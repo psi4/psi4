@@ -79,9 +79,9 @@ Test Contents
 * Most tests will be |PSIfour| tests integration tests focusing on non-regression of user input to answers, and we insist on having these.
   But if you find unit tests helpful, by all means add them to the test suite.
 
-* General format is to store reference results (from literature or another implementation or a carefully run |PSIfour| calculation),
+* Most tests should store reference results (from literature or another implementation or a carefully run |PSIfour| calculation),
   run quantum chemistry, then apply one or more of the :ref:`faq:comparison_functions` so that the test will fail if the answer is unexpected.
-  The functions are the same in CTest and pytest, but in the former it's standalone ``compare_matrices(refmat, mat, ...)`` while in the latter it's asserted ``assert compare_matrices(refmat, mat, ...)``.
+  The functions are the same in CTest and pytest, but in the former they are, for example, ``compare_matrices(refmat, mat, ...)`` while in the latter it's asserted, like ``assert compare_matrices(refmat, mat, ...)``.
   The main advantage of the testing functions is that they provide helpful error printing upon failure. Deep down, they're NumPy functions.
 
 * In preparing the test case reference values, aim for the converged value rather than many digits from your computer under default convergence conditions.
