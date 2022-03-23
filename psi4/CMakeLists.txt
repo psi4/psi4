@@ -161,11 +161,12 @@ endif()
 
 # CHOOSE! this one for pure cmake libint2 library
 if(DEFINED ENV{LGTM_SRC})
-    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}")
+    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "eri_c4_d0_l${MAX_AM_ERI}")
 else()
-    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}" g2 h2 eri3_e4 eri3_g3 eri3_h3 eri2_e4 eri2_g3 eri2_h3)
+    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
+
 endif()
-get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
+get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
 
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
@@ -222,9 +223,15 @@ endif()
 
 if(MSVC)
     # MSVC does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
-    add_definitions("/D_USE_MATH_DEFINES")
+    # _CRT_* to squash some getenv, strdup, strncpy, ctime, fopen warnings
+    add_compile_definitions(
+      _USE_MATH_DEFINES
+      _CRT_NONSTDC_NO_DEPRECATE
+      _CRT_NONSTDC_NO_WARNINGS
+      _CRT_SECURE_NO_WARNINGS
+      )
     # Set the exception handling model
-    add_definitions("/EHsc")
+    add_compile_options("/EHsc")
 endif()
 
 include_directories(include)
