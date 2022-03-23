@@ -124,7 +124,7 @@ Labels have been added as developers needed, so they are not systematic or thoro
 
 A test requiring over 15 minutes should be labeled ``longtests``. A short test under 30 seconds used for general bug checking should be labeled ``quicktests``. A test that confirms |PSIfour| is operational should be labeled ``smoketests``.
 
-If a test needs extra input files like ``grid.dat`` or extra reference files for checking against like ``fchk``, specify these in the ``CMakeLists.txt`` as shown above. Such tests must be run through ``ctest`` and don't usually work when run "by hand" from the objdir via ``stage/bin/psi4 ../tests/directory_name/input.dat``.
+If a test needs extra input files like ``grid.dat`` or extra reference files for checking against, like ``fchk``, specify these in the ``CMakeLists.txt`` as shown above. Such tests must be run through ``ctest`` and don't usually work when run "by hand" from the objdir via ``stage/bin/psi4 ../tests/directory_name/input.dat``.
 
 If a test is multiple minutes long, load-balancing a parallel CTest run requires the test to be started early. Use the ``COST`` line as shown above to set a weighting to about the number of seconds the test takes.
 
