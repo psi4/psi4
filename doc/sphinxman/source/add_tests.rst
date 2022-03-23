@@ -220,7 +220,7 @@ To create a new test case, either create a new file or add to an existing file u
 
 * Test must be in the :source:`tests/pytests/` directory.
 * Test file name must start with ``test_``. This is how pytest knows to collect it.
-* Test file may contain many tests, each of which is an ordinary Python function with name starting ``test_``. This is how pytest knows to collect it.
+* A test file may contain many tests, each of which is an ordinary Python function with name starting ``test_``. This is how pytest knows to collect it.
 * No registration required to bring a test to pytest's attention.
 * No registration required to bring a test to CMake's attention. If a test needs additional files, register them in :source:`psi4/CMakeLists.txt`.
 
