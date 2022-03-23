@@ -40,12 +40,26 @@ uint64_t binomial(int n, int c1);  // From solidharmonics.cc
 
 MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int order, int nderiv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), order_(order), MDHelper(bs1->max_am(), bs2->max_am()) {
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv),
+      order_(order),
+      MDHelper(bs1->max_am() + nderiv, bs2->max_am() + nderiv) {
     int maxnao1 = INT_NCART(maxam1_);
     int maxnao2 = INT_NCART(maxam2_);
 
     // The number of multipole components to compute. N.B. we don't compute the 0th one (overlap)
     int n_mult = cumulative_cart_dim(order_) - 1;
+
+    // Increase buffer size to handle all Cartesian components
+    if (deriv_ == 0) {
+        buffer_ = new double[n_mult * maxnao1 * maxnao2];
+        set_chunks(n_mult);
+    } else if (deriv_ == 1) {
+        buffer_ = new double[6 * n_mult * maxnao1 * maxnao2];
+        set_chunks(6 * n_mult);
+    } else {
+        throw PSIEXCEPTION("Only first derivatives are available for arbitrary-order multipoles.");
+    }
+    buffers_.resize(nchunk_);
 
     // pre-allocate M-matrix
     int am = maxam1_ + maxam2_;
@@ -57,8 +71,8 @@ MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms
     Mz = std::vector<double>(msize);
 
     // pre-allocate S-matrix
-    int sdim0 = maxam1_ + 1;
-    int sdim1 = maxam2_ + 1;
+    int sdim0 = maxam1_ + 1 + deriv_;
+    int sdim1 = maxam2_ + 1 + deriv_;
     int sdim2 = order_ + 1;
     int ssize = sdim0 * sdim1 * sdim2;
     Sx = std::vector<double>(ssize);
@@ -70,15 +84,6 @@ MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms
     for (int d = 0; d < order_ + 1; ++d) {
         comps_mul_[d] = generate_am_components_cca(d);
     }
-
-    // Increase buffer size to handle all Cartesian components
-    if (deriv_ == 0) {
-        buffer_ = new double[n_mult * maxnao1 * maxnao2];
-        set_chunks(n_mult);
-    } else {
-        throw PSIEXCEPTION("Derivatives are NYI for arbitrary-order multipoles");
-    }
-    buffers_.resize(nchunk_);
 }
 
 MultipoleInt::~MultipoleInt() { delete[] buffer_; }
@@ -127,7 +132,7 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
     int dim2 = INT_NCART(am2);
     // The number of bf components in each shell pair
     int size = dim1 * dim2;
-    
+
     // dimensions of M and S matrix
     int mdim1 = std::max(am, order_) + 2;
     int sdim1 = am2 + 1;
@@ -176,13 +181,128 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
                     for (const auto& [l1, m1, n1, index1] : comps_am1) {
                         for (const auto& [l2, m2, n2, index2] : comps_am2) {
                             // -1.0 for consistency with dipole/quadrupole implementation
-                            buffer_[ao12 + size * m_count] += -1.0 *
+                            buffer_[ao12 + size * m_count] +=
+                                -1.0 *
                                 (ca * cb * Sx[address_3d(l1, l2, ex, sdim1, sdim2)] *
                                  Sy[address_3d(m1, m2, ey, sdim1, sdim2)] * Sz[address_3d(n1, n2, ez, sdim1, sdim2)]);
                             ao12++;
                         }
                     }
                     m_count++;
+                }
+            }
+        }
+    }
+    pure_transform(s1, s2, nchunk_);
+    for (int chunk = 0; chunk < nchunk_; ++chunk) {
+        buffers_[chunk] = buffer_ + chunk * s1.size() * s2.size();
+    }
+}
+
+void MultipoleInt::compute_pair_deriv1(const libint2::Shell& s1, const libint2::Shell& s2) {
+    int am1 = s1.contr[0].l;
+    int am2 = s2.contr[0].l;
+    int am = am1 + am2;
+    int nprim1 = s1.nprim();
+    int nprim2 = s2.nprim();
+
+    // zero out buffer
+    memset(buffer_, 0, nchunk_ * INT_NCART(am1) * INT_NCART(am2) * sizeof(double));
+
+    const auto& comps_am1 = am_comps_[am1];
+    const auto& comps_am2 = am_comps_[am2];
+
+    auto A = s1.O;
+    auto B = s2.O;
+    const Point C = {origin_[0], origin_[1], origin_[2]};
+
+    int dim1 = INT_NCART(am1);
+    int dim2 = INT_NCART(am2);
+    // The number of bf components in each shell pair
+    int size = dim1 * dim2;
+
+    // dimensions of M and S matrix
+    int mdim1 = std::max(am, order_) + 2;
+    int sdim1 = am2 + 2;
+    int sdim2 = order_ + 1;
+
+    // dimensions of the E matrix
+    int edim1 = am2 + 2;
+    int edim2 = (am1 + 2) + edim1;
+
+    int ao12 = 0;
+    for (int p1 = 0; p1 < nprim1; ++p1) {
+        double a = s1.alpha[p1];
+        double ca = s1.contr[0].coeff[p1];
+        for (int p2 = 0; p2 < nprim2; ++p2) {
+            double b = s2.alpha[p2];
+            double cb = s2.contr[0].coeff[p2];
+            double p = a + b;
+            Point P{(a * A[0] + b * B[0]) / p, (a * A[1] + b * B[1]) / p, (a * A[2] + b * B[2]) / p};
+            auto PC = point_diff(P, C);
+            fill_E_matrix(am1 + 1, am2 + 1, P, A, B, a, b, Ex, Ey, Ez);
+            fill_M_matrix(am, order_, PC, a, b, Mx, My, Mz);
+
+            std::fill(Sx.begin(), Sx.end(), 0);
+            std::fill(Sy.begin(), Sy.end(), 0);
+            std::fill(Sz.begin(), Sz.end(), 0);
+            for (int i = 0; i <= am1 + 1; ++i) {
+                for (int j = 0; j <= am2 + 1; ++j) {
+                    for (int e = 0; e <= order_; ++e) {
+                        int uppert = std::min(i + j, e);
+                        int idx = address_3d(i, j, e, sdim1, sdim2);
+                        for (int t = 0; t <= uppert; ++t) {
+                            int idxt = address_3d(i, j, t, edim1, edim2);
+                            // eq 9.5.39
+                            Sx[idx] += Ex[idxt] * Mx[e * mdim1 + t];
+                            Sy[idx] += Ey[idxt] * My[e * mdim1 + t];
+                            Sz[idx] += Ez[idxt] * Mz[e * mdim1 + t];
+                        }
+                    }
+                }
+            }
+            // -1.0 for consistency with dipole/quadrupole implementation
+            // double prefac = -1.0 * ca * cb;
+            double prefac = ca * cb;
+            int m_count = 0;
+            for (int mul = 1; mul < order_ + 1; ++mul) {
+                const auto& comps_mul = comps_mul_[mul];
+                for (const auto& [ex, ey, ez, index0] : comps_mul) {
+                    ao12 = 0;
+                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
+                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                            double sx = Sx[address_3d(l1, l2, ex, sdim1, sdim2)];
+                            double sy = Sy[address_3d(m1, m2, ey, sdim1, sdim2)];
+                            double sz = Sz[address_3d(n1, n2, ez, sdim1, sdim2)];
+                            // eq 9.3.30
+                            // Ax
+                            double DAx = -2.0 * a * Sx[address_3d(l1 + 1, l2, ex, sdim1, sdim2)];
+                            if (l1) DAx += l1 * Sx[address_3d(l1 - 1, l2, ex, sdim1, sdim2)];
+                            buffer_[ao12 + size * (m_count + 0)] += prefac * DAx * sy * sz;
+                            // Ay
+                            double DAy = -2.0 * a * Sy[address_3d(m1 + 1, m2, ey, sdim1, sdim2)];
+                            if (m1) DAy += m1 * Sy[address_3d(m1 - 1, m2, ey, sdim1, sdim2)];
+                            buffer_[ao12 + size * (m_count + 1)] += prefac * sx * DAy * sz;
+                            // Az
+                            double DAz = -2.0 * a * Sz[address_3d(n1 + 1, n2, ez, sdim1, sdim2)];
+                            if (n1) DAz += n1 * Sz[address_3d(n1 - 1, n2, ez, sdim1, sdim2)];
+                            buffer_[ao12 + size * (m_count + 2)] += prefac * sx * sy * DAz;
+                            // Bx
+                            double DBx = -2.0 * b * Sx[address_3d(l1, l2 + 1, ex, sdim1, sdim2)];
+                            if (l2) DBx += l2 * Sx[address_3d(l1, l2 - 1, ex, sdim1, sdim2)];
+                            buffer_[ao12 + size * (m_count + 3)] += prefac * DBx * sy * sz;
+                            // By
+                            double DBy = -2.0 * b * Sy[address_3d(m1, m2 + 1, ey, sdim1, sdim2)];
+                            if (m2) DBy += m2 * Sy[address_3d(m1, m2 - 1, ey, sdim1, sdim2)];
+                            buffer_[ao12 + size * (m_count + 4)] += prefac * sx * DBy * sz;
+                            // Bz
+                            double DBz = -2.0 * b * Sz[address_3d(n1, n2 + 1, ez, sdim1, sdim2)];
+                            if (n2) DBz += n2 * Sz[address_3d(n1, n2 - 1, ez, sdim1, sdim2)];
+                            buffer_[ao12 + size * (m_count + 5)] += prefac * sx * sy * DBz;
+                            ao12++;
+                        }
+                    }
+                    m_count += 6;
                 }
             }
         }

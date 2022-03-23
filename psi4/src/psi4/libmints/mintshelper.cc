@@ -2099,7 +2099,69 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
     return perturbation_gradient;
 }
 
+SharedMatrix MintsHelper::multipole_grad(const std::vector<double>& origin, int order, SharedMatrix D) {
+    // Computes skeleton (Hellman-Feynman like) multipole derivatives for each perturbation
+    double** Dp = D->pointer();
+
+    int natom = molecule_->natom();
+    int nmult = (order + 1) * (order + 2) * (order + 3) / 6 - 1;
+    auto ret = std::make_shared<Matrix>("Multipole dervatives (pert*component, i.e. 3NxN_mult)", 3 * natom, nmult);
+    double** Pp = ret->pointer();
+
+    std::shared_ptr<OneBodyAOInt> Mint(integral_->ao_multipoles(order, 1));
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    Mint->set_origin(v3origin);
+
+    const auto& shell_pairs = Mint->shellpairs();
+    size_t n_pairs = shell_pairs.size();
+
+    for (size_t p = 0; p < n_pairs; ++p) {
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
+
+        Mint->compute_shell_deriv1(P, Q);
+        const auto& buffers = Mint->buffers();
+
+        const auto& shellP = basisset_->shell(P);
+        const auto& shellQ = basisset_->shell(Q);
+
+        int nP = shellP.nfunction();
+        int oP = shellP.function_index();
+        int aP = shellP.ncenter();
+
+        int nQ = shellQ.nfunction();
+        int oQ = shellQ.function_index();
+        int aQ = shellQ.ncenter();
+
+        double prefac = (P == Q ? 1.0 : 2.0);
+
+        // loop over the multipole components (x, y, z, xx, xy, xz, ...)
+        for (int chunk = 0; chunk < nmult; ++chunk) {
+            // loop over the derivative components (x, y, z)
+            for (int comp = 0; comp < 3; ++comp) {
+                // ordering in buffers is (xPx, xPy, xPz, xQx, xQy, xQz, yPx, yPy, ..., xxPx, xxPy, ...)
+                // bra derivatives on atom aP
+                const double* ref = buffers[6 * chunk + comp];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[3 * aP + comp][chunk] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+                // bra derivatives on atom aQ
+                ref = buffers[6 * chunk + comp + 3];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[3 * aQ + comp][chunk] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
+    // TODO: use multipole_grad!!!
     // Computes skeleton (Hellman-Feynman like) dipole derivatives for each perturbation
     double **Dp = D->pointer();
 

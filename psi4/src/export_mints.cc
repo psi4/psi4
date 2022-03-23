@@ -1349,9 +1349,9 @@ void export_mints(py::module& m) {
         .def("so_quadrupole", &IntegralFactory::so_quadrupole,
              "Returns a OneBodyInt that computes SO the quadrupole integral")
         .def("ao_multipoles", &IntegralFactory::ao_multipoles,
-             "Returns a OneBodyInt that computes arbitrary-order AO multipole integrals", "order"_a)
+             "Returns a OneBodyInt that computes arbitrary-order AO multipole integrals", "order"_a, "deriv"_a = 0)
         .def("so_multipoles", &IntegralFactory::so_multipoles,
-             "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a)
+             "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a, "deriv"_a = 0)
         .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole,
              "Returns a OneBodyInt that computes the traceless AO quadrupole integral")
         .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole,
@@ -1505,6 +1505,8 @@ void export_mints(py::module& m) {
 
         // Contracted gradient terms
         .def("dipole_grad", &MintsHelper::dipole_grad, "First nuclear derivative dipole integrals")
+        .def("multipole_grad", &MintsHelper::multipole_grad, "First nuclear derivative multipole integrals",
+             "origin"_a, "order"_a, "D"_a)
         .def("overlap_grad", &MintsHelper::overlap_grad, "First nuclear derivative overlap integrals")
         .def("kinetic_grad", &MintsHelper::kinetic_grad, "First nuclear derivative kinetic integrals")
         .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")

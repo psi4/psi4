@@ -82,3 +82,23 @@ def test_mcmurchie_davidson_multipoles_higher_order():
     order = 100
     M = mints.ao_multipoles(origin=[1.0, 2.0, 3.0], order=order)
     assert len(M) == (order + 1) * (order + 2) * (order + 3) / 6 - 1
+
+
+def test_mcmurchie_davidson_multipoles_gradients():
+    mol = psi4.geometry("""
+        units bohr
+        O  0.000000000000  0.000000000000 -0.149544924691
+        H  0.000000000000 -1.336238163149  1.186693238458
+        H  0.000000000000  1.336238163149  1.186693238458
+        no_com
+        no_reorient
+        symmetry c1
+    """)
+    psi4.set_options({'basis': 'cc-pvtz'})
+    _, wfn = psi4.energy('HF', molecule=mol, return_wfn=True)
+    
+    # TODO: finite difference test
+    mints = psi4.core.MintsHelper(wfn.basisset())
+    grad_ref = mints.dipole_grad(wfn.Da())
+    grad = mints.multipole_grad(origin=[0.0, 0.0, 0.0], order=10, D=wfn.Da())
+    np.testing.assert_allclose(grad_ref.np, grad.np[:, :3], atol=1e-14)

@@ -354,6 +354,7 @@ class PSI_API MintsHelper {
     SharedMatrix kinetic_grad(SharedMatrix D);
     SharedMatrix potential_grad(SharedMatrix D);
     SharedMatrix dipole_grad(SharedMatrix D);
+    SharedMatrix multipole_grad(const std::vector<double>& origin, int order, SharedMatrix D);
     SharedMatrix perturb_grad(SharedMatrix D);
 
     /// Play function
