@@ -50,7 +50,7 @@ MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms
     // pre-allocate M-matrix
     int am = maxam1_ + maxam2_;
     int mdim0 = order_ + 1;
-    int mdim1 = am + 3;
+    int mdim1 = std::max(am, order_) + 2;
     int msize = mdim0 * mdim1;
     Mx = std::vector<double>(msize);
     My = std::vector<double>(msize);
@@ -129,7 +129,7 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
     int size = dim1 * dim2;
     
     // dimensions of M and S matrix
-    int mdim1 = am + 3;
+    int mdim1 = std::max(am, order_) + 2;
     int sdim1 = am2 + 1;
     int sdim2 = order_ + 1;
 

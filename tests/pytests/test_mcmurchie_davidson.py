@@ -20,6 +20,10 @@ def reference_data():
     return reference_data
 
 
+def matlist_to_ndarray(mats):
+    return np.array([x.np for x in mats])
+
+
 def test_mcmurchie_davidson_consistency_angmom(reference_data):
     assert reference_data['version'] == '1.5'
     refdata = reference_data['data']
@@ -54,18 +58,16 @@ def test_mcmurchie_davidson_multipoles():
     M = mints.ao_multipoles(origin=[0.0, 0.0, 0.0], order=order)
     assert len(M) == (order + 1) * (order + 2) * (order + 3) / 6 - 1
 
-    to_ndarray = lambda mats: np.array([x.np for x in mats])
-
-    Mnp = to_ndarray(M)
+    Mnp = matlist_to_ndarray(M)
     # reference from l2
-    dips = to_ndarray(mints.ao_dipole())
-    quads = to_ndarray(mints.ao_quadrupole())
+    dips = matlist_to_ndarray(mints.ao_dipole())
+    quads = matlist_to_ndarray(mints.ao_quadrupole())
     
     np.testing.assert_allclose(dips, Mnp[:3], atol=1e-14)
     np.testing.assert_allclose(quads, Mnp[3:9], atol=1e-14)
 
 
-def test_mcmurchie_davidson_multipoles_order10():
+def test_mcmurchie_davidson_multipoles_higher_order():
     mol = psi4.geometry("""
         units bohr
         O  0.000000000000  0.000000000000 -0.149544924691
@@ -75,13 +77,8 @@ def test_mcmurchie_davidson_multipoles_order10():
         no_reorient
         symmetry c1
     """)
-    basis = psi4.core.BasisSet.build(mol, 'orbital', 'sto-3g')
-    psi4.set_options({'puream' : False})
+    basis = psi4.core.BasisSet.build(mol, 'orbital', '6-31G')
     mints = psi4.core.MintsHelper(basis)
-    order = 10
+    order = 100
     M = mints.ao_multipoles(origin=[1.0, 2.0, 3.0], order=order)
     assert len(M) == (order + 1) * (order + 2) * (order + 3) / 6 - 1
-    to_ndarray = lambda mats: np.array([x.np for x in mats])
-    Mnp = to_ndarray(M)
-    for i, m in enumerate(M):
-        print(m.name, np.max(Mnp[i]), Mnp[i].shape)

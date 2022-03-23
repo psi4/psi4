@@ -127,8 +127,7 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
     std::fill(My.begin(), My.end(), 0.0);
     std::fill(Mz.begin(), Mz.end(), 0.0);
 
-    int dim0 = maxpow + 1;
-    int dim1 = maxam + 3;
+    int dim1 = std::max(maxam, maxpow) + 2;
 
     double p = a + b;
     // one over 2p
@@ -138,22 +137,22 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
     My[0] = sqrtpip;
     Mz[0] = sqrtpip;
     for (int e = 1; e <= maxpow; ++e) {
-        // t > e is zero
-        int uppert = std::min(e + 1, maxam + 2);
-        for (int t = 0; t < uppert; ++t) {
+        // t = 0 case
+        int idx0 = e * dim1;
+        int idx0_em = (e - 1) * dim1;
+        Mx[idx0] += PC[0] * Mx[idx0_em] + oo2p * Mx[idx0_em + 1];
+        My[idx0] += PC[1] * My[idx0_em] + oo2p * My[idx0_em + 1];
+        Mz[idx0] += PC[2] * Mz[idx0_em] + oo2p * Mz[idx0_em + 1];
+        // t > 0 case
+        int upper_t = std::min(e + 1, std::max(maxam, maxpow) + 1);
+        for (int t = 1; t < upper_t; ++t) {
             int idx = e * dim1 + t;
-            // TODO: 'unroll' t=0 loop
-            Mx[idx] += PC[0] * Mx[(e - 1) * dim1 + t];
-            My[idx] += PC[1] * My[(e - 1) * dim1 + t];
-            Mz[idx] += PC[2] * Mz[(e - 1) * dim1 + t];
-            if (t > 0) {
-                Mx[idx] += t * Mx[(e - 1) * dim1 + (t - 1)];
-                My[idx] += t * My[(e - 1) * dim1 + (t - 1)];
-                Mz[idx] += t * Mz[(e - 1) * dim1 + (t - 1)];
-            }
-            Mx[idx] += oo2p * Mx[(e - 1) * dim1 + (t + 1)];
-            My[idx] += oo2p * My[(e - 1) * dim1 + (t + 1)];
-            Mz[idx] += oo2p * Mz[(e - 1) * dim1 + (t + 1)];
+            int idx_em = (e - 1) * dim1 + t;
+            int idx_em_tm = (e - 1) * dim1 + (t - 1);
+            int idx_em_tp = (e - 1) * dim1 + (t + 1);
+            Mx[idx] += t * Mx[idx_em_tm] + PC[0] * Mx[idx_em] + oo2p * Mx[idx_em_tp];
+            My[idx] += t * My[idx_em_tm] + PC[1] * My[idx_em] + oo2p * My[idx_em_tp];
+            Mz[idx] += t * Mz[idx_em_tm] + PC[2] * Mz[idx_em] + oo2p * Mz[idx_em_tp];
         }
     }
 }

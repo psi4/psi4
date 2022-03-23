@@ -1582,9 +1582,35 @@ std::vector<SharedMatrix> MintsHelper::ao_traceless_quadrupole() {
 
 std::vector<SharedMatrix> MintsHelper::ao_multipoles(const std::vector<double>& origin, int order) {
     Vector3 v3origin(origin[0], origin[1], origin[2]);
-    MultipoleSymmetry mpsymm(order, molecule_, integral_, factory_);
-    // ignore_symmetry = true
-    auto ret = mpsymm.create_matrices("", true);
+    std::vector<SharedMatrix> ret;
+    int component = 0;
+    for (int l = 1; l <= order; ++l) {
+        for (int ii = 0; ii <= l; ii++) {
+            int lx = l - ii;
+            for (int lz = 0; lz <= ii; lz++) {
+                int ly = ii - lz;
+                std::stringstream sstream;
+                if (l == 1) {
+                    sstream << "Dipole ";
+                } else if (l == 2) {
+                    sstream << "Quadrupole ";
+                } else if (l == 3) {
+                    sstream << "Octupole ";
+                } else if (l == 4) {
+                    sstream << "Hexadecapole ";
+                } else {
+                    int n = (1 << l);
+                    sstream << n << "-pole ";
+                }
+                std::string name = sstream.str();
+                for (int xval = 0; xval < lx; ++xval) name += "X";
+                for (int yval = 0; yval < ly; ++yval) name += "Y";
+                for (int zval = 0; zval < lz; ++zval) name += "Z";
+                auto mat = std::make_shared<Matrix>(name, factory_->norb(), factory_->norb());
+                ret.push_back(mat);
+            }
+        }
+    }
     std::shared_ptr<OneBodyAOInt> multipole_int(integral_->ao_multipoles(order));
     multipole_int->set_origin(v3origin);
     multipole_int->compute(ret);
