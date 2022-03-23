@@ -424,65 +424,72 @@ void HF::find_occupation() {
     if (MOM_performed_) {
         MOM();
     } else {
-        // We first find the aufbau occupation.
-        // We then take our orbitals as the aufbau orbitals within the occupation.
-        std::vector<std::pair<double, int> > pairs_a;
-        std::vector<std::pair<double, int> > pairs_b;
-        for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
-            for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) {
-                pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+        if (!input_docc_ && !input_socc_) {
+            assert(nirrep_ == epsilon_a_->nirrep());
+            assert(nirrep_ == epsilon_b_->nirrep());
+
+            // The occupations are determined by the Aufbau
+            // principle. We first collect all the orbital energies and
+            // sort them in increasing order
+            std::vector<std::pair<double, int> > pairs_a;
+            for (int h = 0; h < nirrep_; ++h) {
+                for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) {
+                    pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+                }
             }
-        }
-        sort(pairs_a.begin(), pairs_a.end());
-
-        // Do we need to sort beta?
-        if (multiplicity_ == 1) {
-            pairs_b = pairs_a;
-
-        } else {
-            for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
+            sort(pairs_a.begin(), pairs_a.end());
+            // Same for beta electrons
+            std::vector<std::pair<double, int> > pairs_b;
+            for (int h = 0; h < nirrep_; ++h) {
                 for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i) {
                     pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
                 }
             }
             sort(pairs_b.begin(), pairs_b.end());
-        }
 
-        if (!input_docc_ && !input_socc_) {
-            // Sanity check
+            // Sanity check: we must have at least one orbital per electron
             if ((size_t)std::max(nalpha_, nbeta_) > pairs_a.size())
                 throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
 
-            // Alpha
-            memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
+            // Reset occupations
+            for (int h = 0; h < nirrep_; ++h) {
+                nalphapi_[h] = 0;
+                nbetapi_[h] = 0;
+            }
+            // Occupy the lowest nalpha orbitals
             for (int i = 0; i < nalpha_; ++i) nalphapi_[pairs_a[i].second]++;
-
-            // Beta
-            memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
+            // Occupy the lowest nbeta electrons
             for (int i = 0; i < nbeta_; ++i) nbetapi_[pairs_b[i].second]++;
         }
 
-        int old_socc[8];
-        int old_docc[8];
-        for (int h = 0; h < nirrep_; ++h) {
-            old_socc[h] = soccpi_[h];
-            old_docc[h] = doccpi_[h];
-        }
+        // Copies of socc and docc
+        Dimension old_socc = soccpi_;
+        Dimension old_docc = doccpi_;
 
         if (!input_docc_ && !input_socc_) {
+            int alphacount = 0;
+            int betacount = 0;
             for (int h = 0; h < nirrep_; ++h) {
                 soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
                 doccpi_[h] = std::min(nalphapi_[h], nbetapi_[h]);
+                alphacount += doccpi_[h] + soccpi_[h];
+                betacount += doccpi_[h];
+            }
+            if (alphacount != nalpha_) {
+                std::ostringstream oss;
+                oss << "Count " << alphacount << " alpha electrons, expected " << nalpha_ << ".\n";
+                oss << "This is a bug. Please file a report.";
+                throw PSIEXCEPTION(oss.str());
+            }
+            if (betacount != nbeta_) {
+                std::ostringstream oss;
+                oss << "Count " << betacount << " beta electrons, expected " << nbeta_ << ".\n";
+                oss << "This is a bug. Please file a report.";
+                throw PSIEXCEPTION(oss.str());
             }
         }
 
-        bool occ_changed = false;
-        for (int h = 0; h < nirrep_; ++h) {
-            if (old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]) {
-                occ_changed = true;
-                break;
-            }
-        }
+        bool occ_changed = (soccpi_ != old_socc) || (doccpi_ != old_docc);
 
         // If print > 2 (diagnostics), print always
         if ((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0) {
