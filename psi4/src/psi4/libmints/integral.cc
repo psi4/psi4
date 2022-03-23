@@ -260,10 +260,8 @@ TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool 
 }
 
 TwoBodyAOInt* IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2") return new Libint2YukawaERI(zeta, this, threshold, deriv, use_shell_pairs, needs_exchange);
-    else throw PSIEXCEPTION("Yukawa ERIs are only available in the Libint2 Package");
+    return new Libint2YukawaERI(zeta, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 TwoBodyAOInt* IntegralFactory::f12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
