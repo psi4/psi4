@@ -261,8 +261,6 @@ void MultipoleInt::compute_pair_deriv1(const libint2::Shell& s1, const libint2::
                     }
                 }
             }
-            // -1.0 for consistency with dipole/quadrupole implementation
-            // double prefac = -1.0 * ca * cb;
             double prefac = ca * cb;
             int m_count = 0;
             for (int mul = 1; mul < order_ + 1; ++mul) {

@@ -71,7 +71,7 @@ class MultipoleInt : public OneBodyAOInt, public mdintegrals::MDHelper {
     void compute_pair_deriv1(const libint2::Shell &, const libint2::Shell &) override;
 
     //! Does the method provide first derivatives?
-    bool has_deriv1() override { return false; }
+    bool has_deriv1() override { return true; }
 
     /// Returns the nuclear contribution to the multipole moments, with angular momentum up to order
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin);

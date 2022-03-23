@@ -43,8 +43,8 @@ class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
- *  \class DipoleInt
- *  \brief Computes dipole integrals.
+ *  \class NablaInt
+ *  \brief Computes nabla integrals.
  *
  * Use an IntegralFactory to create this object. */
 class NablaInt : public OneBodyAOInt {
