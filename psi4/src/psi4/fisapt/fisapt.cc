@@ -55,7 +55,7 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libqt/qt.h"
 
-#include "local2.h"
+#include "psi4/libmints/local.h"
 
 namespace psi {
 
@@ -118,13 +118,12 @@ void FISAPT::localize() {
     ranges.push_back(vectors_["eps_focc"]->dimpi()[0]);
     ranges.push_back(vectors_["eps_occ"]->dimpi()[0]);
 
-    std::shared_ptr<fisapt::IBOLocalizer2> local =
-        fisapt::IBOLocalizer2::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc"], options_);
-    local->print_header();
-    std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc"], Focc, ranges);
+    auto local = IBOLocalizer::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc"], 
+                                     Focc, ranges, options_);
+    local->localize();
 
-    matrices_["Locc"] = ret["L"];
-    matrices_["Qocc"] = ret["Q"];
+    matrices_["Locc"] = local->L();
+    matrices_["Qocc"] = local->Q();
 }
 
 void FISAPT::partition() {
@@ -3096,18 +3095,16 @@ void FISAPT::flocalize() {
         ranges.push_back(nf);
         ranges.push_back(nm);
 
-        std::shared_ptr<Matrix> Focc(
-            new Matrix("Focc", vectors_["eps_occ0A"]->dimpi()[0], vectors_["eps_occ0A"]->dimpi()[0]));
+        SharedMatrix Focc = std::make_shared<Matrix>("Focc", vectors_["eps_occ0A"]->dimpi()[0], vectors_["eps_occ0A"]->dimpi()[0]);
         Focc->set_diagonal(vectors_["eps_occ0A"]);
 
-        std::shared_ptr<fisapt::IBOLocalizer2> local =
-            fisapt::IBOLocalizer2::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc0A"], options_);
-        local->print_header();
-        std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0A"], Focc, ranges);
+        auto local = IBOLocalizer::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc0A"], 
+                                         Focc, ranges, options_);
+        local->localize();
 
-        matrices_["Locc0A"] = ret["L"];
-        matrices_["Uocc0A"] = ret["U"];
-        matrices_["Qocc0A"] = ret["Q"];
+        matrices_["Locc0A"] = local->L();
+        matrices_["Uocc0A"] = local->U();
+        matrices_["Qocc0A"] = local->Q();
 
         matrices_["Lfocc0A"] = std::make_shared<Matrix>("Lfocc0A", nn, nf);
         matrices_["Laocc0A"] = std::make_shared<Matrix>("Laocc0A", nn, na);
@@ -3164,18 +3161,16 @@ void FISAPT::flocalize() {
         ranges.push_back(nf);
         ranges.push_back(nm);
 
-        std::shared_ptr<Matrix> Focc(
-            new Matrix("Focc", vectors_["eps_occ0B"]->dimpi()[0], vectors_["eps_occ0B"]->dimpi()[0]));
+        SharedMatrix Focc = std::make_shared<Matrix>("Focc", vectors_["eps_occ0B"]->dimpi()[0], vectors_["eps_occ0B"]->dimpi()[0]);
         Focc->set_diagonal(vectors_["eps_occ0B"]);
 
-        std::shared_ptr<fisapt::IBOLocalizer2> local =
-            fisapt::IBOLocalizer2::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc0B"], options_);
-        local->print_header();
-        std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0B"], Focc, ranges);
+        auto local = IBOLocalizer::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc0B"],
+                                         Focc, ranges, options_);
+        local->localize();
 
-        matrices_["Locc0B"] = ret["L"];
-        matrices_["Uocc0B"] = ret["U"];
-        matrices_["Qocc0B"] = ret["Q"];
+        matrices_["Locc0B"] = local->L();
+        matrices_["Uocc0B"] = local->U();
+        matrices_["Qocc0B"] = local->Q();
 
         matrices_["Lfocc0B"] = std::make_shared<Matrix>("Lfocc0B", nn, nf);
         matrices_["Laocc0B"] = std::make_shared<Matrix>("Laocc0B", nn, na);
