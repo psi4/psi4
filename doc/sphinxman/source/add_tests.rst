@@ -41,7 +41,7 @@ A test suite plays a vital role in open-source software use and development.
   The test suite also allows high-quality development snapshots of the
   codebase to be built automatically for users.
 
-* For a CMS user, a test suite alongside installed |PSIfour| can be used to show that this piece is working in a complex software environment.
+* For a user who has |PSIfour| as part of a complex computational molecular software environment, a test suite alongside installed |PSIfour| can be used to show that the |PSIfour| piece is working.
 
 * For a feature developer, adding tests provides confidence that you
   can leave your code untouched and still advertise that the feature works
@@ -67,7 +67,7 @@ The PsiAPI/pytest test suite occupies :source:`tests/pytests`.
 The above description sounds as if there are two disjoint test suites, and you have to run both ``ctest`` and ``pytest`` to fully test |PSIfour|.
 This has indeed been the case until March 2022.
 The difficulty has been that (1) two test suites is unexpected so some developers don't know to run both; and (2) there are important tests in the PSIthon suite that can't be run on a |PSIfour| installation since CTest only works in a build directory.
-Now, by adding an extra file to the test directory, PSIthon tests can also be run through :program:`pytest`.
+Now, by adding an extra file to the test directory (:ref:`faq:psithon_through_pytest`), PSIthon tests can also be run through :program:`pytest`.
 This hasn't rolled out to all ~500 PSIthon tests (help wanted), but eventually |PSIfour| can be tested with a single command from a build or from an installation.
 Therefore, in designing a test, choose its mode based on whether PSIthon or PsiAPI suits it better and whether it's a simple model for users (probably PSIthon) or for expert users (probably PsiAPI).
 Both will continue to work in future, and neither have limitations.
@@ -76,7 +76,7 @@ Both will continue to work in future, and neither have limitations.
 Test Contents
 =============
 
-* Most tests will be |PSIfour| tests integration tests focusing on non-regression of user input to answers, and we insist on having these.
+* Most |PSIfour| tests will be integration tests focusing on non-regression of user input to answers, and we insist on having these.
   But if you find unit tests helpful, by all means add them to the test suite.
 
 * Most tests should store reference results (from literature or another implementation or a carefully run |PSIfour| calculation),
@@ -116,7 +116,7 @@ This file adds the test case to the suite. It should have at least the following
 
     add_regression_test(directory_name "psi;semicolon_separated-list-of-applicable-test-labels")
 
-    # if minutest long
+    # if minutes long
     # set_tests_properties(isapt1 PROPERTIES COST 300)
 
 The labels specify which groups of tests include the test case for ``ctest -L label`` purposes. The ``psi`` label should always be added, but the other labels are test-specific. The method tested should always be included, and this is often sufficient. If adding a test for an already existing module, the labels for other tests of the module will suggest other labels to add.
@@ -168,7 +168,9 @@ The compare_values function (along with several relatives in :source:`psi4/drive
 --------------
 
 When your test case is in final form, run it locally, rename the output to ``output.ref``, and check it into the repository alongside ``input.dat``.
-While this isn't used for any testing machinery (except for the nearly decommissioned :source:`tests/psitest.pl` for CC tests), it can be handy for users or developers to consult.
+While this isn't used for any testing machinery (except for the nearly decommissioned :source:`tests/psitest.pl` for CC tests; full decommission expected by v1.6), it can be handy for users or developers to consult.
+
+.. _`faq:psithon_through_pytest`:
 
 ``test_input.py``
 -----------------
@@ -227,8 +229,8 @@ To create a new test case, either create a new file or add to an existing file u
 A few notes on test contents:
 
 * Import testing functions from ``utils`` and use Python assert: ``assert compare_values(expected, computed, ...)``.
-* Don't worry about cleaning up files or resetting options. A function in :source:`tests/pytests/conftest.py` does this automatically.
-* Especially if using data or functions from outside a test, run a variety of tests at different parallelisms. If tests fail that pass when run alone, you've got a function of the same name changing state or some similar correctable phenomenon.
+* Don't worry about cleaning up files or resetting options. A function in :source:`tests/pytests/conftest.py` does this automatically between every test.
+* Especially if using data or functions from outside a test, run a variety of tests at different ``pytest -n <N>`` levels to mix up test ordering. If tests fail that pass when run alone, you've got a function of the same name changing state or some similar correctable phenomenon.
 
 A few notes on test labels:
 
