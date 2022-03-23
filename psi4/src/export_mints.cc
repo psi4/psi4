@@ -923,9 +923,11 @@ void export_mints(py::module& m) {
         .def("get_fragment_multiplicities", &Molecule::get_fragment_multiplicities,
              "Gets the multiplicity of each fragment")
         .def("atom_at_position", &Molecule::atom_at_position1,
-             "Tests to see if an atom is at the position *coord* with a given tolerance *tol*", "coord"_a, "tol"_a)
+             "Returns the index of the atom inside *tol* radius around *coord*. Returns -1 for no atoms, "
+             "throws an exception if more than one is found.", "coord"_a, "tol"_a)
         .def("atom_at_position", &Molecule::atom_at_position3,
-             "Tests to see if an atom is at the position *coord* with a given tolerance *tol*", "coord"_a, "tol"_a)
+             "Returns the index of the atom inside *tol* radius around *coord*. Returns -1 for no atoms, "
+             "throws an exception if more than one is found.", "coord"_a, "tol"_a)
         .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units to output file")
         .def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr to output file")
         .def("print_out_in_angstrom", &Molecule::print_in_angstrom,

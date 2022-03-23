@@ -364,11 +364,21 @@ int Molecule::atom_at_position1(double *const coord, const double tol) const {
 }
 
 int Molecule::atom_at_position2(const Vector3 &b, const double tol) const {
+    std::vector<double> dists(natom());
     for (int i = 0; i < natom(); ++i) {
-        Vector3 a = xyz(i);
-        if (b.distance(a) < tol) return i;
+        const Vector3 a = xyz(i);
+        dists[i] = b.distance(a);
     }
-    return -1;
+    const int num_near = std::count_if(dists.cbegin(), dists.cend(), [tol](double dist){return dist < tol;});
+    if (num_near == 0){
+        return -1;
+    }
+    if (num_near > 1){
+        throw PSIEXCEPTION(
+          "More than one atom within tolerance distance! The geometry either has one or more atoms extremely close "
+          "to each other, or the tolerance distance has been set too large.");
+    }
+    return std::min_element(dists.cbegin(), dists.cend()) - dists.cbegin();
 }
 
 int Molecule::atom_at_position3(const std::array<double, 3> &coord, const double tol) const {
