@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 from typing import List
@@ -164,6 +165,12 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     from qcengine.util import execute
     import psi4
 
+    # Pass runtime env through to `execute`
+    # * appending Psi4 import path (after all, it worked previous line) since partial/relative paths not robust
+    psiimport = Path(psi4.__file__).parent.parent
+    env = os.environ.copy()
+    env["PYTHONPATH"] = env["PYTHONPATH"] + os.pathsep + str(psiimport)
+
     ctestdir = Path(inputdatloc).resolve().parent
 
     if (ctestdir / "input.dat").exists():
@@ -174,17 +181,17 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     infiles = [inputdat]
     if extra_infiles:
         infiles.extend(extra_infiles)
-    infiles_with_contents = {fl: (ctestdir / fl).read_text() for fl in infiles}
+    infiles_with_contents = {Path(fl).name: (ctestdir / fl).read_text() for fl in infiles}
 
     # Note:  The simple `command = ["psi4", "input.dat"]` works fine for Linux and Mac but not for Windows.
     #   L/M/W   ok with `command = [which("psi4"), "input.dat"]` where `which` on Windows finds the psi4.bat file that points to the psi4 python script. -or-
     #   L/M/W   ok with `command = [sys.executable, psi4.executable, "input.dat"]` aka `python /full/path/bin/psi4 input.dat`.
     #   Latter chosen as `psi4.executable` is path computed by `import psi4`, so assured correspondence.
     # Note:  The input.py in json/, python/, and psi4numpy/ are not being treated best.
-    #   Properly, as in CTest, it's `command = [sys.executable, "input.py"]`. But that doesn't pass though PYTHONPATH.
-    #   Rather than have three ways of handling env conditions (direct-call Py, popen psi4, popen Py), using same `command`.
+    #   Properly, as in CTest, it's `command = [sys.executable, "input.py"]`.
+    #   Have to either have 3-item `command` or pass PYTHONPATH through env. Since some tests (fsapt) "import psi4" internally, doing both.
     command = [sys.executable, psi4.executable, inputdat]
-    _, output = execute(command, infiles_with_contents, outfiles)
+    _, output = execute(command, infiles_with_contents, outfiles, environment=env)
 
     success = output["proc"].poll() == 0
     assert success, output["stdout"] + output["stderr"]

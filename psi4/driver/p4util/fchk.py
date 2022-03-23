@@ -100,7 +100,7 @@ def compare_fchkfiles(expected, computed, atol_exponent, label):
     fchk_ref = fchkfile_to_string(expected).splitlines()
     fchk_calc = fchkfile_to_string(computed).splitlines()
 
-    high_accuracy = atol_exponents
+    high_accuracy = atol_exponent
     low_accuracy = 3
 
     # Those listed below need super high scf convergence (d_conv 1e-12) and might

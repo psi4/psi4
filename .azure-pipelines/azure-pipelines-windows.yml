@@ -164,7 +164,6 @@ jobs:
 
       # Configure
       # call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-      # -DCMAKE_VERBOSE_MAKEFILE=ON
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
@@ -176,7 +175,7 @@ jobs:
           if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
           if not defined ENABLE_XHOST exit 1
           cmake -G Ninja ^
-                -DCMAKE_VERBOSE_MAKEFILE=ON ^
+                -DCMAKE_VERBOSE_MAKEFILE=OFF ^
                 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
                 -DCMAKE_INSTALL_PREFIX=../install ^
                 -DCMAKE_C_COMPILER=clang-cl ^
