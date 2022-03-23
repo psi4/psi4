@@ -462,12 +462,9 @@ void HF::find_occupation() {
             for (int i = 0; i < nbeta_; ++i) nbetapi_[pairs_b[i].second]++;
         }
 
-        int old_socc[nirrep_];
-        int old_docc[nirrep_];
-        for (int h = 0; h < nirrep_; ++h) {
-            old_socc[h] = soccpi_[h];
-            old_docc[h] = doccpi_[h];
-        }
+        // Copies of socc and docc
+        Dimension old_socc = soccpi_;
+        Dimension old_docc = doccpi_;
 
         if (!input_docc_ && !input_socc_) {
             int alphacount = 0;
@@ -492,13 +489,7 @@ void HF::find_occupation() {
             }
         }
 
-        bool occ_changed = false;
-        for (int h = 0; h < nirrep_; ++h) {
-            if (old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]) {
-                occ_changed = true;
-                break;
-            }
-        }
+        bool occ_changed = (soccpi_ != old_socc) || (doccpi_ != old_docc);
 
         // If print > 2 (diagnostics), print always
         if ((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0) {
