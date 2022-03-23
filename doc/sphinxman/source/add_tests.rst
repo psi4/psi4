@@ -227,7 +227,7 @@ To create a new test case, either create a new file or add to an existing file u
 A few notes on test contents:
 
 * Import testing functions from ``utils`` and use Python assert: ``assert compare_values(expected, computed, ...)``.
-* Don't worry about cleaning up files or resetting options. There's a function in :source:`tests/pytests/conftest.py` that does so between every test.
+* Don't worry about cleaning up files or resetting options. A function in :source:`tests/pytests/conftest.py` does this automatically.
 * Especially if using data or functions from outside a test, run a variety of tests at different parallelisms. If tests fail that pass when run alone, you've got a function of the same name changing state or some similar correctable phenomenon.
 
 A few notes on test labels:
