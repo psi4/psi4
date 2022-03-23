@@ -748,6 +748,8 @@ to false, which disables this acceleration entirely.
 LinK Exchange
 ~~~~~~~~~~~~~~
 
+.. warning:: The LinK code is currently under development and should not be used.
+
 Large SCF calculations can benefit from specialized screening procedures that further reduce the scaling of the ERI contribution to the Fock matrix.
 LinK, the linear-scaling exchange method described in [Ochsenfeld:1998:1663]_, is available with the direct SCF algorithm (|globals__scf_type| set to ``DIRECT``).
 LinK achieves linear-scaling by exploiting shell pair sparsity in the density matrix and overlap sparsity between shell pairs.

@@ -122,6 +122,7 @@ void DirectJK::print_header() const {
         outfile->Printf("    LinK:              %11s\n", linK_ ? "Yes" : "No");
         outfile->Printf("\n");
     }
+    if (linK_) outfile->Printf("    WARNING: LinK is still under development and should not be used!\n\n");
 }
 void DirectJK::preiterations() {
 
@@ -1069,7 +1070,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     }
 
     // ==> Prep Atom Pairs <== //
-    // Based on limited evidence, atom blocking is better for parallel performance than shell-pair blocking
+    // Atom-pair blocking inherited from DirectJK code
+    // TODO: Test shell-pair blocking
 
     std::vector<std::pair<int, int>> atom_pairs;
     for (size_t Patom = 0; Patom < natom; Patom++) {

@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev176 
+                               Psi4 1.6a1.dev179 
 
-                         Git: Rev {linK-new} 985ce24 dirty
+                         Git: Rev {linK-new} ee22594 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 12 March 2022 04:36PM
+    Psi4 started on: Wednesday, 23 March 2022 04:20PM
 
-    Process ID: 16011
-    Host:       ds10
-    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-brendon/stage/share/psi4
+    Process ID: 18615
+    Host:       ds4
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    6
     
@@ -82,16 +82,16 @@ psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)"
 
 Scratch directory: /scratch/jiang/
 
-*** tstart() called on ds10
-*** at Sat Mar 12 16:36:31 2022
+*** tstart() called on ds4
+*** at Wed Mar 23 16:20:56 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   186 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-brendon/stage/share/psi4/basis/cc-pvtz.gbs 
-    atoms 7-12 entry H          line    23 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-brendon/stage/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-6  entry C          line   186 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/cc-pvtz.gbs 
+    atoms 7-12 entry H          line    23 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -225,6 +225,8 @@ Scratch directory: /scratch/jiang/
     Incremental Fock:          Yes
     LinK:                      Yes
 
+    WARNING: LinK is still under development and should not be used!
+
   Cached 20.0% of DFT collocation blocks in 0.306 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 3.7592595820E-05.
@@ -247,17 +249,17 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -231.83025753211274   -2.31830e+02   0.00000e+00 
-   @RKS iter   1:  -231.83545138000039   -5.19385e-03   3.65134e-03 DIIS/ADIIS/LINK
-   @RKS iter   2:  -231.53451997879191    3.00931e-01   4.63456e-03 DIIS/ADIIS/INCFOCK/LINK
-   @RKS iter   3:  -232.32931820366656   -7.94798e-01   3.60049e-04 DIIS/ADIIS/INCFOCK/LINK
-   @RKS iter   4:  -232.33313657041137   -3.81837e-03   7.46588e-05 DIIS/INCFOCK/LINK
-   @RKS iter   5:  -232.33331177419223   -1.75204e-04   7.55716e-06 DIIS/INCFOCK/LINK
-   @RKS iter   6:  -232.33331213969839   -3.65506e-07   6.93604e-06 DIIS/LINK
-   @RKS iter   7:  -232.33331403948151   -1.89978e-06   6.75648e-07 DIIS/INCFOCK/LINK
-   @RKS iter   8:  -232.33331405445489   -1.49734e-08   3.08817e-07 DIIS/LINK
-   @RKS iter   9:  -232.33331405755555   -3.10067e-09   1.70154e-08 DIIS/LINK
-   @RKS iter  10:  -232.33331405756405   -8.49809e-12   6.55549e-09 DIIS/LINK
+   @RKS iter SAD:  -231.83025753211231   -2.31830e+02   0.00000e+00 
+   @RKS iter   1:  -231.83545138000028   -5.19385e-03   3.65134e-03 DIIS/ADIIS/LINK
+   @RKS iter   2:  -231.53451997879228    3.00931e-01   4.63456e-03 DIIS/ADIIS/INCFOCK/LINK
+   @RKS iter   3:  -232.32931820366662   -7.94798e-01   3.60049e-04 DIIS/ADIIS/INCFOCK/LINK
+   @RKS iter   4:  -232.33313657041168   -3.81837e-03   7.46588e-05 DIIS/INCFOCK/LINK
+   @RKS iter   5:  -232.33331177419194   -1.75204e-04   7.55716e-06 DIIS/INCFOCK/LINK
+   @RKS iter   6:  -232.33331213969817   -3.65506e-07   6.93604e-06 DIIS/LINK
+   @RKS iter   7:  -232.33331403948145   -1.89978e-06   6.75648e-07 DIIS/INCFOCK/LINK
+   @RKS iter   8:  -232.33331405445517   -1.49737e-08   3.08817e-07 DIIS/LINK
+   @RKS iter   9:  -232.33331405755558   -3.10041e-09   1.70154e-08 DIIS/LINK
+   @RKS iter  10:  -232.33331405756405   -8.46967e-12   6.55549e-09 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -372,9 +374,9 @@ Scratch directory: /scratch/jiang/
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993059994308851
-    Two-Electron Energy =                 306.9305832444478597
-    DFT Exchange-Correlation Energy =     -28.1755226628599225
+    One-Electron Energy =                -714.7993059994298619
+    Two-Electron Energy =                 306.9305832444468365
+    DFT Exchange-Correlation Energy =     -28.1755226628599154
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
     Total Energy =                       -232.3333140575640527
@@ -399,18 +401,18 @@ Properties computed using the SCF density matrix
      X:     0.0125      Y:     0.0080      Z:    -0.0000     Total:     0.0149
 
 
-*** tstop() called on ds10 at Sat Mar 12 16:38:37 2022
+*** tstop() called on ds4 at Wed Mar 23 16:23:02 2022
 Module time:
-	user time   =     750.48 seconds =      12.51 minutes
-	system time =       0.76 seconds =       0.01 minutes
+	user time   =     745.22 seconds =      12.42 minutes
+	system time =       0.79 seconds =       0.01 minutes
 	total time  =        126 seconds =       2.10 minutes
 Total time:
-	user time   =     750.48 seconds =      12.51 minutes
-	system time =       0.76 seconds =       0.01 minutes
+	user time   =     745.22 seconds =      12.42 minutes
+	system time =       0.79 seconds =       0.01 minutes
 	total time  =        126 seconds =       2.10 minutes
     B3LYP Energy (using LinK algo)........................................................PASSED
 
-    Psi4 stopped on: Saturday, 12 March 2022 04:38PM
-    Psi4 wall time for execution: 0:02:06.02
+    Psi4 stopped on: Wednesday, 23 March 2022 04:23PM
+    Psi4 wall time for execution: 0:02:05.35
 
 *** Psi4 exiting successfully. Buy a developer a beer!
