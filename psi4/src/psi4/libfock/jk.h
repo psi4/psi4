@@ -48,6 +48,7 @@ class TwoBodyAOInt;
 class Options;
 class PSIO;
 class DFHelper;
+class DFTGrid;
 
 namespace pk {
 class PKManager;
@@ -1190,6 +1191,95 @@ class PSI_API MemDFJK : public JK {
      */
     std::shared_ptr<DFHelper> dfh() { return dfh_; }
 };
+
+/**
+ * Class DFJCOSK
+ *
+ * JK implementation using a direct density-fitted coulomb algorithm
+ * and a semi-numerical 'chain of spheres' exchange algorithm
+ */
+class PSI_API DFJCOSK : public JK {
+   protected:
+    /// Number of threads
+    int nthreads_;
+    /// Options object
+    Options& options_;
+    /// Previous iteration pseudo-density matrix
+    std::vector<SharedMatrix> D_prev_;
+
+    // => Density Fitting Stuff <= //
+
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+    /// Coulomb Metric
+    SharedMatrix J_metric_;
+    /// per-thread TwoBodyAOInt object (for computing three-center ERIs)
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri_computers_;
+
+    // => Semi-Numerical Stuff <= //
+
+    /// Small DFTGrid for initial SCF iterations
+    std::shared_ptr<DFTGrid> grid_init_;
+    /// Large DFTGrid for the final SCF iteration
+    std::shared_ptr<DFTGrid> grid_final_;
+    /// Overlap fitting metric for grid_initial_
+    SharedMatrix Q_init_;
+    /// Overlap fitting metric for grid_final_
+    SharedMatrix Q_final_;
+
+    std::string name() override { return "DFJCOSK"; }
+    size_t memory_estimate() override;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    /// Do we need to backtransform to C1 under the hood?
+    bool C1() const override { return true; }
+    /// Setup integrals, files, etc
+    void preiterations() override;
+    /// Compute J/K for current C/D
+    void compute_JK() override;
+    /// Delete integrals, files, etc
+    void postiterations() override;
+
+    /// Build the coulomb (J) matrix
+    void build_J(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& J);
+
+    /// Build the exchange (K) matrix
+    void build_K(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& K);
+
+    /// Common initialization
+    void common_init();
+
+   public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    DFJCOSK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+    /// Destructor
+    ~DFJCOSK() override;
+
+    // => Knobs <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    void print_header() const override;
+
+    /**
+     * Clear D_prev_
+     */
+    void clear_D_prev() { D_prev_.clear();}
+};
+
 
 }
 

@@ -265,6 +265,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = self.jk().get_early_screening()
 
+    # has early_screening changed from True to False?
+    early_screening_disabled = False
+
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
@@ -482,15 +485,32 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if frac_enabled and not self.frac_performed_:
             continue
 
+        # this is the first iteration after early screening was turned off
+        if early_screening_disabled:
+            break
+
         # Call any postiteration callbacks
         if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
+
             if early_screening:
+
+                # we've reached convergence with early screning enabled; disable it on the JK object
                 early_screening = False
-                self.jk().set_early_screening(False)
+                self.jk().set_early_screening(early_screening)
+
+                # make note of the change to early screening; next SCF iteration will be the last
+                early_screening_disabled = True
+
+                # clear any cached matrices associated with incremental fock construction
+                # the change in the screening spoils the linearity in the density matrix
+                if hasattr(self.jk(), 'clear_D_prev'):
+                    self.jk().clear_D_prev()
+
                 core.print_out("  Energy and wave function converged with early screening.\n")
-                core.print_out("  Continuing iterations with tighter screening.\n\n")
+                core.print_out("  Performing final iteration with tighter screening.\n\n")
             else:
                 break
+
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
             raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
 

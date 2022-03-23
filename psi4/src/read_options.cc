@@ -178,7 +178,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK COSK");
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1544,6 +1544,27 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Bump function max radius -*/
         options.add_double("DF_BUMP_R1", 0.0);
 
+        /*- SUBSECTION COSK Algorithm -*/
+
+        /*- Screening criteria for integrals and intermediates in COSK -*/
+        options.add_double("COSK_INTS_TOLERANCE", 1.0E-12);
+        /*- Screening criteria for shell-pair densities in COSK -*/
+        options.add_double("COSK_DENSITY_TOLERANCE", 1.0E-10);
+        /*- Screening criteria for basis function values on COSK grid-*/
+        options.add_double("COSK_BASIS_TOLERANCE", 1.0E-10);
+        /*- Number of spherical points in initial COSK grid. -*/
+        options.add_int("COSK_SPHERICAL_POINTS", 302);
+        /*- Number of radial points in initial COSK grid. -*/
+        options.add_int("COSK_RADIAL_POINTS", 75);
+        /*- Number of spherical points in final COSK grid. -*/
+        options.add_int("COSK_SPHERICAL_POINTS_FINAL", 302);
+        /*- Number of radial points in final COSK grid. -*/
+        options.add_int("COSK_RADIAL_POINTS_FINAL", 75);
+        /*- Do reduce numerical COSK errors with overlap fitting? !expert -*/
+        options.add_bool("COSK_OVERLAP_FITTING", true);
+        /*- Do allow for improved COSK screening performance by constructing the Fock matrix incrementally? !expert -*/
+        options.add_bool("COSK_INCFOCK", true);
+
         /*- SUBSECTION SAD Guess Algorithm -*/
 
         /*- The amount of SAD information to print to the output !expert -*/
@@ -1720,7 +1741,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
         /*- SCF Type
          -*/
-        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK");
+        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK COSK");
         /*- Auxiliary basis for SCF
          -*/
         options.add_str("DF_BASIS_SCF", "");

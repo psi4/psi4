@@ -441,6 +441,8 @@ class BlockOPoints {
     double* z() const { return z_; }
     /// The weights. You do not own this
     double* w() const { return w_; }
+    /// The center of the block
+    Vector3 center() const { return xc_; }
 
     /// Relevant shells, local -> global
     const std::vector<int>& shells_local_to_global() const { return shells_local_to_global_; }
