@@ -44,7 +44,6 @@ json_data = {
     },
     "extras": {
         "psi4:save_tamps": True
-        }
     }
 }
 
