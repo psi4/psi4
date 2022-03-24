@@ -712,7 +712,7 @@ MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 
     /*
      * Check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
      */
-    CharacterTable ct = mol->point_group()->char_table();
+    auto ct = mol->point_group()->char_table();
     int nirrep = ct.nirrep();
 
     origin_preserves_symmetry_ = true;
