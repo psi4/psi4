@@ -937,7 +937,7 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
     if (print_output) {
         outfile->Printf("\n%s Multipole Moments:\n", transition ? "Transition" : "");
         outfile->Printf("\n ------------------------------------------------------------------------------------\n");
-        outfile->Printf("     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
+        outfile->Printf("     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)\n");
         outfile->Printf(" ------------------------------------------------------------------------------------\n\n");
     }
     double convfac = pc_dipmom_au2debye;
