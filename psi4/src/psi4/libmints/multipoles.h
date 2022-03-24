@@ -47,9 +47,11 @@ class MultipoleInt : public OneBodyAOInt, public mdintegrals::MDHelper {
     int order_;
 
     //! Multipole intermediates
+    //! M matrix (9.5.31)
     std::vector<double> Mx;
     std::vector<double> My;
     std::vector<double> Mz;
+    //! S matrix (9.5.29)
     std::vector<double> Sx;
     std::vector<double> Sy;
     std::vector<double> Sz;

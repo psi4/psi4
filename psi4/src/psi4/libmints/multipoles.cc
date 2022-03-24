@@ -158,21 +158,25 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
             std::fill(Sx.begin(), Sx.end(), 0);
             std::fill(Sy.begin(), Sy.end(), 0);
             std::fill(Sz.begin(), Sz.end(), 0);
+            // compute S matrix according to eq 9.5.39
             for (int i = 0; i <= am1; ++i) {
                 for (int j = 0; j <= am2; ++j) {
                     for (int e = 0; e <= order_; ++e) {
                         int uppert = std::min(i + j, e);
                         int idx = address_3d(i, j, e, sdim1, sdim2);
                         for (int t = 0; t <= uppert; ++t) {
-                            int idxt = address_3d(i, j, t, edim1, edim2);
+                            int idxt = address_3d(i, j, t, edim1, edim2);  // E_t^{ij}
+                            int idxm = e * mdim1 + t;                      // M_t^e
                             // eq 9.5.39
-                            Sx[idx] += Ex[idxt] * Mx[e * mdim1 + t];
-                            Sy[idx] += Ey[idxt] * My[e * mdim1 + t];
-                            Sz[idx] += Ez[idxt] * Mz[e * mdim1 + t];
+                            Sx[idx] += Ex[idxt] * Mx[idxm];
+                            Sy[idx] += Ey[idxt] * My[idxm];
+                            Sz[idx] += Ez[idxt] * Mz[idxm];
                         }
                     }
                 }
             }
+            // -1.0 for consistency with dipole/quadrupole implementation
+            double prefac = -1.0 * ca * cb;
             int m_count = 0;
             for (int mul = 1; mul < order_ + 1; ++mul) {
                 const auto& comps_mul = comps_mul_[mul];
@@ -180,11 +184,10 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
                     ao12 = 0;
                     for (const auto& [l1, m1, n1, index1] : comps_am1) {
                         for (const auto& [l2, m2, n2, index2] : comps_am2) {
-                            // -1.0 for consistency with dipole/quadrupole implementation
-                            buffer_[ao12 + size * m_count] +=
-                                -1.0 *
-                                (ca * cb * Sx[address_3d(l1, l2, ex, sdim1, sdim2)] *
-                                 Sy[address_3d(m1, m2, ey, sdim1, sdim2)] * Sz[address_3d(n1, n2, ez, sdim1, sdim2)]);
+                            // multiply separable x, y, and z components (eq 9.3.12)
+                            buffer_[ao12 + size * m_count] += prefac * Sx[address_3d(l1, l2, ex, sdim1, sdim2)] *
+                                                              Sy[address_3d(m1, m2, ey, sdim1, sdim2)] *
+                                                              Sz[address_3d(n1, n2, ez, sdim1, sdim2)];
                             ao12++;
                         }
                     }

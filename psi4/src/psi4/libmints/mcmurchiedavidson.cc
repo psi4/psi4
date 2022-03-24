@@ -133,23 +133,26 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
     // one over 2p
     double oo2p = 1.0 / (2.0 * p);
     double sqrtpip = std::sqrt(M_PI / p);
+    // eq 9.5.32: M_t^0 = delta_{0t} \sqrt{\pi/p}
     Mx[0] = sqrtpip;
     My[0] = sqrtpip;
     Mz[0] = sqrtpip;
     for (int e = 1; e <= maxpow; ++e) {
         // t = 0 case
-        int idx0 = e * dim1;
-        int idx0_em = (e - 1) * dim1;
+        int idx0 = e * dim1; // M_0^e
+        int idx0_em = (e - 1) * dim1; // M_0^{e-1}
+        // last two terms of eq 9.5.36
         Mx[idx0] += PC[0] * Mx[idx0_em] + oo2p * Mx[idx0_em + 1];
         My[idx0] += PC[1] * My[idx0_em] + oo2p * My[idx0_em + 1];
         Mz[idx0] += PC[2] * Mz[idx0_em] + oo2p * Mz[idx0_em + 1];
         // t > 0 case
         int upper_t = std::min(e + 1, std::max(maxam, maxpow) + 1);
         for (int t = 1; t < upper_t; ++t) {
-            int idx = e * dim1 + t;
-            int idx_em = (e - 1) * dim1 + t;
-            int idx_em_tm = (e - 1) * dim1 + (t - 1);
-            int idx_em_tp = (e - 1) * dim1 + (t + 1);
+            int idx = e * dim1 + t; // target index M_t^e
+            int idx_em = (e - 1) * dim1 + t; // M_t^{e-1}
+            int idx_em_tm = (e - 1) * dim1 + (t - 1); // M_{t-1}^{e-1}
+            int idx_em_tp = (e - 1) * dim1 + (t + 1); // M_{t+1}^{e-1}
+            // eq 9.5.36
             Mx[idx] += t * Mx[idx_em_tm] + PC[0] * Mx[idx_em] + oo2p * Mx[idx_em_tp];
             My[idx] += t * My[idx_em_tm] + PC[1] * My[idx_em] + oo2p * My[idx_em_tp];
             Mz[idx] += t * Mz[idx_em_tm] + PC[2] * Mz[idx_em] + oo2p * Mz[idx_em_tp];
