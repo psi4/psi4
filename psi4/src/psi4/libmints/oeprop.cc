@@ -1039,7 +1039,7 @@ ESPPropCalc::~ESPPropCalc() {}
 void OEProp::compute_esp_over_grid() { epc_.compute_esp_over_grid(true); }
 
 void ESPPropCalc::compute_esp_over_grid(bool print_output) {
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    auto mol = basisset_->molecule();
 
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
