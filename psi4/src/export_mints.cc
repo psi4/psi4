@@ -1447,8 +1447,8 @@ void export_mints(py::module& m) {
              "Vector AO traceless quadrupole integrals")
         .def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole,
              "Vector SO traceless quadrupole integrals")
-        .def("ao_multipoles", &MintsHelper::ao_multipoles, "Vector AO multipole integrals",
-             "origin"_a = std::vector<double>{0.0, 0.0, 0.0}, "order"_a = 1)
+        .def("ao_multipoles", &MintsHelper::ao_multipoles, "Vector AO multipole integrals", "order"_a,
+             "origin"_a = std::vector<double>{0.0, 0.0, 0.0})
         .def("ao_nabla", &MintsHelper::ao_nabla, "Vector AO nabla integrals")
         .def("so_nabla", &MintsHelper::so_nabla, "Vector SO nabla integrals")
         .def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "Vector AO angular momentum integrals")
@@ -1506,7 +1506,7 @@ void export_mints(py::module& m) {
         // Contracted gradient terms
         .def("dipole_grad", &MintsHelper::dipole_grad, "First nuclear derivative dipole integrals")
         .def("multipole_grad", &MintsHelper::multipole_grad, "First nuclear derivative multipole integrals",
-             "origin"_a, "order"_a, "D"_a)
+             "D"_a, "order"_a, "origin"_a = std::vector<double>{0.0, 0.0, 0.0})
         .def("overlap_grad", &MintsHelper::overlap_grad, "First nuclear derivative overlap integrals")
         .def("kinetic_grad", &MintsHelper::kinetic_grad, "First nuclear derivative kinetic integrals")
         .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")

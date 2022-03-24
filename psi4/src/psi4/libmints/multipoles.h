@@ -28,9 +28,7 @@
 #pragma once
 
 #include <vector>
-// #include "typedefs.h"
 #include "psi4/libmints/onebody.h"
-// #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/mcmurchiedavidson.h"
 

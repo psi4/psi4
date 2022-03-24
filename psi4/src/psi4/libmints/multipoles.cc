@@ -46,6 +46,12 @@ MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms
     int maxnao1 = INT_NCART(maxam1_);
     int maxnao2 = INT_NCART(maxam2_);
 
+    if (order_ == 0) {
+        throw PSIEXCEPTION(
+            "Zeroth order multipoles are not accessible via MultipoleInt."
+            " Use OverlapInt instead.");
+    }
+
     // The number of multipole components to compute. N.B. we don't compute the 0th one (overlap)
     int n_mult = cumulative_cart_dim(order_) - 1;
 
@@ -163,7 +169,7 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
                 for (int j = 0; j <= am2; ++j) {
                     for (int e = 0; e <= order_; ++e) {
                         int uppert = std::min(i + j, e);
-                        int idx = address_3d(i, j, e, sdim1, sdim2);
+                        int idx = address_3d(i, j, e, sdim1, sdim2);  // S_{ij}^e
                         for (int t = 0; t <= uppert; ++t) {
                             int idxt = address_3d(i, j, t, edim1, edim2);  // E_t^{ij}
                             int idxm = e * mdim1 + t;                      // M_t^e
@@ -243,40 +249,52 @@ void MultipoleInt::compute_pair_deriv1(const libint2::Shell& s1, const libint2::
             double p = a + b;
             Point P{(a * A[0] + b * B[0]) / p, (a * A[1] + b * B[1]) / p, (a * A[2] + b * B[2]) / p};
             auto PC = point_diff(P, C);
+            // increase E matrix angular momentum for the derivative
             fill_E_matrix(am1 + 1, am2 + 1, P, A, B, a, b, Ex, Ey, Ez);
             fill_M_matrix(am, order_, PC, a, b, Mx, My, Mz);
 
             std::fill(Sx.begin(), Sx.end(), 0);
             std::fill(Sy.begin(), Sy.end(), 0);
             std::fill(Sz.begin(), Sz.end(), 0);
+            // compute S matrix according to eq 9.5.39,
+            // here with increased angular momentum for the derivatives
             for (int i = 0; i <= am1 + 1; ++i) {
                 for (int j = 0; j <= am2 + 1; ++j) {
                     for (int e = 0; e <= order_; ++e) {
                         int uppert = std::min(i + j, e);
-                        int idx = address_3d(i, j, e, sdim1, sdim2);
+                        int idx = address_3d(i, j, e, sdim1, sdim2);  // S_{ij}^e
                         for (int t = 0; t <= uppert; ++t) {
-                            int idxt = address_3d(i, j, t, edim1, edim2);
+                            int idxt = address_3d(i, j, t, edim1, edim2);  // E_t^{ij}
+                            int idxm = e * mdim1 + t;                      // M_t^e
                             // eq 9.5.39
-                            Sx[idx] += Ex[idxt] * Mx[e * mdim1 + t];
-                            Sy[idx] += Ey[idxt] * My[e * mdim1 + t];
-                            Sz[idx] += Ez[idxt] * Mz[e * mdim1 + t];
+                            Sx[idx] += Ex[idxt] * Mx[idxm];
+                            Sy[idx] += Ey[idxt] * My[idxm];
+                            Sz[idx] += Ez[idxt] * Mz[idxm];
                         }
                     }
                 }
             }
             double prefac = ca * cb;
             int m_count = 0;
+            // loop over multipole order
             for (int mul = 1; mul < order_ + 1; ++mul) {
                 const auto& comps_mul = comps_mul_[mul];
+                // loop over components of the given multipole, i.e.,
+                // x, y, z for dipole (mul = 1); xx, xy, xz, yy, ...
+                // for quadrupole (mul = 2) and so on
                 for (const auto& [ex, ey, ez, index0] : comps_mul) {
                     ao12 = 0;
+                    // loop over primitive angular momentum components
                     for (const auto& [l1, m1, n1, index1] : comps_am1) {
                         for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                            // get the 'non-differentiated' contributions to the
+                            // multipole integral
                             double sx = Sx[address_3d(l1, l2, ex, sdim1, sdim2)];
                             double sy = Sy[address_3d(m1, m2, ey, sdim1, sdim2)];
                             double sz = Sz[address_3d(n1, n2, ez, sdim1, sdim2)];
-                            // eq 9.3.30
-                            // Ax
+                            // form derivatives (eq 9.3.30): since the Cartesian components of
+                            // the multipole integral are separable, apply the product rule
+                            // Ax (derivative wrt bra center x coordinate)
                             double DAx = -2.0 * a * Sx[address_3d(l1 + 1, l2, ex, sdim1, sdim2)];
                             if (l1) DAx += l1 * Sx[address_3d(l1 - 1, l2, ex, sdim1, sdim2)];
                             buffer_[ao12 + size * (m_count + 0)] += prefac * DAx * sy * sz;
@@ -288,7 +306,7 @@ void MultipoleInt::compute_pair_deriv1(const libint2::Shell& s1, const libint2::
                             double DAz = -2.0 * a * Sz[address_3d(n1 + 1, n2, ez, sdim1, sdim2)];
                             if (n1) DAz += n1 * Sz[address_3d(n1 - 1, n2, ez, sdim1, sdim2)];
                             buffer_[ao12 + size * (m_count + 2)] += prefac * sx * sy * DAz;
-                            // Bx
+                            // Bx (derivative wrt ket center x coordinate)
                             double DBx = -2.0 * b * Sx[address_3d(l1, l2 + 1, ex, sdim1, sdim2)];
                             if (l2) DBx += l2 * Sx[address_3d(l1, l2 - 1, ex, sdim1, sdim2)];
                             buffer_[ao12 + size * (m_count + 3)] += prefac * DBx * sy * sz;
@@ -303,6 +321,7 @@ void MultipoleInt::compute_pair_deriv1(const libint2::Shell& s1, const libint2::
                             ao12++;
                         }
                     }
+                    // 6 derivative components for each multipole components (Ax to Bz above)
                     m_count += 6;
                 }
             }

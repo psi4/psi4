@@ -1580,7 +1580,7 @@ std::vector<SharedMatrix> MintsHelper::ao_traceless_quadrupole() {
     return quadrupole;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_multipoles(const std::vector<double>& origin, int order) {
+std::vector<SharedMatrix> MintsHelper::ao_multipoles(int order, const std::vector<double>& origin) {
     Vector3 v3origin(origin[0], origin[1], origin[2]);
     std::vector<SharedMatrix> ret;
     int component = 0;
@@ -2099,7 +2099,7 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
     return perturbation_gradient;
 }
 
-SharedMatrix MintsHelper::multipole_grad(const std::vector<double>& origin, int order, SharedMatrix D) {
+SharedMatrix MintsHelper::multipole_grad(SharedMatrix D, int order, const std::vector<double>& origin) {
     // Computes skeleton (Hellman-Feynman like) multipole derivatives for each perturbation
     double** Dp = D->pointer();
 
@@ -2163,7 +2163,7 @@ SharedMatrix MintsHelper::multipole_grad(const std::vector<double>& origin, int 
 SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
     // Computes skeleton (Hellman-Feynman like) dipole derivatives for each perturbation
     // call the more general routine for arbitrary order multipoles
-    return multipole_grad({0.0, 0.0, 0.0}, 1, D);
+    return multipole_grad(D, 1, {0.0, 0.0, 0.0});
 }
 
 SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {

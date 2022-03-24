@@ -26,8 +26,7 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_dipole_h_
-#define _psi_src_lib_libmints_dipole_h_
+#pragma once
 
 #include <vector>
 #include "typedefs.h"
@@ -46,7 +45,7 @@ class Molecule;
  * Use an IntegralFactory to create this object. */
 class DipoleInt : public OneBodyAOInt {
    public:
-    //! Constructor. Do not call directly use an IntegralFactory.
+    //! Constructor. Do not call directly. Use an IntegralFactory.
     DipoleInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     //! Virtual destructor
     ~DipoleInt() override;
@@ -62,5 +61,3 @@ class DipoleInt : public OneBodyAOInt {
 };
 
 }  // namespace psi
-
-#endif

@@ -59,7 +59,7 @@ def fdiff_multipole_integral(mol, basis_name, origin, order, step=1e-4):
                 mol_p.set_geometry(coords_p)
                 basis = psi4.core.BasisSet.build(mol_p, 'orbital', basis_name)
                 mints = psi4.core.MintsHelper(basis)
-                ints_pert = matlist_to_ndarray(mints.ao_multipoles(origin, order))
+                ints_pert = matlist_to_ndarray(mints.ao_multipoles(order, origin))
                 int_grad[i, c, :, :, :] += p * ints_pert / step
     return int_grad
                 
@@ -86,7 +86,11 @@ def test_mcmurchie_davidson_multipoles(mol_h2o):
     basis = psi4.core.BasisSet.build(mol_h2o, 'orbital', 'cc-pvdz')
     mints = psi4.core.MintsHelper(basis)
     order = 6
-    M = mints.ao_multipoles(origin=[0.0, 0.0, 0.0], order=order)
+    M = mints.ao_multipoles(order=order, origin=[0.0, 0.0, 0.0])
+
+    with pytest.raises(Exception):
+        # overlap integrals not accessible via multipole interface
+        mints.ao_multipoles(order=0, origin=[0.0, 0.0, 0.0])
 
     Mnp = matlist_to_ndarray(M)
     # reference from l2
@@ -108,10 +112,10 @@ def test_mcmurchie_davidson_multipoles_gradient(mol_h2o):
 
     mints = psi4.core.MintsHelper(wfn.basisset())
     # test against finite differences
-    grad = mints.multipole_grad(origin=[1.0, 2.0, 3.0], order=order, D=wfn.Da())
+    grad = mints.multipole_grad(D=wfn.Da(), order=order, origin=[1.0, 2.0, 3.0])
     np.testing.assert_allclose(grad_fdiff, grad.np, atol=1e-8)
     
     # test that we get the same result from the 'hard-wired' dipole_grad
     grad_dip = mints.dipole_grad(wfn.Da())
-    grad = mints.multipole_grad(origin=[0.0, 0.0, 0.0], order=1, D=wfn.Da())
+    grad = mints.multipole_grad(D=wfn.Da(), order=1, origin=[0.0, 0.0, 0.0])
     np.testing.assert_allclose(grad_dip.np, grad.np, atol=1e-14)
