@@ -30,6 +30,7 @@
 #define JK_H
 
 #include <vector>
+
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
@@ -713,6 +714,7 @@ class PSI_API DirectJK : public JK {
     bool density_screening_;
 
     // => Incremental Fock build variables <= //
+    
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
@@ -734,6 +736,13 @@ class PSI_API DirectJK : public JK {
     // Is the JK currently on a guess iteration
     bool initial_iteration_ = true;
 
+    // => LinK variables <= //
+
+    // Perform LinK algorithm for exchange?
+    bool linK_;
+    // Density-based ERI Screening tolerance to use in the LinK algorithm
+    double linK_ints_cutoff_;
+
     std::string name() override { return "DirectJK"; }
     size_t memory_estimate() override;
 
@@ -753,9 +762,30 @@ class PSI_API DirectJK : public JK {
     /// Post-iteration Incfock processing
     void incfock_postiter();
 
-    /// Build the J and K matrices for this integral class
-    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                  std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K);
+    /**
+     * @author Andy Jiang, Georgia Tech, December 2021
+     * 
+     * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
+     * doi: 10.1063/1.476741
+     * 
+     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
+     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
+     * @param K The list of AO K matrices to build (Same size as D)
+     * 
+     */
+    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
+                  std::vector<SharedMatrix>& K);
+
+    /**
+     * @brief The standard J and K matrix builds for this integral class
+     * 
+     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
+     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
+     * @param J The list of AO J matrices to build (Same size as D, 0 if no matrices are to be built)
+     * @param K The list of AO K matrices to build (Same size as D, 0 if no matrices are to be built)
+     */
+    void build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
 
     /// Common initialization
     void common_init();
@@ -784,6 +814,7 @@ class PSI_API DirectJK : public JK {
 
     // => Accessors <= //
     bool do_incfock_iter() { return do_incfock_iter_; }
+    bool do_linK() { return linK_; }
 
     /**
     * Print header information regarding JK
