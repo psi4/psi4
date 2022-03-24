@@ -283,10 +283,6 @@ class MultipolePropCalc : public Prop {
     /// Compute arbitrary-order multipoles up to (and including) l=order. returns name, elec, nuc and tot as vector_ptr
     MultipoleOutputType compute_multipoles(int order, bool transition = false, bool print_output = false,
                                            bool verbose = false);
-    /// Compute dipole
-    SharedVector compute_dipole(bool transition = false, bool print_output = false, bool verbose = false);
-    /// Compute quadrupole
-    SharedMatrix compute_quadrupole(bool transition = false, bool print_output = false, bool verbose = false);
     /// Compute mo extents
     std::vector<SharedVector> compute_mo_extents(bool print_output = false);
 };
@@ -402,10 +398,6 @@ class PSI_API OEProp : public TaskListComputer {
     void print_header() override;
 
     // Compute routines
-    /// Compute dipole
-    void compute_dipole(bool transition = false);
-    /// Compute quadrupole
-    void compute_quadrupole(bool transition = false);
     /// Compute arbitrary-order multipoles up to (and including) l=order
     void compute_multipoles(int order, bool transition = false);
     /// Compute mo extents
