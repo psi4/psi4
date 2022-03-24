@@ -973,6 +973,17 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
                 double tot = sqrt(pow(std::get<3>((*mot)[0]), 2) + pow(std::get<3>((*mot)[1]), 2) + pow(std::get<3>((*mot)[2]), 2));
                 outfile->Printf(" %-20s: %18s   %18s   %18.7f\n", "Magnitude", "", "", tot);
             }
+            // For historical reasons, we print traceless quadrupole magnitudes now.
+            // This can be generalized to any l < 1, but that's hard.
+            // Computing integrals is also hard, which is why we don't recompute traceless integrals.
+            if (l == 2) {
+                double tr_n = (std::get<1>((*mot)[3]) + std::get<1>((*mot)[6]) + std::get<1>((*mot)[8])) / 3.0;
+                double tr_e = (std::get<2>((*mot)[3]) + std::get<2>((*mot)[6]) + std::get<2>((*mot)[8])) / 3.0;
+                double tr_t = (std::get<3>((*mot)[3]) + std::get<3>((*mot)[6]) + std::get<3>((*mot)[8])) / 3.0;
+                outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", "Traceless XX", std::get<2>((*mot)[3]) - tr_e, std::get<1>((*mot)[3]) - tr_n, std::get<3>((*mot)[3]) - tr_t);
+                outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", "Traceless YY", std::get<2>((*mot)[6]) - tr_e, std::get<1>((*mot)[6]) - tr_n, std::get<3>((*mot)[6]) - tr_t);
+                outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", "Traceless ZZ", std::get<2>((*mot)[8]) - tr_e, std::get<1>((*mot)[8]) - tr_n, std::get<3>((*mot)[8]) - tr_t);
+            }
             outfile->Printf("\n");
         }
         convfac *= pc_bohr2angstroms;
