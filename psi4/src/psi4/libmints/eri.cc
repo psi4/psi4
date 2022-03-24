@@ -488,7 +488,7 @@ Libint2YukawaERI::Libint2YukawaERI(double zeta, const IntegralFactory *integral,
     } else if (!dummy1 && dummy2 && !dummy3 && dummy4) {
         braket_ = libint2::BraKet::xs_xs;
     } else {
-        throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
+        throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI");
     }
 
     for (int der = 0; der <= deriv; ++der) {
@@ -518,7 +518,7 @@ void Libint2YukawaERI::libint2_wrapper0(const libint2::Shell &sh1, const libint2
             engines_[0].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xs, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
             break;
         default:
-            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2wrapper0");
+            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2_wrapper0");
     }
 }
 
@@ -538,7 +538,7 @@ void Libint2YukawaERI::libint2_wrapper1(const libint2::Shell &sh1, const libint2
             engines_[1].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xs, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
             break;
         default:
-            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2wrapper1");
+            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2_wrapper1");
     }
 }
 void Libint2YukawaERI::libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
@@ -557,7 +557,7 @@ void Libint2YukawaERI::libint2_wrapper2(const libint2::Shell &sh1, const libint2
             engines_[2].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xs, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
             break;
         default:
-            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2wrapper2");
+            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2_wrapper2");
     }
 }
 
