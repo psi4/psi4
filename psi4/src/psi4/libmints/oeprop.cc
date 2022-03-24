@@ -887,8 +887,8 @@ void OEProp::compute_multipoles(int order, bool transition) {
 
 MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int order, bool transition,
                                                                              bool print_output, bool verbose) {
-    MultipolePropCalc::MultipoleOutputType mot = std::make_shared<MultipolePropCalc::MultipoleOutputTypeBase>();
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    auto mot = std::make_shared<MultipolePropCalc::MultipoleOutputTypeBase>();
+    auto mol = basisset_->molecule();
 
     SharedMatrix Da;
     SharedMatrix Db;
@@ -931,8 +931,9 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
         for (iter = mp_ints.begin(); iter != mp_ints.end(); ++iter) iter->get()->print();
     }
 
-    SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
+    auto nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
 
+    // => Print and populate the output tuple <=
     if (print_output) {
         outfile->Printf("\n%s Multipole Moments:\n", transition ? "Transition" : "");
         outfile->Printf("\n ------------------------------------------------------------------------------------\n");
@@ -940,7 +941,7 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
         outfile->Printf(" ------------------------------------------------------------------------------------\n\n");
     }
     double convfac = pc_dipmom_au2debye;
-    int address = 0;
+    int address = 0; // The index of the desired component in the mp_ints object, which covers _all_ orders.
     for (int l = 1; l <= order; ++l) {
         int ncomponents = (l + 1) * (l + 2) / 2;
         std::stringstream ss, tt;
@@ -949,7 +950,7 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
         if (l > 2) ss << "^" << l - 1;
         std::string exp = ss.str();
         if (print_output) {
-            outfile->Printf(" L = %d.  Multiply by %.10f to convert [e a0%s] to [Debye%s]\n", l, convfac, tt, exp.c_str());
+            outfile->Printf(" L = %d.  Multiply by %.10f to convert [e a0%s] to [Debye%s]\n", l, convfac, tt.str().c_str(), exp.c_str());
         }
         for (int component = 0; component < ncomponents; ++component) {
             auto mpmat = mp_ints[address];
@@ -961,10 +962,17 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
                 outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", name.c_str(), elec, nuc, tot);
             }
             auto upper_name = to_upper_copy(name);
-            mot->push_back(std::make_tuple(upper_name, nuc, elec, tot, l));
+            mot->emplace_back(upper_name, nuc, elec, tot, l);
             ++address;
         }
         if (print_output) {
+            // For historical reasons, we print dipole magnitudes now.
+            // Printing magnitudes of higher-order multipole tensors would be nice, but we don't have the C-side machinery
+            // to convert our vector of unique multipole components into a container of all components.
+            if (l == 1) {
+                double tot = sqrt(pow(std::get<3>((*mot)[0]), 2) + pow(std::get<3>((*mot)[1]), 2) + pow(std::get<3>((*mot)[2]), 2));
+                outfile->Printf(" %-20s: %18s   %18s   %18.7f\n", "Magnitude", "", "", tot);
+            }
             outfile->Printf("\n");
         }
         convfac *= pc_bohr2angstroms;
