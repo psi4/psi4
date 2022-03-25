@@ -141,8 +141,8 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
     Mz[0] = sqrtpip;
     for (int e = 1; e <= maxpow; ++e) {
         // t = 0 case
-        int idx0 = e * dim1; // M_0^e
-        int idx0_em = (e - 1) * dim1; // M_0^{e-1}
+        int idx0 = e * dim1;           // M_0^e
+        int idx0_em = (e - 1) * dim1;  // M_0^{e-1}
         // last two terms of eq 9.5.36
         Mx[idx0] += PC[0] * Mx[idx0_em] + oo2p * Mx[idx0_em + 1];
         My[idx0] += PC[1] * My[idx0_em] + oo2p * My[idx0_em + 1];
@@ -150,10 +150,10 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
         // t > 0 case
         int upper_t = std::min(e + 1, std::max(maxam, maxpow) + 1);
         for (int t = 1; t < upper_t; ++t) {
-            int idx = e * dim1 + t; // target index M_t^e
-            int idx_em = (e - 1) * dim1 + t; // M_t^{e-1}
-            int idx_em_tm = (e - 1) * dim1 + (t - 1); // M_{t-1}^{e-1}
-            int idx_em_tp = (e - 1) * dim1 + (t + 1); // M_{t+1}^{e-1}
+            int idx = e * dim1 + t;                    // target index M_t^e
+            int idx_em = (e - 1) * dim1 + t;           // M_t^{e-1}
+            int idx_em_tm = (e - 1) * dim1 + (t - 1);  // M_{t-1}^{e-1}
+            int idx_em_tp = (e - 1) * dim1 + (t + 1);  // M_{t+1}^{e-1}
             // eq 9.5.36
             Mx[idx] += t * Mx[idx_em_tm] + PC[0] * Mx[idx_em] + oo2p * Mx[idx_em_tp];
             My[idx] += t * My[idx_em_tm] + PC[1] * My[idx_em] + oo2p * My[idx_em_tp];
@@ -187,33 +187,46 @@ void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vec
         R[n * dim2] = fac * fmvals[n];
         fac *= mult;
     }
+    // t + u + v <= N
+    // t = 0, u = 0
+    for (int v = 1; v < dim1; ++v) {
+        for (int n = 0; n < maxam; ++n) {
+            double val = 0.0;
+            int noffset = (n + 1) * dim2;
+            // eq 9.9.20
+            if (v > 1) {
+                val += (v - 1) * R[noffset + v - 2];
+            }
+            val += PC[2] * R[noffset + v - 1];
+            R[n * dim2 + v] = val;
+        }
+    }
+    // t = 0
+    for (int v = 0; v < dim1; ++v) {
+        for (int u = 1; u < dim1 - v; ++u) {
+            for (int n = 0; n < maxam; ++n) {
+                double val = 0.0;
+                int noffset = (n + 1) * dim2;
+                // eq 9.9.19
+                if (u > 1) {
+                    val += (u - 1) * R[noffset + (u - 2) * dim1 + v];
+                }
+                val += PC[1] * R[noffset + (u - 1) * dim1 + v];
+                R[n * dim2 + u * dim1 + v] = val;
+            }
+        }
+    }
     for (int v = 0; v < dim1; ++v) {
         for (int u = 0; u < dim1 - v; ++u) {
-            for (int t = 0; t < dim1 - v - u; ++t) {
+            for (int t = 1; t < dim1 - v - u; ++t) {
                 for (int n = 0; n < maxam; ++n) {
                     double val = 0.0;
                     int noffset = (n + 1) * dim2;
-                    if (t == 0 && u == 0 && v == 0) {
-                        continue;
-                    } else if (t == 0 && u == 0) {
-                        // eq 9.9.20
-                        if (v > 1) {
-                            val += (v - 1) * R[noffset + address_3d(t, u, v - 2, dim1, dim1)];
-                        }
-                        val += PC[2] * R[noffset + address_3d(t, u, v - 1, dim1, dim1)];
-                    } else if (t == 0) {
-                        // eq 9.9.19
-                        if (u > 1) {
-                            val += (u - 1) * R[noffset + address_3d(t, u - 2, v, dim1, dim1)];
-                        }
-                        val += PC[1] * R[noffset + address_3d(t, u - 1, v, dim1, dim1)];
-                    } else {
-                        // eq 9.9.18
-                        if (t > 1) {
-                            val += (t - 1) * R[noffset + address_3d(t - 2, u, v, dim1, dim1)];
-                        }
-                        val += PC[0] * R[noffset + address_3d(t - 1, u, v, dim1, dim1)];
+                    // eq 9.9.18
+                    if (t > 1) {
+                        val += (t - 1) * R[noffset + address_3d(t - 2, u, v, dim1, dim1)];
                     }
+                    val += PC[0] * R[noffset + address_3d(t - 1, u, v, dim1, dim1)];
                     R[n * dim2 + address_3d(t, u, v, dim1, dim1)] = val;
                 }
             }

@@ -117,11 +117,11 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
             int der_count = 0;
             double sign_prefac = prefac;
             for (int der = 0; der < order_ + 1; ++der) {
-                auto& comps = comps_der_[der];
-                for (auto& [ex, ey, ez, index0] : comps) {
+                const auto& comps = comps_der_[der];
+                for (const auto& [ex, ey, ez, index0] : comps) {
                     ao12 = 0;
-                    for (auto& [l1, m1, n1, index1] : comps_am1) {
-                        for (auto& [l2, m2, n2, index2] : comps_am2) {
+                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
+                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
                             double val = 0.0;
                             int maxt = l1 + l2;
                             int maxu = m1 + m2;
