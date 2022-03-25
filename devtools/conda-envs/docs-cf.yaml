@@ -11,7 +11,7 @@ dependencies:
     # core
   - eigen
   - networkx
-  - psi4/label/dev::pybind11-headers
+  - pybind11
   - python=3.8.*
     # qc
   - psi4/label/dev::gau2grid
