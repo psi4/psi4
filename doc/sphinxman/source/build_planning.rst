@@ -260,7 +260,7 @@ are available pre-built from conda.
   * CTest https://cmake.org/download/
   * Perl (for some coupled-cluster CTest tests) https://www.perl.org/
   * pytest (for installed testing) http://doc.pytest.org/en/latest/
-  * pytest-xdist (for installed testing in parallel) https://docs.pytest.org/en/2.1.0/xdist.html
+  * pytest-xdist (for installed testing many tests at once) https://github.com/pytest-dev/pytest-xdist
 
 * |PSIfour| Documentation (available pre-built at :psicode:`psi4manual/master/index.html`)
 
@@ -269,6 +269,7 @@ are available pre-built from conda.
   * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme
   * See `["message" lines] :source:`doc/sphinxman/CMakeLists.txt` for advice on obtaining docs dependencies
+  * See :source:`.github/workflows/docs.yml` for full docs building procedure to follow
 
 * Ambit |w---w| https://github.com/jturney/ambit
 
@@ -1678,6 +1679,8 @@ Pytest has similar commands:
 * Run tests matching by label: ``pytest -m testlabel``
 * Run tests excluding those by label: ``pytest -m "not testlabel"``
 * Run tests with complicated filtering by name: ``pytest -k "cc and not cc4 and not stdsuite"``
+* Run tests and see test names: ``pytest -v``
+* Run tests and see test names and sometimes more verbose errors: ``pytest -vv``
 
 .. _`faq:testsoutput`:
 

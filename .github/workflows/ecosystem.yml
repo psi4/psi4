@@ -45,7 +45,7 @@ jobs:
               -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
               -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
             # Notes:
-            # * mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
+            # * See mkl-version notes at end
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -100,14 +100,13 @@ jobs:
           - blas=*=mkl
           - python=${{ matrix.cfg.python-version }}
             # build
-          - boost-cpp
+          #- boost-cpp
           - cmake
           - c-compiler
           - cxx-compiler
           - eigen
           - fortran-compiler
           - mkl-devel=${{ matrix.cfg.mkl-version }}
-          - mpfr
           - ninja
           - pybind11
             # qc req'd
@@ -524,13 +523,23 @@ jobs:
         git diff --color-words
 
 # Notes
-#
+# -----
+
 # Error: (W) "OMP: Error #15: Initializing libiomp5md.dll, but found libomp.dll already initialized." or analysis shows linked to libomp.dll
 # Soln: feed OpenMP_LIBRARY_DIRS so selects correct libiomp5md.lib so analysis shows linked to libiomp5md.dll
-#
+
 # Error (W) "  File "D:\a\psi4\psi4\objdir\stage\lib\psi4\__init__.py", line 55, in <module>
 #              from . import core
 #              ImportError: DLL load failed while importing core: The specified module could not be found."
 # Soln:
 #   Have mkl-devel=<mkl-version> -or- mkl=<mkl-version> in runtime environment to match mkl-devel=<mkl-version> in build env.
 #   Having intel-openmp=<mkl-version> in build and run seems fine but not necessary.
+
+# Using Intel's OpenMP on Windows needs libiomp5md.lib (import library) and libiomp5md.dll at buildtime and libiomp5md.dll at runtime.
+#   No conda package provides libiomp5md.lib, so we stashed one from 2019.1 on GH and clone it here for the build.
+#   We feed the cloned path to the build via OpenMP_LIBRARY_DIRS. 2019.1 has been the iomp5 version for a long time.
+#   But by now, only defaults conda channel has a complementary intel-openmp=2019.1 package with the dll.
+#   In order to update the version and to allow a single channel base, conda-forge, using mkl-version=2021.4 still with that
+#   same 2019.1 iomp5, and it seems to work fine. Is all this really necessary? I don't know.
+#   There is another libiomp5md.lib that comes with llvm and lives at "C:\Program Files\LLVM\lib\libiomp5md.lib".
+#   Attempts to use it quickly fell off the narrow path-of-compilability-and-runability but should be explored again.

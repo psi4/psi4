@@ -28,3 +28,4 @@ dependencies:
   - sphinx-automodapi
   - psi4/label/dev::sphinx-psi-theme
   - jinja2<3.0
+

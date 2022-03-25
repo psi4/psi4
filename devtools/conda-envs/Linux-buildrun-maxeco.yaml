@@ -12,7 +12,6 @@ dependencies:
   - eigen
   - gfortran_linux-64
   - mkl-devel=2021.4
-  - mpfr
   - ninja
   - pybind11
     # qc req'd
