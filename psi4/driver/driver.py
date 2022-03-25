@@ -713,42 +713,75 @@ def properties(*args, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
+    basisstash = p4util.OptionsState(['BASIS'])
+    return_wfn = kwargs.pop('return_wfn', False)
+
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
-    kwargs['molecule'] = molecule
 
     ## Pre-planning interventions
 
     # * Trip on function or alias as name
     lowername = driver_util.upgrade_interventions(args[0])
-    _filter_renamed_methods("properties", lowername)
 
     # * Allow specification of methods to arbitrary order
     lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
 
-    if "/" in lowername:
-        return driver_cbs.cbs_gufunc(properties, lowername, ptype='properties', **kwargs)
+    _filter_renamed_methods("properties", lowername)
 
-    return_wfn = kwargs.pop('return_wfn', False)
     props = kwargs.get('properties', ['dipole', 'quadrupole'])
-
     if len(args) > 1:
         props += args[1:]
-
     kwargs['properties'] = p4util.drop_duplicates(props)
-    optstash = driver_util.negotiate_convergence_criterion('prop', lowername, return_optstash=True)
-    wfn = procedures['properties'][lowername](lowername, **kwargs)
 
+    # * Avert pydantic anger at incomplete modelchem spec
+    userbas = core.get_global_option('BASIS') or kwargs.get('basis')
+    if lowername in integrated_basis_methods and userbas is None:
+        kwargs['basis'] = '(auto)'
+
+    # Are we planning?
+    plan = task_planner.task_planner("properties", lowername, molecule, **kwargs)
+    logger.debug('PROPERTIES PLAN')
+    logger.debug(pp.pformat(plan.dict()))
+
+    if kwargs.get("return_plan", False):
+        # Plan-only requested
+        return plan
+
+    elif not isinstance(plan, AtomicComputer):
+        # Advanced "Computer" active
+        plan.compute()
+        return plan.get_psi_results(return_wfn=return_wfn)
+
+    else:
+        # We have unpacked to an AtomicInput
+        lowername = plan.method
+        basis = plan.basis
+        core.set_global_option("BASIS", basis)
+
+    ## Second half of this fn -- entry means program running exactly analytic property
+
+    # Commit to procedures['properties'] call hereafter
+    core.clean_variables()
+
+    # needed (+restore below) so long as AtomicComputer-s aren't run through json (where convcrit also lives)
+    optstash = driver_util.negotiate_convergence_criterion(("prop", "prop"), lowername, return_optstash=True)
+
+    if kwargs.get('embedding_charges', None):
+        driver_nbody.electrostatic_embedding(kwargs['embedding_charges'])
+
+    wfn = procedures["properties"][lowername](lowername, molecule=molecule, **kwargs)
+
+    basisstash.restore()
     optstash.restore()
 
     if return_wfn:
         return (core.variable('CURRENT ENERGY'), wfn)
     else:
         return core.variable('CURRENT ENERGY')
-
 
 
 def optimize_geometric(name, **kwargs):

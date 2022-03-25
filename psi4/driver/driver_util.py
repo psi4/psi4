@@ -36,16 +36,16 @@ from psi4.driver.p4util.exceptions import ValidationError, MissingMethodError, M
 from psi4.driver.procrouting import *
 
 
-def negotiate_convergence_criterion(dermode: Union[str, Tuple[int, int]], method: str, return_optstash: bool = False):
+def negotiate_convergence_criterion(dermode: Union[Tuple[str, str], Tuple[int, int]], method: str, return_optstash: bool = False):
     r"""
     This function will set local SCF and global energy convergence criterion
     to the defaults listed at:
     http://www.psicode.org/psi4manual/master/scf.html#convergence-and-
-    algorithm-defaults. SCF will be converged more tightly if a post-SCF
-    method is select (pscf_Ec, and pscf_Dc) else the looser (scf_Ec, and
-    scf_Dc convergence criterion will be used).
+    algorithm-defaults. SCF will be converged more tightly (pscf_Ec and pscf_Dc)
+    if a post-SCF method is selected. For a final SCF method, the looser
+    (scf_Ec and scf_Dc) convergence criterion will be used.
 
-    dermode -       Tuple of target and means derivative level or 'prop'. E.g., analytic gradient
+    dermode -       Tuple of target and means derivative level or ("prop", "prop"). E.g., analytic gradient
                     is (1, 1); frequency by energies is (2, 0). Nearly always test on
                     procedures['energy'] since that's guaranteed to exist for a method.
     method -        Name of the method
@@ -64,7 +64,7 @@ def negotiate_convergence_criterion(dermode: Union[str, Tuple[int, int]], method
         (1, 1): [8, 10, 8, 10, 8],
         (2, 1): [8, 10, 8, 10, 8],
         (2, 2): [8, 10, 8, 10, 8],
-        'prop': [6, 10, 6, 10, 8]
+        ("prop", "prop"): [6, 10, 6, 10, 8]
     }[dermode]
 
     # Set method-dependent scf convergence criteria, check against energy routines
@@ -240,11 +240,11 @@ def highest_analytic_derivative_available(method: str,
 
     Parameters
     ----------
-    method : str
+    method
         Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
-    proc : dict, optional
+    proc
         For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
-    managed_keywords : dict
+    managed_keywords
         Keywords that influence managed methods.
 
     Returns
@@ -326,25 +326,87 @@ def highest_analytic_derivative_available(method: str,
     return dertype, proc_messages
 
 
+def highest_analytic_properties_available(method: str,
+                                          proc: Optional[Dict] = None,
+                                          managed_keywords: Optional[Dict] = None) -> Tuple[str, Dict[int,str]]:
+    """Find whether propgram can provide analytic properties for method, as encoded in procedures and managed methods.
+
+    Managed methods return finer grain "is available" info. For example, "is analytic ROHF DF HF gradient available?"
+    from managed method, not just "is HF gradient available?" from procedures.
+
+    Parameters
+    ----------
+    method
+        Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
+    proc
+        For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
+    managed_keywords
+        Keywords that influence managed methods.
+
+    Returns
+    -------
+    str
+        "prop" if analytic properties available for `method`.
+    dict
+        Detailed error messages to be passed along. Keys are dertype.
+
+    Raises
+    ------
+    MissingMethodError
+        When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
+
+    """
+    def _alternative_methods_message(method_name, dertype, proc):
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name, proc['energy'].keys(), 2)
+
+        alternatives = ''
+        if len(alt_method_name) > 0:
+            alternatives = f""" Did you mean? {' '.join(alt_method_name)}"""
+
+        return f"""Derivative method ({method_name}) and derivative level ({dertype}) are not available.{alternatives}"""
+
+    if managed_keywords is None:
+        managed_keywords = {}
+
+    if proc is None:
+        proc = procedures
+
+    dertype = "(auto)"
+    proc_messages = {}
+
+    if method in proc["properties"]:
+        dertype = "prop"
+        if proc["properties"][method].__name__.startswith('select_'):
+            try:
+                proc["properties"][method](method, probe=True, **managed_keywords)
+            except ManagedMethodError:
+                raise MissingMethodError(_alternative_methods_message(method, 'any', proc))
+
+    if dertype == '(auto)':
+        raise MissingMethodError(_alternative_methods_message(method, 'any', proc))
+
+    return dertype, proc_messages
+
+
 def negotiate_derivative_type(target_dertype: str,
                               method: str,
                               user_dertype: Optional[int],
                               verbose: int = 1,
-                              proc: Optional[Dict] = None) -> Tuple[int, int]:
+                              proc: Optional[Dict] = None) -> Union[Tuple[int, int], Tuple[str, str]]:
     r"""Find the best derivative level (0, 1, 2) and strategy (analytic, finite difference)
     for `method` to achieve `target_dertype` within constraints of `user_dertype`.
 
     Parameters
     ----------
-    target_dertype: {'energy', 'gradient', 'hessian'}
+    target_dertype: {"energy", "gradient", "hessian", "properties"}
         Type of calculation targeted by driver.
-    method : str
+    method
         Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
     user_dertype : int or None
         User input on which derivative level should be employed to achieve `target_dertype`. 
-    verbose : int, optional
+    verbose
         Control amount of output printing.
-    proc : dict, optional
+    proc
         For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
     managed_keywords : dict
         Keywords that influence managed methods.
@@ -365,18 +427,31 @@ def negotiate_derivative_type(target_dertype: str,
         When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
 
     """
-    if isinstance(method, list):
-        anal = [highest_analytic_derivative_available(mtd, proc) for mtd in method]
-        if verbose > 1:
-            print(method, anal, '->', min(anal))
-        highest_analytic_dertype, proc_messages = min(anal)
+    if target_dertype == "properties":
+        if isinstance(method, list):
+            # untested
+            analytic = [highest_analytic_derivative_available(mtd, proc) for mtd in method]
+            if verbose > 1:
+                print(method, analytic, '->', min(analytic))
+            highest_analytic_dertype, proc_messages = min(analytic)
+        else:
+            highest_analytic_dertype, proc_messages = highest_analytic_properties_available(method, proc)
+
+        return (target_dertype[:4], highest_analytic_dertype)  # i.e., ("prop", "prop")
+
     else:
-        highest_analytic_dertype, proc_messages = highest_analytic_derivative_available(method, proc)
+        if isinstance(method, list):
+            analytic = [highest_analytic_derivative_available(mtd, proc) for mtd in method]
+            if verbose > 1:
+                print(method, analytic, '->', min(analytic))
+            highest_analytic_dertype, proc_messages = min(analytic)
+        else:
+            highest_analytic_dertype, proc_messages = highest_analytic_derivative_available(method, proc)
 
-    return sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, proc_messages, verbose)
+        return sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, proc_messages, verbose)
 
 
-def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, proc_messages: Dict[int, str], verbose: int=1) -> Tuple[int, int]:
+def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype: Union[int, None], proc_messages: Dict[int, str], verbose: int=1) -> Tuple[int, int]:
     r"""Find the best derivative level (0, 1, 2) and strategy (analytic, finite difference)
     to achieve `target_dertype` within constraints of `user_dertype` and `highest_analytic_dertype`.
 
@@ -384,11 +459,11 @@ def sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype,
     ----------
     target_dertype: {'energy', 'gradient', 'hessian'}
         Type of calculation targeted by driver.
-    user_dertype : int or None
+    user_dertype
         User input on which derivative level should be employed to achieve `target_dertype`. 
     proc_messages
         Dertype-indexed detailed message to be appended to user error.
-    verbose : int, optional
+    verbose
         Control amount of output printing.
 
     Returns

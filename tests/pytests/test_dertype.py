@@ -38,6 +38,10 @@ mock_proc = {
         'EGh_man': select_fail,
         'Egh_man2': select_fail,
     },
+    "properties": {
+        "hf": ordinary,
+        "cc": ordinary,
+    },
 }
 
 
@@ -85,6 +89,8 @@ mock_proc = {
     (('gradient', 'Eg_man', 0), (1, 0)),
     (('energy', 'Eg_man', None), (0, 0)),  # analytic
     (('energy', 'Eg_man', 0), (0, 0)),  # analytic
+    (("properties", "hf", None), ("prop", "prop")),
+    (("properties", "cc", 0), ("prop", "prop")),
 ])
 def test_negotiate(inp, out):
     dertype = negotiate_derivative_type(proc=mock_proc, *inp)
@@ -105,6 +111,8 @@ def test_negotiate(inp, out):
     (('energy', 'E_man', 0)),
     (('hessian', 'Egh_man2', 1)),
     (('gradient', 'Egh_man2', 1)),
+    (("properties", "unavail", None)),
+    (("properties", "unavail", 0)),
 ])
 def test_negotiate_missing_error(inp):
     with pytest.raises(psi4.MissingMethodError) as e:
@@ -130,6 +138,7 @@ def test_negotiate_missing_error(inp):
     (('gradient', 'Eg_man', 2)),
     (('energy', 'Eg_man', 2)),
     (('energy', 'Eg_man', 1)),
+    #(("properties", "hf", 2)),
 ])
 def test_negotiate_excessive_error(inp):
     with pytest.raises(psi4.ValidationError) as e:
