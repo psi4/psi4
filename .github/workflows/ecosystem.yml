@@ -213,15 +213,13 @@ jobs:
           - cppe
           - dftd4-python
           - geometric
+          - openfermion>=1.0
           - openfermionpsi4
           - pymdi
           - qcengine
 
         # toml needed for psi4 to load parameters from dftd4-python
         EOF
-        #if [[ "${{ runner.os }}" == "macOS" ]]; then
-        #  sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" aux.yaml
-        #fi
         fi
         #
         # Runtime for single-channel (W)
