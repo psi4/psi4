@@ -92,6 +92,10 @@ def test_mcmurchie_davidson_multipoles(mol_h2o):
         # overlap integrals not accessible via multipole interface
         mints.ao_multipoles(order=0, origin=[0.0, 0.0, 0.0])
 
+    with pytest.raises(Exception):
+        # wrong origin specification
+        mints.ao_multipoles(order=0, origin=[0.0, 0.0, 0.0, 0.0])
+
     Mnp = matlist_to_ndarray(M)
     # reference from l2
     dips = matlist_to_ndarray(mints.ao_dipole())

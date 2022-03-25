@@ -298,7 +298,7 @@ class PSI_API MintsHelper {
     /// Vector AO Traceless Quadrupole Integrals
     std::vector<SharedMatrix> ao_traceless_quadrupole();
     /// Vector AO Multipole Integrals up to given order (in CCA lexicographic order)
-    std::vector<SharedMatrix> ao_multipoles(int order, const std::vector<double>& origin= {0.0, 0.0, 0.0});
+    std::vector<SharedMatrix> ao_multipoles(int order, const std::vector<double>& origin);
     /// AO EFP Multipole Potential Integrals
     std::vector<SharedMatrix> ao_efp_multipole_potential(const std::vector<double>& origin = {0., 0., 0.},
                                                          int deriv = 0);

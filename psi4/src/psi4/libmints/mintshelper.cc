@@ -1581,9 +1581,9 @@ std::vector<SharedMatrix> MintsHelper::ao_traceless_quadrupole() {
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_multipoles(int order, const std::vector<double>& origin) {
+    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
     Vector3 v3origin(origin[0], origin[1], origin[2]);
     std::vector<SharedMatrix> ret;
-    int component = 0;
     for (int l = 1; l <= order; ++l) {
         for (int ii = 0; ii <= l; ii++) {
             int lx = l - ii;
@@ -2100,6 +2100,7 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
 }
 
 SharedMatrix MintsHelper::multipole_grad(SharedMatrix D, int order, const std::vector<double>& origin) {
+    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
     // Computes skeleton (Hellman-Feynman like) multipole derivatives for each perturbation
     double** Dp = D->pointer();
 
@@ -2141,17 +2142,13 @@ SharedMatrix MintsHelper::multipole_grad(SharedMatrix D, int order, const std::v
             for (int comp = 0; comp < 3; ++comp) {
                 // ordering in buffers is (xPx, xPy, xPz, xQx, xQy, xQz, yPx, yPy, ..., xxPx, xxPy, ...)
                 // bra derivatives on atom aP
-                const double* ref = buffers[6 * chunk + comp];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Pp[3 * aP + comp][chunk] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                    }
-                }
+                const double* ref_bra = buffers[6 * chunk + comp];
                 // ket derivatives on atom aQ (3 elements offset)
-                ref = buffers[6 * chunk + comp + 3];
+                const double* ref_ket = buffers[6 * chunk + comp + 3];
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Pp[3 * aQ + comp][chunk] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+                        Pp[3 * aP + comp][chunk] += prefac * Dp[p + oP][q + oQ] * (*ref_bra++);
+                        Pp[3 * aQ + comp][chunk] += prefac * Dp[p + oP][q + oQ] * (*ref_ket++);
                     }
                 }
             }
@@ -3213,7 +3210,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
 std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
     std::array<std::string, 3> cartcomp{{"X", "Y", "Z"}};
 
-    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
+    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_multipoles(1, 1));
 
     std::shared_ptr<BasisSet> bs1 = Dint->basis1();
     std::shared_ptr<BasisSet> bs2 = Dint->basis2();
