@@ -329,6 +329,22 @@ class Libint2ErfComplementERI : public Libint2TwoElectronInt {
                                     const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
 };
 
+class Libint2YukawaERI : public Libint2TwoElectronInt {
+   public:
+    Libint2YukawaERI(double zeta, const IntegralFactory* integral, double screening_threshold, int deriv = 0,
+                  bool use_shell_pairs = false, bool needs_exchange = false);
+    ~Libint2YukawaERI() override;
+    Libint2YukawaERI* clone() const override { return new Libint2YukawaERI(*this); }
+
+   protected:
+    void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+    void libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+    void libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+};
+
 }  // namespace psi
 
 #endif

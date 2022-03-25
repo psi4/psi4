@@ -259,6 +259,11 @@ TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool 
 #endif
 }
 
+TwoBodyAOInt* IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    return new Libint2YukawaERI(zeta, this, threshold, deriv, use_shell_pairs, needs_exchange);
+}
+
 TwoBodyAOInt* IntegralFactory::f12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
 #ifdef ENABLE_Libint1t
     return new F12(cf, this, deriv, use_shell_pairs);
