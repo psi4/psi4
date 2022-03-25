@@ -25,15 +25,12 @@
  *
  * @END LICENSE
  */
-
-#ifndef _psi_src_lib_libmints_multipoles_h_
-#define _psi_src_lib_libmints_multipoles_h_
+#pragma once
 
 #include <vector>
-#include "typedefs.h"
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/mcmurchiedavidson.h"
 
 namespace psi {
 class Molecule;
@@ -43,12 +40,22 @@ class Molecule;
  *  \brief Computes arbitrary-order multipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class MultipoleInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterMIRecursion mi_recur_;
-
+class MultipoleInt : public OneBodyAOInt, public mdintegrals::MDHelper {
     //! The order of multipole moment to compute
     int order_;
+
+    //! Multipole intermediates
+    //! M matrix (9.5.31)
+    std::vector<double> Mx;
+    std::vector<double> My;
+    std::vector<double> Mz;
+    //! S matrix (9.5.29)
+    std::vector<double> Sx;
+    std::vector<double> Sy;
+    std::vector<double> Sz;
+
+    //! CCA-ordered Cartesian components for the multipoles
+    std::vector<std::vector<std::array<int, 4>>> comps_mul_;
 
    public:
     //! Constructor. Do not call directly. Use an IntegralFactory.
@@ -60,12 +67,14 @@ class MultipoleInt : public OneBodyAOInt {
     //! Computes the multipole integrals between two gaussian shells.
     void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
 
+    //! Computes the first derivative of the multipole integrals between two gaussian shells.
+    void compute_pair_deriv1(const libint2::Shell &, const libint2::Shell &) override;
+
     //! Does the method provide first derivatives?
-    bool has_deriv1() override { return false; }
+    bool has_deriv1() override { return true; }
 
     /// Returns the nuclear contribution to the multipole moments, with angular momentum up to order
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin);
 };
 
 }  // namespace psi
-#endif

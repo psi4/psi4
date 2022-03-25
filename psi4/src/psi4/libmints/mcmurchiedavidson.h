@@ -39,8 +39,12 @@ inline double point_norm(const Point& A) { return std::sqrt(A[0] * A[0] + A[1] *
 
 void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const Point& B, double a, double b,
                    std::vector<double>& Ex, std::vector<double>& Ey, std::vector<double>& Ez);
+void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, std::vector<double>& Mx,
+                   std::vector<double>& My, std::vector<double>& Mz);
 
 std::vector<std::array<int, 4>> generate_am_components_cca(int am);
+
+inline int cumulative_cart_dim(int L) { return ((L + 1) * (L + 2) * (L + 3)) / 6; }
 
 inline int address_3d(int i, int j, int k, int dim2, int dim3) { return k + dim3 * (j + dim2 * i); }
 

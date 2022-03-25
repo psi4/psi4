@@ -466,8 +466,8 @@ class PSI_API IntegralFactory {
     virtual OneBodySOInt* so_quadrupole();
 
     /// Returns an OneBodyInt that computes arbitrary-order multipole integrals.
-    virtual OneBodyAOInt* ao_multipoles(int order);
-    virtual OneBodySOInt* so_multipoles(int order);
+    virtual OneBodyAOInt* ao_multipoles(int order, int deriv = 0);
+    virtual OneBodySOInt* so_multipoles(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the traceless quadrupole integral.
     virtual OneBodyAOInt* ao_traceless_quadrupole();

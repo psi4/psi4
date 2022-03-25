@@ -1580,6 +1580,43 @@ std::vector<SharedMatrix> MintsHelper::ao_traceless_quadrupole() {
     return quadrupole;
 }
 
+std::vector<SharedMatrix> MintsHelper::ao_multipoles(int order, const std::vector<double>& origin) {
+    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    std::vector<SharedMatrix> ret;
+    for (int l = 1; l <= order; ++l) {
+        for (int ii = 0; ii <= l; ii++) {
+            int lx = l - ii;
+            for (int lz = 0; lz <= ii; lz++) {
+                int ly = ii - lz;
+                std::stringstream sstream;
+                if (l == 1) {
+                    sstream << "Dipole ";
+                } else if (l == 2) {
+                    sstream << "Quadrupole ";
+                } else if (l == 3) {
+                    sstream << "Octupole ";
+                } else if (l == 4) {
+                    sstream << "Hexadecapole ";
+                } else {
+                    int n = (1 << l);
+                    sstream << n << "-pole ";
+                }
+                std::string name = sstream.str();
+                for (int xval = 0; xval < lx; ++xval) name += "X";
+                for (int yval = 0; yval < ly; ++yval) name += "Y";
+                for (int zval = 0; zval < lz; ++zval) name += "Z";
+                auto mat = std::make_shared<Matrix>(name, factory_->norb(), factory_->norb());
+                ret.push_back(mat);
+            }
+        }
+    }
+    std::shared_ptr<OneBodyAOInt> multipole_int(integral_->ao_multipoles(order));
+    multipole_int->set_origin(v3origin);
+    multipole_int->compute(ret);
+    return ret;
+}
+
 std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double> &origin, int deriv) {
     std::vector<SharedMatrix> ret = ao_multipole_potential(origin, 3, deriv);
     // EFP expects the following order of Cartesian components
@@ -2062,29 +2099,32 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
     return perturbation_gradient;
 }
 
-SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
-    // Computes skeleton (Hellman-Feynman like) dipole derivatives for each perturbation
-    double **Dp = D->pointer();
+SharedMatrix MintsHelper::multipole_grad(SharedMatrix D, int order, const std::vector<double>& origin) {
+    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
+    // Computes skeleton (Hellman-Feynman like) multipole derivatives for each perturbation
+    double** Dp = D->pointer();
 
     int natom = molecule_->natom();
-    auto ret = std::make_shared<Matrix>("Dipole dervatives (pert*component, i.e. 3Nx3)", 3 * natom, 3);
-    double **Pp = ret->pointer();
+    int nmult = (order + 1) * (order + 2) * (order + 3) / 6 - 1;
+    auto ret = std::make_shared<Matrix>("Multipole dervatives (pert*component, i.e. 3NxN_mult)", 3 * natom, nmult);
+    double** Pp = ret->pointer();
 
-    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
+    std::shared_ptr<OneBodyAOInt> Mint(integral_->ao_multipoles(order, 1));
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    Mint->set_origin(v3origin);
 
-    const auto& shell_pairs = Dint->shellpairs();
+    const auto& shell_pairs = Mint->shellpairs();
     size_t n_pairs = shell_pairs.size();
 
-    // Loop it
     for (size_t p = 0; p < n_pairs; ++p) {
         auto P = shell_pairs[p].first;
         auto Q = shell_pairs[p].second;
 
-        Dint->compute_shell_deriv1(P, Q);
-        const auto &buffers = Dint->buffers();
+        Mint->compute_shell_deriv1(P, Q);
+        const auto& buffers = Mint->buffers();
 
-        const auto &shellP = basisset_->shell(P);
-        const auto &shellQ = basisset_->shell(Q);
+        const auto& shellP = basisset_->shell(P);
+        const auto& shellQ = basisset_->shell(Q);
 
         int nP = shellP.nfunction();
         int oP = shellP.function_index();
@@ -2096,160 +2136,31 @@ SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
 
         double prefac = (P == Q ? 1.0 : 2.0);
 
-        /*
-         * Mu X derivatives
-         */
-        // Px
-        const double *ref = buffers[0];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Py
-        ref = buffers[1];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Pz
-        ref = buffers[2];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qx
-        ref = buffers[3];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qy
-        ref = buffers[4];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qz
-        ref = buffers[5];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        /*
-         * Mu Y derivatives
-         */
-        // Px
-        ref = buffers[6];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Py
-        ref = buffers[7];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Pz
-        ref = buffers[8];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qx
-        ref = buffers[9];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qy
-        ref = buffers[10];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qz
-        ref = buffers[11];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        /*
-         * Mu Z derivatives
-         */
-        // Px
-        ref = buffers[12];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Py
-        ref = buffers[13];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Pz
-        ref = buffers[14];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aP + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qx
-        ref = buffers[15];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qy
-        ref = buffers[16];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-            }
-        }
-
-        // Qz
-        ref = buffers[17];
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                Pp[3 * aQ + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
+        // loop over the multipole components (x, y, z, xx, xy, xz, ...)
+        for (int chunk = 0; chunk < nmult; ++chunk) {
+            // loop over the derivative components (x, y, z)
+            for (int comp = 0; comp < 3; ++comp) {
+                // ordering in buffers is (xPx, xPy, xPz, xQx, xQy, xQz, yPx, yPy, ..., xxPx, xxPy, ...)
+                // bra derivatives on atom aP
+                const double* ref_bra = buffers[6 * chunk + comp];
+                // ket derivatives on atom aQ (3 elements offset)
+                const double* ref_ket = buffers[6 * chunk + comp + 3];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Pp[3 * aP + comp][chunk] += prefac * Dp[p + oP][q + oQ] * (*ref_bra++);
+                        Pp[3 * aQ + comp][chunk] += prefac * Dp[p + oP][q + oQ] * (*ref_ket++);
+                    }
+                }
             }
         }
     }
     return ret;
+}
+
+SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
+    // Computes skeleton (Hellman-Feynman like) dipole derivatives for each perturbation
+    // call the more general routine for arbitrary order multipoles
+    return multipole_grad(D, 1, {0.0, 0.0, 0.0});
 }
 
 SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
@@ -3299,7 +3210,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
 std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
     std::array<std::string, 3> cartcomp{{"X", "Y", "Z"}};
 
-    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
+    std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_multipoles(1, 1));
 
     std::shared_ptr<BasisSet> bs1 = Dint->basis1();
     std::shared_ptr<BasisSet> bs2 = Dint->basis2();

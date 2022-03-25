@@ -26,15 +26,13 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_dipole_h_
-#define _psi_src_lib_libmints_dipole_h_
+#pragma once
 
 #include <vector>
 #include "typedefs.h"
 
 #include "psi4/pragma.h"
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 class SphericalTransform;
@@ -46,19 +44,16 @@ class Molecule;
  *
  * Use an IntegralFactory to create this object. */
 class DipoleInt : public OneBodyAOInt {
-    // This is to disappear when l2 dipole derivatives are worked out
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
    public:
-    //! Constructor. Do not call directly use an IntegralFactory.
+    //! Constructor. Do not call directly. Use an IntegralFactory.
     DipoleInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     //! Virtual destructor
     ~DipoleInt() override;
 
     //! Does the method provide first derivatives?
-    bool has_deriv1() override { return true; }
+    bool has_deriv1() override { return false; }
 
     void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
-    void compute_pair_deriv1(const libint2::Shell &, const libint2::Shell &) override;
 
     /// Returns the nuclear contribution to the dipole moment
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);
@@ -66,5 +61,3 @@ class DipoleInt : public OneBodyAOInt {
 };
 
 }  // namespace psi
-
-#endif

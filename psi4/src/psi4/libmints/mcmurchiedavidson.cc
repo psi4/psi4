@@ -31,8 +31,6 @@ namespace mdintegrals {
 
 inline int cart_dim(int L) { return (L + 1) * (L + 2) / 2; }
 
-inline int cumulative_cart_dim(int L) { return ((L + 1) * (L + 2) * (L + 3)) / 6; }
-
 std::vector<std::array<int, 4>> generate_am_components_cca(int am) {
     std::vector<std::array<int, 4>> ret(cart_dim(am));
     int index = 0;
@@ -115,6 +113,49 @@ void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const
                     Ez[idx] += PB[2] * Ez[idxj_t] + oo2p * Ez[idxj_tm] + (t + 1) * Ez[idxj_tp];
                 }
             }
+        }
+    }
+}
+
+void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, std::vector<double>& Mx,
+                   std::vector<double>& My, std::vector<double>& Mz) {
+    // Generate multipole intermediates using eqs 9.5.31 to 9.5.36
+    // from Molecular Electronic-Structure Theory (10.1002/9781119019572)
+
+    // zero out buffers
+    std::fill(Mx.begin(), Mx.end(), 0.0);
+    std::fill(My.begin(), My.end(), 0.0);
+    std::fill(Mz.begin(), Mz.end(), 0.0);
+
+    int dim1 = std::max(maxam, maxpow) + 2;
+
+    double p = a + b;
+    // one over 2p
+    double oo2p = 1.0 / (2.0 * p);
+    double sqrtpip = std::sqrt(M_PI / p);
+    // eq 9.5.32: M_t^0 = delta_{0t} \sqrt{\pi/p}
+    Mx[0] = sqrtpip;
+    My[0] = sqrtpip;
+    Mz[0] = sqrtpip;
+    for (int e = 1; e <= maxpow; ++e) {
+        // t = 0 case
+        int idx0 = e * dim1; // M_0^e
+        int idx0_em = (e - 1) * dim1; // M_0^{e-1}
+        // last two terms of eq 9.5.36
+        Mx[idx0] += PC[0] * Mx[idx0_em] + oo2p * Mx[idx0_em + 1];
+        My[idx0] += PC[1] * My[idx0_em] + oo2p * My[idx0_em + 1];
+        Mz[idx0] += PC[2] * Mz[idx0_em] + oo2p * Mz[idx0_em + 1];
+        // t > 0 case
+        int upper_t = std::min(e + 1, std::max(maxam, maxpow) + 1);
+        for (int t = 1; t < upper_t; ++t) {
+            int idx = e * dim1 + t; // target index M_t^e
+            int idx_em = (e - 1) * dim1 + t; // M_t^{e-1}
+            int idx_em_tm = (e - 1) * dim1 + (t - 1); // M_{t-1}^{e-1}
+            int idx_em_tp = (e - 1) * dim1 + (t + 1); // M_{t+1}^{e-1}
+            // eq 9.5.36
+            Mx[idx] += t * Mx[idx_em_tm] + PC[0] * Mx[idx_em] + oo2p * Mx[idx_em_tp];
+            My[idx] += t * My[idx_em_tm] + PC[1] * My[idx_em] + oo2p * My[idx_em_tp];
+            Mz[idx] += t * Mz[idx_em_tm] + PC[2] * Mz[idx_em] + oo2p * Mz[idx_em_tp];
         }
     }
 }
