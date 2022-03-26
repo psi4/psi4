@@ -61,6 +61,7 @@ class DIIS:
 
     def __init__(self, max_vecs: int, name: str, removal_policy = RemovalPolicy.LargestError, storage_policy = StoragePolicy.OnDisk, closed_shell = True, engines = {"diis"}):
         # We don't have a good sense for how this class may need to expand, so the current structure is amorphous.
+        # Currently supported storage types: ambit.BlockedTensor, Psi.Vector, Psi.Matrix, Psi.dpdfile2, Psi.dpdbuf4, float
 
         # LargestError is only _defined_ for the case of one engine and not theoretically sound for adiis/ediis:
         # those methods want to traverse a wide range of solution space. As such:
@@ -164,20 +165,20 @@ class DIIS:
                 # The quantity must have been a float. No need to clone.
                 pass
         elif self.storage_policy == StoragePolicy.OnDisk:
-            entry_dims = template_object
             full_name = self.get_name(name, entry_num, item_num)
             psio = core.IO.shared_object()
-            if hasattr(entry_dims, "__len__"):
-                if len(entry_dims) == 2:
-                    quantity = core.Matrix(full_name, *entry_dims)
+            if hasattr(template_object, "__len__"):
+                # Looks like we have dimensions.
+                if len(template_object) == 2:
+                    quantity = core.Matrix(full_name, *template_object)
                     quantity.load(psio, psif.PSIF_LIBDIIS, core.SaveType.SubBlocks)
-                elif len(entry_dims) == 1:
-                    quantity = core.Vector(full_name, *entry_dims)
+                elif len(template_object) == 1:
+                    quantity = core.Vector(full_name, *template_object)
                     quantity.load(psio, psif.PSIF_LIBDIIS)
             elif which_import("ambit", return_bool=True):
                 import ambit
-                if entry_dims == ambit.BlockedTensor:
-                    quantity = ambit.BlockedTensor.load(f"libdiis.{full_name}")
+                if template_object == ambit.BlockedTensor:
+                    quantity = ambit.BlockedTensor.load_and_build(f"libdiis.{full_name}")
         else:
             raise Exception(f"StoragePolicy {self.storage_policy} not recognized. This is a bug: contact developers.")
 
