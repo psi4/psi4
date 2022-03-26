@@ -981,7 +981,7 @@ class ManyBodyComputer(BaseComputer):
 
         dicts = [
             'energies', 'ptype', 'intermediates', 'intermediates2', 'intermediates_ptype', 'energy_body_dict',
-            'gradient_body_dict', 'nbody', 'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
+            'gradient_body_dict', "hessian_body_dict", 'nbody', 'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
         ]
         if self.driver == 'gradient':
             ret = core.Matrix.from_array(ret)
@@ -992,6 +992,7 @@ class ManyBodyComputer(BaseComputer):
             grad = core.Matrix.from_array(nbody_results.extras['qcvars']['CURRENT GRADIENT'])
             wfn.set_hessian(ret)
             wfn.set_gradient(grad)
+            nbody_results.extras["qcvars"]['hessian_body_dict'] = nbody_results.extras["qcvars"]['ptype_body_dict']
 
         for d in nbody_results.extras['qcvars']:
             if d in dicts:

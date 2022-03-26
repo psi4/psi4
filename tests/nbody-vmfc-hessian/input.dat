@@ -36,8 +36,8 @@ for i in vmfc_scheme: #TEST
     energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
     core.clean() #TEST
 
-    compare_values(energy_dict[i], wfn.variables()[i], 8, 'Energy of %s' %i) #TEST
-    compare_arrays(hessian_dict[i], wfn.variables()['PTYPE %s' %i], 2.e-8, 'Hessian of %s' %i) #TEST
+    compare_values(energy_dict[i], wfn.variables()["1_"+i], 8, 'Energy of %s' %i) #TEST
+    compare_arrays(hessian_dict[i], wfn.variables()['HESSIAN %s' %"1_"+i], 2.e-8, 'Hessian of %s' %i) #TEST
 
 ene, hess = 0, np.zeros((9*3, 9*3)) #TEST
 
