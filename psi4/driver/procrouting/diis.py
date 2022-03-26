@@ -1,5 +1,6 @@
 from enum import Enum
 from itertools import product
+import os
 
 from psi4 import core
 from psi4.driver import psifiles as psif
@@ -20,10 +21,23 @@ def axpy(y, alpha, x):
         y.axpy(alpha, x)
     elif isinstance(y, (core.dpdbuf4, core.dpdfile2)):
         y.axpy_matrix(x, alpha)
+    elif which_import("ambit", return_bool=True):
+        import ambit
+        if isinstance(x, ambit.BlockedTensor):
+            y.axpy(alpha, x)
+        else:
+            raise TypeError("Unrecognized object type for DIIS.")
     else:
         raise TypeError("Unrecognized object type for DIIS.")
 
 def template_helper(*args):
+    """
+    Store the _kind of object_ we want to I/O and _its dimensions_.
+    But in practice, given one piece of information, we can deduce the other.
+    If there's one dimension, it must be a Vector.
+    If there are two dimensions, it must be written to disk as a Matrix.
+    If it's a BlockedTensor, we can just read the dimensions.
+    """
     template = []
     for arg in args:
         if isinstance(arg, core.Vector):
@@ -32,6 +46,12 @@ def template_helper(*args):
             template.append([arg.rowdim(), arg.coldim()])
         elif isinstance(arg, float):
             template.append(float(0))
+        elif which_import("ambit", return_bool=True):
+            import ambit
+            if isinstance(arg, ambit.BlockedTensor):
+                template.append(ambit.BlockedTensor)
+            else:
+                raise TypeError("Unrecognized object type for DIIS.")
         else:
             raise TypeError("Unrecognized object type for DIIS.")
 
@@ -74,6 +94,7 @@ class DIIS:
             if not psio.open_check(psif.PSIF_LIBDIIS):
                 psio.open(psif.PSIF_LIBDIIS, 1) # 1 = PSIO_OPEN_OLD
                 self.opened_libdiis = True
+        self.created_files = set()
 
         self.closed_shell = closed_shell # Only needed for A/EDIIS, which doesn't allow ROHF anyways.
         self.engines = engines
@@ -102,16 +123,28 @@ class DIIS:
         elif isinstance(x, float):
             # Never cache a _number_.
             return x
+        elif which_import("ambit", return_bool=True):
+            import ambit
+            if isinstance(x, ambit.BlockedTensor):
+                copy = x.clone()
+            else:
+                raise TypeError("Unrecognized object type for DIIS.")
         else:
             raise TypeError("Unrecognized object type for DIIS.")
         copy.name = new_name
 
         if self.storage_policy == StoragePolicy.OnDisk:
             psio = core.IO.shared_object()
-            if isinstance(x, core.Vector):
+            if isinstance(copy, core.Vector):
                 copy.save(psio, psif.PSIF_LIBDIIS)
-            else:
+            elif isinstance(copy, core.Matrix):
                 copy.save(psio, psif.PSIF_LIBDIIS, core.SaveType.SubBlocks)
+            elif isinstance(copy, ambit.BlockedTensor):
+                filename = f"libdiis.{copy.name}"
+                copy.save(filename)
+                self.created_files.add(filename)
+            else:
+                raise TypeError("Unrecognized object type for DIIS. This shouldn't be possible.")
             copy = None
 
         return copy
@@ -134,12 +167,17 @@ class DIIS:
             entry_dims = template_object
             full_name = self.get_name(name, entry_num, item_num)
             psio = core.IO.shared_object()
-            if len(entry_dims) == 2:
-                quantity = core.Matrix(full_name, *entry_dims)
-                quantity.load(psio, psif.PSIF_LIBDIIS, core.SaveType.SubBlocks)
-            elif len(entry_dims) == 1:
-                quantity = core.Vector(full_name, *entry_dims)
-                quantity.load(psio, psif.PSIF_LIBDIIS)
+            if hasattr(entry_dims, "__len__"):
+                if len(entry_dims) == 2:
+                    quantity = core.Matrix(full_name, *entry_dims)
+                    quantity.load(psio, psif.PSIF_LIBDIIS, core.SaveType.SubBlocks)
+                elif len(entry_dims) == 1:
+                    quantity = core.Vector(full_name, *entry_dims)
+                    quantity.load(psio, psif.PSIF_LIBDIIS)
+            elif which_import("ambit", return_bool=True):
+                import ambit
+                if entry_dims == ambit.BlockedTensor:
+                    quantity = ambit.BlockedTensor.load(f"libdiis.{full_name}")
         else:
             raise Exception(f"StoragePolicy {self.storage_policy} not recognized. This is a bug: contact developers.")
 
@@ -381,8 +419,15 @@ class DIIS:
 
     def delete_diis_file(self):
         """ Purge all data in the DIIS file. """
+        # libpsio deletion
         psio = core.IO.shared_object()
         if not psio.open_check(psif.PSIF_LIBDIIS):
             psio.open(psif.PSIF_LIBDIIS, 1) # 1 = PSIO_OPEN_OLD
         psio.close(psif.PSIF_LIBDIIS, 0) # 0 = DELETE
+        # ambit deletion
+        for filename in self.created_files:
+            try:
+                os.remove(filename)
+            except FileNotFoundError:
+                pass
 
