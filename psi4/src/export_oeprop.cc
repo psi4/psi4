@@ -41,6 +41,7 @@ void export_oeprop(py::module &m) {
     py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring");
 
     py::class_<TaskListComputer, std::shared_ptr<TaskListComputer> >(m, "TaskListComputer", "docstring")
+        .def("add", py::overload_cast<const std::string&>(&TaskListComputer::add), "Append the given task to the list of properties to compute.")
         .def("set_title", &TaskListComputer::set_title, "docstring");
 
     //     def(init<std::shared_ptr<Wavefunction> >()).
@@ -65,10 +66,8 @@ void export_oeprop(py::module &m) {
         .
         // TODO had no_init but init member present
         def(py::init<std::shared_ptr<Wavefunction> >())
-        .def("add", &OEProp::oepy_add, "docstring")
-        .def("compute", &OEProp::oepy_compute, "docstring")
-        //        def("set_title", &OEProp::set_title, "docstring").
-        .def("clear", &OEProp::clear, "docstring")
+        .def("compute", &OEProp::compute, "Compute the properties.")
+        .def("clear", &OEProp::clear, "Clear the list of properties to compute.")
         .def("set_Da_ao", &OEProp::set_Da_ao, "docstring", "Da"_a, "symmetry"_a = 0)
         .def("set_Db_ao", &OEProp::set_Db_ao, "docstring", "Db"_a, "symmetry"_a = 0)
         .def("set_Da_so", &OEProp::set_Da_so, "docstring")
