@@ -528,6 +528,11 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             ref_wfn->set_array_variable(tag_tensor_pl2.str(),tensor_mat_pl2);
         }
 
+        // For psivar scraper
+
+        // Process::environment.globals["CC2 QUADRUPOLE POLARIZABILITY TENSOR @ xNM"]
+        // Process::environment.globals["CCSD QUADRUPOLE POLARIZABILITY TENSOR @ xNM"]
+
         std::stringstream tag_quad;
         if (params.wfn == "CC2") {
             outfile->Printf("\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");

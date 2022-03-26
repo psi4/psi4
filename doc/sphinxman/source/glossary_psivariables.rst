@@ -163,6 +163,11 @@ PSI Variables by Alpha
    The dipole polarizability [au] calculated at the CC2 level
    for a given (x) wavelength, (x) rounded to nearest integer.
 
+.. psivar:: CC2 QUADRUPOLE POLARIZABILITY @ xNM
+
+   The quadrupole polarizability [au] calculated at the CC2 level
+   for a given (x) wavelength, (x) rounded to nearest integer.
+
 .. psivar:: CC2 SPECIFIC ROTATION (LEN) @ xNM
 
    The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
@@ -277,6 +282,11 @@ PSI Variables by Alpha
 .. psivar:: CCSD DIPOLE POLARIZABILITY @ xNM
 
    The dipole polarizability [au] calculated at the CCSD level
+   for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CCSD QUADRUPOLE POLARIZABILITY @ xNM
+
+   The quadrupole polarizability [au] calculated at the CCSD level
    for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CCSD SPECIFIC ROTATION (LEN) @ xNM
