@@ -165,7 +165,7 @@ PSI Variables by Alpha
 
 .. psivar:: CC2 QUADRUPOLE POLARIZABILITY @ xNM
 
-   The quadrupole polarizability in atomic units [(e^2 a0^2)/E_h] calculated at
+   The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
    the CC2 level for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 SPECIFIC ROTATION (LEN) @ xNM
@@ -286,7 +286,7 @@ PSI Variables by Alpha
 
 .. psivar:: CCSD QUADRUPOLE POLARIZABILITY @ xNM
 
-   The quadrupole polarizability in atomic units [(e^2 a0^2)/E_h] calculated at
+   The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
    the CCSD level for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CCSD SPECIFIC ROTATION (LEN) @ xNM

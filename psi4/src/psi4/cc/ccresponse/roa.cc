@@ -535,11 +535,11 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
 
         std::stringstream tag_quad;
         if (params.wfn == "CC2") {
-            outfile->Printf("\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
+            outfile->Printf("\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^3)/E_h]:\n");
             tag_quad << "CC2 QUADRUPOLE POLARIZABILITY TENSOR @ " << om_nm << "NM";
         }
         else {
-            outfile->Printf("\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
+            outfile->Printf("\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^3)/E_h]:\n");
             tag_quad << "CCSD QUADRUPOLE POLARIZABILITY TENSOR @ " << om_nm << "NM";
         }
         outfile->Printf("  -------------------------------------------------------------------------\n");
