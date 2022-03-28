@@ -186,10 +186,26 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
             int m_count = 0;
             for (int mul = 1; mul < order_ + 1; ++mul) {
                 const auto& comps_mul = comps_mul_[mul];
-                for (const auto& [ex, ey, ez, index0] : comps_mul) {
+                // c++17 for (const auto& [ex, ey, ez, index0] : comps_mul) {
+                // c++17    ao12 = 0;
+                // c++17    for (const auto& [l1, m1, n1, index1] : comps_am1) {
+                // c++17        for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                for (const auto& dummy1 : comps_mul) {
+                    const auto ex = dummy1[0];
+                    const auto ey = dummy1[1];
+                    const auto ez = dummy1[2];
+                    const auto index0 = dummy1[3];
                     ao12 = 0;
-                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
-                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                    for (const auto& dummy2 : comps_am1) {
+                        const auto l1 = dummy2[0];
+                        const auto m1 = dummy2[1];
+                        const auto n1 = dummy2[2];
+                        const auto index1 = dummy2[3];
+                        for (const auto& dummy3 : comps_am2) {
+                            const auto l2 = dummy3[0];
+                            const auto m2 = dummy3[1];
+                            const auto n2 = dummy3[2];
+                            const auto index2 = dummy3[3];
                             // multiply separable x, y, and z components (eq 9.3.12)
                             buffer_[ao12 + size * m_count] += prefac * Sx[address_3d(l1, l2, ex, sdim1, sdim2)] *
                                                               Sy[address_3d(m1, m2, ey, sdim1, sdim2)] *
@@ -282,11 +298,27 @@ void MultipoleInt::compute_pair_deriv1(const libint2::Shell& s1, const libint2::
                 // loop over components of the given multipole, i.e.,
                 // x, y, z for dipole (mul = 1); xx, xy, xz, yy, ...
                 // for quadrupole (mul = 2) and so on
-                for (const auto& [ex, ey, ez, index0] : comps_mul) {
+                // c++17 for (const auto& [ex, ey, ez, index0] : comps_mul) {
+                // c++17    ao12 = 0;
+                // c++17    // loop over primitive angular momentum components
+                // c++17    for (const auto& [l1, m1, n1, index1] : comps_am1) {
+                // c++17        for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                for (const auto& dummy1 : comps_mul) {
+                    const auto ex = dummy1[0];
+                    const auto ey = dummy1[1];
+                    const auto ez = dummy1[2];
+                    const auto index0 = dummy1[3];
                     ao12 = 0;
-                    // loop over primitive angular momentum components
-                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
-                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                    for (const auto& dummy2 : comps_am1) {
+                        const auto l1 = dummy2[0];
+                        const auto m1 = dummy2[1];
+                        const auto n1 = dummy2[2];
+                        const auto index1 = dummy2[3];
+                        for (const auto& dummy3 : comps_am2) {
+                            const auto l2 = dummy3[0];
+                            const auto m2 = dummy3[1];
+                            const auto n2 = dummy3[2];
+                            const auto index2 = dummy3[3];
                             // get the 'non-differentiated' contributions to the
                             // multipole integral
                             double sx = Sx[address_3d(l1, l2, ex, sdim1, sdim2)];
