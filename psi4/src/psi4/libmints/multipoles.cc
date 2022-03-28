@@ -187,9 +187,9 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
             for (int mul = 1; mul < order_ + 1; ++mul) {
                 const auto& comps_mul = comps_mul_[mul];
                 for (const auto& [ex, ey, ez, index0] : comps_mul) {
-                   ao12 = 0;
-                   for (const auto& [l1, m1, n1, index1] : comps_am1) {
-                       for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                    ao12 = 0;
+                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
+                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
                             // multiply separable x, y, and z components (eq 9.3.12)
                             buffer_[ao12 + size * m_count] += prefac * Sx[address_3d(l1, l2, ex, sdim1, sdim2)] *
                                                               Sy[address_3d(m1, m2, ey, sdim1, sdim2)] *
@@ -283,10 +283,10 @@ void MultipoleInt::compute_pair_deriv1(const libint2::Shell& s1, const libint2::
                 // x, y, z for dipole (mul = 1); xx, xy, xz, yy, ...
                 // for quadrupole (mul = 2) and so on
                 for (const auto& [ex, ey, ez, index0] : comps_mul) {
-                   ao12 = 0;
-                   // loop over primitive angular momentum components
-                   for (const auto& [l1, m1, n1, index1] : comps_am1) {
-                       for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                    ao12 = 0;
+                    // loop over primitive angular momentum components
+                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
+                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
                             // get the 'non-differentiated' contributions to the
                             // multipole integral
                             double sx = Sx[address_3d(l1, l2, ex, sdim1, sdim2)];
