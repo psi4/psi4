@@ -4,6 +4,7 @@ list(APPEND sources
   orbitalspace.cc
   osrecur.cc
   maketab.cc
+  multipolepotential.cc
   oeprop.cc
   writer.cc
   transform.cc
@@ -27,6 +28,7 @@ list(APPEND sources
   get_writer_file_prefix.cc
   petitelist.cc
   solidharmonics.cc
+  multipoles.cc
   sointegral.cc
   extern.cc
   factory.cc
@@ -73,8 +75,6 @@ quadrupole.cc
 rel_potential.cc
 tracelessquadrupole.cc
 3coverlap.cc
-multipolepotential.cc
-multipoles.cc
   )
 set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
