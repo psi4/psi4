@@ -164,8 +164,6 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
 
 void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vector<double>& R,
                    std::shared_ptr<const libint2::FmEval_Chebyshev7<double>> fm_eval) {
-    // zero out buffer
-    std::fill(R.begin(), R.end(), 0.0);
     // eq 9.9.13
     auto PC = point_diff(P, C);
     auto RPC = point_norm(PC);
@@ -178,6 +176,8 @@ void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vec
 
     int dim1 = maxam + 1;
     int dim2 = dim1 * dim1 * dim1;
+    // zero out buffer
+    std::memset(&R[0], 0.0, dim1 * dim2 * sizeof(double));
 
     // NOTE: avoiding std::pow(-2.0 * p, n)
     double fac = 1.0;

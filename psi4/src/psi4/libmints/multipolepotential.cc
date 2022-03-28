@@ -126,14 +126,14 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
                             int maxt = l1 + l2;
                             int maxu = m1 + m2;
                             int maxv = n1 + n2;
+                            const double* ex_p = &Ex.data()[edim3 * (l2 + edim2 * l1)];
+                            const double* ey_p = &Ey.data()[edim3 * (m2 + edim2 * m1)];
+                            const double* ez_p = &Ez.data()[edim3 * (n2 + edim2 * n1)];
                             for (int t = 0; t <= maxt; ++t) {
                                 for (int u = 0; u <= maxu; ++u) {
                                     for (int v = 0; v <= maxv; ++v) {
                                         // eq 9.9.32
-                                        val += (Ex[address_3d(l1, l2, t, edim2, edim3)] *
-                                                Ey[address_3d(m1, m2, u, edim2, edim3)] *
-                                                Ez[address_3d(n1, n2, v, edim2, edim3)] *
-                                                R[address_3d(t + ex, u + ey, v + ez, rdim1, rdim1)]);
+                                        val += ex_p[t] * ey_p[u] * ez_p[v] * R[address_3d(t + ex, u + ey, v + ez, rdim1, rdim1)];
                                     }
                                 }
                             }

@@ -54,7 +54,8 @@ std::vector<std::array<int, 4>> generate_am_components_cca(int am);
 
 inline int cumulative_cart_dim(int L) { return ((L + 1) * (L + 2) * (L + 3)) / 6; }
 
-inline int address_3d(int i, int j, int k, int dim2, int dim3) { return k + dim3 * (j + dim2 * i); }
+// inline int address_3d(int i, int j, int k, int dim2, int dim3) { return k + dim3 * (j + dim2 * i); }
+#define address_3d(i, j, k, dim2, dim3) ((k) + (dim3) * ((j) + (dim2) * (i)))
 
 class MDHelper {
    protected:
