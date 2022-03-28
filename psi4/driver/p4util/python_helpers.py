@@ -695,6 +695,8 @@ def _qcvar_reshape_set(key, val):
             return val
     elif key.upper().endswith("DIPOLE"):
         reshaper = (1, 3)
+    elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 3, 3)
     elif any(key.upper().endswith(p) for p in _multipole_order):
         val = _multipole_compressor(val, _multipole_order.index(key.upper().split()[-1]))
         reshaper = (1, -1)
@@ -727,6 +729,8 @@ def _qcvar_reshape_get(key, val):
             return val
     elif key.upper().endswith("DIPOLE"):
         reshaper = (3, )
+    elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 3, 3)
     elif any(key.upper().endswith(p) for p in _multipole_order):
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(key.upper().split()[-1]))
     elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:

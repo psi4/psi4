@@ -196,7 +196,7 @@ expected_response = {
       0.0
     ]
   ],
-  "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ 355NM": [
+  "CC2 QUADRUPOLE POLARIZABILITY TENSOR @ 355NM": [[
     [
       0.0,
       0.0,
@@ -212,25 +212,7 @@ expected_response = {
       0.0,
       0.0
     ]
-  ],
-  "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ 439NM": [
-    [
-      0.0,
-      0.0,
-      0.37061096
-    ],
-    [
-      0.0,
-      0.0,
-      0.0
-    ],
-    [
-      0.37061096,
-      0.0,
-      0.0
-    ]
-  ],
-  "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ 355NM": [
+  ], [
     [
       0.0,
       0.0,
@@ -246,25 +228,7 @@ expected_response = {
       10.97015701,
       0.0
     ]
-  ],
-  "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ 439NM": [
-    [
-      0.0,
-      0.0,
-      0.0
-    ],
-    [
-      0.0,
-      0.0,
-      10.74076995
-    ],
-    [
-      0.0,
-      10.74076995,
-      0.0
-    ]
-  ],
-  "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ 355NM": [
+  ], [
     [
       -5.65001748,
       0.0,
@@ -280,8 +244,40 @@ expected_response = {
       0.0,
       0.02444115
     ]
-  ],
-  "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ 439NM": [
+  ]],
+  "CC2 QUADRUPOLE POLARIZABILITY TENSOR @ 439NM": [[
+    [
+      0.0,
+      0.0,
+      0.37061096
+    ],
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.37061096,
+      0.0,
+      0.0
+    ]
+  ], [
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      10.74076995
+    ],
+    [
+      0.0,
+      10.74076995,
+      0.0
+    ]
+  ], [
     [
       -5.51540341,
       0.0,
@@ -297,7 +293,7 @@ expected_response = {
       0.0,
       0.01618613
     ]
-  ]
+  ]]
 }
 
 expected_response = {k: (np.asarray(v) if isinstance(v, list) else v) for k, v in expected_response.items()}
