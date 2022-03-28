@@ -74,7 +74,8 @@ potentialint.cc
 quadrupole.cc
 rel_potential.cc
 tracelessquadrupole.cc
-3coverlap.cc)
+3coverlap.cc
+  )
 set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.

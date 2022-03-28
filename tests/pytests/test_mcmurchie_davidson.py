@@ -117,7 +117,7 @@ def test_mcmurchie_davidson_multipoles_gradient(mol_h2o):
     mints = psi4.core.MintsHelper(wfn.basisset())
     # test against finite differences
     grad = mints.multipole_grad(D=wfn.Da(), order=order, origin=[1.0, 2.0, 3.0])
-    np.testing.assert_allclose(grad_fdiff, grad.np, atol=1e-8)
+    np.testing.assert_allclose(grad_fdiff, grad.np, atol=1e-7)
     
     # test that we get the same result from the 'hard-wired' dipole_grad
     grad_dip = mints.dipole_grad(wfn.Da())

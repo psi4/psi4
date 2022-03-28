@@ -31,7 +31,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
 
-#include <libint2/engine.h>
+#include <libint2/shell.h>
 
 using namespace psi;
 using namespace mdintegrals;
