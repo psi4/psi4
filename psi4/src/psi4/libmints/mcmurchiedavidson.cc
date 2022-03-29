@@ -31,16 +31,12 @@
 
 namespace mdintegrals {
 
-inline int cart_dim(int L) { return (L + 1) * (L + 2) / 2; }
-
 std::vector<std::array<int, 3>> generate_am_components_cca(int am) {
-    std::vector<std::array<int, 3>> ret(cart_dim(am));
-    int index = 0;
+    std::vector<std::array<int, 3>> ret;
     for (int l = am; l > -1; --l) {
         for (int n = 0; n < am - l + 1; ++n) {
             int m = am - l - n;
-            ret[index] = {{l, m, n}};
-            index++;
+            ret.push_back({{l, m, n}});
         }
     }
     return ret;
@@ -166,7 +162,8 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
 
 void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vector<double>& R,
                    std::shared_ptr<const libint2::FmEval_Chebyshev7<double>> fm_eval) {
-    // eq 9.9.13
+    // Generates the auxiliary integrals for Coulomb-type integrals using eq 9.9.13
+    // from Molecular Electronic-Structure Theory (10.1002/9781119019572)
     auto PC = point_diff(P, C);
     auto RPC = point_norm(PC);
     double T = p * RPC * RPC;
@@ -197,10 +194,10 @@ void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vec
             int noffset = (n + 1) * dim2;
             // eq 9.9.20
             if (v > 1) {
-                val += (v - 1) * R[noffset + v - 2];
+                val += (v - 1) * R[noffset + v - 2];  // R_{0,0,v-2}^{n+1}
             }
-            val += PC[2] * R[noffset + v - 1];
-            R[n * dim2 + v] = val;
+            val += PC[2] * R[noffset + v - 1];  // R_{0,0,v-1}^{n+1}
+            R[n * dim2 + v] = val;              // R_{0,0,v}^{n}
         }
     }
     // t = 0
@@ -211,10 +208,10 @@ void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vec
                 int noffset = (n + 1) * dim2;
                 // eq 9.9.19
                 if (u > 1) {
-                    val += (u - 1) * R[noffset + (u - 2) * dim1 + v];
+                    val += (u - 1) * R[noffset + (u - 2) * dim1 + v];  // R_{0,u-2,v}^{n+1}
                 }
-                val += PC[1] * R[noffset + (u - 1) * dim1 + v];
-                R[n * dim2 + u * dim1 + v] = val;
+                val += PC[1] * R[noffset + (u - 1) * dim1 + v];  // R_{0,u-1,v}^{n+1}
+                R[n * dim2 + u * dim1 + v] = val;                // R_{0,u,v}^{n}
             }
         }
     }
@@ -226,10 +223,10 @@ void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vec
                     int noffset = (n + 1) * dim2;
                     // eq 9.9.18
                     if (t > 1) {
-                        val += (t - 1) * R[noffset + address_3d(t - 2, u, v, dim1, dim1)];
+                        val += (t - 1) * R[noffset + address_3d(t - 2, u, v, dim1, dim1)];  // R_{t-2,u,v}^{n+1}
                     }
-                    val += PC[0] * R[noffset + address_3d(t - 1, u, v, dim1, dim1)];
-                    R[n * dim2 + address_3d(t, u, v, dim1, dim1)] = val;
+                    val += PC[0] * R[noffset + address_3d(t - 1, u, v, dim1, dim1)];  // R_{t-1,u,v}^{n+1}
+                    R[n * dim2 + address_3d(t, u, v, dim1, dim1)] = val;              // R_{t,u,v}^{n}
                 }
             }
         }

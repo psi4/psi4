@@ -1669,7 +1669,7 @@ std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<
             int lx = l - ii;
             for (int lz = 0; lz <= ii; lz++) {
                 int ly = ii - lz;
-                std::string name = "AO Multipole Potential";
+                std::string name = "AO Multipole Potential ";
                 for (int xval = 0; xval < lx; ++xval) name += "X";
                 for (int yval = 0; yval < ly; ++yval) name += "Y";
                 for (int zval = 0; zval < lz; ++zval) name += "Z";

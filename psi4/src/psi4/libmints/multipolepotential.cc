@@ -96,7 +96,7 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
     int r_am = am + order_;
     int rdim1 = r_am + 1;
 
-    // dimensions of the E matrix
+    // E matrix dimensions
     int edim2 = am2 + 1;
     int edim3 = am1 + am2 + 2;
 
@@ -107,15 +107,20 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
         for (int p2 = 0; p2 < nprim2; ++p2) {
             double b = s2.alpha[p2];
             double cb = s2.contr[0].coeff[p2];
+
             double p = a + b;
             Point P{(a * A[0] + b * B[0]) / p, (a * A[1] + b * B[1]) / p, (a * A[2] + b * B[2]) / p};
             double prefac = 2.0 * M_PI * ca * cb / p;
+
             fill_E_matrix(am1, am2, P, A, B, a, b, Ex, Ey, Ez);
             fill_R_matrix(r_am, p, P, C, R, fm_eval_);
+
             int der_count = 0;
             double sign_prefac = prefac;
+            // loop over 1/R derivatives
             for (int der = 0; der < order_ + 1; ++der) {
                 const auto& comps = comps_der_[der];
+                // loop over Cartesian components of the derivative
                 for (const auto& [ex, ey, ez] : comps) {
                     ao12 = 0;
                     for (const auto& [l1, m1, n1] : comps_am1) {
@@ -124,15 +129,15 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
                             int maxt = l1 + l2;
                             int maxu = m1 + m2;
                             int maxv = n1 + n2;
-                            // first two indices are already known, so avoid re-computation
-                            // of the entire address_3d
+                            // first two indices are already known, so avoid
+                            // re-computing the entire address_3d
                             const double* ex_p = &Ex.data()[edim3 * (l2 + edim2 * l1)];
                             const double* ey_p = &Ey.data()[edim3 * (m2 + edim2 * m1)];
                             const double* ez_p = &Ez.data()[edim3 * (n2 + edim2 * n1)];
                             for (int t = 0; t <= maxt; ++t) {
                                 for (int u = 0; u <= maxu; ++u) {
                                     for (int v = 0; v <= maxv; ++v) {
-                                        // eq 9.9.32
+                                        // eq 9.9.32 (using eq 9.9.27)
                                         val += ex_p[t] * ey_p[u] * ez_p[v] *
                                                R[address_3d(t + ex, u + ey, v + ez, rdim1, rdim1)];
                                     }
@@ -144,6 +149,7 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
                     }
                     der_count++;
                 }
+                // sign = (-1)^der
                 sign_prefac *= -1.0;
             }
         }

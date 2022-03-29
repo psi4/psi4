@@ -30,7 +30,6 @@
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/mcmurchiedavidson.h"
 
-
 namespace psi {
 
 class BasisSet;
