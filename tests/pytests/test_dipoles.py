@@ -3,7 +3,9 @@ import pytest
 import qcelemental as qcel
 import psi4
 
-from .utils import compare_values
+from utils import compare_values
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 perturbation_strength = 0.001
 

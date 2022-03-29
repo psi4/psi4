@@ -90,7 +90,9 @@ Miscellaneous
 -------------
 
 #. :ref:`faq:add_tests`
+#. :ref:`faq:add_psithon_tests`
 #. :ref:`faq:add_psiapi_tests`
+#. :ref:`How to set up PSIthon tests to run through pytest <faq:psithon_through_pytest>`
 #. :ref:`faq:findmissingoutputref`
 #. :ref:`faq:githubcodereview`
 

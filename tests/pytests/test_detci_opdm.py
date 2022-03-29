@@ -2,6 +2,9 @@ import pytest
 import psi4
 import numpy as np
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+
 def test_pdms():
     h2o = psi4.geometry("""
         H

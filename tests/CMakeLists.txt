@@ -15,8 +15,8 @@ find_package(Perl QUIET)
 #
 # Common test runs:
 #
-#  ctest -L quicktests      run all quicktests
-#  ctest -LE longtests      run all but longtests
+#  ctest -L quick      run all quicktests
+#  ctest -LE long      run all but longtests
 #
 # It is possible to specify more than one label per test. CMake
 # expects a ;-separated list, e.g. "psi;quicktests;scf"

@@ -28,6 +28,8 @@ if(${ENABLE_ecpint})
                        -DLIBECPINT_BUILD_DOCS=OFF
                        -DLIBECPINT_MAX_UNROL=1
                        -DLIBECPINT_MAX_L=5
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 

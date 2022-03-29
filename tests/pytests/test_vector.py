@@ -6,7 +6,7 @@ import pytest
 
 from psi4.core import Dimension, Vector
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 def check_dense_vec(v, exp_d, exp_name=None):

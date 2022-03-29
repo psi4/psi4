@@ -193,12 +193,12 @@ Libint, and even C++ compilers on Linux and Mac) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
 
-* :ref:`C++ and C Compilers <cmake:cxx>` (C++14 compliant)
+* :ref:`C++ and C Compilers <cmake:cxx>` (C++17 compliant)
 
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
 
-* :ref:`Python interpreter and headers <cmake:python>` (3.6+) https://www.python.org/
+* :ref:`Python interpreter and headers <cmake:python>` (3.8+) https://www.python.org/
 
 * CMake (3.15+) https://cmake.org/download/
 
@@ -214,7 +214,6 @@ build system will automatically download and build.
 * :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` :source:`[Libint min version] <external/upstream/libint/CMakeLists.txt#L1>` (Libint2 as of Nov 2020; added by v1.4)
 
   * Eigen https://eigen.tuxfamily.org/index.php?title=Main_Page
-  * MPFR https://www.mpfr.org/
 
 * :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` :source:`[Libxc min version] <external/upstream/libxc/CMakeLists.txt#L1>`
 * pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/stable/>`_ :source:`[Pybind11 min version] <external/upstream/pybind11/CMakeLists.txt#L1>`
@@ -234,12 +233,15 @@ Additionally, there are runtime-only dependencies:
 
 * pydantic https://pydantic-docs.helpmanual.io/# (transitive dependency of QCElemental)
 
+* SciPy https://scipy.org/ (avoidable if necessary by following directions in runtime error message)
+
 Dropped Dependencies:
 
 * Boost (September 2016; dropped by v1.1)
 
 * deepdiff https://github.com/seperman/deepdiff (May 2019; dropped by v1.4)
 
+* MPFR https://www.mpfr.org/ (Mar 2022; dropped by v1.6) no longer needed to compile against Libint2
 
 
 .. _`faq:addondepend`:
@@ -258,7 +260,7 @@ are available pre-built from conda.
   * CTest https://cmake.org/download/
   * Perl (for some coupled-cluster CTest tests) https://www.perl.org/
   * pytest (for installed testing) http://doc.pytest.org/en/latest/
-  * pytest-xdist (for installed testing in parallel) https://docs.pytest.org/en/2.1.0/xdist.html
+  * pytest-xdist (for installed testing many tests at once) https://github.com/pytest-dev/pytest-xdist
 
 * |PSIfour| Documentation (available pre-built at :psicode:`psi4manual/master/index.html`)
 
@@ -267,6 +269,7 @@ are available pre-built from conda.
   * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme
   * See `["message" lines] :source:`doc/sphinxman/CMakeLists.txt` for advice on obtaining docs dependencies
+  * See :source:`.github/workflows/docs.yml` for full docs building procedure to follow
 
 * Ambit |w---w| https://github.com/jturney/ambit
 
@@ -1655,18 +1658,19 @@ the examples below, *testname* are regex of :source:`test names <tests>`,
 and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 ``libefp`` defined :source:`[here, for example] <tests/ci-property/CMakeLists.txt#L3>` .
 
-* Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
+* Run tests in parallel with ``-j`` flag. For maximum parallelism (not Windows): :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
 * Run full test suite: ``ctest``
 * Run about a third of the tests in 5 minutes, the so-called *quicktests*: ``ctest -L quick``
-* Run the same subset of tests that TravisCI checks (not the full test suite): ``ctest -L quick``
+* Run the same subset of tests that continuous integration checks (not the full test suite): ``ctest -L quick``
 * Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``ctest -L smoke``
 * Run tests matching by name: ``ctest -R testname``
 * Run tests excluding those by name: ``ctest -E testname``
 * Run tests matching by label: ``ctest -L testlabel``
 * Run tests excluding those by label: ``ctest -LE testlabel``
 
-Pytest has similar commands
-* Run tests in parallel with ``-n`` flag (if extenstion pytest-xdist installed). For maximum parallelism: :samp:`pytest -n\`getconf _NPROCESSORS_ONLN\`\ `
+Pytest has similar commands:
+
+* Run tests in parallel with ``-n`` flag (if Python package ``pytest-xdist`` installed). For maximum parallelism: :samp:`pytest -n auto`
 * Run full test suite: ``pytest``
 * Run the quick tests: ``pytest -m quick``
 * Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``pytest -m smoke``
@@ -1674,6 +1678,9 @@ Pytest has similar commands
 * Run tests excluding those by name: ``pytest -k "not testname"``
 * Run tests matching by label: ``pytest -m testlabel``
 * Run tests excluding those by label: ``pytest -m "not testlabel"``
+* Run tests with complicated filtering by name: ``pytest -k "cc and not cc4 and not stdsuite"``
+* Run tests and see test names: ``pytest -v``
+* Run tests and see test names and sometimes more verbose errors: ``pytest -vv``
 
 .. _`faq:testsoutput`:
 
@@ -1737,9 +1744,9 @@ generally sufficient to verify an installation.
     .. code-block:: bash
 
      # smoke tests only
-     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -m smoke -n`getconf _NPROCESSORS_ONLN`
+     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -m smoke -n auto
      # all tests
-     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -n`getconf _NPROCESSORS_ONLN`
+     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -n auto
 
 Output looks something like the below. ``PASSED`` in green is good
 (means test ran correctly); ``SKIPPED`` in yellow is good (means that

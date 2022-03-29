@@ -17,7 +17,7 @@ from qcengine.programs.tests.standard_suite_ref import answer_hash, std_suite
 
 import psi4
 
-from .utils import *
+from utils import *
 
 
 def runner_asserter(inp, subject, method, basis, tnm):

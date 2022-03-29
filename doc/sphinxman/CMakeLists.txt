@@ -33,7 +33,9 @@ endif()
 
 if(SPHINXMAN_STRICT)
     #set(SPHINX_EXTRAS "-n;-W;--keep-going")
-    set(SPHINX_EXTRAS "-W;--keep-going")
+    #set(SPHINX_EXTRAS "-W;--keep-going")
+    # return to above after qcel 0.25
+    set(SPHINX_EXTRAS "")
 else()
     set(SPHINX_EXTRAS "")
 endif()

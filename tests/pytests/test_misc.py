@@ -1,6 +1,6 @@
 import pytest
-from .addons import using
-from .utils import *
+from addons import uusing
+from utils import *
 
 import math
 
@@ -10,7 +10,7 @@ import qcelemental as qcel
 import psi4
 from psi4.driver import qcdb
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 def hide_test_xtpl_fn_fn_error():
@@ -57,7 +57,7 @@ def test_parse_cotton_irreps_error(inp):
 
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>
 
-@using("networkx")
+@uusing("networkx")
 def test_deprecated_qcdb_align_b787():
 
     soco10 = """

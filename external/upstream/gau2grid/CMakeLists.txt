@@ -32,6 +32,8 @@ else()
                    -DPython_EXECUTABLE=${Python_EXECUTABLE}
                    -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
                    -DPython_LIBRARY=${Python_LIBRARIES}
+                   -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                   -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
 
     set(gau2grid_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gau2grid CACHE PATH "path to internally built gau2gridConfig.cmake" FORCE)

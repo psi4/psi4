@@ -3,7 +3,9 @@ import pytest
 
 import psi4
 
-from .utils import compare_values
+from utils import compare_values
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 # Reference data generated from Psi's dfmp2 module
 data = {

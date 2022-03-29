@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
 
-pytestmark = [pytest.mark.quick, pytest.mark.mp2]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.mp2]
 
 
 _ref_h2o_ccpvdz = {

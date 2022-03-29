@@ -83,6 +83,9 @@ else()
                        -DREQUIRE_CXX_API_COMPILED=OFF
                        -DENABLE_FORTRAN=OFF
                        -DENABLE_XHOST=${ENABLE_XHOST}
+                       -DBUILD_FPIC=${BUILD_FPIC}
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
 

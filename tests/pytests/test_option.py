@@ -3,7 +3,7 @@ import pytest
 
 import psi4
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 @pytest.mark.smoke
