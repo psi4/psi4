@@ -3604,11 +3604,7 @@ def run_adcc(name, **kwargs):
     # Launch the rocket
     #
     # Copy thread setup from psi4
-    try:
-        adcc.set_n_threads(core.get_num_threads())
-    except AttributeError:
-        # Before adcc 0.13.3:
-        adcc.thread_pool.reinit(core.get_num_threads(), core.get_num_threads())
+    adcc.set_n_threads(core.get_num_threads())
 
     # Hack to direct the stream-like interface adcc expects to the string interface of Psi4 core
     class CoreStream:
@@ -3666,10 +3662,17 @@ def run_adcc(name, **kwargs):
     # Set results of excited-states computation
     # TODO Does not work: Can't use strings
     # adc_wfn.set_variable("excitation kind", state.kind)
-    adc_wfn.set_variable("ADC ITERATIONS", state.n_iter)  # P::e ADC
-    adc_wfn.set_variable(name + " excitation energies",
-                         core.Matrix.from_array(state.excitation_energy.reshape(-1, 1)))
     adc_wfn.set_variable("number of excited states", len(state.excitation_energy))
+    adc_wfn.set_variable("ADC ITERATIONS", state.n_iter)  # P::e ADC
+    method = name.upper()
+    for excitation in state.excitations:
+        root_index = excitation.index + 1
+        adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) EXCITATION ENERGY",
+                             excitation.excitation_energy)
+        adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY",
+                             excitation.excitation_energy)
+        adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY - A TRANSITION",
+                             excitation.excitation_energy)
 
     core.print_out("\n\n  ==> Excited states summary <==  \n")
     core.print_out("\n" + state.describe(oscillator_strengths=False) + "\n")
@@ -3758,38 +3761,58 @@ def run_adcc_property(name, **kwargs):
     else:
         raise ValidationError(f"Gauge {gauge} not recognised for ADC calculations.")
 
-    computed = {}
-    if any(prop in properties for prop in ("TRANSITION_DIPOLE", "OSCILLATOR_STRENGTH")):
-        data = state.transition_dipole_moment
-        computed["Transition dipole moment (in a.u.)"] = data
-        adc_wfn.set_variable(f"{name} transition dipoles", core.Matrix.from_array(data))
+    computed = []
+    method = name.upper()
+    for excitation in state.excitations:
+        root_index = excitation.index + 1
+        props = {}
+        if any(prop in properties for prop in ("TRANSITION_DIPOLE", "OSCILLATOR_STRENGTH")):
+            data = excitation.transition_dipole_moment
+            props["Transition dipole moment (in a.u.)"] = data
+            data_mat = data.reshape(1, 3)
+            adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
+                                 "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
+            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                 "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
+            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                 "ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - A TRANSITION", data_mat)
 
-    if "OSCILLATOR_STRENGTH" in properties:
-        if gauge == "velocity":
-            data = state.oscillator_strength_velocity.reshape(-1, 1)
-        else:
-            data = state.oscillator_strength.reshape(-1, 1)
-        computed[f"Oscillator strength ({gauge} gauge)"] = data
-        adc_wfn.set_variable(f"{name} oscillator strengths ({gauge_short})",
-                             core.Matrix.from_array(data))
+        if "OSCILLATOR_STRENGTH" in properties:
+            if gauge == "velocity":
+                data = excitation.oscillator_strength_velocity
+            else:
+                data = excitation.oscillator_strength
+            props[f"Oscillator strength ({gauge} gauge)"] = data.reshape(-1)
+            adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
+                                 f"OSCILLATOR STRENGTH ({gauge_short})", data)
+            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                 f"OSCILLATOR STRENGTH ({gauge_short})", data)
+            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                 f"OSCILLATOR STRENGTH ({gauge_short}) - A TRANSITION", data)
 
-    if "ROTATIONAL_STRENGTH" in properties:
-        data = state.rotatory_strength.reshape(-1, 1)
-        computed["Rotational strength (velocity gauge)"] = data
-        adc_wfn.set_variable(f"{name} rotational strengths (VEL)",
-                             core.Matrix.from_array(data))
+        if "ROTATIONAL_STRENGTH" in properties:
+            data = excitation.rotatory_strength
+            props["Rotational strength (velocity gauge)"] = data.reshape(-1)
+            adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
+                                 "ROTATORY STRENGTH (VEL)", data)
+            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                 "ROTATORY STRENGTH (VEL)", data)
+            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                 "ROTATORY STRENGTH (VEL) - A TRANSITION", data)
 
-    if "DIPOLE" in properties:
-        data = state.state_dipole_moment
-        computed["State dipole moment (in a.u.)"] = data
-        adc_wfn.set_variable(f"{name} state dipoles", core.Matrix.from_array(data))
+        if "DIPOLE" in properties:
+            data = excitation.state_dipole_moment
+            props["State dipole moment (in a.u.)"] = data
+            data_mat = data.reshape(1, 3)
+            adc_wfn.set_variable(f"{method} ROOT {root_index} (A) DIPOLE MOMENT (LEN)", data_mat)
+
+        computed.append(props)
 
     core.print_out("\nExcited state properties:\n")
-    n_states = adc_wfn.variable("number of excited states")
-    for i in range(int(n_states)):
+    for i, props in enumerate(computed):
         lines = [ind + f"Excited state  {i}"]
-        for prop, data in sorted(computed.items()):
-            lines += [ind + ind + format_vector(prop, data[i])]
+        for prop, data in sorted(props.items()):
+            lines += [ind + ind + format_vector(prop, data)]
         core.print_out("\n".join(lines) + "\n")
 
     # Shove variables into global space
