@@ -30,6 +30,7 @@ import atexit
 import datetime
 import os
 from typing import List, Union
+from pathlib import Path
 
 from qcelemental.util import which, which_import
 
@@ -213,3 +214,53 @@ def test(extent: str = "full", extras: List = None) -> int:
     retcode = pytest.main(command)
     return retcode
 
+
+def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 30, execute: bool = True) -> Path:
+    """Set the name for output and logging files.
+
+    Parameters
+    ----------
+    ofile
+        Name of ASCII output file including extension. The logging file is set from this string with a ``.log`` extension.
+    append
+        Do append to the output and logging files rather than (the default) truncating them?
+    loglevel
+        The criticality level at which to log. 30 for WARN (Python default), 20 for INFO, 10 for DEBUG
+    execute
+        Do set ``ofile`` via :py:func:`psi4.core.set_output_file` and add the logger, rather than just returning ``ofile`` path.
+
+    Returns
+    -------
+    Path
+        ``Path(ofile)``
+
+    Notes
+    -----
+    This :py:func:`psi4.set_output_file` command calls :py:func:`psi4.core.set_output_file` and should be used in
+    preference to it as this additionally sets up logging.
+
+    """
+    out = Path(ofile)
+    log = out.with_suffix(".log")
+
+    # Get the custom logger
+    import logging
+    from psi4 import logger
+    logger.setLevel(loglevel)
+
+    # Create formatters
+    # * detailed:  example: 2019-11-20:01:13:46,811 DEBUG    [psi4.driver.task_base:156]
+    f_format_detailed = logging.Formatter("%(asctime)s,%(msecs)d %(levelname)-8s [%(name)s:%(lineno)d] %(message)s", datefmt="%Y-%m-%d:%H:%M:%S")
+    # * light:     example: 2019-11-20:10:45:21 FINDIFREC CLASS INIT DATA
+    f_format_light = logging.Formatter("%(asctime)s %(message)s", datefmt="%Y-%m-%d:%H:%M:%S")
+
+    # Create handlers, add formatters to handlers, and add handlers to logger (StreamHandler() also available)
+    filemode = "a" if append else "w"
+    f_handler = logging.FileHandler(log, filemode)
+    f_handler.setLevel(logging.DEBUG)
+    f_handler.setFormatter(f_format_detailed)
+
+    if execute:
+        core.set_output_file(str(out), append)
+        logger.addHandler(f_handler)
+    return out
