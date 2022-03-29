@@ -51,10 +51,10 @@ void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const
     int dim2 = maxam2 + 1;
     int dim3 = maxam1 + maxam2 + 2;
     int size = dim1 * dim2 * dim3;
-    // make sure buffers are zeroed out
-    std::memset(&Ex[0], 0.0, size * sizeof(double));
-    std::memset(&Ey[0], 0.0, size * sizeof(double));
-    std::memset(&Ez[0], 0.0, size * sizeof(double));
+    // zero out the parts of the buffer that are needed
+    std::fill(Ex.begin(), Ex.begin() + size, 0.0);
+    std::fill(Ey.begin(), Ey.begin() + size, 0.0);
+    std::fill(Ez.begin(), Ez.begin() + size, 0.0);
 
     // eq 9.2.11: total exponent
     double p = a + b;
@@ -124,10 +124,10 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
     int dim0 = maxpow + 1;
     int dim1 = std::max(maxam, maxpow) + 2;
     int size = dim0 * dim1;
-    // zero out buffers
-    std::memset(&Mx[0], 0.0, size * sizeof(double));
-    std::memset(&My[0], 0.0, size * sizeof(double));
-    std::memset(&Mz[0], 0.0, size * sizeof(double));
+    // zero out the parts of the buffer that are needed
+    std::fill(Mx.begin(), Mx.begin() + size, 0.0);
+    std::fill(My.begin(), My.begin() + size, 0.0);
+    std::fill(Mz.begin(), Mz.begin() + size, 0.0);
 
     double p = a + b;
     // one over 2p
@@ -175,8 +175,9 @@ void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vec
 
     int dim1 = maxam + 1;
     int dim2 = dim1 * dim1 * dim1;
-    // zero out buffer
-    std::memset(&R[0], 0.0, dim1 * dim2 * sizeof(double));
+    // R matrix buffer size needs to be at least dim1 * dim2,
+    // only zero out the required part of the buffer for performance
+    std::fill(R.begin(), R.begin() + dim1 * dim2, 0.0);
 
     // NOTE: avoiding std::pow(-2.0 * p, n)
     double fac = 1.0;

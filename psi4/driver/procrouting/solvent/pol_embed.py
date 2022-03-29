@@ -197,5 +197,5 @@ class CppeInterface:
             prefactors = []
             for multipole in site.multipoles:
                 prefactors.extend(cppe.prefactors(multipole.k) * multipole.values)
-            integrals = self.mints.ao_multipole_potential(site.position, max_k=multipole.k)
+            integrals = self.mints.ao_multipole_potential(order=multipole.k, origin=site.position)
             self.V_es += sum(pref * intv.np for pref, intv in zip(prefactors, integrals))

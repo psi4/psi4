@@ -27,7 +27,7 @@ def compare_charge_integrals(mints, point):
     pot = psi4.core.ExternalPotential()
     pot.addCharge(-1, *point)
     ref = pot.computePotentialMatrix(mints.basisset()).np
-    test = mints.ao_multipole_potential(point, max_k=0)[0].np
+    test = mints.ao_multipole_potential(order=0, origin=point)[0].np
     np.testing.assert_allclose(ref, test)
 
 
@@ -35,7 +35,7 @@ def compare_field_integrals(mints, point):
     # electric_field is evaluated using Libint2
     ref = matlist_to_ndarray(mints.electric_field(point))
     test = matlist_to_ndarray(
-        mints.ao_multipole_potential(point, max_k=1)[1:]
+        mints.ao_multipole_potential(order=1, origin=point)[1:]
     )
     np.testing.assert_allclose(ref, test, atol=1e-14)
 
@@ -47,7 +47,7 @@ def compare_arbitrary_order_fd(mints, point, step=1e-5):
         o = multipole_offset(m_order)
         o_prev = multipole_offset(m_order - 1)
         test = matlist_to_ndarray(
-            mints.ao_multipole_potential(point, max_k=m_order)[o:]
+            mints.ao_multipole_potential(order=m_order, origin=point)[o:]
         )
 
         components = list(itertools.combinations_with_replacement((0, 1, 2), m_order))
@@ -61,7 +61,7 @@ def compare_arbitrary_order_fd(mints, point, step=1e-5):
                 pert = point.copy()
                 pert[cc[-1]] += f * step
                 idxp = o_prev + comp_grad.index(tuple(cc[:-1]))
-                der = mints.ao_multipole_potential(pert, max_k=m_order - 1)[idxp].np
+                der = mints.ao_multipole_potential(m_order - 1, pert)[idxp].np
                 grad_fd[icomp] += p * der / step
         np.testing.assert_allclose(grad_fd, test, atol=1e-9)
 

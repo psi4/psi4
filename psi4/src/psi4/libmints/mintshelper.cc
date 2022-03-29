@@ -1618,7 +1618,7 @@ std::vector<SharedMatrix> MintsHelper::ao_multipoles(int order, const std::vecto
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double> &origin, int deriv) {
-    std::vector<SharedMatrix> ret = ao_multipole_potential(origin, 3, deriv);
+    std::vector<SharedMatrix> ret = ao_multipole_potential(3, origin, deriv);
     // EFP expects the following order of Cartesian components
     //       | // Charge
     //  0    |      0
@@ -1659,7 +1659,7 @@ std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vec
     return ret_reordered;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<double> &origin, int order, int deriv) {
+std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(int order, const std::vector<double> &origin, int deriv) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
     Vector3 v3origin(origin[0], origin[1], origin[2]);
 
