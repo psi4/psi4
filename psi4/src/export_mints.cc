@@ -1457,7 +1457,7 @@ void export_mints(py::module& m) {
         .def("ao_multipole_potential", &MintsHelper::ao_multipole_potential, "Vector AO multipole potential integrals",
              "order"_a, "origin"_a, "deriv"_a = 0)
         .def("electric_field", &MintsHelper::electric_field, "Vector electric field integrals",
-             "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
+             "origin"_a, "deriv"_a = 0)
         .def("induction_operator", &MintsHelper::induction_operator,
              "Induction operator, formed by contracting electric field integrals with dipole moments at given "
              "coordinates (needed for EFP and PE)")

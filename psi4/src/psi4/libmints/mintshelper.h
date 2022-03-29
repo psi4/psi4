@@ -305,7 +305,7 @@ class PSI_API MintsHelper {
     // AO Multipole Potential Integrals up to given order (in CCA lexicographic order)
     std::vector<SharedMatrix> ao_multipole_potential(int order, const std::vector<double>& origin, int deriv = 0);
     /// Electric Field Integrals
-    std::vector<SharedMatrix> electric_field(const std::vector<double>& origin = {0., 0., 0.}, int deriv = 0);
+    std::vector<SharedMatrix> electric_field(const std::vector<double>& origin, int deriv = 0);
     /// Induction Operator for dipole moments at given sites
     SharedMatrix induction_operator(SharedMatrix coords, SharedMatrix moment);
     /// Electric Field Value at given sites
