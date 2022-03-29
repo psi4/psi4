@@ -38,6 +38,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "Params.h"
 
 namespace psi {
 
@@ -57,7 +58,7 @@ EXTERN struct MOInfo moinfo;
 EXTERN struct Frozen frozen;
 EXTERN struct Params params;
 EXTERN struct RHO_Params *rho_params;
-EXTERN struct TD_Params *td_params;
+EXTERN std::vector<TD_Params> td_params;
 // EXTERN std::vector<struct XTD_Params> xtd_params;
 }
 }  // namespace psi

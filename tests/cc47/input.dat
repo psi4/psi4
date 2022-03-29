@@ -14,4 +14,53 @@ set {
   roots_per_irrep [2, 2]
 }
 
-properties('eom-ccsd', properties=['oscillator_strength'])
+wfn = properties('eom-ccsd', properties=['oscillator_strength'], return_wfn=True)[1]
+
+### ccdensity checks
+
+refnre     =   38.2539685310425384 # TEST
+refscf     = -150.7791838721300337 # TEST
+refccsd    = -151.173863088601593  # TEST
+refoverlap =    0.89177313450      # TEST
+
+compare_values(refnre, h2o2.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"), 5, "Left-Right CCSD Overlap") # TEST
+
+### Excitation energy checks
+
+ref1A = -150.917014087692 # TEST
+ref2A = -150.839749395623 # TEST
+ref0B = -150.920333329231 # TEST
+ref1B = -150.839220324206 # TEST
+
+compare_values(ref1A, core.variable("CCSD ROOT 1 (A) TOTAL ENERGY"), 6, "Root 1 (A) Energy") # TEST
+compare_values(ref2A, core.variable("CCSD ROOT 2 (A) TOTAL ENERGY"), 6, "Root 2 (A) Energy") # TEST
+compare_values(ref0B, core.variable("CCSD ROOT 0 (B) TOTAL ENERGY"), 6, "Root 0 (B) Energy") # TEST
+compare_values(ref1B, core.variable("CCSD ROOT 1 (B) TOTAL ENERGY"), 6, "Root 1 (B) Energy") # TEST
+
+### Oscillator strength checks
+
+os0A1A = 0.00000959 # TEST
+os0A2A = 0.00791943 # TEST
+os0A0B = 0.00193778 # TEST
+os0A1B = 0.01015988 # TEST
+os1A2A = 0.00001783 # TEST
+os0B1A = 0.00152626 # TEST
+os0B2A = 0.01290715 # TEST
+os1A1B = 0.01441595 # TEST
+os2A1B = 0.00019032 # TEST
+os0B1B = 0.00682565 # TEST
+
+compare_values(os0A1A, wfn.variable("CC ROOT 0 (A) -> ROOT 1 (A) OSCILLATOR STRENGTH (LEN)"), 6, "Root 1 (A) Oscillator Strength") # TEST
+compare_values(os0A2A, wfn.variable("CC ROOT 0 (A) -> ROOT 2 (A) OSCILLATOR STRENGTH (LEN)"), 6, "Root 2 (A) Oscillator Strength") # TEST
+compare_values(os0A0B, wfn.variable("CC ROOT 0 (A) -> ROOT 0 (B) OSCILLATOR STRENGTH (LEN)"), 6, "Root 0 (B) Oscillator Strength") # TEST
+compare_values(os0A1B, wfn.variable("CC ROOT 0 (A) -> ROOT 1 (B) OSCILLATOR STRENGTH (LEN)"), 6, "Root 1 (B) Oscillator Strength") # TEST
+compare_values(os1A2A, wfn.variable("CC ROOT 1 (A) -> ROOT 2 (A) OSCILLATOR STRENGTH (LEN)"), 6, "Root 1 (A) -> Root 2 (A) Oscillator Strength") # TEST
+compare_values(os0B1A, wfn.variable("CC ROOT 0 (B) -> ROOT 1 (A) OSCILLATOR STRENGTH (LEN)"), 6, "Root 0 (B) -> Root 1 (A) Oscillator Strength") # TEST
+compare_values(os0B2A, wfn.variable("CC ROOT 0 (B) -> ROOT 2 (A) OSCILLATOR STRENGTH (LEN)"), 6, "Root 0 (B) -> Root 2 (A) Oscillator Strength") # TEST
+compare_values(os1A1B, wfn.variable("CC ROOT 1 (A) -> ROOT 1 (B) OSCILLATOR STRENGTH (LEN)"), 6, "Root 1 (A) -> Root 1 (B) Oscillator Strength") # TEST
+compare_values(os2A1B, wfn.variable("CC ROOT 2 (A) -> ROOT 1 (B) OSCILLATOR STRENGTH (LEN)"), 6, "Root 2 (A) -> Root 1 (B) Oscillator Strength") # TEST
+compare_values(os0B1B, wfn.variable("CC ROOT 0 (B) -> ROOT 1 (B) OSCILLATOR STRENGTH (LEN)"), 6, "Root 0 (B) -> Root 1 (B) Oscillator Strength") # TEST
+

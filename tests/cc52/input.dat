@@ -63,8 +63,3 @@ compare_values(ref589vel, wfn.variable("CCSD OPTICAL ROTATION TENSOR (VEL) @ 589
 compare_values(ref589mvg, wfn.variable("CCSD OPTICAL ROTATION TENSOR (MVG) @ 589NM"),  3, "CCSD rotation tensor @ 589nm in modified velocity gauge") # TEST    
 compare_values(ref589quadpol, wfn.variable("CCSD QUADRUPOLE POLARIZABILITY TENSOR @ 589NM"), 3, "CCSD quadrupole polarizability @ 589nm") # TEST 
 
-
-#compare_values(ref589quadpol0, wfn.variable("CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ 589NM"), 3, "CCSD quadrupole polarizability component 0 @ 589nm") # TEST 
-#compare_values(ref589quadpol1, wfn.variable("CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ 589NM"), 3, "CCSD quadrupole polarizability component 1 @ 589nm") # TEST 
-#compare_values(ref589quadpol2, wfn.variable("CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ 589NM"), 3, "CCSD quadrupole polarizability component 2 @ 589nm") # TEST 
-

@@ -116,9 +116,14 @@ struct RHO_Params {
     char opdm_b_lbl[32];
 };
 
+// TODO: Refactor TD_Params and XTD_Params into Root_Params and Transition_Params.
+// Map pairs of state identifiers to Transition_Params, and be able to grab the EOM
+// from Root_Params. All ex_* files that duplicate another file can be then made obsolete.
+
+// Describes both an excited state and the transition to it, from the ground state.
 struct TD_Params {
-    int irrep;
-    int root;
+    int irrep;           // Irrep index of the transition between states.
+    int root;            // Index of the target root within irrep, excluding the ground state.
     double R0;
     double cceom_energy;
     char L1A_lbl[32];
@@ -138,6 +143,7 @@ struct TD_Params {
     double einstein_b;
 };
 
+// Describes a transition between excited states.
 struct XTD_Params {
     int irrep1;
     int irrep2;
