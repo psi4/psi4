@@ -33,13 +33,13 @@ namespace mdintegrals {
 
 inline int cart_dim(int L) { return (L + 1) * (L + 2) / 2; }
 
-std::vector<std::array<int, 4>> generate_am_components_cca(int am) {
-    std::vector<std::array<int, 4>> ret(cart_dim(am));
+std::vector<std::array<int, 3>> generate_am_components_cca(int am) {
+    std::vector<std::array<int, 3>> ret(cart_dim(am));
     int index = 0;
     for (int l = am; l > -1; --l) {
         for (int n = 0; n < am - l + 1; ++n) {
             int m = am - l - n;
-            ret[index] = {{l, m, n, index}};
+            ret[index] = {{l, m, n}};
             index++;
         }
     }

@@ -56,7 +56,7 @@ MultipolePotentialInt::MultipolePotentialInt(std::vector<SphericalTransform>& sp
     // set up Boys function evaluator
     fm_eval_ = libint2::FmEval_Chebyshev7<double>::instance(am + order_);
 
-    comps_der_ = std::vector<std::vector<std::array<int, 4>>>(order_ + 1);
+    comps_der_ = std::vector<std::vector<std::array<int, 3>>>(order_ + 1);
     for (int d = 0; d < order_ + 1; ++d) {
         comps_der_[d] = generate_am_components_cca(d);
     }
@@ -92,11 +92,9 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
     int size = dim1 * dim2;
     memset(buffer_, 0, nchunk_ * size * sizeof(double));
 
-    // pre-allocate R-matrix
+    // R matrix dimensions
     int r_am = am + order_;
     int rdim1 = r_am + 1;
-    int rdim2 = rdim1 * rdim1 * rdim1;
-    std::vector<double> Rmat(rdim1 * rdim2);
 
     // dimensions of the E matrix
     int edim2 = am2 + 1;
@@ -118,10 +116,10 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
             double sign_prefac = prefac;
             for (int der = 0; der < order_ + 1; ++der) {
                 const auto& comps = comps_der_[der];
-                for (const auto& [ex, ey, ez, index0] : comps) {
+                for (const auto& [ex, ey, ez] : comps) {
                     ao12 = 0;
-                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
-                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                    for (const auto& [l1, m1, n1] : comps_am1) {
+                        for (const auto& [l2, m2, n2] : comps_am2) {
                             double val = 0.0;
                             int maxt = l1 + l2;
                             int maxu = m1 + m2;

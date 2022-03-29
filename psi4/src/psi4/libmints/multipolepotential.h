@@ -30,11 +30,6 @@
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/mcmurchiedavidson.h"
 
-// namespace libint2 {
-//     template<typename T>
-//     class FmEval_Chebyshev7;
-//     template<> class FmEval_Chebyshev7<double>;
-// }
 
 namespace psi {
 
@@ -55,7 +50,7 @@ class MultipolePotentialInt : public OneBodyAOInt, public mdintegrals::MDHelper 
     int order_;
 
     //! CCA-ordered Cartesian components for the multipoles
-    std::vector<std::vector<std::array<int, 4>>> comps_der_;
+    std::vector<std::vector<std::array<int, 3>>> comps_der_;
 
     //! Boys function evaluator from Libint2
     std::shared_ptr<const libint2::FmEval_Chebyshev7<double>> fm_eval_;
