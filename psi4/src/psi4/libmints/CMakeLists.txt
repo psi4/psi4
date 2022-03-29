@@ -4,7 +4,6 @@ list(APPEND sources
   orbitalspace.cc
   osrecur.cc
   maketab.cc
-  multipolepotential.cc
   oeprop.cc
   writer.cc
   transform.cc
@@ -51,7 +50,6 @@ list(APPEND sources
   gaussquad.cc
   ecpint.cc
   orthog.cc
-  mcmurchiedavidson.cc
   )
 
 # l2intf is a listing of all the files that include libint2's engine.h include.  they must
@@ -66,6 +64,8 @@ eribase.cc
 eri.cc
 integral.cc
 kinetic.cc
+mcmurchiedavidson.cc  # includes <libint2/boys.h>
+multipolepotential.cc # includes <libint2/boys.h>
 nabla.cc
 onebody.cc
 overlap.cc

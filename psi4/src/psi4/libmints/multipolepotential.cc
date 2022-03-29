@@ -121,24 +121,35 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
             for (int der = 0; der < order_ + 1; ++der) {
                 const auto& comps = comps_der_[der];
                 // loop over Cartesian components of the derivative
-                for (const auto& [ex, ey, ez] : comps) {
+                // TODO: use structured bindings again once C++17 issues
+                // with l2 are sorted out
+                for (const auto& comp_der : comps) {
+                    const auto ex = comp_der[0];
+                    const auto ey = comp_der[1];
+                    const auto ez = comp_der[2];
                     ao12 = 0;
-                    for (const auto& [l1, m1, n1] : comps_am1) {
-                        for (const auto& [l2, m2, n2] : comps_am2) {
+                    for (const auto& comp_am1 : comps_am1) {
+                        const auto l1 = comp_am1[0];
+                        const auto m1 = comp_am1[1];
+                        const auto n1 = comp_am1[2];
+                        for (const auto& comp_am2 : comps_am2) {
+                            const auto l2 = comp_am2[0];
+                            const auto m2 = comp_am2[1];
+                            const auto n2 = comp_am2[2];
                             double val = 0.0;
                             int maxt = l1 + l2;
                             int maxu = m1 + m2;
                             int maxv = n1 + n2;
                             // first two indices are already known, so avoid
                             // re-computing the entire address_3d
-                            const double* ex_p = &Ex.data()[edim3 * (l2 + edim2 * l1)];
-                            const double* ey_p = &Ey.data()[edim3 * (m2 + edim2 * m1)];
-                            const double* ez_p = &Ez.data()[edim3 * (n2 + edim2 * n1)];
+                            const double* Ex_p = &Ex.data()[edim3 * (l2 + edim2 * l1)];
+                            const double* Ey_p = &Ey.data()[edim3 * (m2 + edim2 * m1)];
+                            const double* Ez_p = &Ez.data()[edim3 * (n2 + edim2 * n1)];
                             for (int t = 0; t <= maxt; ++t) {
                                 for (int u = 0; u <= maxu; ++u) {
                                     for (int v = 0; v <= maxv; ++v) {
                                         // eq 9.9.32 (using eq 9.9.27)
-                                        val += ex_p[t] * ey_p[u] * ez_p[v] *
+                                        val += Ex_p[t] * Ey_p[u] * Ez_p[v] *
                                                R[address_3d(t + ex, u + ey, v + ez, rdim1, rdim1)];
                                     }
                                 }
