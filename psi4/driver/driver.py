@@ -600,8 +600,8 @@ def energy(name, **kwargs):
             core.print_out(f" \n Copying restart file <{item}> to <{targetfile}> for internal processing\n")
             shutil.copy(item, targetfile)
 
-    logger.info(f"Compute energy(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={molecule.nuclear_repulsion_energy()}")
-    logger.debug(pp.pformat(molecule.to_dict()))
+    logger.info(f"Compute energy(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
     logger.info(f"Return energy(): {core.variable('CURRENT ENERGY')}")
 
@@ -745,8 +745,8 @@ def gradient(name, **kwargs):
         core.print_out("""gradient() will perform analytic gradient computation.\n""")
 
         # Perform the gradient calculation
-        logger.info(f"Compute gradient(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={molecule.nuclear_repulsion_energy()}")
-        logger.debug(pp.pformat(molecule.to_dict()))
+        logger.info(f"Compute gradient(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
+        logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
         wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
         logger.info(f"Return gradient(): {core.variable('CURRENT ENERGY')}")
         logger.info(nppp(wfn.gradient().np))
@@ -915,8 +915,8 @@ def properties(*args, **kwargs):
 
     kwargs['properties'] = p4util.drop_duplicates(props)
     optstash = driver_util._set_convergence_criterion('properties', lowername, 6, 10, 6, 10, 8)
-    logger.info(f"Compute properties(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={molecule.nuclear_repulsion_energy()}")
-    logger.debug(pp.pformat(molecule.to_dict()))
+    logger.info(f"Compute properties(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
     wfn = procedures['properties'][lowername](lowername, **kwargs)
     logger.info(f"Return properties(): {core.variable('CURRENT ENERGY')}")
 
@@ -1574,8 +1574,8 @@ def hessian(name, **kwargs):
         core.print_out("""hessian() will perform analytic frequency computation.\n""")
 
         # We have the desired method. Do it.
-        logger.info(f"Compute hessian(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={molecule.nuclear_repulsion_energy()}")
-        logger.debug(pp.pformat(molecule.to_dict()))
+        logger.info(f"Compute hessian(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
+        logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
         wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
         logger.info(f"Return hessian(): {wfn.energy()}")
         logger.info(nppp(wfn.hessian().np))

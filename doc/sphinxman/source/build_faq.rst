@@ -130,6 +130,7 @@ Running |PSIfour|
 #. :ref:`faq:psi4version`
 #. :ref:`faq:psi4PBS`
 #. :ref:`faq:psi4fileretention`
+#. :ref:`faq:logging`
 
 Runtime Errors and Debugging
 ----------------------------
