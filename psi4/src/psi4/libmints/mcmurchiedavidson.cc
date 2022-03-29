@@ -51,13 +51,14 @@ void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const
     // computes the Hermite Gaussian expansion coefficients E_t^{ij} (eq 9.5.1)
     // equation numbers from Molecular Electronic-Structure Theory (10.1002/9781119019572)
 
-    // make sure buffers are zeroed out
-    std::fill(Ex.begin(), Ex.end(), 0.0);
-    std::fill(Ey.begin(), Ey.end(), 0.0);
-    std::fill(Ez.begin(), Ez.end(), 0.0);
     int dim1 = maxam1 + 1;
     int dim2 = maxam2 + 1;
     int dim3 = maxam1 + maxam2 + 2;
+    int size = dim1 * dim2 * dim3;
+    // make sure buffers are zeroed out
+    std::memset(&Ex[0], 0.0, size * sizeof(double));
+    std::memset(&Ey[0], 0.0, size * sizeof(double));
+    std::memset(&Ez[0], 0.0, size * sizeof(double));
 
     // eq 9.2.11: total exponent
     double p = a + b;
@@ -124,12 +125,13 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
     // Generate multipole intermediates using eqs 9.5.31 to 9.5.36
     // from Molecular Electronic-Structure Theory (10.1002/9781119019572)
 
-    // zero out buffers
-    std::fill(Mx.begin(), Mx.end(), 0.0);
-    std::fill(My.begin(), My.end(), 0.0);
-    std::fill(Mz.begin(), Mz.end(), 0.0);
-
+    int dim0 = maxpow + 1;
     int dim1 = std::max(maxam, maxpow) + 2;
+    int size = dim0 * dim1;
+    // zero out buffers
+    std::memset(&Mx[0], 0.0, size * sizeof(double));
+    std::memset(&My[0], 0.0, size * sizeof(double));
+    std::memset(&Mz[0], 0.0, size * sizeof(double));
 
     double p = a + b;
     // one over 2p

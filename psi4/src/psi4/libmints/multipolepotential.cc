@@ -126,6 +126,8 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
                             int maxt = l1 + l2;
                             int maxu = m1 + m2;
                             int maxv = n1 + n2;
+                            // first two indices are already known, so avoid re-computation
+                            // of the entire address_3d
                             const double* ex_p = &Ex.data()[edim3 * (l2 + edim2 * l1)];
                             const double* ey_p = &Ey.data()[edim3 * (m2 + edim2 * m1)];
                             const double* ez_p = &Ez.data()[edim3 * (n2 + edim2 * n1)];
@@ -133,7 +135,8 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2
                                 for (int u = 0; u <= maxu; ++u) {
                                     for (int v = 0; v <= maxv; ++v) {
                                         // eq 9.9.32
-                                        val += ex_p[t] * ey_p[u] * ez_p[v] * R[address_3d(t + ex, u + ey, v + ez, rdim1, rdim1)];
+                                        val += ex_p[t] * ey_p[u] * ez_p[v] *
+                                               R[address_3d(t + ex, u + ey, v + ez, rdim1, rdim1)];
                                     }
                                 }
                             }

@@ -36,7 +36,6 @@
 using namespace psi;
 using namespace mdintegrals;
 
-uint64_t binomial(int n, int c1);  // From solidharmonics.cc
 
 MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int order, int nderiv)
