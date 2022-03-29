@@ -94,9 +94,7 @@ OneBodySOInt* IntegralFactory::so_overlap(int deriv) {
     return new OneBodySOInt(ao_int, this);
 }
 
-ThreeCenterOverlapInt* IntegralFactory::overlap_3c() {
-    return new ThreeCenterOverlapInt(bs1_, bs2_, bs3_);
-}
+ThreeCenterOverlapInt* IntegralFactory::overlap_3c() { return new ThreeCenterOverlapInt(bs1_, bs2_, bs3_); }
 
 OneBodyAOInt* IntegralFactory::ao_kinetic(int deriv) {
     return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
@@ -204,59 +202,43 @@ OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
 TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+
 #ifdef USING_simint
     if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
 #endif
-    if (integral_package == "LIBINT2") return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
-#ifdef USING_erd
-    if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
-#endif
-    if (deriv > 0 && integral_package != "LIBINT1")
-        outfile->Printf("ERI derivative integrals only available using Libint");
-    if (integral_package == "SIMINT" || integral_package == "ERD")
+
+    if (integral_package == "SIMINT")
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
-#ifdef ENABLE_Libint1t
-    return new ERI(this, deriv, use_shell_pairs);
-#endif
+
+    return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+
 #ifdef USING_simint
     if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
 #endif
-    if (integral_package == "LIBINT2") return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
-#ifdef USING_erd
-    if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
-#endif
-    if (deriv > 0 && integral_package != "LIBINT1")
-        outfile->Printf("ERI derivative integrals only available using Libint");
+
     if (integral_package == "SIMINT" || integral_package == "ERD")
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
-#ifdef ENABLE_Libint1t
-    return new ERI(this, deriv, use_shell_pairs);
-#endif
+
+    return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2") return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
-#ifdef ENABLE_Libint1t
-    return new ErfERI(omega, this, deriv, use_shell_pairs);
-#endif
+
+    return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2") return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
-#ifdef ENABLE_Libint1t
-    return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
-#endif
+
+    return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
 TwoBodyAOInt* IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
