@@ -319,7 +319,7 @@ def _solve_loop(wfn,
         # ret = {"eigvals": ee, "eigvecs": (rvecs, rvecs), "stats": stats} (TDA)
         # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (RPA)
         # N.B.: Eigvecs and eigvals are of the reduced, non-Hermitian eigenvalue problem, not the
-        # original Hermitian pseudo-eigenvalue problem. To convert to quantiites of original probe:
+        # original Hermitian pseudo-eigenvalue problem. To convert to quantities of original problem:
         # ee = omega^2
         # rvecs = X + Y
         # lvecs = X - Y
