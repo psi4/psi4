@@ -4,7 +4,6 @@ list(APPEND sources
   orbitalspace.cc
   osrecur.cc
   maketab.cc
-  multipolepotential.cc
   oeprop.cc
   writer.cc
   transform.cc
@@ -51,10 +50,9 @@ list(APPEND sources
   gaussquad.cc
   ecpint.cc
   orthog.cc
-  mcmurchiedavidson.cc
   )
 
-# l2intf is a listing of all the files that include libint2's engine.h include.  they must
+# l2intf is a listing of all the files that include libint2's boys.h include (which is included in L2's engine.h).  they must
 # all be built with the same C++ standard, which is currently chosen as C++14 due to
 # problems building with C++17 using Intel compilers on Linux.  Any files including
 # the engine.h should be added here instead of the sources list above.
@@ -66,6 +64,8 @@ eribase.cc
 eri.cc
 integral.cc
 kinetic.cc
+mcmurchiedavidson.cc  # includes <libint2/boys.h>
+multipolepotential.cc # includes <libint2/boys.h>
 nabla.cc
 onebody.cc
 overlap.cc

@@ -36,7 +36,6 @@
 using namespace psi;
 using namespace mdintegrals;
 
-uint64_t binomial(int n, int c1);  // From solidharmonics.cc
 
 MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int order, int nderiv)
@@ -86,7 +85,7 @@ MultipoleInt::MultipoleInt(std::vector<SphericalTransform>& spherical_transforms
     Sz = std::vector<double>(ssize);
 
     // CCA-ordered Cartesian components for the multipoles
-    comps_mul_ = std::vector<std::vector<std::array<int, 4>>>(order_ + 1);
+    comps_mul_ = std::vector<std::vector<std::array<int, 3>>>(order_ + 1);
     for (int d = 0; d < order_ + 1; ++d) {
         comps_mul_[d] = generate_am_components_cca(d);
     }
@@ -186,10 +185,10 @@ void MultipoleInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& 
             int m_count = 0;
             for (int mul = 1; mul < order_ + 1; ++mul) {
                 const auto& comps_mul = comps_mul_[mul];
-                for (const auto& [ex, ey, ez, index0] : comps_mul) {
+                for (const auto& [ex, ey, ez] : comps_mul) {
                     ao12 = 0;
-                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
-                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                    for (const auto& [l1, m1, n1] : comps_am1) {
+                        for (const auto& [l2, m2, n2] : comps_am2) {
                             // multiply separable x, y, and z components (eq 9.3.12)
                             buffer_[ao12 + size * m_count] += prefac * Sx[address_3d(l1, l2, ex, sdim1, sdim2)] *
                                                               Sy[address_3d(m1, m2, ey, sdim1, sdim2)] *
@@ -282,11 +281,11 @@ void MultipoleInt::compute_pair_deriv1(const libint2::Shell& s1, const libint2::
                 // loop over components of the given multipole, i.e.,
                 // x, y, z for dipole (mul = 1); xx, xy, xz, yy, ...
                 // for quadrupole (mul = 2) and so on
-                for (const auto& [ex, ey, ez, index0] : comps_mul) {
+                for (const auto& [ex, ey, ez] : comps_mul) {
                     ao12 = 0;
                     // loop over primitive angular momentum components
-                    for (const auto& [l1, m1, n1, index1] : comps_am1) {
-                        for (const auto& [l2, m2, n2, index2] : comps_am2) {
+                    for (const auto& [l1, m1, n1] : comps_am1) {
+                        for (const auto& [l2, m2, n2] : comps_am2) {
                             // get the 'non-differentiated' contributions to the
                             // multipole integral
                             double sx = Sx[address_3d(l1, l2, ex, sdim1, sdim2)];
