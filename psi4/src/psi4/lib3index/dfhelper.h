@@ -303,9 +303,6 @@ class PSI_API DFHelper {
     /// clear transformations
     void clear_transformations(); 
 
-    /// clear in-core AO integral
-    void clear_AO();
-
     /// clears spaces and transformations
     void clear_all();
 

@@ -230,7 +230,6 @@ void DFHelper::AO_core() {
     required_core_size_ += 3 * nbf_ * nbf_ * Qshell_max_;
 
     // a fraction of memory to use, do we want it as an option?
-    // Set mem_frac to 0.5 when a direct metric contraction is needed (last part of DFHelper::transform()) to save memory for M and F
     AO_core_ = true;
     if (memory_ < required_core_size_) AO_core_ = false;
 }
@@ -1724,12 +1723,6 @@ void DFHelper::clear_transformations() {
 
     transf_.clear();
     transf_core_.clear();
-}
-
-void DFHelper::clear_AO() {
-    // clears in-core AO integral
-
-    Ppq_.reset();
 }
 
 void DFHelper::clear_all() {
