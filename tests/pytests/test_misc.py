@@ -98,16 +98,19 @@ def test_deprecated_qcdb_align_scramble():
 
 # <<<  TODO Deprecated! Delete when the error messages are removed.  >>>
 
-def test_deprecated_dcft_calls():
+@pytest.mark.parametrize("call",
+    [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies])
+def test_deprecated_dcft_calls(call):
     psi4.geometry('He')
     err_substr = "All instances of 'dcft' should be replaced with 'dct'."
 
-    driver_calls = [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies]
+    with pytest.raises(psi4.UpgradeHelper) as e:
+        call('dcft', basis='cc-pvdz')
+    assert err_substr in str(e.value)
 
-    for call in driver_calls:
-        with pytest.raises(psi4.UpgradeHelper) as e:
-            call('dcft', basis='cc-pvdz')
-        assert err_substr in str(e.value)
+
+def test_deprecated_dcft_options():
+    err_substr = "All instances of 'dcft' should be replaced with 'dct'."
 
     # The errors trapped below are C-side, so they're nameless, Py-side.
     with pytest.raises(Exception) as e:

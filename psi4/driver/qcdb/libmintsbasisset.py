@@ -915,8 +915,7 @@ class BasisSet(object):
                 text2 += """  Basis Sets: %s\n""" % (seek['basis'])
                 text2 += """  File Path: %s\n""" % (', '.join(map(str, seek['path'].split(os.pathsep))))
                 text2 += """  Input Blocks: %s\n""" % (', '.join(seek['strings']))
-                raise BasisSetNotFound('BasisSet::construct: Unable to find a basis set for atom %d for key %s among:\n%s' %
-                    (at + 1, key, text2))
+                raise BasisSetNotFound(f'BasisSet::construct: Unable to find a basis set for atom {at + 1} for key {key} among:\n{text2}')
 
         # Construct the grand BasisSet for mol
         basisset = BasisSet(key, mol, atom_basis_shell)
