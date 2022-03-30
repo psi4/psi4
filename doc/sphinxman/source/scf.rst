@@ -973,10 +973,17 @@ needed to describe the full MM region.
 
     gradient('scf')
 
-   The main differences are the specification of charge locations in
-   units of the active molecule, rather than always in Bohr, and in
-   the use of the :py:class:`psi4.driver.QMMM` class, which is now
-   discouraged from being used directly.
+   The main differences are that (1) the specification of
+   charge locations in the old way used the units of the active
+   molecule, whereas the new way always uses Bohr and (2) the
+   specification of the charge and locations in the old way used the
+   :py:class:`psi4.driver.QMMM` class directly and added one charge
+   per command, whereas the new way consolidates all into an array and
+   passes it by keyword argument to the calculation.
+
+   The successor to the :py:class:`psi4.driver.QMMM` class,
+   :py:class:`psi4.driver.QMMMbohr`, is operable, but it is discouraged
+   from being used directly.
 
 To run a computation in a constant dipole field, the |scf__perturb_h|,
 |scf__perturb_with| and |scf__perturb_dipole| keywords can be used.  As an

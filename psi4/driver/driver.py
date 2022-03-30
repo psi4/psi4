@@ -47,6 +47,7 @@ from psi4.driver import driver_nbody
 from psi4.driver import driver_findif
 from psi4.driver import p4util
 from psi4.driver import qcdb
+from psi4.driver import qmmm
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.mdi_engine import mdi_run
@@ -556,7 +557,7 @@ def energy(name, **kwargs):
 
     ep = kwargs.get('external_potentials', None)
     if ep is not None and not isinstance(ep, dict):
-        electrostatic_embedding(kwargs['external_potentials'])
+        set_external_potential(kwargs['external_potentials'])
 
     optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
     optstash2 = p4util.OptionsState(['SCF', 'GUESS'])
@@ -739,7 +740,7 @@ def gradient(name, **kwargs):
 
     ep = kwargs.get('external_potentials', None)
     if ep is not None and not isinstance(ep, dict):
-        electrostatic_embedding(kwargs['external_potentials'])
+        set_external_potential(kwargs['external_potentials'])
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
@@ -906,7 +907,7 @@ def properties(*args, **kwargs):
 
     ep = kwargs.get('external_potentials', None)
     if ep is not None and not isinstance(ep, dict):
-        electrostatic_embedding(kwargs['external_potentials'])
+        set_external_potential(kwargs['external_potentials'])
 
     return_wfn = kwargs.pop('return_wfn', False)
     props = kwargs.get('properties', ['dipole', 'quadrupole'])
@@ -1555,7 +1556,7 @@ def hessian(name, **kwargs):
 
     ep = kwargs.get('external_potentials', None)
     if ep is not None and not isinstance(ep, dict):
-        electrostatic_embedding(kwargs['external_potentials'])
+        set_external_potential(kwargs['external_potentials'])
 
     # At stationary point?
     if 'ref_gradient' in kwargs:
@@ -2235,7 +2236,7 @@ def tdscf(wfn, **kwargs):
     return proc.run_tdscf_excitations(wfn,**kwargs)
 
 
-def electrostatic_embedding(external_potential):
+def set_external_potential(external_potential):
     """Initialize :py:class:`psi4.core.ExternalPotential` object from charges and locations.
 
     Parameters
@@ -2245,9 +2246,6 @@ def electrostatic_embedding(external_potential):
         ``q, x, y, z``. Locations are in [a0].
 
     """
-    from psi4.driver import qmmm
-
-    # Add embedding point charges
     Chrgfield = qmmm.QMMMbohr()
     for qxyz in external_potential:
         if len(qxyz) == 2:
