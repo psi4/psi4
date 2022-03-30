@@ -26,8 +26,7 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_pseudospectral_h_
-#define _psi_src_lib_libmints_pseudospectral_h_
+#pragma once
 
 #include <vector>
 #include "psi4/pragma.h"
@@ -36,58 +35,49 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
- *  \class PotentialInt
- *  \brief Computes pseudospectral integrals.
+ *  \class PotentialErfInt
+ *  \brief Computes the erf-attenuated Coulomb integrals on a given origin.
  * Use an IntegralFactory to create this object.
  */
-class PseudospectralInt : public OneBodyAOInt {
-
+class PotentialErfInt : public OneBodyAOInt {
    protected:
-    /// Use range-separation or not? Defaults to false. If so, produce <m|erf(\omega r) / r|n> integrals
-    bool use_omega_;
-
-    /// The range-separation parameter. Defaults to 0.0
+    /// The range-separation parameter. Defaults to 1.0
     double omega_;
-
-    /// The integration point
-    double C_[3];
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion potential_recur_;
 
    public:
     /// Constructor
-    PseudospectralInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                      int deriv = 0);
-    ~PseudospectralInt() override;
+    PotentialErfInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                    double omega = 1.0, int deriv = 0);
+    ~PotentialErfInt() override{};
 
-    /// Set integration point
-    void set_point(double x, double y, double z) {
-        C_[0] = x;
-        C_[1] = y;
-        C_[2] = z;
-    }
+    void set_origin(const Vector3& _origin) override;
+};
 
-    /// Set omega value, turns use_omega_ to true
-    void set_omega(double omega) {
-        use_omega_ = (omega != 0.0);
-        omega_ = omega;
-    }
+/*! \ingroup MINTS
+ *  \class PotentialErfComplementInt
+ *  \brief Computes the complementary erf-attenuated Coulomb integrals on a given origin.
+ * Use an IntegralFactory to create this object.
+ */
 
-    /// Set the value of the use_omega_ flag
-    void use_omega(bool yes) { use_omega_ = yes; }
+class PotentialErfComplementInt : public OneBodyAOInt {
+   protected:
+    /// The range-separation parameter. Defaults to 1.0
+    double omega_;
 
-    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
+   public:
+    /// Constructor
+    PotentialErfComplementInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                              double omega = 1.0, int deriv = 0);
+    ~PotentialErfComplementInt() override{};
+
+    void set_origin(const Vector3& _origin) override;
 };
 
 }  // namespace psi
-
-#endif
