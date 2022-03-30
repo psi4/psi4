@@ -1,0 +1,58 @@
+#! EOM-CCSD/6-31g excited state transition data for water cation
+
+molecule h2o {
+  1 2 
+  O
+  H 1 1 
+  H 1 1 2 104.5
+}
+
+set {
+  reference uhf 
+  basis cc-pVDZ
+  freeze_core true
+  roots_per_irrep [0, 1, 1, 0]
+}
+
+wfn = properties('eom-ccsd', properties=['oscillator_strength'], return_wfn=True)[1]
+
+### ccdensity checks
+
+refnre     =   8.8014655645673745 # TEST
+refscf     = -75.6332569214465593 # TEST
+refccsd    = -75.803716136508982  # TEST
+refoverlap =   0.95259415503      # TEST
+
+compare_values(refnre, h2o.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"), 5, "Left-Right CCSD Overlap") # TEST
+
+### Excitation energy checks
+
+ref1B1 = -75.325751117648 # TEST
+ref0A2 = -75.260476163556 # TEST
+
+compare_values(ref1B1, core.variable("CCSD ROOT 1 (B1) TOTAL ENERGY"), 6, "Root 1 (A1) Energy") # TEST
+compare_values(ref0A2, core.variable("CCSD ROOT 0 (A2) TOTAL ENERGY"), 6, "Root 0 (A2) Energy") # TEST
+
+### Transition checks
+
+test_data = { # TEST
+"ROOT 0 (B1) -> ROOT 0 (A2)": {"OSCILLATOR STRENGTH (LEN)": 0.00407528, "EINSTEIN A (LEN)": 3.86413231e+07, "EINSTEIN B (LEN)": 1.36907729e+18}, # TEST
+"ROOT 0 (B1) -> ROOT 1 (B1)": {"OSCILLATOR STRENGTH (LEN)": 0.00317063, "EINSTEIN A (LEN)": 2.32728034e+07, "EINSTEIN B (LEN)": 1.21063018e+18}, # TEST
+"ROOT 1 (B1) -> ROOT 0 (A2)": {"OSCILLATOR STRENGTH (LEN)": 0.09372883, "EINSTEIN A (LEN)": 1.28314944e+07, "EINSTEIN B (LEN)": 2.62052705e+20}, # TEST
+}
+
+for transition, data in test_data.items(): # TEST
+    for property, value in data.items(): # TEST
+        # Change these numbers to 6 ASAP # TEST
+        if "EINSTEIN" not in property: # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), 6, f"CC {transition} {property}") # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), 6, f"CCSD {transition} {property}") # TEST
+        else: # TEST 
+            # Large numbers need "special" testing. # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), f"CC {transition} {property}", atol=1e-6, rtol=1e-5) # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), f"CCSD {transition} {property}", atol=1e-6, rtol=1e-5) # TEST
+
+

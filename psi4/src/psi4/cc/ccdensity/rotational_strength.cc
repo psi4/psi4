@@ -40,9 +40,10 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
+#include "ccdensity.h"
+#include "Frozen.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #include "psi4/libmints/mintshelper.h"
 #define EXTERN
 #include "globals.h"
@@ -56,7 +57,7 @@ void transdip(MintsHelper &mints);
 void transp(MintsHelper &mints, double sign);
 void transL(MintsHelper &mints, double sign);
 
-void rotational_strength(MintsHelper &mints, struct TD_Params *S) {
+void rotational_strength(SharedWavefunction wfn, MintsHelper &mints, struct TD_Params *S) {
     int i, j, k;
     int no, nv, nt;
     double lt_x, lt_y, lt_z;
@@ -145,6 +146,9 @@ void rotational_strength(MintsHelper &mints, struct TD_Params *S) {
     outfile->Printf("\tRotational Strength (au)                 %11.8lf\n", rs);
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
 
+    // Save rotary strength to wfn.
+    scalar_saver_ground(wfn, S, "ROTARY STRENGTH (LEN)", rs);
+
     outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n", S->root + 1, moinfo.labels[S->irrep].c_str());
     outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
@@ -230,6 +234,9 @@ void rotational_strength(MintsHelper &mints, struct TD_Params *S) {
     outfile->Printf("\n");
     outfile->Printf("\tRotational Strength (au)                 %11.8lf\n", rs);
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
+
+    // Save rotary strength to wfn.
+    scalar_saver_ground(wfn, S, "ROTARY STRENGTH (VEL)", rs);
 
     return;
 }
