@@ -215,7 +215,7 @@ def test(extent: str = "full", extras: List = None) -> int:
     return retcode
 
 
-def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 30, execute: bool = True) -> Path:
+def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, execute: bool = True) -> Path:
     """Set the name for output and logging files.
 
     Parameters
