@@ -1553,7 +1553,9 @@ PSI Variables by Alpha
    Conventions for root indexing and whether h refers to transition or root
    irrep are as in :ref:`sec:psivarnotes`.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN)
+.. psivar:: CC ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
+   CC ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (VEL)
+   TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
    TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (VEL)
