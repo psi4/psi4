@@ -955,7 +955,7 @@ computations, |PSIfour| can perform more rudimentary QM/MM procedures via the
 
     gradient('scf', external_potentials=external_potentials)
 
-The ``external_potentials`` array has three rows for thee separate
+The ``external_potentials`` array has three rows for three separate
 particles, and it is passed to the SCF code on the last line. The
 rows are composed of the atomic charge, x coordinate, y coordinate,
 and z coordinate in that order. The atomic charge and coordinates are
