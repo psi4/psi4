@@ -331,12 +331,12 @@ PSI Variables by Alpha
 .. psivar:: CCname ROOT n (h) -> ROOT m (i) EINSTEIN A (LEN)
 
    The Einstein A coefficient, the spontaneous emission 'probability.'
-   Units are in [au]^-1.
+   Units are in [1/s].
 
 .. psivar:: CCname ROOT n (h) -> ROOT m (i) EINSTEIN B (LEN)
 
-   The Einstein B coefficient, the stimulated emission 'probability.'
-   Units are in [a0^2 / e / au].
+   The Einstein B coefficient, the stimulated emission 'probability'
+   in terms of energy density. Units are in [m^3 / J / s^2].
 
 .. psivar:: CEPA(0) DIPOLE
 
