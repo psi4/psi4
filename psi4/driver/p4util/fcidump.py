@@ -237,6 +237,7 @@ def fcidump_from_file(fname):
     """Function to read in a FCIDUMP file.
 
     :returns: a dictionary with FCIDUMP header and integrals
+
       - 'norb' : number of basis functions
       - 'nelec' : number of electrons
       - 'ms2' : spin polarization of the system
@@ -249,10 +250,12 @@ def fcidump_from_file(fname):
       - 'eri' : electron-repulsion integrals
 
     :param fname: FCIDUMP file name
+
     """
     intdump = {}
     with open(fname, 'r') as handle:
-        assert '&FCI' == handle.readline().strip()
+        firstline = handle.readline().strip()
+        assert '&FCI' == firstline, firstline
 
         skiplines = 1
         read = True
@@ -322,20 +325,23 @@ def fcidump_from_file(fname):
 
 
 def compare_fcidumps(expected, computed, label):
-    """Function to compare two FCIDUMP files. Prints success
-    when value *computed* matches value *expected*.
-    Performs a system exit on failure. Used in input files in the test suite.
+    """Comparison function for FCIDUMP files.
+    Compares the first six below, then computes energies from MO integrals and compares the last four.
 
-    :returns: a dictionary of energies computed from the MO integrals.
-      - 'NUCLEAR REPULSION ENERGY' : nuclear repulsion plus frozen core energy
+      - 'norb' : number of basis functions
+      - 'nelec' : number of electrons
+      - 'ms2' : spin polarization of the system
+      - 'isym' : symmetry of state (if present in FCIDUMP)
+      - 'orbsym' : list of symmetry labels of each orbital
+      - 'uhf' : whether restricted or unrestricted
       - 'ONE-ELECTRON ENERGY' : SCF one-electron energy
       - 'TWO-ELECTRON ENERGY' : SCF two-electron energy
       - 'SCF TOTAL ENERGY' : SCF total energy
       - 'MP2 CORRELATION ENERGY' : MP2 correlation energy
 
-    :param expected: reference FCIDUMP file
-    :param computed: computed FCIDUMP file
-    :param label: string labelling the test
+    :param expected: Reference FCIDUMP file against which `computed` is compared.
+    :param computed: Input FCIDUMP file to compare against `expected`.
+    :param label: string labeling the test
     """
 
     # Grab expected header and integrals

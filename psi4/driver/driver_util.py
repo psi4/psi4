@@ -27,6 +27,7 @@
 #
 
 import re
+from typing import Dict, Optional, Union
 
 from psi4 import core
 from psi4.driver import qcdb
@@ -197,25 +198,25 @@ def parse_arbitrary_order(name):
         return name, None
 
 
-def parse_cotton_irreps(irrep, point_group):
+def parse_cotton_irreps(irrep: Union[str, int], point_group: str) -> int:
     """Return validated Cotton ordering index of `irrep` within `point_group`.
 
     Parameters
     ----------
-    irrep : str or int
+    irrep
         Irreducible representation. Either label (case-insensitive) or 1-based index (int or str).
-    point_group : str
+    point_group
         Molecular point group label (case-insensitive).
 
     Returns
     -------
     int
-        1-based index for `irrep` within `point_group` in Cotton ordering.
+        1-based index for **irrep** within **point_group** in Cotton ordering.
 
     Raises
     ------
     ValidationError
-        If `irrep` out-of-bounds or invalid or if `point_group` doesn't exist.
+        If **irrep** out-of-bounds or invalid or if **point_group** doesn't exist.
 
     """
     cotton = {
@@ -242,23 +243,28 @@ def parse_cotton_irreps(irrep, point_group):
     raise ValidationError(f"""Irrep '{irrep}' not valid for point group '{point_group}'.""")
 
 
-def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_strategy=False, proc=None):
+def negotiate_derivative_type(ptype: str,
+                              method: str,
+                              user_dertype: Optional[int],
+                              verbose: int = 1,
+                              return_strategy: bool = False,
+                              proc: Optional[Dict] = None) -> Union[int, str]:
     r"""Find the best derivative level (0, 1, 2) and strategy (analytic, finite difference)
     for `method` to achieve `ptype` within constraints of `user_dertype`.
 
-    Procedures
+    Parameters
     ----------
     ptype : {'energy', 'gradient', 'hessian'}
         Type of calculation targeted by driver.
-    method : str
+    method
         Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
-    user_dertype : int or None
+    user_dertype
         User input on which derivative level should be employed to achieve `ptype`.
-    verbose : int, optional
+    verbose
         Control amount of output printing.
-    return_strategy : bool, optional
+    return_strategy
         See below. Form in which to return negotiated dertype.
-    proc : dict, optional
+    proc
         For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
 
     Returns
@@ -309,12 +315,12 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
         if proc['hessian'][method].__name__.startswith('select_'):
             try:
                 proc['hessian'][method](method, probe=True)
-            except ManagedMethodError:
+            except ManagedMethodError as e:
                 dertype = 1
                 if proc['gradient'][method].__name__.startswith('select_'):
                     try:
                         proc['gradient'][method](method, probe=True)
-                    except ManagedMethodError:
+                    except ManagedMethodError as e:
                         dertype = 0
                         if proc['energy'][method].__name__.startswith('select_'):
                             try:
@@ -327,7 +333,7 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
         if proc['gradient'][method].__name__.startswith('select_'):
             try:
                 proc['gradient'][method](method, probe=True)
-            except ManagedMethodError:
+            except ManagedMethodError as e:
                 dertype = 0
                 if proc['energy'][method].__name__.startswith('select_'):
                     try:
@@ -364,7 +370,7 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
 
     if verbose > 1:
         print(
-            f'Dertivative negotiations: target/driver={egh.index(ptype)}, best_available={highest_der_program_can_provide}, user_dertype={user_dertype}, FINAL={dertype}'
+            f'Derivative negotiations: target/driver={egh.index(ptype)}, best_available={highest_der_program_can_provide}, user_dertype={user_dertype} -> FINAL={dertype}'
         )
 
     #if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):

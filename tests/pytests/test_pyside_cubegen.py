@@ -1,9 +1,11 @@
 """
 Test Python-side generation of cube files
 """
+import pytest
 import psi4
-from .utils import compare_cubes
+from utils import compare_cubes
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 def test_pyside_cubegen():
     mol = psi4.geometry("""

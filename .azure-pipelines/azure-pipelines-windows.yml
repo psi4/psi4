@@ -123,7 +123,7 @@ jobs:
                         pint ^
                         pybind11=2.7.0 ^
                         pymdi ^
-                        pytest ^
+                        conda-forge::pytest>=7.0.1 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
                         psi4/label/dev::dftd3 ^
@@ -164,7 +164,6 @@ jobs:
 
       # Configure
       # call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-      # -DCMAKE_VERBOSE_MAKEFILE=ON
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
@@ -176,6 +175,7 @@ jobs:
           if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
           if not defined ENABLE_XHOST exit 1
           cmake -G Ninja ^
+                -DCMAKE_VERBOSE_MAKEFILE=OFF ^
                 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
                 -DCMAKE_INSTALL_PREFIX=../install ^
                 -DCMAKE_C_COMPILER=clang-cl ^
@@ -230,6 +230,10 @@ jobs:
         displayName: 'Run, Run, Spot, Run Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
+      - script: |
+          objdump.exe -p D:/a/1/b/install/lib/psi4/core.*.pyd | grep dll
+        displayName: "Library dependencies"
+
       # Test (ctest)
       - script: |
           setlocal EnableDelayedExpansion
@@ -271,6 +275,7 @@ jobs:
       # Upload package
       # * use same ANACONDA_TOKEN generated on anaconda.org for GHA and save it in Azure DevOps
       #   at /psi4/psi4/Pipelines/psi4.psi4 -> Edit button -> Variables button -> new secret var `conda.anaconda_org_token`.
+      #   when it expires, revoke it at anaconda.org, regenerate there and paste new one at Azure
       # * error handling may need tweaking as I don't know if failure to upload for lack of space (`echo $?`=1) will fail the workflow.
       - bash: |
           set -e

@@ -1,6 +1,6 @@
 import pytest
-from .utils import *
-from .addons import using
+from utils import *
+from addons import using
 
 import pint
 import qcelemental
@@ -9,7 +9,7 @@ from qcelemental.tests import test_molparse_to_string
 import psi4
 from psi4.driver import qcdb
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 _results = test_molparse_to_string._results
 

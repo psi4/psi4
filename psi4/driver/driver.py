@@ -49,6 +49,7 @@ from psi4.driver import driver_findif
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver import pp, nppp, nppp10
+from psi4.driver import qmmm
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.mdi_engine import mdi_run
@@ -558,6 +559,10 @@ def energy(name, **kwargs):
     #for precallback in hooks['energy']['pre']:
     #    precallback(lowername, **kwargs)
 
+    ep = kwargs.get('external_potentials', None)
+    if ep is not None and not isinstance(ep, dict):
+        set_external_potential(kwargs['external_potentials'])
+
     optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
     optstash2 = p4util.OptionsState(['SCF', 'GUESS'])
 
@@ -740,6 +745,10 @@ def gradient(name, **kwargs):
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
+    ep = kwargs.get('external_potentials', None)
+    if ep is not None and not isinstance(ep, dict):
+        set_external_potential(kwargs['external_potentials'])
+
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
         core.print_out("""gradient() will perform analytic gradient computation.\n""")
@@ -906,6 +915,10 @@ def properties(*args, **kwargs):
 
     if "/" in lowername:
         return driver_cbs._cbs_gufunc(properties, lowername, ptype='properties', **kwargs)
+
+    ep = kwargs.get('external_potentials', None)
+    if ep is not None and not isinstance(ep, dict):
+        set_external_potential(kwargs['external_potentials'])
 
     return_wfn = kwargs.pop('return_wfn', False)
     props = kwargs.get('properties', ['dipole', 'quadrupole'])
@@ -1554,6 +1567,10 @@ def hessian(name, **kwargs):
             core.print_out(
                 """hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")
             dertype = 1
+
+    ep = kwargs.get('external_potentials', None)
+    if ep is not None and not isinstance(ep, dict):
+        set_external_potential(kwargs['external_potentials'])
 
     # At stationary point?
     if 'ref_gradient' in kwargs:
@@ -2236,6 +2253,28 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
 def tdscf(wfn, **kwargs):
     return proc.run_tdscf_excitations(wfn,**kwargs)
+
+
+def set_external_potential(external_potential):
+    """Initialize :py:class:`psi4.core.ExternalPotential` object from charges and locations.
+
+    Parameters
+    ----------
+    external_potential
+        List-like structure where each row corresponds to a charge. Lines can be composed of ``q, [x, y, z]`` or
+        ``q, x, y, z``. Locations are in [a0].
+
+    """
+    Chrgfield = qmmm.QMMMbohr()
+    for qxyz in external_potential:
+        if len(qxyz) == 2:
+            Chrgfield.extern.addCharge(qxyz[0], qxyz[1][0], qxyz[1][1], qxyz[1][2])
+        elif len(qxyz) == 4:
+            Chrgfield.extern.addCharge(qxyz[0], qxyz[1], qxyz[2], qxyz[3])
+        else:
+            raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
+    core.set_global_option_python('EXTERN', Chrgfield.extern)
+
 
 # Aliases
 opt = optimize

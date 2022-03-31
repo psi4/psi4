@@ -190,13 +190,11 @@ def electrostatic_embedding(metadata, pair):
     if not metadata['return_total_data']:
         raise Exception('Cannot return interaction data when using embedding scheme.')
     # Add embedding point charges
-    Chrgfield = qmmm.QMMM()
+    Chrgfield = qmmm.QMMMbohr()
     for p in metadata['embedding_charges']:
         if p in pair[1]: continue
         mol = metadata['molecule'].extract_subsets([p])
         for i in range(mol.natom()):
             geom = np.array([mol.x(i), mol.y(i), mol.z(i)])
-            if mol.units() == 'Angstrom':
-                geom *= constants.bohr2angstroms
             Chrgfield.extern.addCharge(metadata['embedding_charges'][p][i], geom[0], geom[1], geom[2])
     core.set_global_option_python('EXTERN', Chrgfield.extern)

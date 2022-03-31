@@ -65,7 +65,7 @@ endif()
 if(DEFINED ENV{LGTM_SRC})
     find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
 else()
-    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+    find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
 find_package(pybind11 2.6.2 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
@@ -165,7 +165,6 @@ if(DEFINED ENV{LGTM_SRC})
     find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "eri_c4_d0_l${MAX_AM_ERI}")
 else()
     find_package(Libint2 CONFIG REQUIRED COMPONENTS gss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
-
 endif()
 get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
 
@@ -287,21 +286,53 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
               ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
-install(DIRECTORY ../tests/pytests/
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
-        FILES_MATCHING
-        PATTERN "test_*.py"
-        PATTERN "__init__.py"
-        PATTERN "addons.py"
-        PATTERN "conftest.py"
-        PATTERN "standard_suite_runner.py"
-        PATTERN "tdscf_reference_data.json"
-        PATTERN "oei_reference_data.json"
-        PATTERN "utils.py")
-install(DIRECTORY ../tests/pytests/test_fchk_writer
-                  ../tests/pytests/test_molden_writer
-                  ../tests/pytests/test_psi4_qcschema
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
+install(
+  FILES ../pytest.ini
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
+  )
+install(
+  DIRECTORY
+    ../tests/pytests/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+  FILES_MATCHING
+    PATTERN "test_*.py"
+    PATTERN "__init__.py"
+    PATTERN "addons.py"
+    PATTERN "conftest.py"
+    PATTERN "standard_suite_runner.py"
+    PATTERN "tdscf_reference_data.json"
+    PATTERN "oei_reference_data.json"
+    PATTERN "utils.py"
+  )
+install(
+  DIRECTORY
+    ../tests/pytests/test_fchk_writer
+    ../tests/pytests/test_molden_writer
+    ../tests/pytests/test_psi4_qcschema
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+  )
+
+install(
+  DIRECTORY
+    ../tests/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+  FILES_MATCHING
+    PATTERN ../tests/pytests EXCLUDE
+    PATTERN ../tests/cfour EXCLUDE
+    PATTERN "test_input.py"
+    PATTERN "input.dat"
+    PATTERN "input.py"
+    PATTERN "__pycache__" EXCLUDE
+    PATTERN "*pyc" EXCLUDE
+    # below place extra files the ctests-run-as-pytests need
+    PATTERN "adcc/formaldehyde-pe-adc1/fa_6w.pot"
+    PATTERN "adcc/formaldehyde-pe-adc2/fa_6w.pot"
+    PATTERN "ci-property/grid.dat"
+    PATTERN "scf-property/grid.dat"
+    PATTERN "mp2-property/grid.dat"
+    PATTERN "cubeprop*/*cube.ref"
+    PATTERN "fcidump/*INTDUMP.ref"
+  )
 
     # <<<  install psi4 share/ & include/  >>>
 

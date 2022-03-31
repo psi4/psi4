@@ -7,7 +7,7 @@ import numpy as np
 import psi4
 from psi4.driver import qcdb
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 _arrs = {
     'a1234_14': np.arange(4),

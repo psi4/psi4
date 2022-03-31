@@ -453,10 +453,6 @@ class PSI_API IntegralFactory {
     virtual OneBodyAOInt* ao_rel_potential(int deriv = 0);
     virtual OneBodySOInt* so_rel_potential(int deriv = 0);
 
-    /// Returns the OneBodyInt that computes the pseudospectral grid integrals
-    virtual OneBodyAOInt* ao_pseudospectral(int deriv = 0);
-    virtual OneBodySOInt* so_pseudospectral(int deriv = 0);
-
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual OneBodyAOInt* ao_dipole(int deriv = 0);
     virtual OneBodySOInt* so_dipole(int deriv = 0);
@@ -482,7 +478,7 @@ class PSI_API IntegralFactory {
     virtual OneBodySOInt* so_angular_momentum(int deriv = 0);
 
     /// Returns a OneBodyInt that computes the multipole potential integrals for PE and EFP
-    virtual OneBodyAOInt* ao_multipole_potential(int max_k = 0, int deriv = 0);
+    virtual OneBodyAOInt* ao_multipole_potential(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyAOInt* electric_field(int deriv = 0);

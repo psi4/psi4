@@ -1,9 +1,9 @@
 import pytest
 import psi4
 import itertools
-from .utils import compare_integers, compare_values
+from utils import compare_integers, compare_values
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 def test_no_screening_schwarz():

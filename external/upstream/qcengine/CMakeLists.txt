@@ -21,7 +21,7 @@ else()
     ExternalProject_Add(qcengine_external
         DEPENDS qcelemental_external
         BUILD_ALWAYS 1
-        URL https://github.com/MolSSI/QCEngine/archive/v0.20.0.tar.gz
+        URL https://github.com/MolSSI/QCEngine/archive/v0.23.0.tar.gz
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${Python_EXECUTABLE} setup.py build

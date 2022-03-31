@@ -47,17 +47,10 @@ elif "CMAKE_INSTALL_DATADIR" in data_dir:
 
 data_dir = os.path.abspath(data_dir)
 if not os.path.isdir(data_dir):
-    raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
-                    "      Current value of PSIDATADIR is %s" % data_dir)
+    raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {data_dir}")
 
 # Init core
-try:
-    from . import core
-except ImportError as err:
-    if 'CXXABI' in str(err):
-        raise ImportError("{0}\nLikely cause: GCC >= 4.9 not in [DY]LD_LIBRARY_PATH".format(err))
-    else:
-        raise ImportError("{0}".format(err))
+from . import core
 
 from psi4.core import get_num_threads, set_num_threads
 core.initialize()

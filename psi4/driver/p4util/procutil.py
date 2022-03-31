@@ -35,7 +35,7 @@ import inspect
 import warnings
 import contextlib
 import collections
-from typing import List, Union
+from typing import Dict, List, Union
 
 import numpy as np
 import qcelemental as qcel
@@ -579,14 +579,18 @@ def expand_psivars(pvdefs):
                 print("""SUCCESS""")
 
 
-def provenance_stamp(routine):
+def provenance_stamp(routine: str, module: str = None) -> Dict:
     """Return dictionary satisfying QCSchema,
     https://github.com/MolSSI/QCSchema/blob/master/qcschema/dev/definitions.py#L23-L41
     with Psi4's credentials for creator and version. The
     generating routine's name is passed in through `routine`.
 
     """
-    return {'creator': 'Psi4', 'version': __version__, 'routine': routine}
+    prov = {'creator': 'Psi4', 'version': __version__, 'routine': routine}
+    if module:
+        prov["module"] = module
+
+    return prov
 
 
 def plump_qcvar(val: Union[float, str, List], shape_clue: str, ret: str = 'np') -> Union[float, np.ndarray, core.Matrix]:

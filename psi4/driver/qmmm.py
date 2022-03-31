@@ -120,7 +120,16 @@ class Diffuse(object):
             extern.addCharge(self.molecule.Z(A), self.molecule.x(A), self.molecule.y(A), self.molecule.z(A))
 
 
-class QMMM(object):
+class QMMM():
+    """Hold charges and :py:class:`psi4.core.ExternalPotential`. Use :py:class:`psi4.driver.QMMMbohr` instead."""
+
+    def __init__(self):
+        raise UpgradeHelper(self.__class__.__name__, "QMMMbohr", 1.6, ' Replace object with a list of charges and locations in Bohr passed as keyword argument, e.g., `energy(..., embedding_charges=[[0.5, [0, 0, 1]], [-0.5, [0, 0, -1]]])`.')
+
+
+class QMMMbohr():
+    """Hold charges and :py:class:`psi4.core.ExternalPotential`. To add external charges to a calculation, prefer
+    passing the array of charges with kwarg ``external_potentials``, as in extern2 example."""
 
     def __init__(self):
         self.charges = []

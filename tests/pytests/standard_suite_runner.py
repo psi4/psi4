@@ -17,7 +17,7 @@ from qcengine.programs.tests.standard_suite_ref import answer_hash, std_suite
 
 import psi4
 
-from .utils import *
+from utils import *
 
 
 def runner_asserter(inp, subject, method, basis, tnm):
@@ -107,7 +107,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # <<<  Comparison Tests  >>>
 
     if qc_module_in != "psi4":
-        assert qc_module_out == qc_module_in, f"QC_MODULE used ({qc_module_in}) != requested ({qc_module_out})"
+        assert qc_module_out == qc_module_in, f"QC_MODULE used ({qc_module_out}) != requested ({qc_module_in})"
 
     ref_block = std_suite[chash]
 
