@@ -328,6 +328,16 @@ PSI Variables by Alpha
    Conventions for root indexing and whether h refers to transition or root
    irrep are as in :ref:`sec:psivarnotes`.
 
+.. psivar:: CCname ROOT n (h) -> ROOT m (i) EINSTEIN A (LEN)
+
+   The Einstein A coefficient, the spontaneous emission 'probability.'
+   Units are in [au]^-1.
+
+.. psivar:: CCname ROOT n (h) -> ROOT m (i) EINSTEIN B (LEN)
+
+   The Einstein B coefficient, the stimulated emission 'probability.'
+   Units are in [a0^2 / e / au].
+
 .. psivar:: CEPA(0) DIPOLE
 
    Dipole array [e a0] for the coupled electron pair approximation variant 0 level of theory, (3,).
