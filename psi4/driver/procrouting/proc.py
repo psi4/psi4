@@ -3664,15 +3664,16 @@ def run_adcc(name, **kwargs):
     # adc_wfn.set_variable("excitation kind", state.kind)
     adc_wfn.set_variable("number of excited states", len(state.excitation_energy))
     adc_wfn.set_variable("ADC ITERATIONS", state.n_iter)  # P::e ADC
-    method = name.upper()
+    methods = [name.upper(), 'ADC']
     for excitation in state.excitations:
         root_index = excitation.index + 1
-        adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) EXCITATION ENERGY",
-                             excitation.excitation_energy)
-        adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY",
-                             excitation.excitation_energy)
-        adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY - A TRANSITION",
-                             excitation.excitation_energy)
+        for method in methods:
+            adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) EXCITATION ENERGY",
+                                 excitation.excitation_energy)
+            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY",
+                                 excitation.excitation_energy)
+            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY - A TRANSITION",
+                                 excitation.excitation_energy)
 
     core.print_out("\n\n  ==> Excited states summary <==  \n")
     core.print_out("\n" + state.describe(oscillator_strengths=False) + "\n")
@@ -3762,7 +3763,7 @@ def run_adcc_property(name, **kwargs):
         raise ValidationError(f"Gauge {gauge} not recognised for ADC calculations.")
 
     computed = []
-    method = name.upper()
+    methods = [name.upper(), 'ADC']
     for excitation in state.excitations:
         root_index = excitation.index + 1
         props = {}
@@ -3770,12 +3771,13 @@ def run_adcc_property(name, **kwargs):
             data = excitation.transition_dipole_moment
             props["Transition dipole moment (in a.u.)"] = data
             data_mat = data.reshape(1, 3)
-            adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
-                                 "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
-            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
-                                 "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
-            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
-                                 "ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - A TRANSITION", data_mat)
+            for method in methods:
+                adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
+                                    "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
+                adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                    "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
+                adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                    "ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - A TRANSITION", data_mat)
 
         if "OSCILLATOR_STRENGTH" in properties:
             if gauge == "velocity":
@@ -3783,28 +3785,31 @@ def run_adcc_property(name, **kwargs):
             else:
                 data = excitation.oscillator_strength
             props[f"Oscillator strength ({gauge} gauge)"] = data.reshape(-1)
-            adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
-                                 f"OSCILLATOR STRENGTH ({gauge_short})", data)
-            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
-                                 f"OSCILLATOR STRENGTH ({gauge_short})", data)
-            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
-                                 f"OSCILLATOR STRENGTH ({gauge_short}) - A TRANSITION", data)
+            for method in methods:
+                adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
+                                    f"OSCILLATOR STRENGTH ({gauge_short})", data)
+                adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                    f"OSCILLATOR STRENGTH ({gauge_short})", data)
+                adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                    f"OSCILLATOR STRENGTH ({gauge_short}) - A TRANSITION", data)
 
         if "ROTATIONAL_STRENGTH" in properties:
             data = excitation.rotatory_strength
             props["Rotational strength (velocity gauge)"] = data.reshape(-1)
-            adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
-                                 "ROTATORY STRENGTH (VEL)", data)
-            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
-                                 "ROTATORY STRENGTH (VEL)", data)
-            adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
-                                 "ROTATORY STRENGTH (VEL) - A TRANSITION", data)
+            for method in methods:
+                adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
+                                    "ROTATORY STRENGTH (VEL)", data)
+                adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                    "ROTATORY STRENGTH (VEL)", data)
+                adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
+                                    "ROTATORY STRENGTH (VEL) - A TRANSITION", data)
 
         if "DIPOLE" in properties:
             data = excitation.state_dipole_moment
             props["State dipole moment (in a.u.)"] = data
             data_mat = data.reshape(1, 3)
-            adc_wfn.set_variable(f"{method} ROOT {root_index} (A) DIPOLE MOMENT (LEN)", data_mat)
+            for method in methods:
+                adc_wfn.set_variable(f"{method} ROOT {root_index} (A) DIPOLE MOMENT", data_mat)
 
         computed.append(props)
 

@@ -1,0 +1,108 @@
+import pytest
+
+from utils import *
+
+import psi4
+import numpy as np
+from pathlib import Path
+import json
+from addons import using
+
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+
+# @pytest.fixture
+# def reference_data():
+#     with open(Path(__file__).parent / "adcc_reference_data.json") as f:
+#         reference_data = json.load(f)
+#     return reference_data
+
+with open(Path(__file__).parent / "adcc_reference_data.json") as f:
+    reference_data = json.load(f)
+
+
+pytestcases = []
+for case in reference_data:
+    is_quick = case['config']['label'] == 'quick'
+    marks = [*using('adcc')]
+    if is_quick:
+        marks.append(pytest.mark.quick)
+    pytestcases.append(
+        pytest.param(case, marks=marks, id=case['config']['molname'])
+    )
+
+@pytest.mark.parametrize('case', pytestcases)
+def test_adcc_reference_data(case):
+    conf = case["config"]
+    psi4.core.clean()
+    psi4.set_options({
+        'reference': conf['reference'],
+        'basis': conf['basis'],
+        'guess': 'core',
+        'scf_type': 'pk',
+        'roots_per_irrep': [conf['n_states']],
+        'kind': conf['kind'],
+        'num_core_orbitals': conf['core_orbitals'],
+        'freeze_core': conf['frozen_core'],
+        'num_frozen_uocc': conf['frozen_virtual'],
+        'e_convergence': 1e-10,
+        'd_convergence': 1e-8,
+        'gauge': conf['gauge'],
+    })
+    mol = psi4.core.Molecule.from_string(conf['molstring'])
+    
+    props = ['TRANSITION_DIPOLE', 'DIPOLE', 'OSCILLATOR_STRENGTH', 'ROTATIONAL_STRENGTH']
+    en_adc, wfn = psi4.properties(conf['method'], properties=props, return_wfn=True, molecule=mol)
+    
+    np.testing.assert_allclose(en_adc, case['energy_gs'], atol=1e-7)
+    np.testing.assert_allclose(wfn.variable("CURRENT ENERGY"), case['energy_gs'], atol=1e-7)
+    
+    method = conf['method'].upper()
+    for i in range(conf['n_states']):
+        root_index = i + 1
+        prop_access_patterns = {
+            'excitation_energy': ([
+                f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY",
+                f"{method} ROOT 0 (A) -> ROOT {root_index} (A) EXCITATION ENERGY",
+                f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY - A TRANSITION",
+                f"ADC ROOT 0 -> ROOT {root_index} EXCITATION ENERGY",
+                f"ADC ROOT 0 (A) -> ROOT {root_index} (A) EXCITATION ENERGY",
+                f"ADC ROOT 0 -> ROOT {root_index} EXCITATION ENERGY - A TRANSITION",
+            ], 1e-6),
+            'oscillator_strength': ([
+                f"{method} ROOT 0 (A) -> ROOT {root_index} (A) OSCILLATOR STRENGTH (LEN)",
+                f"{method} ROOT 0 -> ROOT {root_index} OSCILLATOR STRENGTH (LEN)",
+                f"{method} ROOT 0 -> ROOT {root_index} OSCILLATOR STRENGTH (LEN) - A TRANSITION",
+                f"ADC ROOT 0 (A) -> ROOT {root_index} (A) OSCILLATOR STRENGTH (LEN)",
+                f"ADC ROOT 0 -> ROOT {root_index} OSCILLATOR STRENGTH (LEN)",
+                f"ADC ROOT 0 -> ROOT {root_index} OSCILLATOR STRENGTH (LEN) - A TRANSITION",
+            ], 1e-5),
+            'oscillator_strength_velocity': ([
+                f"{method} ROOT 0 (A) -> ROOT {root_index} (A) OSCILLATOR STRENGTH (VEL)",
+                f"{method} ROOT 0 -> ROOT {root_index} OSCILLATOR STRENGTH (VEL)",
+                f"{method} ROOT 0 -> ROOT {root_index} OSCILLATOR STRENGTH (VEL) - A TRANSITION",
+                f"ADC ROOT 0 (A) -> ROOT {root_index} (A) OSCILLATOR STRENGTH (VEL)",
+                f"ADC ROOT 0 -> ROOT {root_index} OSCILLATOR STRENGTH (VEL)",
+                f"ADC ROOT 0 -> ROOT {root_index} OSCILLATOR STRENGTH (VEL) - A TRANSITION",
+            ], 1e-5),
+            'rotatory_strength': ([
+                f"{method} ROOT 0 (A) -> ROOT {root_index} (A) ROTATORY STRENGTH (VEL)",
+                f"{method} ROOT 0 -> ROOT {root_index} ROTATORY STRENGTH (VEL)",
+                f"{method} ROOT 0 -> ROOT {root_index} ROTATORY STRENGTH (VEL) - A TRANSITION",
+                f"ADC ROOT 0 (A) -> ROOT {root_index} (A) ROTATORY STRENGTH (VEL)",
+                f"ADC ROOT 0 -> ROOT {root_index} ROTATORY STRENGTH (VEL)",
+                f"ADC ROOT 0 -> ROOT {root_index} ROTATORY STRENGTH (VEL) - A TRANSITION",
+            ], 1e-5),
+            # TODO: dipole, transition dipole?
+        }
+        for propname, (vars, atol) in prop_access_patterns.items():
+            # Psi lets us select only one gauge, so skip length gauge in case
+            # we have velocity gauge selected
+            if propname == "oscillator_strength" and conf['gauge'] == "velocity":
+                continue
+            for v in vars:
+                ret = wfn.variable(v)
+                np.testing.assert_allclose(ret, case[propname][i], atol=atol, err_msg=f"Result for {v} incorrect.")
+
+# TODO: formaldehyde PE-ADC tests
