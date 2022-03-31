@@ -12,24 +12,24 @@ from addons import using
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
-# @pytest.fixture
-# def reference_data():
-#     with open(Path(__file__).parent / "adcc_reference_data.json") as f:
-#         reference_data = json.load(f)
-#     return reference_data
-
 with open(Path(__file__).parent / "adcc_reference_data.json") as f:
     reference_data = json.load(f)
 
 
 pytestcases = []
 for case in reference_data:
-    is_quick = case['config']['label'] == 'quick'
+    config = case['config']
     marks = [*using('adcc')]
-    if is_quick:
+    if config['label'] == 'quick':
         marks.append(pytest.mark.quick)
+    # for easier manual test selection
+    casename = "_".join([
+        config['molname'], config['basis'],
+        config['method'].replace("(", "").replace(")", ""),
+        config['kind'], str(config['n_states'])
+    ])
     pytestcases.append(
-        pytest.param(case, marks=marks, id=case['config']['molname'])
+        pytest.param(case, marks=marks, id=casename)
     )
 
 @pytest.mark.parametrize('case', pytestcases)
@@ -51,13 +51,13 @@ def test_adcc_reference_data(case):
         'gauge': conf['gauge'],
     })
     mol = psi4.core.Molecule.from_string(conf['molstring'])
-    
+
     props = ['TRANSITION_DIPOLE', 'DIPOLE', 'OSCILLATOR_STRENGTH', 'ROTATIONAL_STRENGTH']
     en_adc, wfn = psi4.properties(conf['method'], properties=props, return_wfn=True, molecule=mol)
-    
+
     np.testing.assert_allclose(en_adc, case['energy_gs'], atol=1e-7)
     np.testing.assert_allclose(wfn.variable("CURRENT ENERGY"), case['energy_gs'], atol=1e-7)
-    
+
     method = conf['method'].upper()
     for i in range(conf['n_states']):
         root_index = i + 1
@@ -97,9 +97,10 @@ def test_adcc_reference_data(case):
             # TODO: dipole, transition dipole?
         }
         for propname, (vars, atol) in prop_access_patterns.items():
-            # Psi lets us select only one gauge, so skip length gauge in case
-            # we have velocity gauge selected
-            if propname == "oscillator_strength" and conf['gauge'] == "velocity":
+            # Psi lets us select only one gauge, so skip length gauge oscillator strength
+            # in case we have selected velocity gauge and vice versa
+            if propname == "oscillator_strength" and conf['gauge'] == "velocity" or \
+                propname == "oscillator_strength_velocity" and conf['gauge'] == "length":
                 continue
             for v in vars:
                 ret = wfn.variable(v)
