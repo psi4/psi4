@@ -37,7 +37,6 @@
 namespace psi {
 // TODO:  This is all in typedefs.h ....
 class BasisSet;
-class ObaraSaikaTwoCenterVIRecursion;
 class OneBodyAOInt;
 class IntegralFactory;
 class SphericalTransform;

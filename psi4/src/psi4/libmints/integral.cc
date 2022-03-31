@@ -39,7 +39,6 @@
 #include "psi4/libmints/nabla.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/electrostatic.h"
-#include "psi4/libmints/pseudospectral.h"
 #include "psi4/libmints/kinetic.h"
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/overlap.h"
@@ -130,15 +129,6 @@ OneBodyAOInt* IntegralFactory::ao_rel_potential(int deriv) {
 OneBodySOInt* IntegralFactory::so_rel_potential(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_rel_potential(deriv));
     return new RelPotentialSOInt(ao_int, this);
-}
-
-OneBodyAOInt* IntegralFactory::ao_pseudospectral(int deriv) {
-    return new PseudospectralInt(spherical_transforms_, bs1_, bs2_, deriv);
-}
-
-OneBodySOInt* IntegralFactory::so_pseudospectral(int deriv) {
-    std::shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(deriv));
-    return new OneBodySOInt(ao_int, this);
 }
 
 OneBodyAOInt* IntegralFactory::electrostatic() { return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0); }
