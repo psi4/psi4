@@ -91,12 +91,12 @@ for transition, data in test_data.items(): # TEST
     for property, value in data.items(): # TEST
         # Change these numbers to 6 ASAP # TEST
         if "EINSTEIN" not in property: # TEST
-            compare_values(value, wfn.variable(f"CC {transition} {property}"), 6, f"CC {transition} {property}") # TEST
-            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), 6, f"CCSD {transition} {property}") # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), 4, f"CC {transition} {property}") # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), 4, f"CCSD {transition} {property}") # TEST
         else: # TEST 
             # Large numbers need "special" testing. # TEST
-            compare_values(value, wfn.variable(f"CC {transition} {property}"), f"CC {transition} {property}", atol=1e-6, rtol=1e-5) # TEST
-            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), f"CCSD {transition} {property}", atol=1e-6, rtol=1e-5) # TEST
+            compare_values(value, wfn.variable(f"CC {transition} {property}"), f"CC {transition} {property}", atol=1e-6, rtol=1e-4) # TEST
+            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), f"CCSD {transition} {property}", atol=1e-6, rtol=1e-4) # TEST
 
 
 --------------------------------------------------------------------------
