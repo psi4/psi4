@@ -169,7 +169,10 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     # * appending Psi4 import path (after all, it worked previous line) since partial/relative paths not robust
     psiimport = Path(psi4.__file__).parent.parent
     env = os.environ.copy()
-    env["PYTHONPATH"] = env["PYTHONPATH"] + os.pathsep + str(psiimport)
+    if "PYTHONPATH" in env:
+        env["PYTHONPATH"] = env["PYTHONPATH"] + os.pathsep + str(psiimport)
+    else:
+        env["PYTHONPATH"] = str(psiimport)
 
     ctestdir = Path(inputdatloc).resolve().parent
 
