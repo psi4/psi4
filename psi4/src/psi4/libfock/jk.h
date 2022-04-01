@@ -340,6 +340,8 @@ class PSI_API JK {
 
     /// Memory (doubles) used to hold J/K/wK/C/D and ao versions, at current moment
     size_t memory_overhead() const;
+    /// Zero out all J, K, and wK matrices
+    void zero();
 
    public:
     // => Constructors <= //

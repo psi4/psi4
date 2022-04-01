@@ -89,6 +89,10 @@ void DiskJK::preiterations() {
     mints.reset();
 }
 void DiskJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
     auto psio = std::make_shared<PSIO>();
     IWL* iwl = new IWL(psio.get(), PSIF_SO_TEI, cutoff_, 1, 1);
     Label* lblptr = iwl->labels();

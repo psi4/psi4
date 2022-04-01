@@ -114,6 +114,10 @@ void PKJK::preiterations() {
 }
 
 void PKJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
     timer_on("PK computes JK");
     // We form the vector containing the density matrix triangular elements
     PKmanager_->prepare_JK(D_ao_, C_left_ao_, C_right_ao_);

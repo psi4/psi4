@@ -330,12 +330,6 @@ void JK::allocate_JK() {
         }
     }
 
-    // Zero out J/K for compute_JK()
-    for (size_t N = 0; N < D_.size(); ++N) {
-        if (do_J_) J_[N]->zero();
-        if (do_K_) K_[N]->zero();
-        if (do_wK_) wK_[N]->zero();
-    }
 }
 void JK::USO2AO() {
     allocate_JK();
@@ -481,11 +475,6 @@ void JK::USO2AO() {
         }
     }
 
-    for (size_t N = 0; N < D_.size(); ++N) {
-        if (do_J_) J_ao_[N]->zero();
-        if (do_K_) K_ao_[N]->zero();
-        if (do_wK_) wK_ao_[N]->zero();
-    }
 }
 void JK::AO2USO() {
     // If already C1, J/K are J_ao/K_ao, pointers are already aliased
@@ -634,11 +623,28 @@ void JK::compute() {
         C_right_.clear();
     }
 }
+
 void JK::set_wcombine(bool wcombine) {
     wcombine_ = wcombine;
     if (wcombine) {
         throw PSIEXCEPTION("To combine exchange terms, use MemDFJK\n");
     }
 }
+
+void JK::zero() {
+    if (do_J_) {
+        for(auto J : J_) J->zero();
+        for(auto J : J_ao_) J->zero();
+    }
+    if (do_K_) {
+        for(auto K : K_) K->zero();
+        for(auto K : K_ao_) K->zero();
+    }
+    if (do_wK_) {
+        for(auto wK : wK_) wK->zero();
+        for(auto wK : wK_ao_) wK->zero();
+    }
+}
+
 void JK::finalize() { postiterations(); }
 }  // namespace psi
