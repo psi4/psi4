@@ -212,6 +212,7 @@ void JK::common_init() {
     omega_ = 0.0;
     omega_alpha_ = 1.0;
     omega_beta_ = 0.0;
+    early_screening_ = false;
 
     std::shared_ptr<IntegralFactory> integral =
         std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
