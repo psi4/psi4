@@ -610,7 +610,7 @@ Libint2YukawaERI::~Libint2YukawaERI(){};
 
 /// F12
 
-Libint2F12::Libint2F12(std::vector<std::pair<double, double>> coeff_exp, const IntegralFactory *integral,
+Libint2F12::Libint2F12(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
                        double screening_threshold, int deriv, bool use_shell_pairs, bool needs_exchange)
     : Libint2TwoElectronInt(integral, deriv, screening_threshold, use_shell_pairs, needs_exchange) {
     timer_on("Libint2F12::Libint2F12");
@@ -638,10 +638,10 @@ Libint2F12::Libint2F12(std::vector<std::pair<double, double>> coeff_exp, const I
     }
 
     for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::cgtg, max_nprim, max_am, der, max_precision, coeff_exp, braket_);
+        engines_.emplace_back(libint2::Operator::cgtg, max_nprim, max_am, der, max_precision, exp_coeff, braket_);
     }
     max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
-    schwarz_engine_ = libint2::Engine(libint2::Operator::cgtg, max_nprim, max_am, 0, max_precision, coeff_exp,
+    schwarz_engine_ = libint2::Engine(libint2::Operator::cgtg, max_nprim, max_am, 0, max_precision, exp_coeff,
                                       libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2F12::Libint2F12");
@@ -713,7 +713,7 @@ Libint2F12::~Libint2F12(){};
 
 /// F12G12
 
-Libint2F12G12::Libint2F12G12(std::vector<std::pair<double, double>> coeff_exp, const IntegralFactory *integral,
+Libint2F12G12::Libint2F12G12(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
                              double screening_threshold, int deriv, bool use_shell_pairs, bool needs_exchange)
     : Libint2TwoElectronInt(integral, deriv, screening_threshold, use_shell_pairs, needs_exchange) {
     timer_on("Libint2F12G12::Libint2F12G12");
@@ -741,11 +741,11 @@ Libint2F12G12::Libint2F12G12(std::vector<std::pair<double, double>> coeff_exp, c
     }
 
     for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::cgtg_x_coulomb, max_nprim, max_am, der, max_precision, coeff_exp,
+        engines_.emplace_back(libint2::Operator::cgtg_x_coulomb, max_nprim, max_am, der, max_precision, exp_coeff,
                               braket_);
     }
     max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
-    schwarz_engine_ = libint2::Engine(libint2::Operator::cgtg_x_coulomb, max_nprim, max_am, 0, max_precision, coeff_exp,
+    schwarz_engine_ = libint2::Engine(libint2::Operator::cgtg_x_coulomb, max_nprim, max_am, 0, max_precision, exp_coeff,
                                       libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2F12G12::Libint2F12G12");
@@ -829,7 +829,7 @@ Libint2F12G12::~Libint2F12G12(){};
 
 /// F12DoubleCommutator
 
-Libint2F12DoubleCommutator::Libint2F12DoubleCommutator(std::vector<std::pair<double, double>> coeff_exp,
+Libint2F12DoubleCommutator::Libint2F12DoubleCommutator(std::vector<std::pair<double, double>> exp_coeff,
                                                        const IntegralFactory *integral, double screening_threshold,
                                                        int deriv, bool use_shell_pairs, bool needs_exchange)
     : Libint2TwoElectronInt(integral, deriv, screening_threshold, use_shell_pairs, needs_exchange) {
@@ -858,10 +858,10 @@ Libint2F12DoubleCommutator::Libint2F12DoubleCommutator(std::vector<std::pair<dou
     }
 
     for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::delcgtg2, max_nprim, max_am, der, max_precision, coeff_exp, braket_);
+        engines_.emplace_back(libint2::Operator::delcgtg2, max_nprim, max_am, der, max_precision, exp_coeff, braket_);
     }
     max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
-    schwarz_engine_ = libint2::Engine(libint2::Operator::delcgtg2, max_nprim, max_am, 0, max_precision, coeff_exp,
+    schwarz_engine_ = libint2::Engine(libint2::Operator::delcgtg2, max_nprim, max_am, 0, max_precision, exp_coeff,
                                       libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2F12DoubleCommutator::Libint2F12DoubleCommutator");

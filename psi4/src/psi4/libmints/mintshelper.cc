@@ -888,30 +888,46 @@ SharedMatrix MintsHelper::ao_erfc_eri(double omega) {
     return ao_helper("AO ERFC ERI Tensor", ints);
 }
 
-SharedMatrix MintsHelper::ao_f12(std::vector<std::pair<double, double>> coeff_exp) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12(coeff_exp));
+SharedMatrix MintsHelper::ao_f12(std::vector<std::pair<double, double>> exp_coeff) {
+    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12(exp_coeff));
     return ao_helper("AO F12 Tensor", ints);
 }
 
-SharedMatrix MintsHelper::ao_f12(std::vector<std::pair<double, double>> coeff_exp, std::shared_ptr<BasisSet> bs1,
+SharedMatrix MintsHelper::ao_f12(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
                                  std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
                                  std::shared_ptr<BasisSet> bs4) {
     IntegralFactory intf(bs1, bs2, bs3, bs4);
-    std::shared_ptr<TwoBodyAOInt> ints(intf.f12(coeff_exp));
+    std::shared_ptr<TwoBodyAOInt> ints(intf.f12(exp_coeff));
     return ao_helper("AO F12 Tensor", ints);
 }
 
-SharedMatrix MintsHelper::ao_f12_squared(std::vector<std::pair<double, double>> coeff_exp) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12_squared(coeff_exp));
+SharedMatrix MintsHelper::ao_f12_squared(std::vector<std::pair<double, double>> exp_coeff) {
+    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12_squared(exp_coeff));
     return ao_helper("AO F12 Squared Tensor", ints);
 }
 
-SharedMatrix MintsHelper::ao_f12_squared(std::vector<std::pair<double, double>> coeff_exp,
+SharedMatrix MintsHelper::ao_f12_squared(std::vector<std::pair<double, double>> exp_coeff,
                                          std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                                          std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
     IntegralFactory intf(bs1, bs2, bs3, bs4);
-    std::shared_ptr<TwoBodyAOInt> ints(intf.f12_squared(coeff_exp));
+    std::shared_ptr<TwoBodyAOInt> ints(intf.f12_squared(exp_coeff));
     return ao_helper("AO F12 Squared Tensor", ints);
+}
+
+std::vector<std::pair<double, double>> MintsHelper::f12_cgtg(double exponent) {
+    // The fitting coefficients and the exponents
+    std::vector<std::pair<double, double>> exp_coeff = {};
+    std::vector<double> coeffs = {-0.31442480597241274, -0.30369575353387201, -0.16806968430232927,
+                                  -0.098115812152857612, -0.060246640234342785, -0.037263541968504843};
+    std::vector<double> exps = {0.22085085450735284, 1.0040191632019282, 3.6212173098378728,
+                                12.162483236221904, 45.855332448029337, 254.23460688554644};
+
+    for (int i = 0; i < exps.size(); i++){
+        auto exp_scaled = (exponent * exponent) * exps[i];
+        exp_coeff.push_back(std::make_pair(exp_scaled, coeffs[i]));
+    }
+    
+    return exp_coeff;
 }
 
 SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::shared_ptr<ThreeCenterOverlapInt> ints) {
@@ -964,13 +980,13 @@ SharedMatrix MintsHelper::ao_3coverlap(std::shared_ptr<BasisSet> bs1, std::share
     return ao_3coverlap_helper("AO 3-Center Overlap Tensor", ints);
 }
 
-SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> coeff_exp) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12g12(coeff_exp));
+SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_coeff) {
+    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12g12(exp_coeff));
     return ao_helper("AO F12G12 Tensor", ints);
 }
 
-SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> coeff_exp) {
-    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12_double_commutator(coeff_exp));
+SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff) {
+    std::shared_ptr<TwoBodyAOInt> ints(integral_->f12_double_commutator(exp_coeff));
     return ao_helper("AO F12 Double Commutator Tensor", ints);
 }
 
@@ -987,30 +1003,30 @@ SharedMatrix MintsHelper::mo_erfc_eri(double omega, SharedMatrix C1, SharedMatri
     return mo_ints;
 }
 
-SharedMatrix MintsHelper::mo_f12(std::vector<std::pair<double, double>> coeff_exp, SharedMatrix C1, SharedMatrix C2,
+SharedMatrix MintsHelper::mo_f12(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1, SharedMatrix C2,
                                  SharedMatrix C3, SharedMatrix C4) {
-    SharedMatrix mo_ints = mo_eri_helper(ao_f12(coeff_exp), C1, C2, C3, C4);
+    SharedMatrix mo_ints = mo_eri_helper(ao_f12(exp_coeff), C1, C2, C3, C4);
     mo_ints->set_name("MO F12 Tensor");
     return mo_ints;
 }
 
-SharedMatrix MintsHelper::mo_f12_squared(std::vector<std::pair<double, double>> coeff_exp, SharedMatrix C1,
+SharedMatrix MintsHelper::mo_f12_squared(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1,
                                          SharedMatrix C2, SharedMatrix C3, SharedMatrix C4) {
-    SharedMatrix mo_ints = mo_eri_helper(ao_f12_squared(coeff_exp), C1, C2, C3, C4);
+    SharedMatrix mo_ints = mo_eri_helper(ao_f12_squared(exp_coeff), C1, C2, C3, C4);
     mo_ints->set_name("MO F12 Squared Tensor");
     return mo_ints;
 }
 
-SharedMatrix MintsHelper::mo_f12g12(std::vector<std::pair<double, double>> coeff_exp, SharedMatrix C1, SharedMatrix C2,
+SharedMatrix MintsHelper::mo_f12g12(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1, SharedMatrix C2,
                                     SharedMatrix C3, SharedMatrix C4) {
-    SharedMatrix mo_ints = mo_eri_helper(ao_f12g12(coeff_exp), C1, C2, C3, C4);
+    SharedMatrix mo_ints = mo_eri_helper(ao_f12g12(exp_coeff), C1, C2, C3, C4);
     mo_ints->set_name("MO F12G12 Tensor");
     return mo_ints;
 }
 
-SharedMatrix MintsHelper::mo_f12_double_commutator(std::vector<std::pair<double, double>> coeff_exp, SharedMatrix C1,
+SharedMatrix MintsHelper::mo_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1,
                                                    SharedMatrix C2, SharedMatrix C3, SharedMatrix C4) {
-    SharedMatrix mo_ints = mo_eri_helper(ao_f12_double_commutator(coeff_exp), C1, C2, C3, C4);
+    SharedMatrix mo_ints = mo_eri_helper(ao_f12_double_commutator(exp_coeff), C1, C2, C3, C4);
     mo_ints->set_name("MO F12 Double Commutator Tensor");
     return mo_ints;
 }

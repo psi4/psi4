@@ -1484,6 +1484,7 @@ void export_mints(py::module& m) {
         .def("ao_f12g12", &MintsHelper::ao_f12g12, "AO F12G12 integrals", "corr"_a)
         .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
              "corr"_a)
+	.def("f12_cgtg", &MintsHelper::f12_cgtg, "F12 Fitted Slater Correlation Factor", "exponent"_a = 1.0)
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
         .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overlap integrals", "bs1"_a, "bs2"_a,
              "bs3"_a)

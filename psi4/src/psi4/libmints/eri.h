@@ -349,7 +349,7 @@ class Libint2ErfComplementERI : public Libint2TwoElectronInt {
 
 class Libint2F12 : public Libint2TwoElectronInt {
    public:
-    Libint2F12(std::vector<std::pair<double, double>> coeff_exp, const IntegralFactory *integral,
+    Libint2F12(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
                double screening_threshold, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);
     ~Libint2F12() override;
     Libint2F12 *clone() const override { return new Libint2F12(*this); }
@@ -370,13 +370,13 @@ inline std::vector<std::pair<double, double>> take_square(std::vector<std::pair<
     auto n = input.size();
     std::vector<std::pair<double, double>> output;
     for (int i = 0; i < n; ++i) {
-        auto c_i = input[i].first;
-        auto e_i = input[i].second;
+        auto e_i = input[i].first;
+        auto c_i = input[i].second;
         for (int j = i; j < n; ++j) {
-            auto c_j = input[j].first;
-            auto e_j = input[j].second;
+            auto e_j = input[j].first;
+            auto c_j = input[j].second;
             double scale = i == j ? 1.0 : 2.0;
-            output.emplace_back(std::make_pair(scale * c_i * c_j, e_i + e_j));
+            output.emplace_back(std::make_pair(e_i + e_j, scale * c_i * c_j));
         }
     }
     return output;
@@ -384,15 +384,15 @@ inline std::vector<std::pair<double, double>> take_square(std::vector<std::pair<
 
 class Libint2F12Squared : public Libint2F12 {
    public:
-    Libint2F12Squared(std::vector<std::pair<double, double>> coeff_exp, const IntegralFactory *integral,
+    Libint2F12Squared(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
                       double screening_threshold, int deriv = 0, bool use_shell_pairs = false,
                       bool needs_exchange = false)
-        : Libint2F12(take_square(coeff_exp), integral, screening_threshold, deriv, use_shell_pairs, needs_exchange) {}
+        : Libint2F12(take_square(exp_coeff), integral, screening_threshold, deriv, use_shell_pairs, needs_exchange) {}
 };
 
 class Libint2F12G12 : public Libint2TwoElectronInt {
    public:
-    Libint2F12G12(std::vector<std::pair<double, double>> coeff_exp, const IntegralFactory *integral,
+    Libint2F12G12(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
                   double screening_threshold, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);
     ~Libint2F12G12() override;
     Libint2F12G12 *clone() const override { return new Libint2F12G12(*this); }
@@ -411,7 +411,7 @@ class Libint2F12G12 : public Libint2TwoElectronInt {
 
 class Libint2F12DoubleCommutator : public Libint2TwoElectronInt {
    public:
-    Libint2F12DoubleCommutator(std::vector<std::pair<double, double>> coeff_exp, const IntegralFactory *integral,
+    Libint2F12DoubleCommutator(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
                                double screening_threshold, int deriv = 0, bool use_shell_pairs = false,
                                bool needs_exchange = false);
     ~Libint2F12DoubleCommutator() override;
