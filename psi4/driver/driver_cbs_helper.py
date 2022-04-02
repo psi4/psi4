@@ -359,7 +359,8 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI:
     if alpha is None:
         alpha = 6.30
 
-    #beta_division = 1 / (math.exp(-1 * alpha) * (math.exp(math.sqrt(zHI)) - math.exp(math.sqrt(zLO))))
+    # prior to April 2022, this wrong expression was used
+    # beta_division = 1 / (math.exp(-1 * alpha) * (math.exp(math.sqrt(zHI)) - math.exp(math.sqrt(zLO))))
     beta_division = 1 / (math.exp(-1 * alpha * math.sqrt(zHI)) - math.exp(-1 * alpha * math.sqrt(zLO)))
     beta_mult = math.exp(-1 * alpha * math.sqrt(zHI))
 
@@ -604,7 +605,7 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, z
 
     if isinstance(valueLO, float):
         value = (valueHI * zHI**alpha - valueLO * zLO**alpha) / (zHI**alpha - zLO**alpha)
-        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))  # lgtm[py/unused-local-variable]
+        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))
 
         final = value
         if verbose:
@@ -613,6 +614,7 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, z
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
             cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % alpha
+            cbsscheme += f"""   Beta (coefficient) Value:         {beta: 16.12f}\n\n"""
             cbsscheme += """   Extrapolated Energy:              % 16.12f\n\n""" % value
             # Note that in energy-only days, this used to print SCF and Correlation, not Total, Energy
 
@@ -630,7 +632,7 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, z
         valueHI = np.array(valueHI)
 
         value = (valueHI * zHI**alpha - valueLO * zLO**alpha) / (zHI**alpha - zLO**alpha)
-        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))  # lgtm[py/unused-local-variable]
+        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))
 
         if verbose > 2:
             cbsscheme = f"""\n   ==> Helgaker 2-point correlated extrapolation for method: {functionname.upper()} <==\n"""

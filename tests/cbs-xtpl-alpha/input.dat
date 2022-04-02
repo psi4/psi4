@@ -4,9 +4,10 @@ import numpy as np
 scf_dtz_default_ref          = -76.0581961549    #TEST
 scf_dtz_a_1_400_ref          = -76.0606709175    #TEST
 scf_dtz_truhlar_ref          = -76.0609512019    #TEST
+# old, wrong karton refs pre-Apr 2022
 #scf_dtz_karton_ref           = -76.0507952348    #TEST
-scf_dtz_karton_ref           = -76.055604665     #TEST
 #scf_def2_a_0_5_ref           = -76.0596925496    #TEST
+scf_dtz_karton_ref           = -76.055604665     #TEST
 scf_def2_a_0_5_ref           = -76.082654803     #TEST
 mp2_corl_a_3_0_ref           =  -0.3049557793    #TEST
 mp2_corl_a_2_4_ref           =  -0.3159281582    #TEST
