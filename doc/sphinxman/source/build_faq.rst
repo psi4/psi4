@@ -131,6 +131,7 @@ Running |PSIfour|
 #. :ref:`faq:psi4PBS`
 #. :ref:`faq:psi4fileretention`
 #. :ref:`faq:logging`
+#. :ref:`faq:findexemod`
 
 Runtime Errors and Debugging
 ----------------------------

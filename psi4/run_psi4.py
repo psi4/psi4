@@ -64,6 +64,8 @@ parser.add_argument("-m", "--messy", action='store_true',
 parser.add_argument("--psiapi-path", action='store_true',
                     help="""Generates a bash command to source correct Python """
                          """interpreter and path for ``python -c "import psi4"``""")
+parser.add_argument("--module", action='store_true',
+                    help="""Generates the path to PsiAPI loading.""")
 parser.add_argument("-v", "--verbose", action='store_true', help="Prints Psithon to Python translation.")
 parser.add_argument("--inplace", action='store_true',
                     help="Runs Psi4 from the source directory. !Warning! expert option.")
@@ -72,7 +74,7 @@ parser.add_argument("-l", "--psidatadir",
 parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
 parser.add_argument("--qcschema", "--schema", action='store_true',
-                    help="Runs input file as QCSchema. Can either be JSON or MessagePack input.")
+                    help="Runs input file as QCSchema. Can either be JSON or MessagePack input. Use `--output` to not overwrite schema input file.")
 parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
@@ -162,6 +164,10 @@ if args['psiapi_path']:
     pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
     bin_dir = Path(cmake_install_prefix) / 'bin'
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
+    sys.exit()
+
+if args["module"]:
+    print(lib_dir)
     sys.exit()
 
 # Transmit any argument psidatadir through environ
