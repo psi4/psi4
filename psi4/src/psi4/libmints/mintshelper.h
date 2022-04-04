@@ -323,7 +323,7 @@ class PSI_API MintsHelper {
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
     /// Vector SO Dipole Integrals
-    std::vector<SharedMatrix> so_dipole();
+    std::vector<SharedMatrix> so_dipole() const;
     /// Vector SO Nabla Integrals
     std::vector<SharedMatrix> so_nabla() const;
     /// Vector SO Angular Momentum Integrals

@@ -1458,7 +1458,7 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
     cached_oe_ints_[std::make_pair(PSIF_SO_V, include_perturbations)] = so_potential_x2c;
 }
 
-std::vector<SharedMatrix> MintsHelper::so_dipole() {
+std::vector<SharedMatrix> MintsHelper::so_dipole() const {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(1, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry

@@ -48,7 +48,7 @@
 namespace psi {
 namespace ccdensity {
 
-void transdip(MintsHelper &mints) {
+void transdip(const MintsHelper &mints) {
     int nmo, nso;
     double **scf_qt, **X;
     double **MUX_MO, **MUY_MO, **MUZ_MO;
