@@ -53,9 +53,9 @@ namespace ccdensity {
 
 #define _au2cgs 471.44353920
 
-void transdip(MintsHelper &mints);
-void transp(MintsHelper &mints, double sign);
-void transL(MintsHelper &mints, double sign);
+void transdip(const MintsHelper &mints);
+void transp(const MintsHelper &mints, double sign);
+void transL(const MintsHelper &mints, double sign);
 
 void ex_rotational_strength(SharedWavefunction wfn, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data) {
     int i, j, k;
@@ -69,7 +69,7 @@ void ex_rotational_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
     double conv;
     double delta_ee;
     int nmo = moinfo.nmo;
-    const auto& mints = wfn->mintshelper();
+    const auto& mints = *wfn->mintshelper();
 
     transdip(mints);
 

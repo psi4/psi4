@@ -325,9 +325,9 @@ class PSI_API MintsHelper {
     /// Vector SO Dipole Integrals
     std::vector<SharedMatrix> so_dipole();
     /// Vector SO Nabla Integrals
-    std::vector<SharedMatrix> so_nabla();
+    std::vector<SharedMatrix> so_nabla() const;
     /// Vector SO Angular Momentum Integrals
-    std::vector<SharedMatrix> so_angular_momentum();
+    std::vector<SharedMatrix> so_angular_momentum() const;
     /// Vector SO Quadrupole Integrals
     std::vector<SharedMatrix> so_quadrupole();
     /// Vector SO Traceless Quadrupole Integrals

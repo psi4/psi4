@@ -440,7 +440,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             oscillator_strength(ref_wfn, &(td_params[i]));
             outfile->Printf("Doing transition\n");
             if (params.ref == 0) {
-                rotational_strength(ref_wfn, mints, &(td_params[i]));
+                rotational_strength(ref_wfn, &(td_params[i]));
             }
             outfile->Printf("Doing transition\n");
             td_cleanup();
@@ -516,7 +516,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                     ex_oscillator_strength(ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
                     if (params.ref == 0) {
                         // ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
-                        ex_rotational_strength(ref_wfn, mints, &(td_params[state1]), &(td_params[state2]), &xtd_data);
+                        ex_rotational_strength(ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
                     }
 
                     xtd_params.push_back(xtd_data);
@@ -530,7 +530,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
     }  // End params.transition IF loop
 
-    // outfile->Printf("I am here\n");
     dpd_close(0);
 
     if (params.ref == 2)
