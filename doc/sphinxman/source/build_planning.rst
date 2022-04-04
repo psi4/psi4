@@ -1865,7 +1865,7 @@ How to use logging in Psi4
 A log file is generated alongside the output file and has extension
 ``.log``. Selected key information is sent to it. The log file contents
 are provisional and haphazard, so don't start relying upon them. It is
-tentatively envisioned that log files will have much the same results as
+tentatively envisioned that log files will have much of the same results as output
 files but more as structured data than narrative, nicely formatted data.
 In some cases where external calls are involved, the most detailed
 information may only be collectable in the log file. It is
@@ -1873,7 +1873,7 @@ worthwhile to check the log file if expected results are missing from
 the usual output file. If the log file is empty, the logging level may
 be set too low.
 
-To change the logging level to DEBUG in PSIthon::
+To change the logging level to DEBUG from the command-line::
 
   >>> psi4 --logging 10
 
