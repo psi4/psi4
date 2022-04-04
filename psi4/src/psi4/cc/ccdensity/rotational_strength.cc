@@ -57,7 +57,7 @@ void transdip(MintsHelper &mints);
 void transp(MintsHelper &mints, double sign);
 void transL(MintsHelper &mints, double sign);
 
-void rotational_strength(SharedWavefunction wfn, MintsHelper &mints, struct TD_Params *S) {
+void rotational_strength(SharedWavefunction wfn, struct TD_Params *S) {
     int i, j, k;
     int no, nv, nt;
     double lt_x, lt_y, lt_z;
@@ -68,6 +68,7 @@ void rotational_strength(SharedWavefunction wfn, MintsHelper &mints, struct TD_P
     double rs;
     double conv;
     int nmo = moinfo.nmo;
+    const auto& mints = wfn->mintshelper();
 
     transdip(mints);
 

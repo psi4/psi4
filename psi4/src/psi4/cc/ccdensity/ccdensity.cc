@@ -118,7 +118,7 @@ void td_setup(const struct TD_Params& S);
 void tdensity(const struct TD_Params& S);
 void td_print();
 void oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
-void rotational_strength(std::shared_ptr<Wavefunction> wfn, MintsHelper &mints, struct TD_Params *S);
+void rotational_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
 void ael(struct RHO_Params *rho_params);
 void cleanup();
 void td_cleanup();
@@ -132,7 +132,7 @@ void ex_td_setup(const struct TD_Params& S, const struct TD_Params& U);
 void ex_td_cleanup();
 void ex_oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S, struct TD_Params *U,
                             struct XTD_Params *xtd_data);
-void ex_rotational_strength(std::shared_ptr<Wavefunction>, MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
+void ex_rotational_strength(std::shared_ptr<Wavefunction>, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_td_print(std::vector<struct XTD_Params>);
 SharedMatrix block_to_matrix(double **);
 
