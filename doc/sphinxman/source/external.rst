@@ -495,6 +495,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    :envvar:`PSIDATADIR` and specifies the path to the Psi data
    library (ends in ``share/psi4``). Expert mode.
 
+.. option:: --loglevel <int>
+
+   Sets logging level: WARN=30, INFO=20, DEBUG=10.
+
 .. option:: -m, --messy
 
    Leave temporary files after the run is completed.

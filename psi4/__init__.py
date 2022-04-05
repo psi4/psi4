@@ -52,7 +52,7 @@ if not os.path.isdir(data_dir):
 # Init core
 from . import core
 
-from psi4.core import set_output_file, get_num_threads, set_num_threads
+from psi4.core import get_num_threads, set_num_threads
 core.initialize()
 
 if "PSI_SCRATCH" in os.environ.keys():
@@ -83,7 +83,7 @@ from .header import print_header
 from .metadata import __version__, version_formatter
 
 # A few extraneous functions
-from .extras import get_input_directory, addons, test
+from .extras import get_input_directory, addons, test, set_output_file
 from psi4.core import get_variable  # kill off in 1.4
 from psi4.core import variable, set_variable
 
@@ -97,3 +97,7 @@ if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
     sys.path.insert(1, "@cppe_PYMOD@")
 if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
     sys.path.insert(1, "@pylibefp_PYMOD@")
+
+# Create a custom logger
+import logging
+logger = logging.getLogger(__name__)
