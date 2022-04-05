@@ -97,7 +97,7 @@ def test_adcc_reference_data(case):
             'state_dipole_moment': ([
                 f"{method} ROOT {root_index} (A) DIPOLE MOMENT",
                 f"ADC ROOT {root_index} (A) DIPOLE MOMENT",
-            ], 1e-5),
+            ], 1e-4),
         }
         for propname, (vars, atol) in prop_access_patterns.items():
             # Psi lets us select only one gauge, so skip length gauge oscillator strength
@@ -110,5 +110,3 @@ def test_adcc_reference_data(case):
                 if isinstance(ret, psi4.core.Matrix):
                     ret = ret.np.flatten()
                 np.testing.assert_allclose(ret, case[propname][i], atol=atol, err_msg=f"Result for {v} incorrect.")
-
-# TODO: formaldehyde PE-ADC tests
