@@ -170,7 +170,7 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     psiimport = Path(psi4.__file__).parent.parent
     env = os.environ.copy()
     if "PYTHONPATH" in env:
-        env["PYTHONPATH"] = env["PYTHONPATH"] + os.pathsep + str(psiimport)
+        env["PYTHONPATH"] += os.pathsep + str(psiimport)
     else:
         env["PYTHONPATH"] = str(psiimport)
 

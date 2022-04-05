@@ -64,7 +64,7 @@ PSIOManager::~PSIOManager() {}
 std::shared_ptr<PSIOManager> PSIOManager::shared_object() { return _default_psio_manager_; }
 
 void PSIOManager::set_default_path(const std::string& path) {
-    if (path.size() && (path.back() == '/')) {
+    if (!path.empty() && (path.back() == '/')) {
         default_path_ = path;
     } else {
         default_path_ = path + "/";
@@ -72,7 +72,7 @@ void PSIOManager::set_default_path(const std::string& path) {
 }
 
 void PSIOManager::set_specific_path(int fileno, const std::string& path) {
-    if (path.size() && (path.back() == '/')) {
+    if (!path.empty() && (path.back() == '/')) {
         specific_paths_[fileno] = path;
     } else {
         specific_paths_[fileno] = path + "/";

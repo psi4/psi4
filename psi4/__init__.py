@@ -36,6 +36,10 @@ if pymod.startswith(os.path.sep + os.path.sep):
 pymod_dir_step = os.path.sep.join(['..'] * pymod.count(os.path.sep))
 data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_DATADIR@', 'psi4'])
 executable = os.path.abspath(os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_BINDIR@', 'psi4']))
+from pathlib import Path
+if not Path(executable).exists():
+    # Win conda recipe moves psi4 executable unknown to CMake
+    executable = str((Path(psi4_module_loc) / ".." / ".." / ".." / "Scripts" / "psi4.exe").resolve())
 
 # from . import config
 # data_dir = config.psidatadir
