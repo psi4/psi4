@@ -267,19 +267,15 @@ After running the ADC calculation in adcc, the interface code sets
 a number of variables in the returned :py:class:`~psi4.core.Wavefunction`
 in case they are computed.
 In the following the ``<method>`` prefix refers to the ADC method (such as ``adc(1)``,
-``adc(3)``, ``cvs-adc(2)-x``). For example excitation energies for ADC(2) are thus
-available via the variable ``ADC(2) excitation energies``.
+``adc(3)``, ``cvs-adc(2)-x``).
 
 
 * Ground state energy terms like ``MP2 correlation energy``, ``MP3 correlation energy``,
   ``MP2 total energy``, ``MP3 total energy``, ``current correlation energy`` and ``current energy``.
+* ``MP2 dipole X`` and the other components: Ground state dipole moments at MP(2) level.
 * ``number of iterations``: The number of iterations the iterative solver required to converge.
 * ``number of excited states``: The number of excited states, which were computed.
-* ``<method> excitation energies``: The obtained excitation energies as a :py:class:`~psi4.core.Matrix`.
-* ``MP2 dipole X`` and the other components: Ground state dipole moments at MP(2) level.
-* ``<method> transition dipoles``, ``<method> oscillator strengths``,
-  ``<method> rotational strengths`` and ``<method> dipoles``:
-  The respective properties as :py:class:`~psi4.core.Matrix`
+* More variables are summarized in :ref:`apdx:psivariables_alpha`.
 
 The following attribute is set on returned wavefunctions:
 

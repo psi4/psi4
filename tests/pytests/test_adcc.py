@@ -94,7 +94,10 @@ def test_adcc_reference_data(case):
                 f"ADC ROOT 0 -> ROOT {root_index} ROTATORY STRENGTH (VEL)",
                 f"ADC ROOT 0 -> ROOT {root_index} ROTATORY STRENGTH (VEL) - A TRANSITION",
             ], 1e-5),
-            # TODO: dipole, transition dipole?
+            'state_dipole_moment': ([
+                f"{method} ROOT {root_index} (A) DIPOLE MOMENT",
+                f"ADC ROOT {root_index} (A) DIPOLE MOMENT",
+            ], 1e-5),
         }
         for propname, (vars, atol) in prop_access_patterns.items():
             # Psi lets us select only one gauge, so skip length gauge oscillator strength
@@ -104,6 +107,8 @@ def test_adcc_reference_data(case):
                 continue
             for v in vars:
                 ret = wfn.variable(v)
+                if isinstance(ret, psi4.core.Matrix):
+                    ret = ret.np.flatten()
                 np.testing.assert_allclose(ret, case[propname][i], atol=atol, err_msg=f"Result for {v} incorrect.")
 
 # TODO: formaldehyde PE-ADC tests

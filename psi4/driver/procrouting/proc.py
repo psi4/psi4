@@ -3813,6 +3813,24 @@ def run_adcc_property(name, **kwargs):
 
         computed.append(props)
 
+        # for Psivar scraper
+        # wfn.set_variable("ADC ROOT 0 -> ROOT m EXCITATION ENERGY")               # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT m (i) EXCITATION ENERGY")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION")  # P::e ADC
+        # wfn.set_array_variable("ADC ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)")                # P::e ADC
+        # wfn.set_array_variable("ADC ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)")        # P::e ADC
+        # wfn.set_array_variable("ADC ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION")  # P::e ADC
+        # wfn.set_array_variable("ADC ROOT m (i) DIPOLE MOMENT")                # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)")               # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION")  # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)")               # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h TRANSITION")  # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL)")               # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (VEL)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h TRANSITION")  # P::e ADC
+
     core.print_out("\nExcited state properties:\n")
     for i, props in enumerate(computed):
         lines = [ind + f"Excited state  {i}"]
