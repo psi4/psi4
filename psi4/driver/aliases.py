@@ -38,6 +38,7 @@ import os
 import re
 import warnings
 
+import psi4
 from psi4.driver import driver_cbs
 
 
@@ -138,10 +139,14 @@ def allen_focal_point(func, label, **kwargs):
     >>> # [1] single-point energy by this composite method
     >>> energy('allen_focal_point')
 
-    >>> # [2] finite-difference geometry optimization embarrasingly parallel
-    >>> optimize('allen_focal_point', mode='sow')
+    >>> # [2] single-point energy reducing the Hartree-Fock basis sets size
+    >>> energy('allen_focal_point', scf_basis='cc-pV[TQ5]Z')
 
     """
+
+    if not psi4.addons("mrcc"):
+        raise ImportError("Install MRCC (executable 'dmrcc') to use the allen_focal_point function.")
+
     scf = {  # HF
         'wfn': 'hf',
         'basis': kwargs.pop('scf_basis', 'cc-pV[Q56]Z'),

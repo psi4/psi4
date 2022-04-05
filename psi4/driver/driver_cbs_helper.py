@@ -28,7 +28,7 @@
 
 import math
 from functools import partial
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
 
@@ -672,16 +672,31 @@ composite_procedures = {
 }
 
 
-def register_xtpl_function(func):
-    """Enable user-defined extrapolation `func`."""
+def register_xtpl_function(func: Callable):
+    """Register a user-defined extrapolation function to use like an built-in one.
 
+    Parameters
+    ----------
+    func
+        A Python function that applies a basis set extrapolation formula to scalars and optionally to
+        NumPy arrays. See :src:`psi4/driver/driver_cbs_helper.py` and :srcsample:`pywrap-cbs1` for
+        examples. The name of the function should follow the pattern ``<scf|corl>_xtpl_<scientist>_<#basis>``.
+
+    """
     if func.__name__.split("_")[-1].isdigit():
         xtpl_procedures[func.__name__] = func
     else:
         raise ValidationError("Extrapolation function names follow <scf|corl>_xtpl_<scientist>_<#basis>")
 
 
-def register_composite_function(func):
-    """Enable user-defined alias to composite method `func`."""
+def register_composite_function(func: Callable):
+    """Register a user-defined composite method function to use like a built-in one.
 
+    Parameters
+    ----------
+    func
+        A Python function that defines a configuration of the :py:func:`psi4.cbs` wrapper.
+        See :src:`psi4/driver/aliases.py` and :srcsample:`cbs-xtpl-nbody` for examples.
+
+    """
     composite_procedures[func.__name__] = func

@@ -108,6 +108,14 @@ PSI Variables by Alpha
 
    Value 1 (0) when the Brueckner orbitals have (have not) converged.
 
+.. psivar:: CBS NUMBER
+   NBODY NUMBER
+   FINDIF NUMBER
+
+   Number of tasks [] the named procedure performs. These are immediate
+   tasks, so if procedures are nested, the total number of tasks is
+   the product.
+
 .. psivar:: CBS TOTAL ENERGY
    CBS CORRELATION ENERGY
    CBS REFERENCE ENERGY

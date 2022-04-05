@@ -68,8 +68,8 @@ below more conveniently than the equivalent second or third items.
 
    The difference is that the main function
    :py:func:`psi4.cbs` and extrapolation schemes like
-   :py:func:`psi4.driver.driver_cbs.xtpl_highest_1` and
-   :py:func:`psi4.driver.driver_cbs.scf_xtpl_helgaker_2` and composite
+   :py:func:`psi4.driver.driver_cbs_helper.xtpl_highest_1` and
+   :py:func:`psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2` and composite
    aliases like :py:func:`psi4.driver.aliases.sherrill_gold_standard`
    and :py:func:`psi4.driver.aliases.allen_focal_point` in the old way
    passed the Python function directly, whereas the new way uses the
@@ -180,19 +180,30 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 Extrapolation Schemes
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: psi4.driver.driver_cbs.xtpl_highest_1
+Basis set extrapolations are encoded into individual functions like the built-in ones below:
 
-.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_2
+.. autofunction:: psi4.driver.driver_cbs_helper.xtpl_highest_1
 
-.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_truhlar_2
+.. autofunction:: psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2
 
-.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_karton_2
+.. autofunction:: psi4.driver.driver_cbs_helper.scf_xtpl_truhlar_2
 
-.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_3
+.. autofunction:: psi4.driver.driver_cbs_helper.scf_xtpl_karton_2
 
-.. autofunction:: psi4.driver.driver_cbs.corl_xtpl_helgaker_2
+.. autofunction:: psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_3
+
+.. autofunction:: psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2
 
 .. autofunction:: psi4.driver.driver_cbs._get_default_xtpl
+
+Additional extrapolation schemes are easy to define by the
+user. Follow models in :src:`psi4/driver/driver_cbs_helper.py`
+and :srcsample:`pywrap-cbs1` and use the
+:py:func:`psi4.driver.driver_cbs_helper.register_xtpl_function` to make
+user-defined functions known to |PSIfour|.
+
+.. autofunction:: psi4.driver.driver_cbs_helper.register_xtpl_function
+
 
 Aliases
 ^^^^^^^
@@ -200,14 +211,18 @@ Aliases
 When a particular composite method or its functional form is going to be
 reused often, it is convenient to define an alias to it. A convenient
 place for such Python code to reside is in :source:`psi4/driver/aliases.py`
-(source location) or ``psi4/lib/psi4/driver/aliases.py`` (installed
-location). No recompilation is necessary after defining an alias. Some
-existing examples are below.
+Some existing examples are below.
 
 .. autofunction:: psi4.driver.aliases.sherrill_gold_standard
 
 .. autofunction:: psi4.driver.aliases.allen_focal_point
 
+Additional composite aliases are easy to define by the
+user. Follow models in :src:`psi4/driver/aliases.py`
+and :srcsample:`cbs-xtpl-nbody` and use the
+:py:func:`psi4.driver.driver_cbs_helper.register_composite_function`
+to make user-defined functions known to |PSIfour|.
 
+.. autofunction:: psi4.driver.driver_cbs_helper.register_composite_function
 
 
