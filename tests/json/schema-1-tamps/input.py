@@ -78,7 +78,7 @@ if all(map(lambda x: x == 0, tIJAB.flatten())) or \
    all(map(lambda x: x == 0, Da.flatten())) :
     raise Exception("Error in computing values to compare against. Could not compare.")
 else :
-    psi4.compare_values(tIJAB, np.array(json_ret["extras"]["psi4:arrays"]["tIjAb"]))
-    psi4.compare_values(tIA, np.array(json_ret["extras"]["psi4:arrays"]["tIA"]))
-    psi4.compare_values(Da, np.array(json_ret["extras"]["psi4:arrays"]["Da"]))
+    psi4.compare_values(tIJAB, np.array(json_ret["extras"]["psi4:tamps"]["tIjAb"]))
+    psi4.compare_values(tIA, np.array(json_ret["extras"]["psi4:tamps"]["tIA"]))
+    psi4.compare_values(Da, np.array(json_ret["extras"]["psi4:tamps"]["Da"]))
 

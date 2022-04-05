@@ -589,13 +589,13 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     # Add in handling of matrix arguments which need to be obtained by a
     # a function call.
 
-    if json_data["extras"].get("psi4:save_tamps", False):
-        if type(wfn.reference_wavefunction()) is psi4.core.RHF :
-            json_data["extras"]["psi4:arrays"] = {}
-            json_data["extras"]["psi4:arrays"]["tIjAb"] = wfn.get_amplitudes()["tIjAb"].to_array().tolist()
-            json_data["extras"]["psi4:arrays"]["tIA"] = wfn.get_amplitudes()["tIA"].to_array().tolist()
-            if json_data["model"]["method"].lower() in ["ccsd", "scf"] :
-                json_data["extras"]["psi4:arrays"]["Da"] = wfn.Da().to_array().tolist()
+    if json_data["model"]["method"].lower() in ["ccsd"] :
+        if json_data["extras"].get("psi4:save_tamps", False):
+            if type(wfn.reference_wavefunction()) is psi4.core.RHF :
+                json_data["extras"]["psi4:tamps"] = {}
+                json_data["extras"]["psi4:tamps"]["tIjAb"] = wfn.get_amplitudes()["tIjAb"].to_array().tolist()
+                json_data["extras"]["psi4:tamps"]["tIA"] = wfn.get_amplitudes()["tIA"].to_array().tolist()
+                json_data["extras"]["psi4:tamps"]["Da"] = wfn.Da().to_array().tolist()
 
         
     # Handle the return result
