@@ -40,9 +40,10 @@
 #include "psi4/psifiles.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
+#include "ccdensity.h"
+#include "Frozen.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #define EXTERN
 #include "globals.h"
 
@@ -266,20 +267,10 @@ void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S) {
     outfile->Printf("\tEinstein A Coefficient   %11.8e \n", einstein_a);
     outfile->Printf("\tEinstein B Coefficient   %11.8e \n", einstein_b);
 
-    // Save oscillator strength to wfn.
-    auto target_sym = moinfo.sym ^ S->irrep;
-    auto idx_num = S->root + static_cast<int>(S->irrep == 0);
-    auto varname = "CC ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") OSCILLATOR STRENGTH (LEN)";
-    wfn->set_scalar_variable(varname, f_x + f_y + f_z);
-    if (params.wfn == "EOM_CCSD") {
-        auto varname = "CCSD ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") OSCILLATOR STRENGTH (LEN)";
-        wfn->set_scalar_variable(varname, f_x + f_y + f_z);
-    } else if (params.wfn == "EOM_CC2") {
-        auto varname = "CC2 ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") OSCILLATOR STRENGTH (LEN)";
-        wfn->set_scalar_variable(varname, f_x + f_y + f_z);
-    } else {
-        throw PSIEXCEPTION("Unknown wfn type");
-    }
+    // Save variables to wfn.
+    scalar_saver_ground(wfn, S, "OSCILLATOR STRENGTH (LEN)", f_x + f_y + f_z);
+    scalar_saver_ground(wfn, S, "EINSTEIN A (LEN)", einstein_a);
+    scalar_saver_ground(wfn, S, "EINSTEIN B (LEN)", einstein_b);
 
     if ((params.ref == 0) || (params.ref == 1)) {
         free_block(MUX_MO);

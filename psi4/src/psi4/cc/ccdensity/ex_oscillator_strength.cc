@@ -44,6 +44,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
+#include "ccdensity.h"
 #define EXTERN
 #include "globals.h"
 
@@ -281,23 +282,13 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
     outfile->Printf("\tEinstein A Coefficient   %11.8e \n", einstein_a);
     outfile->Printf("\tEinstein B Coefficient   %11.8e \n", einstein_b);
 
-    // Save oscillator strength to wfn.
+    // Save variables to wfn.
     // Process::environment.globals["CCname ROOT n (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)"]
-    auto S_sym = moinfo.sym ^ S->irrep;
-    auto U_sym = moinfo.sym ^ U->irrep;
-    auto S_idx = S->root + static_cast<int>(S->irrep == 0);
-    auto U_idx = U->root + static_cast<int>(U->irrep == 0);
-    auto varname = "CC ROOT " + std::to_string(S_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (" + moinfo.labels[U_sym] + ") OSCILLATOR STRENGTH (LEN)";
-    wfn->set_scalar_variable(varname, f_x + f_y + f_z);
-    if (params.wfn == "EOM_CCSD") {
-        auto varname = "CCSD ROOT " + std::to_string(S_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (" + moinfo.labels[U_sym] + ") OSCILLATOR STRENGTH (LEN)";
-        wfn->set_scalar_variable(varname, f_x + f_y + f_z);
-    } else if (params.wfn == "EOM_CC2") {
-        auto varname = "CC2 ROOT " + std::to_string(S_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (" + moinfo.labels[U_sym] + ") OSCILLATOR STRENGTH (LEN)";
-        wfn->set_scalar_variable(varname, f_x + f_y + f_z);
-    } else {
-        throw PSIEXCEPTION("Unknown wfn type");
-    }
+    // Process::environment.globals["CCname ROOT n (h) -> ROOT m (i) EINSTEIN A (LEN)"]
+    // Process::environment.globals["CCname ROOT n (h) -> ROOT m (i) EINSTEIN B (LEN)"]
+    scalar_saver_excited(wfn, S, U, "OSCILLATOR STRENGTH (LEN)", f_x + f_y + f_z);
+    scalar_saver_excited(wfn, S, U, "EINSTEIN A (LEN)", einstein_a);
+    scalar_saver_excited(wfn, S, U, "EINSTEIN B (LEN)", einstein_b);
 
     if ((params.ref == 0) || (params.ref == 1)) {
         free_block(MUX_MO);

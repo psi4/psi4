@@ -146,3 +146,4 @@ Crawford and Stanton, IJQC 98, 601-611 (1998).
 cc55: RHF-EOM-CCSD/6-31g first two excited states of H2O.  Tests excited-state to
 excited-state transition data (oscillator/rotational strengths, Einstein A, etc).
 
+cc56: Test excited-state to excited-state transition starting from a non-totally symmetric irrep. 
