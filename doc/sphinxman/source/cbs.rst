@@ -55,9 +55,25 @@ below more conveniently than the equivalent second or third items.
 
 * ``energy('mp2/cc-pv[dt]z')``
 
-* ``energy(cbs, corl_wfn='mp2', corl_basis='cc-pv[dt]z')``
+* ``energy("cbs", corl_wfn='mp2', corl_basis='cc-pv[dt]z')``
 
-* ``energy(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvtz"}, {"wfn": "mp2", "basis": "cc-pv[dt]z"}])``
+* ``energy("cbs", cbs_metadata=[{"wfn": "hf", "basis": "cc-pvtz"}, {"wfn": "mp2", "basis": "cc-pv[dt]z", "scheme": "corl_xtpl_helgaker_2"}])``
+
+.. caution:: In |PSIfour| previous to Spring 2022 and v1.6, calling certain
+   cbs-related functions like the above looked like ::
+
+    energy(cbs, corl_wfn='mp2', corl_basis='cc-pv[dt]z')
+
+    energy(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvtz"}, {"wfn": "mp2", "basis": "cc-pv[dt]z", "scheme": corl_xtpl_helgaker_2}])
+
+   The difference is that the main function
+   :py:func:`psi4.cbs` and extrapolation schemes like
+   :py:func:`psi4.driver.driver_cbs.xtpl_highest_1` and
+   :py:func:`psi4.driver.driver_cbs.scf_xtpl_helgaker_2` and composite
+   aliases like :py:func:`psi4.driver.aliases.sherrill_gold_standard`
+   and :py:func:`psi4.driver.aliases.allen_focal_point` in the old way
+   passed the Python function directly, whereas the new way uses the
+   string of the function name.
 
 A CCSD(T) DT coupled-cluster correction atop a TQ MP2 extrapolation
 geometry optimization can also be accessed through the first item below more
@@ -65,9 +81,9 @@ conveniently than the equivalent second and third items.
 
 * ``optimize('mp2/cc-pv[tq]z + D:ccsd(t)/cc-pvdz')``
 
-* ``optimize(cbs, corl_wfn='mp2', corl_basis='cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='cc-pvdz')``
+* ``optimize("cbs", corl_wfn='mp2', corl_basis='cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='cc-pvdz')``
 
-* ``optimize(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvqz"}, {"wfn": "mp2", "basis": "cc-pv[tq]z"}, {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])``
+* ``optimize("cbs", cbs_metadata=[{"wfn": "hf", "basis": "cc-pvqz"}, {"wfn": "mp2", "basis": "cc-pv[tq]z"}, {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])``
 
 Many examples can be found at :srcsample:`cbs-xtpl-energy`,
 :srcsample:`cbs-xtpl-gradient`, :srcsample:`cbs-xtpl-opt`,

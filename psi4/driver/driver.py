@@ -529,6 +529,7 @@ def energy(name, **kwargs):
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
     # Bounce to CP if bsse kwarg
+    name = driver_util.upgrade_interventions(name)
     if kwargs.get('bsse_type', None) is not None:
         return driver_nbody.nbody_gufunc(energy, name, ptype='energy', **kwargs)
 
@@ -653,6 +654,7 @@ def gradient(name, **kwargs):
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 
     # Figure out what kind of gradient this is
+    name = driver_util.upgrade_interventions(name)
     if hasattr(name, '__call__'):
         if name.__name__ in ['cbs', 'complete_basis_set']:
             gradient_type = 'cbs_wrapper'
@@ -908,7 +910,7 @@ def properties(*args, **kwargs):
     kwargs['molecule'] = molecule
 
     # Allow specification of methods to arbitrary order
-    lowername = args[0].lower()
+    lowername = driver_util.upgrade_interventions(args[0])
     lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
@@ -1293,6 +1295,7 @@ def optimize(name, **kwargs):
     elif engine != 'optking':
         raise ValidationError(f"Optimizer {engine} is not supported.")
 
+    name = driver_util.upgrade_interventions(name)
     if hasattr(name, '__call__'):
         lowername = name
         custom_gradient = True
@@ -1500,6 +1503,7 @@ def hessian(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Figure out what kind of gradient this is
+    name = driver_util.upgrade_interventions(name)
     if hasattr(name, '__call__'):
         if name.__name__ in ['cbs', 'complete_basis_set']:
             gradient_type = 'cbs_wrapper'

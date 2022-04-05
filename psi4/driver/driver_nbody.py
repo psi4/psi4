@@ -358,6 +358,10 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     elif metadata['ptype'] == 'hessian':
         core.set_variable("CURRENT HESSIAN", nbody_results['ret_ptype'])
 
+    nbody_number = sum(len(v) for k, v in metadata["compute_dict"]["all"].items())
+    core.set_variable("NBODY NUMBER", nbody_number)
+    wfn.set_variable("NBODY NUMBER", nbody_number)
+
     if metadata['return_wfn']:
         return (nbody_results['ret_ptype'], wfn)
     else:

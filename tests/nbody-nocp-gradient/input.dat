@@ -51,5 +51,5 @@ for key in nocp_scheme: #TEST
     i, j = eval(key)[1][0]-1, eval(key)[1][1]-1 #TEST
     index = [i*3, i*3 + 1, i*3 + 2, j*3, j*3 + 1, j*3 + 2] #TEST
     grad[index, :] += nocp_scheme[key] * np.array(gradient_dict[key]) #TEST
-    
+
 compare_arrays(grad, wfn.variables()['GRADIENT 2'], 8, 'NoCP-Corrected Gradient') #TEST

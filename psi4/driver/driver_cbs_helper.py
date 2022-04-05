@@ -35,6 +35,7 @@ import numpy as np
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
 nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)  # when safe, "from psi4.driver import nppp"
+from psi4.driver.aliases import sherrill_gold_standard, allen_focal_point
 
 
 _zeta_val2sym = {k + 2: v for k, v in enumerate('dtq5678')}
@@ -655,3 +656,32 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, z
     else:
         raise ValidationError(f"corl_xtpl_helgaker_2: datatype is not recognized '{type(valueLO)}'.")
 
+
+xtpl_procedures = {
+    "xtpl_highest_1": xtpl_highest_1,
+    "scf_xtpl_helgaker_2": scf_xtpl_helgaker_2,
+    "scf_xtpl_truhlar_2": scf_xtpl_truhlar_2,
+    "scf_xtpl_karton_2": scf_xtpl_karton_2,
+    "scf_xtpl_helgaker_3": scf_xtpl_helgaker_3,
+    "corl_xtpl_helgaker_2": corl_xtpl_helgaker_2,
+}
+
+composite_procedures = {
+    "sherrill_gold_standard": sherrill_gold_standard,
+    "allen_focal_point": allen_focal_point,
+}
+
+
+def register_xtpl_function(func):
+    """Enable user-defined extrapolation `func`."""
+
+    if func.__name__.split("_")[-1].isdigit():
+        xtpl_procedures[func.__name__] = func
+    else:
+        raise ValidationError("Extrapolation function names follow <scf|corl>_xtpl_<scientist>_<#basis>")
+
+
+def register_composite_function(func):
+    """Enable user-defined alias to composite method `func`."""
+
+    composite_procedures[func.__name__] = func
