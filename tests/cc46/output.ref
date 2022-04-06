@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {oeprop} 294c406 dirty
+                         Git: Rev {oeprop} b7c163e dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 05 April 2022 04:03PM
+    Psi4 started on: Wednesday, 06 April 2022 10:26AM
 
-    Process ID: 29695
+    Process ID: 12635
     Host:       dhcp189-247.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -133,6 +133,8 @@ for root in range(1, 5):
     root_refs_arr[f"CC ROOT {root} QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 
 
+compare_values(psi4.variable("CC ROOT 0 DIPOLE"), psi4.variable("CC DIPOLE"), 6, "CC ROOT 0 vs CC Dipole")
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
 
@@ -150,10 +152,11 @@ with warnings.catch_warnings():
     for tag,refval in gs_refs_arr.items():
         oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
         compare_values(refval, oeprop_val, 4, "CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
+
 --------------------------------------------------------------------------
 
 *** tstart() called on dhcp189-247.emerson.emory.edu
-*** at Tue Apr  5 16:03:46 2022
+*** at Wed Apr  6 10:26:05 2022
 
    => Loading Basis Set <=
 
@@ -269,10 +272,10 @@ with warnings.catch_warnings():
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:  -150.13109142562013   -1.50131e+02   0.00000e+00 
-   @RHF iter   1:  -150.72994418505670   -5.98853e-01   1.20798e-02 ADIIS/DIIS
-   @RHF iter   2:  -150.77474437542543   -4.48002e-02   3.93712e-03 ADIIS/DIIS
-   @RHF iter   3:  -150.77872862263519   -3.98425e-03   9.99210e-04 ADIIS/DIIS
-   @RHF iter   4:  -150.77914039140370   -4.11769e-04   2.79341e-04 ADIIS/DIIS
+   @RHF iter   1:  -150.72994418505670   -5.98853e-01   1.20798e-02 DIIS/ADIIS
+   @RHF iter   2:  -150.77474437542543   -4.48002e-02   3.93712e-03 DIIS/ADIIS
+   @RHF iter   3:  -150.77872862263519   -3.98425e-03   9.99210e-04 DIIS/ADIIS
+   @RHF iter   4:  -150.77914039140370   -4.11769e-04   2.79341e-04 DIIS/ADIIS
    @RHF iter   5:  -150.77918120037543   -4.08090e-05   4.90416e-05 DIIS
    @RHF iter   6:  -150.77918362626571   -2.42589e-06   1.25561e-05 DIIS
    @RHF iter   7:  -150.77918384927833   -2.23013e-07   3.89306e-06 DIIS
@@ -328,7 +331,7 @@ Computation Completed
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
-Properties computed using the SCF density matrix
+Properties computed using the SCF density (α) and SCF density (β) density matrices
 
 
  Multipole Moments:
@@ -345,15 +348,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on dhcp189-247.emerson.emory.edu at Tue Apr  5 16:03:50 2022
+*** tstop() called on dhcp189-247.emerson.emory.edu at Wed Apr  6 10:26:06 2022
 Module time:
-	user time   =       1.15 seconds =       0.02 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.15 seconds =       0.02 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -379,7 +382,7 @@ Total time:
 
 
 *** tstart() called on dhcp189-247.emerson.emory.edu
-*** at Tue Apr  5 16:03:51 2022
+*** at Wed Apr  6 10:26:06 2022
 
 
 	Wfn Parameters:
@@ -458,15 +461,15 @@ Total time:
 	Two-electron energy          =     45.23861563749188
 	Reference energy             =   -150.77918387212975
 
-*** tstop() called on dhcp189-247.emerson.emory.edu at Tue Apr  5 16:03:51 2022
+*** tstop() called on dhcp189-247.emerson.emory.edu at Wed Apr  6 10:26:06 2022
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.23 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.41 seconds =       0.02 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       0.91 seconds =       0.02 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -1590,7 +1593,7 @@ Doing transition
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
-Properties computed using the CC2 density matrix
+Properties computed using the SCF density (α) and SCF density (β) density matrices
 
 
  Multipole Moments:
@@ -1638,7 +1641,7 @@ Properties computed using the CC2 density matrix
   LUNO+3 :    7  B    0.019
 
 
-Properties computed using the CC ROOT 1 density matrix
+Properties computed using the T (α) and T (β) density matrices
 
 
  Multipole Moments:
@@ -1686,7 +1689,7 @@ Properties computed using the CC ROOT 1 density matrix
   LUNO+3 :    7  A    0.006
 
 
-Properties computed using the CC ROOT 2 density matrix
+Properties computed using the T (α) and T (β) density matrices
 
 
  Multipole Moments:
@@ -1734,7 +1737,7 @@ Properties computed using the CC ROOT 2 density matrix
   LUNO+3 :    7  B    0.005
 
 
-Properties computed using the CC ROOT 3 density matrix
+Properties computed using the T (α) and T (β) density matrices
 
 
  Multipole Moments:
@@ -1782,7 +1785,7 @@ Properties computed using the CC ROOT 3 density matrix
   LUNO+3 :    7  B    0.005
 
 
-Properties computed using the CC ROOT 4 density matrix
+Properties computed using the T (α) and T (β) density matrices
 
 
  Multipole Moments:
@@ -1829,6 +1832,7 @@ Properties computed using the CC ROOT 4 density matrix
   LUNO+2 :    6  B    0.017
   LUNO+3 :    7  A    0.006
 
+    CC ROOT 0 vs CC Dipole................................................................PASSED
     CC2 DIPOLE............................................................................PASSED
     CC2 QUADRUPOLE........................................................................PASSED
     CC ROOT 1 DIPOLE......................................................................PASSED
@@ -1843,7 +1847,7 @@ Properties computed using the CC ROOT 4 density matrix
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
-Properties computed using the CCDENSITY-SET-WFN-TEST CC2 density matrix
+Properties computed using the SCF density (α) and SCF density (β) density matrices
 
 
  Multipole Moments:
@@ -1873,7 +1877,7 @@ Properties computed using the CCDENSITY-SET-WFN-TEST CC2 density matrix
     CCDENSITY-SET-WFN-TEST CC2 DIPOLE.....................................................PASSED
     CCDENSITY-SET-WFN-TEST CC2 QUADRUPOLE.................................................PASSED
 
-    Psi4 stopped on: Tuesday, 05 April 2022 04:04PM
-    Psi4 wall time for execution: 0:00:13.48
+    Psi4 stopped on: Wednesday, 06 April 2022 10:26AM
+    Psi4 wall time for execution: 0:00:05.96
 
 *** Psi4 exiting successfully. Buy a developer a beer!

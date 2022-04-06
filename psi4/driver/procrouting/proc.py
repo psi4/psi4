@@ -3171,17 +3171,17 @@ def run_cc_property(name, **kwargs):
         # TODO: When Psi is Py 3.9+, transition to the removeprefix version.
         title = name.upper().replace("EOM-", "")
         #title = name.upper().removeprefix("EOM-")
-        oe.set_title(title)
+        oe.set_titles({title + " {}", "CC {}"})
         for oe_name in one:
             oe.add(oe_name.upper())
         oe.compute()
         # call oe prop for each ES density
         if name.startswith('eom'):
             # copy GS CC DIP/QUAD ... to CC ROOT 0 DIP/QUAD ... if we are doing multiple roots
-            if 'dipole' in one:
+            if 'DIPOLE' in one:
                 core.set_variable("CC ROOT 0 DIPOLE", core.variable("CC DIPOLE"))
                 # core.set_variable("CC ROOT n DIPOLE", core.variable("CC DIPOLE"))  # P::e CCENERGY
-            if 'quadrupole' in one:
+            if 'QUADRUPOLE' in one:
                 core.set_variable("CC ROOT 0 QUADRUPOLE", core.variable("CC QUADRUPOLE"))
                 # core.set_variable("CC ROOT n QUADRUPOLE", core.variable("CC QUADRUPOLE"))  # P::e CCENERGY
 
