@@ -49,6 +49,7 @@ def test_adcc_reference_data(case):
         'e_convergence': 1e-10,
         'd_convergence': 1e-8,
         'gauge': conf['gauge'],
+        'adc__r_convergence': 1e-8,
     })
     mol = psi4.core.Molecule.from_string(conf['molstring'])
 
@@ -97,7 +98,7 @@ def test_adcc_reference_data(case):
             'state_dipole_moment': ([
                 f"{method} ROOT {root_index} (A) DIPOLE MOMENT",
                 f"ADC ROOT {root_index} (A) DIPOLE MOMENT",
-            ], 1e-4),
+            ], 5e-3),
         }
         for propname, (vars, atol) in prop_access_patterns.items():
             # Psi lets us select only one gauge, so skip length gauge oscillator strength
