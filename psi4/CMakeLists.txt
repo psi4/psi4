@@ -297,6 +297,7 @@ install(DIRECTORY ../tests/pytests/
         PATTERN "standard_suite_runner.py"
         PATTERN "tdscf_reference_data.json"
         PATTERN "oei_reference_data.json"
+        PATTERN "f12_libint1.json"
         PATTERN "utils.py")
 install(DIRECTORY ../tests/pytests/test_fchk_writer
                   ../tests/pytests/test_molden_writer

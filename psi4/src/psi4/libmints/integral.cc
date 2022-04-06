@@ -264,23 +264,23 @@ TwoBodyAOInt* IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell
     return new Libint2YukawaERI(zeta, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
-TwoBodyAOInt* IntegralFactory::f12(std::vector<std::pair<double, double>> coeff_exp, int deriv, bool use_shell_pairs) {
-    return new Libint2F12(coeff_exp, this, deriv, use_shell_pairs);
+TwoBodyAOInt* IntegralFactory::f12(std::vector<std::pair<double, double>> exp_coeff, int deriv, bool use_shell_pairs) {
+    return new Libint2F12(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_squared(std::vector<std::pair<double, double>> coeff_exp, int deriv,
+TwoBodyAOInt* IntegralFactory::f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv,
                                            bool use_shell_pairs) {
-    return new Libint2F12Squared(coeff_exp, this, deriv, use_shell_pairs);
+    return new Libint2F12Squared(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12g12(std::vector<std::pair<double, double>> coeff_exp, int deriv,
+TwoBodyAOInt* IntegralFactory::f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv,
                                       bool use_shell_pairs) {
-    return new Libint2F12G12(coeff_exp, this, deriv, use_shell_pairs);
+    return new Libint2F12G12(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::vector<std::pair<double, double>> coeff_exp, int deriv,
+TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv,
                                                      bool use_shell_pairs) {
-    return new Libint2F12DoubleCommutator(coeff_exp, this, deriv, use_shell_pairs);
+    return new Libint2F12DoubleCommutator(exp_coeff, this, deriv, use_shell_pairs);
 }
 
 void IntegralFactory::init_spherical_harmonics(int max_am) {

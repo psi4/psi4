@@ -512,19 +512,19 @@ class PSI_API IntegralFactory {
     virtual TwoBodyAOInt* yukawa_eri(double zeta, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an F12 integral object
-    virtual TwoBodyAOInt* f12(std::vector<std::pair<double, double>> coeff_exp, int deriv = 0,
+    virtual TwoBodyAOInt* f12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                               bool use_shell_pairs = true);
 
     /// Returns an F12 squared integral object
-    virtual TwoBodyAOInt* f12_squared(std::vector<std::pair<double, double>> coeff_exp, int deriv = 0,
+    virtual TwoBodyAOInt* f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                       bool use_shell_pairs = true);
 
     /// Returns an F12G12 integral object
-    virtual TwoBodyAOInt* f12g12(std::vector<std::pair<double, double>> coeff_exp, int deriv = 0,
+    virtual TwoBodyAOInt* f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                  bool use_shell_pairs = true);
 
     /// Returns an F12 double commutator integral object
-    virtual TwoBodyAOInt* f12_double_commutator(std::vector<std::pair<double, double>> coeff_exp, int deriv = 0,
+    virtual TwoBodyAOInt* f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                                 bool use_shell_pairs = true);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells

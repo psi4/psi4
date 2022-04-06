@@ -220,23 +220,25 @@ class PSI_API MintsHelper {
     /// AO ERFC Omega Integrals
     SharedMatrix ao_erfc_eri(double omega);
     /// AO F12 Integrals
-    SharedMatrix ao_f12(std::vector<std::pair<double, double>> coeff_exp);
-    SharedMatrix ao_f12(std::vector<std::pair<double, double>> coeff_exp, std::shared_ptr<BasisSet> bs1,
+    SharedMatrix ao_f12(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
                         std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
     /// AO F12 Integrals
-    SharedMatrix ao_f12_scaled(std::vector<std::pair<double, double>> coeff_exp);
-    SharedMatrix ao_f12_scaled(std::vector<std::pair<double, double>> coeff_exp, std::shared_ptr<BasisSet> bs1,
+    SharedMatrix ao_f12_scaled(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12_scaled(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
                                std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
                                std::shared_ptr<BasisSet> bs4);
     /// AO F12 squared Integrals
-    SharedMatrix ao_f12_squared(std::vector<std::pair<double, double>> coeff_exp);
-    SharedMatrix ao_f12_squared(std::vector<std::pair<double, double>> coeff_exp, std::shared_ptr<BasisSet> bs1,
+    SharedMatrix ao_f12_squared(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12_squared(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
                                 std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
                                 std::shared_ptr<BasisSet> bs4);
     /// AO F12G12 Integrals
-    SharedMatrix ao_f12g12(std::vector<std::pair<double, double>> coeff_exp);
+    SharedMatrix ao_f12g12(std::vector<std::pair<double, double>> exp_coeff);
     /// AO F12 double commutator Integrals
-    SharedMatrix ao_f12_double_commutator(std::vector<std::pair<double, double>> coeff_exp);
+    SharedMatrix ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff);
+    /// F12 Fitted Slater Correlation Factor
+    std::vector<std::pair<double, double>> f12_cgtg(double exponent = 1.0);
 
     /// 3Center overlap integrals
     SharedMatrix ao_3coverlap();
@@ -253,16 +255,16 @@ class PSI_API MintsHelper {
     /// MO ERFC Omega Integrals
     SharedMatrix mo_erfc_eri(double omega, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
     /// MO F12 Integrals
-    SharedMatrix mo_f12(std::vector<std::pair<double, double>> coeff_exp, SharedMatrix C1, SharedMatrix C2,
+    SharedMatrix mo_f12(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1, SharedMatrix C2,
                         SharedMatrix C3, SharedMatrix C4);
     /// MO F12 squared Integrals
-    SharedMatrix mo_f12_squared(std::vector<std::pair<double, double>> coeff_exp, SharedMatrix C1, SharedMatrix C2,
+    SharedMatrix mo_f12_squared(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1, SharedMatrix C2,
                                 SharedMatrix C3, SharedMatrix C4);
     /// MO F12G12 Integrals
-    SharedMatrix mo_f12g12(std::vector<std::pair<double, double>> coeff_exp, SharedMatrix C1, SharedMatrix C2,
+    SharedMatrix mo_f12g12(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1, SharedMatrix C2,
                            SharedMatrix C3, SharedMatrix C4);
     /// MO F12 double commutator Integrals
-    SharedMatrix mo_f12_double_commutator(std::vector<std::pair<double, double>> coeff_exp, SharedMatrix C1,
+    SharedMatrix mo_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1,
                                           SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
 
     /// Symmetric MO ERI Omega Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
