@@ -3171,7 +3171,8 @@ def run_cc_property(name, **kwargs):
         # TODO: When Psi is Py 3.9+, transition to the removeprefix version.
         title = name.upper().replace("EOM-", "")
         #title = name.upper().removeprefix("EOM-")
-        oe.set_titles({title + " {}", "CC {}"})
+        oe.set_title(title + " {}")
+        oe.set_names({title + " {}", "CC {}"})
         for oe_name in one:
             oe.add(oe_name.upper())
         oe.compute()

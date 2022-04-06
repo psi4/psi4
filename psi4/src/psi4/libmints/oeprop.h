@@ -337,7 +337,15 @@ class PSI_API OEProp {
     std::shared_ptr<Wavefunction> wfn_;
     /// Print flag
     int print_;
-    /// Variable names, for printout purposes. Each should have a single '{}' substring to indicate
+    /// OEProp name, for printout purposes.
+    /// TODO: Standardize density matrix names across Psi so we can remove `title_`.
+    ///   `title_` is redundant. Ideally, we'd print the density matrix names and not bother naming the
+    ///   OEProp object itself. But if a user sets an MO density matrix and gives it a name asserting
+    ///   it is an MO density matrix, OEProp would need to recognize that and rename the SO basis matrix
+    ///   it creates. Without a standard naming scheme for densities, OEProp can't do that. Therefore,
+    ///   until density names are standardized, we need to awkwardly keep `title_` around.
+    std::string title_;
+    /// Variable names, for variable saving purposes. Each should have a single '{}' substring to indicate
     /// where the variable name goes. The full generality of format strings are needed for excited
     /// state purposes.
     std::unordered_set<std::string> names_;
@@ -398,10 +406,11 @@ class PSI_API OEProp {
     void add(std::vector<std::string> tasks);
     /// Clear task queue
     void clear();
-    /// Set title for use in saving information
-    void set_title(const std::string& title) { names_ = {title + (title.empty() ? "" : " ") + "{}"}; }
+    /// Set title for use in printout. Set the same title to be the name for printout.
+    /// We do both because in older OEProp, the same member variable was used for both tasks.
+    void set_title(const std::string& title) { names_ = {title + (title.empty() ? "" : " ") + "{}"}; title_ = title; }
     /// Set titles for use in saving information
-    void set_titles(const std::unordered_set<std::string> titles) { names_ = titles; }
+    void set_names(const std::unordered_set<std::string> names) { names_ = names; }
     /// Compute and print/save the properties
     void compute();
 
