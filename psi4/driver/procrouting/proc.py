@@ -3168,7 +3168,10 @@ def run_cc_property(name, **kwargs):
     if n_one > 0:
         # call oe prop for GS density
         oe = core.OEProp(ccwfn)
-        oe.set_title(name.upper())
+        # TODO: When Psi is Py 3.9+, transition to the removeprefix version.
+        title = name.upper().replace("EOM-", "")
+        #title = name.upper().removeprefix("EOM-")
+        oe.set_title(title)
         for oe_name in one:
             oe.add(oe_name.upper())
         oe.compute()
