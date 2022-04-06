@@ -435,6 +435,10 @@ void DiskDFJK::preiterations() {
 }
 
 void DiskDFJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
     max_nocc_ = max_nocc();
     max_rows_ = max_rows();
 

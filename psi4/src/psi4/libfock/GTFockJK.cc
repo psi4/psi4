@@ -47,6 +47,10 @@ size_t GTFockJK::estimate_memory() {
     return 0; // Effectively
 }
 void GTFockJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
     NMats_ = C_left_.size();
     Impl_->create_pfock(NMats_, lr_symmetric_);
     Impl_->SetP(D_ao_);

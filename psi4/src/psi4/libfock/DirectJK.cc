@@ -217,6 +217,10 @@ void DirectJK::incfock_postiter() {
 }
 
 void DirectJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
 #ifdef USING_BrianQC
     if (brianEnable) {
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);

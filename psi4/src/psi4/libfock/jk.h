@@ -245,6 +245,8 @@ class PSI_API JK {
     double do_csam_;
     /// Whether to all desymmetrization, for cases when it's already been performed elsewhere
     std::vector<bool> input_symmetry_cast_map_;
+    /// Use severe screening techniques? Useful in early SCF iterations (defaults to false)
+    bool early_screening_;
 
     // => Tasks <= //
 
@@ -340,6 +342,8 @@ class PSI_API JK {
 
     /// Memory (doubles) used to hold J/K/wK/C/D and ao versions, at current moment
     size_t memory_overhead() const;
+    /// Zero out all J, K, and wK matrices
+    void zero();
 
    public:
     // => Constructors <= //
@@ -464,11 +468,19 @@ class PSI_API JK {
     double get_omega_alpha() {return omega_alpha_; }
 
     /**
-    * Set the alpha value for w exchange: weight for dampened Term                
+    * Set the beta value for w exchange: weight for dampened Term                
     * @param omega_beta Dampened Exchange weight
     */
     virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
     double get_omega_beta() { return omega_beta_; }
+
+    /**
+    * Enable severe screening techniques, which can be useful in early 
+    *       SCF iterations.
+    * @param early_screening early screening status (defaults to false)
+    */
+    void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
+    bool get_early_screening() { return early_screening_; }
 
     // => Computers <= //
 

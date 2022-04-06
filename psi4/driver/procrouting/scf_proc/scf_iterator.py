@@ -262,6 +262,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
 
+    # does the JK algorithm use severe screening approximations for early SCF iterations?
+    early_screening = self.jk().get_early_screening()
+
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
@@ -481,7 +484,13 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         # Call any postiteration callbacks
         if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
-            break
+            if early_screening:
+                early_screening = False
+                self.jk().set_early_screening(False)
+                core.print_out("  Energy and wave function converged with early screening.\n")
+                core.print_out("  Continuing iterations with tighter screening.\n\n")
+            else:
+                break
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
             raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
 
