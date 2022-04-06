@@ -19,6 +19,8 @@ set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATOR}")
+
 ################  Options: Overview and Not Otherwise Mentioned  ###############
 
 #  <<<  CMake build overview  >>>
@@ -39,7 +41,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
 #    - networkx >=2.4 (runtime only; e.g., `conda install networkx`)
-#    - pint (runtime only; e.g., `conda install pint -c conda-forge`)
+#    - pint >=0.10 (runtime only; e.g., `conda install pint -c conda-forge`)
 #    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 #    - Eigen (for Libint2; e.g., `conda install eigen`)

@@ -78,8 +78,8 @@ def _merge_psi4_qcel_apis(args, kwargs):
         raise ValueError("""Not following either Psi4 or QCElemental API pattern for comparison.""")
 
 
-def _psi4_compare_integers(expected, computed, label: str = None, *, verbose: int = 1,
-                           return_handler: Callable = None):
+def _psi4_compare_integers(expected, computed, label = None, *, verbose = 1,
+                           return_handler = None):
     """Shim between Psi4-style and QCA-style testing interfaces for scalar ints, strings."""
 
     # uncomment to ferret out old function name

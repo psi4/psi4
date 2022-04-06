@@ -55,7 +55,7 @@ class MultipoleInt : public OneBodyAOInt, public mdintegrals::MDHelper {
     std::vector<double> Sz;
 
     //! CCA-ordered Cartesian components for the multipoles
-    std::vector<std::vector<std::array<int, 4>>> comps_mul_;
+    std::vector<std::vector<std::array<int, 3>>> comps_mul_;
 
    public:
     //! Constructor. Do not call directly. Use an IntegralFactory.

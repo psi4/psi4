@@ -31,7 +31,6 @@
 
 #include <vector>
 #include "typedefs.h"
-#include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"

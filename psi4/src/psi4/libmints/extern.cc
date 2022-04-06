@@ -67,7 +67,7 @@ void ExternalPotential::print(std::string out) const {
 
     // Charges
     if (charges_.size()) {
-        printer->Printf("    > Charges [e] [molecule length units] < \n\n");
+        printer->Printf("    > Charges [e] [a0] < \n\n");
         printer->Printf("     %10s %10s %10s %10s\n", "Z", "x", "y", "z");
         for (size_t i = 0; i < charges_.size(); i++) {
             printer->Printf("     %10.5f %10.5f %10.5f %10.5f\n", std::get<0>(charges_[i]), std::get<1>(charges_[i]),
@@ -103,15 +103,12 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    double convfac = 1.0;
-    if (basis->molecule()->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
-
     // Monopoles
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i=0; i< charges_.size(); ++i) {
-        Zxyz.push_back({std::get<0>(charges_[i]),{{convfac * std::get<1>(charges_[i]),
-                                                   convfac * std::get<2>(charges_[i]),
-                                                   convfac * std::get<3>(charges_[i])}}});
+        Zxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
+                                                   std::get<2>(charges_[i]),
+                                                   std::get<3>(charges_[i])}}});
     }
 
     std::vector<SharedMatrix> V_charge;
@@ -210,14 +207,11 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     auto grad = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
     double **Gp = grad->pointer();
 
-    double convfac = 1.0;
-    if (mol->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
-
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i=0; i< charges_.size(); ++i) {
-        Zxyz.push_back({std::get<0>(charges_[i]),{{convfac * std::get<1>(charges_[i]),
-                                                   convfac * std::get<2>(charges_[i]),
-                                                   convfac * std::get<3>(charges_[i])}}});
+        Zxyz.push_back({std::get<0>(charges_[i]),{{std::get<1>(charges_[i]),
+                                                   std::get<2>(charges_[i]),
+                                                   std::get<3>(charges_[i])}}});
     }
 
     // Start with the nuclear contribution
@@ -313,9 +307,6 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
 double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     double E = 0.0;
-    double convfac = 1.0;
-
-    if (mol->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
 
     // Nucleus-charge interaction
     for (int A = 0; A < mol->natom(); A++) {
@@ -327,9 +318,9 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
         if (ZA > 0) { // skip Ghost interaction
             for (size_t B = 0; B < charges_.size(); B++) {
                 double ZB = std::get<0>(charges_[B]);
-                double xB = convfac * std::get<1>(charges_[B]);
-                double yB = convfac * std::get<2>(charges_[B]);
-                double zB = convfac * std::get<3>(charges_[B]);
+                double xB = std::get<1>(charges_[B]);
+                double yB = std::get<2>(charges_[B]);
+                double zB = std::get<3>(charges_[B]);
 
                 double dx = xA - xB;
                 double dy = yA - yB;
@@ -369,25 +360,21 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     return E;
 }
 
-double ExternalPotential::computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern, bool in_angstrom) {
+double ExternalPotential::computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern) {
     double E = 0.0;
-    double convfac = 1.0; // assume the geometry of the point charges is in Bohr.
-    if (in_angstrom) {
-        convfac /= pc_bohr2angstroms; // Here we convert to Angstrom
-    }
 
     // charge-charge interaction
     for (auto self_charge: charges_) {
         double ZA = std::get<0>(self_charge);
-        double xA = convfac * std::get<1>(self_charge);
-        double yA = convfac * std::get<2>(self_charge);
-        double zA = convfac * std::get<3>(self_charge);
+        double xA = std::get<1>(self_charge);
+        double yA = std::get<2>(self_charge);
+        double zA = std::get<3>(self_charge);
 
         for (auto other_charge: other_extern->charges_) {
             double ZB = std::get<0>(other_charge);
-            double xB = convfac * std::get<1>(other_charge);
-            double yB = convfac * std::get<2>(other_charge);
-            double zB = convfac * std::get<3>(other_charge);
+            double xB = std::get<1>(other_charge);
+            double yB = std::get<2>(other_charge);
+            double zB = std::get<3>(other_charge);
 
             double dx = xA - xB;
             double dy = yA - yB;

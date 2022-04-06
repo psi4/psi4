@@ -1460,7 +1460,7 @@ void MintsHelper::compute_so_x2c_ints(bool include_perturbations) {
     cached_oe_ints_[std::make_pair(PSIF_SO_V, include_perturbations)] = so_potential_x2c;
 }
 
-std::vector<SharedMatrix> MintsHelper::so_dipole() {
+std::vector<SharedMatrix> MintsHelper::so_dipole() const {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(1, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry
@@ -1496,7 +1496,7 @@ std::vector<SharedMatrix> MintsHelper::so_traceless_quadrupole() {
     return quadrupole;
 }
 
-std::vector<SharedMatrix> MintsHelper::so_nabla() {
+std::vector<SharedMatrix> MintsHelper::so_nabla() const {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(OperatorSymmetry::P, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry
@@ -1508,7 +1508,7 @@ std::vector<SharedMatrix> MintsHelper::so_nabla() {
     return nabla;
 }
 
-std::vector<SharedMatrix> MintsHelper::so_angular_momentum() {
+std::vector<SharedMatrix> MintsHelper::so_angular_momentum() const {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(OperatorSymmetry::L, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry
@@ -1620,7 +1620,7 @@ std::vector<SharedMatrix> MintsHelper::ao_multipoles(int order, const std::vecto
 }
 
 std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double> &origin, int deriv) {
-    std::vector<SharedMatrix> ret = ao_multipole_potential(origin, 3, deriv);
+    std::vector<SharedMatrix> ret = ao_multipole_potential(3, origin, deriv);
     // EFP expects the following order of Cartesian components
     //       | // Charge
     //  0    |      0
@@ -1661,46 +1661,30 @@ std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vec
     return ret_reordered;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<double> &origin, int max_k, int deriv) {
+std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(int order, const std::vector<double> &origin, int deriv) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
     Vector3 v3origin(origin[0], origin[1], origin[2]);
 
-    std::vector<SharedMatrix> mult;
-    bool do_dipole = (max_k >= 1);
-    bool do_quadrupole = (max_k >= 2);
-    bool do_octupole = (max_k >= 3);
-    mult.push_back(std::make_shared<Matrix>("AO Charge Potential 0", basisset_->nbf(), basisset_->nbf()));
-    if (do_dipole) {
-        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential X", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential Y", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Dipole Potential Z", basisset_->nbf(), basisset_->nbf()));
+    std::vector<SharedMatrix> ret;
+    for (int l = 0; l <= order; ++l) {
+        for (int ii = 0; ii <= l; ii++) {
+            int lx = l - ii;
+            for (int lz = 0; lz <= ii; lz++) {
+                int ly = ii - lz;
+                std::string name = "AO Multipole Potential ";
+                for (int xval = 0; xval < lx; ++xval) name += "X";
+                for (int yval = 0; yval < ly; ++yval) name += "Y";
+                for (int zval = 0; zval < lz; ++zval) name += "Z";
+                if (lx == 0 && ly == 0 && lz == 0) name += "0";
+                auto mat = std::make_shared<Matrix>(name, basisset_->nbf(), basisset_->nbf());
+                ret.push_back(mat);
+            }
+        }
     }
-    if (do_quadrupole) {
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XX", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XY", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential XZ", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YY", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential YZ", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Quadrupole Potential ZZ", basisset_->nbf(), basisset_->nbf()));
-    }
-    if (do_octupole) {
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XXX", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XXY", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XXZ", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XYY", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XYZ", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential XZZ", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential YYY", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential YYZ", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential YZZ", basisset_->nbf(), basisset_->nbf()));
-        mult.push_back(std::make_shared<Matrix>("AO Octupole Potential ZZZ", basisset_->nbf(), basisset_->nbf()));
-    }
-
-    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_multipole_potential(max_k, deriv));
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_multipole_potential(order, deriv));
     ints->set_origin(v3origin);
-    ints->compute(mult);
-
-    return mult;
+    ints->compute(ret);
+    return ret;
 }
 
 std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> &origin, int deriv) {

@@ -15,8 +15,8 @@ find_package(Perl QUIET)
 #
 # Common test runs:
 #
-#  ctest -L quicktests      run all quicktests
-#  ctest -LE longtests      run all but longtests
+#  ctest -L quick      run all quicktests
+#  ctest -LE long      run all but longtests
 #
 # It is possible to specify more than one label per test. CMake
 # expects a ;-separated list, e.g. "psi;quicktests;scf"
@@ -41,7 +41,7 @@ foreach(test_name adc1 adc2 aediis-1 aediis-2
                   cc13d cc14 cc15 cc16 cc17 cc18 cc19 cc2 cc21 cc22 cc23 cc24 cc25 cc26 cc27 cc28
                   cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a
-                  cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc7 cc8 cc8a cc8b cc8c
+                  cc50 cc51 cc52 cc53 cc54 cc55 cc56 cc5a cc6 cc7 cc8 cc8a cc8b cc8c
                   cc9 cc9a cdomp2-1 cdomp2-2 cepa1 cepa2 cepa3 cepa-module 
                   ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2

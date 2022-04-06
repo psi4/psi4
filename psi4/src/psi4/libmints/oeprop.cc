@@ -261,19 +261,9 @@ void Prop::set_Db_mo(SharedMatrix D) {
         C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp_ptr, nsor, 0.0, Dsop[0], nsor);
     }
 }
-TaskListComputer::TaskListComputer() {
-    title_ = "";
-    print_ = 1;
-    debug_ = 0;
-    tasks_.clear();
-}
-void TaskListComputer::add(const std::string& prop) { tasks_.insert(prop); }
-void TaskListComputer::add(std::vector<std::string> props) {
-    for (int i = 0; i < (int)props.size(); i++) {
-        tasks_.insert(props[i]);
-    }
-}
-void TaskListComputer::clear() { tasks_.clear(); }
+void OEProp::add(const std::string& prop) { tasks_.insert(prop); }
+void OEProp::add(std::vector<std::string> props) { tasks_.insert(props.begin(), props.end()); }
+void OEProp::clear() { tasks_.clear(); }
 SharedVector Prop::epsilon_a() { return SharedVector(epsilon_a_->clone()); }
 SharedVector Prop::epsilon_b() { return SharedVector(epsilon_b_->clone()); }
 SharedMatrix Prop::Da_ao() {
@@ -697,6 +687,7 @@ OEProp::~OEProp() {}
 void OEProp::common_init() {
     Options& options = Process::environment.options;
     print_ = options.get_int("PRINT");
+    title_ = "";
 
     // Determine number of NOONs to print; default is 3
     if (options.get_str("PRINT_NOONS") == "ALL")

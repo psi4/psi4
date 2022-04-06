@@ -47,8 +47,6 @@ class BasisSet;
 /**
  * The Prop object, base class of OEProp and GridProp objects
  *
- * Word on the street:
- *
  *  Wavefunction is not finalized, so we have no idea what bases
  *  general density matrices/orbital coefficients will be in.
  *  Additionally, there are questions of natural/local/canonical orbitals,
@@ -190,23 +188,6 @@ class PSI_API Prop {
     SharedMatrix overlap_so();
 };
 
-/**
- * The TaskListComputer, a utility base class to add, remove tasks to a tasklist.
- *
- * Historically this class was part of Prop. As Prop provides lots of meaningful
- * functionality without the need to actually compute everything asap in a task loop,
- * it was split off here.
- *
- * Recommendations:
- *   - This class should be removed in the future. A clear API with directly exposed
- *     functions (using SharedPointer return values) without writing into global
- *     environments is the way to go.
- *
- *   - Before using this as a base in a new class, it should be investigated, whether a direct
- *     API would be a better approach with a "PropFactory" for use in the interactive
- *     interpreter.
- */
-
 class PSI_API TaskListComputer {
    protected:
     /// Print flag
@@ -225,15 +206,7 @@ class PSI_API TaskListComputer {
     virtual void print_header() = 0;
     // => Queue/Compute Routines <= //
 
-    /// Add a single task to the queue
-    void add(const std::string& task);
-    /// Add a set of tasks to the queue
-    void add(std::vector<std::string> tasks);
-    /// Clear task queue
-    void clear();
 
-    /// Set title for use in saving information
-    void set_title(const std::string& title) { title_ = title; }
 
     /// Compute properties
     virtual void compute() = 0;
@@ -384,7 +357,7 @@ class ESPPropCalc : public Prop {
  * The OEProp object, computes arbitrary expectation values (scalars)
  * analyses (typically vectors)
  **/
-class PSI_API OEProp : public TaskListComputer {
+class PSI_API OEProp {
    private:
     /// Constructor, uses globals and Process::environment::reference wavefunction, Implementation does not exist.
     OEProp();
@@ -392,10 +365,16 @@ class PSI_API OEProp : public TaskListComputer {
    protected:
     /// The wavefunction object this Prop is built around
     std::shared_ptr<Wavefunction> wfn_;
+    /// Print flag
+    int print_;
+    /// The title of this OEProp object, for use in saving info
+    std::string title_;
+    /// The set of tasks to complete
+    std::set<std::string> tasks_;
     /// Common initialization
     void common_init();
     /// Print header and information
-    void print_header() override;
+    void print_header();
 
     // Compute routines
     /// Compute arbitrary-order multipoles up to (and including) l=order
@@ -439,15 +418,18 @@ class PSI_API OEProp : public TaskListComputer {
     /// Constructor, uses globals
     OEProp(std::shared_ptr<Wavefunction> wfn);
     /// Destructor
-    ~OEProp() override;
+    ~OEProp();
 
-    /// Python issue
-    void oepy_add(const std::string& task) { add(task); }
-    void oepy_compute() { compute(); }
-    void oepy_set_title(const std::string& title) { set_title(title); }
-
+    /// Add a single task to the queue
+    void add(const std::string& task);
+    /// Add a set of tasks to the queue
+    void add(std::vector<std::string> tasks);
+    /// Clear task queue
+    void clear();
+    /// Set title for use in saving information
+    void set_title(const std::string& title) { title_ = title; }
     /// Compute and print/save the properties
-    void compute() override;
+    void compute();
 
     std::vector<double> const& Vvals() const { return epc_.Vvals(); }
     std::vector<double> const& Exvals() const { return epc_.Exvals(); }

@@ -37,13 +37,14 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdpd/dpd.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
+#include "ccdensity.h"
+#include "Frozen.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
-#include "psi4/libmints/mintshelper.h"
 #define EXTERN
 #include "globals.h"
 
@@ -52,11 +53,11 @@ namespace ccdensity {
 
 #define _au2cgs 471.44353920
 
-void transdip(MintsHelper &mints);
-void transp(MintsHelper &mints, double sign);
-void transL(MintsHelper &mints, double sign);
+void transdip(const MintsHelper &mints);
+void transp(const MintsHelper &mints, double sign);
+void transL(const MintsHelper &mints, double sign);
 
-void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data) {
+void ex_rotational_strength(SharedWavefunction wfn, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data) {
     int i, j, k;
     int no, nv, nt;
     double lt_x, lt_y, lt_z;
@@ -68,6 +69,7 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
     double conv;
     double delta_ee;
     int nmo = moinfo.nmo;
+    const auto& mints = *wfn->mintshelper();
 
     transdip(mints);
 
@@ -149,6 +151,10 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
     outfile->Printf("\n");
     outfile->Printf("\tRotational Strength (au)                 %11.8lf\n", rs);
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
+    
+    // Save rotary strength to wfn.
+    // Process::environment.globals["CCname ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (LEN)"]
+    scalar_saver_excited(wfn, S, U, "ROTARY STRENGTH (LEN)", rs);
 
     outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n", S->root + 1, moinfo.labels[S->irrep].c_str(),
                     U->root + 1, moinfo.labels[U->irrep].c_str());
@@ -245,6 +251,10 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
     outfile->Printf("\n");
     outfile->Printf("\tRotational Strength (au)                 %11.8lf\n", rs);
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
+
+    // Save rotary strength to wfn.
+    // Process::environment.globals["CCname ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (VEL)"]
+    scalar_saver_excited(wfn, S, U, "ROTARY STRENGTH (VEL)", rs);
 
     return;
 }

@@ -19,11 +19,12 @@ no_com
 }
 
 # External potential containing the third water from the trimer with TIP3P charges
-Chrgfield = QMMM()
-Chrgfield.extern.addCharge(-0.834, 0.179217, 2.438389, -1.484606)
-Chrgfield.extern.addCharge(0.417, -0.194107, 1.702697, -0.966751)
-Chrgfield.extern.addCharge(0.417, -0.426657, 2.563754, -2.222683)
-psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+external_potentials = np.array([
+-0.834, 0.179217, 2.438389, -1.484606,
+0.417, -0.194107, 1.702697, -0.966751,
+0.417, -0.426657, 2.563754, -2.222683]).reshape((-1, 4))
+# convert coordinates columns to bohr
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
 
 set {
 basis         jun-cc-pvdz
@@ -32,7 +33,7 @@ guess sad
 freeze_core true
 }
 
-energy('fisapt0')
+energy('fisapt0', external_potentials=external_potentials)
 
 keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot']  #TEST
 

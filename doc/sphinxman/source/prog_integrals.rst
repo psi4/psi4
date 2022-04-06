@@ -291,7 +291,11 @@ limiting.  We also started to introduce integral screening, and it is important
 to balance the screening used for one- and two-electron terms carefully, so this
 is a good opportunity to re-evaluate the code.  Finally, given the complexity
 of the OS recursion code, the switch to an external library leaves a more
-compact codebase to maintain.  The tips below serve as a guide to what changed,
+compact codebase to maintain.  The one electron integrals which are not provided by Libint2
+are now handled by a new implementation of the McMurchie-Davidson (M-D) algorithm,
+leading to removal of the OS code in version 1.6. An overview of the one electron integrals
+is shown in table :ref:`table:oei_impl_summary`, together with the implementation they use.
+The tips below serve as a guide to what changed,
 why it changed, and how to interface with |PSIfour|'s one-electron integral
 machinery now.
 
@@ -402,3 +406,49 @@ process.  Iterating over these lists is simple:
 Note that list considers all P,Q pairs if the two basis sets differ, but only
 P>=Q if the basis sets are the same; the caller should account for this
 restricted summation in the latter case.
+
+
+One Electron Integral Algorithm Overview
+........................................
+
+The following table summarizes which implementation is used
+for each type of one electron integral in |PSIfour|.
+
+.. _`table:oei_impl_summary`:
+
+.. table:: Algorithms used for One Electron Integrals
+
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Integral                   | Class                      | Implementation  | Comment                                                            |
+    +============================+============================+=================+====================================================================+
+    | Three-Center Overlap       | ``ThreeCenterOverlapInt``  | Libint2         | using ``libint2::Operator::delta`` for 4-center integrals          |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Angular Momentum           | ``AngularMomentumInt``     | M-D             |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Dipole                     | ``DipoleInt``              | Libint2         | no derivatives supported                                           |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Electric Field             | ``ElectricFieldInt``       | Libint2         | using first derivative of ``libint2::Operator::nuclear``           |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Coulomb Potential          | ``ElectrostaticInt``       | Libint2         | evaluated for a single origin and unity charge                     |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Kinetic                    | ``KineticInt``             | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Multipole Potential        | ``MultipolePotentialInt``  | M-D             | arbitrary order derivative of 1/R supported                        |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Multipole Moments          | ``MultipoleInt``           | M-D             | arbitrary order multipoles supported, including nuclear gradients  |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Nabla Operator             | ``NablaInt``               | Libint2         | using first derivative of ``libint2::Operator::overlap``           |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Overlap                    | ``OverlapInt``             | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Nuclear Coulomb Potential  | ``PotentialInt``           | Libint2         | assumes nuclear centers/charges as the potential                   |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | PCM Potential              | ``PCMPotentialInt``        | Libint2         | parallelized over charge points                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Quadrupole                 | ``QuadrupoleInt``          | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Traceless Quadrupole       | ``TracelessQuadrupoleInt`` | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Relativistic Potential     | ``RelPotentialInt``        | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+

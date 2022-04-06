@@ -13,7 +13,7 @@ requirements:
     - mkl={{ MKL_VERSION }}
     - networkx
     - numpy
-    - pytest
+    - pytest>=7.0.1
     - python={{ PY_VER }}
     - qcelemental
     - qcengine

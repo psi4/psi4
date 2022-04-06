@@ -41,6 +41,8 @@ if(${ENABLE_cppe})
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
                        -Dpybind11_DIR=${pybind11_DIR}
                        -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=CXX)
 

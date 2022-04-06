@@ -38,6 +38,8 @@ if(${ENABLE_simint})
                        -DENABLE_TESTS=OFF
                        -DSIMINT_VECTOR=${SIMINT_VECTOR}
                        -DSIMINT_MAXAM=${MAX_AM_ERI}
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 

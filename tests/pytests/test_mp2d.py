@@ -1,12 +1,12 @@
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
 import numpy as np
-from qcengine.testing import using
+from addons import uusing, using
 
-pytestmark = [pytest.mark.quick]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 # This will remove the 32 file in each iteration of the for loop 
@@ -133,7 +133,7 @@ def test_dft_mp2(inp):
 #TABLE 14259 -1.155358302362078 0.7013114524160179
 
 
-@using('mp2d')
+@uusing("mp2d")
 def test_mp2d_opt():
 
     h2 = psi4.geometry("""

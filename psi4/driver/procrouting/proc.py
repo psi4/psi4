@@ -1249,12 +1249,23 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         # For the dimer SAPT calculation, we need to account for the external potential
         # in all of the subsystems A, B, C. So we add them all in total_external_potential
         # and set the external potential to the dimer wave function
+        from psi4.driver.qmmm import QMMMbohr
+
         total_external_potential = core.ExternalPotential()
 
         for frag in kwargs['external_potentials']:
             if frag.upper() in "ABC":
-                wfn.set_potential_variable(frag.upper(), kwargs['external_potentials'][frag].extern)
-                total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
+                chrgfield = QMMMbohr()
+                for qxyz in kwargs['external_potentials'][frag]:
+                    if len(qxyz) == 2:
+                        chrgfield.extern.addCharge(qxyz[0], qxyz[1][0], qxyz[1][1], qxyz[1][2])
+                    elif len(qxyz) == 4:
+                        chrgfield.extern.addCharge(qxyz[0], qxyz[1], qxyz[2], qxyz[3])
+                    else:
+                        raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
+
+                wfn.set_potential_variable(frag.upper(), chrgfield.extern)
+                total_external_potential.appendCharges(chrgfield.extern.getCharges())
 
             else:
                 core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" % frag)
@@ -3157,7 +3168,10 @@ def run_cc_property(name, **kwargs):
     if n_one > 0:
         # call oe prop for GS density
         oe = core.OEProp(ccwfn)
-        oe.set_title(name.upper())
+        # TODO: When Psi is Py 3.9+, transition to the removeprefix version.
+        title = name.upper().replace("EOM-", "")
+        #title = name.upper().removeprefix("EOM-")
+        oe.set_title(title)
         for oe_name in one:
             oe.add(oe_name.upper())
         oe.compute()

@@ -1,12 +1,12 @@
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
 import numpy as np
-from .addons import using
+from addons import uusing, using
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 __potentials = {
     'pna_6w':
@@ -267,7 +267,7 @@ def _dump_potential(potname):
     return potfile
 
 
-@using('cppe')
+@uusing("cppe")
 def test_cppe_scf_alpha():
     """Tests the PE-SCF ground state energies and static dipole polarizability"""
     alpha_diag = [36.14995, 35.10354, 78.45963]
@@ -305,7 +305,7 @@ def _base_tdscf_test(molecule, ref_scf_energy, ref_pe_energy, exc_energies, osc_
     assert compare_arrays(osc_strengths, r_calc, 4, f'PE OSCILLATOR STRENGTH')
 
 
-@using('cppe')
+@uusing("cppe")
 def test_cppe_tdscf_rhf():
     """Tests PE-TDSCF excited states (restricted)"""
     ref_pe_energy = -0.03424830892844
@@ -329,7 +329,7 @@ def test_cppe_tdscf_rhf():
     _base_tdscf_test(mol, ref_scf_energy, ref_pe_energy, exc_energies, osc_strengths)
 
 
-@using('cppe')
+@uusing("cppe")
 def test_cppe_tdscf_uhf():
     """Tests PE-TDSCF excited states (unrestricted)"""
     ref_pe_energy = -0.0205612607760474

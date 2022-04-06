@@ -30,6 +30,14 @@ import pickle
 
 from . import dependency_check
 
+# printing and logging formatting niceties
+import pprint
+from functools import partial
+import numpy as np
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)
+nppp10 = partial(np.array_str, max_line_width=120, precision=10, suppress_small=True)
+
 from qcelemental import constants
 from psi4.driver import psifiles as psif
 
@@ -41,7 +49,7 @@ from psi4.driver.p4util.testing import *
 from psi4.driver.p4util.fcidump import *
 from psi4.driver.p4util.fchk import *
 from psi4.driver.p4util.text import *
-from psi4.driver.qmmm import QMMM
+from psi4.driver.qmmm import QMMM, QMMMbohr
 from psi4.driver.pluginutil import *
 
 from psi4.driver import gaussian_n

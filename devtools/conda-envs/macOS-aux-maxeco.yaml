@@ -1,0 +1,17 @@
+name: auxenv
+channels:
+  - conda-forge
+dependencies:
+  - blas=*=mkl
+  - python=3.9
+  - toml
+    # qc opt'l
+  - adcc
+  - cppe
+  - dftd4-python
+  - geometric
+  - openfermionpsi4
+  - pymdi
+  - qcengine
+
+# toml needed for psi4 to load parameters from dftd4-python

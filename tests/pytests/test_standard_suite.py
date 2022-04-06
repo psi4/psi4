@@ -4,8 +4,9 @@ from qcengine.programs.tests.standard_suite_ref import std_molecules, std_refs
 
 import psi4
 
-from .standard_suite_runner import runner_asserter
+from standard_suite_runner import runner_asserter
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 @pytest.fixture
 def clsd_open_pmols():

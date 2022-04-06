@@ -160,8 +160,13 @@ PSI Variables by Alpha
 
 .. psivar:: CC2 DIPOLE POLARIZABILITY @ xNM
 
-   The dipole polarizability [au] calculated at the CC2 level
-   for a given (x) wavelength, (x) rounded to nearest integer.
+   The dipole polarizability in atomic units [(e^2 a0^2)/E_h] calculated at
+   the CC2 level for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CC2 QUADRUPOLE POLARIZABILITY @ xNM
+
+   The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
+   the CC2 level for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 SPECIFIC ROTATION (LEN) @ xNM
 
@@ -276,8 +281,13 @@ PSI Variables by Alpha
 
 .. psivar:: CCSD DIPOLE POLARIZABILITY @ xNM
 
-   The dipole polarizability [au] calculated at the CCSD level
-   for a given (x) wavelength, (x) rounded to nearest integer.
+   The dipole polarizability in atomic units [(e^2 a0^2)/E_h] calculated at
+   the CCSD level for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CCSD QUADRUPOLE POLARIZABILITY @ xNM
+
+   The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
+   the CCSD level for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CCSD SPECIFIC ROTATION (LEN) @ xNM
 
@@ -317,6 +327,16 @@ PSI Variables by Alpha
    The total energy of given method from ground state to root m in h symmetry.
    Conventions for root indexing and whether h refers to transition or root
    irrep are as in :ref:`sec:psivarnotes`.
+
+.. psivar:: CCname ROOT n (h) -> ROOT m (i) EINSTEIN A (LEN)
+
+   The Einstein A coefficient, the spontaneous emission 'probability.'
+   Units are in [1/s].
+
+.. psivar:: CCname ROOT n (h) -> ROOT m (i) EINSTEIN B (LEN)
+
+   The Einstein B coefficient, the stimulated emission 'probability'
+   in terms of energy density. Units are in [m^3 / J / s^2].
 
 .. psivar:: CEPA(0) DIPOLE
 
@@ -1519,7 +1539,8 @@ PSI Variables by Alpha
    Conventions for root indexing and whether h refers to transition or root
    irrep are as in :ref:`sec:psivarnotes`.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
+.. psivar:: CC ROOT n (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
+   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
    TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)
@@ -1532,7 +1553,9 @@ PSI Variables by Alpha
    Conventions for root indexing and whether h refers to transition or root
    irrep are as in :ref:`sec:psivarnotes`.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN)
+.. psivar:: CC ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
+   CC ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (VEL)
+   TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
    TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (VEL)

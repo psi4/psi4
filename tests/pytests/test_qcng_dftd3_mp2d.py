@@ -7,16 +7,19 @@ from qcelemental.testing import compare, compare_recursive, compare_values, tnm
 
 import qcengine as qcng
 from qcengine.programs import empirical_dispersion_resources
-from qcengine.testing import is_program_new_enough, using
-from .addons import using
+from qcengine.testing import is_program_new_enough
+from addons import uusing, using
 
 from qcengine.programs.tests import test_dftd3_mp2d
 ref, gref = test_dftd3_mp2d.ref, test_dftd3_mp2d.gref
 
 
-pytestmark = [pytest.mark.quick]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
-@using("dftd3")
+import platform
+skipmac =  pytest.mark.skipif(platform.system().startswith("Darwin"), reason="Mac fails 3body and getting replaced")
+
+@uusing("dftd3")
 @pytest.mark.parametrize("method", [
     "b3lyp-d3",
     "b3lyp-d3m",
@@ -262,7 +265,7 @@ def test_dftd3__from_arrays__supplement():
     assert compare_recursive(ans, res, tnm() + ' idempotent', atol=1.e-4)
 
 
-@using("dftd3")
+@uusing("dftd3")
 def test_3():
     sys = qcel.molparse.from_string(seneyne)['qm']
 
@@ -285,7 +288,7 @@ def test_3():
     assert compare('B3LYP-D3(BJ)', _compute_key(res['extras']['local_keywords']), 'key')
 
 
-@using("dftd3")
+@uusing("dftd3")
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -307,8 +310,8 @@ def test_3():
         #({'first': 'pbe', 'second': 'atm(gr)', 'parent': 'eneyne', 'subject': 'mB', 'lbl': 'ATM'}),
         #({'first': '', 'second': 'ATMgr', 'parent': 'eneyne', 'subject': 'mAgB', 'lbl': 'ATM'}),
         # below two xfail until dftd3 that's only 2-body is out of psi4 proper
-        pytest.param({'first': 'atmgr', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'ATM'}, marks=[using("dftd3_321"), pytest.mark.xfail]),
-        pytest.param({'first': 'pbe-atmgr', 'second': None, 'parent': 'ne', 'subject': 'atom', 'lbl': 'ATM'}, marks=[using("dftd3_321"), pytest.mark.xfail]),
+        pytest.param({'first': 'atmgr', 'second': 'atmgr', 'parent': 'eneyne', 'subject': 'gAmB', 'lbl': 'ATM'}, marks=[*using("dftd3_321"), pytest.mark.xfail]),
+        pytest.param({'first': 'pbe-atmgr', 'second': None, 'parent': 'ne', 'subject': 'atom', 'lbl': 'ATM'}, marks=[*using("dftd3_321"), pytest.mark.xfail]),
     ])  # yapf: disable
 def test_molecule__run_dftd3__23body(inp, subjects):
     subject = subjects()[inp['parent']][inp['subject']]
@@ -320,7 +323,7 @@ def test_molecule__run_dftd3__23body(inp, subjects):
     assert compare_values(gexpected, G, atol=1.e-7)
 
 
-@using("qcdb")
+@uusing("qcdb")
 def test_qcdb__energy_d3():
     eneyne = qcdb.set_molecule(seneyne)
     eneyne.update_geometry()
@@ -342,7 +345,7 @@ def test_qcdb__energy_d3():
                           jrec['qcvars']['B3LYP-D3(BJ) DISPERSION CORRECTION ENERGY'].data, 7, tnm())
 
 
-@using("mp2d")
+@uusing("mp2d")
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -395,7 +398,7 @@ def test_mp2d__run_mp2d__2body(inp, subjects, request):
     gexpected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION GRADIENT'], atol=1.e-7)
 
 
-@using("dftd3")
+@uusing("dftd3")
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -450,7 +453,7 @@ def test_dftd3__run_dftd3__2body(inp, subjects, request):
         gexpected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION GRADIENT'], atol=1.e-7)
 
 
-@using("dftd3_321")
+@uusing("dftd3_321")
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -461,11 +464,11 @@ def test_dftd3__run_dftd3__2body(inp, subjects, request):
     ],
     ids=['qmol', 'pmol', 'qcmol'])
 @pytest.mark.parametrize("inp", [
-    ({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'dimer', 'lbl': 'ATM'}),
-    ({'parent': 'eneyne', 'name': 'd3-b3lyp-atmgr', 'subject': 'mA', 'lbl': 'ATM'}),
-    ({'parent': 'eneyne', 'name': 'd3-pbe-atm(gr)', 'subject': 'mB', 'lbl': 'ATM'}),
-    ({'parent': 'eneyne', 'name': 'd3-ATMgr', 'subject': 'mAgB', 'lbl': 'ATM'}),
-    ({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'gAmB', 'lbl': 'ATM'}),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'dimer', 'lbl': 'ATM'}, marks=skipmac),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-atmgr', 'subject': 'mA', 'lbl': 'ATM'}, marks=skipmac),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-pbe-atm(gr)', 'subject': 'mB', 'lbl': 'ATM'}, marks=skipmac),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-ATMgr', 'subject': 'mAgB', 'lbl': 'ATM'}, marks=skipmac),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'gAmB', 'lbl': 'ATM'}, marks=skipmac),
     ({'parent': 'ne', 'name': 'd3-atmgr', 'subject': 'atom', 'lbl': 'ATM'}),
 ])  # yapf: disable
 def test_dftd3__run_dftd3__3body(inp, subjects, request):

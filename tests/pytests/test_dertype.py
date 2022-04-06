@@ -4,6 +4,8 @@ import psi4
 from psi4.driver.driver_util import negotiate_derivative_type
 
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 def ordinary():
     pass
 

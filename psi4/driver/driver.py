@@ -36,6 +36,7 @@ import os
 import re
 import shutil
 import sys
+import logging
 from typing import Union
 
 import numpy as np
@@ -47,11 +48,15 @@ from psi4.driver import driver_nbody
 from psi4.driver import driver_findif
 from psi4.driver import p4util
 from psi4.driver import qcdb
+from psi4.driver import pp, nppp, nppp10
+from psi4.driver import qmmm
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.mdi_engine import mdi_run
 
 # never import wrappers or aliases into this file
+
+logger = logging.getLogger(__name__)
 
 
 def _find_derivative_type(ptype, method_name, user_dertype):
@@ -554,6 +559,10 @@ def energy(name, **kwargs):
     #for precallback in hooks['energy']['pre']:
     #    precallback(lowername, **kwargs)
 
+    ep = kwargs.get('external_potentials', None)
+    if ep is not None and not isinstance(ep, dict):
+        set_external_potential(kwargs['external_potentials'])
+
     optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
     optstash2 = p4util.OptionsState(['SCF', 'GUESS'])
 
@@ -596,7 +605,10 @@ def energy(name, **kwargs):
             core.print_out(f" \n Copying restart file <{item}> to <{targetfile}> for internal processing\n")
             shutil.copy(item, targetfile)
 
+    logger.info(f"Compute energy(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
+    logger.info(f"Return energy(): {core.variable('CURRENT ENERGY')}")
 
     for postcallback in hooks['energy']['post']:
         postcallback(lowername, wfn=wfn, **kwargs)
@@ -733,12 +745,20 @@ def gradient(name, **kwargs):
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
+    ep = kwargs.get('external_potentials', None)
+    if ep is not None and not isinstance(ep, dict):
+        set_external_potential(kwargs['external_potentials'])
+
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if dertype == 1:
         core.print_out("""gradient() will perform analytic gradient computation.\n""")
 
         # Perform the gradient calculation
+        logger.info(f"Compute gradient(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
+        logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
         wfn = procedures['gradient'][lowername](lowername, molecule=molecule, **kwargs)
+        logger.info(f"Return gradient(): {core.variable('CURRENT ENERGY')}")
+        logger.info(nppp(wfn.gradient().np))
 
     else:
         core.print_out("""gradient() will perform gradient computation by finite difference of analytic energies.\n""")
@@ -896,6 +916,10 @@ def properties(*args, **kwargs):
     if "/" in lowername:
         return driver_cbs._cbs_gufunc(properties, lowername, ptype='properties', **kwargs)
 
+    ep = kwargs.get('external_potentials', None)
+    if ep is not None and not isinstance(ep, dict):
+        set_external_potential(kwargs['external_potentials'])
+
     return_wfn = kwargs.pop('return_wfn', False)
     props = kwargs.get('properties', ['dipole', 'quadrupole'])
 
@@ -904,7 +928,10 @@ def properties(*args, **kwargs):
 
     kwargs['properties'] = p4util.drop_duplicates(props)
     optstash = driver_util._set_convergence_criterion('properties', lowername, 6, 10, 6, 10, 8)
+    logger.info(f"Compute properties(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
+    logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
     wfn = procedures['properties'][lowername](lowername, **kwargs)
+    logger.info(f"Return properties(): {core.variable('CURRENT ENERGY')}")
 
     optstash.restore()
 
@@ -1541,6 +1568,10 @@ def hessian(name, **kwargs):
                 """hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")
             dertype = 1
 
+    ep = kwargs.get('external_potentials', None)
+    if ep is not None and not isinstance(ep, dict):
+        set_external_potential(kwargs['external_potentials'])
+
     # At stationary point?
     if 'ref_gradient' in kwargs:
         core.print_out("""hessian() using ref_gradient to assess stationary point.\n""")
@@ -1560,7 +1591,12 @@ def hessian(name, **kwargs):
         core.print_out("""hessian() will perform analytic frequency computation.\n""")
 
         # We have the desired method. Do it.
+        logger.info(f"Compute hessian(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
+        logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
         wfn = procedures['hessian'][lowername](lowername, molecule=molecule, **kwargs)
+        logger.info(f"Return hessian(): {wfn.energy()}")
+        logger.info(nppp(wfn.hessian().np))
+
         wfn.set_gradient(G0)
         optstash.restore()
         optstash_conv.restore()
@@ -2217,6 +2253,28 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
 def tdscf(wfn, **kwargs):
     return proc.run_tdscf_excitations(wfn,**kwargs)
+
+
+def set_external_potential(external_potential):
+    """Initialize :py:class:`psi4.core.ExternalPotential` object from charges and locations.
+
+    Parameters
+    ----------
+    external_potential
+        List-like structure where each row corresponds to a charge. Lines can be composed of ``q, [x, y, z]`` or
+        ``q, x, y, z``. Locations are in [a0].
+
+    """
+    Chrgfield = qmmm.QMMMbohr()
+    for qxyz in external_potential:
+        if len(qxyz) == 2:
+            Chrgfield.extern.addCharge(qxyz[0], qxyz[1][0], qxyz[1][1], qxyz[1][2])
+        elif len(qxyz) == 4:
+            Chrgfield.extern.addCharge(qxyz[0], qxyz[1], qxyz[2], qxyz[3])
+        else:
+            raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
+    core.set_global_option_python('EXTERN', Chrgfield.extern)
+
 
 # Aliases
 opt = optimize

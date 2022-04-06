@@ -42,6 +42,8 @@ if(${ENABLE_libefp})
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
                        -Dlibefp_DIR=${libefp_DIR}
                        -Dpybind11_DIR=${pybind11_DIR}
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 
         set(pylibefp_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/pylibefp CACHE PATH "path to internally built pylibefpConfig.cmake" FORCE)

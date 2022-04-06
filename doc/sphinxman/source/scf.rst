@@ -947,19 +947,43 @@ computations, |PSIfour| can perform more rudimentary QM/MM procedures via the
 |scf__extern| keyword.  The following snippet, extracted from the
 :srcsample:`extern1` test case, demonstrates its use for a TIP3P external potential::
 
+    import numpy as np
+    external_potentials = [
+        [-0.834, np.array([1.649232019048,0.0,-2.356023604706]) / psi_bohr2angstroms],
+        [ 0.417, np.array([0.544757019107,0.0,-3.799961446760]) / psi_bohr2angstroms],
+        [ 0.417, np.array([0.544757019107,0.0,-0.912085762652]) / psi_bohr2angstroms]]
+
+    gradient('scf', external_potentials=external_potentials)
+
+The ``external_potentials`` array has three rows for three separate
+particles, and it is passed to the SCF code on the last line. The
+rows are composed of the atomic charge, x coordinate, y coordinate,
+and z coordinate in that order. The atomic charge and coordinates are
+specified in atomic units, [e] and [a0]. Add as many particle rows as
+needed to describe the full MM region.
+
+.. caution:: In |PSIfour| previous to Spring 2022 and v1.6, setting an
+   external potential like the above looked like ::
+
     Chrgfield = QMMM()
     Chrgfield.extern.addCharge(-0.834, 1.649232019048, 0.0, -2.356023604706)
     Chrgfield.extern.addCharge( 0.417, 0.544757019107, 0.0, -3.799961446760)
     Chrgfield.extern.addCharge( 0.417, 0.544757019107, 0.0, -0.912085762652)
     psi4.set_global_option_python('EXTERN', Chrgfield.extern)
 
-First a QMMM object is created, then three separate particles are added to this
-object before the SCF code is told about its existence on the last line.  The
-calls to ``addCharge`` take the atomic charge, x coordinate, y coordinate, and
-z coordinate in that order.  The atomic charge is specified in atomic units,
-and the coordinates always use the same units as the geometry specification in
-the regular QM region.  Additional MM molecules may be specified by adding
-extra calls to ``addCharge`` to describe the full MM region.
+    gradient('scf')
+
+   The main differences are that (1) the specification of
+   charge locations in the old way used the units of the active
+   molecule, whereas the new way always uses Bohr and (2) the
+   specification of the charge and locations in the old way used the
+   :py:class:`psi4.driver.QMMM` class directly and added one charge
+   per command, whereas the new way consolidates all into an array and
+   passes it by keyword argument to the calculation.
+
+   The successor to the :py:class:`psi4.driver.QMMM` class,
+   :py:class:`psi4.driver.QMMMbohr`, is operable, but it is discouraged
+   from being used directly.
 
 To run a computation in a constant dipole field, the |scf__perturb_h|,
 |scf__perturb_with| and |scf__perturb_dipole| keywords can be used.  As an

@@ -39,7 +39,6 @@
 #include "psi4/libmints/nabla.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/electrostatic.h"
-#include "psi4/libmints/pseudospectral.h"
 #include "psi4/libmints/kinetic.h"
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/overlap.h"
@@ -130,15 +129,6 @@ OneBodySOInt* IntegralFactory::so_rel_potential(int deriv) {
     return new RelPotentialSOInt(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_pseudospectral(int deriv) {
-    return new PseudospectralInt(spherical_transforms_, bs1_, bs2_, deriv);
-}
-
-OneBodySOInt* IntegralFactory::so_pseudospectral(int deriv) {
-    std::shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(deriv));
-    return new OneBodySOInt(ao_int, this);
-}
-
 OneBodyAOInt* IntegralFactory::electrostatic() { return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0); }
 
 OneBodyAOInt* IntegralFactory::pcm_potentialint() { return new PCMPotentialInt(spherical_transforms_, bs1_, bs2_, 0); }
@@ -177,8 +167,8 @@ OneBodyAOInt* IntegralFactory::ao_multipoles(int order, int deriv) {
     return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order, deriv);
 }
 
-OneBodyAOInt* IntegralFactory::ao_multipole_potential(int max_k, int deriv) {
-    return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, max_k, deriv);
+OneBodyAOInt* IntegralFactory::ao_multipole_potential(int order, int deriv) {
+    return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, order, deriv);
 }
 
 OneBodySOInt* IntegralFactory::so_multipoles(int order, int deriv) {

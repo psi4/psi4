@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import psi4
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 
 def test_dft_atomic_blocking():
     """calculate XC energy per atom with psi4numpy"""

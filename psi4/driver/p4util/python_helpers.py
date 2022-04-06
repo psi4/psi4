@@ -695,6 +695,8 @@ def _qcvar_reshape_set(key, val):
             return val
     elif key.upper().endswith("DIPOLE"):
         reshaper = (1, 3)
+    elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 3, 3)
     elif any(key.upper().endswith(p) for p in _multipole_order):
         val = _multipole_compressor(val, _multipole_order.index(key.upper().split()[-1]))
         reshaper = (1, -1)
@@ -727,6 +729,8 @@ def _qcvar_reshape_get(key, val):
             return val
     elif key.upper().endswith("DIPOLE"):
         reshaper = (3, )
+    elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 3, 3)
     elif any(key.upper().endswith(p) for p in _multipole_order):
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(key.upper().split()[-1]))
     elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
@@ -850,7 +854,7 @@ def _core_variable(key: str) -> Union[float, core.Matrix, np.ndarray]:
     elif core.has_array_variable(key):
         return _qcvar_reshape_get(key, core.array_variable(key))
     else:
-        raise KeyError("psi4.core.variable: Requested variable " + key + " was not set!\n")
+        raise KeyError(f"psi4.core.variable: Requested variable '{key}' was not set!\n")
 
 
 def _core_wavefunction_variable(cls: core.Wavefunction, key: str) -> Union[float, core.Matrix, np.ndarray]:
@@ -884,7 +888,7 @@ def _core_wavefunction_variable(cls: core.Wavefunction, key: str) -> Union[float
     elif cls.has_array_variable(key):
         return _qcvar_reshape_get(key, cls.array_variable(key))
     else:
-        raise KeyError("psi4.core.Wavefunction.variable: Requested variable " + key + " was not set!\n")
+        raise KeyError(f"psi4.core.Wavefunction.variable: Requested variable '{key}' was not set!\n")
 
 
 def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
@@ -892,17 +896,17 @@ def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> 
 
     if isinstance(val, core.Matrix):
         if core.has_scalar_variable(key):
-            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
+            raise ValidationError(f"psi4.core.set_variable: Target variable '{key}' already a scalar variable!")
         else:
             core.set_array_variable(key, val)
     elif isinstance(val, np.ndarray):
         if core.has_scalar_variable(key):
-            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
+            raise ValidationError(f"psi4.core.set_variable: Target variable '{key}' already a scalar variable!")
         else:
             core.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
         if core.has_array_variable(key):
-            raise ValidationError("psi4.core.set_variable: Target variable " + key + " already an array variable!")
+            raise ValidationError(f"psi4.core.set_variable: Target variable '{key}' already an array variable!")
         else:
             core.set_scalar_variable(key, val)
 
@@ -914,20 +918,17 @@ def _core_wavefunction_set_variable(cls: core.Wavefunction, key: str, val: Union
 
     if isinstance(val, core.Matrix):
         if cls.has_scalar_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
-                                  " already a scalar variable!")
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
             cls.set_array_variable(key, val)
     elif isinstance(val, np.ndarray):
         if cls.has_scalar_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
-                                  " already a scalar variable!")
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
             cls.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
         if cls.has_array_variable(key):
-            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
-                                  " already an array variable!")
+            raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already an array variable!")
         else:
             cls.set_scalar_variable(key, val)
 

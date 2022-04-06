@@ -48,7 +48,7 @@
 namespace psi {
 namespace ccdensity {
 
-void transL(MintsHelper &mints, double sign) {
+void transL(const MintsHelper &mints, double sign) {
     int nmo, nso;
     double **scf_qt, **X;
     double **LX_MO, **LY_MO, **LZ_MO;
