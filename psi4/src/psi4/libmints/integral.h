@@ -130,7 +130,7 @@ class PSI_API SphericalTransformComponent {
 class SphericalTransform {
    protected:
     std::vector<SphericalTransformComponent> components_;
-    int l_;  // The angular momentum this transform is for.
+    int l_;     // The angular momentum this transform is for.
     int subl_;  // The sub angular momentum (default: l_)
 
     SphericalTransform();
@@ -497,29 +497,30 @@ class PSI_API IntegralFactory {
     virtual TwoBodyAOInt* erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an erf ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
+                                  bool needs_exchange = false);
 
     /// Returns an erf complement ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
+                                             bool needs_exchange = false);
 
     /// Returns an Yukawa integral object (Slater-type geminal times Coulomb, e^(-z*r)/r)
     virtual TwoBodyAOInt* yukawa_eri(double zeta, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an F12 integral object
-    virtual TwoBodyAOInt* f12(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
-
-    /// Returns an F12Scaled integral object
-    virtual TwoBodyAOInt* f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
+    virtual TwoBodyAOInt* f12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+                              bool use_shell_pairs = true);
 
     /// Returns an F12 squared integral object
-    virtual TwoBodyAOInt* f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv = 0,
+    virtual TwoBodyAOInt* f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                       bool use_shell_pairs = true);
 
     /// Returns an F12G12 integral object
-    virtual TwoBodyAOInt* f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
+    virtual TwoBodyAOInt* f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+                                 bool use_shell_pairs = true);
 
     /// Returns an F12 double commutator integral object
-    virtual TwoBodyAOInt* f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv = 0,
+    virtual TwoBodyAOInt* f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                                 bool use_shell_pairs = true);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells

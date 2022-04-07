@@ -286,6 +286,7 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
               ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
+
 install(
   FILES ../pytest.ini
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
@@ -302,6 +303,7 @@ install(
     PATTERN "standard_suite_runner.py"
     PATTERN "tdscf_reference_data.json"
     PATTERN "oei_reference_data.json"
+    PATTERN "f12_libint1.json"
     PATTERN "utils.py"
   )
 install(

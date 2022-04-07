@@ -273,8 +273,9 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
             std::string label = elbl.at(iat);
             to_upper(symbol);
             to_upper(label);
-            mol->add_atom(elez.at(iat) * int(real.at(iat)), geom.at(3 * iat), geom.at(3 * iat + 1), geom.at(3 * iat + 2),
-                          symbol, mass.at(iat), elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
+            mol->add_atom(elez.at(iat) * int(real.at(iat)), geom.at(3 * iat), geom.at(3 * iat + 1),
+                          geom.at(3 * iat + 2), symbol, mass.at(iat), elez.at(iat) * int(real.at(iat)), symbol + label,
+                          elea.at(iat));
         }
     }
 
@@ -306,14 +307,13 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 }
 
 void export_mints(py::module& m) {
-
     typedef void (Vector::*vector_setitem_1)(int, double);
     typedef void (Vector::*vector_setitem_2)(int, int, double);
     typedef double (Vector::*vector_getitem_1)(int) const;
     typedef double (Vector::*vector_getitem_2)(int, int) const;
-    typedef void (Vector::*vector_one)(const Vector &other);
-    typedef double (Vector::*vector_one_double)(const Vector &other);
-    typedef void (Vector::*vector_two)(double scale, const Vector &other);
+    typedef void (Vector::*vector_one)(const Vector& other);
+    typedef double (Vector::*vector_one_double)(const Vector& other);
+    typedef void (Vector::*vector_two)(double scale, const Vector& other);
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
         .def(py::init<int>())
@@ -360,8 +360,13 @@ void export_mints(py::module& m) {
         .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
         .def("copy", vector_one(&Vector::copy), "Returns a copy of the matrix")
-        .def("clone", [](Vector& vec) {
-                std::shared_ptr<Vector> result = std::move(vec.clone()); return result; }, "Clone the vector")
+        .def(
+            "clone",
+            [](Vector& vec) {
+                std::shared_ptr<Vector> result = std::move(vec.clone());
+                return result;
+            },
+            "Clone the vector")
         .def("zero", &Vector::zero, "Zeros the vector")
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
@@ -587,8 +592,8 @@ void export_mints(py::module& m) {
              "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix", "filename"_a,
              "append"_a = true, "saveLowerTriangle"_a = true, "saveSubBlocks"_a = false)
         .def("save", matrix_save2(&Matrix::save),
-             "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix", "psio"_a,
-             "filename"_a, "savetype"_a = Matrix::SaveType::LowerTriangle)
+             "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix", "psio"_a, "filename"_a,
+             "savetype"_a = Matrix::SaveType::LowerTriangle)
         .def("load", matrix_load(&Matrix::load),
              "Loads a block matrix from an ASCII file (see tests/mints3 for format)", "filename"_a)
         .def("load_mpqc", &Matrix::load_mpqc, "Loads a matrix from an ASCII file in MPQC format", "filename"_a)
@@ -654,8 +659,8 @@ void export_mints(py::module& m) {
     m.def("doublet", doublet_shared(&linalg::doublet),
           "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a, "B"_a,
           "transA"_a = false, "transB"_a = false);
-    m.def("triplet", triplet_shared(&linalg::triplet),
-          "A"_a, "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false, R"pbdoc(
+    m.def("triplet", triplet_shared(&linalg::triplet), "A"_a, "B"_a, "C"_a, "transA"_a = false, "transB"_a = false,
+          "transC"_a = false, R"pbdoc(
             Returns the multiplication of three matrices, with options to transpose each beforehand.
 
             Parameters
@@ -986,8 +991,7 @@ void export_mints(py::module& m) {
              "Sets basis set arg1 to all atoms with symbol (e.g., H) arg0")
         .def("set_basis_by_label", &Molecule::set_basis_by_label,
              "Sets basis set arg1 to all atoms with label (e.g., H4) arg0")
-        .def("set_basis_by_number", &Molecule::set_basis_by_number,
-             "Sets basis set arg1 to all atoms with number arg0")
+        .def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg1 to all atoms with number arg0")
         .def("distance_matrix", &Molecule::distance_matrix, "Returns Matrix of interatom distances")
         .def("print_distances", &Molecule::print_distances, "Print the interatomic distance geometrical parameters")
         .def("print_bond_angles", &Molecule::print_bond_angles, "Print the bond angle geometrical parameters")
@@ -1121,8 +1125,8 @@ void export_mints(py::module& m) {
     py::bind_vector<std::vector<ShellInfo>>(m, "BSVec");
 
     typedef void (BasisSet::*basis_print_out)() const;
-    typedef const GaussianShell& (BasisSet::*no_center_version)(int)const;
-    typedef const GaussianShell& (BasisSet::*center_version)(int, int)const;
+    typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
+    typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
     typedef std::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const std::shared_ptr<BasisSet>&) const;
     typedef int (BasisSet::*ncore_no_args)() const;
     typedef int (BasisSet::*ncore_one_arg)(const std::string&) const;
@@ -1249,20 +1253,21 @@ void export_mints(py::module& m) {
     typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt",
                                                                            "Two body integral base class");
-    pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
-                       "Compute ERIs between 4 shells")
-        .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
-                       "Determines if the P,Q,R,S shell combination is significant")
-        .def("update_density", &TwoBodyAOInt::update_density,
-                       "Update density matrix (c1 symmetry) for Density-matrix based integral screening");
-
-    py::class_<Libint2TwoElectronInt, std::shared_ptr<Libint2TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
-                                                                "Computes two-electron repulsion integrals")
+    pyTwoBodyAOInt
         .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells")
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
-                       "Determines if the P,Q,R,S shell combination is significant");
+             "Determines if the P,Q,R,S shell combination is significant")
+        .def("update_density", &TwoBodyAOInt::update_density,
+             "Update density matrix (c1 symmetry) for Density-matrix based integral screening");
 
-    py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron repulsion integrals");
+    py::class_<Libint2TwoElectronInt, std::shared_ptr<Libint2TwoElectronInt>>(
+        m, "TwoElectronInt", pyTwoBodyAOInt, "Computes two-electron repulsion integrals")
+        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells")
+        .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
+             "Determines if the P,Q,R,S shell combination is significant");
+
+    py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
+                                                        "Computes normal two electron repulsion integrals");
 #ifdef ENABLE_Libint1t
     py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
     py::class_<F12G12, std::shared_ptr<F12G12>>(m, "F12G12", pyTwoBodyAOInt,
@@ -1299,7 +1304,8 @@ void export_mints(py::module& m) {
         // py::return_value_policy<manage_new_object>(), "docstring").
         .def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
              "Returns an ERI iterator object, only coded for standard ERIs")
-        .def("eri", &IntegralFactory::eri, "Returns an ERI integral object", "deriv"_a = 0, "use_shell_pairs"_a = true, "needs_exchange"_a = false)
+        .def("eri", &IntegralFactory::eri, "Returns an ERI integral object", "deriv"_a = 0, "use_shell_pairs"_a = true,
+             "needs_exchange"_a = false)
         .def("f12", &IntegralFactory::f12, "Returns an F12 integral object", "cf"_a, "deriv"_a = 0,
              "use_shell_pairs"_a = true)
         .def("f12g12", &IntegralFactory::f12g12, "Returns an F12G12 integral object", "cf"_a, "deriv"_a = 0,
@@ -1368,8 +1374,8 @@ void export_mints(py::module& m) {
     typedef SharedMatrix (MintsHelper::*normal_3c)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                                                    std::shared_ptr<BasisSet>);
 
-    typedef SharedMatrix (MintsHelper::*normal_f12)(std::shared_ptr<CorrelationFactor>);
-    typedef SharedMatrix (MintsHelper::*normal_f122)(std::shared_ptr<CorrelationFactor>, std::shared_ptr<BasisSet>,
+    typedef SharedMatrix (MintsHelper::*normal_f12)(std::vector<std::pair<double, double>>);
+    typedef SharedMatrix (MintsHelper::*normal_f122)(std::vector<std::pair<double, double>>, std::shared_ptr<BasisSet>,
                                                      std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                                                      std::shared_ptr<BasisSet>);
 
@@ -1465,15 +1471,13 @@ void export_mints(py::module& m) {
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a)
         .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a, "bs1"_a, "bs2"_a, "bs3"_a,
              "bs4"_a)
-        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "AO F12 intgerals", "corr"_a)
-        .def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), "AO F12 intgerals", "corr"_a, "bs1"_a, "bs2"_a,
-             "bs3"_a, "bs4"_a)
         .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a)
         .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a, "bs1"_a,
              "bs2"_a, "bs3"_a, "bs4"_a)
         .def("ao_f12g12", &MintsHelper::ao_f12g12, "AO F12G12 integrals", "corr"_a)
         .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
              "corr"_a)
+	.def("f12_cgtg", &MintsHelper::f12_cgtg, "F12 Fitted Slater Correlation Factor", "exponent"_a = 1.0)
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
         .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overlap integrals", "bs1"_a, "bs2"_a,
              "bs3"_a)
@@ -1514,33 +1518,31 @@ void export_mints(py::module& m) {
         .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2,
              "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices", "oei_type"_a, "atom1"_a, "atom2"_a)
         .def("ao_overlap_half_deriv1", &MintsHelper::ao_overlap_half_deriv1,
-             "Half-derivative of AO basis overlap integrals: returns (3 * natoms) matrices","side"_a, "atom"_a)
+             "Half-derivative of AO basis overlap integrals: returns (3 * natoms) matrices", "side"_a, "atom"_a)
         .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1,
-             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices",
-             "atom"_a, "omega"_a = 0.0, "factory"_a = nullptr)
+             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices", "atom"_a, "omega"_a = 0.0,
+             "factory"_a = nullptr)
         .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2,
              "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices", "atom1"_a, "atom2"_a)
         .def("ao_metric_deriv1", &MintsHelper::ao_metric_deriv1,
-             "Gradient of AO basis metric integrals: returns 3 matrices",
-             "atom"_a, "aux_name"_a)
+             "Gradient of AO basis metric integrals: returns 3 matrices", "atom"_a, "aux_name"_a)
         .def("ao_3center_deriv1", &MintsHelper::ao_3center_deriv1,
-             "Gradient of AO basis 3-center, density-fitted integrals: returns 3 matrices",
-             "atom"_a, "aux_name"_a)
+             "Gradient of AO basis 3-center, density-fitted integrals: returns 3 matrices", "atom"_a, "aux_name"_a)
         .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1,
-             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices",
-             "oei_type"_a, "atom"_a, "C1"_a, "C2"_a)
+             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices", "oei_type"_a, "atom"_a, "C1"_a,
+             "C2"_a)
         .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2,
-             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices",
-             "oei_type"_a, "atom1"_a, "atom2"_a, "C1"_a, "C2"_a)
+             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices", "oei_type"_a, "atom1"_a, "atom2"_a,
+             "C1"_a, "C2"_a)
         .def("mo_overlap_half_deriv1", &MintsHelper::mo_overlap_half_deriv1,
-             "Half-derivative of MO basis overlap integrals: returns (3 * natoms) matrices",
-             "side"_a, "atom"_a, "C1"_a, "C2"_a)
+             "Half-derivative of MO basis overlap integrals: returns (3 * natoms) matrices", "side"_a, "atom"_a, "C1"_a,
+             "C2"_a)
         .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1,
-             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices",
-             "atom"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a, "C3"_a,
+             "C4"_a)
         .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2,
-             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices",
-             "atom1"_a, "atom2"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices", "atom1"_a, "atom2"_a, "C1"_a,
+             "C2"_a, "C3"_a, "C4"_a)
 
         // First derivatives of electric dipole integrals in AO and MO basis.
         .def("ao_elec_dip_deriv1", &MintsHelper::ao_elec_dip_deriv1,
@@ -1584,7 +1586,8 @@ void export_mints(py::module& m) {
         .def("setName", &ExternalPotential::setName, "Sets the name")
         .def("addCharge", &ExternalPotential::addCharge, "Add a charge Z at (x,y,z)", "Z"_a, "x"_a, "y"_a, "z"_a)
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
-        .def("appendCharges", &ExternalPotential::appendCharges, "Append a vector of charge tuples to a current ExternalPotential")
+        .def("appendCharges", &ExternalPotential::appendCharges,
+             "Append a vector of charge tuples to a current ExternalPotential")
         .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions iwth Df coefficients",
              "basis"_a, "coefs"_a)
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
@@ -1618,8 +1621,9 @@ void export_mints(py::module& m) {
                                                                           and writes it to an FCHK file")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("write", &FCHKWriter::write, "Write wavefunction information to file", "filename"_a)
-        .def("SCF_Dtot",&FCHKWriter::SCF_Dtot,py::return_value_policy::reference_internal)
-        .def("set_postscf_density_label", &FCHKWriter::set_postscf_density_label, "Set base label for post-SCF density, e.g. ' CC Density'.", "label"_a);
+        .def("SCF_Dtot", &FCHKWriter::SCF_Dtot, py::return_value_policy::reference_internal)
+        .def("set_postscf_density_label", &FCHKWriter::set_postscf_density_label,
+             "Set base label for post-SCF density, e.g. ' CC Density'.", "label"_a);
 
     py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter",
                                                             "Writes wavefunction information in molden format")
