@@ -303,11 +303,8 @@ install(
     PATTERN "standard_suite_runner.py"
     PATTERN "adcc_reference_data.json"
     PATTERN "oei_reference_data.json"
-<<<<<<< HEAD
     PATTERN "f12_libint1.json"
-=======
     PATTERN "tdscf_reference_data.json"
->>>>>>> f0ba74c19 (migrate adcc tests)
     PATTERN "utils.py"
   )
 install(

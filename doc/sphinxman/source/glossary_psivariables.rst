@@ -78,10 +78,13 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the averaged coupled-pair functional level of theory.
 
-.. psivar:: ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+.. psivar:: ADC ROOT 0 -> ROOT m EXCITATION ENERGY
+   ADC ROOT 0 (h) -> ROOT m (i) EXCITATION ENERGY
+   ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION
 
-   The excitation energy of given method from ground state to root m
-   in h symmetry (if available).
+   The ADC excitation energy from ground state to root m.
+   Conventions for root indexing and whether h refers to transition or root
+   irrep are as in :ref:`sec:psivarnotes`.
    
 .. psivar:: ADC ROOT n TOTAL ENERGY - h SYMMETRY
 
@@ -1506,6 +1509,8 @@ PSI Variables by Alpha
 
 
 .. psivar:: ADC ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+   ADC ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+   ADC ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
    TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
@@ -1549,7 +1554,11 @@ PSI Variables by Alpha
    irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
+   ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
+   ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION
    ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)
+   ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)
+   ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h TRANSITION
    CC ROOT n (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
    TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
@@ -1573,6 +1582,8 @@ PSI Variables by Alpha
    TD-fctl ROOT 0 (h) -> ROOT m (i) ROTARY STRENGTH (VEL)
    TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (VEL) - h TRANSITION
    ADC ROOT 0 -> ROOT m ROTARY STRENGTH (VEL)
+   ADC ROOT 0 (h) -> ROOT m (i) ROTARY STRENGTH (VEL)
+   ADC ROOT 0 -> ROOT m ROTARY STRENGTH (VEL) - h TRANSITION
 
    The rotary strength in length or velocity gauge of named method
    from ground state to root m in h symmetry (if available). DFT
