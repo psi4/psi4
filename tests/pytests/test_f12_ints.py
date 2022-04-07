@@ -16,7 +16,8 @@ def reference_data():
     with open(Path(__file__).parent / "f12_libint1.json") as f:
         reference_data = json.load(f)
     return reference_data
-    
+
+
 def matlist_to_ndarray(mats):
     """Converts a list of psi4.core.Matrix to np.ndarray"""
     return psi4.driver.p4util.numpy_helper._to_array(mats) 
