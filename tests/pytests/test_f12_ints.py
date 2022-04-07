@@ -35,8 +35,8 @@ def test_f12_integrals(reference_data):
 
     for int_type in ['F', 'F2', 'FG', 'Uf']:
         ref = moldata[int_type]
-        shape = ref[f'L_shape']
-        integral_ref = np.array(ref["L"]).reshape(shape)
+        shape = ref[f'shape']
+        integral_ref = np.array(ref["I"]).reshape(shape)
 
         mapping = {
             "F": mints.ao_f12,
