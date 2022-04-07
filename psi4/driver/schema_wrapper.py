@@ -41,6 +41,7 @@ import uuid
 import warnings
 from collections import defaultdict
 from pathlib import Path
+from typing import Any, Dict, Union
 
 import numpy as np
 import qcelemental as qcel
@@ -362,11 +363,29 @@ def _convert_wavefunction(wfn, context=None):
 ## Execution functions
 
 
-def _clean_psi_environ(do_clean):
+def _clean_psi_environ(do_clean: bool):
+    """Reset work environment to new Psi4 instance state.
+    This includes global variables (P::e.globals, P::e.arrays, P::e.options) and any
+    non-explicitly-retained PSIO-managed scratch files.
+
+    """
     if do_clean:
         core.clean_variables()
         core.clean_options()
         core.clean()
+
+
+def _clean_psi_output(do_clean: bool, outfile: str):
+    """Reset primary output file depending on run mode.
+    When ``True``, remove the output file; when ``False``, close the output file.
+    The latter is appropriate when calling :py:func:`psi4.run_qcschema` *from a Psi4 Python session*
+    as otherwise, the parent session's own files could get cleaned away.
+
+    """
+    if do_clean:
+        atexit.register(_quiet_remove, outfile)
+    else:
+        core.close_outfile()
 
 
 def _read_output(outfile):
@@ -389,8 +408,28 @@ def _quiet_remove(filename):
         pass
 
 
-def run_qcschema(input_data, clean=True):
+def run_qcschema(input_data: Union[Dict[str, Any], qcel.models.AtomicInput], clean: bool = True, postclean: bool = True) -> Union[qcel.models.AtomicResult, qcel.models.FailedOperation]:
+    """Run a quantum chemistry job specified by :py:class:`qcelemental.models.AtomicInput` **input_data** in |PSIfour|.
 
+    Parameters
+    ----------
+    input_data
+        Quantum chemistry job in either AtomicInput class or dictionary form.
+    clean
+        Reset global QCVariables, options, and scratch files to default state.
+    postclean
+        When ``False``, *remove* the output file since absorbed into AtomicResult.
+        When ``True``, simply *close* the output file. True is useful when calling
+        from a Psi4 session to avoid removing the parent Psi4's output file.
+
+    Returns
+    -------
+    qcelemental.models.AtomicResult
+        Full record of quantum chemistry calculation, including output text. Returned upon job success.
+    qcelemental.models.FailedOperation
+        Record to diagnose calculation failure, including output text and input specification. Returned upon job failure.
+
+    """
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
     print_header()
@@ -435,7 +474,7 @@ def run_qcschema(input_data, clean=True):
                                               'error_message': ''.join(traceback.format_exception(*sys.exc_info())),
                                           })
 
-    atexit.register(_quiet_remove, outfile)
+    _clean_psi_output(postclean, outfile)
 
     return ret
 

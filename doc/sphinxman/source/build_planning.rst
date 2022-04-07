@@ -1881,3 +1881,22 @@ To change the logging level to DEBUG in PsiAPI::
 
   >>> psi4.set_output_file(<filebase>, loglevel=10)
 
+
+.. _`faq:findexemod`:
+
+How to find the Psi4 module from the executable and vice versa
+--------------------------------------------------------------
+
+Because of the different conventions of C++/Linux and Python installation
+layouts, the |PSIfour| executable and the |PSIfour| Python module aren't
+at fixed locations relative to each other. Accessors have been added
+so that the executable can show where the module is, and the module
+can show where the executable is.
+
+  .. code-block:: bash
+
+    > /path/to/psi4/install/bin/psi4 --module
+    /path/to/psi4/install/lib//
+    > python -c "import psi4;print(psi4.executable)"
+    /path/to/psi4/install/bin/psi4
+

@@ -507,6 +507,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    The amount of memory to use. Can be specified with units (e.g., '10MB') otherwise bytes is assumed.
 
+.. option:: --module
+
+   The location of the associated |PSIfour| Python module.
+
  .. option:: -n <threads>, --nthread <threads>
 
    Number of threads to use (overrides :envvar:`OMP_NUM_THREADS`).
@@ -524,7 +528,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Generates a bash command to source correct Python interpreter and path for ``python -c "import psi4"``
 
-.. option:: --qcschema
+.. option:: --qcschema, --schema
 
    Runs input files as QCSchema. Can either be JSON or MessagePack input.
 
