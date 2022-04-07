@@ -193,7 +193,10 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     # Note:  The input.py in json/, python/, and psi4numpy/ are not being treated best.
     #   Properly, as in CTest, it's `command = [sys.executable, "input.py"]`.
     #   Have to either have 3-item `command` or pass PYTHONPATH through env. Since some tests (fsapt) "import psi4" internally, doing both.
-    command = [sys.executable, psi4.executable, inputdat]
+    if Path(psi4.executable).suffix == ".exe":
+        command = [psi4.executable, inputdat]
+    else:
+        command = [sys.executable, psi4.executable, inputdat]
     _, output = execute(command, infiles_with_contents, outfiles, environment=env)
 
     success = output["proc"].poll() == 0
