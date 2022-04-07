@@ -13,7 +13,6 @@ pytestmark = [pytest.mark.api, pytest.mark.quick]
 
 @pytest.fixture
 def reference_data():
-    # Reference data generated using Psi4 1.5, still using OS86
     with open(Path(__file__).parent / "f12_libint1.json") as f:
         reference_data = json.load(f)
     return reference_data
