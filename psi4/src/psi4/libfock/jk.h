@@ -357,9 +357,13 @@ class PSI_API JK {
     /**
     * Determine if shell quartet is significant or not 
     * based on screening method used
+    * No significance testing is done unless a subclass overrides this method
     */
-    virtual bool shell_significant(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
-        const std::vector<SharedMatrix>& D, int M, int N, int R, int S) { return true; }; 
+    virtual bool shell_significant(int M, int N, int R, int S, 
+        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+	const std::vector<SharedMatrix>& D = {}) {
+          return true; 
+    }; 
 
    public:
     // => Constructors <= //
@@ -697,8 +701,9 @@ class PSI_API PKJK : public JK {
     * Determine if shell quartet is significant or not 
     * based on screening method used
     */
-    //virtual bool shell_significant(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
-    //    const std::vector<SharedMatrix>& D, int M, int N, int R, int S) override;
+    //bool shell_significant(int M, int N, int R, int S,
+    //    std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+    //    const std::vector<SharedMatrix>& D = {}) override; 
 
     /// Total number of SOs
     int nso_;
@@ -795,8 +800,9 @@ class PSI_API DirectJK : public JK {
     * Determine if shell quartet is significant or not 
     * based on screening method used
     */
-    virtual bool shell_significant(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
-        const std::vector<SharedMatrix>& D, int M, int N, int R, int S) override;
+    bool shell_significant(int M, int N, int R, int S,
+        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::vector<SharedMatrix>& D = {}) override; 
 
     /**
      * @brief The standard J and K matrix builds for this integral class

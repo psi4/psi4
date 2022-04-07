@@ -168,6 +168,11 @@ double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
     return D_max;
 }
 
+double TwoBodyAOInt::shell_pair_max_density(int i, int M, int N) const  {
+    return max_dens_shell_pair_[i][M*nshell_ + N]; 
+};
+
+/*
 // Haser 1989 Equations 6 to 14
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
@@ -200,6 +205,7 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
     // The density screened ERI bound (Eq. 6)
     return (mn_mn * rs_rs * max_density * max_density >= screening_threshold_squared_);
 }
+*/
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
     // Square of standard Cauchy-Schwarz Q_mu_nu terms (Eq. 1)
