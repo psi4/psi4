@@ -38,14 +38,13 @@ def test_f12_integrals(reference_data):
         shape = ref[f'L_shape']
         integral_ref = np.array(ref["L"]).reshape(shape)
 
-        if int_type == "F":
-            libint2 = mints.ao_f12(f12)
-        if int_type == "F2":
-            libint2 = mints.ao_f12_squared(f12)
-        if int_type == "FG":
-            libint2 = mints.ao_f12g12(f12)
-        if int_type == "Uf":
-            libint2 = mints.ao_f12_double_commutator(f12)
+        mapping = {
+            "F": mints.ao_f12,
+            "F2": mints.ao_f12_squared,
+            "FG": mints.ao_f12g12,
+            "Uf": mints.ao_f12_double_commutator,
+        }
+        libint2 = mapping[int_type](f12)
 
         libint2_np = matlist_to_ndarray(libint2)
         np.testing.assert_allclose(libint2_np, integral_ref, atol=1.e-14)
