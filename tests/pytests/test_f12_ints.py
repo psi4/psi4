@@ -22,6 +22,7 @@ def matlist_to_ndarray(mats):
     """Converts a list of psi4.core.Matrix to np.ndarray"""
     return psi4.driver.p4util.numpy_helper._to_array(mats) 
 
+
 def test_f12_integrals(reference_data):
     assert reference_data['version'] == '1.5'
     refdata = reference_data['data']
