@@ -747,7 +747,8 @@ def test_simint():
     psi4.set_options({'integral_package': 'simint'})
     _test_scf5()
 
-def test_json():
+
+def test_run_json():
     """json/energy"""
 
     import numpy as np
@@ -781,6 +782,41 @@ def test_json():
 
     with open("pytest_output.dat", "w") as f:
         json.dump(json_ret["raw_output"], f)
+
+
+def test_run_qcschema():
+    """json/energy"""
+
+    import numpy as np
+
+    # Generate JSON data
+    json_input = {
+        "schema_name": "qc_schema_input",
+        "schema_version": 1,
+        "molecule": {
+            "symbols": ["He", "He"],
+            "geometry": [0, 0, -1, 0, 0, 1]
+        },
+        "driver": "gradient",
+        "model": {
+            "method": "SCF",
+            "basis": "sto-3g"
+        },
+        "keywords": {}
+    }
+
+    json_ret = psi4.json_wrapper.run_qcschema(json_input)
+    print(json_ret.dict())
+
+    assert psi4.compare(True, json_ret.success, "Success")
+    assert psi4.compare_values(-5.474227786274896, json_ret.properties.return_energy, 4, "SCF ENERGY")
+
+    bench_gradient = np.array([[  0.0 , 0.0 ,   0.32746933],
+                               [  0.0 , 0.0 ,  -0.32746933]])
+    assert psi4.compare_values(bench_gradient, json_ret.return_result, 4, "SCF RETURN GRADIENT")
+
+    with open("pytest_output.dat", "w") as f:
+        json.dump(json_ret.stdout, f)
 
 
 @uusing("cfour")

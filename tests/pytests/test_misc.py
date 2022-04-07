@@ -13,6 +13,17 @@ from psi4.driver import qcdb
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
+@pytest.mark.parametrize("call",
+    [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies, psi4.properties])
+def test_typo_method_calls(call):
+    psi4.geometry('He')
+    err_substr = "Did you mean?"
+
+    with pytest.raises(Exception) as e:
+        call('ccsdd', basis='cc-pvdz')
+    assert err_substr in str(e.value)
+
+
 def test_xtpl_fn_fn_error():
     psi4.geometry('He')
 
