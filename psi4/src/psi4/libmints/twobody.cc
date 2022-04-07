@@ -244,9 +244,6 @@ void TwoBodyAOInt::setup_sieve() {
         case ScreeningType::Schwarz:
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_schwarz(M, N, R, S); };
             break;
-        case ScreeningType::Density:
-            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_density(M, N, R, S); };
-            break;
         case ScreeningType::None:   
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_none(M, N, R, S); };
             return;

@@ -162,6 +162,37 @@ void DirectJK::incfock_postiter() {
     }
 }
 
+bool shell_significant(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D, int M, int N, int R, int S) {
+    if (density_screening_) {
+        // Maximum density matrix equation
+        double max_density = 0.0;
+
+        // Equation 6 (RHF Case)
+        if (D.size() == 1) {
+            max_density = std::max({4.0 * ints[0]->get_max_dens_shell_pair(0, M, N), 4.0 * ints[0]->get_max_dens_shell_pair(0, R, S),
+                ints[0]->get_max_dens_shell_pair(0, M, R), ints[0]->get_max_dens_shell_pair(0, M, S),
+                ints[0]->get_max_dens_shell_pair(0, N, R), ints[0]->get_max_dens_shell_pair(0, N, S)});
+        } else { // UHF and ROHF
+            // J-like terms
+            double D_MN = ints[0]->get_max_dens_shell_pair_(0, M, N) + ints[0]->get_max_dens_shell_pair(1, M, N);
+            double D_RS = ints[0]->get_max_dens_shell_pair_(0, R, S) + ints[0]->get_max_dens_shell_pair(1, R, S);
+
+            // K-like terms
+            double D_MR = ints[0]->get_max_dens_shell_pair_(0, M, R) + ints[0]->get_max_dens_shell_pair(1, M, R);
+            double D_MS = ints[0]->get_max_dens_shell_pair_(0, M, S) + ints[0]->get_max_dens_shell_pair(1, M, S);
+            double D_NR = ints[0]->get_max_dens_shell_pair_(0, N, R) + ints[0]->get_max_dens_shell_pair(1, N, R);
+            double D_NS = ints[0]->get_max_dens_shell_pair_(0, N, S) + ints[0]->get_max_dens_shell_pair(1, N, S);
+
+            max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
+        }
+
+        // The density screened ERI bound (Eq. 6)
+        return (ints[0]->shell_ceiling2(M, N, S, R) * max_density * max_density >= screening_threshold_squared_);
+    } else {
+        return ints[0]->shell_significant(M, N, R, S);
+    }
+}
+
 void DirectJK::compute_JK() {
    
 #ifdef USING_BrianQC
@@ -587,7 +618,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         int S = task_shells[S2];
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+                        if (!shell_significant(ints, D, P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // if (thread == 0) timer_on("JK: Ints");
