@@ -481,7 +481,7 @@ do the extrapolation).  For example,::
 
   # all equivalent
 
-  cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+  energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
 
   energy('mp2/cc-pv[dt]z')
 
@@ -489,8 +489,9 @@ will compute a 2-point Helgaker extrapolation of the correlation energy
 using the cc-pVDZ and cc-pVTZ basis sets (with method MP2) and add this
 extrapolated correlation energy to the Hartree--Fock energy in the
 largest basis (cc-pVTZ). :py:func:`~psi4.cbs` can
-either be called directly, as in the first example, or the convenience
-syntax of the equivalent second example can be used.
+be configured behind-the-scenes with explicit arguments, as in the
+first example, or the convenience syntax of the equivalent second
+example can be used.
 
 Another very useful and powerful feature of |PSIfour| is the ability
 to compute results on entire databases of molecules at a time,

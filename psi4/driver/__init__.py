@@ -64,5 +64,5 @@ from psi4.driver import frac
 from psi4.driver.driver import *
 
 # Single functions
-from psi4.driver.driver_cbs import cbs
+from psi4.driver.driver_cbs import cbs  # remove in v1.8 when UpgradeHelper expires
 from psi4.driver.p4util.python_helpers import set_options, set_module_options, pcm_helper, basis_helper

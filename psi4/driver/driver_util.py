@@ -27,6 +27,7 @@
 #
 
 import re
+import inspect
 from typing import Dict, Optional, Union
 
 from psi4 import core
@@ -120,6 +121,44 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
     if verbose >= 2:
         print('')
     return optstash
+
+
+def upgrade_interventions(method):
+    from collections import Counter
+    from psi4.driver.driver_cbs import cbs, composite_procedures
+
+    # this section is retrofit so that below error only hits old syntax by user, not old syntax in call stack that pre-ddd uses
+    fn_hist = [frame.function for frame in inspect.stack()]
+    fn_hist_cnt = Counter(fn_hist)
+    user_hit = sum([fn_hist_cnt[fn] for fn in ["energy", "gradient", "optimize", "properties", "hessian"]])
+
+    # this section is long-term portion of function
+    if user_hit == 1:
+        try:
+            lowermethod = method.lower()
+        except AttributeError as e:
+            if method.__name__ == 'cbs':
+                raise UpgradeHelper(method, repr(method.__name__), 1.6,
+                                    ' Replace cbs or complete_basis_set function with cbs string.')
+            elif method.__name__ in ['sherrill_gold_standard', 'allen_focal_point']:
+                raise UpgradeHelper(
+                    method.__name__, '"' + method.__name__ + '"', 1.6,
+                    f' Replace function `energy({method.__name__})` with string `energy("{method.__name__}")` or similar.')
+            else:
+                raise e
+
+    # this section is retrofit for pre-ddd that needs the functions upon which the above just errored
+    try:
+        method = method.lower()
+    except AttributeError as e:
+        pass
+    else:
+        if method == "cbs":
+            method = cbs
+        elif method in composite_procedures:
+            method = composite_procedures[method]
+
+    return method
 
 
 def parse_arbitrary_order(name):

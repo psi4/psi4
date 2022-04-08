@@ -36,7 +36,7 @@ import numpy as np
 from psi4 import core
 from psi4.driver import qcdb
 from psi4.driver import p4util
-from psi4.driver.driver_cbs_helper import xtpl_highest_1, scf_xtpl_helgaker_2, scf_xtpl_truhlar_2, scf_xtpl_karton_2, scf_xtpl_helgaker_3, corl_xtpl_helgaker_2
+from psi4.driver.driver_cbs_helper import composite_procedures, register_composite_function, register_xtpl_function, xtpl_procedures  # lgtm[py/unused-import]
 from psi4.driver import driver_util
 from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import *
@@ -53,6 +53,32 @@ _lmh_labels = {
     4: ['LO', 'MD', 'M2', 'HI'],
     5: ['LO', 'MD', 'M2', 'M3', 'HI']
 }
+
+
+# remove in 1.8
+# these get input files to the point where they raise an UpgradeHelper
+def xtpl_highest_1():
+    pass
+
+
+def scf_xtpl_helgaker_2():
+    pass
+
+
+def scf_xtpl_truhlar_2():
+    pass
+
+
+def scf_xtpl_karton_2():
+    pass
+
+
+def scf_xtpl_helgaker_3():
+    pass
+
+
+def corl_xtpl_helgaker_2():
+    pass
 
 
 def _expand_bracketed_basis(basisstring: str, molecule=None):
@@ -386,17 +412,17 @@ def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
     """
 
     if nbasis == 1 and xtpl_type in ["scf", "corl"]:
-        return xtpl_highest_1
+        return "xtpl_highest_1"
     elif xtpl_type == "scf":
         if nbasis == 2:
-            return scf_xtpl_helgaker_2
+            return "scf_xtpl_helgaker_2"
         elif nbasis == 3:
-            return scf_xtpl_helgaker_3
+            return "scf_xtpl_helgaker_3"
         else:
             raise ValidationError(f"Wrong number of basis sets supplied to scf_xtpl: {nbasis}")
     elif xtpl_type == "corl":
         if nbasis == 2:
-            return corl_xtpl_helgaker_2
+            return "corl_xtpl_helgaker_2"
         else:
             raise ValidationError(f"Wrong number of basis sets supplied to corl_xtpl: {nbasis}")
     else:
@@ -1116,19 +1142,19 @@ def cbs(func, label, **kwargs):
         hiloargs = {'alpha': stage['d_alpha']}
 
         hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
-        stage['d_energy'] = stage['d_scheme'](**hiloargs)
+        stage['d_energy'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
         finalenergy += stage['d_energy'] * stage['d_coef']
 
         if ptype == 'gradient':
             hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
-            stage['d_gradient'] = stage['d_scheme'](**hiloargs)
+            stage['d_gradient'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
             work = stage['d_gradient'].clone()
             work.scale(stage['d_coef'])
             finalgradient.add(work)
 
         elif ptype == 'hessian':
             hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
-            stage['d_hessian'] = stage['d_scheme'](**hiloargs)
+            stage['d_hessian'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
             work = stage['d_hessian'].clone()
             work.scale(stage['d_coef'])
             finalhessian.add(work)
@@ -1159,7 +1185,7 @@ def cbs(func, label, **kwargs):
     for stage in GRAND_NEED:
         tables += """     %6s %20s %1s %-27s %2d %16.8f   %-s\n""" % (stage['d_stage'], stage['d_wfn'], '/',
                                                                       stage['d_basis'], stage['d_coef'],
-                                                                      stage['d_energy'], stage['d_scheme'].__name__)
+                                                                      stage['d_energy'], stage['d_scheme'])
     tables += table_delimit
 
     tables += """\n   ==> %s <==\n\n""" % ('CBS')
@@ -1169,11 +1195,11 @@ def cbs(func, label, **kwargs):
     tables += table_delimit
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
         GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'], '/', GRAND_NEED[0]['d_basis'], '', GRAND_NEED[0]['d_energy'],
-        GRAND_NEED[0]['d_scheme'].__name__)
+        GRAND_NEED[0]['d_scheme'])
     if len(metadata) > 1:
         tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
             GRAND_NEED[1]['d_stage'], GRAND_NEED[1]['d_wfn'], '/', GRAND_NEED[1]['d_basis'], '',
-            GRAND_NEED[1]['d_energy'] - GRAND_NEED[2]['d_energy'], GRAND_NEED[1]['d_scheme'].__name__)
+            GRAND_NEED[1]['d_energy'] - GRAND_NEED[2]['d_energy'], GRAND_NEED[1]['d_scheme'])
     if len(metadata) > 2:
         dc = 3
         for delta in metadata[2:]:
@@ -1181,7 +1207,7 @@ def cbs(func, label, **kwargs):
             tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
                 GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc + 1]['d_wfn'], '/',
                 GRAND_NEED[dc]['d_basis'], '', deltaE_total,
-                GRAND_NEED[dc]['d_scheme'].__name__)
+                GRAND_NEED[dc]['d_scheme'])
             core.set_variable(f"CBS {GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", deltaE_total)
             dc += 2
 
@@ -1238,8 +1264,16 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
     """
     Nxtpl = len(basiszeta)
 
-    if int(scheme.__name__.split('_')[-1]) != Nxtpl:
-        raise ValidationError("""Call to '%s' not valid with '%s' basis sets.""" % (scheme.__name__, len(basiszeta)))
+    try:
+        scheme.split()
+    except AttributeError:
+        raise UpgradeHelper(scheme, repr(scheme.__name__), 1.6, ' Replace extrapolation function with function name.')
+
+    if scheme not in xtpl_procedures:
+        raise ValidationError(f"Extrapolation function ({scheme}) not among registered extrapolation schemes: {list(xtpl_procedures.keys())}. Use 'register_xtpl_function' function.")
+
+    if int(scheme.split("_")[-1]) != Nxtpl:
+        raise ValidationError(f"""Call to '{scheme}' not valid with '{len(basiszeta)}' basis sets.""")
 
     f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
     NEED = {}
