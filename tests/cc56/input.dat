@@ -39,19 +39,21 @@ compare_values(ref0A2, core.variable("CCSD ROOT 0 (A2) TOTAL ENERGY"), 6, "Root 
 ### Transition checks
 
 test_data = { # TEST
-"ROOT 0 (B1) -> ROOT 0 (A2)": {"OSCILLATOR STRENGTH (LEN)": 0.00407528, "EINSTEIN A (LEN)": 3.86413231e+07, "EINSTEIN B (LEN)": 1.36907729e+18}, # TEST
-"ROOT 0 (B1) -> ROOT 1 (B1)": {"OSCILLATOR STRENGTH (LEN)": 0.00317063, "EINSTEIN A (LEN)": 2.32728034e+07, "EINSTEIN B (LEN)": 1.21063018e+18}, # TEST
-"ROOT 1 (B1) -> ROOT 0 (A2)": {"OSCILLATOR STRENGTH (LEN)": 0.09372883, "EINSTEIN A (LEN)": 1.28314944e+07, "EINSTEIN B (LEN)": 2.62052705e+20}, # TEST
+(0, "B1", 0, 0, "A2", 2, "B2"): {"OSCILLATOR STRENGTH (LEN)": 0.00407528, "EINSTEIN A (LEN)": 3.86413231e+07, "EINSTEIN B (LEN)": 1.36907729e+18}, # TEST
+(0, "B1", 0, 1, "B1", 1, "A1"): {"OSCILLATOR STRENGTH (LEN)": 0.00317063, "EINSTEIN A (LEN)": 2.32728034e+07, "EINSTEIN B (LEN)": 1.21063018e+18}, # TEST
+(1, "B1", 1, 0, "A2", 2, "B2"): {"OSCILLATOR STRENGTH (LEN)": 0.09372883, "EINSTEIN A (LEN)": 1.28314944e+07, "EINSTEIN B (LEN)": 2.62052705e+20}, # TEST
 }
 
 for transition, data in test_data.items(): # TEST
     for property, value in data.items(): # TEST
-        # Change these numbers to 6 ASAP # TEST
-        if "EINSTEIN" not in property: # TEST
-            compare_values(value, wfn.variable(f"CC {transition} {property}"), 4, f"CC {transition} {property}") # TEST
-            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), 4, f"CCSD {transition} {property}") # TEST
-        else: # TEST 
-            # Large numbers need "special" testing. # TEST
-            compare_values(value, wfn.variable(f"CC {transition} {property}"), f"CC {transition} {property}", atol=1e-6, rtol=1e-4) # TEST
-            compare_values(value, wfn.variable(f"CCSD {transition} {property}"), f"CCSD {transition} {property}", atol=1e-6, rtol=1e-4) # TEST
-
+        for name in {"CC", "CCSD"}: # TEST
+            prop1 = f"{name} ROOT {transition[0]} ({transition[1]}) -> ROOT {transition[3]} ({transition[4]}) {property}" # TEST
+            prop2 = f"{name} ROOT {transition[2]} -> ROOT {transition[5]} {property}" # TEST
+            prop3 = f"{name} ROOT {transition[2]} -> ROOT {transition[5]} {property} - {transition[6]} TRANSITION" # TEST
+            for propstring in {prop1, prop2, prop3}: # TEST
+                # Change these numbers to 6 ASAP # TEST
+                if "EINSTEIN" not in property: # TEST
+                    compare_values(value, wfn.variable(propstring), 4, propstring) # TEST
+                else: # TEST 
+                    # Large numbers need "special" testing. # TEST
+                    compare_values(value, wfn.variable(propstring), propstring, atol=1e-6, rtol=1e-4) # TEST

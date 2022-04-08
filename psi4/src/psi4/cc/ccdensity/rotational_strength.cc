@@ -34,9 +34,11 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include "psi4/cc/ccwave.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libdpd/dpd.h"
+#include "psi4/libiwl/iwl.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
@@ -44,7 +46,6 @@
 #include "Frozen.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "psi4/libmints/mintshelper.h"
 #define EXTERN
 #include "globals.h"
 
@@ -57,7 +58,7 @@ void transdip(const MintsHelper &mints);
 void transp(const MintsHelper &mints, double sign);
 void transL(const MintsHelper &mints, double sign);
 
-void rotational_strength(SharedWavefunction wfn, struct TD_Params *S) {
+void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S) {
     int i, j, k;
     int no, nv, nt;
     double lt_x, lt_y, lt_z;
@@ -68,7 +69,7 @@ void rotational_strength(SharedWavefunction wfn, struct TD_Params *S) {
     double rs;
     double conv;
     int nmo = moinfo.nmo;
-    const auto& mints = *wfn->mintshelper();
+    const auto& mints = *wfn.mintshelper();
 
     transdip(mints);
 

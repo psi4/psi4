@@ -41,6 +41,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include "psi4/cc/ccwave.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -131,7 +132,7 @@ void amp_write_ROHF(dpdfile2 *, dpdfile2 *, dpdbuf4 *, dpdbuf4 *, dpdbuf4 *, int
 void overlap(int C_irr, int current);
 void overlap_stash(int C_irr);
 
-void diag() {
+void diag(ccenergy::CCEnergyWavefunction& wfn) {
     dpdfile2 CME, CME2, Cme, SIA, Sia, RIA, Ria, DIA, Dia, tIA, tia, LIA, Lia;
     dpdbuf4 CMNEF, Cmnef, CMnEf, SIJAB, Sijab, SIjAb, RIJAB, Rijab, RIjAb, RIjbA;
     dpdbuf4 CMnEf1, CMnfE1, CMnfE, CMneF, C2;
@@ -161,7 +162,7 @@ void diag() {
 
     if (params.wfn == "EOM_CC3") cc3_stage = 0; /* do EOM_CCSD first */
 
-    // Total Energy, Transition Irrep, Correlation Energy
+    // Total Energy, Transition Irrep, Correlation Energy, # Converged
     // We need the variables in this order for sorting purposes.
     std::vector<std::tuple<double, int, double>> state_data;
 
@@ -1071,24 +1072,28 @@ void diag() {
 
     std::map<std::string, int> irrep_counts = { {moinfo.irr_labs[moinfo.sym], 1} };
     std::sort(state_data.begin(), state_data.end());
+    std::map<std::tuple<int, int>, int> state_idx_to_identifiers;
     for (int i = 0; i < state_data.size(); ++i) {
         const auto& tuple = state_data[i];
         auto total_energy = std::get<0>(tuple);
-        auto trans_irrep = moinfo.irr_labs[std::get<1>(tuple)];
-        auto target_irrep = moinfo.irr_labs[moinfo.sym ^ std::get<1>(tuple)];
+        auto trans_irrep_lbl = moinfo.irr_labs[std::get<1>(tuple)];
+        auto target_irrep = moinfo.sym ^ std::get<1>(tuple);
+        auto target_irrep_lbl = moinfo.irr_labs[moinfo.sym ^ std::get<1>(tuple)];
         auto corr_energy = std::get<2>(tuple);
-        auto irrep_idx = irrep_counts[target_irrep];
+        auto irrep_idx = irrep_counts[target_irrep_lbl];
         const std::vector<std::string> names {"CC", short_name};
+        state_idx_to_identifiers[{irrep_idx, target_irrep}] = i + 1;
         for (const auto& name : names) {
             Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY"] = total_energy;
             Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY"] = corr_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY - " + trans_irrep + " TRANSITION"] = total_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY - " + trans_irrep + " TRANSITION"] = corr_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep + ") TOTAL ENERGY"] = total_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep + ") CORRELATION ENERGY"] = corr_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY - " + trans_irrep_lbl + " TRANSITION"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY - " + trans_irrep_lbl + " TRANSITION"] = corr_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep_lbl + ") TOTAL ENERGY"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep_lbl + ") CORRELATION ENERGY"] = corr_energy;
         }
-        irrep_counts[target_irrep]++;
+        irrep_counts[target_irrep_lbl]++;
     }
+    wfn.state_idx_to_identifiers = state_idx_to_identifiers;
 
     outfile->Printf("\tTotal # of sigma evaluations: %d\n", nsigma_evaluations);
     return;
