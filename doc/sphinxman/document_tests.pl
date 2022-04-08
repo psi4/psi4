@@ -69,7 +69,6 @@ my %ExeFolder = (
    "json/"      => "json",
    "psi4numpy/" => "psi4numpy",
    "python/"    => "python",
-   "adcc/"      => "adcc",
    "brianqc/"   => "brianqc",
 );
 
