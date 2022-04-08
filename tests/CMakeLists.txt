@@ -268,12 +268,6 @@ if(ENABLE_snsmp2)
     message(STATUS "Adding test cases: Psi4 + snsmp2")
 endif()
 
-# <<<  adcc  >>>
-if(ENABLE_adcc)
-    add_subdirectory(adcc)
-    message(STATUS "Adding test cases: Psi4 + adcc")
-endif()
-
 # <<<  BrianQC  >>>
 if(ENABLE_BrianQC)
     add_subdirectory(brianqc)

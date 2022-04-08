@@ -301,9 +301,10 @@ install(
     PATTERN "addons.py"
     PATTERN "conftest.py"
     PATTERN "standard_suite_runner.py"
-    PATTERN "tdscf_reference_data.json"
+    PATTERN "adcc_reference_data.json"
     PATTERN "oei_reference_data.json"
     PATTERN "f12_libint1.json"
+    PATTERN "tdscf_reference_data.json"
     PATTERN "utils.py"
   )
 install(
