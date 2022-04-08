@@ -90,6 +90,8 @@ for root in range(1, 5):
     root_refs_arr[f"CC ROOT {root} QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 
 
+compare_values(psi4.variable("CC ROOT 0 DIPOLE"), psi4.variable("CC DIPOLE"), 6, "CC ROOT 0 vs CC Dipole")
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
 
@@ -107,3 +109,4 @@ with warnings.catch_warnings():
     for tag,refval in gs_refs_arr.items():
         oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
         compare_values(refval, oeprop_val, 4, "CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
+

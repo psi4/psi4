@@ -63,7 +63,12 @@ void export_oeprop(py::module &m) {
         .def("Exvals", &OEProp::Exvals, "The x component of the field (in a.u.) at each grid point")
         .def("Eyvals", &OEProp::Eyvals, "The y component of the field (in a.u.) at each grid point")
         .def("Ezvals", &OEProp::Ezvals, "The z component of the field (in a.u.) at each grid point")
-        .def("set_title", &OEProp::set_title, "docstring");
+        .def("set_title", &OEProp::set_title,
+             "Title OEProp for print purposes. As a side effect, saves variables as title + propertyname and only that. "
+             "Follow up with side names, if the side effect is undesired,", "title"_a)
+        .def("set_names", &OEProp::set_names,
+             "Instruct OEProp to save variables under all specified names. The property name will "
+             "be inserted at every occurrence of {}, like Python format strings. Wipes other names-to-save-by.");
 
     // class_<GridProp, std::shared_ptr<GridProp> >("GridProp", "docstring").
     //    def("add", &GridProp::gridpy_add, "docstring").

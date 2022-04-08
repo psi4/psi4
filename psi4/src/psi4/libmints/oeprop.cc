@@ -655,6 +655,7 @@ SharedMatrix Prop::overlap_so() {
 }
 
 std::string Prop::Da_name() const { return Da_so_->name(); }
+std::string Prop::Db_name() const { return Db_so_->name(); }
 
 Vector3 OEProp::compute_center(const double* property) const {
     std::shared_ptr<Molecule> mol = wfn_->molecule();
@@ -687,7 +688,6 @@ OEProp::~OEProp() {}
 void OEProp::common_init() {
     Options& options = Process::environment.options;
     print_ = options.get_int("PRINT");
-    title_ = "";
 
     // Determine number of NOONs to print; default is 3
     if (options.get_str("PRINT_NOONS") == "ALL")
@@ -835,20 +835,19 @@ void OEProp::compute_multipoles(int order, bool transition) {
         int ncomponents = (l + 1) * (l + 2) / 2;
         auto multipole_array = std::make_shared<Matrix>(1, ncomponents);
 
-        std::stringstream sstream;
-        sstream << title_;
-        if (title_ != "") sstream << " ";
+
+        std::string mtdname;
         if (l == 1) {
-            sstream << "DIPOLE";
+            mtdname = "DIPOLE";
         } else if (l == 2) {
-            sstream << "QUADRUPOLE";
+            mtdname = "QUADRUPOLE";
         } else if (l == 3) {
-            sstream << "OCTUPOLE";
+            mtdname = "OCTUPOLE";
         } else if (l == 4) {
-            sstream << "HEXADECAPOLE";
+            mtdname = "HEXADECAPOLE";
         } else {
             int n = (1 << l);
-            sstream << n << "-POLE";
+            mtdname = std::to_string(n) + "-POLE";
         }
 
         for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
@@ -871,8 +870,19 @@ void OEProp::compute_multipoles(int order, bool transition) {
             }
         }
 
-        Process::environment.arrays[sstream.str()] = multipole_array;
-        wfn_->set_array_variable(sstream.str(), multipole_array);
+        std::unordered_set<std::string> names;
+        if (names_.empty()) {
+            names = {"{}"};
+        } else {
+            names = names_;
+        }
+
+        for (auto name: names) {
+            // TODO: Use fmt strings when Psi uses C++20.
+            name.replace(name.find("{}"), sizeof("{}") - 1, mtdname);
+            Process::environment.arrays[name] = multipole_array;
+            wfn_->set_array_variable(name, multipole_array);
+        }
     }
 }
 

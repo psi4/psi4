@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {oeprop} 294c406 dirty
+                         Git: Rev {oeprop} 558962e dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 05 April 2022 04:03PM
+    Psi4 started on: Wednesday, 06 April 2022 12:43PM
 
-    Process ID: 29695
+    Process ID: 17743
     Host:       dhcp189-247.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -133,6 +133,8 @@ for root in range(1, 5):
     root_refs_arr[f"CC ROOT {root} QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 
 
+compare_values(psi4.variable("CC ROOT 0 DIPOLE"), psi4.variable("CC DIPOLE"), 6, "CC ROOT 0 vs CC Dipole")
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
 
@@ -150,10 +152,11 @@ with warnings.catch_warnings():
     for tag,refval in gs_refs_arr.items():
         oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
         compare_values(refval, oeprop_val, 4, "CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
+
 --------------------------------------------------------------------------
 
 *** tstart() called on dhcp189-247.emerson.emory.edu
-*** at Tue Apr  5 16:03:46 2022
+*** at Wed Apr  6 12:43:34 2022
 
    => Loading Basis Set <=
 
@@ -345,15 +348,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on dhcp189-247.emerson.emory.edu at Tue Apr  5 16:03:50 2022
+*** tstop() called on dhcp189-247.emerson.emory.edu at Wed Apr  6 12:43:36 2022
 Module time:
-	user time   =       1.15 seconds =       0.02 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.13 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       1.15 seconds =       0.02 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.13 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -379,7 +382,7 @@ Total time:
 
 
 *** tstart() called on dhcp189-247.emerson.emory.edu
-*** at Tue Apr  5 16:03:51 2022
+*** at Wed Apr  6 12:43:36 2022
 
 
 	Wfn Parameters:
@@ -458,15 +461,15 @@ Total time:
 	Two-electron energy          =     45.23861563749188
 	Reference energy             =   -150.77918387212975
 
-*** tstop() called on dhcp189-247.emerson.emory.edu at Tue Apr  5 16:03:51 2022
+*** tstop() called on dhcp189-247.emerson.emory.edu at Wed Apr  6 12:43:36 2022
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.23 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.41 seconds =       0.02 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       1.36 seconds =       0.02 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -1590,7 +1593,7 @@ Doing transition
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
-Properties computed using the CC2 density matrix
+Properties computed using the CC2 {} density matrix
 
 
  Multipole Moments:
@@ -1829,6 +1832,7 @@ Properties computed using the CC ROOT 4 density matrix
   LUNO+2 :    6  B    0.017
   LUNO+3 :    7  A    0.006
 
+    CC ROOT 0 vs CC Dipole................................................................PASSED
     CC2 DIPOLE............................................................................PASSED
     CC2 QUADRUPOLE........................................................................PASSED
     CC ROOT 1 DIPOLE......................................................................PASSED
@@ -1873,7 +1877,7 @@ Properties computed using the CCDENSITY-SET-WFN-TEST CC2 density matrix
     CCDENSITY-SET-WFN-TEST CC2 DIPOLE.....................................................PASSED
     CCDENSITY-SET-WFN-TEST CC2 QUADRUPOLE.................................................PASSED
 
-    Psi4 stopped on: Tuesday, 05 April 2022 04:04PM
-    Psi4 wall time for execution: 0:00:13.48
+    Psi4 stopped on: Wednesday, 06 April 2022 12:43PM
+    Psi4 wall time for execution: 0:00:07.60
 
 *** Psi4 exiting successfully. Buy a developer a beer!

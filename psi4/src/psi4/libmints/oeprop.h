@@ -29,10 +29,11 @@
 #ifndef _psi_src_lib_oeprop_h
 #define _psi_src_lib_oeprop_h
 
-#include <set>
-#include <vector>
 #include <map>
+#include <set>
 #include <string>
+#include <unordered_set>
+#include <vector>
 
 #include "typedefs.h"
 #include "psi4/libmints/vector3.h"
@@ -183,42 +184,11 @@ class PSI_API Prop {
 
     /// Density Matrix title, used for fallback naming of OEProp compute jobs
     std::string Da_name() const;
+    /// Density Matrix title, used for fallback naming of OEProp compute jobs
+    std::string Db_name() const;
 
     // => Some integral helpers <= //
     SharedMatrix overlap_so();
-};
-
-class PSI_API TaskListComputer {
-   protected:
-    /// Print flag
-    int print_;
-    /// Debug flag
-    int debug_;
-
-    /// The title of this Prop object, for use in saving info
-    std::string title_;
-
-    /// The set of tasks to complete
-    std::set<std::string> tasks_;
-
-   public:
-    /// Print header
-    virtual void print_header() = 0;
-    // => Queue/Compute Routines <= //
-
-
-
-    /// Compute properties
-    virtual void compute() = 0;
-
-    // => Utility Routines <= //
-    void set_print(int print) { print_ = print; }
-    void set_debug(int debug) { debug_ = debug; }
-
-    // Constructor, sets defaults for print and debug
-    TaskListComputer();
-    // Destructor
-    virtual ~TaskListComputer() {}
 };
 
 /**
@@ -367,8 +337,18 @@ class PSI_API OEProp {
     std::shared_ptr<Wavefunction> wfn_;
     /// Print flag
     int print_;
-    /// The title of this OEProp object, for use in saving info
+    /// OEProp name, for printout purposes.
+    /// TODO: Standardize density matrix names across Psi so we can remove `title_`.
+    ///   `title_` is redundant. Ideally, we'd print the density matrix names and not bother naming the
+    ///   OEProp object itself. But if a user sets an MO density matrix and gives it a name asserting
+    ///   it is an MO density matrix, OEProp would need to recognize that and rename the SO basis matrix
+    ///   it creates. Without a standard naming scheme for densities, OEProp can't do that. Therefore,
+    ///   until density names are standardized, we need to awkwardly keep `title_` around.
     std::string title_;
+    /// Variable names, for variable saving purposes. Each should have a single '{}' substring to indicate
+    /// where the variable name goes. The full generality of format strings are needed for excited
+    /// state purposes.
+    std::unordered_set<std::string> names_;
     /// The set of tasks to complete
     std::set<std::string> tasks_;
     /// Common initialization
@@ -426,8 +406,11 @@ class PSI_API OEProp {
     void add(std::vector<std::string> tasks);
     /// Clear task queue
     void clear();
-    /// Set title for use in saving information
-    void set_title(const std::string& title) { title_ = title; }
+    /// Set title for use in printout. Set the same title to be the name for printout.
+    /// We do both because in older OEProp, the same member variable was used for both tasks.
+    void set_title(const std::string& title) { names_ = {title + (title.empty() ? "" : " ") + "{}"}; title_ = title; }
+    /// Set titles for use in saving information
+    void set_names(const std::unordered_set<std::string> names) { names_ = names; }
     /// Compute and print/save the properties
     void compute();
 
