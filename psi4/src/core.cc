@@ -248,7 +248,7 @@ namespace cclambda {
 PsiReturnType cclambda(SharedWavefunction, Options&);
 }
 namespace ccdensity {
-PsiReturnType ccdensity(SharedWavefunction, Options&);
+PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction>, Options&);
 }
 namespace ccresponse {
 PsiReturnType ccresponse(SharedWavefunction, Options&);
@@ -256,7 +256,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options&, double step, std::vec
              std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
 }  // namespace ccresponse
 namespace cceom {
-PsiReturnType cceom(SharedWavefunction, Options&);
+PsiReturnType cceom(std::shared_ptr<ccenergy::CCEnergyWavefunction>, Options&);
 }
 
 extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
@@ -451,7 +451,7 @@ SharedWavefunction py_psi_cclambda(SharedWavefunction ref_wfn) {
     return cclambda;
 }
 
-double py_psi_ccdensity(SharedWavefunction ref_wfn) {
+double py_psi_ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn) {
     py_psi_prepare_options_for_module("CCDENSITY");
     ccdensity::ccdensity(ref_wfn, Process::environment.options);
     return 0.0;
@@ -508,7 +508,7 @@ void py_psi_scatter(std::shared_ptr<Molecule> molecule, double step, py::list di
                         dip_quad_polar_tensors);
 }
 
-double py_psi_cceom(SharedWavefunction ref_wfn) {
+double py_psi_cceom(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn) {
     py_psi_prepare_options_for_module("CCEOM");
     if (cceom::cceom(ref_wfn, Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];

@@ -35,15 +35,16 @@
            Refactoring needed, so pardon the mess, and help out if you can.
 */
 
+#include "psi4/cc/ccwave.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/wavefunction.h"
 
 namespace psi {
 namespace ccdensity {
 // Save a scalar describing a ground->excited transition.
-void scalar_saver_ground(SharedWavefunction wfn, struct TD_Params *S, const std::string suffix, double val);
+void scalar_saver_ground(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, const std::string suffix, double val);
 // Save a scalar describing a excited->excited transition.
-void scalar_saver_excited(SharedWavefunction wfn, struct TD_Params *S, struct TD_Params *U, const std::string suffix, double val);
+void scalar_saver_excited(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U, const std::string suffix, double val);
 
 }
 }

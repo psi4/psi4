@@ -52,7 +52,7 @@ namespace psi {
 namespace ccdensity {
 #include "psi4/physconst.h"
 
-void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct TD_Params *U,
+void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U,
                             struct XTD_Params *xtd_data) {
     int nmo, nso, i, I, h, j;
     int *order, *order_A, *order_B, *doccpi;
@@ -70,14 +70,14 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
     double f;
 
     if ((params.ref == 0) || (params.ref == 1))
-        scf_pitzer = wfn->Ca()->to_block_matrix();
+        scf_pitzer = wfn.Ca()->to_block_matrix();
     else if (params.ref == 2) {
-        scf_pitzer_A = wfn->Ca()->to_block_matrix();
-        scf_pitzer_B = wfn->Cb()->to_block_matrix();
+        scf_pitzer_A = wfn.Ca()->to_block_matrix();
+        scf_pitzer_B = wfn.Cb()->to_block_matrix();
     }
 
-    nso = wfn->nso();
-    nmo = wfn->nmo();
+    nso = wfn.nso();
+    nmo = wfn.nmo();
 
     lt_x = lt_y = lt_z = 0.0;
     rt_x = rt_y = rt_z = 0.0;
@@ -129,7 +129,7 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
 
     /*** Transform the SO dipole integrals to the MO basis ***/
 
-    MintsHelper mints(wfn->basisset(), Process::environment.options, 0);
+    MintsHelper mints(wfn.basisset(), Process::environment.options, 0);
     std::vector<SharedMatrix> dipole = mints.so_dipole();
     MUX_SO = dipole[0]->to_block_matrix();
     MUY_SO = dipole[1]->to_block_matrix();

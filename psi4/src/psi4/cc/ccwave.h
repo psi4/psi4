@@ -55,6 +55,7 @@ class CCEnergyWavefunction : public Wavefunction {
     double compute_energy() override;
 
     std::map<std::string, SharedMatrix> get_amplitudes();
+    std::map<std::tuple<int, int>, int> state_idx_to_identifiers;
 
    private:
     /* setup, info and teardown */

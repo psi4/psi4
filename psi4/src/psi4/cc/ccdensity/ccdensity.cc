@@ -38,21 +38,22 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/libpsio/psio.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libdpd/dpd.h"
-#include "psi4/libiwl/iwl.h"
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/psi4-dec.h"
 #include <cmath>
-#include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
 #include "globals.h"
+#include "psi4/cc/ccwave.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libiwl/iwl.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 namespace psi {
 
 class Molecule;
@@ -117,8 +118,8 @@ void get_td_params(Options &options);
 void td_setup(const struct TD_Params& S);
 void tdensity(const struct TD_Params& S);
 void td_print();
-void oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
-void rotational_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
+void oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S);
+void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S);
 void ael(struct RHO_Params *rho_params);
 void cleanup();
 void td_cleanup();
@@ -130,13 +131,13 @@ void V_cc2();
 void ex_tdensity(char hand, const struct TD_Params& S, const struct TD_Params& U);
 void ex_td_setup(const struct TD_Params& S, const struct TD_Params& U);
 void ex_td_cleanup();
-void ex_oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S, struct TD_Params *U,
+void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U,
                             struct XTD_Params *xtd_data);
-void ex_rotational_strength(std::shared_ptr<Wavefunction>, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
+void ex_rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_td_print(std::vector<struct XTD_Params>);
 SharedMatrix block_to_matrix(double **);
 
-PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
+PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn, Options &options) {
     int i;
     int **cachelist, *cachefiles;
     struct iwlbuf OutBuf;
@@ -437,10 +438,10 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             td_setup(td_params[i]);
             tdensity(td_params[i]);
             outfile->Printf("Doing transition\n");
-            oscillator_strength(ref_wfn, &(td_params[i]));
+            oscillator_strength(*ref_wfn, &(td_params[i]));
             outfile->Printf("Doing transition\n");
             if (params.ref == 0) {
-                rotational_strength(ref_wfn, &(td_params[i]));
+                rotational_strength(*ref_wfn, &(td_params[i]));
             }
             outfile->Printf("Doing transition\n");
             td_cleanup();
@@ -513,10 +514,10 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                                     moinfo.labels[td_params[state2].irrep].c_str());
 
                     // ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
-                    ex_oscillator_strength(ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
+                    ex_oscillator_strength(*ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
                     if (params.ref == 0) {
                         // ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
-                        ex_rotational_strength(ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
+                        ex_rotational_strength(*ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
                     }
 
                     xtd_params.push_back(xtd_data);

@@ -31,6 +31,8 @@
     \brief Save variables to wavefunction.
 */
 
+#include <unordered_set>
+#include "psi4/cc/ccwave.h"
 #include "ccdensity.h"
 #include "MOInfo.h"
 #define EXTERN
@@ -39,37 +41,53 @@
 namespace psi {
 namespace ccdensity {
 
-void scalar_saver_ground(SharedWavefunction wfn, struct TD_Params *S, const std::string suffix, double val) {
+void scalar_saver_ground(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, const std::string suffix, double val) {
     auto target_sym = moinfo.sym ^ S->irrep;
     auto idx_num = S->root + static_cast<int>(S->irrep == 0);
-    auto varname = "CC ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") " + suffix;
-    wfn->set_scalar_variable(varname, val);
+    auto total_idx = wfn.state_idx_to_identifiers[{idx_num, target_sym}];
+    auto trans_irr_lbl = moinfo.labels[moinfo.sym ^ target_sym];
+    std::unordered_set<std::string> names {"CC"};
     if (params.wfn == "EOM_CCSD") {
-        auto varname = "CCSD ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") " + suffix;
-        wfn->set_scalar_variable(varname, val);
+        names.insert("CCSD");
     } else if (params.wfn == "EOM_CC2") {
-        auto varname = "CC2 ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") "  + suffix;
-        wfn->set_scalar_variable(varname, val);
+        names.insert("CC2");
     } else {
         throw PSIEXCEPTION("Unknown wfn type");
     }
+    for (const auto name: names) {
+        auto varname = name + " ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") " + suffix;
+        wfn.set_scalar_variable(varname, val);
+        varname = name + " ROOT 0 -> ROOT " + std::to_string(total_idx) + " " + suffix;
+        wfn.set_scalar_variable(varname, val);
+        varname = name + " ROOT 0 -> ROOT " + std::to_string(total_idx) + " " + suffix + " - " + trans_irr_lbl + " TRANSITION";
+        wfn.set_scalar_variable(varname, val);
+    }
 }
 
-void scalar_saver_excited(SharedWavefunction wfn, struct TD_Params *S, struct TD_Params *U, const std::string suffix, double val) {
+void scalar_saver_excited(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U, const std::string suffix, double val) {
     auto S_sym = moinfo.sym ^ S->irrep;
     auto U_sym = moinfo.sym ^ U->irrep;
     auto S_idx = S->root + static_cast<int>(S->irrep == 0);
     auto U_idx = U->root + static_cast<int>(U->irrep == 0);
-    auto varname = "CC ROOT " + std::to_string(S_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (" + moinfo.labels[U_sym] + ") " + suffix;
-    wfn->set_scalar_variable(varname, val);
+    auto S_total_idx = wfn.state_idx_to_identifiers[{S_idx, S_sym}];
+    auto U_total_idx = wfn.state_idx_to_identifiers[{U_idx, U_sym}];
+    auto trans_irr_lbl = moinfo.labels[S_sym ^ U_sym];
+    std::unordered_set<std::string> names {"CC"};
     if (params.wfn == "EOM_CCSD") {
-        auto varname = "CCSD ROOT " + std::to_string(S_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (" + moinfo.labels[U_sym] + ") " + suffix;
-        wfn->set_scalar_variable(varname, val);
+        names.insert("CCSD");
     } else if (params.wfn == "EOM_CC2") {
-        auto varname = "CC2 ROOT " + std::to_string(S_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (" + moinfo.labels[U_sym] + ") " + suffix;
-        wfn->set_scalar_variable(varname, val);
+        names.insert("CC2");
     } else {
         throw PSIEXCEPTION("Unknown wfn type");
+    }
+    for (const auto name: names) {
+        auto varname = name + " ROOT " + std::to_string(S_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (" + moinfo.labels[U_sym] + ") " + suffix;
+        wfn.set_scalar_variable(varname, val);
+        wfn.set_scalar_variable(varname, val);
+        varname = name + " ROOT " + std::to_string(S_total_idx) + " -> ROOT " + std::to_string(U_total_idx) + " " + suffix;
+        wfn.set_scalar_variable(varname, val);
+        varname = name + " ROOT " + std::to_string(S_total_idx) + " -> ROOT " + std::to_string(U_total_idx) + " " + suffix + " - " + trans_irr_lbl + " TRANSITION";
+        wfn.set_scalar_variable(varname, val);
     }
 }
 
