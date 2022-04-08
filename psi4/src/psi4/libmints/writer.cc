@@ -411,12 +411,48 @@ void FCHKWriter::write(const std::string &filename) {
     // the FCHK format calls for X Y Z; this is a simple reordering operation.
 
     const double pureP[3][3] = {
-        //           0    1    2
-        // Psi4:     Z    X    Y
-        // Expected: X    Y    Z
-        /* 0 */ {0.0, 1.0, 0.0},
-        /* 1 */ {0.0, 0.0, 1.0},
-        /* 2 */ {1.0, 0.0, 0.0},
+        //            0    1    2
+        // Psi4:     -1    0   +1
+        // Expected: +1   -1    0
+        /* 0 */ {0.0, 0.0, 1.0},
+        /* 1 */ {1.0, 0.0, 0.0},
+        /* 2 */ {0.0, 1.0, 0.0}
+    };
+    const double pureD[5][5] = {
+        //            0    1    2    3    4
+        // Psi4:     -2   -1    0   +1   +2
+        // Expected:  0   +1   -1   +2   -2
+        /* 0 */ {0.0, 0.0, 1.0, 0.0, 0.0},
+        /* 1 */ {0.0, 0.0, 0.0, 1.0, 0.0},
+        /* 2 */ {0.0, 1.0, 0.0, 0.0, 0.0},
+        /* 3 */ {0.0, 0.0, 0.0, 0.0, 1.0},
+        /* 4 */ {1.0, 0.0, 0.0, 0.0, 0.0}
+    };
+    const double pureF[7][7] = {
+        //            0    1    2    3    4    5    6
+        // Psi4:     -3   -2   -1    0   +1   +2   +3
+        // Expected:  0   +1   -1   +2   -2   +3   -3
+        /* 0 */ {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+        /* 1 */ {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0},
+        /* 2 */ {0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
+        /* 3 */ {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0},
+        /* 4 */ {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+        /* 5 */ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
+        /* 6 */ {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    };
+    const double pureG[9][9] = {
+        //            0    1    2    3    4    5    6    7    8
+        // Psi4:     -4   -3   -2   -1    0   +1   +2   +3   +4
+        // Expected:  0   +1   -1   +2   -2   +3   -3   +4   -4
+        /* 0 */ {0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
+        /* 1 */ {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0},
+        /* 2 */ {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+        /* 3 */ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0},
+        /* 4 */ {0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+        /* 5 */ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0},
+        /* 6 */ {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+        /* 7 */ {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
+        /* 8 */ {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
     };
     double pf1, pf2, pf3, pf4;
     pf1 = 1.0;              // aa
@@ -504,10 +540,21 @@ void FCHKWriter::write(const std::string &filename) {
         int am = shell.am();
         int nfunc = shell.nfunction();
         if (basis->has_puream()) {
-            // Spherical harmonics - everything is fine, apart from P orbitals
+            // Spherical harmonics - P orbitals are X,Y,Z and all others are Gaussian ordering
             if (am == 1) {
                 for (int row = 0; row < 3; ++row)
                     for (int col = 0; col < 3; ++col) transmat->set(offset + row, offset + col, pureP[row][col]);
+            } else if (am == 2) {
+                for (int row = 0; row < 5; ++row)
+                    for (int col = 0; col < 5; ++col) transmat->set(offset + row, offset + col, pureD[row][col]);
+            } else if (am == 3) {
+                for (int row = 0; row < 7; ++row)
+                    for (int col = 0; col < 7; ++col) transmat->set(offset + row, offset + col, pureF[row][col]);
+            } else if (am == 4) {
+                for (int row = 0; row < 9; ++row)
+                    for (int col = 0; col < 9; ++col) transmat->set(offset + row, offset + col, pureG[row][col]);
+            } else if (am >= 5) {
+                throw PSIEXCEPTION("The Psi4 FCHK writer only supports up to G shell (l=4) spherical functions");
             }
         } else {
             // Cartesians - S and P orbitals are fine, but higher terms need reordering
