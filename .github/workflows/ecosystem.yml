@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-  #pull_request:
+  pull_request:
 
 jobs:
 
@@ -192,7 +192,7 @@ jobs:
           - psi4/label/dev::resp
           - psi4/label/dev::snsmp2
             # test
-          - conda-forge::pytest>=7.0.1
+          - pytest
           - pytest-xdist
           - tomli
             # pip
@@ -269,7 +269,7 @@ jobs:
           - psi4/label/dev::resp
           - psi4/label/dev::snsmp2
             # test
-          - conda-forge::pytest>=7.0.1
+          - pytest
           - pytest-xdist
             # pip
           - pip

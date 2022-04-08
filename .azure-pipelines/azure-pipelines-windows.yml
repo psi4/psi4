@@ -10,7 +10,7 @@ jobs:
       llvm.version: '13.0.0'
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
-      conda.build: true
+      conda.build: false
       MKL_CBWR: AVX
       PYTHON_VERSION: '3.8'
     steps:
@@ -123,7 +123,7 @@ jobs:
                         pint ^
                         pybind11=2.7.0 ^
                         pymdi ^
-                        conda-forge::pytest>=7.0.1 ^
+                        pytest>=7.0.1 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
                         psi4/label/dev::dftd3 ^

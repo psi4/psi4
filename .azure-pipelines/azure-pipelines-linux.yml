@@ -106,7 +106,7 @@ jobs:
         blas=*=mkl \
         mkl-include \
         networkx \
-        conda-forge::pytest>=7.0.1 \
+        pytest>=7.0.1 \
         eigen \
         pytest-xdist \
         msgpack-python \
