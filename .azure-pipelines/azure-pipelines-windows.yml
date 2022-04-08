@@ -10,7 +10,7 @@ jobs:
       llvm.version: '13.0.0'
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
-      conda.build: false
+      conda.build: true
       MKL_CBWR: AVX
       PYTHON_VERSION: '3.8'
     steps:

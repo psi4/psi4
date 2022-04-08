@@ -41,9 +41,6 @@ if not Path(executable).exists():
     # Win conda recipe moves psi4 executable unknown to CMake
     executable = str((Path(psi4_module_loc) / ".." / ".." / ".." / "Scripts" / "psi4.exe").resolve())
 
-# from . import config
-# data_dir = config.psidatadir
-
 if "PSIDATADIR" in os.environ.keys():
     data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
 elif "CMAKE_INSTALL_DATADIR" in data_dir:
