@@ -164,7 +164,7 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
 
     // Total Energy, Transition Irrep, Correlation Energy, # Converged
     // We need the variables in this order for sorting purposes.
-    std::vector<std::tuple<double, int, double, int>> state_data;
+    std::vector<std::tuple<double, int, double>> state_data;
 
     outfile->Printf("Symmetry of ground state: %s\n", moinfo.irr_labs[moinfo.sym].c_str());
     // Master Loop over transition symmetries
