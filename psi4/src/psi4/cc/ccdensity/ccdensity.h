@@ -45,6 +45,8 @@ namespace ccdensity {
 void scalar_saver_ground(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, const std::string suffix, double val);
 // Save a scalar describing a excited->excited transition.
 void scalar_saver_excited(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U, const std::string suffix, double val);
+// Save a scalar describing a single excited transition.
+void array_saver_state(ccenergy::CCEnergyWavefunction& wfn, struct RHO_Params *S, const std::string suffix, SharedMatrix val);
 
 }
 }

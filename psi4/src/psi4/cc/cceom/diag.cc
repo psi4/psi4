@@ -162,7 +162,7 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
 
     if (params.wfn == "EOM_CC3") cc3_stage = 0; /* do EOM_CCSD first */
 
-    // Total Energy, Transition Irrep, Correlation Energy, # Converged
+    // Total Energy, Transition Irrep, Correlation Energy
     // We need the variables in this order for sorting purposes.
     std::vector<std::tuple<double, int, double>> state_data;
 
@@ -1093,7 +1093,7 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
         }
         irrep_counts[target_irrep_lbl]++;
     }
-    wfn.state_idx_to_identifiers = state_idx_to_identifiers;
+    wfn.total_indices = state_idx_to_identifiers;
 
     outfile->Printf("\tTotal # of sigma evaluations: %d\n", nsigma_evaluations);
     return;

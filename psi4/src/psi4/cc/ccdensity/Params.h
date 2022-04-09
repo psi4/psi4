@@ -57,6 +57,11 @@ struct Params {
     int transition;
     int dertype;
     std::string wfn;
+    // TODO: Make meaning of variable invariant.
+    //       Initially, this variable means number of states, but later
+    //       it changes to number of excited states. This inconsistency
+    //       should be fixed. Resolving the problem is not safe until the
+    //       ccdensity module is documented.
     int nstates;
     int prop_sym;
     int prop_root;

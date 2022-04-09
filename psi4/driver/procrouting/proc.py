@@ -3165,36 +3165,56 @@ def run_cc_property(name, **kwargs):
         core.cclambda(ccwfn)
         core.ccdensity(ccwfn)
 
+    # => Make OEProp calls <=
     if n_one > 0:
-        # call oe prop for GS density
+        # ==> Initialize OEProp  <==
         oe = core.OEProp(ccwfn)
+        for oe_prop_name in one:
+            oe.add(oe_prop_name.upper())
+        # ==> OEProp for the ground state <==
         # TODO: When Psi is Py 3.9+, transition to the removeprefix version.
         title = name.upper().replace("EOM-", "")
         #title = name.upper().removeprefix("EOM-")
         oe.set_title(title)
-        oe.set_names({title + " {}", "CC {}"})
-        for oe_name in one:
-            oe.add(oe_name.upper())
+        set_of_names = {title + " {}", "CC {}"}
+        if name.startswith("eom"):
+            gs_h = 0
+            for h, i in enumerate(ccwfn.soccpi()):
+                if i % 2:
+                    gs_h = gs_h ^ h
+            ct = ccwfn.molecule().point_group().char_table()
+            total_h_lbl = ct.gamma(0).symbol()
+            gs_h_lbl = ct.gamma(gs_h).symbol()
+            set_of_names.update({title + " ROOT 0 {}", "CC ROOT 0 {}",
+                                 f"{title} ROOT 0 {{}} - {total_h_lbl} TRANSITION",
+                                      f"CC ROOT 0 {{}} - {total_h_lbl} TRANSITION",
+                                 f"{title} ROOT 0 ({gs_h_lbl}) {{}}", f"CC ROOT 0 ({gs_h_lbl}) {{}}"})
+        oe.set_names(set_of_names)
         oe.compute()
-        # call oe prop for each ES density
+        print(ccwfn.variables())
+        # ==> OEProp for Excited States <==
         if name.startswith('eom'):
-            # copy GS CC DIP/QUAD ... to CC ROOT 0 DIP/QUAD ... if we are doing multiple roots
-            if 'DIPOLE' in one:
-                core.set_variable("CC ROOT 0 DIPOLE", core.variable("CC DIPOLE"))
-                # core.set_variable("CC ROOT n DIPOLE", core.variable("CC DIPOLE"))  # P::e CCENERGY
-            if 'QUADRUPOLE' in one:
-                core.set_variable("CC ROOT 0 QUADRUPOLE", core.variable("CC QUADRUPOLE"))
-                # core.set_variable("CC ROOT n QUADRUPOLE", core.variable("CC QUADRUPOLE"))  # P::e CCENERGY
-
-            n_root = sum(core.get_global_option("ROOTS_PER_IRREP"))
-            for rn in range(n_root):
-                oe.set_title("CC ROOT {}".format(rn + 1))
-                Da = ccwfn.variable("CC ROOT {} Da".format(rn + 1))
-                oe.set_Da_so(Da)
-                if core.get_global_option("REFERENCE") == "UHF":
-                    Db = ccwfn.variable("CC ROOT {} Db".format(rn + 1))
-                    oe.set_Db_so(Db)
-                oe.compute()
+            n_root_pi = core.get_global_option("ROOTS_PER_IRREP")
+            for h in range(ccwfn.nirrep()):
+                root_h_lbl = ct.gamma(h).symbol()
+                trans_h_lbl = ct.gamma(h ^ gs_h).symbol()
+                # Don't forget to count the ground state!
+                for i in range(n_root_pi[h]):
+                    if h == gs_h: i += 1
+                    root_title = title + f" ROOT {i} ({root_h_lbl})"
+                    oe.set_title(root_title)
+                    total_idx = ccwfn.total_index(i, h)
+                    set_of_names = {f"{title} ROOT {total_idx} {{}}", f"CC ROOT {total_idx} {{}}",
+                                    f"{title} ROOT {total_idx} {{}} - {trans_h_lbl} TRANSITION",
+                                         f"CC ROOT {total_idx} {{}} - {trans_h_lbl} TRANSITION",
+                                    f"{title} ROOT {i} ({root_h_lbl}) {{}}", f"CC ROOT {i} ({root_h_lbl}) {{}}"}
+                    oe.set_names(set_of_names)
+                    Da = ccwfn.variable(root_title + " Da")
+                    oe.set_Da_so(Da)
+                    if core.get_global_option("REFERENCE") == "UHF":
+                        Db = ccwfn.variable(root_title + " Db")
+                        oe.set_Db_so(Db)
+                    oe.compute()
 
     core.set_global_option('WFN', 'SCF')
     core.revoke_global_option_changed('WFN')
