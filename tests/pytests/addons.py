@@ -193,6 +193,7 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     # Note:  The input.py in json/, python/, and psi4numpy/ are not being treated best.
     #   Properly, as in CTest, it's `command = [sys.executable, "input.py"]`.
     #   Have to either have 3-item `command` or pass PYTHONPATH through env. Since some tests (fsapt) "import psi4" internally, doing both.
+    #   The "exe" rerouting is for Windows conda package Scripts/psi4.exe file. It gives an encoding error if Python in command.
     if Path(psi4.executable).suffix == ".exe":
         command = [psi4.executable, inputdat]
     else:
