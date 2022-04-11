@@ -41,7 +41,7 @@
 
 namespace psi {
 
-class DirectDFJ : public JBase {
+class DirectDFJ : public SplitJKBase {
   protected:
    /// The auxiliary basis set used in the DF algorithm
    std::shared_ptr<BasisSet> auxiliary_;
@@ -67,7 +67,7 @@ class DirectDFJ : public JBase {
    DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
 
    /**
-    * @author Andy Jiang, Georgia Tech, April 2022
+    * @author Andy Jiang and David Poole, Georgia Tech, April 2022
     *
     * @brief Builds the J matrix according to the DirectDFJ algorithm, described in [Weigand:2002:4285]_
     * doi: 10.1039/b204199p
@@ -75,11 +75,17 @@ class DirectDFJ : public JBase {
     * @param D The list of AO density matrixes to contract to form the J matrix (1 for RHF, 2 for UHF/ROHF)
     * @param J The list of AO J matrices to build (Same size as D)
     */
-   void build_J(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) override;
+   void build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) override;
+
+   /**
+    * @brief Prints information regarding Direct-DF-J run
+    * 
+    */
+   void print_header() override;
 
 };
 
-class LinK : public KBase {
+class LinK : public SplitJKBase {
   protected:
    /// ERI Screening Cutoff
    double cutoff_;
@@ -107,7 +113,13 @@ class LinK : public KBase {
     * @param D The list of AO density matrixes to contract to form the K matrix (1 for RHF, 2 for UHF/ROHF)
     * @param K The list of AO K matrices to build (Same size as D)
     */
-   void build_K(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K) override;
+   void build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K) override;
+
+   /**
+    * @brief Prints information regarding LinK run
+    * 
+    */
+   void print_header() override;
 
 };
 

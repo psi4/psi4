@@ -96,7 +96,6 @@ void DirectJK::print_header() const {
     std::string screen_type = options_.get_str("SCREENING");
     if (print_) {
         outfile->Printf("  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
-
         outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));

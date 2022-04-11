@@ -21,7 +21,7 @@ using namespace psi;
 
 namespace psi {
 
-JBase::JBase(std::shared_ptr<BasisSet> primary, Options& options) : primary_(primary), options_(options) {
+SplitJKBase::SplitJKBase(std::shared_ptr<BasisSet> primary, Options& options) : primary_(primary), options_(options) {
 
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
@@ -34,21 +34,9 @@ JBase::JBase(std::shared_ptr<BasisSet> primary, Options& options) : primary_(pri
 
 }
 
-KBase::KBase(std::shared_ptr<BasisSet> primary, Options& options) : primary_(primary), options_(options) {
-
-    print_ = options_.get_int("PRINT");
-    debug_ = options_.get_int("DEBUG");
-    bench_ = options_.get_int("BENCH");
-
-    nthread_ = 1;
-#ifdef _OPENMP
-    nthread_ = Process::environment.get_n_threads();
-#endif
-
-}
-
-CompositeJK::CompositeJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
-                        : JK(primary), auxiliary_(auxiliary), options_(options) { common_init(); }
+CompositeJK::CompositeJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, 
+                         std::string jtype, std::string ktype, Options& options)
+                        : JK(primary), auxiliary_(auxiliary), jtype_(jtype), ktype_(ktype), options_(options) { common_init(); }
 
 void CompositeJK::common_init() {
 
@@ -56,10 +44,6 @@ void CompositeJK::common_init() {
 #ifdef _OPENMP
     nthread_ = Process::environment.get_n_threads();
 #endif
-
-    // Get the names of the (user-specified) J and K algorithms
-    jtype_ = options_.get_str("J_TYPE");
-    ktype_ = options_.get_str("K_TYPE");
 
     if (jtype_ == "DIRECT_DF") {
         jalgo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
@@ -90,9 +74,11 @@ void CompositeJK::print_header() const {
         outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         if (do_K_) outfile->Printf("    K Algorithm:       %11s\n", ktype_.c_str());
         outfile->Printf("    Integrals threads: %11d\n", nthread_);
-        outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
-        outfile->Printf("    Screening Cutoff:  %11.0E\n\n", cutoff_);
+        outfile->Printf("    Incremental Fock:  %11s\n", incfock_ ? "Yes" : "No");
+        outfile->Printf("\n");
     }
+    jalgo_->print_header();
+    kalgo_->print_header();
 }
 
 void CompositeJK::compute_JK() {
@@ -119,8 +105,8 @@ void CompositeJK::compute_JK() {
     std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
     std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
 
-    jalgo_->build_J(D_ref, J_ref);
-    kalgo_->build_K(D_ref, K_ref);
+    jalgo_->build_G_component(D_ref, J_ref);
+    kalgo_->build_G_component(D_ref, K_ref);
 
     if (incfock_) {
         timer_on("CompositeJK: INCFOCK Postprocessing");
@@ -132,9 +118,20 @@ void CompositeJK::compute_JK() {
 }
 
 DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
-                        : JBase(primary, options), auxiliary_(auxiliary) {
+                        : SplitJKBase(primary, options), auxiliary_(auxiliary) {
+    cutoff_ = options_.get_double("INTS_TOLERANCE");
     build_metric();
     build_ints();
+}
+
+void DirectDFJ::print_header() {
+    if (print_) {
+        outfile->Printf("  ==> Direct Density-Fitted J <==\n\n");
+        outfile->Printf("    Primary Basis: %11s\n", primary_->name().c_str());
+        outfile->Printf("    Auxiliary Basis: %11s\n", auxiliary_->name().c_str());
+        outfile->Printf("    ERI Screening Cutoff: %11.0E\n", cutoff_);
+        outfile->Printf("\n");
+    }
 }
 
 void DirectDFJ::build_metric() {
@@ -160,7 +157,7 @@ void DirectDFJ::build_ints() {
     timer_off("DirectDFJ: Build Ints");
 }
 
-void DirectDFJ::build_J(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) {
+void DirectDFJ::build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J) {
 
     timer_on("DirectDFJ: J");
 
@@ -355,7 +352,7 @@ void DirectDFJ::build_J(const std::vector<SharedMatrix>& D, std::vector<SharedMa
     timer_off("DirectDFJ: J");
 }
 
-LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : KBase(primary, options) {
+LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJKBase(primary, options) {
     cutoff_ = options.get_double("INTS_TOLERANCE");
     if (options_["LINK_INTS_TOLERANCE"].has_changed()) {
         linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
@@ -364,6 +361,16 @@ LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : KBase(primary,
     }
 
     build_ints();
+}
+
+void LinK::print_header() {
+    if (print_) {
+        outfile->Printf("  ==> Linear Exchange (LinK) <==\n\n");
+        outfile->Printf("    Primary Basis: %11s\n", primary_->name().c_str());
+        outfile->Printf("    ERI Screening Cutoff: %11.0E\n", cutoff_);
+        outfile->Printf("    Density Screening Cutoff: %11.0E\n", linK_ints_cutoff_);
+        outfile->Printf("\n");
+    }
 }
 
 void LinK::build_ints() {
@@ -379,7 +386,7 @@ void LinK::build_ints() {
 }
 
 // To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
-void LinK::build_K(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K) {
+void LinK::build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K) {
 
     timer_on("LinK: K");
 

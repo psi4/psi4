@@ -178,7 +178,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK COMPOSITE");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DIRECT_DF_LINK");
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1457,9 +1457,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
 
-        /*- SUBSECTION Composite JK Algorithms -*/
-        options.add_str("J_TYPE", "DIRECT_DF", "DIRECT_DF");
-        options.add_str("K_TYPE", "LINK", "LINK");
+        /*- SUBSECTION Composite JK Options -*/
         
         /*- The screening tolerance used for ERI/Density sparsity in the LinK algorithm -*/
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);

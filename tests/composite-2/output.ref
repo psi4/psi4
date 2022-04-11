@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev143 
+                               Psi4 1.6a1.dev145 
 
-                         Git: Rev {split-jk} 3593c4f dirty
+                         Git: Rev {split-jk} 1218137 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,13 +30,13 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 11 April 2022 12:06AM
+    Psi4 started on: Monday, 11 April 2022 04:29PM
 
-    Process ID: 3945820
+    Process ID: 3978898
     Host:       jacket
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4
     Memory:     500.0 MiB
-    Threads:    18
+    Threads:    24
     
   ==> Input File <==
 
@@ -92,7 +92,7 @@ set {
 ref_energy = energy('b3lyp', bsse_type='nocp')
 
 set {
-  scf_type composite
+  scf_type direct_df_linK
   basis cc-pVDZ
   e_convergence 1.0e-10
   screening density
@@ -122,7 +122,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:06:27 2022
+*** at Mon Apr 11 16:29:11 2022
 
    => Loading Basis Set <=
 
@@ -139,7 +139,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                       18 Threads,    500 MiB Core
+                       24 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -253,15 +253,6 @@ Scratch directory: /scratch/jiang/
     Max Functions          =            128
     Weights Tolerance      =       1.00E-15
 
-   => Loading Basis Set <=
-
-    Name: (CC-PVDZ AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1       entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2, 9-13 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 3-8     entry C          line   121 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
   ==> Integral Setup <==
 
   ==> DirectJK: Integral-Direct J/K Matrices <==
@@ -269,7 +260,7 @@ Scratch directory: /scratch/jiang/
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Integrals threads:          18
+    Integrals threads:          24
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
@@ -296,19 +287,19 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -307.06681160313542   -3.07067e+02   0.00000e+00 
+   @RKS iter SAD:  -307.06681160313553   -3.07067e+02   0.00000e+00 
    @RKS iter   1:  -307.06966590914476   -2.85431e-03   6.70204e-03 ADIIS/DIIS
-   @RKS iter   2:  -306.95736538913485    1.12301e-01   7.81309e-03 ADIIS/DIIS/INCFOCK
-   @RKS iter   3:  -307.48414893226828   -5.26784e-01   7.41373e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -307.48590636425160   -1.75743e-03   5.81469e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   5:  -307.48905163834633   -3.14527e-03   8.46161e-05 DIIS/INCFOCK
-   @RKS iter   6:  -307.48911366939546   -6.20310e-05   2.37789e-05 DIIS
-   @RKS iter   7:  -307.48911795846556   -4.28907e-06   6.10323e-06 DIIS/INCFOCK
+   @RKS iter   2:  -306.95736538913491    1.12301e-01   7.81309e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -307.48414893226823   -5.26784e-01   7.41373e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -307.48590636425155   -1.75743e-03   5.81469e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   5:  -307.48905163834610   -3.14527e-03   8.46161e-05 DIIS/INCFOCK
+   @RKS iter   6:  -307.48911366939535   -6.20310e-05   2.37789e-05 DIIS
+   @RKS iter   7:  -307.48911795846550   -4.28907e-06   6.10323e-06 DIIS/INCFOCK
    @RKS iter   8:  -307.48911823166111   -2.73196e-07   2.41435e-06 DIIS/INCFOCK
-   @RKS iter   9:  -307.48911828314584   -5.14847e-08   6.95994e-07 DIIS/INCFOCK
-   @RKS iter  10:  -307.48911828754535   -4.39951e-09   1.36525e-07 DIIS
-   @RKS iter  11:  -307.48911828765546   -1.10106e-10   5.39420e-08 DIIS
-   @RKS iter  12:  -307.48911828767967   -2.42153e-11   9.71989e-09 DIIS
+   @RKS iter   9:  -307.48911828314596   -5.14848e-08   6.95994e-07 DIIS/INCFOCK
+   @RKS iter  10:  -307.48911828754512   -4.39917e-09   1.36525e-07 DIIS
+   @RKS iter  11:  -307.48911828765551   -1.10390e-10   5.39420e-08 DIIS
+   @RKS iter  12:  -307.48911828767973   -2.42153e-11   9.71989e-09 DIIS
   Energy and wave function converged.
 
 
@@ -374,17 +365,17 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    25 ]
 
-  @RKS Final Energy:  -307.48911828767967
+  @RKS Final Energy:  -307.48911828767973
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            271.4387016428274819
-    One-Electron Energy =                -953.2674115872918037
-    Two-Electron Energy =                 409.4813810316981062
-    DFT Exchange-Correlation Energy =     -35.1417893749134578
+    One-Electron Energy =                -953.2674115872920311
+    Two-Electron Energy =                 409.4813810316982767
+    DFT Exchange-Correlation Energy =     -35.1417893749134720
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -307.4891182876796734
+    Total Energy =                       -307.4891182876797302
 
 Computation Completed
 
@@ -408,17 +399,17 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:06:37 2022
+*** tstop() called on jacket at Mon Apr 11 16:29:21 2022
 Module time:
-	user time   =     171.66 seconds =       2.86 minutes
-	system time =       1.52 seconds =       0.03 minutes
+	user time   =     226.26 seconds =       3.77 minutes
+	system time =       2.52 seconds =       0.04 minutes
 	total time  =         10 seconds =       0.17 minutes
 Total time:
-	user time   =     171.66 seconds =       2.86 minutes
-	system time =       1.52 seconds =       0.03 minutes
+	user time   =     226.26 seconds =       3.77 minutes
+	system time =       2.52 seconds =       0.04 minutes
 	total time  =         10 seconds =       0.17 minutes
 
-       N-Body: Complex Energy (fragments = (1,), basis = (1,):  -307.48911828767967)
+       N-Body: Complex Energy (fragments = (1,), basis = (1,):  -307.48911828767973)
 
        N-Body: Computing complex (2/2) with fragments (2,) in the basis of fragments (2,).
 
@@ -426,7 +417,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:06:37 2022
+*** at Mon Apr 11 16:29:21 2022
 
    => Loading Basis Set <=
 
@@ -443,7 +434,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                       18 Threads,    500 MiB Core
+                       24 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -557,15 +548,6 @@ Scratch directory: /scratch/jiang/
     Max Functions          =            128
     Weights Tolerance      =       1.00E-15
 
-   => Loading Basis Set <=
-
-    Name: (CC-PVDZ AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1       entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2, 9-13 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 3-8     entry C          line   121 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
   ==> Integral Setup <==
 
   ==> DirectJK: Integral-Direct J/K Matrices <==
@@ -573,7 +555,7 @@ Scratch directory: /scratch/jiang/
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Integrals threads:          18
+    Integrals threads:          24
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
@@ -600,18 +582,18 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -307.05810207551883   -3.07058e+02   0.00000e+00 
-   @RKS iter   1:  -307.07200528097604   -1.39032e-02   6.69020e-03 ADIIS/DIIS
-   @RKS iter   2:  -306.96519045950782    1.06815e-01   7.76918e-03 ADIIS/DIIS/INCFOCK
-   @RKS iter   3:  -307.48427117505116   -5.19081e-01   7.17317e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -307.48586390653139   -1.59273e-03   5.66595e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   5:  -307.48886229164680   -2.99839e-03   8.38113e-05 DIIS/INCFOCK
-   @RKS iter   6:  -307.48892401756274   -6.17259e-05   2.16682e-05 DIIS
-   @RKS iter   7:  -307.48892751541752   -3.49785e-06   5.95850e-06 DIIS/INCFOCK
-   @RKS iter   8:  -307.48892778003278   -2.64615e-07   2.19031e-06 DIIS/INCFOCK
-   @RKS iter   9:  -307.48892782155411   -4.15213e-08   7.17227e-07 DIIS/INCFOCK
-   @RKS iter  10:  -307.48892782626967   -4.71556e-09   1.14385e-07 DIIS
-   @RKS iter  11:  -307.48892782634164   -7.19638e-11   5.47368e-08 DIIS
+   @RKS iter SAD:  -307.05810207551895   -3.07058e+02   0.00000e+00 
+   @RKS iter   1:  -307.07200528097633   -1.39032e-02   6.69020e-03 ADIIS/DIIS
+   @RKS iter   2:  -306.96519045950794    1.06815e-01   7.76918e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -307.48427117505088   -5.19081e-01   7.17317e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -307.48586390653111   -1.59273e-03   5.66595e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   5:  -307.48886229164674   -2.99839e-03   8.38113e-05 DIIS/INCFOCK
+   @RKS iter   6:  -307.48892401756262   -6.17259e-05   2.16682e-05 DIIS
+   @RKS iter   7:  -307.48892751541734   -3.49785e-06   5.95850e-06 DIIS/INCFOCK
+   @RKS iter   8:  -307.48892778003250   -2.64615e-07   2.19031e-06 DIIS/INCFOCK
+   @RKS iter   9:  -307.48892782155406   -4.15216e-08   7.17227e-07 DIIS/INCFOCK
+   @RKS iter  10:  -307.48892782626916   -4.71510e-09   1.14385e-07 DIIS
+   @RKS iter  11:  -307.48892782634181   -7.26459e-11   5.47368e-08 DIIS
   Energy and wave function converged.
 
 
@@ -677,17 +659,17 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    25 ]
 
-  @RKS Final Energy:  -307.48892782634164
+  @RKS Final Energy:  -307.48892782634181
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            271.3461787607139399
-    One-Electron Energy =                -953.0866546300916298
-    Two-Electron Energy =                 409.3932332309146886
-    DFT Exchange-Correlation Energy =     -35.1416851878786858
+    One-Electron Energy =                -953.0866546300915161
+    Two-Electron Energy =                 409.3932332309145181
+    DFT Exchange-Correlation Energy =     -35.1416851878786929
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -307.4889278263416372
+    Total Energy =                       -307.4889278263418078
 
 Computation Completed
 
@@ -711,17 +693,17 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:06:46 2022
+*** tstop() called on jacket at Mon Apr 11 16:29:30 2022
 Module time:
-	user time   =     154.29 seconds =       2.57 minutes
-	system time =       0.60 seconds =       0.01 minutes
+	user time   =     196.95 seconds =       3.28 minutes
+	system time =       1.11 seconds =       0.02 minutes
 	total time  =          9 seconds =       0.15 minutes
 Total time:
-	user time   =     326.73 seconds =       5.45 minutes
-	system time =       2.14 seconds =       0.04 minutes
+	user time   =     424.27 seconds =       7.07 minutes
+	system time =       3.67 seconds =       0.06 minutes
 	total time  =         19 seconds =       0.32 minutes
 
-       N-Body: Complex Energy (fragments = (2,), basis = (2,):  -307.48892782634164)
+       N-Body: Complex Energy (fragments = (2,), basis = (2,):  -307.48892782634181)
 
    ==> N-Body: Now computing 2-body complexes <==
 
@@ -732,7 +714,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:06:46 2022
+*** at Mon Apr 11 16:29:30 2022
 
    => Loading Basis Set <=
 
@@ -749,7 +731,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                       18 Threads,    500 MiB Core
+                       24 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -876,15 +858,6 @@ Scratch directory: /scratch/jiang/
     Max Functions          =            239
     Weights Tolerance      =       1.00E-15
 
-   => Loading Basis Set <=
-
-    Name: (CC-PVDZ AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1, 14              entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2, 9-13, 15, 22-26 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 3-8, 16-21         entry C          line   121 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
   ==> Integral Setup <==
 
   ==> DirectJK: Integral-Direct J/K Matrices <==
@@ -892,7 +865,7 @@ Scratch directory: /scratch/jiang/
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Integrals threads:          18
+    Integrals threads:          24
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
@@ -919,19 +892,19 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -614.18681270391846   -6.14187e+02   0.00000e+00 
-   @RKS iter   1:  -614.16832292300705    1.84898e-02   4.68877e-03 ADIIS/DIIS
-   @RKS iter   2:  -613.95809511672542    2.10228e-01   5.41986e-03 ADIIS/DIIS/INCFOCK
-   @RKS iter   3:  -614.97240323937808   -1.01431e+00   6.57053e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -614.98068451778670   -8.28128e-03   4.46220e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   5:  -614.98804542910636   -7.36091e-03   5.82973e-05 DIIS/INCFOCK
-   @RKS iter   6:  -614.98814522505529   -9.97959e-05   2.81650e-05 DIIS
-   @RKS iter   7:  -614.98817138228503   -2.61572e-05   4.91657e-06 DIIS/INCFOCK
-   @RKS iter   8:  -614.98817207723209   -6.94947e-07   2.46381e-06 DIIS/INCFOCK
-   @RKS iter   9:  -614.98817228642656   -2.09194e-07   4.52773e-07 DIIS/INCFOCK
-   @RKS iter  10:  -614.98817229244105   -6.01449e-09   1.81396e-07 DIIS
-   @RKS iter  11:  -614.98817229334986   -9.08813e-10   3.21240e-08 DIIS
-   @RKS iter  12:  -614.98817229339124   -4.13820e-11   8.63870e-09 DIIS
+   @RKS iter SAD:  -614.18681270391767   -6.14187e+02   0.00000e+00 
+   @RKS iter   1:  -614.16832292300637    1.84898e-02   4.68877e-03 ADIIS/DIIS
+   @RKS iter   2:  -613.95809511672599    2.10228e-01   5.41986e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -614.97240323937785   -1.01431e+00   6.57053e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -614.98068451778636   -8.28128e-03   4.46220e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   5:  -614.98804542910614   -7.36091e-03   5.82973e-05 DIIS/INCFOCK
+   @RKS iter   6:  -614.98814522505506   -9.97959e-05   2.81650e-05 DIIS
+   @RKS iter   7:  -614.98817138228458   -2.61572e-05   4.91657e-06 DIIS/INCFOCK
+   @RKS iter   8:  -614.98817207723232   -6.94948e-07   2.46381e-06 DIIS/INCFOCK
+   @RKS iter   9:  -614.98817228642770   -2.09195e-07   4.52773e-07 DIIS/INCFOCK
+   @RKS iter  10:  -614.98817229244219   -6.01449e-09   1.81396e-07 DIIS
+   @RKS iter  11:  -614.98817229335032   -9.08130e-10   3.21240e-08 DIIS
+   @RKS iter  12:  -614.98817229339124   -4.09273e-11   8.63870e-09 DIIS
   Energy and wave function converged.
 
 
@@ -1044,12 +1017,12 @@ Scratch directory: /scratch/jiang/
    => Energetics <=
 
     Nuclear Repulsion Energy =            805.1177369106879951
-    One-Electron Energy =               -2430.8886128171384371
-    Two-Electron Energy =                1081.0750746639992030
-    DFT Exchange-Correlation Energy =     -70.2923710509400479
+    One-Electron Energy =               -2430.8886128171398013
+    Two-Electron Energy =                1081.0750746640005673
+    DFT Exchange-Correlation Energy =     -70.2923710509400621
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -614.9881722933911306
+    Total Energy =                       -614.9881722933912442
 
 Computation Completed
 
@@ -1073,15 +1046,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:07:38 2022
+*** tstop() called on jacket at Mon Apr 11 16:30:20 2022
 Module time:
-	user time   =     917.25 seconds =      15.29 minutes
-	system time =       1.49 seconds =       0.02 minutes
-	total time  =         52 seconds =       0.87 minutes
+	user time   =    1178.64 seconds =      19.64 minutes
+	system time =       2.96 seconds =       0.05 minutes
+	total time  =         50 seconds =       0.83 minutes
 Total time:
-	user time   =    1244.31 seconds =      20.74 minutes
-	system time =       3.64 seconds =       0.06 minutes
-	total time  =         71 seconds =       1.18 minutes
+	user time   =    1603.37 seconds =      26.72 minutes
+	system time =       6.64 seconds =       0.11 minutes
+	total time  =         69 seconds =       1.15 minutes
 
        N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):  -614.98817229339124)
 
@@ -1089,7 +1062,7 @@ Total time:
 
    n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]
         1     -614.978046114021        0.000000000000        0.000000000000
-        2     -614.988172293391       -6.354273487840       -6.354273487840
+        2     -614.988172293391       -6.354273487697       -6.354273487697
 
    => Loading Basis Set <=
 
@@ -1118,7 +1091,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:07:38 2022
+*** at Mon Apr 11 16:30:20 2022
 
    => Loading Basis Set <=
 
@@ -1135,7 +1108,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                       18 Threads,    500 MiB Core
+                       24 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1175,7 +1148,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1266,9 +1239,20 @@ Scratch directory: /scratch/jiang/
     J Algorithm:         DIRECT_DF
     K tasked:                  Yes
     K Algorithm:              LINK
-    Integrals threads:          18
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Integrals threads:          24
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:     CC-PVDZ
+    Auxiliary Basis: (CC-PVDZ AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:     CC-PVDZ
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Cached 33.4% of DFT collocation blocks in 0.279 [GiB].
 
@@ -1292,19 +1276,19 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -307.06686649384187   -3.07067e+02   0.00000e+00 
-   @RKS iter   1:  -307.06985761155505   -2.99112e-03   6.70142e-03 ADIIS/DIIS
-   @RKS iter   2:  -306.95761993145379    1.12238e-01   7.81200e-03 ADIIS/DIIS/INCFOCK
-   @RKS iter   3:  -307.48428915011027   -5.26669e-01   7.41211e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -307.48604407410278   -1.75492e-03   5.81570e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   5:  -307.48919086181672   -3.14679e-03   8.44979e-05 DIIS/INCFOCK
-   @RKS iter   6:  -307.48925271970336   -6.18579e-05   2.37789e-05 DIIS
-   @RKS iter   7:  -307.48925701056532   -4.29086e-06   6.09679e-06 DIIS/INCFOCK
-   @RKS iter   8:  -307.48925728310934   -2.72544e-07   2.41517e-06 DIIS/INCFOCK
-   @RKS iter   9:  -307.48925733465336   -5.15440e-08   6.95027e-07 DIIS/INCFOCK
-   @RKS iter  10:  -307.48925733903354   -4.38018e-09   1.36359e-07 DIIS
-   @RKS iter  11:  -307.48925733914331   -1.09765e-10   5.39707e-08 DIIS
-   @RKS iter  12:  -307.48925733916826   -2.49543e-11   9.71172e-09 DIIS
+   @RKS iter SAD:  -307.06686649384096   -3.07067e+02   0.00000e+00 
+   @RKS iter   1:  -307.06985761155454   -2.99112e-03   6.70142e-03 ADIIS/DIIS
+   @RKS iter   2:  -306.95761993145385    1.12238e-01   7.81200e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -307.48428915011016   -5.26669e-01   7.41211e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -307.48604407410238   -1.75492e-03   5.81570e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   5:  -307.48919086181655   -3.14679e-03   8.44979e-05 DIIS/INCFOCK
+   @RKS iter   6:  -307.48925271970268   -6.18579e-05   2.37789e-05 DIIS
+   @RKS iter   7:  -307.48925701056481   -4.29086e-06   6.09679e-06 DIIS/INCFOCK
+   @RKS iter   8:  -307.48925728310894   -2.72544e-07   2.41517e-06 DIIS/INCFOCK
+   @RKS iter   9:  -307.48925733465296   -5.15440e-08   6.95027e-07 DIIS/INCFOCK
+   @RKS iter  10:  -307.48925733903332   -4.38035e-09   1.36359e-07 DIIS
+   @RKS iter  11:  -307.48925733914342   -1.10106e-10   5.39707e-08 DIIS
+   @RKS iter  12:  -307.48925733916730   -2.38742e-11   9.71172e-09 DIIS
   Energy and wave function converged.
 
 
@@ -1370,17 +1354,17 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    25 ]
 
-  @RKS Final Energy:  -307.48925733916826
+  @RKS Final Energy:  -307.48925733916730
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            271.4387016428274819
-    One-Electron Energy =                -953.2678267470537321
-    Two-Electron Energy =                 409.4817132421683823
-    DFT Exchange-Correlation Energy =     -35.1418454771103868
+    One-Electron Energy =                -953.2678267470520268
+    Two-Electron Energy =                 409.4817132421675296
+    DFT Exchange-Correlation Energy =     -35.1418454771102731
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -307.4892573391682618
+    Total Energy =                       -307.4892573391672954
 
 Computation Completed
 
@@ -1404,17 +1388,17 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:07:49 2022
+*** tstop() called on jacket at Mon Apr 11 16:30:32 2022
 Module time:
-	user time   =     185.01 seconds =       3.08 minutes
-	system time =       0.78 seconds =       0.01 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =     260.33 seconds =       4.34 minutes
+	system time =       1.99 seconds =       0.03 minutes
+	total time  =         12 seconds =       0.20 minutes
 Total time:
-	user time   =    1433.32 seconds =      23.89 minutes
-	system time =       4.51 seconds =       0.08 minutes
-	total time  =         82 seconds =       1.37 minutes
+	user time   =    1868.34 seconds =      31.14 minutes
+	system time =       8.78 seconds =       0.15 minutes
+	total time  =         81 seconds =       1.35 minutes
 
-       N-Body: Complex Energy (fragments = (1,), basis = (1,):  -307.48925733916826)
+       N-Body: Complex Energy (fragments = (1,), basis = (1,):  -307.48925733916730)
 
        N-Body: Computing complex (2/2) with fragments (2,) in the basis of fragments (2,).
 
@@ -1422,7 +1406,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:07:49 2022
+*** at Mon Apr 11 16:30:32 2022
 
    => Loading Basis Set <=
 
@@ -1439,7 +1423,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                       18 Threads,    500 MiB Core
+                       24 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1479,7 +1463,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1570,9 +1554,20 @@ Scratch directory: /scratch/jiang/
     J Algorithm:         DIRECT_DF
     K tasked:                  Yes
     K Algorithm:              LINK
-    Integrals threads:          18
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Integrals threads:          24
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:     CC-PVDZ
+    Auxiliary Basis: (CC-PVDZ AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:     CC-PVDZ
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Cached 33.4% of DFT collocation blocks in 0.284 [GiB].
 
@@ -1596,18 +1591,18 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -307.05815681398354   -3.07058e+02   0.00000e+00 
-   @RKS iter   1:  -307.07219612663772   -1.40393e-02   6.68960e-03 ADIIS/DIIS
-   @RKS iter   2:  -306.96543989651616    1.06756e-01   7.76813e-03 ADIIS/DIIS/INCFOCK
-   @RKS iter   3:  -307.48441226573135   -5.18972e-01   7.17145e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -307.48600230480395   -1.59004e-03   5.66709e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   5:  -307.48900229635007   -2.99999e-03   8.36904e-05 DIIS/INCFOCK
-   @RKS iter   6:  -307.48906384696249   -6.15506e-05   2.16651e-05 DIIS
-   @RKS iter   7:  -307.48906734528259   -3.49832e-06   5.95254e-06 DIIS/INCFOCK
-   @RKS iter   8:  -307.48906760932147   -2.64039e-07   2.19095e-06 DIIS/INCFOCK
-   @RKS iter   9:  -307.48906765088378   -4.15623e-08   7.16283e-07 DIIS/INCFOCK
-   @RKS iter  10:  -307.48906765558843   -4.70465e-09   1.14195e-07 DIIS
-   @RKS iter  11:  -307.48906765566028   -7.18501e-11   5.47556e-08 DIIS
+   @RKS iter SAD:  -307.05815681398371   -3.07058e+02   0.00000e+00 
+   @RKS iter   1:  -307.07219612663641   -1.40393e-02   6.68960e-03 ADIIS/DIIS
+   @RKS iter   2:  -306.96543989651508    1.06756e-01   7.76813e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -307.48441226573038   -5.18972e-01   7.17145e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -307.48600230480287   -1.59004e-03   5.66709e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   5:  -307.48900229634955   -2.99999e-03   8.36904e-05 DIIS/INCFOCK
+   @RKS iter   6:  -307.48906384696210   -6.15506e-05   2.16651e-05 DIIS
+   @RKS iter   7:  -307.48906734528288   -3.49832e-06   5.95254e-06 DIIS/INCFOCK
+   @RKS iter   8:  -307.48906760932175   -2.64039e-07   2.19095e-06 DIIS/INCFOCK
+   @RKS iter   9:  -307.48906765088361   -4.15619e-08   7.16283e-07 DIIS/INCFOCK
+   @RKS iter  10:  -307.48906765558866   -4.70504e-09   1.14195e-07 DIIS
+   @RKS iter  11:  -307.48906765566045   -7.17932e-11   5.47556e-08 DIIS
   Energy and wave function converged.
 
 
@@ -1673,17 +1668,17 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    25 ]
 
-  @RKS Final Energy:  -307.48906765566028
+  @RKS Final Energy:  -307.48906765566045
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            271.3461787607139399
-    One-Electron Energy =                -953.0870730884981867
-    Two-Electron Energy =                 409.3935681646307216
-    DFT Exchange-Correlation Energy =     -35.1417414925068030
+    One-Electron Energy =                -953.0870730884967088
+    Two-Electron Energy =                 409.3935681646290732
+    DFT Exchange-Correlation Energy =     -35.1417414925067177
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -307.4890676556602784
+    Total Energy =                       -307.4890676556604490
 
 Computation Completed
 
@@ -1707,17 +1702,17 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:07:59 2022
+*** tstop() called on jacket at Mon Apr 11 16:30:42 2022
 Module time:
-	user time   =     169.87 seconds =       2.83 minutes
-	system time =       0.78 seconds =       0.01 minutes
+	user time   =     243.09 seconds =       4.05 minutes
+	system time =       2.03 seconds =       0.03 minutes
 	total time  =         10 seconds =       0.17 minutes
 Total time:
-	user time   =    1603.49 seconds =      26.72 minutes
-	system time =       5.29 seconds =       0.09 minutes
-	total time  =         92 seconds =       1.53 minutes
+	user time   =    2111.95 seconds =      35.20 minutes
+	system time =      10.83 seconds =       0.18 minutes
+	total time  =         91 seconds =       1.52 minutes
 
-       N-Body: Complex Energy (fragments = (2,), basis = (2,):  -307.48906765566028)
+       N-Body: Complex Energy (fragments = (2,), basis = (2,):  -307.48906765566045)
 
    ==> N-Body: Now computing 2-body complexes <==
 
@@ -1728,7 +1723,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:07:59 2022
+*** at Mon Apr 11 16:30:42 2022
 
    => Loading Basis Set <=
 
@@ -1745,7 +1740,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                       18 Threads,    500 MiB Core
+                       24 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1798,7 +1793,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1889,9 +1884,20 @@ Scratch directory: /scratch/jiang/
     J Algorithm:         DIRECT_DF
     K tasked:                  Yes
     K Algorithm:              LINK
-    Integrals threads:          18
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Integrals threads:          24
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:     CC-PVDZ
+    Auxiliary Basis: (CC-PVDZ AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:     CC-PVDZ
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Cached 14.3% of DFT collocation blocks in 0.336 [GiB].
 
@@ -1915,19 +1921,19 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -614.18691617954835   -6.14187e+02   0.00000e+00 
-   @RKS iter   1:  -614.16869596312927    1.82202e-02   4.68835e-03 ADIIS/DIIS
-   @RKS iter   2:  -613.95858567603977    2.10110e-01   5.41913e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter SAD:  -614.18691617954755   -6.14187e+02   0.00000e+00 
+   @RKS iter   1:  -614.16869596312847    1.82202e-02   4.68835e-03 ADIIS/DIIS
+   @RKS iter   2:  -613.95858567604046    2.10110e-01   5.41913e-03 ADIIS/DIIS/INCFOCK
    @RKS iter   3:  -614.97267931072474   -1.01409e+00   6.56956e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -614.98095781174675   -8.27850e-03   4.46218e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   5:  -614.98831946810901   -7.36166e-03   5.82356e-05 DIIS/INCFOCK
-   @RKS iter   6:  -614.98841900980165   -9.95417e-05   2.81718e-05 DIIS
-   @RKS iter   7:  -614.98844518735348   -2.61776e-05   4.91258e-06 DIIS/INCFOCK
-   @RKS iter   8:  -614.98844588083921   -6.93486e-07   2.46437e-06 DIIS/INCFOCK
-   @RKS iter   9:  -614.98844609012986   -2.09291e-07   4.52243e-07 DIIS/INCFOCK
-   @RKS iter  10:  -614.98844609615696   -6.02711e-09   1.81436e-07 DIIS
-   @RKS iter  11:  -614.98844609706646   -9.09495e-10   3.21393e-08 DIIS
-   @RKS iter  12:  -614.98844609710807   -4.16094e-11   8.65167e-09 DIIS
+   @RKS iter   4:  -614.98095781174686   -8.27850e-03   4.46218e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   5:  -614.98831946810844   -7.36166e-03   5.82356e-05 DIIS/INCFOCK
+   @RKS iter   6:  -614.98841900980472   -9.95417e-05   2.81718e-05 DIIS
+   @RKS iter   7:  -614.98844518735643   -2.61776e-05   4.91258e-06 DIIS/INCFOCK
+   @RKS iter   8:  -614.98844588084137   -6.93485e-07   2.46437e-06 DIIS/INCFOCK
+   @RKS iter   9:  -614.98844609013167   -2.09290e-07   4.52243e-07 DIIS/INCFOCK
+   @RKS iter  10:  -614.98844609615685   -6.02518e-09   1.81436e-07 DIIS
+   @RKS iter  11:  -614.98844609706589   -9.09040e-10   3.21393e-08 DIIS
+   @RKS iter  12:  -614.98844609710545   -3.95630e-11   8.65167e-09 DIIS
   Energy and wave function converged.
 
 
@@ -2035,17 +2041,17 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    50 ]
 
-  @RKS Final Energy:  -614.98844609710807
+  @RKS Final Energy:  -614.98844609710545
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            805.1177369106879951
-    One-Electron Energy =               -2430.8894365458572793
-    Two-Electron Energy =                1081.0757354444319844
-    DFT Exchange-Correlation Energy =     -70.2924819063706963
+    One-Electron Energy =               -2430.8894365458540960
+    Two-Electron Energy =                1081.0757354444308476
+    DFT Exchange-Correlation Energy =     -70.2924819063703836
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -614.9884460971078397
+    Total Energy =                       -614.9884460971055660
 
 Computation Completed
 
@@ -2069,23 +2075,23 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:08:54 2022
+*** tstop() called on jacket at Mon Apr 11 16:31:38 2022
 Module time:
-	user time   =     961.54 seconds =      16.03 minutes
-	system time =       1.78 seconds =       0.03 minutes
-	total time  =         55 seconds =       0.92 minutes
+	user time   =    1247.86 seconds =      20.80 minutes
+	system time =       3.43 seconds =       0.06 minutes
+	total time  =         56 seconds =       0.93 minutes
 Total time:
-	user time   =    2565.38 seconds =      42.76 minutes
-	system time =       7.08 seconds =       0.12 minutes
+	user time   =    3360.43 seconds =      56.01 minutes
+	system time =      14.28 seconds =       0.24 minutes
 	total time  =        147 seconds =       2.45 minutes
 
-       N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):  -614.98844609710807)
+       N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):  -614.98844609710545)
 
    ==> N-Body: Non-Counterpoise Corrected (NoCP) energies <==
 
    n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]
-        1     -614.978324994829        0.000000000000        0.000000000000
-        2     -614.988446097108       -6.351087565475       -6.351087565475
+        1     -614.978324994828        0.000000000000        0.000000000000
+        2     -614.988446097105       -6.351087564333       -6.351087564333
 
    => Loading Basis Set <=
 
@@ -2098,7 +2104,7 @@ Total time:
 
     B3LYP Int Energy (DirectDFJ+LinK).....................................................PASSED
 
-    Psi4 stopped on: Monday, 11 April 2022 12:08AM
-    Psi4 wall time for execution: 0:02:27.06
+    Psi4 stopped on: Monday, 11 April 2022 04:31PM
+    Psi4 wall time for execution: 0:02:27.10
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -148,10 +148,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
-    } else if (jk_type == "COMPOSITE") {
-        CompositeJK* jk = new CompositeJK(primary, auxiliary, options);
-
-        return std::shared_ptr<JK>(jk);
     } else {
         std::stringstream message;
         message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
@@ -184,6 +180,12 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
             return build_JK(primary, auxiliary, options, "DISK_DF");
         }
 
+    } else if (jk_type == "DIRECT_DF_LINK") {
+        CompositeJK* jk = new CompositeJK(primary, auxiliary, "DIRECT_DF", "LINK", options);
+        // Composite JK algorithms should use Incremental Fock build by default
+        if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
+
+        return std::shared_ptr<JK>(jk);
     } else {  // otherwise it has already been set
         return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
     }

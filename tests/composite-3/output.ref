@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev143 
+                               Psi4 1.6a1.dev145 
 
-                         Git: Rev {split-jk} 3593c4f dirty
+                         Git: Rev {split-jk} 1218137 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 11 April 2022 12:17AM
+    Psi4 started on: Monday, 11 April 2022 04:32PM
 
-    Process ID: 3946811
+    Process ID: 3979349
     Host:       jacket
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4
     Memory:     500.0 MiB
@@ -72,7 +72,7 @@ ref_energy = energy('scf', bsse_type='nocp')
 
 set {
   reference uhf
-  scf_type composite
+  scf_type direct_df_linK
   basis 6-31G*
   e_convergence 1.0e-10
   screening density
@@ -100,7 +100,7 @@ ref_energy = energy('scf', bsse_type='nocp')
 
 set {
   reference rohf
-  scf_type composite
+  scf_type direct_df_linK
   basis 6-31G*
   e_convergence 1.0e-10
   screening density
@@ -130,7 +130,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:39 2022
+*** at Mon Apr 11 16:32:57 2022
 
    => Loading Basis Set <=
 
@@ -190,13 +190,6 @@ Scratch directory: /scratch/jiang/
     Spherical Harmonics?: false
     Max angular momentum: 2
 
-   => Loading Basis Set <=
-
-    Name: (6-31G* AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1 entry NA         line   498 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/def2-universal-jkfit.gbs 
-
   ==> Integral Setup <==
 
   ==> DirectJK: Integral-Direct J/K Matrices <==
@@ -229,9 +222,9 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:  -161.50920846797894   -1.61509e+02   2.67848e-02 ADIIS/DIIS
-   @UHF iter   2:  -161.65676685029626   -1.47558e-01   3.55265e-03 ADIIS/DIIS/INCFOCK
-   @UHF iter   3:  -161.65928595579351   -2.51911e-03   1.12829e-04 ADIIS/DIIS/INCFOCK
+   @UHF iter   1:  -161.50920846797894   -1.61509e+02   2.67848e-02 DIIS/ADIIS
+   @UHF iter   2:  -161.65676685029626   -1.47558e-01   3.55265e-03 DIIS/ADIIS/INCFOCK
+   @UHF iter   3:  -161.65928595579351   -2.51911e-03   1.12829e-04 DIIS/ADIIS/INCFOCK
    @UHF iter   4:  -161.65928835192747   -2.39613e-06   8.47387e-06 DIIS/INCFOCK
    @UHF iter   5:  -161.65928836687945   -1.49520e-08   3.32498e-07 DIIS/INCFOCK
    @UHF iter   6:  -161.65928836689869   -1.92415e-11   2.42033e-08 DIIS
@@ -321,13 +314,13 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:40 2022
+*** tstop() called on jacket at Mon Apr 11 16:32:58 2022
 Module time:
-	user time   =       0.41 seconds =       0.01 minutes
+	user time   =       0.38 seconds =       0.01 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.41 seconds =       0.01 minutes
+	user time   =       0.38 seconds =       0.01 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -339,7 +332,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:40 2022
+*** at Mon Apr 11 16:32:58 2022
 
    => Loading Basis Set <=
 
@@ -404,14 +397,6 @@ Scratch directory: /scratch/jiang/
     Spherical Harmonics?: false
     Max angular momentum: 2
 
-   => Loading Basis Set <=
-
-    Name: (6-31G* AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
   ==> Integral Setup <==
 
   ==> DirectJK: Integral-Direct J/K Matrices <==
@@ -445,10 +430,10 @@ Scratch directory: /scratch/jiang/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:   -75.51425954037674   -7.55143e+01   0.00000e+00 
-   @UHF iter   1:   -75.93899187666619   -4.24732e-01   2.14776e-02 ADIIS/DIIS
-   @UHF iter   2:   -75.99092252196120   -5.19306e-02   1.26060e-02 ADIIS/DIIS/INCFOCK
-   @UHF iter   3:   -76.00963461199134   -1.87121e-02   1.43933e-03 ADIIS/DIIS/INCFOCK
-   @UHF iter   4:   -76.01010010649688   -4.65495e-04   2.68088e-04 ADIIS/DIIS/INCFOCK
+   @UHF iter   1:   -75.93899187666619   -4.24732e-01   2.14776e-02 DIIS/ADIIS
+   @UHF iter   2:   -75.99092252196120   -5.19306e-02   1.26060e-02 DIIS/ADIIS/INCFOCK
+   @UHF iter   3:   -76.00963461199134   -1.87121e-02   1.43933e-03 DIIS/ADIIS/INCFOCK
+   @UHF iter   4:   -76.01010010649688   -4.65495e-04   2.68088e-04 DIIS/ADIIS/INCFOCK
    @UHF iter   5:   -76.01012016552914   -2.00590e-05   4.87754e-05 DIIS/INCFOCK
    @UHF iter   6:   -76.01012112262123   -9.57092e-07   7.30465e-06 DIIS
    @UHF iter   7:   -76.01012114602909   -2.34079e-08   1.20027e-06 DIIS/INCFOCK
@@ -540,13 +525,13 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:40 2022
+*** tstop() called on jacket at Mon Apr 11 16:32:58 2022
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.70 seconds =       0.01 minutes
+	user time   =       0.68 seconds =       0.01 minutes
 	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -561,7 +546,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:40 2022
+*** at Mon Apr 11 16:32:58 2022
 
    => Loading Basis Set <=
 
@@ -628,15 +613,6 @@ Scratch directory: /scratch/jiang/
     Spherical Harmonics?: false
     Max angular momentum: 2
 
-   => Loading Basis Set <=
-
-    Name: (6-31G* AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1   entry NA         line   498 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/def2-universal-jkfit.gbs 
-    atoms 2   entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 3-4 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
   ==> Integral Setup <==
 
   ==> DirectJK: Integral-Direct J/K Matrices <==
@@ -670,10 +646,10 @@ Scratch directory: /scratch/jiang/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:  -237.30951976958107   -2.37310e+02   0.00000e+00 
-   @UHF iter   1:  -237.65020765551048   -3.40688e-01   1.03624e-02 ADIIS/DIIS
-   @UHF iter   2:  -237.69703956521451   -4.68319e-02   6.08404e-03 ADIIS/DIIS/INCFOCK
-   @UHF iter   3:  -237.71465778178683   -1.76182e-02   6.19005e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   4:  -237.71500487258908   -3.47091e-04   1.11600e-04 ADIIS/DIIS/INCFOCK
+   @UHF iter   1:  -237.65020765551048   -3.40688e-01   1.03624e-02 DIIS/ADIIS
+   @UHF iter   2:  -237.69703956521451   -4.68319e-02   6.08404e-03 DIIS/ADIIS/INCFOCK
+   @UHF iter   3:  -237.71465778178683   -1.76182e-02   6.19005e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   4:  -237.71500487258908   -3.47091e-04   1.11600e-04 DIIS/ADIIS/INCFOCK
    @UHF iter   5:  -237.71501683106376   -1.19585e-05   1.85405e-05 DIIS/INCFOCK
    @UHF iter   6:  -237.71501730026617   -4.69202e-07   2.93150e-06 DIIS
    @UHF iter   7:  -237.71501731450269   -1.42365e-08   3.35135e-07 DIIS/INCFOCK
@@ -779,15 +755,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:42 2022
+*** tstop() called on jacket at Mon Apr 11 16:32:59 2022
 Module time:
-	user time   =       1.15 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.07 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.87 seconds =       0.03 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.76 seconds =       0.03 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
        N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):  -237.71501731465278)
 
@@ -824,7 +800,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:42 2022
+*** at Mon Apr 11 16:32:59 2022
 
    => Loading Basis Set <=
 
@@ -865,7 +841,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -900,8 +876,19 @@ Scratch directory: /scratch/jiang/
     K tasked:                  Yes
     K Algorithm:              LINK
     Integrals threads:           1
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:      6-31G*
+    Auxiliary Basis: (6-31G* AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:      6-31G*
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Minimum eigenvalue in the overlap matrix is 1.0003948626E-02.
   Reciprocal condition number of the overlap matrix is 2.9579481637E-03.
@@ -923,9 +910,9 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:  -161.50921363221653   -1.61509e+02   2.67848e-02 ADIIS/DIIS
-   @UHF iter   2:  -161.65677200436002   -1.47558e-01   3.55265e-03 ADIIS/DIIS/INCFOCK
-   @UHF iter   3:  -161.65929110975483   -2.51911e-03   1.12829e-04 ADIIS/DIIS/INCFOCK
+   @UHF iter   1:  -161.50921363221653   -1.61509e+02   2.67848e-02 DIIS/ADIIS
+   @UHF iter   2:  -161.65677200436002   -1.47558e-01   3.55265e-03 DIIS/ADIIS/INCFOCK
+   @UHF iter   3:  -161.65929110975483   -2.51911e-03   1.12829e-04 DIIS/ADIIS/INCFOCK
    @UHF iter   4:  -161.65929350588982   -2.39613e-06   8.47388e-06 DIIS/INCFOCK
    @UHF iter   5:  -161.65929352084200   -1.49522e-08   3.32498e-07 DIIS/INCFOCK
    @UHF iter   6:  -161.65929352085871   -1.67120e-11   2.42033e-08 DIIS
@@ -1015,15 +1002,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:42 2022
+*** tstop() called on jacket at Mon Apr 11 16:32:59 2022
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.10 seconds =       0.04 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       2.00 seconds =       0.03 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
        N-Body: Complex Energy (fragments = (1,), basis = (1,):  -161.65929352085871)
 
@@ -1033,7 +1020,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:42 2022
+*** at Mon Apr 11 16:32:59 2022
 
    => Loading Basis Set <=
 
@@ -1079,7 +1066,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1115,8 +1102,19 @@ Scratch directory: /scratch/jiang/
     K tasked:                  Yes
     K Algorithm:              LINK
     Integrals threads:           1
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:      6-31G*
+    Auxiliary Basis: (6-31G* AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:      6-31G*
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Minimum eigenvalue in the overlap matrix is 2.2554393447E-02.
   Reciprocal condition number of the overlap matrix is 4.8392481640E-03.
@@ -1139,10 +1137,10 @@ Scratch directory: /scratch/jiang/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:   -75.51426059767839   -7.55143e+01   0.00000e+00 
-   @UHF iter   1:   -75.93899652044641   -4.24736e-01   2.14777e-02 ADIIS/DIIS
-   @UHF iter   2:   -75.99092955992901   -5.19330e-02   1.26059e-02 ADIIS/DIIS/INCFOCK
-   @UHF iter   3:   -76.00964131746355   -1.87118e-02   1.43939e-03 ADIIS/DIIS/INCFOCK
-   @UHF iter   4:   -76.01010684696850   -4.65530e-04   2.68156e-04 ADIIS/DIIS/INCFOCK
+   @UHF iter   1:   -75.93899652044641   -4.24736e-01   2.14777e-02 DIIS/ADIIS
+   @UHF iter   2:   -75.99092955992901   -5.19330e-02   1.26059e-02 DIIS/ADIIS/INCFOCK
+   @UHF iter   3:   -76.00964131746355   -1.87118e-02   1.43939e-03 DIIS/ADIIS/INCFOCK
+   @UHF iter   4:   -76.01010684696850   -4.65530e-04   2.68156e-04 DIIS/ADIIS/INCFOCK
    @UHF iter   5:   -76.01012691362386   -2.00667e-05   4.87821e-05 DIIS/INCFOCK
    @UHF iter   6:   -76.01012787078244   -9.57159e-07   7.30983e-06 DIIS
    @UHF iter   7:   -76.01012789421826   -2.34358e-08   1.20014e-06 DIIS/INCFOCK
@@ -1234,14 +1232,14 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:42 2022
+*** tstop() called on jacket at Mon Apr 11 16:33:00 2022
 Module time:
-	user time   =       0.28 seconds =       0.00 minutes
+	user time   =       0.30 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.40 seconds =       0.04 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       2.32 seconds =       0.04 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
        N-Body: Complex Energy (fragments = (2,), basis = (2,):   -76.01012789492449)
@@ -1255,7 +1253,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:42 2022
+*** at Mon Apr 11 16:33:00 2022
 
    => Loading Basis Set <=
 
@@ -1303,7 +1301,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1340,8 +1338,19 @@ Scratch directory: /scratch/jiang/
     K tasked:                  Yes
     K Algorithm:              LINK
     Integrals threads:           1
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:      6-31G*
+    Auxiliary Basis: (6-31G* AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:      6-31G*
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Minimum eigenvalue in the overlap matrix is 9.4505125213E-03.
   Reciprocal condition number of the overlap matrix is 1.7342177407E-03.
@@ -1364,10 +1373,10 @@ Scratch directory: /scratch/jiang/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:  -237.30952589802774   -2.37310e+02   0.00000e+00 
-   @UHF iter   1:  -237.65021717564548   -3.40691e-01   1.03625e-02 ADIIS/DIIS
-   @UHF iter   2:  -237.69705119965914   -4.68340e-02   6.08401e-03 ADIIS/DIIS/INCFOCK
-   @UHF iter   3:  -237.71466925411889   -1.76181e-02   6.19057e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   4:  -237.71501641436794   -3.47160e-04   1.11637e-04 ADIIS/DIIS/INCFOCK
+   @UHF iter   1:  -237.65021717564548   -3.40691e-01   1.03625e-02 DIIS/ADIIS
+   @UHF iter   2:  -237.69705119965914   -4.68340e-02   6.08401e-03 DIIS/ADIIS/INCFOCK
+   @UHF iter   3:  -237.71466925411889   -1.76181e-02   6.19057e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   4:  -237.71501641436794   -3.47160e-04   1.11637e-04 DIIS/ADIIS/INCFOCK
    @UHF iter   5:  -237.71502837953878   -1.19652e-05   1.85446e-05 DIIS/INCFOCK
    @UHF iter   6:  -237.71502884879089   -4.69252e-07   2.93255e-06 DIIS
    @UHF iter   7:  -237.71502886303162   -1.42407e-08   3.35345e-07 DIIS/INCFOCK
@@ -1473,15 +1482,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:44 2022
+*** tstop() called on jacket at Mon Apr 11 16:33:01 2022
 Module time:
-	user time   =       1.40 seconds =       0.02 minutes
+	user time   =       1.37 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.81 seconds =       0.06 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       3.70 seconds =       0.06 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
        N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):  -237.71502886320070)
 
@@ -1519,7 +1528,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:44 2022
+*** at Mon Apr 11 16:33:01 2022
 
    => Loading Basis Set <=
 
@@ -1578,13 +1587,6 @@ Scratch directory: /scratch/jiang/
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
-
-   => Loading Basis Set <=
-
-    Name: (6-31G* AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1 entry NA         line   498 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/def2-universal-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -1685,15 +1687,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:44 2022
+*** tstop() called on jacket at Mon Apr 11 16:33:01 2022
 Module time:
-	user time   =       0.15 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.01 seconds =       0.07 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       3.89 seconds =       0.06 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
        N-Body: Complex Energy (fragments = (1,), basis = (1,):  -161.65928836689903)
 
@@ -1703,7 +1705,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:44 2022
+*** at Mon Apr 11 16:33:01 2022
 
    => Loading Basis Set <=
 
@@ -1767,14 +1769,6 @@ Scratch directory: /scratch/jiang/
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
-
-   => Loading Basis Set <=
-
-    Name: (6-31G* AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -1879,15 +1873,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:44 2022
+*** tstop() called on jacket at Mon Apr 11 16:33:01 2022
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
+	user time   =       0.22 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.27 seconds =       0.07 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       4.12 seconds =       0.07 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
        N-Body: Complex Energy (fragments = (2,), basis = (2,):   -76.01012114673554)
 
@@ -1900,7 +1894,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:44 2022
+*** at Mon Apr 11 16:33:01 2022
 
    => Loading Basis Set <=
 
@@ -1966,15 +1960,6 @@ Scratch directory: /scratch/jiang/
     Number of Cartesian functions: 38
     Spherical Harmonics?: false
     Max angular momentum: 2
-
-   => Loading Basis Set <=
-
-    Name: (6-31G* AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1   entry NA         line   498 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/def2-universal-jkfit.gbs 
-    atoms 2   entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 3-4 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-abhijat/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -2086,14 +2071,14 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:45 2022
+*** tstop() called on jacket at Mon Apr 11 16:33:03 2022
 Module time:
-	user time   =       1.10 seconds =       0.02 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       5.38 seconds =       0.09 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       5.19 seconds =       0.09 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          6 seconds =       0.10 minutes
 
        N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):  -237.71501731465261)
@@ -2131,7 +2116,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:45 2022
+*** at Mon Apr 11 16:33:03 2022
 
    => Loading Basis Set <=
 
@@ -2172,7 +2157,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -2207,8 +2192,19 @@ Scratch directory: /scratch/jiang/
     K tasked:                  Yes
     K Algorithm:              LINK
     Integrals threads:           1
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:      6-31G*
+    Auxiliary Basis: (6-31G* AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:      6-31G*
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Minimum eigenvalue in the overlap matrix is 1.0003948626E-02.
   Reciprocal condition number of the overlap matrix is 2.9579481637E-03.
@@ -2297,15 +2293,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:46 2022
+*** tstop() called on jacket at Mon Apr 11 16:33:03 2022
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.65 seconds =       0.09 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       5.41 seconds =       0.09 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
        N-Body: Complex Energy (fragments = (1,), basis = (1,):  -161.65929352086039)
 
@@ -2315,7 +2311,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:46 2022
+*** at Mon Apr 11 16:33:03 2022
 
    => Loading Basis Set <=
 
@@ -2361,7 +2357,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -2397,8 +2393,19 @@ Scratch directory: /scratch/jiang/
     K tasked:                  Yes
     K Algorithm:              LINK
     Integrals threads:           1
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:      6-31G*
+    Auxiliary Basis: (6-31G* AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:      6-31G*
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Minimum eigenvalue in the overlap matrix is 2.2554393447E-02.
   Reciprocal condition number of the overlap matrix is 4.8392481640E-03.
@@ -2491,15 +2498,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:46 2022
+*** tstop() called on jacket at Mon Apr 11 16:33:03 2022
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.92 seconds =       0.10 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       5.70 seconds =       0.10 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
        N-Body: Complex Energy (fragments = (2,), basis = (2,):   -76.01012789492421)
 
@@ -2512,7 +2519,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Apr 11 00:17:46 2022
+*** at Mon Apr 11 16:33:03 2022
 
    => Loading Basis Set <=
 
@@ -2560,7 +2567,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COMPOSITE.
+  SCF Algorithm Type is DIRECT_DF_LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -2597,8 +2604,19 @@ Scratch directory: /scratch/jiang/
     K tasked:                  Yes
     K Algorithm:              LINK
     Integrals threads:           1
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  ==> Direct Density-Fitted J <==
+
+    Primary Basis:      6-31G*
+    Auxiliary Basis: (6-31G* AUX)
+    ERI Screening Cutoff:       1E-12
+
+  ==> Linear Exchange (LinK) <==
+
+    Primary Basis:      6-31G*
+    ERI Screening Cutoff:       1E-12
+    Density Screening Cutoff:       1E-12
 
   Minimum eigenvalue in the overlap matrix is 9.4505125213E-03.
   Reciprocal condition number of the overlap matrix is 1.7342177407E-03.
@@ -2698,15 +2716,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jacket at Mon Apr 11 00:17:47 2022
+*** tstop() called on jacket at Mon Apr 11 16:33:04 2022
 Module time:
 	user time   =       1.36 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       7.29 seconds =       0.12 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       7.08 seconds =       0.12 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
        N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):  -237.71502886319450)
 
@@ -2727,7 +2745,7 @@ Total time:
 
     ROHF Int Energy (DirectDFJ+LinK)......................................................PASSED
 
-    Psi4 stopped on: Monday, 11 April 2022 12:17AM
-    Psi4 wall time for execution: 0:00:07.99
+    Psi4 stopped on: Monday, 11 April 2022 04:33PM
+    Psi4 wall time for execution: 0:00:07.75
 
 *** Psi4 exiting successfully. Buy a developer a beer!
