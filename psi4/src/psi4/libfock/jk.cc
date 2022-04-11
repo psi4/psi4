@@ -71,7 +71,8 @@ JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
 
-    if (options.get_str("SCREENING") == "DENSITY" && !(jk_type == "DIRECT" || options.get_bool("DF_SCF_GUESS"))) {
+    if (options.get_str("SCREENING") == "DENSITY" && !(jk_type == "DIRECT" ||
+            jk_type == "COMPOSITE" || options.get_bool("DF_SCF_GUESS"))) {
         throw PSIEXCEPTION("Density screening has not been implemented for non-Direct SCF algorithms.");
     }
 
@@ -147,6 +148,10 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
+    } else if (jk_type == "COMPOSITE") {
+        CompositeJK* jk = new CompositeJK(primary, auxiliary, options);
+
+        return std::shared_ptr<JK>(jk);
     } else {
         std::stringstream message;
         message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
@@ -213,6 +218,13 @@ void JK::common_init() {
     omega_alpha_ = 1.0;
     omega_beta_ = 0.0;
     early_screening_ = false;
+
+    incfock_ = Process::environment.options.get_bool("INCFOCK");
+    incfock_count_ = 0;
+    do_incfock_iter_ = false;
+    if (Process::environment.options.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
+        throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
+    }
 
     std::shared_ptr<IntegralFactory> integral =
         std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
@@ -536,6 +548,88 @@ void JK::AO2USO() {
     delete[] temp;
 }
 void JK::initialize() { preiterations(); }
+
+void JK::incfock_setup() {
+
+    // The prev_D_ao_ condition is used to handle stability analysis case
+    if (initial_iteration_ || prev_D_ao_.size() != D_ao_.size()) {
+        initial_iteration_ = true;
+
+        prev_D_ao_.clear();
+        delta_D_ao_.clear();
+
+        if (do_wK_) {
+            prev_wK_ao_.clear();
+            delta_wK_ao_.clear();
+        }
+
+        if (do_J_) {
+            prev_J_ao_.clear();
+            delta_J_ao_.clear();
+        }
+
+        if (do_K_) {
+            prev_K_ao_.clear();
+            delta_K_ao_.clear();
+        }
+    
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            prev_D_ao_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+            delta_D_ao_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+
+            if (do_wK_) {
+                prev_wK_ao_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+                delta_wK_ao_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+            }
+                
+            if (do_J_) {
+                prev_J_ao_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                delta_J_ao_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+            }
+        
+            if (do_K_) {
+                prev_K_ao_.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                delta_K_ao_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+            }
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            delta_D_ao_[N]->copy(D_ao_[N]);
+            delta_D_ao_[N]->subtract(prev_D_ao_[N]);
+        }
+    }
+}
+
+void JK::incfock_postiter() {
+    if (do_incfock_iter_) {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+
+            if (do_wK_) {
+                prev_wK_ao_[N]->add(delta_wK_ao_[N]);
+                wK_ao_[N]->copy(prev_wK_ao_[N]);
+            }
+
+            if (do_J_) {
+                prev_J_ao_[N]->add(delta_J_ao_[N]);
+                J_ao_[N]->copy(prev_J_ao_[N]);
+            }
+
+            if (do_K_) {
+                prev_K_ao_[N]->add(delta_K_ao_[N]);
+                K_ao_[N]->copy(prev_K_ao_[N]);
+            }
+
+            prev_D_ao_[N]->copy(D_ao_[N]);
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            if (do_wK_) prev_wK_ao_[N]->copy(wK_ao_[N]);
+            if (do_J_) prev_J_ao_[N]->copy(J_ao_[N]);
+            if (do_K_) prev_K_ao_[N]->copy(K_ao_[N]);
+            prev_D_ao_[N]->copy(D_ao_[N]);
+        }
+    }
+}
 
 void JK::compute() {
     // Is this density symmetric?
