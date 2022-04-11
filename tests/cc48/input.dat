@@ -125,6 +125,7 @@ ref1B1 = -75.886857034080 # TEST
 ref0B2 = -75.849495233717 # TEST
 ref1B2 = -75.776029952037 # TEST
 
+compare_values(refccsd, core.variable("CCSD ROOT 0 (A1) TOTAL ENERGY"), 6, "Root 0 (A1) Energy") # TEST
 compare_values(ref1A1, core.variable("CCSD ROOT 1 (A1) TOTAL ENERGY"), 6, "Root 1 (A1) Energy") # TEST
 compare_values(ref2A1, core.variable("CCSD ROOT 2 (A1) TOTAL ENERGY"), 6, "Root 2 (A1) Energy") # TEST
 compare_values(ref0B1, core.variable("CCSD ROOT 0 (B1) TOTAL ENERGY"), 6, "Root 0 (B1) Energy") # TEST
