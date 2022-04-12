@@ -471,7 +471,7 @@ def run_qcschema(input_data: Union[Dict[str, Any], qcel.models.AtomicInput], cle
                                           success=False,
                                           error={
                                               'error_type': type(exc).__name__,
-                                              'error_message': ''.join(traceback.format_exception(*sys.exc_info())),
+                                              'error_message': input_data["stdout"] + ''.join(traceback.format_exception(*sys.exc_info())),
                                           })
 
     _clean_psi_output(postclean, outfile)

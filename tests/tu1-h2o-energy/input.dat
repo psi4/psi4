@@ -13,3 +13,9 @@ set basis cc-pVDZ
 energy('scf')
 
 compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+
+gradient('scf')
+compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient')  #TEST
+
+gradient('scf', dertype=0)
+compare_values(-76.0266327341067125, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient by energy')  #TEST

@@ -29,23 +29,33 @@
 import math
 import re
 import sys
-from typing import Callable, List
+import copy
+import pprint
+from typing import Any, Callable, Dict, List, Union
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+import logging
 
 import numpy as np
+import pydantic
+from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
+from psi4.driver import driver_util, p4util, pp
 from psi4.driver import qcdb
-from psi4.driver import p4util
 from psi4.driver.driver_cbs_helper import composite_procedures, register_composite_function, register_xtpl_function, xtpl_procedures  # lgtm[py/unused-import]
-from psi4.driver import driver_util
-from psi4.driver import psifiles as psif
-from psi4.driver.p4util.exceptions import *
+from psi4.driver.driver_util import UpgradeHelper
+from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
+from psi4.driver.task_base import AtomicComputer, BaseComputer
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
 _zeta_sym2val = {v: k for k, v in _zeta_val2sym.items()}
 _addlremark = {'energy': '', 'gradient': ', GRADIENT', 'hessian': ', HESSIAN'}
+_f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_options', 'f_energy', 'f_gradient', 'f_hessian', 'f_dipole', 'f_dipder']
 _lmh_labels = {
     1: ['HI'],
     2: ['LO', 'HI'],
@@ -732,8 +742,8 @@ def cbs(func, label, **kwargs):
         An exception is the default, ``'xtpl_highest_1'``, which uses the best basis
         set available. See :ref:`sec:cbs_xtpl` for all available schemes.
 
-    :type scf_scheme: Callable
-    :param scf_scheme: |dl| ``xtpl_highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
+    :type scf_scheme: string
+    :param scf_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'scf_xtpl_helgaker_3'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the reference energy.
         Defaults to :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3` if three valid basis sets
@@ -749,8 +759,8 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_truhlar_2`
            * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_karton_2`
 
-    :type corl_scheme: Callable
-    :param corl_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :type corl_scheme: string
+    :param corl_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
         Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
@@ -762,8 +772,8 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
-    :type delta_scheme: Callable
-    :param delta_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :type delta_scheme: string
+    :param delta_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the delta correction
         to the correlation energy.
@@ -776,8 +786,8 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
-    :type delta2_scheme: Callable
-    :param delta2_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+    :type delta2_scheme: string
+    :param delta2_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
@@ -871,392 +881,59 @@ def cbs(func, label, **kwargs):
     >>> energy(cbs, corl_wfn='mp2', corl_basis='jun-cc-pVDZ')
 
     >>> # [3] DTQ-zeta extrapolated scf reference energy
-    >>> energy(cbs, scf_wfn='scf', scf_basis='cc-pV[DTQ]Z', scf_scheme=scf_xtpl_helgaker_3)
+    >>> energy('cbs', scf_wfn='scf', scf_basis='cc-pV[DTQ]Z', scf_scheme='scf_xtpl_helgaker_3')
 
     >>> # [4] DT-zeta extrapolated mp2 correlation energy atop a T-zeta reference
-    >>> energy(cbs, corl_wfn='mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+    >>> energy('cbs', corl_wfn='mp2', corl_basis='cc-pv[dt]z', corl_scheme='corl_xtpl_helgaker_2')
 
     >>> # [5] a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference (both equivalent)
-    >>> energy(cbs, corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z')
-    >>> energy(cbs, corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
+    >>> energy('cbs', corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z')
+    >>> energy('cbs', corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme='corl_xtpl_helgaker_2', delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme='corl_xtpl_helgaker_2')
 
     >>> # [6] a D-zeta ccsd(t) correction atop a DT-zeta extrapolated ccsd cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
-    >>> energy(cbs, corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
+    >>> energy('cbs', corl_wfn='mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme='corl_xtpl_helgaker_2', delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
 
     >>> # [7] a Q5-zeta MP2 calculation, corrected by CCSD(T) at the TQ-zeta extrapolated level, and all-electron CCSD(T) correlation at T-zeta level
     >>> energy(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pv5z"}, {"wfn": "mp2", "basis": "cc-pv[q5]z"}, {"wfn": "ccsd(t)", "basis": "cc-pv[tq]z"}, {"wfn": "ccsd(t)", "basis": "cc-pvtz", "options": {"freeze_core": "False"}}])
 
     >>> # [8] cbs() coupled with database()
-    >>> TODO database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
+    >>> TODO database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme='corl_xtpl_helgaker_2', delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
     >>> # [9] cbs() coupled with optimize()
-    >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme=corl_xtpl_helgaker_2, func=cbs)
+    >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme='corl_xtpl_helgaker_2', func=cbs)
 
     """
-    kwargs = p4util.kwargs_lower(kwargs)
-    metadata = _process_cbs_kwargs(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
-    verbose = kwargs.pop('verbose', 0)
-    ptype = kwargs.pop('ptype')
-
-    if ptype not in ['energy', 'gradient', 'hessian']:
-        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
-                                 function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
-
-    optstash = p4util.OptionsState(['BASIS'], ['WFN'], ['WRITER_FILE_LABEL'])
-
-    # Define some quantum chemical knowledge, namely what methods are subsumed in others
-
-    user_writer_file_label = core.get_global_option('WRITER_FILE_LABEL')
-
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
-    natom = molecule.natom()
-
-    if metadata[0]["wfn"] not in VARH.keys():
-        raise ValidationError(
-            """Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-            (metadata[0]["wfn"]))
-
-    if len(metadata) > 1:
-        for delta in metadata[1:]:
-            if delta["wfn"] not in VARH.keys():
-                raise ValidationError(
-                    """Requested higher %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-                    (delta["treatment"], delta["wfn"]))
-            if delta["wfn_lo"] not in VARH.keys():
-                raise ValidationError(
-                    """Requested lesser %s method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" %
-                    (delta["treatment"], delta["wfn_lo"]))
-
-    # Build string of title banner
-    instructions = "\n" + p4util.banner(f" CBS Setup{':' + label if label else ''} ", strNotOutfile=True) + "\n"
-    core.print_out(instructions)
-
-    # Call schemes for each portion of total energy to 'place orders' for calculations needed
-    d_fields = [
-        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_alpha'
-    ]
-    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
-    GRAND_NEED = []
-    MODELCHEM = []
-
-    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
-                                 metadata[0]["wfn"], metadata[0]["options"], natom)
-    GRAND_NEED.append(
-        dict(
-            zip(d_fields, [
-                'scf', metadata[0]["scheme"],
-                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], NEED, +1, 0.0, None, None,
-                metadata[0]["alpha"]
-            ])))
-    if len(metadata) > 1:
-        for delta in metadata[1:]:
-            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
-                                         delta["options"], natom)
-            GRAND_NEED.append(
-                dict(
-                    zip(d_fields, [
-                        delta["stage"], delta["scheme"],
-                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], NEED, +1, 0.0, None, None,
-                        delta["alpha"]
-                    ])))
-            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
-                                         delta["options_lo"], natom)
-            GRAND_NEED.append(
-                dict(
-                    zip(d_fields, [
-                        delta["stage"], delta["scheme"],
-                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], NEED, -1, 0.0, None, None,
-                        delta["alpha"]
-                    ])))
-
-    for stage in GRAND_NEED:
-        for lvl in stage['d_need'].items():
-            MODELCHEM.append(lvl[1])
-
-    # Apply chemical reasoning to choose the minimum computations to run
-    JOBS = MODELCHEM[:]
-
-    addlremark = {'energy': '', 'gradient': ', GRADIENT', 'hessian': ', HESSIAN'}
-    instructions = ''
-    instructions += """    Naive listing of computations required.\n"""
-    for mc in JOBS:
-        instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
-
-    #     Remove duplicate modelchem portion listings
-    for mc in MODELCHEM:
-        dups = -1
-        for indx_job, job in enumerate(JOBS):
-            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
-               (job['f_options'] == mc['f_options']):
-                dups += 1
-                if dups >= 1:
-                    del JOBS[indx_job]
-
-    #     Remove chemically subsumed modelchem portion listings
-    if ptype == 'energy':
-        for mc in MODELCHEM:
-            for wfn in VARH[mc['f_wfn']]:
-                for indx_job, job in enumerate(JOBS):
-                    if (VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']]) and \
-                       (mc['f_basis'] == job['f_basis']) and not \
-                       (mc['f_wfn'] == job['f_wfn']) and \
-                       (not mc['f_options']):
-                        del JOBS[indx_job]
-
-    instructions += """\n    Enlightened listing of computations required.\n"""
-    for mc in JOBS:
-        instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
-
-    #     Expand listings to all that will be obtained
-    JOBS_EXT = []
-    for job in JOBS:
-        for wfn in VARH[job['f_wfn']]:
-            JOBS_EXT.append(
-                dict(
-                    zip(f_fields, [
-                        wfn, job['f_basis'], job['f_zeta'], 0.0,
-                        core.Matrix(natom, 3),
-                        core.Matrix(3 * natom, 3 * natom), job['f_options']
-                    ])))
-
-    instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
-    for mc in JOBS_EXT:
-        instructions += """   %12s / %-24s for  %s%s\n""" % \
-            (mc['f_wfn'], mc['f_basis'] + " + options"*bool(mc['f_options']),
-             VARH[mc['f_wfn']][mc['f_wfn']], addlremark[ptype])
-    core.print_out(instructions)
-
-    psioh = core.IOManager.shared_object()
-    psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
-    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
-    #   needs to be communicated to optimize() so reset by that optstash
-    core.set_local_option('SCF', 'GUESS_PERSIST', True)
-
-    Njobs = 0
-    # Run necessary computations
-    for mc in JOBS:
-        kwargs['name'] = mc['f_wfn']
-
-        # Build string of title banner
-        cbsbanners = ''
-        cbsbanners += """core.print_out('\\n')\n"""
-        cbsbanners += """p4util.banner(' CBS Computation: %s / %s%s ')\n""" % \
-            (mc['f_wfn'].upper(), mc['f_basis'].upper() + " + opts."*bool(mc['f_options']), addlremark[ptype])
-        cbsbanners += """core.print_out('\\n')\n\n"""
-        exec(cbsbanners)
-
-        # Build string of molecule and commands that are dependent on the database
-        commands = '\n'
-        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
-        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
-            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower().replace('*', 's'))
-        exec(commands)
-
-        # Stash and set options if any
-        if mc["f_options"]:
-            optionstash = p4util.OptionsState(*[[opt] for opt in list(mc["f_options"])])
-            for k, v, in mc["f_options"].items():
-                core.set_global_option(k.upper(), v)
-        else:
-            optionstash = False
-
-        # Make energy(), etc. call
-        response = func(molecule=molecule, **kwargs)
-        if ptype == 'energy':
-            mc['f_energy'] = response
-        elif ptype == 'gradient':
-            mc['f_gradient'] = response
-            mc['f_energy'] = core.variable('CURRENT ENERGY')
-            if verbose > 1:
-                mc['f_gradient'].print_out()
-        elif ptype == 'hessian':
-            mc['f_hessian'] = response
-            mc['f_energy'] = core.variable('CURRENT ENERGY')
-            if verbose > 1:
-                mc['f_hessian'].print_out()
-        Njobs += 1
-        if verbose > 1:
-            core.print_out("\nCURRENT ENERGY: %14.16f\n" % mc['f_energy'])
-
-        # Restore modified options
-        if optionstash:
-            optionstash.restore()
-
-        # Fill in energies for subsumed methods
-        if ptype == 'energy':
-            for wfn in VARH[mc['f_wfn']]:
-                for job in JOBS_EXT:
-                    if (wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
-                       (mc['f_options'] == job['f_options']):
-                        job['f_energy'] = core.variable(VARH[wfn][wfn])
-
-        if verbose > 1:
-            core.print_variables()
-        core.clean_variables()
-        core.clean()
-
-        # Copy data from 'run' to 'obtained' table
-        for mce in JOBS_EXT:
-            if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
-               (mc['f_options'] == mce['f_options']):
-                mce['f_energy'] = mc['f_energy']
-                mce['f_gradient'] = mc['f_gradient']
-                mce['f_hessian'] = mc['f_hessian']
-
-    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
-
-    # Build string of title banner
-    instructions = "\n" + p4util.banner(f" CBS Results{':' + label if label else ''} ", strNotOutfile=True) + "\n"
-    core.print_out(instructions)
+    pass
 
 
-    # Insert obtained energies into the array that stores the cbs stages
-    for stage in GRAND_NEED:
-        for lvl in stage['d_need'].items():
-            MODELCHEM.append(lvl[1])
+##  Aliases  ##
+complete_basis_set = cbs
 
-            for job in JOBS_EXT:
-                # Dont ask
-                if (((lvl[1]['f_wfn'] == job['f_wfn']) or
-                     ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
-                     ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
-                     (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn'])))
-                        and (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_options'] == job['f_options'])):
-                    lvl[1]['f_energy'] = job['f_energy']
-                    lvl[1]['f_gradient'] = job['f_gradient']
-                    lvl[1]['f_hessian'] = job['f_hessian']
+######### OUTSOURCE
+######### PARSE / PREPARE
+######### PREPARE / COMPUTE
 
-    # Make xtpl() call
-    finalenergy = 0.0
-    finalgradient = core.Matrix(natom, 3)
-    finalhessian = core.Matrix(3 * natom, 3 * natom)
-
-    for stage in GRAND_NEED:
-        hiloargs = {'alpha': stage['d_alpha']}
-
-        hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
-        stage['d_energy'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
-        finalenergy += stage['d_energy'] * stage['d_coef']
-
-        if ptype == 'gradient':
-            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
-            stage['d_gradient'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
-            work = stage['d_gradient'].clone()
-            work.scale(stage['d_coef'])
-            finalgradient.add(work)
-
-        elif ptype == 'hessian':
-            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
-            stage['d_hessian'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
-            work = stage['d_hessian'].clone()
-            work.scale(stage['d_coef'])
-            finalhessian.add(work)
-
-    # Build string of results table
-    table_delimit = '  ' + '-' * 105 + '\n'
-    tables = ''
-    tables += """\n   ==> %s <==\n\n""" % ('Components')
-    tables += table_delimit
-    tables += """     %6s %20s %1s %-26s %3s %16s   %-s\n""" % ('', 'Method', '/', 'Basis', 'Rqd', 'Energy [Eh]',
-                                                                'Variable')
-    tables += table_delimit
-    for job in JOBS_EXT:
-        star = ''
-        for mc in MODELCHEM:
-            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']):
-                star = '*'
-        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
-            '', job['f_wfn'], '/', job['f_basis'] + " + options" * bool(job['f_options']), star, job['f_energy'],
-            VARH[job['f_wfn']][job['f_wfn']])
-    tables += table_delimit
-
-    tables += """\n   ==> %s <==\n\n""" % ('Stages')
-    tables += table_delimit
-    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [Eh]',
-                                                                'Scheme')
-    tables += table_delimit
-    for stage in GRAND_NEED:
-        tables += """     %6s %20s %1s %-27s %2d %16.8f   %-s\n""" % (stage['d_stage'], stage['d_wfn'], '/',
-                                                                      stage['d_basis'], stage['d_coef'],
-                                                                      stage['d_energy'], stage['d_scheme'])
-    tables += table_delimit
-
-    tables += """\n   ==> %s <==\n\n""" % ('CBS')
-    tables += table_delimit
-    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]',
-                                                                'Scheme')
-    tables += table_delimit
-    tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
-        GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'], '/', GRAND_NEED[0]['d_basis'], '', GRAND_NEED[0]['d_energy'],
-        GRAND_NEED[0]['d_scheme'])
-    if len(metadata) > 1:
-        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
-            GRAND_NEED[1]['d_stage'], GRAND_NEED[1]['d_wfn'], '/', GRAND_NEED[1]['d_basis'], '',
-            GRAND_NEED[1]['d_energy'] - GRAND_NEED[2]['d_energy'], GRAND_NEED[1]['d_scheme'])
-    if len(metadata) > 2:
-        dc = 3
-        for delta in metadata[2:]:
-            deltaE_total = GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy']
-            tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
-                GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc + 1]['d_wfn'], '/',
-                GRAND_NEED[dc]['d_basis'], '', deltaE_total,
-                GRAND_NEED[dc]['d_scheme'])
-            core.set_variable(f"CBS {GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", deltaE_total)
-            dc += 2
-
-    tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
-    tables += table_delimit
-
-    core.print_out(tables)
-
-    core.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
-    core.set_variable('CBS CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
-    core.set_variable('CBS TOTAL ENERGY', finalenergy)
-    core.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
-    core.set_variable('CURRENT CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
-    core.set_variable('CURRENT ENERGY', finalenergy)
-    core.set_variable('CBS NUMBER', Njobs)
-
-    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    basis = core.BasisSet.build(molecule, "ORBITAL", 'def2-svp')
-    wfn = core.Wavefunction(molecule, basis)
-
-    optstash.restore()
-
-    if ptype == 'energy':
-        finalquantity = finalenergy
-    elif ptype == 'gradient':
-        finalquantity = finalgradient
-        wfn.set_gradient(finalquantity)
-        if finalquantity.rows(0) < 20:
-            core.print_out('CURRENT GRADIENT')
-            finalquantity.print_out()
-    elif ptype == 'hessian':
-        finalquantity = finalhessian
-        wfn.set_gradient(finalgradient)
-        wfn.set_hessian(finalquantity)
-        if finalquantity.rows(0) < 20:
-            core.print_out('CURRENT HESSIAN')
-            finalquantity.print_out()
-
-    if return_wfn:
-        return (finalquantity, wfn)
-    else:
-        return finalquantity
+#    #psioh = core.IOManager.shared_object()
+#    #psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
+#    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
+#    #   needs to be communicated to optimize() so reset by that optstash
+#    core.set_local_option('SCF', 'GUESS_PERSIST', True)
+#
+#    # Run necessary computations
+#    for mc in JOBS:
+#        kwargs['name'] = mc['f_wfn']
+#
+#        # Build string of molecule and commands that are dependent on the database
+#        commands = '\n'
+#        commands += """\ncore.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
+#        commands += """core.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+#            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
+#        exec(commands)
+#
+#    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
 
 
-######### COMPUTE / ASSEMBLE
-######### ASSEMBLE / REPORT
-
-
-def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom):
+def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options):
     """Check that the length of *basiszeta* array matches the implied degree of
     extrapolation in *scheme* name. Return a dictionary of same length as
     basiszeta, with *basisname* and *basiszeta* distributed therein.
@@ -1275,15 +952,10 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, natom)
     if int(scheme.split("_")[-1]) != Nxtpl:
         raise ValidationError(f"""Call to '{scheme}' not valid with '{len(basiszeta)}' basis sets.""")
 
-    f_fields = ['f_wfn', 'f_basis', 'f_zeta', 'f_energy', 'f_gradient', 'f_hessian', 'f_options']
     NEED = {}
     for idx in range(Nxtpl):
         NEED[_lmh_labels[Nxtpl][idx]] = dict(
-            zip(f_fields, [
-                wfnname, basisname[idx], basiszeta[idx], 0.0,
-                core.Matrix(natom, 3),
-                core.Matrix(3 * natom, 3 * natom), options
-            ]))
+            zip(_f_fields, [wfnname, basisname[idx], basiszeta[idx], options, 0.0, None, None, None, None]))
     return NEED
 
 
@@ -1307,37 +979,29 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
     return largs
 
 
-##  Aliases  ##
-complete_basis_set = cbs
-
-
-def _cbs_wrapper_methods(**kwargs):
-    """ A helper function for the driver to enumerate methods used in the
-    stages of a cbs calculation.
-
-    Parameters
-    ----------
-    kwargs : dict
-        kwargs containing cbs specification either in the ``cbs_metadata``
-        format, or in separate keywords (``scf_wfn``, ``corl_wfn`` etc.).
-
-    Returns
-    -------
-    list
-        List containing method name for each active stage.
-    """
-
-    cbs_methods = []
-    if "cbs_metadata" in kwargs:
-        for item in kwargs["cbs_metadata"]:
-            cbs_methods.append(item.get("wfn"))
-    else:
-        cbs_method_kwargs = ['scf_wfn', 'corl_wfn', 'delta_wfn']
-        cbs_method_kwargs += [f'delta{x}_wfn' for x in range(2, 6)]
-        for method in cbs_method_kwargs:
-            if method in kwargs:
-                cbs_methods.append(kwargs[method])
-    return cbs_methods
+#def _cbs_wrapper_methods(**kwargs):
+#    """ A helper function for the driver to enumerate methods used in the
+#    stages of a cbs calculation.
+#
+#    Parameters
+#    ----------
+#    kwargs : dict
+#        kwargs containing cbs specification either in the ``cbs_metadata``
+#        format, or in separate keywords (``scf_wfn``, ``corl_wfn`` etc.).
+#
+#    Returns
+#    -------
+#    list
+#        List containing method name for each active stage.
+#    """
+#
+#    if "cbs_metadata" in kwargs:
+#        return [stage["wfn"] for stage in kwargs["cbs_metadata"]]
+#
+#    else:
+#        cbs_method_stages = ['scf_wfn', 'corl_wfn', 'delta_wfn']
+#        cbs_method_stages += [f'delta{x}_wfn' for x in range(2, 6)]
+#        return [kwargs[mtd] for mtd in cbs_method_stages if mtd in kwargs]
 
 
 def _parse_cbs_gufunc_string(method_name):
@@ -1385,7 +1049,7 @@ def _parse_cbs_gufunc_string(method_name):
     return method_list, basis_list
 
 
-def _cbs_gufunc(func, total_method_name, **kwargs):
+def _cbs_text_parser(total_method_name, **kwargs):
     """
     A text based parser of the CBS method string. Provided to handle "method/basis"
     specification of the requested calculations. Also handles "simple" (i.e.
@@ -1393,8 +1057,6 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
     Parameters
     ----------
-    func : function
-        Function to be called (energy, gradient, frequency or cbs).
     total_method_name : str
         String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
         bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
@@ -1403,22 +1065,12 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
     Returns
     -------
-    tuple or float
-        Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
+    dict of updated CBS keyword arguments
     """
 
-    # Catch kwarg issues for all methods
-    kwargs = p4util.kwargs_lower(kwargs)
-    return_wfn = kwargs.pop('return_wfn', False)
-    core.clean_variables()
     ptype = kwargs.pop('ptype', None)
 
-    # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    molecule.update_geometry()
-
     # Sanitize total_method_name
-    label = total_method_name
     total_method_name = total_method_name.lower()
     total_method_name = total_method_name.replace(' ', '')
 
@@ -1434,22 +1086,13 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         method_name = method_list[0]
         basis = basis_list[0]
 
-        # Save some global variables so we can reset them later
-        optstash = p4util.OptionsState(['BASIS'])
-        core.set_global_option('BASIS', basis)
-        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
-        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
-            core.clean()
-        optstash.restore()
-
-        if return_wfn:
-            return (ptype_value, wfn)
-        else:
-            return ptype_value
+        return {'method': method_name, 'basis': basis}
 
     # Drop out for unsupported calls
-    if ptype not in ["energy", "gradient", "hessian"]:
-        raise ValidationError("%s: Cannot extrapolate or delta correct %s yet." % (ptype.title(), ptype))
+    if ptype is None:
+        raise ValidationError("A CBS call was detected, but no ptype was passed in. Please alert a dev.")
+    elif ptype not in ["energy", "gradient", "hessian"]:
+        raise ValidationError(f"{ptype.title()}: Cannot extrapolate or delta correct {ptype} yet.")
 
     # Catch kwarg issues for CBS methods only
     user_dertype = kwargs.pop('dertype', None)
@@ -1458,8 +1101,6 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     # If we are not a single call, let CBS wrapper handle it!
     cbs_kwargs = {}
     cbs_kwargs['ptype'] = ptype
-    cbs_kwargs['return_wfn'] = True
-    cbs_kwargs['molecule'] = molecule
     cbs_kwargs['verbose'] = cbs_verbose
 
     if user_dertype is not None:
@@ -1497,11 +1138,633 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         stage['stage'] = "delta1"
         stage['treatment'] = "corl"
         metadata.append(stage)
-        
-    cbs_kwargs["cbs_metadata"] = metadata
-    ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 
-    if return_wfn:
-        return (ptype_value, wfn)
-    else:
-        return ptype_value
+    cbs_kwargs["cbs_metadata"] = metadata
+
+    return cbs_kwargs
+
+
+#def cbs_gufunc(func, total_method_name, **kwargs):
+#    """
+#    A text based wrapper of the CBS function. Provided to handle "method/basis"
+#    specification of the requested calculations. Also handles "simple" (i.e.
+#    one-method and one-basis) calls.
+#
+#    Parameters
+#    ----------
+#    func : function
+#        Function to be called (energy, gradient, frequency or cbs).
+#    total_method_name : str
+#        String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
+#        bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
+#        ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
+#        and pushed through :py:func:`~psi4.cbs`.
+#
+#    Returns
+#    -------
+#    tuple or float
+#        Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
+#
+#    """
+#
+#    # Catch kwarg issues for all methods
+#    kwargs = p4util.kwargs_lower(kwargs)
+#    return_wfn = kwargs.pop('return_wfn', False)
+#    core.clean_variables()
+#
+#    # Make sure the molecule the user provided is the active one
+#    molecule = kwargs.pop('molecule', core.get_active_molecule())
+#    molecule.update_geometry()
+#
+#    cbs_kwargs = _cbs_text_parser(total_method_name, **kwargs)
+#    cbs_kwargs['molecule'] = molecule
+#    cbs_kwargs['return_wfn'] = True
+#
+#    if 'cbs_metadata' not in cbs_kwargs:
+#        # Single call
+#        method_name = cbs_kwargs['method']
+#        basis = cbs_kwargs['basis']
+#
+#        # Save some global variables so we can reset them later
+#        optstash = p4util.OptionsState(['BASIS'])
+#        core.set_global_option('BASIS', basis)
+#        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
+#        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
+#           core.clean()
+#
+#        optstash.restore()
+#
+#    else:
+#        ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs)
+#
+#    if return_wfn:
+#        return (ptype_value, wfn)
+#    else:
+#        return ptype_value
+
+
+def _build_cbs_compute(metameta, metadata):
+    label = metameta['label']
+    ptype = metameta['ptype']
+    verbose = metameta['verbose']
+
+    # Build string of title banner
+    instructions = "\n" + p4util.banner(f" CBS Setup{':' + label if label else ''} ", strNotOutfile=True) + "\n"
+
+    # Call schemes for each portion of total energy to 'place orders' for calculations needed
+    d_fields = [
+        'd_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_alpha', 'd_need', 'd_coef', 'd_energy', 'd_gradient', 'd_hessian', 'd_dipole', 'd_dipder'
+    ]
+    GRAND_NEED = []
+
+    NEED = _expand_scheme_orders(metadata[0]["scheme"], metadata[0]["basis"][0], metadata[0]["basis"][1],
+                                 metadata[0]["wfn"], metadata[0]["options"])
+    GRAND_NEED.append(
+        dict(
+            zip(d_fields, [
+                'scf', metadata[0]["scheme"],
+                _contract_bracketed_basis(metadata[0]["basis"][0]), metadata[0]["wfn"], metadata[0]["alpha"], NEED, +1,
+                0.0, None, None, None, None
+            ])))
+    if len(metadata) > 1:
+        for delta in metadata[1:]:
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis"][0], delta["basis"][1], delta["wfn"],
+                                         delta["options"])
+            GRAND_NEED.append(
+                dict(
+                    zip(d_fields, [
+                        delta["stage"], delta["scheme"],
+                        _contract_bracketed_basis(delta["basis"][0]), delta["wfn"], delta["alpha"], NEED, +1, 0.0,
+                        None, None, None, None
+                    ])))
+            NEED = _expand_scheme_orders(delta["scheme"], delta["basis_lo"][0], delta["basis_lo"][1], delta["wfn_lo"],
+                                         delta["options_lo"])
+            GRAND_NEED.append(
+                dict(
+                    zip(d_fields, [
+                        delta["stage"], delta["scheme"],
+                        _contract_bracketed_basis(delta["basis_lo"][0]), delta["wfn_lo"], delta["alpha"], NEED, -1,
+                        0.0, None, None, None, None
+                    ])))
+
+    # MODELCHEM is unordered, possibly redundant list of single result *entries* needed to satisfy full CBS
+    # JOBS is subset of MODELCHEM with minimal list of single result *jobs* needed to satisfy full CBS
+    # TROVE is superset of JOBS with maximal list of single result *entries* resulting from JOBS
+    # "entry" here is a mtd-bas-opt spec that can support E/G/H data
+    # "job" here is an entry on which to sic Psi4 that, through VARH, may fill in multiple entries
+
+    MODELCHEM = []
+    for stage in GRAND_NEED:
+        for lvl in stage['d_need'].values():
+            MODELCHEM.append(lvl)
+
+    # Apply chemical reasoning to choose the minimum computations to run
+    JOBS = MODELCHEM[:]
+    listfmt = """   {:>12} / {:24} for  {}{}\n"""
+
+    #     Remove duplicate modelchem portion listings
+    for mc in MODELCHEM:
+        dups = -1
+        for indx_job, job in enumerate(JOBS):
+            #print('')
+            #print(job['f_wfn'], mc['f_wfn'], job['f_wfn'] == mc['f_wfn'])
+            #print(job['f_basis'], mc['f_basis'], job['f_basis'] == mc['f_basis'])
+            #print(job['f_options'], mc['f_options'], job['f_options'] == mc['f_options'],
+            #      job['f_options'] is not False)
+            if ((job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis'])
+                    and (job['f_options'] == mc['f_options'])):  # and (job['f_options'] is not False)):
+                # TODO: I don't understand why I need this change
+                dups += 1
+                if dups >= 1:
+                    del JOBS[indx_job]
+
+    instructions += """    Naive listing of computations required.\n"""
+    for mc in JOBS:
+        instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
+                                       VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
+
+    #     Remove chemically subsumed modelchem portion listings
+    if ptype == 'energy':
+        for mc in MODELCHEM:
+            for wfn in VARH[mc['f_wfn']]:
+                for indx_job, job in enumerate(JOBS):
+                    if ((VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']])
+                            and (mc['f_basis'] == job['f_basis'])
+                            and not (mc['f_wfn'] == job['f_wfn'])  # and (mc['f_options'] is False)):
+                            and (mc['f_options'] == job['f_options'])):
+                        # TODO: I don't understand why I need this change
+                        del JOBS[indx_job]
+
+    instructions += """\n    Enlightened listing of computations required.\n"""
+    for mc in JOBS:
+        instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
+                                       VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
+
+    #     Expand listings to all that will be obtained
+    TROVE = []
+    for job in JOBS:
+        for wfn in VARH[job['f_wfn']]:
+            TROVE.append(dict(zip(_f_fields, [wfn, job['f_basis'], job['f_zeta'], job['f_options'], 0.0, None, None, None, None])))
+
+    instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
+    for mc in TROVE:
+        instructions += listfmt.format(mc['f_wfn'], mc['f_basis'] + " + options" * bool(mc['f_options']),
+                                       VARH[mc['f_wfn']][mc['f_wfn']], _addlremark[ptype])
+    if verbose:
+        core.print_out(instructions)
+        logger.info(instructions)
+
+    return GRAND_NEED, JOBS, TROVE
+
+
+def _assemble_cbs_components(metameta, TROVE, GRAND_NEED):
+    """Absorb job E/G/H results from `TROVE` into `GRAND_NEED`. Process
+    those into stage E/G/H in `GRAND_NEED`, returning the latter.
+    Accumulate into final E/G/H quantities, returning them in dict.
+
+    """
+    label = metameta['label']
+    nat = metameta['molecule'].natom()
+    ptype = metameta['ptype']
+    verbose = metameta['verbose']
+
+    # Build string of title banner
+    instructions = "\n" + p4util.banner(f" CBS Results{':' + label if label else ''} ", strNotOutfile=True) + "\n"
+    core.print_out(instructions)
+    logger.info(instructions)
+
+    # Insert obtained energies into the array that stores the cbs stages
+    for stage in GRAND_NEED:
+        for lvl in stage['d_need'].values():
+            for job in TROVE:
+                # Don't ask
+                if (((lvl['f_wfn'] == job['f_wfn']) or
+                     ((lvl['f_wfn'][3:] == job['f_wfn']) and lvl['f_wfn'].startswith('c4-')) or
+                     ((lvl['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
+                     (('c4-' + lvl['f_wfn']) == job['f_wfn']) or (lvl['f_wfn'] == ('c4-' + job['f_wfn'])))
+                        and (lvl['f_basis'] == job['f_basis']) and (lvl['f_options'] == job['f_options'])):
+                    lvl['f_energy'] = job['f_energy']
+                    lvl['f_gradient'] = job['f_gradient']
+                    lvl['f_hessian'] = job['f_hessian']
+                    lvl['f_dipole'] = job['f_dipole']
+                    lvl['f_dipder'] = job['f_dipder']
+
+    # Make xtpl() call
+    finalenergy = 0.0
+    finalgradient = None
+    finalhessian = None
+    finaldipole = None
+    finaldipder = None
+
+    for stage in GRAND_NEED:
+        hiloargs = {'alpha': stage['d_alpha'], 'verbose': verbose}
+
+        grad_available = all([lmh['f_gradient'] is not None for lmh in stage['d_need'].values()])
+        hess_available = all([lmh['f_hessian'] is not None for lmh in stage['d_need'].values()])
+        dipole_available = all([lmh['f_dipole'] is not None for lmh in stage['d_need'].values()])
+        dipder_available = all([lmh['f_dipder'] is not None for lmh in stage['d_need'].values()])
+
+        hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_energy'))
+        stage['d_energy'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
+        finalenergy += stage['d_energy'] * stage['d_coef']
+
+        if ptype == 'gradient' or grad_available:
+            if finalgradient is None:
+                finalgradient = np.zeros((nat, 3))
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_gradient'))
+            stage['d_gradient'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
+            finalgradient += stage['d_gradient'] * stage['d_coef']
+
+        if ptype == 'hessian' or hess_available:
+            if finalhessian is None:
+                finalhessian = np.zeros((3 * nat, 3 * nat))
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_hessian'))
+            stage['d_hessian'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
+            finalhessian += stage['d_hessian'] * stage['d_coef']
+
+        if dipole_available:
+            if finaldipole is None:
+                finaldipole = np.zeros((3))
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_dipole'))
+            stage['d_dipole'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
+            finaldipole += stage['d_dipole'] * stage['d_coef']
+
+        if dipder_available:
+            if finaldipder is None:
+                finaldipder = np.zeros((3 * nat, 3))
+            hiloargs.update(_contract_scheme_orders(stage['d_need'], 'f_dipder'))
+            stage['d_dipder'] = xtpl_procedures[stage['d_scheme']](**hiloargs)
+            finaldipder += stage['d_dipder'] * stage['d_coef']
+
+    cbs_results = {
+        'ret_ptype': {
+            'energy': finalenergy,
+            'gradient': finalgradient,
+            'hessian': finalhessian,
+        }[ptype],
+        'energy': finalenergy,
+        'gradient': finalgradient,
+        'hessian': finalhessian,
+        'dipole': finaldipole,
+        'dipole gradient': finaldipder,
+    }
+
+    return cbs_results, GRAND_NEED
+
+
+def _summary_table(metadata, TROVE, GRAND_NEED) -> str:
+    """Build string of results table"""
+
+    delimit = '  ' + '-' * 105 + '\n'
+    blckfmt = """\n   ==> {} <==\n\n"""
+    headfmt = """     {:>6} {:>20} {:1} {:26} {:>3} {:>16}   {}\n"""
+    linefmt = """     {:>6} {:>20} {:1} {:27} {:2} {:16.8f}   {}\n"""
+
+    tables = ''
+    tables += blckfmt.format('Components')
+    tables += delimit
+
+    required = []
+    finalenergy = 0.0
+    for stage in GRAND_NEED:
+        finalenergy += stage['d_energy'] * stage['d_coef']
+        for lvl in stage['d_need'].values():
+            required.append((lvl['f_wfn'], lvl['f_basis'], lvl['f_options']))
+
+    tables += headfmt.format('', 'Method', '/', 'Basis', 'Rqd', 'Energy [Eh]', 'Variable')
+    tables += delimit
+    for job in TROVE:
+        star = ''
+        for mc in required:
+            if (job['f_wfn'], job['f_basis'], job['f_options']) == mc:
+                star = '*'
+        tables += linefmt.format('', job['f_wfn'], '/', job['f_basis'] + " + options" * bool(job['f_options']), star,
+                                 job['f_energy'], VARH[job['f_wfn']][job['f_wfn']])
+    tables += delimit
+
+    tables += blckfmt.format('Stages')
+    tables += delimit
+    tables += headfmt.format('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [Eh]', 'Scheme')
+    tables += delimit
+    for stage in GRAND_NEED:
+        tables += linefmt.format(stage['d_stage'], stage['d_wfn'], '/', stage['d_basis'], stage['d_coef'],
+                                 stage['d_energy'], stage['d_scheme'])
+    tables += delimit
+
+    tables += blckfmt.format('CBS')
+    tables += delimit
+    tables += headfmt.format('Stage', 'Method', '/', 'Basis', '', 'Energy [Eh]', 'Scheme')
+    tables += delimit
+    tables += linefmt.format(GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'], '/', GRAND_NEED[0]['d_basis'], '',
+                             GRAND_NEED[0]['d_energy'], GRAND_NEED[0]['d_scheme'])
+
+    if len(metadata) > 1:
+        dc = 1
+        for delta in metadata[1:]:
+            mtdstr = GRAND_NEED[dc]['d_wfn']
+            if dc != 1:
+                mtdstr += ' - ' + GRAND_NEED[dc + 1]['d_wfn']
+            tables += linefmt.format(GRAND_NEED[dc]['d_stage'], mtdstr, '/', GRAND_NEED[dc]['d_basis'], '',
+                                     GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy'],
+                                     GRAND_NEED[dc]['d_scheme'])
+            dc += 2
+
+    tables += linefmt.format('total', 'CBS', '', '', '', finalenergy, '')
+    tables += delimit
+
+    return tables
+
+
+class CompositeComputer(BaseComputer):
+
+    molecule: Any
+    basis: str = "(auto)"
+    method: str = "(auto)"
+    driver: DriverEnum
+    keywords: Dict[str, Any] = {}
+    metadata: Any
+    metameta: Dict[str, Any] = {}
+
+    return_wfn: bool = False
+    verbose: int = 1
+
+    # List of model chemistries with extrapolation scheme applied. Can reconstruct CBS. Keys are d_fields. Formerly GRAND_NEED.
+    cbsrec: List[Dict[str, Any]] = []
+
+    # Maximal list of model chemistries extractable from running `compute_list`. Keys are _f_fields. Formerly JOBS_EXT.
+    trove: List[Dict[str, Any]] = []
+
+    # Minimal (enlightened) list of jobs to run to satisfy full CBS. Keys are _f_fields. Formerly JOBS.
+    compute_list: List[Dict[str, Any]] = []
+
+    # One-to-One list of AtomicComputer-s corresponding to `compute_list`.
+    task_list: List[AtomicComputer] = []
+
+    # One-to-One list of QCSchema corresponding to `task_list`.
+    results_list: List[Any] = []
+
+    @pydantic.validator('molecule')
+    def set_molecule(cls, mol):
+        mol.update_geometry()
+        mol.fix_com(True)
+        mol.fix_orientation(True)
+        return mol
+
+    def __init__(self, **data):
+        data = p4util.kwargs_lower(data)
+        data["metadata"] = _process_cbs_kwargs(data)
+        BaseComputer.__init__(self, **data)
+
+        self.metameta = {
+            'kwargs': data,
+            'ptype': self.driver,
+            'verbose': self.verbose,
+            'label': None,
+            'molecule': self.molecule,
+        }
+        # logger.debug("METAMETA\n" + pp.pformat(self.metameta))
+
+        if data['metadata']:
+            if data['metadata'][0]["wfn"] not in VARH.keys():
+                raise ValidationError(
+                    """Requested SCF method '%s' is not recognized. Add it to VARH in driver_cbs.py to proceed.""" %
+                    (metadata[0]["wfn"]))
+
+            if len(self.metadata) > 1:
+                for delta in self.metadata[1:]:
+                    if delta["wfn"] not in VARH.keys():
+                        raise ValidationError(
+                            f"""Requested higher {delta["treatment"]} method '{delta["wfn"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
+                        )
+                    if delta["wfn_lo"] not in VARH.keys():
+                        raise ValidationError(
+                            f"""Requested lesser {delta["treament"]} method '{delta["wfn_lo"]}' is not recognized. Add it to VARH in driver_cbs.py to proceed."""
+                        )
+
+            self.cbsrec, self.compute_list, self.trove = _build_cbs_compute(self.metameta, self.metadata)
+
+            for job in self.compute_list:
+                keywords = copy.deepcopy(self.metameta['kwargs']['keywords'])
+                if job["f_options"] is not False:
+                    stage_keywords = dict(job["f_options"].items())
+                    keywords = {**keywords, **stage_keywords}
+                task = AtomicComputer(
+                    **{
+                        "molecule": self.molecule,
+                        "driver": self.driver,
+                        "method": job["f_wfn"],
+                        "basis": job["f_basis"],
+                        "keywords": keywords or {},
+                    })
+                self.task_list.append(task)
+
+                # logger.debug("TASK\n" + pp.pformat(task.dict()))
+
+    def build_tasks(self, obj, **kwargs):
+        # permanently a dummy function
+        pass
+
+    def plan(self):
+        return [t.plan() for t in self.task_list]
+
+    def compute(self, client=None):
+        label = self.metameta['label']
+        instructions = "\n" + p4util.banner(f" CBS Computations{':' + label if label else ''} ",
+                                            strNotOutfile=True) + "\n"
+        logger.debug(instructions)
+        core.print_out(instructions)
+
+        with p4util.hold_options_state():
+            for t in reversed(self.task_list):
+                t.compute(client=client)
+
+    def _prepare_results(self, client=None):
+        results_list = [x.get_results(client=client) for x in self.task_list]
+
+        modules = [getattr(v.provenance, "module", None) for v in results_list]
+        if self.driver != "energy" and len(set(modules)) == 2 and modules.count("scf") == len(modules) / 2:
+            # signature of "MP2 GRAD" - "HF GRAD" implementation detail
+            modules = set(modules) - set(["scf"])
+        modules = list(set(modules))
+        modules = modules[0] if len(modules) == 1 else "(mixed)"
+
+        #for x in self.task_list:
+        #    print('\nTASK')
+        #    pp.pprint(x)
+        #for x in self.results_list:
+        #    print('\nRESULT')
+        #    pp.pprint(x)
+
+        # load results_list numbers into compute_list (task_list is AtomicComputer-s)
+        for itask, mc in enumerate(self.compute_list):
+            task = results_list[itask]
+            response = task.return_result
+
+            if self.metameta['ptype'] == 'energy':
+                mc['f_energy'] = response
+
+            elif self.metameta['ptype'] == 'gradient':
+                mc['f_gradient'] = response
+                mc['f_energy'] = task.extras['qcvars']['CURRENT ENERGY']
+
+            elif self.metameta['ptype'] == 'hessian':
+                mc['f_hessian'] = response
+                mc['f_energy'] = task.extras['qcvars']['CURRENT ENERGY']
+                if 'CURRENT GRADIENT' in task.extras['qcvars']:
+                    mc['f_gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
+
+            if 'CURRENT DIPOLE' in task.extras['qcvars']:
+                mc['f_dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
+
+            if 'CURRENT DIPOLE GRADIENT' in task.extras['qcvars']:
+                mc['f_dipder'] = task.extras['qcvars']['CURRENT DIPOLE GRADIENT']
+
+            # Fill in energies for subsumed methods
+            if self.metameta['ptype'] == 'energy':
+                for wfn in VARH[mc['f_wfn']]:
+                    for job in self.trove:
+                        if ((wfn == job['f_wfn']) and (mc['f_basis'] == job['f_basis'])
+                                and (mc['f_options'] == job['f_options'])):
+                            job['f_energy'] = task.extras['qcvars'][VARH[wfn][wfn]]
+
+            # Copy data from 'run' to 'obtained' table
+            for mce in self.trove:
+                if ((mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis'])
+                        and (mc['f_options'] == mce['f_options'])):
+                    mce['f_energy'] = mc['f_energy']
+                    mce['f_gradient'] = mc['f_gradient']
+                    mce['f_hessian'] = mc['f_hessian']
+                    mce['f_dipole'] = mc['f_dipole']
+                    mce['f_dipder'] = mc['f_dipder']
+
+            # logger.debug("MC\n" + pp.pformat(mc))
+
+        cbs_results, self.cbsrec = _assemble_cbs_components(self.metameta, self.trove, self.cbsrec)
+
+        instructions = _summary_table(self.metadata, self.trove, self.cbsrec)
+        core.print_out(instructions)
+        logger.info(instructions)
+
+        # logger.debug('CBS_RESULTS\n' + pp.pformat(cbs_results))
+        # logger.debug('GRAND_NEED\n' + pp.pformat(self.cbsrec))
+
+        cbs_results["module"] = modules
+        return cbs_results
+
+    def get_results(self, client=None):
+        """Return CBS results as CBS-flavored QCSchema."""
+
+        assembled_results = self._prepare_results(client=client)
+
+        # load QCVariables
+        qcvars = {
+            'CBS NUMBER': len(self.compute_list),
+            'NUCLEAR REPULSION ENERGY': self.molecule.nuclear_repulsion_energy(),
+        }
+
+        for qcv in ['CBS', 'CURRENT']:
+            qcvars[qcv + ' REFERENCE ENERGY'] = self.cbsrec[0]['d_energy']
+            qcvars[qcv + ' CORRELATION ENERGY'] = assembled_results['energy'] - self.cbsrec[0]['d_energy']
+            qcvars[qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY'] = assembled_results['energy']
+
+        for idelta in range(int(len(self.cbsrec) / 2)):
+            if idelta == 0:
+                continue
+            dc = idelta * 2 + 1
+            qcvars[f"CBS {self.cbsrec[dc]['d_stage'].upper()} TOTAL ENERGY"] = self.cbsrec[dc]["d_energy"] - self.cbsrec[dc + 1]["d_energy"]
+
+        if np.count_nonzero(assembled_results['gradient']):
+            for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:
+                qcvars[qcv] = assembled_results['gradient']
+
+        if np.count_nonzero(assembled_results['hessian']):
+            for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
+                qcvars[qcv] = assembled_results['hessian']
+
+        if np.count_nonzero(assembled_results['dipole']):
+            for qcv in ['CURRENT DIPOLE', 'CBS DIPOLE']:
+                qcvars[qcv] = assembled_results['dipole']
+
+        if np.count_nonzero(assembled_results['dipole gradient']):
+            for qcv in ['CURRENT DIPOLE GRADIENT', 'CBS DIPOLE GRADIENT']:
+                qcvars[qcv] = assembled_results['dipole gradient']
+
+        cbsjob = AtomicResult(
+            **{
+                'driver': self.driver,
+                #'keywords': self.keywords,
+                'model': {
+                    'method': self.method,
+                    'basis': self.basis,
+                },
+                'molecule': self.molecule.to_schema(dtype=2),
+                'properties': {
+                    'calcinfo_natom': self.molecule.natom(),
+                    'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
+                    'return_energy': assembled_results['energy'],
+                },
+                'provenance': p4util.provenance_stamp(__name__, module=assembled_results["module"]),
+                'extras': {
+                    'qcvars': qcvars,
+                    'cbs_record': copy.deepcopy(self.cbsrec),
+                },
+                'return_result': assembled_results['ret_ptype'],
+                'success': True,
+            })
+
+        logger.debug('CBS QCSchema\n' + pp.pformat(cbsjob.dict()))
+
+        return cbsjob
+
+    def get_psi_results(self, return_wfn=False):
+        """Return CBS results in usual E/wfn interface."""
+
+        cbsjob = self.get_results()
+
+        if cbsjob.driver == 'energy':
+            ret_ptype = cbsjob.return_result
+        else:
+            ret_ptype = core.Matrix.from_array(cbsjob.return_result)
+        wfn = _cbs_schema_to_wfn(cbsjob)
+
+        if return_wfn:
+            return (ret_ptype, wfn)
+        else:
+            return ret_ptype
+
+
+def _cbs_schema_to_wfn(cbsjob):
+    """Helper function to keep Wavefunction dependent on CBS-flavored QCSchemus."""
+
+    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
+    mol = core.Molecule.from_schema(cbsjob.molecule.dict())
+    basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp', quiet=True)
+    wfn = core.Wavefunction(mol, basis)
+    if hasattr(cbsjob.provenance, "module"):
+        wfn.set_module(cbsjob.provenance.module)
+
+    # wfn.set_energy(cbsjob['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
+    for qcv, val in cbsjob.extras['qcvars'].items():
+        for obj in [core, wfn]:
+            obj.set_variable(qcv, val)
+
+
+#    flat_grad = cbsjob['extras']['qcvars'].get('CBS TOTAL GRADIENT')
+#    if flat_grad is not None:
+#        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
+#        wfn.set_gradient(finalgradient)
+#
+#        if finalgradient.rows(0) < 20:
+#            core.print_out('CURRENT GRADIENT')
+#            finalgradient.print_out()
+#
+#    flat_hess = cbsjob['extras']['qcvars'].get('CBS TOTAL HESSIAN')
+#    if flat_hess is not None:
+#        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
+#        wfn.set_hessian(finalhessian)
+#
+#        if finalhessian.rows(0) < 20:
+#            core.print_out('CURRENT HESSIAN')
+#            finalhessian.print_out()
+
+    return wfn

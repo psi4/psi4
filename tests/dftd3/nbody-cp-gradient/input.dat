@@ -152,7 +152,7 @@ for i in cp_scheme: #TEST
 
     for result in [
         energy_dict[i],
-        wfn.variable(i),
+        wfn.variable("1_"+i),
         wfn_mol.variable("CURRENT ENERGY"),
         variable("CURRENT ENERGY"),
     ]:
@@ -160,12 +160,12 @@ for i in cp_scheme: #TEST
 
     for result in [
         gradient_dict[i],
-        wfn.variable(f"PTYPE {i}"),
+        wfn.variable(f"GRADIENT 1_{i}"),
         wfn_mol.variable("CURRENT GRADIENT"),
         variable("CURRENT GRADIENT"),
     ]:
         compare_arrays(ref_disp[i][1], result.rms(), 8, f"Gradient RMS of {i}")  #TEST
-    compare_arrays(gradient_dict[i], wfn.variable(f'PTYPE {i}'), 8, 'Gradient of %s' %i) #TEST
+    compare_arrays(gradient_dict[i], wfn.variable(f'GRADIENT 1_{i}'), 8, 'Gradient of %s' %i) #TEST
 
 
 # recompute from pieces

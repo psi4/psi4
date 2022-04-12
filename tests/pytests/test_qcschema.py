@@ -76,7 +76,7 @@ def test_qcschema_keyword_error(result_data_fixture):
     ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
 
     assert compare_integers(False, ret.success, "Computation Status")
-    assert compare_integers(True, "unicorn" in ret.error.error_message, "Error Message")
+    assert compare_integers(True, "UNICORN" in ret.error.error_message, "Error Message")
 
 
 @pytest.mark.parametrize("input_enc, input_fn, output_enc, output_fn, ", [

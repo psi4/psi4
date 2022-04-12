@@ -27,6 +27,7 @@
  */
 
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/process.h"
 #include "defines.h"
 #include "dfocc.h"
 #include "psi4/libdiis/diismanager.h"
@@ -118,6 +119,9 @@ void DFOCC::ccsd_iterations() {
         }
 
     } while (std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
+
+    Process::environment.globals["CCSD ITERATIONS"] = itr_occ;
+    variables_["CCSD ITERATIONS"] = itr_occ;
 
     // delete
     if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
