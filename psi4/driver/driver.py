@@ -59,72 +59,6 @@ from psi4.driver.mdi_engine import mdi_run
 logger = logging.getLogger(__name__)
 
 
-def _find_derivative_type(ptype, method_name, user_dertype):
-    r"""
-    Figures out the derivative type (0, 1, 2) for a given method_name. Will
-    first use user default and then the highest available derivative type for
-    a given method.
-    """
-
-    derivatives = {"gradient": 1, "hessian": 2}
-
-    if ptype not in derivatives:
-        raise ValidationError("_find_derivative_type: ptype must either be gradient or hessian.")
-
-    dertype = "(auto)"
-
-    # If user type is None, try to find the highest derivative
-    if user_dertype is None:
-        if (ptype == 'hessian') and (method_name in procedures['hessian']):
-            dertype = 2
-            # Will need special logic if we ever have managed Hessians
-        elif method_name in procedures['gradient']:
-            dertype = 1
-            if procedures['gradient'][method_name].__name__.startswith('select_'):
-                try:
-                    procedures['gradient'][method_name](method_name, probe=True)
-                except ManagedMethodError:
-                    dertype = 0
-        elif method_name in procedures['energy']:
-            dertype = 0
-    else:
-        # Quick sanity check. Only *should* be able to be None or int, but hey, kids today...
-        if not isinstance(user_dertype, int):
-            raise ValidationError("_find_derivative_type: user_dertype should only be None or int!")
-        dertype = user_dertype
-
-    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
-        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
-
-    if (core.get_global_option('PCM')) and (dertype != 0):
-        core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
-        dertype = 0
-
-    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
-        core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
-        dertype = 0
-
-    # Summary validation
-    if (dertype == 2) and (method_name in procedures['hessian']):
-        pass
-    elif (dertype == 1) and (method_name in procedures['gradient']):
-        pass
-    elif (dertype == 0) and (method_name in procedures['energy']):
-        pass
-    else:
-        alternatives = ''
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name, procedures['energy'].keys(), 2)
-        if len(alt_method_name) > 0:
-            alternatives = """ Did you mean? %s""" % (' '.join(alt_method_name))
-
-        raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
-                              % (method_name, str(dertype), alternatives))
-
-    dertype = min(dertype, derivatives[ptype])
-
-    return dertype
-
-
 def _energy_is_invariant(gradient, stationary_criterion=1.e-2):
     """Polls options and probes `gradient` to return whether current method
     and system expected to be invariant to translations and rotations of
@@ -564,7 +498,10 @@ def energy(name, **kwargs):
     if ep is not None and not isinstance(ep, dict):
         set_external_potential(kwargs['external_potentials'])
 
-    optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
+    # only point is to trigger MissingMethodError
+    driver_util.negotiate_derivative_type('energy', lowername, None)
+
+    optstash = driver_util.negotiate_convergence_criterion((0, 0), lowername, return_optstash=True)
     optstash2 = p4util.OptionsState(['SCF', 'GUESS'])
 
     # Before invoking the procedure, we rename any file that should be read.
@@ -686,7 +623,7 @@ def gradient(name, **kwargs):
         if dertype == 1:
             return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
         else:
-            optstash = driver_util._set_convergence_criterion('energy', 'scf', 8, 10, 8, 10, 8)
+            optstash = driver_util.negotiate_convergence_criterion((1, 0), "scf", return_optstash=True)
             lowername = name
 
     elif gradient_type == 'nbody_gufunc':
@@ -694,12 +631,12 @@ def gradient(name, **kwargs):
 
     elif gradient_type == 'cbs_wrapper':
         cbs_methods = driver_cbs._cbs_wrapper_methods(**kwargs)
-        dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
+        _, dertype = min([driver_util.negotiate_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         if dertype == 1:
             # Bounce to CBS (directly) in pure-gradient mode if name is CBS and all parts have analytic grad. avail.
             return name(gradient, kwargs.pop('label', 'custom function'), ptype='gradient', **kwargs)
         else:
-            optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
+            optstash = driver_util.negotiate_convergence_criterion((1, 0), cbs_methods[0], return_optstash=True)
             lowername = name
             # Pass through to G by E
 
@@ -707,14 +644,14 @@ def gradient(name, **kwargs):
         cbs_methods = driver_cbs._parse_cbs_gufunc_string(name.lower())[0]
         for method in cbs_methods:
             _filter_renamed_methods("gradient", method)
-        dertype = min([_find_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
+        _, dertype = min([driver_util.negotiate_derivative_type('gradient', method, user_dertype) for method in cbs_methods])
         lowername = name.lower()
         if dertype == 1:
             # Bounce to CBS in pure-gradient mode if "method/basis" name and all parts have analytic grad. avail.
             return driver_cbs._cbs_gufunc(gradient, name, ptype='gradient', **kwargs)
         else:
             # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-            optstash = driver_util._set_convergence_criterion('energy', cbs_methods[0], 8, 10, 8, 10, 8)
+            optstash = driver_util.negotiate_convergence_criterion((1, 0), cbs_methods[0], return_optstash=True)
 
     else:
         # Allow specification of methods to arbitrary order
@@ -728,10 +665,10 @@ def gradient(name, **kwargs):
         if lowername in energy_only_methods:
             raise ValidationError("gradient('%s') does not have an associated gradient" % name)
 
-        dertype = _find_derivative_type('gradient', lowername, user_dertype)
+        _, dertype = driver_util.negotiate_derivative_type('gradient', lowername, user_dertype)
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-        optstash = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+        optstash = driver_util.negotiate_convergence_criterion((1, 1), lowername, return_optstash=True)
 
 
     # Commit to procedures[] call hereafter
@@ -920,6 +857,9 @@ def properties(*args, **kwargs):
     if "/" in lowername:
         return driver_cbs._cbs_gufunc(properties, lowername, ptype='properties', **kwargs)
 
+    # only point is to trigger MissingMethodError
+    driver_util.negotiate_derivative_type('properties', args[0].lower(), None)
+
     ep = kwargs.get('external_potentials', None)
     if ep is not None and not isinstance(ep, dict):
         set_external_potential(kwargs['external_potentials'])
@@ -931,7 +871,7 @@ def properties(*args, **kwargs):
         props += args[1:]
 
     kwargs['properties'] = p4util.drop_duplicates(props)
-    optstash = driver_util._set_convergence_criterion('properties', lowername, 6, 10, 6, 10, 8)
+    optstash = driver_util.negotiate_convergence_criterion(("prop", "prop"), lowername, return_optstash=True)
     logger.info(f"Compute properties(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
     logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
     wfn = procedures['properties'][lowername](lowername, **kwargs)
@@ -1553,14 +1493,14 @@ def hessian(name, **kwargs):
     if level:
         kwargs['level'] = level
 
-    dertype = _find_derivative_type('hessian', lowername, kwargs.pop('freq_dertype', kwargs.get('dertype', None)))
+    _, dertype = driver_util.negotiate_derivative_type('hessian', lowername, kwargs.pop('freq_dertype', kwargs.get('dertype', None)))
 
     # Make sure the molecule the user provided is the active one
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 8, 10, 8, 10, 8)
+    optstash_conv = driver_util.negotiate_convergence_criterion((2, 2), lowername, return_optstash=True)
 
     # Select certain irreps
     irrep = kwargs.get('irrep', -1)
@@ -1583,7 +1523,10 @@ def hessian(name, **kwargs):
         core.print_out("""hessian() using ref_gradient to assess stationary point.\n""")
         G0 = kwargs['ref_gradient']
     else:
-        G0 = gradient(lowername, molecule=molecule, **kwargs)
+        dup_kwargs = kwargs.copy()
+        if dup_kwargs.get("dertype") == 2:
+            dup_kwargs["dertype"] = 1
+        G0 = gradient(lowername, molecule=molecule, **dup_kwargs)
     translations_projection_sound, rotations_projection_sound = _energy_is_invariant(G0)
     core.print_out(
         '\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'
@@ -1669,7 +1612,7 @@ def hessian(name, **kwargs):
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
         optstash_conv.restore()
-        optstash_conv = driver_util._set_convergence_criterion('energy', lowername, 10, 11, 10, 11, 10)
+        optstash_conv = driver_util.negotiate_convergence_criterion((2, 0), lowername, return_optstash=True)
 
         # Obtain list of displacements
         findif_meta_dict = driver_findif.hessian_from_energies_geometries(molecule, irrep)
