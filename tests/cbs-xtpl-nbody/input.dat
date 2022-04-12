@@ -1,7 +1,10 @@
 #! RHF interaction energies using nbody and cbs parts of the driver
 #! Ne dimer with mp2/v[dt]z + d:ccsd(t)/vdz
 
-ans = 0.0131222  #TEST
+df_ans = 0.0131222  #TEST
+uncp_conv_ans = 0.01303175  #TEST
+cp_conv_ans = 0.01400641  #TEST
+ans = df_ans  #TEST
 
 molecule ne2 {
     0 1
@@ -19,7 +22,7 @@ set {
     reference     rhf
 }
 
-def unaug_focal(func, label, **kwargs):
+def unaug_focal(**kwargs):
 
     scf = {
         'wfn': 'hf',
@@ -37,8 +40,7 @@ def unaug_focal(func, label, **kwargs):
         'basis': kwargs.pop('delta_basis', 'cc-pVDZ'),
         'scheme': kwargs.pop('delta_scheme', 'xtpl_highest_1')
     }
-    kwargs["cbs_metadata"] = [scf, corl, delta]
-    return driver_cbs.cbs(func, label, **kwargs)
+    return [scf, corl, delta]
 
 register_composite_function(unaug_focal)
 

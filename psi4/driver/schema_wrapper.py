@@ -471,7 +471,7 @@ def run_qcschema(input_data: Union[Dict[str, Any], qcel.models.AtomicInput], cle
                                           success=False,
                                           error={
                                               'error_type': type(exc).__name__,
-                                              'error_message': ''.join(traceback.format_exception(*sys.exc_info())),
+                                              'error_message': input_data["stdout"] + ''.join(traceback.format_exception(*sys.exc_info())),
                                           })
 
     _clean_psi_output(postclean, outfile)
@@ -570,7 +570,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         molschemus = json_data["molecule"]  # dtype >=2
     else:
         molschemus = json_data  # dtype =1
-    mol = core.Molecule.from_schema(molschemus)
+    mol = core.Molecule.from_schema(molschemus, nonphysical=True)
 
     # Update molecule geometry as we orient and fix_com
     json_data["molecule"]["geometry"] = mol.geometry().np.ravel().tolist()

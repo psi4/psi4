@@ -29,14 +29,18 @@
 import math
 from functools import partial
 from typing import Callable, Optional, Union
+import logging
 
 import numpy as np
 
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
 nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)  # when safe, "from psi4.driver import nppp"
+from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.aliases import sherrill_gold_standard, allen_focal_point
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 _zeta_val2sym = {k + 2: v for k, v in enumerate('dtq5678')}
 Extrapolatable = Union[float, core.Matrix, core.Vector]
@@ -82,11 +86,11 @@ def xtpl_highest_1(functionname: str, zHI: int, valueHI: Extrapolatable, verbose
             cbsscheme += f"""   HI-zeta ({zHI}) Energy:               {valueHI: 16.12f}\n"""
 
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
         return valueHI
 
-    elif isinstance(valueHI, (core.Matrix, core.Vector)):
-        valueHI = valueHI.to_array()
+    elif isinstance(valueHI, np.ndarray):
 
         if verbose > 2:
             cbsscheme = f"""\n   ==> {functionname.upper()} <==\n\n"""
@@ -94,7 +98,6 @@ def xtpl_highest_1(functionname: str, zHI: int, valueHI: Extrapolatable, verbose
             cbsscheme += nppp(valueHI)
             core.print_out(cbsscheme)
 
-        valueHI = core.Matrix.from_array(valueHI)
         return valueHI
 
 
@@ -175,12 +178,11 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, zH
             cbsscheme += " " * (18 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % value
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
         return value
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
-        valueLO = valueLO.to_array()
-        valueHI = valueHI.to_array()
+    elif isinstance(valueLO, np.ndarray):
 
         beta = (valueHI - valueLO) * beta_division
         value = valueHI - beta * beta_mult
@@ -199,8 +201,8 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, zH
             cbsscheme += nppp(value)
             cbsscheme += "\n"
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
-        value = core.Matrix.from_array(value)
         return value
 
     else:
@@ -279,12 +281,11 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI
             cbsscheme += " " * (18 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % value
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
         return value
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
-        valueLO = valueLO.to_array()
-        valueHI = valueHI.to_array()
+    elif isinstance(valueLO, np.ndarray):
 
         beta = (valueHI - valueLO) * beta_division
         value = valueHI - beta * beta_mult
@@ -303,8 +304,8 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI
             cbsscheme += nppp(value)
             cbsscheme += "\n"
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
-        value = core.Matrix.from_array(value)
         return value
 
     else:
@@ -385,12 +386,11 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI:
             cbsscheme += " " * (18 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % value
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
         return value
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
-        valueLO = valueLO.to_array()
-        valueHI = valueHI.to_array()
+    elif isinstance(valueLO, np.ndarray):
 
         beta = (valueHI - valueLO) * beta_division
         value = valueHI - beta * beta_mult
@@ -409,8 +409,8 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI:
             cbsscheme += nppp(value)
             cbsscheme += "\n"
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
-        value = core.Matrix.from_array(value)
         return value
 
     else:
@@ -500,10 +500,11 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Extrapolatable, zM
             cbsscheme += " " * (18 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % value
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
         return value
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
+    elif isinstance(valueLO, np.ndarray):
         valueLO = np.array(valueLO)
         valueMD = np.array(valueMD)
         valueHI = np.array(valueHI)
@@ -536,6 +537,7 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Extrapolatable, zM
             cbsscheme += nppp(np_value)
             cbsscheme += "\n"
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
         ## Build and set from numpy routines
         #value = core.Matrix(*valueHI.shape)
@@ -625,12 +627,11 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, z
             cbsscheme += " " * (19 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % final
             core.print_out(cbsscheme)
+            logger.info(cbsscheme)
 
         return final
 
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
-        valueLO = np.array(valueLO)
-        valueHI = np.array(valueHI)
+    elif isinstance(valueLO, np.ndarray):
 
         value = (valueHI * zHI**alpha - valueLO * zLO**alpha) / (zHI**alpha - zLO**alpha)
         beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))
@@ -649,8 +650,8 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, z
             cbsscheme += nppp(value)
             cbsscheme += "\n"
             core.print_out(cbsscheme)
+            logger.debug(cbsscheme)
 
-        value = core.Matrix.from_array(value)
         return value
 
     else:

@@ -10,6 +10,8 @@ json_data = {
     "schema_name": "qc_schema_input",
     "schema_version": 1,
     "molecule": {
+        "schema_name": "qcschema_molecule",
+        "schema_version": 2,
         "geometry": [
             0.0,
             0.0,

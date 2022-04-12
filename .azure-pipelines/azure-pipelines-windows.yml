@@ -117,6 +117,8 @@ jobs:
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
+                        mpmath ^
+                        msgpack-python ^
                         networkx ^
                         ninja ^
                         numpy ^
@@ -222,7 +224,6 @@ jobs:
 
       # Spot Test
       - script: |
-          setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat -o stdout
         displayName: 'Run, Run, Spot, Run Test'

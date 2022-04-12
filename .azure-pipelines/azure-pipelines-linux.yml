@@ -145,6 +145,19 @@ jobs:
   - bash: |
       cd build
       source activate p4env
+      export PATH=$(Build.SourcesDirectory)/build/stage/bin:${PATH}
+      export PYTHONPATH=$(Build.SourcesDirectory)/build/stage/lib:${PYTHONPATH}
+      which conda python psi4 qcengine
+      psi4 --version
+      python -c "import psi4; print(psi4.__file__, psi4.__version__)"
+      python -c "import qcengine as qcng; print(qcng.__file__, qcng.__version__)"
+      python -c "import qcelemental as qcel; print(qcel.__file__, qcel.__version__)"
+      qcengine info
+    displayName: 'Eco Test'
+
+  - bash: |
+      cd build
+      source activate p4env
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
@@ -158,5 +171,6 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -n 2 -m 'quick' stage/lib/psi4/tests/
+      export PYTHONPATH=$(Build.SourcesDirectory)/build/stage/lib:${PYTHONPATH}
+      pytest -v -rws --durations=15 -n 2 -m 'quick' stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
