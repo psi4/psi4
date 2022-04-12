@@ -745,19 +745,18 @@ To avoid this, either set |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
 
-Composite JK
-~~~~~~~~~~~~
+Separated JK Algorithms
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes, it would make sense to build J and K matrices separately, as there are fast algorithms that exist that
+For larger computations, it may make sense to build J and K matrices separately, as there are fast algorithms that exist that
 build only the J matrix, such as integral-direct density-fitted J builds in [Weigend:2002:4285]_, or
-only the K matrix, such as the Linear Exchange (LinK) Algorithm in [Ochsenfeld:1998:1663]_. To turn on and control
-the use of separate J/K builds, here are the options that are used:
+only the K matrix, such as the Linear Exchange (LinK) Algorithm in [Ochsenfeld:1998:1663]_. In Psi4, the following
+combinations of split J/K algorithms are currently available to use:
 
-|globals__scf_type|: Set this option to COMPOSITE, if a split J/K build is desired.
-|scf__j_type|: Defaults to DIRECT_DF. The J algorithm to use in a split J/K build.
-|scf__k_type|: Defaults to LINK. The K algorithm to use in a split J/K build.
-
-Below, we will describe several of the J and K build algorithms currently available to use with Composite JK.
+DIRECT DENSITY-FITTED J + LINEAR EXCHANGE (LinK)
+    Uses an integral-direct density-fitted ERI algorithm to build the J matrix, and
+    the Linear Exchange method to build the K matrix. To use this method, set |globals__scf_type|
+    to ``DIRECT_DF_LINK``. A more detailed description of these methods are provided below.
 
 Direct Density-Fitted J
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -772,9 +771,9 @@ This algorithm is found in [Weigend:2002:4285]_, and consists of the following s
 
 .. math:: J_{\mu\nu} = \sum_{Q} \Gamma_{Q}(Q|\mu\nu)
 
-To turn on and control the direct density-fitted J algorithm, here are the list of options provided.
+To control the direct density-fitted J algorithm, here are the list of options provided.
 
-  |scf__j_type|: When set to DIRECT_DF, the algorithm is used for building J.
+  |scf__ints_tolerance|: Defaults to 1.0e-12. Use this to set the screening threshold for the three-index ERIs.
 
 LinK Exchange
 ~~~~~~~~~~~~~
@@ -787,9 +786,9 @@ LinK is especially powerful when used with incremental Fock builds (set |scf__in
 
 To turn on and control the LinK algorithm, here are the list of options provided.
 
-  |scf__k_type|: When set to LINK, LinK is used for building K.
+  |scf__ints_tolerance|: Defaults to 1.0e-12. Use this to set the ERI screening threshold.
 
-  |scf__linK_ints_tolerance|: The integral screening tolerance used for sparsity-prep in the LinK algorithm. Defaults to the |scf__ints_tolerance| option.
+  |scf__linK_ints_tolerance|: Defaults to the |scf__ints_tolerance| option. The tolerance used for density-based ERI screening in the LinK algorithm.
 
 .. index::
     single: SOSCF
