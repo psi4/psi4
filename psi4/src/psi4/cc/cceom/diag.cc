@@ -164,7 +164,9 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
 
     // Total Energy, Transition Irrep, Correlation Energy
     // We need the variables in this order for sorting purposes.
-    std::vector<std::tuple<double, int, double>> state_data;
+    // Further, initialize with ground state data.
+    // TODO: Move from moinfo to wfn vars when the wfn is sanitized. Info isn't updated properly as of Apr. '22.
+    std::vector<std::tuple<double, int, double>> state_data = {{moinfo.eref + moinfo.ecc, 0, moinfo.ecc}};
 
     outfile->Printf("Symmetry of ground state: %s\n", moinfo.irr_labs[moinfo.sym].c_str());
     // Master Loop over transition symmetries
@@ -1070,7 +1072,7 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
         short_name = "CCSD";
     }
 
-    std::map<std::string, int> irrep_counts = { {moinfo.irr_labs[moinfo.sym], 1} };
+    std::map<std::string, int> irrep_counts;
     std::sort(state_data.begin(), state_data.end());
     std::map<std::tuple<int, int>, int> state_idx_to_identifiers;
     for (int i = 0; i < state_data.size(); ++i) {
@@ -1082,12 +1084,12 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
         auto corr_energy = std::get<2>(tuple);
         auto irrep_idx = irrep_counts[target_irrep_lbl];
         const std::vector<std::string> names {"CC", short_name};
-        state_idx_to_identifiers[{irrep_idx, target_irrep}] = i + 1;
+        state_idx_to_identifiers[{irrep_idx, target_irrep}] = i;
         for (const auto& name : names) {
-            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY"] = total_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY"] = corr_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY - " + trans_irrep_lbl + " TRANSITION"] = total_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY - " + trans_irrep_lbl + " TRANSITION"] = corr_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i) + " TOTAL ENERGY"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY"] = corr_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i) + " TOTAL ENERGY - " + trans_irrep_lbl + " TRANSITION"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY - " + trans_irrep_lbl + " TRANSITION"] = corr_energy;
             Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep_lbl + ") TOTAL ENERGY"] = total_energy;
             Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep_lbl + ") CORRELATION ENERGY"] = corr_energy;
         }
