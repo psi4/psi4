@@ -176,6 +176,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
 
 
 
+@pytest.mark.nbody
 @pytest.mark.scf
 @pytest.mark.dft
 @pytest.mark.long

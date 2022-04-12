@@ -808,6 +808,8 @@ def gradient(name, **kwargs):
             wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", grad_psi_matrix)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
+        core.set_variable("FINDIF NUMBER", ndisp)
+        wfn.set_variable("FINDIF NUMBER", ndisp)
 
     optstash.restore()
 
@@ -1654,6 +1656,8 @@ def hessian(name, **kwargs):
             wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
+        core.set_variable("FINDIF NUMBER", ndisp)
+        wfn.set_variable("FINDIF NUMBER", ndisp)
 
         core.set_global_option("PARENT_SYMMETRY", "")
         optstash.restore()
@@ -1705,6 +1709,8 @@ def hessian(name, **kwargs):
             wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
+        core.set_variable("FINDIF NUMBER", ndisp)
+        wfn.set_variable("FINDIF NUMBER", ndisp)
 
         core.set_global_option("PARENT_SYMMETRY", "")
         optstash.restore()

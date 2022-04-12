@@ -562,6 +562,7 @@ def test_v2rdm_casscf():
 #    assert psi4.compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD total energy")
 
 
+@pytest.mark.nbody
 @uusing("dftd3")
 @uusing("gcp")
 def test_grimme_3c():

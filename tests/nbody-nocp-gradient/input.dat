@@ -22,6 +22,7 @@ units bohr
 
 g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='nocp', max_nbody=2,
                                       return_total_data=True, return_wfn=True)
+compare(6, wfn.variable("NBODY NUMBER"), "nbody number")  #TEST
 core.clean()
 
 nocp_scheme = {'((1, 2), (1, 2))': 1, '((1, 3), (1, 3))': 1, '((2, 3), (2, 3))': 1, #TEST

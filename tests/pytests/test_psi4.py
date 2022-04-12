@@ -82,6 +82,7 @@ def test_psi4_cas():
     assert psi4.compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')
 
 
+@pytest.mark.nbody
 @pytest.mark.smoke
 def test_psi4_dfmp2():
     """dfmp2-1"""
