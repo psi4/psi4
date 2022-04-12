@@ -3211,7 +3211,7 @@ def run_cc_property(name, **kwargs):
                     oe.set_names(set_of_names)
                     Da = ccwfn.variable(root_title + " Da")
                     oe.set_Da_so(Da)
-                    if core.get_global_option("REFERENCE") == "UHF":
+                    if not ccwfn.same_a_b_dens():
                         Db = ccwfn.variable(root_title + " Db")
                         oe.set_Db_so(Db)
                     oe.compute()
