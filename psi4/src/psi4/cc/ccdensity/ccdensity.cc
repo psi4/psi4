@@ -395,7 +395,7 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
                 auto ref_Da_so = ref_wfn->Da();
                 ref_Da_so->copy(Pa_so);
             } else {
-                array_saver_state(*ref_wfn, &(rho_params[i]), "Da", Pa_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "Da", Pa_so);
             }
         } else {
             auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa_x, ref_wfn->Ca(), false, false, true);
@@ -406,19 +406,13 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
                 ref_Da_so->copy(Pa_so);
                 ref_Db_so->copy(Pb_so);
             } else {
-                array_saver_state(*ref_wfn, &(rho_params[i]), "Da", Pa_so);
-                array_saver_state(*ref_wfn, &(rho_params[i]), "Db", Pb_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "Da", Pa_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "Db", Pb_so);
             }
         }
 
         // For psivar scraper
 
-        // Process::environment.globals["CCname ROOT n Da"]
-        // Process::environment.globals["CCname ROOT n Da - h TRANSITION"]
-        // Process::environment.globals["CCname ROOT n (h) Da"]
-        // Process::environment.globals["CCname ROOT n Db"]
-        // Process::environment.globals["CCname ROOT n Db - h TRANSITION"]
-        // Process::environment.globals["CCname ROOT n (h) Db"]
         // Process::environment.globals["CCname ROOT n DIPOLE"]
         // Process::environment.globals["CCname ROOT n DIPOLE - h TRANSITION"]
         // Process::environment.globals["CCname ROOT n (h) DIPOLE"]

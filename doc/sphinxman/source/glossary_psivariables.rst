@@ -127,20 +127,6 @@ PSI Variables by Alpha
    energy [Eh] and correlation correction components [Eh] for the compound
    method requested through cbs().
 
-.. psivar:: CCname ROOT n Da
-   CCname ROOT n (h) Da
-   CCname ROOT n Da - h TRANSITION
-
-   Alpha spin block of the density matrix the requested coupled cluster level of theory and root *n* (number starts at GS = 0).
-   Conventions for root indexing and whether h refers to transition or root irrep are as in :ref:`sec:psivarnotes`.
-
-.. psivar:: CCname ROOT n Db
-   CCname ROOT n (h) Db
-   CCname ROOT n Db - h TRANSITION
-
-   Beta spin block of the density matrix the requested coupled cluster level of theory and root *n* (number starts at GS = 0).
-   Conventions for root indexing and whether h refers to transition or root irrep are as in :ref:`sec:psivarnotes`.
-
 .. psivar:: CCname ROOT n DIPOLE
    CCname ROOT n (h) DIPOLE
    CCname ROOT n DIPOLE - h TRANSITION

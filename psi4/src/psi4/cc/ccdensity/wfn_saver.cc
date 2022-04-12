@@ -90,7 +90,7 @@ void scalar_saver_excited(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params 
     }
 }
 
-void array_saver_state(ccenergy::CCEnergyWavefunction& wfn, struct RHO_Params *S, const std::string suffix, SharedMatrix val) {
+void density_saver(ccenergy::CCEnergyWavefunction& wfn, struct RHO_Params *S, const std::string suffix, SharedMatrix val) {
     auto target_sym = moinfo.sym ^ S->R_irr;
     auto idx_num = S->R_root + static_cast<int>(S->R_irr == 0);
     auto total_idx = wfn.total_indices[{idx_num, target_sym}];
@@ -103,13 +103,19 @@ void array_saver_state(ccenergy::CCEnergyWavefunction& wfn, struct RHO_Params *S
     } else {
         throw PSIEXCEPTION("Unknown wfn type");
     }
+
+    if (suffix != "Da" and suffix != "Db") {
+        throw PSIEXCEPTION("Unknown spin type.");
+    }
+    std::map<std::string, SharedMatrix>& density_map = (suffix == "Da") ? wfn.Da_map_ : wfn.Db_map_;
+
     for (const auto name: names) {
         auto varname = name + " ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") " + suffix;
-        wfn.set_array_variable(varname, val);
+        density_map[varname] = val;
         varname = name + " ROOT " + std::to_string(total_idx) + " " + suffix;
-        wfn.set_array_variable(varname, val);
+        density_map[varname] = val;
         varname = name + " ROOT " + std::to_string(total_idx) + " " + suffix + " - " + trans_irr_lbl + " TRANSITION";
-        wfn.set_array_variable(varname, val);
+        density_map[varname] = val;
     }
 }
 

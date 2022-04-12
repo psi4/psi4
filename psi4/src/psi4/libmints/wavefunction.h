@@ -191,7 +191,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedMatrix Da_;
     /// Beta density matrix
     SharedMatrix Db_;
-
     /// Lagrangian matrix
     SharedMatrix Lagrangian_;
 
@@ -735,6 +734,17 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Get PCM object
     std::shared_ptr<PCM> get_PCM() const;
     bool PCM_enabled() const { return PCM_enabled_; }
+
+    /// The below members are experimental and are designed to hold densities when the
+    /// "current density" is ambiguous, e.g., non-orbital optimized methods and multi-
+    /// stage methods. ~ JPM - Apr. '22
+    /// This is public because `ccdensity` doesn't subclass wfn like it should, so we need
+    /// SOME way to let it get/set.
+    /// Vector of alpha density matrices
+    std::map<std::string, SharedMatrix> Da_map_;
+    /// Vector of beta density matrices
+    std::map<std::string, SharedMatrix> Db_map_;
+
 };
 
 }  // namespace psi
