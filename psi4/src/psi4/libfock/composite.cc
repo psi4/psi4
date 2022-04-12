@@ -1,14 +1,12 @@
 #include "composite.h"
-#include "jk.h"
 
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/lib3index/dftensor.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <vector>
-#include <unordered_set>
 #include <algorithm>
 #include <sstream>
 
@@ -62,8 +60,8 @@ size_t CompositeJK::memory_estimate() {
     return 0;   // only Direct-based integral algorithms are currently implemented in Composite JK
 }
 
-void CompositeJK::preiterations() {}
-void CompositeJK::postiterations() {}
+void CompositeJK::preiterations() { return; }
+void CompositeJK::postiterations() { return; }
 
 void CompositeJK::print_header() const {
     std::string screen_type = options_.get_str("SCREENING");

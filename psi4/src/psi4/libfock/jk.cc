@@ -84,7 +84,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     if (jk_type == "CD") {
-        CDJK* jk = new CDJK(primary, options.get_double("CHOLESKY_TOLERANCE"));
+        std::shared_ptr<CDJK> jk = std::make_shared<CDJK>(primary, options.get_double("CHOLESKY_TOLERANCE"));
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -96,35 +96,35 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "DISK_DF") {
-        DiskDFJK* jk = new DiskDFJK(primary, auxiliary);
-        _set_dfjk_options<DiskDFJK>(jk, options);
+        std::shared_ptr<DiskDFJK> jk = std::make_shared<DiskDFJK>(primary, auxiliary);
+        _set_dfjk_options<DiskDFJK>(jk.get(), options);
         if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "MEM_DF") {
-        MemDFJK* jk = new MemDFJK(primary, auxiliary);
+        std::shared_ptr<MemDFJK> jk = std::make_shared<MemDFJK>(primary, auxiliary);
         // TODO: re-enable after fixing all bugs
         jk->set_wcombine(false);
-        _set_dfjk_options<MemDFJK>(jk, options);
+        _set_dfjk_options<MemDFJK>(jk.get(), options);
         if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
     } else if (jk_type == "PK") {
-        PKJK* jk = new PKJK(primary, options);
+        std::shared_ptr<PKJK> jk = std::make_shared<PKJK>(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "OUT_OF_CORE") {
-        DiskJK* jk = new DiskJK(primary, options);
+        std::shared_ptr<DiskJK> jk = std::make_shared<DiskJK>(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -132,10 +132,10 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "DIRECT") {
-        DirectJK* jk = new DirectJK(primary, options);
+        std::shared_ptr<DirectJK> jk = std::make_shared<DirectJK>(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -145,7 +145,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else {
         std::stringstream message;
@@ -180,11 +180,11 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         }
 
     } else if (jk_type == "DIRECT_DF_LINK") {
-        CompositeJK* jk = new CompositeJK(primary, auxiliary, "DIRECT_DF", "LINK", options);
+        std::shared_ptr<CompositeJK> jk = std::make_shared<CompositeJK>(primary, auxiliary, "DIRECT_DF", "LINK", options);
         // Composite JK algorithms should use Incremental Fock build by default
         if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
     } else {  // otherwise it has already been set
         return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
     }
