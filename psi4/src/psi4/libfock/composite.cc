@@ -264,6 +264,7 @@ void DirectDFJ::build_G_component(const std::vector<SharedMatrix>& D, std::vecto
     }
 
     // Solve for gammaQ, (P|Q) * gammaQ = gammaP
+    // Copy is made since DGESV call uses the metric as a workspace :(
     SharedMatrix Jmet_copy = Jmet_->clone();
 
     std::vector<int> ipiv(naux);
