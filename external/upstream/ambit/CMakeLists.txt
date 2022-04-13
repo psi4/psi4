@@ -1,5 +1,5 @@
 if(${ENABLE_ambit})
-    find_package(ambit CONFIG QUIET)
+    find_package(ambit 0.6 CONFIG QUIET)
 
     if(${ambit_FOUND})
         get_property(_loc TARGET ambit::ambit PROPERTY LOCATION)
@@ -27,7 +27,8 @@ if(${ENABLE_ambit})
         ExternalProject_Add(ambit_external
             DEPENDS lapack_external
                     hdf5_external
-            URL https://github.com/jturney/ambit/archive/v0.5.1.tar.gz
+                    pybind11_external
+            URL https://github.com/jturney/ambit/archive/v0.6.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -37,6 +38,7 @@ if(${ENABLE_ambit})
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+                       -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DSTATIC_ONLY=${_a_only}
                        -DSHARED_ONLY=${_so_only}
                        -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant
@@ -46,22 +48,12 @@ if(${ENABLE_ambit})
                        -DEXTRA_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                        -DPython_EXECUTABLE=${Python_EXECUTABLE}
                        -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
-                       -DPython_LIBRARY=${Python_LIBRARIES}
-                       -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
-                       -DPYTHON_INCLUDE_DIR=${Python_INCLUDE_DIRS}
-                       -DPYTHON_LIBRARY=${Python_LIBRARIES}
-                       -DPYTHON_INTERPRETER=${Python_EXECUTABLE}
+                       -DPython_LIBRARY=${Python_LIBRARIES}                       
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
                        -DENABLE_TESTS=OFF
-                       #-DENABLE_STATIC=${ENABLE_STATIC}
-                       #-DENABLE_PSI4=ON
-                       #-DPSI4_SOURCE_DIR=${PROJECT_SOURCE_DIR}/psi4
-                       #-DPSI4_BINARY_DIR=${CMAKE_BINARY_DIR}
-                       #-DPSI4_INCLUDE_DIRS=${PYTHON_INCLUDE_DIR}
-                       #-DENABLE_CXX11_SUPPORT=ON
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
                        -DTargetHDF5_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5
