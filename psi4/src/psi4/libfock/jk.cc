@@ -203,8 +203,8 @@ SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
 }
 
 size_t JK::computed_shells() {
-    outfile->Printf("WARNING: JK::computed_shells() was called, but benchmarking is disabled for the chosen JK algorithm.\n");
-    outfile->Printf("       Returning 0 as computed_shells count.\n");
+    outfile->Printf("WARNING: JK::computed_shells() was called, but benchmarking is disabled for the chosen JK algorithm.");
+    outfile->Printf(" Returning 0 as computed_shells count.\n");
 
     return 0;
 }
