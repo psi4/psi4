@@ -158,7 +158,7 @@ def test_schwarz_vs_csam_energy():
     assert compare_values(e_schwarz, e_csam, 11, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
 
 def test_schwarz_vs_density_quartets():
-    """Checks difference between the number of shell quartets screened with Schwarz and Density screening. 
+    """Checks difference between the number of shell quartets computed with Schwarz and Density screening. 
     Default threshhold of 1.0E-12 is used"""
 
     mol = psi4.geometry("""
@@ -174,39 +174,39 @@ def test_schwarz_vs_density_quartets():
         no_com
     """)
 
-    # Run a quick SCF job to get density matrix
-    energy, wfn = psi4.energy('hf/DZ', return_wfn=True)
+    # run schwarz screening calculation
+    psi4.set_options({ 
+        "scf_type": "direct", 
+        "screening" : 'schwarz', 
+        "df_scf_guess" : False,
+        "integral_package": 'libint2', 
+        "ints_tolerance" : 1e-12, 
+        "bench" : 1 
 
-    psi4.set_options({"ints_tolerance" : 1e-12})
-    basis = wfn.basisset()
+    })
+    schwarz_energy, schwarz_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
-    factory = psi4.core.IntegralFactory(basis)
-    psi4.set_options({ "screening" : 'schwarz', 'integral_package': 'libint2' })
-    eriSchwarz = factory.eri(0)
+    # run density screening calculation
+    psi4.set_options({ 
+        "scf_type": "direct", 
+        "screening" : 'density', 
+        "df_scf_guess" : False,
+        "integral_package": 'libint2', 
+        "ints_tolerance" : 1e-12, 
+        "bench" : 1
+    })
+    density_energy, density_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
-    psi4.set_options({"screening" : 'density' })
-    eriDensity = factory.eri(0)
-    Da = [wfn.Da()]
-    # Update using the Density Matrix
-    eriDensity.update_density(Da)
+    # compare results to expected values
+    schwarz_computed_shells = schwarz_wfn.computed_shells_per_iter_
+    density_computed_shells = density_wfn.computed_shells_per_iter_
 
-    shell_inds = range(basis.nshell())
-    quartets = itertools.product(shell_inds, shell_inds, shell_inds, shell_inds)
+    schwarz_computed_shells_expected = [20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290]
+    density_computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
 
-    screen_count_schwarz = 0
-    screen_count_density = 0
-
-    for m, n, r, s in quartets:
-        screen_schwarz = not eriSchwarz.shell_significant(m, n, r, s)
-        screen_density = not eriDensity.shell_significant(m, n, r, s)
-
-        if screen_schwarz:
-            screen_count_schwarz += 1
-        if screen_density:
-            screen_count_density += 1
-    
-    assert compare_integers(screen_count_schwarz, 14504, 'Schwarz Screened Ints Count, Cutoff 1.0e-12')
-    assert compare_integers(screen_count_density, 19440, 'Density Screened Ints Count, Cutoff 1.0e-12')
+    for iter_ in range(0,9):
+        assert compare_integers(schwarz_computed_shells_expected[iter_], schwarz_computed_shells[iter_], 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
+        assert compare_integers(density_computed_shells_expected[iter_], density_computed_shells[iter_], 'Density Computed Shells Count, Cutoff 1.0e-12')
 
 def test_rhf_vs_uhf_screening():
     """Checks difference between the number of shell quartets screened with Density screening in RHF vs UHF. 
@@ -225,49 +225,41 @@ def test_rhf_vs_uhf_screening():
         no_com
     """)
 
-    psi4.set_options({ "screening" : "density",
-                       "ints_tolerance" : 1e-12, 
-                       "reference" : "rhf",
-                       "integral_package" : 'libint2'})
+    # run rhf calculation 
+    psi4.set_options({ 
+        "scf_type": "direct", 
+        "screening" : 'density', 
+        "df_scf_guess" : False,
+        "integral_package": 'libint2', 
+        "ints_tolerance" : 1e-12, 
+        "reference" : "rhf",
+        "bench" : 1 
 
-    # Run an SCF to get RHF Wavefunction
+    })
     rhf_energy, rhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
-    rhf_basis = rhf_wfn.basisset()
-    rhf_factory = psi4.core.IntegralFactory(rhf_basis)
-    eriRhf = rhf_factory.eri(0)
 
-    # Run an SCF to get UHF Wavefunction
-    psi4.set_options( { "reference" : "uhf" })
+    # run uhf calculation 
+    psi4.set_options({ 
+        "scf_type": "direct", 
+        "screening" : 'density', 
+        "df_scf_guess" : False,
+        "integral_package": 'libint2', 
+        "ints_tolerance" : 1e-12, 
+        "reference" : "uhf",
+        "bench" : 1
+
+    })
     uhf_energy, uhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
-    uhf_basis = uhf_wfn.basisset()
-    uhf_factory = psi4.core.IntegralFactory(uhf_basis)
-    eriUhf = uhf_factory.eri(0)
 
-
-    Drhf = [rhf_wfn.Da()]
-    Duhf = [uhf_wfn.Da(), uhf_wfn.Db()]
-
-    # Update using the Density Matrix
-    eriRhf.update_density(Drhf)
-    eriUhf.update_density(Duhf)
-
-    shell_inds = range(rhf_basis.nshell())
-    quartets = itertools.product(shell_inds, shell_inds, shell_inds, shell_inds)
-
-    screen_count_rhf = 0
-    screen_count_uhf = 0
-
-    for m, n, r, s in quartets:
-        screen_rhf = not eriRhf.shell_significant(m, n, r, s)
-        screen_uhf = not eriUhf.shell_significant(m, n, r, s)
-
-        if screen_rhf:
-            screen_count_rhf += 1
-        if screen_uhf:
-            screen_count_uhf += 1
+    # compare results to expected values
+    rhf_computed_shells = rhf_wfn.computed_shells_per_iter_
+    uhf_computed_shells = uhf_wfn.computed_shells_per_iter_
     
-    assert compare_integers(screen_count_rhf, 19440, 'RHF Density Screened Ints Count, Cutoff 1.0e-12')
-    assert compare_integers(screen_count_uhf, 19440, 'UHF Density Screened Ints Count, Cutoff 1.0e-12')
+    computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
+
+    for iter_ in range(0,9):
+        assert compare_integers(computed_shells_expected[iter_], rhf_computed_shells[iter_], 'RHF Density Computed Shells Count, Cutoff 1.0e-12')
+        assert compare_integers(computed_shells_expected[iter_], uhf_computed_shells[iter_], 'UHF Density Computed Shells Count, Cutoff 1.0e-12')
 
 def test_schwarz_vs_density_energy():
     """Checks difference in Hartree-Fock energy between Schwarz and Density screening (with and without IFB), 
