@@ -28,7 +28,7 @@ if(${ENABLE_ambit})
             DEPENDS lapack_external
                     hdf5_external
                     pybind11_external
-            URL https://github.com/jturney/ambit/archive/v0.6.tar.gz
+            URL https://github.com/jturney/ambit/archive/733c529.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
