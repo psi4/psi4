@@ -129,6 +129,9 @@ class HF : public Wavefunction {
     /// The value below which integrals are neglected
     double integral_threshold_;
 
+    /// list of number of shells computed each SCF iteration
+    std::vector<size_t> computed_shells_per_iter_;
+
     /// The soon to be ubiquitous JK object
     std::shared_ptr<JK> jk_;
 
@@ -251,6 +254,10 @@ class HF : public Wavefunction {
     /// MOM performed?
     bool MOM_performed() const { return MOM_performed_; }
     void set_MOM_performed(bool tf) { MOM_performed_ = tf; }
+
+    /// Get list of computed shells per SCF iteration
+    std::vector<size_t> computed_shells_per_iter() { return computed_shells_per_iter_; }
+    void set_computed_shells_per_iter(const std::vector<size_t>& cs) { computed_shells_per_iter_ = cs; }
 
     // Q: MOM_started_ was ditched b/c same info as MOM_performed_
 

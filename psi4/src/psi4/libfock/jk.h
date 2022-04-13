@@ -248,6 +248,8 @@ class PSI_API JK {
     std::vector<bool> input_symmetry_cast_map_;
     /// Use severe screening techniques? Useful in early SCF iterations (defaults to false)
     bool early_screening_;
+    /// Number of shells computed, i.e., not screened out
+    size_t computed_shells_;
 
     // => Tasks <= //
 
@@ -427,6 +429,7 @@ class PSI_API JK {
     void set_debug(int debug) { debug_ = debug; }
     /// Bench flag (defaults to 0)
     void set_bench(int bench) { bench_ = bench; }
+    int get_bench() const { return bench_; }
     /**
     * Set to do J tasks
     * @param do_J do J matrices or not,
@@ -570,6 +573,11 @@ class PSI_API JK {
      * @return D vector of D matrices
      */
     const std::vector<SharedMatrix>& D() const { return D_; }
+
+     /**
+     * Return number of shells computed during the SCF iteration
+     */
+    virtual size_t computed_shells();
 
     /**
     * Print header information regarding JK
@@ -828,6 +836,11 @@ class PSI_API DirectJK : public JK {
     // => Accessors <= //
     bool do_incfock_iter() { return do_incfock_iter_; }
     bool do_linK() { return linK_; }
+
+    /**
+     * Return number of shells computed during the SCF iteration
+     */
+    size_t computed_shells() override { return computed_shells_; }
 
     /**
     * Print header information regarding JK

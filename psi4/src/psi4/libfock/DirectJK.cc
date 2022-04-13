@@ -586,11 +586,11 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     
     // => Benchmarks <= //
 
-    size_t computed_shells = 0L;
+    computed_shells_ = 0L;
 
 // ==> Master Task Loop <== //
 
-#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
+#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells_)
     for (size_t task = 0L; task < ntask_pair2; task++) {
         size_t task1 = task / ntask_pair;
         size_t task2 = task % ntask_pair;
@@ -651,7 +651,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         // if (thread == 0) timer_on("JK: Ints");
                         if (ints[thread]->compute_shell(P, Q, R, S) == 0)
                             continue;  // No integrals in this shell quartet
-                        computed_shells++;
+                        computed_shells_++;
                         // if (thread == 0) timer_off("JK: Ints");
 
                         const double* buffer = ints[thread]->buffer();
@@ -1002,8 +1002,8 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         auto printer = PsiOutStream("bench.dat", mode);
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
-        printer.Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
-                        possible_shells, computed_shells / (double)possible_shells);
+        printer.Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells_,
+                        possible_shells, computed_shells_ / (double)possible_shells);
     }
 
     timer_off("build_JK_matrices()");
