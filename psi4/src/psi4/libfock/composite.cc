@@ -176,13 +176,6 @@ void DirectDFJ::build_G_component(const std::vector<SharedMatrix>& D, std::vecto
     // => Get significant primary shells <=
     const auto& shell_pairs = ints_[0]->shell_pairs();
 
-    std::vector<std::vector<int>> shell_partners(pri_nshell);
-    for (const auto& pair : shell_pairs) {
-        int U = pair.first;
-        int V = pair.second;
-        shell_partners[U].push_back(V);
-    }
-
     // Weigand 2002 doi: 10.1039/b204199p (Figure 1)
     // The gamma intermediates defined in Figure 1
     // gammaP = (P|uv) * Duv
@@ -265,7 +258,7 @@ void DirectDFJ::build_G_component(const std::vector<SharedMatrix>& D, std::vecto
                         Dbuff[du * num_v + dv] = Dp[u][v];
                     }
                 }
-                C_DGEMV('N', num_p, num_u * num_v, prefactor, (double *)Puv, num_u * num_v, Dbuff.data(), 1, 1.0, &(gamp[i * naux + p_start]), 1);
+                C_DGEMV('N', num_p, num_u * num_v, prefactor, Puv, num_u * num_v, Dbuff.data(), 1, 1.0, &(gamp[i * naux + p_start]), 1);
             }
         }
     }
@@ -277,69 +270,68 @@ void DirectDFJ::build_G_component(const std::vector<SharedMatrix>& D, std::vecto
     C_DGESV(naux, nmat, Jmet_copy->pointer()[0], naux, ipiv.data(), gamp, naux);
 
 #pragma omp parallel for num_threads(nthread_) schedule(dynamic)
-    for (int U = 0; U < pri_nshell; U++) {
+    for (int UVidx = 0; UVidx < shell_pairs.size(); UVidx++) {
+
+        int U = shell_pairs[UVidx].first;
+        int V = shell_pairs[UVidx].second;
 
         int u_start = primary_->shell_to_basis_function(U);
         int num_u = primary_->shell(U).nfunction();
+
+        int v_start = primary_->shell_to_basis_function(V);
+        int num_v = primary_->shell(V).nfunction();
+
+        double prefactor = 2.0;
+        if (U == V) prefactor *= 0.5;
 
         int thread = 0;
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
 
-        for (const int V : shell_partners[U]) {
+        for (int Q = 0; Q < aux_nshell; Q++) {
 
-            int v_start = primary_->shell_to_basis_function(V);
-            int num_v = primary_->shell(V).nfunction();
+            int q_start = auxiliary_->shell_to_basis_function(Q);
+            int num_q = auxiliary_->shell(Q).nfunction();
 
-            double prefactor = 2.0;
-            if (U == V) prefactor *= 0.5;
+            ints_[thread]->compute_shell(Q, 0, U, V);
 
-            for (int Q = 0; Q < aux_nshell; Q++) {
-
-                int q_start = auxiliary_->shell_to_basis_function(Q);
-                int num_q = auxiliary_->shell(Q).nfunction();
-
-                ints_[thread]->compute_shell(Q, 0, U, V);
-
-                const double* buffer = ints_[thread]->buffer();
-
-                for (int i = 0; i < D.size(); i++) {
-                    double* JTp = JT[thread][i]->pointer()[0];
-                    double* Quv = const_cast<double *>(buffer);
-
-                    /*
-                    for (int q = q_start; q < q_start + num_q; q++) {
-                        int dq = q - q_start;
-                        for (int u = u_start; u < u_start + num_u; u++) {
-                            int du = u - u_start;
-                            for (int v = v_start; v < v_start + num_v; v++) {
-                                int dv = v - v_start;
-                                JTp[du * num_v + dv] += prefactor * (*Quv) * gamp[i * naux + q];
-                                Quv++;
-                            }
-                        }
-                    }
-                    */
-                    C_DGEMV('T', num_q, num_u * num_v, prefactor, (double *) Quv, num_u * num_v, &(gamp[i * naux + q_start]), 1, 1.0, JTp, 1);
-                }
-            }
-
-            // => Stripeout <= //
+            const double* buffer = ints_[thread]->buffer();
 
             for (int i = 0; i < D.size(); i++) {
                 double* JTp = JT[thread][i]->pointer()[0];
-                double** Jp = J[i]->pointer();
-                for (int u = u_start; u < u_start + num_u; u++) {
-                    int du = u - u_start;
-                    for (int v = v_start; v < v_start + num_v; v++) {
-                        int dv = v - v_start;
+                double* Quv = const_cast<double *>(buffer);
 
-                        Jp[u][v] += JTp[du * num_v + dv];
+                /*
+                for (int q = q_start; q < q_start + num_q; q++) {
+                    int dq = q - q_start;
+                    for (int u = u_start; u < u_start + num_u; u++) {
+                        int du = u - u_start;
+                        for (int v = v_start; v < v_start + num_v; v++) {
+                            int dv = v - v_start;
+                            JTp[du * num_v + dv] += prefactor * (*Quv) * gamp[i * naux + q];
+                            Quv++;
+                        }
                     }
                 }
-                JT[thread][i]->zero();
+                */
+                C_DGEMV('T', num_q, num_u * num_v, prefactor, Quv, num_u * num_v, &(gamp[i * naux + q_start]), 1, 1.0, JTp, 1);
             }
+        }
+
+        // => Stripeout <= //
+
+        for (int i = 0; i < D.size(); i++) {
+            double* JTp = JT[thread][i]->pointer()[0];
+            double** Jp = J[i]->pointer();
+            for (int u = u_start; u < u_start + num_u; u++) {
+                int du = u - u_start;
+                for (int v = v_start; v < v_start + num_v; v++) {
+                    int dv = v - v_start;
+                    Jp[u][v] += JTp[du * num_v + dv];
+                }
+            }
+            JT[thread][i]->zero();
         }
     }
 
