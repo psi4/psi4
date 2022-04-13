@@ -74,7 +74,7 @@ message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MIN
 find_package(DL)
 
 if(${ENABLE_ambit})
-    find_package(ambit CONFIG REQUIRED)
+    find_package(ambit 0.6 CONFIG REQUIRED)
     get_property(_loc TARGET ambit::ambit PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using ambit${ColourReset}: ${_loc} (version ${ambit_VERSION})")
