@@ -105,6 +105,16 @@ void DirectJK::common_init() {
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
 }
+
+size_t DirectJK::computed_shells() { 
+    if (linK_) {
+	//no bench data returned if LinK is enabled - to come in a future update
+	return JK::computed_shells(); 
+    } else {
+	return computed_shells_; 
+    }
+}
+
 void DirectJK::print_header() const {
     std::string screen_type = options_.get_str("SCREENING");
     if (print_) {

@@ -840,7 +840,7 @@ class PSI_API DirectJK : public JK {
     /**
      * Return number of shells computed during the SCF iteration
      */
-    size_t computed_shells() override { return computed_shells_; }
+    size_t computed_shells() override; 
 
     /**
     * Print header information regarding JK
