@@ -122,7 +122,6 @@ jobs:
                         numpy ^
                         pint ^
                         pybind11=2.7.0 ^
-                        pymdi ^
                         pytest>=7.0.1 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
@@ -136,7 +135,6 @@ jobs:
                         conda-forge::qcelemental ^
                         conda-forge::qcengine ^
                         scipy
-          pip install git+https://github.com/i-pi/i-pi.git@master-py3
           conda install --only-deps anaconda-client
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
           which anaconda
