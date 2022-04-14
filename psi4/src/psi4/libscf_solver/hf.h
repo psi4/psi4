@@ -255,7 +255,7 @@ class HF : public Wavefunction {
     bool MOM_performed() const { return MOM_performed_; }
     void set_MOM_performed(bool tf) { MOM_performed_ = tf; }
 
-    /// Number computed shells per SCF iteration
+    /// Number of computed shells per SCF iteration
     std::vector<size_t> computed_shells_per_iter() { return computed_shells_per_iter_; }
     void set_computed_shells_per_iter(const std::vector<size_t>& cs) { computed_shells_per_iter_ = cs; }
 
