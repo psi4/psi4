@@ -574,9 +574,9 @@ class PSI_API JK {
      */
     const std::vector<SharedMatrix>& D() const { return D_; }
 
-     /**
-     * Return number of shells computed during the SCF iteration
-     */
+    /**
+    * Return number of shells computed during the JK build process.
+    */
     virtual size_t computed_shells();
 
     /**
@@ -838,8 +838,8 @@ class PSI_API DirectJK : public JK {
     bool do_linK() { return linK_; }
 
     /**
-     * Return number of shells computed during the SCF iteration
-     */
+    * Return number of shells computed during the JK build process.
+    */
     size_t computed_shells() override; 
 
     /**
