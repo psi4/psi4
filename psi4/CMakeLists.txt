@@ -274,7 +274,10 @@ endif()
 if(NOT ENABLE_CYTHONIZE)
     install(DIRECTORY driver
             DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
-            FILES_MATCHING PATTERN "*.py")
+            FILES_MATCHING
+              PATTERN "*.py"
+              PATTERN pytest EXCLUDE
+      )
 endif()
 
 install(FILES header.py

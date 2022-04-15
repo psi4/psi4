@@ -1069,10 +1069,14 @@ def test_snsmp2():
 
 
 @uusing("resp")
-def test_resp():
+def test_resp(tmp_path):
     """resp/tests/test_resp_1"""
+    import os
     import resp
     import numpy as np
+
+    # resp writes fixed-name grid files that clobber when tests run in parallel
+    os.chdir(tmp_path)
 
     mol = psi4.geometry(""" C   1.45051389  -0.06628932   0.00000000
      H   1.75521613  -0.62865986  -0.87500146
@@ -1136,11 +1140,16 @@ def test_resp():
 
     assert np.allclose(charges2[1], reference_charges2, atol=5e-4)
 
+
 @pytest.mark.smoke
 @uusing("resp")
-def test_resp_2():
+def test_resp_2(tmp_path):
+    import os
     import resp
     import numpy as np
+
+    # resp writes fixed-name grid files that clobber when tests run in parallel
+    os.chdir(tmp_path)
 
     # Initialize two different conformations of ethanol
     geometry = """C    0.00000000  0.00000000  0.00000000
