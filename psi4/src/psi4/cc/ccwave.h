@@ -152,8 +152,8 @@ class CCEnergyWavefunction : public Wavefunction {
     double rhf_mp2_energy();
     void one_step();
     void denom();
-    void pair_energies(double **epair_aa, double **epair_ab);
-    void print_pair_energies(double *emp2_aa, double *emp2_ab, double *ecc_aa, double *ecc_ab);
+    void pair_energies(std::vector<double>& epair_aa, std::vector<double>& epair_ab);
+    void print_pair_energies(std::vector<double>& emp2_aa, std::vector<double>& emp2_ab, std::vector<double>& ecc_aa, std::vector<double>& ecc_ab);
 
     void form_df_ints(Options &options, int **cachelist, int *cachefiles);
 

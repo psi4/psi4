@@ -51,20 +51,17 @@ namespace ccenergy {
 **
 */
 
-void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
+void CCEnergyWavefunction::pair_energies(std::vector<double>& epair_aa, std::vector<double>& epair_ab) {
     dpdbuf4 tau, D, E;
 
     if (params_.ref == 0) { /** RHF **/
 
-        auto nocc_act = 0;
-        for (int irrep = 0; irrep < moinfo_.nirreps; irrep++) nocc_act += moinfo_.clsdpi[irrep];
+        auto nocc_act = moinfo_.clsdpi.sum();
         auto naa = nocc_act * (nocc_act - 1) / 2;
         auto nab = nocc_act * nocc_act;
 
         /* Compute alpha-alpha pair energies */
         if (naa) {
-            double* eaa = init_array(naa);
-
             global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
             global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 0, 5, 1, "tauIjAb");
             global_dpd_->buf4_init(&E, PSIF_CC_TMP0, 0, 2, 2, 2, 2, 0, "E <ij|kl>");
@@ -85,12 +82,10 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
                     auto j = Params->roworb[irrep][p][1];
 
                     auto ij = (i > j) ? i * (i - 1) / 2 + j : j * (j - 1) / 2 + i;
-                    eaa[ij] = block[p][p];
+                    epair_aa[ij] = block[p][p];
                 }
                 global_dpd_->buf4_mat_irrep_close(&E, irrep);
             }
-
-            *epair_aa = eaa;
 
             global_dpd_->buf4_close(&tau);
             global_dpd_->buf4_close(&D);
@@ -121,12 +116,10 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
                     auto j = Params->roworb[irrep][p][1];
 
                     auto ij = i * nocc_act + j;
-                    eab[ij] = block[p][p];
+                    epair_ab[ij] = block[p][p];
                 }
                 global_dpd_->buf4_mat_irrep_close(&E, irrep);
             }
-
-            *epair_ab = eab;
 
             global_dpd_->buf4_close(&tau);
             global_dpd_->buf4_close(&D);
@@ -135,11 +128,10 @@ void CCEnergyWavefunction::pair_energies(double** epair_aa, double** epair_ab) {
     }
 }
 
-void CCEnergyWavefunction::print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa, double* ecc_ab) {
+void CCEnergyWavefunction::print_pair_energies(std::vector<double>& emp2_aa, std::vector<double>& emp2_ab, std::vector<double>& ecc_aa, std::vector<double>& ecc_ab) {
     if (params_.ref == 0) { /** RHF **/
 
-        auto nocc_act = 0;
-        for (int irrep = 0; irrep < moinfo_.nirreps; irrep++) nocc_act += moinfo_.clsdpi[irrep];
+        auto nocc_act = moinfo_.clsdpi.sum();
         auto naa = nocc_act * (nocc_act - 1) / 2;
         auto nab = nocc_act * nocc_act;
 

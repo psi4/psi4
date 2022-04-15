@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here
+    \brief Compute the MP2 energy for RHF, UHF references.
 */
 #include <cstdio>
 #include <cstdlib>
@@ -53,6 +53,7 @@ double CCEnergyWavefunction::mp2_energy() {
         return 0.0;
 }
 
+// Assumes "fIA", "D <ij||ab>", "dIjAb" and "dIA" are created.
 double CCEnergyWavefunction::rhf_mp2_energy() {
     double T2_energy, T1_energy;
     dpdfile2 F, T1, D1;
