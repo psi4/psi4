@@ -678,7 +678,6 @@ def _qcvar_reshape_set(key, val):
     """Reverse `_qcvar_reshape_get` for internal psi4.core.Matrix storage."""
 
     reshaper = None
-
     if key.upper().startswith("MBIS"):
         if key.upper().endswith("CHARGES"):
             return val
@@ -693,12 +692,13 @@ def _qcvar_reshape_set(key, val):
             val = val.reshape(-1, 3, 3, 3)
             val = np.array([_multipole_compressor(val[iat], 3) for iat in range(len(val))])
             return val
-    elif key.upper().endswith("DIPOLE"):
+    elif key.upper().endswith("DIPOLE") or "DIPOLE -" in key.upper():
         reshaper = (1, 3)
     elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
         reshaper = (3, 3, 3)
-    elif any(key.upper().endswith(p) for p in _multipole_order):
-        val = _multipole_compressor(val, _multipole_order.index(key.upper().split()[-1]))
+    elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
+        p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
+        val = _multipole_compressor(val, _multipole_order.index(p[0]))
         reshaper = (1, -1)
     elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
         reshaper = (1, -1)
@@ -727,12 +727,13 @@ def _qcvar_reshape_get(key, val):
             val = val.np.reshape(-1, 10)
             val = np.array([_multipole_plumper(val[iat], 3) for iat in range(len(val))])
             return val
-    elif key.upper().endswith("DIPOLE"):
+    elif key.upper().endswith("DIPOLE") or "DIPOLE -" in key.upper():
         reshaper = (3, )
     elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
         reshaper = (3, 3, 3)
-    elif any(key.upper().endswith(p) for p in _multipole_order):
-        return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(key.upper().split()[-1]))
+    elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
+        p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
+        return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(p[0]))
     elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
         reshaper = (-1, )
 

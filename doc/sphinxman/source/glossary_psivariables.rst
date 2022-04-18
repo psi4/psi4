@@ -127,13 +127,19 @@ PSI Variables by Alpha
    energy [Eh] and correlation correction components [Eh] for the compound
    method requested through cbs().
 
-.. psivar:: CC ROOT n DIPOLE
+.. psivar:: CCname ROOT n DIPOLE
+   CCname ROOT n (h) DIPOLE
+   CCname ROOT n DIPOLE - h TRANSITION
 
    Dipole array [e a0] for the requested coupled cluster level of theory and root *n* (number starts at GS = 0), (3,).
+   Conventions for root indexing and whether h refers to transition or root irrep are as in :ref:`sec:psivarnotes`.
 
-.. psivar:: CC ROOT n QUADRUPOLE
+.. psivar:: CCname ROOT n QUADRUPOLE
+   CCname ROOT n (h) QUADRUPOLE
+   CCname ROOT n QUADRUPOLE - h TRANSITION
 
    Redundant quadrupole array [e a0^2] for the requested coupled cluster level of theory and root *n* (number starts at GS = 0), (3, 3).
+   Conventions for root indexing and whether h refers to transition or root irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: CC ROOT n TOTAL ENERGY
    CC ROOT n CORRELATION ENERGY
@@ -1559,7 +1565,9 @@ PSI Variables by Alpha
    ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)
    ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)
    ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h TRANSITION
-   CC ROOT n (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
+   CCname ROOT n -> ROOT m OSCILLATOR STRENGTH (LEN)
+   CCname ROOT n (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
+   CCname ROOT n -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
    TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION
@@ -1573,8 +1581,12 @@ PSI Variables by Alpha
    Conventions for root indexing and whether h refers to transition or root
    irrep are as in :ref:`sec:psivarnotes`.
 
-.. psivar:: CC ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
-   CC ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (VEL)
+.. psivar:: CCname ROOT n -> ROOT m ROTARY STRENGTH (LEN)
+   CCname ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
+   CCname ROOT n -> ROOT m ROTARY STRENGTH (LEN) - h TRANSITION
+   CCname ROOT n -> ROOT m ROTARY STRENGTH (VEL)
+   CCname ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (VEL)
+   CCname ROOT n -> ROOT m ROTARY STRENGTH (VEL) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
    TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN) - h TRANSITION

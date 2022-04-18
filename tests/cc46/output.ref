@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {oeprop} 558962e dirty
+                         Git: Rev {cctest} 427a1c3 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 06 April 2022 12:43PM
+    Psi4 started on: Saturday, 09 April 2022 11:55AM
 
-    Process ID: 17743
-    Host:       dhcp189-247.emerson.emory.edu
+    Process ID: 33127
+    Host:       Jonathons-MacBook-Pro.local
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -99,31 +99,31 @@ root_refs = {
         "CC ROOT 1 QUADRUPOLE ZZ":   -16.4603,
         "CC ROOT 2 DIPOLE X":          0.0000,
         "CC ROOT 2 DIPOLE Y":          0.0000,
-        "CC ROOT 2 DIPOLE Z":          1.7559,
-        "CC ROOT 2 QUADRUPOLE XX":   -12.1976,
-        "CC ROOT 2 QUADRUPOLE XY":    -0.9808,
+        "CC ROOT 2 DIPOLE Z":          1.9830,
+        "CC ROOT 2 QUADRUPOLE XX":   -11.5842,
+        "CC ROOT 2 QUADRUPOLE XY":    -0.4562,
         "CC ROOT 2 QUADRUPOLE XZ":     0.0000,
-        "CC ROOT 2 QUADRUPOLE YY":   -13.9980,
+        "CC ROOT 2 QUADRUPOLE YY":   -13.9751,
         "CC ROOT 2 QUADRUPOLE YZ":     0.0000,
-        "CC ROOT 2 QUADRUPOLE ZZ":    -9.7604,
+        "CC ROOT 2 QUADRUPOLE ZZ":   -10.6229,
         "CC ROOT 3 DIPOLE X":          0.0000,
         "CC ROOT 3 DIPOLE Y":          0.0000,
-        "CC ROOT 3 DIPOLE Z":          1.9830,
-        "CC ROOT 3 QUADRUPOLE XX":   -11.5842,
-        "CC ROOT 3 QUADRUPOLE XY":    -0.4562,
+        "CC ROOT 3 DIPOLE Z":         -1.3387,
+        "CC ROOT 3 QUADRUPOLE XX":   -14.2850,
+        "CC ROOT 3 QUADRUPOLE XY":    -0.0453,
         "CC ROOT 3 QUADRUPOLE XZ":     0.0000,
-        "CC ROOT 3 QUADRUPOLE YY":   -13.9751,
+        "CC ROOT 3 QUADRUPOLE YY":   -13.5795,
         "CC ROOT 3 QUADRUPOLE YZ":     0.0000,
-        "CC ROOT 3 QUADRUPOLE ZZ":   -10.6229,
+        "CC ROOT 3 QUADRUPOLE ZZ":   -15.3582,
         "CC ROOT 4 DIPOLE X":          0.0000,
         "CC ROOT 4 DIPOLE Y":          0.0000,
-        "CC ROOT 4 DIPOLE Z":         -1.3387,
-        "CC ROOT 4 QUADRUPOLE XX":   -14.2850,
-        "CC ROOT 4 QUADRUPOLE XY":    -0.0453,
+        "CC ROOT 4 DIPOLE Z":          1.7559,
+        "CC ROOT 4 QUADRUPOLE XX":   -12.1976,
+        "CC ROOT 4 QUADRUPOLE XY":    -0.9808,
         "CC ROOT 4 QUADRUPOLE XZ":     0.0000,
-        "CC ROOT 4 QUADRUPOLE YY":   -13.5795,
+        "CC ROOT 4 QUADRUPOLE YY":   -13.9980,
         "CC ROOT 4 QUADRUPOLE YZ":     0.0000,
-        "CC ROOT 4 QUADRUPOLE ZZ":   -15.3582
+        "CC ROOT 4 QUADRUPOLE ZZ":    -9.7604,
 }
 root_refs_arr = {}
 for root in range(1, 5):
@@ -155,8 +155,8 @@ with warnings.catch_warnings():
 
 --------------------------------------------------------------------------
 
-*** tstart() called on dhcp189-247.emerson.emory.edu
-*** at Wed Apr  6 12:43:34 2022
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Sat Apr  9 11:55:50 2022
 
    => Loading Basis Set <=
 
@@ -272,10 +272,10 @@ with warnings.catch_warnings():
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:  -150.13109142562013   -1.50131e+02   0.00000e+00 
-   @RHF iter   1:  -150.72994418505670   -5.98853e-01   1.20798e-02 ADIIS/DIIS
-   @RHF iter   2:  -150.77474437542543   -4.48002e-02   3.93712e-03 ADIIS/DIIS
-   @RHF iter   3:  -150.77872862263519   -3.98425e-03   9.99210e-04 ADIIS/DIIS
-   @RHF iter   4:  -150.77914039140370   -4.11769e-04   2.79341e-04 ADIIS/DIIS
+   @RHF iter   1:  -150.72994418505670   -5.98853e-01   1.20798e-02 DIIS/ADIIS
+   @RHF iter   2:  -150.77474437542543   -4.48002e-02   3.93712e-03 DIIS/ADIIS
+   @RHF iter   3:  -150.77872862263519   -3.98425e-03   9.99210e-04 DIIS/ADIIS
+   @RHF iter   4:  -150.77914039140370   -4.11769e-04   2.79341e-04 DIIS/ADIIS
    @RHF iter   5:  -150.77918120037543   -4.08090e-05   4.90416e-05 DIIS
    @RHF iter   6:  -150.77918362626571   -2.42589e-06   1.25561e-05 DIIS
    @RHF iter   7:  -150.77918384927833   -2.23013e-07   3.89306e-06 DIIS
@@ -348,15 +348,15 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on dhcp189-247.emerson.emory.edu at Wed Apr  6 12:43:36 2022
+*** tstop() called on Jonathons-MacBook-Pro.local at Sat Apr  9 11:55:51 2022
 Module time:
-	user time   =       1.13 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.13 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -381,8 +381,8 @@ Total time:
         Stored in file 33.
 
 
-*** tstart() called on dhcp189-247.emerson.emory.edu
-*** at Wed Apr  6 12:43:36 2022
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Sat Apr  9 11:55:52 2022
 
 
 	Wfn Parameters:
@@ -461,14 +461,14 @@ Total time:
 	Two-electron energy          =     45.23861563749188
 	Reference energy             =   -150.77918387212975
 
-*** tstop() called on dhcp189-247.emerson.emory.edu at Wed Apr  6 12:43:36 2022
+*** tstop() called on Jonathons-MacBook-Pro.local at Sat Apr  9 11:55:52 2022
 Module time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.36 seconds =       0.02 minutes
-	system time =       0.35 seconds =       0.01 minutes
+	user time   =       1.00 seconds =       0.02 minutes
+	system time =       0.32 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
             **************************
             *                        *
@@ -1593,7 +1593,7 @@ Doing transition
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
-Properties computed using the CC2 {} density matrix
+Properties computed using the CC2 density matrix
 
 
  Multipole Moments:
@@ -1641,7 +1641,7 @@ Properties computed using the CC2 {} density matrix
   LUNO+3 :    7  B    0.019
 
 
-Properties computed using the CC ROOT 1 density matrix
+Properties computed using the CC2 ROOT 1 (A) density matrix
 
 
  Multipole Moments:
@@ -1689,7 +1689,7 @@ Properties computed using the CC ROOT 1 density matrix
   LUNO+3 :    7  A    0.006
 
 
-Properties computed using the CC ROOT 2 density matrix
+Properties computed using the CC2 ROOT 2 (A) density matrix
 
 
  Multipole Moments:
@@ -1737,7 +1737,7 @@ Properties computed using the CC ROOT 2 density matrix
   LUNO+3 :    7  B    0.005
 
 
-Properties computed using the CC ROOT 3 density matrix
+Properties computed using the CC2 ROOT 0 (B) density matrix
 
 
  Multipole Moments:
@@ -1785,7 +1785,7 @@ Properties computed using the CC ROOT 3 density matrix
   LUNO+3 :    7  B    0.005
 
 
-Properties computed using the CC ROOT 4 density matrix
+Properties computed using the CC2 ROOT 1 (B) density matrix
 
 
  Multipole Moments:
@@ -1877,7 +1877,7 @@ Properties computed using the CCDENSITY-SET-WFN-TEST CC2 density matrix
     CCDENSITY-SET-WFN-TEST CC2 DIPOLE.....................................................PASSED
     CCDENSITY-SET-WFN-TEST CC2 QUADRUPOLE.................................................PASSED
 
-    Psi4 stopped on: Wednesday, 06 April 2022 12:43PM
-    Psi4 wall time for execution: 0:00:07.60
+    Psi4 stopped on: Saturday, 09 April 2022 11:55AM
+    Psi4 wall time for execution: 0:00:05.23
 
 *** Psi4 exiting successfully. Buy a developer a beer!

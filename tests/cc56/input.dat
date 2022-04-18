@@ -14,7 +14,7 @@ set {
   roots_per_irrep [0, 1, 1, 0]
 }
 
-wfn = properties('eom-ccsd', properties=['oscillator_strength'], return_wfn=True)[1]
+wfn = properties('eom-ccsd', properties=['dipole', 'oscillator_strength'], return_wfn=True)[1]
 
 ### ccdensity checks
 
@@ -35,6 +35,22 @@ ref0A2 = -75.260476163556 # TEST
 
 compare_values(ref1B1, core.variable("CCSD ROOT 1 (B1) TOTAL ENERGY"), 6, "Root 1 (A1) Energy") # TEST
 compare_values(ref0A2, core.variable("CCSD ROOT 0 (A2) TOTAL ENERGY"), 6, "Root 0 (A2) Energy") # TEST
+
+### Dipole check
+
+test_data = {                   # TEST
+(0, "B1", 0, "A1"):  1.0109909, # TEST
+(1, "B1", 1, "A1"):  0.4953101, # TEST
+(0, "A2", 2, "B2"): -0.0535458, # TEST
+}                               # TEST
+
+for transition, value in test_data.items(): # TEST
+    for name in {"CC", "CCSD"}: # TEST
+        prop1 = f"{name} ROOT {transition[0]} ({transition[1]}) DIPOLE" # TEST
+        prop2 = f"{name} ROOT {transition[2]} DIPOLE" # TEST
+        prop3 = f"{name} ROOT {transition[2]} DIPOLE - {transition[3]} TRANSITION" # TEST
+        for propstring in {prop1, prop2, prop3}: # TEST
+            compare_values(value, wfn.variable(propstring)[2], 6, propstring) # TEST
 
 ### Transition checks
 

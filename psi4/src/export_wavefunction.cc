@@ -319,7 +319,9 @@ void export_wavefunction(py::module& m) {
         .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
         .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
 #endif
-        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation");
+        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
+        .def("get_alpha_density", [](Wavefunction& wfn, std::string name) {return wfn.Da_map_[name] ;}, "Experimental!")
+        .def("get_beta_density", [](Wavefunction& wfn, std::string name) {return wfn.Db_map_[name] ;}, "Experimental!");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
@@ -603,6 +605,8 @@ void export_wavefunction(py::module& m) {
     py::class_<ccenergy::CCEnergyWavefunction, std::shared_ptr<ccenergy::CCEnergyWavefunction>, Wavefunction>(
         m, "CCWavefunction", "Specialized Wavefunction used by the ccenergy, cceom, ccgradient, etc. modules.")
         .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
+        .def("total_index", [](ccenergy::CCEnergyWavefunction& wfn, int i, int h) { return wfn.total_indices[{i, h}]; },
+                """Map an index (i) within irrep (h) to its energy-sorted index among all roots.", "i"_a, "h"_a)
         .def("get_amplitudes", &ccenergy::CCEnergyWavefunction::get_amplitudes, R"pbdoc(
                Get dict of converged T amplitudes.
 
