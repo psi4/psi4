@@ -186,6 +186,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     // transform
+    dfh_->release_AO();
     dfh_->transform();
 
     // transformations specific for hybrid functional
@@ -213,6 +214,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
         dfh_->add_transformation("bbR", "b", "b", "pqQ");
         dfh_->add_transformation("bsR", "b", "s", "pqQ");
         dfh_->add_transformation("ssR", "s", "s", "pqQ");
+        dfh_->release_AO();
         dfh_->transform();
     }
 

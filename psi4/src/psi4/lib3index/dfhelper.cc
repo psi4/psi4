@@ -2008,7 +2008,7 @@ void DFHelper::transform() {
     timer_on("DFH: Metric Contractions");
 
     // release in-core AO 
-    if (AO_core_) {
+    if (AO_core_ && release_AO_)  {
         Ppq_.reset();
     }
 

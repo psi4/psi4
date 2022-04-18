@@ -104,6 +104,9 @@ class PSI_API DFHelper {
     void set_AO_core(bool core) { AO_core_ = core; }
     bool get_AO_core() { return AO_core_; }
 
+    /// Switch flag for releasing AO (for SAPT(DFT))
+    void release_AO() { release_AO_ = true; }
+
     ///
     /// Sets the MO integrals to in-core. (Defaults to FALSE)
     /// @param core True to indicate in-core
@@ -335,6 +338,7 @@ class PSI_API DFHelper {
     bool symm_compute_;
     bool AO_core_ = true;
     bool MO_core_ = false;
+    bool release_AO_ = false;
     size_t nthreads_ = 1;
     double cutoff_ = 1e-12;
     double condition_ = 1e-12;
