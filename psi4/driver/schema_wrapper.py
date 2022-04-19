@@ -642,8 +642,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     json_data["properties"] = props
     json_data["success"] = True
-    if "provenance" not in json_data :
-        json_data["provenance"] = {}
+
     json_data["provenance"]["module"] = wfn.module()
 
     if keep_wfn:
