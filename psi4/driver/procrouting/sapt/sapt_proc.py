@@ -202,6 +202,8 @@ def run_sapt_dft(name, **kwargs):
             wfn_B = hf_wfn_B
             data["DFT MONOMERA"] = hf_data["HF MONOMER A"] 
             data["DFT MONOMERB"] = hf_data["HF MONOMER B"] 
+            dhf_value = hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
+            data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")
 
     if hf_wfn_dimer is None:
         dimer_wfn = core.Wavefunction.build(sapt_dimer, core.get_global_option("BASIS"))
