@@ -203,7 +203,7 @@ def run_sapt_dft(name, **kwargs):
             data["DFT MONOMERA"] = hf_data["HF MONOMER A"] 
             data["DFT MONOMERB"] = hf_data["HF MONOMER B"] 
             dhf_value = hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
-            data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")
+            data["DHF VALUE"] = dhf_value
 
     if hf_wfn_dimer is None:
         dimer_wfn = core.Wavefunction.build(sapt_dimer, core.get_global_option("BASIS"))
@@ -263,9 +263,12 @@ def run_sapt_dft(name, **kwargs):
     scf_alg = core.get_global_option("SCF_TYPE")
     sapt_dft_header(sapt_dft_functional, mon_a_shift, mon_b_shift, bool(do_delta_hf), scf_alg)
 
+    # Compute Delta HF for SAPT(HF)?
+    delta_hf = do_delta_hf and not do_dft
+
     # Call SAPT(DFT)
     sapt_jk = wfn_B.jk()
-    sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=sapt_jk, data=data, print_header=False)
+    sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=sapt_jk, data=data, print_header=False, delta_hf=delta_hf)
 
     # Copy data back into globals
     for k, v in data.items():
@@ -302,7 +305,7 @@ def sapt_dft_header(sapt_dft_functional="unknown",
     core.print_out("   JK Algorithm            %12s\n" % jk_alg)
 
 
-def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, print_header=True, cleanup_jk=True):
+def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, print_header=True, cleanup_jk=True, delta_hf=False):
     """
     The primary SAPT(DFT) algorithm to compute the interaction energy once the wavefunctions have been built.
 
@@ -395,6 +398,14 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
                                   conv=core.get_option("SAPT", "D_CONVERGENCE"),
                                   Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
     data.update(ind)
+
+    # Set Delta HF for SAPT(HF)
+    if delta_hf:
+        total_sapt = (data["Elst10,r"] + data["Exch10"] + data["Ind20,r"] + data["Exch-Ind20,r"])
+        sapt_hf_delta = data["DHF VALUE"] - total_sapt
+        core.set_variable("SAPT(DFT) Delta HF", sapt_hf_delta)
+        data["Delta HF Correction"] = core.variable("SAPT(DFT) Delta HF")
+
     core.timer_off("SAPT(DFT):ind")
 
     # Blow away JK object before doing MP2 for memory considerations
