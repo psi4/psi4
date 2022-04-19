@@ -61,7 +61,7 @@ h2o_schema = psi4.core.Molecule.from_schema(json_data)
 psi4.compare_values(h2o_test.geometry().to_array(),
                     h2o_schema.geometry().to_array())
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data, True, True)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data, True)
 psi4.set_options({"basis": basis, "scf_type": "df", "mp2_type": "df"})
 e, wfn = psi4.energy(method, return_wfn = True)
 
