@@ -7,5 +7,6 @@ def test_fcidump():
         "Ne.C1.6311G.INTDUMP.ref",
         "Ne.cc-pVDZ.UHF.INTDUMP.ref",
         "Ne.C1.cc-pVDZ.UHF.INTDUMP.ref",
+        "Ne.6311G.frozen.INTDUMP.ref",
     ])
 
