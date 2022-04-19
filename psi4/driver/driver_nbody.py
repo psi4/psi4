@@ -721,19 +721,6 @@ def assemble_nbody_components(metadata, component_results):
     return results
 
 
-def electrostatic_embedding(embedding_charges):
-    """
-    Add atom-centered point charges
-    """
-    from psi4.driver import qmmm
-
-    # Add embedding point charges
-    Chrgfield = qmmm.QMMMbohr()
-    for i in embedding_charges:
-        Chrgfield.extern.addCharge(i[0], i[1][0], i[1][1], i[1][2])
-    core.set_global_option_python('EXTERN', Chrgfield.extern)
-
-
 class ManyBodyComputer(BaseComputer):
 
     molecule: Any
@@ -851,7 +838,7 @@ class ManyBodyComputer(BaseComputer):
                     for frag in embedding_frags:
                         positions = self.molecule.extract_subsets(frag).geometry().np.tolist()
                         charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
-                    data['keywords']['function_kwargs'].update({'embedding_charges': charges})
+                    data['keywords']['function_kwargs'].update({'external_potentials': charges})
 
                 self.task_list[lbl] = obj(**data)
                 counter += 1
@@ -869,9 +856,6 @@ class ManyBodyComputer(BaseComputer):
         with p4util.hold_options_state():
             for k, t in self.task_list.items():
                 t.compute(client=client)
-
-        if self.embedding_charges:
-            core.set_global_option_python('EXTERN', None)
 
     def prepare_results(self, results={}, client=None):
 

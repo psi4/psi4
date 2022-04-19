@@ -1051,7 +1051,7 @@ class FiniteDifferenceComputer(BaseComputer):
 
         # logger.debug('FINDIFREC CLASS INIT DATA\n' + pp.pformat(data))
 
-        translations_projection_sound = (not 'embedding_charges' in data['keywords']['function_kwargs']
+        translations_projection_sound = (not "external_potentials" in data['keywords']['function_kwargs']
                                          and not core.get_option('SCF', 'PERTURB_H')
                                          and not hasattr(self.molecule, 'EFP'))
         if 'ref_gradient' in data:

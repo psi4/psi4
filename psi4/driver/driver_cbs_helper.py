@@ -505,9 +505,6 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Extrapolatable, zM
         return value
 
     elif isinstance(valueLO, np.ndarray):
-        valueLO = np.array(valueLO)
-        valueMD = np.array(valueMD)
-        valueHI = np.array(valueHI)
 
         nonzero_mask = np.abs(valueHI) > 1.e-14
         top = (valueHI - valueMD)[nonzero_mask]
@@ -545,7 +542,6 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Extrapolatable, zM
         #value_view[:] = np_value
         #return value
 
-        np_value = core.Matrix.from_array(np_value)
         return np_value
 
     else:

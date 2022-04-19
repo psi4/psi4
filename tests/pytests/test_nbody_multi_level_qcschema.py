@@ -28,10 +28,6 @@ def base_schema():
     _base_schema = {
         'schema_name': 'qcschema_input',
         'schema_version': 1,
-        "extras": {
-            "psiapi": True,
-            "wfn_qcvars_only": True,
-        },
         'molecule': h2o_trimer.to_schema(dtype=2),
         'keywords': {
             'function_kwargs': {

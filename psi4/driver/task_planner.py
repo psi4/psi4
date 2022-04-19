@@ -97,8 +97,8 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
     keywords = p4util.prepare_options_for_set_options()
 
     keywords["function_kwargs"] = {}
-    if "embedding_charges" in kwargs and "bsse_type" not in kwargs:
-        keywords["function_kwargs"].update({"embedding_charges": kwargs.pop("embedding_charges")})
+    if "external_potentials" in kwargs and "bsse_type" not in kwargs:
+        keywords["function_kwargs"].update({"external_potentials": kwargs.pop("external_potentials")})
 
     # Need to add full path to pcm file
     if "PCM__PCMSOLVER_PARSED_FNAME" in keywords.keys():
