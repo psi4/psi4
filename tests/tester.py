@@ -1,23 +1,17 @@
 import re
 from pathlib import Path
 
-# Goals
-# -----
-# [ ] Notice if test undocumented
-# [ ] Notice if test unregistered to CMake/CTest or registered with wrong name
+# Goals for Psithon Tests
+# -----------------------
+# [x] Notice if test undocumented
+# [x] Notice if test unregistered to CMake/CTest or registered with wrong name
+# [x] Notice if test unregistered to pytest or registered with wrong name
+# [x] If test unregistered to pytest, fill in runner file (completely for most, but add'l files are manual)
+# [x] Check ctest/pytest marks consistency
 # [ ] Write Sphinx files
-# [ ] Translate docstring from LaTeX to reST
-# [ ] Fill in missing pytest file
-# [ ] Notice if files to be copied
+# [ ] Translate docs comment from LaTeX to reST
 # [ ] Update samples/
-# [ ] Check ctest/pytest marks consistency
-# [ ] 
-# [ ] 
-# [ ] 
-# [ ] 
-# [ ] 
-# [ ] Replace documents_tests.pl
-
+# [ ] Replace document_tests.pl
 
 
 complaints = []
@@ -28,7 +22,7 @@ internal_dirs = [
 ]
 
 skip_nested_dirs = [
-    "brianqc",  # can't test
+    "brianqc",  # can't test locally
     "cfour",  # imminent deletion
     "erd",  # imminent deletion
     "pasture-ccsorttransqt2",  # retired
@@ -56,7 +50,7 @@ def filter_marks(marks, nested):
         elif m == nested:
             if m in ["json"]:
                 markstr.append(m)
-            else: 
+            else:
                 pass
         else:
             markstr.append(m)
@@ -65,12 +59,12 @@ def filter_marks(marks, nested):
 
 with open("CMakeLists.txt") as fp:
     cm = fp.read()
-cm = cm.split()
+cm = cm.replace("add_subdirectory(", "").replace(")", "").split()
 
 tests = Path(".")
 for fl in sorted(tests.rglob("*")):
     if fl.name in ["input.dat", "input.py"]:
-        testdir = fl.parent 
+        testdir = fl.parent
 
         legit = True
         ctest_name = str(testdir).replace("/", "-")
@@ -91,11 +85,11 @@ for fl in sorted(tests.rglob("*")):
                 nested_cm = fp.read()
             nested_cm = nested_cm.replace("add_subdirectory(", "").replace(")", "").split()
             if str(testdir.name) not in nested_cm:
-                complaints.append(f"{testdir}: missing directory registration. `vi {fnested_cm}`")
+                complaints.append(f"{testdir}: missing cmake directory registration. `vi {fnested_cm}`")
                 legit = False
         else:
             if ctest_name not in cm:
-                complaints.append(f"{testdir}: missing directory registration. `vi CMakeLists.txt`")
+                complaints.append(f"{testdir}: missing cmake directory registration. `vi CMakeLists.txt`")
                 legit = False
 
         with open(fl) as fp:
@@ -107,7 +101,7 @@ for fl in sorted(tests.rglob("*")):
                 description += ln[2:]
         description = description.strip()
         if not description:
-            complaints.append(f"{testdir}: missing comment. `vi {fl}`") 
+            complaints.append(f"{testdir}: missing docs comment. `vi {fl}`")
 
         marks = []
         copyfiles = False
@@ -124,7 +118,7 @@ for fl in sorted(tests.rglob("*")):
             else:
                 complaints.append(f"{testdir}: missing ctest registration. `vi {cml}`")
                 legit = False
-                
+
             mobj = re.search(f"^\s*" + r"file\(COPY", cmakeliststxt, re.MULTILINE)
             if mobj:
                 copyfiles = True
@@ -135,7 +129,7 @@ for fl in sorted(tests.rglob("*")):
 
         marks = filter_marks(marks, nested=nested)
         markstr = ";".join(marks)
-        
+
         tipy = fl.with_name("test_input.py")
         if tipy.is_file():
             with open(tipy) as fp:
@@ -155,17 +149,15 @@ for fl in sorted(tests.rglob("*")):
                     complaints.append(f"{testdir}: mismatched directory ({pytest_name}) and pytest registration ({mobj.group('name')}). `vi {tipy}`")
 
         else:
-            complaints.append(f"{testdir}: missing pytest input generated. check it! `vi {tipy}`")
-
             if legit:
+                complaints.append(f"{testdir}: missing pytest input generated. check it! `vi {tipy}`")
+
                 copyfilesstr = ", [\n    ]" if copyfiles else ""
                 with open(tipy, "w") as fp:
                     fp.write(model_testinputpy.format(markstr=markstr, pytest_name=pytest_name, copyfilesstr=copyfilesstr))
-        
-        #print(testdir, ctest_name, pytest_name, nested, marks)
+
 
 if complaints:
     print("Complaints\n----------")
     for idx, item in enumerate(complaints):
-        print(f"- [ ] {idx+1:3}. {item}")
-    
+        print(f"- [ ] {idx + 1:3}. {item}")
