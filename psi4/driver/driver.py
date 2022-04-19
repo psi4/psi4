@@ -52,7 +52,6 @@ from psi4.driver import task_planner
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver import pp, nppp, nppp10
-#from psi4.driver import qmmm
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting import *
 from psi4.driver.mdi_engine import mdi_run
@@ -497,11 +496,6 @@ def energy(name, **kwargs):
             core.print_out(f" \n Copying restart file <{item}> to <{targetfile}> for internal processing\n")
             shutil.copy(item, targetfile)
 
-    ep = kwargs.get('external_potentials', None)
-    if ep is not None and not isinstance(ep, dict):
-        #set_external_potential(kwargs['external_potentials'])
-        driver_nbody.electrostatic_embedding(kwargs['external_potentials'])
-
     logger.info(f"Compute energy(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
     logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
@@ -616,11 +610,6 @@ def gradient(name, **kwargs):
     # no analytic derivatives for scf_type cd
     if core.get_global_option('SCF_TYPE') == 'CD':
         raise ValidationError("""No analytic derivatives for SCF_TYPE CD.""")
-
-    ep = kwargs.get('external_potentials', None)
-    if ep is not None and not isinstance(ep, dict):
-        #set_external_potential(kwargs['external_potentials'])
-        driver_nbody.electrostatic_embedding(kwargs['external_potentials'])
 
     core.print_out("""gradient() will perform analytic gradient computation.\n""")
 
@@ -779,11 +768,6 @@ def properties(*args, **kwargs):
 
     # needed (+restore below) so long as AtomicComputer-s aren't run through json (where convcrit also lives)
     optstash = driver_util.negotiate_convergence_criterion(("prop", "prop"), lowername, return_optstash=True)
-
-    ep = kwargs.get('external_potentials', None)
-    if ep is not None and not isinstance(ep, dict):
-        #set_external_potential(kwargs['external_potentials'])
-        driver_nbody.electrostatic_embedding(kwargs['external_potentials'])
 
     logger.info(f"Compute properties(): method={lowername}, basis={core.get_global_option('BASIS').lower()}, molecule={molecule.name()}, nre={'w/EFP' if hasattr(molecule, 'EFP') else molecule.nuclear_repulsion_energy()}")
     logger.debug("w/EFP" if hasattr(molecule, "EFP") else pp.pformat(molecule.to_dict()))
@@ -1428,11 +1412,6 @@ def hessian(name, **kwargs):
         ['FINDIF', 'FD_PROJECT'],
     )
 
-    ep = kwargs.get('external_potentials', None)
-    if ep is not None and not isinstance(ep, dict):
-        #set_external_potential(kwargs['external_potentials'])
-        driver_nbody.electrostatic_embedding(kwargs['external_potentials'])
-
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     optstash_conv = driver_util.negotiate_convergence_criterion((2, 2), lowername, return_optstash=True)
 
@@ -2029,27 +2008,6 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
 def tdscf(wfn, **kwargs):
     return proc.run_tdscf_excitations(wfn,**kwargs)
-
-
-def set_external_potential(external_potential):
-    """Initialize :py:class:`psi4.core.ExternalPotential` object from charges and locations.
-
-    Parameters
-    ----------
-    external_potential
-        List-like structure where each row corresponds to a charge. Lines can be composed of ``q, [x, y, z]`` or
-        ``q, x, y, z``. Locations are in [a0].
-
-    """
-    Chrgfield = qmmm.QMMMbohr()
-    for qxyz in external_potential:
-        if len(qxyz) == 2:
-            Chrgfield.extern.addCharge(qxyz[0], qxyz[1][0], qxyz[1][1], qxyz[1][2])
-        elif len(qxyz) == 4:
-            Chrgfield.extern.addCharge(qxyz[0], qxyz[1], qxyz[2], qxyz[3])
-        else:
-            raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
-    core.set_global_option_python('EXTERN', Chrgfield.extern)
 
 
 # Aliases

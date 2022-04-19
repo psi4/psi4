@@ -53,3 +53,11 @@ an_ener = psi4.variable('CURRENT ENERGY')
 compare_matrices(an_grad, fd_grad, 5, "Finite difference (3-pt.) vs. analytic gradient to 10^-5") #TEST
 compare_values(-76.0194112285529968, fd_ener, 6, 'Finite difference energy')  #TEST
 compare_values(-76.0194112285529968, an_ener, 6, 'Analytic energy')  #TEST
+
+no_extern_grad_xptd = [                                #TEST
+ [-3.61281240e-03, -4.93441226e-07, -1.84830343e-02],  #TEST
+ [ 1.80644240e-03,  1.27352333e-02,  9.24171070e-03],  #TEST
+ [ 1.80637000e-03, -1.27347399e-02,  9.24132361e-03]]  #TEST
+
+no_extern_grad_cptd = gradient("scf", molecule=water)
+compare_values(no_extern_grad_xptd, no_extern_grad_cptd, 5, "analytic gradient w/o external potential")  #TEST
