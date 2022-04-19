@@ -184,7 +184,7 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     infiles = [inputdat]
     if extra_infiles:
         infiles.extend(extra_infiles)
-    infiles_with_contents = {Path(fl).name: (ctestdir / fl).read_text() for fl in infiles}
+    infiles_with_contents = {(Path(fl).name if Path(fl).is_absolute() else fl): (ctestdir / fl).read_text() for fl in infiles}
 
     # Note:  The simple `command = ["psi4", "input.dat"]` works fine for Linux and Mac but not for Windows.
     #   L/M/W   ok with `command = [which("psi4"), "input.dat"]` where `which` on Windows finds the psi4.bat file that points to the psi4 python script. -or-
@@ -194,11 +194,12 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     #   Properly, as in CTest, it's `command = [sys.executable, "input.py"]`.
     #   Have to either have 3-item `command` or pass PYTHONPATH through env. Since some tests (fsapt) "import psi4" internally, doing both.
     #   The "exe" rerouting is for Windows conda package Scripts/psi4.exe file. It gives an encoding error if Python in command.
+    # * Toggle `scratch_messy` to examine scratch contents.
     if Path(psi4.executable).suffix == ".exe":
         command = [psi4.executable, inputdat]
     else:
         command = [sys.executable, psi4.executable, inputdat]
-    _, output = execute(command, infiles_with_contents, outfiles, environment=env)
+    _, output = execute(command, infiles_with_contents, outfiles, environment=env, scratch_messy=False)
 
     success = output["proc"].poll() == 0
     assert success, output["stdout"] + output["stderr"]

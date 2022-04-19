@@ -28,9 +28,6 @@
 #  In order to ensure that this works properly, please add your tests to the
 #  appropriate variables given below
 
-#set(py3_fail_list pywrap-freq-e-sowreap
-#                  pywrap-freq-g-sowreap pywrap-opt-sowreap
-#                  pywrap-db2)
 foreach(test_name adc1 adc2 aediis-1 aediis-2
                   casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
                   castup2 castup3 cbs-delta-energy cbs-parser cbs-xtpl-alpha cbs-xtpl-energy

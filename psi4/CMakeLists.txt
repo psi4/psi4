@@ -338,6 +338,14 @@ install(
     PATTERN "mp2-property/grid.dat"
     PATTERN "cubeprop*/*cube.ref"
     PATTERN "fcidump/*INTDUMP.ref"
+    PATTERN "psithon2/psiaux1/*"
+    PATTERN "psithon2/psiaux1/myplugin1/*"
+    PATTERN "psithon2/psiaux2/*"
+    PATTERN "dftd3/psithon2/psiaux1/*"
+    PATTERN "dftd3/psithon2/psiaux1/myplugin1/*"
+    PATTERN "dftd3/psithon2/psiaux2/*"
+    PATTERN "mints3/L*dat"
+    PATTERN "mints3/P*dat"
   )
 
     # <<<  install psi4 share/ & include/  >>>
