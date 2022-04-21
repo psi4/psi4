@@ -60,7 +60,6 @@ struct Params {
     double bconv;
     int analyze;
     int print_pair_energies;
-    int spinadapt_energies;
     int semicanonical;
     int dertype;
     int t2_coupled;

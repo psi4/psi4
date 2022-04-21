@@ -211,6 +211,38 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the coupled-cluster doubles level of theory.
 
+.. psivar:: CC ALPHA-ALPHA PAIR ENERGIES
+   CCSD ALPHA-ALPHA PAIR ENERGIES
+   CC2 ALPHA-ALPHA PAIR ENERGIES
+   CC3 ALPHA-ALPHA PAIR ENERGIES
+
+   Restricted-reference same-spin pair energies for coupled-cluster theories.
+   Size number of active doubly occupied orbitals, square.
+
+.. psivar:: CC ALPHA-BETA PAIR ENERGIES
+   CCSD ALPHA-BETA PAIR ENERGIES
+   CC2 ALPHA-BETA PAIR ENERGIES
+   CC3 ALPHA-BETA PAIR ENERGIES
+
+   Restricted-reference opposite-spin (alpha first) pair energies for coupled-cluster
+   theories. Size number of active doubly occupied orbitals, square.
+
+.. psivar:: CC SINGLET PAIR ENERGIES
+   CCSD SINGLET PAIR ENERGIES
+   CC2 SINGLET PAIR ENERGIES
+   CC3 SINGLET PAIR ENERGIES
+
+   Restricted-reference singlet-adapted pair energies for coupled-cluster theories.
+   Size number of active doubly occupied orbitals, square.
+
+.. psivar:: CC TRIPLET PAIR ENERGIES
+   CCSD TRIPLET PAIR ENERGIES
+   CC2 TRIPLET PAIR ENERGIES
+   CC3 TRIPLET PAIR ENERGIES
+
+   Restricted-reference triplet-adapted pair energies for coupled-cluster theories.
+   Size number of active doubly occupied orbitals, square.
+
 .. psivar:: CCSD PAIR ENERGIES
 
    The restricted-reference pair energies for coupled-cluster singles and doubles
