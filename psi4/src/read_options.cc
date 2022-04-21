@@ -1451,12 +1451,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SCF error at which to complete the linear interpolation between DIIS steps and steps of the initial SCF accelerator
             Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
         options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
-        /*- Do Perform Incremental Fock Build? -*/
+        /*- Do perform incremental Fock build? -*/
         options.add_bool("INCFOCK", false);
         /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 
         N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
-        /*- The density threshold in which to stop performing INCFOCK -*/
+        /*- The density threshold at which to stop building the Fock matrix incrementally -*/
         options.add_double("INCFOCK_CONVERGENCE", 1.0e-5);
 
         /*- Perform the linear scaling exchange (LinK) algorithm, as described in [Ochsenfeld:1998:1663]_.
