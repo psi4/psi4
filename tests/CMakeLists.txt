@@ -121,9 +121,6 @@ if(ENABLE_pasture)
 endif()
 
 message(STATUS "Adding test cases: Psi4")
-if(NOT PERL_FOUND)
-   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
-endif()
 
 ###########################  External Project Tests  ###########################
 
