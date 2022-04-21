@@ -385,12 +385,12 @@ void DirectJK::compute_JK() {
         timer_on("DirectJK: INCFOCK Preprocessing");
         incfock_setup();
         int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
-        double dconv = options_.get_double("D_CONVERGENCE");
+        double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         double Dnorm = Process::environment.globals["SCF D NORM"];
         // Do IFB on this iteration?
-        do_incfock_iter_ = (Dnorm >= dconv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
         
-        if (!initial_iteration_ && (Dnorm >= dconv)) incfock_count_ += 1;
+        if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
         timer_off("DirectJK: INCFOCK Preprocessing");
     }
 
