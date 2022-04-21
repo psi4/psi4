@@ -710,7 +710,8 @@ def gradient(name, **kwargs):
             print('Performing finite difference calculations')
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.gradient_from_energies_geometries(molecule)
+        fdargs = driver_findif.prep_findif(molecule, irrep=None, mode="1_0", gradient=None)
+        findif_meta_dict = driver_findif.gradient_from_energies_geometries(molecule, **fdargs)
         ndisp = len(findif_meta_dict["displacements"]) + 1
 
         print(""" %d displacements needed ...""" % (ndisp), end='')
@@ -1559,7 +1560,8 @@ def hessian(name, **kwargs):
             """hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molecule, irrep)
+        fdargs = driver_findif.prep_findif(molecule, irrep, mode="2_0", gradient=G0)
+        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molecule, **fdargs)
 
         # Record undisplaced symmetry for projection of displaced point groups
         core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
@@ -1615,7 +1617,8 @@ def hessian(name, **kwargs):
         optstash_conv = driver_util.negotiate_convergence_criterion((2, 0), lowername, return_optstash=True)
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.hessian_from_energies_geometries(molecule, irrep)
+        fdargs = driver_findif.prep_findif(molecule, irrep, mode="2_0", gradient=G0)
+        findif_meta_dict = driver_findif.hessian_from_energies_geometries(molecule, **fdargs)
 
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
