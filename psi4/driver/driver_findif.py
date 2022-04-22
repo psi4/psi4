@@ -29,7 +29,7 @@
 import copy
 import logging
 from functools import partial
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Iterator, List, Tuple, Union
 
 import numpy as np
 import pydantic
@@ -42,7 +42,6 @@ from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.task_base import AtomicComputer, BaseComputer
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
@@ -50,29 +49,29 @@ logger.setLevel(logging.DEBUG)
 # h is the index of an irrep.
 
 
-def _displace_cart(mass, geom, salc_list, i_m, step_size):
+def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: core.CdSalcList, i_m: Iterator[Tuple], step_size: float) -> Tuple[np.ndarray, str]:
     """Displace a geometry along the specified displacement SALCs.
 
     Parameters
     ----------
-    mass : ndarray
+    mass
         (nat, ) masses [u] of atoms of the molecule (const).
-    geom : ndarray
+    geom
         (nat, 3) reference geometry [a0] of the molecule (const).
-    salc_list : :py:class:`~psi4.core.CdSalcList`
+    salc_list
         A list of Cartesian displacement SALCs
-    i_m : iterator of tuples
+    i_m
         An iterator containing tuples. Each tuple has the index of a salc in
         salc_list and the number of steps (positive or negative) to displace
         the salc at that index.
-    step_size : float
+    step_size
         The size of a single "step," i.e., the stencil size.
 
     Returns
     -------
-    disp_geom : ndarray
+    disp_geom
         (nat, 3) Displaced geometry.
-    label : str
+    label
         Displacement label for the metadata dictionary.
 
     """
@@ -83,8 +82,8 @@ def _displace_cart(mass, geom, salc_list, i_m, step_size):
     for salc_index, disp_steps in i_m:
         # * Python error if iterate through `salc_list`
         for i in range(len(salc_list[salc_index])):
-            salc = salc_list[salc_index][i]
-            disp_geom[salc.atom, salc.xyz] += disp_steps * step_size * salc.coef / np.sqrt(mass[salc.atom])
+            component = salc_list[salc_index][i]
+            disp_geom[component.atom, component.xyz] += disp_steps * step_size * component.coef / np.sqrt(mass[component.atom])
         label.append(f"{salc_index}: {disp_steps}")
 
     # salc_index is in descending order. We want the label in ascending order, so...
@@ -93,23 +92,23 @@ def _displace_cart(mass, geom, salc_list, i_m, step_size):
     return disp_geom, label
 
 
-def _initialize_findif(mol,
-                       freq_irrep_only,
-                       mode,
-                       stencil_size,
-                       step_size,
-                       initialize_string,
-                       t_project,
-                       r_project,
-                       initialize,
-                       verbose=0):
+def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
+                       freq_irrep_only: int,
+                       mode: str,
+                       stencil_size: int,
+                       step_size: float,
+                       initialize_string: Callable,
+                       t_project: bool,
+                       r_project: bool,
+                       initialize: bool,
+                       verbose: int = 0) -> Dict:
     """Perform initialization tasks needed by all primary functions.
 
     Parameters
     ----------
-    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
+    mol
         The molecule to displace
-    freq_irrep_only : int
+    freq_irrep_only
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
     mode : {"1_0", "2_0", "2_1"}
@@ -117,22 +116,22 @@ def _initialize_findif(mol,
          displacements, and the second number is the level determined at.
     stencil_size : {3, 5}
         Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
-    step_size : float
+    step_size
         [a0]
-    initialize_string : function
+    initialize_string
          A function that returns the string to print to show the caller was entered.
          The string is both caller-specific and dependent on values determined
          in this function.
-    initialize : bool
+    initialize
         For printing, whether call is from generator or assembly stages.
-    verbose : int
+    verbose
          Set to 0 to silence extra print information, regardless of the print level.
          Used so the information is printed only during geometry generation, and not
          during the derivative computation as well.
 
     Returns
     -------
-    data : dict
+    data
         Miscellaneous information required by callers.
     """
 
@@ -270,7 +269,7 @@ def _initialize_findif(mol,
     return data
 
 
-def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=True, stencil_size=3, step_size=0.005):
+def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only: int, mode: str, *, t_project: bool = True, r_project: bool = True, stencil_size: int = 3, step_size: float = 0.005) -> Dict:
     """
     Generate geometries for the specified molecule and derivative levels.
     You probably want to instead use one of the convenience functions:
@@ -279,9 +278,9 @@ def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=Tru
 
     Parameters
     ----------
-    mol : qcdb.molecule or :py:class:`~psi4.core.Molecule`
+    mol
         The molecule on which to perform a finite difference calculation.
-    freq_irrep_only : int
+    freq_irrep_only
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps. Irrelevant for "1_0".
     mode : {"1_0", "2_0", "2_1"}
@@ -290,12 +289,12 @@ def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=Tru
         is hessian from energies.
     stencil_size : {3, 5}
         Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
-    step_size : float
+    step_size
         Displacement size [a0].
 
     Returns
     -------
-    findifrec : dict
+    findifrec
         Dictionary of finite difference data, specified below.
         The dictionary makes findifrec _extensible_. If you need a new field
         in the record, just add it.
@@ -447,17 +446,47 @@ def _geom_generator(mol, freq_irrep_only, mode, *, t_project=True, r_project=Tru
     return findifrec
 
 
-def assemble_gradient_from_energies(findifrec: Dict):
+_der_from_lesser_docstring = """
+    Parameters
+    ----------
+    mol
+        The molecule on which to perform a finite difference calculation.
+    freq_irrep_only
+        The Cotton ordered irrep to get frequencies for. Choose -1 for all
+        irreps. Irrelevant for "1_0".
+    stencil_size : {3, 5}
+        Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
+    step_size
+        Displacement size [a0].
+
+    Returns
+    -------
+    findifrec : dict
+        Dictionary of finite difference data, specified in _geom_generator docstring.
+
+"""
+
+
+gradient_from_energies_geometries = partial(_geom_generator, freq_irrep_only=-1, mode="1_0")
+hessian_from_gradients_geometries = partial(_geom_generator, mode="2_1")
+hessian_from_energies_geometries = partial(_geom_generator, mode="2_0")
+
+gradient_from_energies_geometries.__doc__ = "Generate geometries for a gradient by finite difference of energies." + _der_from_lesser_docstring
+hessian_from_gradients_geometries.__doc__ = "Generate geometries for a Hessian by finite difference of gradients." + _der_from_lesser_docstring
+hessian_from_energies_geometries.__doc__ = "Generate geometries for a Hessian by finite difference of energies." + _der_from_lesser_docstring
+
+
+def assemble_gradient_from_energies(findifrec: Dict) -> np.ndarray:
     """Compute the gradient by finite difference of energies.
 
     Parameters
     ----------
-    findifrec : dict
+    findifrec
         Dictionary of finite difference data, specified in _geom_generator docstring.
 
     Returns
     -------
-    gradient : ndarray
+    gradient
         (nat, 3) Cartesian gradient [Eh/a0].
     """
 
@@ -523,29 +552,29 @@ def assemble_gradient_from_energies(findifrec: Dict):
     return g_cart
 
 
-def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print_lvl):
+def _process_hessian_symmetry_block(H_block: np.ndarray, B_block: np.ndarray, massweighter: np.ndarray, irrep: str, print_lvl: int) -> np.ndarray:
     """Perform post-construction processing for a symmetry block of the Hessian.
        Statements need to be printed, and the Hessian must be made orthogonal.
 
     Parameters
-    ---------
-    H_block : ndarray
+    ----------
+    H_block
         A block of the Hessian for an irrep, in mass-weighted salcs.
-        Dimensions # cdsalcs by # cdsalcs.
-    B_block : ndarray
+        (nsalc, nsalc)
+    B_block
         A block of the B matrix for an irrep, which transforms CdSalcs to Cartesians.
-        Dimensions # cdsalcs by # cartesians.
-    massweighter : ndarray
+        (nsalc, 3 * nat)
+    massweighter
         The mass associated with each atomic coordinate.
-        Dimension # cartesians. Due to x, y, z, values appear in groups of three.
-    irrep : str
+        (3 * nat, ) Due to x, y, z, values appear in groups of three.
+    irrep
         A string identifying the irrep H_block and B_block are of.
-    print_lvl : int
+    print_lvl
         The level of printing information requested by the user.
 
     Returns
     -------
-    H_block : ndarray
+    H_block
         H_block, but made into an orthogonal array.
     """
 
@@ -572,27 +601,27 @@ def _process_hessian_symmetry_block(H_block, B_block, massweighter, irrep, print
     return H_block
 
 
-def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
+def _process_hessian(H_blocks: List[np.ndarray], B_blocks: List[np.ndarray], massweighter: np.ndarray, print_lvl: int) -> np.ndarray:
     """Perform post-construction processing for the Hessian.
        Statements need to be printed, and the Hessian must be transformed.
 
     Parameters
     ----------
-    H_blocks : list of ndarray
+    H_blocks
         A list of blocks of the Hessian per irrep, in mass-weighted salcs.
-        Each is dimension # cdsalcs-in-irrep by # cdsalcs-in-irrep.
-    B_blocks : list of ndarray
+        Each is (nsalc_in_irrep, nsalc_in_irrep)
+    B_blocks
         A block of the B matrix per irrep, which transforms CdSalcs to Cartesians.
-        Each is dimensions # cdsalcs-in-irrep by # cartesians.
-    massweighter : ndarray
+        Each is (nsalc_in_irrep, 3 * nat)
+    massweighter
         The mass associated with each atomic coordinate.
-        Dimension 3 * natom. Due to x, y, z, values appear in groups of three.
-    print_lvl : int
+        (3 * nat, ) Due to x, y, z, values appear in groups of three.
+    print_lvl
         The level of printing information requested by the user.
 
     Returns
     -------
-    Hx : ndarray
+    Hx
         The Hessian in non-mass weighted cartesians.
     """
 
@@ -631,19 +660,20 @@ def _process_hessian(H_blocks, B_blocks, massweighter, print_lvl):
     return Hx
 
 
-def assemble_dipder_from_dipoles(findifrec, freq_irrep_only):
+def assemble_dipder_from_dipoles(findifrec: Dict, freq_irrep_only: int) -> np.ndarray:
     """Compute the dipole derivatives by finite difference of dipoles.
+
     Parameters
     ----------
-    findifrec : dict
+    findifrec
         Dictionary of finite difference data, specified in _geom_generator docstring.
-    freq_irrep_only : int
+    freq_irrep_only
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
 
     Returns
     -------
-    dipder : ndarray
+    dipder
         (3 * nat, 3) Cartesian Dipole Derivatives [Eh/a0^2]
 
     """
@@ -711,20 +741,20 @@ def assemble_dipder_from_dipoles(findifrec, freq_irrep_only):
     return dipder_cart
 
 
-def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
+def assemble_hessian_from_gradients(findifrec: Dict, freq_irrep_only: int) -> np.ndarray:
     """Compute the Hessian by finite difference of gradients.
 
     Parameters
     ----------
-    findifrec : dict
+    findifrec
         Dictionary of finite difference data, specified in _geom_generator docstring.
-    freq_irrep_only : int
+    freq_irrep_only
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
 
     Returns
     -------
-    hessian : ndarray
+    hessian
         (3 * nat, 3 * nat) Cartesian Hessian [Eh/a0^2]
     """
 
@@ -885,19 +915,19 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-def assemble_hessian_from_energies(findifrec, freq_irrep_only):
+def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.ndarray:
     """Compute the Hessian by finite difference of energies.
 
     Parameters
     ----------
-    findifrec : dict
+    findifrec
         Dictionary of finite difference data, specified in _geom_generator docstring.
-    freq_irrep_only : int
+    freq_irrep_only
         The 0-indexed Cotton ordered irrep to get frequencies for. Choose -1 for all irreps.
 
     Returns
     -------
-    hessian : ndarray
+    hessian
         (3 * nat, 3 * nat) Cartesian Hessian [Eh/a0^2].
     """
 
@@ -986,11 +1016,6 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
 
     # All blocks of the Hessian are now constructed!
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
-
-
-gradient_from_energies_geometries = partial(_geom_generator, freq_irrep_only=-1, mode="1_0")
-hessian_from_gradients_geometries = partial(_geom_generator, mode="2_1")
-hessian_from_energies_geometries = partial(_geom_generator, mode="2_0")
 
 
 class FiniteDifferenceComputer(BaseComputer):
@@ -1147,6 +1172,7 @@ class FiniteDifferenceComputer(BaseComputer):
         return [t.plan() for t in self.task_list.values()]
 
     def compute(self, client=None):
+        """Run each job in task list."""
         instructions = "\n" + p4util.banner(f" FiniteDifference Computations", strNotOutfile=True) + "\n"
         logger.debug(instructions)
         core.print_out(instructions)
@@ -1157,13 +1183,6 @@ class FiniteDifferenceComputer(BaseComputer):
 
     def _prepare_results(self, client=None):
         results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
-
-        #for i, x in self.task_list.items():
-        #    print('\nTASK', i)
-        #    pp.pprint(x)
-        #for i, x in results_list.items():
-        #    print('\nRESULT', i)
-        #    pp.pprint(x)
 
         # load AtomicComputer results into findifrec[reference]
         reference = self.findifrec["reference"]
@@ -1249,7 +1268,7 @@ class FiniteDifferenceComputer(BaseComputer):
 
         # logger.debug('\nFINDIF_RESULTS POST-LOAD\n' + pp.pformat(self.findifrec))
 
-    def get_results(self, client=None):
+    def get_results(self, client=None) -> AtomicResult:
         instructions = "\n" + p4util.banner(f" FiniteDifference Results", strNotOutfile=True) + "\n"
         core.print_out(instructions)
 
@@ -1283,7 +1302,7 @@ class FiniteDifferenceComputer(BaseComputer):
 #            # this correctly filters out cbs fn and "hf/cc-pvtz"
 #            # it probably incorrectly filters out mp5, but reconsider in DDD
 
-        findifjob = AtomicResult(
+        findif_model = AtomicResult(
             **{
                 'driver': self.driver,
                 'model': {
@@ -1305,19 +1324,19 @@ class FiniteDifferenceComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findifjob))
+        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model))
 
-        return findifjob
+        return findif_model
 
     def get_psi_results(self, return_wfn=False):
 
-        findifjob = self.get_results()
+        findif_model = self.get_results()
 
-        ret_ptype = core.Matrix.from_array(findifjob.return_result)
-        wfn = _findif_schema_to_wfn(findifjob)
+        ret_ptype = core.Matrix.from_array(findif_model.return_result)
+        wfn = _findif_schema_to_wfn(findif_model)
 
-        _gradient_write(wfn)
-        _hessian_write(wfn)
+        gradient_write(wfn)
+        hessian_write(wfn)
 
         if return_wfn:
             return (ret_ptype, wfn)
@@ -1325,34 +1344,34 @@ class FiniteDifferenceComputer(BaseComputer):
             return ret_ptype
 
 
-def _findif_schema_to_wfn(findifjob):
+def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
     """Helper function to keep Wavefunction dependent on FinDif-flavored QCSchemus."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(findifjob.molecule.dict(), nonphysical=True)
-    sbasis = "def2-svp" if (findifjob.model.basis == "(auto)") else findifjob.model.basis
+    mol = core.Molecule.from_schema(findif_model.molecule.dict(), nonphysical=True)
+    sbasis = "def2-svp" if (findif_model.model.basis == "(auto)") else findif_model.model.basis
     basis = core.BasisSet.build(mol, "ORBITAL", sbasis)
     wfn = core.Wavefunction(mol, basis)
-    if hasattr(findifjob.provenance, "module"):
-        wfn.set_module(findifjob.provenance.module)
+    if hasattr(findif_model.provenance, "module"):
+        wfn.set_module(findif_model.provenance.module)
 
     # setting CURRENT E/G/H on wfn below catches Wfn.energy_, gradient_, hessian_
     # setting CURRENT E/G/H on core below is authoritative P::e record
-    for qcv, val in findifjob.extras['qcvars'].items():
+    for qcv, val in findif_model.extras["qcvars"].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, val)
 
     return wfn
 
 
-def _hessian_write(wfn):
+def hessian_write(wfn: core.Wavefunction):
     if core.get_option('FINDIF', 'HESSIAN_WRITE'):
         filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
         with open(filename, 'wb') as handle:
             qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='psi4')
 
 
-def _gradient_write(wfn):
+def gradient_write(wfn: core.Wavefunction):
     if core.get_option('FINDIF', 'GRADIENT_WRITE'):
         filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
         qcdb.gradparse.to_string(np.asarray(wfn.gradient()),
@@ -1362,8 +1381,8 @@ def _gradient_write(wfn):
                                  energy=wfn.energy())
 
 
-def _rms(arr):
-    """Compute root-mean-square of array, be it psi4.core.Matrix or np.ndarray."""
+def _rms(arr: Union[core.Matrix, np.ndarray]) -> float:
+    """Compute root-mean-square of array, be it Psi4 or NumPy array."""
     if isinstance(arr, np.ndarray):
         return np.sqrt(np.mean(np.square(arr)))
     else:

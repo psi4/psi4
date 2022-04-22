@@ -31,7 +31,7 @@ import re
 import sys
 import copy
 import pprint
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 import logging
 
@@ -63,6 +63,7 @@ _lmh_labels = {
     4: ['LO', 'MD', 'M2', 'HI'],
     5: ['LO', 'MD', 'M2', 'M3', 'HI']
 }
+CBSMetadata = List[Dict[str, Any]]
 
 
 # remove in 1.8
@@ -91,7 +92,7 @@ def corl_xtpl_helgaker_2():
     pass
 
 
-def _expand_bracketed_basis(basisstring: str, molecule=None):
+def _expand_bracketed_basis(basisstring: str, molecule: Union["qcdb.Molecule", core.Molecule] = None) -> Tuple[List[str], List[int]]:
     """Function to transform and validate basis series specification for cbs().
 
     Parameters
@@ -107,7 +108,7 @@ def _expand_bracketed_basis(basisstring: str, molecule=None):
         number (e.g., ``[23]``). Does not allow skipped zetas (e.g., ``[dq]``), zetas
         outside the [2,8] range, non-Dunning, non-Ahlrichs, or non-Jensen sets,
         or non-findable .gbs sets.
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule
         This function checks that the basis is valid by trying to build
         the qcdb.BasisSet object for *molecule* or for H2 if None.
 
@@ -178,7 +179,7 @@ def _expand_bracketed_basis(basisstring: str, molecule=None):
     return (BSET, ZSET)
 
 
-def _contract_bracketed_basis(basisarray: List):
+def _contract_bracketed_basis(basisarray: List[str]) -> str:
     """Function to reform a bracketed basis set string from a sequential series
     of basis sets. Essentially the inverse of _expand_bracketed_basis(). Used to
     print a nicely formatted basis set string in the results table.
@@ -439,15 +440,15 @@ def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
         raise ValidationError(f"Stage treatment must be 'corl' or 'scf', not '{xtpl_type}'")
 
 
-def _validate_cbs_inputs(cbs_metadata, molecule):
+def _validate_cbs_inputs(cbs_metadata: CBSMetadata, molecule: Union["qcdb.Molecule", core.Molecule]) -> CBSMetadata:
     """ A helper function which validates the ``cbs_metadata`` format,
     expands basis sets, and provides sensible defaults for optional arguments.
 
     Parameters
     ----------
-    cbs_metadata : list
+    cbs_metadata
         List of dicts containing CBS stage keywords.
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule
         Molecule to be passed to _expand_bracketed_basis()
 
     Returns
@@ -506,21 +507,21 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
         stage["options"] = item.get("options", False)
         stage["options_lo"] = item.get("options_lo", False)
         metadata.append(stage)
-    return (metadata)
+    return metadata
 
 
-def _process_cbs_kwargs(kwargs):
+def _process_cbs_kwargs(kwargs: Dict) -> CBSMetadata:
     """ A helper function which translates supplied kwargs into the
     ``cbs_metadata`` format and passes it for validation.
 
     Parameters
     ----------
-    kwargs : dict
+    kwargs
         kwargs containing the CBS function specification.
 
     Returns
     -------
-    list
+    cbs_metadata
         List of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
     """
@@ -933,7 +934,7 @@ complete_basis_set = cbs
 #    psioh.set_specific_retention(psif.PSIF_SCF_MOS, False)
 
 
-def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options):
+def _expand_scheme_orders(scheme: str, basisname: List[str], basiszeta: List[int], wfnname: str, options: Dict) -> Dict[str, Dict[str, Any]]:
     """Check that the length of *basiszeta* array matches the implied degree of
     extrapolation in *scheme* name. Return a dictionary of same length as
     basiszeta, with *basisname* and *basiszeta* distributed therein.
@@ -959,7 +960,7 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options):
     return NEED
 
 
-def _contract_scheme_orders(needdict, datakey='f_energy'):
+def _contract_scheme_orders(needdict, datakey: str = 'f_energy') -> Dict[str, Any]:
     """Prepared named arguments for extrapolation functions by
     extracting zetas and values (which one determined by *datakey*) out
     of *needdict* and returning a dictionary whose keys are constructed
@@ -1004,13 +1005,13 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
 #        return [kwargs[mtd] for mtd in cbs_method_stages if mtd in kwargs]
 
 
-def _parse_cbs_gufunc_string(method_name):
+def _parse_cbs_gufunc_string(method_name: str):
     """ A helper function that parses a ``"method/basis"`` input string
     into separate method and basis components. Also handles delta corrections.
 
     Parameters
     ----------
-    method_name : str
+    method_name
         A ``"method/basis"`` style string defining the calculation.
 
     Returns
@@ -1049,7 +1050,7 @@ def _parse_cbs_gufunc_string(method_name):
     return method_list, basis_list
 
 
-def _cbs_text_parser(total_method_name, **kwargs):
+def cbs_text_parser(total_method_name: str, **kwargs) -> Dict:
     """
     A text based parser of the CBS method string. Provided to handle "method/basis"
     specification of the requested calculations. Also handles "simple" (i.e.
@@ -1057,7 +1058,7 @@ def _cbs_text_parser(total_method_name, **kwargs):
 
     Parameters
     ----------
-    total_method_name : str
+    total_method_name
         String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
         bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
         ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
@@ -1176,7 +1177,7 @@ def _cbs_text_parser(total_method_name, **kwargs):
 #    molecule = kwargs.pop('molecule', core.get_active_molecule())
 #    molecule.update_geometry()
 #
-#    cbs_kwargs = _cbs_text_parser(total_method_name, **kwargs)
+#    cbs_kwargs = cbs_text_parser(total_method_name, **kwargs)
 #    cbs_kwargs['molecule'] = molecule
 #    cbs_kwargs['return_wfn'] = True
 #
@@ -1203,7 +1204,7 @@ def _cbs_text_parser(total_method_name, **kwargs):
 #        return ptype_value
 
 
-def _build_cbs_compute(metameta, metadata):
+def _build_cbs_compute(metameta: Dict[str, Any], metadata: CBSMetadata):
     label = metameta['label']
     ptype = metameta['ptype']
     verbose = metameta['verbose']
@@ -1588,13 +1589,6 @@ class CompositeComputer(BaseComputer):
         modules = list(set(modules))
         modules = modules[0] if len(modules) == 1 else "(mixed)"
 
-        #for x in self.task_list:
-        #    print('\nTASK')
-        #    pp.pprint(x)
-        #for x in self.results_list:
-        #    print('\nRESULT')
-        #    pp.pprint(x)
-
         # load results_list numbers into compute_list (task_list is AtomicComputer-s)
         for itask, mc in enumerate(self.compute_list):
             task = results_list[itask]
@@ -1689,7 +1683,7 @@ class CompositeComputer(BaseComputer):
             for qcv in ['CURRENT DIPOLE GRADIENT', 'CBS DIPOLE GRADIENT']:
                 qcvars[qcv] = assembled_results['dipole gradient']
 
-        cbsjob = AtomicResult(
+        cbs_model = AtomicResult(
             **{
                 'driver': self.driver,
                 #'keywords': self.keywords,
@@ -1712,20 +1706,21 @@ class CompositeComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('CBS QCSchema\n' + pp.pformat(cbsjob.dict()))
+        logger.debug('CBS QCSchema\n' + pp.pformat(cbs_model.dict()))
 
-        return cbsjob
+        return cbs_model
 
     def get_psi_results(self, return_wfn=False):
         """Return CBS results in usual E/wfn interface."""
 
-        cbsjob = self.get_results()
 
-        if cbsjob.driver == 'energy':
-            ret_ptype = cbsjob.return_result
+        cbs_model = self.get_results()
+
+        if cbs_model.driver == 'energy':
+            ret_ptype = cbs_model.return_result
         else:
-            ret_ptype = core.Matrix.from_array(cbsjob.return_result)
-        wfn = _cbs_schema_to_wfn(cbsjob)
+            ret_ptype = core.Matrix.from_array(cbs_model.return_result)
+        wfn = _cbs_schema_to_wfn(cbs_model)
 
         if return_wfn:
             return (ret_ptype, wfn)
@@ -1733,23 +1728,23 @@ class CompositeComputer(BaseComputer):
             return ret_ptype
 
 
-def _cbs_schema_to_wfn(cbsjob):
+def _cbs_schema_to_wfn(cbs_model):
     """Helper function to keep Wavefunction dependent on CBS-flavored QCSchemus."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(cbsjob.molecule.dict())
+    mol = core.Molecule.from_schema(cbs_model.molecule.dict())
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp', quiet=True)
     wfn = core.Wavefunction(mol, basis)
-    if hasattr(cbsjob.provenance, "module"):
-        wfn.set_module(cbsjob.provenance.module)
+    if hasattr(cbs_model.provenance, "module"):
+        wfn.set_module(cbs_model.provenance.module)
 
-    # wfn.set_energy(cbsjob['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
-    for qcv, val in cbsjob.extras['qcvars'].items():
+    # wfn.set_energy(cbs_model['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
+    for qcv, val in cbs_model.extras['qcvars'].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, val)
 
 
-#    flat_grad = cbsjob['extras']['qcvars'].get('CBS TOTAL GRADIENT')
+#    flat_grad = cbs_model['extras']['qcvars'].get('CBS TOTAL GRADIENT')
 #    if flat_grad is not None:
 #        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
 #        wfn.set_gradient(finalgradient)
@@ -1758,7 +1753,7 @@ def _cbs_schema_to_wfn(cbsjob):
 #            core.print_out('CURRENT GRADIENT')
 #            finalgradient.print_out()
 #
-#    flat_hess = cbsjob['extras']['qcvars'].get('CBS TOTAL HESSIAN')
+#    flat_hess = cbs_model['extras']['qcvars'].get('CBS TOTAL HESSIAN')
 #    if flat_hess is not None:
 #        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
 #        wfn.set_hessian(finalhessian)

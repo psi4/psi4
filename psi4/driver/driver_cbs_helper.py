@@ -34,13 +34,11 @@ import logging
 import numpy as np
 
 from psi4 import core
-from psi4.driver.p4util.exceptions import *
-nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)  # when safe, "from psi4.driver import nppp"
 from psi4.driver.p4util.exceptions import ValidationError
+nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)  # when safe, "from psi4.driver import nppp"
 from psi4.driver.aliases import sherrill_gold_standard, allen_focal_point
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 _zeta_val2sym = {k + 2: v for k, v in enumerate('dtq5678')}
 Extrapolatable = Union[float, core.Matrix, core.Vector]
@@ -623,7 +621,7 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, z
             cbsscheme += " " * (19 - len(name_str))
             cbsscheme += """% 16.12f\n\n""" % final
             core.print_out(cbsscheme)
-            logger.info(cbsscheme)
+            logger.debug(cbsscheme)
 
         return final
 

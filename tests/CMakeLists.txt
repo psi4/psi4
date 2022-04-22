@@ -104,7 +104,7 @@ foreach(test_name adc1 adc2 aediis-1 aediis-2
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5 tdscf-6 tdscf-7
                   basis-ecp dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
                   linK-1 linK-2 linK-3
-                  cbs-xtpl-energy-conv
+                  cbs-xtpl-energy-conv ddd-deriv
                   )
     add_subdirectory(${test_name})
 endforeach()

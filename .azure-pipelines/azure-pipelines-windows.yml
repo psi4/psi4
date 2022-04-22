@@ -132,8 +132,6 @@ jobs:
                         conda-forge::gau2grid ^
                         conda-forge::libxc ^
                         psi4/label/dev::libint2=*=h2e52968_4 ^
-                        conda-forge::mpmath ^
-                        conda-forge::msgpack-python ^
                         conda-forge::qcelemental ^
                         conda-forge::qcengine ^
                         scipy
