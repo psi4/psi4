@@ -48,9 +48,8 @@ logger = logging.getLogger(__name__)
 # h is the index of an irrep.
 
 
-def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: "psi4.core.CdSalcList", i_m: Iterator[Tuple], step_size: float) -> Tuple[np.ndarray, str]:
+def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: core.CdSalcList, i_m: Iterator[Tuple], step_size: float) -> Tuple[np.ndarray, str]:
     """Displace a geometry along the specified displacement SALCs.
-    Called within :py:func:`_geom_generator` so from each displacement mode: [gradient|hessian]_from_[gradients|energies]_geometries.
 
     Parameters
     ----------
@@ -82,8 +81,8 @@ def _displace_cart(mass: np.ndarray, geom: np.ndarray, salc_list: "psi4.core.CdS
     for salc_index, disp_steps in i_m:
         # * Python error if iterate through `salc_list`
         for i in range(len(salc_list[salc_index])):
-            salc = salc_list[salc_index][i]
-            disp_geom[salc.atom, salc.xyz] += disp_steps * step_size * salc.coef / np.sqrt(mass[salc.atom])
+            component = salc_list[salc_index][i]
+            disp_geom[component.atom, component.xyz] += disp_steps * step_size * component.coef / np.sqrt(mass[component.atom])
         label.append(f"{salc_index}: {disp_steps}")
 
     # salc_index is in descending order. We want the label in ascending order, so...
@@ -103,7 +102,6 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
                        initialize: bool,
                        verbose: int = 0) -> Dict:
     """Perform initialization tasks needed by all primary functions.
-    Called by _geom_generator and each assembly mode: assemble_[gradient|dipder|hessian]_from_[energies|dipoles|gradients].
 
     Parameters
     ----------
@@ -556,10 +554,9 @@ def assemble_gradient_from_energies(findifrec: Dict) -> np.ndarray:
 def _process_hessian_symmetry_block(H_block: np.ndarray, B_block: np.ndarray, massweighter: np.ndarray, irrep: str, print_lvl: int) -> np.ndarray:
     """Perform post-construction processing for a symmetry block of the Hessian.
        Statements need to be printed, and the Hessian must be made orthogonal.
-       Called by assemble_hessian_from_gradients|energies functions.
 
     Parameters
-    ---------
+    ----------
     H_block
         A block of the Hessian for an irrep, in mass-weighted salcs.
         (nsalc, nsalc)
@@ -606,19 +603,18 @@ def _process_hessian_symmetry_block(H_block: np.ndarray, B_block: np.ndarray, ma
 def _process_hessian(H_blocks: List[np.ndarray], B_blocks: List[np.ndarray], massweighter: np.ndarray, print_lvl: int) -> np.ndarray:
     """Perform post-construction processing for the Hessian.
        Statements need to be printed, and the Hessian must be transformed.
-       Final step in assemble_hessian_from_gradients|energies functions.
 
     Parameters
     ----------
     H_blocks
         A list of blocks of the Hessian per irrep, in mass-weighted salcs.
-        Each is dimension (# cdsalcs-in-irrep, # cdsalcs-in-irrep).
+        Each is (nsalc_in_irrep, nsalc_in_irrep)
     B_blocks
         A block of the B matrix per irrep, which transforms CdSalcs to Cartesians.
-        Each is dimension (# cdsalcs-in-irrep, # cartesians).
+        Each is (nsalc_in_irrep, 3 * nat)
     massweighter
         The mass associated with each atomic coordinate.
-        Dimension (3 * nat). Due to x, y, z, values appear in groups of three.
+        (3 * nat, ) Due to x, y, z, values appear in groups of three.
     print_lvl
         The level of printing information requested by the user.
 
@@ -1083,7 +1079,7 @@ def prep_findif(mol, irrep, mode, gradient=None):
 
 
 def _rms(arr: Union[core.Matrix, np.ndarray]) -> float:
-    """Compute root-mean-square of array, be it psi4.core.Matrix or np.ndarray."""
+    """Compute root-mean-square of array, be it Psi4 or NumPy array."""
     if isinstance(arr, np.ndarray):
         return np.sqrt(np.mean(np.square(arr)))
     else:
