@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+
 # Figure out psidatadir: envvar trumps staged/installed
 import os
 psi4_module_loc = os.path.dirname(os.path.abspath(__file__))

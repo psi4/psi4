@@ -1300,9 +1300,6 @@ PYBIND11_MODULE(core, core) {
     core.def("options_to_python", py_psi_options_to_python,
              "Get dictionary of whether options of module have changed.");
 
-    core.def("options_to_python", py_psi_options_to_python,
-             "Get dictionary of whether options of module have changed.");
-
     // These return/set/print PSI variables found in Process::environment.globals
     core.def("has_scalar_variable",
              [](const std::string& key) { return bool(Process::environment.globals.count(to_upper(key))); },

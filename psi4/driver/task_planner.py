@@ -35,7 +35,7 @@ from psi4.driver import p4util, pp
 from psi4.driver.task_base import BaseComputer, AtomicComputer
 from psi4.driver.driver_findif import FiniteDifferenceComputer
 from psi4.driver.driver_nbody import ManyBodyComputer
-from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, _cbs_text_parser
+from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ def _expand_cbs_methods(method: str, basis: str, driver, **kwargs) -> Tuple[str,
     # Expand CBS methods
     if "/" in method:
         kwargs["ptype"] = driver
-        cbsmeta = _cbs_text_parser(method, **kwargs)
+        cbsmeta = cbs_text_parser(method, **kwargs)
 
         # Single call detected
         if "cbs_metadata" not in cbsmeta:

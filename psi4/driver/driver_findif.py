@@ -1172,6 +1172,7 @@ class FiniteDifferenceComputer(BaseComputer):
         return [t.plan() for t in self.task_list.values()]
 
     def compute(self, client=None):
+        """Run each job in task list."""
         instructions = "\n" + p4util.banner(f" FiniteDifference Computations", strNotOutfile=True) + "\n"
         logger.debug(instructions)
         core.print_out(instructions)
@@ -1182,13 +1183,6 @@ class FiniteDifferenceComputer(BaseComputer):
 
     def _prepare_results(self, client=None):
         results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
-
-        #for i, x in self.task_list.items():
-        #    print('\nTASK', i)
-        #    pp.pprint(x)
-        #for i, x in results_list.items():
-        #    print('\nRESULT', i)
-        #    pp.pprint(x)
 
         # load AtomicComputer results into findifrec[reference]
         reference = self.findifrec["reference"]
@@ -1274,7 +1268,7 @@ class FiniteDifferenceComputer(BaseComputer):
 
         # logger.debug('\nFINDIF_RESULTS POST-LOAD\n' + pp.pformat(self.findifrec))
 
-    def get_results(self, client=None):
+    def get_results(self, client=None) -> AtomicResult:
         instructions = "\n" + p4util.banner(f" FiniteDifference Results", strNotOutfile=True) + "\n"
         core.print_out(instructions)
 
@@ -1308,7 +1302,7 @@ class FiniteDifferenceComputer(BaseComputer):
 #            # this correctly filters out cbs fn and "hf/cc-pvtz"
 #            # it probably incorrectly filters out mp5, but reconsider in DDD
 
-        findifjob = AtomicResult(
+        findif_model = AtomicResult(
             **{
                 'driver': self.driver,
                 'model': {
@@ -1330,19 +1324,19 @@ class FiniteDifferenceComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findifjob))
+        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model))
 
-        return findifjob
+        return findif_model
 
     def get_psi_results(self, return_wfn=False):
 
-        findifjob = self.get_results()
+        findif_model = self.get_results()
 
-        ret_ptype = core.Matrix.from_array(findifjob.return_result)
-        wfn = _findif_schema_to_wfn(findifjob)
+        ret_ptype = core.Matrix.from_array(findif_model.return_result)
+        wfn = _findif_schema_to_wfn(findif_model)
 
-        _gradient_write(wfn)
-        _hessian_write(wfn)
+        gradient_write(wfn)
+        hessian_write(wfn)
 
         if return_wfn:
             return (ret_ptype, wfn)
@@ -1350,20 +1344,20 @@ class FiniteDifferenceComputer(BaseComputer):
             return ret_ptype
 
 
-def _findif_schema_to_wfn(findifjob):
+def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
     """Helper function to keep Wavefunction dependent on FinDif-flavored QCSchemus."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(findifjob.molecule.dict(), nonphysical=True)
-    sbasis = "def2-svp" if (findifjob.model.basis == "(auto)") else findifjob.model.basis
+    mol = core.Molecule.from_schema(findif_model.molecule.dict(), nonphysical=True)
+    sbasis = "def2-svp" if (findif_model.model.basis == "(auto)") else findif_model.model.basis
     basis = core.BasisSet.build(mol, "ORBITAL", sbasis)
     wfn = core.Wavefunction(mol, basis)
-    if hasattr(findifjob.provenance, "module"):
-        wfn.set_module(findifjob.provenance.module)
+    if hasattr(findif_model.provenance, "module"):
+        wfn.set_module(findif_model.provenance.module)
 
     # setting CURRENT E/G/H on wfn below catches Wfn.energy_, gradient_, hessian_
     # setting CURRENT E/G/H on core below is authoritative P::e record
-    for qcv, val in findifjob.extras['qcvars'].items():
+    for qcv, val in findif_model.extras["qcvars"].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, val)
 
