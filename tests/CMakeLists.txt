@@ -1,5 +1,3 @@
-find_package(Perl QUIET)
-
 # In order to get CTest to run tests in separate categories,
 # labels are used. All tests must carry the label "psi".
 #
@@ -121,9 +119,6 @@ if(ENABLE_pasture)
 endif()
 
 message(STATUS "Adding test cases: Psi4")
-if(NOT PERL_FOUND)
-   message(WARNING "Perl was not found. Some Coupled Cluster test cases will not be thoroughly checked.")
-endif()
 
 ###########################  External Project Tests  ###########################
 

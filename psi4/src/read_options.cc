@@ -2349,8 +2349,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("MP2_AMPS_PRINT", 0);
         /*- Do print MP2 and CCSD pair energies for RHF references? -*/
         options.add_bool("PAIR_ENERGIES_PRINT", 0);
-        /*- Do print spin-adapted pair energies? -*/
-        options.add_bool("SPINADAPT_ENERGIES", false);
         /*- Do build W intermediates required for cc3 in core memory? -*/
         options.add_bool("T3_WS_INCORE", 0);
         /*- Do SCS-MP2 with parameters optimized for nucleic acids? -*/

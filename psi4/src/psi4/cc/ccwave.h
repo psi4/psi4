@@ -152,8 +152,11 @@ class CCEnergyWavefunction : public Wavefunction {
     double rhf_mp2_energy();
     void one_step();
     void denom();
-    void pair_energies(double **epair_aa, double **epair_ab);
-    void print_pair_energies(double *emp2_aa, double *emp2_ab, double *ecc_aa, double *ecc_ab);
+    // Grab pair energies from the OOVV block of C2 (not T2), storing in the input vectors.
+    // For HF orbitals, the correlation energy is the sum of pair energies.
+    void pair_energies(std::vector<double>& epair_aa, std::vector<double>& epair_ab) const;
+    // Use input AA and AB pair energies to save pair energies to the wavefunction and print them.
+    void print_pair_energies(const std::vector<double>& emp2_aa, const std::vector<double>& emp2_ab, const std::vector<double>& ecc_aa, const std::vector<double>& ecc_ab);
 
     void form_df_ints(Options &options, int **cachelist, int *cachefiles);
 

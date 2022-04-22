@@ -79,9 +79,8 @@ void CCEnergyWavefunction::get_moinfo() {
     moinfo_.sopi = nsopi_;
     moinfo_.orbspi = nmopi_;
     moinfo_.openpi = soccpi_;
-    moinfo_.clsdpi = init_int_array(moinfo_.nirreps);
-    // TODO: figure out why I can't just directly assign doccpi_ here, the same as soccpi_.
-    for (int h = 0; h < moinfo_.nirreps; ++h) moinfo_.clsdpi[h] = doccpi_[h];
+    // We'll remove the frzcpi later in this file.
+    moinfo_.clsdpi = doccpi_;
 
     auto nirreps = moinfo_.nirreps;
 
@@ -310,7 +309,6 @@ void CCEnergyWavefunction::cleanup() {
     //    free(moinfo.sopi);
     //    free(moinfo.sosym);
     //    free(moinfo.orbspi);
-    free(moinfo_.clsdpi);
     //    free(moinfo.openpi);
     //    free(moinfo.uoccpi);
     //  free(moinfo.fruocc);

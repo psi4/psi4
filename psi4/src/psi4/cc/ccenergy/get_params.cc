@@ -165,7 +165,6 @@ void CCEnergyWavefunction::get_params(Options &options) {
 
     params_.print_mp2_amps = options.get_bool("MP2_AMPS_PRINT");
     params_.print_pair_energies = options.get_bool("PAIR_ENERGIES_PRINT");
-    params_.spinadapt_energies = options.get_bool("SPINADAPT_ENERGIES");
     params_.t3_Ws_incore = options.get_bool("T3_WS_INCORE");
 
     /* get parameters related to SCS-MP2 or SCS-N-MP2 */
@@ -216,8 +215,6 @@ void CCEnergyWavefunction::get_params(Options &options) {
     outfile->Printf("    Analyze T2 Amps =     %s\n", params_.analyze ? "Yes" : "No");
     outfile->Printf("    Print Pair Ener =     %s\n", params_.print_pair_energies ? "Yes" : "No");
 
-    if (params_.print_pair_energies)
-        outfile->Printf("    Spinadapt Ener. =     %s\n", params_.spinadapt_energies ? "Yes" : "No");
     outfile->Printf("    Local CC        =     %s\n", params_.local ? "Yes" : "No");
 
     if (params_.wfn == "CC3" || params_.wfn == "EOM_CC3")
