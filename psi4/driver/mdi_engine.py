@@ -281,13 +281,13 @@ class MDIEngine():
     def set_lattice_field(self):
         """ Set a field of lattice point charges using information received through MDI
         """
-        self.lattice_field = psi4.QMMMbohr()
+        arr = []
         for ilat in range(self.nlattice):
-            latx = self.clattice[3 * ilat + 0]
-            laty = self.clattice[3 * ilat + 1]
-            latz = self.clattice[3 * ilat + 2]
-            self.lattice_field.extern.addCharge(self.lattice[ilat], latx, laty, latz)
-        psi4.core.set_global_option_python('EXTERN', self.lattice_field.extern)
+            arr.append(self.lattice[ilat])
+            arr.append(self.clattice[3 * ilat + 0])
+            arr.append(self.clattice[3 * ilat + 1])
+            arr.append(self.clattice[3 * ilat + 2])
+        self.kwargs["external_potentials"] = np.array(arr).reshape((-1, 4))
         self.set_lattice = True
 
     # Respond to the >NLATTICE command
@@ -397,7 +397,7 @@ class MDIEngine():
 
         # If a lattice of point charges was set, unset it now
         if self.set_lattice:
-            psi4.core.set_global_option_python('EXTERN', None)
+            self.kwargs.pop("external_potentials", None)
             
 
     # Enter server mode, listening for commands from the driver

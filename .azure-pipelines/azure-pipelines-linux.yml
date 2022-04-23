@@ -159,6 +159,4 @@ jobs:
       cd build
       source activate p4env
       PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -n 2 -m 'quick' stage/lib/psi4/tests/
-      #export PYTHONPATH=$(Build.SourcesDirectory)/build/stage/lib:${PYTHONPATH}
-      #pytest -v -rws --durations=15 -n 2 -m 'quick' stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
