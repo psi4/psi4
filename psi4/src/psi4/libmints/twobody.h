@@ -221,6 +221,8 @@ class PSI_API TwoBodyAOInt {
      inline double function_ceiling2(int m, int n, int r, int s) {
         return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
     }
+    // the value of the bound for pair m and n
+    double shell_pair_value(int m, int n) { return shell_pair_values_[m * nshell_ + n]; };
     /// Return the maximum density matrix element per shell pair. Maximum is over density matrices, if multiple set
     double shell_pair_max_density(int M, int N) const;
 
