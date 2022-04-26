@@ -1078,6 +1078,23 @@ def prep_findif(mol, irrep, mode, gradient=None):
         return fdargs
 
 
+def hessian_write(wfn: core.Wavefunction):
+    if core.get_option('FINDIF', 'HESSIAN_WRITE'):
+        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
+        with open(filename, 'wb') as handle:
+            qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='psi4')
+
+
+def gradient_write(wfn: core.Wavefunction):
+    if core.get_option('FINDIF', 'GRADIENT_WRITE'):
+        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
+        qcdb.gradparse.to_string(np.asarray(wfn.gradient()),
+                                 filename,
+                                 dtype='GRD',
+                                 mol=wfn.molecule(),
+                                 energy=wfn.energy())
+
+
 def _rms(arr: Union[core.Matrix, np.ndarray]) -> float:
     """Compute root-mean-square of array, be it Psi4 or NumPy array."""
     if isinstance(arr, np.ndarray):

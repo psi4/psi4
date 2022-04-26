@@ -751,9 +751,7 @@ def gradient(name, **kwargs):
 
     optstash.restore()
 
-    if core.get_option('FINDIF', 'GRADIENT_WRITE'):
-        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
-        qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=molecule, energy=wfn.energy())
+    driver_findif.gradient_write(wfn)
 
     if return_wfn:
         return (wfn.gradient(), wfn)
@@ -1662,7 +1660,7 @@ def hessian(name, **kwargs):
         optstash.restore()
         optstash_conv.restore()
 
-    _hessian_write(wfn)
+    driver_findif.hessian_write(wfn)
 
     if return_wfn:
         return (wfn.hessian(), wfn)
@@ -1896,13 +1894,6 @@ def vibanal_wfn(wfn: core.Wavefunction, hess: np.ndarray = None, irrep: Union[in
             handle.write(qcdb.vib.print_molden_vibs(vibinfo, symbols, geom, standalone=True))
 
     return vibinfo
-
-
-def _hessian_write(wfn):
-    if core.get_option('FINDIF', 'HESSIAN_WRITE'):
-        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
-        with open(filename, 'wb') as handle:
-            qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='psi4')
 
 
 def gdma(wfn, datafile=""):
