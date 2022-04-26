@@ -42,7 +42,7 @@ class Table(object):
 
     def __init__(self, rows=(), row_label_width=10, row_label_precision=4, cols=(), width=16, precision=10):
         warnings.warn(
-            "Using `psi4.driver.p4util.Table` is deprecated, and in 1.4 it will stop working\n",
+            "Using `psi4.driver.p4util.Table` is deprecated, and as soon as 1.4 it will stop working\n",
             category=FutureWarning,
             stacklevel=2)
         self.row_label_width = row_label_width
@@ -191,7 +191,7 @@ def banner(text, type=1, width=35, strNotOutfile=False):
 def print_stdout(stuff):
     """Function to print *stuff* to standard output stream."""
     warnings.warn(
-        "Using `psi4.driver.p4util.print_stdout` instead of `print` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.driver.p4util.print_stdout` instead of `print` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 
@@ -201,7 +201,7 @@ def print_stdout(stuff):
 def print_stderr(stuff):
     """Function to print *stuff* to standard error stream."""
     warnings.warn(
-        "Using `psi4.driver.p4util.print_stderr` instead of `print(..., file=sys.stderr)` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.driver.p4util.print_stderr` instead of `print(..., file=sys.stderr)` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 

@@ -99,7 +99,7 @@ def B787(cgeom,
 
     """
     warnings.warn(
-        "Using `qcdb.align.B787` instead of `qcelemental.molutil.B787` is deprecated, and in 1.5 it will stop working\n",
+        "Using `qcdb.align.B787` instead of `qcelemental.molutil.B787` is deprecated, and as soon as 1.5 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 
@@ -149,7 +149,7 @@ def compute_scramble(nat, do_resort=True, do_shift=True, do_rotate=True, deflect
 
     """
     warnings.warn(
-        "Using `qcdb.align.compute_scramble` instead of `qcelemental.molutil.compute_scramble` is deprecated, and in 1.5 it will stop working\n",
+        "Using `qcdb.align.compute_scramble` instead of `qcelemental.molutil.compute_scramble` is deprecated, and as soon as 1.5 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 

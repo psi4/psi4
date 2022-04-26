@@ -289,7 +289,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     enum SaveType { Full
     PSI_DEPRECATED(
         "Using `Matrix::SaveType::Full` instead of `Matrix::SaveType::SubBlocks` is deprecated, "
-        "and in 1.5 it will stop working"),
+        "and as soon as 1.5 it will stop working"),
     SubBlocks, LowerTriangle, ThreeIndexLowerTriangle };
 
     /**
@@ -1133,35 +1133,35 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void rotate_columns(int h, int i, int j, double theta);
 
     PSI_DEPRECATED(
-        "Using `Matrix::matrix` instead of `linalg::detail::matrix` is deprecated, and in 1.4 it will "
+        "Using `Matrix::matrix` instead of `linalg::detail::matrix` is deprecated, and as soon as 1.4 it will "
         "stop working")
     static double** matrix(int nrow, int ncol) { return linalg::detail::matrix(nrow, ncol); }
 
     PSI_DEPRECATED(
-        "Using `Matrix::free` instead of `linalg::detail::free` is deprecated, and in 1.4 it will "
+        "Using `Matrix::free` instead of `linalg::detail::free` is deprecated, and as soon as 1.4 it will "
         "stop working")
     static void free(double** Block) { linalg::detail::free(Block); }
 
     PSI_DEPRECATED(
         "Using `Matrix::create` instead of `auto my_mat = std::make_shared<Matrix>(name, rows, cols);` "
-        "is deprecated, and in 1.4 it will "
+        "is deprecated, and as soon as 1.4 it will "
         "stop working")
     static SharedMatrix create(const std::string& name, const Dimension& rows, const Dimension& cols) {
         return std::make_shared<Matrix>(name, rows, cols);
     }
 
     PSI_DEPRECATED(
-        "Using `Matrix::horzcat` instead of `linalg::horzcat` is deprecated, and in 1.4 it will "
+        "Using `Matrix::horzcat` instead of `linalg::horzcat` is deprecated, and as soon as 1.4 it will "
         "stop working")
     static SharedMatrix horzcat(const std::vector<SharedMatrix>& mats) { return linalg::horzcat(mats); }
 
     PSI_DEPRECATED(
-        "Using `Matrix::vertcat` instead of `linalg::vertcat` is deprecated, and in 1.4 it will "
+        "Using `Matrix::vertcat` instead of `linalg::vertcat` is deprecated, and as soon as 1.4 it will "
         "stop working")
     static SharedMatrix vertcat(const std::vector<SharedMatrix>& mats) { return linalg::vertcat(mats); }
 
     PSI_DEPRECATED(
-        "Using `Matrix::doublet` instead of `doublet` is deprecated, and in 1.4 it will "
+        "Using `Matrix::doublet` instead of `doublet` is deprecated, and as soon as 1.4 it will "
         "stop working")
     static SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false,
                                 bool transB = false) {
@@ -1169,7 +1169,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     }
 
     PSI_DEPRECATED(
-        "Using `Matrix::triplet` instead of `triplet` is deprecated, and in 1.4 it will "
+        "Using `Matrix::triplet` instead of `triplet` is deprecated, and as soon as 1.4 it will "
         "stop working")
     static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C,
                                 bool transA = false, bool transB = false, bool transC = false) {

@@ -3504,7 +3504,7 @@ def run_adc(name, **kwargs):
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     warnings.warn("Using built-in `adc` module instead of add-on `adcc` interface is deprecated due "
-                  "to certain wrong results, and in 1.7, it will stop working.", category=FutureWarning)
+                  "to certain wrong results, and as soon as 1.7, it will stop working.", category=FutureWarning)
 
     error_msg = ("\n\t\t\t\t!!!!! WARNING !!!!!\n" +
             "\t\tThe built-in ADC(2) method may give incorrect results if\n"

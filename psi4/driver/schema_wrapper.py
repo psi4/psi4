@@ -482,7 +482,7 @@ def run_qcschema(input_data: Union[Dict[str, Any], qcel.models.AtomicInput], cle
 def run_json(json_data, clean=True):
 
     warnings.warn(
-        "Using `psi4.schema_wrapper.run_json` or `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and in 1.7 it will stop working\n",
+        "Using `psi4.schema_wrapper.run_json` or `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and as soon as 1.5 it will stop working\n",
         category=FutureWarning)
 
     # Set scratch

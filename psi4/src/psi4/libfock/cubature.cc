@@ -3927,7 +3927,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
 PSI_DEPRECATED(
     "MolecularGrid: This grid builder is outdated"
-    "and will stop working in an upcoming version.")
+    "and, as soon as 1.7 it will stop working.")
 void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const std::vector<std::vector<double>> &rs,
                                          const std::vector<std::vector<double>> &ws,
                                          const std::vector<std::vector<int>> &Ls) {
