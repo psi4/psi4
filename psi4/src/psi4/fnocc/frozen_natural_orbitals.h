@@ -68,7 +68,7 @@ class PSI_API DFFrozenNO : public FrozenNO {
     void FourIndexIntegrals();
 
    protected:
-    void ModifyCa(double* Dab);
+    void ModifyCa(const std::vector<double>& Dab);
     void ModifyCa_occ(double* Dij);
     void BuildFock(long int nQ, double* Qso, double* F);
     void TransformQ(long int nQ, double* Qso);

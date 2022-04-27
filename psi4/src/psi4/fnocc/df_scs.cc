@@ -67,20 +67,29 @@ void DFCoupledCluster::SCS_CCSD() {
         tb = tempv;
     }
 
-    for (long int a = o; a < rs; a++) {
-        for (long int b = o; b < rs; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
-                    long int ijab = (a - o) * v * o * o + (b - o) * o * o + i * o + j;
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
+    auto matAA = std::make_shared<Matrix>("CC Alpha-Alpha Pair Energies", o, o);
+    auto matAB = std::make_shared<Matrix>("CC Alpha-Beta Pair Energies", o, o);
+
+    for (long int i = 0; i < o; i++) {
+        for (long int j = 0; j < o; j++) {
+            double pair_os = 0;
+            double pair_ss = 0;
+            for (long int a = 0; a < v; a++) {
+                for (long int b = 0; b < v; b++) {
+                    long int ijab = a * v * o * o + b * o * o + i * o + j;
+                    long int iajb = i * v * v * o + a * v * o + j * v + b;
                     long int jaib = iajb + (i - j) * v * (1 - v * o);
 
-                    osenergy += integrals[iajb] * (tb[ijab] + t1[(a - o) * o + i] * t1[(b - o) * o + j]);
-                    ssenergy += integrals[iajb] * (tb[ijab] - tb[(b - o) * o * o * v + (a - o) * o * o + i * o + j]);
-                    ssenergy += integrals[iajb] *
-                                (t1[(a - o) * o + i] * t1[(b - o) * o + j] - t1[(b - o) * o + i] * t1[(a - o) * o + j]);
+                    pair_os += integrals[iajb] * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
+                    pair_ss += integrals[iajb] * (tb[ijab] - tb[b * o * o * v + a * o * o + i * o + j]);
+                    pair_ss += integrals[iajb] *
+                                (t1[a * o + i] * t1[b * o + j] - t1[b * o + i] * t1[a * o + j]);
                 }
             }
+            osenergy += pair_os;
+            ssenergy += pair_ss;
+            matAA->add(i, j, pair_ss);
+            matAB->add(i, j, pair_os);
         }
     }
     eccsd_os = osenergy;
