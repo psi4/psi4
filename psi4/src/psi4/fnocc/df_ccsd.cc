@@ -143,7 +143,7 @@ double DFCoupledCluster::compute_energy() {
             psio->close(PSIF_DCC_ABCI, 1);
         } else {
             psio_address addr = PSIO_ZERO;
-            double *temp1 = (double *)malloc((nQ * v > o * v * v ? nQ * v : o * v * v) * sizeof(double));
+            std::vector<double> temp1(nQ * v > o * v * v ? nQ * v : o * v * v);
             std::vector<double> temp2(o * v * v);
             auto psio = std::make_shared<PSIO>();
             psio->open(PSIF_DCC_ABCI4, PSIO_OPEN_NEW);
@@ -154,7 +154,7 @@ double DFCoupledCluster::compute_energy() {
                         temp1[q * v + c] = Qvv[q * v * v + a * v + c];
                     }
                 }
-                F_DGEMM('n', 't', o * v, v, nQ, 1.0, Qov, o * v, temp1, v, 0.0, temp2.data(), o * v);
+                F_DGEMM('n', 't', o * v, v, nQ, 1.0, Qov, o * v, temp1.data(), v, 0.0, temp2.data(), o * v);
 #pragma omp parallel for schedule(static)
                 for (long int b = 0; b < v; b++) {
                     for (long int i = 0; i < o; i++) {
@@ -166,7 +166,6 @@ double DFCoupledCluster::compute_energy() {
                 psio->write(PSIF_DCC_ABCI4, "E2abci4", (char *)&temp1[0], o * v * v * sizeof(double), addr, &addr);
             }
             psio->close(PSIF_DCC_ABCI4, 1);
-            free(temp1);
         }
         free(Qvv);
 

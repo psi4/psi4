@@ -48,7 +48,7 @@ using namespace psi;
 namespace psi {
 namespace fnocc {
 
-void DFCoupledCluster::SCS_CCSD() {
+std::tuple<double, double, SharedMatrix, SharedMatrix> DFCoupledCluster::ComputePair(const std::string& name) {
     long int v = nvirt;
     long int o = ndoccact;
     long int rs = nmo;
@@ -67,8 +67,8 @@ void DFCoupledCluster::SCS_CCSD() {
         tb = tempv;
     }
 
-    auto matAA = std::make_shared<Matrix>("CC Alpha-Alpha Pair Energies", o, o);
-    auto matAB = std::make_shared<Matrix>("CC Alpha-Beta Pair Energies", o, o);
+    auto matAA = std::make_shared<Matrix>(name + " Alpha-Alpha Pair Energies", o, o);
+    auto matAB = std::make_shared<Matrix>(name + " Alpha-Beta Pair Energies", o, o);
 
     for (long int i = 0; i < o; i++) {
         for (long int j = 0; j < o; j++) {
@@ -92,45 +92,19 @@ void DFCoupledCluster::SCS_CCSD() {
             matAB->add(i, j, pair_os);
         }
     }
-    eccsd_os = osenergy;
-    eccsd_ss = ssenergy;
+
+    return std::make_tuple(osenergy, ssenergy, matAA, matAB);
+}
+
+void DFCoupledCluster::SCS_CCSD() {
+    SharedMatrix CCA, CCB;
+    std::tie(eccsd_os, eccsd_ss, CCA, CCB) = ComputePair("CC");
     eccsd = eccsd_os + eccsd_ss;
 }
 
 void DFCoupledCluster::SCS_MP2() {
-    long int v = nvirt;
-    long int o = ndoccact;
-    long int rs = nmo;
-
-    double ssenergy = 0.0;
-    double osenergy = 0.0;
-
-    // df (ia|bj) formerly E2klcd
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, integrals, o * v);
-
-    if (t2_on_disk) {
-        auto psio = std::make_shared<PSIO>();
-        psio->open(PSIF_DCC_T2, PSIO_OPEN_OLD);
-        psio->read_entry(PSIF_DCC_T2, "t2", (char*)&tempv[0], o * o * v * v * sizeof(double));
-        psio->close(PSIF_DCC_T2, 1);
-        tb = tempv;
-    }
-
-    for (long int a = o; a < rs; a++) {
-        for (long int b = o; b < rs; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
-                    long int ijab = (a - o) * v * o * o + (b - o) * o * o + i * o + j;
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
-                    long int jaib = iajb + (i - j) * v * (1 - v * o);
-                    osenergy += integrals[iajb] * tb[ijab];
-                    ssenergy += integrals[iajb] * (tb[ijab] - tb[(b - o) * o * o * v + (a - o) * o * o + i * o + j]);
-                }
-            }
-        }
-    }
-    emp2_os = osenergy;
-    emp2_ss = ssenergy;
+    SharedMatrix MPA, MPB;
+    std::tie(emp2_os, emp2_ss, MPA, MPB) = ComputePair("MP2");
     emp2 = emp2_os + emp2_ss;
 }
 }
