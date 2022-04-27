@@ -1576,7 +1576,7 @@ def _basis_file_warner_and_aliaser(filename):
     for k, v in aliased_in_1p4.items():
         if filename.endswith(k + ".gbs"):
             warnings.warn(
-                f"Using basis set `{k}` instead of its generic name `{v}` is deprecated, and in 1.5 it will stop working\n",
+                f"Using basis set `{k}` instead of its generic name `{v}` is deprecated, and as soon as 1.5 it will stop working\n",
                 category=FutureWarning,
                 stacklevel=2)
             return filename.replace(k, v)

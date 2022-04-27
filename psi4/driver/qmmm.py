@@ -124,7 +124,7 @@ class QMMM():
     """Hold charges and :py:class:`psi4.core.ExternalPotential`. Use :py:class:`psi4.driver.QMMMbohr` instead."""
 
     def __init__(self):
-        raise UpgradeHelper(self.__class__.__name__, "QMMMbohr", 1.6, ' Replace object with a list of charges and locations in Bohr passed as keyword argument, e.g., `energy(..., embedding_charges=[[0.5, [0, 0, 1]], [-0.5, [0, 0, -1]]])`.')
+        raise UpgradeHelper(self.__class__.__name__, "QMMMbohr", 1.6, ' Replace object with a list of charges and locations in Bohr passed as keyword argument, e.g., `energy(..., external_potentials=[[0.5, [0, 0, 1]], [-0.5, [0, 0, -1]]])`.')
 
 
 class QMMMbohr():

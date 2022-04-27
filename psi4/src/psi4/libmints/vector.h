@@ -242,7 +242,7 @@ class PSI_API Vector final {
 
     PSI_DEPRECATED(
         "Using `Vector::create` instead of `auto my_vec = std::make_shared<Vector>(name, dim);` "
-        "is deprecated, and in 1.4 it will "
+        "is deprecated, and as soon as 1.4 it will "
         "stop working")
     static SharedVector create(const std::string &name, const Dimension &dim) {
         return std::make_shared<Vector>(name, dim);

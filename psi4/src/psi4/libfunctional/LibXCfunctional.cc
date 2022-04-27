@@ -289,7 +289,7 @@ void LibXCFunctional::set_tweak(std::vector<double> values, bool quiet) {
 
     outfile->Printf(
         "Using `LibXCFunctional.set_tweak(std::vector<double>)` instead of "
-        "`LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and in 1.5 it will stop working. "
+        "`LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and as soon as 1.5 it will stop working. "
         "Allowed keys are: %s\n",
         allowed_keys_join.c_str());
 

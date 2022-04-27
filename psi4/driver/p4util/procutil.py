@@ -181,7 +181,7 @@ def format_kwargs_for_input(filename, lmode=1, **kwargs):
 
     """
     warnings.warn(
-        "Using `psi4.driver.p4util.format_kwargs_for_input` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.driver.p4util.format_kwargs_for_input` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.get_legacy_gradient()
@@ -273,7 +273,7 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
 
     """
     warnings.warn(
-        "Using `psi4.driver.p4util.extract_sowreap_from_output` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.driver.p4util.extract_sowreap_from_output` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 
@@ -556,7 +556,7 @@ def mat2arr(mat):
 
     """
     warnings.warn(
-        "Using `psi4.driver.p4util.mat2arr` instead of `MatrixInstance.to_array().tolist()` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.driver.p4util.mat2arr` instead of `MatrixInstance.to_array().tolist()` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 
@@ -578,7 +578,7 @@ def format_currentstate_for_input(func, name, allButMol=False, **kwargs):
 
     """
     warnings.warn(
-        "Using `psi4.driver.p4util.format_currentstate_for_input` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.driver.p4util.format_currentstate_for_input` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 

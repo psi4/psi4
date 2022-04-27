@@ -1,7 +1,10 @@
 #! RHF interaction energies using nbody and cbs parts of the driver
 #! Ne dimer with mp2/v[dt]z + d:ccsd(t)/vdz
 
-ans = 0.0131222  #TEST
+df_ans = 0.0131222  #TEST
+uncp_conv_ans = 0.01303175  #TEST
+cp_conv_ans = 0.01400641  #TEST
+ans = df_ans  #TEST
 
 molecule ne2 {
     0 1

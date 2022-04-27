@@ -62,7 +62,7 @@ namespace psi {
 void CdSalc::print() const {
     outfile->Printf("\tirrep = %d, ncomponent = %ld\n", irrep_, ncomponent());
     for (size_t i = 0; i < ncomponent(); ++i) {
-        outfile->Printf("\t\t%d: atom %d, direction %c, coef %lf\n", i, components_[i].atom,
+        outfile->Printf("\t\t%d: atom %d, direction %c, coef % lf\n", i, components_[i].atom,
                         direction(components_[i].xyz), components_[i].coef);
     }
 }

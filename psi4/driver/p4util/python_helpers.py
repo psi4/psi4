@@ -478,7 +478,7 @@ def set_module_options(module: str, options_dict: Dict[str, Any]) -> None:
     Sets Psi4 module options from a module specification and input dictionary.
     """
     warnings.warn(
-        "Using `psi4.set_module_options(<module>, {<key>: <val>})` instead of `psi4.set_options({<module>__<key>: <val>})` is deprecated, and in 1.5 it will stop working\n",
+        "Using `psi4.set_module_options(<module>, {<key>: <val>})` instead of `psi4.set_options({<module>__<key>: <val>})` is deprecated, and as soon as 1.5 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 
@@ -658,7 +658,7 @@ def _qcvar_warnings(key: str) -> str:
 
     if key.upper() in _qcvar_transitions:
         warnings.warn(
-            f"Using QCVariable `{key.upper()}` instead of `{_qcvar_transitions[key.upper()]}` is deprecated, and in 1.5 it will stop working\n",
+            f"Using QCVariable `{key.upper()}` instead of `{_qcvar_transitions[key.upper()]}` is deprecated, and as soon as 1.5 it will stop working\n",
             category=FutureWarning,
             stacklevel=3)
         return _qcvar_transitions[key.upper()]
@@ -1002,7 +1002,7 @@ def _core_get_variable(key):
 
     """
     warnings.warn(
-        "Using `psi4.core.get_variable` instead of `psi4.core.variable` (or `psi4.core.scalar_variable` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.get_variable` instead of `psi4.core.variable` (or `psi4.core.scalar_variable` for scalar variables only) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.scalar_variable(key)
@@ -1015,7 +1015,7 @@ def _core_get_variables():
 
     """
     warnings.warn(
-        "Using `psi4.core.get_variables` instead of `psi4.core.variables` (or `psi4.core.scalar_variables` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.get_variables` instead of `psi4.core.variables` (or `psi4.core.scalar_variables` for scalar variables only) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.scalar_variables()
@@ -1028,7 +1028,7 @@ def _core_get_array_variable(key):
 
     """
     warnings.warn(
-        "Using `psi4.core.get_array_variable` instead of `psi4.core.variable` (or `psi4.core.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.get_array_variable` instead of `psi4.core.variable` (or `psi4.core.array_variable` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.array_variable(key)
@@ -1041,7 +1041,7 @@ def _core_get_array_variables():
 
     """
     warnings.warn(
-        "Using `psi4.core.get_array_variables` instead of `psi4.core.variables` (or `psi4.core.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.get_array_variables` instead of `psi4.core.variables` (or `psi4.core.array_variables` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.array_variables()
@@ -1060,7 +1060,7 @@ def _core_wavefunction_get_variable(cls, key):
 
     """
     warnings.warn(
-        "Using `psi4.core.Wavefunction.get_variable` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.scalar_variable` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.Wavefunction.get_variable` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.scalar_variable` for scalar variables only) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return cls.scalar_variable(key)
@@ -1073,7 +1073,7 @@ def _core_wavefunction_get_array(cls, key):
 
     """
     warnings.warn(
-        "Using `psi4.core.Wavefunction.get_array` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.Wavefunction.get_array` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.array_variable` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return cls.array_variable(key)
@@ -1086,7 +1086,7 @@ def _core_wavefunction_set_array(cls, key, val):
 
     """
     warnings.warn(
-        "Using `psi4.core.Wavefunction.set_array` instead of `psi4.core.Wavefunction.set_variable` (or `psi4.core.Wavefunction.set_array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.Wavefunction.set_array` instead of `psi4.core.Wavefunction.set_variable` (or `psi4.core.Wavefunction.set_array_variable` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return cls.set_array_variable(key, val)
@@ -1099,7 +1099,7 @@ def _core_wavefunction_arrays(cls):
 
     """
     warnings.warn(
-        "Using `psi4.core.Wavefunction.arrays` instead of `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.Wavefunction.arrays` instead of `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return cls.array_variables()
@@ -1126,7 +1126,7 @@ def _core_wavefunction_legacy_frequencies(cls):
 
     """
     warnings.warn(
-        "Using `psi4.core.Wavefunction.legacy_frequencies` (accessing c-side member data) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.Wavefunction.legacy_frequencies` (accessing c-side member data) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return cls.legacy_frequencies()
@@ -1138,7 +1138,7 @@ def _core_wavefunction_set_frequencies(cls, val):
 
     """
     warnings.warn(
-        "Using `psi4.core.Wavefunction.set_frequencies` (accessing c-side member data) instead of `psi4.core.Wavefunction.frequency_analysis` (py-side member data) is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.Wavefunction.set_frequencies` (accessing c-side member data) instead of `psi4.core.Wavefunction.frequency_analysis` (py-side member data) is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return cls.set_legacy_frequencies(val)
@@ -1151,7 +1151,7 @@ core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
 
 def _core_wavefunction_X(cls):
     warnings.warn(
-        "Using `psi4.core.Wavefunction.X` instead of `psi4.core.Wavefunction.lagrangian` is deprecated, and in 1.5 it will stop working\n",
+        "Using `psi4.core.Wavefunction.X` instead of `psi4.core.Wavefunction.lagrangian` is deprecated, and as soon as 1.5 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return cls.lagrangian()
@@ -1168,7 +1168,7 @@ def _core_get_gradient():
 
     """
     warnings.warn(
-        "Using `psi4.core.get_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.5 (or whenever Py optking is adopted) it will stop working\n",
+        "Using `psi4.core.get_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and as soon as 1.6 (or whenever Py optking is adopted) it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.get_legacy_gradient()
@@ -1180,7 +1180,7 @@ def _core_set_gradient(val):
 
     """
     warnings.warn(
-        "Using `psi4.core.set_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.5 (or whenever Py optking is adopted) it will stop working\n",
+        "Using `psi4.core.set_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and as soon as 1.6 (or whenever Py optking is adopted) it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.set_legacy_gradient(val)
@@ -1198,7 +1198,7 @@ def _core_doublet(A, B, transA, transB):
 
     """
     warnings.warn(
-        "Using `psi4.core.Matrix.doublet` instead of `psi4.core.doublet` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.Matrix.doublet` instead of `psi4.core.doublet` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.doublet(A, B, transA, transB)
@@ -1212,7 +1212,7 @@ def _core_triplet(A, B, C, transA, transB, transC):
 
     """
     warnings.warn(
-        "Using `psi4.core.Matrix.triplet` instead of `psi4.core.triplet` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.core.Matrix.triplet` instead of `psi4.core.triplet` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.triplet(A, B, C, transA, transB, transC)
