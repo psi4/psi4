@@ -202,8 +202,6 @@ SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
 }
 
-
-
 const std::vector<size_t>& JK::computed_shells_per_iter() {
     return computed_shells_per_iter_;
 }
