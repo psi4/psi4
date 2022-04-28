@@ -1007,6 +1007,10 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         }
     }
 
+    if (get_bench()) {
+        computed_shells_per_iter_.push_back(computed_shells());
+    }
+
     timer_off("build_JK_matrices()");
 }
 

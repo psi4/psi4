@@ -209,6 +209,10 @@ size_t JK::computed_shells() {
     return 0;
 }
 
+const std::vector<size_t>& JK::computed_shells_per_iter() {
+    return computed_shells_per_iter_;
+}
+
 void JK::common_init() {
     print_ = 1;
     debug_ = 0;
@@ -234,6 +238,7 @@ void JK::common_init() {
     early_screening_ = false;
 
     computed_shells_ = 0L;
+    computed_shells_per_iter_ = {};
 
     std::shared_ptr<IntegralFactory> integral =
         std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
