@@ -246,10 +246,6 @@ void UHF::form_G() {
         wKa_->zero();
         wKb_->zero();
     }
-
-    if (jk_->get_bench()) {
-        computed_shells_per_iter_.push_back(jk_->computed_shells());
-    }
 }
 
 void UHF::form_F() {

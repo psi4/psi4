@@ -163,10 +163,6 @@ void CUHF::form_G() {
     J_->add(J[1]);
     Ka_ = K[0];
     Kb_ = K[1];
-
-    if (jk_->get_bench()) {
-        computed_shells_per_iter_.push_back(jk_->computed_shells());
-    }
 }
 
 void CUHF::compute_spin_contamination() {

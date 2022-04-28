@@ -108,8 +108,6 @@ void HF::common_init() {
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
-    computed_shells_per_iter_ = {};
-
     H_ = factory_->create_matrix("One-electron Hamiltonian");
     X_ = factory_->create_matrix("X");
 

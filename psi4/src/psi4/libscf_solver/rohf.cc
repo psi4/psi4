@@ -958,10 +958,6 @@ void ROHF::form_G() {
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);
     Gb_->subtract(Kb_);
-
-    if (jk_->get_bench()) {
-        computed_shells_per_iter_.push_back(jk_->computed_shells());
-    }
 }
 
 bool ROHF::stability_analysis() {

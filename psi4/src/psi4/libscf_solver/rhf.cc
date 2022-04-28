@@ -231,11 +231,6 @@ void RHF::form_G() {
     } else {
         wK_->zero();
     }
-
-    // Record computed_shells count if benchmarking JK
-    if (jk_->get_bench()) {
-        computed_shells_per_iter_.push_back(jk_->computed_shells());
-    }
 }
 
 void RHF::form_F() {
