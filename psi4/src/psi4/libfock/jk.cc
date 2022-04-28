@@ -202,12 +202,7 @@ SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
 }
 
-size_t JK::computed_shells() {
-    outfile->Printf("WARNING: JK::computed_shells() was called, but benchmarking is disabled for the chosen JK algorithm.");
-    outfile->Printf(" Returning 0 as computed_shells count.\n");
 
-    return 0;
-}
 
 const std::vector<size_t>& JK::computed_shells_per_iter() {
     return computed_shells_per_iter_;
@@ -670,6 +665,13 @@ void JK::zero() {
         for(auto wK : wK_) wK->zero();
         for(auto wK : wK_ao_) wK->zero();
     }
+}
+
+size_t JK::computed_shells() {
+    outfile->Printf("WARNING: JK::computed_shells() was called, but benchmarking is disabled for the chosen JK algorithm.");
+    outfile->Printf(" Returning 0 as computed_shells count.\n");
+
+    return 0;
 }
 
 void JK::finalize() { postiterations(); }

@@ -349,6 +349,10 @@ class PSI_API JK {
     size_t memory_overhead() const;
     /// Zero out all J, K, and wK matrices
     void zero();
+    /**
+    * Return number of shells computed during the JK build process.
+    */
+    virtual size_t computed_shells();
 
    public:
     // => Constructors <= //
@@ -575,11 +579,6 @@ class PSI_API JK {
      * @return D vector of D matrices
      */
     const std::vector<SharedMatrix>& D() const { return D_; }
-
-    /**
-    * Return number of shells computed during the JK build process.
-    */
-    virtual size_t computed_shells();
 
     /**
     * Return number of shells computed per SCF iteration during the JK build process.
@@ -818,6 +817,11 @@ class PSI_API DirectJK : public JK {
     /// Common initialization
     void common_init();
 
+    /**
+    * Return number of shells computed during the JK build process.
+    */
+    size_t computed_shells() override; 
+
    public:
     // => Constructors < = //
 
@@ -843,11 +847,6 @@ class PSI_API DirectJK : public JK {
     // => Accessors <= //
     bool do_incfock_iter() { return do_incfock_iter_; }
     bool do_linK() { return linK_; }
-
-    /**
-    * Return number of shells computed during the JK build process.
-    */
-    size_t computed_shells() override; 
 
     /**
     * Print header information regarding JK
