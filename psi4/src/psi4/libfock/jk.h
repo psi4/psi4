@@ -250,7 +250,7 @@ class PSI_API JK {
     bool early_screening_;
     /// Number of shells computed, i.e., not screened out
     size_t computed_shells_;
-    /// Tally of computed_shells_ per SCF iteration 
+    /// Tally of shells computed per SCF iteration 
     std::vector<size_t> computed_shells_per_iter_;
 
     // => Tasks <= //
