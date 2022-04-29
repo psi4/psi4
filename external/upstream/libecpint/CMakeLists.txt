@@ -17,7 +17,7 @@ else()
     endif()
 
     ExternalProject_Add(libecpint_external
-        URL https://github.com/robashaw/libecpint/archive/v1.0.5.tar.gz
+        URL https://github.com/robashaw/libecpint/archive/v1.0.7.tar.gz
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

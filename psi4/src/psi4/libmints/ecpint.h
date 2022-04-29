@@ -99,8 +99,9 @@ class ECPInt : public OneBodyAOInt {
     int current_ecp_center() const { return centers_and_libecp_ecps_[current_ecp_iterator_].first; }
 
     /// Overridden shell-pair integral calculation over all ECP centers
-    void compute_pair(const libint2::Shell &shellA, const libint2::Shell &shellB) override;
-    void compute_pair_deriv1(const libint2::Shell &shellA, const libint2::Shell &shellB) override;
+    void compute_shell(int s1, int s2) override;
+    void compute_shell_deriv1(int s1, int s2) override;
+    void compute_shell_deriv2(int s1, int s2) override;
 };
 
 class ECPSOInt : public OneBodySOInt {

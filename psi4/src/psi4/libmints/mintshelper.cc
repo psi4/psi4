@@ -2126,7 +2126,7 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
 #endif
 
         ecp_ints_vec[rank]->compute_shell_deriv1(P, Q);
-        const double *buffer = ecp_ints_vec[rank]->buffer();
+        const auto &buffers = ecp_ints_vec[rank]->buffers();
 
         size_t nP = basisset_->shell(P).nfunction();
         size_t oP = basisset_->shell(P).function_index();
@@ -2147,9 +2147,9 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
 
         size_t size = nP * nQ;
         for (const int center : all_centers) {
-            const double *ref0 = &buffer[3 * center * size + 0 * size];
-            const double *ref1 = &buffer[3 * center * size + 1 * size];
-            const double *ref2 = &buffer[3 * center * size + 2 * size];
+            const double *ref0 = buffers[3 * center + 0];
+            const double *ref1 = buffers[3 * center + 1];
+            const double *ref2 = buffers[3 * center + 2];
             for (size_t p = 0; p < nP; p++) {
                 for (size_t q = 0; q < nQ; q++) {
                     double Vval = perm * Dp[p + oP][q + oQ];

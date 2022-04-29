@@ -132,16 +132,11 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
 
 ECPInt::~ECPInt() { delete[] buffer_; }
 
-void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &shellB) {
-    // Start by finding the LibECP shells, using the lookup table
-    const size_t size = s1.ncartesian() * s2.ncartesian();
+void ECPInt::compute_shell(int s1, int s2) {
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[s1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[s2];
+    const size_t size = LibECPShell1.ncartesian() * LibECPShell2.ncartesian();
     memset(buffer_, 0, size * sizeof(double));
-    //int idx1 = libecp_shell_lookup_[s1.start()];
-    //int idx2 = libecp_shell_lookup_[s2.start()];
-    int idx1 = 0;
-    int idx2 = 0;
-    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[idx1];
-    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[idx2];
     for (const auto &center_and_ecp : centers_and_libecp_ecps_){
         libecpint::TwoIndex<double> results;
         engine_.compute_shell_pair(center_and_ecp.second, LibECPShell1, LibECPShell2, results);
@@ -150,15 +145,13 @@ void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &sh
     }
 }
 
-void ECPInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell &s2) {
-    const size_t size = s1.ncartesian() * s2.ncartesian();
+void ECPInt::compute_shell_deriv1(int s1, int s2) {
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[s1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[s2];
+    const size_t size = LibECPShell1.ncartesian() * LibECPShell2.ncartesian();
     memset(buffer_, 0, 3 * natom_ * size * sizeof(double));
-    int idx1 = libecp_shell_lookup_[s1.start()];
-    int idx2 = libecp_shell_lookup_[s2.start()];
-    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[idx1];
-    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[idx2];
-    int center1 = s1.ncenter();
-    int center2 = s2.ncenter();
+    int center1 = bs1_->shell(s1).ncenter();
+    int center2 = bs2_->shell(s2).ncenter();
     for (const auto &center_and_ecp : centers_and_libecp_ecps_){
         int center3 = center_and_ecp.first;
         std::array<libecpint::TwoIndex<double>, 9> results;
@@ -174,7 +167,7 @@ void ECPInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell &s
     }
 }
 
-void ECPInt::compute_pair_deriv2(const GaussianShell &s1, const GaussianShell &s2) {
+void ECPInt::compute_shell_deriv2(int s1, int s2) {
     // The derivative ordering in the LibECPInt buffers
     //    0     1     2     3     4     5
     //  AxAx, AxAy, AxAz, AyAy, AyAz, AzAz,
@@ -188,12 +181,10 @@ void ECPInt::compute_pair_deriv2(const GaussianShell &s1, const GaussianShell &s
     //  BxCx, BxCy, BxCz, ByCx, ByCy, ByCz, BzCx, BzCy, BzCz,
     //   39    40    41    42    43    44
     //  CxCx, CxCy, CxCz, CyCy, CyCz, CzCz
-    const size_t size = s1.ncartesian() * s2.ncartesian();
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[s1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[s2];
+    const size_t size = LibECPShell1.ncartesian() * LibECPShell2.ncartesian();
     memset(buffer_, 0, 45 * size * sizeof(double));
-    int idx1 = libecp_shell_lookup_[s1.start()];
-    int idx2 = libecp_shell_lookup_[s2.start()];
-    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[idx1];
-    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[idx2];
     for (const auto &center_and_ecp : centers_and_libecp_ecps_){
         std::array<libecpint::TwoIndex<double>, 45> results;
         engine_.compute_shell_pair_second_derivative(center_and_ecp.second, LibECPShell1, LibECPShell2, results);
