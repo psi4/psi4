@@ -16,6 +16,14 @@ endif()
 
 target_link_libraries(scf_solver PUBLIC diis)
 
+if(TARGET ECPINT::ecpint)
+  target_link_libraries(scf_solver
+    PUBLIC
+      ECPINT::ecpint
+    )
+endif()
+
+
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(scf_solver
     PUBLIC

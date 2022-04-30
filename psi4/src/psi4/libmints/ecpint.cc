@@ -51,6 +51,7 @@
 
 namespace psi {
 
+
 ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv), engine_(bs1->max_am(), bs1->max_ecp_am(), deriv) {
@@ -125,8 +126,8 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
         maxnao1 *= 45;
     }
 
-    buffer_ = new double[maxnao1 * maxnao2];
-    buffers_.resize(1);
+    buffer_ = new double[nchunk_ * maxnao1 * maxnao2];
+    buffers_.resize(nchunk_);
     buffers_[0] = buffer_;
 }
 
@@ -164,6 +165,10 @@ void ECPInt::compute_shell_deriv1(int s1, int s2) {
             const size_t offset = offsets[i];
             std::transform(results[i].data.begin(), results[i].data.end(), buffer_ + offset, buffer_ + offset, std::plus<double>());
         }
+    }
+    pure_transform(bs1_->l2_shell(s1), bs2_->l2_shell(s2), nchunk_);
+    for (int chunk = 0; chunk < nchunk_; ++chunk) {
+        buffers_[chunk] = buffer_ + chunk * bs1_->shell(s1).nfunction() * bs2_->shell(s2).nfunction();
     }
 }
 

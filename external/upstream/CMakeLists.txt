@@ -10,7 +10,7 @@ foreach(dir
   erd
   gau2grid
   gdma
-  #libecpint
+  libecpint
   libint
   libint2
   mdi

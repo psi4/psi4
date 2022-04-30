@@ -47,6 +47,7 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
+#include "psi4/libmints/ecpint.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/molecule.h"
@@ -422,7 +423,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::unique_ptr<OneBodyAOInt> S_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_overlap());
     std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
     std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
-    std::unique_ptr<OneBodyAOInt> ECP_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_ecp());
+    auto ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp()));
 
     // Compute overlap S and orthogonalizer X;
     SharedMatrix S(mat.create_matrix("Overlap Matrix"));
