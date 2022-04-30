@@ -58,11 +58,7 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
     int maxam1 = bs1->max_am();
     int maxam2 = bs2->max_am();
 
-    // It will be easy to lift this restriction by duplicating the code below for bs1 and bs2
-    if (bs1 != bs2)
-        throw PSIEXCEPTION("Mixed basis sets are not supported for ECP integrals yet.");
-
-    // Make LibECP Gaussian basis set objects
+    // Make LibECP Gaussian basis set objects for the bra...
     for (int shell = 0; shell < bs1->nshell(); ++shell){
         const GaussianShell &psi_shell = bs1->shell(shell);
         const double *center = psi_shell.center();
@@ -71,9 +67,18 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
         for (int prim = 0; prim < psi_shell.nprimitive(); ++prim){
             newshell.addPrim(psi_shell.exp(prim), psi_shell.coef(prim));
         }
-        // Use the location of the shell's first bf as a unique ID
-        libecp_shell_lookup_[psi_shell.start()] = libecp_shells_.size();
-        libecp_shells_.push_back(newshell);
+        libecp_shells1_.push_back(newshell);
+    }
+    // ... and the ket
+    for (int shell = 0; shell < bs2->nshell(); ++shell){
+        const GaussianShell &psi_shell = bs2->shell(shell);
+        const double *center = psi_shell.center();
+        std::array<double,3> C{center[0], center[1], center[2]};
+        libecpint::GaussianShell newshell(C, psi_shell.am());
+        for (int prim = 0; prim < psi_shell.nprimitive(); ++prim){
+            newshell.addPrim(psi_shell.exp(prim), psi_shell.coef(prim));
+        }
+        libecp_shells2_.push_back(newshell);
     }
 
     double oldCx, oldCy, oldCz;
@@ -134,8 +139,8 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
 ECPInt::~ECPInt() { delete[] buffer_; }
 
 void ECPInt::compute_shell(int s1, int s2) {
-    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[s1];
-    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[s2];
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells1_[s1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells2_[s2];
     const size_t size = LibECPShell1.ncartesian() * LibECPShell2.ncartesian();
     memset(buffer_, 0, size * sizeof(double));
     for (const auto &center_and_ecp : centers_and_libecp_ecps_){
@@ -144,11 +149,13 @@ void ECPInt::compute_shell(int s1, int s2) {
         // Accumulate the results into buffer_
         std::transform (results.data.begin(), results.data.end(), buffer_, buffer_, std::plus<double>());
     }
+    pure_transform(bs1_->l2_shell(s1), bs2_->l2_shell(s2));
+    buffers_[0] = buffer_;
 }
 
 void ECPInt::compute_shell_deriv1(int s1, int s2) {
-    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[s1];
-    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[s2];
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells1_[s1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells2_[s2];
     const size_t size = LibECPShell1.ncartesian() * LibECPShell2.ncartesian();
     memset(buffer_, 0, 3 * natom_ * size * sizeof(double));
     int center1 = bs1_->shell(s1).ncenter();
@@ -186,8 +193,8 @@ void ECPInt::compute_shell_deriv2(int s1, int s2) {
     //  BxCx, BxCy, BxCz, ByCx, ByCy, ByCz, BzCx, BzCy, BzCz,
     //   39    40    41    42    43    44
     //  CxCx, CxCy, CxCz, CyCy, CyCz, CzCz
-    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[s1];
-    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[s2];
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells1_[s1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells2_[s2];
     const size_t size = LibECPShell1.ncartesian() * LibECPShell2.ncartesian();
     memset(buffer_, 0, 45 * size * sizeof(double));
     for (const auto &center_and_ecp : centers_and_libecp_ecps_){
@@ -198,6 +205,10 @@ void ECPInt::compute_shell_deriv2(int s1, int s2) {
             const size_t offset = i * size;
             std::transform (results[i].data.begin(), results[i].data.end(), buffer_ + offset, buffer_ + offset, std::plus<double>());
         }
+    }
+    pure_transform(bs1_->l2_shell(s1), bs2_->l2_shell(s2), nchunk_);
+    for (int chunk = 0; chunk < nchunk_; ++chunk) {
+        buffers_[chunk] = buffer_ + chunk * bs1_->shell(s1).nfunction() * bs2_->shell(s2).nfunction();
     }
 }
 

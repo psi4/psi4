@@ -72,12 +72,10 @@ class ECPInt : public OneBodyAOInt {
     libecpint::ECPIntegral engine_;
     int current_ecp_number_;
 
-    /// Integrals are requested using Psi4 GaussianShell objects, but we need the corresponding LibECP
-    /// object to actually compute them.  This structure maps the two, via the Psi4 GaussianShell's
-    /// first() function, which provides the index of the first basis function the shell involves.
-    std::map<int, int> libecp_shell_lookup_;
-    /// A list of all of the orbital basis sets, converted to LibECP format.
-    std::vector<libecpint::GaussianShell> libecp_shells_;
+    /// A list of all of the orbital basis sets, converted to LibECP format for the bra.
+    std::vector<libecpint::GaussianShell> libecp_shells1_;
+    /// A list of all of the orbital basis sets, converted to LibECP format for the ket.
+    std::vector<libecpint::GaussianShell> libecp_shells2_;
     /// A list of the centers with ECPs, and the corresponding LibECP data structure.
     std::vector<std::pair<int,libecpint::ECP>> centers_and_libecp_ecps_;
     /// Tracks the iterations over ECP-bearing centers in Hessian integral calculations.
