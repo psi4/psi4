@@ -493,8 +493,8 @@ SharedMatrix SCFDeriv::compute_hessian()
         }
         timer_off("Hess: V");
     }
-    
-    
+
+    if (basisset_->has_ECP() ) {
     // => Potential Hessian <= //
     timer_on("Hess: ECP");
     {
@@ -503,7 +503,8 @@ SharedMatrix SCFDeriv::compute_hessian()
         hessians_["Effective Core Potential"] = SharedMatrix(hessians_["Nuclear"]->clone());
         hessians_["Effective Core Potential"]->set_name("Effective Core Potential Hessian");
         hessians_["Effective Core Potential"]->zero();
-        double** ECPp = hessians_["Potential"]->pointer();
+        double** ECPp = hessians_["Effective Core Potential"]->pointer();
+        hessian_terms.push_back("Effective Core Potential");
 
         // Potential energy derivatives
         std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(2)));
@@ -786,13 +787,14 @@ SharedMatrix SCFDeriv::compute_hessian()
             }
         }
         // Symmetrize the result
-        int dim = hessians_["ECP"]->rowdim();
+        int dim = hessians_["Effective Core Potential"]->rowdim();
         for (int row = 0; row < dim; ++row){
             for (int col = 0; col < row; ++col){
                 ECPp[row][col] = ECPp[col][row] = (ECPp[row][col] + ECPp[col][row]);
             }
         }
         timer_off("Hess: ECP");
+    }
     }
 
 
