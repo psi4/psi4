@@ -685,6 +685,26 @@ CD
     for gradient computations.  The algorithm to obtain the Cholesky
     vectors is not designed for computations with thousands of basis
     functions.
+COSK
+    An algorithm that uses a direct density-fitting approach for the J term
+    and a semi-numerical or chain-of-spheres (COS) approach for the K term.
+    This algorithm uses no I/O, scales well with system size, and requires
+    minimal memory, making it ideal for large systems and multi-core CPUs.
+    See [Neese:2009:98]_ for more information.
+    The cost of the K algorithm is proportional to the size of the COSK
+    integration grid, as is the numerical error. Both computational cost and
+    numerical error are reduced by initially converging the SCF solution on a
+    small grid, followed by a single iteration on a larger grid.
+    The initial and final grid sizes are controlled by the keywords
+    |scf__cosk_radial_points|, |scf__cosk_spherical_points|,
+    |scf__cosk_radial_points_final|, and |scf__cosk_spherical_points_final|.
+    Screening thresholds over integrals, densities, and basis extents are set
+    with the |scf__cosk_ints_tolerance|, |scf__cosk_density_tolerance|, and
+    |scf__cosk_basis_tolerance| keywords, respectively. The |scf__cosk_incfock|
+    keyword (defaults to ``true``) increases performance by constructing the
+    Fock matrix from differences in the density matrix, which are more amenable
+    to screening. The |scf__cosk_overlap_fitting| keyword (defaults to ``true``)
+    reduces numerical errors using the method described in [Izsak:2011:144105]_.
 
 In some cases the above algorithms have multiple implementations that return
 the same result, but are optimal under different molecules sizes and hardware
