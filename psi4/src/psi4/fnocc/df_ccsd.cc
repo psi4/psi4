@@ -316,6 +316,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     outfile->Printf("   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
 
     memset((void *)diisvec, '\0', (maxdiis + 1) * sizeof(double));
+    // => Perform CCSD iterations <=
     while (iter < maxiter) {
         std::time_t iter_start = std::time(nullptr);
 
@@ -432,7 +433,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     // add D1 diagnostic to qcvars
     set_scalar_variable("CC D1 DIAGNOSTIC", sqrt(eigval->pointer()[0]));
 
-    // delta mp2 correction for fno computations:
+    // => Update internal vars for FNO correction, followed by printout. <=
     if (options_.get_bool("NAT_ORBS")) {
         double delta_emp2 = scalar_variable("MP2 CORRELATION ENERGY") - emp2;
         double delta_emp2_os = scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY") - emp2_os;

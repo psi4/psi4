@@ -92,10 +92,12 @@ class CoupledCluster : public Wavefunction {
 
     /// SCS-MP2 function and variables
     void SCS_MP2();
+    // WARNING! If FNO is in used, these energies at first neglect the FNO correction but add it later.
     double emp2, emp2_os, emp2_ss, emp2_os_fac, emp2_ss_fac;
 
     /// SCS-CCSD function and variables
     void SCS_CCSD();
+    // WARNING! If FNO is in used, these energies at first neglect the FNO correction but add it later.
     double eccsd, eccsd_os, eccsd_ss, eccsd_os_fac, eccsd_ss_fac;
 
     /// cc or qci (t)
