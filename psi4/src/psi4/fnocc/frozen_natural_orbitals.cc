@@ -747,7 +747,9 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     std::vector<double> newFock(v * v);
     std::vector<double> neweps(nvirt_no);
 
-    // build mp2 amplitudes for mp2 density
+    // => Construct MP2 amplitudes, pair energies, and energies <=
+    auto matAA = std::make_shared<Matrix>("MP2 Alpha-Alpha Pair Energies", o, o);
+    auto matAB = std::make_shared<Matrix>("MP2 Alpha-Beta Pair Energies", o, o);
     emp2 = 0.0;
     double emp2_os = 0.0;
     double emp2_ss = 0.0;
@@ -755,6 +757,8 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
         double di = - Fo->get(i);
         for (long int j = 0; j < o; j++) {
             double dij = di - Fo->get(j);
+            double pair_os = 0;
+            double pair_ss = 0;
             for (long int a = 0; a < v; a++) {
                 double dija = dij + Fv->get(a);
                 for (long int b = 0; b < v; b++) {
@@ -762,11 +766,15 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
                     long int abij = a * v * o * o + b * o * o + i * o + j;
                     double dijab = dija + Fv->get(b);
                     amps1[abij] = -amps2[iajb] / dijab;
-                    emp2_os -= amps2[iajb] * amps2[iajb] / dijab;
-                    emp2_ss -=
+                    pair_os -= amps2[iajb] * amps2[iajb] / dijab;
+                    pair_ss -=
                         amps2[iajb] * (amps2[iajb] - amps2[j * o * v * v + a * o * v + i * v + b]) / dijab;
                 }
             }
+            emp2_os += pair_os;
+            emp2_ss += pair_ss;
+            matAA->add(i, j, pair_ss);
+            matAB->add(i, j, pair_os);
         }
     }
     emp2 = emp2_os + emp2_ss;
@@ -778,6 +786,8 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
     set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
     set_scalar_variable("MP2 TOTAL ENERGY", emp2 + Process::environment.globals["SCF TOTAL ENERGY"]);
+    set_array_variable("MP2 ALPHA-ALPHA PAIR ENERGIES", matAA);
+    set_array_variable("MP2 ALPHA-BETA PAIR ENERGIES", matAB);
 
     long int ijab = 0;
     for (long int a = o; a < o + v; a++) {
