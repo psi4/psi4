@@ -139,7 +139,7 @@ def test_negotiate_missing_error(inp):
     (('gradient', 'Eg_man', 2)),
     (('energy', 'Eg_man', 2)),
     (('energy', 'Eg_man', 1)),
-    #(("properties", "hf", 2)),
+    #(("properties", "hf", 2)),  # todo: does not raise b/c prop not in hierarchical sequence. investigate whether should force error.
 ])
 def test_negotiate_excessive_error(inp):
     with pytest.raises(psi4.ValidationError) as e:

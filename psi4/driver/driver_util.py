@@ -296,7 +296,7 @@ def negotiate_derivative_type(
     if target_dertype == "properties":
         if isinstance(method, list):
             # untested
-            analytic = [highest_analytic_derivative_available(mtd, proc) for mtd in method]
+            analytic = [highest_analytic_properties_available(mtd, proc) for mtd in method]
             if verbose > 1:
                 print(method, analytic, '->', min(analytic))
             highest_analytic_dertype, proc_messages = min(analytic)
