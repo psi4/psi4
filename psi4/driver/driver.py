@@ -710,7 +710,8 @@ def gradient(name, **kwargs):
             print('Performing finite difference calculations')
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.gradient_from_energies_geometries(molecule)
+        fdargs = driver_findif.prep_findif(molecule, irrep=None, mode="1_0", gradient=None)
+        findif_meta_dict = driver_findif.gradient_from_energies_geometries(molecule, **fdargs)
         ndisp = len(findif_meta_dict["displacements"]) + 1
 
         print(""" %d displacements needed ...""" % (ndisp), end='')
@@ -750,9 +751,7 @@ def gradient(name, **kwargs):
 
     optstash.restore()
 
-    if core.get_option('FINDIF', 'GRADIENT_WRITE'):
-        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"
-        qcdb.gradparse.to_string(np.asarray(wfn.gradient()), filename, dtype='GRD', mol=molecule, energy=wfn.energy())
+    driver_findif.gradient_write(wfn)
 
     if return_wfn:
         return (wfn.gradient(), wfn)
@@ -1559,7 +1558,8 @@ def hessian(name, **kwargs):
             """hessian() will perform frequency computation by finite difference of analytic gradients.\n""")
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molecule, irrep)
+        fdargs = driver_findif.prep_findif(molecule, irrep, mode="2_0", gradient=G0)
+        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molecule, **fdargs)
 
         # Record undisplaced symmetry for projection of displaced point groups
         core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
@@ -1615,7 +1615,8 @@ def hessian(name, **kwargs):
         optstash_conv = driver_util.negotiate_convergence_criterion((2, 0), lowername, return_optstash=True)
 
         # Obtain list of displacements
-        findif_meta_dict = driver_findif.hessian_from_energies_geometries(molecule, irrep)
+        fdargs = driver_findif.prep_findif(molecule, irrep, mode="2_0", gradient=G0)
+        findif_meta_dict = driver_findif.hessian_from_energies_geometries(molecule, **fdargs)
 
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
@@ -1659,7 +1660,7 @@ def hessian(name, **kwargs):
         optstash.restore()
         optstash_conv.restore()
 
-    _hessian_write(wfn)
+    driver_findif.hessian_write(wfn)
 
     if return_wfn:
         return (wfn.hessian(), wfn)
@@ -1893,13 +1894,6 @@ def vibanal_wfn(wfn: core.Wavefunction, hess: np.ndarray = None, irrep: Union[in
             handle.write(qcdb.vib.print_molden_vibs(vibinfo, symbols, geom, standalone=True))
 
     return vibinfo
-
-
-def _hessian_write(wfn):
-    if core.get_option('FINDIF', 'HESSIAN_WRITE'):
-        filename = core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"
-        with open(filename, 'wb') as handle:
-            qcdb.hessparse.to_string(np.asarray(wfn.hessian()), handle, dtype='psi4')
 
 
 def gdma(wfn, datafile=""):
