@@ -1547,19 +1547,19 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SUBSECTION COSK Algorithm -*/
 
         /*- Screening criteria for integrals and intermediates in COSK -*/
-        options.add_double("COSK_INTS_TOLERANCE", 1.0E-12);
+        options.add_double("COSK_INTS_TOLERANCE", 1.0E-11);
         /*- Screening criteria for shell-pair densities in COSK -*/
         options.add_double("COSK_DENSITY_TOLERANCE", 1.0E-10);
         /*- Screening criteria for basis function values on COSK grid-*/
         options.add_double("COSK_BASIS_TOLERANCE", 1.0E-10);
         /*- Number of spherical points in initial COSK grid. -*/
-        options.add_int("COSK_SPHERICAL_POINTS", 302);
+        options.add_int("COSK_SPHERICAL_POINTS", 50);
         /*- Number of radial points in initial COSK grid. -*/
-        options.add_int("COSK_RADIAL_POINTS", 75);
+        options.add_int("COSK_RADIAL_POINTS", 25);
         /*- Number of spherical points in final COSK grid. -*/
-        options.add_int("COSK_SPHERICAL_POINTS_FINAL", 302);
+        options.add_int("COSK_SPHERICAL_POINTS_FINAL", 110);
         /*- Number of radial points in final COSK grid. -*/
-        options.add_int("COSK_RADIAL_POINTS_FINAL", 75);
+        options.add_int("COSK_RADIAL_POINTS_FINAL", 35);
         /*- Do reduce numerical COSK errors with overlap fitting? !expert -*/
         options.add_bool("COSK_OVERLAP_FITTING", true);
         /*- Do allow for improved COSK screening performance by constructing the Fock matrix incrementally? !expert -*/
