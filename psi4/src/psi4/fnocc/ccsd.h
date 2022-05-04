@@ -269,6 +269,8 @@ class PSI_API DFCoupledCluster : public CoupledCluster {
     /// evaluate cc diagrams
     virtual void CCResidual();
 
+    std::tuple<double, double, SharedMatrix, SharedMatrix> ComputePair(const std::string& name);
+
     /// SCS-MP2 function and variables
     virtual void SCS_MP2();
 

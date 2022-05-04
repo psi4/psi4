@@ -115,10 +115,10 @@ double DFCoupledCluster::compute_energy() {
 
         if (!isLowMemory) {
             // write (ov|vv) integrals, formerly E2abci, for (t)
-            double *tempq = (double *)malloc(v * nQ * sizeof(double));
+            std::vector<double> tempq(v * nQ);
             // the buffer integrals was at least 2v^3, so these should definitely fit.
-            double *Z = (double *)malloc(v * v * v * sizeof(double));
-            double *Z2 = (double *)malloc(v * v * v * sizeof(double));
+            std::vector<double> Z(v * v * v);
+            std::vector<double> Z2(v * v * v);
             auto psio = std::make_shared<PSIO>();
             psio->open(PSIF_DCC_ABCI, PSIO_OPEN_NEW);
             psio_address addr2 = PSIO_ZERO;
@@ -129,7 +129,7 @@ double DFCoupledCluster::compute_energy() {
                         tempq[q * v + b] = Qov[q * o * v + i * v + b];
                     }
                 }
-                F_DGEMM('n', 't', v, v * v, nQ, 1.0, tempq, v, Qvv, v * v, 0.0, &Z[0], v);
+                F_DGEMM('n', 't', v, v * v, nQ, 1.0, tempq.data(), v, Qvv, v * v, 0.0, Z.data(), v);
 #pragma omp parallel for schedule(static)
                 for (long int a = 0; a < v; a++) {
                     for (long int b = 0; b < v; b++) {
@@ -141,13 +141,10 @@ double DFCoupledCluster::compute_energy() {
                 psio->write(PSIF_DCC_ABCI, "E2abci", (char *)&Z2[0], v * v * v * sizeof(double), addr2, &addr2);
             }
             psio->close(PSIF_DCC_ABCI, 1);
-            free(tempq);
-            free(Z);
-            free(Z2);
         } else {
             psio_address addr = PSIO_ZERO;
-            double *temp1 = (double *)malloc((nQ * v > o * v * v ? nQ * v : o * v * v) * sizeof(double));
-            double *temp2 = (double *)malloc(o * v * v * sizeof(double));
+            std::vector<double> temp1(nQ * v > o * v * v ? nQ * v : o * v * v);
+            std::vector<double> temp2(o * v * v);
             auto psio = std::make_shared<PSIO>();
             psio->open(PSIF_DCC_ABCI4, PSIO_OPEN_NEW);
             for (long int a = 0; a < v; a++) {
@@ -157,7 +154,7 @@ double DFCoupledCluster::compute_energy() {
                         temp1[q * v + c] = Qvv[q * v * v + a * v + c];
                     }
                 }
-                F_DGEMM('n', 't', o * v, v, nQ, 1.0, Qov, o * v, temp1, v, 0.0, temp2, o * v);
+                F_DGEMM('n', 't', o * v, v, nQ, 1.0, Qov, o * v, temp1.data(), v, 0.0, temp2.data(), o * v);
 #pragma omp parallel for schedule(static)
                 for (long int b = 0; b < v; b++) {
                     for (long int i = 0; i < o; i++) {
@@ -169,16 +166,14 @@ double DFCoupledCluster::compute_energy() {
                 psio->write(PSIF_DCC_ABCI4, "E2abci4", (char *)&temp1[0], o * v * v * sizeof(double), addr, &addr);
             }
             psio->close(PSIF_DCC_ABCI4, 1);
-            free(temp1);
-            free(temp2);
         }
         free(Qvv);
 
-        double *temp1 = (double *)malloc(o * o * v * v * sizeof(double));
-        double *temp2 = (double *)malloc(o * o * v * v * sizeof(double));
+        std::vector<double> temp1(o * o * v * v);
+        std::vector<double> temp2(o * o * v * v);
 
         // write (oo|ov) integrals, formerly E2ijak, for (t)
-        F_DGEMM('n', 't', o * o, o * v, nQ, 1.0, Qoo, o * o, Qov, o * v, 0.0, temp1, o * o);
+        F_DGEMM('n', 't', o * o, o * v, nQ, 1.0, Qoo, o * o, Qov, o * v, 0.0, temp1.data(), o * o);
         for (long int i = 0; i < o; i++) {
             for (long int j = 0; j < o; j++) {
                 for (long int k = 0; k < o; k++) {
@@ -194,15 +189,13 @@ double DFCoupledCluster::compute_energy() {
         psio->close(PSIF_DCC_IJAK, 1);
 
         // df (ov|ov) integrals, formerly E2klcd
-        F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, temp1, o * v);
+        F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, temp1.data(), o * v);
         psio->open(PSIF_DCC_IAJB, PSIO_OPEN_NEW);
         psio->write_entry(PSIF_DCC_IAJB, "E2iajb", (char *)&temp1[0], o * o * v * v * sizeof(double));
         psio->close(PSIF_DCC_IAJB, 1);
 
         free(Qov);
         free(Qoo);
-        free(temp1);
-        free(temp2);
 
         // triples
 
@@ -420,20 +413,19 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     // add T1 diagnostic to qcvars
     set_scalar_variable("CC T1 DIAGNOSTIC", t1diag);
 
-    auto T = std::make_shared<Matrix>(o, o);
+    Matrix T(o, o);
     auto eigvec = std::make_shared<Matrix>(o, o);
     auto eigval = std::make_shared<Vector>(o);
-    double **Tp = T->pointer();
     for (long int i = 0; i < o; i++) {
         for (long int j = 0; j < o; j++) {
             double dum = 0.0;
             for (long int a = 0; a < v; a++) {
                 dum += t1[a * o + i] * t1[a * o + j];
             }
-            Tp[i][j] = dum;
+            T.set(i, j, dum);
         }
     }
-    T->diagonalize(eigvec, eigval, descending);
+    T.diagonalize(eigvec, eigval, descending);
     outfile->Printf("        D1 diagnostic:                  %20.12lf\n", sqrt(eigval->pointer()[0]));
     outfile->Printf("\n");
 

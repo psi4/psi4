@@ -68,14 +68,11 @@ FrozenNO::~FrozenNO() {}
 void FrozenNO::common_init() {
     module_ = "fnocc";
 
-    nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
-    for (int h = 0; h < nirrep_; h++) {
-        nfzc += frzcpi_[h];
-        nfzv += frzvpi_[h];
-        nso += nsopi_[h];
-        nmo += nmopi_[h];
-        ndocc += doccpi_[h];
-    }
+    nfzc = frzcpi_.sum();
+    nfzv = frzvpi_.sum();
+    nso = nsopi_.sum();
+    nmo = nmopi_.sum();
+    ndocc = doccpi_.sum();
     ndoccact = ndocc - nfzc;
     nvirt = nmo - ndocc;
 
@@ -112,8 +109,8 @@ void FrozenNO::ComputeNaturalOrbitals() {
     std::vector<std::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    std::shared_ptr<Wavefunction> wfn = reference_wavefunction_;
-    std::shared_ptr<IntegralTransform> ints = std::make_shared<IntegralTransform>(
+    auto wfn = reference_wavefunction_;
+    auto ints = std::make_shared<IntegralTransform>(
         wfn, spaces, IntegralTransform::TransformationType::Restricted, IntegralTransform::OutputType::DPDOnly,
         IntegralTransform::MOOrdering::QTOrder, IntegralTransform::FrozenOrbitals::OccAndVir, false);
     ints->set_dpd_id(0);
@@ -127,33 +124,26 @@ void FrozenNO::ComputeNaturalOrbitals() {
     outfile->Printf("\n");
 
     dpdbuf4 amps1, amps2;
-    std::shared_ptr<PSIO> psio = _default_psio_lib_;
+    auto psio = _default_psio_lib_;
     psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints->get_dpd_id());
 
     // orbital energies:
-    int numAOcc = 0, numBOcc = 0, numAVir = 0, numBVir = 0;
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
-    auto* aOccOrbsPI = new int[nirrep_];
-    auto* bOccOrbsPI = new int[nirrep_];
-    auto* aVirOrbsPI = new int[nirrep_];
-    auto* bVirOrbsPI = new int[nirrep_];
-    for (int h = 0; h < nirrep_; ++h) {
-        aOccOrbsPI[h] = doccpi_[h] + soccpi_[h] - frzcpi_[h];
-        bOccOrbsPI[h] = doccpi_[h] - frzcpi_[h];
-        aVirOrbsPI[h] = nmopi_[h] - doccpi_[h] - soccpi_[h] - frzvpi_[h];
-        bVirOrbsPI[h] = nmopi_[h] - doccpi_[h] - frzvpi_[h];
-        numAOcc += aOccOrbsPI[h];
-        numBOcc += bOccOrbsPI[h];
-        numAVir += aVirOrbsPI[h];
-        numBVir += bVirOrbsPI[h];
-    }
-    auto* aOccEvals = new double[numAOcc];
-    auto* bOccEvals = new double[numBOcc];
-    auto* aVirEvals = new double[numAVir];
-    auto* bVirEvals = new double[numBVir];
+    auto aOccOrbsPI = doccpi_ + soccpi_ - frzcpi_;
+    auto bOccOrbsPI = doccpi_ - frzcpi_;
+    auto aVirOrbsPI = nmopi_ - doccpi_ - soccpi_ - frzvpi_;
+    auto bVirOrbsPI = nmopi_ - doccpi_ - frzvpi_;
+    auto numAOcc = aOccOrbsPI.sum();
+    auto numBOcc = bOccOrbsPI.sum();
+    auto numAVir = aVirOrbsPI.sum();
+    auto numBVir = bVirOrbsPI.sum();
+    std::vector<double> aOccEvals(numAOcc);
+    std::vector<double> bOccEvals(numBOcc);
+    std::vector<double> aVirEvals(numAVir);
+    std::vector<double> bVirEvals(numBVir);
 
     std::shared_ptr<Vector> epsA = reference_wavefunction_->epsilon_a();
     std::shared_ptr<Vector> epsB = reference_wavefunction_->epsilon_b();
@@ -328,14 +318,14 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     // determine how many orbitals will be retained
     double cutoff = options_.get_double("OCC_TOLERANCE");
-    auto* newVirOrbsPI = new int[nirrep_];
+    Dimension newVirOrbsPI(nirrep_);
 
     if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
         if (!options_["OCC_PERCENTAGE"].has_changed()) {
             // use occupancy tolerance:
             for (int h = 0; h < nirrep_; h++) {
                 newVirOrbsPI[h] = 0;
-                double* vec = eigval->pointer(h);
+                auto vec = eigval->pointer(h);
                 for (int a = 0; a < aVirOrbsPI[h]; a++) {
                     if (vec[a] > cutoff) newVirOrbsPI[h]++;
                 }
@@ -372,7 +362,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
                     int count = 0;
                     for (int h2 = 0; h2 < nirrep_; h2++) {
-                        double* vec = eigval->pointer(h2);
+                        auto vec = eigval->pointer(h2);
                         for (int b = 0; b < aVirOrbsPI[h2]; b++) {
                             if (!skip[count] && vec[b] > max) {
                                 max = vec[b];
@@ -414,12 +404,11 @@ void FrozenNO::ComputeNaturalOrbitals() {
     outfile->Printf(" ]\n");
     outfile->Printf("\n");
 
-    int nvirt_no = 0;
     int nvirt = 0;
     for (int h = 0; h < nirrep_; h++) {
         nvirt += aVirOrbsPI[h];
-        nvirt_no += newVirOrbsPI[h];
     }
+    nvirt_no = newVirOrbsPI.sum();
     outfile->Printf("        Retaining %i of %i virtual orbitals.\n", nvirt_no, nvirt);
     outfile->Printf("\n");
 
@@ -488,18 +477,6 @@ void FrozenNO::ComputeNaturalOrbitals() {
             epsp[doccpi_[h] + a] = eigp[a];
         }
     }
-
-    // free memory
-    delete[] newVirOrbsPI;
-
-    delete[] aOccOrbsPI;
-    delete[] bOccOrbsPI;
-    delete[] aVirOrbsPI;
-    delete[] bVirOrbsPI;
-    delete[] aOccEvals;
-    delete[] bOccEvals;
-    delete[] aVirEvals;
-    delete[] bVirEvals;
 
     tstop();
 }
@@ -752,46 +729,45 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     }
 
     // allocate memory for a couple of buffers
-    double* amps2 = (double*)malloc(o * o * v * v * sizeof(double));
+    std::vector<double> amps2(o * o * v * v);
 
     // build (ia|jb) integrals
-    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, amps2, o * v);
+    F_DGEMM('n', 't', o * v, o * v, nQ, 1.0, Qov, o * v, Qov, o * v, 0.0, amps2.data(), o * v);
     free(Qov);
 
     if (memory < 16L * o * o * v * v) {
         throw PsiException("not enough memory (fno)", __FILE__, __LINE__);
     }
 
-    double* amps1 = (double*)malloc(o * o * v * v * sizeof(double));
+    std::vector<double> amps1(o * o * v * v);
 
     nvirt_no = nvirt;
 
-    std::shared_ptr<Vector> eps_test = epsilon_a();
-    double* tempeps = eps_test->pointer();
-    double* F = tempeps + nfzc;
-    double* Dab = (double*)malloc(v * v * sizeof(double));
-    double* temp = (double*)malloc(nso * v * sizeof(double));
-    double* newFock = (double*)malloc(v * v * sizeof(double));
-    double* neweps = (double*)malloc(nvirt_no * sizeof(double));
+    auto Fo = epsilon_a_subset("MO", "ACTIVE_OCC");
+    auto Fv = epsilon_a_subset("MO", "ACTIVE_VIR");
+    std::vector<double> Dab(v * v);
+    std::vector<double> temp(nso * v);
+    std::vector<double> newFock(v * v);
+    std::vector<double> neweps(nvirt_no);
 
     // build mp2 amplitudes for mp2 density
     long int ijab = 0;
     emp2 = 0.0;
     double emp2_os = 0.0;
     double emp2_ss = 0.0;
-    for (long int a = o; a < o + v; a++) {
-        double da = F[a];
-        for (long int b = o; b < o + v; b++) {
-            double dab = da + F[b];
+    for (long int a = 0; a < v; a++) {
+        double da = Fv->get(a);
+        for (long int b = 0; b < v; b++) {
+            double dab = da + Fv->get(b);
             for (long int i = 0; i < o; i++) {
-                double dabi = dab - F[i];
+                double dabi = dab - Fo->get(i);
                 for (long int j = 0; j < o; j++) {
-                    long int iajb = i * v * v * o + (a - o) * v * o + j * v + (b - o);
-                    double dijab = dabi - F[j];
+                    long int iajb = i * v * v * o + a * v * o + j * v + b;
+                    double dijab = dabi - Fo->get(j);
                     amps1[ijab++] = -amps2[iajb] / dijab;
                     emp2_os -= amps2[iajb] * amps2[iajb] / dijab;
                     emp2_ss -=
-                        amps2[iajb] * (amps2[iajb] - amps2[j * o * v * v + (a - o) * o * v + i * v + (b - o)]) / dijab;
+                        amps2[iajb] * (amps2[iajb] - amps2[j * o * v * v + a * o * v + i * v + b]) / dijab;
                 }
             }
         }
@@ -820,15 +796,15 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     }
 
     // build ab block of the density:
-    F_DGEMM('t', 'n', v, v, v * o * o, 2.0, amps1, v * o * o, amps2, v * o * o, 0.0, Dab, v);
+    F_DGEMM('t', 'n', v, v, v * o * o, 2.0, amps1.data(), v * o * o, amps2.data(), v * o * o, 0.0, Dab.data(), v);
 
     // diagonalize Dab
-    double* eigvalDab = (double*)malloc(v * sizeof(double));
-    Diagonalize(v, Dab, eigvalDab);
+    std::vector<double> eigvalDab(v);
+    Diagonalize(v, Dab.data(), eigvalDab.data());
 
     // reorder transformation matrix:
     for (long int i = 0; i < v; i++) {
-        C_DCOPY(v, Dab + (v - 1 - i) * v, 1, temp + i * v, 1);
+        C_DCOPY(v, Dab.data() + (v - 1 - i) * v, 1, temp.data() + i * v, 1);
     }
 
     // establish cutoff for frozen virtuals
@@ -899,48 +875,37 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     outfile->Printf("\n");
 
     // transform Fock matrix to MP2 NO basis
-    memset((void*)newFock, '\0', v * v * sizeof(double));
-    C_DCOPY(v, F + ndoccact, 1, newFock, v + 1);
-    F_DGEMM('n', 'n', v, nvirt_no, v, 1.0, newFock, v, temp, v, 0.0, Dab, v);
-    F_DGEMM('t', 'n', nvirt_no, nvirt_no, v, 1.0, temp, v, Dab, v, 0.0, newFock, nvirt_no);
+    C_DCOPY(v, Fv->pointer(), 1, newFock.data(), v + 1);
+    F_DGEMM('n', 'n', v, nvirt_no, v, 1.0, newFock.data(), v, temp.data(), v, 0.0, Dab.data(), v);
+    F_DGEMM('t', 'n', nvirt_no, nvirt_no, v, 1.0, temp.data(), v, Dab.data(), v, 0.0, newFock.data(), nvirt_no);
 
     // diagonalize new Fock matrix for semi-canonical orbitals
-    Diagonalize(nvirt_no, newFock, neweps);
+    Diagonalize(nvirt_no, newFock.data(), neweps.data());
 
     // construct full mo -> no transformation matrix
-    F_DGEMM('n', 'n', v, nvirt_no, nvirt_no, 1.0, temp, v, newFock, nvirt_no, 0.0, Dab, v);
+    F_DGEMM('n', 'n', v, nvirt_no, nvirt_no, 1.0, temp.data(), v, newFock.data(), nvirt_no, 0.0, Dab.data(), v);
 
     // put orbital energies back in F - doesn't matter in this implementation
-    C_DCOPY(nvirt_no, neweps, 1, F + ndoccact, 1);
-
-    // free memory before using libtrans
-    free(temp);
-    free(neweps);
-    free(amps1);
-    free(amps2);
-    free(eigvalDab);
-    free(newFock);
+    C_DCOPY(nvirt_no, neweps.data(), 1, Fv->pointer(), 1);
 
     // change number of frozen virtual orbitals
     frzvpi_[0] = nfzv + (nvirt - nvirt_no);
 
     // modify c matrix
     ModifyCa(Dab);
-
-    free(Dab);
 }
 
-void DFFrozenNO::ModifyCa(double* Dab) {
+void DFFrozenNO::ModifyCa(const std::vector<double>& Dab) {
     long int v = nvirt;
 
-    std::shared_ptr<psi::Wavefunction> ref = reference_wavefunction_;
+    auto ref = reference_wavefunction_;
 
-    std::shared_ptr<Matrix> Caomo = ref->Ca();
+    auto Caomo = ref->Ca();
 
-    double** Capointer = Caomo->pointer();
+    auto Capointer = Caomo->pointer();
 
     // so->no
-    double* temp = (double*)malloc(nso * nvirt_no * sizeof(double));
+    std::vector<double> temp(nso * nvirt_no);
     for (long int i = 0; i < nso; i++) {
         for (long int j = 0; j < nvirt_no; j++) {
             double dum = 0.0;
@@ -955,19 +920,18 @@ void DFFrozenNO::ModifyCa(double* Dab) {
             Capointer[i][ndocc + j] = temp[i * nvirt_no + j];
         }
     }
-    free(temp);
 }
 void DFFrozenNO::ModifyCa_occ(double* Dij) {
     long int o = ndoccact;
 
-    std::shared_ptr<psi::Wavefunction> ref = reference_wavefunction_;
+    auto ref = reference_wavefunction_;
 
-    std::shared_ptr<Matrix> Caomo = ref->Ca();
+    auto Caomo = ref->Ca();
 
-    double** Capointer = Caomo->pointer();
+    auto Capointer = Caomo->pointer();
 
     // so->no
-    double* temp = (double*)malloc(nso * o * sizeof(double));
+    std::vector<double> temp(nso * o);
     for (long int i = 0; i < nso; i++) {
         for (long int j = 0; j < o; j++) {
             double dum = 0.0;
@@ -982,7 +946,6 @@ void DFFrozenNO::ModifyCa_occ(double* Dij) {
             Capointer[i][nfzc + j] = temp[i * o + j];
         }
     }
-    free(temp);
 }
 
 void DFFrozenNO::TransformQ(long int nQ, double* Qso) {
