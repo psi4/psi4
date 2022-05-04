@@ -147,7 +147,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
-    } else if (jk_type == "COSK") {
+    } else if (jk_type == "COSX") {
         DFJCOSK * jk = new DFJCOSK(primary, auxiliary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));

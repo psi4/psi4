@@ -192,22 +192,22 @@ void DFJCOSK::common_init() {
     // Create a small DFTGrid for the initial SCF iterations
     std::map<std::string, std::string> grid_init_str_options;
     std::map<std::string, int> grid_init_int_options = {
-        {"DFT_SPHERICAL_POINTS" , options_.get_int("COSK_SPHERICAL_POINTS")}, 
-        {"DFT_RADIAL_POINTS" ,    options_.get_int("COSK_RADIAL_POINTS")},
+        {"DFT_SPHERICAL_POINTS" , options_.get_int("COSX_SPHERICAL_POINTS")}, 
+        {"DFT_RADIAL_POINTS" ,    options_.get_int("COSX_RADIAL_POINTS")},
     };
     std::map<std::string, double> grid_init_float_options = {
-        {"DFT_BASIS_TOLERANCE" , options_.get_double("COSK_BASIS_TOLERANCE")}, 
+        {"DFT_BASIS_TOLERANCE" , options_.get_double("COSX_BASIS_TOLERANCE")}, 
     };
     grid_init_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_init_int_options, grid_init_str_options, grid_init_float_options, options_);
 
     // Create a large DFTGrid for the final SCF iteration
     std::map<std::string, std::string> grid_final_str_options;
     std::map<std::string, int> grid_final_int_options = {
-        {"DFT_SPHERICAL_POINTS" , options_.get_int("COSK_SPHERICAL_POINTS_FINAL")}, 
-        {"DFT_RADIAL_POINTS" ,    options_.get_int("COSK_RADIAL_POINTS_FINAL")},
+        {"DFT_SPHERICAL_POINTS" , options_.get_int("COSX_SPHERICAL_POINTS_FINAL")}, 
+        {"DFT_RADIAL_POINTS" ,    options_.get_int("COSX_RADIAL_POINTS_FINAL")},
     };
     std::map<std::string, double> grid_final_float_options = {
-        {"DFT_BASIS_TOLERANCE" , options_.get_double("COSK_BASIS_TOLERANCE")}, 
+        {"DFT_BASIS_TOLERANCE" , options_.get_double("COSX_BASIS_TOLERANCE")}, 
     };
     grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
 
@@ -272,13 +272,13 @@ void DFJCOSK::print_header() const {
         if (do_wK_) outfile->Printf("    Omega:              %11.3E\n", omega_);
         outfile->Printf("    Integrals threads:  %11d\n", nthreads_);
         outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf("    Incremental Fock :  %11s\n", (options_.get_bool("COSK_INCFOCK") ? "Yes" : "No"));
+        outfile->Printf("    Incremental Fock :  %11s\n", (options_.get_bool("COSX_INCFOCK") ? "Yes" : "No"));
         outfile->Printf("    J Screening Type:   %11s\n", screen_type.c_str());
         outfile->Printf("    J Screening Cutoff: %11.0E\n", cutoff_);
-        outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSK_INTS_TOLERANCE"));
-        outfile->Printf("    K Density Cutoff:   %11.0E\n", options_.get_double("COSK_DENSITY_TOLERANCE"));
-        outfile->Printf("    K Basis Cutoff:     %11.0E\n", options_.get_double("COSK_BASIS_TOLERANCE"));
-        outfile->Printf("    K Overlap Fitting:  %11s\n", (options_.get_bool("COSK_OVERLAP_FITTING") ? "Yes" : "No"));
+        outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSX_INTS_TOLERANCE"));
+        outfile->Printf("    K Density Cutoff:   %11.0E\n", options_.get_double("COSX_DENSITY_TOLERANCE"));
+        outfile->Printf("    K Basis Cutoff:     %11.0E\n", options_.get_double("COSX_BASIS_TOLERANCE"));
+        outfile->Printf("    K Overlap Fitting:  %11s\n", (options_.get_bool("COSX_OVERLAP_FITTING") ? "Yes" : "No"));
     }
 }
 
@@ -298,7 +298,7 @@ void DFJCOSK::compute_JK() {
     //
     std::vector<SharedMatrix> D_eff(njk);
 
-    if(options_.get_bool("COSK_INCFOCK")) {
+    if(options_.get_bool("COSX_INCFOCK")) {
 
         // If there is no previous pseudo-density, this iteration is normal
         if(D_prev_.size() != njk) {
@@ -581,10 +581,10 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
     int natom = primary_->molecule()->natom();
 
     // => Knobs <= //
-    //double gscreen = options_.get_double("COSK_INTS_TOLERANCE");
-    double kscreen = options_.get_double("COSK_INTS_TOLERANCE");
-    double dscreen = options_.get_double("COSK_DENSITY_TOLERANCE");
-    bool overlap_fitted = options_.get_bool("COSK_OVERLAP_FITTING");
+    //double gscreen = options_.get_double("COSX_INTS_TOLERANCE");
+    double kscreen = options_.get_double("COSX_INTS_TOLERANCE");
+    double dscreen = options_.get_double("COSX_DENSITY_TOLERANCE");
+    bool overlap_fitted = options_.get_bool("COSX_OVERLAP_FITTING");
 
     // use a small DFTGrid grid (and overlap metric) for early SCF iterations
     // otherwise use a large DFTGrid

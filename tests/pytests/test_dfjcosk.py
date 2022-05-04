@@ -72,7 +72,7 @@ units au
 def test_dfjcosk(inp):
     """Test the DFJCOSK JK object via SCF calculations"""
 
-    psi4.set_options({"scf_type" : "cosk", "basis": "cc-pvdz"})
+    psi4.set_options({"scf_type" : "cosx", "basis": "cc-pvdz"})
     psi4.set_options(inp["options"])
 
     # does the DFJCOSK SCF energy match a pre-computed reference?

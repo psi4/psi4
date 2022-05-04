@@ -685,26 +685,12 @@ CD
     for gradient computations.  The algorithm to obtain the Cholesky
     vectors is not designed for computations with thousands of basis
     functions.
-COSK
-    An algorithm that uses a direct density-fitting approach for the J term
-    and a semi-numerical or chain-of-spheres (COS) approach for the K term.
-    This algorithm uses no I/O, scales well with system size, and requires
-    minimal memory, making it ideal for large systems and multi-core CPUs.
-    See [Neese:2009:98]_ for more information.
-    The cost of the K algorithm is proportional to the size of the COSK
-    integration grid, as is the numerical error. Both computational cost and
-    numerical error are reduced by initially converging the SCF solution on a
-    small grid, followed by a single iteration on a larger grid.
-    The initial and final grid sizes are controlled by the keywords
-    |scf__cosk_radial_points|, |scf__cosk_spherical_points|,
-    |scf__cosk_radial_points_final|, and |scf__cosk_spherical_points_final|.
-    Screening thresholds over integrals, densities, and basis extents are set
-    with the |scf__cosk_ints_tolerance|, |scf__cosk_density_tolerance|, and
-    |scf__cosk_basis_tolerance| keywords, respectively. The |scf__cosk_incfock|
-    keyword (defaults to ``true``) increases performance by constructing the
-    Fock matrix from differences in the density matrix, which are more amenable
-    to screening. The |scf__cosk_overlap_fitting| keyword (defaults to ``true``)
-    reduces numerical errors using the method described in [Izsak:2011:144105]_.
+COSX
+    An algorithm based on the semi-numerical "chain of spheres exchange" (COSX)
+    approach described in [Neese:2009:98]_. The coulomb term is computed with a
+    direct density-fitting algorithm. The COSX algorithm uses no I/O, scales
+    well with system size, and requires minimal memory, making it ideal for
+    large systems and multi-core CPUs. See the COSX section below for more information.
 
 In some cases the above algorithms have multiple implementations that return
 the same result, but are optimal under different molecules sizes and hardware
@@ -764,6 +750,33 @@ resort will be used.
 To avoid this, either set |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
+
+COSX Exchange
+~~~~~~~~~~~~~
+
+The semi-numerical COSX algorithm (described in [Neese:2009:98]_) is so-called
+because the two-electron ERIs are evaluated analytically over one electron 
+coordinate and numerically over the other electron coordinate. The numerical 
+integration is performed on standard DFT quadrature grids, which are described
+in :ref:`DFT`. Both the accuracy of the COSX algorithm and also the computational
+cost are directly determined by the size of the integration grid, so selection
+of the grid is important. This COSX implementation uses two separate grids.
+The SCF algorithm is first converged on a smaller grid, followed by a final SCF
+iteration on a larger grid. The size of the initial grid is controlled by the
+keywords |scf__cosx_radial_points| and |scf__cosx_spherical_points|. The final
+grid  is controlled by |scf__cosx_radial_points_final| and
+|scf__cosx_spherical_points_final|.
+Defaults have been chosen for both grids that balance cost and accuracy.
+Screening thresholds over integrals, densities, and basis extents are set
+with the |scf__cosx_ints_tolerance|, |scf__cosx_density_tolerance|, and
+|scf__cosx_basis_tolerance| keywords, respectively. The |scf__cosx_incfock|
+keyword (defaults to ``true``) increases performance by constructing the
+Fock matrix from differences in the density matrix, which are more amenable
+to screening. Consider disabling this keyword if SCF energy convergence issues
+are observed, particularly when using diffuse basis functions. The
+|scf__cosx_overlap_fitting| keyword (defaults to ``true``) reduces numerical
+integration errors using the method described in [Izsak:2011:144105]_ and is
+always recommended.
 
 LinK Exchange
 ~~~~~~~~~~~~~
