@@ -200,8 +200,8 @@ void DFJCOSK::common_init() {
         {"DFT_BLOCK_SCHEME",   "OCTREE"},
     };
     std::map<std::string, int> grid_init_int_options = {
-        {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS")}, 
-        {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS")},
+        {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_INITIAL")}, 
+        {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_INITIAL")},
         {"DFT_BLOCK_MIN_POINTS", 100},
         {"DFT_BLOCK_MAX_POINTS", 256},
     };

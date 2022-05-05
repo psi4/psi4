@@ -763,7 +763,7 @@ cost are directly determined by the size of the integration grid, so selection
 of the grid is important. This COSX implementation uses two separate grids.
 The SCF algorithm is first converged on a smaller grid, followed by a final SCF
 iteration on a larger grid. The size of the initial grid is controlled by the
-keywords |scf__cosx_radial_points| and |scf__cosx_spherical_points|. The final
+keywords |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|. The final
 grid  is controlled by |scf__cosx_radial_points_final| and
 |scf__cosx_spherical_points_final|.
 Defaults have been chosen for both grids that balance cost and accuracy.

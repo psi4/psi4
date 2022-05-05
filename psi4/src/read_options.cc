@@ -1547,9 +1547,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SUBSECTION COSX Algorithm -*/
 
         /*- Number of spherical points in initial COSX grid. -*/
-        options.add_int("COSX_SPHERICAL_POINTS", 50);
+        options.add_int("COSX_SPHERICAL_POINTS_INITIAL", 50);
         /*- Number of radial points in initial COSX grid. -*/
-        options.add_int("COSX_RADIAL_POINTS", 25);
+        options.add_int("COSX_RADIAL_POINTS_INITIAL", 25);
         /*- Number of spherical points in final COSX grid. -*/
         options.add_int("COSX_SPHERICAL_POINTS_FINAL", 110);
         /*- Number of radial points in final COSX grid. -*/
