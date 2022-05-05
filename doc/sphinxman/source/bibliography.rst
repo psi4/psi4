@@ -606,3 +606,14 @@ Bibliography
    S. Behnle and R. F. Fink,
    *J. Chem. Theory Comput.* **17**, 3259 (2021).
    https://doi.org/10.1021/acs.jctc.1c00280
+
+.. [Behnle:2022:OREMP]
+   "UREMP, RO-REMP, and OO-REMP: Hybrid perturbation theories for open-shell electronic structure calculations",
+   S. Behnle and R. F. Fink
+   *J. Chem. Phys.* **156**, 124103 (2022).
+   https://doi.org/10.1063/5.0081285
+
+.. [Fink:2006:RE]
+   "Two new unitary-invariant and size-consistent perturbation theoretical approaches to the electron correlation energy",
+   R. F. Fink
+   *Chem. Phys. Lett.*, **428**, 461 (2006)
