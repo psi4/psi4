@@ -189,25 +189,51 @@ void DFJCOSK::common_init() {
 
     timer_on("Grid Construction");
 
+    // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
+
     // Create a small DFTGrid for the initial SCF iterations
-    std::map<std::string, std::string> grid_init_str_options;
+    std::map<std::string, std::string> grid_init_str_options = {
+        {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
+        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
+        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
+        {"DFT_GRID_NAME",      ""},
+        {"DFT_BLOCK_SCHEME",   "OCTREE"},
+    };
     std::map<std::string, int> grid_init_int_options = {
-        {"DFT_SPHERICAL_POINTS" , options_.get_int("COSX_SPHERICAL_POINTS")}, 
-        {"DFT_RADIAL_POINTS" ,    options_.get_int("COSX_RADIAL_POINTS")},
+        {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS")}, 
+        {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS")},
+        {"DFT_BLOCK_MIN_POINTS", 100},
+        {"DFT_BLOCK_MAX_POINTS", 256},
     };
     std::map<std::string, double> grid_init_float_options = {
-        {"DFT_BASIS_TOLERANCE" , options_.get_double("COSX_BASIS_TOLERANCE")}, 
+        {"DFT_BASIS_TOLERANCE",   options_.get_double("COSX_BASIS_TOLERANCE")}, 
+        {"DFT_BS_RADIUS_ALPHA",   1.0},
+        {"DFT_PRUNING_ALPHA",     1.0},
+        {"DFT_BLOCK_MAX_RADIUS",  3.0},
+        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
     };
     grid_init_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_init_int_options, grid_init_str_options, grid_init_float_options, options_);
 
     // Create a large DFTGrid for the final SCF iteration
-    std::map<std::string, std::string> grid_final_str_options;
+    std::map<std::string, std::string> grid_final_str_options = {
+        {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
+        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
+        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
+        {"DFT_GRID_NAME",      ""},
+        {"DFT_BLOCK_SCHEME",   "OCTREE"},
+    };
     std::map<std::string, int> grid_final_int_options = {
-        {"DFT_SPHERICAL_POINTS" , options_.get_int("COSX_SPHERICAL_POINTS_FINAL")}, 
-        {"DFT_RADIAL_POINTS" ,    options_.get_int("COSX_RADIAL_POINTS_FINAL")},
+        {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_FINAL")}, 
+        {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_FINAL")},
+        {"DFT_BLOCK_MIN_POINTS", 100},
+        {"DFT_BLOCK_MAX_POINTS", 256},
     };
     std::map<std::string, double> grid_final_float_options = {
-        {"DFT_BASIS_TOLERANCE" , options_.get_double("COSX_BASIS_TOLERANCE")}, 
+        {"DFT_BASIS_TOLERANCE",   options_.get_double("COSX_BASIS_TOLERANCE")}, 
+        {"DFT_BS_RADIUS_ALPHA",   1.0},
+        {"DFT_PRUNING_ALPHA",     1.0},
+        {"DFT_BLOCK_MAX_RADIUS",  3.0},
+        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
     };
     grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
 

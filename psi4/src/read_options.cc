@@ -1546,12 +1546,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION COSX Algorithm -*/
 
-        /*- Screening criteria for integrals and intermediates in COSX -*/
-        options.add_double("COSX_INTS_TOLERANCE", 1.0E-11);
-        /*- Screening criteria for shell-pair densities in COSX -*/
-        options.add_double("COSX_DENSITY_TOLERANCE", 1.0E-10);
-        /*- Screening criteria for basis function values on COSX grid-*/
-        options.add_double("COSX_BASIS_TOLERANCE", 1.0E-10);
         /*- Number of spherical points in initial COSX grid. -*/
         options.add_int("COSX_SPHERICAL_POINTS", 50);
         /*- Number of radial points in initial COSX grid. -*/
@@ -1560,6 +1554,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("COSX_SPHERICAL_POINTS_FINAL", 110);
         /*- Number of radial points in final COSX grid. -*/
         options.add_int("COSX_RADIAL_POINTS_FINAL", 35);
+        /*- Screening criteria for integrals and intermediates in COSX -*/
+        options.add_double("COSX_INTS_TOLERANCE", 1.0E-11);
+        /*- Screening criteria for shell-pair densities in COSX !expert -*/
+        options.add_double("COSX_DENSITY_TOLERANCE", 1.0E-10);
+        /*- Screening criteria for basis function values on COSX grids !expert -*/
+        options.add_double("COSX_BASIS_TOLERANCE", 1.0E-10);
+        /*- Pruning scheme for COSX grids !expert -*/
+        options.add_str("COSX_PRUNING_SCHEME", "ROBUST", 
+                        "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
         /*- Do reduce numerical COSX errors with overlap fitting? !expert -*/
         options.add_bool("COSX_OVERLAP_FITTING", true);
         /*- Do allow for improved COSX screening performance by constructing the Fock matrix incrementally? !expert -*/
