@@ -397,7 +397,7 @@ void export_wavefunction(py::module& m) {
                       "Are we to do excited-state MOM?")
         .def_property("MOM_performed_", &scf::HF::MOM_performed, &scf::HF::set_MOM_performed,
                       "MOM performed current iteration?")
-	.def_property("attempt_number_", &scf::HF::attempt_number, &scf::HF::set_attempt_number,
+        .def_property("attempt_number_", &scf::HF::attempt_number, &scf::HF::set_attempt_number,
                       "Current macroiteration (1-indexed) for stability analysis")
         .def("stability_analysis", &scf::HF::stability_analysis, "Assess wfn stability and correct if requested")
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
