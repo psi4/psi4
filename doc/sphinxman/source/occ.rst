@@ -28,7 +28,7 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. index:: 
+.. index::
    single: Orbital-Optimized Methods, OMP2
    single: Orbital-Optimized Methods, OMP3
    single: Orbital-Optimized Methods, OMP2.5
@@ -55,40 +55,40 @@ OCC: Orbital-Optimized Coupled-Cluster and |MollerPlesset| Perturbation Theories
 Introduction
 ~~~~~~~~~~~~
 
-Orbital-optimized methods have several advantages over their non-optimized counterparts. 
+Orbital-optimized methods have several advantages over their non-optimized counterparts.
 Once the orbitals are optimized, the wave function will obey the Hellmann--Feynman theorem
-for orbital rotation parameters. Therefore, there is no need for orbital response terms 
-in the evaluation of analytic gradients. In other words, it is unnecessary to solve the 
-first order coupled-perturbed CC and many-body perturbation theory (MBPT) equations. 
-Further, computation of one-electron properties is easier because there are no response contributions to the particle 
-density matrices (PDMs). Moreover, active space approximations can be readily incorporated into the CC methods 
-[Krylov:2000:vod]_. Additionally, orbital-optimized coupled-cluster avoids spurious second-order 
+for orbital rotation parameters. Therefore, there is no need for orbital response terms
+in the evaluation of analytic gradients. In other words, it is unnecessary to solve the
+first order coupled-perturbed CC and many-body perturbation theory (MBPT) equations.
+Further, computation of one-electron properties is easier because there are no response contributions to the particle
+density matrices (PDMs). Moreover, active space approximations can be readily incorporated into the CC methods
+[Krylov:2000:vod]_. Additionally, orbital-optimized coupled-cluster avoids spurious second-order
 poles in its response function, and its transition dipole moments are gauge invariant [Pedersen:1999:od]_.
 
-Another advantage is that the orbital-optimized methods do not suffer from artifactual symmetry-breaking 
+Another advantage is that the orbital-optimized methods do not suffer from artifactual symmetry-breaking
 instabilities [Crawford:1997:instability]_, [Sherrill:1998:od]_, [Bozkaya:2011:omp2]_, and [Bozkaya:2011:omp3]_.
-Furthermore, Kurlancheek and Head-Gordon [Kurlancek:2009]_ demonstrated that first order properties such as 
-forces or dipole moments are discontinuous along nuclear coordinates when such a symmetry breaking occurs. 
-They also observed that although the energy appears well behaved, the MP2 method can have natural occupation 
-numbers greater than 2 or less than 0, hence may violate the N-representability condition. They further 
-discussed that the orbital response equations generally have a singularity problem at the unrestriction point 
-where spin-restricted orbitals become unstable to unrestriction. This singularity yields to extremely large or 
-small eigenvalues of the one-particle density matrix (OPDM). These abnormal eigenvalues may lead to unphysical 
+Furthermore, Kurlancheek and Head-Gordon [Kurlancek:2009]_ demonstrated that first order properties such as
+forces or dipole moments are discontinuous along nuclear coordinates when such a symmetry breaking occurs.
+They also observed that although the energy appears well behaved, the MP2 method can have natural occupation
+numbers greater than 2 or less than 0, hence may violate the N-representability condition. They further
+discussed that the orbital response equations generally have a singularity problem at the unrestriction point
+where spin-restricted orbitals become unstable to unrestriction. This singularity yields to extremely large or
+small eigenvalues of the one-particle density matrix (OPDM). These abnormal eigenvalues may lead to unphysical
 molecular properties such as vibrational frequencies. However, orbital-optimized MP2 (also MP3)
 will solve this N-representability problem by disregarding orbital response contribution of one-particle
-density matrix. 
+density matrix.
 
-Although the performance of coupled-cluster singles and doubles (CCSD) and orbital-optimized 
-CCD (OD) is similar, the situation is different in the case of triples corrections, especially at stretched 
-geometries [Bozkaya:2012:odtl]_. Bozkaya and Schaefer demonstrated that orbital-optimized coupled cluster based 
-triple corrections, especially those of asymmetrics, provide significantly better potential energy curves than 
-CCSD based triples corrections.  
+Although the performance of coupled-cluster singles and doubles (CCSD) and orbital-optimized
+CCD (OD) is similar, the situation is different in the case of triples corrections, especially at stretched
+geometries [Bozkaya:2012:odtl]_. Bozkaya and Schaefer demonstrated that orbital-optimized coupled cluster based
+triple corrections, especially those of asymmetrics, provide significantly better potential energy curves than
+CCSD based triples corrections.
 
-A lot of the functionality in OCC has been enabled with Density Fitting (DF) and Cholesky 
+A lot of the functionality in OCC has been enabled with Density Fitting (DF) and Cholesky
 Decomposition (CD) techniques, which can greatly speed up calculations and reduce memory
 requirements for typically negligible losses in accuracy.
 
-**NOTE**: As will be discussed later, all methods with orbital-optimization functionality have non-orbital 
+**NOTE**: As will be discussed later, all methods with orbital-optimization functionality have non-orbital
 optimized counterparts. Consequently, there arise two possible ways to call density-fitted MP2. In most
 cases, users should prefer the DF-MP2 code described in the :ref:`DF-MP2 <sec:dfmp2>` section because it is
 faster. If gradients are needed (like in a geometry optimization), then the procedures outlined hereafter
@@ -126,7 +126,7 @@ where :math:`\hat{K}` is the orbital rotation operator
    \hat{K} &= \sum_{p,q}^{} K_{pq} \ \hat{E}_{pq} = \sum_{p>q}^{} \kappa_{pq} \ \hat{E}_{pq}^{-} \\
    \hat{E}_{pq}  &= \hat{p}^{\dagger} \hat{q} \\
    \hat{E}_{pq}^{-} &= \hat{E}_{pq} \ - \ \hat{E}_{qp} \\
-   {\bf K} &= Skew({\bf \kappa}) 
+   {\bf K} &= Skew({\bf \kappa})
 
 The effect of the orbital rotations on the MO coefficients can be written as
 
@@ -142,51 +142,51 @@ Now, let us define a variational energy functional (Lagrangian) as a function of
 .. math::
    \widetilde{E}({\bf \kappa}) &= \langle 0| \hat{H}^{\kappa} | 0 \rangle \\
    &+  \langle 0| \big(\hat{W}_{N}^{\kappa}\hat{T}_{2}^{(1)}\big)_{c} | 0 \rangle \\
-   &+  \langle 0| \{\hat{\Lambda}_{2}^{(1)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)} 
+   &+  \langle 0| \{\hat{\Lambda}_{2}^{(1)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)}
    \ + \ \hat{W}_{N}^{\kappa} \big)_{c}\}_{c} | 0 \rangle
-    
+
 * OMP3
 
 .. math::
    \widetilde{E}({\bf \kappa}) &= \langle 0| \hat{H}^{\kappa} | 0 \rangle \\
-   &+ \langle 0| \big(\hat{W}_{N}^{\kappa}\hat{T}_{2}^{(1)}\big)_{c} | 0 \rangle 
+   &+ \langle 0| \big(\hat{W}_{N}^{\kappa}\hat{T}_{2}^{(1)}\big)_{c} | 0 \rangle
    \ + \ \langle 0| \big(\hat{W}_{N}^{\kappa}\hat{T}_{2}^{(2)}\big)_{c} | 0 \rangle \\
-   &+  \langle 0| \{\hat{\Lambda}_{2}^{(1)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)} 
+   &+  \langle 0| \{\hat{\Lambda}_{2}^{(1)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)}
    \ + \ \hat{W}_{N}^{\kappa} \big)_{c}\}_{c} | 0 \rangle \\
-   &+ \langle 0| \{\hat{\Lambda}_{2}^{(1)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(2)} 
+   &+ \langle 0| \{\hat{\Lambda}_{2}^{(1)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(2)}
    \ + \ \hat{W}_{N}^{\kappa}\hat{T}_{2}^{(1)} \big)_{c}\}_{c} | 0 \rangle \\
-   &+ \langle 0| \{\hat{\Lambda}_{2}^{(2)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)} 
-   \ + \ \hat{W}_{N}^{\kappa} \big)_{c}\}_{c} | 0 \rangle  
-    
+   &+ \langle 0| \{\hat{\Lambda}_{2}^{(2)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)}
+   \ + \ \hat{W}_{N}^{\kappa} \big)_{c}\}_{c} | 0 \rangle
+
 * OLCCD
 
 .. math::
-   \widetilde{E}({\bf \kappa}) &= \langle 0| \hat{H}^{\kappa} | 0 \rangle 
+   \widetilde{E}({\bf \kappa}) &= \langle 0| \hat{H}^{\kappa} | 0 \rangle
    \ + \ \langle 0| \big(\hat{W}_{N}^{\kappa}\hat{T}_{2}\big)_{c} | 0 \rangle \\
    &+ \langle 0| \{\hat{\Lambda}_{2} \ \big(\hat{W}_{N}^{\kappa} \ + \ \hat{H}_{N}^{\kappa}\hat{T}_{2} \big)_{c}\}_{c}  | 0 \rangle
 
 * OCCD
 
 .. math::
-   \widetilde{E}({\bf \kappa})  &= \langle 0|(1+\hat{\Lambda}_{2}) e^{-\hat{T}_{2}}  \hat{H}^{\kappa}  e^{\hat{T}_{2}}|0\rangle,  
+   \widetilde{E}({\bf \kappa})  &= \langle 0|(1+\hat{\Lambda}_{2}) e^{-\hat{T}_{2}}  \hat{H}^{\kappa}  e^{\hat{T}_{2}}|0\rangle,
 
 
-where subscript c means only connected diagrams are allowed, and 
+where subscript c means only connected diagrams are allowed, and
 :math:`\hat{H}^{\kappa}`, :math:`\hat{f}_{N}^{\kappa}`, and :math:`\hat{W}_{N}^{\kappa}` defined as
 
 .. math::
    \hat{H}^{\kappa} &=  e^{-\hat{K}} \hat{H} e^{\hat{K}} \\
    \hat{f}_{N}^{\kappa} &=  e^{-\hat{K}} \hat{f}_{N}^{d} e^{\hat{K}} \\
-   \hat{W}_{N}^{\kappa} &=  e^{-\hat{K}} \hat{W}_{N} e^{\hat{K}} 
+   \hat{W}_{N}^{\kappa} &=  e^{-\hat{K}} \hat{W}_{N} e^{\hat{K}}
 
-where :math:`\hat{f}_{N}`, and :math:`\hat{W}_{N}` are the one- and two-electron components of normal-ordered Hamiltonian. Then, 
+where :math:`\hat{f}_{N}`, and :math:`\hat{W}_{N}` are the one- and two-electron components of normal-ordered Hamiltonian. Then,
 first and second derivatives of the energy with respect to the :math:`{\bf \kappa}` parameter at :math:`{\bf \kappa} = 0`
 
 .. math::
-   w_{pq} = \frac{\partial \widetilde{E}}{\partial \kappa_{pq}} 
+   w_{pq} = \frac{\partial \widetilde{E}}{\partial \kappa_{pq}}
 
 .. math::
-   A_{pq,rs} = \frac{\partial^2 \widetilde{E}}{\partial \kappa_{pq} \partial \kappa_{rs}} 
+   A_{pq,rs} = \frac{\partial^2 \widetilde{E}}{\partial \kappa_{pq} \partial \kappa_{rs}}
 
 Then the energy can be expanded up to second-order as follows
 
@@ -202,7 +202,20 @@ yields
 
 This final equation corresponds to the usual Newton-Raphson step.
 
-Publications resulting from the use of the orbital-optimized code should cite the following publications: 
+* OREMP
+
+The REMP hybrid perturbation theory is a constrined mixture of the |MollerPlesset| perturbation theory and the
+Retaining the Excitation degree perturbation theory([Fink:2006:RE]_, [Behnle:2019:REMP]_).
+The mixing ratio is determined by the parameter :math':`A`:
+
+.. math::
+   \widehat{H}^{(0)}_\text{REMP} = (1-A)\widehat{H}^{(0)}_\text{RE} + A\widehat{H}^{(0)}_\text{MP}
+
+Technically, the second order of RE corresponds to LCCD for RHF and UHF references. REMP and its orbital-optimized variant OREMP
+are thus straightforward to implement in a (O)LCCD program by appropriate scaling of residuum vector contributions and density matrices.
+
+
+Publications resulting from the use of the orbital-optimized code should cite the following publications:
 
 * **OMP2** [Bozkaya:2011:omp2]_, [Bozkaya:2013:omp2grad]_, and [Bozkaya:2014:dfomp2grad]_
 
@@ -214,11 +227,13 @@ Publications resulting from the use of the orbital-optimized code should cite th
 
 * **OCCD** [Bozkaya:2020:dfoccd]_
 
+* **OREMP** [Behnle:2021:OREMP]_, and [Behnle:2022:OREMP]_
+
 Convergence Problems
 ~~~~~~~~~~~~~~~~~~~~
 
-For problematic open-shell systems, we recommend to use the ROHF or DFT orbitals as an initial guess for orbital-optimized methods. Both ROHF and 
-DFT orbitals may provide better initial guesses than UHF orbitals, hence convergence may be significantly speeded up with ROHF or DFT orbitals. 
+For problematic open-shell systems, we recommend to use the ROHF or DFT orbitals as an initial guess for orbital-optimized methods. Both ROHF and
+DFT orbitals may provide better initial guesses than UHF orbitals, hence convergence may be significantly speeded up with ROHF or DFT orbitals.
 In order to use ROHF orbitals, simply ``set reference rohf``. For DFT orbitals, ``set reference uks`` and ``set dft_functional b3lyp``. Of
 course users can use any DFT functional available in |PSIfour|.
 
@@ -272,6 +287,12 @@ through "type select" values in the rightmost Table column.
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Orbital-Optimized CCD                    | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    | oremp                   | Orbital-Optimized 2nd order REMP hybrid perturbation theory  | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| CONV   |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Density-Fitted Orbital-Optimized REMP                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| DF     |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Cholesky-Decomposed Orbital-Optimized REMP                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
+    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
 
 .. _`table:occ_scsoo_calls`:
 
@@ -311,6 +332,7 @@ through "type select" values in the rightmost Table column.
 .. index:: OMP2.5; setting keywords
 .. index:: OLCCD; setting keywords
 .. index:: OCCD; setting keywords
+.. index:: OREMP; setting keywords
 
 Basic OCC Keywords
 ~~~~~~~~~~~~~~~~~~
@@ -383,7 +405,7 @@ preference to the default module, issue ``set qc_module occ``.
 
 Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globals__mp_type| to ``CONV`` to get previous behavior.
 
-Publications resulting from the use of the non-OO CC codes should cite the following publications: 
+Publications resulting from the use of the non-OO CC codes should cite the following publications:
 
 * **MP2** [Bozkaya:2011:omp2]_, [Bozkaya:2013:omp2grad]_, and [Bozkaya:2014:dfomp2grad]_
 
@@ -400,6 +422,8 @@ Publications resulting from the use of the non-OO CC codes should cite the follo
 * **CCSD(T)** [Bozkaya:2017:dfccsdtgrad]_
 
 * **CCSD(AT)** [Bozkaya:2016:dfccsdat]_
+
+* **REMP** [Behnle:2019:REMP]_, [Behnle:2022:OREMP]
 
 .. _`table:occ_nonoo_calls`:
 
@@ -468,4 +492,9 @@ Publications resulting from the use of the non-OO CC codes should cite the follo
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Lambda-OCCD(T)                           | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-
+    | remp                    | 2nd order REMP hybrid perturbation theory                    | RHF/UHF              | ---                  | |globals__cc_type| CONV   |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Density-Fitted REMP                                          | RHF/UHF              | ---                  | |globals__cc_type| DF     |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Cholesky-Decomposed REMP                                     | RHF/UHF              | ---                  | |globals__cc_type| CD     |
+    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
