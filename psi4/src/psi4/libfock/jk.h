@@ -249,7 +249,7 @@ class PSI_API JK {
     /// Use severe screening techniques? Useful in early SCF iterations (defaults to false)
     bool early_screening_;
     /// Number of shells computed, i.e., not screened out
-    size_t computed_shells_;
+    size_t num_computed_shells_;
     /// Tally of shells computed per SCF iteration 
     std::vector<size_t> computed_shells_per_iter_;
 
@@ -352,7 +352,7 @@ class PSI_API JK {
     /**
     * Return number of shells computed during the JK build process.
     */
-    virtual size_t computed_shells();
+    virtual size_t num_computed_shells();
 
    public:
     // => Constructors <= //
@@ -820,7 +820,7 @@ class PSI_API DirectJK : public JK {
     /**
     * Return number of shells computed during the JK build process.
     */
-    size_t computed_shells() override; 
+    size_t num_computed_shells() override; 
 
    public:
     // => Constructors < = //

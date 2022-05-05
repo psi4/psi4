@@ -102,12 +102,12 @@ void DirectJK::common_init() {
     
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
-size_t DirectJK::computed_shells() { 
+size_t DirectJK::num_computed_shells() { 
     if (linK_) {
 	//no bench data returned if LinK is enabled - to come in a future update
-	return JK::computed_shells(); 
+	return JK::num_computed_shells(); 
     } else {
-	return computed_shells_; 
+	return num_computed_shells_; 
     }
 }
 size_t DirectJK::memory_estimate() {
@@ -595,11 +595,11 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     
     // => Benchmarks <= //
 
-    computed_shells_ = 0L;
+    num_computed_shells_ = 0L;
 
 // ==> Master Task Loop <== //
 
-#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells_)
+#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : num_computed_shells_)
     for (size_t task = 0L; task < ntask_pair2; task++) {
         size_t task1 = task / ntask_pair;
         size_t task2 = task % ntask_pair;
@@ -660,7 +660,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         // if (thread == 0) timer_on("JK: Ints");
                         if (ints[thread]->compute_shell(P, Q, R, S) == 0)
                             continue;  // No integrals in this shell quartet
-                        computed_shells_++;
+                        num_computed_shells_++;
                         // if (thread == 0) timer_off("JK: Ints");
 
                         const double* buffer = ints[thread]->buffer();
@@ -1007,7 +1007,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     }
 
     if (get_bench()) {
-        computed_shells_per_iter_.push_back(computed_shells());
+        computed_shells_per_iter_.push_back(num_computed_shells());
     }
 
     timer_off("build_JK_matrices()");
