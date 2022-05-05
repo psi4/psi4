@@ -90,22 +90,73 @@ std::tuple<double, double, SharedMatrix, SharedMatrix> DFCoupledCluster::Compute
             ssenergy += pair_ss;
             matAA->add(i, j, pair_ss);
             matAB->add(i, j, pair_os);
+            if (i != j) {
+                matAA->add(j, i, pair_ss);
+                matAB->add(j, i, pair_os);
+            }
         }
     }
 
     return std::make_tuple(osenergy, ssenergy, matAA, matAB);
 }
 
+std::tuple<SharedMatrix, SharedMatrix> spin_adapt(SharedMatrix ss, SharedMatrix os) {
+    auto triplet = ss->clone();
+    triplet->scale(1.5);
+    auto singlet = os->clone();
+    singlet->scale(2);
+    singlet->axpy(-0.5, ss);
+    for (int i = 0; i < singlet->nrow(); i++) {
+        singlet->set(i, i, singlet->get(i, i) / 2);
+    }
+    return std::make_tuple(singlet, triplet);
+}
+
 void DFCoupledCluster::SCS_CCSD() {
     SharedMatrix CCA, CCB;
     std::tie(eccsd_os, eccsd_ss, CCA, CCB) = ComputePair("CC");
     eccsd = eccsd_os + eccsd_ss;
+    CCA->add(delta_pair_energies_ss);
+    CCB->add(delta_pair_energies_os);
+    set_array_variable("CC ALPHA-ALPHA PAIR ENERGIES", CCA);
+    set_array_variable("CC ALPHA-BETA PAIR ENERGIES", CCB);
+    set_array_variable("CCSD ALPHA-ALPHA PAIR ENERGIES", CCA);
+    set_array_variable("CCSD ALPHA-BETA PAIR ENERGIES", CCB);
+    SharedMatrix singlet, triplet;
+    std::tie(singlet, triplet) = spin_adapt(CCA, CCB);
+    singlet->set_name("CC SINGLET PAIR ENERGIES");
+    set_array_variable("CC SINGLET PAIR ENERGIES", singlet);
+    set_array_variable("CCSD SINGLET PAIR ENERGIES", singlet);
+    triplet->set_name("CC TRIPLET PAIR ENERGIES");
+    set_array_variable("CC TRIPLET PAIR ENERGIES", triplet);
+    set_array_variable("CCSD TRIPLET PAIR ENERGIES", triplet);
 }
 
 void DFCoupledCluster::SCS_MP2() {
     SharedMatrix MPA, MPB;
     std::tie(emp2_os, emp2_ss, MPA, MPB) = ComputePair("MP2");
     emp2 = emp2_os + emp2_ss;
+    if (has_array_variable("MP2 ALPHA-ALPHA PAIR ENERGIES")) {
+        // We just computed the truncated MP2 pair energies.
+        delta_pair_energies_ss = array_variable("MP2 ALPHA-ALPHA PAIR ENERGIES")->clone();
+        delta_pair_energies_os = array_variable("MP2 ALPHA-BETA PAIR ENERGIES")->clone();
+        delta_pair_energies_ss->subtract(MPA);
+        delta_pair_energies_os->subtract(MPB);
+    } else {
+        // We just computed the true MP2 pair energies.
+        set_array_variable("MP2 ALPHA-ALPHA PAIR ENERGIES", MPA);
+        set_array_variable("MP2 ALPHA-BETA PAIR ENERGIES", MPB);
+        delta_pair_energies_ss = MPA->clone();
+        delta_pair_energies_os = MPB->clone();
+        delta_pair_energies_ss->zero();
+        delta_pair_energies_os->zero();
+        SharedMatrix singlet, triplet;
+        std::tie(singlet, triplet) = spin_adapt(MPA, MPB);
+        singlet->set_name("MP2 SINGLET PAIR ENERGIES");
+        set_array_variable("MP2 SINGLET PAIR ENERGIES", singlet);
+        triplet->set_name("MP2 TRIPLET PAIR ENERGIES");
+        set_array_variable("MP2 TRIPLET PAIR ENERGIES", triplet);
+    }
 }
 }
 }

@@ -243,11 +243,6 @@ PSI Variables by Alpha
    Restricted-reference triplet-adapted pair energies for coupled-cluster theories.
    Size number of active doubly occupied orbitals, square.
 
-.. psivar:: CCSD PAIR ENERGIES
-
-   The restricted-reference pair energies for coupled-cluster singles and doubles
-   level of theory. Size number of active doubly occupied orbitals, square.
-
 .. psivar:: CCSD TOTAL ENERGY
    CCSD CORRELATION ENERGY
    CCSDT TOTAL ENERGY

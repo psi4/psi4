@@ -775,6 +775,10 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
             emp2_ss += pair_ss;
             matAA->add(i, j, pair_ss);
             matAB->add(i, j, pair_os);
+            if (i != j) {
+                matAA->add(j, i, pair_ss);
+                matAB->add(j, i, pair_os);
+            }
         }
     }
     emp2 = emp2_os + emp2_ss;
@@ -788,6 +792,12 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     set_scalar_variable("MP2 TOTAL ENERGY", emp2 + Process::environment.globals["SCF TOTAL ENERGY"]);
     set_array_variable("MP2 ALPHA-ALPHA PAIR ENERGIES", matAA);
     set_array_variable("MP2 ALPHA-BETA PAIR ENERGIES", matAB);
+    SharedMatrix singlet, triplet;
+    std::tie(singlet, triplet) = spin_adapt(matAA, matAB);
+    singlet->set_name("MP2 SINGLET PAIR ENERGIES");
+    set_array_variable("MP2 SINGLET PAIR ENERGIES", singlet);
+    triplet->set_name("MP2 TRIPLET PAIR ENERGIES");
+    set_array_variable("MP2 TRIPLET PAIR ENERGIES", triplet);
 
     long int ijab = 0;
     for (long int a = o; a < o + v; a++) {
