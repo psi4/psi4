@@ -929,6 +929,10 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     }
 
+    // Reference on what the density is:
+    // https://github.com/SebWouters/CheMPS2/issues/83
+    wfn->density_map_["DMRG MS-AVERAGED"] = std::make_shared<Matrix>(std::move(build_rdm_ao(iHandler, DMRG1DM, work1, *wfn->Ca(), *wfn->aotoso())));
+
     if ( dmrg_density_ao ){
 
         (*outfile->stream()) << "############################" << std::endl;
@@ -937,7 +941,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         (*outfile->stream()) << "###                      ###" << std::endl;
         (*outfile->stream()) << "############################" << std::endl;
         (*outfile->stream()) << "Please check the molden file for AO basis function information." << std::endl;
-        build_rdm_ao(iHandler, DMRG1DM, work1, *wfn->Ca(), *wfn->aotoso()).print("outfile");
+        wfn->density_map_["DMRG MS-AVERAGED"]->print("outfile");
     }
 
     if (( dmrg_caspt2 ) && ( nIterations > 0 )){

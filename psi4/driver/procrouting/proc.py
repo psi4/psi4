@@ -3209,10 +3209,10 @@ def run_cc_property(name, **kwargs):
                                          f"CC ROOT {total_idx} {{}} - {trans_h_lbl} TRANSITION",
                                     f"{title} ROOT {i} ({root_h_lbl}) {{}}", f"CC ROOT {i} ({root_h_lbl}) {{}}"}
                     oe.set_names(set_of_names)
-                    Da = ccwfn.get_alpha_density(root_title + " Da")
+                    Da = ccwfn.get_density(root_title + " ALPHA")
                     oe.set_Da_so(Da)
                     if not ccwfn.same_a_b_dens():
-                        Db = ccwfn.get_beta_density(root_title + " Db")
+                        Db = ccwfn.get_density(root_title + " BETA")
                         oe.set_Db_so(Db)
                     oe.compute()
 

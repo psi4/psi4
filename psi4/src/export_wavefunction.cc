@@ -320,8 +320,7 @@ void export_wavefunction(py::module& m) {
         .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
 #endif
         .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
-        .def("get_alpha_density", [](Wavefunction& wfn, std::string name) {return wfn.Da_map_[name] ;}, "Experimental!")
-        .def("get_beta_density", [](Wavefunction& wfn, std::string name) {return wfn.Db_map_[name] ;}, "Experimental!");
+        .def("get_density", [](Wavefunction& wfn, std::string name) {return wfn.density_map_[name] ;}, "Experimental!");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
