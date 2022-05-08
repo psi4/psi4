@@ -765,7 +765,7 @@ iteration on a larger grid. The size of the initial grid is controlled by the
 keywords |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|. The final
 grid  is controlled by |scf__cosx_radial_points_final| and
 |scf__cosx_spherical_points_final|.
-Defaults have been chosen for both grids that balance cost and accuracy.
+The defaults for both grids aim to balance cost and accuracy.
 Screening thresholds over integrals, densities, and basis extents are set
 with the |scf__cosx_ints_tolerance|, |scf__cosx_density_tolerance|, and
 |scf__cosx_basis_tolerance| keywords, respectively. The |scf__cosx_incfock|
