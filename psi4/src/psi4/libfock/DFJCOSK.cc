@@ -55,7 +55,7 @@ SharedMatrix compute_numeric_overlap(std::shared_ptr<DFTGrid> grid, std::shared_
     // DOI 10.1063/1.3646921, EQ. 9
 
     int nbf = primary->nbf();
-    auto bf_computer = std::make_shared<BasisFunctions>(primary, grid->max_points(), grid->max_functions());
+    BasisFunctions bf_computer(primary, grid->max_points(), grid->max_functions());
     auto S_num = std::make_shared<Matrix>("Numerical Overlap", nbf, nbf);
 
     // This loop could be parallelized over blocks of grid points. However, the cost of the loop is
@@ -70,8 +70,8 @@ SharedMatrix compute_numeric_overlap(std::shared_ptr<DFTGrid> grid, std::shared_
         auto w = block->w();
 
         // compute basis functions at these grid points
-        bf_computer->compute_functions(block);
-        auto point_values = bf_computer->basis_values()["PHI"];
+        bf_computer.compute_functions(block);
+        auto point_values = bf_computer.basis_values()["PHI"];
 
         // resize the buffer of basis function values
         Matrix X_block("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
@@ -169,17 +169,17 @@ void DFJCOSK::common_init() {
 
     // pre-compute coulomb fitting metric
     timer_on("Coulomb Metric");
-    auto J_metric_obj = std::make_shared<FittingMetric>(auxiliary_, true);
-    J_metric_obj->form_fitting_metric();
-    J_metric_ = J_metric_obj->get_metric();
+    FittingMetric J_metric_obj(auxiliary_, true);
+    J_metric_obj.form_fitting_metric();
+    J_metric_ = J_metric_obj.get_metric();
     timer_off("Coulomb Metric");
 
     // pre-construct per-thread TwoBodyAOInt objects for computing 3-index ERIs
     timer_on("ERI Computers");
     eri_computers_.resize(nthreads_);
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    eri_computers_[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
+    eri_computers_[0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_[rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_.front()->clone());
     }
@@ -312,7 +312,6 @@ void DFJCOSK::preiterations() {}
 
 void DFJCOSK::compute_JK() {
 
-    auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     int njk = D_ao_.size();
 
     // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
@@ -446,10 +445,14 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
         size_t MN = MNP % nshellpair;
         size_t P = MNP / nshellpair;
-        auto bra = eri_computers_[0]->shell_pairs()[MN];
+        int rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        auto bra = eri_computers_[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers_[0]->shell_pair_value(M,N) < thresh2) {
+        if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers_[rank]->shell_pair_value(M,N) < thresh2) {
             continue;
         }
         computed_triplets1++;
@@ -459,10 +462,6 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
         int mstart = primary_->shell(M).function_index();
         int nn = primary_->shell(N).nfunction();
         int nstart = primary_->shell(N).function_index();
-        int rank = 0;
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
         eri_computers_[rank]->compute_shell(P, 0, M, N);
         const auto & buffer = eri_computers_[rank]->buffers()[0];
 
@@ -542,10 +541,14 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
         size_t MN = MNP % nshellpair;
         size_t P = MNP / nshellpair;
-        auto bra = eri_computers_[0]->shell_pairs()[MN];
+        int rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        auto bra = eri_computers_[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers_[0]->shell_pair_value(M,N) < thresh2) {
+        if(H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers_[rank]->shell_pair_value(M,N) < thresh2) {
             continue;
         }
         computed_triplets2++;
@@ -555,10 +558,6 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
         int mstart = primary_->shell(M).function_index();
         int nn = primary_->shell(N).nfunction();
         int nstart = primary_->shell(N).function_index();
-        int rank = 0;
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
 
         eri_computers_[rank]->compute_shell(P, 0, M, N);
         const auto & buffer = eri_computers_[rank]->buffers()[0];
@@ -585,8 +584,8 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
     if (bench_) {
         auto mode = std::ostream::app;
-        auto printer = std::make_shared<PsiOutStream>("bench.dat", mode);
-        printer->Printf("DFJ ERI Shells: %zu,%zu,%zu\n", computed_triplets1, computed_triplets2, nshelltriplet);
+        PsiOutStream printer("bench.dat", mode);
+        printer.Printf("DFJ ERI Shells: %zu,%zu,%zu\n", computed_triplets1, computed_triplets2, nshelltriplet);
     }
 
     for(size_t jki = 0; jki < njk; jki++) {
@@ -637,7 +636,6 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
     // initialize per-thread objects
     IntegralFactory factory(primary_);
-    //auto factory = std::make_shared<IntegralFactory>(primary_);
     for(size_t thread = 0; thread < nthreads_; thread++) {
         int_computers[thread] = std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory.electrostatic()));
         bf_computers[thread] = std::make_shared<BasisFunctions>(primary_, grid->max_points(), grid->max_functions());
@@ -1004,9 +1002,9 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
     if (bench_) {
         auto mode = std::ostream::app;
-        auto printer = std::make_shared<PsiOutStream>("bench.dat", mode);
+        PsiOutStream printer("bench.dat", mode);
         size_t ints_per_atom = int_shells_computed  / (size_t) natom;
-        printer->Printf("COSK ESP Shells: %zu,%zu,%zu\n", ints_per_atom, int_shells_computed, int_shells_total);
+        printer.Printf("COSK ESP Shells: %zu,%zu,%zu\n", ints_per_atom, int_shells_computed, int_shells_total);
     }
 
 }

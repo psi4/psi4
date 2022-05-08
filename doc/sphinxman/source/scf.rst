@@ -754,26 +754,37 @@ to false, which disables this acceleration entirely.
 COSX Exchange
 ~~~~~~~~~~~~~
 
-The semi-numerical COSX algorithm (described in [Neese:2009:98]_) evaluates two-electron ERIs
-analytically over one electron coordinate and numerically over the other electron coordinate. The numerical
-integration is performed on standard DFT quadrature grids, which are described
-in :ref:`DFT`. Both the accuracy of the COSX algorithm and also the computational
+The semi-numerical COSX algorithm (described in [Neese:2009:98]_) evaluates
+two-electron ERIs analytically over one electron coordinate and numerically
+over the other electron coordinate. COSX is related to the earlier pseudospectral
+methods of Friesner. In COSX, numerical integration is performed on standard
+DFT quadrature grids, which are described in :ref:`DFT`.
+Both the accuracy of the COSX algorithm and also the computational
 cost are directly determined by the size of the integration grid, so selection
 of the grid is important. This COSX implementation uses two separate grids.
 The SCF algorithm is first converged on a smaller grid, followed by a final SCF
 iteration on a larger grid. The size of the initial grid is controlled by the
-keywords |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|. The final
-grid  is controlled by |scf__cosx_radial_points_final| and
-|scf__cosx_spherical_points_final|.
-The defaults for both grids aim to balance cost and accuracy.
+keywords |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
+The final grid  is controlled by |scf__cosx_radial_points_final| and
+|scf__cosx_spherical_points_final|. The defaults for both grids aim to balance
+cost and accuracy.
+
 Screening thresholds over integrals, densities, and basis extents are set
 with the |scf__cosx_ints_tolerance|, |scf__cosx_density_tolerance|, and
-|scf__cosx_basis_tolerance| keywords, respectively. The |scf__cosx_incfock|
-keyword (defaults to ``true``) increases performance by constructing the
-Fock matrix from differences in the density matrix, which are more amenable
-to screening. Consider disabling this keyword if SCF energy convergence issues
-are observed, particularly when using diffuse basis functions. The
-|scf__cosx_overlap_fitting| keyword (defaults to ``true``) reduces numerical
+|scf__cosx_basis_tolerance| keywords, respectively. |scf__cosx_ints_tolerance|
+is the most consequential of the three thresholds in both cost and accuracy.
+This keyword determines screening of negligible one-electron integrals.
+|scf__cosx_density_tolerance| controls the threshold for significant
+shell pairs in the density matrix. Lastly, |scf__cosx_basis_tolerance| is
+a cutoff for the value of basis functions at grid points. This keyword is
+used to determine the radial extent of the each basis shell, and it is the
+COSX analogue to |scf__dft_basis_tolerance|.
+
+The |scf__cosx_incfock| keyword (defaults to ``true``) increases performance
+by constructing the Fock matrix from differences in the density matrix, which
+are more amenable to screening. Consider disabling this keyword if SCF energy
+convergence issues are observed, particularly when using diffuse basis functions.
+The |scf__cosx_overlap_fitting| keyword (defaults to ``true``) reduces numerical
 integration errors using the method described in [Izsak:2011:144105]_ and is
 always recommended.
 
