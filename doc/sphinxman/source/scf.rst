@@ -754,9 +754,8 @@ to false, which disables this acceleration entirely.
 COSX Exchange
 ~~~~~~~~~~~~~
 
-The semi-numerical COSX algorithm (described in [Neese:2009:98]_) is so-called
-because the two-electron ERIs are evaluated analytically over one electron 
-coordinate and numerically over the other electron coordinate. The numerical 
+The semi-numerical COSX algorithm (described in [Neese:2009:98]_) evaluates two-electron ERIs
+analytically over one electron coordinate and numerically over the other electron coordinate. The numerical
 integration is performed on standard DFT quadrature grids, which are described
 in :ref:`DFT`. Both the accuracy of the COSX algorithm and also the computational
 cost are directly determined by the size of the integration grid, so selection
