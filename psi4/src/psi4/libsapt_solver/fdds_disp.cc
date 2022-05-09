@@ -186,19 +186,17 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     // transform
-    dfh_->release_AO();
+    dfh_->switch_release_AO();
     dfh_->transform();
 
     // transformations specific for hybrid functional
-    // clear spaces to re-order spaces and transformations in DFHelper
-    // clear transformations to avoid overwriting pqQ tensors 
 
     if (is_hybrid_) {
         // Contracted 3-index integrals to reproduce 4-index ERI
+        // Clear spaces to re-order spaces and transformations in DFHelper
+        // Clear transformations to avoid overwriting pqQ tensors 
         dfh_->clear_spaces();
         dfh_->clear_transformations();
-        // dfh_->clear_AO(); // Already released in transform()
-        // dfh_->set_method("STORE");
         dfh_->set_method("DIRECT_iaQ");
         dfh_->set_metric_pow(-0.5);
         dfh_->initialize();
@@ -214,12 +212,11 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
         dfh_->add_transformation("bbR", "b", "b", "pqQ");
         dfh_->add_transformation("bsR", "b", "s", "pqQ");
         dfh_->add_transformation("ssR", "s", "s", "pqQ");
-        dfh_->release_AO();
+        dfh_->switch_release_AO();
         dfh_->transform();
     }
 
     dfh_->clear_spaces();
-    // dfh_->clear_AO();
 
     if (is_hybrid_) {
         // QR Factorization of (ar|Q)

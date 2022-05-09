@@ -104,8 +104,11 @@ class PSI_API DFHelper {
     void set_AO_core(bool core) { AO_core_ = core; }
     bool get_AO_core() { return AO_core_; }
 
-    /// Switch flag for releasing AO (for SAPT(DFT))
-    void release_AO() { release_AO_ = true; }
+    /// Switch flag for releasing in-core AO integrals to store 
+    /// intermediates for the metric contraction. Used in methods 
+    /// that AO integrals are not needed in the contraction step 
+    /// like SAPT(DFT). 
+    void switch_release_AO() { release_AO_ = true; }
 
     ///
     /// Sets the MO integrals to in-core. (Defaults to FALSE)
