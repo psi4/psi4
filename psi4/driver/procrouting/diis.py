@@ -222,7 +222,7 @@ class DIIS:
             R_len = len(self.template.get("error", []))
             T_len = len(self.template.get("target", []))
             if R_len + T_len != len(args):
-                raise Exception(f"Cannot build {R_len} residuals and {T_len} amplitudes from {len(entries)} items.")
+                raise Exception(f"Cannot build {R_len} residuals and {T_len} amplitudes from {len(args)} items.")
             entry = {"error": args[:R_len], "target": args[R_len:]}
         else:
             entry = args[0]
