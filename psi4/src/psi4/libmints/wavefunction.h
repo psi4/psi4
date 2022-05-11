@@ -740,7 +740,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// stage methods. ~ JPM - Apr. '22
     /// This is public because `ccdensity` doesn't subclass wfn like it should, so we need
     /// SOME way to let it get/set.
-    /// Vector of alpha density matrices
+    /// Vector of density matrices
     std::map<std::string, SharedMatrix> density_map_;
 
 };
