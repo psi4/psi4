@@ -52,7 +52,7 @@ def test_qcschema_energy(result_data_fixture):
     assert compare_integers(True, 'beer' in ret.stdout, "Stdout Beer")
 
     # Check Array data
-    assert compare_integers(True, isinstance(ret.extras["qcvars"]["MAYER_INDICES"], np.ndarray),
+    assert compare_integers(True, isinstance(ret.extras["qcvars"]["MAYER INDICES"], np.ndarray),
                             "Extras: Mayer Indices is Array")
     assert compare_integers(True, ret.provenance.routine == "psi4.schema_runner.run_qcschema", "Provenance: Routine")
 

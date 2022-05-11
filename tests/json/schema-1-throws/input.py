@@ -30,24 +30,24 @@ json_data = {
 }
 
 # Check non-contiguous fragment throws
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-psi4.compare_integers(False, json_ret["success"], "JSON Failure")                           #TEST
-psi4.compare_integers("non-contiguous frag" in json_ret["error"]['error_message'], True, "Contiguous Fragment Error")  #TEST
+psi4.compare_integers(False, json_ret.success, "JSON Failure")                           #TEST
+psi4.compare_integers("non-contiguous frag" in json_ret.error.error_message, True, "Contiguous Fragment Error")  #TEST
 
 # Check symbol length errors
 del json_data["molecule"]["fragments"]
 json_data["molecule"]["symbols"] = ["O", "H"]
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-psi4.compare_integers(False, json_data["success"], "JSON Failure")                           #TEST
-psi4.compare_integers("dropped atoms!" in json_data["error"]['error_message'], True, "Symbol Error")  #TEST
+psi4.compare_integers(False, json_ret.success, "JSON Failure")                           #TEST
+psi4.compare_integers("dropped atoms!" in json_ret.error.error_message, True, "Symbol Error")  #TEST
 
 # Check keyword errors
 json_data["molecule"]["symbols"] = ["O", "H", "H"]
 json_data["model"] = {"method": "SCF", "basis": "sto-3g"}
 json_data["keywords"] = {"scf_type": "super_df"}
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-psi4.compare_integers(False, json_ret["success"], "JSON Failure")                           #TEST
-psi4.compare_integers("valid choice" in json_ret["error"]['error_message'], True, "Keyword Error")  #TEST
+psi4.compare_integers(False, json_ret.success, "JSON Failure")                           #TEST
+psi4.compare_integers("valid choice" in json_ret.error.error_message, True, "Keyword Error")  #TEST
