@@ -26,23 +26,28 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "AtomicComputer",
+    "BaseComputer",
+    "EnergyGradientHessianWfnReturn",
+]
+
 import abc
 import copy
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Tuple, Union
 
-import pydantic
+from pydantic import Field, validator
 import qcelemental as qcel
-from qcelemental.models import DriverEnum, AtomicInput
+from qcelemental.models import DriverEnum, AtomicInput, AtomicResult
 qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
 import qcengine as qcng
 
 from psi4 import core
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
-__all__ = ["BaseComputer", "AtomicComputer"]
+EnergyGradientHessianWfnReturn = Union[float, core.Matrix, Tuple[Union[float, core.Matrix], core.Wavefunction]]
 
 
 class BaseComputer(qcel.models.ProtoModel):
@@ -60,35 +65,37 @@ class BaseComputer(qcel.models.ProtoModel):
 
 
 class AtomicComputer(BaseComputer):
+    """Computer for analytic single-geometry computations."""
 
-    molecule: Any
-    basis: str
-    method: str
-    driver: DriverEnum
-    keywords: Dict[str, Any] = {}
-    computed: bool = False
-    result: Any = {}
-
-    result_id: str = None
+    molecule: Any = Field(..., description="The molecule to use in the computation.")
+    basis: str = Field(..., description="The quantum chemistry basis set to evaluate (e.g., 6-31g, cc-pVDZ, ...).")
+    method: str = Field(..., description="The quantum chemistry method to evaluate (e.g., B3LYP, MP2, ...).")
+    driver: DriverEnum = Field(..., description="The resulting type of computation: energy, gradient, hessian, properties."
+        "Note for finite difference that this should be the target driver, not the means driver.")
+    keywords: Dict[str, Any] = Field({}, description="The keywords to use in the computation.")
+    computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
+    result: Any = Field({}, description="AtomicResult return.")
+    result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
 
     class Config(qcel.models.ProtoModel.Config):
         pass
 
-    @pydantic.validator("basis")
+    @validator("basis")
     def set_basis(cls, basis):
         return basis.lower()
 
-    @pydantic.validator("method")
+    @validator("method")
     def set_method(cls, method):
         return method.lower()
 
-    @pydantic.validator("keywords")
+    @validator("keywords")
     def set_keywords(cls, keywords):
         return copy.deepcopy(keywords)
 
-    def plan(self):
+    def plan(self) -> AtomicInput:
+        """Form QCSchema input from member data."""
 
-        data = AtomicInput(**{
+        atomic_model = AtomicInput(**{
             "molecule": self.molecule.to_schema(dtype=2),
             "driver": self.driver,
             "model": {
@@ -105,16 +112,16 @@ class AtomicComputer(BaseComputer):
             },
         })
 
-        return data
+        return atomic_model
 
-    def compute(self, client=None):
+    def compute(self, client: Optional["FractalClient"] = None):
+        """Run quantum chemistry."""
         from psi4.driver import pp
 
         if self.computed:
             return
 
         if client:
-
             self.computed = True
             from qcfractal.interface.models import KeywordSet
             from qcfractal.interface import Molecule
@@ -145,7 +152,6 @@ class AtomicComputer(BaseComputer):
 
             return
 
-        #print('<<< JSON launch ...', self.molecule.schoenflies_symbol(), self.molecule.nuclear_repulsion_energy())
         logger.info(f'<<< JSON launch ... {self.molecule.schoenflies_symbol()} {self.molecule.nuclear_repulsion_energy()}')
         gof = core.get_output_file()
 
@@ -173,21 +179,20 @@ class AtomicComputer(BaseComputer):
         core.print_out(_drink_filter(self.result.dict()["stdout"]))
         self.computed = True
 
-    def get_results(self, client=None):
+    def get_results(self, client: Optional["FractalClient"] = None) -> AtomicResult:
+        """Return results as Atomic-flavored QCSchema."""
+
         if self.result:
             return self.result
 
         if client:
             result = client.query_results(id=self.result_id)
-            logger.debug("Querying AtomicResult {}".format(self.result_id))
+            logger.debug(f"Querying AtomicResult {self.result_id}")
             if len(result) == 0:
                 return self.result
 
             self.result = result[0]
             return self.result
-
-    def get_json_results(self):
-        return self.result
 
 
 def _drink_filter(stdout: str) -> str:

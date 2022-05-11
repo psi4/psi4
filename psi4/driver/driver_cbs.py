@@ -25,18 +25,126 @@
 #
 # @END LICENSE
 #
+"""Plan, run, and assemble QC tasks to obtain composite method, basis, & options treatments.
+
+===
+CBS
+===
+
+cbs_text_parser()
+-----------------
+
+    _parse_cbs_gufunc_string()
+    --------------------------
+    * break user string into paired method and basis stages
+
+* transform user string into cbs kwargs inc'l basic cbs_metadata
+
+
+----------------------------
+CompositeComputer.__init__()
+----------------------------
+
+    _process_cbs_kwargs()
+    ---------------------
+    * transform user kwargs into trial cbs_metadata format (aka dict spec)
+
+        _validate_cbs_inputs()
+        ----------------------
+
+            _get_default_xtpl()
+            -------------------
+            * supply default xtpl fn for stage and basis conditions
+
+            _expand_bracketed_basis()
+            -------------------------
+            * parse and validate user bases
+
+        * check and supply defaults for cbs_metadata format (various calls to above two fns)
+
+* BaseComputer.__init__()
+
+    _build_cbs_compute()
+    --------------------
+
+        _expand_scheme_orders()
+        -----------------------
+        * form f_fields dict of entries for each zeta in a scheme (single NEED; entries related by nonlinear fn)
+
+        _contract_bracketed_basis()
+        ---------------------------
+        * form basis abbr. string from basis seq
+
+    * form d_fields list of stages or stage halves from NEEDs (GRAND_NEED; items related linearly to form final val)
+    * form list of entries (entry:= mtd-bas-opt) mentioned in GRAND_NEED (MODELCHEM; redundant, naive)
+    * form subset of MODELCHEM with minimal list of jobs (job:= entry on which to call QC) to satisfy CBS (JOBS; minimal, enlightened)
+    * form superset of JOBS with maximal list of entries resulting from JOBS (TROVE)
+    * return GRAND_NEED/cbsrec, JOBS/compute_list, TROVE/trove
+
+* form task_list of AtomicComputers 1:1 from JOBS/compute_list
+
+-------------------------------
+CompositeComputer.build_tasks()
+-------------------------------
+* pass
+
+---------------------------
+CompositeComputer.compute()
+---------------------------
+* compute() for each job in task list
+
+-----------------------------------
+CompositeComputer.get_psi_results()
+-----------------------------------
+
+    Computer.get_results()
+    ----------------------
+
+        Computer._prepare_results()
+        ---------------------------
+        * get_results() for each job in task list
+        * arrange atres data into e/d/g/h fields in compute_list and copy them into cbs tables
+
+            _assemble_cbs_components()
+            --------------------------
+            * fill in results from TROVE/trove into GRAND_NEED/cbsrec
+
+                _contract_scheme_orders()
+                -------------------------
+                * prepare arguments for xtpl fns based on desired E/D/G/H quantity
+
+            * form extrapolated values for all available E/D/G/H quantities
+            * return structure of extrapolated values and filled-in GRAND_NEED/cbsrec
+
+            _summary_table()
+            ----------------
+            * build string table of cbs results
+
+    * form cbs qcvars, inc'l number, E, DG, G, H as available
+    * form model, including detailed dict at atres.extras["cbs_record"]
+
+* convert result to psi4.core.Matrix (non-energy)
+
+    _cbs_schema_to_wfn()
+    --------------------
+    * build wfn from cbs mol and basis (always def2-svp) and module (if present)
+    * push qcvars to P::e and wfn
+
+* return e/g/h and wfn
+
+"""
 
 import math
 import re
 import sys
 import copy
 import pprint
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 import logging
 
 import numpy as np
-import pydantic
+from pydantic import Field, validator
 from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
@@ -46,10 +154,9 @@ from psi4.driver.driver_cbs_helper import composite_procedures, register_composi
 from psi4.driver.driver_util import UpgradeHelper
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.task_base import AtomicComputer, BaseComputer
+from psi4.driver.task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
@@ -180,7 +287,7 @@ def _expand_bracketed_basis(basisstring: str, molecule: Union["qcdb.Molecule", c
 
 
 def _contract_bracketed_basis(basisarray: List[str]) -> str:
-    """Function to reform a bracketed basis set string from a sequential series
+    """Function to re-form a bracketed basis set string from a sequential series
     of basis sets. Essentially the inverse of _expand_bracketed_basis(). Used to
     print a nicely formatted basis set string in the results table.
 
@@ -191,7 +298,7 @@ def _contract_bracketed_basis(basisarray: List[str]) -> str:
 
     Returns
     -------
-    string
+    str
         A nicely formatted basis set string, e.g. ``"cc-pv[q5]z"`` for the above example.
 
     """
@@ -202,11 +309,10 @@ def _contract_bracketed_basis(basisarray: List[str]) -> str:
     else:
         zetaindx = [i for i in range(len(basisarray[0])) if basisarray[0][i] != basisarray[1][i]][0]
         ZSET = [bas[zetaindx] for bas in basisarray]
-
         pre = basisarray[1][:zetaindx]
         post = basisarray[1][zetaindx + 1:]
-        basisstring = pre + '[' + ''.join(ZSET) + ']' + post
-        return basisstring
+
+        return "".join([pre, "[", *ZSET, "]", post])
 
 
 def return_energy_components():
@@ -980,31 +1086,6 @@ def _contract_scheme_orders(needdict, datakey: str = 'f_energy') -> Dict[str, An
     return largs
 
 
-#def _cbs_wrapper_methods(**kwargs):
-#    """ A helper function for the driver to enumerate methods used in the
-#    stages of a cbs calculation.
-#
-#    Parameters
-#    ----------
-#    kwargs : dict
-#        kwargs containing cbs specification either in the ``cbs_metadata``
-#        format, or in separate keywords (``scf_wfn``, ``corl_wfn`` etc.).
-#
-#    Returns
-#    -------
-#    list
-#        List containing method name for each active stage.
-#    """
-#
-#    if "cbs_metadata" in kwargs:
-#        return [stage["wfn"] for stage in kwargs["cbs_metadata"]]
-#
-#    else:
-#        cbs_method_stages = ['scf_wfn', 'corl_wfn', 'delta_wfn']
-#        cbs_method_stages += [f'delta{x}_wfn' for x in range(2, 6)]
-#        return [kwargs[mtd] for mtd in cbs_method_stages if mtd in kwargs]
-
-
 def _parse_cbs_gufunc_string(method_name: str):
     """ A helper function that parses a ``"method/basis"`` input string
     into separate method and basis components. Also handles delta corrections.
@@ -1143,65 +1224,6 @@ def cbs_text_parser(total_method_name: str, **kwargs) -> Dict:
     cbs_kwargs["cbs_metadata"] = metadata
 
     return cbs_kwargs
-
-
-#def cbs_gufunc(func, total_method_name, **kwargs):
-#    """
-#    A text based wrapper of the CBS function. Provided to handle "method/basis"
-#    specification of the requested calculations. Also handles "simple" (i.e.
-#    one-method and one-basis) calls.
-#
-#    Parameters
-#    ----------
-#    func : function
-#        Function to be called (energy, gradient, frequency or cbs).
-#    total_method_name : str
-#        String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
-#        bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
-#        ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
-#        and pushed through :py:func:`~psi4.cbs`.
-#
-#    Returns
-#    -------
-#    tuple or float
-#        Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
-#
-#    """
-#
-#    # Catch kwarg issues for all methods
-#    kwargs = p4util.kwargs_lower(kwargs)
-#    return_wfn = kwargs.pop('return_wfn', False)
-#    core.clean_variables()
-#
-#    # Make sure the molecule the user provided is the active one
-#    molecule = kwargs.pop('molecule', core.get_active_molecule())
-#    molecule.update_geometry()
-#
-#    cbs_kwargs = cbs_text_parser(total_method_name, **kwargs)
-#    cbs_kwargs['molecule'] = molecule
-#    cbs_kwargs['return_wfn'] = True
-#
-#    if 'cbs_metadata' not in cbs_kwargs:
-#        # Single call
-#        method_name = cbs_kwargs['method']
-#        basis = cbs_kwargs['basis']
-#
-#        # Save some global variables so we can reset them later
-#        optstash = p4util.OptionsState(['BASIS'])
-#        core.set_global_option('BASIS', basis)
-#        ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
-#        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
-#           core.clean()
-#
-#        optstash.restore()
-#
-#    else:
-#        ptype_value, wfn = cbs(func, total_method_name, **cbs_kwargs)
-#
-#    if return_wfn:
-#        return (ptype_value, wfn)
-#    else:
-#        return ptype_value
 
 
 def _build_cbs_compute(metameta: Dict[str, Any], metadata: CBSMetadata):
@@ -1486,7 +1508,6 @@ class CompositeComputer(BaseComputer):
     metadata: Any
     metameta: Dict[str, Any] = {}
 
-    return_wfn: bool = False
     verbose: int = 1
 
     # List of model chemistries with extrapolation scheme applied. Can reconstruct CBS. Keys are d_fields. Formerly GRAND_NEED.
@@ -1504,7 +1525,7 @@ class CompositeComputer(BaseComputer):
     # One-to-One list of QCSchema corresponding to `task_list`.
     results_list: List[Any] = []
 
-    @pydantic.validator('molecule')
+    @validator('molecule')
     def set_molecule(cls, mol):
         mol.update_geometry()
         mol.fix_com(True)
@@ -1566,9 +1587,10 @@ class CompositeComputer(BaseComputer):
         pass
 
     def plan(self):
+        # uncalled function
         return [t.plan() for t in self.task_list]
 
-    def compute(self, client=None):
+    def compute(self, client: Optional["FractalClient"] = None):
         label = self.metameta['label']
         instructions = "\n" + p4util.banner(f" CBS Computations{':' + label if label else ''} ",
                                             strNotOutfile=True) + "\n"
@@ -1579,7 +1601,7 @@ class CompositeComputer(BaseComputer):
             for t in reversed(self.task_list):
                 t.compute(client=client)
 
-    def _prepare_results(self, client=None):
+    def _prepare_results(self, client: Optional["FractalClient"] = None):
         results_list = [x.get_results(client=client) for x in self.task_list]
 
         modules = [getattr(v.provenance, "module", None) for v in results_list]
@@ -1645,21 +1667,28 @@ class CompositeComputer(BaseComputer):
         cbs_results["module"] = modules
         return cbs_results
 
-    def get_results(self, client=None):
-        """Return CBS results as CBS-flavored QCSchema."""
+    def get_results(self, client: Optional["FractalClient"] = None) -> AtomicResult:
+        """Return results as Composite-flavored QCSchema."""
 
         assembled_results = self._prepare_results(client=client)
+        E0 = assembled_results["energy"]
 
-        # load QCVariables
+        # load QCVariables & properties
         qcvars = {
             'CBS NUMBER': len(self.compute_list),
             'NUCLEAR REPULSION ENERGY': self.molecule.nuclear_repulsion_energy(),
         }
 
+        properties = {
+            "calcinfo_natom": self.molecule.natom(),
+            "nuclear_repulsion_energy": self.molecule.nuclear_repulsion_energy(),
+            "return_energy": E0,
+        }
+
         for qcv in ['CBS', 'CURRENT']:
             qcvars[qcv + ' REFERENCE ENERGY'] = self.cbsrec[0]['d_energy']
-            qcvars[qcv + ' CORRELATION ENERGY'] = assembled_results['energy'] - self.cbsrec[0]['d_energy']
-            qcvars[qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY'] = assembled_results['energy']
+            qcvars[qcv + ' CORRELATION ENERGY'] = E0 - self.cbsrec[0]['d_energy']
+            qcvars[qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY'] = E0
 
         for idelta in range(int(len(self.cbsrec) / 2)):
             if idelta == 0:
@@ -1667,21 +1696,27 @@ class CompositeComputer(BaseComputer):
             dc = idelta * 2 + 1
             qcvars[f"CBS {self.cbsrec[dc]['d_stage'].upper()} TOTAL ENERGY"] = self.cbsrec[dc]["d_energy"] - self.cbsrec[dc + 1]["d_energy"]
 
-        if np.count_nonzero(assembled_results['gradient']):
-            for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:
-                qcvars[qcv] = assembled_results['gradient']
+        G0 = assembled_results["gradient"]
+        if np.count_nonzero(G0):
+            qcvars["CURRENT GRADIENT"] = G0
+            qcvars["CBS TOTAL GRADIENT"] = G0
+            properties["return_gradient"] = G0
 
-        if np.count_nonzero(assembled_results['hessian']):
-            for qcv in ['CURRENT HESSIAN', 'CBS TOTAL HESSIAN']:
-                qcvars[qcv] = assembled_results['hessian']
+        H0 = assembled_results["hessian"]
+        if np.count_nonzero(H0):
+            qcvars["CURRENT HESSIAN"] = H0
+            qcvars["CBS TOTAL HESSIAN"] = H0
+            properties["return_hessian"] = H0
 
-        if np.count_nonzero(assembled_results['dipole']):
-            for qcv in ['CURRENT DIPOLE', 'CBS DIPOLE']:
-                qcvars[qcv] = assembled_results['dipole']
+        D0 = assembled_results["dipole"]
+        if np.count_nonzero(D0):
+            qcvars["CURRENT DIPOLE"] = D0
+            qcvars["CBS DIPOLE"] = D0
 
-        if np.count_nonzero(assembled_results['dipole gradient']):
-            for qcv in ['CURRENT DIPOLE GRADIENT', 'CBS DIPOLE GRADIENT']:
-                qcvars[qcv] = assembled_results['dipole gradient']
+        DD0 = assembled_results["dipole gradient"]
+        if np.count_nonzero(DD0):
+            qcvars["CURRENT DIPOLE GRADIENT"] = DD0
+            qcvars["CBS DIPOLE GRADIENT"] = DD0
 
         cbs_model = AtomicResult(
             **{
@@ -1692,11 +1727,7 @@ class CompositeComputer(BaseComputer):
                     'basis': self.basis,
                 },
                 'molecule': self.molecule.to_schema(dtype=2),
-                'properties': {
-                    'calcinfo_natom': self.molecule.natom(),
-                    'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
-                    'return_energy': assembled_results['energy'],
-                },
+                'properties': properties,
                 'provenance': p4util.provenance_stamp(__name__, module=assembled_results["module"]),
                 'extras': {
                     'qcvars': qcvars,
@@ -1710,10 +1741,30 @@ class CompositeComputer(BaseComputer):
 
         return cbs_model
 
-    def get_psi_results(self, return_wfn=False):
-        """Return CBS results in usual E/wfn interface."""
+    def get_psi_results(self, return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+        """Called by driver to assemble results into Composite-flavored QCSchema,
+        then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
 
+        Parameters
+        ----------
+        return_wfn
+            Whether to additionally return the dummy :py:class:`~psi4.core.Wavefunction`
+            calculation result as the second element of a tuple. Contents are:
 
+            - molecule
+            - dummy basis, def2-svp
+            - e/g/h member data
+            - QCVariables
+            - module if simple
+
+        Returns
+        -------
+        ret
+            Energy, gradient, or Hessian according to self.driver.
+        wfn
+            Wavefunction described above when *return_wfn* specified.
+
+        """
         cbs_model = self.get_results()
 
         if cbs_model.driver == 'energy':
@@ -1729,9 +1780,8 @@ class CompositeComputer(BaseComputer):
 
 
 def _cbs_schema_to_wfn(cbs_model):
-    """Helper function to keep Wavefunction dependent on CBS-flavored QCSchemus."""
+    """Helper function to produce Wavefunction from a Composite-flavored AtomicResult."""
 
-    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
     mol = core.Molecule.from_schema(cbs_model.molecule.dict())
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp', quiet=True)
     wfn = core.Wavefunction(mol, basis)
@@ -1742,24 +1792,5 @@ def _cbs_schema_to_wfn(cbs_model):
     for qcv, val in cbs_model.extras['qcvars'].items():
         for obj in [core, wfn]:
             obj.set_variable(qcv, val)
-
-
-#    flat_grad = cbs_model['extras']['qcvars'].get('CBS TOTAL GRADIENT')
-#    if flat_grad is not None:
-#        finalgradient = plump_qcvar(flat_grad, 'gradient', ret='psi4')
-#        wfn.set_gradient(finalgradient)
-#
-#        if finalgradient.rows(0) < 20:
-#            core.print_out('CURRENT GRADIENT')
-#            finalgradient.print_out()
-#
-#    flat_hess = cbs_model['extras']['qcvars'].get('CBS TOTAL HESSIAN')
-#    if flat_hess is not None:
-#        finalhessian = plump_qcvar(flat_hess, 'hessian', ret='psi4')
-#        wfn.set_hessian(finalhessian)
-#
-#        if finalhessian.rows(0) < 20:
-#            core.print_out('CURRENT HESSIAN')
-#            finalhessian.print_out()
 
     return wfn

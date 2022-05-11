@@ -26,25 +26,27 @@
 # @END LICENSE
 #
 
+__all__ = ["task_planner"]
+
 import os
 import copy
 import logging
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
+from qcelemental.models import DriverEnum
 from psi4.driver import p4util, pp
-from psi4.driver.task_base import BaseComputer, AtomicComputer
+from psi4.driver.task_base import AtomicComputer
 from psi4.driver.driver_findif import FiniteDifferenceComputer
 from psi4.driver.driver_nbody import ManyBodyComputer
 from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
-__all__ = ["task_planner"]
+TaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer, ManyBodyComputer]
 
 
-def _expand_cbs_methods(method: str, basis: str, driver, **kwargs) -> Tuple[str, str, Dict]:
+def _expand_cbs_methods(method: str, basis: str, driver: DriverEnum, **kwargs) -> Tuple[str, str, Dict]:
     if method == 'cbs' and kwargs.get('cbsmeta', None):
         return method, basis, kwargs['cbsmeta']
 
@@ -65,8 +67,8 @@ def _expand_cbs_methods(method: str, basis: str, driver, **kwargs) -> Tuple[str,
     return method, basis, cbsmeta
 
 
-def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> BaseComputer:
-    """Plans a task graph of a complex computations.
+def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule", **kwargs) -> TaskComputers:
+    """Plans a task graph of a complex computation.
 
     Canonical Task layering:
      - ManyBody
@@ -76,20 +78,21 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
 
     Parameters
     ----------
-    driver : {"energy", "gradient", "hessian"}
-        The resulting type of computation. That is, target, not means.
-    method : str
+    driver
+        The resulting type of computation: e/g/h. Note for finite difference that this should be the target driver, not the means driver.
+    method
         A string representation of the method such as "HF" or "B3LYP". Special cases are:
         "cbs"
-    molecule : psi4.core.Molecule
+    molecule
         A Psi4 base molecule to use
-    **kwargs
-        Description
+    kwargs
+        User keyword arguments, often used to configure task computers.
 
     Returns
     -------
-    Task
-        A task object
+    computer
+        A simple (AtomicComputer) or Layered (CompositeComputer, FiniteDifferenceComputer, ManyBodyComputer) task object.
+        Layered objects contain many and multiple types of computers in a graph.
 
     """
 
@@ -106,8 +109,7 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
         keywords["PCM__PCMSOLVER_PARSED_FNAME"] = os.path.join(os.getcwd(), fname)
 
     # Pull basis out of kwargs, override globals if user specified
-    basis = keywords.pop("BASIS", "(auto)")
-    basis = kwargs.pop("basis", basis)
+    basis = kwargs.pop("basis", keywords.pop("BASIS", "(auto)"))
     method = method.lower()
 
     # Expand CBS methods
@@ -133,33 +135,35 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
         # Add tasks for every nbody level requested
         if levels is None:
             levels = {plan.max_nbody: method}
+        else:
+            # rearrange bodies in order with supersystem last lest body count fail in organization loop below
+            levels = dict(sorted(levels.items(), key=lambda item: 1000 if item[0] == "supersystem" else item[0]))
 
-        # Organize nbody calculations into levels
-        nbody_list = []
+        # Organize nbody calculations into modelchem levels
+        # * expand keys of `levels` into full lists of nbodies covered. save to plan, resetting max_nbody accordingly
+        # * below, process values of `levels`, which are modelchem strings, into kwargs specs
+        nbodies_per_mc_level = []
         prev_body = 0
-        for n in levels:
-            level = []
-            if n == 'supersystem':
-                level.append(n)
-            elif n != (prev_body + 1):
-                for m in range(prev_body + 1, n + 1):
-                    level.append(m)
+        for nb in levels:
+            nbodies = []
+            if nb == "supersystem":
+                nbodies.append(nb)
+            elif nb != (prev_body + 1):
+                for m in range(prev_body + 1, nb + 1):
+                    nbodies.append(m)
             else:
-                level.append(n)
-            nbody_list.append(level)
+                nbodies.append(nb)
+            nbodies_per_mc_level.append(nbodies)
             prev_body += 1
 
-        plan.max_nbody = max([i for i in levels if isinstance(i, int)])
-        plan.nbody_list = nbody_list
+        plan.max_nbody = max(nb for nb in levels if nb != "supersystem")
+        plan.nbodies_per_mc_level = nbodies_per_mc_level
 
-        for nlevel, [n, level] in enumerate(levels.items()):
-            method, basis, cbsmeta = _expand_cbs_methods(level, basis, driver, cbsmeta=cbsmeta, **kwargs)
+        for mc_level_idx, mtd in enumerate(levels.values()):
+            method, basis, cbsmeta = _expand_cbs_methods(mtd, basis, driver, cbsmeta=cbsmeta, **kwargs)
             packet.update({'method': method, 'basis': basis})
 
-            # if n == 'supersytem':
-            #     nlevel = plan.max_nbody
-
-            # Tell the task bulider which level to add a task list for
+            # Tell the task builder which level to add a task list for
             if method == "cbs":
                 # This CompositeComputer is discarded after being used for dermode.
                 simplekwargs = copy.deepcopy(kwargs)
@@ -173,17 +177,16 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
                 dermode = negotiate_derivative_type(driver, methods, kwargs.pop('dertype', None), verbose=1)
 
                 if dermode[0] == dermode[1]:  # analytic
-                    logger.info('PLANNING MB(CBS):  n={n} {nlevel} packet={packet} cbsmeta={cbsmeta} kw={kwargs}')
-                    plan.build_tasks(CompositeComputer, **packet, nlevel=nlevel, level=n, **cbsmeta, **kwargs)
+                    logger.info("PLANNING MB(CBS):  {mc_level_idx=} {packet=} {cbsmeta=} kw={kwargs}")
+                    plan.build_tasks(CompositeComputer, **packet, mc_level_idx=mc_level_idx, **cbsmeta, **kwargs)
 
                 else:
                     logger.info(
-                        f'PLANNING MB(FD(CBS):  n={n}, {nlevel} packet={packet} cbsmeta={cbsmeta} findif_kw={current_findif_kwargs} kw={kwargs}'
+                        f"PLANNING MB(FD(CBS):  {mc_level_idx=} {packet=} {cbsmeta=} findif_kw={current_findif_kwargs} kw={kwargs}"
                     )
                     plan.build_tasks(FiniteDifferenceComputer,
                                      **packet,
-                                     nlevel=nlevel,
-                                     level=n,
+                                     mc_level_idx=mc_level_idx,
                                      findif_mode=dermode,
                                      computer=CompositeComputer,
                                      **cbsmeta,
@@ -193,16 +196,15 @@ def task_planner(driver: str, method: str, molecule: 'Molecule', **kwargs) -> Ba
             else:
                 dermode = negotiate_derivative_type(driver, method, kwargs.pop('dertype', None), verbose=1)
                 if dermode[0] == dermode[1]:  # analytic
-                    logger.info(f'PLANNING MB:  n={n}, {nlevel} packet={packet}')
-                    plan.build_tasks(AtomicComputer, **packet, nlevel=nlevel, level=n, **kwargs)
+                    logger.info(f"PLANNING MB:  {mc_level_idx=} {packet=}")
+                    plan.build_tasks(AtomicComputer, **packet, mc_level_idx=mc_level_idx, **kwargs)
                 else:
                     logger.info(
-                        f'PLANNING MB(FD):  n={n}, {nlevel} packet={packet} findif_kw={current_findif_kwargs} kw={kwargs}'
+                        f"PLANNING MB(FD):  {mc_level_idx=} {packet=} findif_kw={current_findif_kwargs} kw={kwargs}"
                     )
                     plan.build_tasks(FiniteDifferenceComputer,
                                      **packet,
-                                     nlevel=nlevel,
-                                     level=n,
+                                     mc_level_idx=mc_level_idx,
                                      findif_mode=dermode,
                                      **current_findif_kwargs,
                                      **kwargs)

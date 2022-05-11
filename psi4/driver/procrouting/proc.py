@@ -2596,10 +2596,11 @@ def run_scf_hessian(name, **kwargs):
     H = core.scfhess(ref_wfn)
     ref_wfn.set_hessian(H)
 
-    # Clearly, add some logic when the reach of this fn expands
-    ref_wfn.set_variable("HF TOTAL HESSIAN", H)  # P::e SCF
     ref_wfn.set_variable("SCF TOTAL HESSIAN", H)  # P::e SCF
-    core.set_variable("SCF TOTAL HESSIAN", H)  # P::e SCF
+    if ref_wfn.functional().needs_xc():
+        ref_wfn.set_variable("DFT TOTAL HESSIAN", H)  # no DFT hess at present. overwritten later for DH -- TODO when DH gradients  # P::e SCF
+    else:
+        ref_wfn.set_variable("HF TOTAL HESSIAN", H)  # P::e SCF
 
     # Shove variables into global space
     for k, v in ref_wfn.variables().items():

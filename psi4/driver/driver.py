@@ -1767,6 +1767,7 @@ def gdma(wfn, datafile=""):
     if not datafile:
         os.remove(commands)
 
+
 def fchk(wfn: core.Wavefunction, filename: str, *, debug: bool = False, strict_label: bool = True):
     """Function to write wavefunction information in *wfn* to *filename* in
     Gaussian FCHK format.
