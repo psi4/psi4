@@ -4324,13 +4324,12 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
                                            "DFT_WEIGHTS_TOLERANCE",
                                            "DFT_BLOCK_MAX_RADIUS",
                                            "DFT_BASIS_TOLERANCE"};
-    for (auto key : float_keys) {
+    for (const auto& key : float_keys) {
         if (float_opts_map.find(key) != float_opts_map.end()) {
             full_float_options[key] = float_opts_map[key];
         } else {
             full_float_options[key] = options_.get_double(key);
         }
-        // prfloatf("%s : %d\n", key.c_str(), full_float_options[key]);
     }
 
     // TODO: Move both the double and bool parts from a global to a grid specific option.

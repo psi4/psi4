@@ -765,7 +765,7 @@ of the grid is important. This COSX implementation uses two separate grids.
 The SCF algorithm is first converged on a smaller grid, followed by a final SCF
 iteration on a larger grid. The size of the initial grid is controlled by the
 keywords |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
-The final grid  is controlled by |scf__cosx_radial_points_final| and
+The final grid is controlled by |scf__cosx_radial_points_final| and
 |scf__cosx_spherical_points_final|. The defaults for both grids aim to balance
 cost and accuracy.
 
