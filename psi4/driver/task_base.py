@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -123,8 +123,7 @@ class AtomicComputer(BaseComputer):
 
         if client:
             self.computed = True
-            from qcfractal.interface.models import KeywordSet
-            from qcfractal.interface import Molecule
+            from qcportal.models import KeywordSet, Molecule
 
             # Build the keywords
             keyword_id = client.add_keywords([KeywordSet(values=self.keywords)])[0]
@@ -163,8 +162,10 @@ class AtomicComputer(BaseComputer):
             self.plan(),
             "psi4",
             raise_error=True,
-            # local_options below suitable for continuous mode
+            # local_options below suitable for serial mode where each job takes all the resources of the parent Psi4 job.
+            #   distributed runs through QCFractal will likely need a different setup.
             local_options={
+                # B -> GiB
                 "memory": core.get_memory() / (2 ** 30),
                 "ncores": core.get_num_threads(),
             },

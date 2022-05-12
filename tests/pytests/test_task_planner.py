@@ -17,7 +17,7 @@ from psi4.driver.driver_cbs import CompositeComputer
 from psi4.driver.driver_nbody import ManyBodyComputer
 from psi4.driver.driver_findif import FiniteDifferenceComputer
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.quick, pytest.mark.psi, pytest.mark.api]
 
 
 def test_single_result():

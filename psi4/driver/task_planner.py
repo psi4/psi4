@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -100,7 +100,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule"
     keywords = p4util.prepare_options_for_set_options()
 
     keywords["function_kwargs"] = {}
-    if "external_potentials" in kwargs and "bsse_type" not in kwargs:
+    if "external_potentials" in kwargs:
         keywords["function_kwargs"].update({"external_potentials": kwargs.pop("external_potentials")})
 
     # Need to add full path to pcm file
@@ -164,6 +164,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule"
             packet.update({'method': method, 'basis': basis})
 
             # Tell the task builder which level to add a task list for
+            # * see https://github.com/psi4/psi4/pull/1351#issuecomment-549948276 for discussion of where build_tasks logic should live
             if method == "cbs":
                 # This CompositeComputer is discarded after being used for dermode.
                 simplekwargs = copy.deepcopy(kwargs)

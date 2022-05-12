@@ -162,12 +162,6 @@ SubTaskComputers = Union["AtomicComputer", "CompositeComputer", "FiniteDifferenc
 FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
 
-def nCr(n: int, r: int) -> int:
-    """n Choose r"""
-    f = math.factorial
-    return f(n) // f(r) // f(n - r)
-
-
 class BsseEnum(str, Enum):
     """Available basis-set superposition error (BSSE) treatments."""
 
@@ -637,7 +631,7 @@ def assemble_nbody_components(
                 continue
 
             for k in range(1, nb + 1):
-                take_nk = nCr(metadata['nfragments'] - k - 1, nb - k)
+                take_nk = math.comb(metadata['nfragments'] - k - 1, nb - k)
                 sign = ((-1)**(nb - k))
                 cp_body_dict[nb] += take_nk * sign * cp_by_level[k]
 
@@ -675,7 +669,7 @@ def assemble_nbody_components(
                 continue
 
             for k in range(1, nb + 1):
-                take_nk = nCr(metadata['nfragments'] - k - 1, nb - k)
+                take_nk = math.comb(metadata['nfragments'] - k - 1, nb - k)
                 sign = ((-1)**(nb - k))
                 nocp_body_dict[nb] += take_nk * sign * nocp_by_level[k]
 
