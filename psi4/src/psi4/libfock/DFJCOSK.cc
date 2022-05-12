@@ -50,21 +50,21 @@ using namespace psi;
 
 namespace psi {
 
-SharedMatrix compute_numeric_overlap(std::shared_ptr<DFTGrid> grid, std::shared_ptr<BasisSet> primary) {
+Matrix compute_numeric_overlap(const std::shared_ptr<DFTGrid> &grid, const std::shared_ptr<BasisSet> &primary) {
 
     // DOI 10.1063/1.3646921, EQ. 9
 
     int nbf = primary->nbf();
     BasisFunctions bf_computer(primary, grid->max_points(), grid->max_functions());
-    auto S_num = std::make_shared<Matrix>("Numerical Overlap", nbf, nbf);
+    Matrix S_num("Numerical Overlap", nbf, nbf);
+    auto S_nump = S_num.pointer();
 
     // This loop could be parallelized over blocks of grid points. However, the cost of the loop is
     // so small (< 10 seconds for a 200 heavy atom system), parallelism isn't necessary
 
-    for (size_t bi = 0; bi < grid->blocks().size(); bi++) {
+    for (const auto &block : grid->blocks()) {
 
         // grid points in this block
-        auto block = grid->blocks()[bi];
         int npoints_block = block->npoints();
         int nbf_block = block->local_nbf();
         auto w = block->w();
@@ -83,7 +83,7 @@ SharedMatrix compute_numeric_overlap(std::shared_ptr<DFTGrid> grid, std::shared_
         }
 
         // significant basis functions at these grid points
-        std::vector<int> bf_map = block->functions_local_to_global();
+        const auto &bf_map = block->functions_local_to_global();
 
         auto S_num_block = linalg::doublet(X_block, X_block, true, false);
         auto S_num_blockp = S_num_block.pointer();
@@ -92,13 +92,13 @@ SharedMatrix compute_numeric_overlap(std::shared_ptr<DFTGrid> grid, std::shared_
             size_t mu = bf_map[mu_local];
             for (size_t nu_local = 0; nu_local < nbf_block; nu_local++) {
                 size_t nu = bf_map[nu_local];
-                S_num->add(mu, nu, S_num_blockp[mu_local][nu_local]);
+                S_nump[mu][nu] += S_num_blockp[mu_local][nu_local];
             }
         }
 
     }
 
-    S_num->hermitivitize();
+    S_num.hermitivitize();
 
     return S_num;
 
@@ -273,11 +273,11 @@ void DFJCOSK::common_init() {
 
     // solve: Q_init_ = S_an @ S_num_init_^{-1}
     Q_init_ = S_an->clone();
-    C_DGESV(nbf, nbf, S_num_init->pointer()[0], nbf, ipiv.data(), Q_init_->pointer()[0], nbf);
+    C_DGESV(nbf, nbf, S_num_init.pointer()[0], nbf, ipiv.data(), Q_init_->pointer()[0], nbf);
 
     // solve: Q_final_ = S_an @ S_num_final_^{-1}
     Q_final_ = S_an->clone();
-    C_DGESV(nbf, nbf, S_num_final->pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
+    C_DGESV(nbf, nbf, S_num_final.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
 
     timer_off("Overlap Metric Solve");
 
@@ -699,8 +699,8 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
         // significant basis functions and shells at these grid points
         // significance determined via basis extent
-        std::vector<int> bf_map = block->functions_local_to_global();
-        std::vector<int> shell_map = block->shells_local_to_global();
+        const auto &bf_map = block->functions_local_to_global();
+        const auto &shell_map = block->shells_local_to_global();
         int nbf_block = bf_map.size();
         int ns_block = shell_map.size();
 
