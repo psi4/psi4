@@ -754,10 +754,10 @@ to false, which disables this acceleration entirely.
 COSX Exchange
 ~~~~~~~~~~~~~
 
-The semi-numerical COSX algorithm (described in [Neese:2009:98]_) evaluates
+The semi-numerical COSX algorithm described in [Neese:2009:98]_ evaluates
 two-electron ERIs analytically over one electron coordinate and numerically
-over the other electron coordinate. COSX is related to the earlier pseudospectral
-methods of Friesner. In COSX, numerical integration is performed on standard
+over the other electron coordinate, and belongs to the family of pseudospectral 
+methods originally suggested by Friesner. In COSX, numerical integration is performed on standard
 DFT quadrature grids, which are described in :ref:`DFT`.
 Both the accuracy of the COSX algorithm and also the computational
 cost are directly determined by the size of the integration grid, so selection
