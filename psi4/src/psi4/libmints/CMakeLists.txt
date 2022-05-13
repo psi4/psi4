@@ -44,7 +44,6 @@ list(APPEND sources
   cdsalclist.cc
   erd_eri.cc
   angularmomentum.cc
-  ecpint.cc
   orthog.cc
   )
 
@@ -100,6 +99,18 @@ if(TARGET Libint::libint)
 endif()
 
 if(TARGET ECPINT::ecpint)
+  target_sources(mints
+    PRIVATE
+      ecpint.cc
+    )
+  target_compile_definitions(mints
+    PUBLIC
+      USING_ecpint
+    )
+  target_compile_definitions(l2intf
+    PUBLIC
+      USING_ecpint
+    )
   target_link_libraries(mints
     PUBLIC
       ECPINT::ecpint

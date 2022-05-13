@@ -36,7 +36,9 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libciomr/libciomr.h"
+#ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/potential.h"
@@ -681,6 +683,7 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr<BasisSet> bs1, std::share
     return potential_mat;
 }
 
+#ifdef USING_ecpint
 SharedMatrix MintsHelper::ao_ecp() {
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++) {
@@ -701,6 +704,7 @@ SharedMatrix MintsHelper::ao_ecp(std::shared_ptr<BasisSet> bs1, std::shared_ptr<
     one_body_ao_computer(ints_vec, ecp_mat, false);
     return ecp_mat;
 }
+#endif
 
 SharedMatrix MintsHelper::ao_pvp() {
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
@@ -1289,7 +1293,9 @@ SharedMatrix MintsHelper::so_potential_nr(bool include_perturbations) {
 
     // Add ECPs, if needed
     if (basisset_->has_ECP()) {
+#ifdef USING_ecpint
         potential_mat->add(so_ecp());
+#endif
     }
 
     // Handle addition of any perturbations here and not in SCF code.
@@ -1330,6 +1336,7 @@ SharedMatrix MintsHelper::so_kinetic(bool include_perturbations) {
     return cached_oe_ints_[p];
 }
 
+#ifdef USING_ecpint
 SharedMatrix MintsHelper::so_ecp() {
     std::string label(PSIF_SO_ECP);
     if (!basisset_->has_ECP()) {
@@ -1344,6 +1351,7 @@ SharedMatrix MintsHelper::so_ecp() {
     auto p = std::make_pair(label, false);
     return cached_oe_ints_[p];
 }
+#endif
 
 SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
     std::string label(PSIF_SO_V);
@@ -2087,6 +2095,7 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
     return perturbation_gradient;
 }
 
+#ifdef USING_ecpint
 SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
     int natom = basisset_->molecule()->natom();
     auto grad = std::make_shared<Matrix>("Effective Core Potential Gradient", natom, 3);
@@ -2168,6 +2177,7 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
     }
     return grad;
 }
+#endif
 
 SharedMatrix MintsHelper::multipole_grad(SharedMatrix D, int order, const std::vector<double> &origin) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
@@ -2242,7 +2252,9 @@ SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
         ret->add(perturb_grad(D));
     }
     if (basisset_->n_ecp_shell()) {
+#ifdef USING_ecpint
         ret->add(effective_core_potential_grad(D));
+#endif
     }
     return ret;
 }

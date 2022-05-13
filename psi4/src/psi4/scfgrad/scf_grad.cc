@@ -37,7 +37,9 @@
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
+#ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
@@ -496,6 +498,7 @@ SharedMatrix SCFDeriv::compute_hessian()
 
     if (basisset_->has_ECP() ) {
     // => Potential Hessian <= //
+#ifdef USING_ecpint
     timer_on("Hess: ECP");
     {
         double** Dp = Dt->pointer();
@@ -795,6 +798,7 @@ SharedMatrix SCFDeriv::compute_hessian()
         }
         timer_off("Hess: ECP");
     }
+#endif
     }
 
 

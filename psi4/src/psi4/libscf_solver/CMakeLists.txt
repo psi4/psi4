@@ -17,6 +17,10 @@ endif()
 target_link_libraries(scf_solver PUBLIC diis)
 
 if(TARGET ECPINT::ecpint)
+  target_compile_definitions(scf_solver
+    PUBLIC
+      USING_ecpint
+    )
   target_link_libraries(scf_solver
     PUBLIC
       ECPINT::ecpint

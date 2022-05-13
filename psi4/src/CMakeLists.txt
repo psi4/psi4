@@ -94,6 +94,17 @@ target_link_libraries(core
     tgt::lapack # OpenMP flags to core.cc
   )
 
+if(TARGET ECPINT::ecpint)
+  target_compile_definitions(core
+    PUBLIC
+      USING_ecpint
+    )
+  target_compile_definitions(l2export
+    PUBLIC
+      USING_ecpint
+    )
+endif()
+
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(core
     PRIVATE

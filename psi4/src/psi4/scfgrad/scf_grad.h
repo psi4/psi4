@@ -90,9 +90,11 @@ protected:
                          std::shared_ptr<Matrix> Cocc,
                          int nso, int nocc, int nvir, bool alpha);
 
+#ifdef USING_ecpint
     void ecp_deriv(std::shared_ptr<Matrix> C, 
                    std::shared_ptr<Matrix> Cocc,
                    int nso, int nocc, int nvir, bool alpha);
+#endif
 
     void JK_deriv1(std::shared_ptr<Matrix> D1,
                    std::shared_ptr<Matrix> C1, 

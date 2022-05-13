@@ -118,6 +118,7 @@ jobs:
             # qc opt'l
           - psi4/label/dev::ambit
           - psi4/label/dev::chemps2
+          - conda-forge::libecpint
           - psi4/label/dev::dkh
           - psi4/label/dev::gdma
           - psi4/label/dev::pcmsolver
@@ -147,6 +148,7 @@ jobs:
           # nyi
           sed -i "s;- psi4/label/dev::ambit;;g" build.yaml
           sed -i "s;- psi4/label/dev::chemps2;;g" build.yaml
+          sed -i "s;- conda-forge::libecpint;;g" build.yaml
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
@@ -208,6 +210,8 @@ jobs:
           - blas=*=mkl
           - python=${{ matrix.cfg.python-version }}
           - toml
+            # qc req'd from buildtime
+          - libecpint
             # qc opt'l
           - adcc
           - cppe
@@ -249,6 +253,7 @@ jobs:
           - libxc
             # qc req'd from buildtime
           #- psi4/label/dev::ambit
+          #- conda-forge::libecpint
           #- psi4/label/dev::chemps2
           #- psi4/label/dev::dkh
           #- psi4/label/dev::gdma
@@ -328,6 +333,8 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+          -D ENABLE_ecpint=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
           -D ENABLE_PCMSolver=ON \
@@ -366,6 +373,8 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+          -D ENABLE_ecpint=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
           -D ENABLE_PCMSolver=ON \

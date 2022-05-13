@@ -44,7 +44,9 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
+#ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/liboptions/liboptions.h"
@@ -496,6 +498,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
 
     if (basisset_->has_ECP()) {
     // => ECP <= //
+#ifdef USING_ecpint
     {
         // Effective core potential derivatives
         std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(1)));
@@ -592,6 +595,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                          &next_Epi);
         }
     }
+#endif
     }
 
     // => Vpi <= //
@@ -2484,8 +2488,10 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
 
     // Effective core potential derivatives (Epi)
     if (basisset_->has_ECP()) {
+#ifdef USING_ecpint
         ecp_deriv(Ca, Ca_occ, nso, naocc, navir, true);
         ecp_deriv(Cb, Cb_occ, nso, nbocc, nbvir, false);
+#endif
     }
 
     // Potential derivatives (Vpi)
@@ -3274,6 +3280,7 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
     }
 }
 
+#ifdef USING_ecpint
 void USCFDeriv::ecp_deriv(std::shared_ptr<Matrix> C, 
                           std::shared_ptr<Matrix> Cocc,
                           int nso, int nocc, int nvir, bool alpha)
@@ -3378,6 +3385,7 @@ void USCFDeriv::ecp_deriv(std::shared_ptr<Matrix> C,
                      &next_Epi);
     }
 }
+#endif
 
 void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C, 
                                 std::shared_ptr<Matrix> Cocc,
