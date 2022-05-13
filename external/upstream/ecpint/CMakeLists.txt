@@ -1,5 +1,5 @@
 if(${ENABLE_ecpint})
-    find_package(ecpint 1.0.6 CONFIG QUIET)
+    find_package(ecpint 1.0.7 CONFIG QUIET)
 
     if(${ecpint_FOUND})
         get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
@@ -13,8 +13,8 @@ if(${ENABLE_ecpint})
         include(ExternalProject)
         message(STATUS "Suitable ecpint could not be located, ${Magenta}Building ecpint${ColourReset} instead.")
         ExternalProject_Add(ecpint_external
-            URL https://github.com/loriab/libecpint/archive/psiecp.tar.gz
-            #UPDATE_COMMAND ""
+            URL https://github.com/robashaw/libecpint/archive/v1.0.7.tar.gz
+            UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -33,7 +33,7 @@ if(${ENABLE_ecpint})
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 
-        set(ecpint_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/ecpint CACHE PATH "path to internally built ecpintConfig.cmake" FORCE)
+        set(ecpint_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/ecpint CACHE PATH "path to internally built ecpint-config.cmake" FORCE)
     endif()
 else()
     add_library(ecpint_external INTERFACE)  # dummy

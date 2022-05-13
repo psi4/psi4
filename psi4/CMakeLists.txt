@@ -101,7 +101,7 @@ else()
 endif()
 
 if(${ENABLE_ecpint})
-    find_package(ecpint 1.0.6 CONFIG REQUIRED)
+    find_package(ecpint 1.0.7 CONFIG REQUIRED)
     get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using ecpint${ColourReset}: ${_loc} (version ${ecpint_VERSION})")

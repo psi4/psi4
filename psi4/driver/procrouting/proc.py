@@ -1451,7 +1451,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         raise ValidationError("""Detected options to both cast and perform a broken symmetry computation""")
 
     if (core.get_option('SCF', 'STABILITY_ANALYSIS') == 'FOLLOW') and (core.get_option('SCF', 'REFERENCE') != 'UHF'):
-        raise ValidationError("""Stability analysis root following is only available for UHF""")
+        raise ValidationError(f"""Stability analysis root following is only available for unrestricted Hartree--Fock, not present {core.get_option('SCF', 'REFERENCE')}""")
 
     # broken set-up
     if do_broken:
