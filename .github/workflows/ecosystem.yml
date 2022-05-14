@@ -118,8 +118,7 @@ jobs:
             # qc opt'l
           - psi4/label/dev::ambit
           - psi4/label/dev::chemps2
-          - conda-forge::libecpint
-          - sysroot_linux-64=2.17
+          - psi4/label/dev::libecpint
           - psi4/label/dev::dkh
           - psi4/label/dev::gdma
           - psi4/label/dev::pcmsolver
@@ -137,6 +136,7 @@ jobs:
           sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
           sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
           sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
+          sed -E -i.bak "s;- psi4/label/dev::libecpint;;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
@@ -149,7 +149,7 @@ jobs:
           # nyi
           sed -i "s;- psi4/label/dev::ambit;;g" build.yaml
           sed -i "s;- psi4/label/dev::chemps2;;g" build.yaml
-          sed -i "s;- conda-forge::libecpint;;g" build.yaml
+          sed -i "s;- psi4/label/dev::libecpint;;g" build.yaml
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
@@ -183,6 +183,7 @@ jobs:
           - psi4/label/dev::ambit
           - psi4/label/dev::chemps2
           - psi4/label/dev::dkh
+          - psi4/label/dev::libecpint
           - psi4/label/dev::gdma
           - psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
@@ -211,8 +212,6 @@ jobs:
           - blas=*=mkl
           - python=${{ matrix.cfg.python-version }}
           - toml
-            # qc req'd from buildtime
-          - libecpint
             # qc opt'l
           - adcc
           - cppe
