@@ -591,7 +591,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     if json_data["model"]["method"].lower() in ["ccsd"] :
         if json_data["extras"].get("psi4:save_tamps", False):
-            if type(wfn.reference_wavefunction()) is psi4.core.RHF :
+            if type(wfn.reference_wavefunction()) is core.RHF :
                 json_data["extras"]["psi4:tamps"] = {}
                 json_data["extras"]["psi4:tamps"]["tIjAb"] = wfn.get_amplitudes()["tIjAb"].to_array().tolist()
                 json_data["extras"]["psi4:tamps"]["tIA"] = wfn.get_amplitudes()["tIA"].to_array().tolist()

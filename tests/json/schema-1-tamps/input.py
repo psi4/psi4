@@ -9,7 +9,6 @@ basis = "sto-3g"
 json_data = {
     "schema_name": "qcschema_input",
     "schema_version": 1,
-    "return_output": True,
     "molecule": {
         "geometry": [
             0.0,
@@ -70,7 +69,7 @@ tIA = wfn.get_amplitudes()["tIA"].to_array()
 Da = wfn.Da().to_array()
 
 with open("output.json", "w") as ofile:
-    json.dump(json_ret, ofile, indent=2)
+    json.dump(json_ret.json(), ofile, indent=2)
 
 # Make sure the amplitudes compted from h2o_test are actually assigned.
 if all(map(lambda x: x == 0, tIJAB.flatten())) or \
@@ -78,7 +77,7 @@ if all(map(lambda x: x == 0, tIJAB.flatten())) or \
    all(map(lambda x: x == 0, Da.flatten())) :
     raise Exception("Error in computing values to compare against. Could not compare.")
 else :
-    psi4.compare_values(tIJAB, np.array(json_ret["extras"]["psi4:tamps"]["tIjAb"]))
-    psi4.compare_values(tIA, np.array(json_ret["extras"]["psi4:tamps"]["tIA"]))
-    psi4.compare_values(Da, np.array(json_ret["extras"]["psi4:tamps"]["Da"]))
+    psi4.compare_values(tIJAB, np.array(json_ret.extras["psi4:tamps"]["tIjAb"]))
+    psi4.compare_values(tIA, np.array(json_ret.extras["psi4:tamps"]["tIA"]))
+    psi4.compare_values(Da, np.array(json_ret.extras["psi4:tamps"]["Da"]))
 
