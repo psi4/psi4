@@ -75,6 +75,8 @@ def select_scf_gradient(name, **kwargs):
     # Considering only scf
 
     if mtd_type == 'CD':
+        # manifestation of `"""No analytic derivatives for SCF_TYPE CD."""`.
+        #   here, only hits upon `gradient("scf")` so above message also present in driver.py to catch e.g., mp2 gradient atop a cd reference.
         func = None
     else:
         func = run_scf_gradient

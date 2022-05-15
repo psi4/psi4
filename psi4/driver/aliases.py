@@ -37,7 +37,9 @@ Place in this file quickly defined procedures such as
 import os
 import re
 import warnings
+from typing import Any, Dict, List
 
+CBSMetadata = List[Dict[str, Any]]
 
 # Python procedures like these can be run directly from the input file or integrated
 # with the energy(), etc. routines by means of lines like those at the end
@@ -82,7 +84,7 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
                 '', gradient.get(at, 0), gradient.get(at, 1), gradient.get(at, 2)))
 
 
-def sherrill_gold_standard(**kwargs):
+def sherrill_gold_standard(**kwargs) -> CBSMetadata:
     r"""Function to call the quantum chemical method known as 'Gold Standard'
     in the Sherrill group. Uses the composite wrapper to evaluate
     the following expression. Two-point extrapolation of the correlation energy
@@ -120,7 +122,7 @@ def sherrill_gold_standard(**kwargs):
     return [scf, corl, delta]
 
 
-def allen_focal_point(**kwargs):
+def allen_focal_point(**kwargs) -> CBSMetadata:
     r"""Function to call Wes Allen-style Focal
     Point Analysis. JCP 127 014306.  Uses
     the composite wrapper to evaluate the following
