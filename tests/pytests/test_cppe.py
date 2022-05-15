@@ -506,7 +506,7 @@ def test_cppe_pe_ecp(inp):
         'pe__pe_ecp': True,
     })
     scf_energy, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
-    assert compare_values(inp["ref"], scf_energy, 9, "Total PE-SCF Energy with PE(ECP)")
+    assert compare_values(inp["ref"], scf_energy, 7, "Total PE-SCF Energy with PE(ECP)")
 
 
 @pytest.mark.quick
