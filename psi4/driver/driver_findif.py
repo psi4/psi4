@@ -27,9 +27,12 @@
 #
 """Plan, run, and assemble QC tasks to obtain derivatives by finite difference of lesser derivatives.
 
-======
-FINDIF
-======
+===========
+FINDIF Flow
+===========
+Bullet points are major actions
+Lines of dashes denote function calls
+e/d/dd=dg/g/h := energy, dipole, dipole derivative = dipole gradient, gradient, Hessian
 
 -----------------------------------
 FiniteDifferenceComputer.__init__()
@@ -59,7 +62,7 @@ FiniteDifferenceComputer.__init__()
             ----------------
             * form new geometry by linear combination
 
-        * ... and collect geometry into field displacements.<label>
+        * ... and collect geometry into a field of findifrec["displacements"].<label>
         * for (2, 0) also collect off-diagonal displacements
         * also collect undisplaced geometry into field reference
         * return findifrec
@@ -87,7 +90,7 @@ FiniteDifferenceComputer.get_psi_results()
         Computer._prepare_results()
         ---------------------------
         * get_results() for each job in task list
-        * arrange atres data into e/d/g/h fields as available on each of reference and displacements entries
+        * arrange atomicresult data into e/d/g/h fields as available on each of reference and displacements entries
 
             assemble_hessian_from_energies()
             --------------------------------
@@ -112,8 +115,8 @@ FiniteDifferenceComputer.get_psi_results()
         * place as many of DD, G, H as available onto reference entry
 
     * pull qcvars off reference job
-    * from reference job set add'l mol, DD, G, H as available
-    * form model, including detailed dict at atres.extras["findif_record"]
+    * from reference job, set add'l mol, DD, G, H as available
+    * form model, including detailed dict at atomicresult.extras["findif_record"]
 
 * convert result to psi4.core.Matrix
 
@@ -1152,6 +1155,15 @@ class FiniteDifferenceComputer(BaseComputer):
         return mol
 
     def __init__(self, **data):
+        """Initialize FiniteDifference class.
+
+        data keywords include
+        * general AtomicInput keys like molecule, driver, method, basis, and keywords.
+        * specialized findif keys like findif_mode, findif_irrep, and those converted from keywords to kwargs:
+          findif_stencil_size, findif_step_size, and findif_verbose.
+        * TODO hangers-on keys present at class initiation get automatically attached to class since `extra = "allow"` but should be pruned
+
+        """
         findif_stencil_size = data.pop('findif_stencil_size')
         findif_step_size = data.pop('findif_step_size')
 
@@ -1350,8 +1362,9 @@ class FiniteDifferenceComputer(BaseComputer):
                 G0 = assemble_gradient_from_energies(self.findifrec)
             except KeyError:
                 core.print_out("Unable to construct reference gradient from Hessian displacements.")
-                # TODO: this happens properly when a subset irrep doesn't
-                #  have the right displacements for grad. For both this case
+                # TODO: this happens properly when the requested symmetry block
+                #  of displacements don't have the totally symmetric displacements
+                #  needed for gradient. For both this case
                 #  and distributed computing are-we-there-yet? queries,
                 #  should have a probe as to whether all the
                 #  findif[displacement] labels are present and whether

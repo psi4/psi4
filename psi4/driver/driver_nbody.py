@@ -27,9 +27,12 @@
 #
 """Plan, run, and assemble QC tasks to obtain many-body expansion and basis-set superposition error treatments.
 
-========
-ManyBody
-========
+=============
+ManyBody Flow
+=============
+Bullet points are major actions
+Lines of dashes denote function calls
+e/d/dd=dg/g/h := energy, dipole, dipole derivative = dipole gradient, gradient, Hessian
 
 ---------------------------
 ManyBodyComputer.__init__()

@@ -2600,7 +2600,7 @@ def run_scf_hessian(name, **kwargs):
 
     ref_wfn.set_variable("SCF TOTAL HESSIAN", H)  # P::e SCF
     if ref_wfn.functional().needs_xc():
-        ref_wfn.set_variable("DFT TOTAL HESSIAN", H)  # no DFT hess at present. overwritten later for DH -- TODO when DH gradients  # P::e SCF
+        ref_wfn.set_variable("DFT TOTAL HESSIAN", H)  # overwritten later for DH -- TODO when DH Hessians # P::e SCF
     else:
         ref_wfn.set_variable("HF TOTAL HESSIAN", H)  # P::e SCF
 

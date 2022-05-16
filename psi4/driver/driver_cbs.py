@@ -27,18 +27,24 @@
 #
 """Plan, run, and assemble QC tasks to obtain composite method, basis, & options treatments.
 
-===
-CBS
-===
+========
+CBS Flow
+========
+Bullet points are major actions
+Lines of dashes denote function calls
+stage: scf, corl, delta1, delta2, ...
+e/d/dd=dg/g/h := energy, dipole, dipole derivative = dipole gradient, gradient, Hessian
 
 cbs_text_parser()
 -----------------
+* called from task_planner() only if "/" in method
 
     _parse_cbs_gufunc_string()
     --------------------------
     * break user string into paired method and basis stages
 
 * transform user string into cbs kwargs inc'l basic cbs_metadata
+  cbs kwargs may signal simple method/basis single point -or- a modelchem requiring CompositeComputer
 
 
 ----------------------------
@@ -47,7 +53,8 @@ CompositeComputer.__init__()
 
     _process_cbs_kwargs()
     ---------------------
-    * transform user kwargs into trial cbs_metadata format (aka dict spec)
+    * if input is cbs_metadata dict, skip to _validate_cbs_inputs()
+    * otherwise, transform user kwargs into trial cbs_metadata format (aka dict spec)
 
         _validate_cbs_inputs()
         ----------------------
@@ -69,14 +76,15 @@ CompositeComputer.__init__()
 
         _expand_scheme_orders()
         -----------------------
-        * form f_fields dict of entries for each zeta in a scheme (single NEED; entries related by nonlinear fn)
+        * form f_fields dict of entries for each zeta in a scheme (single NEED; entries related by nonlinear fn
+         (that is, constructing the CBS energy from the component energies is nonlinear))
 
         _contract_bracketed_basis()
         ---------------------------
         * form basis abbr. string from basis seq
 
     * form d_fields list of stages or stage halves from NEEDs (GRAND_NEED; items related linearly to form final val)
-    * form list of entries (entry:= mtd-bas-opt) mentioned in GRAND_NEED (MODELCHEM; redundant, naive)
+    * form list of entries (entry:= mtd-bas-opt specification) mentioned in GRAND_NEED (MODELCHEM; redundant, naive)
     * form subset of MODELCHEM with minimal list of jobs (job:= entry on which to call QC) to satisfy CBS (JOBS; minimal, enlightened)
     * form superset of JOBS with maximal list of entries resulting from JOBS (TROVE)
     * return GRAND_NEED/cbsrec, JOBS/compute_list, TROVE/trove
