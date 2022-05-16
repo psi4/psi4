@@ -37,6 +37,9 @@
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
+#ifdef USING_ecpint
+#include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
@@ -491,6 +494,311 @@ SharedMatrix SCFDeriv::compute_hessian()
             }
         }
         timer_off("Hess: V");
+    }
+
+    if (basisset_->has_ECP() ) {
+    // => Potential Hessian <= //
+#ifdef USING_ecpint
+    timer_on("Hess: ECP");
+    {
+        double** Dp = Dt->pointer();
+
+        hessians_["Effective Core Potential"] = SharedMatrix(hessians_["Nuclear"]->clone());
+        hessians_["Effective Core Potential"]->set_name("Effective Core Potential Hessian");
+        hessians_["Effective Core Potential"]->zero();
+        double** ECPp = hessians_["Effective Core Potential"]->pointer();
+        hessian_terms.push_back("Effective Core Potential");
+
+        // Potential energy derivatives
+        std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(2)));
+        const auto& buffers = ecpint->buffers();
+
+        for (int P = 0; P < basisset_->nshell(); P++) {
+            const GaussianShell& s1 = basisset_->shell(P);
+            int nP = s1.nfunction();
+            int oP = s1.function_index();
+            int aP = s1.ncenter();
+            int Ax = 3 * aP + 0;
+            int Ay = 3 * aP + 1;
+            int Az = 3 * aP + 2;
+            for (int Q = 0; Q <= P; Q++) {
+
+                const GaussianShell& s2 = basisset_->shell(Q);
+                int nQ = s2.nfunction();
+                int oQ = s2.function_index();
+                int aQ = s2.ncenter();
+
+                int Bx = 3 * aQ + 0;
+                int By = 3 * aQ + 1;
+                int Bz = 3 * aQ + 2;
+
+                double perm = (P == Q ? 1.0 : 2.0);
+
+                size_t offset = static_cast<size_t> (nP)*nQ;
+#define DEBUGINTS 0
+
+#if DEBUGINTS
+                outfile->Printf("AM1 %d AM2 %d a1 %f a2 %f center1 %d center2 %d\n", s1.am(), s2.am(), s1.exp(0), s2.exp(0), s1.ncenter(), s2.ncenter());
+#endif
+                ecpint->setup_hessian_iterations();
+                while(ecpint->next_hessian_ecp()) {
+                    int ecp_center = ecpint->current_ecp_center();
+                    int Cx = 3 * ecp_center + 0;
+                    int Cy = 3 * ecp_center + 1;
+                    int Cz = 3 * ecp_center + 2;
+
+                    ecpint->compute_shell_deriv2(P,Q);
+
+                    const double *AxAx = buffers[ 0];
+                    const double *AxAy = buffers[ 1];
+                    const double *AxAz = buffers[ 2];
+                    const double *AyAy = buffers[ 3];
+                    const double *AyAz = buffers[ 4];
+                    const double *AzAz = buffers[ 5];
+                    const double *AxBx = buffers[ 6];
+                    const double *AxBy = buffers[ 7];
+                    const double *AxBz = buffers[ 8];
+                    const double *AyBx = buffers[ 9];
+                    const double *AyBy = buffers[10];
+                    const double *AyBz = buffers[11];
+                    const double *AzBx = buffers[12];
+                    const double *AzBy = buffers[13];
+                    const double *AzBz = buffers[14];
+                    const double *AxCx = buffers[15];
+                    const double *AxCy = buffers[16];
+                    const double *AxCz = buffers[17];
+                    const double *AyCx = buffers[18];
+                    const double *AyCy = buffers[19];
+                    const double *AyCz = buffers[20];
+                    const double *AzCx = buffers[21];
+                    const double *AzCy = buffers[22];
+                    const double *AzCz = buffers[23];
+                    const double *BxBx = buffers[24];
+                    const double *BxBy = buffers[25];
+                    const double *BxBz = buffers[26];
+                    const double *ByBy = buffers[27];
+                    const double *ByBz = buffers[28];
+                    const double *BzBz = buffers[29];
+                    const double *BxCx = buffers[30];
+                    const double *BxCy = buffers[31];
+                    const double *BxCz = buffers[32];
+                    const double *ByCx = buffers[33];
+                    const double *ByCy = buffers[34];
+                    const double *ByCz = buffers[35];
+                    const double *BzCx = buffers[36];
+                    const double *BzCy = buffers[37];
+                    const double *BzCz = buffers[38];
+                    const double *CxCx = buffers[39];
+                    const double *CxCy = buffers[40];
+                    const double *CxCz = buffers[41];
+                    const double *CyCy = buffers[42];
+                    const double *CyCz = buffers[43];
+                    const double *CzCz = buffers[44];
+
+                    double ABscale = (aP == aQ ? 2.0 : 1.0);
+                    double ACscale = (aP == ecp_center ? 2.0 : 1.0);
+                    double BCscale = (aQ == ecp_center ? 2.0 : 1.0);
+
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            double Delem = perm * Dp[p + oP][q + oQ];
+                            double tmpAxAx =  Delem * (*AxAx);
+                            double tmpAxAy =  Delem * (*AxAy);
+                            double tmpAxAz =  Delem * (*AxAz);
+                            double tmpAyAy =  Delem * (*AyAy);
+                            double tmpAyAz =  Delem * (*AyAz);
+                            double tmpAzAz =  Delem * (*AzAz);
+                            double tmpAxBx =  Delem * (*AxBx);
+                            double tmpAxBy =  Delem * (*AxBy);
+                            double tmpAxBz =  Delem * (*AxBz);
+                            double tmpAyBx =  Delem * (*AyBx);
+                            double tmpAyBy =  Delem * (*AyBy);
+                            double tmpAyBz =  Delem * (*AyBz);
+                            double tmpAzBx =  Delem * (*AzBx);
+                            double tmpAzBy =  Delem * (*AzBy);
+                            double tmpAzBz =  Delem * (*AzBz);
+                            double tmpAxCx =  Delem * (*AxCx);
+                            double tmpAxCy =  Delem * (*AxCy);
+                            double tmpAxCz =  Delem * (*AxCz);
+                            double tmpAyCx =  Delem * (*AyCx);
+                            double tmpAyCy =  Delem * (*AyCy);
+                            double tmpAyCz =  Delem * (*AyCz);
+                            double tmpAzCx =  Delem * (*AzCx);
+                            double tmpAzCy =  Delem * (*AzCy);
+                            double tmpAzCz =  Delem * (*AzCz);
+                            double tmpBxBx =  Delem * (*BxBx);
+                            double tmpBxBy =  Delem * (*BxBy);
+                            double tmpBxBz =  Delem * (*BxBz);
+                            double tmpByBy =  Delem * (*ByBy);
+                            double tmpByBz =  Delem * (*ByBz);
+                            double tmpBzBz =  Delem * (*BzBz);
+                            double tmpBxCx =  Delem * (*BxCx);
+                            double tmpBxCy =  Delem * (*BxCy);
+                            double tmpBxCz =  Delem * (*BxCz);
+                            double tmpByCx =  Delem * (*ByCx);
+                            double tmpByCy =  Delem * (*ByCy);
+                            double tmpByCz =  Delem * (*ByCz);
+                            double tmpBzCx =  Delem * (*BzCx);
+                            double tmpBzCy =  Delem * (*BzCy);
+                            double tmpBzCz =  Delem * (*BzCz);
+                            double tmpCxCx =  Delem * (*CxCx);
+                            double tmpCxCy =  Delem * (*CxCy);
+                            double tmpCxCz =  Delem * (*CxCz);
+                            double tmpCyCy =  Delem * (*CyCy);
+                            double tmpCyCz =  Delem * (*CyCz);
+                            double tmpCzCz =  Delem * (*CzCz);
+
+                            // AxAx
+                            ECPp[Ax][Ax] += tmpAxAx;
+                            // AyAy
+                            ECPp[Ay][Ay] += tmpAyAy;
+                            // AzAz
+                            ECPp[Az][Az] += tmpAzAz;
+                            // AxAy
+                            ECPp[Ax][Ay] += tmpAxAy;
+                            // AxAz
+                            ECPp[Ax][Az] += tmpAxAz;
+                            // AyAz
+                            ECPp[Ay][Az] += tmpAyAz;
+                            // BxBx
+                            ECPp[Bx][Bx] += tmpBxBx;
+                            // ByBy
+                            ECPp[By][By] += tmpByBy;
+                            // BzBz
+                            ECPp[Bz][Bz] += tmpBzBz;
+                            // BxBy
+                            ECPp[Bx][By] += tmpBxBy;
+                            // BxBz
+                            ECPp[Bx][Bz] += tmpBxBz;
+                            // ByBz
+                            ECPp[By][Bz] += tmpByBz;
+                            // AxBx
+                            ECPp[Ax][Bx] += ABscale* tmpAxBx;
+                            // AxBy
+                            ECPp[Ax][By] += tmpAxBy;
+                            // AxBz
+                            ECPp[Ax][Bz] += tmpAxBz;
+                            // AyBx
+                            ECPp[Ay][Bx] += tmpAyBx;
+                            // AyBy
+                            ECPp[Ay][By] += ABscale*tmpAyBy;
+                            // AyBz
+                            ECPp[Ay][Bz] += tmpAyBz;
+                            // AzBx
+                            ECPp[Az][Bx] += tmpAzBx;
+                            // AzBy
+                            ECPp[Az][By] += tmpAzBy;
+                            // AzBz
+                            ECPp[Az][Bz] += ABscale*tmpAzBz;
+                            // CxAx
+                            ECPp[Cx][Ax] += ACscale*tmpAxCx;
+                            // CxAy
+                            ECPp[Cx][Ay] += tmpAyCx;
+                            // CxAz
+                            ECPp[Cx][Az] += tmpAzCx;
+                            // CyAx
+                            ECPp[Cy][Ax] += tmpAxCy;
+                            // CyAy
+                            ECPp[Cy][Ay] += ACscale*tmpAyCy;
+                            // CyAz
+                            ECPp[Cy][Az] += tmpAzCy;
+                            // CzAx
+                            ECPp[Cz][Ax] += tmpAxCz;
+                            // CzAy
+                            ECPp[Cz][Ay] += tmpAyCz;
+                            // CzAz
+                            ECPp[Cz][Az] += ACscale*tmpAzCz;
+                            // CxBx
+                            ECPp[Cx][Bx] += BCscale*tmpBxCx;
+                            // CxBy
+                            ECPp[Cx][By] += tmpByCx;
+                            // CxBz
+                            ECPp[Cx][Bz] += tmpBzCx;
+                            // CyBx
+                            ECPp[Cy][Bx] += tmpBxCy;
+                            // CyBy
+                            ECPp[Cy][By] += BCscale*tmpByCy;
+                            // CyBz
+                            ECPp[Cy][Bz] += tmpBzCy;
+                            // CzBx
+                            ECPp[Cz][Bx] += tmpBxCz;
+                            // CzBy
+                            ECPp[Cz][By] += tmpByCz;
+                            // CzBz
+                            ECPp[Cz][Bz] += BCscale*tmpBzCz;
+                            // CxCx
+                            ECPp[Cx][Cx] += tmpCxCx;
+                            // CyCy
+                            ECPp[Cy][Cy] += tmpCyCy;
+                            // CzCz
+                            ECPp[Cz][Cz] += tmpCzCz;
+                            // CxCy
+                            ECPp[Cx][Cy] += tmpCxCy;
+                            // CxCz
+                            ECPp[Cx][Cz] += tmpCxCz;
+                            // CyCz
+                            ECPp[Cy][Cz] += tmpCyCz;
+
+                            ++AxAx;
+                            ++AxAy;
+                            ++AxAz;
+                            ++AyAy;
+                            ++AyAz;
+                            ++AzAz;
+                            ++AxBx;
+                            ++AxBy;
+                            ++AxBz;
+                            ++AyBx;
+                            ++AyBy;
+                            ++AyBz;
+                            ++AzBx;
+                            ++AzBy;
+                            ++AzBz;
+                            ++AxCx;
+                            ++AxCy;
+                            ++AxCz;
+                            ++AyCx;
+                            ++AyCy;
+                            ++AyCz;
+                            ++AzCx;
+                            ++AzCy;
+                            ++AzCz;
+                            ++BxBx;
+                            ++BxBy;
+                            ++BxBz;
+                            ++ByBy;
+                            ++ByBz;
+                            ++BzBz;
+                            ++BxCx;
+                            ++BxCy;
+                            ++BxCz;
+                            ++ByCx;
+                            ++ByCy;
+                            ++ByCz;
+                            ++BzCx;
+                            ++BzCy;
+                            ++BzCz;
+                            ++CxCx;
+                            ++CxCy;
+                            ++CxCz;
+                            ++CyCy;
+                            ++CyCz;
+                            ++CzCz;
+                        }
+                    }
+                }
+            }
+        }
+        // Symmetrize the result
+        int dim = hessians_["Effective Core Potential"]->rowdim();
+        for (int row = 0; row < dim; ++row){
+            for (int col = 0; col < row; ++col){
+                ECPp[row][col] = ECPp[col][row] = (ECPp[row][col] + ECPp[col][row]);
+            }
+        }
+        timer_off("Hess: ECP");
+    }
+#endif
     }
 
 

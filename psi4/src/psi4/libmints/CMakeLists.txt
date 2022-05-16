@@ -44,9 +44,6 @@ list(APPEND sources
   cdsalclist.cc
   erd_eri.cc
   angularmomentum.cc
-  bessel.cc
-  gaussquad.cc
-  ecpint.cc
   orthog.cc
   )
 
@@ -93,12 +90,34 @@ target_link_libraries(mints
   PUBLIC
     Libint2::cxx
   )
-
 # Conditionally linked-to external projects
 if(TARGET Libint::libint)
   target_link_libraries(mints
     PUBLIC
       Libint::libint
+    )
+endif()
+
+if(TARGET ECPINT::ecpint)
+  target_sources(mints
+    PRIVATE
+      ecpint.cc
+    )
+  target_compile_definitions(mints
+    PUBLIC
+      USING_ecpint
+    )
+  target_compile_definitions(l2intf
+    PUBLIC
+      USING_ecpint
+    )
+  target_link_libraries(mints
+    PUBLIC
+      ECPINT::ecpint
+    )
+  target_link_libraries(l2intf
+    PUBLIC
+      ECPINT::ecpint
     )
 endif()
 
@@ -122,13 +141,6 @@ if(TARGET dkh::dkh)
   target_link_libraries(mints
     PUBLIC
       dkh::dkh
-    )
-endif()
-
-if(TARGET ECPINT::ecpint)
-  target_link_libraries(mints
-    PUBLIC
-      ECPINT::ecpint
     )
 endif()
 

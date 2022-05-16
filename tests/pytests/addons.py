@@ -62,6 +62,7 @@ _programs = {
     "chemps2": psi4.addons("chemps2"),
     "cppe": which_import("cppe", return_bool=True),  # package pycppe, import cppe
     "dkh": psi4.addons("dkh"),
+    "ecpint": psi4.addons("ecpint"),
     "libefp": which_import("pylibefp", return_bool=True),
     "erd": psi4.addons("erd"),
     "fockci": which_import("psi4fockci", return_bool=True),  # package fockci, import psi4fockci

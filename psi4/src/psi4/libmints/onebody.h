@@ -142,7 +142,7 @@ class PSI_API OneBodyAOInt {
     int deriv() const { return deriv_; }
 
     /// Compute the integrals between basis function in the given shell pair.
-    void compute_shell(int, int);
+    virtual void compute_shell(int, int);
     /// Computes the integrals between basis function in the given shell pair
     virtual void compute_shell_deriv1(int, int);
     /// Computes the integrals between basis function in the given shell pair

@@ -1451,7 +1451,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         raise ValidationError("""Detected options to both cast and perform a broken symmetry computation""")
 
     if (core.get_option('SCF', 'STABILITY_ANALYSIS') == 'FOLLOW') and (core.get_option('SCF', 'REFERENCE') != 'UHF'):
-        raise ValidationError("""Stability analysis root following is only available for UHF""")
+        raise ValidationError(f"""Stability analysis root following is only available for unrestricted Hartree--Fock, not present {core.get_option('SCF', 'REFERENCE')}""")
 
     # broken set-up
     if do_broken:
@@ -2505,45 +2505,6 @@ def run_scf_gradient(name, **kwargs):
         ref_wfn.set_variable("-D Gradient", disp_grad)
 
     grad = core.scfgrad(ref_wfn)
-
-    if ref_wfn.basisset().has_ECP():
-        core.print_out("\n\n  ==> Adding ECP gradient terms (computed numerically) <==\n")
-        # Build a map of atom->ECP number
-        old_print = ref_wfn.get_print()
-        ref_wfn.set_print(0)
-        delta = 0.0001
-        natom = ref_wfn.molecule().natom()
-        mints = core.MintsHelper(ref_wfn)
-        ecpgradmat = core.Matrix("ECP Gradient", natom, 3)
-        ecpgradmat.zero()
-        ecpgrad = np.asarray(ecpgradmat)
-        Dmat = ref_wfn.Da_subset("AO")
-        Dmat.add(ref_wfn.Db_subset("AO"))
-        def displaced_energy(atom, displacement):
-            mints.basisset().move_atom(atom, displacement)
-            E = Dmat.vector_dot(mints.ao_ecp())
-            mints.basisset().move_atom(atom, -1*displacement)
-            return E
-
-        for atom in range(natom):
-            for xyz in range(3):
-                transvec = core.Vector3(0.0)
-                transvec[xyz] += delta
-                # +1 displacement
-                Ep1 = displaced_energy(atom,  1*transvec)
-                # -1 displacement
-                Em1 = displaced_energy(atom, -1*transvec)
-                # +2 displacement
-                Ep2 = displaced_energy(atom,  2*transvec)
-                # -2 displacement
-                Em2 = displaced_energy(atom, -2*transvec)
-                # Evaluate
-                ecpgrad[atom, xyz] = (Em2 + 8*Ep1 - 8*Em1 - Ep2) / (12*delta)
-        ecpgradmat.symmetrize_gradient(ref_wfn.molecule())
-        ecpgradmat.print_atom_vector()
-        grad.add(ecpgradmat)
-        grad.print_atom_vector()
-        ref_wfn.set_print(old_print)
 
     ref_wfn.set_gradient(grad)
 

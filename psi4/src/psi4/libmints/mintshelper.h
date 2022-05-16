@@ -286,8 +286,10 @@ class PSI_API MintsHelper {
     SharedMatrix ao_potential();
     SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO ECP Integrals
+#ifdef USING_ecpint
     SharedMatrix ao_ecp();
     SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+#endif
     /// AO pVp Integrals
     SharedMatrix ao_pvp();
     /// AO DKH Integrals
@@ -322,7 +324,9 @@ class PSI_API MintsHelper {
     /// SO Kinetic Integrals
     SharedMatrix so_kinetic(bool include_perturbations = true);
     /// SO ECP Integrals
+#ifdef USING_ecpint
     SharedMatrix so_ecp();
+#endif
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
     /// Vector SO Dipole Integrals
@@ -355,11 +359,19 @@ class PSI_API MintsHelper {
     SharedMatrix three_idx_grad(const std::string& aux_name, const std::string& intermed_name,
                                 const std::string& gradient_name);
 
+    // Computes the gradient due to the kinetic energy term of the core Hamiltonian
     SharedMatrix kinetic_grad(SharedMatrix D);
+    // Computes the gradient due to the potential energy term of the core Hamiltonian
     SharedMatrix potential_grad(SharedMatrix D);
+    // Computes the electric dipole derivatives
     SharedMatrix dipole_grad(SharedMatrix D);
     SharedMatrix multipole_grad(SharedMatrix D, int order, const std::vector<double>& origin = {0.0, 0.0, 0.0});
+    // Computes the gradient due to external dipole perturbation
     SharedMatrix perturb_grad(SharedMatrix D);
+    // Computes the gradient due to ECPs in the basis set
+#ifdef USING_ecpint
+    SharedMatrix effective_core_potential_grad(SharedMatrix D);
+#endif
 
     /// Play function
     void play();

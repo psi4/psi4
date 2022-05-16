@@ -47,6 +47,9 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
+#ifdef USING_ecpint
+#include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/molecule.h"
@@ -422,7 +425,9 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::unique_ptr<OneBodyAOInt> S_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_overlap());
     std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
     std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
-    std::unique_ptr<OneBodyAOInt> ECP_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_ecp());
+#ifdef USING_ecpint
+    auto ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp()));
+#endif
 
     // Compute overlap S and orthogonalizer X;
     SharedMatrix S(mat.create_matrix("Overlap Matrix"));
@@ -442,17 +447,23 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     T_ints->compute(T);
     SharedMatrix V(mat.create_matrix("V"));
     V_ints->compute(V);
+#ifdef USING_ecpint
     SharedMatrix ECP(mat.create_matrix("ECP"));
     ECP_ints->compute(ECP);
+#endif
     SharedMatrix H(mat.create_matrix("Core Hamiltonian Matrix H"));
     H->zero();
     H->add(T);
     H->add(V);
+#ifdef USING_ecpint
     H->add(ECP);
+#endif
 
     T.reset();
     V.reset();
+#ifdef USING_ecpint
     ECP.reset();
+#endif
 
     if (print_ > 6) {
         H->print();

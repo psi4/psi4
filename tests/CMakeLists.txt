@@ -28,7 +28,7 @@
 #  In order to ensure that this works properly, please add your tests to the
 #  appropriate variables given below
 
-foreach(test_name adc1 adc2 aediis-1 aediis-2
+foreach(test_name adc1 adc2 aediis-1
                   casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
                   castup2 castup3 cbs-delta-energy cbs-parser cbs-xtpl-alpha cbs-xtpl-energy
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func cbs-xtpl-nbody
@@ -44,7 +44,7 @@ foreach(test_name adc1 adc2 aediis-1 aediis-2
                   dct-grad3 dct-grad4 dct1 dct2 dct3 dct4 dct5 dct6 dct7 dct8 dct9
                   dct10 dct11 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp 
 		           dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
-                  dfccsd-t-grad1 dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-ecp dfmp2-fc
+                  dfccsd-t-grad1 dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-fc
                   dfmp2-grad1 dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
@@ -83,9 +83,9 @@ foreach(test_name adc1 adc2 aediis-1 aediis-2
                   pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1
                   pywrap-db3
                   pywrap-molecule rasci-c2-active rasci-h2o
-                  rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
+                  rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc
                   sapt-exch-disp-inf sapt-exch-ind-inf sapt-exch-ind30-inf
-                  sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
+                  sapt7 sapt8 scf-bz2 scf-dipder scf-guess scf-guess-read1 scf-upcast-custom-basis
                   scf-guess-read2 scf-guess-read3 scf1 scf-occ scf2 scf3 scf4 scf5 scf6
                   scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
                   scf-property soscf-large soscf-ref
@@ -97,7 +97,7 @@ foreach(test_name adc1 adc2 aediis-1 aediis-2
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5 tdscf-6 tdscf-7
-                  basis-ecp dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
+                  dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
                   linK-1 linK-2 linK-3
                   cbs-xtpl-energy-conv
                   )
@@ -264,6 +264,18 @@ endif()
 if(ENABLE_BrianQC)
     add_subdirectory(brianqc)
     message(STATUS "Adding test cases: Psi4 + BrianQC")
+endif()
+
+# <<<  ECPINT  >>>
+if(ENABLE_ecpint)
+    add_subdirectory(aediis-2)
+    add_subdirectory(basis-ecp)
+    add_subdirectory(dfmp2-ecp)
+    add_subdirectory(sapt-ecp)
+    add_subdirectory(scf-ecp)
+    add_subdirectory(scf-ecp2)
+    add_subdirectory(scf-ecp3)
+    message(STATUS "Adding test cases: Psi4 + ecpint")
 endif()
 
 # plugin regime

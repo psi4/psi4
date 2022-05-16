@@ -46,7 +46,9 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/potentialint.h"
+#ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/erd_eri.h"
 
@@ -113,11 +115,21 @@ OneBodySOInt* IntegralFactory::so_potential(int deriv) {
     return new PotentialSOInt(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_ecp(int deriv) { return new ECPInt(spherical_transforms_, bs1_, bs2_, deriv); }
+OneBodyAOInt* IntegralFactory::ao_ecp(int deriv) {
+#ifdef USING_ecpint
+    return new ECPInt(spherical_transforms_, bs1_, bs2_, deriv);
+#else
+    throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
+#endif
+}
 
 OneBodySOInt* IntegralFactory::so_ecp(int deriv) {
+#ifdef USING_ecpint
     std::shared_ptr<OneBodyAOInt> ao_int(ao_ecp(deriv));
     return new ECPSOInt(ao_int, this);
+#else
+    throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
+#endif
 }
 
 OneBodyAOInt* IntegralFactory::ao_rel_potential(int deriv) {

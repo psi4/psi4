@@ -141,6 +141,9 @@ std::shared_ptr<BasisSet> construct_basisset_from_pydict(const std::shared_ptr<M
     // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
     int totalncore = 0;
     if (pybs.contains("ecp_shell_map")) {
+#ifndef USING_ecpint
+        throw PSIEXCEPTION("BasisSet contains ECP shells but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
+#endif
         py::list ecpbasisinfo = pybs["ecp_shell_map"].cast<py::list>();
         for (int atom = 0; atom < py::len(ecpbasisinfo); ++atom) {
             std::vector<ShellInfo> vec_shellinfo;
@@ -1430,9 +1433,11 @@ void export_mints(py::module& m) {
         .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
         .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
              "include_perturbations"_a = true)
+#ifdef USING_ecpint
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("so_ecp", &MintsHelper::so_ecp, "SO basis effective core potential integrals.")
+#endif
 
         // One-electron properties and
         .def("ao_pvp", &MintsHelper::ao_pvp, "AO pvp integrals")

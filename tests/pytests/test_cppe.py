@@ -480,15 +480,18 @@ def test_cppe_tdscf_uhf():
 
 
 @pytest.mark.quick
+@pytest.mark.ecp
+@uusing("ecpint")
+@uusing("cppe")
 @pytest.mark.parametrize("inp", [
     pytest.param({
         'potname': 'h2o_spillout',
         "ref": -169.106418687201
-    }, id='h2o', marks=using('cppe')),
+    }, id='h2o'),
     pytest.param({
         'potname': 'h2s_spillout',
         "ref": -169.104593047406
-    }, id='h2s', marks=using('cppe')),
+    }, id='h2s'),
 ])
 def test_cppe_pe_ecp(inp):
     mol = psi4.geometry(__geoms['formamide'])
@@ -503,7 +506,7 @@ def test_cppe_pe_ecp(inp):
         'pe__pe_ecp': True,
     })
     scf_energy, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
-    assert compare_values(inp["ref"], scf_energy, 9, "Total PE-SCF Energy with PE(ECP)")
+    assert compare_values(inp["ref"], scf_energy, 7, "Total PE-SCF Energy with PE(ECP)")
 
 
 @pytest.mark.quick

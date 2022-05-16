@@ -280,7 +280,9 @@ are available pre-built from conda.
 
 .. * :ref:`erd <cmake:erd>` |w---w| :ref:`[what is this?] <sec:erd>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/erd/CMakeLists.txt#L2>`_
 
-  * :ref:`Fortran Compiler <cmake:fortran>`
+..  * :ref:`Fortran Compiler <cmake:fortran>`
+
+* :ref:`ecpint <cmake:ecpint>` |w---w| :ref:`[what is ecpint?] <sec:ecpint>` :source:`[ecpint min version] <external/upstream/ecpint/CMakeLists.txt/#L2>`
 
 * :ref:`dkh <cmake:dkh>` |w---w| :ref:`[what is dkh?] <sec:dkh>` :source:`[dkh min version] <external/upstream/dkh/CMakeLists.txt#L2>`
 

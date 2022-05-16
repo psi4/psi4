@@ -44,6 +44,9 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
+#ifdef USING_ecpint
+#include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/liboptions/liboptions.h"
@@ -491,6 +494,108 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
             psio_->write(PSIF_HESS, "Tpi^A", (char*)Tpip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Tpi,
                          &next_Tpi);
         }
+    }
+
+    if (basisset_->has_ECP()) {
+    // => ECP <= //
+#ifdef USING_ecpint
+    {
+        // Effective core potential derivatives
+        std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(1)));
+
+        auto Emix = std::make_shared<Matrix>("Emix", nso, nocc);
+        auto Emiy = std::make_shared<Matrix>("Emiy", nso, nocc);
+        auto Emiz = std::make_shared<Matrix>("Emiz", nso, nocc);
+        double** Emixp = Emix->pointer();
+        double** Emiyp = Emiy->pointer();
+        double** Emizp = Emiz->pointer();
+
+        // Make a list of all ECP centers
+        std::set<int> ecp_centers;
+        for (int ecp_shell = 0; ecp_shell < basisset_->n_ecp_shell(); ++ecp_shell){
+            const GaussianShell &ecp = basisset_->ecp_shell(ecp_shell);
+            ecp_centers.insert(ecp.ncenter());
+        }
+
+        auto Epi = std::make_shared<Matrix>("Epi", nmo, nocc);
+        double** Epip = Epi->pointer();
+        psio_address next_Epi = PSIO_ZERO;
+
+
+        for (int A = 0; A < natom; A++) {
+            Emix->zero();
+            Emiy->zero();
+            Emiz->zero();
+            const auto& shell_pairs = ecpint->shellpairs();
+            size_t n_pairs = shell_pairs.size();
+
+            for (size_t p = 0; p < n_pairs; ++p) {
+                auto P = shell_pairs[p].first;
+                auto Q = shell_pairs[p].second;
+                const auto & shellP = basisset_->shell(P);
+                const auto & shellQ = basisset_->shell(Q);
+                int aP = shellP.ncenter();
+                int aQ = shellQ.ncenter();
+
+                // Make a list of all ECP centers and the current basis function pair
+                std::set<int> all_centers(ecp_centers.begin(), ecp_centers.end());
+                all_centers.insert(aP);
+                all_centers.insert(aQ);
+                if (all_centers.find(A) == all_centers.end()) continue;
+
+                ecpint->compute_shell_deriv1(P, Q);
+                const auto &buffers = ecpint->buffers();
+                int nP = shellP.nfunction();
+                int nQ = shellQ.nfunction();
+                int oP = shellP.function_index();
+                int oQ = shellQ.function_index();
+                const double* buffer2;
+
+                for (const int center : all_centers) {
+                    double scale = P == Q ? 1.0 : 2.0;
+                    if (center == A) {
+                        // x
+                        buffer2 = buffers[3*center+0];
+                        for (int p = 0; p < nP; p++) {
+                            for (int q = 0; q < nQ; q++) {
+                                C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Emixp[p + oP], 1);
+                                C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Emixp[q + oQ], 1);
+                            }
+                        }
+                        // y
+                        buffer2 = buffers[3*center+1];
+                        for (int p = 0; p < nP; p++) {
+                            for (int q = 0; q < nQ; q++) {
+                                C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Emiyp[p + oP], 1);
+                                C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Emiyp[q + oQ], 1);
+                            }
+                        }
+                        // z
+                        buffer2 = buffers[3*center+2];
+                        for (int p = 0; p < nP; p++) {
+                            for (int q = 0; q < nQ; q++) {
+                                C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Emizp[p + oP], 1);
+                                C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Emizp[q + oQ], 1);
+                            }
+                        }
+                    }
+                }
+            }
+            // Epi_x
+            C_DGEMM('T', 'N', nmo, nocc, nso, 0.5, Cp[0], nmo, Emixp[0], nocc, 0.0, Epip[0], nocc);
+            psio_->write(PSIF_HESS, "Epi^A", (char*)Epip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Epi,
+                         &next_Epi);
+            // Epi_y
+            C_DGEMM('T', 'N', nmo, nocc, nso, 0.5, Cp[0], nmo, Emiyp[0], nocc, 0.0, Epip[0], nocc);
+            psio_->write(PSIF_HESS, "Epi^A", (char*)Epip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Epi,
+                         &next_Epi);
+            // Epi_z
+            C_DGEMM('T', 'N', nmo, nocc, nso, 0.5, Cp[0], nmo, Emizp[0], nocc, 0.0, Epip[0], nocc);
+            psio_->write(PSIF_HESS, "Epi^A", (char*)Epip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Epi,
+                         &next_Epi);
+        }
+    }
+#endif
     }
 
     // => Vpi <= //
@@ -1957,6 +2062,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
         double** Tpip = Tpi->pointer();
         double** Fpip = Fpi->pointer();
 
+        psio_address next_Epi = PSIO_ZERO;
         psio_address next_Tpi = PSIO_ZERO;
         psio_address next_Vpi = PSIO_ZERO;
         psio_address next_Jpi = PSIO_ZERO;
@@ -1969,6 +2075,11 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
             psio_->read(PSIF_HESS, "Vpi^A", (char*)Tpip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Vpi,
                         &next_Vpi);
             Fpi->add(Tpi);
+            if (basisset_->has_ECP()) {
+                psio_->read(PSIF_HESS, "Epi^A", (char*)Tpip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Epi,
+                            &next_Epi);
+                Fpi->add(Tpi);
+            }
             psio_->read(PSIF_HESS, "Gpi^A", (char*)Tpip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Jpi,
                         &next_Jpi);
             Fpi->add(Tpi);
@@ -2374,6 +2485,14 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     // Kinetic derivatives
     kinetic_deriv(Ca, Ca_occ, nso, naocc, navir, true);
     kinetic_deriv(Cb, Cb_occ, nso, nbocc, nbvir, false);
+
+    // Effective core potential derivatives (Epi)
+    if (basisset_->has_ECP()) {
+#ifdef USING_ecpint
+        ecp_deriv(Ca, Ca_occ, nso, naocc, navir, true);
+        ecp_deriv(Cb, Cb_occ, nso, nbocc, nbvir, false);
+#endif
+    }
 
     // Potential derivatives (Vpi)
     potential_deriv(Ca, Ca_occ, nso, naocc, navir, true);
@@ -3160,6 +3279,114 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
         psio_->write(PSIF_HESS,Tpi_str,(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
     }
 }
+
+#ifdef USING_ecpint
+void USCFDeriv::ecp_deriv(std::shared_ptr<Matrix> C, 
+                          std::shared_ptr<Matrix> Cocc,
+                          int nso, int nocc, int nvir, bool alpha)
+{
+    std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(1)));
+    size_t nmo = nocc + nvir;
+    int natom = molecule_->natom();
+
+    double** Cp  = C->pointer();  
+    double** Cop = Cocc->pointer();
+
+    auto Emix = std::make_shared<Matrix>("Emix", nso, nocc);
+    auto Emiy = std::make_shared<Matrix>("Emiy", nso, nocc);
+    auto Emiz = std::make_shared<Matrix>("Emiz", nso, nocc);
+    double** Emixp = Emix->pointer();
+    double** Emiyp = Emiy->pointer();
+    double** Emizp = Emiz->pointer();
+
+    // Make a list of all ECP centers
+    std::set<int> ecp_centers;
+    for (int ecp_shell = 0; ecp_shell < basisset_->n_ecp_shell(); ++ecp_shell){
+        const GaussianShell &ecp = basisset_->ecp_shell(ecp_shell);
+        ecp_centers.insert(ecp.ncenter());
+    }
+
+    auto Epi = std::make_shared<Matrix>("Epi", nmo, nocc);
+    double** Epip = Epi->pointer();
+    psio_address next_Epi = PSIO_ZERO;
+
+
+    for (int A = 0; A < natom; A++) {
+        Emix->zero();
+        Emiy->zero();
+        Emiz->zero();
+        const auto& shell_pairs = ecpint->shellpairs();
+        size_t n_pairs = shell_pairs.size();
+
+        for (size_t p = 0; p < n_pairs; ++p) {
+            auto P = shell_pairs[p].first;
+            auto Q = shell_pairs[p].second;
+            const auto & shellP = basisset_->shell(P);
+            const auto & shellQ = basisset_->shell(Q);
+            int aP = shellP.ncenter();
+            int aQ = shellQ.ncenter();
+
+            // Make a list of all ECP centers and the current basis function pair
+            std::set<int> all_centers(ecp_centers.begin(), ecp_centers.end());
+            all_centers.insert(aP);
+            all_centers.insert(aQ);
+            if (all_centers.find(A) == all_centers.end()) continue;
+
+            ecpint->compute_shell_deriv1(P, Q);
+            const auto &buffers = ecpint->buffers();
+            int nP = shellP.nfunction();
+            int nQ = shellQ.nfunction();
+            int oP = shellP.function_index();
+            int oQ = shellQ.function_index();
+            const double* buffer2;
+
+            for (const int center : all_centers) {
+                double scale = P == Q ? 1.0 : 2.0;
+                if (center == A) {
+                    // x
+                    buffer2 = buffers[3*center+0];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Emixp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Emixp[q + oQ], 1);
+                        }
+                    }
+                    // y
+                    buffer2 = buffers[3*center+1];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Emiyp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Emiyp[q + oQ], 1);
+                        }
+                    }
+                    // z
+                    buffer2 = buffers[3*center+2];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Emizp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Emizp[q + oQ], 1);
+                        }
+                    }
+                }
+            }
+        }
+        auto Epi_str = (alpha) ? "Epi^A_a" : "Epi^A_b";
+        // Epi_x
+        C_DGEMM('T', 'N', nmo, nocc, nso, 0.5, Cp[0], nmo, Emixp[0], nocc, 0.0, Epip[0], nocc);
+        psio_->write(PSIF_HESS, Epi_str, (char*)Epip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Epi,
+                     &next_Epi);
+        // Epi_y
+        C_DGEMM('T', 'N', nmo, nocc, nso, 0.5, Cp[0], nmo, Emiyp[0], nocc, 0.0, Epip[0], nocc);
+        psio_->write(PSIF_HESS, Epi_str, (char*)Epip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Epi,
+                     &next_Epi);
+        // Epi_z
+        C_DGEMM('T', 'N', nmo, nocc, nso, 0.5, Cp[0], nmo, Emizp[0], nocc, 0.0, Epip[0], nocc);
+        psio_->write(PSIF_HESS, Epi_str, (char*)Epip[0], static_cast<size_t>(nmo) * nocc * sizeof(double), next_Epi,
+                     &next_Epi);
+    }
+}
+#endif
+
 void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C, 
                                 std::shared_ptr<Matrix> Cocc,
                                 int nso, int nocc, int nvir, bool alpha)
@@ -4275,12 +4502,14 @@ void USCFDeriv::assemble_Fock(int nocc, int nvir, bool alpha)
     psio_address next_Vpi = PSIO_ZERO;
     psio_address next_Jpi = PSIO_ZERO;
     psio_address next_Fpi = PSIO_ZERO;
+    psio_address next_Epi = PSIO_ZERO;
     psio_address next_VXCpi = PSIO_ZERO;
 
 
     auto T_str = (alpha) ? "Tpi^A_a" : "Tpi^A_b";
     auto V_str = (alpha) ? "Vpi^A_a" : "Vpi^A_b";
     auto G_str = (alpha) ? "Gpi^A_a" : "Gpi^A_b";
+    auto E_str = (alpha) ? "Epi^A_a" : "Epi^A_b";
     auto VXC_str = (alpha) ? "VXCpi^A_a" : "VXCpi^A_b";
     auto F_str = (alpha) ? "Fpi^A_a" : "Fpi^A_b";
 
@@ -4290,6 +4519,10 @@ void USCFDeriv::assemble_Fock(int nocc, int nvir, bool alpha)
         psio_->read(PSIF_HESS,T_str,(char*)Fpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
         psio_->read(PSIF_HESS,V_str,(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
         Fpi->add(Tpi);
+        if (basisset_->has_ECP()) {
+            psio_->read(PSIF_HESS,E_str,(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Epi,&next_Epi);
+            Fpi->add(Tpi);
+        }
         psio_->read(PSIF_HESS,G_str,(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Jpi,&next_Jpi);
         Fpi->add(Tpi);
         if (functional_->needs_xc()) {
