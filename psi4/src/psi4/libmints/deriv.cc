@@ -545,9 +545,11 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     }
 
     // Initialize an ERI object requesting derivatives.
-    std::vector<std::shared_ptr<TwoBodyAOInt> > ao_eri;
-    for (int i = 0; i < Process::environment.get_n_threads(); ++i)
-        ao_eri.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
+    int nthread = Process::environment.get_n_threads();
+    std::vector<std::shared_ptr<TwoBodyAOInt> > ao_eri(nthread);
+    ao_eri[0] = std::shared_ptr<TwoBodyAOInt>(integral_->eri(1));
+    for (int i = 1; i < nthread; ++i)
+        ao_eri[i] = std::shared_ptr<TwoBodyAOInt>(ao_eri.front()->clone());
     TwoBodySOInt so_eri(ao_eri, integral_, cdsalcs_);
 
     // A certain optimization can be used if we know we only need totally symmetric

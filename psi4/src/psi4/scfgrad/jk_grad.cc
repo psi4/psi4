@@ -304,9 +304,10 @@ void DFJKGrad::build_Amn_terms() {
     // => Integrals <= //
 
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(df_ints_num_threads_);
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    for (int t = 1; t < df_ints_num_threads_; t++) {
+        eri[t] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     const std::vector<std::pair<int, int>>& shell_pairs = eri[0]->shell_pairs();
@@ -878,12 +879,16 @@ void DFJKGrad::build_Amn_x_terms() {
     // => Integrals <= //
 
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
-    std::vector<std::shared_ptr<TwoBodyAOInt>> omega_eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(df_ints_num_threads_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> omega_eri(df_ints_num_threads_);
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1));
+    if (do_wK_) {
+        omega_eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_, 1));
+    }
+    for (int t = 1; t < df_ints_num_threads_; t++) {
+        eri[t] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
         if (do_wK_) {
-            omega_eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_, 1)));
+            omega_eri[t] = std::shared_ptr<TwoBodyAOInt>(omega_eri.front()->clone());
         }
     }
 
