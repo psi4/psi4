@@ -50,19 +50,19 @@ using namespace psi;
 
 namespace psi {
 
-Matrix compute_numeric_overlap(const std::shared_ptr<DFTGrid> &grid, const std::shared_ptr<BasisSet> &primary) {
+Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisSet> &primary) {
 
     // DOI 10.1063/1.3646921, EQ. 9
 
     int nbf = primary->nbf();
-    BasisFunctions bf_computer(primary, grid->max_points(), grid->max_functions());
+    BasisFunctions bf_computer(primary, grid.max_points(), grid.max_functions());
     Matrix S_num("Numerical Overlap", nbf, nbf);
     auto S_nump = S_num.pointer();
 
     // This loop could be parallelized over blocks of grid points. However, the cost of the loop is
     // so small (< 10 seconds for a 200 heavy atom system), parallelism isn't necessary
 
-    for (const auto &block : grid->blocks()) {
+    for (const auto &block : grid.blocks()) {
 
         // grid points in this block
         int npoints_block = block->npoints();
@@ -104,35 +104,35 @@ Matrix compute_numeric_overlap(const std::shared_ptr<DFTGrid> &grid, const std::
 
 }
 
-SharedMatrix compute_esp_bound(std::shared_ptr<BasisSet> primary) {
+Matrix compute_esp_bound(const BasisSet &primary) {
 
     // DOI 10.1016/j.chemphys.2008.10.036, EQ. 20
     // This is a pretty loose ESP bound, which should eventually be swapped out for something tighter
     // The bound is also only based on the overlap between the basis functions, not the distance 
     // between the basis functions and the grid point.
 
-    int nshell = primary->nshell();
+    int nshell = primary.nshell();
 
-    auto esp_bound = std::make_shared<Matrix>("Shell Integral Bound", nshell, nshell);
-    auto esp_boundp = esp_bound->pointer();
+    Matrix esp_bound("Shell Integral Bound", nshell, nshell);
+    auto esp_boundp = esp_bound.pointer();
 
-    auto dist = primary->molecule()->distance_matrix();
+    auto dist = primary.molecule()->distance_matrix();
     auto distp = dist.pointer();
 
     for (size_t s1=0; s1 < nshell; s1++) {
-        int c1 = primary->shell_to_center(s1);
-        int np1 = primary->shell(s1).nprimitive();
+        int c1 = primary.shell_to_center(s1);
+        int np1 = primary.shell(s1).nprimitive();
         for (size_t s2=0; s2 < nshell; s2++) {
-            int c2 = primary->shell_to_center(s2);
-            int np2 = primary->shell(s2).nprimitive();
+            int c2 = primary.shell_to_center(s2);
+            int np2 = primary.shell(s2).nprimitive();
 
             double r2 = distp[c1][c2] * distp[c1][c2] ;
             for(size_t pi1 = 0; pi1 < np1; pi1++) {
                 for(size_t pi2 = 0; pi2 < np2; pi2++) {
-                    double exp1 = primary->shell(s1).exp(pi1);
-                    double exp2 = primary->shell(s2).exp(pi2);
-                    double coef1 = primary->shell(s1).coef(pi1);
-                    double coef2 = primary->shell(s2).coef(pi2);
+                    double exp1 = primary.shell(s1).exp(pi1);
+                    double exp2 = primary.shell(s2).exp(pi2);
+                    double coef1 = primary.shell(s1).coef(pi1);
+                    double coef2 = primary.shell(s2).coef(pi2);
                     esp_boundp[s1][s2] += coef1 * coef2 * std::exp(-1 * r2 * exp1 * exp2 / (exp1 + exp2)) * 2 * M_PI / (exp1 + exp2);
                 }
             }
@@ -177,7 +177,7 @@ void DFJCOSK::common_init() {
     // pre-construct per-thread TwoBodyAOInt objects for computing 3-index ERIs
     timer_on("ERI Computers");
     eri_computers_.resize(nthreads_);
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    auto zero = BasisSet::zero_ao_basis_set();
     IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
     eri_computers_[0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
     for(int rank = 1; rank < nthreads_; rank++) {
@@ -251,8 +251,8 @@ void DFJCOSK::common_init() {
     timer_on("Numeric Overlap");
 
     // compute the numeric overlap matrix for each grid
-    auto S_num_init = compute_numeric_overlap(grid_init_, primary_);
-    auto S_num_final = compute_numeric_overlap(grid_final_, primary_ );
+    auto S_num_init = compute_numeric_overlap(*grid_init_, primary_);
+    auto S_num_final = compute_numeric_overlap(*grid_final_, primary_ );
 
     timer_off("Numeric Overlap");
 
@@ -613,15 +613,8 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
     // use a small DFTGrid grid (and overlap metric) for early SCF iterations
     // otherwise use a large DFTGrid
-    std::shared_ptr<DFTGrid> grid;
-    SharedMatrix Q;
-    if(early_screening_) {
-        grid = grid_init_;
-        Q = Q_init_;
-    } else {
-        grid = grid_final_;
-        Q = Q_final_;
-    }
+    auto grid = early_screening_ ? grid_init_ : grid_final_;
+    auto Q = early_screening_ ? Q_init_ : Q_final_;
 
     // => Initialization <= //
 
@@ -645,8 +638,8 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
     }
 
     // precompute bounds for the one-electron integrals
-    auto esp_bound = compute_esp_bound(primary_);
-    auto esp_boundp = esp_bound->pointer();
+    auto esp_bound = compute_esp_bound(*primary_);
+    auto esp_boundp = esp_bound.pointer();
 
     // inter-atom and inter-shell distances [Bohr]
     auto dist = primary_->molecule()->distance_matrix();
