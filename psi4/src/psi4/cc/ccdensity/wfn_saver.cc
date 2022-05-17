@@ -104,18 +104,13 @@ void density_saver(ccenergy::CCEnergyWavefunction& wfn, struct RHO_Params *S, co
         throw PSIEXCEPTION("Unknown wfn type");
     }
 
-    if (suffix != "Da" and suffix != "Db") {
-        throw PSIEXCEPTION("Unknown spin type.");
-    }
-    std::map<std::string, SharedMatrix>& density_map = (suffix == "Da") ? wfn.Da_map_ : wfn.Db_map_;
-
     for (const auto name: names) {
         auto varname = name + " ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") " + suffix;
-        density_map[varname] = val;
+        wfn.density_map_[varname] = val;
         varname = name + " ROOT " + std::to_string(total_idx) + " " + suffix;
-        density_map[varname] = val;
+        wfn.density_map_[varname] = val;
         varname = name + " ROOT " + std::to_string(total_idx) + " " + suffix + " - " + trans_irr_lbl + " TRANSITION";
-        density_map[varname] = val;
+        wfn.density_map_[varname] = val;
     }
 }
 

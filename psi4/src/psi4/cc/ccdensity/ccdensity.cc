@@ -395,7 +395,7 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
                 auto ref_Da_so = ref_wfn->Da();
                 ref_Da_so->copy(Pa_so);
             } else {
-                density_saver(*ref_wfn, &(rho_params[i]), "Da", Pa_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "ALPHA", Pa_so);
             }
         } else {
             auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa_x, ref_wfn->Ca(), false, false, true);
@@ -406,8 +406,8 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
                 ref_Da_so->copy(Pa_so);
                 ref_Db_so->copy(Pb_so);
             } else {
-                density_saver(*ref_wfn, &(rho_params[i]), "Da", Pa_so);
-                density_saver(*ref_wfn, &(rho_params[i]), "Db", Pb_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "ALPHA", Pa_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "BETA", Pb_so);
             }
         }
 
