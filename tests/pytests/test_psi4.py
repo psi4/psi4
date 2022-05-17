@@ -160,6 +160,7 @@ def test_psi4_sapt():
 
     psi4.set_options({
         "basis": "cc-pvdz",
+        "df_basis_elst": "cc-pvdz-ri",
         "guess": "sad",
         "scf_type": "df",
         "sad_print": 2,

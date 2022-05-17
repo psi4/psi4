@@ -70,6 +70,7 @@ my %ExeFolder = (
    "psi4numpy/" => "psi4numpy",
    "python/"    => "python",
    "brianqc/"   => "brianqc",
+   "dftd4/"     => "dftd4",
 );
 
 foreach my $exe (keys %ExeFolder) {
@@ -102,6 +103,7 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^json$/;
     next if $File =~ /^psi4numpy$/;
     next if $File =~ /^brianqc$/;
+    next if $File =~ /^dftd4$/;
     next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
 }

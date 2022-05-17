@@ -35,6 +35,7 @@ set {
     d_convergence 11
     puream        true
     print         1
+    df_basis_elst cc-pvdz-ri
 }
 
 energy('sapt0', molecule=ethene_ethyne)

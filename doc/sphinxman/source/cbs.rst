@@ -197,7 +197,7 @@ Basis set extrapolations are encoded into individual functions like the built-in
 .. autofunction:: psi4.driver.driver_cbs._get_default_xtpl
 
 Additional extrapolation schemes are easy to define by the
-user. Follow models in :src:`psi4/driver/driver_cbs_helper.py`
+user. Follow models in :source:`psi4/driver/driver_cbs_helper.py`
 and :srcsample:`pywrap-cbs1` and use the
 :py:func:`psi4.driver.driver_cbs_helper.register_xtpl_function` to make
 user-defined functions known to |PSIfour|.
@@ -218,7 +218,7 @@ Some existing examples are below.
 .. autofunction:: psi4.driver.aliases.allen_focal_point
 
 Additional composite aliases are easy to define by the
-user. Follow models in :src:`psi4/driver/aliases.py`
+user. Follow models in :source:`psi4/driver/aliases.py`
 and :srcsample:`cbs-xtpl-nbody` and use the
 :py:func:`psi4.driver.driver_cbs_helper.register_composite_function`
 to make user-defined functions known to |PSIfour|.

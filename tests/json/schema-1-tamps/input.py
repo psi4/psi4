@@ -1,3 +1,5 @@
+#! test QCSchema for CCSD amplitudes saving
+
 import numpy as np
 import psi4
 import json

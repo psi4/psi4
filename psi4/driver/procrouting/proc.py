@@ -4409,12 +4409,10 @@ def run_sapt(name, **kwargs):
     aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT", core.get_global_option("DF_BASIS_SAPT"),
                                     "RIFIT", core.get_global_option("BASIS"))
     dimer_wfn.set_basisset("DF_BASIS_SAPT", aux_basis)
-    if core.get_global_option("DF_BASIS_ELST") == "":
-        dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
-    else:
-        aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST", core.get_global_option("DF_BASIS_ELST"),
-                                        "RIFIT", core.get_global_option("BASIS"))
-        dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
+
+    aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST", core.get_global_option("DF_BASIS_ELST"),
+                                    "JKFIT", core.get_global_option("BASIS"))
+    dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
 
     core.print_out('\n')
     p4util.banner(name.upper())

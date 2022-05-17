@@ -37,6 +37,7 @@ import numpy as np
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)
 nppp10 = partial(np.array_str, max_line_width=120, precision=10, suppress_small=True)
+del partial
 
 from qcelemental import constants
 from psi4.driver import psifiles as psif

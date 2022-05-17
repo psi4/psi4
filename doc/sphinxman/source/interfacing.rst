@@ -50,6 +50,7 @@ platform capabilities, *etc*.
    cppe
    dftd3
    dkh
+   ecpint
    libefp
    erd
    fchk

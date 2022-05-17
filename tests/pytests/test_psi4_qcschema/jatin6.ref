@@ -152,6 +152,7 @@
   },
   "keywords": {
     "d_convergence": 1e-11,
+    "df_basis_elst": "cc-pVDZ-RI",
     "guess": "SAD",
     "print": 1,
     "puream": 1,
