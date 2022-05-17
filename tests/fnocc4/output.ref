@@ -1,27 +1,40 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 undefined 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {fnocc} c29823f dirty
 
 
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, and A. Jiang
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:36PM
+    Psi4 started on: Wednesday, 04 May 2022 09:51PM
 
-    Process ID:  14486
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID: 42626
+    Host:       Jonathons-MacBook-Pro.local
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -48,18 +61,80 @@ set {
   occ_tolerance       1e-4
   scf_type cd
   cc_type cd
+  docc 5
 }
 energy('ccsd(t)')
-edfccsd  = get_variable("CCSD CORRELATION ENERGY")
-edfccsdt = get_variable("CCSD(T) CORRELATION ENERGY")
+edfccsd  = variable("CCSD CORRELATION ENERGY")
+edfccsdt = variable("CCSD(T) CORRELATION ENERGY")
 
 refscf   = -76.03568944758564 #TEST
 refccsd  = -0.230820828839    #TEST
 refccsdt = -0.236177474967    #TEST
 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 8, "SCF energy")  #TEST
 compare_values(refccsd, edfccsd, 8, "DF-CCSD correlation energy")          #TEST 
 compare_values(refccsdt, edfccsdt, 8, "DF-CCSD(T) correlation energy")     #TEST 
+
+MP2_AA = psi4.core.Matrix.from_list([                                              # TEST
+    [ 0.00000000000000, -0.00428398478272, -0.00419570592503, -0.00430641391483],  # TEST
+    [-0.00428398478272,  0.00000000000000, -0.01396452488975, -0.01477587852741],  # TEST
+    [-0.00419570592503, -0.01396452488975,  0.00000000000000, -0.01514257170829],  # TEST
+    [-0.00430641391483, -0.01477587852741, -0.01514257170829,  0.00000000000000]]) # TEST
+MP2_AB = psi4.core.Matrix.from_list([                                              # TEST
+    [-0.00920558388349, -0.01503064230884, -0.01247437691960, -0.01249609327967],  # TEST
+    [-0.01503064230884, -0.02086763069309, -0.02150550984680, -0.01769376267564],  # TEST
+    [-0.01247437691960, -0.02150550984680, -0.01928028171317, -0.01903616354256],  # TEST
+    [-0.01249609327967, -0.01769376267564, -0.01903616354256, -0.01888836910298]]) # TEST
+CC_AA = psi4.core.Matrix.from_list([                                               # TEST
+    [ 0.00000000000000, -0.00355325408348, -0.00358389639617, -0.00365479361718],  # TEST
+    [-0.00355325408348, -0.00000000000000, -0.01222161746842, -0.01311838524115],  # TEST
+    [-0.00358389639617, -0.01222161746842, -0.00000000000000, -0.01350166123234],  # TEST
+    [-0.00365479361718, -0.01311838524115, -0.01350166123234,  0.00000000000000]]) # TEST
+CC_AB = psi4.core.Matrix.from_list([                                               # TEST
+    [-0.01028999575996, -0.01755171682158, -0.01438899948556, -0.01424600571311],  # TEST
+    [-0.01755171682158, -0.02315756485360, -0.02282862604693, -0.01781214608581],  # TEST
+    [-0.01438899948556, -0.02282862604693, -0.02115512456820, -0.01927033525107],  # TEST
+    [-0.01424600571311, -0.01781214608581, -0.01927033525107, -0.02048670587858]]) # TEST
+compare_values(MP2_AA, variable("MP2 ALPHA-ALPHA PAIR ENERGIES"), 6, "MP2 pair energies")  #TEST
+compare_values(MP2_AB, variable("MP2 ALPHA-BETA PAIR ENERGIES"), 6, "MP2 pair energies")  #TEST
+compare_values(CC_AA, variable("CC ALPHA-ALPHA PAIR ENERGIES"), 6, "CC pair energies")  #TEST
+compare_values(CC_AB, variable("CC ALPHA-BETA PAIR ENERGIES"), 6, "CC pair energies")  #TEST
+
+# Verify pair energies for no natural orbitals.
+set nat_orbs false
+
+energy('ccsd')
+
+CC_AA = psi4.core.Matrix.from_list([                                               # TEST
+    [-0.00000000000000, -0.00355379712454, -0.00358451923023, -0.00365634304187],  # TEST
+    [-0.00355379712454, -0.00000000000000, -0.01222425439601, -0.01311878137478],  # TEST
+    [-0.00358451923023, -0.01222425439601,  0.00000000000000, -0.01350117726968],  # TEST
+    [-0.00365634304187, -0.01311878137478, -0.01350117726968, -0.00000000000000]]) # TEST
+CC_AB = psi4.core.Matrix.from_list([                                               # TEST
+    [-0.01029665497950, -0.01754100889471, -0.01438482159887, -0.01425347793138],  # TEST
+    [-0.01754100889471, -0.02310833912592, -0.02278359107810, -0.01780363338693],  # TEST
+    [-0.01438482159887, -0.02278359107810, -0.02113799784891, -0.01926310603607],  # TEST
+    [-0.01425347793138, -0.01780363338693, -0.01926310603607, -0.02048597205351]]) # TEST
+compare_values(MP2_AA, variable("MP2 ALPHA-ALPHA PAIR ENERGIES"), 6, "MP2 pair energies")  #TEST
+compare_values(MP2_AB, variable("MP2 ALPHA-BETA PAIR ENERGIES"), 6, "MP2 pair energies")  #TEST
+compare_values(CC_AA, variable("CC ALPHA-ALPHA PAIR ENERGIES"), 6, "CC pair energies")  #TEST
+compare_values(CC_AB, variable("CC ALPHA-BETA PAIR ENERGIES"), 6, "CC pair energies")  #TEST
+ref3MP2 = MP2_AA.clone()                                # TEST
+ref3MP2.scale(1.5)                                      # TEST
+ref3CC = CC_AA.clone()                                  # TEST
+ref3CC.scale(1.5)                                       # TEST
+ref1MP2 = MP2_AB.clone()                                # TEST
+ref1MP2.scale(2)                                        # TEST
+ref1MP2.axpy(-1/2, MP2_AA)                              # TEST
+ref1MP2.np[np.diag_indices_from(ref1MP2.np)] *= 1/2     # TEST
+ref1CC = CC_AB.clone()                                  # TEST
+ref1CC.scale(2)                                         # TEST
+ref1CC.axpy(-1/2, CC_AA)                                # TEST
+ref1CC.np[np.diag_indices_from(ref1CC.np)] *= 1/2       # TEST
+compare_values(ref1MP2, variable("MP2 SINGLET PAIR ENERGIES"), 5, "MP2 Singlet Pairs") # TEST
+compare_values(ref1CC, variable("CC SINGLET PAIR ENERGIES"), 5, "CC Singlet Pairs") # TEST
+compare_values(ref3MP2, variable("MP2 TRIPLET PAIR ENERGIES"), 5, "MP2 Triplet Pairs") # TEST
+compare_values(ref3CC, variable("CC TRIPLET PAIR ENERGIES"), 5, "CC Triplet Pairs") # TEST
 
 # verify that DFCC and DFMP2 give the same MP2 results
 set scf_type df
@@ -72,30 +147,33 @@ set fnocc {
     r_convergence 1e1
 }
 energy('ccsd')
-emp2    = get_variable("MP2 CORRELATION ENERGY")
+emp2    = variable("MP2 CORRELATION ENERGY")
 clean()
 energy('mp2')
-emp2_2  = get_variable("MP2 CORRELATION ENERGY")
+emp2_2  = variable("MP2 CORRELATION ENERGY")
 compare_values(emp2, emp2_2, 8, "MP2 correlation energy (DFMP2 vs. DFCC)")     #TEST 
 
 clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on psinet
-*** at Mon May 15 15:36:58 2017
+Scratch directory: /tmp/
+
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:51:54 2022
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   243 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1   entry O          line   254 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    40 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -109,15 +187,15 @@ clean()
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
-           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
-           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+         O            0.000000000000     0.000000000000    -0.068516219320    15.994914619570
+         H            0.000000000000    -0.790689573744     0.543701060715     1.007825032230
+         H            0.000000000000     0.790689573744     0.543701060715     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
-  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
-  Nuclear repulsion =    8.801465529972067
+  Rotational constants: A = 753245.07149  B = 401042.16706  C = 261705.25473 [MHz]
+  Nuclear repulsion =    8.801465564567374
 
   Charge       = 0
   Multiplicity = 1
@@ -134,27 +212,17 @@ clean()
   Guess Type is SAD.
   Energy threshold   = 1.00e-12
   Density threshold  = 1.00e-12
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: AUG-CC-PVDZ
     Blend: AUG-CC-PVDZ
     Number of shells: 19
-    Number of basis function: 41
+    Number of basis functions: 41
     Number of Cartesian functions: 43
     Spherical Harmonics?: true
     Max angular momentum: 2
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         41      41       0       0       0       0
-   -------------------------------------------------------
-    Total      41      41       5       5       5       0
-   -------------------------------------------------------
 
   ==> Integral Setup <==
 
@@ -165,48 +233,60 @@ clean()
     wK tasked:                     No
     OpenMP threads:                 1
     Integrals threads:              1
-    Memory (MB):                  375
+    Memory [MiB]:                 375
     Algorithm:                   Core
     Integral Cache:              SAVE
     Schwarz Cutoff:             1E-12
     Cholesky tolerance:      1.00E-12
     No. Cholesky vectors:         644
 
-  Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
-  Using Symmetric Orthogonalization.
+  Minimum eigenvalue in the overlap matrix is 3.1766171140E-03.
+  Reciprocal condition number of the overlap matrix is 5.6487997342E-04.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         41      41 
+   -------------------------
+    Total      41      41
+   -------------------------
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -76.01288454222311   -7.60129e+01   3.87182e-02 
-   @RHF iter   1:   -75.98486143688409    2.80231e-02   7.86421e-03 
-   @RHF iter   2:   -76.02141385854679   -3.65524e-02   4.55880e-03 DIIS
-   @RHF iter   3:   -76.03454350886410   -1.31297e-02   8.59508e-04 DIIS
-   @RHF iter   4:   -76.03555344797364   -1.00994e-03   2.39192e-04 DIIS
-   @RHF iter   5:   -76.03568367852256   -1.30231e-04   4.66387e-05 DIIS
-   @RHF iter   6:   -76.03568934380158   -5.66528e-06   6.82953e-06 DIIS
-   @RHF iter   7:   -76.03568944339281   -9.95912e-08   1.18941e-06 DIIS
-   @RHF iter   8:   -76.03568944733928   -3.94647e-09   2.77789e-07 DIIS
-   @RHF iter   9:   -76.03568944757801   -2.38728e-10   5.66157e-08 DIIS
-   @RHF iter  10:   -76.03568944758567   -7.65965e-12   7.78425e-09 DIIS
-   @RHF iter  11:   -76.03568944758585   -1.84741e-13   2.30431e-09 DIIS
-   @RHF iter  12:   -76.03568944758582    2.84217e-14   4.19255e-10 DIIS
-   @RHF iter  13:   -76.03568944758581    1.42109e-14   7.67516e-11 DIIS
-   @RHF iter  14:   -76.03568944758577    4.26326e-14   1.75264e-11 DIIS
-   @RHF iter  15:   -76.03568944758588   -1.13687e-13   3.86256e-12 DIIS
-   @RHF iter  16:   -76.03568944758584    4.26326e-14   5.27643e-13 DIIS
+   @RHF iter SAD:   -75.41489747543585   -7.54149e+01   0.00000e+00 
+   @RHF iter   1:   -75.94941361511191   -5.34516e-01   1.10059e-02 DIIS/ADIIS
+   @RHF iter   2:   -76.00127152392366   -5.18579e-02   7.53959e-03 DIIS/ADIIS
+   @RHF iter   3:   -76.03517081866430   -3.38993e-02   6.06961e-04 DIIS/ADIIS
+   @RHF iter   4:   -76.03565670821004   -4.85890e-04   1.31538e-04 DIIS/ADIIS
+   @RHF iter   5:   -76.03568675499886   -3.00468e-05   3.13448e-05 DIIS
+   @RHF iter   6:   -76.03568934310077   -2.58810e-06   6.16867e-06 DIIS
+   @RHF iter   7:   -76.03568944590226   -1.02801e-07   9.99422e-07 DIIS
+   @RHF iter   8:   -76.03568944832256   -2.42029e-09   1.70475e-07 DIIS
+   @RHF iter   9:   -76.03568944838773   -6.51710e-11   4.71208e-08 DIIS
+   @RHF iter  10:   -76.03568944839276   -5.03064e-12   6.17565e-09 DIIS
+   @RHF iter  11:   -76.03568944839290   -1.42109e-13   9.50402e-10 DIIS
+   @RHF iter  12:   -76.03568944839284    5.68434e-14   1.37862e-10 DIIS
+   @RHF iter  13:   -76.03568944839289   -4.26326e-14   1.96209e-11 DIIS
+   @RHF iter  14:   -76.03568944839286    2.84217e-14   1.52147e-12 DIIS
+   @RHF iter  15:   -76.03568944839289   -2.84217e-14   1.65237e-13 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
-       1A    -20.584242     2A     -1.335644     3A     -0.696477  
+       1A    -20.584242     2A     -1.335644     3A     -0.696478  
        4A     -0.577441     5A     -0.506115  
 
     Virtual:                                                              
@@ -228,68 +308,67 @@ clean()
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @RHF Final Energy:   -76.03568944758584
+  @RHF Final Energy:   -76.03568944839289
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.2744713091268949
-    Two-Electron Energy =                  37.4373163315689936
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0356894475858383
+    Nuclear Repulsion Energy =              8.8014655645673745
+    One-Electron Energy =                -122.2744713714095326
+    Two-Electron Energy =                  37.4373163584492659
+    Total Energy =                        -76.0356894483928869
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.2197
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.7994     Total:     0.7994
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0319     Total:     2.0319
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.2196840            1.0190771            0.7993931
+ Magnitude           :                                                    0.7993931
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:37:00 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:51:56 2022
 Module time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       1.68 seconds =       0.03 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       1.68 seconds =       0.03 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
+  Constructing Basis Sets for FNOCC...
+
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   269 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    69 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   270 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: RIFIT
     Keyword: DF_BASIS_CC
-    atoms 1   entry O          line   203 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    29 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   204 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    30 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:37:00 2017
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:51:56 2022
 
 
 
@@ -311,7 +390,7 @@ Total time:
 
   ==> Frozen Natural Orbitals <==
 
-        Doubles contribution to MP2 energy in full space:      -0.223147494068
+        Doubles contribution to MP2 energy in full space:      -0.223147493714
 
         Cutoff for significant NO occupancy: 1.000e-04
 
@@ -321,12 +400,10 @@ Total time:
   ==> Memory <==
 
         Total memory available:             500.00 mb
-
         CCSD memory requirements:            12.28 mb
             3-index integrals:                3.38 mb
             CCSD intermediates:               8.90 mb
-
-        (T) part (regular algorithm):         0.47 mb
+        (T) algorithm:                        0.16 mb (low-memory)
 
   ==> Input parameters <==
 
@@ -344,66 +421,66 @@ Total time:
   Begin singles and doubles coupled cluster iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2222360996   -0.2222360996    0.2140313913        0
-      1   1 1   -0.2238158926   -0.0015797930    0.0394025562        0
-      2   2 1   -0.2286675152   -0.0048516226    0.0131759019        0
-      3   3 1   -0.2299703824   -0.0013028672    0.0054372059        0
-      4   4 1   -0.2298859700    0.0000844124    0.0009504376        0
-      5   5 1   -0.2299119134   -0.0000259434    0.0002842777        0
-      6   6 1   -0.2299098142    0.0000020991    0.0000585554        1
-      7   7 1   -0.2299096000    0.0000002142    0.0000125873        0
-      8   8 1   -0.2299095216    0.0000000784    0.0000030938        0
-      9   8 2   -0.2299094269    0.0000000948    0.0000007140        0
-     10   8 3   -0.2299094328   -0.0000000060    0.0000001711        0
-     11   8 4   -0.2299094326    0.0000000003    0.0000000463        0
-     12   8 5   -0.2299094345   -0.0000000020    0.0000000133        0
-     13   8 6   -0.2299094344    0.0000000001    0.0000000037        0
-     14   8 7   -0.2299094343    0.0000000000    0.0000000011        0
-     15   8 8   -0.2299094343    0.0000000000    0.0000000003        0
-     16   8 1   -0.2299094343   -0.0000000000    0.0000000001        0
-     17   8 2   -0.2299094343    0.0000000000    0.0000000000        0
-     18   8 3   -0.2299094343    0.0000000000    0.0000000000        0
-     19   8 4   -0.2299094343    0.0000000000    0.0000000000        0
+      0   0 1   -0.2222360992   -0.2222360992    0.2140313908        0
+      1   1 1   -0.2238158923   -0.0015797931    0.0394025560        0
+      2   2 1   -0.2286675149   -0.0048516226    0.0131759018        0
+      3   3 1   -0.2299703820   -0.0013028672    0.0054372059        0
+      4   4 1   -0.2298859697    0.0000844124    0.0009504376        0
+      5   5 1   -0.2299119130   -0.0000259434    0.0002842777        0
+      6   6 1   -0.2299098139    0.0000020991    0.0000585554        1
+      7   7 1   -0.2299095997    0.0000002142    0.0000125873        0
+      8   8 1   -0.2299095213    0.0000000784    0.0000030938        0
+      9   8 2   -0.2299094265    0.0000000948    0.0000007140        0
+     10   8 3   -0.2299094325   -0.0000000060    0.0000001711        0
+     11   8 4   -0.2299094322    0.0000000003    0.0000000463        0
+     12   8 5   -0.2299094342   -0.0000000020    0.0000000133        0
+     13   8 6   -0.2299094341    0.0000000001    0.0000000037        1
+     14   8 7   -0.2299094340    0.0000000000    0.0000000011        0
+     15   8 8   -0.2299094340    0.0000000000    0.0000000003        0
+     16   8 1   -0.2299094340   -0.0000000000    0.0000000001        0
+     17   8 2   -0.2299094340    0.0000000000    0.0000000000        0
+     18   8 3   -0.2299094340    0.0000000000    0.0000000000        0
+     19   8 4   -0.2299094340    0.0000000000    0.0000000000        0
 
   CCSD iterations converged!
 
-        T1 diagnostic:                        0.012604416163
-        D1 diagnostic:                        0.027705590358
+        T1 diagnostic:                        0.012604416091
+        D1 diagnostic:                        0.027705590195
 
-        OS MP2 FNO correction:               -0.000819116338
+        OS MP2 FNO correction:               -0.000819116331
         SS MP2 FNO correction:               -0.000092278158
-        MP2 FNO correction:                  -0.000911394496
+        MP2 FNO correction:                  -0.000911394489
 
-        OS MP2 correlation energy:           -0.166478414242
-        SS MP2 correlation energy:           -0.056669079826
-        MP2 correlation energy:              -0.223147494068
-      * MP2 total energy:                   -76.258836941654
+        OS MP2 correlation energy:           -0.166478413966
+        SS MP2 correlation energy:           -0.056669079748
+        MP2 correlation energy:              -0.223147493714
+      * MP2 total energy:                   -76.258836942107
 
-        OS CCSD correlation energy:          -0.181187220780
-        SS CCSD correlation energy:          -0.049633608060
-        CCSD correlation energy:             -0.230820828839
-      * CCSD total energy:                  -76.266510276425
+        OS CCSD correlation energy:          -0.181187220464
+        SS CCSD correlation energy:          -0.049633608039
+        CCSD correlation energy:             -0.230820828503
+      * CCSD total energy:                  -76.266510276896
 
-  Total time for CCSD iterations:       1.17 s (user)
-                                        0.30 s (system)
-                                           1 s (total)
+  Total time for CCSD iterations:       1.42 s (user)
+                                        0.72 s (system)
+                                           2 s (total)
 
-  Time per iteration:                   0.06 s (user)
-                                        0.02 s (system)
-                                        0.05 s (total)
+  Time per iteration:                   0.07 s (user)
+                                        0.04 s (system)
+                                        0.11 s (total)
 
-*** tstop() called on psinet at Mon May 15 15:37:02 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:00 2022
 Module time:
-	user time   =       1.26 seconds =       0.02 minutes
-	system time =       0.33 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
-Total time:
-	user time   =       2.28 seconds =       0.04 minutes
-	system time =       0.39 seconds =       0.01 minutes
+	user time   =       1.51 seconds =       0.03 minutes
+	system time =       0.80 seconds =       0.01 minutes
 	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       3.31 seconds =       0.06 minutes
+	system time =       0.96 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:37:02 2017
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:52:00 2022
 
 
         *******************************************************
@@ -412,11 +489,14 @@ Total time:
         *                                                     *
         *******************************************************
 
+
+        Using low-memory algorithm.
+
         num_threads:                      1
         available memory:         500.00 mb
-        memory requirements:        0.47 mb
+        memory requirements:        0.16 mb
 
-        Number of ijk combinations: 20
+        Number of abc combinations: 2600
 
         Computing (T) correction...
 
@@ -431,50 +511,57 @@ Total time:
               80.0         0 s
               90.0         0 s
 
-        (T) energy                            -0.005356646127
+        (T) energy                            -0.005356646097
 
-        CCSD(T) correlation energy            -0.236177474967
-      * CCSD(T) total energy                 -76.271866922553
+        CCSD(T) correlation energy            -0.236177474601
+      * CCSD(T) total energy                 -76.271866922994
 
 
-*** tstop() called on psinet at Mon May 15 15:37:02 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:00 2022
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.31 seconds =       0.04 minutes
-	system time =       0.40 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       3.39 seconds =       0.06 minutes
+	system time =       1.01 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstop() called on psinet at Mon May 15 15:37:02 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:00 2022
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.31 seconds =       0.04 minutes
-	system time =       0.40 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
-	SCF energy........................................................PASSED
-	DF-CCSD correlation energy........................................PASSED
-	DF-CCSD(T) correlation energy.....................................PASSED
+	user time   =       3.39 seconds =       0.06 minutes
+	system time =       1.01 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
+    SCF energy............................................................................PASSED
+    DF-CCSD correlation energy............................................................PASSED
+    DF-CCSD(T) correlation energy.........................................................PASSED
+    MP2 pair energies.....................................................................PASSED
+    MP2 pair energies.....................................................................PASSED
+    CC pair energies......................................................................PASSED
+    CC pair energies......................................................................PASSED
 
-*** tstart() called on psinet
-*** at Mon May 15 15:37:02 2017
+Scratch directory: /tmp/
+
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:52:00 2022
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   243 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1   entry O          line   254 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    40 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -488,15 +575,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
-           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
-           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+         O            0.000000000000     0.000000000000    -0.068516219320    15.994914619570
+         H            0.000000000000    -0.790689573744     0.543701060715     1.007825032230
+         H            0.000000000000     0.790689573744     0.543701060715     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
-  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
-  Nuclear repulsion =    8.801465529972067
+  Rotational constants: A = 753245.07149  B = 401042.16706  C = 261705.25473 [MHz]
+  Nuclear repulsion =    8.801465564567376
 
   Charge       = 0
   Multiplicity = 1
@@ -506,21 +593,352 @@ Total time:
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DF.
+  SCF Algorithm Type is CD.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
   Guess Type is SAD.
   Energy threshold   = 1.00e-12
   Density threshold  = 1.00e-12
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: AUG-CC-PVDZ
     Blend: AUG-CC-PVDZ
     Number of shells: 19
-    Number of basis function: 41
+    Number of basis functions: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> CDJK: Cholesky-decomposed J/K Matrices <==
+
+    J tasked:                     Yes
+    K tasked:                     Yes
+    wK tasked:                     No
+    OpenMP threads:                 1
+    Integrals threads:              1
+    Memory [MiB]:                 375
+    Algorithm:                   Core
+    Integral Cache:              SAVE
+    Schwarz Cutoff:             1E-12
+    Cholesky tolerance:      1.00E-12
+    No. Cholesky vectors:         644
+
+  Minimum eigenvalue in the overlap matrix is 3.1766171140E-03.
+  Reciprocal condition number of the overlap matrix is 5.6487997342E-04.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         41      41 
+   -------------------------
+    Total      41      41
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:   -75.41489747543584   -7.54149e+01   0.00000e+00 
+   @RHF iter   1:   -75.94941361511199   -5.34516e-01   1.10059e-02 DIIS/ADIIS
+   @RHF iter   2:   -76.00127152392372   -5.18579e-02   7.53959e-03 DIIS/ADIIS
+   @RHF iter   3:   -76.03517081866443   -3.38993e-02   6.06961e-04 DIIS/ADIIS
+   @RHF iter   4:   -76.03565670821025   -4.85890e-04   1.31538e-04 DIIS/ADIIS
+   @RHF iter   5:   -76.03568675499899   -3.00468e-05   3.13448e-05 DIIS
+   @RHF iter   6:   -76.03568934310081   -2.58810e-06   6.16867e-06 DIIS
+   @RHF iter   7:   -76.03568944590241   -1.02802e-07   9.99422e-07 DIIS
+   @RHF iter   8:   -76.03568944832271   -2.42031e-09   1.70475e-07 DIIS
+   @RHF iter   9:   -76.03568944838790   -6.51852e-11   4.71208e-08 DIIS
+   @RHF iter  10:   -76.03568944839284   -4.94538e-12   6.17565e-09 DIIS
+   @RHF iter  11:   -76.03568944839297   -1.27898e-13   9.50402e-10 DIIS
+   @RHF iter  12:   -76.03568944839296    1.42109e-14   1.37862e-10 DIIS
+   @RHF iter  13:   -76.03568944839293    2.84217e-14   1.96208e-11 DIIS
+   @RHF iter  14:   -76.03568944839296   -2.84217e-14   1.52131e-12 DIIS
+   @RHF iter  15:   -76.03568944839292    4.26326e-14   1.65027e-13 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.584242     2A     -1.335644     3A     -0.696478  
+       4A     -0.577441     5A     -0.506115  
+
+    Virtual:                                                              
+
+       6A      0.034638     7A      0.057685     8A      0.174873  
+       9A      0.198741    10A      0.218991    11A      0.232717  
+      12A      0.278530    13A      0.326042    14A      0.382596  
+      15A      0.397838    16A      0.427440    17A      0.532830  
+      18A      0.636757    19A      0.654113    20A      0.794630  
+      21A      0.917421    22A      1.105329    23A      1.117326  
+      24A      1.145003    25A      1.291882    26A      1.454162  
+      27A      1.469924    28A      1.572034    29A      1.970895  
+      30A      1.987693    31A      2.082183    32A      2.345806  
+      33A      2.398639    34A      2.533727    35A      2.701071  
+      36A      2.959052    37A      3.670709    38A      3.682736  
+      39A      3.693890    40A      3.973957    41A      4.218940  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @RHF Final Energy:   -76.03568944839292
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655645673763
+    One-Electron Energy =                -122.2744713714095326
+    Two-Electron Energy =                  37.4373163584492374
+    Total Energy =                        -76.0356894483929153
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.2196840            1.0190771            0.7993931
+ Magnitude           :                                                    0.7993931
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:02 2022
+Module time:
+	user time   =       1.54 seconds =       0.03 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       5.01 seconds =       0.08 minutes
+	system time =       1.11 seconds =       0.02 minutes
+	total time  =          8 seconds =       0.13 minutes
+  Constructing Basis Sets for FNOCC...
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   270 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_CC
+    atoms 1   entry O          line   204 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    30 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+
+
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:52:02 2022
+
+
+
+        *******************************************************
+        *                                                     *
+        *                       DF-CCSD                       *
+        *                 Density-fitted CCSD                 *
+        *                                                     *
+        *                   Eugene DePrince                   *
+        *                                                     *
+        *******************************************************
+
+
+  ==> 3-index integrals <==
+
+        Reading Cholesky vectors from disk ...
+        Cholesky decomposition threshold: 1.00e-12
+        Number of Cholesky vectors:            644
+
+  ==> Memory <==
+
+        Total memory available:             500.00 mb
+        CCSD memory requirements:            16.51 mb
+            3-index integrals:                7.15 mb
+            CCSD intermediates:               9.35 mb
+
+  ==> Input parameters <==
+
+        Freeze core orbitals?                 yes
+        Use frozen natural orbitals?           no
+        r_convergence:                  1.000e-12
+        e_convergence:                  1.000e-12
+        Number of DIIS vectors:                 8
+        Number of frozen core orbitals:         1
+        Number of active occupied orbitals:     4
+        Number of active virtual orbitals:     36
+        Number of frozen virtual orbitals:      0
+
+
+  Begin singles and doubles coupled cluster iterations
+
+   Iter  DIIS          Energy       d(Energy)          |d(T)|     time
+      0   0 1   -0.2231474937   -0.2231474937    0.2144618896        0
+      1   1 1   -0.2245288815   -0.0013813878    0.0405213426        0
+      2   2 1   -0.2294879569   -0.0049590753    0.0139566958        1
+      3   3 1   -0.2307602544   -0.0012722976    0.0059236638        0
+      4   4 1   -0.2306848180    0.0000754364    0.0011175106        0
+      5   5 1   -0.2306941667   -0.0000093486    0.0003817171        0
+      6   6 1   -0.2306997507   -0.0000055840    0.0001037193        0
+      7   7 1   -0.2306978080    0.0000019427    0.0000341138        1
+      8   8 1   -0.2306975051    0.0000003028    0.0000103932        0
+      9   8 2   -0.2306976249   -0.0000001198    0.0000037349        0
+     10   8 3   -0.2306974517    0.0000001732    0.0000013592        0
+     11   8 4   -0.2306974732   -0.0000000215    0.0000004452        1
+     12   8 5   -0.2306974701    0.0000000031    0.0000001461        0
+     13   8 6   -0.2306974741   -0.0000000040    0.0000000440        0
+     14   8 7   -0.2306974752   -0.0000000011    0.0000000111        0
+     15   8 8   -0.2306974754   -0.0000000002    0.0000000031        1
+     16   8 1   -0.2306974754    0.0000000000    0.0000000010        0
+     17   8 2   -0.2306974754   -0.0000000000    0.0000000003        0
+     18   8 3   -0.2306974754   -0.0000000000    0.0000000001        0
+     19   8 4   -0.2306974754    0.0000000000    0.0000000000        1
+     20   8 5   -0.2306974754    0.0000000000    0.0000000000        0
+     21   8 6   -0.2306974754   -0.0000000000    0.0000000000        0
+     22   8 7   -0.2306974754    0.0000000000    0.0000000000        0
+
+  CCSD iterations converged!
+
+        T1 diagnostic:                        0.012980893977
+        D1 diagnostic:                        0.028206276143
+
+        OS MP2 correlation energy:           -0.166478413966
+        SS MP2 correlation energy:           -0.056669079748
+        MP2 correlation energy:              -0.223147493714
+      * MP2 total energy:                   -76.258836942107
+
+        OS CCSD correlation energy:          -0.181058602934
+        SS CCSD correlation energy:          -0.049638872437
+        CCSD correlation energy:             -0.230697475371
+      * CCSD total energy:                  -76.266386923764
+
+  Total time for CCSD iterations:       3.85 s (user)
+                                        0.79 s (system)
+                                           5 s (total)
+
+  Time per iteration:                   0.18 s (user)
+                                        0.04 s (system)
+                                        0.23 s (total)
+
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:07 2022
+Module time:
+	user time   =       3.90 seconds =       0.07 minutes
+	system time =       0.83 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
+Total time:
+	user time   =       9.03 seconds =       0.15 minutes
+	system time =       1.94 seconds =       0.03 minutes
+	total time  =         13 seconds =       0.22 minutes
+
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:07 2022
+Module time:
+	user time   =       3.90 seconds =       0.07 minutes
+	system time =       0.83 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
+Total time:
+	user time   =       9.03 seconds =       0.15 minutes
+	system time =       1.94 seconds =       0.03 minutes
+	total time  =         13 seconds =       0.22 minutes
+    MP2 pair energies.....................................................................PASSED
+    MP2 pair energies.....................................................................PASSED
+    CC pair energies......................................................................PASSED
+    CC pair energies......................................................................PASSED
+    MP2 Singlet Pairs.....................................................................PASSED
+    CC Singlet Pairs......................................................................PASSED
+    MP2 Triplet Pairs.....................................................................PASSED
+    CC Triplet Pairs......................................................................PASSED
+
+Scratch directory: /tmp/
+    For method 'CCSD', SCF Algorithm Type (re)set to DISK_DF.
+
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:52:07 2022
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   254 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    40 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.068516219320    15.994914619570
+         H            0.000000000000    -0.790689573744     0.543701060715     1.007825032230
+         H            0.000000000000     0.790689573744     0.543701060715     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.07149  B = 401042.16706  C = 261705.25473 [MHz]
+  Nuclear repulsion =    8.801465564567376
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DISK_DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-12
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis functions: 41
     Number of Cartesian functions: 43
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -530,75 +948,77 @@ Total time:
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   269 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    69 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         41      41       0       0       0       0
-   -------------------------------------------------------
-    Total      41      41       5       5       5       0
-   -------------------------------------------------------
+    atoms 1   entry O          line   270 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               375
+    Memory [MiB]:              375
     Algorithm:                Core
     Integral Cache:           SAVE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: (AUG-CC-PVDZ AUX)
     Blend: AUG-CC-PVDZ-JKFIT
     Number of shells: 52
-    Number of basis function: 150
+    Number of basis functions: 150
     Number of Cartesian functions: 171
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
-  Using Symmetric Orthogonalization.
+  Minimum eigenvalue in the overlap matrix is 3.1766171140E-03.
+  Reciprocal condition number of the overlap matrix is 5.6487997342E-04.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         41      41 
+   -------------------------
+    Total      41      41
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -76.01287318605965   -7.60129e+01   3.87181e-02 
-   @DF-RHF iter   1:   -75.98484263765383    2.80305e-02   7.86396e-03 
-   @DF-RHF iter   2:   -76.02139393685833   -3.65513e-02   4.55877e-03 DIIS
-   @DF-RHF iter   3:   -76.03452343851397   -1.31295e-02   8.59589e-04 DIIS
-   @DF-RHF iter   4:   -76.03553368798703   -1.01025e-03   2.39208e-04 DIIS
-   @DF-RHF iter   5:   -76.03566391303066   -1.30225e-04   4.66460e-05 DIIS
-   @DF-RHF iter   6:   -76.03566957982468   -5.66679e-06   6.83407e-06 DIIS
-   @DF-RHF iter   7:   -76.03566967954147   -9.97168e-08   1.19006e-06 DIIS
-   @DF-RHF iter   8:   -76.03566968349257   -3.95110e-09   2.77870e-07 DIIS
-   @DF-RHF iter   9:   -76.03566968373130   -2.38728e-10   5.66544e-08 DIIS
-   @DF-RHF iter  10:   -76.03566968373900   -7.70228e-12   7.79013e-09 DIIS
-   @DF-RHF iter  11:   -76.03566968373914   -1.42109e-13   2.30612e-09 DIIS
-   @DF-RHF iter  12:   -76.03566968373920   -5.68434e-14   4.19836e-10 DIIS
-   @DF-RHF iter  13:   -76.03566968373917    2.84217e-14   7.68627e-11 DIIS
-   @DF-RHF iter  14:   -76.03566968373917    0.00000e+00   1.75479e-11 DIIS
-   @DF-RHF iter  15:   -76.03566968373924   -7.10543e-14   3.86609e-12 DIIS
-   @DF-RHF iter  16:   -76.03566968373916    8.52651e-14   5.28174e-13 DIIS
+   @DF-RHF iter SAD:   -75.41489041839912   -7.54149e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.94939227239874   -5.34502e-01   1.10058e-02 DIIS/ADIIS
+   @DF-RHF iter   2:   -76.00125190400686   -5.18596e-02   7.53949e-03 DIIS/ADIIS
+   @DF-RHF iter   3:   -76.03515078281198   -3.38989e-02   6.07132e-04 DIIS/ADIIS
+   @DF-RHF iter   4:   -76.03563695012032   -4.86167e-04   1.31544e-04 DIIS/ADIIS
+   @DF-RHF iter   5:   -76.03566699153129   -3.00414e-05   3.13425e-05 DIIS
+   @DF-RHF iter   6:   -76.03566957923056   -2.58770e-06   6.16942e-06 DIIS
+   @DF-RHF iter   7:   -76.03566968205300   -1.02822e-07   1.00001e-06 DIIS
+   @DF-RHF iter   8:   -76.03566968447616   -2.42316e-09   1.70526e-07 DIIS
+   @DF-RHF iter   9:   -76.03566968454139   -6.52278e-11   4.71411e-08 DIIS
+   @DF-RHF iter  10:   -76.03566968454639   -5.00222e-12   6.17936e-09 DIIS
+   @DF-RHF iter  11:   -76.03566968454653   -1.42109e-13   9.50902e-10 DIIS
+   @DF-RHF iter  12:   -76.03566968454652    1.42109e-14   1.37943e-10 DIIS
+   @DF-RHF iter  13:   -76.03566968454646    5.68434e-14   1.96303e-11 DIIS
+   @DF-RHF iter  14:   -76.03566968454649   -2.84217e-14   1.52340e-12 DIIS
+   @DF-RHF iter  15:   -76.03566968454642    7.10543e-14   1.65538e-13 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -624,68 +1044,67 @@ Total time:
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @DF-RHF Final Energy:   -76.03566968373916
+  @DF-RHF Final Energy:   -76.03566968454642
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.2744484212394411
-    Two-Electron Energy =                  37.4373132075282200
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0356696837391581
+    Nuclear Repulsion Energy =              8.8014655645673763
+    One-Electron Energy =                -122.2744484835213257
+    Two-Electron Energy =                  37.4373132344075259
+    Total Energy =                        -76.0356696845464199
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.2197
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.7994     Total:     0.7994
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0319     Total:     2.0319
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :         -0.2196532            1.0190771            0.7994239
+ Magnitude           :                                                    0.7994239
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:37:02 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:08 2022
 Module time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.75 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.82 seconds =       0.05 minutes
-	system time =       0.43 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       9.83 seconds =       0.16 minutes
+	system time =       1.98 seconds =       0.03 minutes
+	total time  =         14 seconds =       0.23 minutes
+  Constructing Basis Sets for FNOCC...
+
    => Loading Basis Set <=
 
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   269 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    69 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   270 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ-RI
     Role: RIFIT
     Keyword: DF_BASIS_CC
-    atoms 1   entry O          line   203 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    29 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   204 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    30 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:37:02 2017
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:52:08 2022
 
 
 
@@ -708,7 +1127,7 @@ Total time:
   Basis Set: AUG-CC-PVDZ
     Blend: AUG-CC-PVDZ
     Number of shells: 19
-    Number of basis function: 41
+    Number of basis functions: 41
     Number of Cartesian functions: 43
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -718,17 +1137,17 @@ Total time:
   Basis Set: AUG-CC-PVDZ-RI
     Blend: AUG-CC-PVDZ-RI
     Number of shells: 40
-    Number of basis function: 118
+    Number of basis functions: 118
     Number of Cartesian functions: 136
     Spherical Harmonics?: true
     Max angular momentum: 3
 
+  The DF Tensor (Qso) construction requires 0.003 GiB of memory. 
     Number of auxiliary functions:         118
 
   ==> Memory <==
 
         Total memory available:             500.00 mb
-
         CCSD memory requirements:             4.09 mb
             3-index integrals:                1.63 mb
             CCSD intermediates:               2.47 mb
@@ -749,66 +1168,69 @@ Total time:
   Begin singles and doubles coupled cluster iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2231285261   -0.2231285261    0.2144301456        0
+      0   0 1   -0.2231285258   -0.2231285258    0.2144301451        0
 
   CCSD iterations converged!
 
         T1 diagnostic:                        0.000000000000
         D1 diagnostic:                        0.000000000000
 
-        OS MP2 correlation energy:           -0.166416232132
-        SS MP2 correlation energy:           -0.056712293993
-        MP2 correlation energy:              -0.223128526125
-      * MP2 total energy:                   -76.258798209864
+        OS MP2 correlation energy:           -0.166416231856
+        SS MP2 correlation energy:           -0.056712293914
+        MP2 correlation energy:              -0.223128525770
+      * MP2 total energy:                   -76.258798210317
 
-        OS CCSD correlation energy:          -0.166416232132
-        SS CCSD correlation energy:          -0.056712293993
-        CCSD correlation energy:             -0.223128526125
-      * CCSD total energy:                  -76.258798209864
+        OS CCSD correlation energy:          -0.166416231856
+        SS CCSD correlation energy:          -0.056712293914
+        CCSD correlation energy:             -0.223128525770
+      * CCSD total energy:                  -76.258798210317
 
   Total time for CCSD iterations:       0.02 s (user)
-                                        0.01 s (system)
+                                        0.02 s (system)
                                            0 s (total)
 
   Time per iteration:                    inf s (user)
                                          inf s (system)
-                                        -nan s (total)
+                                         nan s (total)
 
-*** tstop() called on psinet at Mon May 15 15:37:02 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:09 2022
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.00 seconds =       0.05 minutes
-	system time =       0.45 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =      10.03 seconds =       0.17 minutes
+	system time =       2.02 seconds =       0.03 minutes
+	total time  =         15 seconds =       0.25 minutes
 
-*** tstop() called on psinet at Mon May 15 15:37:02 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:09 2022
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.00 seconds =       0.05 minutes
-	system time =       0.45 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =      10.03 seconds =       0.17 minutes
+	system time =       2.02 seconds =       0.03 minutes
+	total time  =         15 seconds =       0.25 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:37:02 2017
+Scratch directory: /tmp/
+
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:52:09 2022
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   243 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1   entry O          line   254 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    40 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -822,15 +1244,15 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
-           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
-           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+         O            0.000000000000     0.000000000000    -0.068516219320    15.994914619570
+         H            0.000000000000    -0.790689573744     0.543701060715     1.007825032230
+         H            0.000000000000     0.790689573744     0.543701060715     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
-  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
-  Nuclear repulsion =    8.801465529972067
+  Rotational constants: A = 753245.07149  B = 401042.16706  C = 261705.25473 [MHz]
+  Nuclear repulsion =    8.801465564567376
 
   Charge       = 0
   Multiplicity = 1
@@ -847,14 +1269,14 @@ Total time:
   Guess Type is SAD.
   Energy threshold   = 1.00e-12
   Density threshold  = 1.00e-12
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: AUG-CC-PVDZ
     Blend: AUG-CC-PVDZ
     Number of shells: 19
-    Number of basis function: 41
+    Number of basis functions: 41
     Number of Cartesian functions: 43
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -864,75 +1286,78 @@ Total time:
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   269 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    69 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         41      41       0       0       0       0
-   -------------------------------------------------------
-    Total      41      41       5       5       5       0
-   -------------------------------------------------------
+    atoms 1   entry O          line   270 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  DFHelper Memory: AOs need 0.002 GiB; user supplied 0.366 GiB. Using in-core AOs.
 
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: (AUG-CC-PVDZ AUX)
     Blend: AUG-CC-PVDZ-JKFIT
     Number of shells: 52
-    Number of basis function: 150
+    Number of basis functions: 150
     Number of Cartesian functions: 171
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
-  Using Symmetric Orthogonalization.
+  Minimum eigenvalue in the overlap matrix is 3.1766171140E-03.
+  Reciprocal condition number of the overlap matrix is 5.6487997342E-04.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         41      41 
+   -------------------------
+    Total      41      41
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -76.01287318605965   -7.60129e+01   3.87181e-02 
-   @DF-RHF iter   1:   -75.98484263765383    2.80305e-02   7.86396e-03 
-   @DF-RHF iter   2:   -76.02139393685833   -3.65513e-02   4.55877e-03 DIIS
-   @DF-RHF iter   3:   -76.03452343851397   -1.31295e-02   8.59589e-04 DIIS
-   @DF-RHF iter   4:   -76.03553368798703   -1.01025e-03   2.39208e-04 DIIS
-   @DF-RHF iter   5:   -76.03566391303066   -1.30225e-04   4.66460e-05 DIIS
-   @DF-RHF iter   6:   -76.03566957982468   -5.66679e-06   6.83407e-06 DIIS
-   @DF-RHF iter   7:   -76.03566967954147   -9.97168e-08   1.19006e-06 DIIS
-   @DF-RHF iter   8:   -76.03566968349257   -3.95110e-09   2.77870e-07 DIIS
-   @DF-RHF iter   9:   -76.03566968373130   -2.38728e-10   5.66544e-08 DIIS
-   @DF-RHF iter  10:   -76.03566968373900   -7.70228e-12   7.79013e-09 DIIS
-   @DF-RHF iter  11:   -76.03566968373914   -1.42109e-13   2.30612e-09 DIIS
-   @DF-RHF iter  12:   -76.03566968373920   -5.68434e-14   4.19836e-10 DIIS
-   @DF-RHF iter  13:   -76.03566968373917    2.84217e-14   7.68627e-11 DIIS
-   @DF-RHF iter  14:   -76.03566968373917    0.00000e+00   1.75479e-11 DIIS
-   @DF-RHF iter  15:   -76.03566968373924   -7.10543e-14   3.86609e-12 DIIS
-   @DF-RHF iter  16:   -76.03566968373916    8.52651e-14   5.28174e-13 DIIS
+   @DF-RHF iter SAD:   -75.41489041839915   -7.54149e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.94939227239874   -5.34502e-01   1.10058e-02 DIIS/ADIIS
+   @DF-RHF iter   2:   -76.00125190400692   -5.18596e-02   7.53949e-03 DIIS/ADIIS
+   @DF-RHF iter   3:   -76.03515078281197   -3.38989e-02   6.07132e-04 DIIS/ADIIS
+   @DF-RHF iter   4:   -76.03563695012029   -4.86167e-04   1.31544e-04 DIIS/ADIIS
+   @DF-RHF iter   5:   -76.03566699153131   -3.00414e-05   3.13425e-05 DIIS
+   @DF-RHF iter   6:   -76.03566957923064   -2.58770e-06   6.16942e-06 DIIS
+   @DF-RHF iter   7:   -76.03566968205308   -1.02822e-07   1.00001e-06 DIIS
+   @DF-RHF iter   8:   -76.03566968447615   -2.42306e-09   1.70526e-07 DIIS
+   @DF-RHF iter   9:   -76.03566968454142   -6.52705e-11   4.71411e-08 DIIS
+   @DF-RHF iter  10:   -76.03566968454645   -5.03064e-12   6.17936e-09 DIIS
+   @DF-RHF iter  11:   -76.03566968454655   -9.94760e-14   9.50902e-10 DIIS
+   @DF-RHF iter  12:   -76.03566968454662   -7.10543e-14   1.37943e-10 DIIS
+   @DF-RHF iter  13:   -76.03566968454652    9.94760e-14   1.96301e-11 DIIS
+   @DF-RHF iter  14:   -76.03566968454662   -9.94760e-14   1.52351e-12 DIIS
+   @DF-RHF iter  15:   -76.03566968454651    1.13687e-13   1.65432e-13 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -958,52 +1383,49 @@ Total time:
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @DF-RHF Final Energy:   -76.03566968373916
+  @DF-RHF Final Energy:   -76.03566968454651
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.2744484212394411
-    Two-Electron Energy =                  37.4373132075282200
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0356696837391581
+    Nuclear Repulsion Energy =              8.8014655645673763
+    One-Electron Energy =                -122.2744484835214962
+    Two-Electron Energy =                  37.4373132344076112
+    Total Energy =                        -76.0356696845465052
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.2197
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.7994     Total:     0.7994
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0319     Total:     2.0319
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :         -0.2196532            1.0190771            0.7994239
+ Magnitude           :                                                    0.7994239
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:37:03 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:10 2022
 Module time:
-	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.77 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.48 seconds =       0.06 minutes
-	system time =       0.47 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =      10.83 seconds =       0.18 minutes
+	system time =       2.07 seconds =       0.03 minutes
+	total time  =         16 seconds =       0.27 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:37:03 2017
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed May  4 21:52:10 2022
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -1015,8 +1437,8 @@ Total time:
     Name: AUG-CC-PVDZ-RI
     Role: RIFIT
     Keyword: DF_BASIS_MP2
-    atoms 1   entry O          line   203 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    29 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   204 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    30 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -1032,7 +1454,7 @@ Total time:
   Basis Set: AUG-CC-PVDZ-RI
     Blend: AUG-CC-PVDZ-RI
     Number of shells: 40
-    Number of basis function: 118
+    Number of basis functions: 118
     Number of Cartesian functions: 136
     Spherical Harmonics?: true
     Max angular momentum: 3
@@ -1047,33 +1469,36 @@ Total time:
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0356696837391581 [Eh]
+	 Reference Energy          =     -76.0356696845465052 [Eh]
 	 Singles Energy            =      -0.0000000000000000 [Eh]
-	 Same-Spin Energy          =      -0.0567122939925745 [Eh]
-	 Opposite-Spin Energy      =      -0.1664162321321916 [Eh]
-	 Correlation Energy        =      -0.2231285261247662 [Eh]
-	 Total Energy              =     -76.2587982098639259 [Eh]
+	 Same-Spin Energy          =      -0.0567122939143171 [Eh]
+	 Opposite-Spin Energy      =      -0.1664162318558538 [Eh]
+	 Correlation Energy        =      -0.2231285257701709 [Eh]
+	 Total Energy              =     -76.2587982103166695 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0189040979975248 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1996994785586299 [Eh]
-	 SCS Correlation Energy    =      -0.2186035765561548 [Eh]
-	 SCS Total Energy          =     -76.2542732602953066 [Eh]
+	 SCS Same-Spin Energy      =      -0.0189040979714390 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1996994782270245 [Eh]
+	 SCS Correlation Energy    =      -0.2186035761984636 [Eh]
+	 SCS Total Energy          =     -76.2542732607449665 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on psinet at Mon May 15 15:37:03 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed May  4 21:52:10 2022
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.59 seconds =       0.06 minutes
-	system time =       0.47 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
-	MP2 correlation energy (DFMP2 vs. DFCC)...........................PASSED
+	user time   =      10.92 seconds =       0.18 minutes
+	system time =       2.07 seconds =       0.03 minutes
+	total time  =         16 seconds =       0.27 minutes
+    MP2 correlation energy (DFMP2 vs. DFCC)...............................................PASSED
+
+    Psi4 stopped on: Wednesday, 04 May 2022 09:52PM
+    Psi4 wall time for execution: 0:00:16.01
 
 *** Psi4 exiting successfully. Buy a developer a beer!

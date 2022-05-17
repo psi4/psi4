@@ -145,8 +145,8 @@ void FrozenNO::ComputeNaturalOrbitals() {
     std::vector<double> aVirEvals(numAVir);
     std::vector<double> bVirEvals(numBVir);
 
-    std::shared_ptr<Vector> epsA = reference_wavefunction_->epsilon_a();
-    std::shared_ptr<Vector> epsB = reference_wavefunction_->epsilon_b();
+    auto epsA = reference_wavefunction_->epsilon_a();
+    auto epsB = reference_wavefunction_->epsilon_b();
     for (int h = 0; h < nirrep_; ++h) {
         for (int a = frzcpi_[h]; a < doccpi_[h] + soccpi_[h]; ++a) aOccEvals[aOccCount++] = epsA->get(h, a);
         for (int b = frzcpi_[h]; b < doccpi_[h]; ++b) bOccEvals[bOccCount++] = epsB->get(h, b);
@@ -286,8 +286,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
     psio->close(PSIF_LIBTRANS_DPD, 1);
     ints.reset();
 
-    std::shared_ptr<Matrix> eigvec =
-        std::make_shared<Matrix>("Dab eigenvectors", nirrep_, aVirOrbsPI, aVirOrbsPI, symmetry);
+    auto eigvec = std::make_shared<Matrix>("Dab eigenvectors", nirrep_, aVirOrbsPI, aVirOrbsPI, symmetry);
     auto eigval = std::make_shared<Vector>("Dab eigenvalues", nirrep_, aVirOrbsPI);
     D->diagonalize(eigvec, eigval, descending);
 
@@ -349,8 +348,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
             // ratio of occupations matches occ_fraction
             double frac = options_.get_double("OCC_PERCENTAGE") / 100.0;
 
-            int* skip = (int*)malloc(nvirt * sizeof(int));
-            memset((void*)skip, '\0', nvirt * sizeof(int));
+            std::vector<bool> skip(nvirt, false);
 
             double my_occ_total = 0.0;
             for (int h = 0; h < nirrep_; h++) {
@@ -376,7 +374,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
                     if (maxcount < 0) {
                         throw PsiException("having trouble sorting virtual NOs", __FILE__, __LINE__);
                     }
-                    skip[maxcount] = 1;
+                    skip[maxcount] = true;
 
                     double my_occ = eigval->pointer(maxh)[maxb];
                     if ((my_occ_total / occ_total) < frac) {
@@ -385,7 +383,6 @@ void FrozenNO::ComputeNaturalOrbitals() {
                     }
                 }
             }
-            free(skip);
             outfile->Printf("        Cutoff for retaining NOs is %5.2lf%% occupancy\n", frac * 100.0);
             outfile->Printf("\n");
         }
@@ -729,6 +726,8 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     }
 
     // allocate memory for a couple of buffers
+    // At this point in time, amps2 means the (ia|jb) integrals.
+    // TODO: Rename this variable and eliminate the redefinition later.
     std::vector<double> amps2(o * o * v * v);
 
     // build (ia|jb) integrals
@@ -750,25 +749,38 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     std::vector<double> newFock(v * v);
     std::vector<double> neweps(nvirt_no);
 
-    // build mp2 amplitudes for mp2 density
-    long int ijab = 0;
+    // => Construct MP2 amplitudes, pair energies, and energies <= //
+    // This is a specialization of the CC pair energy constructor in df_scs.cc
+    auto matAA = std::make_shared<Matrix>("MP2 Alpha-Alpha Pair Energies", o, o);
+    auto matAB = std::make_shared<Matrix>("MP2 Alpha-Beta Pair Energies", o, o);
     emp2 = 0.0;
     double emp2_os = 0.0;
     double emp2_ss = 0.0;
-    for (long int a = 0; a < v; a++) {
-        double da = Fv->get(a);
-        for (long int b = 0; b < v; b++) {
-            double dab = da + Fv->get(b);
-            for (long int i = 0; i < o; i++) {
-                double dabi = dab - Fo->get(i);
-                for (long int j = 0; j < o; j++) {
+    for (long int i = 0; i < o; i++) {
+        double di = - Fo->get(i);
+        for (long int j = 0; j < o; j++) {
+            double dij = di - Fo->get(j);
+            double pair_os = 0;
+            double pair_ss = 0;
+            for (long int a = 0; a < v; a++) {
+                double dija = dij + Fv->get(a);
+                for (long int b = 0; b < v; b++) {
                     long int iajb = i * v * v * o + a * v * o + j * v + b;
-                    double dijab = dabi - Fo->get(j);
-                    amps1[ijab++] = -amps2[iajb] / dijab;
-                    emp2_os -= amps2[iajb] * amps2[iajb] / dijab;
-                    emp2_ss -=
+                    long int abij = a * v * o * o + b * o * o + i * o + j;
+                    double dijab = dija + Fv->get(b);
+                    amps1[abij] = -amps2[iajb] / dijab;
+                    pair_os -= amps2[iajb] * amps2[iajb] / dijab;
+                    pair_ss -=
                         amps2[iajb] * (amps2[iajb] - amps2[j * o * v * v + a * o * v + i * v + b]) / dijab;
                 }
+            }
+            emp2_os += pair_os;
+            emp2_ss += pair_ss;
+            matAA->add(i, j, pair_ss);
+            matAB->add(i, j, pair_os);
+            if (i != j) {
+                matAA->add(j, i, pair_ss);
+                matAB->add(j, i, pair_os);
             }
         }
     }
@@ -781,13 +793,22 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
     set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
     set_scalar_variable("MP2 TOTAL ENERGY", emp2 + Process::environment.globals["SCF TOTAL ENERGY"]);
+    set_array_variable("MP2 ALPHA-ALPHA PAIR ENERGIES", matAA);
+    set_array_variable("MP2 ALPHA-BETA PAIR ENERGIES", matAB);
+    SharedMatrix singlet, triplet;
+    std::tie(singlet, triplet) = spin_adapt(matAA, matAB);
+    singlet->set_name("MP2 SINGLET PAIR ENERGIES");
+    set_array_variable("MP2 SINGLET PAIR ENERGIES", singlet);
+    triplet->set_name("MP2 TRIPLET PAIR ENERGIES");
+    set_array_variable("MP2 TRIPLET PAIR ENERGIES", triplet);
 
-    ijab = 0;
-    for (long int a = o; a < o + v; a++) {
-        for (long int b = o; b < o + v; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
-                    long int ijba = (b - o) * o * o * v + (a - o) * o * o + i * o + j;
+    // The meaning of amps2 now changes to the amps.
+    size_t ijab = 0;
+    for (size_t a = o; a < o + v; a++) {
+        for (size_t b = o; b < o + v; b++) {
+            for (size_t i = 0; i < o; i++) {
+                for (size_t j = 0; j < o; j++) {
+                    size_t ijba = (b - o) * o * o * v + (a - o) * o * o + i * o + j;
                     amps2[ijab] = 2.0 * amps1[ijab] - amps1[ijba];
                     ijab++;
                 }
@@ -832,8 +853,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
             // ratio of occupations matches occ_fraction
             double frac = options_.get_double("OCC_PERCENTAGE") / 100.0;
 
-            int* skip = (int*)malloc(v * sizeof(int));
-            memset((void*)skip, '\0', v * sizeof(int));
+            std::vector<bool> skip(v, false);
 
             double my_occ_total = 0.0;
             for (int a = 0; a < v; a++) {
@@ -853,7 +873,7 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
                 if (maxcount < 0) {
                     throw PsiException("having trouble sorting virtual NOs", __FILE__, __LINE__);
                 }
-                skip[maxcount] = 1;
+                skip[maxcount] = true;
 
                 double my_occ = eigvalDab[maxb];
                 if ((my_occ_total / occ_total) < frac) {
@@ -861,7 +881,6 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
                     nvirt_no++;
                 }
             }
-            free(skip);
             outfile->Printf("        Cutoff for retaining NOs is %5.2lf%% occupancy\n", frac * 100.0);
             outfile->Printf("\n");
         }

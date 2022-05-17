@@ -316,6 +316,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     outfile->Printf("   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
 
     memset((void *)diisvec, '\0', (maxdiis + 1) * sizeof(double));
+    // => Perform CCSD iterations <= //
     while (iter < maxiter) {
         std::time_t iter_start = std::time(nullptr);
 
@@ -432,7 +433,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
     // add D1 diagnostic to qcvars
     set_scalar_variable("CC D1 DIAGNOSTIC", sqrt(eigval->pointer()[0]));
 
-    // delta mp2 correction for fno computations:
+    // => Update internal vars for FNO correction, followed by printout. <= //
     if (options_.get_bool("NAT_ORBS")) {
         double delta_emp2 = scalar_variable("MP2 CORRELATION ENERGY") - emp2;
         double delta_emp2_os = scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY") - emp2_os;
@@ -517,25 +518,18 @@ double DFCoupledCluster::CheckEnergy() {
         tb = tempv;
     }
     double energy = 0.0;
-    auto pairs = std::make_shared<Matrix>(o, o);
-    double **pairsp = pairs->pointer();
     for (long int i = 0; i < o; i++) {
         for (long int j = 0; j < o; j++) {
-            pairsp[i][j] = 0;
             for (long int a = 0; a < v; a++) {
                 for (long int b = 0; b < v; b++) {
                     long int ijab = a * v * o * o + b * o * o + i * o + j;
                     long int iajb = i * v * v * o + a * v * o + j * v + b;
                     long int jaib = j * v * v * o + a * v * o + i * v + b;
-                    double energy_contribution = (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
-                    energy += energy_contribution;
-                    pairsp[i][j] += energy_contribution;
+                    energy += (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
                 }
             }
         }
     }
-
-    set_array_variable("CCSD PAIR ENERGIES", pairs);
 
     return energy;
 }
