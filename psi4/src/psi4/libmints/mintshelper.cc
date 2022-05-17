@@ -268,8 +268,9 @@ void MintsHelper::integrals() {
     }
 
     // Get ERI object
-    std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
-    for (int i = 0; i < nthread_; ++i) tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri()));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> tb(nthread_);
+    tb[0] = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
+    for (int i = 1; i < nthread_; ++i) tb[i] = std::shared_ptr<TwoBodyAOInt>(tb.front()->clone());
     auto eri = std::make_shared<TwoBodySOInt>(tb, integral_);
 
     //// Print out some useful information
@@ -331,8 +332,9 @@ void MintsHelper::integrals_erf(double w) {
     IWLWriter writer(ERIOUT);
 
     // Get ERI object
-    std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
-    for (int i = 0; i < nthread_; ++i) tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega)));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> tb(nthread_);
+    tb[0] = std::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega));
+    for (int i = 1; i < nthread_; ++i) tb[i] = std::shared_ptr<TwoBodyAOInt>(tb.front()->clone());
     auto erf = std::make_shared<TwoBodySOInt>(tb, integral_);
 
     // Let the user know what we're doing.
@@ -362,9 +364,10 @@ void MintsHelper::integrals_erfc(double w) {
     IWLWriter writer(ERIOUT);
 
     // Get ERI object
-    std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
-    for (int i = 0; i < nthread_; ++i)
-        tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->erf_complement_eri(omega)));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> tb(nthread_);
+    tb[0] = std::shared_ptr<TwoBodyAOInt>(integral_->erf_complement_eri(omega));
+    for (int i = 1; i < nthread_; ++i)
+        tb[i] = std::shared_ptr<TwoBodyAOInt>(tb.front()->clone());
     auto erf = std::make_shared<TwoBodySOInt>(tb, integral_);
 
     // Let the user know what we're doing.
@@ -2265,9 +2268,10 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
     auto auxiliary = get_basisset(aux_name);
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary, BasisSet::zero_ao_basis_set(), auxiliary,
                                                        BasisSet::zero_ao_basis_set());
-    std::vector<std::shared_ptr<TwoBodyAOInt>> Jint;
-    for (int t = 0; t < nthread_; t++) {
-        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> Jint(nthread_);
+    Jint[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1));
+    for (int t = 1; t < nthread_; t++) {
+        Jint[t] = std::shared_ptr<TwoBodyAOInt>(Jint.front()->clone());
     }
 
     // Construct temporary matrices for each thread
@@ -2374,9 +2378,10 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string &aux_name, const std:
     auto primary = get_basisset("ORBITAL");
     auto auxiliary = get_basisset(aux_name);
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary, BasisSet::zero_ao_basis_set(), primary, primary);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> Jint;
-    for (int t = 0; t < nthread_; t++) {
-        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> Jint(nthread_);
+    Jint[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1));
+    for (int t = 1; t < nthread_; t++) {
+        Jint[t] = std::shared_ptr<TwoBodyAOInt>(Jint.front()->clone());
     }
 
     const auto &shell_pairs = Jint[0]->shell_pairs();
@@ -3707,8 +3712,9 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2) {
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
-    for (int thread = 0; thread < nthreads; thread++) ints.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri(2)));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> ints(nthreads);
+    ints[0] = std::shared_ptr<TwoBodyAOInt>(integral_->eri(2));
+    for (int thread = 1; thread < nthreads; thread++) ints[thread] = std::shared_ptr<TwoBodyAOInt>(ints.front()->clone());
 
     std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
     std::shared_ptr<BasisSet> bs2 = ints[0]->basis2();
