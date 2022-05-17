@@ -70,6 +70,9 @@ std::tuple<double, double, SharedMatrix, SharedMatrix> DFCoupledCluster::Compute
     auto matAA = std::make_shared<Matrix>(name + " Alpha-Alpha Pair Energies", o, o);
     auto matAB = std::make_shared<Matrix>(name + " Alpha-Beta Pair Energies", o, o);
 
+    // The sum over i, j gives the "Coulomb-like" part of the (i, j) energy and the "Exchnge-like"
+    // part of the (j, i) pair energy. For this reason, we need sum over both i, j and also add to the
+    // i, j and j, i pair energies.
     for (long int i = 0; i < o; i++) {
         for (long int j = 0; j < o; j++) {
             double pair_os = 0;
@@ -146,10 +149,8 @@ void DFCoupledCluster::SCS_MP2() {
         // We just computed the true MP2 pair energies.
         set_array_variable("MP2 ALPHA-ALPHA PAIR ENERGIES", MPA);
         set_array_variable("MP2 ALPHA-BETA PAIR ENERGIES", MPB);
-        delta_pair_energies_ss = MPA->clone();
-        delta_pair_energies_os = MPB->clone();
-        delta_pair_energies_ss->zero();
-        delta_pair_energies_os->zero();
+        delta_pair_energies_ss = std::make_shared<Matrix>("Same-Spin Pair Energies", MPA->rowspi(), MPA->colspi());
+        delta_pair_energies_os = std::make_shared<Matrix>("Opposite-Spin Pair Energies", MPB->rowspi(), MPB->colspi());
         SharedMatrix singlet, triplet;
         std::tie(singlet, triplet) = spin_adapt(MPA, MPB);
         singlet->set_name("MP2 SINGLET PAIR ENERGIES");

@@ -726,6 +726,8 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     }
 
     // allocate memory for a couple of buffers
+    // At this point in time, amps2 means the (ia|jb) integrals.
+    // TODO: Rename this variable and eliminate the redefinition later.
     std::vector<double> amps2(o * o * v * v);
 
     // build (ia|jb) integrals
@@ -747,7 +749,8 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     std::vector<double> newFock(v * v);
     std::vector<double> neweps(nvirt_no);
 
-    // => Construct MP2 amplitudes, pair energies, and energies <=
+    // => Construct MP2 amplitudes, pair energies, and energies <= //
+    // This is a specialization of the CC pair energy constructor in df_scs.cc
     auto matAA = std::make_shared<Matrix>("MP2 Alpha-Alpha Pair Energies", o, o);
     auto matAB = std::make_shared<Matrix>("MP2 Alpha-Beta Pair Energies", o, o);
     emp2 = 0.0;
@@ -799,12 +802,13 @@ void DFFrozenNO::ComputeNaturalOrbitals() {
     triplet->set_name("MP2 TRIPLET PAIR ENERGIES");
     set_array_variable("MP2 TRIPLET PAIR ENERGIES", triplet);
 
-    long int ijab = 0;
-    for (long int a = o; a < o + v; a++) {
-        for (long int b = o; b < o + v; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
-                    long int ijba = (b - o) * o * o * v + (a - o) * o * o + i * o + j;
+    // The meaning of amps2 now changes to the amps.
+    size_t ijab = 0;
+    for (size_t a = o; a < o + v; a++) {
+        for (size_t b = o; b < o + v; b++) {
+            for (size_t i = 0; i < o; i++) {
+                for (size_t j = 0; j < o; j++) {
+                    size_t ijba = (b - o) * o * o * v + (a - o) * o * o + i * o + j;
                     amps2[ijab] = 2.0 * amps1[ijab] - amps1[ijba];
                     ijab++;
                 }
