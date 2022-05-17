@@ -1,4 +1,4 @@
-#! test QC_JSON Schema mol orientation
+#! test QCSchema mol orientation
 
 import numpy as np
 import psi4

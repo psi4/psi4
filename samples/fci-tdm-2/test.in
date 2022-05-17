@@ -42,12 +42,6 @@ compare_values(refci1, thisenergy,                      7, "CI ROOT 0 ENERGY") #
 compare_values(refci2,   variable("CI ROOT 1 TOTAL ENERGY"),       7, "CI ROOT 1 ENERGY") #TEST
 compare_values(refcorr1, variable("CI ROOT 0 CORRELATION ENERGY"), 7, "CI ROOT 0 correlation energy")  #TEST
 compare_values(refcorr2, variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI ROOT 1 correlation energy")  #TEST
-with warnings.catch_warnings():  #TEST
-    warnings.simplefilter("ignore")  #TEST
-    compare_values(refDipHF, variable("SCF DIPOLE Z"), 3, "SCF Z Component of dipole")      #TEST
-    compare_values(refDipCI1, variable("CI ROOT 0 DIPOLE Z"), 3, "CI ROOT 0 Z Component of dipole")        #TEST
-    compare_values(refDipCI2, variable("CI ROOT 1 DIPOLE Z"), 3, "CI ROOT 1 Z Component of dipole")        #TEST
-    compare_values(abs(refTDM), abs(variable("CI ROOT 0 -> ROOT 1 DIPOLE Z")), 3, "CI ROOT 0 -> ROOT 1 Z Component of dipole")        #TEST
 compare_values(refDipHF * d2au, variable("SCF DIPOLE")[2], 3, "SCF Z Component of dipole")      #TEST
 compare_values(refDipCI1 * d2au, variable("CI ROOT 0 DIPOLE")[2], 3, "CI ROOT 0 Z Component of dipole")        #TEST
 compare_values(refDipCI2 * d2au, variable("CI ROOT 1 DIPOLE")[2], 3, "CI ROOT 1 Z Component of dipole")        #TEST

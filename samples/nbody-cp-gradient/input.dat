@@ -101,6 +101,7 @@ core.clean()
 
 
 
+
 # compute nbody again with return_total_data=False
 # * note CURRENT ENERGY moved from first to second testing block
 g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type=['cp','nocp'], max_nbody=2,

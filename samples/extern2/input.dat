@@ -12,11 +12,20 @@ molecule water {
 }
 
 # Define a TIP3P water as the external potential
-Chrgfield = QMMM()
-Chrgfield.extern.addCharge(-0.834,1.649232019048,0.0,-2.356023604706)
-Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-3.799961446760)
-Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-0.912085762652)
-psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+# Apr 2022: QMMM object directly is outdated -- instead pass list in Bohr as kwarg
+#Chrgfield = QMMM()
+#Chrgfield.extern.addCharge(-0.834,1.649232019048,0.0,-2.356023604706)
+#Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-3.799961446760)
+#Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-0.912085762652)
+#psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+
+external_potentials = np.array([
+-0.834,1.649232019048,0.0,-2.356023604706,
+0.417,0.544757019107,0.0,-3.799961446760,
+0.417,0.544757019107,0.0,-0.912085762652]).reshape((-1, 4))
+# convert coordinates columns to bohr
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+
 
 set {
     scf_type df
@@ -24,8 +33,8 @@ set {
     basis 6-31G*
 }
 
-fd_grad = gradient('mp2', molecule=water, dertype=0)
+fd_grad = gradient('mp2', molecule=water, dertype=0, external_potentials=external_potentials)
 fd_ener = psi4.variable('CURRENT ENERGY')
-an_grad = gradient('mp2', molecule=water)
+an_grad = gradient('mp2', molecule=water, external_potentials=external_potentials)
 an_ener = psi4.variable('CURRENT ENERGY')
 

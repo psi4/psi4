@@ -23,26 +23,26 @@ h2o.update_geometry()
 
 # SCF TESTS
 
-scf_dz = energy(cbs, scf_wfn='SCF', scf_basis='cc-pVDZ')
+scf_dz = energy("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ')
 
-#scf_tzvp = energy(cbs, scf_basis='def2-TZVP')
-scf_tzvp = energy(cbs, scf_wfn='SCF', scf_basis='def2-TZVP')
+#scf_tzvp = energy("cbs", scf_basis='def2-TZVP')
+scf_tzvp = energy("cbs", scf_wfn='SCF', scf_basis='def2-TZVP')
 
-scf_adtz = energy(cbs, scf_wfn='SCF', scf_basis='aug-cc-pV[23]Z')
+scf_adtz = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[23]Z')
 
 # Three point extrapolation
-scf_adtqz = energy(cbs, scf_wfn='SCF', scf_basis='aug-cc-pV[D3Q]Z')
+scf_adtqz = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[D3Q]Z')
 
 
 # MP2 TESTS
 
-mp2_addz = energy(cbs, corl_wfn='MP2', corl_basis='aug-cc-pV(D+d)Z')
+mp2_addz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV(D+d)Z')
 
-mp2_atz = energy(cbs, corl_wfn='MP2', corl_basis='aug-cc-pVTZ')
+mp2_atz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pVTZ')
 
-mp2_adtz = energy(cbs, corl_wfn='MP2', corl_basis='aug-cc-pV[2T]Z')
+mp2_adtz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[2T]Z')
 
-mp2_atqz = energy(cbs, corl_wfn='MP2', corl_basis='aug-cc-pV[T,Q]Z')
+mp2_atqz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[T,Q]Z')
 
 
 # <<<  gradients  >>>
@@ -68,19 +68,19 @@ he_dimer.update_geometry()
 
 # SCF TESTS
 
-scf_dz = gradient(cbs, scf_wfn='SCF', scf_basis='cc-pVDZ')
+scf_dz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ')
 
-scf_tz = gradient(cbs, scf_wfn='SCF', scf_basis='cc-pVTZ')
+scf_tz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVTZ')
 
-scf_dtz = gradient(cbs, scf_wfn='SCF', scf_basis='cc-pV[23]Z')
+scf_dtz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[23]Z')
 
-scf_dtqz = gradient(cbs, scf_wfn='SCF', scf_basis='cc-pV[DTQ]Z')
+scf_dtqz, wfn = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[DTQ]Z', return_wfn=True)
 
 
 # MP2 TESTS
-mp2_dtz = gradient(cbs, corl_wfn='MP2', corl_basis='cc-pV[DT]Z')
+mp2_dtz, wfn = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', return_wfn=True)
 
-mp2_dtz = gradient(cbs, corl_wfn='MP2', corl_basis='cc-pV[DT]Z', dertype='energy')
+mp2_dtz, wfn = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', dertype='energy', return_wfn=True)
 
 # <<<  optimize  >>>
 
@@ -100,6 +100,6 @@ set {
 
 h2.update_geometry()
 
-optimize(cbs, scf_wfn='SCF', scf_basis='cc-pvdz')
+optimize("cbs", scf_wfn='SCF', scf_basis='cc-pvdz')
 
-optimize(cbs, scf_wfn='SCF', scf_basis='cc-pV[DT]Z')
+optimize("cbs", scf_wfn='SCF', scf_basis='cc-pV[DT]Z')

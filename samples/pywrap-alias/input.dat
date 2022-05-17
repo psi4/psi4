@@ -23,7 +23,7 @@ set scf {
 set occ do_scs on
 
 banner('gold standard')
-energy(sherrill_gold_standard)
+energy('sherrill_gold_standard')
 clean()
 
 #banner('scf')
@@ -47,6 +47,10 @@ banner('mp4')
 energy('mp4')
 clean()
 
+banner('mp5')
+energy('mp5')
+clean()
+
 banner('mp11')
 energy('mp11')
 clean()
@@ -65,7 +69,7 @@ clean()
 
 banner('cbs()')
 set scf_type pk
-energy(cbs, scf_type='scf', scf_basis='cc-pvdz')
+energy('cbs', scf_type='scf', scf_basis='cc-pvdz')
 clean()
 
 set {

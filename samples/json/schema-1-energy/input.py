@@ -1,4 +1,4 @@
-#! test QC_JSON Schema for energy
+#! test QCSchema for energy
 
 import numpy as np
 import psi4

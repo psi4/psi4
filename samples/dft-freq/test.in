@@ -15,5 +15,4 @@ ref_freqs.set(0, 1, 3728.54) #TEST
 ref_freqs.set(0, 2, 3850.17) #TEST
 
 fd_freqs = scf_wfn.frequencies() #TEST
-compare_vectors(ref_freqs, fd_freqs, 1, "Reference vs computed frequencies to 0.1 cm^-1") #TEST 
-
+compare_vectors(ref_freqs, fd_freqs, "Reference vs computed frequencies to 0.2 cm^-1", atol=0.2)  #TEST

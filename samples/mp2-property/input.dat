@@ -22,6 +22,4 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
 
 mp2_e, mp2_wfn = prop('MP2', properties = props, return_wfn=True)
 
-import warnings
-with warnings.catch_warnings():
 compare_values(np.array([0, 0, -0.9526489, 0, 0, 0, -0.9526489, 0, 0, 0, 0, 0, 0, 0, -0.9526489, 0, -0.9526489, 0, -0.9526489, 0, 0, 0, -0.9526489, 0, 0, 0, -6.8644462]).reshape((3, 3, 3)),

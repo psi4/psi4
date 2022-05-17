@@ -1,0 +1,22 @@
+#! Water-Argon complex with ECP present; check of UHF Hessian
+
+molecule arwater {
+    1 2
+    Ar           0.000000000000     0.000000000000     1.093338152877
+    O            0.000000000000     0.000000000000    -2.481615873104
+    H            0.000000000000    -0.854670041110    -1.984056761964
+    H           -0.000000000000     0.854670041110    -1.984056761964
+}
+
+set = {
+    basis          lanl2dz
+    d_convergence  12
+    reference      uhf
+}
+
+# Analytic Hessian
+hess2 = hessian('scf')
+# Hessian from finite differences of energies
+hess0 = hessian('scf', dertype=0)
+# Hessian from finite differences of gradients
+hess1 = hessian('scf', dertype=1)

@@ -11,6 +11,7 @@ molecule h2 {
 set globals = {
    basis      6-31G**
    reference uhf
+   gradient_write on
 }
 
 grad = gradient('scf')

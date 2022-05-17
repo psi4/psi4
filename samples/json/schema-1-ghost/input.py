@@ -1,4 +1,4 @@
-#! test QC_JSON Schema with ghost atoms
+#! test QCSchema with ghost atoms
 
 import numpy as np
 import psi4
