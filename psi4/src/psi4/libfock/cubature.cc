@@ -4267,25 +4267,34 @@ void BlockOPoints::print(std::string out, int print) {
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options &options)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
-    std::map<std::string, std::string> opts_map;
+    std::map<std::string, std::string> str_opts_map;
     std::map<std::string, int> int_opts_map;
-    buildGridFromOptions(int_opts_map, opts_map);
+    std::map<std::string, double> float_opts_map;
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map, Options &options)
+                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options &options)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
-    buildGridFromOptions(int_opts_map, opts_map);
+    std::map<std::string, double> float_opts_map;
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
+}
+DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
+                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map,
+                 std::map<std::string, double> float_opts_map, Options &options)
+    : MolecularGrid(molecule), primary_(primary), options_(options) {
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
 }
 DFTGrid::~DFTGrid() {}
 
 void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
-                                   std::map<std::string, std::string> opts_map) {
+                                   std::map<std::string, std::string> str_opts_map,
+                                   std::map<std::string, double> float_opts_map) {
     std::map<std::string, std::string> full_str_options;
     std::vector<std::string> str_keys = {"DFT_RADIAL_SCHEME", "DFT_PRUNING_SCHEME", "DFT_NUCLEAR_SCHEME",
                                          "DFT_GRID_NAME", "DFT_BLOCK_SCHEME"};
     for (auto key : str_keys) {
-        if (opts_map.find(key) != opts_map.end()) {
-            full_str_options[key] = opts_map[key];
+        if (str_opts_map.find(key) != str_opts_map.end()) {
+            full_str_options[key] = str_opts_map[key];
         } else {
             full_str_options[key] = options_.get_str(key);
         }
@@ -4309,18 +4318,32 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
         // printf("%s : %d\n", key.c_str(), full_int_options[key]);
     }
 
+    std::map<std::string, double> full_float_options;
+    std::vector<std::string> float_keys = {"DFT_BS_RADIUS_ALPHA",
+                                           "DFT_PRUNING_ALPHA",
+                                           "DFT_WEIGHTS_TOLERANCE",
+                                           "DFT_BLOCK_MAX_RADIUS",
+                                           "DFT_BASIS_TOLERANCE"};
+    for (const auto& key : float_keys) {
+        if (float_opts_map.find(key) != float_opts_map.end()) {
+            full_float_options[key] = float_opts_map[key];
+        } else {
+            full_float_options[key] = options_.get_double(key);
+        }
+    }
+
     // TODO: Move both the double and bool parts from a global to a grid specific option.
     //  possibly via an approach listed here:
     //  https://stackoverflow.com/questions/24702235/c-stdmap-holding-any-type-of-value/24702596
     MolecularGridOptions opt;
-    opt.bs_radius_alpha = options_.get_double("DFT_BS_RADIUS_ALPHA");
-    opt.pruning_alpha = options_.get_double("DFT_PRUNING_ALPHA");
+    opt.bs_radius_alpha = full_float_options["DFT_BS_RADIUS_ALPHA"];
+    opt.pruning_alpha = full_float_options["DFT_PRUNING_ALPHA"];
     opt.radscheme = RadialGridMgr::WhichScheme(full_str_options["DFT_RADIAL_SCHEME"].c_str());
     opt.nucscheme = NuclearWeightMgr::WhichScheme(full_str_options["DFT_NUCLEAR_SCHEME"].c_str());
     opt.namedGrid = StandardGridMgr::WhichGrid(full_str_options["DFT_GRID_NAME"].c_str());
     opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
     opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
-    opt.weights_cutoff = options_.get_double("DFT_WEIGHTS_TOLERANCE");
+    opt.weights_cutoff = full_float_options["DFT_WEIGHTS_TOLERANCE"];
     opt.blockscheme = full_str_options["DFT_BLOCK_SCHEME"];
     opt.remove_distant_points = options_.get_bool("DFT_REMOVE_DISTANT_POINTS");
 
@@ -4362,8 +4385,8 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     // Blocking/sieving info
     int max_points = full_int_options["DFT_BLOCK_MAX_POINTS"];
     int min_points = full_int_options["DFT_BLOCK_MIN_POINTS"];
-    double max_radius = options_.get_double("DFT_BLOCK_MAX_RADIUS");
-    double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
+    double max_radius = full_float_options["DFT_BLOCK_MAX_RADIUS"];
+    double epsilon = full_float_options["DFT_BASIS_TOLERANCE"];
     auto extents = std::make_shared<BasisExtents>(primary_, epsilon);
     timer_on("build grid");
     MolecularGrid::buildGridFromOptions(opt);

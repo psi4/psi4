@@ -542,6 +542,14 @@ Bibliography
 .. [Liakos:2015:1525]
    D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
    *J. Chem. Theory Comput.* **11**, 1525 (2015).
+
+.. [Neese:2009:98]
+   F. Neese, F. Wennmohs, and A. Hansen
+   *Chem. Phys.* **356**, 98-109 (2009)
+
+.. [Izsak:2011:144105]
+   R. Izs\ |a_slash|\ k and F. Neese
+   *J. Chem. Phys.* **135**, 144105 (2011)
    
 .. [Smith:2018:3504]
     10.1021/acs.jctc.8b00286,

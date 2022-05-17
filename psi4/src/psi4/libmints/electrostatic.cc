@@ -36,6 +36,7 @@
 #include <libint2/engine.h>
 
 using namespace psi;
+using Zxyz_vector = std::vector<std::pair<double, std::array<double, 3>>>;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
 ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1,
@@ -60,6 +61,15 @@ ElectrostaticInt::~ElectrostaticInt() {}
 void ElectrostaticInt::compute(SharedMatrix& result, const Vector3& C) {
     engine0_->set_params(std::vector<std::pair<double, std::array<double,3>>>{{1.0, {C[0], C[1], C[2]}}});
     OneBodyAOInt::compute(result);
+}
+
+void ElectrostaticInt::set_origin(const Vector3& _origin) {
+    origin_ = _origin;
+    Zxyz_vector pcs;
+    // l2 includes the electron charge, legacy psi4 code does not, so
+    // we adopt this behavior here with -1.0
+    pcs.push_back({-1.0, {origin_[0], origin_[1], origin_[2]}});
+    engine0_->set_params(pcs);
 }
 
 SharedVector ElectrostaticInt::nuclear_contribution(std::shared_ptr<Molecule> mol) {

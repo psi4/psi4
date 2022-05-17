@@ -1,5 +1,6 @@
 list(APPEND sources
   CDJK.cc
+  DFJCOSK.cc
   DirectJK.cc
   DiskDFJK.cc
   DiskJK.cc

@@ -221,14 +221,19 @@ class DFTGrid : public MolecularGrid {
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;
     /// Master builder methods
-    void buildGridFromOptions(std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map);
+    void buildGridFromOptions(std::map<std::string, int> int_opts_map,
+                              std::map<std::string, std::string> str_opts_map,
+                              std::map<std::string, double> float_opts_map);
     /// The Options object
     Options& options_;
 
    public:
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-            std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map, Options& options);
+            std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options& options);
+    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
+            std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, 
+            std::map<std::string, double> float_opts_map, Options& options);
     ~DFTGrid() override;
 };
 
@@ -436,6 +441,8 @@ class BlockOPoints {
     double* z() const { return z_; }
     /// The weights. You do not own this
     double* w() const { return w_; }
+    /// The center of the block
+    Vector3 center() const { return xc_; }
 
     /// Relevant shells, local -> global
     const std::vector<int>& shells_local_to_global() const { return shells_local_to_global_; }
