@@ -94,7 +94,7 @@ Installation
   from source also,
   let the build system fetch and build it and activate dependent code.
   Note that Libint2 has many more integral class enabling and AM knobs
-  than Libint2 and that the generation step (generator source to
+  than Libint1 and that the generation step (generator source to
   library source) preceding the compilation step (library source to
   built library) takes far longer than in Libint1 for production builds.
 

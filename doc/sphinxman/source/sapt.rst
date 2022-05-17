@@ -69,7 +69,9 @@ SAPT: Symmetry-Adapted Perturbation Theory
    this, a discrepency between these values was possible when one of the monomers was (exclusively) 
    a charged alkali metal. 
 
-.. _`note:saptfitA`:
+
+.. _`sec:saptfitA`:
+
 
 .. caution:: May 2022 c. v1.6, the default for |sapt__df_basis_elst|
    changed from the value of |sapt__df_basis_sapt| (which itself
@@ -83,7 +85,7 @@ SAPT: Symmetry-Adapted Perturbation Theory
    subsidiary calculations of higher-order SAPT do not change; that is,
    the :ref:`SAPT module<sec:sapt>` breaks the consistency of its SAPT0
    results. The reasoning and reward behind this change is that the JKFIT
-   basis better describes the physics (see :ref:`note:saptfitB`) and the
+   basis better describes the physics (see :ref:`fitting changes <sec:saptfitB>` ) and the
    default SAPT0 results from the :ref:`SAPT module<sec:sapt>` are now
    consistent with those from the :ref:`FISAPT module<sec:fisapt>` and
    the sapt(dft) module. See :srcsample:`sapt-compare` for an example.
@@ -903,7 +905,9 @@ The scaling factor is reported at the top (here ``1.0072``) together with the
 label. Note that if Exch10 is less than :math:`10^{-5}`, the scaling factor is
 set to :math:`1.0`.
 
-.. _`note:saptfitB`:
+
+.. _`sec:saptfitB`:
+
 
 .. caution:: To density fit the dispersion terms in SAPT, the RI auxiliary
    basis set (*e.g.*, aug-cc-pVDZ-RI) controlled through
@@ -912,7 +916,7 @@ set to :math:`1.0`.
    exchange-dispersion), the JKFIT density-fitting auxiliary basis
    (*e.g.*, aug-cc-pVDZ-JKFIT) is more appropriate. The :ref:`FISAPT
    module<sec:fisapt>` has always used JKFIT in this role. The
-   :ref:`SAPT module<sec:sapt>` newly (see :ref:`note:saptfitA`) uses
+   :ref:`SAPT module<sec:sapt>` newly (see :ref:`fitting notes <sec:saptfitA>` ) uses
    JKFIT for computations targeting SAPT0 and sSAPT0 methods. But the
    :ref:`SAPT module<sec:sapt>` still uses the RI basis for higher-order
    SAPT. For heavier elements (*i.e.*, second-row and beyond), the RI

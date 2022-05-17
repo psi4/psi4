@@ -79,7 +79,7 @@ How to install a Psi4 binary with the Psi4conda installer, download site
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `Download one of the nine installers
-<http://psicode.org/downloads.html>`_ (Linux/Mac/Windows; Py36/37/38/39).
+<http://psicode.org/downloads.html>`_ (Linux/Mac/Windows; Py38/39/310).
 ``bash`` it. Follow the prompts and *do* make the adjustments to
 :envvar:`PATH` and :envvar:`PSI_SCRATCH` that it suggests at the end. Test
 with ``psi4 --test`` (green and yellow good; red bad). Done. Explicit commands at :ref:`sec:psi4conda`.

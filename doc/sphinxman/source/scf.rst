@@ -935,7 +935,9 @@ automatically be detected and no further input is required to use the
 ECP-containing basis set.  See :srcsample:`scf-ecp` and :srcsample:`dfmp2-ecp`
 for examples of computations with ECP-containing basis sets.
 
-.. warning:: As of May 2022, v1.6, the LibECPInt library is used, and analytic derivatives and Hessians of ECPs are available. Previously, built-in code was used for ECPs, and analytic derivatives were not available. Then, the HF and DFT derivatives were implemented in a semi-numerical scheme, where numerical ECP gradients are added to analytic SCF gradients.  Analytic gradients for (DF)MP2 were not yet available, but the standard numerical gradients will work correctly.
+.. warning:: Prior to May 2022, v1.6, Psi4 used a built-in ECP code. Analytic derivatives of ECPs were not available. The HF and DFT derivatives were implemented in a semi-numerical scheme, where numerical ECP gradients were added to analytic SCF gradients. For post-SCF methods, the entire gradient computation needed to be run as finite difference of energies.
+
+.. warning:: As of May 2022, v1.6, Psi4 uses the LibECPInt library, and analytic derivatives and Hessians of ECPs are available. Analytic derivatives of molecular systems including ECPs should be available whenever the method has analytic derivatives, but these have so far only been verified for HF and DFT.
 
 .. warning:: ECPs have not been tested with projected basis set guesses or with FI-SAPT calculations.  If you require this functionality, please contact the developers on GitHub and/or the `forum <http://forum.psicode.org>`_.
 
