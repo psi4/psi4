@@ -1058,9 +1058,11 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
     // Edify the auto-docs.
     /*- Process::environment.globals["CCname ROOT m TOTAL ENERGY"] -*/
     /*- Process::environment.globals["CCname ROOT m (h) TOTAL ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT m (IN h) TOTAL ENERGY"] -*/
     /*- Process::environment.globals["CCname ROOT m TOTAL ENERGY - h TRANSITION"] -*/
     /*- Process::environment.globals["CCname ROOT m CORRELATION ENERGY"] -*/
     /*- Process::environment.globals["CCname ROOT m (h) CORRELATION ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT m (IN h) CORRELATION ENERGY"] -*/
     /*- Process::environment.globals["CCname ROOT m CORRELATION ENERGY - h TRANSITION"] -*/
 
     std::string short_name;
@@ -1090,8 +1092,10 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
             Process::environment.globals[name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY"] = corr_energy;
             Process::environment.globals[name + " ROOT " + std::to_string(i) + " TOTAL ENERGY - " + trans_irrep_lbl + " TRANSITION"] = total_energy;
             Process::environment.globals[name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY - " + trans_irrep_lbl + " TRANSITION"] = corr_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep_lbl + ") TOTAL ENERGY"] = total_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep_lbl + ") CORRELATION ENERGY"] = corr_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i) + " (" + target_irrep_lbl + ") TOTAL ENERGY"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i) + " (" + target_irrep_lbl + ") CORRELATION ENERGY"] = corr_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (IN " + target_irrep_lbl + ") TOTAL ENERGY"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (IN " + target_irrep_lbl + ") CORRELATION ENERGY"] = corr_energy;
         }
         irrep_counts[target_irrep_lbl]++;
     }
