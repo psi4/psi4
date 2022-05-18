@@ -111,7 +111,7 @@ CompositeComputer.get_psi_results()
         Computer._prepare_results()
         ---------------------------
         * get_results() for each job in task list
-        * arrange atres data into e/d/g/h fields in compute_list and copy them into cbs tables
+        * arrange atomicresult data into e/d/g/h fields in compute_list and copy them into cbs tables
 
             _assemble_cbs_components()
             --------------------------
@@ -129,7 +129,7 @@ CompositeComputer.get_psi_results()
             * build string table of cbs results
 
     * form cbs qcvars, inc'l number, E, DG, G, H as available
-    * form model, including detailed dict at atres.extras["cbs_record"]
+    * form model, including detailed dict at atomicresult.extras["cbs_record"]
 
 * convert result to psi4.core.Matrix (non-energy)
 
@@ -1024,10 +1024,8 @@ def cbs(func, label, **kwargs):
 ##  Aliases  ##
 complete_basis_set = cbs
 
-######### OUTSOURCE
-######### PARSE / PREPARE
-######### PREPARE / COMPUTE
-
+#   LAB: below is a piece of pre-class cbs() that didn't make the transition. it has details, so preserving for future revival
+#
 #    #psioh = core.IOManager.shared_object()
 #    #psioh.set_specific_retention(psif.PSIF_SCF_MOS, True)
 #    # projection across point groups not allowed and cbs() usually a mix of symm-enabled and symm-tol calls
@@ -1293,18 +1291,15 @@ def _build_cbs_compute(metameta: Dict[str, Any], metadata: CBSMetadata):
     JOBS = MODELCHEM[:]
     listfmt = """   {:>12} / {:24} for  {}{}\n"""
 
+    # TODO: In the "naive" and "enlightened" loops below, I had to remove condition `and (job['f_options'] is not False))`
+    #   to get them working, and I feel like they were added to fix the same thing. someday, seek to understand.
+
     #     Remove duplicate modelchem portion listings
     for mc in MODELCHEM:
         dups = -1
         for indx_job, job in enumerate(JOBS):
-            #print('')
-            #print(job['f_wfn'], mc['f_wfn'], job['f_wfn'] == mc['f_wfn'])
-            #print(job['f_basis'], mc['f_basis'], job['f_basis'] == mc['f_basis'])
-            #print(job['f_options'], mc['f_options'], job['f_options'] == mc['f_options'],
-            #      job['f_options'] is not False)
             if ((job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis'])
-                    and (job['f_options'] == mc['f_options'])):  # and (job['f_options'] is not False)):
-                # TODO: I don't understand why I need this change
+                    and (job['f_options'] == mc['f_options'])):
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]
@@ -1321,9 +1316,8 @@ def _build_cbs_compute(metameta: Dict[str, Any], metadata: CBSMetadata):
                 for indx_job, job in enumerate(JOBS):
                     if ((VARH[mc['f_wfn']][wfn] == VARH[job['f_wfn']][job['f_wfn']])
                             and (mc['f_basis'] == job['f_basis'])
-                            and not (mc['f_wfn'] == job['f_wfn'])  # and (mc['f_options'] is False)):
+                            and not (mc['f_wfn'] == job['f_wfn'])
                             and (mc['f_options'] == job['f_options'])):
-                        # TODO: I don't understand why I need this change
                         del JOBS[indx_job]
 
     instructions += """\n    Enlightened listing of computations required.\n"""
@@ -1615,6 +1609,7 @@ class CompositeComputer(BaseComputer):
         modules = [getattr(v.provenance, "module", None) for v in results_list]
         if self.driver != "energy" and len(set(modules)) == 2 and modules.count("scf") == len(modules) / 2:
             # signature of "MP2 GRAD" - "HF GRAD" implementation detail
+            # * avoid having post-scf single-method gradients/Hessians show up as "(mixed)" module just because an outright HF call in the jobs list
             modules = set(modules) - set(["scf"])
         modules = list(set(modules))
         modules = modules[0] if len(modules) == 1 else "(mixed)"

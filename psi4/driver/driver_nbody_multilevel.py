@@ -28,7 +28,7 @@
 
 import numpy as np
 
-def prepare_results(self, client=None):
+def prepare_results(self, client: Optional["FractalClient"] = None):
     """
     Use different levels of theory for different expansion levels
     See kwargs description in driver_nbody.nbody_gufunc
@@ -50,7 +50,7 @@ def prepare_results(self, client=None):
     if ptype == 'hessian':
         hessian_result = np.zeros((natoms * 3, natoms * 3))
 
-    # Get numerical label for supersystem tasks
+    # Get numerical label (index) for supersystem tasks
     sup_level = 0
     levels = []
     for n,i in enumerate(self.nbodies_per_mc_level):
@@ -60,7 +60,7 @@ def prepare_results(self, client=None):
             sup_level = n+1
 
     nbody_list = self.nbodies_per_mc_level
-    quiet=True
+    quiet = True
 
     for l in sorted(levels)[::-1]:
         self.quiet = quiet

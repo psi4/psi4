@@ -47,6 +47,14 @@ TaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceCompute
 
 
 def _expand_cbs_methods(method: str, basis: str, driver: DriverEnum, **kwargs) -> Tuple[str, str, Dict]:
+    """Sort out the user input method string into recognized fields. Handles cases like:
+
+    * (i) `"mp2"` --> passes through;
+    * (ii) `"mp2/cc-pvdz"` --> broken into method and basis fields;
+    * (iii) `"mp2/cc-pv[d,t]z"` --> processed into method="cbs" and CBSMetadata spec;
+    * (iv) `method="cbs", cbsmeta=CBSMetadata` --> passes through.
+
+    """
     if method == 'cbs' and kwargs.get('cbsmeta', None):
         return method, basis, kwargs['cbsmeta']
 
@@ -91,7 +99,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule"
     Returns
     -------
     computer
-        A simple (AtomicComputer) or Layered (CompositeComputer, FiniteDifferenceComputer, ManyBodyComputer) task object.
+        A simple (AtomicComputer) or layered (CompositeComputer, FiniteDifferenceComputer, ManyBodyComputer) task object.
         Layered objects contain many and multiple types of computers in a graph.
 
     """
