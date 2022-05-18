@@ -90,6 +90,7 @@ set {
     BASIS jun-cc-pVQZ
     SCF_TYPE DF
     FREEZE_CORE True
+    DF_BASIS_ELST jun-cc-pVQZ-RI
 }
 
 energy('sapt0')

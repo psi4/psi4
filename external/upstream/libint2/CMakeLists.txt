@@ -64,11 +64,20 @@ else()
 
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2 ${_url_am_src}${ColourReset} instead.")
 
+        if (MSVC)
+            # Windows shared (dll) can't work
+            set(_build_shared_libs "OFF")
+        else()
+            # stopgap to avert a report that static lib not working on Linux
+            set(_build_shared_libs "ON")
+        endif()
+
         ExternalProject_Add(libint2_external
             URL ${_url_l2_tarball}
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
-                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                       #-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                       -DCMAKE_BUILD_TYPE=Release
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
@@ -78,7 +87,7 @@ else()
                        -DEigen3_DIR=${Eigen3_DIR}
                        -DLIBINT2_SHGAUSS_ORDERING=gaussian
                        #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-                       -DBUILD_SHARED_LIBS=OFF
+                       -DBUILD_SHARED_LIBS=${_build_shared_libs}
                        -DREQUIRE_CXX_API=ON
                        -DREQUIRE_CXX_API_COMPILED=OFF
                        -DENABLE_FORTRAN=OFF
@@ -140,7 +149,7 @@ else()
     # CHOOSE! `make export`
     #set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/libint2 CACHE PATH "path to internally built libint2-config.cmake" FORCE)
     # CHOOSE! pure cmake
-    set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint2 CACHE PATH "path to internally built Libint2Config.cmake" FORCE)
+    set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/libint2 CACHE PATH "path to internally built libint2-config.cmake" FORCE)
 
 endif()
 

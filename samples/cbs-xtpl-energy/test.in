@@ -1,4 +1,4 @@
-#! Extrapolated water energies
+#! Extrapolated water energies - density-fitted version
 import numpy as np
 
 nucenergy_ref =   8.8014655646      #TEST

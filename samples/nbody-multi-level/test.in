@@ -52,3 +52,34 @@ clean()
 comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
 for n, v in comparison_dict.items():                                                              #TEST
     compare_values(v, wfn.variable(n), 6, 'Electrostatically embedded many-body expansion')   #TEST
+
+
+# units check
+h2o_trimer_ang = psi4.core.Molecule.from_arrays(
+    elez=[8, 1, 1, 8, 1, 1, 8, 1, 1],
+    fragment_separators=[3, 6],
+    geom=np.array([
+  -2.76373224,  -1.24377706,  -0.15444566,
+  -1.12357791,  -2.06227970,  -0.05243799,
+  -3.80792362,  -2.08705525,   1.06090407,
+   2.46924614,  -1.75437739,  -0.17092884,
+   3.76368260,  -2.21425403,   1.00846104,
+   2.30598330,   0.07098445,  -0.03942473,
+   0.29127930,   3.00875625,   0.20308515,
+  -1.21253048,   1.95820900,   0.10303324,
+   0.10002049,   4.24958115,  -1.10222079]) * psi_bohr2angstroms,
+    units="Angstrom")
+
+levels = {1: 'mp2/sto-3g', 'supersystem': 'scf/sto-3g'}
+e, wfn = energy('', molecule=h2o_trimer_ang, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
+clean()
+comparison_dict = {'1': -224.998373505116, '3': -225.023509855159}                                #TEST
+for n, v in comparison_dict.items():                                                              #TEST
+    compare_values(v, wfn.variable(n+'nocp'), 6, 'Supersystem multi-level energy: Ang')           #TEST
+
+e, wfn = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_wfn=True,
+                max_nbody=2, embedding_charges=embedding_charges)
+clean()
+comparison_dict = {'1': -224.940138148882, '2': -224.943882712817}                                #TEST
+for n, v in comparison_dict.items():                                                              #TEST
+    compare_values(v, wfn.variable(n), 6, 'Electrostatically embedded many-body expansion: Ang')  #TEST

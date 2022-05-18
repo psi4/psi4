@@ -17,4 +17,19 @@ set {
   roots_per_irrep [2, 2, 2, 2]
 }
 
-properties('eom-ccsd', properties=['oscillator_strength'])
+wfn = properties('eom-ccsd', properties=['oscillator_strength'], return_wfn=True)[1]
+
+### ccdensity checks
+
+
+
+### Excitation energy checks
+
+
+
+### Transition checks
+
+}
+
+
+

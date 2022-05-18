@@ -42,6 +42,9 @@ ADC: Ab Initio Polarization Propagator
 
 *Module:* :ref:`Keywords <apdx:adc>`, :ref:`PSI Variables <apdx:adc_psivar>`, :source:`ADC <psi4/src/psi4/adc>`
 
+.. caution:: As of Spring 2022, v1.6, the built-in backend is deprecated and will only be active
+   when adcc addon backend is unavailable. In v1.7, built-in ADC will be removed.
+
 Algebraic-diagrammatic construction methods for the polarization propagator (ADC)
 determine correlated excitation energies by investigating the pole structure
 of said propagator. For this the propagator is expressed in a representation

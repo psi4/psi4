@@ -24,27 +24,21 @@ mol = psi4.core.Molecule.from_arrays(
     units="Bohr")
 activate(mol)
 
-Chrgfield_A = QMMM()
-Chrgfield_A.extern.addCharge( 0.417, -0.5496 / psi_bohr2angstroms, -0.6026 / psi_bohr2angstroms,  1.5720 / psi_bohr2angstroms)
-Chrgfield_A.extern.addCharge(-0.834, -1.4545 / psi_bohr2angstroms, -0.1932 / psi_bohr2angstroms,  1.4677 / psi_bohr2angstroms)
-Chrgfield_A.extern.addCharge( 0.417, -1.9361 / psi_bohr2angstroms, -0.4028 / psi_bohr2angstroms,  2.2769 / psi_bohr2angstroms)
-
-Chrgfield_B = QMMM()
-Chrgfield_B.extern.addCharge( 0.417, -2.5628 / psi_bohr2angstroms, -0.8269 / psi_bohr2angstroms, -1.6696 / psi_bohr2angstroms)
-Chrgfield_B.extern.addCharge(-0.834, -1.7899 / psi_bohr2angstroms, -0.4027 / psi_bohr2angstroms, -1.2768 / psi_bohr2angstroms)
-Chrgfield_B.extern.addCharge( 0.417, -1.8988 / psi_bohr2angstroms, -0.4993 / psi_bohr2angstroms, -0.3072 / psi_bohr2angstroms)
-
-Chrgfield_C = QMMM()
-Chrgfield_C.extern.addCharge( 0.417,  1.1270 / psi_bohr2angstroms,  1.5527 / psi_bohr2angstroms, -0.1658 / psi_bohr2angstroms)
-Chrgfield_C.extern.addCharge(-0.834,  1.9896 / psi_bohr2angstroms,  1.0738 / psi_bohr2angstroms, -0.1673 / psi_bohr2angstroms)
-Chrgfield_C.extern.addCharge( 0.417,  2.6619 / psi_bohr2angstroms,  1.7546 / psi_bohr2angstroms, -0.2910 / psi_bohr2angstroms)
-
-
 external_potentials = {
-                       'A': Chrgfield_A,
-                       'B': Chrgfield_B,
-                       'C': Chrgfield_C,
-                      }
+    "A": [
+        [ 0.417, np.array([-0.5496, -0.6026,  1.5720]) / psi_bohr2angstroms],
+        [-0.834, np.array([-1.4545, -0.1932,  1.4677]) / psi_bohr2angstroms],
+        [ 0.417, np.array([-1.9361, -0.4028,  2.2769]) / psi_bohr2angstroms]],
+    "B": [
+        [ 0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
+        [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
+        [ 0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms]],
+    "C": [
+        [ 0.417, np.array([ 1.1270,  1.5527, -0.1658]) / psi_bohr2angstroms],
+        [-0.834, np.array([ 1.9896,  1.0738, -0.1673]) / psi_bohr2angstroms],
+        [ 0.417, np.array([ 2.6619,  1.7546, -0.2910]) / psi_bohr2angstroms]],
+}
+
 
 set {
 basis jun-cc-pvdz
@@ -71,7 +65,6 @@ with open('fB.dat', 'w') as fB: fB.write("w3 4 5 6")
 subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True)
 
 fEnergies = {}
-
 
 
 

@@ -693,7 +693,7 @@ def register_xtpl_function(func: Callable):
     ----------
     func
         A Python function that applies a basis set extrapolation formula to scalars and optionally to
-        NumPy arrays. See :src:`psi4/driver/driver_cbs_helper.py` and :srcsample:`pywrap-cbs1` for
+        NumPy arrays. See :source:`psi4/driver/driver_cbs_helper.py` and :srcsample:`pywrap-cbs1` for
         examples. The name of the function should follow the pattern ``<scf|corl>_xtpl_<scientist>_<#basis>``.
 
     """
@@ -710,7 +710,7 @@ def register_composite_function(func: Callable):
     ----------
     func
         A Python function that defines a configuration of the :py:func:`psi4.cbs` wrapper.
-        See :src:`psi4/driver/aliases.py` and :srcsample:`cbs-xtpl-nbody` for examples.
+        See :source:`psi4/driver/aliases.py` and :srcsample:`cbs-xtpl-nbody` for examples.
 
     """
     composite_procedures[func.__name__] = func

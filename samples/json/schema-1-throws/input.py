@@ -1,4 +1,4 @@
-#! test QC_JSON Schema noncontiguous mol
+#! test QCSchema noncontiguous mol
 
 import numpy as np
 import psi4

@@ -1,4 +1,4 @@
-#! test QC_JSON Schema for properties
+#! test QCSchema for properties
 
 import numpy as np
 import psi4

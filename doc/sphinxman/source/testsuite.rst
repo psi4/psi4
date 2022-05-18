@@ -44,12 +44,12 @@ Sample inputs accessible through :ref:`interfaced executables
 
 .. toctree::
 
-   autodoc_testsuite_adcc.rst
    autodoc_testsuite_brianqc.rst
    autodoc_testsuite_cfour
    autodoc_testsuite_chemps2
    autodoc_testsuite_cookbook
    autodoc_testsuite_dftd3
+   autodoc_testsuite_dftd4
    autodoc_testsuite_dkh
    autodoc_testsuite_libefp
    autodoc_testsuite_erd

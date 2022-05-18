@@ -1,3 +1,4 @@
+#! TD-HF test variable access
 molecule h2o {
   1 2 
   O

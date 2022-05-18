@@ -243,6 +243,8 @@ Dropped Dependencies:
 
 * MPFR https://www.mpfr.org/ (Mar 2022; dropped by v1.6) no longer needed to compile against Libint2
 
+* Perl for testing (April 2022; dropped by v1.6)
+
 
 .. _`faq:addondepend`:
 
@@ -258,7 +260,6 @@ are available pre-built from conda.
 * |PSIfour| Testing
 
   * CTest https://cmake.org/download/
-  * Perl (for some coupled-cluster CTest tests) https://www.perl.org/
   * pytest (for installed testing) http://doc.pytest.org/en/latest/
   * pytest-xdist (for installed testing many tests at once) https://github.com/pytest-dev/pytest-xdist
 

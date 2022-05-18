@@ -2,7 +2,8 @@
 #! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
 Enuc = 235.94662124        #TEST
-Ecp  = -0.0224119246       #TEST
+df_Ecp  = -0.0224119246    #TEST
+conv_Ecp = -0.0224253      #TEST
 
 molecule formic_dim {
    0 1
@@ -35,4 +36,4 @@ set {
 e_cp = energy('mp2', bsse_type='cp')
 
 compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 7, "Nuclear Repulsion Energy") #TEST
-compare_values(Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")                      #TEST
+compare_values(df_Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")                   #TEST

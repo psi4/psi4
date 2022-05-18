@@ -1,0 +1,147 @@
+#! Exercises the various DFT-D corrections, both through python directly and through c++
+
+ref_d2         = [-0.00390110, -0.00165271, -0.00058118]  #TEST
+ref_d3zero     = [-0.00285088, -0.00084340, -0.00031923]  #TEST
+ref_d3bj       = [-0.00784595, -0.00394347, -0.00226683]  #TEST
+ref_d4bj       = [-0.00625445, -0.00306407, -0.00176150]  #TEST
+ref_d4bj_2body = [-0.00625366, -0.00306413, -0.00176146]  #TEST
+
+ref_pbe_d2     = [-0.00278650, -0.00118051, -0.00041513]  #TEST
+ref_pbe_d3zero = [-0.00175474, -0.00045421, -0.00016839]  #TEST
+ref_pbe_d3bj   = [-0.00475937, -0.00235265, -0.00131239]  #TEST
+ref_pbe_d4bj   = [-0.00399176, -0.00190682, -0.00108739]  #TEST
+
+gref_d4bj = [
+            np.array(
+                [
+                    [-0.0, -0.000121388195, -0.000285720303],
+                    [0.0, 0.000121388195, -0.000285720303],
+                    [0.000013500589, -0.000035224119, -0.000051913946],
+                    [-0.000013500589, -0.000035224119, -0.000051913946],
+                    [-0.000013500589, 0.000035224119, -0.000051913946],
+                    [0.000013500589, 0.000035224119, -0.000051913946],
+                    [0.0, -0.0, 0.000162779428],
+                    [0.0, -0.0, 0.00042515118],
+                    [0.0, -0.0, 0.000180544011],
+                    [0.0, -0.0, 0.000010621775],
+                ]
+            ),
+            np.array(
+                [
+                    [-0.0, -0.000077703214, -0.000000117582],
+                    [0.0, 0.000077703214, -0.000000117582],
+                    [-0.000003720109, -0.000014373039, 0.000000058791],
+                    [0.000003720109, -0.000014373039, 0.000000058791],
+                    [0.000003720109, 0.000014373039, 0.000000058791],
+                    [-0.000003720109, 0.000014373039, 0.000000058791],
+                ]
+            ),
+            np.array(
+                [
+                    [0.0, 0.0, 0.000044445504],
+                    [0.0, 0.0, -0.000044316404],
+                    [0.0, 0.0, -0.000011452466],
+                    [0.0, 0.0, 0.000011323366],
+                ]
+            ),
+]
+
+
+molecule eneyne {
+C   0.000000  -0.667578  -2.124659
+C   0.000000   0.667578  -2.124659
+H   0.923621  -1.232253  -2.126185
+H  -0.923621  -1.232253  -2.126185
+H  -0.923621   1.232253  -2.126185
+H   0.923621   1.232253  -2.126185
+--
+C   0.000000   0.000000   2.900503
+C   0.000000   0.000000   1.693240
+H   0.000000   0.000000   0.627352
+H   0.000000   0.000000   3.963929
+}
+
+print('  -D correction from Py-side')  #TEST
+eneyne.update_geometry()
+E, G = eneyne.run_dftd4('b3lyp', 'd4bj')
+compare_values(ref_d4bj[0], E, 7, '1: Ethene-Ethyne -D4 (bj)')  #TEST
+mA = eneyne.extract_subsets(1)
+E, G = mA.run_dftd4('b3lyp', 'd4bj')
+compare_values(ref_d4bj[1], E, 7, '2: Ethene -D4 (bj)')  #TEST
+compare_values(gref_d4bj[1], G, 7, '3: Ethene -D4 (bj) grad')  #TEST
+mB = eneyne.extract_subsets(2)
+E, G = mB.run_dftd4('b3lyp', 'd4bj')
+compare_values(ref_d4bj[2], E, 7, '4: Ethyne -D4 (bj)')  #TEST
+
+set basis sto-3g
+set scf_type df
+set dft_radial_points 50  # use really bad grid for speed since all we want is the -D value
+set dft_spherical_points 110
+#set scf print 3  # will print dftd3 program output to psi4 output file
+
+
+print('  -D correction from C-side')  #TEST
+activate(mA)
+gradient('b3lyp-d4bj')
+compare_values(ref_d4bj[1], variable('DISPERSION CORRECTION ENERGY'), 7, '5: Ethene -D4')  #TEST
+compare_values(gref_d4bj[1], variable('DISPERSION CORRECTION GRADIENT'), 7, '6: Ethene -D4 grad')  #TEST
+
+mAgB = eneyne.extract_subsets(1, 2)
+activate(mAgB)
+energy('b3lyp-d4')
+compare_values(ref_d4bj[1], variable('DISPERSION CORRECTION ENERGY'), 7, '7: Ethene -D4 (alias)')  #TEST
+
+print('  non-default -D correction from C-side')  #TEST
+activate(mB)
+set dft_dispersion_parameters [0.40868035, 4.53807137, 16.0, 1.0, 2.02929367, 1.0]  # b3lyp-d4
+energy('b3lyp-d4(bj)')
+compare_values(ref_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, '8: Ethene -D4')  #TEST
+
+activate(eneyne)
+set dft_dispersion_parameters [0.40868035, 4.53807137, 16.0, 1.0, 2.02929367, 0.0]  # b3lyp-d4-2body
+energy('b3lyp-d4(bj)')
+compare_values(ref_d4bj_2body[0], variable('DISPERSION CORRECTION ENERGY'), 7, '9: Ethene -D4-2body')  #TEST
+
+gAmB = eneyne.extract_subsets(2, 1)
+activate(gAmB)
+set dft_dispersion_parameters [0.75]
+energy('b3lyp-d2')
+compare_values(ref_pbe_d2[2], variable('DISPERSION CORRECTION ENERGY'), 7, '10: Ethene -D2 (alias)')  #TEST
+
+set dft_dispersion_parameters [1.0,  0.722, 1.217, 14.0]
+energy('b3lyp-d3')
+compare_values(ref_pbe_d3zero[2], variable('DISPERSION CORRECTION ENERGY'), 7, '11: Ethene -D4 (alias)')  #TEST
+set dft_dispersion_parameters [0.75]
+set dft_dispersion_parameters [0.38574991, 4.80688534, 16.0, 1.0, 0.95948085, 1.0]  # pbe-d4
+energy('b3lyp-d4')
+compare_values(ref_pbe_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, '12: Ethene -D4 (alias)')  #TEST
+activate(mA)
+set dft_dispersion_parameters [1.0]
+energy('wb97x-d')
+compare_values(-0.000834247063, variable('DISPERSION CORRECTION ENERGY'), 7, '13: Ethene wb97x-d (chg)')  #TEST
+
+print('  non-default -D correction from Py-side')  #TEST
+eneyne.update_geometry()
+
+eneyne.run_dftd4('', 'd4bj', {"s8": 0.95948085, "a1": 0.38574991, "a2": 4.80688534, "s9": 1.0})  # pbe-d4
+compare_values(ref_pbe_d4bj[0], variable('DISPERSION CORRECTION ENERGY'), 7, '14: Ethene-Ethyne -D4 (bj)')  #TEST
+
+try:
+    eneyne.run_dftd4('b3lyp', 'd4bj', {"s8": 0.95948085, "a1": 0.38574991, "a2": 4.80688534, "s9": 1.0})  # pbe-d4
+    compare_values(ref_pbe_d4bj[0], variable('DISPERSION CORRECTION ENERGY'), 7, '15: Ethene-Ethyne -D4 (bj)')  #TEST
+except psi4.driver.p4util.exceptions.TestComparisonError:
+    # unlike Mol.run_dftd3(), functional overrides parameters in Mol.run_dftd4()
+    compare(True, True, 'Ethene-Ethyne -D4 (bj) func trumps params')  #TEST
+    pass
+
+eneyne.run_dftd4('', 'D4', {"s8": 2.02929367, "a1": 0.40868035, "a2": 4.53807137, "s9": 0.0})  # b3lyp-d4-2body
+compare_values(ref_d4bj_2body[0], variable('DISPERSION CORRECTION ENERGY'), 7, '16: Ethene-Ethyne -D4 (bj)')  #TEST
+
+print('  cast-up, -D correction from C-side')  #TEST
+clean_options()
+activate(mB)
+set basis cc-pvdz
+set basis_guess sto-3g
+energy('b3lyp-d4bj')
+compare_values(ref_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, '17: Ethene -D4 cast-up')  #TEST
+

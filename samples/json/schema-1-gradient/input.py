@@ -1,4 +1,4 @@
-#! test QC_JSON Schema for gradient
+#! test QCSchema for gradient
 
 import numpy as np
 import psi4

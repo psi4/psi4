@@ -25,6 +25,6 @@ sapt_explicit, wfn = energy("sapt2+(3)/cc-pvdz", molecule=ne2, return_wfn=True)
 
 cbs_string = energy("mp2/6-311++G** + D:ccsd/6-311+G")
 
-cbs_direct = energy(cbs, corl_wfn="mp2", corl_basis="6-311++G**", delta_wfn="ccsd", delta_basis="6-311+G")
+cbs_direct = energy("cbs", corl_wfn="mp2", corl_basis="6-311++G**", delta_wfn="ccsd", delta_basis="6-311+G")
 
 

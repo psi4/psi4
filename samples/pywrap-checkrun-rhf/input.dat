@@ -144,7 +144,11 @@ for method in Earray:
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
+   if method == "ADC":
+        set_global_option("QC_MODULE", "builtin")
    ans = energy(method)
+   if method == "ADC":
+        revoke_global_option_changed("QC_MODULE")
    print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
    clean()
 
@@ -172,7 +176,11 @@ for method in Earray:
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
+   if method == "ADC":
+        set_global_option("QC_MODULE", "builtin")
    ans = energy(method)
+   if method == "ADC":
+        revoke_global_option_changed("QC_MODULE")
    print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
    clean()
 

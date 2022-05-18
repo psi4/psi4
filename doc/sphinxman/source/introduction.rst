@@ -594,7 +594,7 @@ Architectures
     principle, it should work on any Unix system. The latest version of the
     |PSIfour| program package may be obtained at `psicode.org <http://psicode.org>`_.
     The package is available as a binary (:ref:`Installing from Binary
-    <sec:conda>`) for Linux, macOS, or Windows (both native and via Windows Subsystem for
+    <sec:conda>`) for Linux, macOS (not arm64), or Windows (both native and via Windows Subsystem for
     Linux aka `Bash on Ubuntu on Windows
     <https://docs.microsoft.com/en-us/windows/wsl/about>`_)
     or as source code (git repository or zipped archive from
@@ -602,7 +602,7 @@ Architectures
 Compilers
     |PSIfour| has been successfully compiled using Intel, GCC, and Clang
     compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
-    C++14 compliance (now GCC version 6.0 or above).
+    C++17 compliance (now GCC version 7.0 or above).
     For some architectures, a :ref:`precompiled binary
     <sec:conda>` is available. See :ref:`Compiling and Installing
     <sec:installFile>` for details.
@@ -614,6 +614,7 @@ Python
     |PSIfour| 1.3 supports Python 3.6 and 3.7.
     |PSIfour| 1.4 supports Python 3.6, 3.7, 3.8, and 3.9.
     |PSIfour| 1.5 supports Python 3.7, 3.8, and 3.9.
+    |PSIfour| 1.6 supports Python 3.8, 3.9, and 3.10.
     The future plan is to support the two or three latest Python versions.
     The current master supports 3.8, 3.9, and 3.10.
     

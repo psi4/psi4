@@ -1,0 +1,22 @@
+#! Water-Argon complex with ECP present; check of RHF Hessian
+
+molecule arwater {
+    Ar    0.000000000000     0.000000000000     1.183723589566
+    O     0.000000000000     0.000000000000    -2.685707410601
+    H     0.000000000000    -0.790560862274    -2.156502733156
+    H     0.000000000000     0.790560862274    -2.156502733156
+}
+
+set = {
+    basis          lanl2dz
+    d_convergence  12
+}
+
+# Analytic Hessian
+hess2 = hessian('scf')
+# Hessian from finite differences of energies
+hess0 = hessian('scf', dertype=0)
+compare_matrices(hess0, hess2, 3, "RHF ECP finite-diff of energies vs. analytic Hessian to 10^-3") #TEST
+# Hessian from finite differences of gradients
+hess1 = hessian('scf', dertype=1)
+compare_matrices(hess1, hess2, 3, "RHF ECP finite-diff of gradients vs. analytic Hessian to 10^-3") #TEST
