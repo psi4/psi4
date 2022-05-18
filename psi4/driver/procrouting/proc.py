@@ -3164,7 +3164,7 @@ def run_cc_property(name, **kwargs):
                 # Don't forget to count the ground state!
                 for i in range(n_root_pi[h]):
                     if h == gs_h: i += 1
-                    root_title = title + f" ROOT {i} ({root_h_lbl})"
+                    root_title = title + f" ROOT {i} (IN {root_h_lbl})"
                     oe.set_title(root_title)
                     total_idx = ccwfn.total_index(i, h)
                     set_of_names = {f"{title} ROOT {total_idx} {{}}", f"CC ROOT {total_idx} {{}}",
