@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+from typing import Optional
+
 import numpy as np
 
 def prepare_results(self, client: Optional["FractalClient"] = None):

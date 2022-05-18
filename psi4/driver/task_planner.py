@@ -134,7 +134,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule"
     packet = {"molecule": molecule, "driver": driver, "method": method, "basis": basis, "keywords": keywords}
 
     # First check for BSSE type
-    if 'bsse_type' in kwargs:
+    if kwargs.get("bsse_type", None) is not None:
         levels = kwargs.pop('levels', None)
 
         plan = ManyBodyComputer(**packet, **kwargs)
