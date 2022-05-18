@@ -793,10 +793,10 @@ def tdscf_excitations(wfn,
                 wfn.set_variable(f"TD-{name} ROOT 0 ({x.irrep_GS}) -> ROOT {i+1} ({x.irrep_ES}) {prop_name}", val)
                 wfn.set_variable(f"TD-{name} ROOT 0 -> ROOT {i+1} {prop_name} - {x.irrep_trans} TRANSITION", val)
 
-            # wfn.set_variable("TD-fctl ROOT m TOTAL ENERGY")               # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT m (IN h) TOTAL ENERGY")           # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT m (h) TOTAL ENERGY")           # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT m TOTAL ENERGY - h TRANSITION")  # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT n TOTAL ENERGY")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT n (IN h) TOTAL ENERGY")           # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT n (h) TOTAL ENERGY")           # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT n TOTAL ENERGY - h TRANSITION")  # P::e SCF
             root_setter("TOTAL ENERGY", E_tot_au)
             # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY")               # P::e SCF
             # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) EXCITATION ENERGY")       # P::e SCF

@@ -255,16 +255,16 @@ double ADCWfn::compute_energy() {
                                                 free(tracepi);
                         */
 
-                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY"] -*/
-                        oss << state_top << "0 -> ROOT " << root + 1 << " EXCITATION ENERGY - " << irrep_[irrep] << " SYMMETRY";
+                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION"] -*/
+                        oss << state_top << "0 -> ROOT " << root + 1 << " EXCITATION ENERGY - " << irrep_[irrep] << " TRANSITION";
                         Process::environment.globals[oss.str()] = omega[root];
-                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h SYMMETRY"] -*/
+                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h TRANSITION"] -*/
                         oss.str(std::string());
-                        oss << state_top << "0 -> ROOT " << root + 1 << " CORRELATION ENERGY - " << irrep_[irrep] << " SYMMETRY";
+                        oss << state_top << "0 -> ROOT " << root + 1 << " CORRELATION ENERGY - " << irrep_[irrep] << " TRANSITION";
                         Process::environment.globals[oss.str()] = omega[root] + corr_energy;
-                        /*- Process::environment.globals["ADC ROOT n TOTAL ENERGY - h SYMMETRY"] -*/
+                        /*- Process::environment.globals["ADC ROOT n TOTAL ENERGY - h TRANSITION"] -*/
                         oss.str(std::string());
-                        oss << state_top << root + 1 << " TOTAL ENERGY - " << irrep_[irrep] << " SYMMETRY";
+                        oss << state_top << root + 1 << " TOTAL ENERGY - " << irrep_[irrep] << " TRANSITION";
                         Process::environment.globals[oss.str()] = omega[root] + energy_ + corr_energy;
 
                         global_dpd_->file2_close(&V);

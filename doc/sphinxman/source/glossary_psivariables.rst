@@ -263,32 +263,40 @@ PSI Variables by Alpha
    method requested through cbs().
 
 .. psivar:: CCname ROOT n TOTAL ENERGY
+   TD-fctl ROOT n TOTAL ENERGY
 
-   The total electronic energy [Eh] for the requested coupled cluster level of theory and root *n* (*n* starts at 0).
+   The total electronic energy [Eh] for the requested theory and root *n* (*n* starts at 0).
+   DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n (IN h) TOTAL ENERGY
+   TD-fctl ROOT n (IN h) TOTAL ENERGY
 
-    The total electronic energy [Eh] for the requested coupled cluster level of theory and root *n* within irrep *h* (*n* starts at 0).
+   The total electronic energy [Eh] for the requested theory and root *n* within irrep *h* (*n* starts at 0).
+   DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n (h) TOTAL ENERGY
+   TD-fctl ROOT n (IN h) TOTAL ENERGY
 
-    The total electronic energy [Eh] for the requested coupled cluster level of theory and root *n*, which is of irrep *h* (*n* starts at 0).
+   The total electronic energy [Eh] for the requested theory and root *n*, which is of irrep *h* (*n* starts at 0).
+   DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n TOTAL ENERGY - h TRANSITION
+   TD-fctl ROOT n TOTAL ENERGY - h TRANSITION
 
-   The total electronic energy [Eh] for the requested coupled cluster level of theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0).
+   The total electronic energy [Eh] for the requested theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0).
 
 .. psivar:: CCname ROOT n CORRELATION ENERGY
 
    The correlation energy [Eh] for the requested coupled cluster level of theory and root *n* (*n* starts at 0).
+   DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n (IN h) CORRELATION ENERGY
 
-    The correlation energy [Eh] for the requested coupled cluster level of theory and root *n* within irrep *h* (*n* starts at 0).
+   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n* within irrep *h* (*n* starts at 0).
 
 .. psivar:: CCname ROOT n (h) CORRELATION ENERGY
 
-    The correlation energy [Eh] for the requested coupled cluster level of theory and root *n*, which is of irrep *h* (*n* starts at 0).
+   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n*, which is of irrep *h* (*n* starts at 0).
 
 .. psivar:: CCname ROOT n CORRELATION ENERGY - h TRANSITION
 
