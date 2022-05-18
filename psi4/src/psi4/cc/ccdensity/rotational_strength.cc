@@ -148,8 +148,8 @@ void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *
     outfile->Printf("\tRotational Strength (au)                 %11.8lf\n", rs);
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
 
-    // Save rotary strength to wfn.
-    scalar_saver_ground(wfn, S, "ROTARY STRENGTH (LEN)", rs);
+    // Save rotatory strength to wfn.
+    scalar_saver_ground(wfn, S, "ROTATORY STRENGTH (LEN)", rs);
 
     outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n", S->root + 1, moinfo.labels[S->irrep].c_str());
     outfile->Printf("\t                              X    \t       Y    \t       Z\n");
@@ -237,8 +237,8 @@ void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *
     outfile->Printf("\tRotational Strength (au)                 %11.8lf\n", rs);
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
 
-    // Save rotary strength to wfn.
-    scalar_saver_ground(wfn, S, "ROTARY STRENGTH (VEL)", rs);
+    // Save rotatory strength to wfn.
+    scalar_saver_ground(wfn, S, "ROTATORY STRENGTH (VEL)", rs);
 
     return;
 }

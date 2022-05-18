@@ -817,12 +817,12 @@ def tdscf_excitations(wfn,
             # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ROTATORY STRENGTH (LEN)")       # P::e SCF
             # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (LEN)")       # P::e SCF
             # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h TRANSITION")  # P::e SCF
-            transition_setter("ROTARY STRENGTH (LEN)", x.R_length)
+            transition_setter("ROTATORY STRENGTH (LEN)", x.R_length)
             # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL)")               # P::e SCF
             # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ROTATORY STRENGTH (VEL)")       # P::e SCF
             # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (VEL)")       # P::e SCF
             # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h TRANSITION")  # P::e SCF
-            transition_setter("ROTARY STRENGTH (VEL)", x.R_velocity)
+            transition_setter("ROTATORY STRENGTH (VEL)", x.R_velocity)
             # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN")                # P::e SCF
             # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
             # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
