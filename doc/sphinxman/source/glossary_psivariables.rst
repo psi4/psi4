@@ -207,7 +207,7 @@ PSI Variables by Alpha
    DFT functional labeled if canonical.
 
 .. psivar:: ADC ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)
-   CCname ROOT m (h) -> ROOT n (i) ROTARY STRENGTH (VEL)
+   CCname ROOT m (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)
    TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)
 
    The velocity-gauge oscillator strength of the transition from root *m* to root *n*,
@@ -227,10 +227,10 @@ PSI Variables by Alpha
    The total ADC energy of root *n* within irrep *h*. This variable is only defined for Psi's
    built-in ADC and will be removed for 1.7.
 
-.. psivar:: ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h TRANSITION
+.. psivar:: ADC ROOT 0 -> ROOT n CORRELATION ENERGY - h TRANSITION
 
    The correlation energy contribution to the excitation energy from the ground state to
-   root *m* within irrep *h*. This variable is only defined for Psi's built-in ADC and will be removed for 1.7.
+   root *n* within irrep *h*. This variable is only defined for Psi's built-in ADC and will be removed for 1.7.
 
 .. psivar:: AQCC DIPOLE
 
