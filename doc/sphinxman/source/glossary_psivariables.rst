@@ -78,144 +78,147 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the averaged coupled-pair functional level of theory.
 
-.. psivar:: ADC ROOT 0 -> ROOT m EXCITATION ENERGY
-   TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY
+.. psivar:: ADC ROOT 0 -> ROOT n EXCITATION ENERGY
+   TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY
 
-   The excitation energy from ground state to root *m*.
+   The excitation energy [Eh} from ground state to root *n*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (IN h) -> ROOT m (IN i) EXCITATION ENERGY
-   TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) EXCITATION ENERGY
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY
 
-   The excitation energy from the ground state (which is of irrep *h*)
-   to root *m* within irrep *i*.
+   The excitation energy [Eh] from the ground state (which is of irrep *h*)
+   to root *n* within irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (h) -> ROOT m (i) EXCITATION ENERGY
-   TD-fctl ROOT 0 (h) -> ROOT m (i) EXCITATION ENERGY
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY
+   TD-fctl ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY
 
-   The excitation energy from the ground state (which is of irrep *h*)
-   to root *m* (which is of irrep *i*).
+   The excitation energy [Eh] from the ground state (which is of irrep *h*)
+   to root *n* (which is of irrep *i*).
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION
-   TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION
+.. psivar:: ADC ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION
 
-   The excitation energy from the ground state to root *m*, and the
+   The excitation energy [Eh] from the ground state to root *n*, and the
    transition is of irrep *h*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
-   TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+.. psivar:: ADC ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+   TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
 
-   The electric transition dipole moment in length gauge, for the transition
-   from the ground state to root *m*.
+   The electric transition dipole moment [e a0] in length gauge, for the transition
+   from the ground state to root *n*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (IN h) -> ROOT m (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
-   TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
 
-   The electric transition dipole moment in length gauge, for the transition
-   from the ground state, which is of irrep *h*, to root *m* within irrep *i*.
+   The electric transition dipole moment [e a0] in length gauge, for the transition
+   from the ground state, which is of irrep *h*, to root *n* within irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
-   TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
 
-   The electric transition dipole moment in length gauge, for the transition
-   from the ground state, which is of irrep *h*, to root *m*, which is of irrep *i*.
+   The electric transition dipole moment [e a0] in length gauge, for the transition
+   from the ground state, which is of irrep *h*, to root *n*, which is of irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
-   TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
+.. psivar:: ADC ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
 
-   The electric transition dipole moment in length gauge, for the transition
-   from the ground state to root *m*, and the transition is of *h* symmetry.
+   The electric transition dipole moment [e a0] in length gauge, for the transition
+   from the ground state to root *n*, and the transition is of *h* symmetry.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
-   CCname ROOT n -> ROOT m OSCILLATOR STRENGTH (LEN)
-   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
+.. psivar:: ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN)
+   CCname ROOT m -> ROOT n OSCILLATOR STRENGTH (LEN)
+   TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN)
 
-   The length-gauge oscillator strength of the transition from root *n* to root *m*.
+   The length-gauge oscillator strength of the transition from root *m* to root *n*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (IN h) -> ROOT m (IN i) OSCILLATOR STRENGTH (LEN)
-   CCname ROOT n (IN h) -> ROOT m (IN i) OSCILLATOR STRENGTH (LEN)
-   TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) OSCILLATOR STRENGTH (LEN)
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)
+   CCname ROOT m (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)
 
-   The length-gauge oscillator strength of the transition from root *n* within irrep *h*
-   to root *m* within irrep *i*.
+   The length-gauge oscillator strength of the transition from root *m* within irrep *h*
+   to root *n* within irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
-   CCname ROOT n (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
-   TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)
+   CCname ROOT m (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)
 
-   The length-gauge oscillator strength of the transition from root *n* to root *m*,
+   The length-gauge oscillator strength of the transition from root *m* to root *n*,
    which are in irreps *h* and *i*, respectively..
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION
-   CCname ROOT n -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION
-   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION
+.. psivar:: ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION
+   CCname ROOT m -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION
 
-   The length-gauge oscillator strength of the transition from root *n* to root *m*,
+   The length-gauge oscillator strength of the transition from root *m* to root *n*,
    and the transition is of irrep *h*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)
-   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)
+.. psivar:: ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL)
+   TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL)
 
-   The velocity-gauge oscillator strength of the transition from root *n* to root *m*.
+   The velocity-gauge oscillator strength of the transition from the ground state to root *n*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (IN h) -> ROOT m (IN i) OSCILLATOR STRENGTH (VEL)
-   TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) OSCILLATOR STRENGTH (VEL)
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (VEL)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (VEL)
 
-   The velocity-gauge oscillator strength of the transition from root *n* within irrep *h*
-   to root *m* within irrep *i*.
+   The velocity-gauge oscillator strength of the transition from the ground state within irrep *h*
+   to root *n* within irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)
-   TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (VEL)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (VEL)
 
-   The velocity-gauge oscillator strength of the transition from root *n* to root *m*,
+   The velocity-gauge oscillator strength of the transition from the ground state to root *n*,
    which are in irreps *h* and *i*, respectively..
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h TRANSITION
-   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h TRANSITION
+.. psivar:: ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL) - h TRANSITION
 
-   The velocity-gauge oscillator strength of the transition from root *n* to root *m*,
+   The velocity-gauge oscillator strength of the transition from the ground state to root *n*,
    and the transition is of irrep *h*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL)
-   CCname ROOT n -> ROOT m ROTATORY STRENGTH (VEL)
-   TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL)
+.. psivar:: ADC ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL)
+   CCname ROOT m -> ROOT n ROTATORY STRENGTH (VEL)
+   TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL)
 
-.. psivar:: ADC ROOT 0 (IN h) -> ROOT m (IN i) ROTATORY STRENGTH (VEL)
-   CCname ROOT n (IN h) -> ROOT m (IN i) ROTARY STRENGTH (VEL)
-   TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ROTATORY STRENGTH (VEL)
-
-   The velocity-gauge oscillator strength of the transition from root *n* within irrep *h*
-   to root *m* within irrep *i*.
+   The velocity-gauge oscillator strength of the transition from root *m* to root *n*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (VEL)
-   CCname ROOT n (h) -> ROOT m (i) ROTARY STRENGTH (VEL)
-   TD-fctl ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (VEL)
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)
+   CCname ROOT m (IN h) -> ROOT n (IN i) ROTARY STRENGTH (VEL)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)
 
-   The velocity-gauge oscillator strength of the transition from root *n* to root *m*,
+   The velocity-gauge oscillator strength of the transition from root *m* within irrep *h*
+   to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)
+   CCname ROOT m (h) -> ROOT n (i) ROTARY STRENGTH (VEL)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)
+
+   The velocity-gauge oscillator strength of the transition from root *m* to root *n*,
    which are in irreps *h* and *i*, respectively..
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h TRANSITION
-   CCname ROOT n -> ROOT m ROTATORY STRENGTH (VEL) - h TRANSITION
-   TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h TRANSITION
+.. psivar:: ADC ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION
+   CCname ROOT m -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION
 
-   The velocity-gauge oscillator strength of the transition from root *n* to root *m*,
+   The velocity-gauge oscillator strength of the transition from root *m* to root *n*,
    and the transition is of irrep *h*.
    DFT functional labeled if canonical.
 
@@ -382,34 +385,31 @@ PSI Variables by Alpha
    in terms of energy density. Units are in [m^3 / J / s^2].
    Describes the irrep *h* transition between roots *m* and *n*.
 
-.. psivar:: CCname ROOT n -> ROOT m ROTATORY STRENGTH (LEN)
-   TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN)
+.. psivar:: CCname ROOT m -> ROOT n ROTATORY STRENGTH (LEN)
+   TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (LEN)
 
-   The length-gauge rotatory strength of the transition from root *n* to root *m*.
+   The length-gauge rotatory strength of the transition from root *m* to root *n*.
    DFT functional labeled if canonical.
 
-.. psivar:: CCname ROOT n (IN h) -> ROOT m (IN i) ROTATORY STRENGTH (LEN)
-   TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ROTATORY STRENGTH (LEN)
+.. psivar:: CCname ROOT m (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (LEN)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (LEN)
 
-   The length-gauge oscillator strength of the transition from root *n* within irrep *h*
-   to root *m* within irrep *i*.
+   The length-gauge oscillator strength of the transition from root *m* within irrep *h*
+   to root *n* within irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: CCname ROOT n (h) -> ROOT m (i) ROTATORY STRENGTH (LEN)
-   TD-fctl ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (LEN)
+.. psivar:: CCname ROOT m (h) -> ROOT n (i) ROTATORY STRENGTH (LEN)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (LEN)
 
-   The length-gauge oscillator strength of the transition from root *n* to root *m*,
+   The length-gauge oscillator strength of the transition from root *m* to root *n*,
    which are in irreps *h* and *i*, respectively..
    DFT functional labeled if canonical.
 
-.. psivar:: CCname ROOT n -> ROOT m ROTATORY STRENGTH (LEN) - h TRANSITION
-   TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h TRANSITION
+.. psivar:: CCname ROOT m -> ROOT n ROTATORY STRENGTH (LEN) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (LEN) - h TRANSITION
 
-   The length-gauge oscillator strength of the transition from root *n* to root *m*,
+   The length-gauge oscillator strength of the transition from root *m* to root *n*,
    and the transition is of irrep *h*.
-   DFT functional labeled if canonical.
-
-   The velocity-gauge oscillator strength of the transition from root *n* to root *m*.
    DFT functional labeled if canonical.
 
 .. psivar:: CC TOTAL ENERGY
@@ -440,33 +440,51 @@ PSI Variables by Alpha
    Dipole array [e a0] for the requested coupled cluster level of theory and root, (3,).
 
 .. psivar:: CC2 DIPOLE POLARIZABILITY @ xNM
+   CCSD DIPOLE POLARIZABILITY @ xNM
 
    The dipole polarizability in atomic units [(e^2 a0^2)/E_h] calculated at
-   the CC2 level for a given (x) wavelength, (x) rounded to nearest integer.
+   the CC level for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CC2 DIPOLE POLARIZABILITY TENSOR @ xNM
+   CCSD DIPOLE POLARIZABILITY TENSOR @ xNM
+
+   The dipole polarizability tensor in atomic units [(e^2 a0^2)/E_h] calculated at
+   the CC level for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 QUADRUPOLE POLARIZABILITY @ xNM
+   CCSD QUADRUPOLE POLARIZABILITY @ xNM
 
    The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
-   the CC2 level for a given (x) wavelength, (x) rounded to nearest integer.
+   the CC level for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CC2 QUADRUPOLE POLARIZABILITY TENSOR @ xNM
+   CCSD QUADRUPOLE POLARIZABILITY TENSOR @ xNM
+
+   The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
+   the CC level for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 SPECIFIC ROTATION (LEN) @ xNM
+   CCSD SPECIFIC ROTATION (LEN) @ xNM
 
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC level in the
    length gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 SPECIFIC ROTATION (VEL) @ xNM
+   CCSD SPECIFIC ROTATION (VEL) @ xNM
 
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC level in the
    velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 SPECIFIC ROTATION (MVG) @ xNM
+   CCSD SPECIFIC ROTATION (MVG) @ xNM
 
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC level in the
    modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
+   CCSD ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
 
-   The origin-dependence of the CC2 specific rotation in deg/[dm (g/cm^3)]/bohr and the
+   The origin-dependence of the CC specific rotation in deg/[dm (g/cm^3)]/bohr and the
    length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CCD TOTAL ENERGY
@@ -590,36 +608,6 @@ PSI Variables by Alpha
 
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the modified CCSDT(Q) level of theory.
-
-.. psivar:: CCSD DIPOLE POLARIZABILITY @ xNM
-
-   The dipole polarizability in atomic units [(e^2 a0^2)/E_h] calculated at
-   the CCSD level for a given (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CCSD QUADRUPOLE POLARIZABILITY @ xNM
-
-   The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
-   the CCSD level for a given (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CCSD SPECIFIC ROTATION (LEN) @ xNM
-
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
-   length gauge for a given (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CCSD SPECIFIC ROTATION (VEL) @ xNM
-
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
-   velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CCSD SPECIFIC ROTATION (MVG) @ xNM
-
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
-   modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CCSD ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
-
-   The origin-dependence of the CCSD specific rotation in deg/[dm (g/cm^3)]/bohr and the
-   length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CEPA(0) DIPOLE
 
@@ -1770,148 +1758,148 @@ PSI Variables by Alpha
    by 1.4 opposite-spin and 0 same-spin contributions, with
    any singles carried along.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
+.. psivar:: TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
 
-   The electric transition dipole moment in velocity gauge, for the transition
+   The electric transition dipole moment [e a0] in velocity gauge, for the transition
    from the ground state to root *m*.
    DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
 
-   The electric transition dipole moment in velocity gauge, for the transition
-   from the ground state, which is of irrep *h*, to root *m* within irrep *i*.
+   The electric transition dipole moment [e a0] in velocity gauge, for the transition
+   from the ground state, which is of irrep *h*, to root *n* within irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
 
-   The electric transition dipole moment in velocity gauge, for the transition
-   from the ground state, which is of irrep *h*, to root *m*, which is of irrep *i*.
+   The electric transition dipole moment [e a0] in velocity gauge, for the transition
+   from the ground state, which is of irrep *h*, to root *n*, which is of irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h TRANSITION
+.. psivar:: TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h TRANSITION
 
-   The electric transition dipole moment in velocity gauge, for the transition
-   from the ground state to root *m*, and the transition is of *h* symmetry.
+   The electric transition dipole moment [e a0] in velocity gauge, for the transition
+   from the ground state to root *n*, and the transition is of *h* symmetry.
    DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT
+.. psivar:: TD-fctl ROOT 0 -> ROOT n MAGNETIC TRANSITION DIPOLE MOMENT
 
    The magnetic transition dipole moment, for the transition
-   from the ground state to root *m*.
+   from the ground state to root *n*.
    DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) MAGNETIC TRANSITION DIPOLE MOMENT
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) MAGNETIC TRANSITION DIPOLE MOMENT
 
    The magnetic transition dipole moment, for the transition
-   from the ground state, which is of irrep *h*, to root *m* within irrep *i*.
+   from the ground state, which is of irrep *h*, to root *n* within irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (h) -> ROOT m (i) MAGNETIC TRANSITION DIPOLE MOMENT
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) MAGNETIC TRANSITION DIPOLE MOMENT
 
    The magnetic transition dipole moment, for the transition
-   from the ground state, which is of irrep *h*, to root *m*, which is of irrep *i*.
+   from the ground state, which is of irrep *h*, to root *n*, which is of irrep *i*.
    DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT - h TRANSITION
+.. psivar:: TD-fctl ROOT 0 -> ROOT n MAGNETIC TRANSITION DIPOLE MOMENT - h TRANSITION
 
    The magnetic transition dipole moment, for the transition
-   from the ground state to root *m*, and the transition is of *h* symmetry.
+   from the ground state to root *n*, and the transition is of *h* symmetry.
    DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA
+.. psivar:: TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR ALPHA
 
    The left alpha spin eigenvectors of the named method
-   from ground state to root *m*. DFT
+   from ground state to root *n*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) LEFT EIGENVECTOR ALPHA
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) LEFT EIGENVECTOR ALPHA
 
    The left alpha spin eigenvectors of the named method
-   from ground state, which is in irrep *h*, to root *m* within irrep *i*. DFT
+   from ground state, which is in irrep *h*, to root *n* within irrep *i*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR ALPHA
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) LEFT EIGENVECTOR ALPHA
 
    The left alpha spin eigenvectors of the named method
-   from ground state, which is in irrep *h*, to root *m*, which is in irrep *i*. DFT
+   from ground state, which is in irrep *h*, to root *n*, which is in irrep *i*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA - h TRANSITION
+.. psivar:: TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR ALPHA - h TRANSITION
 
    The left alpha spin eigenvectors of the named method
-   from ground state to root *m*, and the transition is of irrep *h*. DFT
+   from ground state to root *n*, and the transition is of irrep *h*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA
+.. psivar:: TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR BETA
 
    The left beta spin eigenvectors of the named method
-   from ground state to root *m*. DFT
+   from ground state to root *n*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) LEFT EIGENVECTOR BETA
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) LEFT EIGENVECTOR BETA
 
    The left beta spin eigenvectors of the named method
-   from ground state, which is in irrep *h*, to root *m* within irrep *i*. DFT
+   from ground state, which is in irrep *h*, to root *n* within irrep *i*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR BETA
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) LEFT EIGENVECTOR BETA
 
    The left beta spin eigenvectors of the named method
-   from ground state, which is in irrep *h*, to root *m*, which is in irrep *i*. DFT
+   from ground state, which is in irrep *h*, to root *n*, which is in irrep *i*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA - h TRANSITION
+.. psivar:: TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR BETA - h TRANSITION
 
    The left beta spin eigenvectors of the named method
-   from ground state to root *m*, and the transition is of irrep *h*. DFT
+   from ground state to root *n*, and the transition is of irrep *h*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA
+.. psivar:: TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR ALPHA
 
    The right alpha spin eigenvectors of the named method
-   from ground state to root *m*. DFT
+   from ground state to root *n*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) RIGHT EIGENVECTOR ALPHA
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) RIGHT EIGENVECTOR ALPHA
 
    The right alpha spin eigenvectors of the named method
-   from ground state, which is in irrep *h*, to root *m* within irrep *i*. DFT
+   from ground state, which is in irrep *h*, to root *n* within irrep *i*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (h) -> ROOT m (i) RIGHT EIGENVECTOR ALPHA
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) RIGHT EIGENVECTOR ALPHA
 
    The right alpha spin eigenvectors of the named method
-   from ground state, which is in irrep *h*, to root *m*, which is in irrep *i*. DFT
+   from ground state, which is in irrep *h*, to root *n*, which is in irrep *i*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA - h TRANSITION
+.. psivar:: TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR ALPHA - h TRANSITION
 
    The right alpha spin eigenvectors of the named method
-   from ground state to root *m*, and the transition is of irrep *h*. DFT
+   from ground state to root *n*, and the transition is of irrep *h*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA
+.. psivar:: TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR BETA
 
    The right beta spin eigenvectors of the named method
-   from ground state to root *m*. DFT
+   from ground state to root *n*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) RIGHT EIGENVECTOR BETA
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) RIGHT EIGENVECTOR BETA
 
    The right beta spin eigenvectors of the named method
-   from ground state, which is in irrep *h*, to root *m* within irrep *i*. DFT
+   from ground state, which is in irrep *h*, to root *n* within irrep *i*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 (h) -> ROOT m (i) RIGHT EIGENVECTOR BETA
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) RIGHT EIGENVECTOR BETA
 
    The right beta spin eigenvectors of the named method
-   from ground state, which is in irrep *h*, to root *m*, which is in irrep *i*. DFT
+   from ground state, which is in irrep *h*, to root *n*, which is in irrep *i*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA - h TRANSITION
+.. psivar:: TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR BETA - h TRANSITION
 
    The right alpha and beta spin eigenvectors of the named method
-   from ground state to root *m*, and the transition is of irrep *h*. DFT
+   from ground state to root *n*, and the transition is of irrep *h*. DFT
    functional labeled if canonical.
 
 .. psivar:: THERMAL ENERGY

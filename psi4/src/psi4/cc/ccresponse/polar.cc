@@ -192,6 +192,8 @@ void polar(std::shared_ptr<Wavefunction> ref_wfn) {
 // for the edification of the autodoc-er. these set py-side or through oeprop calls
 /*- Process::environment.globals["CC2 DIPOLE POLARIZABILITY @ xNM"] -*/
 /*- Process::environment.globals["CCSD DIPOLE POLARIZABILITY @ xNM"] -*/
+/*- Process::environment.globals["CC2 DIPOLE POLARIZABILITY TENSOR @ xNM"] -*/
+/*- Process::environment.globals["CCSD DIPOLE POLARIZABILITY TENSOR @ xNM"] -*/
 
 }  // namespace ccresponse
 }  // namespace psi

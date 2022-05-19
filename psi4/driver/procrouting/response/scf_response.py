@@ -798,65 +798,65 @@ def tdscf_excitations(wfn,
             # wfn.set_variable("TD-fctl ROOT n (h) TOTAL ENERGY")           # P::e SCF
             # wfn.set_variable("TD-fctl ROOT n TOTAL ENERGY - h TRANSITION")  # P::e SCF
             root_setter("TOTAL ENERGY", E_tot_au)
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY")               # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) EXCITATION ENERGY")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) EXCITATION ENERGY")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION")  # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION")  # P::e SCF
             transition_setter("EXCITATION ENERGY", x.E_ex_au)
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)")               # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) OSCILLATOR STRENGTH (LEN)")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION")  # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN)")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION")  # P::e SCF
             transition_setter("OSCILLATOR STRENGTH (LEN)", x.f_length)
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)")               # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) OSCILLATOR STRENGTH (VEL)")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h TRANSITION")  # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL)")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (VEL)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (VEL)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL) - h TRANSITION")  # P::e SCF
             transition_setter("OSCILLATOR STRENGTH (VEL)", x.f_velocity)
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN)")               # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ROTATORY STRENGTH (LEN)")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (LEN)")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h TRANSITION")  # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (LEN)")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (LEN)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (LEN)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (LEN) - h TRANSITION")  # P::e SCF
             transition_setter("ROTATORY STRENGTH (LEN)", x.R_length)
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL)")               # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ROTATORY STRENGTH (VEL)")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (VEL)")       # P::e SCF
-            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h TRANSITION")  # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL)")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION")  # P::e SCF
             transition_setter("ROTATORY STRENGTH (VEL)", x.R_velocity)
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN")                # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION")  # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN")                # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION")  # P::e SCF
             transition_setter("ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", core.Matrix.from_array(x.edtm_length.reshape((1, 3))))
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")               # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h TRANSITION")  # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h TRANSITION")  # P::e SCF
             transition_setter("ELECTRIC TRANSITION DIPOLE MOMENT (VEL)", core.Matrix.from_array(x.edtm_velocity.reshape((1, 3))))
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT")               # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) MAGNETIC TRANSITION DIPOLE MOMENT")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) MAGNETIC TRANSITION DIPOLE MOMENT")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT - h TRANSITION")  # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n MAGNETIC TRANSITION DIPOLE MOMENT")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) MAGNETIC TRANSITION DIPOLE MOMENT")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) MAGNETIC TRANSITION DIPOLE MOMENT")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n MAGNETIC TRANSITION DIPOLE MOMENT - h TRANSITION")  # P::e SCF
             transition_setter("MAGNETIC TRANSITION DIPOLE MOMENT (VEL)", core.Matrix.from_array(x.mdtm.reshape((1, 3))))
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA")               # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) RIGHT EIGENVECTOR ALPHA")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) RIGHT EIGENVECTOR ALPHA")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA - h TRANSITION")  # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR ALPHA")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) RIGHT EIGENVECTOR ALPHA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) RIGHT EIGENVECTOR ALPHA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR ALPHA - h TRANSITION")  # P::e SCF
             transition_setter("RIGHT EIGENVECTOR ALPHA", x.R_eigvec if restricted else x.R_eigvec[0])
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA")               # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) LEFT EIGENVECTOR ALPHA")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR ALPHA")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA - h TRANSITION")  # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR ALPHA")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) LEFT EIGENVECTOR ALPHA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) LEFT EIGENVECTOR ALPHA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR ALPHA - h TRANSITION")  # P::e SCF
             transition_setter("LEFT EIGENVECTOR ALPHA", x.L_eigvec if restricted else x.L_eigvec[0])
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA")               # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) RIGHT EIGENVECTOR BETA")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) RIGHT EIGENVECTOR BETA")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA - h TRANSITION")  # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR BETA")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) RIGHT EIGENVECTOR BETA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) RIGHT EIGENVECTOR BETA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR BETA - h TRANSITION")  # P::e SCF
             transition_setter("RIGHT EIGENVECTOR BETA", x.R_eigvec if restricted else x.R_eigvec[1])
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA")               # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT m (IN i) LEFT EIGENVECTOR BETA")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR BETA")       # P::e SCF
-            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA - h TRANSITION")  # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR BETA")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) LEFT EIGENVECTOR BETA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) LEFT EIGENVECTOR BETA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR BETA - h TRANSITION")  # P::e SCF
             transition_setter("LEFT EIGENVECTOR BETA", x.L_eigvec if restricted else x.L_eigvec[1])
 
         core.print_out(
