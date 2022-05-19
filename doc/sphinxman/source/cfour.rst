@@ -351,10 +351,10 @@ An advantage of |PSIfours| Python driver is that any number of common
 work-up procedures can be automated and wrapped around the
 conventional single-point and optimization procedures at the heart of all
 quantum chemistry codes. Three core "wrappers" available in |PSIfour| are
-:py:func:`~psi4.driver.driver_nbody.nbody_gufunc`,
+:py:func:`~psi4.driver.driver_nbody.nbody`,
 :py:func:`~psi4.database`, and
 :py:func:`~psi4.driver.cbs`; read their respective sections
-for details, but an overview is provided here. :py:func:`~psi4.driver.driver_nbody.nbody_gufunc`
+for details, but an overview is provided here. :py:func:`~psi4.driver.driver_nbody.nbody`
 computes the interaction energy of a bimolecular complex (counterpoise-corrected,
 not, or both). ::
 

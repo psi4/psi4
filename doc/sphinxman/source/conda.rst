@@ -99,7 +99,7 @@ the |PSIfour| executable into the main conda environment at
 .. code-block:: bash
 
     # Linux or WSL (Windows Subsystem for Linux)
-    # py36|py37|py38|py39 for alternate python versions
+    # py38|py39|py310 for alternate python versions
     >>> curl "http://vergil.chemistry.gatech.edu/psicode-download/Psi4conda-1.4rc1-py38-Linux-x86_64.sh" -o Psi4conda-latest-py38-Linux-x86_64.sh --keepalive-time 2
     >>> bash Psi4conda-latest-py38-Linux-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms
     >>> (bash) echo $'. $HOME/psi4conda/etc/profile.d/conda.sh\nconda activate' >> ~/.bashrc
@@ -110,7 +110,7 @@ the |PSIfour| executable into the main conda environment at
 .. code-block:: bash
 
     # Mac
-    # py36|py37|py38|py39 for alternate python versions
+    # py38|py39|py310 for alternate python versions
     >>> curl -O "http://vergil.chemistry.gatech.edu/download/Psi4conda-latest-py35-MacOSX-x86_64.sh" --keepalive-time 2
     >>> curl "http://vergil.chemistry.gatech.edu/psicode-download/Psi4conda-1.4rc1-py38-MacOSX-x86_64.sh" -o Psi4conda-latest-py38-MacOSX-x86_64.sh --keepalive-time 2
     >>> bash Psi4conda-latest-py38-MacOSX-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms

@@ -548,7 +548,7 @@ Bibliography
    *Chem. Phys.* **356**, 98-109 (2009)
 
 .. [Izsak:2011:144105]
-   R. Izs\ |a_slash|\ k and F. Neese
+   R. Izs\ |a_acute|\ k and F. Neese
    *J. Chem. Phys.* **135**, 144105 (2011)
    
 .. [Smith:2018:3504]
