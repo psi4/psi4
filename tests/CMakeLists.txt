@@ -67,7 +67,7 @@ foreach(test_name adc1 adc2 aediis-1
                   mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
                   mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
                   nbo nbody-cp-gradient nbody-vmfc-gradient nbody-vmfc-hessian nbody-hessian nbody-convergence
-                  nbody-freq nbody-multi-level numpy-array-interface
+                  nbody-freq nbody-multi-level nbody-multi-level-2 numpy-array-interface
                   olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3
                   omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2
                   omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2
@@ -99,7 +99,7 @@ foreach(test_name adc1 adc2 aediis-1
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5 tdscf-6 tdscf-7
                   dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
                   linK-1 linK-2 linK-3
-                  cbs-xtpl-energy-conv
+                  cbs-xtpl-energy-conv ddd-deriv nbody-he-4b
                   )
     add_subdirectory(${test_name})
 endforeach()

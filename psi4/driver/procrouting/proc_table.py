@@ -173,8 +173,8 @@ procedures = {
         #    encompass the new alias.
     },
     'gradient' : {
-        'hf'            : proc.run_scf_gradient,
-        'scf'           : proc.run_scf_gradient,
+        'hf'            : proc.select_scf_gradient,
+        'scf'           : proc.select_scf_gradient,
         'cc2'           : proc.run_ccenergy_gradient,
         'ccsd'          : proc.select_ccsd_gradient,
         'ccsd(t)'       : proc.select_ccsd_t__gradient,
@@ -196,6 +196,7 @@ procedures = {
     'hessian' : {
         # Upon adding a method to this list:
         # * add it to the docstring in driver.frequency
+        # * program up and set DIPOLE GRADIENT, too, otherwise IR intensities logic will fail
         'hf'            : proc.run_scf_hessian,
         'scf'           : proc.run_scf_hessian,
     },
@@ -246,6 +247,13 @@ for key in functionals:
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2']
 
+# Integrate arbitrary order with driver routines
+for lvl in range(2, 99):
+    procedures['energy'][f'ci{lvl}'] = proc.run_detci
+    procedures['energy'][f'zapt{lvl}'] = proc.run_detci
+    if lvl >= 5:
+        procedures['energy'][f'mp{lvl}'] = proc.run_detci
+
 # Integrate DFT with driver routines
 for key in functionals:
     ssuper = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]
@@ -262,7 +270,7 @@ for key in functionals:
 
     # Gradients
     if not (ssuper.is_c_hybrid() or ssuper.is_c_lrc() or ssuper.needs_vv10()):
-        procedures['gradient'][key] = proc.run_scf_gradient
+        procedures['gradient'][key] = proc.select_scf_gradient
 
     # Hessians
     if not ssuper.is_gga(): # N.B. this eliminates both GGA and m-GGA, as the latter contains GGA terms

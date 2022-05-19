@@ -57,6 +57,7 @@ def _pybuild_basis(mol,
                    other=None,
                    puream=-1,
                    return_atomlist=False,
+                   *,
                    quiet=False):
     if key == 'ORBITAL':
         key = 'BASIS'
@@ -118,11 +119,11 @@ core.BasisSet.build = _pybuild_basis
 
 
 @staticmethod
-def _core_wavefunction_build(mol, basis=None):
+def _core_wavefunction_build(mol, basis=None, *, quiet: bool = False):
     if basis is None:
-        basis = core.BasisSet.build(mol)
+        basis = core.BasisSet.build(mol, quiet=quiet)
     elif isinstance(basis, str):
-        basis = core.BasisSet.build(mol, "ORBITAL", basis)
+        basis = core.BasisSet.build(mol, "ORBITAL", basis, quiet=quiet)
 
     wfn = core.Wavefunction(mol, basis)
     # Set basis for density-fitted calculations to the zero basis...
@@ -624,15 +625,34 @@ core.set_global_option_python = _core_set_global_option_python
 ## QCvar helps
 
 _qcvar_transitions = {
-    "SCSN-MP2 CORRELATION ENERGY": "SCS(N)-MP2 CORRELATION ENERGY",
-    "SCSN-MP2 TOTAL ENERGY": "SCS(N)-MP2 TOTAL ENERGY",
-    "MAYER_INDICES": "MAYER INDICES",
-    "WIBERG_LOWDIN_INDICES": "WIBERG LOWDIN INDICES",
-    "LOWDIN_CHARGES": "LOWDIN CHARGES",
-    "MULLIKEN_CHARGES": "MULLIKEN CHARGES",
-    "(AT) CORRECTION ENERGY": "A-(T) CORRECTION ENERGY",
-    "CCSD(AT) TOTAL ENERGY": "A-CCSD(T) TOTAL ENERGY",
-    "CCSD(AT) CORRELATION ENERGY": "A-CCSD(T) CORRELATION ENERGY",
+    # old: (replacement, release after next)
+    "SCSN-MP2 CORRELATION ENERGY": ("SCS(N)-MP2 CORRELATION ENERGY", 1.5),
+    "SCSN-MP2 TOTAL ENERGY": ("SCS(N)-MP2 TOTAL ENERGY", 1.5),
+    "MAYER_INDICES": ("MAYER INDICES", 1.5),
+    "WIBERG_LOWDIN_INDICES": ("WIBERG LOWDIN INDICES", 1.5),
+    "LOWDIN_CHARGES": ("LOWDIN CHARGES", 1.5),
+    "MULLIKEN_CHARGES": ("MULLIKEN CHARGES", 1.5),
+    "(AT) CORRECTION ENERGY": ("A-(T) CORRECTION ENERGY", 1.5),
+    "CCSD(AT) TOTAL ENERGY": ("A-CCSD(T) TOTAL ENERGY", 1.5),
+    "CCSD(AT) CORRELATION ENERGY": ("A-CCSD(T) CORRELATION ENERGY", 1.5),
+    "CP-CORRECTED 2-BODY INTERACTION ENERGY": ("CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY", 1.7),
+    "CP-CORRECTED 3-BODY INTERACTION ENERGY": ("CP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY", 1.7),
+    "CP-CORRECTED 4-BODY INTERACTION ENERGY": ("CP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY", 1.7),
+    "CP-CORRECTED 5-BODY INTERACTION ENERGY": ("CP-CORRECTED INTERACTION ENERGY THROUGH 5-BODY", 1.7),
+    "NOCP-CORRECTED 2-BODY INTERACTION ENERGY": ("NOCP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY", 1.7),
+    "NOCP-CORRECTED 3-BODY INTERACTION ENERGY": ("NOCP-CORRECTED INTERACTION ENERGY THROUGH 3-BODY", 1.7),
+    "NOCP-CORRECTED 4-BODY INTERACTION ENERGY": ("NOCP-CORRECTED INTERACTION ENERGY THROUGH 4-BODY", 1.7),
+    "NOCP-CORRECTED 5-BODY INTERACTION ENERGY": ("NOCP-CORRECTED INTERACTION ENERGY THROUGH 5-BODY", 1.7),
+    "VMFC-CORRECTED 2-BODY INTERACTION ENERGY": ("VMFC-CORRECTED INTERACTION ENERGY THROUGH 2-BODY", 1.7),
+    "VMFC-CORRECTED 3-BODY INTERACTION ENERGY": ("VMFC-CORRECTED INTERACTION ENERGY THROUGH 3-BODY", 1.7),
+    "VMFC-CORRECTED 4-BODY INTERACTION ENERGY": ("VMFC-CORRECTED INTERACTION ENERGY THROUGH 4-BODY", 1.7),
+    "VMFC-CORRECTED 5-BODY INTERACTION ENERGY": ("VMFC-CORRECTED INTERACTION ENERGY THROUGH 5-BODY", 1.7),
+    "COUNTERPOISE CORRECTED TOTAL ENERGY": ("CP-CORRECTED TOTAL ENERGY", 1.7),
+    "COUNTERPOISE CORRECTED INTERACTION ENERGY": ("CP-CORRECTED INTERACTION ENERGY", 1.7),
+    "NON-COUNTERPOISE CORRECTED TOTAL ENERGY": ("NOCP-CORRECTED TOTAL ENERGY", 1.7),
+    "NON-COUNTERPOISE CORRECTED INTERACTION ENERGY": ("NOCP-CORRECTED INTERACTION ENERGY", 1.7),
+    "VALIRON-MAYER FUNCTION COUTERPOISE TOTAL ENERGY": ("VALIRON-MAYER FUNCTION COUNTERPOISE TOTAL ENERGY", 1.7),  # note misspelling
+    "VALIRON-MAYER FUNCTION COUTERPOISE INTERACTION ENERGY": ("VMFC-CORRECTED INTERACTION ENERGY", 1.7),  # note misspelling
 }
 
 _qcvar_cancellations = {
@@ -657,11 +677,12 @@ def _qcvar_warnings(key: str) -> str:
         raise UpgradeHelper(key.upper(), key.upper()[:-3], 1.6, " Note the Debye -> a.u. units change.")
 
     if key.upper() in _qcvar_transitions:
+        replacement, version = _qcvar_transitions[key.upper()]
         warnings.warn(
-            f"Using QCVariable `{key.upper()}` instead of `{_qcvar_transitions[key.upper()]}` is deprecated, and as soon as 1.5 it will stop working\n",
+            f"Using QCVariable `{key.upper()}` instead of `{replacement}` is deprecated, and as soon as {version} it will stop working\n",
             category=FutureWarning,
             stacklevel=3)
-        return _qcvar_transitions[key.upper()]
+        return replacement
 
     if key.upper() in _qcvar_cancellations:
         raise UpgradeHelper(key.upper(), "no direct replacement", 1.4, " Consult QCVariables " + ", ".join(_qcvar_cancellations[key.upper()]) + " to recompose the quantity.")

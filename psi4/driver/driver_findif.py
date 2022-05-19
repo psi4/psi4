@@ -25,20 +25,132 @@
 #
 # @END LICENSE
 #
+"""Plan, run, and assemble QC tasks to obtain derivatives by finite difference of lesser derivatives.
+
+===========
+FINDIF Flow
+===========
+Bullet points are major actions
+Lines of dashes denote function calls
+e/d/dd=dg/g/h := energy, dipole, dipole derivative = dipole gradient, gradient, Hessian
+
+-----------------------------------
+FiniteDifferenceComputer.__init__()
+-----------------------------------
+* collect findif_stencil_size, findif_step_size from initializer kwargs
+* BaseComputer.__init__()
+* negotiate safety and user wishes on translation and rotation projection
+
+    gradient_from_energies_geometries()
+    -----------------------------------
+    hessian_from_gradients_geometries()
+    -----------------------------------
+    hessian_from_energies_geometries()
+    ----------------------------------
+
+        _geom_generator()
+        -----------------
+
+            _initialize_findif()
+            --------------------
+            * initialize CdSalcs, partition them per irrep, apply user irreps
+
+        * start the governing dict findifrec with parameters, size, mol
+        * for each irrep, for each relevant salc ...
+
+            _displace_cart()
+            ----------------
+            * form new geometry by linear combination
+
+        * ... and collect geometry into a field of findifrec["displacements"].<label>
+        * for (2, 0) also collect off-diagonal displacements
+        * also collect undisplaced geometry into field reference
+        * return findifrec
+
+* form AtomicComputers for each displacement, particularly changing mol and driver, and possibly relaxing disp symm
+* form dict task_list with keys findifrec labels and vals AtomicComputers
+
+--------------------------------------
+FiniteDifferenceComputer.build_tasks()
+--------------------------------------
+* pass
+
+----------------------------------
+FiniteDifferenceComputer.compute()
+----------------------------------
+* compute() for each job in task list
+
+------------------------------------------
+FiniteDifferenceComputer.get_psi_results()
+------------------------------------------
+
+    Computer.get_results()
+    ----------------------
+
+        Computer._prepare_results()
+        ---------------------------
+        * get_results() for each job in task list
+        * arrange atomicresult data into e/d/g/h fields as available on each of reference and displacements entries
+
+            assemble_hessian_from_energies()
+            --------------------------------
+            assemble_hessian_from_gradients()
+            ---------------------------------
+
+                _process_hessian_symmetry_block()
+                ---------------------------------
+                * resymmetrize each H block
+
+                _process_hessian()
+                ------------------
+                * transform H to Cartesians and unmasswt
+
+            assemble_gradient_from_energies()
+            ---------------------------------
+            assemble_dipder_from_dipoles()
+            ------------------------------
+
+            * form DD, G, H from lower derivative points
+
+        * place as many of DD, G, H as available onto reference entry
+
+    * pull qcvars off reference job
+    * from reference job, set add'l mol, DD, G, H as available
+    * form model, including detailed dict at atomicresult.extras["findif_record"]
+
+* convert result to psi4.core.Matrix
+
+    _findif_schema_to_wfn()
+    -----------------------
+    * build wfn from findif mol and basis (if singular) and module (if singular)
+    * push qcvars to P::e and wfn
+
+    gradient_write()
+    ----------------
+    * write .grad file if requested
+
+    hessian_write()
+    ---------------
+    * write .hess file if requested
+
+* return dd/g/h and wfn
+
+"""
 
 import copy
 import logging
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, List, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
-import pydantic
+from pydantic import Field, validator
 from qcelemental.models import DriverEnum, AtomicResult
 from qcelemental import constants
 
 from psi4 import core
 from psi4.driver import p4util, pp, qcdb, nppp10
 from psi4.driver.p4util.exceptions import ValidationError
+from psi4.driver.task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
 logger = logging.getLogger(__name__)
 
@@ -1017,31 +1129,57 @@ def assemble_hessian_from_energies(findifrec: Dict, freq_irrep_only: int) -> np.
     return _process_hessian(H_pi, B_pi, massweighter, data["print_lvl"])
 
 
-########
+class FiniteDifferenceComputer(BaseComputer):
 
-# This function is shifting `_energy_is_invariant` from driver to findif but isn't in final DDD form.
-def prep_findif(mol, irrep, mode, gradient=None):
+    molecule: Any
+    driver: DriverEnum
+    metameta: Dict[str, Any] = {}
+    task_list: Dict[str, BaseComputer] = {}
+    findifrec: Dict[str, Any] = {}
+    computer: BaseComputer = AtomicComputer
+    method: str
 
-        findif_stencil_size = core.get_option("FINDIF", "POINTS")
-        findif_step_size = core.get_option("FINDIF", "DISP_SIZE")
+    @validator('driver')
+    def set_driver(cls, driver):
+        egh = ['energy', 'gradient', 'hessian']
+        if driver not in egh:
+            raise ValidationError(f"""Wrapper is unhappy to be calling function ({driver}) not among {egh}.""")
 
-        translations_projection_sound = (not core.get_option('SCF', 'EXTERN')
+        return driver
+
+    @validator('molecule')
+    def set_molecule(cls, mol):
+        mol.update_geometry()
+        mol.fix_com(True)
+        mol.fix_orientation(True)
+        return mol
+
+    def __init__(self, **data):
+        """Initialize FiniteDifference class.
+
+        data keywords include
+        * general AtomicInput keys like molecule, driver, method, basis, and keywords.
+        * specialized findif keys like findif_mode, findif_irrep, and those converted from keywords to kwargs:
+          findif_stencil_size, findif_step_size, and findif_verbose.
+        * TODO hangers-on keys present at class initiation get automatically attached to class since `extra = "allow"` but should be pruned
+
+        """
+        findif_stencil_size = data.pop('findif_stencil_size')
+        findif_step_size = data.pop('findif_step_size')
+
+        BaseComputer.__init__(self, **data)
+
+        translations_projection_sound = (not "external_potentials" in data['keywords']['function_kwargs']
                                          and not core.get_option('SCF', 'PERTURB_H')
-                                         and not hasattr(mol, 'EFP'))
-        if gradient is not None:
+                                         and not hasattr(self.molecule, 'EFP'))
+        if 'ref_gradient' in data:
+            logger.info("""hessian() using ref_gradient to assess stationary point.""")
             stationary_criterion = 1.e-2  # pulled out of a hat
-            stationary_point = _rms(gradient) < stationary_criterion
-
-            rotations_projection_sound = translations_projection_sound and stationary_point
-            core.print_out(
-                '\n  Based on options and gradient (rms={:.2E}), recommend {}projecting translations and {}projecting rotations.\n'
-                .format(_rms(gradient), '' if translations_projection_sound else 'not ',
-                        '' if rotations_projection_sound else 'not '))
+            stationary_point = _rms(data['ref_gradient']) < stationary_criterion
         else:
             stationary_point = False  # unknown, so F to be safe
         rotations_projection_sound_grad = translations_projection_sound
         rotations_projection_sound_hess = translations_projection_sound and stationary_point
-
         if core.has_option_changed('FINDIF', 'FD_PROJECT'):
             r_project_grad = core.get_option('FINDIF', 'FD_PROJECT')
             r_project_hess = core.get_option('FINDIF', 'FD_PROJECT')
@@ -1049,33 +1187,323 @@ def prep_findif(mol, irrep, mode, gradient=None):
             r_project_grad = rotations_projection_sound_grad
             r_project_hess = rotations_projection_sound_hess
 
-        if mode == "1_0":
-            fdargs = {
-                "stencil_size": findif_stencil_size,
-                "step_size": findif_step_size,
-                "t_project": translations_projection_sound,
-                "r_project": r_project_grad,
-            }
+        for kwg in ['dft_functional']:
+            if kwg in data:
+                data['keywords']['function_kwargs'][kwg] = data.pop(kwg)
+        # I have the feeling the keywords.function_kwargs should be all left over in data
+        #   after the findif control ones are removed, not this by-name procedure
+        data['keywords']['PARENT_SYMMETRY'] = self.molecule.point_group().full_name()
 
-        elif mode == "2_1":
-            fdargs = {
-                "freq_irrep_only": irrep,
-                "stencil_size": findif_stencil_size,
-                "step_size": findif_step_size,
-                "t_project": translations_projection_sound,
-                "r_project": r_project_hess,
-            }
+        self.method = data['method']
 
-        elif mode == "2_0":
-            fdargs = {
-                "freq_irrep_only": irrep,
-                "stencil_size": findif_stencil_size,
-                "step_size": findif_step_size,
-                "t_project": translations_projection_sound,
-                "r_project": r_project_hess,
-            }
+        self.metameta['mode'] = str(data['findif_mode'][0]) + '_' + str(data['findif_mode'][1])
+        self.metameta['irrep'] = data.pop('findif_irrep', -1)
 
-        return fdargs
+        if self.metameta['mode'] == '1_0':
+            self.metameta['proxy_driver'] = 'energy'
+            self.findifrec = gradient_from_energies_geometries(self.molecule,
+                                                               stencil_size=findif_stencil_size,
+                                                               step_size=findif_step_size,
+                                                               t_project=translations_projection_sound,
+                                                               r_project=r_project_grad)
+
+        elif self.metameta['mode'] == '2_1':
+            self.metameta['proxy_driver'] = 'gradient'
+            self.findifrec = hessian_from_gradients_geometries(self.molecule,
+                                                               freq_irrep_only=self.metameta['irrep'],
+                                                               stencil_size=findif_stencil_size,
+                                                               step_size=findif_step_size,
+                                                               t_project=translations_projection_sound,
+                                                               r_project=r_project_hess)
+
+        elif self.metameta['mode'] == '2_0':
+            self.metameta['proxy_driver'] = 'energy'
+            self.findifrec = hessian_from_energies_geometries(self.molecule,
+                                                              freq_irrep_only=self.metameta['irrep'],
+                                                              stencil_size=findif_stencil_size,
+                                                              step_size=findif_step_size,
+                                                              t_project=translations_projection_sound,
+                                                              r_project=r_project_hess)
+
+        ndisp = len(self.findifrec["displacements"]) + 1
+        info = f""" {ndisp} displacements needed ...\n"""
+        core.print_out(info)
+        logger.debug(info)
+
+        # var_dict = core.variables()
+        packet = {
+            "molecule": self.molecule,
+            "driver": self.metameta['proxy_driver'],
+            "method": self.method,
+            "basis": data["basis"],
+            "keywords": data["keywords"] or {},
+        }
+        if 'cbs_metadata' in data:
+            packet['cbs_metadata'] = data['cbs_metadata']
+        passalong = {k: v for k, v in data.items() if k not in packet}
+        passalong.pop('ptype', None)
+
+        self.task_list["reference"] = self.computer(**packet, **passalong)
+
+        parent_group = self.molecule.point_group()
+        for label, displacement in self.findifrec["displacements"].items():
+            clone = self.molecule.clone()
+            clone.reinterpret_coordentry(False)
+            #clone.fix_orientation(True)
+
+            # Load in displacement into the active molecule
+            clone.set_geometry(core.Matrix.from_array(displacement["geometry"]))
+
+            # If the user insists on symmetry, weaken it if some is lost when displacing.
+            # or 'fix_symmetry' in self.findifrec.molecule
+            logger.debug(f'SYMM {clone.schoenflies_symbol()}')
+            if self.molecule.symmetry_from_input():
+                disp_group = clone.find_highest_point_group()
+                new_bits = parent_group.bits() & disp_group.bits()
+                new_symm_string = qcdb.PointGroup.bits_to_full_name(new_bits)
+                clone.reset_point_group(new_symm_string)
+
+            packet = {
+                "molecule": clone,
+                "driver": self.metameta['proxy_driver'],
+                "method": self.method,
+                "basis": data["basis"],
+                "keywords": data["keywords"] or {},
+            }
+            if 'cbs_metadata' in data:
+                packet['cbs_metadata'] = data['cbs_metadata']
+
+            self.task_list[label] = self.computer(**packet, **passalong)
+
+
+#        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
+#            _process_displacement(energy, lowername, molecule, displacement, n, ndisp, write_orbitals=False, **kwargs)
+
+    def build_tasks(self, obj, **kwargs):
+        # permanently a dummy function
+        pass
+
+    def plan(self):
+        # uncalled function
+        return [t.plan() for t in self.task_list.values()]
+
+    def compute(self, client: Optional["FractalClient"] = None):
+        """Run each job in task list."""
+        instructions = "\n" + p4util.banner(f" FiniteDifference Computations", strNotOutfile=True) + "\n"
+        logger.debug(instructions)
+        core.print_out(instructions)
+
+        with p4util.hold_options_state():
+            for t in self.task_list.values():
+                t.compute(client=client)
+
+    def _prepare_results(self, client: Optional["FractalClient"] = None):
+        results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
+
+        # load AtomicComputer results into findifrec[reference]
+        reference = self.findifrec["reference"]
+        task = results_list["reference"]
+        response = task.return_result
+        reference["module"] = getattr(task.provenance, "module", None)
+
+        if task.driver == 'energy':
+            reference['energy'] = response
+
+        elif task.driver == 'gradient':
+            reference['gradient'] = response
+            reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
+
+        elif task.driver == 'hessian':
+            reference['hessian'] = response
+            reference['energy'] = task.extras['qcvars']['CURRENT ENERGY']
+            if 'CURRENT GRADIENT' in task.extras['qcvars']:
+                reference['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
+
+        dipole_available = False
+        if 'CURRENT DIPOLE' in task.extras['qcvars']:
+            reference['dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
+            dipole_available = True
+
+        # load AtomicComputer results into findifrec[displacements]
+        for label, displacement in self.findifrec["displacements"].items():
+            task = results_list[label]
+            response = task.return_result
+
+            if task.driver == 'energy':
+                displacement['energy'] = response
+
+            elif task.driver == 'gradient':
+                displacement['gradient'] = response
+                displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
+
+            elif task.driver == 'hessian':
+                displacement['hessian'] = response
+                displacement['energy'] = task.extras['qcvars']['CURRENT ENERGY']
+                if 'CURRENT GRADIENT' in task.extras['qcvars']:
+                    displacement['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
+
+            if 'CURRENT DIPOLE' in task.extras['qcvars']:
+                displacement['dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
+
+        # apply finite difference formulas and load derivatives into findifrec[reference]
+        if self.metameta['mode'] == '1_0':
+            G0 = assemble_gradient_from_energies(self.findifrec)
+            self.findifrec["reference"][self.driver.name] = G0
+
+        elif self.metameta['mode'] == '2_1':
+            DD0 = assemble_dipder_from_dipoles(self.findifrec, self.metameta['irrep'])
+            self.findifrec["reference"]["dipole derivative"] = DD0
+
+            H0 = assemble_hessian_from_gradients(self.findifrec, self.metameta['irrep'])
+            self.findifrec["reference"][self.driver.name] = H0
+
+        elif self.metameta['mode'] == '2_0':
+            try:
+                G0 = assemble_gradient_from_energies(self.findifrec)
+            except KeyError:
+                core.print_out("Unable to construct reference gradient from Hessian displacements.")
+                # TODO: this happens properly when the requested symmetry block
+                #  of displacements don't have the totally symmetric displacements
+                #  needed for gradient. For both this case
+                #  and distributed computing are-we-there-yet? queries,
+                #  should have a probe as to whether all the
+                #  findif[displacement] labels are present and whether
+                #  all the findif[displacement][energy-or-gradient] values
+                #  are ready. Not sure what type of error/query is best,
+                #  so deferring for now. Also, possibly need to check if
+                #  step size matches before using values from one findifrec
+                #  to construct another quantity.
+            else:
+                self.findifrec["reference"]["gradient"] = G0
+
+            if dipole_available:
+                DD0 = assemble_dipder_from_dipoles(self.findifrec, self.metameta['irrep'])
+                self.findifrec["reference"]["dipole derivative"] = DD0
+
+            H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
+            self.findifrec["reference"][self.driver.name] = H0
+
+    def get_results(self, client: Optional["FractalClient"] = None) -> AtomicResult:
+        """Return results as FiniteDifference-flavored QCSchema."""
+
+        instructions = "\n" + p4util.banner(f" FiniteDifference Results", strNotOutfile=True) + "\n"
+        core.print_out(instructions)
+
+        self._prepare_results(client=client)  # assembled_results
+
+        # load QCVariables & properties
+        qcvars = self.task_list['reference'].get_results().extras['qcvars']
+        E0 = self.findifrec['reference']['energy']
+
+        properties = {
+            "calcinfo_natom": self.molecule.natom(),
+            "nuclear_repulsion_energy": self.molecule.nuclear_repulsion_energy(),
+            "return_energy": E0,
+        }
+
+        qcvars['FINDIF NUMBER'] = len(self.task_list)
+        qcvars['NUCLEAR REPULSION ENERGY'] = self.molecule.nuclear_repulsion_energy()
+        qcvars['CURRENT ENERGY'] = E0
+
+        DD0 = self.findifrec['reference'].get('dipole derivative')
+        if DD0 is not None:
+            qcvars['CURRENT DIPOLE GRADIENT'] = DD0
+            qcvars[f"{self.method.upper()} DIPOLE GRADIENT"] = DD0
+
+        G0 = self.findifrec['reference'].get('gradient')
+        if G0 is not None:
+            qcvars['CURRENT GRADIENT'] = G0
+            qcvars[f"{self.method.upper()} TOTAL GRADIENT"] = G0
+            properties["return_gradient"] = G0
+
+        H0 = self.findifrec['reference'].get('hessian')
+        if H0 is not None:
+            qcvars['CURRENT HESSIAN'] = H0
+            qcvars[f"{self.method.upper()} TOTAL HESSIAN"] = H0
+            properties["return_hessian"] = H0
+
+#        if isinstance(lowername, str) and lowername in procedures['energy']:
+#            # this correctly filters out cbs fn and "hf/cc-pvtz"
+#            # it probably incorrectly filters out mp5, but reconsider in DDD
+
+        findif_model = AtomicResult(
+            **{
+                'driver': self.driver,
+                'model': {
+                    "basis": self.basis,
+                    'method': self.method,
+                },
+                'molecule': self.molecule.to_schema(dtype=2),
+                'properties': properties,
+                'provenance': p4util.provenance_stamp(__name__, module=self.findifrec["reference"]["module"]),
+                'extras': {
+                    'qcvars': qcvars,
+                    'findif_record': copy.deepcopy(self.findifrec),
+                },
+                'return_result': self.findifrec['reference'][self.driver.name],
+                'success': True,
+            })
+
+        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model))
+
+        return findif_model
+
+    def get_psi_results(self, return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+        """Called by driver to assemble results into FiniteDifference-flavored QCSchema,
+        then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
+
+        Parameters
+        ----------
+        return_wfn
+            Whether to additionally return the dummy :py:class:`~psi4.core.Wavefunction`
+            calculation result as the second element of a tuple. Contents are:
+
+            - undisplaced molecule
+            - compute basis if simple, else dummy basis def2-svp
+            - e/g/h member data
+            - QCVariables
+            - module
+
+        Returns
+        -------
+        ret
+            Gradient or Hessian according to self.driver.
+        wfn
+            Wavefunction described above when *return_wfn* specified.
+
+        """
+        findif_model = self.get_results()
+
+        ret_ptype = core.Matrix.from_array(findif_model.return_result)
+        wfn = _findif_schema_to_wfn(findif_model)
+
+        gradient_write(wfn)
+        hessian_write(wfn)
+
+        if return_wfn:
+            return (ret_ptype, wfn)
+        else:
+            return ret_ptype
+
+
+def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
+    """Helper function to produce Wavefunction and Psi4 files from a FiniteDifference-flavored AtomicResult."""
+
+    # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
+    mol = core.Molecule.from_schema(findif_model.molecule.dict(), nonphysical=True)
+    sbasis = "def2-svp" if (findif_model.model.basis == "(auto)") else findif_model.model.basis
+    basis = core.BasisSet.build(mol, "ORBITAL", sbasis, quiet=True)
+    wfn = core.Wavefunction(mol, basis)
+    if hasattr(findif_model.provenance, "module"):
+        wfn.set_module(findif_model.provenance.module)
+
+    # setting CURRENT E/G/H on wfn below catches Wfn.energy_, gradient_, hessian_
+    # setting CURRENT E/G/H on core below is authoritative P::e record
+    for qcv, val in findif_model.extras["qcvars"].items():
+        for obj in [core, wfn]:
+            obj.set_variable(qcv, val)
+
+    return wfn
 
 
 def hessian_write(wfn: core.Wavefunction):

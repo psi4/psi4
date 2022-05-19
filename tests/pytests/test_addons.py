@@ -755,7 +755,7 @@ def test_run_json():
 
     # Generate JSON data
     json_input = {
-        "schema_name": "qc_schema_input",
+        "schema_name": "qcschema_input",
         "schema_version": 1,
         "molecule": {
             "symbols": ["He", "He"],
@@ -779,9 +779,6 @@ def test_run_json():
                                [  0.0 , 0.0 ,  -0.32746933]])
     cgradient = np.array(json_ret["return_result"]).reshape(-1, 3)
     assert psi4.compare_arrays(bench_gradient, cgradient, 4, "SCF RETURN GRADIENT")
-
-    with open("pytest_output.dat", "w") as f:
-        json.dump(json_ret["raw_output"], f)
 
 
 def test_run_qcschema():

@@ -60,21 +60,24 @@ _ie_uncp_grad = np.array(
 _stdouts = {
     "cp_T": r"""
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
-\s*  n-Body     Total Energy \[Eh\]       I.E. \[kcal/mol\]      Delta \[kcal/mol\]
-\s*        1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000
-\s*        2     -155.4076102\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*        n-Body     Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
+\s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
+\s*             1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN   2     -155.4076102\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
 """,
     "cp_F": r"""
 \s*   ==> N-Body: Counterpoise Corrected \(CP\) energies <==
-\s*  n-Body     Total Energy \[Eh\]       I.E. \[kcal/mol\]      Delta \[kcal/mol\]
-\s*        1                   N/A        0.000000000000        0.000000000000
-\s*        2                   N/A       -1.08315\d\d\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
+\s*        n-Body     Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
+\s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
+\s*             1  N/A                         0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN   2  N/A                        -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d       -0.0017261\d\d\d\d\d       -1.08315\d\d\d\d\d\d\d
 """,
     "uncp": r"""
 \s*   ==> N-Body: Non-Counterpoise Corrected \(NoCP\) energies <==
-\s*  n-Body     Total Energy \[Eh\]       I.E. \[kcal/mol\]      Delta \[kcal/mol\]
-\s*        1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000
-\s*        2     -155.4088716\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d
+\s*        n-Body     Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy
+\s*                   \[Eh\]                    \[Eh\]                  \[kcal/mol\]            \[Eh\]                  \[kcal/mol\]
+\s*             1     -155.4058841\d\d\d\d\d        0.000000000000        0.000000000000        0.000000000000        0.000000000000
+\s*  FULL/RTN   2     -155.4088716\d\d\d\d\d       -0.0029874\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d       -0.0029874\d\d\d\d\d       -1.87464\d\d\d\d\d\d\d
 """,
 }
 _stdouts["cpuncp"] = _stdouts["cp_T"] + _stdouts["uncp"]

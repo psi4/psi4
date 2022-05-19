@@ -37,10 +37,9 @@ Place in this file quickly defined procedures such as
 import os
 import re
 import warnings
+from typing import Any, Dict, List
 
-import psi4
-from psi4.driver import driver_cbs
-
+CBSMetadata = List[Dict[str, Any]]
 
 # Python procedures like these can be run directly from the input file or integrated
 # with the energy(), etc. routines by means of lines like those at the end
@@ -85,11 +84,11 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
                 '', gradient.get(at, 0), gradient.get(at, 1), gradient.get(at, 2)))
 
 
-def sherrill_gold_standard(func, label, **kwargs):
+def sherrill_gold_standard(**kwargs) -> CBSMetadata:
     r"""Function to call the quantum chemical method known as 'Gold Standard'
-    in the Sherrill group. Uses :py:func:`~psi4.driver.cbs` to evaluate
+    in the Sherrill group. Uses the composite wrapper to evaluate
     the following expression. Two-point extrapolation of the correlation energy
-    performed according to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`.
+    performed according to :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2`.
 
     .. math:: E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}
 
@@ -120,18 +119,17 @@ def sherrill_gold_standard(func, label, **kwargs):
         'scheme': kwargs.pop('delta_scheme', 'xtpl_highest_1')
     }
 
-    kwargs["cbs_metadata"] = [scf, corl, delta]
-    return driver_cbs.cbs(func, "", **kwargs)
+    return [scf, corl, delta]
 
 
-def allen_focal_point(func, label, **kwargs):
+def allen_focal_point(**kwargs) -> CBSMetadata:
     r"""Function to call Wes Allen-style Focal
     Point Analysis. JCP 127 014306.  Uses
-    :py:func:`~psi4.driver.cbs` to evaluate the following
+    the composite wrapper to evaluate the following
     expression. SCF employs a three-point extrapolation according
-    to :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`. MP2, CCSD, and
+    to :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_3`. MP2, CCSD, and
     CCSD(T) employ two-point extrapolation performed according to
-    :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`.  CCSDT and CCSDT(Q)
+    :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2`.  CCSDT and CCSDT(Q)
     are plain deltas. This wrapper requires :ref:`Kallay's MRCC code <sec:mrcc>`.
 
     .. math:: E_{total}^{\text{FPA}} = E_{total,\; \text{SCF}}^{\text{cc-pV[Q56]Z}} \; + E_{corl,\; \text{MP2}}^{\text{cc-pV[56]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD}}^{\text{CCSD(T)}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD(T)}}^{\text{CCSDT}}\big\vert_{\text{cc-pVTZ}} \; + \delta_{\text{CCSDT}}^{\text{CCSDT(Q)}}\big\vert_{\text{cc-pVDZ}}
@@ -182,6 +180,4 @@ def allen_focal_point(func, label, **kwargs):
         'scheme': kwargs.pop('delta4_scheme', 'xtpl_highest_1'),
     }
 
-    kwargs["cbs_metadata"] = [scf, corl, delta, delta2, delta3, delta4]
-    return driver_cbs.cbs(func, label, **kwargs)
-
+    return [scf, corl, delta, delta2, delta3, delta4]
