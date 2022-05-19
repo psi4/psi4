@@ -1,0 +1,25 @@
+#! Sample HF/cc-pVDZ H2O computation all derivatives
+
+memory 600 mb
+
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+set basis cc-pVDZ
+ans = -76.0266327341067125
+
+energy('scf')
+
+gradient('scf')
+
+gradient('scf', dertype=0)
+
+hessian('scf')
+
+hessian('scf', dertype=1)
+
+#hessian('scf', dertype=0)
+

@@ -78,14 +78,14 @@ core.clean()
 
     for result in [
         energy_dict[i],
-        wfn.variable(i),
+        wfn.variable("1_"+i),
         wfn_mol.variable("CURRENT ENERGY"),
         variable("CURRENT ENERGY"),
     ]:
 
     for result in [
         gradient_dict[i],
-        wfn.variable(f"PTYPE {i}"),
+        wfn.variable(f"GRADIENT 1_{i}"),
         wfn_mol.variable("CURRENT GRADIENT"),
         variable("CURRENT GRADIENT"),
     ]:

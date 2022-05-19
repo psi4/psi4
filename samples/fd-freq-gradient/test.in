@@ -16,6 +16,13 @@ set {
 
 findif_numbers_w_rproj = [7, 13, 6, 5, 2, 11]
 findif_numbers_wo_rproj = [13, 25, 9, 5, 3, 17]
+# since distributed driver assumes non-eq for caution's sake, have to assert projection or pass gradient so findif numbers match
+#set fd_project on
+#findif_numbers = findif_numbers_w_rproj
+# -or-
+#findif_numbers = findif_numbers_wo_rproj
+# -or-
+scf_g = gradient('scf')
 findif_numbers = findif_numbers_w_rproj
 
 # Test against analytic second derivatives
@@ -26,13 +33,14 @@ a1_freqs, b2_freqs = np.split(anal_freqs, [2])              #TEST
 set { points 3 }
 set findif {print 3}
 
-scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)
+scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True, ref_gradient=scf_g)
 fd_freqs = scf_wfn.frequencies().to_array()   #TEST
 compare(findif_numbers[0], variable('findif number'), '3-point stencil points')  #TEST
 compare_values(anal_freqs, fd_freqs,  #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1) ", atol=1.e-1)  #TEST
 
 # Frequencies by 5-pt formula in C1 point group.
+set fd_project on  # see note above
 set { points 5 }
 
 scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)

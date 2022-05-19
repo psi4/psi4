@@ -51,13 +51,5 @@ an_grad = gradient('scf', molecule=water, external_potentials=external_potential
 an_ener = psi4.variable('CURRENT ENERGY')
 
 
-no_extern_grad_xptd = [
- [-3.61281240e-03, -4.93441226e-07, -1.84830343e-02],
- [ 1.80644240e-03,  1.27352333e-02,  9.24171070e-03],
- [ 1.80637000e-03, -1.27347399e-02,  9.24132361e-03]]
-
-# line below shouldn't be necessary but is for now. corrected in DDD
-set_global_option_python("EXTERN", None)
 
 no_extern_grad_cptd = gradient("scf", molecule=water)
-

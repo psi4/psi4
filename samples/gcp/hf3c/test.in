@@ -91,6 +91,7 @@ for rxn in [4, 8, 16, 20]:
         compare_values(-0.051764469, E1, digits, 'S22-4 ma gcp')  #TEST  # from orca
         compare_values(-0.051764469, E2, digits, 'S22-4 mb gcp')  #TEST  # from orca
 
+    clean()
     E = energy('hf/minix', molecule=di)
     E1 = energy('hf/minix', molecule=ma)
     E2 = energy('hf/minix', molecule=mb)

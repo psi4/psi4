@@ -14,7 +14,6 @@ set {
 }
 
 # Test frequencies by gradients
-set findif { points 3 }
 
 h2o.update_geometry()
 # Psi is forbidden from "fixing" our coordinate axes. That would interfere with the displacements.
@@ -25,7 +24,7 @@ method = "scf" # Change this line to change the method you compute with.
 
 # Displace the h2o molecule to get all displacements for hessian by gradients.
 # Set -1 to 1 to get A1 frequencies, to 4 for B2...
-findif_meta_dict = driver_findif.hessian_from_gradients_geometries(h2o, -1)
+findif_meta_dict = driver_findif.hessian_from_gradients_geometries(h2o, -1, stencil_size=3)
 
 ndisp = len(findif_meta_dict["displacements"]) + 1
 

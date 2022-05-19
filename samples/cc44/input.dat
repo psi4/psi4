@@ -14,6 +14,8 @@ molecule h2o {
 # above will fail b/c below min mem. set core.set_memory(bytes) to bypass.
 set_memory_bytes(2000000)
 
+# note that this test will fail in parallel b/c of low memory and #2576
+
 set {
   basis "aug-cc-pVTZ"
   roots_per_irrep [1, 0, 0, 1]

@@ -26,11 +26,12 @@ edfccsdt = variable("CCSD(T) CORRELATION ENERGY")
 
 
 
-ref_pair_ene = [
-      [-0.010244054671, -0.010471430803, -0.008926897738, -0.008901781427],
-      [-0.010471430803, -0.023051607323, -0.017447839602, -0.015432374743],
-      [-0.008926897738, -0.017447839602, -0.021088561478, -0.01636417494 ],
-      [-0.008901781427, -0.015432374743, -0.01636417494 , -0.020436212035]]
+
+# Verify pair energies for no natural orbitals.
+set nat_orbs false
+
+energy('ccsd')
+
 
 # verify that DFCC and DFMP2 give the same MP2 results
 set scf_type df
