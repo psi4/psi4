@@ -22,5 +22,5 @@ energy('eom-ccsd')
 compare_values(scf_0, variable("SCF TOTAL ENERGY"), 6, "SCF energy")                 #TEST
 compare_values(ccsd_0, variable("CCSD TOTAL ENERGY"), 6, "CCSD energy")              #TEST
 for (ref, h, i) in eomccsd_ref: # TEST
-    val = variable(f"CCSD ROOT {i} ({h}) TOTAL ENERGY")                                 #TEST
-    compare_values(ref, val, 6, f"EOM-CCSD root {i} ({h})")                                #TEST
+    val = variable(f"CCSD ROOT {i} (IN {h}) TOTAL ENERGY")                                 #TEST
+    compare_values(ref, val, 6, f"EOM-CCSD root {i} (IN {h})")                                #TEST

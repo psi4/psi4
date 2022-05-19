@@ -22,7 +22,7 @@ h2o.update_geometry()
 # SCF TESTS
 
 scf_dz = energy('SCF/cc-pVDZ')
-#clean()
+clean()
 
 scf_tzvp = energy('SCF/def2-TZVP')
 
@@ -37,7 +37,7 @@ scf_zapa = energy('SCF/[23]ZaPa-NR')
 # MP2 TESTS
 
 mp2_addz = energy('MP2/aug-cc-pV(D+d)Z')
-#clean()
+clean()
 
 mp2_atz = energy('MP2/aug-cc-pVTZ')
 

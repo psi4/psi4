@@ -3,7 +3,14 @@ import numpy as np
 
 findif_numbers_w_rproj = [13, 37, 8, 7, 2, 19]
 findif_numbers_wo_rproj = [43, 145, 13, 7, 5, 33]
+# since distributed driver assumes non-eq for caution's sake, have to assert projection or pass gradient so findif numbers match
+set fd_project on
 findif_numbers = findif_numbers_w_rproj
+# -or-
+#findif_numbers = findif_numbers_wo_rproj
+# -or-
+#scf_g = gradient('scf')
+#findif_numbers = findif_numbers_w_rproj
 
 molecule h2o {
   symmetry c1

@@ -19,10 +19,14 @@ exc_2 = 0.27347 # TEST
 exc_3 = 0.57815 # TEST
 exc_4 = 0.63789 # TEST
 
-compare_values(exc_1, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (A1) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
-compare_values(exc_2, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (B2) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
-compare_values(exc_3, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 1 (B1) EXCITATION ENERGY"), 5, "Third Excitation Energy")        # TEST
-compare_values(exc_4, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (A2) EXCITATION ENERGY"), 5, "Fourth Excitation Energy")       # TEST
+compare_values(exc_1, wfn.variable("TD-HF ROOT 0 (IN B1) -> ROOT 0 (IN A1) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
+compare_values(exc_2, wfn.variable("TD-HF ROOT 0 (IN B1) -> ROOT 0 (IN B2) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
+compare_values(exc_3, wfn.variable("TD-HF ROOT 0 (IN B1) -> ROOT 1 (IN B1) EXCITATION ENERGY"), 5, "Third Excitation Energy")        # TEST
+compare_values(exc_4, wfn.variable("TD-HF ROOT 0 (IN B1) -> ROOT 0 (IN A2) EXCITATION ENERGY"), 5, "Fourth Excitation Energy")       # TEST
+compare_values(exc_1, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 1 (A1) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
+compare_values(exc_2, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 2 (B2) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
+compare_values(exc_3, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 3 (B1) EXCITATION ENERGY"), 5, "Third Excitation Energy")        # TEST
+compare_values(exc_4, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 4 (A2) EXCITATION ENERGY"), 5, "Fourth Excitation Energy")       # TEST
 compare_values(exc_1, wfn.variable("TD-HF ROOT 0 -> ROOT 1 EXCITATION ENERGY"), 5, "First Excitation Energy")                  # TEST
 compare_values(exc_2, wfn.variable("TD-HF ROOT 0 -> ROOT 2 EXCITATION ENERGY"), 5, "Second Excitation Energy")                 # TEST
 compare_values(exc_3, wfn.variable("TD-HF ROOT 0 -> ROOT 3 EXCITATION ENERGY"), 5, "Third Excitation Energy")                  # TEST

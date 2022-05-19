@@ -20,7 +20,7 @@ symmetry c1
 units bohr
 }
 
-g, wfn = psi4.gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc', max_nbody=2,
+g, wfn = psi4.gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc',
                                       return_total_data=True, return_wfn=True)
 core.clean()
 
@@ -36,8 +36,8 @@ for i in vmfc_scheme: #TEST
     energy_dict[i] = core.variable('CURRENT ENERGY') #TEST
     core.clean() #TEST
 
-    compare_values(energy_dict[i], wfn.variables()[i], 8, 'Energy of %s' %i) #TEST
-    compare_arrays(gradient_dict[i], wfn.variables()['PTYPE %s' %i], 8, 'Gradient of %s' %i) #TEST
+    compare_values(energy_dict[i], wfn.variables()["1_"+i], 8, 'Energy of %s' %i) #TEST
+    compare_arrays(gradient_dict[i], wfn.variables()['GRADIENT %s' % "1_"+i], 8, 'Gradient of %s' %i) #TEST
 
 ene, grad = 0, np.zeros((9, 3)) #TEST
 
@@ -56,3 +56,27 @@ for key in vmfc_scheme: #TEST
     grad[index, :] += vmfc_scheme[key] * np.array(gradient_dict[key]) #TEST
  
 compare_arrays(grad, wfn.variables()['GRADIENT 2'], 8, 'VMFC-Corrected Gradient') #TEST
+
+grad_maxnb2 = np.array(
+     [[ 0.002155804191, -0.029634185797,  0.032376607396],
+      [-0.003170680084,  0.014254859601, -0.006078802815],
+      [ 0.012483476168,  0.023203573171, -0.025365946635],
+      [ 0.025226012667,  0.016325441914,  0.031594301626],
+      [-0.027006236709, -0.001406222833, -0.024814674937],
+      [-0.010724421068, -0.008596936788, -0.007375340751],
+      [-0.024435013809,  0.009777336603, -0.035394108341],
+      [ 0.012544129973, -0.004104715215,  0.008163796645],
+      [ 0.012926928671, -0.019819150657,  0.026894167812]])
+grad_maxnb3 = np.array(
+     [[ 0.002219694063,  0.009321053605, -0.006605392323],
+      [ 0.004716622541, -0.000932172428,  0.004496896826],
+      [ 0.001311905336, -0.002455421929,  0.003035312701],
+      [-0.009018191555, -0.002317388378, -0.00680297185 ],
+      [ 0.001420670764,  0.002045748088,  0.003021479389],
+      [-0.001682106814,  0.004664038597,  0.003106497953],
+      [ 0.006639093791, -0.006637441486,  0.005420065144],
+      [-0.003115962895, -0.004227261417, -0.002455116289],
+      [-0.002491725232,  0.000538845348, -0.003216771551]])
+compare_arrays(grad_maxnb3, g, 6, 'returned gradient')  #TEST
+compare_arrays(grad_maxnb2, wfn.variable("GRADIENT 2"), 6, '2-body gradient')  #TEST
+compare_arrays(grad_maxnb3, wfn.variable("GRADIENT 3"), 6, '3-body gradient')  #TEST
