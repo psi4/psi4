@@ -1056,12 +1056,14 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
 
     // => Save Psivars <=
     // Edify the auto-docs.
-    /*- Process::environment.globals["CCname ROOT m TOTAL ENERGY"] -*/
-    /*- Process::environment.globals["CCname ROOT m (h) TOTAL ENERGY"] -*/
-    /*- Process::environment.globals["CCname ROOT m TOTAL ENERGY - h TRANSITION"] -*/
-    /*- Process::environment.globals["CCname ROOT m CORRELATION ENERGY"] -*/
-    /*- Process::environment.globals["CCname ROOT m (h) CORRELATION ENERGY"] -*/
-    /*- Process::environment.globals["CCname ROOT m CORRELATION ENERGY - h TRANSITION"] -*/
+    /*- Process::environment.globals["CCname ROOT n TOTAL ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT n (h) TOTAL ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT n (IN h) TOTAL ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT n TOTAL ENERGY - h TRANSITION"] -*/
+    /*- Process::environment.globals["CCname ROOT n CORRELATION ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT n (h) CORRELATION ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT n (IN h) CORRELATION ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT n CORRELATION ENERGY - h TRANSITION"] -*/
 
     std::string short_name;
     if (params.wfn == "EOM_CC2") {
@@ -1086,12 +1088,22 @@ void diag(ccenergy::CCEnergyWavefunction& wfn) {
         const std::vector<std::string> names {"CC", short_name};
         state_idx_to_identifiers[{irrep_idx, target_irrep}] = i;
         for (const auto& name : names) {
-            Process::environment.globals[name + " ROOT " + std::to_string(i) + " TOTAL ENERGY"] = total_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY"] = corr_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(i) + " TOTAL ENERGY - " + trans_irrep_lbl + " TRANSITION"] = total_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY - " + trans_irrep_lbl + " TRANSITION"] = corr_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep_lbl + ") TOTAL ENERGY"] = total_energy;
-            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep_lbl + ") CORRELATION ENERGY"] = corr_energy;
+            auto varname = name + " ROOT " + std::to_string(i) + " TOTAL ENERGY";
+            Process::environment.globals[varname] = total_energy;
+            varname = name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY";
+            Process::environment.globals[varname] = corr_energy;
+            varname = name + " ROOT " + std::to_string(i) + " TOTAL ENERGY - " + trans_irrep_lbl + " TRANSITION";
+            Process::environment.globals[varname] = total_energy;
+            varname = name + " ROOT " + std::to_string(i) + " CORRELATION ENERGY - " + trans_irrep_lbl + " TRANSITION";
+            Process::environment.globals[varname] = corr_energy;
+            varname = name + " ROOT " + std::to_string(i) + " (" + target_irrep_lbl + ") TOTAL ENERGY";
+            Process::environment.globals[varname] = total_energy;
+            varname = name + " ROOT " + std::to_string(i) + " (" + target_irrep_lbl + ") CORRELATION ENERGY";
+            Process::environment.globals[varname] = corr_energy;
+            varname = name + " ROOT " + std::to_string(irrep_idx) + " (IN " + target_irrep_lbl + ") TOTAL ENERGY";
+            Process::environment.globals[varname] = total_energy;
+            varname = name + " ROOT " + std::to_string(irrep_idx) + " (IN " + target_irrep_lbl + ") CORRELATION ENERGY";
+            Process::environment.globals[varname] = corr_energy;
         }
         irrep_counts[target_irrep_lbl]++;
     }

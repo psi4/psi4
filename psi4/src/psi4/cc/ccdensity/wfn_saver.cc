@@ -55,7 +55,9 @@ void scalar_saver_ground(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *
         throw PSIEXCEPTION("Unknown wfn type");
     }
     for (const auto name: names) {
-        auto varname = name + " ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") " + suffix;
+        auto varname = name + " ROOT 0 (" + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(total_idx) + " (" + moinfo.labels[target_sym] + ") " + suffix;
+        wfn.set_scalar_variable(varname, val);
+        varname = name + " ROOT 0 (IN " + moinfo.labels[moinfo.sym] + ") -> ROOT " + std::to_string(idx_num) + " (IN " + moinfo.labels[target_sym] + ") " + suffix;
         wfn.set_scalar_variable(varname, val);
         varname = name + " ROOT 0 -> ROOT " + std::to_string(total_idx) + " " + suffix;
         wfn.set_scalar_variable(varname, val);
@@ -81,7 +83,9 @@ void scalar_saver_excited(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params 
         throw PSIEXCEPTION("Unknown wfn type");
     }
     for (const auto name: names) {
-        auto varname = name + " ROOT " + std::to_string(S_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (" + moinfo.labels[U_sym] + ") " + suffix;
+        auto varname = name + " ROOT " + std::to_string(S_total_idx) + " (" + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_total_idx) + " (" + moinfo.labels[U_sym] + ") " + suffix;
+        wfn.set_scalar_variable(varname, val);
+        varname = name + " ROOT " + std::to_string(S_idx) + " (IN " + moinfo.labels[S_sym] + ") -> ROOT " + std::to_string(U_idx) + " (IN " + moinfo.labels[U_sym] + ") " + suffix;
         wfn.set_scalar_variable(varname, val);
         varname = name + " ROOT " + std::to_string(S_total_idx) + " -> ROOT " + std::to_string(U_total_idx) + " " + suffix;
         wfn.set_scalar_variable(varname, val);
@@ -105,7 +109,9 @@ void density_saver(ccenergy::CCEnergyWavefunction& wfn, struct RHO_Params *S, co
     }
 
     for (const auto name: names) {
-        auto varname = name + " ROOT " + std::to_string(idx_num) + " (" + moinfo.labels[target_sym] + ") " + suffix;
+        auto varname = name + " ROOT " + std::to_string(total_idx) + " (" + moinfo.labels[target_sym] + ") " + suffix;
+        wfn.density_map_[varname] = val;
+        varname = name + " ROOT " + std::to_string(idx_num) + " (IN " + moinfo.labels[target_sym] + ") " + suffix;
         wfn.density_map_[varname] = val;
         varname = name + " ROOT " + std::to_string(total_idx) + " " + suffix;
         wfn.density_map_[varname] = val;

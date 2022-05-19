@@ -163,7 +163,8 @@ void CCEnergyWavefunction::print_pair_energies(const std::vector<double>& emp2_a
     }
     set_array_variable("MP2 ALPHA-ALPHA PAIR ENERGIES", mp2_mat);
     set_array_variable("CC ALPHA-ALPHA PAIR ENERGIES", cc_mat);
-    set_array_variable(full_name +  " ALPHA-ALPHA PAIR ENERGIES", cc_mat);
+    auto cc_str = full_name + " ALPHA-ALPHA PAIR ENERGIES";
+    set_array_variable(cc_str, cc_mat);
     // Process::environment.globals["CCSD ALPHA-ALPHA PAIR ENERGIES"]
     // Process::environment.globals["CC2 ALPHA-ALPHA PAIR ENERGIES"]
     // Process::environment.globals["CC3 ALPHA-ALPHA PAIR ENERGIES"]
@@ -195,7 +196,8 @@ void CCEnergyWavefunction::print_pair_energies(const std::vector<double>& emp2_a
     }
     set_array_variable("MP2 ALPHA-BETA PAIR ENERGIES", mp2_mat);
     set_array_variable("CC ALPHA-BETA PAIR ENERGIES", cc_mat);
-    set_array_variable(full_name +  " ALPHA-BETA PAIR ENERGIES", cc_mat);
+    cc_str = full_name +  " ALPHA-BETA PAIR ENERGIES";
+    set_array_variable(cc_str, cc_mat);
     // Process::environment.globals["CCSD ALPHA-BETA PAIR ENERGIES"]
     // Process::environment.globals["CC2 ALPHA-BETA PAIR ENERGIES"]
     // Process::environment.globals["CC3 ALPHA-BETA PAIR ENERGIES"]
@@ -238,7 +240,8 @@ void CCEnergyWavefunction::print_pair_energies(const std::vector<double>& emp2_a
     }
     set_array_variable("MP2 SINGLET PAIR ENERGIES", mp2_mat);
     set_array_variable("CC SINGLET PAIR ENERGIES", cc_mat);
-    set_array_variable(full_name +  " SINGLET PAIR ENERGIES", cc_mat);
+    cc_str = full_name +  " SINGLET PAIR ENERGIES";
+    set_array_variable(cc_str, cc_mat);
     // Process::environment.globals["CCSD SINGLET PAIR ENERGIES"]
     // Process::environment.globals["CC2 SINGLET PAIR ENERGIES"]
     // Process::environment.globals["CC3 SINGLET PAIR ENERGIES"]
@@ -272,7 +275,8 @@ void CCEnergyWavefunction::print_pair_energies(const std::vector<double>& emp2_a
     }
     set_array_variable("MP2 TRIPLET PAIR ENERGIES", mp2_mat);
     set_array_variable("CC TRIPLET PAIR ENERGIES", cc_mat);
-    set_array_variable(full_name +  " TRIPLET PAIR ENERGIES", cc_mat);
+    cc_str = full_name +  " TRIPLET PAIR ENERGIES";
+    set_array_variable(cc_str, cc_mat);
     // Process::environment.globals["CCSD TRIPLET PAIR ENERGIES"]
     // Process::environment.globals["CC2 TRIPLET PAIR ENERGIES"]
     // Process::environment.globals["CC3 TRIPLET PAIR ENERGIES"]

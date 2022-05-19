@@ -3150,7 +3150,8 @@ def run_cc_property(name, **kwargs):
             set_of_names.update({title + " ROOT 0 {}", "CC ROOT 0 {}",
                                  f"{title} ROOT 0 {{}} - {total_h_lbl} TRANSITION",
                                       f"CC ROOT 0 {{}} - {total_h_lbl} TRANSITION",
-                                 f"{title} ROOT 0 ({gs_h_lbl}) {{}}", f"CC ROOT 0 ({gs_h_lbl}) {{}}"})
+                                 f"{title} ROOT 0 ({gs_h_lbl}) {{}}", f"CC ROOT 0 ({gs_h_lbl}) {{}}",
+                                 f"{title} ROOT 0 (IN {gs_h_lbl}) {{}}", f"CC ROOT 0 (IN {gs_h_lbl}) {{}}"})
         oe.set_names(set_of_names)
         oe.compute()
         print(ccwfn.variables())
@@ -3163,13 +3164,14 @@ def run_cc_property(name, **kwargs):
                 # Don't forget to count the ground state!
                 for i in range(n_root_pi[h]):
                     if h == gs_h: i += 1
-                    root_title = title + f" ROOT {i} ({root_h_lbl})"
+                    root_title = title + f" ROOT {i} (IN {root_h_lbl})"
                     oe.set_title(root_title)
                     total_idx = ccwfn.total_index(i, h)
                     set_of_names = {f"{title} ROOT {total_idx} {{}}", f"CC ROOT {total_idx} {{}}",
                                     f"{title} ROOT {total_idx} {{}} - {trans_h_lbl} TRANSITION",
                                          f"CC ROOT {total_idx} {{}} - {trans_h_lbl} TRANSITION",
-                                    f"{title} ROOT {i} ({root_h_lbl}) {{}}", f"CC ROOT {i} ({root_h_lbl}) {{}}"}
+                                    f"{title} ROOT {total_idx} ({root_h_lbl}) {{}}", f"CC ROOT {total_idx} ({root_h_lbl}) {{}}",
+                                    f"{title} ROOT {i} (IN {root_h_lbl}) {{}}", f"CC ROOT {i} (IN {root_h_lbl}) {{}}"}
                     oe.set_names(set_of_names)
                     Da = ccwfn.get_density(root_title + " ALPHA")
                     oe.set_Da_so(Da)
@@ -3653,6 +3655,8 @@ def run_adcc(name, **kwargs):
         for method in methods:
             adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) EXCITATION ENERGY",
                                  excitation.excitation_energy)
+            adc_wfn.set_variable(f"{method} ROOT 0 (IN A) -> ROOT {root_index} (IN A) EXCITATION ENERGY",
+                                 excitation.excitation_energy)
             adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY",
                                  excitation.excitation_energy)
             adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} EXCITATION ENERGY - A TRANSITION",
@@ -3757,6 +3761,8 @@ def run_adcc_property(name, **kwargs):
             for method in methods:
                 adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
                                     "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
+                adc_wfn.set_variable(f"{method} ROOT 0 (IN A) -> ROOT {root_index} (IN A) "
+                                    "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
                 adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
                                     "ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", data_mat)
                 adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
@@ -3771,6 +3777,8 @@ def run_adcc_property(name, **kwargs):
             for method in methods:
                 adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
                                     f"OSCILLATOR STRENGTH ({gauge_short})", data)
+                adc_wfn.set_variable(f"{method} ROOT 0 (IN A) -> ROOT {root_index} (IN A) "
+                                    f"OSCILLATOR STRENGTH ({gauge_short})", data)
                 adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
                                     f"OSCILLATOR STRENGTH ({gauge_short})", data)
                 adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
@@ -3782,6 +3790,8 @@ def run_adcc_property(name, **kwargs):
             for method in methods:
                 adc_wfn.set_variable(f"{method} ROOT 0 (A) -> ROOT {root_index} (A) "
                                     "ROTATORY STRENGTH (VEL)", data)
+                adc_wfn.set_variable(f"{method} ROOT 0 (IN A) -> ROOT {root_index} (IN A) "
+                                    "ROTATORY STRENGTH (VEL)", data)
                 adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
                                     "ROTATORY STRENGTH (VEL)", data)
                 adc_wfn.set_variable(f"{method} ROOT 0 -> ROOT {root_index} "
@@ -3792,27 +3802,38 @@ def run_adcc_property(name, **kwargs):
             props["State dipole moment (in a.u.)"] = data
             data_mat = data.reshape(1, 3)
             for method in methods:
+                adc_wfn.set_variable(f"{method} ROOT {root_index} DIPOLE MOMENT", data_mat)
+                adc_wfn.set_variable(f"{method} ROOT {root_index} DIPOLE MOMENT - A TRANSITION", data_mat)
                 adc_wfn.set_variable(f"{method} ROOT {root_index} (A) DIPOLE MOMENT", data_mat)
+                adc_wfn.set_variable(f"{method} ROOT {root_index} (IN A) DIPOLE MOMENT", data_mat)
 
         computed.append(props)
 
         # for Psivar scraper
-        # wfn.set_variable("ADC ROOT 0 -> ROOT m EXCITATION ENERGY")               # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT m (i) EXCITATION ENERGY")       # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION")  # P::e ADC
-        # wfn.set_array_variable("ADC ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)")                # P::e ADC
-        # wfn.set_array_variable("ADC ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)")        # P::e ADC
-        # wfn.set_array_variable("ADC ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION")  # P::e ADC
-        # wfn.set_array_variable("ADC ROOT m (i) DIPOLE MOMENT")                # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)")               # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)")       # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION")  # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)")               # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)")       # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h TRANSITION")  # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL)")               # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (VEL)")       # P::e ADC
-        # wfn.set_variable("ADC ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h TRANSITION")  # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT n EXCITATION ENERGY")               # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION")  # P::e ADC
+        # wfn.set_array_variable("ADC ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN)")                # P::e ADC
+        # wfn.set_array_variable("ADC ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)")        # P::e ADC
+        # wfn.set_array_variable("ADC ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)")        # P::e ADC
+        # wfn.set_array_variable("ADC ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION")  # P::e ADC
+        # wfn.set_array_variable("ADC ROOT n DIPOLE MOMENT")                # P::e ADC
+        # wfn.set_array_variable("ADC ROOT n (IN i) DIPOLE MOMENT")                # P::e ADC
+        # wfn.set_array_variable("ADC ROOT n (i) DIPOLE MOMENT")                # P::e ADC
+        # wfn.set_array_variable("ADC ROOT n DIPOLE MOMENT - h TRANSITION")                # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN)")               # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION")  # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL)")               # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (VEL)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (VEL)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL) - h TRANSITION")  # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL)")               # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)")       # P::e ADC
+        # wfn.set_variable("ADC ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION")  # P::e ADC
 
     core.print_out("\nExcited state properties:\n")
     for i, props in enumerate(computed):
