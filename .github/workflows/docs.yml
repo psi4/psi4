@@ -6,10 +6,10 @@ on:
       - master
       - gha-docs
 
-concurrency: 
+concurrency:
   group: latest-docs-group
   cancel-in-progress: true
-  
+
 jobs:
 
   docs:
