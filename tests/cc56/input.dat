@@ -67,8 +67,8 @@ for transition, data in test_data.items(): # TEST
             prop1 = f"{name} ROOT {transition[0]} (IN {transition[1]}) -> ROOT {transition[3]} (IN {transition[4]}) {property}" # TEST
             prop2 = f"{name} ROOT {transition[2]} -> ROOT {transition[5]} {property}" # TEST
             prop3 = f"{name} ROOT {transition[2]} -> ROOT {transition[5]} {property} - {transition[6]} TRANSITION" # TEST
-            prop1 = f"{name} ROOT {transition[2]} ({transition[1]}) -> ROOT {transition[5]} ({transition[4]}) {property}" # TEST
-            for propstring in {prop1, prop2, prop3}: # TEST
+            prop4 = f"{name} ROOT {transition[2]} ({transition[1]}) -> ROOT {transition[5]} ({transition[4]}) {property}" # TEST
+            for propstring in {prop1, prop2, prop3, prop4}: # TEST
                 # Change these numbers to 6 ASAP # TEST
                 if "EINSTEIN" not in property: # TEST
                     compare_values(value, wfn.variable(propstring), 4, propstring) # TEST
