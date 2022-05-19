@@ -1610,7 +1610,7 @@ class CompositeComputer(BaseComputer):
         if self.driver != "energy" and len(set(modules)) == 2 and modules.count("scf") == len(modules) / 2:
             # signature of "MP2 GRAD" - "HF GRAD" implementation detail
             # * avoid having post-scf single-method gradients/Hessians show up as "(mixed)" module just because an outright HF call in the jobs list
-            modules = set(modules) - set(["scf"])
+            modules = set(modules) - {"scf"}
         modules = list(set(modules))
         modules = modules[0] if len(modules) == 1 else "(mixed)"
 

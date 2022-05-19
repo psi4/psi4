@@ -72,9 +72,9 @@ class AtomicComputer(BaseComputer):
     method: str = Field(..., description="The quantum chemistry method to evaluate (e.g., B3LYP, MP2, ...).")
     driver: DriverEnum = Field(..., description="The resulting type of computation: energy, gradient, hessian, properties."
         "Note for finite difference that this should be the target driver, not the means driver.")
-    keywords: Dict[str, Any] = Field({}, description="The keywords to use in the computation.")
+    keywords: Dict[str, Any] = Field(default_factory=dict, description="The keywords to use in the computation.")
     computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
-    result: Any = Field({}, description="AtomicResult return.")
+    result: Any = Field(default_factory=dict, description="AtomicResult return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
 
     class Config(qcel.models.ProtoModel.Config):

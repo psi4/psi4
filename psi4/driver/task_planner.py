@@ -55,7 +55,7 @@ def _expand_cbs_methods(method: str, basis: str, driver: DriverEnum, **kwargs) -
     * (iv) `method="cbs", cbsmeta=CBSMetadata` --> passes through.
 
     """
-    if method == 'cbs' and kwargs.get('cbsmeta', None):
+    if method == 'cbs' and kwargs.get('cbsmeta', False):
         return method, basis, kwargs['cbsmeta']
 
     # Expand CBS methods
