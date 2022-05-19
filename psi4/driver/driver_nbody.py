@@ -34,6 +34,8 @@ Bullet points are major actions
 Lines of dashes denote function calls
 e/d/dd=dg/g/h := energy, dipole, dipole derivative = dipole gradient, gradient, Hessian
 `mc_(frag, bas)` := a modelchem index, mc; indices of real fragments, frag; set(bas - frag) are indices of ghost fragments. see "intermediates_energy" in big table below for example.
+note that there's a lot of natural 1-indexing (1, 2, 3) rather than 0-indexing (0, 1, 2) in manybody. e.g., 2-body energy, Molecule.extract_subsets(1, (1, 2))
+note that a "level" can be n-body level (how many real molecular fragments) or a modelchem level (`mc_`; e.g., CC on 1-bodies, MP2 on 2-bodies; "multilevel")
 
 ---------------------------
 ManyBodyComputer.__init__()
@@ -51,7 +53,7 @@ task_planner.py::task_planner()
     ------------------------------
     ManyBodyComputer.build_tasks()
     ------------------------------
-    * if supersystem requested, request (frag, bas) indices for full nbody range of nocp treatment from build_nbody_compute_list()
+    * if supersystem requested as a modelchem level, request (frag, bas) indices for full nbody range of nocp treatment from build_nbody_compute_list()
     * otherwise, request (frag, bas) indices for specified nbody range covering specified bsse treatments from build_nbody_compute_list()
 
         build_nbody_compute_list()
@@ -106,7 +108,7 @@ ManyBodyComputer.get_psi_results()
 
                 _sum_cluster_ptype_data()
                 -------------------------
-                * build up ene, grad, Hess in per-fragment pieces based on list of (frag, bas) subjobs active for that bsse treatment
+                * sum up ene, grad, or Hess in per-fragment pieces based on list of (frag, bas) subjobs active for that bsse treatment
 
             * compute special case of monomers in monomer basis
             * for each of cp/nocp/vmfc, apply appropriate formula to build each n-body level of cumulative total energy into body_dict

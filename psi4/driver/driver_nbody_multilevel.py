@@ -26,16 +26,16 @@
 # @END LICENSE
 #
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import numpy as np
 
-def prepare_results(self, client: Optional["FractalClient"] = None):
-    """
-    Use different levels of theory for different expansion levels
-    See kwargs description in driver_nbody.nbody_gufunc
-    :returns: *return type of func* |w--w| The data.
-    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
+def prepare_results(self, client: Optional["FractalClient"] = None) -> Dict[str, Any]:
+    """Use different levels of theory for different n-body levels.
+
+    See ManyBodyComputer.prepare_results() for how this fits in.
+    TODO: incorporate function into class.
+
     """
     from psi4.driver.driver_nbody import _print_nbody_energy
 
