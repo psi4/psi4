@@ -283,15 +283,18 @@ void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Param
     outfile->Printf("\tEinstein B Coefficient   %11.8e \n", einstein_b);
 
     // Save variables to wfn.
-    // Process::environment.globals["CCname ROOT n -> ROOT m OSCILLATOR STRENGTH (LEN)"]
-    // Process::environment.globals["CCname ROOT n -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION"]
-    // Process::environment.globals["CCname ROOT n (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)"]
-    // Process::environment.globals["CCname ROOT n -> ROOT m EINSTEIN A (LEN)"]
-    // Process::environment.globals["CCname ROOT n -> ROOT m EINSTEIN A (LEN) - h TRANSITION"]
-    // Process::environment.globals["CCname ROOT n (h) -> ROOT m (i) EINSTEIN A (LEN)"]
-    // Process::environment.globals["CCname ROOT n -> ROOT m EINSTEIN B (LEN)"]
-    // Process::environment.globals["CCname ROOT n -> ROOT m EINSTEIN B (LEN) - h TRANSITION"]
-    // Process::environment.globals["CCname ROOT n (h) -> ROOT m (i) EINSTEIN B (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n OSCILLATOR STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n EINSTEIN A (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n EINSTEIN A (LEN) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) EINSTEIN A (LEN)"]
+    // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) EINSTEIN A (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n EINSTEIN B (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n EINSTEIN B (LEN) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) EINSTEIN B (LEN)"]
+    // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) EINSTEIN B (LEN)"]
     scalar_saver_excited(wfn, S, U, "OSCILLATOR STRENGTH (LEN)", f_x + f_y + f_z);
     scalar_saver_excited(wfn, S, U, "EINSTEIN A (LEN)", einstein_a);
     scalar_saver_excited(wfn, S, U, "EINSTEIN B (LEN)", einstein_b);

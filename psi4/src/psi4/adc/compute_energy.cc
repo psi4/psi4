@@ -255,10 +255,10 @@ double ADCWfn::compute_energy() {
                                                 free(tracepi);
                         */
 
-                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION"] -*/
+                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION"] -*/
                         oss << state_top << "0 -> ROOT " << root + 1 << " EXCITATION ENERGY - " << irrep_[irrep] << " TRANSITION";
                         Process::environment.globals[oss.str()] = omega[root];
-                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h TRANSITION"] -*/
+                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT n CORRELATION ENERGY - h TRANSITION"] -*/
                         oss.str(std::string());
                         oss << state_top << "0 -> ROOT " << root + 1 << " CORRELATION ENERGY - " << irrep_[irrep] << " TRANSITION";
                         Process::environment.globals[oss.str()] = omega[root] + corr_energy;

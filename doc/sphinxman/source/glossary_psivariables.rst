@@ -199,7 +199,7 @@ PSI Variables by Alpha
    DFT functional labeled if canonical.
 
 .. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)
-   CCname ROOT m (IN h) -> ROOT n (IN i) ROTARY STRENGTH (VEL)
+   CCname ROOT m (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)
    TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)
 
    The velocity-gauge oscillator strength of the transition from root *m* within irrep *h*
@@ -222,12 +222,12 @@ PSI Variables by Alpha
    and the transition is of irrep *h*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT n TOTAL ENERGY - h SYMMETRY
+.. psivar:: ADC ROOT n TOTAL ENERGY - h TRANSITION
 
    The total ADC energy of root *n* within irrep *h*. This variable is only defined for Psi's
    built-in ADC and will be removed for 1.7.
 
-.. psivar:: ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h SYMMETRY
+.. psivar:: ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h TRANSITION
 
    The correlation energy contribution to the excitation energy from the ground state to
    root *m* within irrep *h*. This variable is only defined for Psi's built-in ADC and will be removed for 1.7.
@@ -278,7 +278,7 @@ PSI Variables by Alpha
    DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n (h) TOTAL ENERGY
-   TD-fctl ROOT n (IN h) TOTAL ENERGY
+   TD-fctl ROOT n (h) TOTAL ENERGY
 
    The total electronic energy [Eh] for the requested theory and root *n*, which is of irrep *h* (*n* starts at 0).
    DFT functional labeled if canonical.

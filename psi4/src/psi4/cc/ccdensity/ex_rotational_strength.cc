@@ -153,8 +153,8 @@ void ex_rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Param
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
     
     // Save rotatory strength to wfn.
-    // Process::environment.globals["CCname ROOT n -> ROOT m ROTATORY STRENGTH (LEN)"]
-    // Process::environment.globals["CCname ROOT n -> ROOT m ROTATORY STRENGTH (LEN) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n ROTATORY STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n ROTATORY STRENGTH (LEN) - h TRANSITION"]
     // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) ROTATORY STRENGTH (LEN)"]
     // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (LEN)"]
     scalar_saver_excited(wfn, S, U, "ROTATORY STRENGTH (LEN)", rs);
