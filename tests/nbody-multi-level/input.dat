@@ -67,7 +67,7 @@ for k, v in wfn.variables().items():
 g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['nocp'], return_total_data=True, return_wfn=True, levels=levels)
 compare_values(comparison_dict_grad["nocp"], g, 5, '[2a] nocp-corrected multi-level gradient')            #TEST
 clean()
-g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['cp'], return_total_data=True, return_wfn=True, levels=levels)
+g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['cp','nocp'], return_total_data=True, return_wfn=True, levels=levels)
 compare_values(comparison_dict_grad["cp"], g, 5, '[2b] cp-corrected multi-level gradient')            #TEST
 clean()
 g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['vmfc'], return_total_data=True, return_wfn=True, levels=levels)

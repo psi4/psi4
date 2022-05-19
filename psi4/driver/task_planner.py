@@ -147,6 +147,16 @@ def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule"
             # rearrange bodies in order with supersystem last lest body count fail in organization loop below
             levels = dict(sorted(levels.items(), key=lambda item: 1000 if item[0] == "supersystem" else item[0]))
 
+            # We define cp as being a correction to only interaction energies
+            # If only doing cp, we need to ignore any user-specified 1st (monomer) level
+            if 'cp' in kwargs.get("bsse_type", None) and 'nocp' not in kwargs.get("bsse_type", None): 
+                if 1 in levels.keys():
+                    removed_level = levels.pop(1)
+                    logger.info("NOTE: User specified exclusively 'cp' correction, but provided level 1 details") 
+                    logger.info(f"NOTE: Removing level {removed_level}")
+                    logger.info("NOTE: For total energies, add 'nocp' to bsse_list")
+
+
         # Organize nbody calculations into modelchem levels
         # * expand keys of `levels` into full lists of nbodies covered. save to plan, resetting max_nbody accordingly
         # * below, process values of `levels`, which are modelchem strings, into kwargs specs
