@@ -216,6 +216,7 @@ int C_DGEQRF(int m, int n, double* a, int lda, double* tau, double* work, int lw
 int C_DGERFS(char trans, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, double* b, int ldb,
              double* x, int ldx, double* ferr, double* berr, double* work, int* iwork);
 int C_DGERQF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
+PSI_API
 int C_DGESDD(char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt,
              double* work, int lwork, int* iwork);
 PSI_API
