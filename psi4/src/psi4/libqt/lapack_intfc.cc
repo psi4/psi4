@@ -4204,7 +4204,7 @@ int C_DGERQF(int m, int n, double* a, int lda, double* tau, double* work, int lw
  *
  *     .. Parameters ..
  **/
-int C_DGESDD(char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt,
+int PSI_API C_DGESDD(char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt,
              double* work, int lwork, int* iwork) {
     int info;
     ::F_DGESDD(&jobz, &m, &n, a, &lda, s, u, &ldu, vt, &ldvt, work, &lwork, iwork, &info);
