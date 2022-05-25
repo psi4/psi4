@@ -307,6 +307,34 @@ class PSI_API JK {
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
     std::vector<SharedMatrix> wK_ao_;
 
+    // => Incremental Fock build variables and routines <= //
+
+    /// Perform Incremental Fock Build for J and K Matrices? (default false)
+    bool incfock_ = false;
+    /// The number of times INCFOCK has been performed (includes resets)
+    int incfock_count_;
+    bool do_incfock_iter_;
+
+    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
+    std::vector<SharedMatrix> prev_D_ao_;
+    std::vector<SharedMatrix> prev_J_ao_;
+    std::vector<SharedMatrix> prev_K_ao_;
+    std::vector<SharedMatrix> prev_wK_ao_;
+
+    /// Delta D, J, K, wK Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> delta_D_ao_;
+    std::vector<SharedMatrix> delta_J_ao_;
+    std::vector<SharedMatrix> delta_K_ao_;
+    std::vector<SharedMatrix> delta_wK_ao_;
+
+    /// Is the JK currently on a guess iteration
+    bool initial_iteration_ = true;
+
+    /// Set up Incfock variables per iteration
+    void incfock_setup();
+    /// Post-iteration Incfock processing
+    void incfock_postiter();
+
     // => Per-Iteration Setup/Finalize Routines <= //
 
     /// Build the pseudo-density D_, before compute_JK()
@@ -482,6 +510,20 @@ class PSI_API JK {
     */
     void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
     bool get_early_screening() { return early_screening_; }
+
+    /**
+     * Set whether or not to perform incremental Fock build?
+     */
+    bool set_incfock(bool incfock) { incfock_ = incfock; }
+    /**
+     * Returns whether or not an incremental Fock build is performed in an SCF iteration
+     */
+    bool do_incfock_iter() { return do_incfock_iter_; }
+    /**
+     * @brief Resets the incfock iteration number
+     * 
+     */
+    bool reset_incfock() { initial_iteration_ = true, incfock_count_ = 0; }
 
     // => Computers <= //
 
@@ -726,36 +768,6 @@ class PSI_API DirectJK : public JK {
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 
-    // => Incremental Fock build variables <= //
-    
-    /// Perform Incremental Fock Build for J and K Matrices? (default false)
-    bool incfock_;
-    /// The number of times INCFOCK has been performed (includes resets)
-    int incfock_count_;
-    bool do_incfock_iter_;
-
-    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
-    std::vector<SharedMatrix> prev_D_ao_;
-    std::vector<SharedMatrix> prev_J_ao_;
-    std::vector<SharedMatrix> prev_K_ao_;
-    std::vector<SharedMatrix> prev_wK_ao_;
-
-    // Delta D, J, K, wK Matrices for Incremental Fock Build
-    std::vector<SharedMatrix> delta_D_ao_;
-    std::vector<SharedMatrix> delta_J_ao_;
-    std::vector<SharedMatrix> delta_K_ao_;
-    std::vector<SharedMatrix> delta_wK_ao_;
-
-    // Is the JK currently on a guess iteration
-    bool initial_iteration_ = true;
-
-    // => LinK variables <= //
-
-    // Perform LinK algorithm for exchange?
-    bool linK_;
-    // Density-based ERI Screening tolerance to use in the LinK algorithm
-    double linK_ints_cutoff_;
-
     std::string name() override { return "DirectJK"; }
     size_t memory_estimate() override;
 
@@ -769,25 +781,6 @@ class PSI_API DirectJK : public JK {
     void compute_JK() override;
     /// Delete integrals, files, etc
     void postiterations() override;
-
-    /// Set up Incfock variables per iteration
-    void incfock_setup();
-    /// Post-iteration Incfock processing
-    void incfock_postiter();
-
-    /**
-     * @author Andy Jiang, Georgia Tech, December 2021
-     * 
-     * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
-     * doi: 10.1063/1.476741
-     * 
-     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
-     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
-     * @param K The list of AO K matrices to build (Same size as D)
-     * 
-     */
-    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& K);
 
     /**
      * @brief The standard J and K matrix builds for this integral class
@@ -824,10 +817,6 @@ class PSI_API DirectJK : public JK {
      * @param val a positive integer
      */
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
-
-    // => Accessors <= //
-    bool do_incfock_iter() { return do_incfock_iter_; }
-    bool do_linK() { return linK_; }
 
     /**
     * Print header information regarding JK
@@ -1193,93 +1182,133 @@ class PSI_API MemDFJK : public JK {
 };
 
 /**
- * Class DFJCOSK
+ * Class SplitJKBase
  *
- * JK implementation using a direct density-fitted coulomb algorithm
- * and a semi-numerical 'chain of spheres' exchange algorithm
+ * A wrapper class that allows building of different J and K algorithms
+ * (such as Direct-DF J builds, and LinK builds)
  */
-class PSI_API DFJCOSK : public JK {
-   protected:
-    /// Number of threads
-    int nthreads_;
-    /// Options object
-    Options& options_;
-    /// Previous iteration pseudo-density matrix
-    std::vector<SharedMatrix> D_prev_;
+class SplitJKBase {
+  protected:
+   /// Number of threads to use in the calculation
+   int nthread_;
+   /// Options object
+   Options& options_;
+   /// Print flag, defaults to 1
+   int print_;
+   /// Debug flag, defaults to 0
+   int debug_;
+   /// Bench flag, defaults to 0
+   int bench_;
 
-    // => Density Fitting Stuff <= //
+   /// Whether or not the D matrix is Hermitian
+   bool lr_symmetric_;
+   /// Whether or not to use early screening
+   bool early_screening_;
 
-    /// Auxiliary basis set
-    std::shared_ptr<BasisSet> auxiliary_;
-    /// Coulomb Metric
-    SharedMatrix J_metric_;
-    /// per-thread TwoBodyAOInt object (for computing three-center ERIs)
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri_computers_;
+   /// Integral objects (one per thread)
+   std::vector<std::shared_ptr<TwoBodyAOInt>> ints_;
+   /// The primary basis set
+   std::shared_ptr<BasisSet> primary_;
+   /// Builds the integrals for the J (or K) build class
+   virtual void build_ints() = 0;
 
-    // => Semi-Numerical Stuff <= //
+  public:
+   /**
+    * @brief Construct a new JK algo object
+    * All Split J/K algorithms extend from this class
+    * 
+    * @param primary The primary basis set used in the J/K matrix computation
+    * @param options The options object
+    */
+   SplitJKBase(std::shared_ptr<BasisSet> primary, Options& options);
 
-    /// Small DFTGrid for initial SCF iterations
-    std::shared_ptr<DFTGrid> grid_init_;
-    /// Large DFTGrid for the final SCF iteration
-    std::shared_ptr<DFTGrid> grid_final_;
-    /// Overlap fitting metric for grid_initial_
-    SharedMatrix Q_init_;
-    /// Overlap fitting metric for grid_final_
-    SharedMatrix Q_final_;
+   /**
+    * @brief Builds the J/K matrix according to the class algorithm
+    * 
+    * @param D The list of D matrices
+    * @param X The list of J (or K) matrices, depending on algorithm
+    */
+   virtual void build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& X) = 0;
 
-    std::string name() override { return "DFJCOSK"; }
-    size_t memory_estimate() override;
+   /**
+    * @brief Prints the specific algorithm information for the J/K build
+    */
+   virtual void print_header() = 0;
 
-    // => Required Algorithm-Specific Methods <= //
+   /**
+    * @brief Set the early screening variable
+    * 
+    */
+   void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
 
-    /// Do we need to backtransform to C1 under the hood?
-    bool C1() const override { return true; }
-    /// Setup integrals, files, etc
-    void preiterations() override;
-    /// Compute J/K for current C/D
-    void compute_JK() override;
-    /// Delete integrals, files, etc
-    void postiterations() override;
+   /**
+    * @brief Set the lr_symmetric_ variable
+    * 
+    */
+   void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
 
-    /// Build the coulomb (J) matrix
-    void build_J(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& J);
+};
 
-    /// Build the exchange (K) matrix
-    void build_K(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& K);
+/**
+ * Class CompositeJK
+ *
+ * JK implementation allowing mixing and matching of different J and K algorithms
+ * (such as Direct-DF J builds, and LinK builds)
+ */
+class PSI_API CompositeJK : public JK {
+  protected:
+   /// Auxiliary basis set used in DF algorithms
+   std::shared_ptr<BasisSet> auxiliary_;
 
-    /// Common initialization
-    void common_init();
+   /// String representing algorithm used to build the J matrix
+   std::string jtype_;
+   /// String representing algorithm used to build the K matrix
+   std::string ktype_;
 
-   public:
-    // => Constructors < = //
+   /// The specific algorithm used to build the J matrix
+   std::shared_ptr<SplitJKBase> jalgo_;
+   /// The specific algorithm used to build the K matrix
+   std::shared_ptr<SplitJKBase> kalgo_;
+   /// Options object
+   Options& options_;
+   /// Number of threads used in computation
+   int nthread_;
 
-    /**
+   std::string name() override { return "CompositeJK"; }
+   size_t memory_estimate() override;
+
+   // => Required Algorithm-Specific Methods <= //
+
+   /// Do we need to backtransform to C1 under the hood?
+   bool C1() const override { return true; }
+   /// Setup integrals, files, etc
+   void preiterations() override;
+   /// Delete integrals, files, etc
+   void postiterations() override;
+
+   /// Compute J/K for current C/D
+   void compute_JK() override;
+
+   /// Common initialization
+   void common_init();
+
+  public:
+   /**
      * @param primary primary basis set for this system.
-     *        AO2USO transforms will be built with the molecule
-     *        contained in this basis object, so the incoming
-     *        C matrices must have the same spatial symmetry
-     *        structure as this molecule
+     * @param auxiliary auxiliary basis set used in DF algorithms (null if no DF algorithm is used)
+     * @param jtype Which J build algorithm to run
+     * @param ktype Which K build algorithm to run
+     * @param options Psi4 environmental options object
      */
-    DFJCOSK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
-    /// Destructor
-    ~DFJCOSK() override;
+   CompositeJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+               std::string jtype, std::string ktype, Options& options);
 
-    // => Knobs <= //
-
-    /**
+   /**
     * Print header information regarding JK
     * type on output file
     */
     void print_header() const override;
-
-    /**
-     * Clear D_prev_
-     */
-    void clear_D_prev() { D_prev_.clear();}
 };
-
 
 }
 

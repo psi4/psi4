@@ -691,6 +691,13 @@ COSX
     direct density-fitting algorithm. The COSX algorithm uses no I/O, scales
     well with system size, and requires minimal memory, making it ideal for
     large systems and multi-core CPUs. See the COSX section below for more information.
+LINK
+    An exact (four-index) ERI algorithm to build the K matrix that exploits the sparsity in
+    overlap and density between atomic orbitals, leading to asymptotic linear-scaling.
+    This algorithm is described in [Ochsenfeld:1998:1663]_. The J matrix is computed with a
+    direct density-fitting algorithm. Like COSX, the LinK algorithm uses no I/O, is asymptotically
+    linear-scaling, and its integral-direct nature leads to minimal memory. LinK can also be used
+    for large systems and multi-core CPUs. See the LinK section below for more information.
 
 In some cases the above algorithms have multiple implementations that return
 the same result, but are optimal under different molecules sizes and hardware
@@ -751,6 +758,41 @@ To avoid this, either set |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
 
+Separated JK Algorithms
+~~~~~~~~~~~~~~~~~~~~~~~
+
+For larger computations, it may make sense to build J and K matrices separately, as there are fast algorithms that exist that
+build only the J matrix, such as integral-direct density-fitted J builds in [Weigend:2002:4285]_, or
+only the K matrix, such as the Linear Exchange (LinK) Algorithm in [Ochsenfeld:1998:1663]_. In Psi4, the following
+combinations of split J/K algorithms are currently available to use:
+
+DIRECT DENSITY-FITTED J + LINEAR EXCHANGE (LinK)
+    Uses an integral-direct density-fitted ERI algorithm to build the J matrix, and
+    the Linear Exchange method to build the K matrix. To use this method, set |globals__scf_type|
+    to ``LINK``. A more detailed description of these methods are provided below.
+
+DIRECT DENSITY-FITTED J + COSX EXCHANGE
+    Combines the integral-direct density-fitted J build algorithm with the Chain-of-Spheres
+    Exchange Method to build the K matrix. To use this method, set |global__scf_type| to
+    ``COSK``. A more detailed description of these methods are provided below.
+
+Direct Density-Fitted J
+~~~~~~~~~~~~~~~~~~~~~~~
+
+When building J matrices, density-fitting is more effective in building J matrices compared to K matrices. In cases of low memory, an
+integral-direct density-fitted J matrix build is the among the most efficient methods used for build the J matrix.
+This algorithm is found in [Weigend:2002:4285]_, and consists of the following steps:
+
+.. math:: \Gamma_{P} = \sum_{\mu\nu} (P|\mu\nu)D_{\mu\nu}
+
+.. math:: \Gamma_{Q} = \sum_{P} (P|Q)^{-1}\Gamma_{P}
+
+.. math:: J_{\mu\nu} = \sum_{Q} \Gamma_{Q}(Q|\mu\nu)
+
+To control the direct density-fitted J algorithm, here are the list of options provided.
+
+  |scf__ints_tolerance|: Defaults to 1.0e-12. Use this to set the screening threshold for the three-index ERIs.
+
 COSX Exchange
 ~~~~~~~~~~~~~
 
@@ -782,7 +824,7 @@ a cutoff for the value of basis functions at grid points. This keyword is
 used to determine the radial extent of the each basis shell, and it is the
 COSX analogue to |scf__dft_basis_tolerance|.
 
-The |scf__cosx_incfock| keyword (defaults to ``true``) increases performance
+The |scf__incfock| keyword (defaults to ``true`` for this algorithm) increases performance
 by constructing the Fock matrix from differences in the density matrix, which
 are more amenable to screening. Consider disabling this keyword if SCF energy
 convergence issues are observed, particularly when using diffuse basis functions.
@@ -793,22 +835,18 @@ always recommended.
 LinK Exchange
 ~~~~~~~~~~~~~
 
-.. warning:: The LinK code is currently under development and should not be used.
-
 Large SCF calculations can benefit from specialized screening procedures that further reduce the scaling of the ERI contribution to the Fock matrix.
-LinK, the linear-scaling exchange method described in [Ochsenfeld:1998:1663]_, is available with the direct SCF algorithm (|globals__scf_type| set to ``DIRECT``).
+LinK, the linear-scaling exchange method described in [Ochsenfeld:1998:1663]_, is now available to use (|globals__scf_type| set to ``LINK``).
 LinK achieves linear-scaling by exploiting shell pair sparsity in the density matrix and overlap sparsity between shell pairs.
 This method is most competitive when used with non-diffuse orbital basis sets, since orbital and density overlaps decay slower with diffuse functions.
-LinK is especially powerful when combined with density-matrix based ERI screening (set |globals__screening| to ``DENSITY``) and incremental Fock builds (set |scf__incfock| to ``TRUE``), which decrease the number of significant two-electron integrals to calculate.
-
-NOTE: Turning on LinK is currently only recommended for research and development purposes, and not for performance,
-since a fast J matrix build compatible to use with LinK has not been developed yet.
+LinK is especially powerful when combined with density-matrix based ERI screening (set |globals__screening| to ``DENSITY``) and incremental Fock builds (set |scf__incfock| to ``TRUE``), 
+which decrease the number of significant two-electron integrals to calculate.
 
 To turn on and control the LinK algorithm, here are the list of options provided.
 
-  |scf__do_linK|: Defaults to false. If turned on, the K matrix will be built using the algorithm described in [Ochsenfeld:1998:1663]_.
+  |scf__ints_tolerance|: Defaults to 1.0e-12. Use this to set the ERI screening threshold.
 
-  |scf__linK_ints_tolerance|: The integral screening tolerance used for sparsity-prep in the LinK algorithm. Defaults to the |scf__ints_tolerance| option.
+  |scf__linK_ints_tolerance|: Defaults to the |scf__ints_tolerance| option. The tolerance used for density-based ERI screening in the LinK algorithm.
 
 .. index::
     single: SOSCF

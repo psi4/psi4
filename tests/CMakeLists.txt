@@ -98,7 +98,6 @@ foreach(test_name adc1 adc2 aediis-1
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5 tdscf-6 tdscf-7
                   dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
-                  linK-1 linK-2 linK-3
                   cbs-xtpl-energy-conv ddd-deriv nbody-he-4b
                   )
     add_subdirectory(${test_name})

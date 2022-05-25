@@ -1,32 +1,5 @@
-/*
- * @BEGIN LICENSE
- *
- * Psi4: an open-source quantum chemistry software package
- *
- * Copyright (c) 2007-2022 The Psi4 Developers.
- *
- * The copyrights for code used from other parties are included in
- * the corresponding files.
- *
- * This file is part of Psi4.
- *
- * Psi4 is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, version 3.
- *
- * Psi4 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License along
- * with Psi4; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * @END LICENSE
- */
+#include "composite.h"
 
-#include "jk.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
@@ -37,7 +10,6 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/lib3index/dftensor.h"
 
 #include <vector>
 #include <map>
@@ -145,45 +117,27 @@ Matrix compute_esp_bound(const BasisSet &primary) {
 
 }
 
-DFJCOSK::DFJCOSK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) { 
-    timer_on("DFJCOSK::Setup");
-    common_init(); 
-    timer_off("DFJCOSK::Setup");
+COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJKBase(primary, options) {
+    lr_symmetric_ = true;
+    build_ints();
 }
 
-DFJCOSK::~DFJCOSK() {}
+void COSK::print_header() {
+    if (print_) {
+        outfile->Printf("  ==> COSK: Semi-Numerical K <==\n\n");
 
-void DFJCOSK::common_init() {
+        outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSX_INTS_TOLERANCE"));
+        outfile->Printf("    K Density Cutoff:   %11.0E\n", options_.get_double("COSX_DENSITY_TOLERANCE"));
+        outfile->Printf("    K Basis Cutoff:     %11.0E\n", options_.get_double("COSX_BASIS_TOLERANCE"));
+        outfile->Printf("    K Overlap Fitting:  %11s\n", (options_.get_bool("COSX_OVERLAP_FITTING") ? "Yes" : "No"));
+    }
+}
 
-    nthreads_ = 1;
-#ifdef _OPENMP
-    nthreads_ = Process::environment.get_n_threads();
-#endif
+void COSK::build_ints() {
 
-    // this JK class uses SCF-iteration-dependent screening
     // COSK is integrated on a small grid in early SCF iterations
     // and a large grid for the final iterations
     early_screening_ = true;
-
-    // => Direct Density-Fitted Coulomb Setup <= //
-
-    // pre-compute coulomb fitting metric
-    timer_on("Coulomb Metric");
-    FittingMetric J_metric_obj(auxiliary_, true);
-    J_metric_obj.form_fitting_metric();
-    J_metric_ = J_metric_obj.get_metric();
-    timer_off("Coulomb Metric");
-
-    // pre-construct per-thread TwoBodyAOInt objects for computing 3-index ERIs
-    timer_on("ERI Computers");
-    eri_computers_.resize(nthreads_);
-    auto zero = BasisSet::zero_ao_basis_set();
-    IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
-    eri_computers_[0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
-    for(int rank = 1; rank < nthreads_; rank++) {
-        eri_computers_[rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_.front()->clone());
-    }
-    timer_off("ERI Computers");
 
     // => Chain of Spheres Exchange Setup <= //
 
@@ -280,324 +234,14 @@ void DFJCOSK::common_init() {
     C_DGESV(nbf, nbf, S_num_final.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
 
     timer_off("Overlap Metric Solve");
-
 }
 
-size_t DFJCOSK::memory_estimate() {
-    return 0;  // Memory is O(N^2), which psi4 counts as effectively 0
-}
+void COSK::build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K) {
 
-void DFJCOSK::print_header() const {
-    std::string screen_type = options_.get_str("SCREENING");
-    if (print_) {
-        outfile->Printf("  ==> DFJCOSK: Density-Fitted J and Semi-Numerical K <==\n\n");
-
-        outfile->Printf("    J tasked:           %11s\n", (do_J_ ? "Yes" : "No"));
-        outfile->Printf("    K tasked:           %11s\n", (do_K_ ? "Yes" : "No"));
-        outfile->Printf("    wK tasked:          %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) outfile->Printf("    Omega:              %11.3E\n", omega_);
-        outfile->Printf("    Integrals threads:  %11d\n", nthreads_);
-        outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf("    Incremental Fock :  %11s\n", (options_.get_bool("COSX_INCFOCK") ? "Yes" : "No"));
-        outfile->Printf("    J Screening Type:   %11s\n", screen_type.c_str());
-        outfile->Printf("    J Screening Cutoff: %11.0E\n", cutoff_);
-        outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSX_INTS_TOLERANCE"));
-        outfile->Printf("    K Density Cutoff:   %11.0E\n", options_.get_double("COSX_DENSITY_TOLERANCE"));
-        outfile->Printf("    K Basis Cutoff:     %11.0E\n", options_.get_double("COSX_BASIS_TOLERANCE"));
-        outfile->Printf("    K Overlap Fitting:  %11s\n", (options_.get_bool("COSX_OVERLAP_FITTING") ? "Yes" : "No"));
+    // => Zeroing <= //
+    for (auto& Kmat : K) {
+        Kmat->zero();
     }
-}
-
-void DFJCOSK::preiterations() {}
-
-void DFJCOSK::compute_JK() {
-
-    int njk = D_ao_.size();
-
-    // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
-    if (do_wK_) throw PSIEXCEPTION("COSK does not support wK integrals yet!");
-
-    // D_eff, the effective pseudo-density matrix is either:
-    //   (1) the regular density: D_eff == D_lr = C_lo x C*ro
-    //   (2) the difference density: D_eff == dD_lr = (C_lo x C_ro)_{iter} - (C_lo x C_ro)_{iter - 1}
-    //
-    std::vector<SharedMatrix> D_eff(njk);
-
-    if(options_.get_bool("COSX_INCFOCK")) {
-
-        // If there is no previous pseudo-density, this iteration is normal
-        if(D_prev_.size() != njk) {
-            D_eff = D_ao_;
-            zero();
-        } else { // Otherwise, the iteraction is incremental
-            for (size_t jki = 0; jki < njk; jki++) {
-                D_eff[jki] = D_ao_[jki]->clone();
-                D_eff[jki]->subtract(D_prev_[jki]);
-            }
-        }
-
-        // Save a copy of the density for the next iteration
-        D_prev_.clear();
-        for(auto const &Di : D_ao_) {
-            D_prev_.push_back(Di->clone());
-        }
-
-    } else {
-        D_eff = D_ao_;
-        zero();
-    }
-
-    if (do_J_) {
-        timer_on("DFJ");
-        build_J(D_eff, J_ao_);
-        timer_off("DFJ");
-    }
-    
-    if (do_K_) {
-        timer_on("COSK");
-        build_K(D_eff, K_ao_);
-        timer_off("COSK");
-    }
-
-}
-
-void DFJCOSK::postiterations() {}
-
-void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
-    
-    timer_on("Setup");
-
-    // => Sizing <= //
-    int njk = D.size();
-    int nbf = primary_->nbf();
-    int nshell = primary_->nshell();
-    int nbf_aux = auxiliary_->nbf();
-    int nshell_aux = auxiliary_->nshell();
-
-    // benchmarking 
-    size_t nshellpair = eri_computers_[0]->shell_pairs().size();
-    size_t nshelltriplet = nshell_aux * nshellpair;
-    size_t computed_triplets1 = 0, computed_triplets2 = 0;
-
-    // screening threshold
-    double thresh2 = options_.get_double("INTS_TOLERANCE") * options_.get_double("INTS_TOLERANCE");
-
-    // per-thread G Vector buffers (for accumulating thread contributions to G)
-    // G is the contraction of the density matrix with the 3-index ERIs
-    std::vector<std::vector<SharedVector>> GT(njk, std::vector<SharedVector>(nthreads_));
-
-    // H is the contraction of G with the inverse coulomb metric
-    std::vector<SharedVector> H(njk);
-
-    // per-thread J Matrix buffers (for accumulating thread contributions to J)
-    std::vector<std::vector<SharedMatrix>> JT(njk, std::vector<SharedMatrix>(nthreads_));
-
-    // initialize per-thread objects
-    for(size_t jki = 0; jki < njk; jki++) {
-        for(size_t thread = 0; thread < nthreads_; thread++) {
-            JT[jki][thread] = std::make_shared<Matrix>(nbf, nbf);
-            GT[jki][thread] = std::make_shared<Vector>(nbf_aux);
-        }
-        H[jki] = std::make_shared<Vector>(nbf_aux);
-    }
-
-    // diagonal shell maxima of J_metric_ for screening
-    std::vector<double> J_metric_shell_diag(nshell_aux, 0.0);
-    for (size_t s = 0; s < nshell_aux; s++) {
-        int bf_start = auxiliary_->shell(s).function_index();
-        int bf_end = bf_start + auxiliary_->shell(s).nfunction();
-        for (size_t bf = bf_start; bf < bf_end; bf++) {
-            J_metric_shell_diag[s] = std::max(J_metric_shell_diag[s], J_metric_->get(bf, bf));
-        }
-    }
-
-    // shell maxima of D for screening
-    Matrix Dshell(nshell, nshell);
-    auto Dshellp = Dshell.pointer();
-
-    for(size_t M = 0; M < nshell; M++) {
-        int nm = primary_->shell(M).nfunction();
-        int mstart = primary_->shell(M).function_index();
-        for(size_t N = 0; N < nshell; N++) {
-            int nn = primary_->shell(N).nfunction();
-            int nstart = primary_->shell(N).function_index();
-            for(size_t jki = 0; jki < njk; jki++) {
-                auto Dp = D[jki]->pointer();
-                for(size_t m = mstart; m < mstart + nm; m++) {
-                    for(size_t n = nstart; n < nstart + nn; n++) {
-                        Dshellp[M][N] = std::max(Dshellp[M][N], std::abs(Dp[m][n]));
-                    }
-                }
-            }
-        }
-    }
-
-    timer_off("Setup");
-
-    //  => First Contraction <= //
-
-    // contract D with three-index DF ERIs to get G:
-    // G_{p} = D_{mn} * (mn|p)
-
-    timer_on("ERI1");
-#pragma omp parallel for schedule(guided) num_threads(nthreads_) reduction(+ : computed_triplets1)
-    for (size_t MNP = 0; MNP < nshelltriplet; MNP++) {
-
-        size_t MN = MNP % nshellpair;
-        size_t P = MNP / nshellpair;
-        int rank = 0;
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
-        auto bra = eri_computers_[rank]->shell_pairs()[MN];
-        size_t M = bra.first;
-        size_t N = bra.second;
-        if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers_[rank]->shell_pair_value(M,N) < thresh2) {
-            continue;
-        }
-        computed_triplets1++;
-        int np = auxiliary_->shell(P).nfunction();
-        int pstart = auxiliary_->shell(P).function_index();
-        int nm = primary_->shell(M).nfunction();
-        int mstart = primary_->shell(M).function_index();
-        int nn = primary_->shell(N).nfunction();
-        int nstart = primary_->shell(N).function_index();
-        eri_computers_[rank]->compute_shell(P, 0, M, N);
-        const auto & buffer = eri_computers_[rank]->buffers()[0];
-
-        for(size_t jki = 0; jki < njk; jki++) {
-
-            auto GTp = GT[jki][rank]->pointer();
-            auto Dp = D[jki]->pointer();
-
-            for (int p = pstart, index = 0; p < pstart + np; p++) {
-                for (int m = mstart; m < mstart + nm; m++) {
-                    for (int n = nstart; n < nstart + nn; n++, index++) {
-                        GTp[p] += buffer[index] * Dp[m][n];
-                        if (N != M) GTp[p] += buffer[index] * Dp[n][m];
-                    }
-                }
-            }
-
-        }
-
-    }
-
-    timer_off("ERI1");
-
-    //  => Second Contraction <= //
-
-    //  linear solve for H:
-    //  G_{p} = H_{q} (q|p)
-
-    timer_on("Metric");
-
-    std::vector<int> ipiv(nbf_aux);
-
-    for(size_t jki = 0; jki < njk; jki++) {
-        for(size_t thread = 0; thread < nthreads_; thread++) {
-            H[jki]->add(GT[jki][thread]);
-        }
-        C_DGESV(nbf_aux, 1, J_metric_->clone()->pointer()[0], nbf_aux, ipiv.data(), H[jki]->pointer(), nbf_aux);
-    }
-
-
-    // I believe C_DSYSV should be faster than C_GESV, but I've found the opposite to be true.
-    // This performance issue should be investigated, but is not consequential here.
-    // The cost of either linear solve is dwarfed by the actual integral computation.
-    //
-    //std::vector<double> work(3 * nbf_aux);
-    //int errcode = C_DSYSV('U', nbf_aux, 1, J_metric_->clone()->pointer()[0], nbf_aux, ipiv.data(), H[jki]->pointer(), nbf_aux, work.data(), 3 * nbf_aux);
-
-    // shell maxima of H for screening
-    Vector H_shell_max(nshell_aux);
-    auto H_shell_maxp = H_shell_max.pointer();
-
-    for(size_t jki = 0; jki < njk; jki++) {
-
-        auto Hp = H[jki]->pointer();
-
-        for (int P = 0; P < nshell_aux; P++) {
-            int np = auxiliary_->shell(P).nfunction();
-            int pstart = auxiliary_->shell(P).function_index();
-            for (int p = pstart; p < pstart + np; p++) {
-                H_shell_maxp[P] = std::max(H_shell_maxp[P], std::abs(Hp[p]));
-            }
-        }
-
-    }
-
-    timer_off("Metric");
-
-    //  => Third Contraction <= //
-
-    // contract H with three-index DF ERIs to get J
-    // J_{mn} = H_{p} (mn|p)
-
-    timer_on("ERI2");
-
-#pragma omp parallel for schedule(guided) num_threads(nthreads_) reduction(+ : computed_triplets2)
-    for (size_t MNP = 0; MNP < nshelltriplet; MNP++) {
-
-        size_t MN = MNP % nshellpair;
-        size_t P = MNP / nshellpair;
-        int rank = 0;
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
-        auto bra = eri_computers_[rank]->shell_pairs()[MN];
-        size_t M = bra.first;
-        size_t N = bra.second;
-        if(H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers_[rank]->shell_pair_value(M,N) < thresh2) {
-            continue;
-        }
-        computed_triplets2++;
-        int np = auxiliary_->shell(P).nfunction();
-        int pstart = auxiliary_->shell(P).function_index();
-        int nm = primary_->shell(M).nfunction();
-        int mstart = primary_->shell(M).function_index();
-        int nn = primary_->shell(N).nfunction();
-        int nstart = primary_->shell(N).function_index();
-
-        eri_computers_[rank]->compute_shell(P, 0, M, N);
-        const auto & buffer = eri_computers_[rank]->buffers()[0];
-
-        for(size_t jki = 0; jki < njk; jki++) {
-
-            auto JTp = JT[jki][rank]->pointer();
-            auto Hp = H[jki]->pointer();
-
-            for (int p = pstart, index = 0; p < pstart + np; p++) {
-                for (int m = mstart; m < mstart + nm; m++) {
-                    for (int n = nstart; n < nstart + nn; n++, index++) {
-                        JTp[m][n] += buffer[index] * Hp[p];
-                        if (N != M) JTp[n][m] += buffer[index] * Hp[p];
-                    }
-                }
-            }
-
-        }
-
-    }
-
-    timer_off("ERI2");
-
-    if (bench_) {
-        auto mode = std::ostream::app;
-        PsiOutStream printer("bench.dat", mode);
-        printer.Printf("DFJ ERI Shells: %zu,%zu,%zu\n", computed_triplets1, computed_triplets2, nshelltriplet);
-    }
-
-    for(size_t jki = 0; jki < njk; jki++) {
-        for (size_t thread = 0; thread < nthreads_; thread++) {
-            J[jki]->add(JT[jki][thread]);
-        }
-        J[jki]->hermitivitize();
-    }
-
-}
-
-void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K) {
 
     // => Sizing <= //
     int njk = D.size();
@@ -619,17 +263,17 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
     // => Initialization <= //
 
     // per-thread ElectrostaticInt object (for computing one-electron "pseudospectral" integrals)
-    std::vector<std::shared_ptr<ElectrostaticInt>> int_computers(nthreads_);
+    std::vector<std::shared_ptr<ElectrostaticInt>> int_computers(nthread_);
 
     // per-thread BasisFunctions object (for computing basis function values at grid points)
-    std::vector<std::shared_ptr<BasisFunctions>> bf_computers(nthreads_);
+    std::vector<std::shared_ptr<BasisFunctions>> bf_computers(nthread_);
 
     // per-thread K Matrix buffers (for accumulating thread contributions to K)
-    std::vector<std::vector<SharedMatrix>> KT(njk, std::vector<SharedMatrix>(nthreads_));
+    std::vector<std::vector<SharedMatrix>> KT(njk, std::vector<SharedMatrix>(nthread_));
 
     // initialize per-thread objects
     IntegralFactory factory(primary_);
-    for(size_t thread = 0; thread < nthreads_; thread++) {
+    for(size_t thread = 0; thread < nthread_; thread++) {
         int_computers[thread] = std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory.electrostatic()));
         bf_computers[thread] = std::make_shared<BasisFunctions>(primary_, grid->max_points(), grid->max_functions());
         for(size_t jki = 0; jki < njk; jki++) {
@@ -671,10 +315,10 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
     size_t int_shells_total = 0;
     size_t int_shells_computed = 0;
 
-    timer_on("Grid Loop");
+    timer_on("COSK: Grid Loop");
 
     // The primary COSK loop over blocks of grid points
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads_) reduction(+ : int_shells_total, int_shells_computed)
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_) reduction(+ : int_shells_total, int_shells_computed)
     for (size_t bi = 0; bi < grid->blocks().size(); bi++) {
 
         int rank = 0;
@@ -881,7 +525,7 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
             G_block[jki] = std::make_shared<Matrix>(nbf_block_all, npoints_block);
         }
 
-        if(rank == 0) timer_on("ESP Integrals");
+        if(rank == 0) timer_on("COSK: ESP Integrals");
 
         const auto & int_buff = int_computers[rank]->buffers()[0];
 
@@ -958,7 +602,7 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
         }
 
-        if(rank == 0) timer_off("ESP Integrals");
+        if(rank == 0) timer_off("COSK: ESP Integrals");
 
         // Contract X (or Q if overlap fitting) with G to get contribution to K
         for(size_t jki = 0; jki < njk; jki++) {
@@ -981,11 +625,11 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
     }
 
-    timer_off("Grid Loop");
+    timer_off("COSK: Grid Loop");
 
     // Reduce per-thread contributions
     for(size_t jki = 0; jki < njk; jki++) {
-        for (size_t thread = 0; thread < nthreads_; thread++) {
+        for (size_t thread = 0; thread < nthread_; thread++) {
             K[jki]->add(KT[jki][thread]);
         }
         if (lr_symmetric_) {
@@ -999,7 +643,6 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
         size_t ints_per_atom = int_shells_computed  / (size_t) natom;
         printer.Printf("COSK ESP Shells: %zu,%zu,%zu\n", ints_per_atom, int_shells_computed, int_shells_total);
     }
-
 }
 
-}  // namespace psi
+} // namespace psi

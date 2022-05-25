@@ -94,7 +94,9 @@ void export_fock(py::module &m) {
         .def("K", &JK::K, py::return_value_policy::reference_internal)
         .def("wK", &JK::wK, py::return_value_policy::reference_internal)
         .def("D", &JK::D, py::return_value_policy::reference_internal)
-        .def("print_header", &JK::print_header, "docstring");
+        .def("print_header", &JK::print_header, "docstring")
+        .def("do_incfock_iter", &JK::do_incfock_iter, "Was the last Fock build incremental?")
+        .def("reset_incfock", &JK::reset_incfock, "Reset the incfock iteration number (0 means no incfock)");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
@@ -186,13 +188,6 @@ void export_fock(py::module &m) {
 
     py::class_<MemDFJK, std::shared_ptr<MemDFJK>, JK>(m, "MemDFJK", "docstring")
         .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
-
-    py::class_<DirectJK, std::shared_ptr<DirectJK>, JK>(m, "DirectJK", "docstring")
-        .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Was the last Fock build incremental?")
-        .def("do_linK", &DirectJK::do_linK, "Use the linK exchange algorithm?");
-
-    py::class_<DFJCOSK, std::shared_ptr<DFJCOSK>, JK>(m, "DFJCOSK", "docstring")
-        .def("clear_D_prev", &DFJCOSK::clear_D_prev, "Clear previous D matrices.");
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
