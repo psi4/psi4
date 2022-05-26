@@ -411,6 +411,7 @@ struct params {
                                             is an open-shell singlet */
     std::string mcscf_type;              /*Type of MCSCF computation DF or CONV */
     int multp;                           /* multiplicity (2S+1) */
+    int print_;                          /* Amount of information to print */
     int ex_lvl;                          /* excitation level */
     int val_ex_lvl;                      /* valence excitation level, used for RAS's */
     int cc_val_ex_lvl;                   /* NOT analogous to val_ex_lvl ... this controls how
