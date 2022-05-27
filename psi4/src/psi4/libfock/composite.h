@@ -29,6 +29,7 @@
 #ifndef COMPOSITE_H
 #define COMPOSITE_H
 
+#include "cubature.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/onebody.h"

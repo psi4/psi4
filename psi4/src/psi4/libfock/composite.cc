@@ -1,3 +1,4 @@
+#include "jk.h"
 #include "composite.h"
 
 #include "psi4/libmints/integral.h"
