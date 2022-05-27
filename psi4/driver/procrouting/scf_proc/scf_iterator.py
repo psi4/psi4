@@ -299,7 +299,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_off("HF: Form G")
 
         # Check if an incremental Fock build was used?
-        incfock_performed = self.jk().do_incfock_iter()
+        incfock_performed = self.jk().incfock_last_iter()
 
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):

@@ -118,7 +118,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // MemDFJK should NOT use incfock
         jk->set_incfock(false);
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
     } else if (jk_type == "PK") {
         auto jk = std::make_shared<PKJK>(primary, options);
 
@@ -129,7 +129,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // PKJK should NOT use incfock
         jk->set_incfock(false);
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "OUT_OF_CORE") {
         auto jk = std::make_shared<DiskJK>(primary, options);
@@ -160,7 +160,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return jk;
 
     } else if (jk_type == "COSX") {
-        // auto jk = std::make_shared<DFJCOSK>(primary, auxiliary, options);
         auto jk = std::make_shared<CompositeJK>(primary, auxiliary, "DIRECT_DF", "COSK", options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));

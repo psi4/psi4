@@ -774,7 +774,7 @@ DIRECT DENSITY-FITTED J + LINEAR EXCHANGE (LinK)
 DIRECT DENSITY-FITTED J + COSX EXCHANGE
     Combines the integral-direct density-fitted J build algorithm with the Chain-of-Spheres
     Exchange Method to build the K matrix. To use this method, set |global__scf_type| to
-    ``COSK``. A more detailed description of these methods are provided below.
+    ``COSX``. A more detailed description of these methods are provided below.
 
 Direct Density-Fitted J
 ~~~~~~~~~~~~~~~~~~~~~~~

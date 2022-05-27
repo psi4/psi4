@@ -95,7 +95,7 @@ void export_fock(py::module &m) {
         .def("wK", &JK::wK, py::return_value_policy::reference_internal)
         .def("D", &JK::D, py::return_value_policy::reference_internal)
         .def("print_header", &JK::print_header, "docstring")
-        .def("do_incfock_iter", &JK::do_incfock_iter, "Was the last Fock build incremental?")
+        .def("incfock_last_iter", &JK::incfock_last_iter, "Was the last Fock build incremental?")
         .def("reset_incfock", &JK::reset_incfock, "Reset the incfock iteration number (0 means no incfock)");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")

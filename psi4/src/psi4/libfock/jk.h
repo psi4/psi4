@@ -31,6 +31,7 @@
 
 #include <vector>
 
+#include "composite.h"
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
@@ -516,9 +517,9 @@ class PSI_API JK {
      */
     bool set_incfock(bool incfock) { incfock_ = incfock; }
     /**
-     * Returns whether or not an incremental Fock build is performed in an SCF iteration
+     * Returns whether or not an incremental Fock build was performed during the last SCF iteration
      */
-    bool do_incfock_iter() { return do_incfock_iter_; }
+    bool incfock_last_iter() { return do_incfock_iter_; }
     /**
      * @brief Resets the incfock iteration number
      * 
@@ -1182,84 +1183,16 @@ class PSI_API MemDFJK : public JK {
 };
 
 /**
- * Class SplitJKBase
- *
- * A wrapper class that allows building of different J and K algorithms
- * (such as Direct-DF J builds, and LinK builds)
- */
-class SplitJKBase {
-  protected:
-   /// Number of threads to use in the calculation
-   int nthread_;
-   /// Options object
-   Options& options_;
-   /// Print flag, defaults to 1
-   int print_;
-   /// Debug flag, defaults to 0
-   int debug_;
-   /// Bench flag, defaults to 0
-   int bench_;
-
-   /// Whether or not the D matrix is Hermitian
-   bool lr_symmetric_;
-   /// Whether or not to use early screening
-   bool early_screening_;
-
-   /// Integral objects (one per thread)
-   std::vector<std::shared_ptr<TwoBodyAOInt>> ints_;
-   /// The primary basis set
-   std::shared_ptr<BasisSet> primary_;
-   /// Builds the integrals for the J (or K) build class
-   virtual void build_ints() = 0;
-
-  public:
-   /**
-    * @brief Construct a new JK algo object
-    * All Split J/K algorithms extend from this class
-    * 
-    * @param primary The primary basis set used in the J/K matrix computation
-    * @param options The options object
-    */
-   SplitJKBase(std::shared_ptr<BasisSet> primary, Options& options);
-
-   /**
-    * @brief Builds the J/K matrix according to the class algorithm
-    * 
-    * @param D The list of D matrices
-    * @param X The list of J (or K) matrices, depending on algorithm
-    */
-   virtual void build_G_component(const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& X) = 0;
-
-   /**
-    * @brief Prints the specific algorithm information for the J/K build
-    */
-   virtual void print_header() = 0;
-
-   /**
-    * @brief Set the early screening variable
-    * 
-    */
-   void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
-
-   /**
-    * @brief Set the lr_symmetric_ variable
-    * 
-    */
-   void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
-
-};
-
-/**
  * Class CompositeJK
  *
- * JK implementation allowing mixing and matching of different J and K algorithms
+ * JK implementation allowing mixing and matching of J and K using separate construction algorithms
  * (such as Direct-DF J builds, and LinK builds)
  */
 class PSI_API CompositeJK : public JK {
   protected:
-   /// Auxiliary basis set used in DF algorithms
+   /// Auxiliary basis set used for DF-based J or K builds
    std::shared_ptr<BasisSet> auxiliary_;
-
+   
    /// String representing algorithm used to build the J matrix
    std::string jtype_;
    /// String representing algorithm used to build the K matrix
