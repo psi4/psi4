@@ -247,6 +247,36 @@ funcs.append({
 })
 
 funcs.append({
+    "name": "R2SCAN3C",
+    "alias": ["R2SCAN-3C"],
+    "x_functionals": {
+        "MGGA_X_R2SCAN": {}
+    },
+    "c_functionals": {
+        "MGGA_C_R2SCAN": {}
+    },
+    "description": '    r2SCAN Meta-GGA based 3C composite method with a TZ basis set, gCP and D4\n',
+    "citation": '     S. Grimme,  A. Hansen,  S. Ehlert, J.-M. Mewes J. Chem. Phys. 154, 064103, 2021\n',
+    "doi": "10.1063/5.0040021",
+    "dispersion": {
+        "type": "d4bjeeqatm",
+    },
+})
+
+funcs.append({
+    "name": "R2SCAN",
+    "x_functionals": {
+        "MGGA_X_R2SCAN": {}
+    },
+    "c_functionals": {
+        "MGGA_C_R2SCAN": {}
+    },
+    "description": '    r2SCAN Meta-GGA XC Functional\n',
+    "citation": '    J. W. Furness, A. D. Kaplan, J. Ning, J. P. Perdew, J. Sun  J. Phys. Chem. Lett.  11, 8208–8215, 2020\n',
+    "doi": "0.1021/acs.jpclett.0c02405",
+})
+
+funcs.append({
     "name": "t-HCTH",
     "alias": ["tHCTH", "tau-HCTH"],
     "x_functionals": {

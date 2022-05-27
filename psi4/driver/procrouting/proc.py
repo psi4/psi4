@@ -1736,6 +1736,8 @@ def scf_helper(name, post_scf=True, **kwargs):
             core.set_global_option('BASIS', 'minix')
         elif name in ['pbeh3c', 'pbeh-3c']:
             core.set_global_option('BASIS', 'def2-msvp')
+        elif name in ['r2scan3c', 'r2scan-3c']:
+            core.set_global_option('BASIS', 'def2-mTZVPP')
 
     # the FIRST scf call
     if cast:
