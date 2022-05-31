@@ -98,7 +98,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // CDJK should NOT use incfock
         jk->set_incfock(false);
 
-        return jk;
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "DISK_DF") {
         auto jk = std::make_shared<DiskDFJK>(primary, auxiliary);
@@ -107,7 +107,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // DiskDFJK should NOT use incfock
         jk->set_incfock(false);
 
-        return jk;
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "MEM_DF") {
         auto jk = std::make_shared<MemDFJK>(primary, auxiliary);
@@ -118,7 +118,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // MemDFJK should NOT use incfock
         jk->set_incfock(false);
 
-        return jk;
+        return std::shared_ptr<JK>(jk);
     } else if (jk_type == "PK") {
         auto jk = std::make_shared<PKJK>(primary, options);
 
@@ -129,7 +129,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // PKJK should NOT use incfock
         jk->set_incfock(false);
 
-        return jk;
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "OUT_OF_CORE") {
         auto jk = std::make_shared<DiskJK>(primary, options);
@@ -142,7 +142,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // DiskJK should NOT use incfock
         jk->set_incfock(false);
 
-        return jk;
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "DIRECT") {
         auto jk = std::make_shared<DirectJK>(primary, options);
@@ -157,7 +157,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         // If not user set, incfock should be on for DirectJK
         if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
 
-        return jk;
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "COSX") {
         auto jk = std::make_shared<CompositeJK>(primary, auxiliary, "DIRECT_DF", "COSK", options);
@@ -170,7 +170,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         /// COSK uses incfock by default
         if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
 
-        return jk;
+        return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "LINK") {
         auto jk = std::make_shared<CompositeJK>(primary, auxiliary, "DIRECT_DF", "LINK", options);
@@ -183,7 +183,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         /// LinK uses incfock by default
         if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
 
-        return jk;
+        return std::shared_ptr<JK>(jk);
     } else {
         std::stringstream message;
         message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
