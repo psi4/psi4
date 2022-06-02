@@ -249,7 +249,7 @@ dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
 #   H  0.0 1.0 0.0
 #   H  0.0 0.0 0.0
 #
-def geometry(geom, name="default"):
+def geometry(geom: str, name: str = "default") -> core.Molecule:
     """Function to create a molecule object of name *name* from the
     geometry in string *geom*. Permitted for user use but deprecated
     in driver in favor of explicit molecule-passing. Comments within
@@ -289,7 +289,7 @@ def geometry(geom, name="default"):
     return molecule
 
 
-def activate(mol):
+def activate(mol: core.Molecule):
     """Function to set molecule object *mol* as the current active molecule.
     Permitted for user use but deprecated in driver in favor of explicit
     molecule-passing.

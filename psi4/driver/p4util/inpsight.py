@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+__all__ = ["InPsight"]
+
 import math
 import os
 from datetime import date
@@ -33,6 +35,7 @@ from datetime import date
 
 # yapf: disable
 class InPsight:
+    """POV-Ray visualization."""
 
     # POV-Ray defines
     defines = {}

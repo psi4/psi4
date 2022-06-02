@@ -13,6 +13,20 @@ from psi4.driver import qcdb
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
+def test_variables_deprecated():
+    psi4.geometry("he")
+    psi4.set_options({"basis": "cc-pvtz", "qc_module": "occ"})
+    psi4.energy("mp2")
+
+    qcvars = psi4.core.variables()
+    assert "SCS(N)-MP2 CORRELATION ENERGY" in qcvars.keys()
+    assert "SCSN-MP2 CORRELATION ENERGY" not in qcvars.keys()
+
+    qcvars = psi4.core.variables(include_deprecated_keys=True)
+    assert "SCS(N)-MP2 CORRELATION ENERGY" in qcvars.keys()
+    assert "SCSN-MP2 CORRELATION ENERGY" in qcvars.keys()
+
+
 @pytest.mark.parametrize("call",
     [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies, psi4.properties])
 def test_typo_method_calls(call):

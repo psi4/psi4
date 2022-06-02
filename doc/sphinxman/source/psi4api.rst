@@ -38,3 +38,5 @@
 
 .. automodapi:: psi4.driver
 
+.. automodapi:: psi4.driver.p4util
+

@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+__all__ = ["der0th", "der1st", "der2nd", "no", "yes"]
+
 import re
 
 yes = re.compile(r'^(yes|true|on|1$)', re.IGNORECASE)

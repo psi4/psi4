@@ -200,7 +200,8 @@ Bibliography
 
 .. [Verma:2015]
    P. Verma, W. D. Derricotte, F. A. Evangelista,
-   *J. Chem. Theory Comput.* **DOI: 10.1021/acs.jctc.5b00817** (2015).
+   *J. Chem. Theory Comput.* (2015).
+   https://doi.org/10.1021/acs.jctc.5b00817
 
 .. [Jeziorski:1981:1668]
    B. Jeziorski and H. J. Monkhorst,
@@ -438,23 +439,23 @@ Bibliography
 
 .. [Lehtola:2019:1593]
    S. Lehtola
-   *J. Chem. Theory Comput.* **15**, 1593 (2019), doi: 10.1021/acs.jctc.8b01089.
+   *J. Chem. Theory Comput.* **15**, 1593 (2019), https://doi.org/10.1021/acs.jctc.8b01089.
 
 .. [Lehtola:2019:241102]
    S. Lehtola
-   *J. Chem. Phys.* **151**, 241102 (2019), doi: 10.1063/1.5139948.
+   *J. Chem. Phys.* **151**, 241102 (2019), https://doi.org/10.1063/1.5139948.
 
  .. [Lehtola:2019:25945]
    S. Lehtola
-   *Int. J. Quantum Chem.* **119**, e25945 (2019), doi: 10.1002/qua.25945.
+   *Int. J. Quantum Chem.* **119**, e25945 (2019), https://doi.org/10.1002/qua.25945.
 
 .. [Lehtola:2020:012516]
    S. Lehtola
-   *Phys. Rev. A.* **101**, 012516 (2020), doi: 10.1103/PhysRevA.101.012516.
+   *Phys. Rev. A.* **101**, 012516 (2020), https://doi.org/10.1103/PhysRevA.101.012516.
 
 .. [Lehtola:2020:032504]
    S. Lehtola
-   *Phys. Rev. A.* **101**, 032504 (2020), doi: 10.1103/PhysRevA.101.032504.
+   *Phys. Rev. A.* **101**, 032504 (2020), https://doi.org/10.1103/PhysRevA.101.032504.
 
 .. [Lehtola:2020:04224]
    S. Lehtola
@@ -490,28 +491,28 @@ Bibliography
 
 .. [stratmann:1998]
    R. Eric Stratmann, G. E. Scuseria, and M. J. Frisch
-   *J. Chem. Phys.* **109**, 8218 (1998), doi: 10.1063/1.477483.
+   *J. Chem. Phys.* **109**, 8218 (1998), https://doi.org/10.1063/1.477483.
 
 .. [Pedersen1995-du]
    T. B. Pedersen, A. E. Hansen
-   *Chem. Phys. Lett.* **246**, 1 (1995), doi: 10.1016/0009-2614(95)01036-9.
+   *Chem. Phys. Lett.* **246**, 1 (1995), https://doi.org/10.1016/0009-2614(95)01036-9.
 
 .. [Lestrange2015-xn]
    P. J. Lestrange, F. Egidi, X. Li
-   *J. Chem. Phys.* **143**, 234103 (2015), doi: 10.1063/1.4937410.
+   *J. Chem. Phys.* **143**, 234103 (2015), https://doi.org/10.1063/1.4937410.
 
 .. [Rizzo2011-to]
-    A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy, doi: 10.1002/9781118008720.ch2.
+    A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy, https://doi.org/10.1002/9781118008720.ch2.
 
 .. [Dreuw2005-wp]
    A. Dreuw, M. Head-Gordon
-   *Chem. Rev.* **105**, 4009 (2005), doi: 10.1021/cr0505627.
+   *Chem. Rev.* **105**, 4009 (2005), https://doi.org/10.1021/cr0505627.
 
 .. [Norman2018-tn]
    P. Norman, K. Ruud, T. Saue, "Principles and Practices of Molecular Properties: Theory, Modeling, and Simulations". John Wiley & Sons, 2018
 
 .. [Verstraelen:2016]
-   T. Verstraelen et al. "Minimal Basis Iterative Stockholder: Atoms in Molecules for Force-Field Development". *J. Chem. Theory and Comput.* doi: 10.1021/acs.jctc.6b00456.
+   T. Verstraelen et al. "Minimal Basis Iterative Stockholder: Atoms in Molecules for Force-Field Development". *J. Chem. Theory and Comput.* https://doi.org/10.1021/acs.jctc.6b00456.
 
 ..
    [Misquitta:2005:214103]
@@ -570,26 +571,26 @@ Bibliography
 .. [Haser:1989:104]
    M. Haser and R. Ahlrichs,
    *J. Comp. Chem.* **10(1)**, 104 (1989).
-   doi: 10.1002/jcc.540100111
+   https://doi.org/10.1002/jcc.540100111
    
 .. [Thompson:2017:144101]
    T. H. Thompson and C. Ochsenfeld
    *J. Chem. Phys.* **147**, 144101 (2017).
-   doi: 10.1063/1.4994190
+   https://doi.org/10.1063/1.4994190
    
 .. [Smith:2020:184108]
     "PSI4 1.4: Open-source software for high-throughput quantum chemistry",
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish, M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio, A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer, R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni, J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein, B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov, K. Patkowski, A. E. DePrince III, U. Bozkaya, R. King, F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill
     *J. Chem. Phys.* **152**, 184108 (2020).
-    doi: 10.1063/5.0006002
+    https://doi.org/10.1063/5.0006002
 
 .. [Waldrop:2021:024103]
    "Nonapproximated third-order exchange induction energy in symmetry-adapted perturbation theory",
    J. M. Waldrop and K. Patkowski
    *J. Chem. Phys.* **154**, 024103 (2021).
-   doi: 10.1063/1.4994190
+   https://doi.org/10.1063/1.4994190
    
 .. [Ochsenfeld:1998:1663]
    C. Ochsenfeld, C. A. White, M. Head-Gordon
    *J. Chem. Phys.* **109**, 1663 (1998)
-   doi: 10.1063/1.476741
+   https://doi.org/10.1063/1.476741
