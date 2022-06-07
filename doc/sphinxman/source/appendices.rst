@@ -51,8 +51,10 @@ Basis Sets
    basissets_byelement
    basissets_byfamily
 
-PSI Variables
-=============
+.. _`sec:appendices:qcvars`:
+
+QCVariables (aka PSI Variables)
+===============================
 
 .. toctree::
    :maxdepth: 2

@@ -26,6 +26,29 @@
 # @END LICENSE
 #
 
+"""
+Module with PsiAPI helpers for PSIthon `{...}` syntax.
+Also, many Python extensions to core classes:
+
+ - core (variable-related, gradient, python option),
+ - Wavefunction (variable-related, freq, Lagrangian, constructor, scratch file, serialization),
+ - Matrix (doublet, triplet),
+ - BasisSet (constructor)
+ - JK (constructor)
+ - VBase (grid)
+ - OEProp (avail prop)
+
+"""
+
+__all__ = [
+    "basis_helper",
+    "pcm_helper",
+    "set_options",
+    "set_module_options",
+    "temp_circular_import_blocker",  # retire ASAP
+]
+
+
 import os
 import re
 import sys
@@ -35,7 +58,7 @@ from collections import Counter
 from itertools import product
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -48,17 +71,66 @@ from .exceptions import TestComparisonError, ValidationError, UpgradeHelper
 
 ## Python basis helps
 
-
 @staticmethod
-def _pybuild_basis(mol,
-                   key=None,
-                   target=None,
-                   fitrole='ORBITAL',
-                   other=None,
-                   puream=-1,
-                   return_atomlist=False,
-                   *,
-                   quiet=False):
+def _pybuild_basis(
+        mol: core.Molecule,
+        key: Optional[str] = None,
+        target: Optional[Union[str, Callable]] = None,
+        fitrole: str = "ORBITAL",
+        other: Optional[Union[str, Callable]] = None,
+        puream: int = -1,
+        return_atomlist: bool = False,
+        *,
+        quiet: bool = False,
+    ) -> Union[core.BasisSet, List[core.BasisSet]]:
+    """Build a primary or auxiliary basis set.
+
+    Parameters
+    ----------
+    mol
+        Molecule for which to build the basis set instance.
+    key
+        {'BASIS', 'ORBITAL', 'DF_BASIS_SCF', 'DF_BASIS_MP2', 'DF_BASIS_CC', 'BASIS_RELATIVISTIC', 'DF_BASIS_SAD'}
+        Label (effectively Psi4 keyword) to append the basis on the molecule.
+        The primary basis set is indicated by any of values None or
+        ``"ORBITAL"`` or ``"BASIS"``.
+    target
+        Defines the basis set to be constructed. Can be a string (naming a
+        basis file) or a callable (providing shells or multiple basis files).
+        For auxiliary bases to be built entirely from primary default, can be
+        an empty string. If None, value taken from `key` in global options. If
+        a user-defined-basis callable is available at string `target`, `target`
+        value will be set to it. In practice, setting this argument to a
+        |PSIfour| keyword (e.g., ``core.get_option("SCF", "DF_BASIS_SCF")`` or
+        ``core.get_global_option("BASIS")``) works to handle both simple and
+        user-defined bases.
+    fitrole
+        {'ORBITAL', 'JKFIT', 'RIFIT', 'DECON'}
+        Role for which to build basis. Only used when `key` indicates auxiliary
+        (i.e., *is not* ``"BASIS"``) and auxiliary spec from processing `target`
+        can't complete the `mol`. Then, primary spec from `other` can be used
+        to complete the auxiliary basis by looking up suitable default basis
+        according to `fitrole`.
+    other
+        Only used when building auxiliary basis sets. Defines the primary basis through a string or callable like `target`.
+    puream
+        Whether to override the native spherical/cartesian-ness of `target` for
+        returned basis? Value ``1`` forces spherical, value ``0`` forces
+        Cartesian, value ``-1`` (default) uses native puream. Note that
+        explicitly setting :term:`PUREAM <PUREAM (GLOBALS)>` trumps both native
+        puream and this `puream` argument.
+    return_atomlist
+        Build one-atom basis sets (e.g., for SAD) rather than one whole-`mol`
+        basis set.
+    quiet
+        When True, do not print to the output file.
+
+    Returns
+    -------
+    BasisSet or ~typing.List[BasisSet]
+        Single basis for `mol`, unless `return_atomlist` is True.
+
+    """
     if key == 'ORBITAL':
         key = 'BASIS'
 
@@ -119,7 +191,26 @@ core.BasisSet.build = _pybuild_basis
 
 
 @staticmethod
-def _core_wavefunction_build(mol, basis=None, *, quiet: bool = False):
+def _core_wavefunction_build(
+        mol: core.Molecule,
+        basis: Union[None, str, core.BasisSet] = None,
+        *,
+        quiet: bool = False,
+    ) -> core.Wavefunction:
+    """Build a wavefunction from minimal inputs, molecule and basis set.
+
+    Parameters
+    ----------
+    mol
+        Molecule for which to build the wavefunction instance.
+    basis
+        Basis set for which to build the wavefunction instance. If a
+        :class:`BasisSet`, taken as-is. If a string, taken as a name for the
+        primary basis. If None, name taken from :term:`BASIS <BASIS (MINTS)>`.
+    quiet
+        When True, do not print to the output file.
+
+    """
     if basis is None:
         basis = core.BasisSet.build(mol, quiet=quiet)
     elif isinstance(basis, str):
@@ -135,9 +226,17 @@ def _core_wavefunction_build(mol, basis=None, *, quiet: bool = False):
 core.Wavefunction.build = _core_wavefunction_build
 
 
-def _core_wavefunction_get_scratch_filename(self, filenumber):
-    """ Given a wavefunction and a scratch file number, canonicalizes the name
-        so that files can be consistently written and read """
+def _core_wavefunction_get_scratch_filename(self: core.Wavefunction, filenumber: int) -> str:
+    """Return canonical path to scratch file `filenumber` based on molecule on `self`.
+
+    Parameters
+    ----------
+    self
+        Wavefunction instance.
+    filenumber
+        Scratch file number from :source:`psi4/include/psi4/psifiles.h`.
+
+    """
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(self.molecule().name())))[1]
     psi_scratch = core.IOManager.shared_object().get_default_path()
     return os.path.join(psi_scratch, fname + '.' + str(filenumber))
@@ -148,13 +247,14 @@ core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
 
 @staticmethod
 def _core_wavefunction_from_file(wfn_data: Union[str, Dict, Path]) -> core.Wavefunction:
-    r"""Build Wavefunction from data.
+    r"""Build Wavefunction from data laid out like
+    :meth:`~psi4.core.Wavefunction.to_file`.
 
     Parameters
     ----------
     wfn_data
-        If a dict, use data directly. Otherwise, path-like passed to :py:func:`numpy.load`
-        to read from disk.
+        If a dict, use data directly. Otherwise, path-like passed to
+        :py:func:`numpy.load` to read from disk.
 
     Returns
     -------
@@ -229,19 +329,20 @@ def _core_wavefunction_from_file(wfn_data: Union[str, Dict, Path]) -> core.Wavef
 core.Wavefunction.from_file = _core_wavefunction_from_file
 
 
-def _core_wavefunction_to_file(wfn: core.Wavefunction, filename: str = None) -> Dict:
-    """Converts a Wavefunction object to a base class
+def _core_wavefunction_to_file(wfn: core.Wavefunction, filename: str = None) -> Dict[str, Dict[str, Any]]:
+    """Serialize a Wavefunction object. Opposite of
+    :meth:`~psi4.core.Wavefunction.from_file`.
 
     Parameters
     ----------
     wfn
-        A Wavefunction or inherited class
+        Wavefunction or inherited class instance.
     filename
-        An optional filename to write the data to
+        An optional filename to which to write the data.
 
     Returns
     -------
-    dict
+    ~typing.Dict[str, ~typing.Dict[str, ~typing.Any]]
         A dictionary and NumPy representation of the Wavefunction.
 
     """
@@ -327,7 +428,13 @@ core.Wavefunction.to_file = _core_wavefunction_to_file
 
 
 @staticmethod
-def _core_jk_build(orbital_basis: core.BasisSet, aux: core.BasisSet = None, jk_type: str = None, do_wK: bool = None, memory: int = None) -> core.JK:
+def _core_jk_build(
+        orbital_basis: core.BasisSet,
+        aux: Optional[core.BasisSet] = None,
+        jk_type: Optional[str] = None,
+        do_wK: Optional[bool] = None,
+        memory: Optional[int] = None,
+    ) -> core.JK:
     """
     Constructs a Psi4 JK object from an input basis.
 
@@ -337,11 +444,17 @@ def _core_jk_build(orbital_basis: core.BasisSet, aux: core.BasisSet = None, jk_t
         Orbital basis to use in the JK object.
     aux
         Optional auxiliary basis set for density-fitted tensors. Defaults
-        to the DF_BASIS_SCF if set, otherwise the correspond JKFIT basis
+        to the :term:`DF_BASIS_SCF <DF_BASIS_SCF (SCF)>` if set, otherwise the corresponding JKFIT basis
         to the passed in `orbital_basis`.
     jk_type
         Type of JK object to build (DF, Direct, PK, etc). Defaults to the
-        current global SCF_TYPE option.
+        current :term:`SCF_TYPE <SCF_TYPE (GLOBALS)>` option.
+    do_wK
+        Set up JK to do omega K tasks. Set `do_wK` and `memory` together to
+        activate either.
+    memory
+        Memory in doubles to use for JK. Set `do_wK` and `memory` together to
+        activate either.
 
     Returns
     -------
@@ -350,18 +463,14 @@ def _core_jk_build(orbital_basis: core.BasisSet, aux: core.BasisSet = None, jk_t
 
     Example
     -------
-
-    jk = psi4.core.JK.build(bas)
-    jk.set_memory(int(5e8)) # 4GB of memory
-    jk.initialize()
-
-    ...
-
-    jk.C_left_add(matirx)
-    jk.compute()
-    jk.C_clear()
-
-    ...
+    >>> jk = psi4.core.JK.build(bas)
+    >>> jk.set_memory(int(5e8))  # 4GB of memory
+    >>> jk.initialize()
+    >>> ...
+    >>> jk.C_left_add(matirx)
+    >>> jk.compute()
+    >>> jk.C_clear()
+    >>> ...
 
     """
 
@@ -391,9 +500,15 @@ core.JK.build = _core_jk_build
 ## Grid Helpers
 
 
-def _core_vbase_get_np_xyzw(Vpot):
+def _core_vbase_get_np_xyzw(self: core.VBase) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Returns the x, y, z, and weights of a grid as a tuple of NumPy array objects.
+
+    Parameters
+    ----------
+    self
+        VBase instance.
+
     """
     x_list = []
     y_list = []
@@ -401,10 +516,10 @@ def _core_vbase_get_np_xyzw(Vpot):
     w_list = []
 
     # Loop over every block in the potenital
-    for b in range(Vpot.nblocks()):
+    for b in range(self.nblocks()):
 
         # Obtain the block
-        block = Vpot.get_block(b)
+        block = self.get_block(b)
 
         # Obtain the x, y, and z coordinates along with the weight
         x_list.append(block.x())
@@ -425,18 +540,32 @@ core.VBase.get_np_xyzw = _core_vbase_get_np_xyzw
 ## Python other helps
 
 
-def set_options(options_dict: Dict[str, Any], verbose: int = 1) -> None:
+def set_options(options_dict: Dict[str, Any], verbose: int = 1):
     """Sets Psi4 options from an input dictionary.
 
     Parameters
     ----------
     options_dict
-        Dictionary where keys are "option_name" for global options or
-        "module_name__option_name" (double underscore separation) for
-        option local to "module_name". Values are the option value. All
-        are case insensitive.
+        Dictionary where keys are case insensitive and values are the option value.
+
+        - For global options, keys are ``"<option_name>"``.
+        - For option local to "<module_name>", keys are ``"<module_name>__<option_name>"``
+          (double underscore separation).
+        - For contents that would be in ``pcm = {...}``, use ``"PCM__INPUT"`` key.
     verbose
         Control print volume.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> psi4.set_options({
+            "basis": "cc-pvtz",
+            "df_basis_scf": "cc-pvtz-jkfit",
+            "scf__reference": "uhf",
+            "print": 2})
 
     """
     optionre = re.compile(r'\A(?P<module>\w+__)?(?P<option>\w+)\Z', re.IGNORECASE)
@@ -477,6 +606,10 @@ def set_options(options_dict: Dict[str, Any], verbose: int = 1) -> None:
 def set_module_options(module: str, options_dict: Dict[str, Any]) -> None:
     """
     Sets Psi4 module options from a module specification and input dictionary.
+
+    .. deprecated:: 1.5
+       Use :py:func:`psi4.driver.p4util.set_options` instead.
+
     """
     warnings.warn(
         "Using `psi4.set_module_options(<module>, {<key>: <val>})` instead of `psi4.set_options({<module>__<key>: <val>})` is deprecated, and as soon as 1.5 it will stop working\n",
@@ -491,13 +624,14 @@ def set_module_options(module: str, options_dict: Dict[str, Any]) -> None:
 
 
 def pcm_helper(block: str):
-    """
-    Passes multiline string *block* to PCMSolver parser.
+    """Helper to specify the multiline PCMSolver syntax for PCM.
+    Prefer to use :py:func:`set_options` with key ``"PCM__INPUT"``.
 
     Parameters
     ----------
     block
-        multiline string with PCM input in PCMSolver syntax.
+        Text that goes in a PSIthon ``pcm = {...}`` block.
+
     """
     import pcmsolver
 
@@ -511,8 +645,8 @@ def pcm_helper(block: str):
         core.set_local_option("PCM", "PCMSOLVER_PARSED_FNAME", fl.name)
 
 
-def basname(name):
-    """Imitates BasisSet.make_filename() without the gbs extension"""
+def _basname(name: str) -> str:
+    """Imitates :py:meth:`core.BasisSet.make_filename` without the gbs extension."""
     return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
 
 
@@ -520,18 +654,30 @@ def temp_circular_import_blocker():
     pass
 
 
-def basis_helper(block, name='', key='BASIS', set_option=True):
-    """For PsiAPI mode, forms a basis specification function from *block*
+def basis_helper(block: str, name: str = '', key: str = 'BASIS', set_option: bool = True):
+    """Helper to specify a custom basis set in PsiAPI mode.
+
+    This function forms a basis specification function from *block*
     and associates it with keyword *key* under handle *name*. Registers
     the basis spec with Psi4 so that it can be applied again to future
-    molecules. For usage, see mints2, mints9, and cc54 test cases. Unless
-    *set_option* is False, *name* will be set as current active *key*,
-    equivalent to `set key name` or `set_option({key: name})`.
+    molecules. For usage, see :srcsample:`mints2`, :srcsample:`mints9`, and
+    :srcsample:`cc54` test cases.
+
+    Parameters
+    ----------
+    block
+        Text that goes in a PSIthon ``basis {...}`` block.
+    name
+        Name label to associated with basis specified by `block`.
+    key
+        Basis keyword specified by `block`.
+    set_option
+        When True, execute the equivalent of ``set key name`` or ``set_option({key: name})``. When False, skip execution.
 
     """
     key = key.upper()
     name = ('anonymous' + str(uuid.uuid4())[:8]) if name == '' else name
-    cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
+    cleanbas = _basname(name).replace('-', '')  # further remove hyphens so can be function name
     block = qcel.util.filter_comments(block)
     command_lines = re.split('\n', block)
 
@@ -575,7 +721,7 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
             if not assignments:
                 # case with no [basname] markers where whole block is contents of gbs file
                 mol.set_basis_all_atoms(name, role=role)
-                basstrings[basname(name)] = basblock[0]
+                basstrings[_basname(name)] = basblock[0]
             else:
                 message = (
                     "Conflicting basis set specification: assign lines present but shells have no [basname] label."
@@ -584,7 +730,7 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
         else:
             # case with specs separated by [basname] markers
             for idx in range(0, len(basblock), 2):
-                basstrings[basname(basblock[idx])] = basblock[idx + 1]
+                basstrings[_basname(basblock[idx])] = basblock[idx + 1]
 
         return basstrings
 
@@ -670,6 +816,10 @@ _qcvar_cancellations = {
 
 
 def _qcvar_warnings(key: str) -> str:
+    """Intercept QCVariable keys to issue warnings or upgrade hints. Otherwise,
+    pass through.
+
+    """
     if any([key.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]]):
         raise UpgradeHelper(key.upper(), key.upper()[:-2], 1.6, " Note the Debye -> a.u. units change.")
 
@@ -695,9 +845,11 @@ for order in range(5, 10):
     _multipole_order.append(f"{int(2**order)}-POLE")
 
 
-def _qcvar_reshape_set(key, val):
-    """Reverse `_qcvar_reshape_get` for internal psi4.core.Matrix storage."""
+def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
+    """Reverse :py:func:`_qcvar_reshape_get` for internal
+    :py:class:`psi4.core.Matrix` storage.
 
+    """
     reshaper = None
     if key.upper().startswith("MBIS"):
         if key.upper().endswith("CHARGES"):
@@ -730,9 +882,11 @@ def _qcvar_reshape_set(key, val):
         return val
 
 
-def _qcvar_reshape_get(key, val):
-    """For QCVariables where the 2D psi4.core.Matrix shape is unnatural, convert to natural shape in ndarray."""
+def _qcvar_reshape_get(key: str, val: Union[core.Matrix, np.ndarray]) -> Union[core.Matrix, np.ndarray]:
+    """For QCVariables where the 2D :py:class:`psi4.core.Matrix` shape is
+    unnatural, convert to natural shape in :class:`numpy.ndarray`.
 
+    """
     reshaper = None
     if key.upper().startswith("MBIS"):
         if key.upper().endswith("CHARGES"):
@@ -763,19 +917,20 @@ def _qcvar_reshape_get(key, val):
     else:
         return val
 
-def _multipole_compressor(complete, order):
+
+def _multipole_compressor(complete: np.ndarray, order: int) -> np.ndarray:
     """Form flat unique components multipole array from complete Cartesian array.
 
     Parameters
     ----------
-    order : int
+    order
         Multipole order. e.g., 1 for dipole, 4 for hexadecapole.
-    complete : ndarray
+    complete
         Multipole array, order-dimensional Cartesian array expanded to complete components.
 
     Returns
     -------
-    compressed : ndarray
+    compressed : numpy.ndarray
         Multipole array, length (order + 1) * (order + 2) / 2 compressed to unique components.
 
     """
@@ -834,26 +989,60 @@ def _multipole_plumper(compressed: np.ndarray, order: int) -> np.ndarray:
 
 
 def _core_has_variable(key: str) -> bool:
-    """Whether scalar or array QCVariable *key* has been set in global memory."""
+    """Whether scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key*
+    has been set in global memory.
 
+    Parameters
+    ----------
+    key
+        Case-insensitive key to global double or :py:class:`~psi4.core.Matrix`
+        storage maps.
+
+    """
     return core.has_scalar_variable(key) or core.has_array_variable(key)
 
 
-def _core_wavefunction_has_variable(cls: core.Wavefunction, key: str) -> bool:
-    """Whether scalar or array QCVariable *key* has been set on *self* :class:`psi4.core.Wavefunction`."""
+def _core_wavefunction_has_variable(self: core.Wavefunction, key: str) -> bool:
+    """Whether scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key*
+    has been set on *self*.
 
-    return cls.has_scalar_variable(key) or cls.has_array_variable(key)
+    Parameters
+    ----------
+    self
+        Wavefunction instance.
+    key
+        Case-insensitive key to instance's double or
+        :py:class:`~psi4.core.Matrix` storage maps.
+
+    """
+    return self.has_scalar_variable(key) or self.has_array_variable(key)
 
 
 def _core_variable(key: str) -> Union[float, core.Matrix, np.ndarray]:
-    """Return copy of scalar or array QCVariable *key* from global memory.
+    """Return copy of scalar or array :ref:`QCVariable <sec:appendices:qcvars>`
+    *key* from global memory.
+
+    Parameters
+    ----------
+    key
+        Case-insensitive key to global double or :py:class:`~psi4.core.Matrix`
+        storage maps.
 
     Returns
     -------
-    float or numpy.ndarray or Matrix
-        Scalar variables are returned as floats.
-        Array variables not naturally 2D (like multipoles) are returned as :class:`numpy.ndarray` of natural dimensionality.
-        Other array variables are returned as :py:class:`~psi4.core.Matrix` and may have an extra dimension with symmetry information.
+    float or ~numpy.ndarray or Matrix
+        Requested QCVariable from global memory.
+
+        - Scalar variables are returned as floats.
+        - Array variables not naturally 2D (like multipoles or per-atom charges)
+          are returned as :class:`~numpy.ndarray` of natural dimensionality.
+        - Other array variables are returned as :py:class:`~psi4.core.Matrix` and
+          may have an extra dimension with symmetry information.
+
+    Raises
+    ------
+    KeyError
+        If `key` not set on `self`.
 
     Example
     -------
@@ -879,15 +1068,33 @@ def _core_variable(key: str) -> Union[float, core.Matrix, np.ndarray]:
         raise KeyError(f"psi4.core.variable: Requested variable '{key}' was not set!\n")
 
 
-def _core_wavefunction_variable(cls: core.Wavefunction, key: str) -> Union[float, core.Matrix, np.ndarray]:
-    """Return copy of scalar or array QCVariable *key* from *self* :class:`psi4.core.Wavefunction`.
+def _core_wavefunction_variable(self: core.Wavefunction, key: str) -> Union[float, core.Matrix, np.ndarray]:
+    """Return copy of scalar or array :ref:`QCVariable <sec:appendices:qcvars>`
+    *key* from *self*.
+
+    Parameters
+    ----------
+    self
+        Wavefunction instance.
+    key
+        Case-insensitive key to instance's double or :py:class:`~psi4.core.Matrix`
+        storage maps.
 
     Returns
     -------
-    float or numpy.ndarray or Matrix
-        Scalar variables are returned as floats.
-        Array variables not naturally 2D (like multipoles) are returned as :class:`numpy.ndarray` of natural dimensionality.
-        Other array variables are returned as :py:class:`~psi4.core.Matrix` and may have an extra dimension with symmetry information.
+    float or ~numpy.ndarray or Matrix
+        Requested QCVariable from `self`.
+
+        - Scalar variables are returned as floats.
+        - Array variables not naturally 2D (like multipoles or per-atom charges)
+          are returned as :class:`~numpy.ndarray` of natural dimensionality.
+        - Other array variables are returned as :py:class:`~psi4.core.Matrix` and
+          may have an extra dimension with symmetry information.
+
+    Raises
+    ------
+    KeyError
+        If `key` not set on `self`.
 
     Example
     -------
@@ -905,17 +1112,36 @@ def _core_wavefunction_variable(cls: core.Wavefunction, key: str) -> Union[float
     """
     key = _qcvar_warnings(key)
 
-    if cls.has_scalar_variable(key):
-        return cls.scalar_variable(key)
-    elif cls.has_array_variable(key):
-        return _qcvar_reshape_get(key, cls.array_variable(key))
+    if self.has_scalar_variable(key):
+        return self.scalar_variable(key)
+    elif self.has_array_variable(key):
+        return _qcvar_reshape_get(key, self.array_variable(key))
     else:
         raise KeyError(f"psi4.core.Wavefunction.variable: Requested variable '{key}' was not set!\n")
 
 
 def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
-    """Sets scalar or array QCVariable *key* to *val* in global memory."""
+    """Sets scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* to
+    *val* in global memory.
 
+    Parameters
+    ----------
+    key
+        Case-insensitive key to global double or :py:class:`~psi4.core.Matrix`
+        storage maps.
+    val
+        Scalar or array to be stored in `key`. If :class:`~numpy.ndarray` and
+        data `key` does not naturally fit in 2D Matrix (often charge and
+        multipole QCVariables), it will be reshaped, as all
+        :class:`~numpy.ndarray` are stored as :class:`~psi4.core.Matrix`.
+
+    Raises
+    ------
+    ValidationError
+        If `val` is a scalar but `key` already exists as an array variable. Or
+        if `val` is an array but `key` already exists as a scalar variable.
+
+    """
     if isinstance(val, core.Matrix):
         if core.has_scalar_variable(key):
             raise ValidationError(f"psi4.core.set_variable: Target variable '{key}' already a scalar variable!")
@@ -935,49 +1161,110 @@ def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> 
     # TODO _qcvar_warnings(key)
 
 
-def _core_wavefunction_set_variable(cls: core.Wavefunction, key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
-    """Sets scalar or array QCVariable *key* to *val* on *cls*."""
+def _core_wavefunction_set_variable(self: core.Wavefunction, key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
+    """Sets scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key* to
+    *val* on *self*.
 
+    Parameters
+    ----------
+    self
+        Wavefunction instance.
+    key
+        Case-insensitive key to instance's double or :class:`~psi4.core.Matrix`
+        storage maps.
+
+        - If ``CURRENT ENERGY``, syncs with :attr:`self.energy_`.
+        - If ``CURRENT GRADIENT``, syncs with :attr:`gradient_`.
+        - If ``CURRENT HESSIAN``, syncs with :attr:`self.hessian_`.
+    val
+        Scalar or array to be stored in `key`. If :class:`~numpy.ndarray` and
+        data `key` does not naturally fit in 2D Matrix (often charge and
+        multipole QCVariables), it will be reshaped, as all
+        :class:`~numpy.ndarray` are stored as :class:`~psi4.core.Matrix`.
+
+    Raises
+    ------
+    ValidationError
+        If `val` is a scalar but `key` already exists as an array variable. Or
+        if `val` is an array but `key` already exists as a scalar variable.
+
+    """
     if isinstance(val, core.Matrix):
-        if cls.has_scalar_variable(key):
+        if self.has_scalar_variable(key):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
-            cls.set_array_variable(key, val)
+            self.set_array_variable(key, val)
     elif isinstance(val, np.ndarray):
-        if cls.has_scalar_variable(key):
+        if self.has_scalar_variable(key):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already a scalar variable!")
         else:
-            cls.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
+            self.set_array_variable(key, core.Matrix.from_array(_qcvar_reshape_set(key, val)))
     else:
-        if cls.has_array_variable(key):
+        if self.has_array_variable(key):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable '{key}' already an array variable!")
         else:
-            cls.set_scalar_variable(key, val)
+            self.set_scalar_variable(key, val)
 
     # TODO _qcvar_warnings(key)
 
 
 def _core_del_variable(key: str) -> None:
-    """Removes scalar or array QCVariable *key* from global memory if present."""
+    """Removes scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key*
+    from global memory if present.
 
+    Parameters
+    ----------
+    key
+        Case-insensitive key to global double or :py:class:`~psi4.core.Matrix`
+        storage maps.
+
+    """
     if core.has_scalar_variable(key):
         core.del_scalar_variable(key)
     elif core.has_array_variable(key):
         core.del_array_variable(key)
 
 
-def _core_wavefunction_del_variable(cls: core.Wavefunction, key: str) -> None:
-    """Removes scalar or array QCVariable *key* from *cls* if present."""
+def _core_wavefunction_del_variable(self: core.Wavefunction, key: str) -> None:
+    """Removes scalar or array :ref:`QCVariable <sec:appendices:qcvars>` *key*
+    from *self* if present.
 
-    if cls.has_scalar_variable(key):
-        cls.del_scalar_variable(key)
-    elif cls.has_array_variable(key):
-        cls.del_array_variable(key)
+    Parameters
+    ----------
+    self
+        Wavefunction instance.
+    key
+        Case-insensitive key to instance's double or
+        :py:class:`~psi4.core.Matrix` storage maps.
+
+    """
+    if self.has_scalar_variable(key):
+        self.del_scalar_variable(key)
+    elif self.has_array_variable(key):
+        self.del_array_variable(key)
 
 
 def _core_variables(include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
-    """Return all scalar or array QCVariables from global memory."""
+    """Return all scalar or array :ref:`QCVariables <sec:appendices:qcvars>`
+    from global memory.
 
+    Parameters
+    ----------
+    include_deprecated_keys
+        Also return duplicate entries with keys that have been deprecated.
+
+    Returns
+    -------
+    ~typing.Dict[str, ~typing.Union[float, ~numpy.ndarray, Matrix]
+        Map of all QCVariables that have been set.
+
+        - Scalar variables are returned as floats.
+        - Array variables not naturally 2D (like multipoles or per-atom charges)
+          are returned as :class:`~numpy.ndarray` of natural dimensionality.
+        - Other array variables are returned as :py:class:`~psi4.core.Matrix` and
+          may have an extra dimension with symmetry information.
+
+    """
     dicary = {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
 
     if include_deprecated_keys:
@@ -988,10 +1275,30 @@ def _core_variables(include_deprecated_keys: bool = False) -> Dict[str, Union[fl
     return dicary
 
 
-def _core_wavefunction_variables(cls, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
-    """Return all scalar or array QCVariables from *cls*."""
+def _core_wavefunction_variables(self, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
+    """Return all scalar or array :ref:`QCVariables <sec:appendices:qcvars>`
+    from *self*.
 
-    dicary = {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
+    Parameters
+    ----------
+    self
+        Wavefunction instance.
+    include_deprecated_keys
+        Also return duplicate entries with keys that have been deprecated.
+
+    Returns
+    -------
+    ~typing.Dict[str, ~typing.Union[float, ~numpy.ndarray, Matrix]
+        Map of all QCVariables that have been set on `self`.
+
+        - Scalar variables are returned as floats.
+        - Array variables not naturally 2D (like multipoles or per-atom charges)
+          are returned as :class:`~numpy.ndarray` of natural dimensionality.
+        - Other array variables are returned as :py:class:`~psi4.core.Matrix` and
+          may have an extra dimension with symmetry information.
+
+    """
+    dicary = {**self.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in self.array_variables().items()}}
 
     if include_deprecated_keys:
         for old_key, (current_key, version) in _qcvar_transitions.items():
@@ -1019,7 +1326,7 @@ core.Wavefunction.variables = _core_wavefunction_variables
 def _core_get_variable(key):
     """
     .. deprecated:: 1.4
-       Use :py:func:`psi4.variable` instead.
+       Use :py:func:`psi4.core.variable` instead.
 
     """
     warnings.warn(
@@ -1045,7 +1352,7 @@ def _core_get_variables():
 def _core_get_array_variable(key):
     """
     .. deprecated:: 1.4
-       Use :py:func:`psi4.variable` instead.
+       Use :py:func:`psi4.core.variable` instead.
 
     """
     warnings.warn(
@@ -1132,11 +1439,24 @@ core.Wavefunction.set_array = _core_wavefunction_set_array
 core.Wavefunction.arrays = _core_wavefunction_arrays
 
 
-def _core_wavefunction_frequencies(cls):
-    if not hasattr(cls, 'frequency_analysis'):
+def _core_wavefunction_frequencies(self):
+    """Returns the results of a frequency analysis.
+
+    Parameters
+    ----------
+    self
+        Wavefunction instance.
+
+    Returns
+    -------
+    ~typing.Optional[~typing.Dict[str, ~numpy.ndarray]]
+        A dictionary of vibrational information. See :py:func:`psi4.driver.qcdb.vib.harmonic_analysis`
+
+    """
+    if not hasattr(self, 'frequency_analysis'):
         return None
 
-    vibinfo = cls.frequency_analysis
+    vibinfo = self.frequency_analysis
     vibonly = qcdb.vib.filter_nonvib(vibinfo)
     return core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data))
 
@@ -1144,6 +1464,7 @@ def _core_wavefunction_frequencies(cls):
 def _core_wavefunction_legacy_frequencies(cls):
     """
     .. deprecated:: 1.4
+       Use :py:meth:`~psi4.core.Wavefunction.frequencies` instead.
 
     """
     warnings.warn(
@@ -1171,6 +1492,11 @@ core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
 
 
 def _core_wavefunction_X(cls):
+    """
+    .. deprecated:: 1.5
+       Use :py:meth:`~psi4.core.Wavefunction.lagrangian` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.Wavefunction.X` instead of `psi4.core.Wavefunction.lagrangian` is deprecated, and as soon as 1.5 it will stop working\n",
         category=FutureWarning,

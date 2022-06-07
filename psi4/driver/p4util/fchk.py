@@ -28,12 +28,17 @@
 """Module with utility functions for FCHK files."""
 
 import re
+from typing import Union
+
 import numpy as np
 from psi4.driver.p4util.testing import compare_strings, compare_arrays, compare_values, compare_integers
 from psi4 import core
 from .exceptions import ValidationError
 
-__all__ = ['fchkfile_to_string','compare_fchkfiles', "compare_moldenfiles"]
+__all__ = [
+    "compare_fchkfiles",
+    "compare_moldenfiles",
+]
 
 def _consume_fchk_section(input_list, index):
     """compare a float or integer matrix section"""
@@ -62,17 +67,17 @@ def _consume_fchk_section(input_list, index):
     return offset + 1, field
 
 
-def fchkfile_to_string(fname):
+def _fchkfile_to_string(fname: str) -> str:
     """ Load FCHK file into a string"""
     with open(fname, 'r') as handle:
         fchk_string = handle.read()
     return fchk_string
 
 
-def compare_fchkfiles(expected, computed, atol_exponent, label):
-    """Comparison function for output data in FCHK (formatted checkpoint) file format.
-    Compares many fields including number of electrons, highest angular momentum, basis
-    set exponents, densities, final gradient.
+def compare_fchkfiles(expected: str, computed: str, atol_exponent: Union[int, float], label: str):
+    """Comparison function for output data in FCHK (formatted checkpoint) file
+    format. Compares many fields including number of electrons, highest angular
+    momentum, basis set exponents, densities, final gradient.
 
     Note only Psi4-style signature (``(expected, computed, atol_exponent, label)``) available.
 
@@ -84,21 +89,21 @@ def compare_fchkfiles(expected, computed, atol_exponent, label):
 
     Parameters
     ----------
-    expected : file
-        Reference FCHK file against which `computed` is compared.
-    computed : file
-        Input FCHK file to compare against `expected`.
-    atol_exponent : int or float
+    expected
+        Path to reference FCHK file against which `computed` is compared.
+    computed
+        Path to input FCHK file to compare against `expected`.
+    atol_exponent
         Absolute tolerance for high accuracy fields -- 1.e-8 or 1.e-9 is suitable.
         Values less than one are taken literally; one or greater taken as decimal digits for comparison.
         So `1` means `atol=0.1` and `2` means `atol=0.01` but `0.04` means `atol=0.04`
         Note that the largest expressable processed atol will be `~0.99`.
-    label : str
+    label
         Label for passed and error messages.
 
     """
-    fchk_ref = fchkfile_to_string(expected).splitlines()
-    fchk_calc = fchkfile_to_string(computed).splitlines()
+    fchk_ref = _fchkfile_to_string(expected).splitlines()
+    fchk_calc = _fchkfile_to_string(computed).splitlines()
 
     high_accuracy = atol_exponent
     low_accuracy = 3
@@ -143,7 +148,11 @@ def compare_fchkfiles(expected, computed, atol_exponent, label):
     return compare_integers(True, all(tests), label)
 
 
-def compare_moldenfiles(expected, computed, atol_exponent=7, label="Compare Molden"):
+def compare_moldenfiles(
+    expected: str,
+    computed: str,
+    atol_exponent: Union[int, float] = 1.e-7,
+    label: str = "Compare Molden"):
     """Comparison function for output data in Molden file format.
     Compares many fields including geometry, basis set, occupations, symmetries, energies.
 
@@ -153,16 +162,16 @@ def compare_moldenfiles(expected, computed, atol_exponent=7, label="Compare Mold
 
     Parameters
     ----------
-    expected : file
-        Reference Molden file against which `computed` is compared.
-    computed : file
-        Input Molden file to compare against `expected`.
-    atol_exponent : int or float
+    expected
+        Path to reference Molden file against which `computed` is compared.
+    computed
+        Path to input Molden file to compare against `expected`.
+    atol_exponent
         Absolute tolerance for high accuracy fields -- 1.e-8 or 1.e-9 is suitable.
         Values less than one are taken literally; one or greater taken as decimal digits for comparison.
         So `1` means `atol=0.1` and `2` means `atol=0.01` but `0.04` means `atol=0.04`
         Note that the largest expressable processed atol will be `~0.99`.
-    label : str
+    label
         Label for passed and error messages.
 
     """

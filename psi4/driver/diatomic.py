@@ -26,7 +26,7 @@
 # @END LICENSE
 #
 
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -36,7 +36,7 @@ from psi4.driver.p4util.exceptions import *
 
 
 def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials=True, weighted=True, polynomial_order=4):
-    """Performs and unweighted least squares fit of a polynomial, with specified order
+    """Performs an unweighted least squares fit of a polynomial, with specified order
        to an array of input function values (fvals) evaluated at given locations (xvals).
        See https://doi.org/10.1063/1.4862157, particularly eqn (7) for details. """
     xpts = np.array(xvals) - localization_point
@@ -58,7 +58,7 @@ def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials
     return fit
 
 
-def anharmonicity(rvals: List, energies: List, plot_fit: str = '', mol = None) -> Dict:
+def anharmonicity(rvals: List[float], energies: List[float], plot_fit: str = '', mol = None) -> Dict[str, Any]:
     """Generates spectroscopic constants for a diatomic molecules.
        Fits a diatomic potential energy curve using a weighted least squares approach
        (c.f. https://doi.org/10.1063/1.4862157, particularly eqn. 7), locates the minimum

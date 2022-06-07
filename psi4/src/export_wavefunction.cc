@@ -281,37 +281,39 @@ void export_wavefunction(py::module& m) {
         .def("set_external_potential", &Wavefunction::set_external_potential, "Sets the requested external potential.")
         .def("external_pot", &Wavefunction::external_pot, "Gets the requested external potential.")
         .def("has_scalar_variable", &Wavefunction::has_scalar_variable,
-             "Is the double QC variable (case-insensitive) set?")
+             "Is the double QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.Wavefunction.has_variable`.")
         .def("has_array_variable", &Wavefunction::has_array_variable,
-             "Is the Matrix QC variable (case-insensitive) set?")
+             "Is the Matrix QC variable (case-insensitive) set? Prefer :meth:`~psi4.core.Wavefunction.has_variable`.")
         .def("has_potential_variable", &Wavefunction::has_potential_variable,
              "Is the ExternalPotential QC variable (case-insensitive) set? "
              "(This function is provisional and might be removed in the future.)")
         .def("scalar_variable", &Wavefunction::scalar_variable,
-             "Returns the requested (case-insensitive) double QC variable.")
+             "Returns the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.Wavefunction.variable`.")
         .def("array_variable", &Wavefunction::array_variable,
-             "Returns copy of the requested (case-insensitive) Matrix QC variable.")
+             "Returns copy of the requested (case-insensitive) Matrix QC variable. Prefer :meth:`~psi4.core.Wavefunction.variable`.")
         .def("potential_variable", &Wavefunction::potential_variable,
              "key"_a, "Returns copy of the requested (case-insensitive) ExternalPotential QC variable *key*. "
              "(This function is provisional and might be removed in the future.)")
         .def("set_scalar_variable", &Wavefunction::set_scalar_variable,
              "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT "
-             "ENERGY.")
+             "ENERGY. Prefer :meth:`~psi4.core.Wavefunction.set_variable`.")
         .def("set_array_variable", &Wavefunction::set_array_variable,
              "Sets the requested (case-insensitive) Matrix QC variable. Syncs with ``Wavefunction.gradient_`` or "
-             "``hessian_`` if CURRENT GRADIENT or HESSIAN.")
+             "``hessian_`` if CURRENT GRADIENT or HESSIAN. Prefer :meth:`~psi4.core.Wavefunction.set_variable`.")
         .def("set_potential_variable", &Wavefunction::set_potential_variable,
              "Sets the requested (case-insensitive) ExternalPotential QC variable. "
              "(This function is provisional and might be removed in the future.)")
         .def("del_scalar_variable", &Wavefunction::del_scalar_variable,
-             "Removes the requested (case-insensitive) double QC variable.")
+             "Removes the requested (case-insensitive) double QC variable. Prefer :meth:`~psi4.core.Wavefunction.del_variable`.")
         .def("del_array_variable", &Wavefunction::del_array_variable,
-             "Removes the requested (case-insensitive) Matrix QC variable.")
+             "Removes the requested (case-insensitive) Matrix QC variable. Prefer :meth:`~psi4.core.Wavefunction.del_variable`.")
         .def("del_potential_variable", &Wavefunction::del_potential_variable,
              "Removes the requested (case-insensitive) ExternalPotential QC variable. "
              "(This function is provisional and might be removed in the future.)")
-        .def("scalar_variables", &Wavefunction::scalar_variables, "Returns the dictionary of all double QC variables.")
-        .def("array_variables", &Wavefunction::array_variables, "Returns the dictionary of all Matrix QC variables.")
+        .def("scalar_variables", &Wavefunction::scalar_variables,
+             "Returns the dictionary of all double QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
+        .def("array_variables", &Wavefunction::array_variables,
+             "Returns the dictionary of all Matrix QC variables. Prefer :meth:`~psi4.core.Wavefunction.variables`.")
         .def("potential_variables", &Wavefunction::potential_variables, "Returns the dictionary of all ExternalPotential QC variables. "
              "(This function is provisional and might be removed in the future.)")
 

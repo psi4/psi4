@@ -26,9 +26,8 @@
 # @END LICENSE
 #
 
-"""Module with functions that call the four main :py:mod:`driver`
-functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
-:py:mod:`driver.response`, and :py:mod:`driver.frequency`.
+"""
+Module with database functionality.
 
 """
 import collections
@@ -37,6 +36,7 @@ import os
 import re
 import sys
 
+from psi4 import core
 from psi4.driver import constants
 from psi4.driver import p4util
 from psi4.driver.driver import *

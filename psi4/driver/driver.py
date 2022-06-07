@@ -25,10 +25,10 @@
 #
 # @END LICENSE
 #
-"""Module with a *procedures* dictionary specifying available quantum
-chemical methods and functions driving the main quantum chemical
-functionality, namely single-point energies, geometry optimizations,
-properties, and vibrational frequency calculations.
+"""
+Nexus of psi4.driver module with primary user-facing functions, including
+single-point energies, geometry optimizations, properties, and vibrational
+frequency calculations.
 
 """
 import json
@@ -38,7 +38,7 @@ import copy
 import shutil
 import sys
 import logging
-from typing import Union
+from typing import Dict, Optional, Union
 import logging
 
 import numpy as np
@@ -1583,7 +1583,14 @@ def frequency(name, **kwargs):
         return core.variable('CURRENT ENERGY')
 
 
-def vibanal_wfn(wfn: core.Wavefunction, hess: np.ndarray = None, irrep: Union[int, str] = None, molecule=None, project_trans: bool = True, project_rot: bool = True):
+def vibanal_wfn(
+    wfn: core.Wavefunction,
+    hess: Optional[np.ndarray] = None,
+    irrep: Optional[Union[int, str]] = None,
+    molecule=None,
+    project_trans: bool = True,
+    project_rot: bool = True,
+) -> Dict[str, np.ndarray]:
     """Function to perform analysis of a hessian or hessian block, specifically...
     calling for and printing vibrational and thermochemical analysis, setting thermochemical variables,
     and writing the vibrec and normal mode files.
@@ -1596,7 +1603,8 @@ def vibanal_wfn(wfn: core.Wavefunction, hess: np.ndarray = None, irrep: Union[in
         Hessian to analyze, if not the hessian in wfn.
         (3*nat, 3*nat) non-mass-weighted Hessian in atomic units, [Eh/a0/a0].
     irrep
-        The irrep for which frequencies are calculated. Thermochemical analysis is skipped if this is given,
+        The irrep for which frequencies are calculated. Thermochemical analysis
+        is skipped if this is specified (non-None),
         as only one symmetry block of the hessian has been computed.
     molecule : :py:class:`~psi4.core.Molecule` or qcdb.Molecule, optional
         The molecule to pull information from, if not the molecule in wfn. Must at least have similar
@@ -1608,8 +1616,9 @@ def vibanal_wfn(wfn: core.Wavefunction, hess: np.ndarray = None, irrep: Union[in
 
     Returns
     -------
-    vibinfo : dict
+    vibinfo : ~typing.Dict[str, ~numpy.ndarray]
         A dictionary of vibrational information. See :py:func:`~psi4.driver.qcdb.vib.harmonic_analysis`
+
     """
 
     if hess is None:

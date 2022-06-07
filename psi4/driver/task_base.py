@@ -74,7 +74,7 @@ class AtomicComputer(BaseComputer):
         "Note for finite difference that this should be the target driver, not the means driver.")
     keywords: Dict[str, Any] = Field(default_factory=dict, description="The keywords to use in the computation.")
     computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
-    result: Any = Field(default_factory=dict, description="AtomicResult return.")
+    result: Any = Field(default_factory=dict, description=":py:class:~`qcelemental.models.AtomicResult` return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
 
     class Config(qcel.models.ProtoModel.Config):

@@ -25,7 +25,21 @@
 #
 # @END LICENSE
 #
-"""Module with comparison functions with output configures for Psi4."""
+"""Module with comparison functions with output configured for Psi4."""
+
+__all__ = [
+    "compare",
+    "compare_arrays",
+    "compare_cubes",
+    "compare_integers",
+    "compare_matrices",
+    "compare_molrecs",
+    "compare_recursive",
+    "compare_strings",
+    "compare_values",
+    "compare_vectors",
+    "compare_wavefunctions",
+]
 
 import sys
 from functools import partial
@@ -36,11 +50,6 @@ import qcelemental as qcel
 from psi4 import core
 from psi4.driver import qcdb
 from .exceptions import TestComparisonError
-
-__all__ = [
-    'compare', 'compare_integers', 'compare_strings', 'compare_values', 'compare_arrays', 'compare_recursive',
-    'compare_molrecs', 'compare_cubes', 'compare_vectors', 'compare_matrices', 'compare_wavefunctions'
-]
 
 # TODO in multistage compare_* fns, we're potentially stopping the fn prematurely and not in the manner of the handling fn.
 

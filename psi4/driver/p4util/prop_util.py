@@ -33,11 +33,11 @@ from . import optproc
 __all__ = ['free_atom_volumes']
 
 
-def free_atom_volumes(wfn, **kwargs):
+def free_atom_volumes(wfn: psi4.core.Wavefunction, **kwargs):
     """ 
     Computes free-atom volumes using MBIS density partitioning.
     The free-atom volumes are computed for all unique (inc. basis set)
-    atoms in a molecule and stored as wavefunction variables.
+    atoms in a molecule and stored as wavefunction variables, :psivar:`MBIS FREE ATOM n VOLUME`.
     Free-atom densities are computed at the same level of theory as the molecule, 
     and we use unrestricted references as needed in computing the ground-state. 
 
@@ -45,7 +45,7 @@ def free_atom_volumes(wfn, **kwargs):
 
     Parameters
     ----------
-    wfn : psi4.core.Wavefunction
+    wfn
         The wave function associated with the molecule, method, and basis for 
         atomic computations
     """
