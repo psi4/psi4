@@ -84,6 +84,7 @@ void CIWavefunction::common_init() {
     set_ras_parameters();     /* set fermi levels and the like            */
 
     // Print out information
+    print_ = Parameters_->print_;
     print_parameters();
     print_ras_parameters();
 

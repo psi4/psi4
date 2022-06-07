@@ -74,7 +74,7 @@ void CIWavefunction::get_parameters(Options &options) {
     Parameters_->wfn = options.get_str("WFN");
 
     // CDS-TODO: Check these
-    print_ = 1;
+    Parameters_->print_ = 1;
 
     Parameters_->ex_lvl = options.get_int("EX_LEVEL");
     Parameters_->cc_ex_lvl = options.get_int("CC_EX_LEVEL");
@@ -90,7 +90,7 @@ void CIWavefunction::get_parameters(Options &options) {
     Parameters_->print_ciblks = options["CIBLKS_PRINT"].to_integer();
 
     if (options["PRINT"].has_changed()) {
-        print_ = options.get_int("PRINT");
+        Parameters_->print_ = options.get_int("PRINT");
     }
 
     Parameters_->opentype = PARM_OPENTYPE_UNKNOWN;
@@ -913,7 +913,7 @@ void CIWavefunction::set_ras_parameters() {
         Parameters_->ex_allow.resize(Parameters_->ex_lvl);
         for (i = 0; i < Parameters_->ex_lvl; i++) Parameters_->ex_allow[i] = 1;
 
-        if (print_ > 2) {
+        if (Parameters_->print_ > 2) {
             outfile->Printf("Note: Calculation requested is a full CI.\n");
             outfile->Printf("Resetting EX_LEVEL to %d and turning on all excitations\n\n", Parameters_->ex_lvl);
         }
