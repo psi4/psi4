@@ -590,7 +590,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         forte.register_forte_options(forte_options)
         psi_options.set_current_module('FORTE')
         forte_options.push_options_to_psi4(psi_options)
-        # Restore current options
+        # Restore current module
         psi_options.set_current_module(current_module)
 
     kwargs = json_data["keywords"].pop("function_kwargs", {})

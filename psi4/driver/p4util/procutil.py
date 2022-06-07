@@ -541,8 +541,8 @@ def prepare_options_for_set_options():
             for name, metadata in forte_options.dict().items():
                 if metadata["value"] != metadata["default_value"]:
                     flat_options[f"forte__{name.lower()}"] = metadata["value"]
-            # Restore current module
         finally:
+            # Restore current module
             psi_options.set_current_module(current_module)
     return flat_options
 
