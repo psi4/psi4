@@ -497,7 +497,6 @@ def prepare_options_for_set_options():
     has_changed_snapshot = {module: core.options_to_python(module) for module in _modules}
 
     for opt in core.get_global_option_list():
-
         handled_locally = False
         ghoc = core.has_global_option_changed(opt)
         opt_snapshot = {k: v[opt] for k, v in has_changed_snapshot.items() if opt in v}
@@ -516,6 +515,35 @@ def prepare_options_for_set_options():
             # some options are globals section (not level) so not in any module
             flat_options[opt] = core.get_global_option(opt)
 
+    # The normal machinery to forward plugin options to Psi goes through 'plugin_load'.
+    # Forte doesn't use this. Pending a larger options rewrite (move to a Python dictionary?),
+    # we need the following dirty hack.
+
+    try:
+        import forte # Needed for Forte options to run.
+    except ImportError:
+        pass
+    else:
+        # Initialization tasks with Psi options
+        psi_options = core.get_options()
+        current_module = psi_options.get_current_module()
+        # Get the current Forte options from Forte
+        forte_options = forte.ForteOptions()
+        forte.register_forte_options(forte_options)
+        psi_options.set_current_module("FORTE")
+        try:
+            forte_options.get_options_from_psi4(psi_options)
+        except RuntimeError:
+            # If we're in this case, Forte hasn't pushed its options to Psi.
+            pass
+        else:
+            # Load changed Forte options into `flat_options`
+            for name, metadata in forte_options.dict().items():
+                if metadata["value"] != metadata["default_value"]:
+                    flat_options[f"forte__{name.lower()}"] = metadata["value"]
+            # Restore current module
+        finally:
+            psi_options.set_current_module(current_module)
     return flat_options
 
 

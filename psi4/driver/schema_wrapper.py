@@ -576,6 +576,23 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     json_data["molecule"]["geometry"] = mol.geometry().np.ravel().tolist()
 
     # Set options
+    ## The Forte plugin needs special treatment.
+    try:
+        import forte # Needed for Forte options to run.
+    except ImportError:
+        pass
+    else:
+        # Initialization tasks with Psi options.
+        psi_options = core.get_options()
+        current_module = psi_options.get_current_module()
+        # Get the current Forte options from Forte
+        forte_options = forte.ForteOptions()
+        forte.register_forte_options(forte_options)
+        psi_options.set_current_module('FORTE')
+        forte_options.push_options_to_psi4(psi_options)
+        # Restore current options
+        psi_options.set_current_module(current_module)
+
     kwargs = json_data["keywords"].pop("function_kwargs", {})
     p4util.set_options(json_data["keywords"])
 
