@@ -276,8 +276,8 @@ def negotiate_derivative_type(
             # untested
             analytic = [highest_analytic_properties_available(mtd, proc) for mtd in method]
             if verbose > 1:
-                print(method, analytic, '->', min(analytic))
-            highest_analytic_dertype, proc_messages = min(analytic)
+                print(method, analytic, '->', min(analytic, key=lambda t: t[0]))
+            highest_analytic_dertype, proc_messages = min(analytic, key=lambda t: t[0])
         else:
             highest_analytic_dertype, proc_messages = highest_analytic_properties_available(method, proc)
 
@@ -287,8 +287,8 @@ def negotiate_derivative_type(
         if isinstance(method, list):
             analytic = [highest_analytic_derivative_available(mtd, proc) for mtd in method]
             if verbose > 1:
-                print(method, analytic, '->', min(analytic))
-            highest_analytic_dertype, proc_messages = min(analytic)
+                print(method, analytic, '->', min(analytic, key=lambda t: t[0]))
+            highest_analytic_dertype, proc_messages = min(analytic, key=lambda t: t[0])
         else:
             highest_analytic_dertype, proc_messages = highest_analytic_derivative_available(method, proc)
 

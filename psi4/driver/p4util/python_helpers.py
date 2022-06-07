@@ -981,7 +981,7 @@ def _core_variables(include_deprecated_keys: bool = False) -> Dict[str, Union[fl
     dicary = {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
 
     if include_deprecated_keys:
-        for old_key, current_key in _qcvar_transitions.items():
+        for old_key, (current_key, version) in _qcvar_transitions.items():
             if current_key in dicary:
                 dicary[old_key] = dicary[current_key]
 
@@ -994,7 +994,7 @@ def _core_wavefunction_variables(cls, include_deprecated_keys: bool = False) -> 
     dicary = {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
 
     if include_deprecated_keys:
-        for old_key, current_key in _qcvar_transitions.items():
+        for old_key, (current_key, version) in _qcvar_transitions.items():
             if current_key in dicary:
                 dicary[old_key] = dicary[current_key]
 

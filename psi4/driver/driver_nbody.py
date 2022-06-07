@@ -939,6 +939,10 @@ class ManyBodyComputer(BaseComputer):
         core.print_out(info)
         logger.info(info)
 
+        for kwg in ['dft_functional']:
+            if kwg in kwargs:
+                kwargs['keywords']['function_kwargs'][kwg] = kwargs.pop(kwg)
+
         count = 0
         template = copy.deepcopy(kwargs)
 
