@@ -456,7 +456,6 @@ class PSI_API Options {
     std::vector<int> get_int_vector(std::string key) const;
     double* get_double_array(std::string key) const;
     std::vector<double> get_double_vector(std::string key) const;
-    const char* get_cstr(std::string key) const;
 
     Data& operator[](std::string key);
 

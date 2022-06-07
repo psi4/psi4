@@ -517,9 +517,9 @@ void Options::set_current_module(const std::string s) {
 void Options::to_upper(std::string& str) const { psi::to_upper(str); }
 
 void Options::validate_options() {
-    std::map<std::string, Data>::const_iterator iter = locals_[current_module_].begin();
-    std::map<std::string, Data>::const_iterator stop = locals_[current_module_].end();
-    std::map<std::string, Data>::const_iterator not_found = all_local_options_.end();
+    auto iter = locals_[current_module_].begin();
+    auto stop = locals_[current_module_].end();
+    auto not_found = all_local_options_.end();
     for (; iter != stop; ++iter) {
         if (iter->second.has_changed()) {
             if (all_local_options_.find(iter->first) == not_found)
@@ -982,8 +982,6 @@ std::vector<double> Options::get_double_vector(std::string key) const {
     }
     return array;
 }
-
-const char* Options::get_cstr(std::string key) const { return (use(key).to_string().c_str()); }
 
 Data& Options::operator[](std::string key) { return use(key); }
 }  // namespace psi
