@@ -258,6 +258,7 @@ class _TDSCFResults:
     irrep_GS: str
     irrep_ES: str
     irrep_trans: str
+    irrep_trans_index: int
     edtm_length: np.ndarray
     f_length: float
     edtm_velocity: np.ndarray
@@ -333,7 +334,8 @@ def _solve_loop(wfn,
         # flatten dictionary: helps with sorting by energy
         # also append state symmetry to return value
         for e, (R, L) in zip(ret["eigvals"], ret["eigvecs"]):
-            irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ state_sym]
+            irrep_trans_index = engine.G_gs ^ state_sym
+            irrep_trans = wfn.molecule().irrep_labels()[irrep_trans_index]
 
             # length-gauge electric dipole transition moment
             edtm_length = engine.residue(R, mints.so_dipole())
@@ -354,7 +356,8 @@ def _solve_loop(wfn,
             R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / e
 
             results.append(
-                _TDSCFResults(e, irrep_GS, irrep_ES, irrep_trans, edtm_length, f_length, edtm_velocity, f_velocity,
+                _TDSCFResults(e, irrep_GS, irrep_ES, irrep_trans, irrep_trans_index,
+                              edtm_length, f_length, edtm_velocity, f_velocity,
                               mdtm, R_length, R_velocity, spin_mult, R, L))
 
     return results
@@ -435,33 +438,94 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
 
     # Print contributing transitions...
     core.print_out(f"\n\nContributing excitations{'' if tda else ' and de-excitations'}")
-    #...only currently for C1 symmetry
-    if wfn.molecule().point_group().symbol() != 'c1':
-        core.print_out("...only curently available with C1 symmetry\n")
-    else:
+    core.print_out(
+        f"\nOnly contributions with abs(coeff) >{coeff_cutoff: .2e} will be printed:\n"
+    )
+    for i, x in enumerate(tdscf_results):
+        E_ex_nm = 1e9 / (constants.conversion_factor('hartree', 'm^-1') *
+                            x.E_ex_au)
         core.print_out(
-            f"\nOnly contributions with coefficients >{coeff_cutoff: .2e} will be printed:\n"
+            f"\nExcited State {i+1:4d} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):"
         )
-        for i, x in enumerate(tdscf_results):
-            E_ex_nm = 1e9 / (constants.conversion_factor('hartree', 'm^-1') *
-                             x.E_ex_au)
+        core.print_out(
+            f"{x.E_ex_au:> 10.5f} au   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n"
+        )
+
+        if not restricted:
+            core.print_out("Alpha orbitals:\n")
+        # Extract contributing transitions from left and right eigenvectors from solver
+        if tda:
+            X = x.L_eigvec if restricted else x.L_eigvec[0]
+            Xssq = X.sum_of_squares()
+            core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
+        else:
+            L = x.L_eigvec if restricted else x.L_eigvec[0]
+            R = x.R_eigvec if restricted else x.R_eigvec[0]
+            X = L.clone()
+            X.add(R)
+            X.scale(0.5)
+            Y = R.clone()
+            Y.subtract(L)
+            Y.scale(0.5)
+            Xssq = X.sum_of_squares()
+            Yssq = Y.sum_of_squares()
+
             core.print_out(
-                f"\nExcited State {i+1:4d} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):"
-            )
-            core.print_out(
-                f"{x.E_ex_au:> 10.5f} au   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n"
+                f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
             )
 
-            if not restricted:
-                core.print_out("Alpha orbitals:\n")
-            # Extract contributing transitions from left and right eigenvectors from solver
+        nocc = wfn.epsilon_a_subset("SO", "OCC").shape
+        nvir = wfn.epsilon_a_subset("SO", "VIR").shape
+        # Ignore any scaling for now
+        div = 1
+        # Excitations
+        nirrep = X.nirrep()
+        # Convert to list of lists for C1 case
+        if nirrep == 1:
+            nocc = (nocc, )
+            nvir = (nvir, )
+        for h in range(nirrep):
+            h_vir = x.irrep_trans_index ^ h
+            occ_irrep = wfn.molecule().irrep_labels()[h]
+            vir_irrep = wfn.molecule().irrep_labels()[h_vir]
+            for row in range(nocc[h][0]):
+                for col in range(nvir[h_vir][0]):
+                    if nirrep == 1:
+                        coef = X.np[row][col] / div
+                    else:
+                        coef = X.nph[h][row][col] / div
+                    if abs(coef) > coeff_cutoff:
+                        perc = 100 * coef**2
+                        core.print_out(
+                            f"   {row+1: 4}{occ_irrep} ->{col+1+nocc[h_vir][0]: 4}{vir_irrep}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                        )
+        # De-excitations if not using TDA
+        if not tda:
+            for h in range(nirrep):
+                h_vir = x.irrep_trans_index ^ h
+                occ_irrep = wfn.molecule().irrep_labels()[h]
+                vir_irrep = wfn.molecule().irrep_labels()[h_vir]
+                for row in range(nocc[h][0]):
+                    for col in range(nvir[h_vir][0]):
+                        if nirrep == 1:
+                            coef = Y.np[row][col] / div
+                        else:
+                            coef = Y.nph[h][row][col] / div
+                        if abs(coef) > coeff_cutoff:
+                            perc = 100 * coef**2
+                            core.print_out(
+                                f"   {row+1: 4}{occ_irrep} <-{col+1+nocc[h_vir][0]: 4}{vir_irrep}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                            )
+        # Now treat beta orbitals if needed
+        if not restricted:
+            core.print_out("Beta orbitals:\n")
             if tda:
-                X = x.L_eigvec if restricted else x.L_eigvec[0]
+                X = x.L_eigvec if restricted else x.L_eigvec[1]
                 Xssq = X.sum_of_squares()
                 core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
             else:
-                L = x.L_eigvec if restricted else x.L_eigvec[0]
-                R = x.R_eigvec if restricted else x.R_eigvec[0]
+                L = x.L_eigvec if restricted else x.L_eigvec[1]
+                R = x.R_eigvec if restricted else x.R_eigvec[1]
                 X = L.clone()
                 X.add(R)
                 X.scale(0.5)
@@ -475,72 +539,44 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                     f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
                 )
 
-            nocc = X.rows()
-            nvirt = X.cols()
-            # Ignore any scaling for now
-            div = 1
-            # Excitations
-            for row in range(nocc):
-                for col in range(nvirt):
-                    coef = X.get(row, col) / div
-                    if abs(coef) > coeff_cutoff:
-                        perc = 100 * coef**2
-                        core.print_out(
-                            f"   {row+1: 3} ->{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n"
-                        )
-            # De-excitations if not using TDA
-            if not tda:
-                for row in range(nocc):
-                    for col in range(nvirt):
-                        coef = Y.get(row, col) / div
+            nocc = wfn.epsilon_b_subset("SO", "OCC").shape
+            nvir = wfn.epsilon_b_subset("SO", "OCC").shape
+            # Convert to list of lists for C1 case
+            if nirrep == 1:
+                nocc = (nocc, )
+                nvir = (nvir, )
+            # Excitations (beta orbitals)
+            for h in range(nirrep):
+                h_vir = x.irrep_trans_index ^ h
+                occ_irrep = wfn.molecule().irrep_labels()[h]
+                vir_irrep = wfn.molecule().irrep_labels()[h_vir]
+                for row in range(nocc[h][0]):
+                    for col in range(nvir[h_vir][0]):
+                        if nirrep == 1:
+                            coef = X.np[row][col] / div
+                        else:
+                            coef = X.nph[h][row][col] / div
                         if abs(coef) > coeff_cutoff:
                             perc = 100 * coef**2
                             core.print_out(
-                                f"   {row+1: 3} <-{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n"
-                            )
-            # Now treat beta orbitals if needed
-            if not restricted:
-                core.print_out("Beta orbitals:\n")
-                if tda:
-                    X = x.L_eigvec if restricted else x.L_eigvec[1]
-                    Xssq = X.sum_of_squares()
-                    core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
-                else:
-                    L = x.L_eigvec if restricted else x.L_eigvec[1]
-                    R = x.R_eigvec if restricted else x.R_eigvec[1]
-                    X = L.clone()
-                    X.add(R)
-                    X.scale(0.5)
-                    Y = R.clone()
-                    Y.subtract(L)
-                    Y.scale(0.5)
-                    Xssq = X.sum_of_squares()
-                    Yssq = Y.sum_of_squares()
-
-                    core.print_out(
-                        f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
-                    )
-
-                nocc = X.rows()
-                nvirt = X.cols()
-                # Excitations (beta orbitals)
-                for row in range(nocc):
-                    for col in range(nvirt):
-                        coef = X.get(row, col) / div
-                        if abs(coef) > coeff_cutoff:
-                            perc = 100 * coef**2
-                            core.print_out(
-                                f"   {row+1: 3}B->{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                f"   {row+1: 4}{occ_irrep}(B)->{col+1+nocc[h_vir][0]: 4}{vir_irrep}(B) {coef: 10.6f} ({perc: >6.3f}%)\n"
                             )
                 # De-excitations if not using TDA (beta orbitals):
-                if not tda:
-                    for row in range(nocc):
-                        for col in range(nvirt):
-                            coef = Y.get(row, col) / div
+            if not tda:
+                for h in range(nirrep):
+                    h_vir = x.irrep_trans_index ^ h
+                    occ_irrep = wfn.molecule().irrep_labels()[h]
+                    vir_irrep = wfn.molecule().irrep_labels()[h_vir]
+                    for row in range(nocc[h][0]):
+                        for col in range(nvir[h_vir][0]):
+                            if nirrep == 1:
+                                coef = Y.np[row][col] / div
+                            else:
+                                coef = Y.nph[h][row][col] / div
                             if abs(coef) > coeff_cutoff:
                                 perc = 100 * coef**2
                                 core.print_out(
-                                    f"   {row+1: 3}B<-{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                    f"   {row+1: 4}{occ_irrep}(B)<-{col+1+nocc[h_vir][0]: 4}{vir_irrep}(B) {coef: 10.6f} ({perc: >6.3f}%)\n"
                                 )
     core.print_out("\n")
 
