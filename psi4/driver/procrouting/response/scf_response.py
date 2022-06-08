@@ -559,7 +559,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                         if abs(coef) > coeff_cutoff:
                             perc = 100 * coef**2
                             core.print_out(
-                                f"   {row+1: 4}{occ_irrep}(B)->{col+1+nocc[h_vir][0]: 4}{vir_irrep} (b)  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                f"   {row+1: 4}{occ_irrep} (b) ->{col+1+nocc[h_vir][0]: 4}{vir_irrep} (b)  {coef: 10.6f} ({perc: >6.3f}%)\n"
                             )
                 # De-excitations if not using TDA (beta orbitals):
             if not tda:
@@ -576,7 +576,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                             if abs(coef) > coeff_cutoff:
                                 perc = 100 * coef**2
                                 core.print_out(
-                                    f"   {row+1: 4}{occ_irrep}(B)<-{col+1+nocc[h_vir][0]: 4}{vir_irrep} (b)  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                    f"   {row+1: 4}{occ_irrep} (b) <-{col+1+nocc[h_vir][0]: 4}{vir_irrep} (b)  {coef: 10.6f} ({perc: >6.3f}%)\n"
                                 )
     core.print_out("\n")
 
