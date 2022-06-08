@@ -486,8 +486,8 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
             nvir = (nvir, )
         for h in range(nirrep):
             h_vir = x.irrep_trans_index ^ h
-            occ_irrep = wfn.molecule().irrep_labels()[h]
-            vir_irrep = wfn.molecule().irrep_labels()[h_vir]
+            occ_irrep = wfn.molecule().irrep_labels()[h].lower()
+            vir_irrep = wfn.molecule().irrep_labels()[h_vir].lower()
             for row in range(nocc[h][0]):
                 for col in range(nvir[h_vir][0]):
                     if nirrep == 1:
@@ -497,14 +497,14 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                     if abs(coef) > coeff_cutoff:
                         perc = 100 * coef**2
                         core.print_out(
-                            f"   {row+1: 4}{occ_irrep} ->{col+1+nocc[h_vir][0]: 4}{vir_irrep}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                            f"   {row+1: 4}{occ_irrep} (a) ->{col+1+nocc[h_vir][0]: 4}{vir_irrep} (a)  {coef: 10.6f} ({perc: >6.3f}%)\n"
                         )
         # De-excitations if not using TDA
         if not tda:
             for h in range(nirrep):
                 h_vir = x.irrep_trans_index ^ h
-                occ_irrep = wfn.molecule().irrep_labels()[h]
-                vir_irrep = wfn.molecule().irrep_labels()[h_vir]
+                occ_irrep = wfn.molecule().irrep_labels()[h].lower()
+                vir_irrep = wfn.molecule().irrep_labels()[h_vir].lower()
                 for row in range(nocc[h][0]):
                     for col in range(nvir[h_vir][0]):
                         if nirrep == 1:
@@ -514,7 +514,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                         if abs(coef) > coeff_cutoff:
                             perc = 100 * coef**2
                             core.print_out(
-                                f"   {row+1: 4}{occ_irrep} <-{col+1+nocc[h_vir][0]: 4}{vir_irrep}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                f"   {row+1: 4}{occ_irrep} (a) <-{col+1+nocc[h_vir][0]: 4}{vir_irrep} (a)  {coef: 10.6f} ({perc: >6.3f}%)\n"
                             )
         # Now treat beta orbitals if needed
         if not restricted:
@@ -548,8 +548,8 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
             # Excitations (beta orbitals)
             for h in range(nirrep):
                 h_vir = x.irrep_trans_index ^ h
-                occ_irrep = wfn.molecule().irrep_labels()[h]
-                vir_irrep = wfn.molecule().irrep_labels()[h_vir]
+                occ_irrep = wfn.molecule().irrep_labels()[h].lower()
+                vir_irrep = wfn.molecule().irrep_labels()[h_vir].lower()
                 for row in range(nocc[h][0]):
                     for col in range(nvir[h_vir][0]):
                         if nirrep == 1:
@@ -559,14 +559,14 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                         if abs(coef) > coeff_cutoff:
                             perc = 100 * coef**2
                             core.print_out(
-                                f"   {row+1: 4}{occ_irrep}(B)->{col+1+nocc[h_vir][0]: 4}{vir_irrep}(B) {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                f"   {row+1: 4}{occ_irrep}(B)->{col+1+nocc[h_vir][0]: 4}{vir_irrep} (b)  {coef: 10.6f} ({perc: >6.3f}%)\n"
                             )
                 # De-excitations if not using TDA (beta orbitals):
             if not tda:
                 for h in range(nirrep):
                     h_vir = x.irrep_trans_index ^ h
-                    occ_irrep = wfn.molecule().irrep_labels()[h]
-                    vir_irrep = wfn.molecule().irrep_labels()[h_vir]
+                    occ_irrep = wfn.molecule().irrep_labels()[h].lower()
+                    vir_irrep = wfn.molecule().irrep_labels()[h_vir].lower()
                     for row in range(nocc[h][0]):
                         for col in range(nvir[h_vir][0]):
                             if nirrep == 1:
@@ -576,7 +576,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                             if abs(coef) > coeff_cutoff:
                                 perc = 100 * coef**2
                                 core.print_out(
-                                    f"   {row+1: 4}{occ_irrep}(B)<-{col+1+nocc[h_vir][0]: 4}{vir_irrep}(B) {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                    f"   {row+1: 4}{occ_irrep}(B)<-{col+1+nocc[h_vir][0]: 4}{vir_irrep} (b)  {coef: 10.6f} ({perc: >6.3f}%)\n"
                                 )
     core.print_out("\n")
 
