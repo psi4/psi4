@@ -248,9 +248,9 @@ class PSI_API JK {
     std::vector<bool> input_symmetry_cast_map_;
     /// Use severe screening techniques? Useful in early SCF iterations (defaults to false)
     bool early_screening_;
-    /// Number of shells computed, i.e., not screened out
+    /// Number of ERI shell quartets computed, i.e., not screened out
     size_t num_computed_shells_;
-    /// Tally of shells computed per SCF iteration 
+    /// Tally of ERI shell quartets computed per SCF iteration 
     std::vector<size_t> computed_shells_per_iter_;
 
     // => Tasks <= //
@@ -350,7 +350,7 @@ class PSI_API JK {
     /// Zero out all J, K, and wK matrices
     void zero();
     /**
-    * Return number of shells computed during the JK build process.
+    * Return number of ERI shell quartets computed during the JK build process.
     */
     virtual size_t num_computed_shells();
 
@@ -581,7 +581,7 @@ class PSI_API JK {
     const std::vector<SharedMatrix>& D() const { return D_; }
 
     /**
-    * Return number of shells computed per SCF iteration during the JK build process.
+    * Return number of ERI shell quartets computed per SCF iteration during the JK build process.
     */
     const std::vector<size_t>& computed_shells_per_iter();
 
@@ -818,7 +818,7 @@ class PSI_API DirectJK : public JK {
     void common_init();
 
     /**
-    * Return number of shells computed during the JK build process.
+    * Return number of ERI shell quartets computed during the JK build process.
     */
     size_t num_computed_shells() override; 
 
