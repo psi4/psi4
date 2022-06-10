@@ -102,9 +102,18 @@ void DirectJK::common_init() {
     
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
+size_t DirectJK::num_computed_shells() { 
+    if (linK_) {
+	//no bench data returned if LinK is enabled - to come in a future update
+	return JK::num_computed_shells(); 
+    } else {
+	return num_computed_shells_; 
+    }
+}
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
 }
+
 void DirectJK::print_header() const {
     std::string screen_type = options_.get_str("SCREENING");
     if (print_) {
@@ -586,11 +595,11 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     
     // => Benchmarks <= //
 
-    size_t computed_shells = 0L;
+    num_computed_shells_ = 0L;
 
 // ==> Master Task Loop <== //
 
-#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
+#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : num_computed_shells_)
     for (size_t task = 0L; task < ntask_pair2; task++) {
         size_t task1 = task / ntask_pair;
         size_t task2 = task % ntask_pair;
@@ -651,7 +660,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         // if (thread == 0) timer_on("JK: Ints");
                         if (ints[thread]->compute_shell(P, Q, R, S) == 0)
                             continue;  // No integrals in this shell quartet
-                        computed_shells++;
+                        num_computed_shells_++;
                         // if (thread == 0) timer_off("JK: Ints");
 
                         const double* buffer = ints[thread]->buffer();
@@ -997,13 +1006,8 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         }
     }
 
-    if (bench_) {
-        auto mode = std::ostream::app;
-        auto printer = PsiOutStream("bench.dat", mode);
-        size_t ntri = nshell * (nshell + 1L) / 2L;
-        size_t possible_shells = ntri * (ntri + 1L) / 2L;
-        printer.Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
-                        possible_shells, computed_shells / (double)possible_shells);
+    if (get_bench()) {
+        computed_shells_per_iter_.push_back(num_computed_shells());
     }
 
     timer_off("build_JK_matrices()");

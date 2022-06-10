@@ -248,6 +248,10 @@ class PSI_API JK {
     std::vector<bool> input_symmetry_cast_map_;
     /// Use severe screening techniques? Useful in early SCF iterations (defaults to false)
     bool early_screening_;
+    /// Number of ERI shell quartets computed, i.e., not screened out
+    size_t num_computed_shells_;
+    /// Tally of ERI shell quartets computed per SCF iteration 
+    std::vector<size_t> computed_shells_per_iter_;
 
     // => Tasks <= //
 
@@ -345,6 +349,10 @@ class PSI_API JK {
     size_t memory_overhead() const;
     /// Zero out all J, K, and wK matrices
     void zero();
+    /**
+    * Return number of ERI shell quartets computed during the JK build process.
+    */
+    virtual size_t num_computed_shells();
 
    public:
     // => Constructors <= //
@@ -427,6 +435,7 @@ class PSI_API JK {
     void set_debug(int debug) { debug_ = debug; }
     /// Bench flag (defaults to 0)
     void set_bench(int bench) { bench_ = bench; }
+    int get_bench() const { return bench_; }
     /**
     * Set to do J tasks
     * @param do_J do J matrices or not,
@@ -570,6 +579,11 @@ class PSI_API JK {
      * @return D vector of D matrices
      */
     const std::vector<SharedMatrix>& D() const { return D_; }
+
+    /**
+    * Return number of ERI shell quartets computed per SCF iteration during the JK build process.
+    */
+    const std::vector<size_t>& computed_shells_per_iter();
 
     /**
     * Print header information regarding JK
@@ -802,6 +816,11 @@ class PSI_API DirectJK : public JK {
 
     /// Common initialization
     void common_init();
+
+    /**
+    * Return number of ERI shell quartets computed during the JK build process.
+    */
+    size_t num_computed_shells() override; 
 
    public:
     // => Constructors < = //

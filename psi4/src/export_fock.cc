@@ -94,6 +94,7 @@ void export_fock(py::module &m) {
         .def("K", &JK::K, py::return_value_policy::reference_internal)
         .def("wK", &JK::wK, py::return_value_policy::reference_internal)
         .def("D", &JK::D, py::return_value_policy::reference_internal)
+        .def("computed_shells_per_iter", &JK::computed_shells_per_iter, "Array containing the number of ERI shell quartets computed (not screened out) during each compute call.")
         .def("print_header", &JK::print_header, "docstring");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")
