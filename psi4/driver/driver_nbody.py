@@ -138,13 +138,15 @@ ManyBodyComputer.get_psi_results()
 """
 
 __all__ = [
+    "BsseEnum",
     "ManyBodyComputer",
+    "nbody",
 ]
 
 import copy
 import itertools
 import math
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union, TYPE_CHECKING
 from ast import literal_eval
 from enum import Enum
 
@@ -160,13 +162,18 @@ from qcelemental.models import DriverEnum, AtomicResult
 from psi4 import core
 from psi4.driver import constants, driver_nbody_multilevel, p4util
 from psi4.driver.p4util.exceptions import *
-from psi4.driver.task_base import BaseComputer, EnergyGradientHessianWfnReturn
+from psi4.driver.task_base import BaseComputer, AtomicComputer, EnergyGradientHessianWfnReturn
+from psi4.driver.driver_cbs import CompositeComputer
+from psi4.driver.driver_findif import FiniteDifferenceComputer
+
+if TYPE_CHECKING:
+    import qcportal
 
 logger = logging.getLogger(__name__)
 
-SubTaskComputers = Union["AtomicComputer", "CompositeComputer", "FiniteDifferenceComputer"]
 FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
+SubTaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
 
 def nbody():
     """
@@ -907,14 +914,19 @@ class ManyBodyComputer(BaseComputer):
 
         return rtd
 
-    def build_tasks(self, mb_computer: SubTaskComputers, mc_level_idx: int, **kwargs: Dict[str, Any]) -> int:
+    def build_tasks(
+        self,
+        mb_computer: SubTaskComputers,
+        mc_level_idx: int,
+        **kwargs: Dict[str, Any],
+    ) -> int:
         """Adds to the task_list as many new unique tasks as necessary to treat a single model chemistry level at one or several n-body levels.
         New tasks are of type *mb_computer* with model chemistry level specified in *kwargs* and n-body levels accessed through *mc_level_idx*.
 
         Parameters
         ----------
         mb_computer
-            Class of TaskComputers to instantiate and add to self.task_list. Usually AtomicComputer but may be other when wrappers are layered.
+            Class of task computers to instantiate and add to self.task_list. Usually :class:`~psi4.driver.AtomicComputer` but may be other when wrappers are layered.
         mc_level_idx
             Position in field self.nbodies_per_mc_level used to obtain ``nbodies``, the list of n-body
             levels (e.g., `[1]` or `[1, 2]` or `["supersystem"]`) to which the modelchem specified in **kwargs** applies.
@@ -927,7 +939,7 @@ class ManyBodyComputer(BaseComputer):
 
         Returns
         -------
-        count
+        count : int
             Number of new tasks planned by this call.
             Formerly, didn't include supersystem in count.
 
@@ -994,7 +1006,7 @@ class ManyBodyComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list.values()]
 
-    def compute(self, client: Optional["FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.FractalClient"] = None):
         """Run quantum chemistry."""
 
         info = "\n" + p4util.banner(f" ManyBody Computations ", strNotOutfile=True) + "\n"
@@ -1008,7 +1020,7 @@ class ManyBodyComputer(BaseComputer):
     def prepare_results(
         self,
         results: Optional[Dict[str, SubTaskComputers]] = None,
-        client: Optional["FractalClient"] = None,
+        client: Optional["qcportal.FractalClient"] = None,
     ) -> Dict[str, Any]:
         """Process the results from all n-body component molecular systems and model chemistry levels into final quantities.
 
@@ -1344,7 +1356,7 @@ class ManyBodyComputer(BaseComputer):
 
         return nbody_results
 
-    def get_results(self, client: Optional["FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
         """Return results as ManyBody-flavored QCSchema."""
 
         info = "\n" + p4util.banner(f" ManyBody Results ", strNotOutfile=True) + "\n"

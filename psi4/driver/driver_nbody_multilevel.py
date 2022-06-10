@@ -26,11 +26,14 @@
 # @END LICENSE
 #
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import numpy as np
 
-def prepare_results(self, client: Optional["FractalClient"] = None) -> Dict[str, Any]:
+if TYPE_CHECKING:
+    import qcportal
+
+def prepare_results(self, client: Optional["qcportal.FractalClient"] = None) -> Dict[str, Any]:
     """Use different levels of theory for different n-body levels.
 
     See ManyBodyComputer.prepare_results() for how this fits in.

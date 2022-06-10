@@ -208,7 +208,8 @@ class DIIS:
     ----------
     max_vec
         The maximum number of error and state vectors to hold. These are pruned based off the removal policy.
-    removal_policy : {"OLDEST", "LARGEST"}
+    removal_policy
+        {"OLDEST", "LARGEST"}
         How the state and error vectors are removed once at the maximum. OLDEST will remove the oldest vector while
         largest will remove the residual with the largest RMS value.
 

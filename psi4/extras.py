@@ -245,7 +245,7 @@ def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, exe
 
     Returns
     -------
-    Path
+    ~pathlib.Path
         ``Path(ofile)``
 
     Notes

@@ -46,7 +46,7 @@ Extrapolatable = Union[float, core.Matrix, core.Vector]
 
 def xtpl_highest_1(functionname: str, zHI: int, valueHI: Extrapolatable, verbose: int = 1, **kwargs) -> Extrapolatable:
     r"""Scheme for total or correlation energies with a single basis or the highest
-    zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
+    zeta-level among an array of bases. Used by :py:func:`~psi4.driver.cbs`.
 
     Parameters
     ----------
@@ -61,7 +61,7 @@ def xtpl_highest_1(functionname: str, zHI: int, valueHI: Extrapolatable, verbose
 
     Returns
     -------
-    float or ndarray
+    float or ~numpy.ndarray
         Returns :math:`E_{total}^{\infty}` which is equal to valueHI.
         Eponymous function applied to input zetas and values; type from `valueHI`.
 
@@ -102,7 +102,7 @@ def xtpl_highest_1(functionname: str, zHI: int, valueHI: Extrapolatable, verbose
 
 def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI: int, valueHI: Extrapolatable, verbose: int = 1, alpha: Optional[float] = None) -> Extrapolatable:
     r"""Extrapolation scheme using exponential form for reference energies with two adjacent
-    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+    zeta-level bases. Used by :py:func:`~psi4.driver.cbs`.
 
     Parameters
     ----------
@@ -126,7 +126,7 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, zH
 
     Returns
     -------
-    float or ndarray
+    float or ~numpy.ndarray
         Eponymous function applied to input zetas and values; type from `valueLO`.
 
     Notes
@@ -210,7 +210,7 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, zH
 
 def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI: int, valueHI: Extrapolatable, verbose: int = 1, alpha: Optional[float] = None) -> Extrapolatable:
     r"""Extrapolation scheme using power form for reference energies with two adjacent
-    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+    zeta-level bases. Used by :py:func:`~psi4.driver.cbs`.
 
     Parameters
     ----------
@@ -234,7 +234,7 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI
 
     Returns
     -------
-    float or ndarray
+    float or ~numpy.ndarray
         Eponymous function applied to input zetas and values; type from `valueLO`.
 
     Notes
@@ -313,7 +313,7 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI
 
 def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI: int, valueHI: Extrapolatable, verbose: int = 1, alpha: Optional[float] = None) -> Extrapolatable:
     r"""Extrapolation scheme using root-power form for reference energies with two adjacent
-    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+    zeta-level bases. Used by :py:func:`~psi4.driver.cbs`.
 
     Parameters
     ----------
@@ -337,7 +337,7 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI:
 
     Returns
     -------
-    float or ndarray
+    float or ~numpy.ndarray
         Eponymous function applied to input zetas and values; type from `valueLO`.
 
     Notes
@@ -418,7 +418,7 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI:
 
 def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Extrapolatable, zMD: int, valueMD: Extrapolatable, zHI: int, valueHI: Extrapolatable, verbose: int = 1, alpha: Optional[float] = None) -> Extrapolatable:
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
+    Used by :py:func:`~psi4.driver.cbs`.
 
     Parameters
     ----------
@@ -448,7 +448,7 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Extrapolatable, zM
 
     Returns
     -------
-    float or ndarray
+    float or ~numpy.ndarray
         Eponymous function applied to input zetas and values; type from `valueLO`.
 
     Notes
@@ -549,7 +549,7 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: Extrapolatable, zM
 
 def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, zHI: int, valueHI: Extrapolatable, verbose: int = 1, alpha: Optional[float] = None) -> Extrapolatable:
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
+    Used by :py:func:`~psi4.driver.cbs`.
 
     Parameters
     ----------
@@ -573,7 +573,7 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: Extrapolatable, z
 
     Returns
     -------
-    float or numpy.ndarray
+    float or ~numpy.ndarray
         Eponymous function applied to input zetas and values; type from `valueLO`.
 
     Notes
@@ -691,7 +691,7 @@ def register_composite_function(func: Callable):
     Parameters
     ----------
     func
-        A Python function that defines a configuration of the :py:func:`psi4.cbs` wrapper.
+        A Python function that defines a configuration of the :py:func:`psi4.driver.cbs` wrapper.
         See :source:`psi4/driver/aliases.py` and :srcsample:`cbs-xtpl-nbody` for examples.
 
     """

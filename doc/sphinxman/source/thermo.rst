@@ -95,5 +95,5 @@ Output
 The full list of keywords for thermo is provided in Appendix :ref:`apdx:thermo`.
 
 Information on the Psithon function that drives frequency analyses is provided
-at :py:func:`~psi4.frequency`.
+at :py:func:`~psi4.driver.frequency`.
 

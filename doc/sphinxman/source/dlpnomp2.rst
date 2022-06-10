@@ -88,7 +88,7 @@ An example input file is::
    energy('dlpno-mp2')
 
 The main difference between this input and a DF-MP2 input is the ``energy('dlpno-mp2')``
-call to :py:func:`~psi4.energy`. The only other addition is the |dlpno__pno_convergence|
+call to :py:func:`~psi4.driver.energy`. The only other addition is the |dlpno__pno_convergence|
 keyword, which determines the accuracy of the local approximations underlying 
 the DLPNO-MP2 method. Note that the water molecule in this example is not large
 enough for DLPNO-MP2 to be of any benefit relative to DF-MP2.

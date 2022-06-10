@@ -79,6 +79,12 @@ The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Vali
     # Returns the nocp energy as its first in the list
     energy('CCSD(T)', bsse_type=['nocp', 'cp', 'vmfc'], max_nbody=3)
 
-.. autoclass:: psi4.driver.driver_nbody.ManyBodyComputer
+API
+---
+
+.. autoclass:: psi4.driver.driver_nbody.BsseEnum
    :members:
+   :undoc-members:
+
+.. autopydantic_model:: psi4.driver.driver_nbody.ManyBodyComputer
 

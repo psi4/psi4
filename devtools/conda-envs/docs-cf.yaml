@@ -24,9 +24,10 @@ dependencies:
   - jupyter_client
   - nbsphinx
   - python-graphviz
-  - sphinx>=3.5
+  - sphinx
   - sphinx-autodoc-typehints
   - sphinx-automodapi
   - psi4/label/dev::sphinx-psi-theme
   - jinja2<3.0
+  - autodoc-pydantic
 

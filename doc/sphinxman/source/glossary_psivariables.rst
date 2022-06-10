@@ -1477,6 +1477,11 @@ PSI Variables by Alpha
 
    A induction-classified SAPT term energy [Eh] implemented for SAPT2+3.
 
+.. psivar:: SAPT EXCH-IND30(S^INF) ENERGY
+   SAPT EXCH-IND30,R(S^INF) ENERGY
+
+   A induction-classified SAPT term energy [Eh] implemented for SAPT2+3. See :ref:`sec:saptinf`.
+
 .. psivar:: SAPT DISP30 ENERGY
    SAPT EXCH-DISP30 ENERGY
    SAPT EXCH-IND-DISP30 ENERGY

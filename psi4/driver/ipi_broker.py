@@ -26,8 +26,14 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "ipi_broker",
+    "IPIBroker",
+]
+
 import sys
 import time
+from typing import Dict, Optional, Union
 
 import numpy as np
 
@@ -44,6 +50,8 @@ except ImportError:
 
 
 class IPIBroker(Client):
+    """Interface implementation between i-PI (https://ipi-code.org/) and |PSIfour|."""
+
     def __init__(self, LOT, options=None, serverdata=False, molecule=None):
         self.serverdata = serverdata
         if not ipi_available:
@@ -126,13 +134,25 @@ class IPIBroker(Client):
         self.timing[LOT] = self.timing.get(LOT, []) + [time_needed]
 
 
-def ipi_broker(LOT, molecule=None, serverdata=False, options=None):
-    """ Run IPIBroker to connect to i-pi
+def ipi_broker(
+    LOT: str,
+    molecule: Optional[psi4.core.Molecule] = None,
+    serverdata: Union[str, bool] = False,
+    options: Optional[Dict] = None
+) -> IPIBroker:
+    """Runs :class:`~psi4.driver.ipi_broker.IPIBroker` to connect to i-PI (https://ipi-code.org/).
 
-    Arguments:
-        molecule: Initial molecule
-        serverdata: Configuration where to connect to ipi
-        options: any additional Psi4 options
+    Parameters
+    ----------
+    LOT
+        level of theory
+    molecule
+        Initial molecule
+    serverdata
+        Configuration where to connect to ipi
+    options
+        any additional Psi4 options
+
     """
     b = IPIBroker(LOT, molecule=molecule, serverdata=serverdata, options=options)
 

@@ -311,7 +311,7 @@ Minimal input for the DCT single-point computation looks like this::
     
     energy('dct')
 
-The ``energy('dct')`` call to :py:func:`~psi4.energy` executes the DCT
+The ``energy('dct')`` call to :py:func:`~psi4.driver.energy` executes the DCT
 module, which will first call the SCF module and perform the SCF computation
 with RHF reference to obtain a guess for the DCT orbitals. After SCF is
 converged, the program will perform the energy computation using the ODC-12

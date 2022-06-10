@@ -109,7 +109,7 @@ color_re = r'@(?:@|\.|([*_])?([a-zA-Z])?(?:{((?:[^}]|}})*)})?)'
 _force_color = False
 
 
-class match_to_ansi(object):
+class match_to_ansi():
     def __init__(self, color=True):
         self.color = color
 

@@ -102,7 +102,8 @@ def create_plugin(name: str, template: str) -> None:
     ----------
     name
         Name of plugin. Should not have any fancy characters or reserved keywords.
-    template : {{{available_plugins}}}
+    template
+        {{{available_plugins}}}
         Which existing template to model off of.
 
     """

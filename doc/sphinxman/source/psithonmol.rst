@@ -559,7 +559,7 @@ complexes, arrays can be used, e.g. ``extract_subsets(2,[1,3])``::
    energy('scf')
 
 If the molecule contains fragments but is not conveniently ordered for the
-``--`` marker, the :py:func:`~psi4.auto_fragments` function can be applied, as shown in
+``--`` marker, the :py:func:`~psi4.driver.wrapper_autofrag.auto_fragments` function can be applied, as shown in
 :srcsample:`pywrap-basis`, to return as active molecule the previous
 active molecule, only fragmented.
 

@@ -51,7 +51,7 @@ for eng, disps in _engine_can_do.items():
         _capable_engines_for_disp[disp].append(eng)
 
 
-class EmpiricalDispersion(object):
+class EmpiricalDispersion():
     """Lightweight unification of empirical dispersion calculation modes.
 
     Attributes

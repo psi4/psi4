@@ -140,7 +140,7 @@ FiniteDifferenceComputer.get_psi_results()
 import copy
 import logging
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union, TYPE_CHECKING
 
 import numpy as np
 from pydantic import Field, validator
@@ -151,6 +151,9 @@ from psi4 import core
 from psi4.driver import p4util, pp, qcdb, nppp10
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
+
+if TYPE_CHECKING:
+    import qcportal
 
 logger = logging.getLogger(__name__)
 
@@ -222,10 +225,12 @@ def _initialize_findif(mol: Union["qcdb.Molecule", core.Molecule],
     freq_irrep_only
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps.
-    mode : {"1_0", "2_0", "2_1"}
+    mode
+        {"1_0", "2_0", "2_1"}
          The first number specifies the derivative level determined from
          displacements, and the second number is the level determined at.
-    stencil_size : {3, 5}
+    stencil_size
+        {3, 5}
         Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
     step_size
         [a0]
@@ -394,11 +399,13 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
     freq_irrep_only
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps. Irrelevant for "1_0".
-    mode : {"1_0", "2_0", "2_1"}
+    mode
+        {"1_0", "2_0", "2_1"}
         The first number specifies the targeted derivative level. The
         second number is the compute derivative level. E.g., "2_0"
         is hessian from energies.
-    stencil_size : {3, 5}
+    stencil_size
+        {3, 5}
         Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
     step_size
         Displacement size [a0].
@@ -493,7 +500,7 @@ def _geom_generator(mol: Union["qcdb.Molecule", core.Molecule], freq_irrep_only:
     Displacement size will be {data["step_size"]:6.2e}.\n"""
 
     # Genuine support for qcdb molecules would be nice. But that requires qcdb CdSalc tech.
-    # Until then, silently swap the qcdb molecule out for a psi4.core.molecule.
+    # Until then, silently swap the qcdb molecule out for a psi4.core.Molecule.
     if isinstance(mol, qcdb.Molecule):
         mol = core.Molecule.from_dict(mol.to_dict())
 
@@ -565,7 +572,8 @@ _der_from_lesser_docstring = """
     freq_irrep_only
         The Cotton ordered irrep to get frequencies for. Choose -1 for all
         irreps. Irrelevant for "1_0".
-    stencil_size : {3, 5}
+    stencil_size
+        {3, 5}
         Number of points to evaluate for each displacement basis vector inclusive of central reference geometry.
     step_size
         Displacement size [a0].
@@ -1287,7 +1295,7 @@ class FiniteDifferenceComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list.values()]
 
-    def compute(self, client: Optional["FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.FractalClient"] = None):
         """Run each job in task list."""
         instructions = "\n" + p4util.banner(f" FiniteDifference Computations", strNotOutfile=True) + "\n"
         logger.debug(instructions)
@@ -1297,7 +1305,7 @@ class FiniteDifferenceComputer(BaseComputer):
             for t in self.task_list.values():
                 t.compute(client=client)
 
-    def _prepare_results(self, client: Optional["FractalClient"] = None):
+    def _prepare_results(self, client: Optional["qcportal.FractalClient"] = None):
         results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
 
         # load AtomicComputer results into findifrec[reference]
@@ -1383,7 +1391,7 @@ class FiniteDifferenceComputer(BaseComputer):
             H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0
 
-    def get_results(self, client: Optional["FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
         """Return results as FiniteDifference-flavored QCSchema."""
 
         instructions = "\n" + p4util.banner(f" FiniteDifference Results", strNotOutfile=True) + "\n"

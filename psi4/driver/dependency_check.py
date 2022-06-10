@@ -28,6 +28,8 @@
 
 """Attempts to catch Python based import errors and provides possible solutions."""
 
+__all__ = []
+
 # NumPy import
 try:
     import numpy as np

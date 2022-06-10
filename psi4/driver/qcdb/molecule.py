@@ -29,7 +29,7 @@
 import os
 import hashlib
 import collections
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -1253,7 +1253,7 @@ class Molecule(LibmintsMolecule):
             prec=prec)
         return smol
 
-    def run_dftd3(self, func: str = None, dashlvl: str = None, dashparam: Dict = None, dertype: Union[int, str] = None, verbose: int = 1):
+    def run_dftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
         """Compute dispersion correction via Grimme's DFTD3 program.
 
         Parameters
@@ -1283,9 +1283,9 @@ class Molecule(LibmintsMolecule):
         -------
         energy : float
             When `dertype=0`, energy [Eh].
-        gradient : ndarray
+        gradient : ~numpy.ndarray
             When `dertype=1`, (nat, 3) gradient [Eh/a0].
-        (energy, gradient) : tuple of float and ndarray
+        (energy, gradient) : tuple of float and ~numpy.ndarray
             When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
 
         """
@@ -1336,30 +1336,30 @@ class Molecule(LibmintsMolecule):
         elif derint == 1:
             return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
 
-    def run_dftd4(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbose=1):
+    def run_dftd4(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
         """Compute dispersion correction via Grimme's DFTD4 program.
 
         Parameters
         ----------
-        func : str, optional
+        func
             Name of functional (func only, func & disp, or disp only) for
             which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
             blyp-d3(bj), hf+d). Unlike run_dftd3, ``func`` overwrites any
             parameter initialized via `dashparam`.
-        dashlvl : str, optional
+        dashlvl
             Name of dispersion correction to be applied (e.g., d, D2,
             d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
             "formal" to run.
-        dashparam : dict, optional
+        dashparam
             Values for the same keys as `dashcoeff[dashlvl]['default']`
             used to provide custom values. Unlike run_dftd3, will not have
             effect if `func` given. Must provide all parameters.
             Extra parameters will error.
-        dertype : int or str, optional
+        dertype
             Maximum derivative level at which to run DFTD3. For large
             molecules, energy-only calculations can be significantly more
             efficient. Influences return values, see below.
-        verbose : int, optional
+        verbose
             Amount of printing.
 
         Returns
@@ -1426,7 +1426,7 @@ class Molecule(LibmintsMolecule):
         elif derint == 1:
             return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
 
-    def run_gcp(self, func: str = None, dertype: Union[int, str] = None, verbose: int = 1):
+    def run_gcp(self, func: Optional[str] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
         """Compute geometrical BSSE correction via Grimme's GCP program.
 
         Function to call Grimme's GCP program
@@ -1443,14 +1443,14 @@ class Molecule(LibmintsMolecule):
 
         Parameters
         ----------
-        func : str, optional
+        func
             Name of method/basis combination or composite method for which to compute the correction
            (e.g., HF/cc-pVDZ, DFT/def2-SVP, HF3c, PBEh3c).
-        dertype : int or str, optional
+        dertype
             Maximum derivative level at which to run GCP. For large
             molecules, energy-only calculations can be significantly more
             efficient. Influences return values, see below.
-        verbose : int, optional
+        verbose
             Amount of printing. Unused at present.
 
         Returns

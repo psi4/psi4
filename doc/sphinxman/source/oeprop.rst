@@ -35,8 +35,8 @@
 
 .. _`sec:oeprop`:
 
-Evaluation of One-Electron Properties |w---w| :py:func:`~psi4.oeprop`
-=====================================================================
+Evaluation of One-Electron Properties |w---w| :py:func:`~psi4.driver.oeprop`
+============================================================================
 
 .. codeauthor:: Robert M. Parrish and Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
@@ -106,8 +106,8 @@ computed using the built-in properties() function, e.g.::
 
   properties('ccsd', properties=['dipole'])
 
-The :py:func:`~psi4.properties` function provides limited functionality, but is a lot easier to
-use for correlated methods. For capabilities of :py:func:`~psi4.properties` see the
+The :py:func:`~psi4.driver.properties` function provides limited functionality, but is a lot easier to
+use for correlated methods. For capabilities of :py:func:`~psi4.driver.properties` see the
 corresponding section of the manual.
 
 

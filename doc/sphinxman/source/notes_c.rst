@@ -38,7 +38,7 @@ Notes on Options
 
 .. note:: All |PSIfour| keyword names and values are insensitive to case, both
    those that are placed in ``set`` blocks and as Python function arguments.
-   The few exceptions are documented for the :py:func:`~psi4.database` function,
+   The few exceptions are documented for the :py:func:`~psi4.driver.wrapper_database.database` function,
    where case structure must match the database file.
 
 .. _`op_c_bool`:
@@ -114,7 +114,7 @@ conventional integrals. Therefore, for a closed-shell molecule:
 .. table:: Overlapping capabilities of |PSIfour|. "Y" is available; "D" is default.
 
     +----------------------+----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
-    | name                 | |globals__qc_module| | :py:func:`~psi4.energy()`                                                | :py:func:`~psi4.gradient()`                                  |
+    | name                 | |globals__qc_module| | :py:func:`~psi4.driver.energy()`                                         | :py:func:`~psi4.driver.gradient()`                           |
     +                      +                      +------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
     | _                    | |scf__reference|     | RHF                    | UHF                    | ROHF                   | RHF                | UHF                | ROHF               |
     +                      +                      +------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+

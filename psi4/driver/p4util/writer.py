@@ -266,7 +266,7 @@ def _write_molden(
     3. To supply a custom density matrix, manually set the Da and Db of the wavefunction.
        This is used, for example, to write natural orbitals coming from a root computed
        by a ``CIWavefunction`` computation, e.g., ``detci``, ``fci``, ``casscf``.
-       The first two arguments of :py:meth:`~psi4.core.Wavefunction.get_opdm`
+       The first two arguments of :py:meth:`~psi4.core.CIWavefunction.get_opdm`
        can be set to ``n, n`` where n => 0 selects the root to
        write out, provided these roots were computed, see :term:`NUM_ROOTS <NUM_ROOTS (DETCI)>`. The
        third argument controls the spin (``"A"``, ``"B"`` or ``"SUM"``) and the final

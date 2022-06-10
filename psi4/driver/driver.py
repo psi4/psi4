@@ -524,7 +524,7 @@ def energy(name, **kwargs):
 
 
 def gradient(name, **kwargs):
-    r"""Function complementary to :py:func:`~psi4.optimize()`. Carries out one gradient pass,
+    r"""Function complementary to :py:func:`~psi4.driver.optimize()`. Carries out one gradient pass,
     deciding analytic or finite difference.
 
     :returns: :py:class:`~psi4.core.Matrix` |w--w| Total electronic gradient in Hartrees/Bohr.
@@ -979,7 +979,7 @@ def optimize(name, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    :raises: :py:class:`psi4.OptimizationConvergenceError` if :term:`GEOM_MAXITER <GEOM_MAXITER (OPTKING)>` exceeded without reaching geometry convergence.
+    :raises: :py:class:`psi4.driver.OptimizationConvergenceError` if :term:`GEOM_MAXITER <GEOM_MAXITER (OPTKING)>` exceeded without reaching geometry convergence.
 
     :PSI variables:
 
@@ -993,7 +993,7 @@ def optimize(name, **kwargs):
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
-        :py:func:`psi4.energy`.
+        :py:func:`psi4.driver.energy`.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -1319,7 +1319,7 @@ def optimize(name, **kwargs):
 
 
 def hessian(name, **kwargs):
-    r"""Function complementary to :py:func:`~frequency`. Computes force
+    r"""Function complementary to :py:func:`~psi4.driver.frequency`. Computes force
     constants, deciding analytic, finite difference of gradients, or
     finite difference of energies.
 

@@ -30,6 +30,14 @@
 Module with database functionality.
 
 """
+
+__all__ = [
+    "database",
+    "db",
+    "DB_RGT",
+    "DB_RXN",
+]
+
 import collections
 import math
 import os
@@ -86,7 +94,7 @@ def database(name, db_name, **kwargs):
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
-        :py:func:`psi4.energy`.
+        :py:func:`psi4.driver.energy`.
 
     :type db_name: str
     :param db_name: ``'BASIC'`` || ``'S22'`` || ``'HTBH'`` || etc.

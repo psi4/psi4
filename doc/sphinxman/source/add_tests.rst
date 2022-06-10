@@ -289,10 +289,12 @@ Plain Old Data
 .. comment compare_arrays covered by compare_values
 
 .. autofunction:: qcelemental.testing.compare_values
+   :noindex:
 
 .. autofunction:: psi4.compare_integers(expected, computed [, label, *, **kwargs])
 
 .. autofunction:: qcelemental.testing.compare
+   :noindex:
 
 
 Objects
@@ -304,6 +306,7 @@ Objects
 .. autofunction:: psi4.compare_matrices(expected, computed [, label, *, check_name=False, **kwargs])
 
 .. autofunction:: qcelemental.testing.compare_recursive
+   :noindex:
 
 .. function:: psi4.compare_vectors(expected, computed, atol_exponent, label [, *, check_name=False, **kwargs])
    :noindex:
@@ -318,6 +321,7 @@ Objects
 .. autofunction:: psi4.compare_molrecs(expected, computed [, label, *, check_name=False, **kwargs])
 
 .. autofunction:: qcelemental.testing.compare_molrecs
+   :noindex:
 
 
 File Formats

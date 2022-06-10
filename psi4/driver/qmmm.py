@@ -34,7 +34,7 @@ a QM calculation.
 from psi4.driver import *
 
 
-class Diffuse(object):
+class Diffuse():
 
     def __init__(self, molecule, basisname, ribasisname):
 

@@ -29,6 +29,11 @@
 Runs a JSON input psi file.
 """
 
+__all__ = [
+    "run_json",
+    "run_qcschema",
+]
+
 import atexit
 import copy
 import datetime
@@ -57,7 +62,6 @@ pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 
 
-__all__ = ["run_qcschema", "run_json"]
 
 ## Methods and properties blocks
 
@@ -408,7 +412,11 @@ def _quiet_remove(filename):
         pass
 
 
-def run_qcschema(input_data: Union[Dict[str, Any], qcel.models.AtomicInput], clean: bool = True, postclean: bool = True) -> Union[qcel.models.AtomicResult, qcel.models.FailedOperation]:
+def run_qcschema(
+    input_data: Union[Dict[str, Any], qcel.models.AtomicInput],
+    clean: bool = True,
+    postclean: bool = True,
+) -> Union[qcel.models.AtomicResult, qcel.models.FailedOperation]:
     """Run a quantum chemistry job specified by :py:class:`qcelemental.models.AtomicInput` **input_data** in |PSIfour|.
 
     Parameters
@@ -479,7 +487,7 @@ def run_qcschema(input_data: Union[Dict[str, Any], qcel.models.AtomicInput], cle
     return ret
 
 
-def run_json(json_data, clean=True):
+def run_json(json_data: Dict[str, Any], clean: bool = True) -> Dict[str, Any]:
 
     warnings.warn(
         "Using `psi4.schema_wrapper.run_json` or `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and as soon as 1.5 it will stop working\n",

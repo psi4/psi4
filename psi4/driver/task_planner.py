@@ -26,7 +26,11 @@
 # @END LICENSE
 #
 
-__all__ = ["task_planner"]
+__all__ = [
+    "expand_cbs_methods",
+    "task_planner",
+    "TaskComputers",
+]
 
 import os
 import copy
@@ -40,19 +44,32 @@ from psi4.driver.driver_findif import FiniteDifferenceComputer
 from psi4.driver.driver_nbody import ManyBodyComputer
 from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
 from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
+from psi4 import core
 
 logger = logging.getLogger(__name__)
 
 TaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer, ManyBodyComputer]
 
 
-def _expand_cbs_methods(method: str, basis: str, driver: DriverEnum, **kwargs) -> Tuple[str, str, Dict]:
-    """Sort out the user input method string into recognized fields. Handles cases like:
+def expand_cbs_methods(method: str, basis: str, driver: DriverEnum, **kwargs) -> Tuple[str, str, Dict]:
+    """Sort out the user input method string into recognized fields.
+    Handles cases like:
 
-    * (i) `"mp2"` --> passes through;
-    * (ii) `"mp2/cc-pvdz"` --> broken into method and basis fields;
-    * (iii) `"mp2/cc-pv[d,t]z"` --> processed into method="cbs" and CBSMetadata spec;
-    * (iv) `method="cbs", cbsmeta=CBSMetadata` --> passes through.
+    (i) ``"mp2"`` -- passes through;
+    (ii) ``"mp2/cc-pvdz"`` -- broken into method and basis fields;
+    (iii) ``"mp2/cc-pv[d,t]z"`` -- processed into method="cbs" & CBSMetadata spec;
+    (iv) ``method="cbs", cbsmeta=CBSMetadata`` -- passes through.
+
+    Parameters
+    ----------
+    method
+        User first argument to driver function. A string hint of the method --
+        see cases above.
+    basis
+        User basis hint.
+    driver
+        The calling driver function. Note for finite difference that this is
+        the target driver, not the means driver.
 
     """
     if method == 'cbs' and kwargs.get('cbsmeta', False):
@@ -75,32 +92,32 @@ def _expand_cbs_methods(method: str, basis: str, driver: DriverEnum, **kwargs) -
     return method, basis, cbsmeta
 
 
-def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule", **kwargs) -> TaskComputers:
+def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwargs) -> TaskComputers:
     """Plans a task graph of a complex computation.
 
     Canonical Task layering:
-     - ManyBody
-     - FiniteDifference
-     - Composite
-     - Atomic
+     - ManyBody - BSSE treatment, many-body expansion
+     - FiniteDifference - derivatives through stencils
+     - Composite - basis set extrapolation, focal-point methods
+     - Atomic - analytic single-points
 
     Parameters
     ----------
     driver
-        The resulting type of computation: e/g/h. Note for finite difference that this should be the target driver, not the means driver.
+        The resulting type of computation: e/g/h. Note for finite difference
+        that this should be the target driver, not the means driver.
     method
-        A string representation of the method such as "HF" or "B3LYP". Special cases are:
-        "cbs"
+        A string representation of the method such as "HF" or "B3LYP". Special
+        cases are: "cbs".
     molecule
-        A Psi4 base molecule to use
+        A Psi4 base molecule to use.
     kwargs
         User keyword arguments, often used to configure task computers.
 
     Returns
     -------
-    computer
-        A simple (AtomicComputer) or layered (CompositeComputer, FiniteDifferenceComputer, ManyBodyComputer) task object.
-        Layered objects contain many and multiple types of computers in a graph.
+    Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer, ManyBodyComputer]
+        A simple (:class:`~psi4.driver.AtomicComputer`) or layered (:class:`~psi4.driver.driver_cbs.CompositeComputer`, :class:`~psi4.driver.driver_findif.FiniteDifferenceComputer`, :class:`~psi4.driver.driver_nbody.ManyBodyComputer`) task object. Layered objects contain many and multiple types of computers in a graph.
 
     """
 
@@ -121,7 +138,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule"
     method = method.lower()
 
     # Expand CBS methods
-    method, basis, cbsmeta = _expand_cbs_methods(method, basis, driver, **kwargs)
+    method, basis, cbsmeta = expand_cbs_methods(method, basis, driver, **kwargs)
     if method in composite_procedures:
         kwargs.update({'cbs_metadata': composite_procedures[method](**kwargs)})
         method = 'cbs'
@@ -178,7 +195,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: "psi4.core.Molecule"
         plan.nbodies_per_mc_level = nbodies_per_mc_level
 
         for mc_level_idx, mtd in enumerate(levels.values()):
-            method, basis, cbsmeta = _expand_cbs_methods(mtd, basis, driver, cbsmeta=cbsmeta, **kwargs)
+            method, basis, cbsmeta = expand_cbs_methods(mtd, basis, driver, cbsmeta=cbsmeta, **kwargs)
             packet.update({'method': method, 'basis': basis})
 
             # Tell the task builder which level to add a task list for

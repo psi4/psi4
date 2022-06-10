@@ -1210,7 +1210,7 @@ PYBIND11_MODULE(core, core) {
         "Assigns the global gradient to the values in the (nat, 3) Matrix argument. FOR INTERNAL OPTKING USE ONLY.");
     core.def("get_atomic_point_charges", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.get_atomic_point_charges removed since hasn't been working as intended. Use Wavefunction.get_atomic_point_charges() instead."); }, ".. deprecated:: 1.4");
     core.def("set_memory_bytes", py_psi_set_memory, "memory"_a, "quiet"_a = false,
-             "Sets the memory available to Psi (in bytes); prefer :func:`psi4.set_memory`.");
+             "Sets the memory available to Psi (in bytes); prefer :func:`psi4.driver.set_memory`.");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
 
     core.def("set_datadir", [](const std::string& pdd) { Process::environment.set_datadir(pdd); }, "psidatadir"_a,
@@ -1308,17 +1308,17 @@ PYBIND11_MODULE(core, core) {
              [](const std::string& key) { return bool(Process::environment.arrays.count(to_upper(key))); },
              "key"_a, "Is the Matrix QCVariable *key* (case-insensitive) set? Prefer :func:`~psi4.core.has_variable`");
     core.def("scalar_variable", [](const std::string& key) { return Process::environment.globals[to_upper(key)]; },
-             "key"_a, "Returns the double QCVariable *key* (case-insensitive); prefer :func:`~psi4.variable`");
+             "key"_a, "Returns the double QCVariable *key* (case-insensitive); prefer :func:`~psi4.core.variable`");
     core.def("array_variable",
              [](const std::string& key) { return Process::environment.arrays[to_upper(key)]->clone(); },
-             "key"_a, "Returns copy of the Matrix QCVariable *key* (case-insensitive); prefer :func:`~psi4.variable`");
+             "key"_a, "Returns copy of the Matrix QCVariable *key* (case-insensitive); prefer :func:`~psi4.core.variable`");
     core.def("set_scalar_variable",
              [](const std::string& key, double value) { Process::environment.globals[to_upper(key)] = value; },
-             "key"_a, "value"_a, "Sets the double QCVariable *key* (case-insensitive); prefer :func:`~psi4.set_variable`");
+             "key"_a, "value"_a, "Sets the double QCVariable *key* (case-insensitive); prefer :func:`~psi4.core.set_variable`");
     core.def(
         "set_array_variable",
         [](const std::string& key, SharedMatrix value) { Process::environment.arrays[to_upper(key)] = value->clone(); },
-        "key"_a, "value"_a, "Sets the requested (case-insensitive) Matrix QCVariable; prefer :func:`~psi4.set_variable`");
+        "key"_a, "value"_a, "Sets the requested (case-insensitive) Matrix QCVariable; prefer :func:`~psi4.core.set_variable`");
     core.def("del_scalar_variable", [](const std::string key) { Process::environment.globals.erase(to_upper(key)); },
              "key"_a, "Removes the double QCVariable *key* (case-insensitive); prefer :func:`~psi4.core.del_variable`");
     core.def("del_array_variable", [](const std::string key) { Process::environment.arrays.erase(to_upper(key)); },

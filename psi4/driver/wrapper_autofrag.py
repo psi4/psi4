@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+__all__ = ["auto_fragments"]
+
 from typing import List, Optional
 
 from psi4 import core
