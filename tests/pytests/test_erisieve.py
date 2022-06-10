@@ -199,16 +199,24 @@ def test_schwarz_vs_density_quartets():
     })
     density_energy, density_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
-    # compare results to expected values
+    # prep for comparing results to expected values
     schwarz_computed_shells = schwarz_wfn.jk().computed_shells_per_iter()
     density_computed_shells = density_wfn.jk().computed_shells_per_iter()
 
     schwarz_computed_shells_expected = [20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290]
     density_computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
 
-    for iter_ in range(0,9):
-        assert compare_integers(schwarz_computed_shells_expected[iter_], schwarz_computed_shells[iter_], 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
-        assert compare_integers(density_computed_shells_expected[iter_], density_computed_shells[iter_], 'Density Computed Shells Count, Cutoff 1.0e-12')
+    # compare iteration counts of runs with computed shell quartet array lengths
+    # iteration_+1 is used to account for computed_shells arrays including SAD guess results
+    assert(len(schwarz_computed_shells) == len(schwarz_computed_shells_expected))
+    assert(len(schwarz_computed_shells_expected) == schwarz_wfn.iteration_+1)
+
+    assert(len(density_computed_shells) == len(density_computed_shells_expected))
+    assert(len(density_computed_shells_expected) == density_wfn.iteration_+1)
+
+    # actually compare results with expected values
+    assert compare_values(schwarz_computed_shells_expected, schwarz_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
+    assert compare_values(density_computed_shells_expected, density_computed_shells, 'Density Computed Shells Count, Cutoff 1.0e-12')
 
 def test_rhf_vs_uhf_screening():
     """Checks difference between the number of shell quartets screened with Density screening in RHF vs UHF. 
@@ -255,15 +263,23 @@ def test_rhf_vs_uhf_screening():
     })
     uhf_energy, uhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
-    # compare results to expected values
+    # prep for comparing results to expected values
     rhf_computed_shells = rhf_wfn.jk().computed_shells_per_iter()
     uhf_computed_shells = uhf_wfn.jk().computed_shells_per_iter()
     
     computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
 
-    for iter_ in range(0,9):
-        assert compare_integers(computed_shells_expected[iter_], rhf_computed_shells[iter_], 'RHF Density Computed Shells Count, Cutoff 1.0e-12')
-        assert compare_integers(computed_shells_expected[iter_], uhf_computed_shells[iter_], 'UHF Density Computed Shells Count, Cutoff 1.0e-12')
+    # compare iteration counts of runs with computed shell quartet array lengths
+    # iteration_+1 is used to account for computed_shells arrays including SAD guess results
+    assert(len(rhf_computed_shells) == len(computed_shells_expected))
+    assert(len(computed_shells_expected) == rhf_wfn.iteration_+1)
+
+    assert(len(uhf_computed_shells) == len(computed_shells_expected))
+    assert(len(computed_shells_expected) == uhf_wfn.iteration_+1)
+
+    # actually compare results with expected values
+    assert compare_values(computed_shells_expected, rhf_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
+    assert compare_values(computed_shells_expected, uhf_computed_shells, 'Density Computed Shells Count, Cutoff 1.0e-12')
 
 def test_schwarz_vs_density_energy():
     """Checks difference in Hartree-Fock energy between Schwarz and Density screening (with and without IFB), 
