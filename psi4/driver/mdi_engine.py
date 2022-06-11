@@ -29,6 +29,13 @@
 For details regarding MDI, see https://molssi.github.io/MDI_Library/html/index.html.
 
 """
+
+__all__ = [
+    "mdi_init",
+    "mdi_run",
+    "MDIEngine",
+]
+
 import numpy as np
 import qcelemental as qcel
 
@@ -51,11 +58,19 @@ except ImportError:
 
 
 class MDIEngine():
-    def __init__(self, scf_method, **kwargs):
+    def __init__(self, scf_method: str, **kwargs):
         """ Initialize an MDIEngine object for communication with MDI
 
-        Arguments:
-           scf_method: Method used when calculating energies or gradients
+        Parameters
+        ----------
+        scf_method
+            Method (SCF or post-SCF) used when calculating energies or gradients.
+        molecule
+            The target molecule, if not the last molecule defined.
+        kwargs
+            Any additional arguments to pass to :func:`psi4.driver.energy` or
+            :func:`psi4.driver.gradient` computation.
+
         """
 
         # Method used when the SCF command is received
@@ -429,17 +444,28 @@ class MDIEngine():
 def mdi_init(mdi_arguments):
     """ Initialize the MDI Library
 
-    Arguments:
-        mdi_arguments: MDI configuration options
+    Parameters
+    ----------
+    mdi_arguments
+        MDI configuration options
+
     """
     MDI_Init(mdi_arguments)
 
 
-def mdi_run(scf_method, **kwargs):
+def mdi_run(scf_method: str, **kwargs):
     """ Begin functioning as an MDI engine
 
-    Arguments:
-        scf_method: Method used when calculating energies or gradients
+    Parameters
+    ----------
+    scf_method
+        Method (SCF or post-SCF) used when calculating energies or gradients.
+    molecule
+        The target molecule, if not the last molecule defined.
+    kwargs
+        Any additional arguments to pass to :func:`psi4.driver.energy` or
+        :func:`psi4.driver.gradient` computation.
+
     """
     engine = MDIEngine(scf_method, **kwargs)
     engine.listen_for_commands()

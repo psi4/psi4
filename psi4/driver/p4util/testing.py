@@ -241,14 +241,14 @@ _psi4_style_doc = """
 compare_values.__doc__ = """Comparison function for float or float array-like data structures.
     See :py:func:`qcelemental.testing.compare_values` for details.
 
-    :py:func:`psi4.compare_arrays` is an old comparison function for float NumPy arrays that is now an alias to this.
+    ``psi4.compare_arrays`` is an old comparison function for float NumPy arrays that is now an alias to this.
 
 """ + _psi4_style_doc
 
 compare_strings.__doc__ = """Comparison function for integers, strings, booleans, or integer array-like data structures.
     See :py:func:`qcelemental.testing.compare` for details.
 
-    :py:func:`psi4.compare_strings` is an alias to this.
+    ``psi4.compare_strings`` is an alias to this.
 
 """
 compare_integers.__doc__ = compare_strings.__doc__
@@ -261,10 +261,14 @@ compare_cubes.__doc__ = """Comparison function for volumetric data in cube file 
 
     Parameters
     ----------
-    expected : file
+    expected
         Reference cube file against which `computed` is compared.
-    computed : file
+        Read by :func:`numpy.genfromtxt` so `expected` can be any of file, str,
+        pathlib.Path, list of str, generator.
+    computed
         Input cube file to compare against `expected`.
+        Read by :func:`numpy.genfromtxt` so `computed` can be any of file, str,
+        pathlib.Path, list of str, generator.
 
 """
 

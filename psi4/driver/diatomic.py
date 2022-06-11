@@ -26,6 +26,11 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "anharmonicity",
+    "least_squares_fit_polynomial",
+]
+
 from typing import Any, Dict, List
 
 import numpy as np
@@ -35,7 +40,14 @@ from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 
 
-def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials=True, weighted=True, polynomial_order=4):
+def least_squares_fit_polynomial(
+    xvals: List[float],
+    fvals: List[float],
+    localization_point: float,
+    no_factorials: bool = True,
+    weighted: bool = True,
+    polynomial_order: int = 4,
+):
     """Performs an unweighted least squares fit of a polynomial, with specified order
        to an array of input function values (fvals) evaluated at given locations (xvals).
        See https://doi.org/10.1063/1.4862157, particularly eqn (7) for details. """

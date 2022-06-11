@@ -147,7 +147,7 @@ import re
 import sys
 import copy
 import pprint
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 import logging
 
@@ -163,6 +163,9 @@ from psi4.driver.driver_util import UpgradeHelper
 from psi4.driver.p4util.exceptions import ValidationError
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
 from psi4.driver.task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
+
+if TYPE_CHECKING:
+    import qcportal
 
 logger = logging.getLogger(__name__)
 
@@ -857,100 +860,100 @@ def cbs(func, label, **kwargs):
         An exception is the default, ``'xtpl_highest_1'``, which uses the best basis
         set available. See :ref:`sec:cbs_xtpl` for all available schemes.
 
-    :type scf_scheme: string
+    :type scf_scheme: str
     :param scf_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'scf_xtpl_helgaker_3'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the reference energy.
-        Defaults to :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3` if three valid basis sets
-        present in ``psi4.driver.driver_cbs.scf_basis``, :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2` if two valid basis
-        sets present in ``scf_basis``, and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_3` if three valid basis sets
+        present in ``psi4.driver.driver_cbs.scf_basis``, :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2` if two valid basis
+        sets present in ``scf_basis``, and :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
-           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`
-           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2`
-           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_truhlar_2`
-           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_karton_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_3`
+           * :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_truhlar_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_karton_2`
 
-    :type corl_scheme: string
+    :type corl_scheme: str
     :param corl_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
-        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``corl_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``corl_basis`` and :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
-           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2`
 
-    :type delta_scheme: string
+    :type delta_scheme: str
     :param delta_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the delta correction
         to the correlation energy.
-        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta_basis`` and :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
-           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2`
 
-    :type delta2_scheme: string
+    :type delta2_scheme: str
     :param delta2_scheme: |dl| ``'xtpl_highest_1'`` |dr| || ``'corl_xtpl_helgaker_2'`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
-        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta2_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta2_basis`` and :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
-           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2`
 
     :type scf_alpha: float
     :param scf_alpha: |dl| ``1.63`` |dr|
 
         Overrides the default \alpha parameter used in the listed SCF extrapolation procedures.
-        Has no effect on others, including :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` and :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`.
+        Has no effect on others, including :py:func:`~psi4.driver.driver_cbs_helper.xtpl_highest_1` and :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_3`.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2`
-           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_truhlar_2`
-           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_karton_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_truhlar_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_karton_2`
 
     :type corl_alpha: float
     :param corl_alpha: |dl| ``3.00`` |dr| 
 
-        Overrides the default \alpha parameter used in the listed :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation
+        Overrides the default \alpha parameter used in the listed :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2` correlation
         extrapolation to the corl stage. The supplied \alpha does not impact delta or any further stages.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2`
 
     :type delta_alpha: float
     :param delta_alpha: |dl| ``3.00`` |dr| 
 
         Overrides the default \alpha parameter used in the listed
-        :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
+        :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
         delta correction is performed using smaller basis sets for which a different \alpha might
         be more appropriate.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2`
 
     * Combined interface
     
@@ -1149,7 +1152,7 @@ def cbs_text_parser(total_method_name: str, **kwargs) -> Dict:
         String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
         bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
         ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
-        and pushed through :py:func:`~psi4.cbs`.
+        and pushed through :py:func:`~psi4.driver.cbs`.
 
     Returns
     -------
@@ -1592,7 +1595,7 @@ class CompositeComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list]
 
-    def compute(self, client: Optional["FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.FractalClient"] = None):
         label = self.metameta['label']
         instructions = "\n" + p4util.banner(f" CBS Computations{':' + label if label else ''} ",
                                             strNotOutfile=True) + "\n"
@@ -1603,7 +1606,7 @@ class CompositeComputer(BaseComputer):
             for t in reversed(self.task_list):
                 t.compute(client=client)
 
-    def _prepare_results(self, client: Optional["FractalClient"] = None):
+    def _prepare_results(self, client: Optional["qcportal.FractalClient"] = None):
         results_list = [x.get_results(client=client) for x in self.task_list]
 
         modules = [getattr(v.provenance, "module", None) for v in results_list]
@@ -1670,7 +1673,7 @@ class CompositeComputer(BaseComputer):
         cbs_results["module"] = modules
         return cbs_results
 
-    def get_results(self, client: Optional["FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
         """Return results as Composite-flavored QCSchema."""
 
         assembled_results = self._prepare_results(client=client)

@@ -145,11 +145,11 @@ in section :ref:`sec:interfaceadcc` and :ref:`sec:adcbuiltin`.
 
 The leftmost column of table :ref:`table:adcsummary` provides the supported ADC methods.
 If only excitation energies are desired, one can simply pass one
-of the listed method strings to the function :py:func:`~psi4.energy`.
+of the listed method strings to the function :py:func:`~psi4.driver.energy`.
 For example, ``energy('adc(2)-x')`` will compute
 excitation energies at ADC(2)-x level.
 Properties such as oscillator strengths, transition or state dipole moments
-are available by calling the function :py:func:`~psi4.properties`
+are available by calling the function :py:func:`~psi4.driver.properties`
 with appropriate arguments.
 Most commonly users will want to compute at least oscillator strengths
 along with the excitation energies,
@@ -160,7 +160,7 @@ Running ADC calculations
 .. sectionauthor:: Michael F. Herbst
 
 Running an ADC calculation with |PSIfour| requires
-the call to :py:func:`~psi4.properties` as discussed above
+the call to :py:func:`~psi4.driver.properties` as discussed above
 as well as one or more mandatory keyword arguments.
 
 The most important keyword argument is |adc__roots_per_irrep|,

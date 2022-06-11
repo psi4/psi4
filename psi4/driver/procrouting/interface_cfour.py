@@ -55,7 +55,7 @@ def run_cfour(name, **kwargs):
     Also processes results back into Psi4 format.
 
     This function is not called directly but is instead called by
-    :py:func:`~psi4.energy` or :py:func:`~psi4.optimize` when a Cfour
+    :py:func:`~psi4.driver.energy` or :py:func:`~psi4.driver.optimize` when a Cfour
     method is requested (through *name* argument). In order to function
     correctly, the Cfour executable ``xcfour`` must be present in
     :envvar:`PATH` or :envvar:`PSIPATH`.

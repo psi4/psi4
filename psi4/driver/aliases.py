@@ -26,14 +26,20 @@
 # @END LICENSE
 #
 
-"""Module with functions that call upon those in modules
-:py:mod:`proc`, :py:mod:`driver`, and :py:mod:`wrappers`.
+"""Module with high-level functions calling wrappers and driver.
 
 Place in this file quickly defined procedures such as
    - aliases for complex methods
    - simple modifications to existing methods
 
 """
+
+__all__ = [
+    "allen_focal_point",
+    "fake_file11",
+    "sherrill_gold_standard",
+]
+
 import os
 import re
 import warnings
@@ -46,7 +52,7 @@ CBSMetadata = List[Dict[str, Any]]
 # of this file.
 
 
-def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
+def fake_file11(wfn: "psi4.core.Wavefunction", filename: str = 'fake_file11.dat', **kwargs):
     r"""Function to print a file *filename* of the old file11 format
     from molecule and gradient information in *wfn*.
 
@@ -55,10 +61,8 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
 
     :returns: None
 
-    :type filename: str
     :param filename: destination file name for file11 file
 
-    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, gradient from which to generate file11
 
     :examples:
@@ -124,8 +128,8 @@ def sherrill_gold_standard(**kwargs) -> CBSMetadata:
 
 def allen_focal_point(**kwargs) -> CBSMetadata:
     r"""Function to call Wes Allen-style Focal
-    Point Analysis. JCP 127 014306.  Uses
-    the composite wrapper to evaluate the following
+    Point Analysis. JCP 127 014306, https://doi.org/10.1063/1.2747241 .
+    Uses the composite wrapper to evaluate the following
     expression. SCF employs a three-point extrapolation according
     to :py:func:`~psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_3`. MP2, CCSD, and
     CCSD(T) employ two-point extrapolation performed according to

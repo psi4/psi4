@@ -46,10 +46,10 @@ Complete Basis Set
 .. codeauthor:: Lori A. Burns, Daniel G. A. Smith and Peter Kraus
 .. sectionauthor:: Lori A. Burns and Peter Kraus
 
-The :py:func:`psi4.cbs` function described below is
+The :py:func:`psi4.driver.cbs` function described below is
 powerful but complicated, requiring many options. For most common
 calculations, a shorthand can be accessed directly though
-:py:func:`psi4.energy`, :py:func:`psi4.gradient`, *etc.* For example,
+:py:func:`psi4.driver.energy`, :py:func:`psi4.driver.gradient`, *etc.* For example,
 a MP2 single-point DT extrapolation can be accessed through the first item
 below more conveniently than the equivalent second or third items.
 
@@ -67,7 +67,7 @@ below more conveniently than the equivalent second or third items.
     energy(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvtz"}, {"wfn": "mp2", "basis": "cc-pv[dt]z", "scheme": corl_xtpl_helgaker_2}])
 
    The difference is that the main function
-   :py:func:`psi4.cbs` and extrapolation schemes like
+   :py:func:`psi4.driver.cbs` and extrapolation schemes like
    :py:func:`psi4.driver.driver_cbs_helper.xtpl_highest_1` and
    :py:func:`psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2` and composite
    aliases like :py:func:`psi4.driver.aliases.sherrill_gold_standard`
@@ -225,4 +225,9 @@ to make user-defined functions known to |PSIfour|.
 
 .. autofunction:: psi4.driver.driver_cbs_helper.register_composite_function
 
+
+API
+^^^
+
+.. autopydantic_model:: psi4.driver.driver_cbs.CompositeComputer
 

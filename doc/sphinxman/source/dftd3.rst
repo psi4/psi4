@@ -274,7 +274,7 @@ The dispersion coefficients are defined as
 See the `DFT-D3 documentation <https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/man.pdf>`_ 
 for more details.
 
-For now, the three-body correction can be called by using the :py:func:`~qcdb.Molecule.run_dftd3`
+For now, the three-body correction can be called by using the :py:func:`~psi4.core.Molecule.run_dftd3`
 function with `d3-atmgr` as the passed functional string. 
 For example, the three-body ATM dispersion correction for a neon trimer could
 be computed with::
@@ -372,6 +372,8 @@ any user-specified dispersion parameters.
    -0.00024762
 
 .. autofunction:: qcdb.Molecule.run_dftd3
+
+.. autofunction:: qcdb.Molecule.run_dftd4
 
 .. autoclass:: psi4.driver.procrouting.empirical_dispersion.EmpiricalDispersion
 

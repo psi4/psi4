@@ -35,8 +35,8 @@
 
 .. _`sec:molden`:
 
-Interface to Molden |w---w| :py:func:`~psi4.molden`
-===================================================
+Interface to Molden |w---w| :py:func:`~psi4.driver.molden`
+==========================================================
 
 .. codeauthor:: Justin M. Turney
 .. sectionauthor:: C. David Sherrill

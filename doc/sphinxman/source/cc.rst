@@ -156,11 +156,11 @@ continuum model (PCM) in the PTE approximation [Cammi:2009:164104]_, see
 .. [#f1] Also known as CCSD(AT), Lambda-CCSD(T), CCSD(T)_L
 
 The following wavefunctions are currently recognized by |PSIfour| as arguments
-to functions like :py:func:`~psi4.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'a-ccsd(t)'``, ``'cc2'``,
+to functions like :py:func:`~psi4.driver.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'a-ccsd(t)'``, ``'cc2'``,
 ``'cc3'``, ``'bccd'`` (CCD with Brueckner orbitals), ``'bccd(t)'`` (CCD(T) with
 Brueckner orbitals), ``'eom-ccsd'``, ``'eom-cc2'`` (CC2 for excited states),
 ``'eom-cc3'`` (CC3 for excited states).  Response properties can be obtained
-by calling the function :py:func:`~psi4.properties` (instead of, for example, :py:func:`~psi4.energy`,
+by calling the function :py:func:`~psi4.driver.properties` (instead of, for example, :py:func:`~psi4.driver.energy`,
 *e.g.*, ``properties('ccsd')``.  There are many sample
 coupled cluster inputs provided in :source:`samples`.
 

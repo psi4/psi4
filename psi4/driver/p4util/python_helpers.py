@@ -1173,9 +1173,9 @@ def _core_wavefunction_set_variable(self: core.Wavefunction, key: str, val: Unio
         Case-insensitive key to instance's double or :class:`~psi4.core.Matrix`
         storage maps.
 
-        - If ``CURRENT ENERGY``, syncs with :attr:`self.energy_`.
-        - If ``CURRENT GRADIENT``, syncs with :attr:`gradient_`.
-        - If ``CURRENT HESSIAN``, syncs with :attr:`self.hessian_`.
+        - If ``CURRENT ENERGY``, syncs with ``self.energy_``.
+        - If ``CURRENT GRADIENT``, syncs with ``gradient_``.
+        - If ``CURRENT HESSIAN``, syncs with ``self.hessian_``.
     val
         Scalar or array to be stored in `key`. If :class:`~numpy.ndarray` and
         data `key` does not naturally fit in 2D Matrix (often charge and
@@ -1184,7 +1184,7 @@ def _core_wavefunction_set_variable(self: core.Wavefunction, key: str, val: Unio
 
     Raises
     ------
-    ValidationError
+    ~psi4.driver.ValidationError
         If `val` is a scalar but `key` already exists as an array variable. Or
         if `val` is an array but `key` already exists as a scalar variable.
 

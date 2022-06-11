@@ -35,7 +35,7 @@ __all__ = [
 import abc
 import copy
 import logging
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union, TYPE_CHECKING
 
 from pydantic import Field, validator
 import qcelemental as qcel
@@ -45,12 +45,17 @@ import qcengine as qcng
 
 from psi4 import core
 
+if TYPE_CHECKING:
+    import qcportal
+
 logger = logging.getLogger(__name__)
 
 EnergyGradientHessianWfnReturn = Union[float, core.Matrix, Tuple[Union[float, core.Matrix], core.Wavefunction]]
 
 
 class BaseComputer(qcel.models.ProtoModel):
+    """Base class for "computers" that plan, run, and process QC tasks."""
+
     @abc.abstractmethod
     def compute(self):
         pass
@@ -74,7 +79,7 @@ class AtomicComputer(BaseComputer):
         "Note for finite difference that this should be the target driver, not the means driver.")
     keywords: Dict[str, Any] = Field(default_factory=dict, description="The keywords to use in the computation.")
     computed: bool = Field(False, description="Whether quantum chemistry has been run on this task.")
-    result: Any = Field(default_factory=dict, description=":py:class:~`qcelemental.models.AtomicResult` return.")
+    result: Any = Field(default_factory=dict, description=":py:class:`~qcelemental.models.AtomicResult` return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
 
     class Config(qcel.models.ProtoModel.Config):
@@ -114,7 +119,7 @@ class AtomicComputer(BaseComputer):
 
         return atomic_model
 
-    def compute(self, client: Optional["FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.client.FractalClient"] = None):
         """Run quantum chemistry."""
         from psi4.driver import pp
 
@@ -180,7 +185,7 @@ class AtomicComputer(BaseComputer):
         core.print_out(_drink_filter(self.result.dict()["stdout"]))
         self.computed = True
 
-    def get_results(self, client: Optional["FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
         """Return results as Atomic-flavored QCSchema."""
 
         if self.result:

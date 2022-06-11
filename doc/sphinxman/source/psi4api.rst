@@ -39,4 +39,16 @@
 .. automodapi:: psi4.driver
 
 .. automodapi:: psi4.driver.p4util
+   :skip:ConvergenceError
+   :skip:ManagedMethodError
+   :skip:MissingMethodError
+   :skip:OptimizationConvergenceError
+   :skip:ParsingError
+   :skip:PastureRequiredError
+   :skip:PsiException
+   :skip:SCFConvergenceError
+   :skip:TDSCFConvergenceError
+   :skip:TestComparisonError
+   :skip:UpgradeHelper
+   :skip:ValidationError
 
