@@ -540,7 +540,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                 )
 
             nocc = wfn.epsilon_b_subset("SO", "OCC").shape
-            nvir = wfn.epsilon_b_subset("SO", "OCC").shape
+            nvir = wfn.epsilon_b_subset("SO", "VIR").shape
             # Convert to list of lists for C1 case
             if nirrep == 1:
                 nocc = (nocc, )
