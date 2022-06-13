@@ -1347,6 +1347,14 @@ class PSI_API CompositeJK : public JK {
     * Return number of ERI shell quartets computed during the JK build process.
     */
     size_t num_computed_shells() override;
+    
+    /**
+    * Determine if shell quartet is significant or not 
+    * based on screening method used
+    */
+    bool shell_significant(int M, int N, int R, int S,
+        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::vector<SharedMatrix>& D = {}) override; 
 
    public:
     // => Constructors < = //

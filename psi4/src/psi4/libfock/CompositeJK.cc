@@ -656,9 +656,11 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers_["3-Center"][rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
+        // TODO: Implement screening using shell_significant() framework
         if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers_["3-Center"][rank]->shell_pair_value(M,N) < thresh2) {
             continue;
         }
+        // TODO: Implement benchmarking using computed_shells_per_iter_ framework
         computed_triplets1++;
         int np = auxiliary_->shell(P).nfunction();
         int pstart = auxiliary_->shell(P).function_index();
@@ -754,9 +756,11 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers_["3-Center"][rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
+        // TODO: Implement screening using shell_significant() framework
         if(H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers_["3-Center"][rank]->shell_pair_value(M,N) < thresh2) {
             continue;
         }
+        // TODO: Implement benchmarking using computed_shells_per_iter_ framework
         computed_triplets2++;
         int np = auxiliary_->shell(P).nfunction();
         int pstart = auxiliary_->shell(P).function_index();
@@ -1532,6 +1536,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 int_shells_total += npoints_block;
 
                 // can we screen the whole block over K_uv = (X_ug (A_vtg (F_tg)) upper bound?
+                // TODO: implement this screening process using shell_significant() framework
                 double k_bound = X_block_max * esp_boundp[NU][TAU] * F_block_gmaxp[TAU];
                 if (symm) k_bound = std::max(k_bound, X_block_max * esp_boundp[TAU][NU] * F_block_gmaxp[NU]);
                 if (k_bound < kscreen) continue;
