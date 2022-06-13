@@ -181,10 +181,10 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
                 double D_RS = ints[0]->shell_pair_max_density(0, R, S) + ints[0]->shell_pair_max_density(1, R, S);
 
                 // K-like terms
-                double D_MR = ints[0]->shell_pair_max_density(0, M, R), ints[0]->shell_pair_max_density(1, M, R);
-                double D_MS = ints[0]->shell_pair_max_density(0, M, S), ints[0]->shell_pair_max_density(1, M, S);
-                double D_NR = ints[0]->shell_pair_max_density(0, N, R), ints[0]->shell_pair_max_density(1, N, R);
-                double D_NS = ints[0]->shell_pair_max_density(0, N, S), ints[0]->shell_pair_max_density(1, N, S);
+                double D_MR = std::max(ints[0]->shell_pair_max_density(0, M, R), ints[0]->shell_pair_max_density(1, M, R));
+                double D_MS = std::max(ints[0]->shell_pair_max_density(0, M, S), ints[0]->shell_pair_max_density(1, M, S));
+                double D_NR = std::max(ints[0]->shell_pair_max_density(0, N, R), ints[0]->shell_pair_max_density(1, N, R));
+                double D_NS = std::max(ints[0]->shell_pair_max_density(0, N, S), ints[0]->shell_pair_max_density(1, N, S));
 
                 max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
             }
