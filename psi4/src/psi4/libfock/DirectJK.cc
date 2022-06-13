@@ -181,16 +181,16 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
                 double D_RS = ints[0]->shell_pair_max_density(0, R, S) + ints[0]->shell_pair_max_density(1, R, S);
 
                 // K-like terms
-                double D_MR = ints[0]->shell_pair_max_density(0, M, R) + ints[0]->shell_pair_max_density(1, M, R);
-                double D_MS = ints[0]->shell_pair_max_density(0, M, S) + ints[0]->shell_pair_max_density(1, M, S);
-                double D_NR = ints[0]->shell_pair_max_density(0, N, R) + ints[0]->shell_pair_max_density(1, N, R);
-                double D_NS = ints[0]->shell_pair_max_density(0, N, S) + ints[0]->shell_pair_max_density(1, N, S);
+                double D_MR = ints[0]->shell_pair_max_density(0, M, R), ints[0]->shell_pair_max_density(1, M, R);
+                double D_MS = ints[0]->shell_pair_max_density(0, M, S), ints[0]->shell_pair_max_density(1, M, S);
+                double D_NR = ints[0]->shell_pair_max_density(0, N, R), ints[0]->shell_pair_max_density(1, N, R);
+                double D_NS = ints[0]->shell_pair_max_density(0, N, S), ints[0]->shell_pair_max_density(1, N, S);
 
                 max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
             }
 
             // The density screened ERI bound (Eq. 6)
-            return (ints[0]->shell_ceiling2(M, N, S, R) * max_density * max_density >= cutoff_*cutoff_);
+            return (ints[0]->shell_ceiling2(M, N, R, S) * max_density * max_density >= cutoff_*cutoff_);
         } else {
             throw PSIEXCEPTION("Tests for significant shell quartets using density screening are being conducted, but the ints and/or D variables are undefined. Check your DirectJK::shell_significant function arguments");
 	}
