@@ -22,6 +22,16 @@ jobs:
         fetch-depth: 0
         path: code
 
+    - name: Checkout website repo
+      if: ${{ github.repository == 'psi4/psi4' }}
+      uses: actions/checkout@v2
+      with:
+        repository: psi4/psi4docs
+        path: docs
+        ref: master
+        #persist-credentials: true
+        #token: ${{ secrets.psi4docs_from_psi4 }}
+
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
       uses: conda-incubator/setup-miniconda@v2
@@ -91,15 +101,15 @@ jobs:
           code/objdir/doc/sphinxman/sphinxman.tar.gz
         retention-days: 1
 
-#    - name: Compare Docs (generated vs psi4/psi4docs)
-#      if: ${{ github.repository == 'psi4/psi4' }}
-#      working-directory: ./docs
-#      id: compare-psi4docs
-#      run: |
-#        cp -pR ../code/objdir/doc/sphinxman/html .
-#        echo "::group::Selective Git Diff"
-#        git diff --color-words -I"Last updated on" -I"psi4/tree"
-#        echo "::endgroup::"
+    - name: Compare Docs (generated vs psi4/psi4docs)
+      if: ${{ github.repository == 'psi4/psi4' }}
+      working-directory: ./docs
+      id: compare-psi4docs
+      run: |
+        cp -pR ../code/objdir/doc/sphinxman/html .
+        echo "::group::Selective Git Diff"
+        git diff --color-words -I"Last updated on" -I"psi4/tree"
+        echo "::endgroup::"
 #        git config --local user.email "action@github.com"
 #        git config --local user.name "GitHub Action"
 #        git add -A
