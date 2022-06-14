@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 undefined 
+                               Psi4 1.7a1.dev7 
 
-                         Git: Rev {tdscf_var} c8200ee dirty
+                         Git: Rev {tdscf_excitations_symmetry} 7a26583 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 08 March 2022 09:38AM
+    Psi4 started on: Tuesday, 14 June 2022 07:42PM
 
-    Process ID: 4307
-    Host:       dhcp189-161.emerson.emory.edu
-    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
+    Process ID: 2986
+    Host:       sat.lazhome.net
+    PSIDATADIR: /home/laz/src/psi4laz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -72,18 +72,16 @@ res = tdscf_excitations(wfn, states=1, tda=True)
 
 Scratch directory: /tmp/
 
-Scratch directory: /tmp/
-
-*** tstart() called on dhcp189-161.emerson.emory.edu
-*** at Tue Mar  8 09:38:45 2022
+*** tstart() called on sat.lazhome.net
+*** at Tue Jun 14 19:42:34 2022
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   331 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvtz.gbs 
-    atoms 2-3 entry H          line    40 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvtz.gbs 
+    atoms 1   entry O          line   331 file /home/laz/src/psi4laz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvtz.gbs 
+    atoms 2-3 entry H          line    40 file /home/laz/src/psi4laz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -201,8 +199,8 @@ Scratch directory: /tmp/
     Name: (AUG-CC-PVTZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   286 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvtz-jkfit.gbs 
-    atoms 2-3 entry H          line    70 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvtz-jkfit.gbs 
+    atoms 1   entry O          line   286 file /home/laz/src/psi4laz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvtz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /home/laz/src/psi4laz/psi4/objdir/stage/share/psi4/basis/aug-cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -252,16 +250,16 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -75.99649856945162   -7.59965e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.27848037838424   -2.81982e-01   7.43710e-03 ADIIS/DIIS
-   @DF-RKS iter   2:   -76.13846395305951    1.40016e-01   1.00918e-02 ADIIS/DIIS
-   @DF-RKS iter   3:   -76.43792342004775   -2.99459e-01   1.44390e-04 ADIIS/DIIS
-   @DF-RKS iter   4:   -76.43802433927998   -1.00919e-04   5.53433e-05 DIIS
-   @DF-RKS iter   5:   -76.43803373954702   -9.40027e-06   7.62052e-06 DIIS
-   @DF-RKS iter   6:   -76.43803397919825   -2.39651e-07   1.01649e-06 DIIS
-   @DF-RKS iter   7:   -76.43803398667335   -7.47509e-09   1.11109e-07 DIIS
-   @DF-RKS iter   8:   -76.43803398687703   -2.03684e-10   1.90677e-08 DIIS
-   @DF-RKS iter   9:   -76.43803398688198   -4.94538e-12   1.72436e-09 DIIS
+   @DF-RKS iter SAD:   -75.99649856949712   -7.59965e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.27848037841602   -2.81982e-01   7.43710e-03 ADIIS/DIIS
+   @DF-RKS iter   2:   -76.13846395308045    1.40016e-01   1.00918e-02 ADIIS/DIIS
+   @DF-RKS iter   3:   -76.43792342007802   -2.99459e-01   1.44390e-04 ADIIS/DIIS
+   @DF-RKS iter   4:   -76.43802433931030   -1.00919e-04   5.53433e-05 DIIS
+   @DF-RKS iter   5:   -76.43803373957769   -9.40027e-06   7.62052e-06 DIIS
+   @DF-RKS iter   6:   -76.43803397922862   -2.39651e-07   1.01649e-06 DIIS
+   @DF-RKS iter   7:   -76.43803398670352   -7.47490e-09   1.11109e-07 DIIS
+   @DF-RKS iter   8:   -76.43803398690724   -2.03727e-10   1.90677e-08 DIIS
+   @DF-RKS iter   9:   -76.43803398691261   -5.37170e-12   1.72436e-09 DIIS
   Energy and wave function converged.
 
 
@@ -314,17 +312,17 @@ Scratch directory: /tmp/
               A 
     DOCC [     5 ]
 
-  @DF-RKS Final Energy:   -76.43803398688198
+  @DF-RKS Final Energy:   -76.43803398691261
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1873335747049811
-    One-Electron Energy =                -123.0232657260598614
-    Two-Electron Energy =                  44.2113887867615816
-    DFT Exchange-Correlation Energy =      -6.8134906222886888
+    One-Electron Energy =                -123.0232657260727507
+    Two-Electron Energy =                  44.2113887867510726
+    DFT Exchange-Correlation Energy =      -6.8134906222959195
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.4380339868819902
+    Total Energy =                        -76.4380339869126146
 
 Computation Completed
 
@@ -333,28 +331,30 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     0.9763
 
-  Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.2317
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     0.7446     Total:     0.7446
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     1.8926     Total:     1.8926
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :         -0.2316643            0.9762758            0.7446116
+ Magnitude           :                                                    0.7446116
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on dhcp189-161.emerson.emory.edu at Tue Mar  8 09:38:50 2022
+*** tstop() called on sat.lazhome.net at Tue Jun 14 19:42:41 2022
 Module time:
-	user time   =       4.10 seconds =       0.07 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       5.81 seconds =       0.10 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =       4.10 seconds =       0.07 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       5.81 seconds =       0.10 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -417,13 +417,13 @@ Total time:
 
 
 Contributing excitations
-Only contributions with coefficients > 1.00e-01 will be printed:
+Only contributions with abs(coeff) > 1.00e-01 will be printed:
 
 Excited State    1 (1 A):   0.26284 au   173.35 nm f = 0.0504
   Sums of squares: Xssq =  1.000000e+00
-     5 ->  6    0.950891 (90.419%)
-     5 ->  8    0.261758 ( 6.852%)
-     5 -> 10    0.151293 ( 2.289%)
+      5a  ->   6a     0.950891 (90.419%)
+      5a  ->   8a     0.261758 ( 6.852%)
+      5a  ->  10a     0.151293 ( 2.289%)
 
 
 ******************************************************************************************
@@ -435,7 +435,7 @@ Excited State    1 (1 A):   0.26284 au   173.35 nm f = 0.0504
 ******************************************************************************************
 
 
-    Psi4 stopped on: Tuesday, 08 March 2022 09:38AM
-    Psi4 wall time for execution: 0:00:08.85
+    Psi4 stopped on: Tuesday, 14 June 2022 07:42PM
+    Psi4 wall time for execution: 0:00:13.43
 
 *** Psi4 exiting successfully. Buy a developer a beer!
