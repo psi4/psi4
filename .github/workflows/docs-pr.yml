@@ -22,15 +22,13 @@ jobs:
         fetch-depth: 0
         path: code
 
-    - name: Checkout website repo
+    - name: Checkout psi4/psi4docs Repo
       if: ${{ github.repository == 'psi4/psi4' }}
       uses: actions/checkout@v2
       with:
         repository: psi4/psi4docs
         path: docs
         ref: master
-        #persist-credentials: true
-        #token: ${{ secrets.psi4docs_from_psi4 }}
 
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
@@ -94,15 +92,15 @@ jobs:
         tar -zcf sphinxman.tar.gz html/
 
     - name: Archive Docs Tarball
-      if: ${{ github.repository == 'psi4/psi4' }}
+      if: (success() || failure()) && ${{ github.repository == 'psi4/psi4' }}
       uses: actions/upload-artifact@v2
       with:
         name: sphinxman-html
         path: |
           code/objdir/doc/sphinxman/sphinxman.tar.gz
-        retention-days: 1
+        retention-days: 7
 
-    - name: Compare Docs (generated vs psi4/psi4docs)
+    - name: Compare Docs (PR generated vs psi4/psi4docs)
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./docs
       id: compare-psi4docs
@@ -111,17 +109,4 @@ jobs:
         echo "::group::Selective Git Diff"
         git diff --color-words -I"Last updated on" -I"psi4/tree"
         echo "::endgroup::"
-#        git config --local user.email "action@github.com"
-#        git config --local user.name "GitHub Action"
-#        git add -A
-#        git commit -m "auto-generated from Psi4 master"
-
-#    - name: Push Changes to psi4/psi4docs
-#      if: ${{ github.repository == 'psi4/psi4' }}
-#      uses: ad-m/github-push-action@master
-#      with:
-#        directory: ./docs
-#        repository: psi4/psi4docs
-#        github_token: ${{ secrets.psi4docs_from_psi4 }}
-#        force: true
 

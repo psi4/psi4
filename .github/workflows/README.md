@@ -6,7 +6,7 @@
 * Runs on: push to master
 * Goals:
   * get CI warning if doxygen docs compile broken
-  * get CI warning if sphinx docs compile broken, or compile with warnings. (Future, after flag can be enabled: ", or compile with unreachable links, or can't compile nit-picky")
+  * get CI warning if sphinx docs compile broken, or compile with warnings, or compile with unreachable links, or can't compile nit-picky"
   * publish nightly-build docs promptly and automatically
   * get CI warning if psi4 compile broken with conda-forge environment (as opposed to the usual defaults-based environment)
 * Results:
@@ -25,3 +25,15 @@
   * show what addon packages to get from what channel, especially during shift from defaults-based to conda-forge-based
 * Results:
   * None
+
+----
+
+## [docs-pr.yml](./docs-pr.yml)
+
+* Since: June 2022
+* Runs on: PR
+* Goals
+  * provide CI warning to author if PR changes break sphinx docs compile, or compile with warnings, or compile with unreachable links, or can't compile nit-picky"
+* Results
+  * archived tarball of HTML docs (download from Actions, Archives, then unpack and view in browser)
+
