@@ -405,10 +405,10 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
             Cv = Cvir_so;
         }
 
-        SharedMatrix tmp1 = linalg::triplet(Co, F, Co, true, false, false);
-        SharedMatrix result = linalg::doublet(tmp1, x_vec[i], false, false);
+        auto tmp1 = linalg::triplet(Co, F, Co, true, false, false);
+        auto result = linalg::doublet(tmp1, x_vec[i], false, false);
 
-        SharedMatrix tmp2 = linalg::triplet(x_vec[i], Cv, F, false, true, false);
+        auto tmp2 = linalg::triplet(x_vec[i], Cv, F, false, true, false);
         result->gemm(false, false, -1.0, tmp2, Cv, 1.0);
 
         ret.push_back(result);

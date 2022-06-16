@@ -102,10 +102,8 @@ void UHF::common_init() {
     Fb_ = SharedMatrix(factory_->create_matrix("F beta"));
     Da_ = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_ = SharedMatrix(factory_->create_matrix("SCF beta density"));
-    Dt_ = SharedMatrix(factory_->create_matrix("D total"));
     Da_old_ = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
     Db_old_ = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
-    Dt_old_ = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
     Ca_ = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
     Cb_ = SharedMatrix(factory_->create_matrix("beta MO coefficients (C)"));
@@ -146,10 +144,8 @@ void UHF::finalize() {
         }
     }
 
-    Dt_.reset();
     Da_old_.reset();
     Db_old_.reset();
-    Dt_old_.reset();
     Ga_.reset();
     Gb_.reset();
 
@@ -161,7 +157,6 @@ void UHF::finalize() {
 void UHF::save_density_and_energy() {
     Da_old_->copy(Da_);
     Db_old_->copy(Db_);
-    Dt_old_->copy(Dt_);
 }
 void UHF::form_V() {
     // // Push the C matrix on
@@ -343,9 +338,6 @@ void UHF::form_D() {
         C_DGEMM('N', 'T', nso, nso, nb, 1.0, Cb[0], nmo, Cb[0], nmo, 0.0, Db[0], nso);
     }
 
-    Dt_->copy(Da_);
-    Dt_->add(Db_);
-
     if (debug_) {
         outfile->Printf("in UHF::form_D:\n");
         Da_->print();
@@ -357,15 +349,12 @@ void UHF::damping_update(double damping_percentage) {
     Da_->axpy(damping_percentage, Da_old_);
     Db_->scale(1.0 - damping_percentage);
     Db_->axpy(damping_percentage, Db_old_);
-    Dt_->copy(Da_);
-    Dt_->add(Db_);
 }
 
-// TODO: Once Dt_ is refactored to D_ the only difference between this and RHF::compute_initial_E is a factor of 0.5
 double UHF::compute_initial_E() {
-    Dt_->copy(Da_);
-    Dt_->add(Db_);
-    return nuclearrep_ + 0.5 * (Dt_->vector_dot(H_));
+    auto Dt = Da_->clone();
+    Dt->add(Db_);
+    return nuclearrep_ + 0.5 * (Dt->vector_dot(H_));
 }
 
 double UHF::compute_E() {
@@ -559,7 +548,6 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     Cr.clear();
 
     int nvecs = x_vec.size() / 2;
-    // Compute Fij x_ia - Fab x_ia
 
     // We actually want to compute all alpha then all beta, its smart enough to figure out the half transform
     SharedMatrix Cao, Cbo, Cav, Cbv;
@@ -608,6 +596,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
 
     // Compute JK
+    // J_mn = I_mnpq Ca_pi Ca_qa Xa_ai, I_mnpq Cb_pi Cb_qa Xb_ai pairs
     jk_->compute();
 
     const std::vector<SharedMatrix>& J = jk_->J();
@@ -658,8 +647,11 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     std::vector<SharedMatrix> ret;
     if (combine) {
         for (size_t i = 0; i < nvecs; i++) {
+            // Scale the Xa -> alpha Coulomb terms.
             J[i]->scale(2.0);
+            // Add the Xb -> alpha Coulomb terms.
             J[i]->axpy(2.0, J[nvecs + i]);
+            // X -> alpha terms in the AO/SO basis are the same as the X -> beta.
             J[nvecs + i]->copy(J[i]);
             if (functional_->needs_xc()) {
                 J[i]->axpy(2.0, Vx[2 * i]);
@@ -693,8 +685,11 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                 "in your input.");
         }
         for (size_t i = 0; i < nvecs; i++) {
+            // Add opposite-spin terms to alpha.
             J[i]->add(J[nvecs + i]);
+            // Before MO transformation, beta and alpha are the same.
             J[nvecs + i]->copy(J[i]);
+            // Augment same-spin Coulomb terms with exchange-correlation.
             if (functional_->needs_xc()) {
                 J[i]->add(Vx[2 * i]);
                 J[nvecs + i]->add(Vx[2 * i + 1]);

@@ -278,6 +278,9 @@ def _solve_loop(wfn,
                 restricted: bool = True,
                 spin_mult: str = "singlet") -> List[_TDSCFResults]:
     """
+    For each irrep, solve for the desired number of states and compute the states'
+    properties. These function is responsible for driving the other functions that
+    are responsible for computation.
 
     References
     ----------
@@ -347,7 +350,7 @@ def _solve_loop(wfn,
             # 1/2 is the Bohr magneton in atomic units
             mdtm = 0.5 * engine.residue(L, mints.so_angular_momentum())
             # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
-            # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
+            # This is because Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
             # length gauge rotatory strength
             R_length = np.einsum("i,i", edtm_length, mdtm)
             # velocity gauge rotatory strength
@@ -632,7 +635,7 @@ def tdscf_excitations(wfn,
     This function can be used for:
       - restricted singlets: RPA or TDA, any functional
       - restricted triplets: RPA or TDA, Hartree-Fock only
-      - unresctricted: RPA or TDA, Hartre-Fock and LDA only
+      - unresctricted: RPA or TDA, Hartree-Fock and LDA only
 
     Tighter convergence thresholds will require a larger iterative subspace.
     The maximum size of the iterative subspace is calculated based on `r_convergence`:
