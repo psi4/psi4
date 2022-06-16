@@ -56,17 +56,17 @@ inline std::vector<double> rks_quadrature_integrate(std::shared_ptr<BlockOPoints
                                                     std::shared_ptr<PointFunctions> pworker) {
     // Block data
     int npoints = block->npoints();
-    double* x = block->x();
-    double* y = block->y();
-    double* z = block->z();
-    double* w = block->w();
+    auto x = block->x();
+    auto y = block->y();
+    auto z = block->z();
+    auto w = block->w();
 
     // Superfunctional data
-    double* zk = fworker->value("V")->pointer();
-    double* QTp = fworker->value("Q_TMP")->pointer();
+    auto zk = fworker->value("V")->pointer();
+    auto QTp = fworker->value("Q_TMP")->pointer();
 
     // Points data
-    double* rho_a = pworker->point_value("RHO_A")->pointer();
+    auto rho_a = pworker->point_value("RHO_A")->pointer();
 
     // Build quadrature
     std::vector<double> ret(5);
