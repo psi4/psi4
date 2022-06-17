@@ -37,7 +37,6 @@ namespace scf {
 
 class UHF : public HF {
    protected:
-    SharedMatrix Dt_, Dt_old_;
     SharedMatrix Da_old_, Db_old_;
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
 
