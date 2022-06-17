@@ -19,6 +19,7 @@ dependencies:
   - psi4/label/dev::libxc
   - psi4/label/dev::libecpint
   - qcengine
+  - qcportal=0.15.8
     # docs
   - ipykernel
   - jupyter_client

@@ -407,14 +407,14 @@ rst_epilog = """
 #   :width: 100 %
 #   :alt: Psi4 Project Logo
 
-extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'),
-            'srcsample': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.dat', ''),
-            'srcsamplepy': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.py', ''),
-            'srcbasis':  ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/%s.gbs', ''),
-            'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
-            'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', ''),
-            'psicode':   ("https://psicode.org/%s", "psicode.org/"),
-            'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '') }
+extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/%s'),
+            'srcsample': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.dat', '%s'),
+            'srcsamplepy': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.py', '%s'),
+            'srcbasis':  ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/%s.gbs', '%s'),
+            'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', '%s'),
+            'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', '%s'),
+            'psicode':   ("https://psicode.org/%s", "psicode.org/%s"),
+            'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '%s') }
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3.10', None),
