@@ -361,11 +361,8 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     U->expm(4, true);
 
     // Need to build a new one here incase nmo != nso
-    SharedMatrix tmp = linalg::doublet(C, U, false, false);
+    auto tmp = linalg::doublet(C, U, false, false);
     C->copy(tmp);
-
-    U.reset();
-    tmp.reset();
 }
 void HF::initialize_gtfock_jk() {
     // Build the JK from options, symmetric type
@@ -670,11 +667,11 @@ void HF::form_H() {
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && H_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        SharedMatrix Vprime = external_pot_->computePotentialMatrix(basisset_);
+        auto Vprime = external_pot_->computePotentialMatrix(basisset_);
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
-            SharedMatrix Vprimesym = factory_->create_shared_matrix("External Potential");
+            auto Vprimesym = factory_->create_shared_matrix("External Potential");
             Vprimesym->apply_symmetry(Vprime, AO2SO_);
             Vprime = Vprimesym;
         }
@@ -1157,7 +1154,7 @@ void HF::guess() {
         if (print_)
             outfile->Printf("  SCF Guess: Superposition of Atomic Potentials (doi:10.1021/acs.jctc.8b01089).\n\n");
 
-        std::shared_ptr<psi::VBase> builder = VBase::build_V(basisset_, functional_, options_, "SAP");
+        auto builder = VBase::build_V(basisset_, functional_, options_, "SAP");
         builder->initialize();
 
         // Print info on the integration grid
@@ -1227,8 +1224,8 @@ void HF::check_phases() {
 }
 
 void HF::print_occupation() {
-    std::vector<std::string> labels = molecule_->irrep_labels();
-    std::string reference = options_.get_str("REFERENCE");
+    auto labels = molecule_->irrep_labels();
+    auto reference = options_.get_str("REFERENCE");
     outfile->Printf("          ");
     for (int h = 0; h < nirrep_; ++h) outfile->Printf(" %4s ", labels[h].c_str());
     outfile->Printf("\n");
