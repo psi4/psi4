@@ -1408,7 +1408,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values_["RHO_BY"] = quad_values_["RHO_AY"];
     quad_values_["RHO_BZ"] = quad_values_["RHO_AZ"];
 
-    if (isnan(quad_values_["FUNCTIONAL"])) {
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
         throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
     }
 
@@ -2026,7 +2026,7 @@ SharedMatrix RV::compute_gradient() {
     quad_values_["RHO_BY"] = quad_values_["RHO_AY"];
     quad_values_["RHO_BZ"] = quad_values_["RHO_AZ"];
 
-    if (isnan(quad_values_["FUNCTIONAL"])) {
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
         throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
     }
 
@@ -2360,7 +2360,7 @@ SharedMatrix RV::compute_hessian() {
         }
     }
 
-    if (isnan(quad_values_["FUNCTIONAL"])) {
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
         throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
     }
 
@@ -2702,7 +2702,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values_["RHO_BY"] = std::accumulate(rhobyq.begin(), rhobyq.end(), 0.0);
     quad_values_["RHO_BZ"] = std::accumulate(rhobzq.begin(), rhobzq.end(), 0.0);
 
-    if (isnan(quad_values_["FUNCTIONAL"])) {
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
         throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
     }
 
@@ -3511,7 +3511,7 @@ SharedMatrix UV::compute_gradient() {
     quad_values_["RHO_BY"] = std::accumulate(rhobyq.begin(), rhobyq.end(), 0.0);
     quad_values_["RHO_BZ"] = std::accumulate(rhobzq.begin(), rhobzq.end(), 0.0);
 
-    if (isnan(quad_values_["FUNCTIONAL"])) {
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
         throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
     }
 
