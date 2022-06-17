@@ -716,6 +716,8 @@ void HF::form_Shalf() {
     else
         throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
 
+    bool used_brian = false;
+
 #if USING_BrianQC
     if (brianEnable) {
         double S_cutoff = options_.get_double("S_TOLERANCE");
@@ -742,46 +744,26 @@ void HF::form_Shalf() {
 
         if (print_) outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n", nso_ - nmo_, nso_);
 
-        // Double check occupation vectors
-        for (int h = 0; h < nirrep_; ++h) {
-            if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
-                throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
-            }
-        }
-
-        // Refreshes twice in RHF, no big deal
-        epsilon_a_->init(nmopi_);
-        Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
-        epsilon_b_->init(nmopi_);
-        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
-
-        // Extra matrix dimension changes for specific derived classes
-        prepare_canonical_orthogonalization();
-
-        if (print_ > 3) {
-            S_->print("outfile");
-            X_->print("outfile");
-        }
-
-        return;
-    }
+        used_brian = true;
 #endif
 
-    double lindep_tolerance = options_.get_double("S_TOLERANCE");
-    double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
+    if (!used_brian) {
+        double lindep_tolerance = options_.get_double("S_TOLERANCE");
+        double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
 
-    BasisSetOrthogonalization orthog(method, S_, lindep_tolerance, cholesky_tolerance, print_);
+        BasisSetOrthogonalization orthog(method, S_, lindep_tolerance, cholesky_tolerance, print_);
 
-    // Transform
-    X_ = orthog.basis_to_orthog_basis();
+        // Transform
+        X_ = orthog.basis_to_orthog_basis();
 
-    // Update nmo_
-    nmopi_ = X_->colspi();
-    nmo_ = nmopi_.sum();
+        // Update nmo_
+        nmopi_ = X_->colspi();
+        nmo_ = nmopi_.sum();
+    }
 
     // Double check occupation vectors
     for (int h = 0; h < X_->nirrep(); ++h) {
-        if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+        if (std::max(nalphapi_[h], nbetapi_[h]) > nmopi_[h]) {
             throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
         }
     }
