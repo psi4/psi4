@@ -2,7 +2,7 @@
 #! identically between cfour and psi4
 
 store = {}  #TEST
-test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']  #TEST
+test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']  #TEST
 
 print('    <<<  UHF  >>>')
 
@@ -46,6 +46,7 @@ set basis aug-cc-pvdz
 set reference uhf
 set docc [3, 0, 0, 1]
 set socc [0, 0, 1, 0]  #OCCUPATION=3-1-1-0/3-0-1-0
+set mp_type conv
 
 energy('mp3')
 
