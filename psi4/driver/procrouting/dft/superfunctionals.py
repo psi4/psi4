@@ -29,6 +29,12 @@
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
 """
+
+__all__ = [
+    "build_superfunctional",
+    "test_ccl_functional",
+]
+
 import os
 import re
 

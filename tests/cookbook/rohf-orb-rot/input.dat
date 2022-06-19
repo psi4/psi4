@@ -6,6 +6,8 @@
 #! (i.e., by swapping these two orbitals). The orb_rotate() function accomplishes this.
 
 # Restrict occupations to compute CCSD/6-31G energy of X state (symm A'') of HO2 in Cs.
+import math
+
 set { 
     basis 6-31G
     reference rohf

@@ -120,7 +120,7 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
     Returns
     -------
     Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer, ManyBodyComputer]
-        A simple (:class:`~psi4.driver.AtomicComputer`) or layered (:class:`~psi4.driver.driver_cbs.CompositeComputer`, :class:`~psi4.driver.driver_findif.FiniteDifferenceComputer`, :class:`~psi4.driver.driver_nbody.ManyBodyComputer`) task object. Layered objects contain many and multiple types of computers in a graph.
+        A simple (:class:`~psi4.driver.task_planner.AtomicComputer`) or layered (:class:`~psi4.driver.driver_cbs.CompositeComputer`, :class:`~psi4.driver.driver_findif.FiniteDifferenceComputer`, :class:`~psi4.driver.driver_nbody.ManyBodyComputer`) task object. Layered objects contain many and multiple types of computers in a graph.
 
     """
 

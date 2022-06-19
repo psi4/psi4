@@ -3,6 +3,8 @@
 #! that are updated during the potential energy surface scan, and then the same procedure is performed
 #! using polar coordinates, converted to Cartesian coordinates.
 
+import math
+
 refENuc = [ 9.78588587740,  9.780670144878629, 8.807297289661147,     #TEST
              8.802603130390768, 8.006633899691952,  8.002366482173423 ] #TEST
 

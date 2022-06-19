@@ -29,6 +29,8 @@
 List of LDA functionals
 """
 
+__all__ = ["functional_list"]
+
 funcs = []
 
 funcs.append({

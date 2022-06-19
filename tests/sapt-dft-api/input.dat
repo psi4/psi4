@@ -35,7 +35,7 @@ set {
 }
 
 # Prepare the fragments
-sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")
+sapt_dimer, monomerA, monomerB = driver.proc_util.prepare_sapt_molecule(dimer, "dimer")
 
 # Run the first monomer
 set DFT_GRAC_SHIFT 0.203293

@@ -25,6 +25,9 @@
 #
 # @END LICENSE
 #
+
+__all__ = ["run_roa"]
+
 import shelve
 
 from psi4 import core

@@ -142,6 +142,24 @@ CompositeComputer.get_psi_results()
 
 """
 
+__all__ = [
+    "xtpl_highest_1",
+    "scf_xtpl_helgaker_2",
+    "scf_xtpl_truhlar_2",
+    "scf_xtpl_karton_2",
+    "scf_xtpl_helgaker_3",
+    "corl_xtpl_helgaker_2",
+    # "_expand_bracketed_basis",
+    # "_contract_bracketed_basis",
+    "return_energy_components",
+    "cbs",
+    "complete_basis_set",
+    "cbs_text_parser",
+    "CompositeComputer",
+    "register_composite_function",
+    "register_xtpl_function",
+]
+
 import copy
 import logging
 import re

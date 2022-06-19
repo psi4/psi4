@@ -20,6 +20,8 @@ External API Objects
 
 .. autopydantic_model:: psi4.driver.task_base.BaseComputer
 
+.. autopydantic_model:: psi4.driver.task_planner.AtomicComputer
+
 .. autoclass:: psi4.driver.task_planner.TaskComputers
 
 .. autoclass:: psi4.driver.driver_nbody.SubTaskComputers

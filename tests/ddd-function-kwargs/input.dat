@@ -46,5 +46,3 @@ grad_fd = gradient(
 )
 compare_values(ref_grad, grad_fd, 3, "b3lyp grad findif")
 
-
-

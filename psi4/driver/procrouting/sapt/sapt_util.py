@@ -26,12 +26,20 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "print_sapt_var",
+    "print_sapt_hf_summary",
+    "print_sapt_dft_summary",
+]
+
+from typing import Dict
+
 from psi4 import core
 
 from ...constants import constants
 
 
-def print_sapt_var(name, value, short=False, start_spacer="    "):
+def print_sapt_var(name: str, value: float, short: bool = False, start_spacer: str = "    ") -> str:
     """
     Converts the incoming value as hartree to a correctly formatted Psi print format.
     """
@@ -43,7 +51,7 @@ def print_sapt_var(name, value, short=False, start_spacer="    "):
         return start_spacer + "%-28s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]" % vals
 
 
-def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
+def print_sapt_hf_summary(data: Dict[str, float], name: str, short: bool = False, delta_hf: bool = False) -> str:
 
     ret = "   Partial %s Results, to compute Delta HF (dHF)\n" % name
     ret += "  " + "-" * 105 + "\n"
@@ -122,7 +130,7 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
         return ret
 
 
-def print_sapt_dft_summary(data, name, short=False):
+def print_sapt_dft_summary(data: Dict[str, float], name: str, short: bool = False) -> str:
 
     ret = "   %s Results\n" % name
     ret += "  " + "-" * 105 + "\n"

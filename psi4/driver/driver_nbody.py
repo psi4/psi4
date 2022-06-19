@@ -928,7 +928,7 @@ class ManyBodyComputer(BaseComputer):
         Parameters
         ----------
         mb_computer
-            Class of task computers to instantiate and add to self.task_list. Usually :class:`~psi4.driver.AtomicComputer` but may be other when wrappers are layered.
+            Class of task computers to instantiate and add to self.task_list. Usually :class:`~psi4.driver.task_planner.AtomicComputer` but may be other when wrappers are layered.
         mc_level_idx
             Position in field self.nbodies_per_mc_level used to obtain ``nbodies``, the list of n-body
             levels (e.g., `[1]` or `[1, 2]` or `["supersystem"]`) to which the modelchem specified in **kwargs** applies.

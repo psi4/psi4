@@ -24,7 +24,7 @@ set {
 set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
 
 # Prepare the fragments
-sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")
+sapt_dimer, monomerA, monomerB = driver.proc_util.prepare_sapt_molecule(dimer, "dimer")
 
 # Run the first monomer
 set DFT_OMEGA 0.3

@@ -26,7 +26,15 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "build_sapt_jk_cache",
+    "electrostatics",
+    "exchange",
+    "induction",
+]
+
 import time
+from typing import Any, Dict, Optional
 
 import numpy as np
 
@@ -37,7 +45,12 @@ from ...p4util.exceptions import *
 from .sapt_util import print_sapt_var
 
 
-def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
+def build_sapt_jk_cache(
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    jk: core.JK,
+    do_print: bool = True,
+) -> Dict[str, Any]:
     """
     Constructs the DCBS cache data required to compute ELST/EXCH/IND
     """
@@ -119,7 +132,7 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     return cache
 
 
-def electrostatics(cache, do_print=True):
+def electrostatics(cache: Dict[str, Any], do_print: bool = True) -> Dict[str, float]:
     """
     Computes the E10 electrostatics from a build_sapt_jk_cache datacache.
     """
@@ -140,7 +153,7 @@ def electrostatics(cache, do_print=True):
     return {"Elst10,r": Elst10}
 
 
-def exchange(cache, jk, do_print=True):
+def exchange(cache: Dict[str, Any], jk: core.JK, do_print: bool = True) -> Dict[str, float]:
     """
     Computes the E10 exchange (S^2 and S^inf) from a build_sapt_jk_cache datacache.
     """
@@ -244,7 +257,16 @@ def exchange(cache, jk, do_print=True):
     return {"Exch10(S^2)": Exch_s2, "Exch10": Exch10}
 
 
-def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True, Sinf=False, sapt_jk_B=None):
+def induction(
+    cache: Dict[str, Any],
+    jk: core.JK,
+    do_print: bool = True,
+    maxiter: int = 12,
+    conv: float = 1.e-8,
+    do_response: bool = True,
+    Sinf: bool = False,
+    sapt_jk_B: Optional[core.JK] = None
+) -> Dict[str, Any]:
     """
     Compute Ind20 and Exch-Ind20 quantities from a SAPT cache and JK object.
     """
@@ -583,7 +605,15 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     return ret
 
 
-def _sapt_cpscf_solve(cache, jk, rhsA, rhsB, maxiter, conv, sapt_jk_B=None):
+def _sapt_cpscf_solve(
+    cache: Dict[str, Any],
+    jk: core.JK,
+    rhsA,
+    rhsB,
+    maxiter: int,
+    conv: float,
+    sapt_jk_B: Optional[core.JK] = None,
+):
     """
     Solve the SAPT CPHF (or CPKS) equations.
     """

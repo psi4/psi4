@@ -31,6 +31,37 @@ single-point energies, geometry optimizations, properties, and vibrational
 frequency calculations.
 
 """
+
+# TODO: below largely work (except sapt-dft-api and sapt-dft-lrc
+
+__all__ = [
+    "energy",
+    "gradient",
+    "properties",
+    "optimize",
+    "hessian",
+    "frequency",
+    "vibanal_wfn",
+    "gdma",
+    "fchk",
+    "molden",
+    "tdscf",
+    "opt",
+    "freq",
+    "frequencies",
+    "prop",
+]
+
+__all__.extend([
+    "procedures",
+    # TODO: below may need transitive export
+    #"p4util",
+    #"qcdb",
+    #"from psi4.driver.p4util.exceptions import *",
+    #"from psi4.driver.procrouting import *",
+    #"mdi_run",
+])
+
 import copy
 import json
 import logging

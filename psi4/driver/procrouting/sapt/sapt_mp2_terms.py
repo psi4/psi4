@@ -26,7 +26,14 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "df_fdds_dispersion",
+    "df_mp2_fisapt_dispersion",
+    "df_mp2_sapt_dispersion",
+]
+
 import time
+from typing import Any, Dict
 
 import numpy as np
 
@@ -85,8 +92,16 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, x_alpha, rho_thresh=1.e-8):
     return core.triplet(halfp_Saux, tmp, halfp_Saux, False, False, False)
 
 
-def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points=10, leg_lambda=0.3, do_print=True):
-
+def df_fdds_dispersion(
+    primary: core.BasisSet,
+    auxiliary: core.BasisSet,
+    cache: Dict[str, Any],
+    is_hybrid: bool,
+    x_alpha: float,
+    leg_points: int = 10,
+    leg_lambda: float = 0.3,
+    do_print: bool = True,
+) -> Dict[str, float]:
     rho_thresh = core.get_option("SAPT", "SAPT_FDDS_V2_RHO_CUTOFF")
     if do_print:
         core.print_out("\n  ==> E20 Dispersion (CHF FDDS) <== \n\n")
@@ -249,8 +264,13 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
     return {"Disp20,FDDS (unc)": Disp20_uc, "Disp20": Disp20_c}
 
 
-def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
-
+def df_mp2_fisapt_dispersion(
+    wfn: core.Wavefunction,
+    primary: core.BasisSet,
+    auxiliary: core.BasisSet,
+    cache: Dict[str, Any],
+    do_print: bool = True,
+) -> Dict[str, float]:
     if do_print:
         core.print_out("\n  ==> E20 Dispersion (MP2) <== \n\n")
 
@@ -291,8 +311,15 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     return ret
 
 
-def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, cache, do_print=True):
-
+def df_mp2_sapt_dispersion(
+    dimer_wfn: core.Wavefunction,
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    primary_basis: core.BasisSet,
+    aux_basis: core.BasisSet,
+    cache: Dict[str, Any],
+    do_print: bool = True,
+) -> Dict[str, float]:
     if do_print:
         core.print_out("\n  ==> E20 Dispersion (MP2) <== \n\n")
 
