@@ -352,7 +352,8 @@ def _write_molden(self, filename=None, do_virtual=None, use_natural=False):
         
     # Dump MO information
     if basisset.has_puream():
-        mol_string += '[5D]\n[7F]\n[9G]\n\n'
+        # For historical reasons, D and F can go on the same line, but setting D without F implicitly sets F. G must be on its own.
+        mol_string += '[5D7F]\n[9G]\n\n'
     ct = mol.point_group().char_table()
     mol_string += '[MO]\n'
     mo_dim = self.nmopi() if do_virtual else (self.doccpi() + self.soccpi())
