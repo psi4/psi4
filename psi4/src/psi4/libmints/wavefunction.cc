@@ -145,8 +145,6 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     frequencies_ = vectors["frequencies"];
 
     // set dimensions
-    doccpi_ = dimensions["doccpi"];
-    soccpi_ = dimensions["soccpi"];
     frzcpi_ = dimensions["frzcpi"];
     frzvpi_ = dimensions["frzvpi"];
     nalphapi_ = dimensions["nalphapi"];
@@ -213,8 +211,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     energy_ = other->energy_;
     efzc_ = other->efzc_;
 
-    doccpi_ = other->doccpi_;
-    soccpi_ = other->soccpi_;
     frzcpi_ = other->frzcpi_;
     frzvpi_ = other->frzvpi_;
     nalphapi_ = other->nalphapi_;
@@ -302,8 +298,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     efzc_ = other->efzc_;
     variables_ = other->variables_;
 
-    doccpi_ = other->doccpi_;
-    soccpi_ = other->soccpi_;
     frzcpi_ = other->frzcpi_;
     frzvpi_ = other->frzvpi_;
     nalphapi_ = other->nalphapi_;
@@ -390,10 +384,6 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->efzc_ = efzc_;
 
     // collapse all the Dimension objects down to one element
-    wfn->doccpi_.init(1, doccpi_.name());
-    wfn->doccpi_[0] = doccpi_.sum();
-    wfn->soccpi_.init(1, soccpi_.name());
-    wfn->soccpi_[0] = soccpi_.sum();
     wfn->frzcpi_.init(1, frzcpi_.name());
     wfn->frzcpi_[0] = frzcpi_.sum();
     wfn->frzvpi_.init(1, frzvpi_.name());
@@ -501,8 +491,6 @@ void Wavefunction::common_init() {
     nmopi_ = Dimension(nirrep_, "MOs per irrep");
     nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
     nbetapi_ = Dimension(nirrep_, "Beta electrons per irrep");
-    doccpi_ = Dimension(nirrep_, "Doubly occupied orbitals per irrep");
-    soccpi_ = Dimension(nirrep_, "Singly occupied orbitals per irrep");
     frzcpi_ = Dimension(nirrep_, "Frozen core orbitals per irrep");
     frzvpi_ = Dimension(nirrep_, "Frozen virtual orbitals per irrep");
 
@@ -513,8 +501,6 @@ void Wavefunction::common_init() {
     nmo_ = basisset_->nbf();
     for (int k = 0; k < nirrep_; k++) {
         nmopi_[k] = 0;
-        doccpi_[k] = 0;
-        soccpi_[k] = 0;
         nalphapi_[k] = 0;
         nbetapi_[k] = 0;
     }
@@ -784,18 +770,18 @@ void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction
 }
 
 void Wavefunction::force_doccpi(const Dimension &doccpi) {
+    auto socc = soccpi();
     for (int h = 0; h < nirrep_; h++) {
-        if ((soccpi_[h] + doccpi[h]) > nmopi_[h]) {
+        if ((socc[h] + doccpi[h]) > nmopi_[h]) {
             throw PSIEXCEPTION(
                 "Wavefunction::force_doccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
                 "the total number of molecular orbitals.");
         }
-        doccpi_[h] = doccpi[h];
-        nalphapi_[h] = doccpi_[h] + soccpi_[h];
-        nbetapi_[h] = doccpi_[h];
+        nalphapi_[h] = doccpi[h] + socc[h];
+        nbetapi_[h] = doccpi[h];
     }
-    nalpha_ = doccpi_.sum() + soccpi_.sum();
-    nbeta_ = doccpi_.sum();
+    nalpha_ = nalphapi_.sum();
+    nbeta_ = nbetapi_.sum();
 }
 
 void Wavefunction::force_soccpi(const Dimension &soccpi) {
@@ -804,16 +790,16 @@ void Wavefunction::force_soccpi(const Dimension &soccpi) {
             "Wavefunction::force_soccpi: Cannot set soccpi since alpha and beta densities must be the same for this "
             "Wavefunction.");
     }
+    auto docc = doccpi();
     for (int h = 0; h < nirrep_; h++) {
-        if ((soccpi[h] + doccpi_[h]) > nmopi_[h]) {
+        if ((soccpi[h] + doccpi()[h]) > nmopi_[h]) {
             throw PSIEXCEPTION(
                 "Wavefunction::force_soccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
                 "the total number of molecular orbitals.");
         }
-        soccpi_[h] = soccpi[h];
-        nalphapi_[h] = doccpi_[h] + soccpi_[h];
+        nalphapi_[h] = docc[h] + soccpi[h];
     }
-    nalpha_ = doccpi_.sum() + soccpi_.sum();
+    nalpha_ = nalphapi_.sum();
 }
 
 void Wavefunction::set_frzvpi(const Dimension &frzvpi) {

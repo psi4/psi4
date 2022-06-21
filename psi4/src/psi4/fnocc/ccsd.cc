@@ -89,8 +89,6 @@ void CoupledCluster::common_init() {
     isccsd = options_.get_bool("RUN_CCSD");
 
     escf = reference_wavefunction_->energy();
-    doccpi_ = reference_wavefunction_->doccpi();
-    soccpi_ = reference_wavefunction_->soccpi();
     frzcpi_ = reference_wavefunction_->frzcpi();
     frzvpi_ = reference_wavefunction_->frzvpi();
     nmopi_ = reference_wavefunction_->nmopi();
@@ -103,14 +101,11 @@ void CoupledCluster::common_init() {
     nalpha_ = reference_wavefunction_->nalpha();
     nbeta_ = reference_wavefunction_->nbeta();
 
-    nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
-    for (int h = 0; h < nirrep_; h++) {
-        nfzc += frzcpi_[h];
-        nfzv += frzvpi_[h];
-        nso += nsopi_[h];
-        nmo += nmopi_[h] - frzcpi_[h] - frzvpi_[h];
-        ndocc += doccpi_[h];
-    }
+    nfzc = frzcpi_.sum();
+    nfzv = frzvpi_.sum();
+    nso = nsopi_.sum();
+    nmo = nmopi_.sum() - nfzc - nfzv;
+    ndocc = doccpi().sum();
     ndoccact = ndocc - nfzc;
     nvirt = nmo - ndoccact;
 
@@ -794,12 +789,12 @@ void CoupledCluster::AllocateMemory() {
     eps = (double *)malloc((ndoccact + nvirt) * sizeof(double));
     std::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
     for (int h = 0; h < nirrep_; h++) {
-        for (int norb = frzcpi_[h]; norb < doccpi_[h]; norb++) {
+        for (int norb = frzcpi_[h]; norb < nalphapi_[h]; norb++) {
             eps[count++] = eps_test->get(h, norb);
         }
     }
     for (int h = 0; h < nirrep_; h++) {
-        for (int norb = doccpi_[h]; norb < nmopi_[h] - frzvpi_[h]; norb++) {
+        for (int norb = nalphapi_[h]; norb < nmopi_[h] - frzvpi_[h]; norb++) {
             eps[count++] = eps_test->get(h, norb);
         }
     }

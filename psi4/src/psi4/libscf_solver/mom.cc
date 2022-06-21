@@ -201,7 +201,6 @@ void HF::MOM_start() {
                 // Redo indexing
                 nalphapi_[hi]--;
                 nbetapi_[hi]--;
-                doccpi_[hi]--;
 
                 // Vir -> Occ
                 int pa = orbs_a[a].second.second;
@@ -229,7 +228,6 @@ void HF::MOM_start() {
                 // Redo indexing
                 nalphapi_[ha]++;
                 nbetapi_[ha]++;
-                doccpi_[ha]++;
 
                 outfile->Printf("   %8s: %4d%-4s -> %4d%-4s \n", "AB -> AB", pi + 1, ct.gamma(hi).symbol(), pa + 1,
                                 ct.gamma(ha).symbol());
@@ -545,41 +543,6 @@ void HF::MOM_start() {
             }
             if (nalpha_ < nbeta_)
                 throw PSIEXCEPTION("PSI::MOM_start: Nbeta ends up being less than Nalpha, this is not supported");
-
-            // Fix doccpi/soccpi. In MOM, we do _not_ assume that all singly occupied orbitals are alpha.
-            // All we assume is that when you pair the alpha and beta orbitals of a given irrep by energy,
-            // two being occupied increments docc, and one being occupied increments soccpi.
-            for (int h = 0; h < nirrep_; h++) {
-                std::vector<std::pair<double, std::pair<int, bool> > > alphas;
-                std::vector<std::pair<double, std::pair<int, bool> > > betas;
-
-                for (int i = 0; i < nalphapi_[h]; i++) {
-                    alphas.push_back(std::make_pair(epsilon_a_->get(h, i), std::make_pair(i, true)));
-                }
-                for (int i = 0; i < nbetapi_[h]; i++) {
-                    betas.push_back(std::make_pair(epsilon_b_->get(h, i), std::make_pair(i, true)));
-                }
-                for (int i = nalphapi_[h]; i < nmopi_[h]; i++) {
-                    alphas.push_back(std::make_pair(epsilon_a_->get(h, i), std::make_pair(i, false)));
-                }
-                for (int i = nbetapi_[h]; i < nmopi_[h]; i++) {
-                    betas.push_back(std::make_pair(epsilon_b_->get(h, i), std::make_pair(i, false)));
-                }
-                sort(alphas.begin(), alphas.end());
-                sort(betas.begin(), betas.end());
-
-                doccpi_[h] = 0;
-                soccpi_[h] = 0;
-
-                for (int i = 0; i < nmopi_[h]; i++) {
-                    bool alpha_occ = alphas[i].second.second;
-                    bool beta_occ = betas[i].second.second;
-                    if (alpha_occ && beta_occ)
-                        doccpi_[h]++;
-                    else if (alpha_occ || beta_occ)  // Careful, could be beta occ
-                        soccpi_[h]++;
-                }
-            }
 
         } else if (options_.get_str("REFERENCE") == "ROHF") {
             throw PSIEXCEPTION("SCF::MOM_start: MOM excited states are not implemented for ROHF");

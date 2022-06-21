@@ -59,10 +59,10 @@ void normalize(double** A, int rows, int cols);
 double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
 PSI_API
-void reorder_qt(int* docc_in, int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order, int* orbs_per_irrep,
+void reorder_qt(const int* docc_in, const int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order, int* orbs_per_irrep,
                 int nirreps);
 PSI_API
-void reorder_qt_uhf(int* docc, int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
+void reorder_qt_uhf(const int* docc, const int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
                     int* orbspi, int nirreps);
 // int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
 //      int *docc, int *socc, int *frdocc, int *fruocc,

@@ -142,10 +142,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Total frozen core orbitals
     int nfrzc_;
 
-    /// Number of doubly occupied per irrep
-    Dimension doccpi_;
-    /// Number of singly occupied per irrep
-    Dimension soccpi_;
     /// Number of frozen core per irrep
     Dimension frzcpi_;
     /// Number of frozen virtuals per irrep
@@ -378,10 +374,22 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     int get_print() const { return print_; }
     static void initialize_singletons();
 
-    /// Returns the DOCC per irrep array.
-    const Dimension& doccpi() const { return doccpi_; }
-    /// Returns the SOCC per irrep array.
-    const Dimension& soccpi() const { return soccpi_; }
+    /// Returns the DOCC per irrep array. Not recommended for unrestricted code.
+    const Dimension doccpi() const {
+        std::vector<int> docc_vec;
+        for (int h = 0; h < nalphapi_.n(); h++) {
+            docc_vec.push_back(std::min(nalphapi_[h], nbetapi_[h]));
+        }
+        return docc_vec;
+    }
+    /// Returns the SOCC per irrep array. Not recommended for unrestricted code.
+    const Dimension soccpi() const {
+        std::vector<int> socc_vec;
+        for (int h = 0; h < nalphapi_.n(); h++) {
+            socc_vec.push_back(std::abs(nalphapi_[h] - nbetapi_[h]));
+        }
+        return socc_vec;
+    }
     /// Returns the number of SOs per irrep array.
     const Dimension& nsopi() const { return nsopi_; }
     /// Returns the number of MOs per irrep array.

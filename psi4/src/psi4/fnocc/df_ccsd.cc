@@ -553,12 +553,12 @@ void DFCoupledCluster::AllocateMemory() {
     eps = (double *)malloc((ndoccact + nvirt) * sizeof(double));
     std::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
     for (int h = 0; h < nirrep_; h++) {
-        for (int norb = frzcpi_[h]; norb < doccpi_[h]; norb++) {
+        for (int norb = frzcpi_[h]; norb < nalphapi_[h]; norb++) {
             eps[count++] = eps_test->get(h, norb);
         }
     }
     for (int h = 0; h < nirrep_; h++) {
-        for (int norb = doccpi_[h]; norb < nmopi_[h] - frzvpi_[h]; norb++) {
+        for (int norb = nalphapi_[h]; norb < nmopi_[h] - frzvpi_[h]; norb++) {
             eps[count++] = eps_test->get(h, norb);
         }
     }

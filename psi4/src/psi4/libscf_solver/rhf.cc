@@ -120,7 +120,7 @@ void RHF::finalize() {
         for (int m = 0; m < Lagrangian_->rowdim(h); ++m) {
             for (int n = 0; n < Lagrangian_->coldim(h); ++n) {
                 double sum = 0.0;
-                for (int i = 0; i < doccpi_[h]; ++i) {
+                for (int i = 0; i < nalphapi_[h]; ++i) {
                     sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
                 }
                 Lagrangian_->set(h, m, n, sum);
@@ -273,12 +273,12 @@ void RHF::form_D() {
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
-        int na = doccpi_[h];
+        int na = nalphapi_[h];
 
         if (nso == 0 || nmo == 0) continue;
 
-        double** Ca = Ca_->pointer(h);
-        double** D = Da_->pointer(h);
+        auto Ca = Ca_->pointer(h);
+        auto D = Da_->pointer(h);
 
         C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, D[0], nso);
     }
@@ -625,13 +625,13 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
-        SharedMatrix Cocc_ao = Ca_subset("AO", "ALL");
-        SharedMatrix F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
-        SharedMatrix IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
+        auto Cocc_ao = Ca_subset("AO", "ALL");
+        auto F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        auto IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
         Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
 
-        double* denomp = Precon_ao->pointer()[0];
-        double** fp = IFock_ao->pointer();
+        auto denomp = Precon_ao->pointer()[0];
+        auto fp = IFock_ao->pointer();
 
         for (size_t i = 0, target = 0; i < nalpha_; i++) {
             for (size_t a = nalpha_; a < nmo_; a++) {
@@ -642,17 +642,17 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_so) {
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
-        Dimension virpi = nmopi_ - nalphapi_;
-        SharedMatrix IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
-        Precon_so = std::make_shared<Matrix>("Precon", nirrep_, doccpi_, virpi);
+        auto virpi = nmopi_ - nalphapi_;
+        auto IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+        Precon_so = std::make_shared<Matrix>("Precon", nirrep_, nalphapi_, virpi);
 
         for (size_t h = 0; h < nirrep_; h++) {
-            if (!doccpi_[h] || !virpi[h]) continue;
-            double* denomp = Precon_so->pointer(h)[0];
-            double** fp = IFock_so->pointer(h);
+            if (!nalphapi_[h] || !virpi[h]) continue;
+            auto denomp = Precon_so->pointer(h)[0];
+            auto fp = IFock_so->pointer(h);
 
-            for (size_t i = 0, target = 0; i < doccpi_[h]; i++) {
-                for (size_t a = doccpi_[h]; a < nmopi_[h]; a++) {
+            for (size_t i = 0, target = 0; i < nalphapi_[h]; i++) {
+                for (size_t a = nalphapi_[h]; a < nmopi_[h]; a++) {
                     denomp[target++] = -fp[i][i] + fp[a][a];
                 }
             }
@@ -920,14 +920,14 @@ bool RHF::stability_analysis() {
                 int isym = Atrip.params->psym[iabs];
                 int asym = Atrip.params->qsym[aabs];
                 int irel = iabs - Atrip.params->poff[isym];
-                int arel = aabs - Atrip.params->qoff[asym] + doccpi_[asym];
+                int arel = aabs - Atrip.params->qoff[asym] + nalphapi_[asym];
                 for (int jb = 0; jb < Atrip.params->coltot[h]; ++jb) {
                     int jabs = Atrip.params->colorb[h][jb][0];
                     int babs = Atrip.params->colorb[h][jb][1];
                     int jsym = Atrip.params->rsym[jabs];
                     int bsym = Atrip.params->ssym[babs];
                     int jrel = jabs - Atrip.params->roff[jsym];
-                    int brel = babs - Atrip.params->soff[bsym] + doccpi_[bsym];
+                    int brel = babs - Atrip.params->soff[bsym] + nalphapi_[bsym];
                     // Triplet A_ia_jb += delta_ij F_ab - delta_ab F_ij
                     if ((iabs == jabs) && (asym == bsym)) Atrip.matrix[h][ia][jb] += moF->get(asym, arel, brel);
                     if ((aabs == babs) && (isym == jsym)) Atrip.matrix[h][ia][jb] -= moF->get(isym, irel, jrel);

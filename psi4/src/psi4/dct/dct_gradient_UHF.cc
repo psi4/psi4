@@ -3093,10 +3093,10 @@ void DCTSolver::compute_lagrangian_OO(bool separate_gbargamma) {
     // If we have gbar_gamma separate, just like when computing the OO gradient, we compute these terms special.
     if (separate_gbargamma) {
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), Slice(zero, nsopi_));
-        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(zero, doccpi_), Slice(zero, nsopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(zero, soccpi_ + doccpi_));
-        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(zero, doccpi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, nalphapi_), Slice(zero, nsopi_));
+        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(zero, nbetapi_), Slice(zero, nsopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(zero, nalphapi_));
+        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(zero, nbetapi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
         auto beta_jk = linalg::doublet(gbar_beta_block, gamma_beta_block, false, false);
 
@@ -3338,10 +3338,10 @@ void DCTSolver::compute_lagrangian_VV(bool separate_gbargamma) {
     // If we have gbar_gamma separate, just like when computing the OO gradient, we compute these terms special.
     if (separate_gbargamma) {
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nsopi_), Slice(zero, nsopi_));
-        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(doccpi_, nsopi_), Slice(zero, nsopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(soccpi_ + doccpi_, nsopi_));
-        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(doccpi_, nsopi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(nalphapi_, nsopi_), Slice(zero, nsopi_));
+        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(nbetapi_, nsopi_), Slice(zero, nsopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(nalphapi_, nsopi_));
+        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(nbetapi_, nsopi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
         auto beta_jk = linalg::doublet(gbar_beta_block, gamma_beta_block, false, false);
 

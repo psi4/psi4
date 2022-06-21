@@ -833,10 +833,10 @@ void HF::compute_SAD_guess(bool natorb) {
 
             if (!nso || !nmo) continue;
 
-            double** Cap = Ca_->pointer(h);
-            double** Cbp = Cb_->pointer(h);
-            double** Ca2p = Ca_sad->pointer(h);
-            double** Cb2p = Cb_sad->pointer(h);
+            auto Cap = Ca_->pointer(h);
+            auto Cbp = Cb_->pointer(h);
+            auto Ca2p = Ca_sad->pointer(h);
+            auto Cb2p = Cb_sad->pointer(h);
             for (int i = 0; i < nso; i++) {
                 C_DCOPY(nmo, Ca2p[i], 1, Cap[i], 1);
                 C_DCOPY(nmo, Cb2p[i], 1, Cbp[i], 1);
@@ -847,8 +847,6 @@ void HF::compute_SAD_guess(bool natorb) {
         nbetapi_ = sad_dim;
         nalpha_ = sad_dim.sum();
         nbeta_ = sad_dim.sum();
-        doccpi_ = sad_dim;
-        soccpi_ = Dimension(Da_->nirrep(), "SAD SOCC dim (0's)");
         energies_["Total Energy"] = 0.0;  // This is the -1th iteration
     }
 }

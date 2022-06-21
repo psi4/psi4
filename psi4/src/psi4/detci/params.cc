@@ -1364,8 +1364,8 @@ void CIWavefunction::print_ras_parameters() {
     orbital_info << seperator;
     orbital_info << _concat_dim("Nso", sdist, nsopi_, tdist, hdist);
     orbital_info << _concat_dim("Nmo", sdist, nmopi_, tdist, hdist);
-    orbital_info << _concat_dim("Ndocc", sdist, doccpi_, tdist, hdist);
-    orbital_info << _concat_dim("Nsocc", sdist, soccpi_, tdist, hdist);
+    orbital_info << _concat_dim("Ndocc", sdist, doccpi(), tdist, hdist);
+    orbital_info << _concat_dim("Nsocc", sdist, soccpi(), tdist, hdist);
     orbital_info << seperator;
 
     // Occupied spaces
