@@ -602,6 +602,70 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             if (meta_) {
                 C_DAXPY(npoints, 0.5 * alpha_, fv_tau.data(), 1, v_tau_a, 1);
             }
+
+            // Data validation.
+            bool found_nan = false;
+            if (meta_) {
+                if (exc_) {
+                    for (int i = 0; i < npoints; i++) {
+                        if (std::isnan(v[i])) {
+                            outfile->Printf("v is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
+                            found_nan = true;
+                        }
+                    }
+                }
+                for (int i = 0; i < npoints; i++) {
+                    if (std::isnan(v_rho_a[i])) {
+                        outfile->Printf("v_rho_a is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
+                        found_nan = true;
+                    }
+                    if (std::isnan(v_gamma_aa[i])) {
+                        outfile->Printf("v_gamma_aa is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
+                        found_nan = true;
+                    }
+                    if (std::isnan(v_tau_a[i])) {
+                        outfile->Printf("v_tau_a is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
+                        found_nan = true;
+                    }
+                }
+            } else if (gga_) {
+                if (exc_) {
+                    for (int i = 0; i < npoints; i++) {
+                        if (std::isnan(v[i])) {
+                            outfile->Printf("v is NaN : rho_ap %12.8f   gamma_aap %12.8f\n", rho_ap[i], gamma_aap[i]);
+                            found_nan = true;
+                        }
+                    }
+                }
+                for (int i = 0; i < npoints; i++) {
+                    if (std::isnan(v_rho_a[i])) {
+                        outfile->Printf("v_rho_a is NaN : rho_ap %12.8f   gamma_aap %12.8f\n", rho_ap[i], gamma_aap[i]);
+                        found_nan = true;
+                    }
+                    if (std::isnan(v_gamma_aa[i])) {
+                        outfile->Printf("v_gamma_aa is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
+                        found_nan = true;
+                    }
+                }
+            } else {
+                if (exc_) {
+                    for (int i = 0; i < npoints; i++) {
+                        if (std::isnan(v[i])) {
+                            outfile->Printf("v is NaN : rho_ap %12.8f\n", rho_ap[i]);
+                            found_nan = true;
+                        }
+                    }
+                }
+                for (int i = 0; i < npoints; i++) {
+                    if (std::isnan(v_rho_a[i])) {
+                        outfile->Printf("v_rho_a is NaN : rho_ap %12.8f\n", rho_ap[i]);
+                        found_nan = true;
+                    }
+                }
+            }
+            if (found_nan) {
+                throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
+            }
         }
 
         // Compute second derivative
