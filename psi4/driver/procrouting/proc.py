@@ -3206,7 +3206,7 @@ def run_cc_property(name, **kwargs):
                                  f"{title} ROOT 0 (IN {gs_h_lbl}) {{}}", f"CC ROOT 0 (IN {gs_h_lbl}) {{}}"})
         oe.set_names(set_of_names)
         oe.compute()
-        print(ccwfn.variables())
+
         # ==> OEProp for Excited States <==
         if name.startswith('eom'):
             n_root_pi = core.get_global_option("ROOTS_PER_IRREP")
