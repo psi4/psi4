@@ -170,7 +170,7 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
             // Maximum density matrix equation
             double max_density = 0.0;
 
-	    auto is_in_array = [](auto element, auto array) {
+	    auto is_in_array = [&](auto element, auto array) {
               return std::find(std::begin(array), std::end(array), element) != std::end(array);
 	    };
 
