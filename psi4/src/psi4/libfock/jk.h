@@ -255,6 +255,9 @@ class PSI_API JK {
 
     // => Tasks <= //
 
+    /// Type of wave function JK is being built for
+    std::string jk_reference_;
+
     /// Do J matrices? Defaults to true
     bool do_J_;
     /// Do K matrices? Defaults to true
@@ -447,6 +450,12 @@ class PSI_API JK {
     /// Bench flag (defaults to 0)
     void set_bench(int bench) { bench_ = bench; }
     int get_bench() const { return bench_; }
+    /**
+    * Set to determine wave function reference. 
+    * @param jk_reference type of reference wave function
+    */
+    void set_jk_reference(const std::string& jk_reference) { jk_reference_ = jk_reference; }
+    
     /**
     * Set to do J tasks
     * @param do_J do J matrices or not,
