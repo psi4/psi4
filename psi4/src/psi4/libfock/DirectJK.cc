@@ -175,14 +175,15 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
 	    };
 
 	    std::array<std::string, 2> one_density_jk_references = { "RHF", "RKS" };
-	    std::array<std::string, 3> two_density_jk_references = { "UHF", "ROHF", "UKS" };
+	    std::array<std::string, 3> two_density_jk_references = { "UHF", "UKS", "ROHF" }; 
             
-	    // Equation 6 (RHF Case)
+	    // Equation 6 (RHF/RKS Case)
             if (is_in_array(jk_reference_, one_density_jk_references)) {
                 max_density = std::max({4.0 * ints[0]->shell_pair_max_density(0, M, N), 4.0 * ints[0]->shell_pair_max_density(0, R, S),
                     ints[0]->shell_pair_max_density(0, M, R), ints[0]->shell_pair_max_density(0, M, S),
                     ints[0]->shell_pair_max_density(0, N, R), ints[0]->shell_pair_max_density(0, N, S)});
-            } else if (is_in_array(jk_reference_, two_density_jk_references)) { 
+            // UHF/UKS/ROHF Case
+	    } else if (is_in_array(jk_reference_, two_density_jk_references)) { 
                 // J-like terms
                 double D_MN = ints[0]->shell_pair_max_density(0, M, N) + ints[0]->shell_pair_max_density(1, M, N);
                 double D_RS = ints[0]->shell_pair_max_density(0, R, S) + ints[0]->shell_pair_max_density(1, R, S);
@@ -194,8 +195,9 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
                 double D_NS = std::max(ints[0]->shell_pair_max_density(0, N, S), ints[0]->shell_pair_max_density(1, N, S));
 
                 max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
-            } else {
-	      std::string error_message = "DirectJK shell significance tests being performed with invalid reference wave function type " + jk_reference_ + "! DirectJK::shell_significant() is only allowed with RHF, UHF, and ROHF reference wave functions.";
+            // throw, because we are using incompatible reference wave function
+	    } else {
+	      std::string error_message = "DirectJK shell significance tests being performed with invalid reference wave function type " + jk_reference_ + "! DirectJK::shell_significant() is only allowed with RHF/RKS, UHF/UKS, and ROHF reference wave functions.";
               throw PSIEXCEPTION(error_message);
             }
 
