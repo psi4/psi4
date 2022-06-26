@@ -411,7 +411,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
         }
     }
 
-    // => Outut variables <= //
+    // => Output variables <= //
 
     double* v = nullptr;
 
@@ -606,59 +606,26 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             // Data validation.
             bool found_nan = false;
             if (meta_) {
-                if (exc_) {
-                    for (int i = 0; i < npoints; i++) {
-                        if (std::isnan(v[i])) {
-                            outfile->Printf("v is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
-                            found_nan = true;
-                        }
-                    }
-                }
                 for (int i = 0; i < npoints; i++) {
-                    if (std::isnan(v_rho_a[i])) {
-                        outfile->Printf("v_rho_a is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
-                        found_nan = true;
-                    }
-                    if (std::isnan(v_gamma_aa[i])) {
-                        outfile->Printf("v_gamma_aa is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
-                        found_nan = true;
-                    }
-                    if (std::isnan(v_tau_a[i])) {
-                        outfile->Printf("v_tau_a is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
+                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_gamma_aa[i]) || std::isnan(v_tau_a[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 %.6e %.6e\n",
+                          rho_ap[i] / 2, rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4, tau_ap[i] / 2, tau_ap[i] / 2);
                         found_nan = true;
                     }
                 }
             } else if (gga_) {
-                if (exc_) {
-                    for (int i = 0; i < npoints; i++) {
-                        if (std::isnan(v[i])) {
-                            outfile->Printf("v is NaN : rho_ap %12.8f   gamma_aap %12.8f\n", rho_ap[i], gamma_aap[i]);
-                            found_nan = true;
-                        }
-                    }
-                }
                 for (int i = 0; i < npoints; i++) {
-                    if (std::isnan(v_rho_a[i])) {
-                        outfile->Printf("v_rho_a is NaN : rho_ap %12.8f   gamma_aap %12.8f\n", rho_ap[i], gamma_aap[i]);
-                        found_nan = true;
-                    }
-                    if (std::isnan(v_gamma_aa[i])) {
-                        outfile->Printf("v_gamma_aa is NaN : rho_ap %12.8f   gamma_aap %12.8f   tau_ap %12.8f\n", rho_ap[i], gamma_aap[i], tau_ap[i]);
+                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_gamma_aa[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n",
+                          rho_ap[i] / 2, rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4);
                         found_nan = true;
                     }
                 }
             } else {
-                if (exc_) {
-                    for (int i = 0; i < npoints; i++) {
-                        if (std::isnan(v[i])) {
-                            outfile->Printf("v is NaN : rho_ap %12.8f\n", rho_ap[i]);
-                            found_nan = true;
-                        }
-                    }
-                }
                 for (int i = 0; i < npoints; i++) {
-                    if (std::isnan(v_rho_a[i])) {
-                        outfile->Printf("v_rho_a is NaN : rho_ap %12.8f\n", rho_ap[i]);
+                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n",
+                          rho_ap[i] / 2, rho_ap[i] / 2);
                         found_nan = true;
                     }
                 }
