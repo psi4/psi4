@@ -40,10 +40,12 @@ import shutil
 import inspect
 import subprocess
 
+import qcelemental as qcel
+
 from psi4.driver import qcdb
 from psi4.driver import p4util
-from psi4.driver.molutil import *
 from psi4.driver.p4util.exceptions import *
+from psi4 import core
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}
@@ -256,7 +258,17 @@ def run_cfour(name, **kwargs):
         core.set_variable(key.upper(), float(psivar[key]))
 
     if qcdbmolecule is None and c4mol is not None:
-        molecule = geometry(c4mol.create_psi4_string_from_molecule(), name='blank_molecule_psi4_yo')
+
+        molrec = qcel.molparse.from_string(
+            c4mol.create_psi4_string_from_molecule(),
+            enable_qm=True,
+            missing_enabled_return_qm='minimal',
+            enable_efp=False,
+            missing_enabled_return_efp='none',
+        )
+        molecule = core.Molecule.from_dict(molrec['qm'])
+        molecule.set_name('blank_molecule_psi4_yo')
+        core.set_active_molecule(molecule)
         molecule.update_geometry()
         # This case arises when no Molecule going into calc (cfour {} block) but want
         #   to know the orientation at which grad, properties, etc. are returned (c4mol).
@@ -382,11 +394,16 @@ def run_cfour(name, **kwargs):
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
     #   Feb 2017 hack. Could get proper basis in skel wfn even if not through p4 basis kw
-    gobas = core.get_global_option('BASIS') if core.get_global_option('BASIS') else 'sto-3g'
+    if core.get_global_option('BASIS') in ["", "(AUTO)"]:
+        gobas = "sto-3g"
+    else:
+        gobas = core.get_global_option('BASIS')
     basis = core.BasisSet.build(molecule, "ORBITAL", gobas)
     if basis.has_ECP():
         raise ValidationError("""ECPs not hooked up for Cfour""")
     wfn = core.Wavefunction(molecule, basis)
+    for k, v in psivar.items():
+        wfn.set_variable(k.upper(), float(v))
 
     optstash.restore()
 
@@ -453,7 +470,7 @@ def write_zmat(name, dertype, molecule):
         qcdbmolecule.tagline = molecule.name()
         molcmd, molkw = qcdbmolecule.format_molecule_for_cfour()
 
-        if core.get_global_option('BASIS') == '':
+        if core.get_global_option('BASIS') in ["", "(AUTO)"]:
             bascmd, baskw = '', {}
         else:
             user_pg = molecule.schoenflies_symbol()
