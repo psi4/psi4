@@ -3,7 +3,7 @@
 
 store = {}  #TEST
 #test_psivars = ['scf total energy', 'mp2 singles energy', 'mp2 opposite-spin energy', 'mp2 same-spin energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'mp4 total energy', 'mp4 correlation energy', 'current energy', 'current correlation energy', 'current reference energy', 'mp4(sdq) correlation energy', 'mp4(sdq) total energy', 'mp4(t) correction energy']  #TEST
-test_psivars = ['scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'mp4 total energy', 'mp4 correlation energy', 'current energy', 'current correlation energy', 'current reference energy', 'mp4(sdq) correlation energy', 'mp4(sdq) total energy', 'mp4(t) correction energy']  #TEST
+test_psivars = ['scf total energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'mp4 total energy', 'mp4 correlation energy', 'current energy', 'current correlation energy', 'current reference energy', 'mp4(sdq) correlation energy', 'mp4(sdq) total energy', 'mp4(t) correction energy']  #TEST
 
 print('    <<<  RHF  >>>')
 

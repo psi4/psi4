@@ -57,6 +57,8 @@ def harvest_output(outtext):
 
     #for outpass in re.split(r'--invoking executable xjoda', outtext, re.MULTILINE):
     for outpass in re.split(r'JODA beginning optimization cycle', outtext, re.MULTILINE):
+        if "Final ZMATnew file" in outpass:
+            continue
         psivar, qcskcoord, c4grad, version, module, error = qcng.programs.cfour.harvester.harvest_outfile_pass(outpass)
         c4coord = Molecule.from_schema(qcskcoord.dict())
 
@@ -721,6 +723,8 @@ def harvest_GRD(grd):
     for at in range(Nat):
         mline = grd[at + 1].split()
         el = 'GH' if int(float(mline[0])) == 0 else qcel.periodictable.to_E(int(float(mline[0])))
+        if el == "GH":
+            raise ValidationError("Psi4/Cfour gradients with ghost atoms no longer supported. Use QCEngine or QCDB where they are.")
         molxyz += '%s %16s %16s %16s\n' % (el, mline[-3], mline[-2], mline[-1])
         lline = grd[at + 1 + Nat].split()
         grad.append([float(lline[-3]), float(lline[-2]), float(lline[-1])])
