@@ -44,56 +44,6 @@
 
 namespace psi {
 
-Vector::Vector() {
-    dimpi_ = nullptr;
-    name_ = "";
-}
-
-Vector::Vector(const Vector &c) {
-    dimpi_ = c.dimpi_;
-    alloc();
-    copy_from(c);
-    name_ = c.name_;
-}
-
-Vector::Vector(int nirreps, int *dimpi) : dimpi_(nirreps) {
-    dimpi_ = dimpi;
-    alloc();
-}
-
-Vector::Vector(int dim) : dimpi_(1) {
-    dimpi_[0] = dim;
-    alloc();
-}
-
-Vector::Vector(const std::string &name, int nirreps, int *dimpi) : dimpi_(nirreps) {
-    auto dim_vector = std::vector<int>(nirreps);
-    for (int h = 0; h < nirreps; ++h) dim_vector[h] = dimpi[h];
-    dimpi_ = Dimension(dim_vector);
-    alloc();
-    name_ = name;
-}
-
-Vector::Vector(const std::string &name, int dim) : dimpi_(1) {
-    dimpi_[0] = dim;
-    alloc();
-    name_ = name;
-}
-
-Vector::Vector(const Dimension &v) {
-    dimpi_ = v;
-    alloc();
-    name_ = v.name();
-}
-
-Vector::Vector(const std::string &name, const Dimension &v) {
-    dimpi_ = v;
-    alloc();
-    name_ = name;
-}
-
-Vector::~Vector() { release(); }
-
 void Vector::init(int nirreps, int *dimpi) {
     dimpi_.init(nirreps);
     dimpi_ = dimpi;
@@ -119,36 +69,6 @@ std::unique_ptr<Vector> Vector::clone() const {
     return temp;
 }
 
-void Vector::alloc() {
-    if (vector_.size()) release();
-
-    int total = dimpi_.sum();
-    v_.resize(total);
-
-    std::fill(vector_.begin(), vector_.end(), (double *)0);
-    std::fill(v_.begin(), v_.end(), 0.0);
-
-    assign_pointer_offsets();
-}
-
-void Vector::assign_pointer_offsets() {
-    // Resize just to be sure it's the correct size
-    vector_.resize(dimpi_.n(), 0);
-
-    size_t offset = 0;
-    for (int h = 0; h < nirrep(); ++h) {
-        if (dimpi_[h])
-            vector_[h] = &(v_[0]) + offset;
-        else
-            vector_[h] = nullptr;
-        offset += dimpi_[h];
-    }
-}
-
-void Vector::release() {
-    std::fill(vector_.begin(), vector_.end(), (double *)0);
-    std::fill(v_.begin(), v_.end(), 0.0);
-}
 
 void Vector::copy_from(const Vector &other) {
     dimpi_ = other.dimpi_;
@@ -159,19 +79,6 @@ void Vector::copy_from(const Vector &other) {
 void Vector::copy(const Vector *rhs) { copy_from(*rhs); }
 
 void Vector::copy(const Vector &rhs) { copy_from(rhs); }
-
-IntVector Vector::get_sort_vector(std::function<bool(const Vector&, int, int, int)> func) {
-    return get_sort_vector(func, Slice(Dimension(nirrep()), dimpi_));
-}
-
-IntVector Vector::get_sort_vector(std::function<bool(const Vector&, int, int, int)> func, Slice slice) {
-    IntVector sort(slice.end() - slice.begin());
-    for (int h = 0; h < nirrep(); h++) {
-        std::iota(sort.pointer(h), sort.pointer(h) + sort.dim(h), 0);
-        std::stable_sort(sort.pointer(h) + slice.begin()[h], sort.pointer(h) + slice.end()[h], std::bind(func, *this, h, std::placeholders::_1, std::placeholders::_2));
-    }
-    return sort;
-}
 
 void Vector::sort(const IntVector& idxs) {
     auto orig = clone();

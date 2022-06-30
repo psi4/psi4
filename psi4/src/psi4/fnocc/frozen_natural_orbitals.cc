@@ -287,7 +287,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
     ints.reset();
 
     auto eigvec = std::make_shared<Matrix>("Dab eigenvectors", nirrep_, aVirOrbsPI, aVirOrbsPI, symmetry);
-    auto eigval = std::make_shared<Vector>("Dab eigenvalues", nirrep_, aVirOrbsPI);
+    auto eigval = std::make_shared<Vector>("Dab eigenvalues", aVirOrbsPI);
     D->diagonalize(eigvec, eigval, descending);
 
     // overwrite ao/mo C matrix with ao/no transformation
@@ -416,9 +416,9 @@ void FrozenNO::ComputeNaturalOrbitals() {
         int o = nalphapi_[h];
         int vnew = newVirOrbsPI[h];
         int vold = aVirOrbsPI[h];
-        double** Fnew = Fab->pointer(h);
-        double** cp = eigvec->pointer(h);
-        double* Fold = epsA->pointer(h);
+        auto Fnew = Fab->pointer(h);
+        auto cp = eigvec->pointer(h);
+        auto Fold = epsA->pointer(h);
         for (int a = 0; a < vnew; a++) {
             for (int b = 0; b < vnew; b++) {
                 double dum = 0.0;
@@ -432,16 +432,16 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     // semicanonicalize orbitals:
     auto eigvecF = std::make_shared<Matrix>("Fab eigenvectors", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
-    auto eigvalF = std::make_shared<Vector>("Fab eigenvalues", nirrep_, newVirOrbsPI);
+    auto eigvalF = std::make_shared<Vector>("Fab eigenvalues", newVirOrbsPI);
     Fab->diagonalize(eigvecF, eigvalF);
 
     // overwrite ao/no C matrix with ao/semicanonical no transformation:
     for (int h = 0; h < nirrep_; h++) {
         int v = newVirOrbsPI[h];
 
-        double** c_newv = eigvecF->pointer(h);
-        double** c_oldv = Ca_->pointer(h);
-        double** tp = temp->pointer(h);
+        auto c_newv = eigvecF->pointer(h);
+        auto c_oldv = Ca_->pointer(h);
+        auto tp = temp->pointer(h);
 
         for (int mu = 0; mu < nsopi_[h]; mu++) {
             for (int a = 0; a < v; a++) {
@@ -465,7 +465,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
     }
 
     // put modified orbital energies back into epsilon_a
-    std::shared_ptr<Vector> eps = epsilon_a_;
+    auto eps = epsilon_a_;
     for (int h = 0; h < nirrep_; h++) {
         auto epsp = eps->pointer(h);
         auto eigp = eigvalF->pointer(h);

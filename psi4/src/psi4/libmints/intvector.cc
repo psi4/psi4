@@ -34,69 +34,6 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 using namespace psi;
 
-IntVector::IntVector() {
-    name_ = "";
-}
-
-IntVector::IntVector(const IntVector &c) {
-    dimpi_ = c.dimpi_;
-    alloc();
-    copy(c);
-    name_ = c.name_;
-}
-
-IntVector::IntVector(const Dimension& dimpi) {
-    dimpi_ = dimpi;
-    alloc();
-}
-IntVector::IntVector(int dim) {
-    dimpi_ = Dimension(std::vector<int>{dim});
-    alloc();
-}
-IntVector::IntVector(const std::string &name, Dimension dimpi) {
-    dimpi_ = dimpi;
-    alloc();
-    name_ = name;
-}
-IntVector::IntVector(const std::string &name, int dim) {
-    dimpi_ = Dimension(std::vector<int>{dim});
-    alloc();
-    name_ = name;
-}
-
-IntVector::~IntVector() {
-    release();
-}
-
-void IntVector::alloc() {
-    if (vector_.size()) release();
-
-    int total = dimpi_.sum();
-    v_.resize(total);
-
-    release();
-    assign_pointer_offsets();
-}
-
-void IntVector::assign_pointer_offsets() {
-    // Resize just to be sure it's the correct size
-    vector_.resize(dimpi_.n(), 0);
-
-    size_t offset = 0;
-    for (int h = 0; h < nirrep(); ++h) {
-        if (dimpi_[h])
-            vector_[h] = &(v_[0]) + offset;
-        else
-            vector_[h] = nullptr;
-        offset += dimpi_[h];
-    }
-}
-
-void IntVector::release() {
-    std::fill(vector_.begin(), vector_.end(), (int*)0);
-    std::fill(v_.begin(), v_.end(), 0.0);
-}
-
 void IntVector::copy(const IntVector &other) {
     dimpi_ = other.dimpi_;
     v_ = other.v_;
@@ -135,15 +72,5 @@ IntVector IntVector::iota(const Dimension &dim) {
         std::iota(vec.pointer(h), vec.pointer(h) + dim[h], 0);
     }
     return vec;
-}
-
-void IntVector::sort(std::function<bool(int, int, int)> func) {
-    sort(func, Slice(Dimension(nirrep()), dimpi_));
-}
-
-void IntVector::sort(std::function<bool(int, int, int)> func, Slice slice) {
-    for (int h = 0; h < nirrep(); h++) {
-        std::stable_sort(vector_[h] + slice.begin()[h], vector_[h] + slice.end()[h], std::bind(func, h, std::placeholders::_1, std::placeholders::_2));
-    }
 }
 

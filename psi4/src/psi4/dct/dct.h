@@ -363,13 +363,13 @@ class DCTSolver : public Wavefunction {
     /// The number of virtual beta orbitals per irrep
     Dimension nbvirpi_;
     /// Alpha occupied MO offset
-    int* aocc_off_;
+    std::vector<int> aocc_off_;
     /// Alpha virtual MO offset
-    int* avir_off_;
+    std::vector<int> avir_off_;
     /// Beta occupied MO offset
-    int* bocc_off_;
+    std::vector<int> bocc_off_;
     /// Beta virtual MO offset
-    int* bvir_off_;
+    std::vector<int> bvir_off_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero

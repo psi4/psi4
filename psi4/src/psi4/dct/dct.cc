@@ -116,10 +116,6 @@ void DCTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha) {
 }
 
 DCTSolver::~DCTSolver() {
-    delete[] aocc_off_;
-    delete[] avir_off_;
-    delete[] bocc_off_;
-    delete[] bvir_off_;
 }
 
 }  // namespace dct

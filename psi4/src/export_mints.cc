@@ -354,8 +354,10 @@ void export_mints(py::module& m) {
         .def(py::init<const Dimension&>())
         .def(py::init<const std::string&, int>())
         .def(py::init<const std::string&, const Dimension&>())
-        .def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
+        .def_property("name", &Vector::name, &Vector::set_name,
                       "The name of the Vector. Used in printing.")
+        //.def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
+        //              "The name of the Vector. Used in printing.")
         .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m", "m"_a)
         .def("get", vector_getitem_2(&Vector::get), "Returns a single element value located at m in irrep h", "h"_a,
              "m"_a)
@@ -425,10 +427,11 @@ void export_mints(py::module& m) {
             },
             py::return_value_policy::reference_internal);
 
+    typedef int (IntVector::*int_vector_get)(int, int) const;
     typedef void (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "Class handling vectors with integer values")
         .def(py::init<int>())
-        .def("get", &IntVector::get, "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
+        .def("get", int_vector_get(&IntVector::get), "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
         .def("set", int_vector_set(&IntVector::set), "Sets a single element value located at m in irrep h", "h"_a,
              "m"_a, "val"_a)
         .def("print_out", &IntVector::print_out, "Prints the vector to the output file")

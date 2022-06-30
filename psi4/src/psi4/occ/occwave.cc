@@ -510,7 +510,7 @@ void OCCWave::nbo() {
     outfile->Printf("\n");
 
     auto Udum = std::make_shared<Matrix>("Udum", nirrep_, nmopi_, nmopi_);
-    auto diag = std::make_shared<Vector>("Natural orbital occupation numbers", nirrep_, nmopi_);
+    auto diag = std::make_shared<Vector>("Natural orbital occupation numbers", nmopi_);
 
     // Diagonalizing Alpha-OPDM
     Udum->zero();
