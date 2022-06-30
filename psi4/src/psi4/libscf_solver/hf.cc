@@ -588,7 +588,7 @@ void HF::form_H() {
 
                     basisset_->compute_phi(phi_ao.pointer(), x, y, z);
                     // Transform phi_ao to SO basis
-                    phi_so.gemv(true, 1.0, &u, &phi_ao, 0.0);
+                    phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
                     for (int i = 0; i < nso; i++)
                         for (int j = 0; j < nso; j++) V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
                 }  // npoints
@@ -629,7 +629,7 @@ void HF::form_H() {
 
                             basisset_->compute_phi(phi_ao.pointer(), x, y, z);
 
-                            phi_so.gemv(true, 1.0, &u, &phi_ao, 0.0);
+                            phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
 
                             for (int i = 0; i < nso; i++)
                                 for (int j = 0; j < nso; j++)

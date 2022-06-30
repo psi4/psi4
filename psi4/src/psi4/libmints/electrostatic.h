@@ -52,7 +52,7 @@ class ElectrostaticInt : public PotentialInt {
                      int deriv = 0);
     ~ElectrostaticInt() override;
 
-    void set_origin(const Vector3& _origin);
+    void set_origin(const Vector3& _origin) override;
 
 // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
 // The following line is to shut it up.

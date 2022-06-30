@@ -28,131 +28,86 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <numeric>
 #include "psi4/libqt/qt.h"
-#include "matrix.h"
 #include "vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 using namespace psi;
 
 IntVector::IntVector() {
-    vector_ = nullptr;
-    dimpi_ = nullptr;
-    nirrep_ = 0;
     name_ = "";
 }
 
 IntVector::IntVector(const IntVector &c) {
-    vector_ = nullptr;
-    nirrep_ = c.nirrep_;
-    dimpi_ = new int[nirrep_];
-    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = c.dimpi_[h];
+    dimpi_ = c.dimpi_;
     alloc();
-    copy_from(c.vector_);
+    copy(c);
     name_ = c.name_;
 }
 
-IntVector::IntVector(int nirreps, int *dimpi) {
-    vector_ = nullptr;
-    nirrep_ = nirreps;
-    dimpi_ = new int[nirrep_];
-    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = dimpi[h];
+IntVector::IntVector(const Dimension& dimpi) {
+    dimpi_ = dimpi;
     alloc();
 }
 IntVector::IntVector(int dim) {
-    vector_ = nullptr;
-    nirrep_ = 1;
-    dimpi_ = new int[nirrep_];
-    dimpi_[0] = dim;
+    dimpi_ = Dimension(std::vector<int>{dim});
     alloc();
 }
-IntVector::IntVector(const std::string &name, int nirreps, int *dimpi) {
-    vector_ = nullptr;
-    nirrep_ = nirreps;
-    dimpi_ = new int[nirrep_];
-    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = dimpi[h];
+IntVector::IntVector(const std::string &name, Dimension dimpi) {
+    dimpi_ = dimpi;
     alloc();
     name_ = name;
 }
 IntVector::IntVector(const std::string &name, int dim) {
-    vector_ = nullptr;
-    nirrep_ = 1;
-    dimpi_ = new int[nirrep_];
-    dimpi_[0] = dim;
+    dimpi_ = Dimension(std::vector<int>{dim});
     alloc();
     name_ = name;
 }
 
 IntVector::~IntVector() {
     release();
-    if (dimpi_) delete[] dimpi_;
-}
-
-void IntVector::init(int nirreps, int *dimpi) {
-    if (dimpi_) delete[] dimpi_;
-    nirrep_ = nirreps;
-    dimpi_ = new int[nirrep_];
-    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = dimpi[h];
-    alloc();
 }
 
 void IntVector::alloc() {
-    if (vector_) release();
+    if (vector_.size()) release();
 
-    vector_ = (int **)malloc(sizeof(int *) * nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        if (dimpi_[h]) {
-            vector_[h] = new int[dimpi_[h]];
-            memset(vector_[h], 0, dimpi_[h] * sizeof(int));
-        }
+    int total = dimpi_.sum();
+    v_.resize(total);
+
+    release();
+    assign_pointer_offsets();
+}
+
+void IntVector::assign_pointer_offsets() {
+    // Resize just to be sure it's the correct size
+    vector_.resize(dimpi_.n(), 0);
+
+    size_t offset = 0;
+    for (int h = 0; h < nirrep(); ++h) {
+        if (dimpi_[h])
+            vector_[h] = &(v_[0]) + offset;
+        else
+            vector_[h] = nullptr;
+        offset += dimpi_[h];
     }
 }
 
 void IntVector::release() {
-    if (!vector_) return;
-
-    for (int h = 0; h < nirrep_; ++h) {
-        if (dimpi_[h]) delete[](vector_[h]);
-    }
-    free(vector_);
-    vector_ = nullptr;
+    std::fill(vector_.begin(), vector_.end(), (int*)0);
+    std::fill(v_.begin(), v_.end(), 0.0);
 }
 
-void IntVector::copy_from(int **c) {
-    size_t size;
-    for (int h = 0; h < nirrep_; ++h) {
-        size = dimpi_[h] * sizeof(int);
-        if (size) memcpy(&(vector_[h][0]), &(c[h][0]), size);
-    }
-}
-
-void IntVector::copy(const IntVector *rhs) {
-    if (nirrep_ != rhs->nirrep_) {
-        release();
-        if (dimpi_) delete[] dimpi_;
-        nirrep_ = rhs->nirrep_;
-        dimpi_ = new int[nirrep_];
-        for (int h = 0; h < nirrep_; ++h) dimpi_[h] = rhs->dimpi_[h];
-        alloc();
-    }
-    copy_from(rhs->vector_);
-}
-void IntVector::copy(const IntVector &rhs) {
-    if (nirrep_ != rhs.nirrep_) {
-        release();
-        if (dimpi_) delete[] dimpi_;
-        nirrep_ = rhs.nirrep_;
-        dimpi_ = new int[nirrep_];
-        for (int h = 0; h < nirrep_; ++h) dimpi_[h] = rhs.dimpi_[h];
-        alloc();
-    }
-    copy_from(rhs.vector_);
+void IntVector::copy(const IntVector &other) {
+    dimpi_ = other.dimpi_;
+    v_ = other.v_;
+    assign_pointer_offsets();
 }
 
 void IntVector::set(int *vec) {
     int h, i, ij;
 
     ij = 0;
-    for (h = 0; h < nirrep_; ++h) {
+    for (h = 0; h < nirrep(); ++h) {
         for (i = 0; i < dimpi_[h]; ++i) {
             vector_[h][i] = vec[ij++];
         }
@@ -167,25 +122,28 @@ void IntVector::print(std::string out, const char *extra) const {
     } else {
         printer->Printf("\n # %s %s #\n", name_.c_str(), extra);
     }
-    for (h = 0; h < nirrep_; ++h) {
+    for (h = 0; h < nirrep(); ++h) {
         printer->Printf(" Irrep: %d\n", h + 1);
         for (int i = 0; i < dimpi_[h]; ++i) printer->Printf("   %4d: %10d\n", i + 1, vector_[h][i]);
         printer->Printf("\n");
     }
 }
 
-int *IntVector::to_block_vector() {
-    size_t size = 0;
-    for (int h = 0; h < nirrep_; ++h) size += dimpi_[h];
-
-    auto *temp = new int[size];
-    size_t offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < dimpi_[h]; ++i) {
-            temp[i + offset] = vector_[h][i];
-        }
-        offset += dimpi_[h];
+IntVector IntVector::iota(const Dimension &dim) {
+    IntVector vec(dim);
+    for (int h = 0; h < dim.n(); h++) {
+        std::iota(vec.pointer(h), vec.pointer(h) + dim[h], 0);
     }
-
-    return temp;
+    return vec;
 }
+
+void IntVector::sort(std::function<bool(int, int, int)> func) {
+    sort(func, Slice(Dimension(nirrep()), dimpi_));
+}
+
+void IntVector::sort(std::function<bool(int, int, int)> func, Slice slice) {
+    for (int h = 0; h < nirrep(); h++) {
+        std::stable_sort(vector_[h] + slice.begin()[h], vector_[h] + slice.end()[h], std::bind(func, h, std::placeholders::_1, std::placeholders::_2));
+    }
+}
+

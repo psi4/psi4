@@ -219,6 +219,7 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool nee
 #ifdef ENABLE_Libint1t
     return new ERI(this, deriv, use_shell_pairs);
 #endif
+    throw PSIEXCEPTION("No ERI object to return.");
 }
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
@@ -239,6 +240,7 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_e
 #ifdef ENABLE_Libint1t
     return new ERI(this, deriv, use_shell_pairs);
 #endif
+    throw PSIEXCEPTION("No ERI object to return.");
 }
 
 TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
@@ -249,6 +251,7 @@ TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_p
 #ifdef ENABLE_Libint1t
     return new ErfERI(omega, this, deriv, use_shell_pairs);
 #endif
+    throw PSIEXCEPTION("No ERI object to return.");
 }
 
 TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
@@ -259,6 +262,7 @@ TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool 
 #ifdef ENABLE_Libint1t
     return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
 #endif
+    throw PSIEXCEPTION("No ERI object to return.");
 }
 
 TwoBodyAOInt* IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {

@@ -182,6 +182,8 @@ class HF : public Wavefunction {
     void MOM();
     /// Start the MOM algorithm (requires one iteration worth of setup)
     void MOM_start();
+    /// Perform MOM operations for a single spincase
+    void MOM_spincase(const Dimension& npi, Vector& orb_energies, Matrix& old_C, Matrix& new_C);
 
     /// Fractional occupation UHF/UKS
     void frac();

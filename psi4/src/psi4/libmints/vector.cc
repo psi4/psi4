@@ -46,12 +46,10 @@ namespace psi {
 
 Vector::Vector() {
     dimpi_ = nullptr;
-    nirrep_ = 0;
     name_ = "";
 }
 
 Vector::Vector(const Vector &c) {
-    nirrep_ = c.nirrep_;
     dimpi_ = c.dimpi_;
     alloc();
     copy_from(c);
@@ -59,42 +57,36 @@ Vector::Vector(const Vector &c) {
 }
 
 Vector::Vector(int nirreps, int *dimpi) : dimpi_(nirreps) {
-    nirrep_ = nirreps;
     dimpi_ = dimpi;
     alloc();
 }
 
 Vector::Vector(int dim) : dimpi_(1) {
-    nirrep_ = 1;
     dimpi_[0] = dim;
     alloc();
 }
 
 Vector::Vector(const std::string &name, int nirreps, int *dimpi) : dimpi_(nirreps) {
-    nirrep_ = nirreps;
-    auto dim_vector = std::vector<int>(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) dim_vector[h] = dimpi[h];
+    auto dim_vector = std::vector<int>(nirreps);
+    for (int h = 0; h < nirreps; ++h) dim_vector[h] = dimpi[h];
     dimpi_ = Dimension(dim_vector);
     alloc();
     name_ = name;
 }
 
 Vector::Vector(const std::string &name, int dim) : dimpi_(1) {
-    nirrep_ = 1;
     dimpi_[0] = dim;
     alloc();
     name_ = name;
 }
 
 Vector::Vector(const Dimension &v) {
-    nirrep_ = v.n();
     dimpi_ = v;
     alloc();
     name_ = v.name();
 }
 
 Vector::Vector(const std::string &name, const Dimension &v) {
-    nirrep_ = v.n();
     dimpi_ = v;
     alloc();
     name_ = name;
@@ -104,7 +96,6 @@ Vector::~Vector() { release(); }
 
 void Vector::init(int nirreps, int *dimpi) {
     dimpi_.init(nirreps);
-    nirrep_ = nirreps;
     dimpi_ = dimpi;
     alloc();
 }
@@ -118,7 +109,6 @@ void Vector::init(int nirreps, const int *dimpi, const std::string &name) {
 
 void Vector::init(const Dimension &v) {
     name_ = v.name();
-    nirrep_ = v.n();
     dimpi_ = v;
     alloc();
 }
@@ -146,7 +136,7 @@ void Vector::assign_pointer_offsets() {
     vector_.resize(dimpi_.n(), 0);
 
     size_t offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
+    for (int h = 0; h < nirrep(); ++h) {
         if (dimpi_[h])
             vector_[h] = &(v_[0]) + offset;
         else
@@ -161,7 +151,6 @@ void Vector::release() {
 }
 
 void Vector::copy_from(const Vector &other) {
-    nirrep_ = other.dimpi_.n();
     dimpi_ = other.dimpi_;
     v_ = other.v_;
     assign_pointer_offsets();
@@ -171,9 +160,35 @@ void Vector::copy(const Vector *rhs) { copy_from(*rhs); }
 
 void Vector::copy(const Vector &rhs) { copy_from(rhs); }
 
+IntVector Vector::get_sort_vector(std::function<bool(const Vector&, int, int, int)> func) {
+    return get_sort_vector(func, Slice(Dimension(nirrep()), dimpi_));
+}
+
+IntVector Vector::get_sort_vector(std::function<bool(const Vector&, int, int, int)> func, Slice slice) {
+    IntVector sort(slice.end() - slice.begin());
+    for (int h = 0; h < nirrep(); h++) {
+        std::iota(sort.pointer(h), sort.pointer(h) + sort.dim(h), 0);
+        std::stable_sort(sort.pointer(h) + slice.begin()[h], sort.pointer(h) + slice.end()[h], std::bind(func, *this, h, std::placeholders::_1, std::placeholders::_2));
+    }
+    return sort;
+}
+
+void Vector::sort(const IntVector& idxs) {
+    auto orig = clone();
+    if (dimpi_ != idxs.dimpi()) {
+        throw PSIEXCEPTION("Vector::sort Indexing vector and vector to sort must have the same dimension.");
+    }
+    // WARNING! Function also requires each irrep to be a permutation of 0, 1, 2...
+    for (int h = 0; h < nirrep(); h++) {
+        for (int i = 0; i < dimpi_[h]; i++) {
+            set(h, i, orig->get(h, idxs.get(h, i)));
+        }
+    }
+}
+
 SharedVector Vector::get_block(const Slice &slice) {
     // check if slice is within bounds
-    for (int h = 0; h < nirrep_; h++) {
+    for (int h = 0; h < nirrep(); h++) {
         if (slice.end()[h] > dimpi_[h]) {
             std::string msg =
                 "Invalid call to Vector::get_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
@@ -183,7 +198,7 @@ SharedVector Vector::get_block(const Slice &slice) {
     const Dimension &slice_begin = slice.begin();
     Dimension slice_dim = slice.end() - slice.begin();
     auto block = std::make_shared<Vector>("Block", slice_dim);
-    for (int h = 0; h < nirrep_; h++) {
+    for (int h = 0; h < nirrep(); h++) {
         int max_p = slice_dim[h];
         for (int p = 0; p < max_p; p++) {
             double value = get(h, p + slice_begin[h]);
@@ -193,9 +208,9 @@ SharedVector Vector::get_block(const Slice &slice) {
     return block;
 }
 
-void Vector::set_block(const Slice &slice, SharedVector block) {
+void Vector::set_block(const Slice &slice, const Vector& block) {
     // check if slice is within bounds
-    for (int h = 0; h < nirrep_; h++) {
+    for (int h = 0; h < nirrep(); h++) {
         if (slice.end()[h] > dimpi_[h]) {
             std::string msg =
                 "Invalid call to Vector::set_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
@@ -204,10 +219,10 @@ void Vector::set_block(const Slice &slice, SharedVector block) {
     }
     const Dimension &slice_begin = slice.begin();
     Dimension slice_dim = slice.end() - slice.begin();
-    for (int h = 0; h < nirrep_; h++) {
+    for (int h = 0; h < nirrep(); h++) {
         int max_p = slice_dim[h];
         for (int p = 0; p < max_p; p++) {
-            double value = block->get(h, p);
+            double value = block.get(h, p);
             set(h, p + slice_begin[h], value);
         }
     }
@@ -222,18 +237,18 @@ void Vector::print(std::string out, const char *extra) const {
     } else {
         printer->Printf("\n # %s %s #\n", name_.c_str(), extra);
     }
-    for (int h = 0; h < nirrep_; ++h) {
+    for (int h = 0; h < nirrep(); ++h) {
         printer->Printf(" Irrep: %d\n", h + 1);
         for (int i = 0; i < dimpi_[h]; ++i) printer->Printf("   %4d: %20.15f\n", i + 1, vector_[h][i]);
         printer->Printf("\n");
     }
 }
 
-void Vector::gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta) {
+void Vector::gemv(bool transa, double alpha, const Matrix& A, const Vector& X, double beta) {
     char trans = transa ? 't' : 'n';
 
-    for (int h = 0; h < nirrep_; ++h) {
-        C_DGEMV(trans, A->rowspi(h), A->colspi(h), alpha, A->get_pointer(h), A->colspi(h), &(X->vector_[h][0]), 1, beta,
+    for (int h = 0; h < nirrep(); ++h) {
+        C_DGEMV(trans, A.rowspi(h), A.colspi(h), alpha, A.get_pointer(h), A.colspi(h), &(X.vector_[h][0]), 1, beta,
                 &(vector_[h][0]), 1);
     }
 }
@@ -291,7 +306,7 @@ void Vector::save(psi::PSIO *const psio, size_t fileno) {
         psio->open(fileno, PSIO_OPEN_OLD);
     }
 
-    for (int h = 0; h < nirrep_; ++h) {
+    for (int h = 0; h < nirrep(); ++h) {
         std::string str(name_);
         str += " Irrep " + std::to_string(h);
 
@@ -312,7 +327,7 @@ void Vector::load(psi::PSIO *const psio, size_t fileno) {
         psio->open(fileno, PSIO_OPEN_OLD);
     }
 
-    for (int h = 0; h < nirrep_; ++h) {
+    for (int h = 0; h < nirrep(); ++h) {
         std::string str(name_);
         str += " Irrep " + std::to_string(h);
 

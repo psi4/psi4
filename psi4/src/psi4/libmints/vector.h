@@ -40,6 +40,7 @@ class Matrix;
 
 class Vector;
 using SharedVector = std::shared_ptr<Vector>;
+class IntVector;
 
 namespace occwave {
 class Array1d;
@@ -52,8 +53,6 @@ class PSI_API Vector final {
     std::vector<double> v_;
     /// Pointer offsets into v_, of size dimpi_.n()
     std::vector<double *> vector_;
-    /// Number of irreps
-    int nirrep_;
     /// Dimensions per irrep
     Dimension dimpi_;
     /// Name
@@ -163,9 +162,9 @@ class PSI_API Vector final {
      * Set a vector block
      *
      * @param slice Vector slice
-     * @param block the SharedVector object block to set
+     * @param block the Vector object block to set
      */
-    void set_block(const Slice &slice, SharedVector block);
+    void set_block(const Slice &slice, const Vector& block);
 
     double &operator()(int i) { return vector_[0][i]; }
 
@@ -182,7 +181,7 @@ class PSI_API Vector final {
     const Dimension &dimpi() const { return dimpi_; }
 
     /// Returns the number of irreps
-    int nirrep() const { return nirrep_; }
+    int nirrep() const { return dimpi_.n(); }
 
     /**
      * Sets the name of the vector, used in print(...)
@@ -213,8 +212,22 @@ class PSI_API Vector final {
     /// Copies rhs to this
     void copy(const Vector &rhs);
 
-    /// General matrix vector multiplication
-    void gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta);
+    IntVector get_sort_vector(std::function<bool(const Vector&, int, int, int)> func);
+    IntVector get_sort_vector(std::function<bool(const Vector&, int, int, int)> func, Slice slice);
+
+    /// Sort the vector according to the re-indexing vector.
+    void sort(const IntVector& idxs);
+
+    /**
+     * General matrix vector multiplication into this, alpha * AX + beta Y -> Y
+     *
+     * @ transa Do transpose A?
+     * @ alpha Scaling factor
+     * @ A Matrix to multiply by.
+     * @ X Vector to multiply by.
+     * @ beta Scaling factor for current input.
+     */
+    void gemv(bool transa, double alpha, const Matrix& A, const Vector& X, double beta);
 
     /// Vector dot product
     double vector_dot(const SharedVector &other);
@@ -240,35 +253,28 @@ class PSI_API Vector final {
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
 
-    PSI_DEPRECATED(
-        "Using `Vector::create` instead of `auto my_vec = std::make_shared<Vector>(name, dim);` "
-        "is deprecated, and as soon as 1.4 it will "
-        "stop working")
-    static SharedVector create(const std::string &name, const Dimension &dim) {
-        return std::make_shared<Vector>(name, dim);
-    }
 };
 
 /*! \ingroup MINTS */
 class PSI_API IntVector {
    protected:
-    /// IntVector data
-    int **vector_;
-    /// Number of irreps
-    int nirrep_;
+    /// Actual data, of size dimpi_.sum()
+    std::vector<int> v_;
+    /// Pointer offsets into v_, of size dimpi_.n()
+    std::vector<int *> vector_;
     /// Dimensions per irrep
-    int *dimpi_;
+    Dimension dimpi_;
     /// Name of the IntVector
     std::string name_;
 
-    /// Allocates vector_
+    /// Fill v_ with zero and (re)populate vector_.
     void alloc();
+
+    /// Assign pointer offsets in vector_ from v_.
+    void assign_pointer_offsets();
 
     /// Releases vector_
     void release();
-
-    /// Copies data to vector_
-    void copy_from(int **);
 
    public:
     /// Default constructor, zeros everything out
@@ -278,13 +284,13 @@ class PSI_API IntVector {
     IntVector(const IntVector &copy);
 
     /// Constructor, allocates memory
-    IntVector(int nirrep, int *dimpi);
+    IntVector(const Dimension& dimpi);
 
     /// Constructor, convenience for 1 irrep
     IntVector(int dim);
 
     /// Constructor, allocates memory
-    IntVector(const std::string &name, int nirrep, int *dimpi);
+    IntVector(const std::string &name, Dimension dimpi);
 
     /// Constructor, convenience for 1 irrep
     IntVector(const std::string &name, int dim);
@@ -292,31 +298,27 @@ class PSI_API IntVector {
     /// Destructor, frees memory
     virtual ~IntVector();
 
-    void init(int nirrep, int *dimpi);
-
     /// Sets the vector_ to the data in vec
     void set(int *vec);
 
     /// Returns a pointer to irrep h
     int *pointer(int h = 0) { return vector_[h]; }
+    const int *pointer(int h = 0) const { return vector_[h]; }
 
     /// Returns a single element value
-    int get(int h, int m) { return vector_[h][m]; }
+    int get(int h, int m) const { return vector_[h][m]; }
 
     /// Sets a single element value
     void set(int h, int m, int val) { vector_[h][m] = val; }
-
-    /// Returns a copy of the vector_
-    int *to_block_vector();
 
     /// Returns the dimension per irrep h
     int dim(int h = 0) const { return dimpi_[h]; }
 
     /// Returns the dimension array
-    int *dimpi() const { return dimpi_; }
+    Dimension dimpi() const { return dimpi_; }
 
     /// Returns the number of irreps
-    int nirrep() const { return nirrep_; }
+    int nirrep() const { return dimpi_.n(); }
 
     /**
      * Sets the name of the vector, used in print(...)
@@ -346,6 +348,10 @@ class PSI_API IntVector {
 
     /// Copies rhs to this
     void copy(const IntVector &rhs);
+
+    static IntVector iota(const Dimension &dim);
+    void sort(std::function<bool(int, int, int)> func);
+    void sort(std::function<bool(int, int, int)> func, Slice slice);
 };
 
 }  // namespace psi
