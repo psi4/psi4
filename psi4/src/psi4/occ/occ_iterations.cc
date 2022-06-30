@@ -491,10 +491,10 @@ void OCCWave::compute_orbital_step() {
     // Update the orbital amplitude. Trust the rest of the program to DIIS when ready.
     // DIIS is tied to both orbitals and amplitudes, so having stepped orbitals isn't enough.
     const auto kappaA_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Alpha], *kappaA);
-    kappa_bar_[SpinType::Alpha]->add(kappaA_vec);
+    kappa_bar_[SpinType::Alpha]->add(*kappaA_vec);
     if (reference_ == "UNRESTRICTED") {
         const auto kappaB_vec = std::make_shared<Vector>(idp_dimensions_[SpinType::Beta], *kappaB);
-        kappa_bar_[SpinType::Beta]->add(kappaB_vec);
+        kappa_bar_[SpinType::Beta]->add(*kappaB_vec);
     }
 }
 

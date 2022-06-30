@@ -1784,13 +1784,13 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         rho_block = point_func->point_values()["RHO_A"];
 
         if (!same_dens_) {
-            rho_block->add(point_func->point_values()["RHO_B"]);
+            rho_block->add(*point_func->point_values()["RHO_B"]);
         }
 
-        double* x = block->x();
-        double* y = block->y();
-        double* z = block->z();
-        double* w = block->w();
+        auto x = block->x();
+        auto y = block->y();
+        auto z = block->z();
+        auto w = block->w();
 
         for (size_t p = 0; p < num_points; p++) {
             x_points[running_points + p] = x[p];

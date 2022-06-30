@@ -186,15 +186,9 @@ double Vector::rms() { return sqrt(sum_of_squares() / v_.size()); }
 
 void Vector::scale(double sc) { C_DSCAL(v_.size(), sc, v_.data(), 1); }
 
-void Vector::add(const SharedVector &other) { axpy(1.0, *other.get()); }
-
 void Vector::add(const Vector &other) { axpy(1.0, other); }
 
-void Vector::subtract(const SharedVector &other) { axpy(-1.0, *other.get()); }
-
 void Vector::subtract(const Vector &other) { axpy(-1.0, other); }
-
-void Vector::axpy(double scale, const SharedVector &other) { axpy(scale, *other.get()); }
 
 void Vector::axpy(double scale, const Vector &other) {
     if (v_.size() != other.v_.size()) {

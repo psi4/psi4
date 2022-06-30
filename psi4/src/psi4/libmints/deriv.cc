@@ -90,7 +90,7 @@ class PSI_API CorrelatedFunctor {
     void finalize() {
         // Do summation over threads
         for (int i = 1; i < nthread; ++i) {
-            result[0]->add(result[i]);
+            result[0]->add(*result[i]);
         }
         delete[] tpdm_buffer_;
         delete[] buffer_sizes_;
@@ -155,7 +155,7 @@ class PSI_API ScfRestrictedFunctor {
     void finalize() {
         // Do summation over threads
         for (int i = 1; i < nthread; ++i) {
-            result[0]->add(result[i]);
+            result[0]->add(*result[i]);
         }
     }
 
@@ -228,7 +228,7 @@ class PSI_API ScfAndDfCorrelationRestrictedFunctor {
         scf_functor_.finalize();
         // Do summation over threads
         for (int i = 1; i < nthread; ++i) {
-            result_vec_[0]->add(result_vec_[i]);
+            result_vec_[0]->add(*result_vec_[i]);
         }
     }
 
@@ -338,7 +338,7 @@ class PSI_API ScfUnrestrictedFunctor {
 
     void finalize() {
         // Do summation over threads
-        for (int i = 1; i < nthread; ++i) result[0]->add(result[i]);
+        for (int i = 1; i < nthread; ++i) result[0]->add(*result[i]);
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs, int pirrep, int pso, int qirrep, int qso,

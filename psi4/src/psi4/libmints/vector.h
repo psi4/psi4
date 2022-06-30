@@ -212,14 +212,11 @@ class PSI_API Vector final : public IrrepedVector<double> {
     void add(int h, int m, double val) { vector_[h][m] += val; }
 
     /// Adds other vector to this
-    void add(const SharedVector &other);
     void add(const Vector &other);
 
     /// Subtracts other vector from this
-    void subtract(const SharedVector &other);
     void subtract(const Vector &other);
 
-    void axpy(double scale, const SharedVector &other);
     void axpy(double scale, const Vector &other);
 
     /// Zeros the vector out
