@@ -126,22 +126,12 @@ void Vector::gemv(bool transa, double alpha, const Matrix& A, const Vector& X, d
     }
 }
 
-double Vector::vector_dot(const SharedVector &other) { return vector_dot(*other.get()); }
-
 double Vector::vector_dot(const Vector &other) {
     if (v_.size() != other.v_.size()) {
         throw PSIEXCEPTION("Vector::vector_dot: Vector sizes do not match!");
     }
 
     return C_DDOT(v_.size(), v_.data(), 1, const_cast<double *>(other.v_.data()), 1);
-}
-
-double Vector::dot(Vector *X) {
-    if (v_.size() != X->v_.size()) {
-        throw PSIEXCEPTION("Vector::vector_dot: Vector sizes do not match!");
-    }
-
-    return C_DDOT(v_.size(), v_.data(), 1, X->v_.data(), 1);
 }
 
 double Vector::sum_of_squares() { return C_DDOT(v_.size(), v_.data(), 1, v_.data(), 1); }

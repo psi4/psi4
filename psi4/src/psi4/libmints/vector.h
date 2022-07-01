@@ -221,8 +221,6 @@ class PSI_API Vector final : public IrrepedVector<double> {
      */
     void set_block(const Slice &slice, const Vector& block);
 
-    void print_out() { print("outfile"); }
-
     /**
      * Print the matrix using print_mat
      *
@@ -246,9 +244,7 @@ class PSI_API Vector final : public IrrepedVector<double> {
     void gemv(bool transa, double alpha, const Matrix& A, const Vector& X, double beta);
 
     /// Vector dot product
-    double vector_dot(const SharedVector &other);
     double vector_dot(const Vector &other);
-    double dot(Vector *X);
 
     /// Vector norm
     double norm();
@@ -279,9 +275,6 @@ class PSI_API IntVector : public IrrepedVector<int> {
     explicit IntVector(const Dimension &dimpi) : IrrepedVector<int>(dimpi) {}; 
     explicit IntVector(const std::string& name, const Dimension &dimpi) : IrrepedVector<int>(name, dimpi) {};
     IntVector(const IntVector& vector) : IrrepedVector<int>(vector) {};
-
-    /// Python compatible printer
-    void print_out() { print("outfile"); }
 
     /**
      * Print the matrix using print_mat

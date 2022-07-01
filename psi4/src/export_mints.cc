@@ -373,7 +373,7 @@ void export_mints(py::module& m) {
             },
             "Clone the vector")
         .def("zero", &Vector::zero, "Zeros the vector")
-        .def("print_out", &Vector::print_out, "Prints the vector to the output file")
+        .def("print_out", &Vector::print, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
         .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
@@ -434,7 +434,7 @@ void export_mints(py::module& m) {
         .def("get", int_vector_get(&IntVector::get), "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
         .def("set", int_vector_set(&IntVector::set), "Sets a single element value located at m in irrep h", "h"_a,
              "m"_a, "val"_a)
-        .def("print_out", &IntVector::print_out, "Prints the vector to the output file")
+        .def("print_out", &IntVector::print, "Prints the vector to the output file")
         .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", "h"_a)
         .def("nirrep", &IntVector::nirrep, "Returns the number of irreps");
 
