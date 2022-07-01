@@ -117,12 +117,24 @@ class IrrepedVector {
     /// Copy constructor
     explicit IrrepedVector(const IrrepedVector<T>& vector) {
         name_ = vector.name_;
+        copy(vector);
+    }
+
+    ~IrrepedVector() { release(); }
+
+    /// Re-initialize the vector. Should usually prefer creating new object.
+    void init(const Dimension &v) {
+        name_ = v.name();
+        dimpi_ = v;
+        alloc();
+    };
+
+    /// Copy IrrepedVector's data into this.
+    void copy(const IrrepedVector<T>& vector) {
         dimpi_ = vector.dimpi_;
         v_ = vector.v_;
         assign_pointer_offsets();
     }
-
-    ~IrrepedVector() { release(); }
 
     T &operator()(int i) { return vector_[0][i]; }
     const T &operator()(int i) const { return vector_[0][i]; }
@@ -133,41 +145,23 @@ class IrrepedVector {
     T *pointer(int h = 0) { return vector_[h]; }
     const T *pointer(int h = 0) const { return vector_[h]; }
 
-    /// Returns the dimension per irrep h
-    int dim(int h = 0) const { return dimpi_[h]; }
-
-    /// Returns a single element value
     T get(int m) const { return vector_[0][m]; }
-
-    /// Sets a single element value
-    void set(int m, T val) { vector_[0][m] = val; }
-
-    /// Returns a single element value
     T get(int h, int m) const { return vector_[h][m]; }
 
-    /// Sets a single element value
+    void set(int m, T val) { vector_[0][m] = val; }
     void set(int h, int m, T val) { vector_[h][m] = val; }
 
-    /// Returns the dimension array
-    const Dimension &dimpi() const { return dimpi_; }
+    void add(int m, T val) { vector_[0][m] += val; }
+    void add(int h, int m, T val) { vector_[h][m] += val; }
 
-    /// Returns the number of irreps
+    int dim(int h = 0) const { return dimpi_[h]; }
+    const Dimension &dimpi() const { return dimpi_; }
     int nirrep() const { return dimpi_.n(); }
 
-    /**
-     * Sets the name of the vector, used in print(...)
-     *
-     * @param name New name to use.
-     */
+    // Getter and setter for name, used in print functions
+    std::string name() const { return name_; }
     void set_name(const std::string &name) { name_ = name; }
 
-    /**
-     * Gets the name of the matrix.
-     */
-    std::string name() const { return name_; }
-
-    /// Python compatible printer
-    //
     void sort(std::function<bool(int, T, T)> func) {;
         sort(func, Slice(Dimension(nirrep()), dimpi_));
     };
@@ -181,9 +175,6 @@ class IrrepedVector {
 /*! \ingroup MINTS */
 class PSI_API Vector final : public IrrepedVector<double> {
    protected:
-
-    /// Copies data to vector_
-    void copy_from(const Vector &other);
 
     /// Numpy Shape
     std::vector<int> numpy_shape_;
@@ -199,19 +190,11 @@ class PSI_API Vector final : public IrrepedVector<double> {
     // Defined in occ/arrays.cc. Remove when no longer needed.
     explicit Vector(const Dimension &dimpi, const occwave::Array1d &array);
 
-    void init(int nirrep, int *dimpi);
-
-    void init(int nirrep, const int *dimpi, const std::string &name = "");
-
-    void init(const Dimension &v);
-
     std::unique_ptr<Vector> clone() const;
 
-    void add(int m, double val) { vector_[0][m] += val; }
-
-    void add(int h, int m, double val) { vector_[h][m] += val; }
-
-    /// Adds other vector to this
+    /// Adds other elt/vector to this
+    void add(int m, double val) { IrrepedVector<double>::add(m, val); }
+    void add(int h, int m, double val) { IrrepedVector<double>::add(h, m, val); }
     void add(const Vector &other);
 
     /// Subtracts other vector from this
@@ -246,13 +229,7 @@ class PSI_API Vector final : public IrrepedVector<double> {
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string outfile = "outfile", const char *extra = nullptr) const;
-
-    /// Copies rhs to this
-    void copy(const Vector *rhs);
-
-    /// Copies rhs to this
-    void copy(const Vector &rhs);
+    void print(std::string outfile = "outfile") const;
 
     /// Sort the vector according to the re-indexing vector.
     void sort(const IntVector& idxs);
@@ -303,9 +280,6 @@ class PSI_API IntVector : public IrrepedVector<int> {
     explicit IntVector(const std::string& name, const Dimension &dimpi) : IrrepedVector<int>(name, dimpi) {};
     IntVector(const IntVector& vector) : IrrepedVector<int>(vector) {};
 
-    /// Sets the vector_ to the data in vec
-    void set(int *vec);
-
     /// Python compatible printer
     void print_out() { print("outfile"); }
 
@@ -315,13 +289,7 @@ class PSI_API IntVector : public IrrepedVector<int> {
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string outfile = "outfile", const char *extra = nullptr) const;
-
-    /// Copies rhs to this
-    void copy(const IntVector *rhs);
-
-    /// Copies rhs to this
-    void copy(const IntVector &rhs);
+    void print(std::string outfile = "outfile") const;
 
     static IntVector iota(const Dimension &dim);
 };

@@ -253,7 +253,7 @@ void CGRSolver::guess() {
 }
 void CGRSolver::residual() {
     for (size_t N = 0; N < b_.size(); ++N) {
-        r_[N]->copy(Ap_[N].get());
+        r_[N]->copy(*Ap_[N]);
         r_[N]->scale(-1.0);
         r_[N]->add(*b_[N]);
     }

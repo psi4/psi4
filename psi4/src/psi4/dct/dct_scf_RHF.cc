@@ -53,8 +53,8 @@ namespace dct {
 void DCTSolver::initialize_orbitals_from_reference_R() {
     dct_timer_on("DCTSolver::rhf_guess");
 
-    epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
-    epsilon_b_->copy(epsilon_a_.get());
+    epsilon_a_->copy(*reference_wavefunction_->epsilon_a());
+    epsilon_b_->copy(*epsilon_a_);
     Ca_->copy(reference_wavefunction_->Ca());
     Cb_->copy(Ca_);
     moFa_->copy(reference_wavefunction_->Fa());

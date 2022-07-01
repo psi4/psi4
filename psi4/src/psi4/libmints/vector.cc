@@ -44,41 +44,11 @@
 
 namespace psi {
 
-void Vector::init(int nirreps, int *dimpi) {
-    dimpi_.init(nirreps);
-    dimpi_ = dimpi;
-    alloc();
-}
-
-void Vector::init(int nirreps, const int *dimpi, const std::string &name) {
-    name_ = name;
-    dimpi_.init(nirreps);
-    dimpi_ = dimpi;
-    alloc();
-}
-
-void Vector::init(const Dimension &v) {
-    name_ = v.name();
-    dimpi_ = v;
-    alloc();
-}
-
 std::unique_ptr<Vector> Vector::clone() const {
     auto temp = std::make_unique<Vector>(dimpi_);
-    temp->copy(this);
+    temp->copy(*this);
     return temp;
 }
-
-
-void Vector::copy_from(const Vector &other) {
-    dimpi_ = other.dimpi_;
-    v_ = other.v_;
-    assign_pointer_offsets();
-}
-
-void Vector::copy(const Vector *rhs) { copy_from(*rhs); }
-
-void Vector::copy(const Vector &rhs) { copy_from(rhs); }
 
 void Vector::sort(const IntVector& idxs) {
     auto orig = clone();
@@ -137,13 +107,9 @@ void Vector::set_block(const Slice &slice, const Vector& block) {
 
 void Vector::zero() { std::fill(v_.begin(), v_.end(), 0.0); }
 
-void Vector::print(std::string out, const char *extra) const {
+void Vector::print(std::string out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    if (extra == nullptr) {
-        printer->Printf("\n # %s #\n", name_.c_str());
-    } else {
-        printer->Printf("\n # %s %s #\n", name_.c_str(), extra);
-    }
+    printer->Printf("\n # %s #\n", name_.c_str());
     for (int h = 0; h < nirrep(); ++h) {
         printer->Printf(" Irrep: %d\n", h + 1);
         for (int i = 0; i < dimpi_[h]; ++i) printer->Printf("   %4d: %20.15f\n", i + 1, vector_[h][i]);

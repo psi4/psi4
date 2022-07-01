@@ -761,7 +761,9 @@ void HF::form_Shalf() {
     epsilon_a_->init(nmopi_);
     Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
     epsilon_b_->init(nmopi_);
-    Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+    if (!same_a_b_orbs_) {
+        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+    }
 
     // Extra matrix dimension changes for specific derived classes
     prepare_canonical_orthogonalization();
