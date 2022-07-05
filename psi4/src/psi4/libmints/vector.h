@@ -29,8 +29,11 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
 #include "dimension.h"
 
 namespace psi {
@@ -100,6 +103,7 @@ class IrrepedVector {
     explicit IrrepedVector(const std::string & name, int dim) : dimpi_(1) {
         dimpi_[0] = dim;
         alloc();
+        name_ = name;
     };
 
     explicit IrrepedVector(const Dimension &dimpi) {
@@ -162,14 +166,25 @@ class IrrepedVector {
     std::string name() const { return name_; }
     void set_name(const std::string &name) { name_ = name; }
 
-    void sort(std::function<bool(int, T, T)> func) {;
+    void sort(std::function<bool(int, T, T)> func) {
         sort(func, Slice(Dimension(nirrep()), dimpi_));
-    };
+    }
     void sort(std::function<bool(int, T, T)> func, Slice slice) {
         for (int h = 0; h < nirrep(); h++) {
             std::stable_sort(vector_[h] + slice.begin()[h], vector_[h] + slice.end()[h], std::bind(func, h, std::placeholders::_1, std::placeholders::_2));
         }
-    };
+    }
+
+    void print(const std::string& out, const std::string& fmt) const {
+        const auto printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+        printer->Printf("\n # %s #\n", name_.c_str());
+        const std::string temp_str = "   %4d: " + fmt + "\n"; 
+        for (int h = 0; h < nirrep(); ++h) {
+            printer->Printf(" Irrep: %d\n", h + 1);
+            for (int i = 0; i < dimpi_[h]; ++i) printer->Printf(temp_str.c_str(), i + 1, vector_[h][i]);
+            printer->Printf("\n");
+        }
+    }
 };
 
 /*! \ingroup MINTS */
@@ -211,7 +226,7 @@ class PSI_API Vector final : public IrrepedVector<double> {
      * @param slice Vector slice
      * @return SharedVector object
      */
-    SharedVector get_block(const Slice &slice);
+    SharedVector get_block(const Slice &slice) const;
 
     /**
      * Set a vector block
@@ -221,13 +236,7 @@ class PSI_API Vector final : public IrrepedVector<double> {
      */
     void set_block(const Slice &slice, const Vector& block);
 
-    /**
-     * Print the matrix using print_mat
-     *
-     * @param outfile File point to use, defaults to Psi4's outfile.
-     * @param extra When printing the name of the 'extra' will be printing after the name.
-     */
-    void print(std::string outfile = "outfile") const;
+    void print(std::string outfile = "outfile") const { IrrepedVector<double>::print(outfile, "%20.15f"); };
 
     /// Sort the vector according to the re-indexing vector.
     void sort(const IntVector& idxs);
@@ -244,18 +253,18 @@ class PSI_API Vector final : public IrrepedVector<double> {
     void gemv(bool transa, double alpha, const Matrix& A, const Vector& X, double beta);
 
     /// Vector dot product
-    double vector_dot(const Vector &other);
+    double vector_dot(const Vector &other) const;
 
     /// Vector norm
-    double norm();
-    double sum_of_squares();
-    double rms();
+    double norm() const;
+    double sum_of_squares() const;
+    double rms() const;
 
     /// Scale the elements of the vector
     void scale(double sc);
 
     /// Save the Vector to disk
-    void save(psi::PSIO* const psio, size_t fileno);
+    void save(psi::PSIO* const psio, size_t fileno) const;
     /// Load a Vector from disk
     void load(psi::PSIO* const psio, size_t fileno);
 
@@ -263,7 +272,7 @@ class PSI_API Vector final : public IrrepedVector<double> {
      * Adds accessability to the matrix shape for numpy
      */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
-    std::vector<int> numpy_shape() { return numpy_shape_; }
+    std::vector<int> numpy_shape() const { return numpy_shape_; }
 
 };
 
@@ -276,13 +285,7 @@ class PSI_API IntVector : public IrrepedVector<int> {
     explicit IntVector(const std::string& name, const Dimension &dimpi) : IrrepedVector<int>(name, dimpi) {};
     IntVector(const IntVector& vector) : IrrepedVector<int>(vector) {};
 
-    /**
-     * Print the matrix using print_mat
-     *
-     * @param outfile File point to use, defaults to Psi4's outfile.
-     * @param extra When printing the name of the 'extra' will be printing after the name.
-     */
-    void print(std::string outfile = "outfile") const;
+    void print(std::string outfile = "outfile") const { IrrepedVector<int>::print(outfile, "%10d"); };
 
     static IntVector iota(const Dimension &dim);
 };

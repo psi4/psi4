@@ -34,8 +34,6 @@
 #include <cstring>
 #include <cmath>
 
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsio/psio.hpp"
 
 #include "dimension.h"
@@ -63,7 +61,7 @@ void Vector::sort(const IntVector& idxs) {
     }
 }
 
-SharedVector Vector::get_block(const Slice &slice) {
+SharedVector Vector::get_block(const Slice &slice) const {
     // check if slice is within bounds
     for (int h = 0; h < nirrep(); h++) {
         if (slice.end()[h] > dimpi_[h]) {
@@ -107,16 +105,6 @@ void Vector::set_block(const Slice &slice, const Vector& block) {
 
 void Vector::zero() { std::fill(v_.begin(), v_.end(), 0.0); }
 
-void Vector::print(std::string out) const {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    printer->Printf("\n # %s #\n", name_.c_str());
-    for (int h = 0; h < nirrep(); ++h) {
-        printer->Printf(" Irrep: %d\n", h + 1);
-        for (int i = 0; i < dimpi_[h]; ++i) printer->Printf("   %4d: %20.15f\n", i + 1, vector_[h][i]);
-        printer->Printf("\n");
-    }
-}
-
 void Vector::gemv(bool transa, double alpha, const Matrix& A, const Vector& X, double beta) {
     char trans = transa ? 't' : 'n';
 
@@ -126,7 +114,7 @@ void Vector::gemv(bool transa, double alpha, const Matrix& A, const Vector& X, d
     }
 }
 
-double Vector::vector_dot(const Vector &other) {
+double Vector::vector_dot(const Vector &other) const {
     if (v_.size() != other.v_.size()) {
         throw PSIEXCEPTION("Vector::vector_dot: Vector sizes do not match!");
     }
@@ -134,11 +122,11 @@ double Vector::vector_dot(const Vector &other) {
     return C_DDOT(v_.size(), v_.data(), 1, const_cast<double *>(other.v_.data()), 1);
 }
 
-double Vector::sum_of_squares() { return C_DDOT(v_.size(), v_.data(), 1, v_.data(), 1); }
+double Vector::sum_of_squares() const { return C_DDOT(v_.size(), v_.data(), 1, v_.data(), 1); }
 
-double Vector::norm() { return sqrt(sum_of_squares()); }
+double Vector::norm() const { return sqrt(sum_of_squares()); }
 
-double Vector::rms() { return sqrt(sum_of_squares() / v_.size()); }
+double Vector::rms() const { return sqrt(sum_of_squares() / v_.size()); }
 
 void Vector::scale(double sc) { C_DSCAL(v_.size(), sc, v_.data(), 1); }
 
@@ -154,7 +142,7 @@ void Vector::axpy(double scale, const Vector &other) {
     C_DAXPY(v_.size(), scale, const_cast<double *>(other.v_.data()), 1, v_.data(), 1);
 }
 
-void Vector::save(psi::PSIO *const psio, size_t fileno) {
+void Vector::save(psi::PSIO *const psio, size_t fileno) const {
     // Check to see if the file is open
     bool already_open = false;
     if (psio->open_check(fileno)) {

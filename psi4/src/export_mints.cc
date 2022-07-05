@@ -356,8 +356,6 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&, const Dimension&>())
         .def_property("name", &Vector::name, &Vector::set_name,
                       "The name of the Vector. Used in printing.")
-        //.def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
-        //              "The name of the Vector. Used in printing.")
         .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m", "m"_a)
         .def("get", vector_getitem_2(&Vector::get), "Returns a single element value located at m in irrep h", "h"_a,
              "m"_a)
@@ -373,7 +371,7 @@ void export_mints(py::module& m) {
             },
             "Clone the vector")
         .def("zero", &Vector::zero, "Zeros the vector")
-        .def("print_out", &Vector::print, "Prints the vector to the output file")
+        .def("print_out", [](Vector& vec) {vec.print();}, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
         .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
@@ -434,7 +432,7 @@ void export_mints(py::module& m) {
         .def("get", int_vector_get(&IntVector::get), "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
         .def("set", int_vector_set(&IntVector::set), "Sets a single element value located at m in irrep h", "h"_a,
              "m"_a, "val"_a)
-        .def("print_out", &IntVector::print, "Prints the vector to the output file")
+        .def("print_out", [](IntVector& vec) {vec.print();}, "Prints the vector to the output file")
         .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", "h"_a)
         .def("nirrep", &IntVector::nirrep, "Returns the number of irreps");
 

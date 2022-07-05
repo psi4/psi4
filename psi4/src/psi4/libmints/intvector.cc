@@ -26,24 +26,10 @@
  * @END LICENSE
  */
 
-#include <cstdlib>
-#include <cstring>
 #include <numeric>
-#include "vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libqt/qt.h"
-using namespace psi;
 
-void IntVector::print(std::string out) const {
-    int h;
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    printer->Printf("\n # %s #\n", name_.c_str());
-    for (h = 0; h < nirrep(); ++h) {
-        printer->Printf(" Irrep: %d\n", h + 1);
-        for (int i = 0; i < dimpi_[h]; ++i) printer->Printf("   %4d: %10d\n", i + 1, vector_[h][i]);
-        printer->Printf("\n");
-    }
-}
+#include "vector.h"
+using namespace psi;
 
 IntVector IntVector::iota(const Dimension &dim) {
     IntVector vec(dim);
