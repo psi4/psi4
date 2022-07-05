@@ -112,7 +112,6 @@ jobs:
       - script: |
           conda install cmake ^
                         anaconda-project ^
-                        anaconda-client ^
                         conda-build ^
                         conda-forge::eigen ^
                         conda-verify ^
@@ -122,7 +121,7 @@ jobs:
                         msgpack-python ^
                         networkx ^
                         ninja ^
-                        numpy=1.22 ^
+                        numpy ^
                         pint ^
                         pybind11=2.7.0 ^
                         pytest>=7.0.1 ^
@@ -136,6 +135,8 @@ jobs:
                         conda-forge::qcelemental ^
                         conda-forge::qcengine ^
                         scipy
+          conda install --only-deps anaconda-client
+          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
           which anaconda
           conda list
         displayName: "Install conda packages"
