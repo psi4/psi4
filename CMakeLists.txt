@@ -192,7 +192,6 @@ if(DEFINED ENV{LGTM_SRC})
 else()
     find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
-message("${_Python_NumPy_INCLUDE_DIR}")
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 
 if(DEFINED ENV{LGTM_SRC})
