@@ -121,7 +121,7 @@ jobs:
                         msgpack-python ^
                         networkx ^
                         ninja ^
-                        anaconda::numpy ^
+                        numpy ^
                         pint ^
                         pybind11=2.7.0 ^
                         pytest>=7.0.1 ^
@@ -139,6 +139,7 @@ jobs:
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
           which anaconda
           conda list
+          python -c "import sys\ntry: import numpy; sys.stdout.write(numpy.get_include())\nexcept:pass\n"
         displayName: "Install conda packages"
 
       # Install LLVM
