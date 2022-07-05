@@ -139,7 +139,6 @@ jobs:
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
           which anaconda
           conda list
-          python -c "import sys\ntry: import numpy; sys.stdout.write(numpy.get_include())\nexcept:pass\n"
         displayName: "Install conda packages"
 
       # Install LLVM
@@ -183,6 +182,7 @@ jobs:
                 -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
+                -DPython_NumPy_INCLUDE_DIR="C:/tools/miniconda3/lib/site-packages/numpy/core/include" ^
                 -DEigen3_ROOT="C:/tools/miniconda3/Library" ^
                 -DBOOST_ROOT="C:/tools/miniconda3/Library" ^
                 -DMultiprecision_ROOT="C:/tools/miniconda3/Library" ^
