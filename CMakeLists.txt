@@ -260,6 +260,7 @@ ExternalProject_Add(psi4-core
               -DPython_EXECUTABLE=${Python_EXECUTABLE}
               -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
               -DPython_LIBRARY=${Python_LIBRARIES}
+              -DPython_NumPy_INCLUDE_DIR=${Python_NumPy_INCLUDE_DIR}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DENABLE_ambit=${ENABLE_ambit}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
