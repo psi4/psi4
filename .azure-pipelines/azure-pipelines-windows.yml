@@ -92,7 +92,7 @@ jobs:
       # Install Miniconda
       - script: |
           choco install miniconda3 --yes
-          set PATH=C:\tools\miniconda3\Scripts;C:\tools\miniconda3;C:\tools\miniconda3\Library\bin;%PATH%
+          set PATH=C:\tools\miniconda3\Scripts;C:\tools\miniconda3;C:\tools\miniconda3\Library\bin;C:\tools\miniconda3\Library\mingw-w64\bin;%PATH%
           echo '##vso[task.setvariable variable=PATH]%PATH%'
           set LIB=C:\tools\miniconda3\Library\lib;%LIB%
           echo '##vso[task.setvariable variable=LIB]%LIB%'
@@ -132,11 +132,11 @@ jobs:
                         conda-forge::gau2grid ^
                         conda-forge::libxc ^
                         psi4/label/dev::libint2=*=h2e52968_4 ^
-                        conda-forge::qcelemental ^
-                        conda-forge::qcengine ^
+                        conda-forge::qcelemental=0.25.0 ^
+                        conda-forge::qcengine=0.23.0 ^
                         scipy
           conda install --only-deps anaconda-client
-          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
+          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
           which anaconda
           conda list
         displayName: "Install conda packages"
@@ -182,6 +182,7 @@ jobs:
                 -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
+                -DPython_NumPy_INCLUDE_DIR="C:/tools/miniconda3/lib/site-packages/numpy/core/include" ^
                 -DEigen3_ROOT="C:/tools/miniconda3/Library" ^
                 -DBOOST_ROOT="C:/tools/miniconda3/Library" ^
                 -DMultiprecision_ROOT="C:/tools/miniconda3/Library" ^
