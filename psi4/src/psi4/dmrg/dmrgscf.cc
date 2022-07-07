@@ -419,11 +419,11 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     const int wfn_irrep               = options.get_int("DMRG_IRREP");
     const int wfn_multp               = options.get_int("DMRG_MULTIPLICITY");
-    int * dmrg_states                 = options.get_int_array("DMRG_SWEEP_STATES");
+    auto dmrg_states                  = options.get_int_vector("DMRG_SWEEP_STATES");
     const int ndmrg_states            = options["DMRG_SWEEP_STATES"].size();
     double * dmrg_econv               = options.get_double_array("DMRG_SWEEP_ENERGY_CONV");
     const int ndmrg_econv             = options["DMRG_SWEEP_ENERGY_CONV"].size();
-    int * dmrg_maxsweeps              = options.get_int_array("DMRG_SWEEP_MAX_SWEEPS");
+    auto dmrg_maxsweeps               = options.get_int_vector("DMRG_SWEEP_MAX_SWEEPS");
     const int ndmrg_maxsweeps         = options["DMRG_SWEEP_MAX_SWEEPS"].size();
     double * dmrg_noiseprefactors     = options.get_double_array("DMRG_SWEEP_NOISE_PREFAC");
     const int ndmrg_noiseprefactors   = options["DMRG_SWEEP_NOISE_PREFAC"].size();
@@ -431,8 +431,8 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     const int ndmrg_dvdson_rtol       = options["DMRG_SWEEP_DVDSON_RTOL"].size();
     const bool dmrg_print_corr        = options.get_bool("DMRG_PRINT_CORR");
     const bool mps_chkpt              = options.get_bool("DMRG_MPS_WRITE");
-    int * frozen_docc                 = options.get_int_array("RESTRICTED_DOCC");
-    int * active                      = options.get_int_array("ACTIVE");
+    auto frozen_docc                  = options.get_int_vector("RESTRICTED_DOCC");
+    auto active                       = options.get_int_vector("ACTIVE");
     const double d_convergence        = options.get_double("DMRG_SCF_GRAD_THR");
     const bool dmrg_store_unit        = options.get_bool("DMRG_UNITARY_WRITE");
     const bool dmrg_do_diis           = options.get_bool("DMRG_DIIS");
@@ -539,7 +539,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     /*******************************************
      *   Create another bit of DMRG preamble   *
      *******************************************/
-    CheMPS2::DMRGSCFindices iHandler(nmo, SyGroup, frozen_docc, active, nvirtual.data());
+    CheMPS2::DMRGSCFindices iHandler(nmo, SyGroup, frozen_docc.data(), active.data(), nvirtual.data());
     CheMPS2::DMRGSCFunitary unitary(&iHandler);
     std::unique_ptr<CheMPS2::DIIS> theDIIS = nullptr;
     CheMPS2::DMRGSCFintegrals theRotatedTEI(&iHandler);

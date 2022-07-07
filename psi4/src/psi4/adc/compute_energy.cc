@@ -54,7 +54,7 @@ double ADCWfn::compute_energy() {
     double *omega, omega_o, omega_diff, theta;
     dpdfile2 B, V;
 
-    omega_guess_ = std::make_shared<Vector>(nirrep_, rpi_);
+    omega_guess_ = std::make_shared<Vector>(nirrep_, rpi_.data());
 
     if (options_.get_str("REFERENCE") == "RHF") {
         corr_energy = rhf_init_tensors();

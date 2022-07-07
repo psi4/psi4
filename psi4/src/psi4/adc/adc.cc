@@ -108,12 +108,9 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) : Wavefunction(opti
             outfile->Printf("dim of states_per_irrep vector must be %d\n", nirrep_);
             throw PsiException("adc input comparison error ROOTS_PER_IRREP and nirrep_", __FILE__, __LINE__);
         }
-        rpi_ = options_.get_int_array("ROOTS_PER_IRREP");
+        rpi_ = options_.get_int_vector("ROOTS_PER_IRREP");
     } else {
-        rpi_ = new int[nirrep_];
-        for (int h = 0; h < nirrep_; h++) {
-            rpi_[h] = 1;
-        }
+        rpi_ = std::vector<int>(nirrep_, 1);
     }
 
     // Setting up dimensions for each irrep block and totoal dimension of S manifold.

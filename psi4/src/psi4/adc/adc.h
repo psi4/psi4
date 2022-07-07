@@ -106,7 +106,7 @@ class ADCWfn : public Wavefunction {
     // Number of doubly occupied MOs per irrep
     int *clsdpi_;
     // Roots sought per irrep
-    int *rpi_;
+    std::vector<int> rpi_;
     // Number of sngly excited configurations per irrep
     int *nxspi_;
     // Irreps for X, Y and Z
