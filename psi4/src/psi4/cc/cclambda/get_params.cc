@@ -55,7 +55,8 @@ namespace cclambda {
 
 void CCLambdaWavefunction::get_params(Options &options) {
     int errcod, iconv, i, j, k, l, prop_sym, prop_root, excited_method = 0;
-    int *states_per_irrep, prop_all, lambda_and_Ls = 0;
+    int prop_all, lambda_and_Ls = 0;
+    std::vector<int> states_per_irrep;
     char lbl[32];
     std::string junk;
 

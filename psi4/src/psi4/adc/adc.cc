@@ -110,10 +110,7 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) : Wavefunction(opti
         }
         rpi_ = options_.get_int_array("ROOTS_PER_IRREP");
     } else {
-        rpi_ = new int[nirrep_];
-        for (int h = 0; h < nirrep_; h++) {
-            rpi_[h] = 1;
-        }
+        rpi_ = std::vector<int>(nirrep_, 1);
     }
 
     // Setting up dimensions for each irrep block and totoal dimension of S manifold.

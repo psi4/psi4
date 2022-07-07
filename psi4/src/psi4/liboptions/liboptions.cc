@@ -945,8 +945,8 @@ double Options::get_double(std::string key) const { return (use(key).to_double()
 
 std::string Options::get_str(std::string key) const { return (use(key).to_string()); }
 
-int* Options::get_int_array(std::string key) const {
-    int* array = new int[use(key).size()];
+std::vector<int> Options::get_int_array(std::string key) const {
+    std::vector<int> array(use(key).size());
     for (size_t i = 0; i < use(key).size(); ++i) {
         array[i] = use(key)[i].to_integer();
     }

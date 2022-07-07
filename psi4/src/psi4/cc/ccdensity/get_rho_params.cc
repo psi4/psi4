@@ -48,7 +48,7 @@ namespace ccdensity {
 void get_rho_params(Options &options) {
     int i, j, k, l, prop_sym, prop_root, lambda_and_Ls = 0, errcod, prop_all, cnt;
     char lbl[32];
-    int *states_per_irrep;
+    std::vector<int> states_per_irrep;
 
     /* check WFN keyword in input */
     params.wfn = options.get_str("WFN");
