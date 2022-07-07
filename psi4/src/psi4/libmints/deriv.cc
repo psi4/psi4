@@ -76,7 +76,7 @@ class PSI_API CorrelatedFunctor {
     CorrelatedFunctor(SharedVector results) : psio_(_default_psio_lib_) {
         nthread = Process::environment.get_n_threads();
         result.push_back(results);
-        for (int i = 1; i < nthread; ++i) result.push_back(SharedVector(result[0]->clone()));
+        for (int i = 1; i < nthread; ++i) result.push_back(std::make_shared<Vector>(std::move(result[0]->clone())));
         size_t num_pairs = 0;
         psio_->read_entry(PSIF_AO_TPDM, "Num. Pairs", (char *)&num_pairs, sizeof(size_t));
         buffer_sizes_ = new size_t[num_pairs];
@@ -148,7 +148,7 @@ class PSI_API ScfRestrictedFunctor {
         nthread = Process::environment.get_n_threads();
         result.push_back(results);
 
-        for (int i = 1; i < nthread; ++i) result.push_back(SharedVector(result[0]->clone()));
+        for (int i = 1; i < nthread; ++i) result.push_back(std::make_shared<Vector>(std::move(results->clone())));
     }
     ~ScfRestrictedFunctor() {}
 
@@ -210,7 +210,7 @@ class PSI_API ScfAndDfCorrelationRestrictedFunctor {
         nthread = Process::environment.get_n_threads();
         result_vec_.push_back(results);
 
-        for (int i = 1; i < nthread; ++i) result_vec_.push_back(SharedVector(results->clone()));
+        for (int i = 1; i < nthread; ++i) result_vec_.push_back(std::make_shared<Vector>(std::move(results->clone())));
     }
 
     ScfAndDfCorrelationRestrictedFunctor() {
@@ -329,7 +329,7 @@ class PSI_API ScfUnrestrictedFunctor {
         : Da_(Da), Db_(Db) {
         nthread = Process::environment.get_n_threads();
         result.push_back(results);
-        for (int i = 1; i < nthread; ++i) result.push_back(SharedVector(result[0]->clone()));
+        for (int i = 1; i < nthread; ++i) result.push_back(std::make_shared<Vector>(std::move(result[0]->clone())));
     }
     ~ScfUnrestrictedFunctor() {}
 

@@ -63,8 +63,8 @@ SharedMatrix RHamiltonian::explicit_hamiltonian() {
 
     auto H = std::make_shared<Matrix>("Explicit Hamiltonian", diag->nirrep(), diag->dimpi(), diag->dimpi());
 
-    std::shared_ptr<Vector> b(diag->clone());
-    std::shared_ptr<Vector> s(diag->clone());
+    auto b = std::make_shared<Vector>(std::move(diag->clone()));
+    auto s = std::make_shared<Vector>(std::move(diag->clone()));
     std::vector<std::shared_ptr<Vector> > bb;
     std::vector<std::shared_ptr<Vector> > ss;
     bb.push_back(b);

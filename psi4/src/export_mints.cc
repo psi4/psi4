@@ -314,7 +314,6 @@ void export_mints(py::module& m) {
     typedef void (Vector::*vector_setitem_2)(int, int, double);
     typedef double (Vector::*vector_getitem_1)(int) const;
     typedef double (Vector::*vector_getitem_2)(int, int) const;
-    typedef void (Vector::*vector_one)(const Vector& other);
     typedef double (Vector::*vector_one_double)(const Vector& other);
     typedef void (Vector::*vector_two)(double scale, const Vector& other);
 
@@ -362,12 +361,14 @@ void export_mints(py::module& m) {
         .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", "m"_a, "val"_a)
         .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
-        .def("copy", vector_one(&Vector::copy), "Returns a copy of the matrix")
+        .def("add", vector_setitem_1(&Vector::add), "Add to a single element value located at m", "m"_a, "val"_a)
+        .def("add", vector_setitem_2(&Vector::add), "Add to a single element value located at m in irrep h", "h"_a, "m"_a,
+             "val"_a)
+        .def("copy", &Vector::copy, "Returns a copy of the vector")
         .def(
             "clone",
             [](Vector& vec) {
-                std::shared_ptr<Vector> result = std::move(vec.clone());
-                return result;
+                return std::make_shared<Vector>(std::move(vec.clone()));
             },
             "Clone the vector")
         .def("zero", &Vector::zero, "Zeros the vector")
@@ -425,15 +426,30 @@ void export_mints(py::module& m) {
             },
             py::return_value_policy::reference_internal);
 
-    typedef int (IntVector::*int_vector_get)(int, int) const;
-    typedef void (IntVector::*int_vector_set)(int, int, int);
+    typedef int (IntVector::*int_vector_get_1)(int) const;
+    typedef int (IntVector::*int_vector_get_2)(int, int) const;
+    typedef void (IntVector::*int_vector_set_1)(int, int);
+    typedef void (IntVector::*int_vector_set_2)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "Class handling vectors with integer values")
         .def(py::init<int>())
-        .def("get", int_vector_get(&IntVector::get), "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
-        .def("set", int_vector_set(&IntVector::set), "Sets a single element value located at m in irrep h", "h"_a,
+        .def(py::init<const Dimension&>())
+        .def(py::init<const std::string&, int>())
+        .def(py::init<const std::string&, const Dimension&>())
+        .def_property("name", &IntVector::name, &IntVector::set_name,
+                      "The name of the IntVector. Used in printing.")
+        .def("get", int_vector_get_1(&IntVector::get), "Returns a single element value located at m", "m"_a)
+        .def("get", int_vector_get_2(&IntVector::get), "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
+        .def("set", int_vector_set_1(&IntVector::set), "Sets a single element value located at m", "m"_a, "val"_a)
+        .def("set", int_vector_set_2(&IntVector::set), "Sets a single element value located at m in irrep h", "h"_a,
              "m"_a, "val"_a)
+        .def("add", int_vector_set_1(&IntVector::add), "Add to a single element value located at m", "m"_a, "val"_a)
+        .def("add", int_vector_set_2(&IntVector::add), "Add to a single element value located at m in irrep h", "h"_a, "m"_a,
+             "val"_a)
+        .def("copy", &IntVector::copy, "Returns a copy of the vector")
+        .def("zero", &IntVector::zero, "Zeros the vector")
         .def("print_out", [](IntVector& vec) {vec.print();}, "Prints the vector to the output file")
-        .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", "h"_a)
+        .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", "h"_a = 0)
+        .def("dimpi", &IntVector::dimpi, "Returns the Dimension object")
         .def("nirrep", &IntVector::nirrep, "Returns the number of irreps");
 
     py::enum_<diagonalize_order>(m, "DiagonalizeOrder", "Defines ordering of eigenvalues after diagonalization")

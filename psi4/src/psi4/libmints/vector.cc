@@ -42,12 +42,6 @@
 
 namespace psi {
 
-std::unique_ptr<Vector> Vector::clone() const {
-    auto temp = std::make_unique<Vector>(dimpi_);
-    temp->copy(*this);
-    return temp;
-}
-
 void Vector::sort(const IntVector& idxs) {
     auto orig = clone();
     if (dimpi_ != idxs.dimpi()) {
@@ -56,54 +50,10 @@ void Vector::sort(const IntVector& idxs) {
     // WARNING! Function also requires each irrep to be a permutation of 0, 1, 2...
     for (int h = 0; h < nirrep(); h++) {
         for (int i = 0; i < dimpi_[h]; i++) {
-            set(h, i, orig->get(h, idxs.get(h, i)));
+            set(h, i, orig.get(h, idxs.get(h, i)));
         }
     }
 }
-
-SharedVector Vector::get_block(const Slice &slice) const {
-    // check if slice is within bounds
-    for (int h = 0; h < nirrep(); h++) {
-        if (slice.end()[h] > dimpi_[h]) {
-            std::string msg =
-                "Invalid call to Vector::get_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
-            throw PSIEXCEPTION(msg);
-        }
-    }
-    const Dimension &slice_begin = slice.begin();
-    Dimension slice_dim = slice.end() - slice.begin();
-    auto block = std::make_shared<Vector>("Block", slice_dim);
-    for (int h = 0; h < nirrep(); h++) {
-        int max_p = slice_dim[h];
-        for (int p = 0; p < max_p; p++) {
-            double value = get(h, p + slice_begin[h]);
-            block->set(h, p, value);
-        }
-    }
-    return block;
-}
-
-void Vector::set_block(const Slice &slice, const Vector& block) {
-    // check if slice is within bounds
-    for (int h = 0; h < nirrep(); h++) {
-        if (slice.end()[h] > dimpi_[h]) {
-            std::string msg =
-                "Invalid call to Vector::set_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
-            throw PSIEXCEPTION(msg);
-        }
-    }
-    const Dimension &slice_begin = slice.begin();
-    Dimension slice_dim = slice.end() - slice.begin();
-    for (int h = 0; h < nirrep(); h++) {
-        int max_p = slice_dim[h];
-        for (int p = 0; p < max_p; p++) {
-            double value = block.get(h, p);
-            set(h, p + slice_begin[h], value);
-        }
-    }
-}
-
-void Vector::zero() { std::fill(v_.begin(), v_.end(), 0.0); }
 
 void Vector::gemv(bool transa, double alpha, const Matrix& A, const Vector& X, double beta) {
     char trans = transa ? 't' : 'n';

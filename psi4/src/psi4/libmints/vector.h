@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 
+#include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
 #include "dimension.h"
@@ -47,6 +48,36 @@ class IntVector;
 
 namespace occwave {
 class Array1d;
+}
+
+/**
+ * Set a vector block
+ *
+ * @param slice Vector slice
+ * @param block the Vector object block to set
+ */
+template <class T>
+T get_block(const T& self, const Slice& slice) {
+    // check if slice is within bounds
+    for (int h = 0; h < self.nirrep(); h++) {
+        if (slice.end()[h] > self.dimpi()[h]) {
+            std::string msg =
+                "Invalid call to Vector::get_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
+            throw PSIEXCEPTION(msg);
+        }
+    }
+    const Dimension &slice_begin = slice.begin();
+    auto slice_dim = slice.end() - slice.begin();
+    auto block = T("Block", slice_dim);
+    for (int h = 0; h < self.nirrep(); h++) {
+        int max_p = slice_dim[h];
+        // TODO: Copy contiguous memory instead.
+        for (int p = 0; p < max_p; p++) {
+            double value = self.get(h, p + slice_begin[h]);
+            block.set(h, p, value);
+        }
+    }
+    return block;
 }
 
 template <class T>
@@ -140,6 +171,8 @@ class IrrepedVector {
         assign_pointer_offsets();
     }
 
+    IrrepedVector<T> clone() { return IrrepedVector<T>(*this) ; }
+
     T &operator()(int i) { return vector_[0][i]; }
     const T &operator()(int i) const { return vector_[0][i]; }
     T &operator[](int i) { return vector_[0][i]; }
@@ -157,6 +190,8 @@ class IrrepedVector {
 
     void add(int m, T val) { vector_[0][m] += val; }
     void add(int h, int m, T val) { vector_[h][m] += val; }
+
+    void zero() { std::fill(v_.begin(), v_.end(), 0); }
 
     int dim(int h = 0) const { return dimpi_[h]; }
     const Dimension &dimpi() const { return dimpi_; }
@@ -185,6 +220,29 @@ class IrrepedVector {
             printer->Printf("\n");
         }
     }
+
+    IrrepedVector<T> get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
+    void set_block(const Slice &slice, const IrrepedVector<T>& block) {
+        // check if slice is within bounds
+        for (int h = 0; h < nirrep(); h++) {
+            if (slice.end()[h] > dimpi_[h]) {
+                std::string msg =
+                    "Invalid call to Vector::set_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
+                throw PSIEXCEPTION(msg);
+            }
+        }
+        const Dimension &slice_begin = slice.begin();
+        Dimension slice_dim = slice.end() - slice.begin();
+        for (int h = 0; h < nirrep(); h++) {
+            int max_p = slice_dim[h];
+            for (int p = 0; p < max_p; p++) {
+                double value = block.get(h, p);
+                set(h, p + slice_begin[h], value);
+            }
+        }
+    }
+
+
 };
 
 /*! \ingroup MINTS */
@@ -205,7 +263,8 @@ class PSI_API Vector final : public IrrepedVector<double> {
     // Defined in occ/arrays.cc. Remove when no longer needed.
     explicit Vector(const Dimension &dimpi, const occwave::Array1d &array);
 
-    std::unique_ptr<Vector> clone() const;
+    Vector clone() { return Vector(*this); }
+    Vector get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
 
     /// Adds other elt/vector to this
     void add(int m, double val) { IrrepedVector<double>::add(m, val); }
@@ -216,25 +275,6 @@ class PSI_API Vector final : public IrrepedVector<double> {
     void subtract(const Vector &other);
 
     void axpy(double scale, const Vector &other);
-
-    /// Zeros the vector out
-    void zero();
-
-    /**
-     * Get a vector block
-     *
-     * @param slice Vector slice
-     * @return SharedVector object
-     */
-    SharedVector get_block(const Slice &slice) const;
-
-    /**
-     * Set a vector block
-     *
-     * @param slice Vector slice
-     * @param block the Vector object block to set
-     */
-    void set_block(const Slice &slice, const Vector& block);
 
     void print(std::string outfile = "outfile") const { IrrepedVector<double>::print(outfile, "%20.15f"); };
 
@@ -284,6 +324,8 @@ class PSI_API IntVector : public IrrepedVector<int> {
     explicit IntVector(const Dimension &dimpi) : IrrepedVector<int>(dimpi) {}; 
     explicit IntVector(const std::string& name, const Dimension &dimpi) : IrrepedVector<int>(name, dimpi) {};
     IntVector(const IntVector& vector) : IrrepedVector<int>(vector) {};
+
+    IntVector clone() { return IntVector(*this) ; }
 
     void print(std::string outfile = "outfile") const { IrrepedVector<int>::print(outfile, "%10d"); };
 
