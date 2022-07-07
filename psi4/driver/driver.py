@@ -32,7 +32,6 @@ frequency calculations.
 
 """
 
-# TODO: below largely work (except sapt-dft-api and sapt-dft-lrc
 
 __all__ = [
     "energy",
@@ -51,6 +50,17 @@ __all__ = [
     "frequencies",
     "prop",
 ]
+
+# TODO: above are all the fns defined in this file that are sensible
+#   to export from this file, which is the usual contents of `__all__`.
+#   However, due to Psi4's overuse of "import *" and unfortunate nested
+#   naming of driver/driver.py, a lot of internal driver fns intended for
+#   driver.py's private use are available in the API and may be in use in the
+#   wild. `sapt-dft-api` and `sapt-dft-lrc` are two test cases that needed
+#   slight modification after the API tightening that happens when defining
+#   `__all__`. Below is one at least transitory necessary extra __all__
+#   extension and some more possibly necessary ones as we work towards a
+#   more rational import structure.
 
 __all__.extend([
     "procedures",

@@ -1019,7 +1019,7 @@ def _validate_soscf():
 
 core.HF.validate_diis = _validate_diis
 
-def efp_field_fn(xyz: List) -> List:
+def efp_field_fn(xyz: List[float]) -> List[float]:
     """Callback function for PylibEFP to compute electric field from electrons
     in ab initio part for libefp polarization calculation.
 
