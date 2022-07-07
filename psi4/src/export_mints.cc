@@ -355,6 +355,7 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&, const Dimension&>())
         .def_property("name", &Vector::name, &Vector::set_name,
                       "The name of the Vector. Used in printing.")
+        .def("init", &Vector::init, "Reallocate the data of the Vector. Consider making a new object.")
         .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m", "m"_a)
         .def("get", vector_getitem_2(&Vector::get), "Returns a single element value located at m in irrep h", "h"_a,
              "m"_a)
@@ -364,7 +365,7 @@ void export_mints(py::module& m) {
         .def("add", vector_setitem_1(&Vector::add), "Add to a single element value located at m", "m"_a, "val"_a)
         .def("add", vector_setitem_2(&Vector::add), "Add to a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
-        .def("copy", &Vector::copy, "Returns a copy of the vector")
+        .def("copy", &Vector::copy, "Copy another vector into this.")
         .def(
             "clone",
             [](Vector& vec) {
@@ -437,6 +438,7 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&, const Dimension&>())
         .def_property("name", &IntVector::name, &IntVector::set_name,
                       "The name of the IntVector. Used in printing.")
+        .def("init", &IntVector::init, "Reallocate the data of the Vector. Consider making a new object.")
         .def("get", int_vector_get_1(&IntVector::get), "Returns a single element value located at m", "m"_a)
         .def("get", int_vector_get_2(&IntVector::get), "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
         .def("set", int_vector_set_1(&IntVector::set), "Sets a single element value located at m", "m"_a, "val"_a)
@@ -445,12 +447,19 @@ void export_mints(py::module& m) {
         .def("add", int_vector_set_1(&IntVector::add), "Add to a single element value located at m", "m"_a, "val"_a)
         .def("add", int_vector_set_2(&IntVector::add), "Add to a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
-        .def("copy", &IntVector::copy, "Returns a copy of the vector")
+        .def("copy", &IntVector::copy, "Copy another vector into this.")
+        .def(
+            "clone",
+            [](IntVector& vec) {
+                return std::make_shared<IntVector>(std::move(vec.clone()));
+            },
+            "Clone the vector")
         .def("zero", &IntVector::zero, "Zeros the vector")
         .def("print_out", [](IntVector& vec) {vec.print();}, "Prints the vector to the output file")
         .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", "h"_a = 0)
         .def("dimpi", &IntVector::dimpi, "Returns the Dimension object")
-        .def("nirrep", &IntVector::nirrep, "Returns the number of irreps");
+        .def("nirrep", &IntVector::nirrep, "Returns the number of irreps")
+        .def_static("iota", &IntVector::iota);
 
     py::enum_<diagonalize_order>(m, "DiagonalizeOrder", "Defines ordering of eigenvalues after diagonalization")
         .value("Ascending", ascending)

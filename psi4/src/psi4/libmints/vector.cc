@@ -42,19 +42,6 @@
 
 namespace psi {
 
-void Vector::sort(const IntVector& idxs) {
-    auto orig = clone();
-    if (dimpi_ != idxs.dimpi()) {
-        throw PSIEXCEPTION("Vector::sort Indexing vector and vector to sort must have the same dimension.");
-    }
-    // WARNING! Function also requires each irrep to be a permutation of 0, 1, 2...
-    for (int h = 0; h < nirrep(); h++) {
-        for (int i = 0; i < dimpi_[h]; i++) {
-            set(h, i, orig.get(h, idxs.get(h, i)));
-        }
-    }
-}
-
 void Vector::gemv(bool transa, double alpha, const Matrix& A, const Vector& X, double beta) {
     char trans = transa ? 't' : 'n';
 

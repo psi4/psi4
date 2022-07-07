@@ -210,6 +210,19 @@ class IrrepedVector {
         }
     }
 
+    void sort(const IrrepedVector<int>& idxs) {
+        auto orig = clone();
+        if (dimpi_ != idxs.dimpi()) {
+            throw PSIEXCEPTION("Indexing vector and vector to sort must have the same dimension.");
+        }
+        // WARNING! Function also requires each irreped block to be a permutation of 0, 1, 2...
+        for (int h = 0; h < nirrep(); h++) {
+            for (int i = 0; i < dimpi_[h]; i++) {
+                set(h, i, orig.get(h, idxs.get(h, i)));
+            }
+        }
+    }
+
     void print(const std::string& out, const std::string& fmt) const {
         const auto printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
         printer->Printf("\n # %s #\n", name_.c_str());
@@ -227,7 +240,7 @@ class IrrepedVector {
         for (int h = 0; h < nirrep(); h++) {
             if (slice.end()[h] > dimpi_[h]) {
                 std::string msg =
-                    "Invalid call to Vector::set_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
+                    "Invalid call to get_block(): Slice is out of bounds. Irrep = " + std::to_string(h);
                 throw PSIEXCEPTION(msg);
             }
         }
@@ -241,7 +254,6 @@ class IrrepedVector {
             }
         }
     }
-
 
 };
 
@@ -277,9 +289,6 @@ class PSI_API Vector final : public IrrepedVector<double> {
     void axpy(double scale, const Vector &other);
 
     void print(std::string outfile = "outfile") const { IrrepedVector<double>::print(outfile, "%20.15f"); };
-
-    /// Sort the vector according to the re-indexing vector.
-    void sort(const IntVector& idxs);
 
     /**
      * General matrix vector multiplication into this, alpha * AX + beta Y -> Y
