@@ -596,10 +596,11 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     // => Benchmarks <= //
 
     num_computed_shells_ = 0L;
+    size_t computed_shells = 0L;
 
 // ==> Master Task Loop <== //
 
-#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : num_computed_shells_)
+#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
     for (size_t task = 0L; task < ntask_pair2; task++) {
         size_t task1 = task / ntask_pair;
         size_t task2 = task % ntask_pair;
@@ -660,7 +661,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         // if (thread == 0) timer_on("JK: Ints");
                         if (ints[thread]->compute_shell(P, Q, R, S) == 0)
                             continue;  // No integrals in this shell quartet
-                        num_computed_shells_++;
+                        computed_shells++;
                         // if (thread == 0) timer_off("JK: Ints");
 
                         const double* buffer = ints[thread]->buffer();
@@ -1006,6 +1007,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         }
     }
 
+    num_computed_shells_ = computed_shells;
     if (get_bench()) {
         computed_shells_per_iter_.push_back(num_computed_shells());
     }
