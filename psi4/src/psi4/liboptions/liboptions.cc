@@ -945,14 +945,6 @@ double Options::get_double(std::string key) const { return (use(key).to_double()
 
 std::string Options::get_str(std::string key) const { return (use(key).to_string()); }
 
-std::vector<int> Options::get_int_array(std::string key) const {
-    std::vector<int> array(use(key).size());
-    for (size_t i = 0; i < use(key).size(); ++i) {
-        array[i] = use(key)[i].to_integer();
-    }
-    return array;
-}
-
 void Options::fill_int_array(std::string key, int* empty_array) const {
     for (size_t i = 0; i < use(key).size(); ++i) {
         empty_array[i] = use(key)[i].to_integer();

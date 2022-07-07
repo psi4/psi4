@@ -59,7 +59,7 @@ void get_rho_params(Options &options) {
 
     /* setup propery variables for excited states */
     if (!params.ground) {
-        states_per_irrep = options.get_int_array("ROOTS_PER_IRREP");
+        states_per_irrep = options.get_int_vector("ROOTS_PER_IRREP");
 
         prop_all = 1;
         prop_all = options.get_bool("PROP_ALL");
