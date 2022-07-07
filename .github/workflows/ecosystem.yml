@@ -542,6 +542,9 @@ jobs:
 #   Have mkl-devel=<mkl-version> -or- mkl=<mkl-version> in runtime environment to match mkl-devel=<mkl-version> in build env.
 #   Having intel-openmp=<mkl-version> in build and run seems fine but not necessary.
 
+# Error: (W) "DLL load failed while importing _multiarray_umath: The specified module could not be found."
+# Soln: Add `C:\tools\miniconda3\Library\mingw-w64\bin` to PATH
+
 # Using Intel's OpenMP on Windows needs libiomp5md.lib (import library) and libiomp5md.dll at buildtime and libiomp5md.dll at runtime.
 #   No conda package provides libiomp5md.lib, so we stashed one from 2019.1 on GH and clone it here for the build.
 #   We feed the cloned path to the build via OpenMP_LIBRARY_DIRS. 2019.1 has been the iomp5 version for a long time.
