@@ -347,7 +347,9 @@ void export_mints(py::module& m) {
         .def("begin", &Slice::begin, "Get the first element of this slice")
         .def("end", &Slice::end, "Get the past-the-end element of this slice");
 
-    py::class_<Vector, std::shared_ptr<Vector>>(m, "Vector", "Class for creating and manipulating vectors",
+    py::class_<IrrepedVector<double>, std::shared_ptr<IrrepedVector<double>>>(m, "ProtoVector");
+
+    py::class_<Vector, std::shared_ptr<Vector>, IrrepedVector<double>>(m, "Vector", "Class for creating and manipulating vectors",
                                                 py::dynamic_attr())
         .def(py::init<int>())
         .def(py::init<const Dimension&>())
@@ -427,11 +429,13 @@ void export_mints(py::module& m) {
             },
             py::return_value_policy::reference_internal);
 
+    py::class_<IrrepedVector<int>, std::shared_ptr<IrrepedVector<int>>>(m, "ProtoIntVector");
+
     typedef int (IntVector::*int_vector_get_1)(int) const;
     typedef int (IntVector::*int_vector_get_2)(int, int) const;
     typedef void (IntVector::*int_vector_set_1)(int, int);
     typedef void (IntVector::*int_vector_set_2)(int, int, int);
-    py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "Class handling vectors with integer values")
+    py::class_<IntVector, std::shared_ptr<IntVector>, IrrepedVector<int>>(m, "IntVector", "Class handling vectors with integer values")
         .def(py::init<int>())
         .def(py::init<const Dimension&>())
         .def(py::init<const std::string&, int>())
@@ -459,6 +463,8 @@ void export_mints(py::module& m) {
         .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", "h"_a = 0)
         .def("dimpi", &IntVector::dimpi, "Returns the Dimension object")
         .def("nirrep", &IntVector::nirrep, "Returns the number of irreps")
+        .def("get_block", &IntVector::get_block, "Get a vector block", "slice"_a)
+        .def("set_block", &IntVector::set_block, "Set a vector block", "slice"_a, "block"_a)
         .def_static("iota", &IntVector::iota);
 
     py::enum_<diagonalize_order>(m, "DiagonalizeOrder", "Defines ordering of eigenvalues after diagonalization")

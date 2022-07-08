@@ -4,7 +4,7 @@ Tests for Vector class.
 
 import pytest
 
-from psi4.core import Dimension, Vector, IntVector
+from psi4.core import Dimension, Vector, IntVector, Slice
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
@@ -114,4 +114,61 @@ def test_copy(tested_class):
     vec.copy(vec2)
     assert vec.nirrep() == 5
     assert vec.dim(2) == 0
+
+@pytest.mark.parametrize("tested_class", [pytest.param(i) for i in [Vector, IntVector]])
+def test_zero(tested_class):
+    dim = Dimension([1, 2, 3])
+    vec = tested_class(dim)
+    vec.set(0, 5)
+    vec.set(0, 5) # Deliberately doing this twice.
+    vec.set(2, 2, 7)
+    vec.zero()
+    assert vec.get(0) == 0
+    assert vec.get(2, 2) == 0
+
+@pytest.mark.parametrize("tested_class", [pytest.param(i) for i in [Vector, IntVector]])
+def test_get_block(tested_class):
+    dim = Dimension([1, 2, 3])
+    vec = tested_class(dim)
+    for h in range(vec.nirrep()):
+        for i in range(vec.dim(h)):
+            vec.set(h, i, 10 * h + i)
+    my_slice = Slice(Dimension([0, 1, 0]), Dimension([0, 2, 1]))
+    block = vec.get_block(my_slice)
+    assert block.dimpi() == Dimension([0, 1, 1])
+    assert block.get(1, 0) == 11
+    assert block.get(2, 0) == 20
+
+@pytest.mark.parametrize("tested_class", [pytest.param(i) for i in [Vector, IntVector]])
+def test_set_block(tested_class):
+    dim = Dimension([1, 2, 3])
+    vec = tested_class(dim)
+    for h in range(vec.nirrep()):
+        for i in range(vec.dim(h)):
+            vec.set(h, i, 10 * h + i)
+    my_slice = Slice(Dimension([0, 1, 0]), Dimension([0, 2, 1]))
+    block = tested_class(Dimension([0, 1, 1]))
+    block.set(1, 0, 5)
+    block.set(2, 0, 10)
+    vec.set_block(my_slice, block)
+    assert vec.get(1, 1) == 5
+    assert vec.get(2, 0) == 10
+
+@pytest.mark.parametrize("tested_class", [pytest.param(i) for i in [Vector, IntVector]])
+def test_bounds(tested_class):
+    dim = Dimension([1, 2, 3])
+    vec = tested_class(dim)
+    with pytest.raises(RuntimeError):
+        vec.add(1000, 0, 0)
+    with pytest.raises(RuntimeError):
+        vec.get(1000, 0)
+    with pytest.raises(RuntimeError):
+        vec.set(1000, 0, 0)
+
+    with pytest.raises(RuntimeError):
+        vec.add(0, 1000, 0)
+    with pytest.raises(RuntimeError):
+        vec.get(0, 1000)
+    with pytest.raises(RuntimeError):
+        vec.set(0, 1000, 0)
 

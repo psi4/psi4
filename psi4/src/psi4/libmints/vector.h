@@ -182,14 +182,38 @@ class IrrepedVector {
     T *pointer(int h = 0) { return vector_[h]; }
     const T *pointer(int h = 0) const { return vector_[h]; }
 
-    T get(int m) const { return vector_[0][m]; }
-    T get(int h, int m) const { return vector_[h][m]; }
+    T get(int m) const { return get(0, m); }
+    T get(int h, int m) const {
+        if (h >= nirrep()) {
+            throw PSIEXCEPTION("Cannot get an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");
+        }
+        if (m >= dim(h)) {
+            throw PSIEXCEPTION("Cannot get element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(dim(h)) +  " elements.");
+        }
+        return vector_[h][m];
+    }
 
-    void set(int m, T val) { vector_[0][m] = val; }
-    void set(int h, int m, T val) { vector_[h][m] = val; }
+    void set(int m, T val) { set(0, m, val); }
+    void set(int h, int m, T val) {
+        if (h >= nirrep()) {
+            throw PSIEXCEPTION("Cannot set an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");
+        }
+        if (m >= dim(h)) {
+            throw PSIEXCEPTION("Cannot set element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(dim(h)) +  " elements.");
+        }
+        vector_[h][m] = val;
+    }
 
-    void add(int m, T val) { vector_[0][m] += val; }
-    void add(int h, int m, T val) { vector_[h][m] += val; }
+    void add(int m, T val) { add(0, m, val); }
+    void add(int h, int m, T val) {
+        if (h >= nirrep()) {
+            throw PSIEXCEPTION("Cannot add to an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");
+        }
+        if (m >= dim(h)) {
+            throw PSIEXCEPTION("Cannot add to element " + std::to_string(m) +  " of irrep " + std::to_string(h) +  " which only has " + std::to_string(dim(h)) +  " elements.");
+        }
+        vector_[h][m] += val;
+    }
 
     void zero() { std::fill(v_.begin(), v_.end(), 0); }
 
@@ -335,6 +359,7 @@ class PSI_API IntVector : public IrrepedVector<int> {
     IntVector(const IntVector& vector) : IrrepedVector<int>(vector) {};
 
     IntVector clone() { return IntVector(*this) ; }
+    IntVector get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
 
     void print(std::string outfile = "outfile") const { IrrepedVector<int>::print(outfile, "%10d"); };
 
