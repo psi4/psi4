@@ -152,7 +152,7 @@ class IrrepedVector {
     };
 
     /// Copy constructor
-    explicit IrrepedVector(const IrrepedVector<T>& vector) {
+    IrrepedVector(const IrrepedVector<T>& vector) {
         name_ = vector.name_;
         copy(vector);
     }
