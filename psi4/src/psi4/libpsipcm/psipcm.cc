@@ -206,7 +206,7 @@ PCM::PCM(const PCM *other) {
     ntessirr_ = other->ntessirr_;
     tesspi_ = other->tesspi_;
     tess_Zxyz_ = other->tess_Zxyz_->clone();
-    MEP_n_ = SharedVector(other->MEP_n_->clone());
+    MEP_n_ = std::make_shared<Vector>(std::move(other->MEP_n_->clone()));
     basisset_ = other->basisset_;
     my_aotoso_ = other->my_aotoso_->clone();
     potential_int_ = other->potential_int_;
@@ -275,7 +275,7 @@ SharedMatrix PCM::compute_V(const SharedMatrix &D) {
 
 double PCM::compute_E_total(const SharedVector &MEP_e) const {
     // Combine the nuclear and electronic potentials at each tessera
-    MEP_e->add(MEP_n_);
+    MEP_e->add(*MEP_n_);
     std::string MEP_label("TotMEP");
     std::string ASC_label("TotASC");
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
@@ -325,7 +325,7 @@ double PCM::compute_E_separate(const SharedVector &MEP_e) const {
                             ASC_n->get(0, tess), MEP_e->get(0, tess), ASC_e->get(0, tess));
     }
 
-    MEP_e->add(MEP_n_);
+    MEP_e->add(*MEP_n_);
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
     pcmsolver_compute_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
 
