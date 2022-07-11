@@ -221,10 +221,17 @@ Tag (pre)release
     bc8d7f5 v1.3rc2
     >>> git tag -a v1.3rc2 bc8d7f5 -m "v1.3rc2"
 
-    # pause here and push to upstream and let Azure complete if want an
-    #       on-tag Windows conda package, not just tag+1.dev1
-    #       below pushes commit and tag together so only one CI
-    #       > git push --atomic upstream master v1.5
+    # goto GH:psi4/psi4 > Settings > Branches > master > Edit
+    #      https://github.com/psi4/psi4/settings/branch_protection_rules/424295
+    # uncheck "Include administrators" and Save changes
+    
+    >>> git push --atomic upstream master v1.3rc2
+
+    # pause here and push to upstream and let Azure complete for an
+    #       on-tag Windows conda package and docs, not tag+1.dev1 .
+    #       the atomic flag below pushes commit and tag together so only one CI
+    #       which is necessary for Windows conda package to compute the right version.
+    #       After push, can temporarily re-engage "Include administrators" protections.
     #       also, grab the docs build from GHA artifacts
 
     >>> vi psi4/metadata.py
@@ -243,7 +250,6 @@ Tag (pre)release
     # uncheck "Include administrators" and Save changes
 
     >>> git push upstream master
-    >>> git push upstream v1.3rc2
 
     # re-engage "Include administrators" protections
 
@@ -280,14 +286,10 @@ Tag postrelease
     # skipping the hash recording and "upcoming" step b/c only tags matter on maintenance branch
 
     # free pushing to maintenance branches at present so GitHub interface steps not needed
-    # goto GH:psi4/psi4 > Settings > Branches > 1.3.x > Edit
-    #      https://github.com/psi4/psi4/settings/branch_protection_rules/4385008  # !Varies!
-    # uncheck "Include administrators" and Save changes
+    
+    # see note at "Tag postrelease" for why atomic commit needed. Collect docs from GHA artifacts.
 
-    >>> git push upstream 1.3.x
-    >>> git push upstream v1.3.1
-
-    # re-engage "Include administrators" protections
+    >>> git push --atomic upstream 1.3.x v1.3.1
 
 
 Initialize release branch
