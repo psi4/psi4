@@ -359,6 +359,15 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
 }
 void LibXCFunctional::compute_functional(const std::map<std::string, SharedVector>& in,
                                          const std::map<std::string, SharedVector>& out, int npoints, int deriv) {
+// Uncomment below to enable the parallel_timer calls (which must individually be uncommented).
+/*
+        int rank = 0; 
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+*/
+
+
     // => Input variables <= //
 
     if ((deriv >= 1) & (!vxc_)) {
@@ -601,6 +610,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             // Data validation.
+            //parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
                 for (int i = 0; i < npoints; i++) {
@@ -630,6 +640,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             if (found_nan) {
                 throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
             }
+            //parallel_timer_off("DFT NaN Check", rank);
         }
 
         // Compute second derivative
@@ -660,6 +671,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             // Data validation.
+            //parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
                 throw PSIEXCEPTION("Second derivative for meta functionals not yet available.");
@@ -683,6 +695,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             if (found_nan) {
                 throw PSIEXCEPTION("V: Integrated DFT functional derivative to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
             }
+            //parallel_timer_off("DFT NaN Check", rank);
         }
 
     } else {  // End unpolarized
@@ -763,6 +776,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             // Data validation.
+            //parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
                 for (int i = 0; i < npoints; i++) {
@@ -794,6 +808,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             if (found_nan) {
                 throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
             }
+            //parallel_timer_off("DFT NaN Check", rank);
         }
 
         // Compute second deriv
@@ -845,6 +860,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             // Data validation.
+            //parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
                 throw PSIEXCEPTION("Second derivative for meta functionals not yet available.");
@@ -872,6 +888,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             if (found_nan) {
                 throw PSIEXCEPTION("V: Integrated DFT functional derivative to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
             }
+            //parallel_timer_off("DFT NaN Check", rank);
         }
         if (deriv > 2) {  // lgtm[cpp/constant-comparison]
             throw PSIEXCEPTION("TRYING TO COMPUTE DERIV >= 3 ");
