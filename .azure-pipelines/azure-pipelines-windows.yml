@@ -11,6 +11,8 @@ jobs:
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
       conda.build: false
+      ctest.type: 'smoke'
+      pytest.type: 'quick'
       MKL_CBWR: AVX
       PYTHON_VERSION: '3.8'
     steps:
@@ -20,11 +22,11 @@ jobs:
           setlocal EnableDelayedExpansion
           echo python.version: %PYTHON_VERSION%
           set VALID=false
-          if "%PYTHON_VERSION%"=="3.7" set VALID=true
           if "%PYTHON_VERSION%"=="3.8" set VALID=true
           if "%PYTHON_VERSION%"=="3.9" set VALID=true
+          if "%PYTHON_VERSION%"=="3.10" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.7" through "3.9".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.8" through "3.10".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -47,10 +49,11 @@ jobs:
           setlocal EnableDelayedExpansion
           echo ctest.type: %CTEST_TYPE%
           set VALID=false
+          if "%CTEST_TYPE%"=="smoke" set VALID=true
           if "%CTEST_TYPE%"=="quick" set VALID=true
           if "%CTEST_TYPE%"=="full" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "ctest.type" value: "%CTEST_TYPE%". Valid values: "quick" and "full".
+            echo ERROR: Invalid "ctest.type" value: "%CTEST_TYPE%". Valid values: "smoke" and "quick" and "full".
             exit 1
           )
         displayName: "Check ctest configuration"
@@ -60,10 +63,11 @@ jobs:
           setlocal EnableDelayedExpansion
           echo pytest.type: %PYTEST_TYPE%
           set VALID=false
+          if "%PYTEST_TYPE%"=="smoke" set VALID=true
           if "%PYTEST_TYPE%"=="quick" set VALID=true
           if "%PYTEST_TYPE%"=="full" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "pytest.type" value: "%PYTEST_TYPE%". Valid values: "quick" and "full".
+            echo ERROR: Invalid "pytest.type" value: "%PYTEST_TYPE%". Valid values: "smoke" and "quick" and "full".
             exit 1
           )
         displayName: "Check pytest configuration"

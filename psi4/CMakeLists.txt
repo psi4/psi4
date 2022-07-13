@@ -304,6 +304,7 @@ install(
     PATTERN "addons.py"
     PATTERN "conftest.py"
     PATTERN "standard_suite_runner.py"
+    PATTERN "standard_suite_ref_local.py"
     PATTERN "adcc_reference_data.json"
     PATTERN "oei_reference_data.json"
     PATTERN "f12_libint1.json"
