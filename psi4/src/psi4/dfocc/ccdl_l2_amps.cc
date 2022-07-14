@@ -119,12 +119,12 @@ void DFOCC::ccdl_l2_amps() {
         l2->to_matrix(L2);
 
         // add entry
-        if (do_diis_ == 1 && orb_opt_ == "FALSE") ccsdlDiisManager->add_entry(2, RL2.get(), L2.get());
+        if (do_diis_ == 1 && orb_opt_ == "FALSE") ccsdlDiisManager->add_entry(RL2.get(), L2.get());
         RL2.reset();
 
         // extrapolate
         if (do_diis_ == 1 && orb_opt_ == "FALSE") {
-            if (ccsdlDiisManager->subspace_size() >= cc_mindiis_) ccsdlDiisManager->extrapolate(1, L2.get());
+            if (ccsdlDiisManager->subspace_size() >= cc_mindiis_) ccsdlDiisManager->extrapolate(L2.get());
             l2->set2(L2);
         }
         L2.reset();
@@ -670,7 +670,7 @@ void DFOCC::ccdl_l2AB_amps()
 
             // add entry
             //if (do_diis_ == 1)
-                ccsdlDiisManager->add_entry(6, RL2AA.get(), RL2BB.get(), RL2AB.get(), L2AA.get(), L2BB.get(), L2AB.get());
+                ccsdlDiisManager->add_entry(RL2AA.get(), RL2BB.get(), RL2AB.get(), L2AA.get(), L2BB.get(), L2AB.get());
             RL2AA.reset();
             RL2BB.reset();
             RL2BB.reset();
@@ -678,7 +678,7 @@ void DFOCC::ccdl_l2AB_amps()
             // extrapolate
             //if (do_diis_ == 1) {
                 if (ccsdlDiisManager->subspace_size() >= cc_mindiis_)
-                    ccsdlDiisManager->extrapolate(3, L2AA.get(), L2BB.get(), L2AB.get());
+                    ccsdlDiisManager->extrapolate(L2AA.get(), L2BB.get(), L2AB.get());
                 LAA->set2(L2AA);
                 LBB->set2(L2BB);
                 LAB->set2(L2AB);

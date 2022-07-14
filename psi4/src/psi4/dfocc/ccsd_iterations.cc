@@ -63,7 +63,7 @@ void DFOCC::ccsd_iterations() {
             std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
             std::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
             ccsdDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
+                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
             ccsdDiisManager->set_error_vector_size(T2.get(), T1.get());
             ccsdDiisManager->set_vector_size(T2.get(), T1.get());
             T2.reset();
@@ -78,9 +78,9 @@ void DFOCC::ccsd_iterations() {
             std::shared_ptr<Matrix> T1B(new Matrix("T1B", naoccB, navirB));
 
             ccsdDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
+                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
             ccsdDiisManager->set_error_vector_size(T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
-            ccsdDiisManager->set_vector_size(5, T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
+            ccsdDiisManager->set_vector_size(T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();

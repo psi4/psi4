@@ -600,7 +600,7 @@ void DFOCC::uccsd_t2AB_amps()
 
             // add entry
             if (do_diis_ == 1) 
-                ccsdDiisManager->add_entry(10, RT2AA.get(), RT2BB.get(), RT2AB.get(), RT1A.get(),  RT1B.get(), T2AA.get(), T2BB.get(),
+                ccsdDiisManager->add_entry(RT2AA.get(), RT2BB.get(), RT2AB.get(), RT1A.get(),  RT1B.get(), T2AA.get(), T2BB.get(),
                                            T2AB.get(), T1A.get(), T1B.get());
             RT2AA.reset();
             RT2BB.reset();
@@ -611,7 +611,7 @@ void DFOCC::uccsd_t2AB_amps()
             // extrapolate
             if (do_diis_ == 1) {
                 if (ccsdDiisManager->subspace_size() >= cc_mindiis_)
-                    ccsdDiisManager->extrapolate(5, T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
+                    ccsdDiisManager->extrapolate(T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
                 TAA->set2(T2AA);
                 TBB->set2(T2BB);
                 TAB->set2(T2AB);

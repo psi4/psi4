@@ -45,7 +45,7 @@ foreach(test_name adc1 adc2 aediis-1
                   dct10 dct11 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp
                   dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1
                   dfccsd-grad2 dfccsd-t-grad1 dfccsd-t-grad2
-                  dfccsdt1 dfccsdt2 dfccsdat1 dfccsdat2 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-ecp dfmp2-fc
+                  dfccsdt1 dfccsdt2 dfccsdat1 dfccsdat2 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-fc
                   dfmp2-grad1 dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfoccdat1 dfoccdat2 dfoccd-grad1 dfoccd-grad2 dfoccdt1 dfoccdt2 fnodfccsdt1 fnodfccsdt2
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2

@@ -101,7 +101,7 @@ void DFOCC::ccd_t2_amps_low() {
     T.reset();
 
     // add entry
-    if (do_diis_ == 1 && orb_opt_ == "FALSE") ccsdDiisManager->add_entry(2, RT2.get(), T2.get());
+    if (do_diis_ == 1 && orb_opt_ == "FALSE") ccsdDiisManager->add_entry(RT2.get(), T2.get());
     RT2.reset();
 
     // extrapolate
