@@ -145,7 +145,7 @@ void DFOCC::ccdl_iterations() {
         if (reference_ == "RESTRICTED") {
             std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA * navirA, naoccA * navirA));
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::LargestError, DIISManager::OnDisk));
+                new DIISManager(cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
             ccsdlDiisManager->set_error_vector_size(L2.get());
             ccsdlDiisManager->set_vector_size(L2.get());
             L2.reset();
@@ -156,7 +156,7 @@ void DFOCC::ccdl_iterations() {
             std::shared_ptr<Matrix> L2AB(new Matrix("L2AB", naoccA * naoccB, navirA * navirB));
 
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
-                    new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::LargestError, DIISManager::OnDisk));
+                    new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
             ccsdlDiisManager->set_error_vector_size(L2AA.get(), L2BB.get(), L2AB.get());
             ccsdlDiisManager->set_vector_size(L2AA.get(), L2BB.get(), L2AB.get());
             L2AA.reset();
@@ -304,9 +304,9 @@ void DFOCC::ccdl_step() {
         if (reference_ == "RESTRICTED") {
             std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA * navirA, naoccA * navirA));
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::LargestError, DIISManager::OnDisk));
-            ccsdlDiisManager->set_error_vector_size(1, DIISEntry::Matrix, L2.get());
-            ccsdlDiisManager->set_vector_size(1, DIISEntry::Matrix, L2.get());
+                new DIISManager(cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdlDiisManager->set_error_vector_size(L2.get());
+            ccsdlDiisManager->set_vector_size(L2.get());
             L2.reset();
         }
         else if (reference_ == "UNRESTRICTED") {
@@ -315,11 +315,9 @@ void DFOCC::ccdl_step() {
             std::shared_ptr<Matrix> L2AB(new Matrix("L2AB", naoccA * naoccB, navirA * navirB));
 
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
-                    new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::LargestError, DIISManager::OnDisk));
-            ccsdlDiisManager->set_error_vector_size(3, DIISEntry::Matrix, L2AA.get(), DIISEntry::Matrix, L2BB.get(),
-                    DIISEntry::Matrix, L2AB.get());
-            ccsdlDiisManager->set_vector_size(3, DIISEntry::Matrix, L2AA.get(), DIISEntry::Matrix, L2BB.get(),
-                    DIISEntry::Matrix, L2AB.get());
+                    new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdlDiisManager->set_error_vector_size(L2AA.get(), L2BB.get(), L2AB.get());
+            ccsdlDiisManager->set_vector_size(L2AA.get(), L2BB.get(), L2AB.get());
             L2AA.reset();
             L2BB.reset();
             L2AB.reset();

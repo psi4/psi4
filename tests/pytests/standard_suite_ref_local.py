@@ -2,49 +2,11 @@ import numpy as np
 from qcengine.programs.tests.standard_suite_ref import answer_hash, _std_suite, _std_generics
 
 
+# in-repo extensions for _std_suite above
+# * ideally empty. PR to QCEngine ASAP and empty this after QCEngine release.
 _std_suite_psi4_extension = [
     # <<<  CD-AE-CD  >>>
-    {
-        "meta": {
-            "system": "hf",
-            "basis": "cc-pvdz",
-            "scf_type": "cd",
-            "reference": "rhf",
-            "fcae": "ae",
-            "corl_type": "cd",
-        },
-        "data": {
-            "MP3 TOTAL GRADIENT": np.array(
-                # dfocc findif-5
-                [ 0., 0., -0.000926981449, 0., 0., 0.000926981449]
-            ).reshape((-1, 3)),
-            "LCCD TOTAL GRADIENT": np.array(
-                # dfocc findif-5
-                [ 0., 0., 0.002193849073, 0., 0., -0.002193849073]
-            ).reshape((-1, 3)),
-        },
-    },
     # <<<  CD-FC-CD  >>>
-    {
-        "meta": {
-            "system": "hf", 
-            "basis": "cc-pvdz",
-            "scf_type": "cd", 
-            "reference": "rhf",
-            "fcae": "fc", 
-            "corl_type": "cd", 
-        },    
-        "data": {
-            "MP3 TOTAL GRADIENT": np.array(
-                # dfocc findif-5 fc cd+cd
-                [ 0., 0., -0.000588974421, 0., 0., 0.000588974421]
-            ).reshape((-1, 3)),
-            "LCCD TOTAL GRADIENT": np.array(
-                # dfocc findif-5 fc cd+cd
-                [ 0., 0., 0.002525704147, 0., 0., -0.002525704147]
-            ).reshape((-1, 3)),
-        },
-    },
 ]
 
 

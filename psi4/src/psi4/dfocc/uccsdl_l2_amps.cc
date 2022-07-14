@@ -682,7 +682,7 @@ void DFOCC::uccsdl_l2AB_amps()
 
             // add entry
             if (do_diis_ == 1)
-                ccsdlDiisManager->add_entry(10, RL2AA.get(), RL2BB.get(), RL2AB.get(), RL1A.get(),  RL1B.get(), L2AA.get(), L2BB.get(),
+                ccsdlDiisManager->add_entry(RL2AA.get(), RL2BB.get(), RL2AB.get(), RL1A.get(),  RL1B.get(), L2AA.get(), L2BB.get(),
                                            L2AB.get(), L1A.get(), L1B.get());
             RL2AA.reset();
             RL2BB.reset();
@@ -693,7 +693,7 @@ void DFOCC::uccsdl_l2AB_amps()
             // extrapolate
             if (do_diis_ == 1) {
                 if (ccsdlDiisManager->subspace_size() >= cc_mindiis_)
-                    ccsdlDiisManager->extrapolate(5, L2AA.get(), L2BB.get(), L2AB.get(), L1A.get(), L1B.get());
+                    ccsdlDiisManager->extrapolate(L2AA.get(), L2BB.get(), L2AB.get(), L1A.get(), L1B.get());
                 LAA->set2(L2AA);
                 LBB->set2(L2BB);
                 LAB->set2(L2AB);
