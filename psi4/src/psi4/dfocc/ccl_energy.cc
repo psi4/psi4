@@ -357,7 +357,7 @@ void DFOCC::lccdl_energy() {
 
     }  // else if (reference_ == "UNRESTRICTED")
 
-    if (wfn_type_ == "DF-OLCCD") {
+    if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP") {
         ElccdL = Eref + EcorrL;
         ErempL = ElccdL;
         DE = ElccdL - ElccdL_old;

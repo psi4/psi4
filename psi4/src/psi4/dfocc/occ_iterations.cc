@@ -132,21 +132,21 @@ void DFOCC::occ_iterations() {
     //fire up DIIS
     if (do_diis_ == 1) {
 //        outfile->Printf("firing up coupled DIIS...\n");
-      orbitalDIIS = std::shared_ptr<DIISManager>(new DIISManager (cc_maxdiis_,"Orbital Optimized DIIS",DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk)); //initialize DIIS manager
+      orbitalDIIS = std::make_shared<DIISManager>(cc_maxdiis_, "Orbital Optimized DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk); //initialize DIIS manager
       std::shared_ptr<Vector> kappa_barA_(new Vector("Kappa_barA",nidpA));
       if (reference_ == "RESTRICTED" ) {
         if (wfn_type_ == "DF-OMP2" || wfn_type_ == "DF-OLCCD" ||  wfn_type_ == "DF-OREMP") {
           std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA)); // T2 buffer prototype
-          orbitalDIIS->set_error_vector_size(2, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get());
-          orbitalDIIS->set_vector_size(2, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get());
+          orbitalDIIS->set_error_vector_size(kappa_barA_.get(), T2.get());
+          orbitalDIIS->set_vector_size(kappa_barA_.get(), T2.get());
           T2.reset();
         }
         else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "DF-OMP3"){
           outfile->Printf("\ttrying to launch coupled DIIS for DF-OMP2.5/DF-OMP3...\n");
           std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));   // T2_1 and T2_2 share the same prototype
-          orbitalDIIS->set_error_vector_size(3, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get(), DIISEntry::InputType::Matrix, T2.get());
+          orbitalDIIS->set_error_vector_size(kappa_barA_.get(), T2.get(), T2.get());
       outfile->Printf("\tsuccessfully set the error vectors...\n");
-          orbitalDIIS->set_vector_size(3, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get(), DIISEntry::InputType::Matrix, T2.get());
+          orbitalDIIS->set_vector_size(kappa_barA_.get(), T2.get(), T2.get());
       outfile->Printf("\tsuccessfully set the guess vectors...\n");
           T2.reset();
         }
@@ -162,10 +162,8 @@ void DFOCC::occ_iterations() {
             std::shared_ptr<Matrix> RT2AA(new Matrix("RT2AA", naoccA * naoccA, navirA * navirA)); // the amplitudes and the residuums differ in their signature
             std::shared_ptr<Matrix> RT2BB(new Matrix("RT2BB", naoccB * naoccB, navirB * navirB)); // a possible solution would be to reorder the residuum
             std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB)); // but this would be computationally wasted time
-            orbitalDIIS->set_error_vector_size(5, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
-                         DIISEntry::InputType::Matrix, RT2AA.get(), DIISEntry::InputType::Matrix, RT2BB.get(), DIISEntry::InputType::Matrix, RT2AB.get());
-            orbitalDIIS->set_vector_size(5, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
-                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
+            orbitalDIIS->set_error_vector_size(kappa_barA_.get(), kappa_barB_.get(), RT2AA.get(), RT2BB.get(), RT2AB.get());
+            orbitalDIIS->set_vector_size(kappa_barA_.get(), kappa_barB_.get(), T2AA.get(), T2BB.get(), T2AB.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();
@@ -177,12 +175,8 @@ void DFOCC::occ_iterations() {
             std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * naoccA, navirA * navirA)); //T2_1 and T2_2 and their respective residuals share the same prototype
             std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * naoccB, navirB * navirB));
             std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
-            orbitalDIIS->set_error_vector_size(8, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
-                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get(),
-                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
-            orbitalDIIS->set_vector_size(8, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
-                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get(),
-                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
+            orbitalDIIS->set_error_vector_size(kappa_barA_.get(), kappa_barB_.get(), T2AA.get(), T2BB.get(), T2AB.get(), T2AA.get(), T2BB.get(), T2AB.get());
+            orbitalDIIS->set_vector_size(kappa_barA_.get(), kappa_barB_.get(), T2AA.get(), T2BB.get(), T2AB.get(), T2AA.get(), T2BB.get(), T2AB.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();
@@ -191,10 +185,8 @@ void DFOCC::occ_iterations() {
             std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * naoccA, navirA * navirA));
             std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * naoccB, navirB * navirB));
             std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
-            orbitalDIIS->set_error_vector_size(5,DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
-                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
-            orbitalDIIS->set_vector_size(5,DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
-                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
+            orbitalDIIS->set_error_vector_size(kappa_barA_.get(), kappa_barB_.get(), T2AA.get(), T2BB.get(), T2AB.get());
+            orbitalDIIS->set_vector_size(kappa_barA_.get(), kappa_barB_.get(), T2AA.get(), T2BB.get(), T2AB.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();
@@ -474,6 +466,7 @@ void DFOCC::occ_iterations() {
                             mo_maxiter);
         else if (wfn_type_ == "DF-OCCD")
             outfile->Printf("\n ======================== DF-OCCD IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
+                            mo_maxiter);
         else if (wfn_type_ == "DF-OREMP")
             outfile->Printf("\n ======================== DF-OREMP IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
                             mo_maxiter);
@@ -624,9 +617,9 @@ void DFOCC::oo_diis() {
         rt1->read_symm(psio_, PSIF_DFOCC_AMPS);
         std::shared_ptr<Matrix> RT1(new Matrix("RT1",naoccA * navirA, naoccA * navirA));
         rt1->to_matrix(RT1);
-        orbitalDIIS->add_entry(4,wogA_vec.get(),RT1.get(),kappa_barA_vec.get(),T1.get());
+        orbitalDIIS->add_entry(wogA_vec.get(), RT1.get(), kappa_barA_vec.get(), T1.get());
         if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
-          orbitalDIIS->extrapolate(2,kappa_barA_vec.get(),T1.get());
+          orbitalDIIS->extrapolate(kappa_barA_vec.get(), T1.get());
           t1->set2(T1);
           t1->write_symm(psio_, PSIF_DFOCC_AMPS);
           t1.reset();
@@ -650,9 +643,9 @@ void DFOCC::oo_diis() {
         rt2->read_symm(psio_, PSIF_DFOCC_AMPS);
         std::shared_ptr<Matrix> RT2(new Matrix("RT2",naoccA * navirA, naoccA * navirA));
         rt2->to_matrix(RT2);
-        orbitalDIIS->add_entry(6,wogA_vec.get(),RT1.get(),RT2.get(),kappa_barA_vec.get(),T1.get(),T2.get());
+        orbitalDIIS->add_entry(wogA_vec.get(), RT1.get(), RT2.get(), kappa_barA_vec.get(), T1.get(), T2.get());
         if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
-          orbitalDIIS->extrapolate(3,kappa_barA_vec.get(),T1.get(),T2.get());
+          orbitalDIIS->extrapolate(kappa_barA_vec.get(), T1.get(), T2.get());
           t1->set2(T1);
           t1->write_symm(psio_, PSIF_DFOCC_AMPS);
           t2->set2(T2);
@@ -669,9 +662,9 @@ void DFOCC::oo_diis() {
         rt1->read_symm(psio_, PSIF_DFOCC_AMPS);
         std::shared_ptr<Matrix> RT1(new Matrix("RT1",naoccA * navirA, naoccA * navirA));
         rt1->to_matrix(RT1);
-        orbitalDIIS->add_entry(4,wogA_vec.get(),RT1.get(),kappa_barA_vec.get(),T1.get());
+        orbitalDIIS->add_entry(wogA_vec.get(), RT1.get(), kappa_barA_vec.get(), T1.get());
         if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
-          orbitalDIIS->extrapolate(2,kappa_barA_vec.get(),T1.get());
+          orbitalDIIS->extrapolate(kappa_barA_vec.get(), T1.get());
           t1->set2(T1);
           t1->write_symm(psio_, PSIF_DFOCC_AMPS);
           for (int i=0; i<nidpA; i++ ){kappa_barA->set(i,kappa_barA_vec->get(i));}
@@ -728,12 +721,12 @@ void DFOCC::oo_diis() {
 //        outfile->Printf("successfully transferred the orbital gradient and rotation...\n");
         // all complete. now call add_entry, first pass the error vector componenets, then the guess vector components
         // in the same order as defined by set_error_vector_size and set_vector_size
-        orbitalDIIS->add_entry(10,wogA_vec.get(),wogB_vec.get(),RT1AA.get(),RT1BB.get(),RT1AB.get(),
-                               kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get());
+        orbitalDIIS->add_entry(wogA_vec.get(), wogB_vec.get(), RT1AA.get(), RT1BB.get(), RT1AB.get(),
+                               kappa_barA_vec.get(), kappa_barB_vec.get(), T1AA.get(), T1BB.get(), T1AB.get());
 //        outfile->Printf("successfully added vectors to DIIS subspace\n");
         if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
 //          outfile->Printf("calling extrapolate... ");
-          orbitalDIIS->extrapolate(5,kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get());
+          orbitalDIIS->extrapolate(kappa_barA_vec.get(), kappa_barB_vec.get(), T1AA.get(), T1BB.get(), T1AB.get());
 //          outfile->Printf("success.\n ");
           t1aa->set2(T1AA);
           t1bb->set2(T1BB);
@@ -820,12 +813,12 @@ void DFOCC::oo_diis() {
           rt2ab->read(psio_, PSIF_DFOCC_AMPS);
           std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB));
           rt2ab->to_matrix(RT2AB);
-          orbitalDIIS->add_entry(16,wogA_vec.get(),wogB_vec.get(),RT1AA.get(),RT1BB.get(),RT1AB.get(),
-                               RT2AA.get(),RT2BB.get(),RT2AB.get(),
-                               kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get(),
-                               T2AA.get(),T2BB.get(),T2AB.get());
+          orbitalDIIS->add_entry(wogA_vec.get(), wogB_vec.get(), RT1AA.get(), RT1BB.get(), RT1AB.get(),
+                               RT2AA.get(), RT2BB.get(), RT2AB.get(),
+                               kappa_barA_vec.get(), kappa_barB_vec.get(), T1AA.get(), T1BB.get(), T1AB.get(),
+                               T2AA.get(), T2BB.get(), T2AB.get());
           if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
-            orbitalDIIS->extrapolate(8,kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get(),T2AA.get(),T2BB.get(),T2AB.get());
+            orbitalDIIS->extrapolate(kappa_barA_vec.get(), kappa_barB_vec.get(), T1AA.get(), T1BB.get(), T1AB.get(), T2AA.get(), T2BB.get(), T2AB.get());
             t1aa->set2(T1AA);
             t1bb->set2(T1BB);
             t1ab->set2(T1AB);
@@ -869,10 +862,10 @@ void DFOCC::oo_diis() {
           rt1ab->read(psio_, PSIF_DFOCC_AMPS);
           std::shared_ptr<Matrix> RT1AB(new Matrix("RT1AB", naoccA * naoccB, navirA * navirB));
           rt1ab->to_matrix(RT1AB);
-          orbitalDIIS->add_entry(10,wogA_vec.get(),wogB_vec.get(),RT1AA.get(),RT1BB.get(),RT1AB.get(),
-                               kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get());
+          orbitalDIIS->add_entry(wogA_vec.get(), wogB_vec.get(), RT1AA.get(), RT1BB.get(), RT1AB.get(),
+                               kappa_barA_vec.get(), kappa_barB_vec.get(), T1AA.get(), T1BB.get(), T1AB.get());
           if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
-            orbitalDIIS->extrapolate(5,kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get());
+            orbitalDIIS->extrapolate(kappa_barA_vec.get(), kappa_barB_vec.get(), T1AA.get(), T1BB.get(), T1AB.get());
             t1aa->set2(T1AA);
             t1bb->set2(T1BB);
             t1ab->set2(T1AB);
