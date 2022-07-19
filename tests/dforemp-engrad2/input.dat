@@ -1,4 +1,4 @@
-#^! density fitted OO-REMP/cc-pVDZ engrad single points for the H2O+ molecule.
+#! density fitted OO-REMP/cc-pVDZ engrad single points for the H2O+ molecule.
 
 Enuc = 9.187386457589815 #TEST
 
@@ -43,8 +43,8 @@ Avals=[0.00, 0.10, 0.20, 0.30, 1.00]
 #for A in Avals:
 #     psi4.print_out("running step %5.2f" % A)
 #     set remp_A=$A
-#     e_remp=energy('remp')
-#     compare_values(test_dict[remp_A], get_variable("REMP TOTAL ENERGY"), 6, "REMP Total Energy") #TEST
+#     e_remp=energy('remp2')
+#     compare_values(test_dict[remp_A], get_variable("REMP2 TOTAL ENERGY"), 6, "REMP2 Total Energy") #TEST
 
 compare_values(Enuc, h2o.nuclear_repulsion_energy(), 8, "Nuclear Repulsion Energy") #TEST
 
@@ -54,9 +54,9 @@ ref_grad=psi4.Matrix.from_list([
             [ 0.000000000000,     0.041865124629,    -0.024569164887 ],  
             [ 0.000000000000,    -0.041865124629,    -0.024569164887 ]])
 
-grad_oremp=gradient('oremp')
+grad_oremp=gradient('oremp2')
 
-compare_values(test_energy_dict["0.00"], variable("OREMP TOTAL ENERGY"), 8, "DF-OREMP(0.00) Total Energy") #TEST
+compare_values(test_energy_dict["0.00"], variable("OREMP2 TOTAL ENERGY"), 8, "DF-OREMP(0.00) Total Energy") #TEST
 compare_matrices(ref_grad, grad_oremp, 5, "DF-OREMP(0.00) Analytic gradients")  #TEST
 
 
@@ -66,9 +66,9 @@ ref_grad=psi4.Matrix.from_list([
             [  0.000000000000,     0.041343367016,    -0.024106320834  ],
             [  0.000000000000,    -0.041343367016,    -0.024106320834  ]])
 
-grad_oremp=gradient('oremp')
+grad_oremp=gradient('oremp2')
 
-compare_values(test_energy_dict["0.10"], variable("OREMP TOTAL ENERGY"), 8, "DF-OREMP(0.10) Total Energy") #TEST
+compare_values(test_energy_dict["0.10"], variable("OREMP2 TOTAL ENERGY"), 8, "DF-OREMP(0.10) Total Energy") #TEST
 compare_matrices(ref_grad, grad_oremp, 5, "DF-OREMP(0.10) Analytic gradients")  #TEST
 
 
@@ -78,8 +78,8 @@ ref_grad=psi4.Matrix.from_list([
             [  0.000000000000,     0.040973151761,    -0.023778205018 ],
             [  0.000000000000,    -0.040973151761,    -0.023778205018 ]])
 
-grad_oremp=gradient('oremp')
-compare_values(test_energy_dict["0.20"], variable("OREMP TOTAL ENERGY"), 8, "DF-OREMP(0.20) Total Energy") #TEST
+grad_oremp=gradient('oremp2')
+compare_values(test_energy_dict["0.20"], variable("OREMP2 TOTAL ENERGY"), 8, "DF-OREMP(0.20) Total Energy") #TEST
 compare_matrices(ref_grad, grad_oremp, 5, "DF-OREMP(0.20) Analytic gradients")  #TEST
 
 
@@ -89,8 +89,8 @@ ref_grad=psi4.Matrix.from_list([
             [  0.000000000000,     0.040701828521,    -0.023537661761  ],
             [  0.000000000000,    -0.040701828521,    -0.023537661761  ]])
 
-grad_oremp=gradient('oremp')
-compare_values(test_energy_dict["0.30"], variable("OREMP TOTAL ENERGY"), 8, "DF-OREMP(0.30) Total Energy") #TEST
+grad_oremp=gradient('oremp2')
+compare_values(test_energy_dict["0.30"], variable("OREMP2 TOTAL ENERGY"), 8, "DF-OREMP(0.30) Total Energy") #TEST
 compare_matrices(ref_grad, grad_oremp, 5, "DF-OREMP(0.30) Analytic gradients")  #TEST
 
 
@@ -100,6 +100,6 @@ ref_grad=psi4.Matrix.from_list([
             [  0.000000000000,     0.040091039970,    -0.023003708862  ],
             [  0.000000000000,    -0.040091039970,    -0.023003708862  ]])
 
-grad_oremp=gradient('oremp')
-compare_values(test_energy_dict["1.00"], variable("OREMP TOTAL ENERGY"), 8, "DF-OREMP(1.00) Total Energy") #TEST
+grad_oremp=gradient('oremp2')
+compare_values(test_energy_dict["1.00"], variable("OREMP2 TOTAL ENERGY"), 8, "DF-OREMP(1.00) Total Energy") #TEST
 compare_matrices(ref_grad, grad_oremp, 5, "DF-OREMP(1.00) Analytic gradients")  #TEST

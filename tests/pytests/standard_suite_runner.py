@@ -53,6 +53,8 @@ def runner_asserter(inp, subject, method, basis, tnm):
         "oremp2": cc_type,
         "olccd": cc_type,
         "occd": cc_type,
+        "occd(t)": cc_type,
+        "a-occd(t)": cc_type,
     }
     corl_type = corl_natural_values[method]
 
@@ -201,10 +203,19 @@ def runner_asserter(inp, subject, method, basis, tnm):
             _asserter(asserter_args, contractual_args, contractual_oremp2)
         elif method == "olccd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_lccd)  # assert skipped
             _asserter(asserter_args, contractual_args, contractual_olccd)
         elif method == "occd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_occd)
+        elif method == "occd(t)":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_occd)
+            _asserter(asserter_args, contractual_args, contractual_occd_prt_pr)
+        elif method == "a-occd(t)":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_occd)
+            _asserter(asserter_args, contractual_args, contractual_aoccd_prt_pr)
 
     if "wrong" in inp:
         errmatch, reason = inp["wrong"]

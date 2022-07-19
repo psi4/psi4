@@ -337,6 +337,7 @@ Bibliography
 .. [Bozkaya:2016:dfolccd]
    U. Bozkaya,
    *Phys. Chem. Chem. Phys.* **18**, 11362-11373 (2016).
+   https://doi.org/10.1039/c6cp00164e
 
 .. [Bozkaya:2016:dfccsdat]
    U. Bozkaya,

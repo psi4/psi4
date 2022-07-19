@@ -767,31 +767,6 @@ def select_olccd(name, **kwargs):
         return func(name, **kwargs)
 
 
-def select_oremp2(name, **kwargs):
-    """Function selecting the algorithm for an OREMP2 energy call
-    and directing to specified or best-performance default modules.
-
-    """
-    reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
-    module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
-
-    func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
-        if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ
-
-    if func is None:
-        raise ManagedMethodError(['select_oremp2', name, 'CC_TYPE', mtd_type, reference, module])
-
-    if kwargs.pop('probe', False):
-        return
-    else:
-        return func(name, **kwargs)
-
-
 def select_olccd_gradient(name, **kwargs):
     """Function selecting the algorithm for an OLCCD gradient call
     and directing to specified or best-performance default modules.
@@ -813,59 +788,6 @@ def select_olccd_gradient(name, **kwargs):
 
     if func is None:
         raise ManagedMethodError(['select_olccd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
-
-    if kwargs.pop('probe', False):
-        return
-    else:
-        return func(name, **kwargs)
-
-#def select_oremp_gradient(name, **kwargs):
-#    """Function selecting the algorithm for an OREMP gradient call
-#    and directing to specified or best-performance default modules.
-#
-#    """
-#    reference = core.get_option('SCF', 'REFERENCE')
-#    mtd_type = core.get_global_option('CC_TYPE')
-#    module = core.get_global_option('QC_MODULE')
-#    # Considering only [df]occ
-#
-#    func = None
-#    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
-#        if mtd_type == 'CONV':
-#            if module in ['', 'OCC']:
-#                func = run_occ_gradient
-#        elif mtd_type == 'DF':
-#            if module in ['', 'OCC']:
-#                raise NotImplementedError(f"No DF gradients for OREMP (yet)")
-#                #func = run_dfocc_gradient
-#
-#    if func is None:
-#        raise ManagedMethodError(['select_oremp_gradient', name, 'CC_TYPE', mtd_type, reference, module])
-#
-#    if kwargs.pop('probe', False):
-#        return
-#    else:
-#        return func(name, **kwargs)
-
-
-def select_oremp2_gradient(name, **kwargs):
-    """Function selecting the algorithm for an OREMP2 gradient call
-    and directing to specified or best-performance default modules.
-
-    """
-    reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
-    module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
-
-    func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
-        if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
-
-    if func is None:
-        raise ManagedMethodError(['select_oremp2_gradient', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1380,6 +1302,12 @@ def select_remp2(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
 
     if func is None:
         raise ManagedMethodError(['select_remp2', name, 'CC_TYPE', mtd_type, reference, module])
@@ -2111,75 +2039,62 @@ def run_dfocc(name, **kwargs):
         else:
             raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")
 
-    if name in ['mp2', 'omp2']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
-        corl_type = core.get_global_option('MP2_TYPE')
-    elif name in ['mp2.5', 'fno-mp2.5']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-        corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
-    elif name in ['omp2.5']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-        corl_type = core.get_global_option('MP_TYPE')
-    elif name in ['mp3', 'fno-mp3']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-        corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
-    elif name in ['omp3']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-        corl_type = core.get_global_option('MP_TYPE')
-    elif name in ['lccd', 'olccd', 'fno-lccd']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['remp', 'oremp']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OREMP')
-        corl_type = core.get_global_option('CC_TYPE')
+    if name == "occd(at)":
+        core.print_out(f"""\nMethod "{name}" has been regularized to "a-occd(t)" for QCVariables.""")
+        name = "a-occd(t)"
 
-    elif name in ['ccd', 'fno-ccd']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name == 'occd':
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name == 'occd(t)':
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD(T)')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name == 'occd(at)':
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD(AT)')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['ccsd', 'fno-ccsd']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['ccsd(t)', 'fno-ccsd(t)']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['a-ccsd(t)', 'fno-a-ccsd(t)']:
-        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name == 'dfocc':
-        pass
-    else:
-        raise ValidationError('Unidentified method %s' % (name))
+    if name in ["mp2.5", "mp3"] and not core.has_global_option_changed("MP_TYPE"):
+        core.print_out(f"    Information: {name.upper()} default algorithm changed to DF in August 2020. Use `set mp_type conv` for previous behavior.\n")
 
-    set_cholesky_from(corl_type)
+    director = {
+           "mp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP2_TYPE")},
+          "omp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP2_TYPE")},
 
-    # conventional vs. optimized orbitals
-    if name in [   'mp2',     'mp2.5',     'mp3',     'lccd',     'remp',     'ccd',     'ccsd',     'ccsd(t)',     'a-ccsd(t)',
-                          'fno-mp2.5', 'fno-mp3', 'fno-lccd',             'fno-ccd', 'fno-ccsd', 'fno-ccsd(t)', 'fno-a-ccsd(t)',]:
-        core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2',    'omp2.5',    'omp3',    'olccd',    'oremp',    'occd',                 'occd(t)',     'a-occd(t)',]:
-        core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+           "mp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
+       "fno-mp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "FALSE", "nat_orbs": "TRUE",  "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
+          "omp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
 
-    # FNO or not
-    if name in ['fno-mp2.5', 'fno-mp3', 'fno-lccd',
-                     'fno-ccd', 'fno-ccsd', 'fno-ccsd(t)', 'fno-a-ccsd(t)']:
-        core.set_local_option('DFOCC', 'NAT_ORBS', 'TRUE')
+           "mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
+       "fno-mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "TRUE",  "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
+          "omp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
+
+         "remp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+        "oremp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
+          "lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+      "fno-lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "TRUE",  "corl_type": core.get_global_option("CC_TYPE")},
+         "olccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
+           "ccd":     {"wfn_type": "DF-OCCD",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+       "fno-ccd":     {"wfn_type": "DF-OCCD",     "orb_opt": "FALSE", "nat_orbs": "TRUE",  "corl_type": core.get_global_option("CC_TYPE")},
+          "occd":     {"wfn_type": "DF-OCCD",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
+           "ccsd":    {"wfn_type": "DF-CCSD",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+       "fno-ccsd":    {"wfn_type": "DF-CCSD",     "orb_opt": "FALSE", "nat_orbs": "TRUE",  "corl_type": core.get_global_option("CC_TYPE")},
+
+           "ccsd(t)": {"wfn_type": "DF-CCSD(T)",  "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+       "fno-ccsd(t)": {"wfn_type": "DF-CCSD(T)",  "orb_opt": "FALSE", "nat_orbs": "TRUE",  "corl_type": core.get_global_option("CC_TYPE")},
+
+         "a-ccsd(t)": {"wfn_type": "DF-CCSD(AT)", "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+     "fno-a-ccsd(t)": {"wfn_type": "DF-CCSD(AT)", "orb_opt": "FALSE", "nat_orbs": "TRUE",  "corl_type": core.get_global_option("CC_TYPE")},
+
+          "occd(t)":  {"wfn_type": "DF-OCCD(T)",  "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
+        "a-occd(t)":  {"wfn_type": "DF-OCCD(AT)", "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+    }
+
+    if name not in director:
+        raise ValidationError(f"Invalid method {name} for DFOCC energy")
+
+    for k, v in director[name].items():
+        if k == "corl_type":
+            set_cholesky_from(v)
+        else:
+            core.set_local_option("DFOCC", k.upper(), v)
 
     core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
     core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
     core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-
-    if name in ["mp2.5", "mp3"] and not core.has_global_option_changed("MP_TYPE"):
-        core.print_out(f"    Information: {name.upper()} default algorithm changed to DF in August 2020. Use `set mp_type conv` for previous behavior.\n")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2210,9 +2125,8 @@ def run_dfocc(name, **kwargs):
     dfocc_wfn = core.dfocc(ref_wfn)
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2', 'mp2.5', 'mp3', 'lccd', 'remp', "a-ccsd(t)", "olccd", "occd"]:
-        for k, v in dfocc_wfn.variables().items():
-            core.set_variable(k, v)
+    for k, v in dfocc_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return dfocc_wfn
@@ -2237,52 +2151,43 @@ def run_dfocc_gradient(name, **kwargs):
     if core.get_global_option('SCF_TYPE') != 'DISK_DF':
         raise ValidationError('DFOCC gradients need DF-SCF reference.')
 
-    if name in ['mp2', 'omp2']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
-        corl_type = core.get_global_option('MP2_TYPE')
-    elif name in ['mp2.5']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-        corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
-    elif name in ["omp2.5"]:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-        corl_type = core.get_global_option('MP_TYPE')
-    elif name in ['mp3']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-        corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
-    elif name in ['omp3']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-        corl_type = core.get_global_option('MP_TYPE')
-    elif name in ['lccd', 'olccd']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['ccd']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
-        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['occd']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
-        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['ccsd']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['ccsd(t)']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
-        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
-        corl_type = core.get_global_option('CC_TYPE')
-    elif name in ['remp', 'oremp']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OREMP')
-        corl_type = core.get_global_option('CC_TYPE')
-    else:
-        raise ValidationError('Unidentified method %s' % (name))
+    # CC_LAMBDA keyword was being set TRUE sporadically, but that's covered c-side
 
-    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd', 'ccsd(t)', 'remp']:
-        core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd', 'oremp', 'occd']:
-        core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
-    if corl_type not in ["DF", "CD"]:
-        raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")
+    director = {
+           "mp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP2_TYPE")},
+          "omp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP2_TYPE")},
+
+           "mp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
+          "omp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
+
+           "mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
+          "omp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
+
+         "remp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+        "oremp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
+          "lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+         "olccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
+           "ccd":     {"wfn_type": "DF-OCCD",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+          "occd":     {"wfn_type": "DF-OCCD",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
+           "ccsd":    {"wfn_type": "DF-CCSD",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
+           "ccsd(t)": {"wfn_type": "DF-CCSD(T)",  "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+    }
+
+    if name not in director:
+        raise ValidationError(f"Invalid method {name} for DFOCC gradient")
+
+    if director[name]["corl_type"] not in ["DF", "CD"]:
+        raise ValidationError(f"Invalid type '{corl_type}' for DFOCC")
+
+    for k, v in director[name].items():
+        if k == "corl_type":
+            pass
+        else:
+            core.set_local_option("DFOCC", k.upper(), v)
 
     core.set_global_option('DERTYPE', 'FIRST')
     core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
@@ -2323,9 +2228,8 @@ def run_dfocc_gradient(name, **kwargs):
     dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
     # Shove variables into global space
-    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccsd', 'omp2', 'ccsd(t)', "olccd", 'occd']:
-        for k, v in dfocc_wfn.variables().items():
-            core.set_variable(k, v)
+    for k, v in dfocc_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return dfocc_wfn

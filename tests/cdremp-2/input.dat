@@ -46,30 +46,30 @@ set{
 #for A in Avals:
 #     psi4.print_out("running step %5.2f" % A)
 #     set remp_A=$A
-#     e_remp=energy('remp')
-#     compare_values(test_dict[remp_A], get_variable("REMP TOTAL ENERGY"), 6, "REMP Total Energy") #TEST
+#     e_remp2=energy('remp2')
+#     compare_values(test_dict[remp_A], get_variable("REMP2 TOTAL ENERGY"), 6, "REMP2 Total Energy") #TEST
 
 
 
 set remp_A=0.00
-e_remp=energy('remp')
+e_remp2=energy('remp2')
 compare_values(ESCF, variable("SCF TOTAL ENERGY"), 6, "CD-SCF Energy") #TEST
-compare_values(test_dict["0.00"], variable("REMP TOTAL ENERGY"), 7, "CD-REMP(0.00) Total Energy") #TEST
+compare_values(test_dict["0.00"], variable("REMP2 TOTAL ENERGY"), 7, "CD-REMP(0.00) Total Energy") #TEST
 
 
 set remp_A=0.10
-e_remp=energy('remp')
-compare_values(test_dict["0.10"], variable("REMP TOTAL ENERGY"), 7, "CD-REMP(0.10) Total Energy") #TEST
+e_remp2=energy('remp2')
+compare_values(test_dict["0.10"], variable("REMP2 TOTAL ENERGY"), 7, "CD-REMP(0.10) Total Energy") #TEST
 
 set remp_A=0.20
-e_remp=energy('remp')
-compare_values(test_dict["0.20"], variable("REMP TOTAL ENERGY"), 7, "CD-REMP(0.20) Total Energy") #TEST
+e_remp2=energy('remp2')
+compare_values(test_dict["0.20"], variable("REMP2 TOTAL ENERGY"), 7, "CD-REMP(0.20) Total Energy") #TEST
 
 set remp_A=0.30
-e_remp=energy('remp')
-compare_values(test_dict["0.30"], variable("REMP TOTAL ENERGY"), 7, "CD-REMP(0.30) Total Energy") #TEST
+e_remp2=energy('remp2')
+compare_values(test_dict["0.30"], variable("REMP2 TOTAL ENERGY"), 7, "CD-REMP(0.30) Total Energy") #TEST
 
 set remp_A=1.00
-e_remp=energy('remp')
-compare_values(test_dict["1.00"], variable("REMP TOTAL ENERGY"), 7, "CD-REMP(1.00) Total Energy") #TEST
+e_remp2=energy('remp2')
+compare_values(test_dict["1.00"], variable("REMP2 TOTAL ENERGY"), 7, "CD-REMP(1.00) Total Energy") #TEST
 

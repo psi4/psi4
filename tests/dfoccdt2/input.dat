@@ -2,7 +2,7 @@
 
 refnuc      =  3.50194996133039  #TEST
 refscf      = -54.96603000632251 #TEST
-refcc       = -55.09185083364584 #TEST
+refcc       = -55.091853589591   #TEST
 
 molecule nh {
   0 3

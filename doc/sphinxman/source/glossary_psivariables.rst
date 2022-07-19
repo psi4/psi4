@@ -1285,6 +1285,39 @@ PSI Variables by Alpha
    .. math:: E_{NN} = \sum_{i, j<i}^{N_{atom}}\frac{Z_i Z_j}{|\mathbf{R}_i - \mathbf{R}_j|}
       :label: ENN
 
+.. psivar:: OCCD TOTAL ENERGY
+   OCCD CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized coupled-cluster doubles level of theory.
+
+.. psivar:: OCCD REFERENCE CORRECTION ENERGY
+
+   The additional correction to the SCF reference energy [Eh]
+   for the orbital-optimized coupled cluster doubles level of theory.
+
+.. psivar:: OCCD(T) TOTAL ENERGY
+   OCCD(T) CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized coupled-cluster doubles with perturbative
+   triples level of theory.
+
+.. psivar:: O(T) CORRECTION ENERGY
+
+   The orbital-optimized coupled-cluster perturbative triples correction [Eh].
+
+.. psivar:: A-OCCD(T) TOTAL ENERGY
+   A-OCCD(T) CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized coupled-cluster doubles with asymmetric
+   perturbative triples level of theory.
+
+.. psivar:: A-O(T) CORRECTION ENERGY
+
+   The orbital-optimized coupled-cluster asymmetric perturbative triples correction [Eh].
+
 .. psivar:: OCEPA(0) TOTAL ENERGY
    OCEPA(0) CORRELATION ENERGY
 

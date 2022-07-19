@@ -201,7 +201,7 @@ void DFOCC::cd_omp2_manager() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
-        Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
+        variables_["OMP2 TOTAL ENERGY"] = Emp2L;
         Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] = Escsmp2;
         Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] = Esosmp2;
         Process::environment.globals["SCS(N)-OMP2 TOTAL ENERGY"] = Escsnmp2;
@@ -210,10 +210,16 @@ void DFOCC::cd_omp2_manager() {
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
         variables_["CURRENT CORRELATION ENERGY"] = Emp2L - Escf;
 
-        Process::environment.globals["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
+        variables_["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
+        variables_["OMP2 REFERENCE CORRECTION ENERGY"] = Eref - Escf;
         Process::environment.globals["SCS-OMP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
         Process::environment.globals["SOS-OMP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
         Process::environment.globals["SCS(N)-OMP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+
+        if (reference_ == "UNRESTRICTED") {
+            variables_["OMP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+            variables_["OMP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        }
 
         // if scs on
         if (do_scs == "TRUE") {
@@ -2055,29 +2061,31 @@ void DFOCC::omp3_manager_cd() {
     outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
 
-    Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
     Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
     Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
-        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
-        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
     }
     else {
-        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
+        variables_["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
-    Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
+    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
     // Perform MP3 iterations
     timer_on("MP3");
     t2_2nd_sc();
     timer_off("MP3");
 
+    if (reference != "ROHF") {
+        // LAB: dfocc can't compute a ROHF-MP3 explicitly, so it's unlikely to be a correct byproduct
     outfile->Printf("\n");
     outfile->Printf("\tComputing CD-MP3 energy using SCF MOs (Canonical CD-MP3)... \n");
     outfile->Printf("\t======================================================================= \n");
@@ -2094,8 +2102,16 @@ void DFOCC::omp3_manager_cd() {
     outfile->Printf("\tCD-MP3 Total Energy (a.u.)         : %20.14f\n", Emp3);
     outfile->Printf("\t======================================================================= \n");
 
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+    variables_["MP3 TOTAL ENERGY"] = Emp3;
+    variables_["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+        if (reference_ == "UNRESTRICTED") {
+            variables_["MP3 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+            variables_["MP3 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+        }
+        // RHF & UHF only
+        variables_["MP3 SINGLES ENERGY"] = 0.0;
+        variables_["MP3 DOUBLES ENERGY"] = Ecorr;
+    }
     Emp3L = Emp3;
     EcorrL = Emp3L - Escf;
     Emp3L_old = Emp3;
@@ -2196,11 +2212,21 @@ void DFOCC::omp3_manager_cd() {
 
         // Set the global variables with the energies
         // Emp3L=Emp3;
-        Process::environment.globals["CURRENT ENERGY"] = Emp3L;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
-        Process::environment.globals["OMP3 TOTAL ENERGY"] = Emp3L;
-        Process::environment.globals["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["CURRENT ENERGY"] = Emp3L;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+        variables_["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["OMP3 TOTAL ENERGY"] = Emp3L;
+        variables_["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["OMP3 REFERENCE CORRECTION ENERGY"] = Eref - Escf;
+
+        if (reference_ == "UNRESTRICTED") {
+            variables_["OMP3 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+            variables_["OMP3 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+        }
+
+        /* updates the wavefunction for checkpointing */
+        energy_ = variables_["CURRENT ENERGY"];
+        name_ = "CD-OMP3";
 
         response_helper();
 
@@ -2628,29 +2654,31 @@ void DFOCC::omp2_5_manager_cd() {
     outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
 
-    Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
     Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
     Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
-        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
-        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
     }
     else {
-        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
+        variables_["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
-    Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
+    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
     // Perform MP3 iterations
     timer_on("MP3");
     t2_2nd_sc();
     timer_off("MP3");
 
+    if (reference != "ROHF") {
+        // LAB: dfocc can't compute a ROHF-MP3 explicitly, so it's unlikely to be a correct byproduct
     outfile->Printf("\n");
     outfile->Printf("\tComputing CD-MP2.5 energy using SCF MOs (Canonical CD-MP2.5)... \n");
     outfile->Printf("\t======================================================================= \n");
@@ -2666,9 +2694,24 @@ void DFOCC::omp2_5_manager_cd() {
     outfile->Printf("\tCD-MP2.5 Total Energy (a.u.)       : %20.14f\n", Emp3);
     outfile->Printf("\t======================================================================= \n");
 
-    Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
+    variables_["MP2.5 TOTAL ENERGY"] = Emp3;
+    variables_["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
+    variables_["MP2.5 SINGLES ENERGY"] = 0.0;
+    variables_["MP2.5 DOUBLES ENERGY"] = variables_["MP2.5 CORRELATION ENERGY"];  // RHF & UHF only
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP2.5 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+        variables_["MP2.5 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+    }
+
+    variables_["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
+    variables_["MP3 CORRELATION ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2) - Escf;
+    variables_["MP3 DOUBLES ENERGY"] = variables_["MP3 CORRELATION ENERGY"];  // RHF & UHF only
+    variables_["MP3 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP3 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB + 2.0 * (Emp3AA + Emp3BB - Emp2AA - Emp2BB);
+        variables_["MP3 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB + 2.0 * (Emp3AB - Emp2AB);
+    }
+    }
     Emp3L = Emp3;
     EcorrL = Emp3L - Escf;
     Emp3L_old = Emp3;
@@ -2768,11 +2811,18 @@ void DFOCC::omp2_5_manager_cd() {
 
         // Set the global variables with the energies
         // Emp3L=Emp3;
-        Process::environment.globals["CURRENT ENERGY"] = Emp3L;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
-        Process::environment.globals["OMP2.5 TOTAL ENERGY"] = Emp3L;
-        Process::environment.globals["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["CURRENT ENERGY"] = Emp3L;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+        variables_["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["OMP2.5 TOTAL ENERGY"] = Emp3L;
+        variables_["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
+        variables_["OMP2.5 REFERENCE CORRECTION ENERGY"] = Eref - Escf;
+        energy_ = Emp3L;
+
+        if (reference_ == "UNRESTRICTED") {
+            variables_["OMP2.5 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+            variables_["OMP2.5 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+        }
 
         // Save MOs to wfn
         save_mo_to_wfn();
@@ -3305,13 +3355,6 @@ void DFOCC::olccd_manager_cd() {
         energy_ = variables_["CURRENT ENERGY"];
         name_ = "CD-OLCCD";
 
-        // ordinary ROHF-MP2 not available in course of ROHF-OLCCD
-        if (reference == "ROHF") {
-            del_scalar_variable("MP2 CORRELATION ENERGY");
-            del_scalar_variable("MP2 SINGLES ENERGY");
-            del_scalar_variable("MP2 TOTAL ENERGY");
-        }
-
         // Save MOs to wfn
         save_mo_to_wfn();
 
@@ -3599,14 +3642,14 @@ void DFOCC::cis_manager_cd() {
     outfile->Printf("\t======================================================================= \n");
 
     Process::environment.globals["CURRENT ENERGY"] = Ecis;
-    Process::environment.globals["CIS TOTAL ENERGY"] = Ecis;
+    Process::environment.globals["CIS TOTAL ENERGY"] = Ecis;  // no-autodoc
 
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = Ecis - Escf;
-    Process::environment.globals["CIS CORRELATION ENERGY"] = Ecis - Escf;
+    Process::environment.globals["CIS CORRELATION ENERGY"] = Ecis - Escf;  // no-autodoc
 
     /* updates the wavefunction for checkpointing */
-    energy_ = Process::environment.globals["CIS TOTAL ENERGY"];
+    energy_ = Process::environment.globals["CIS TOTAL ENERGY"];  // no-autodoc
     name_ = "CD-CIS";
 
 }  // end cis_manager_cd
@@ -3972,15 +4015,15 @@ void DFOCC::occd_manager_cd() {
             }
 
             if (do_fno == "TRUE") Eccsd_t += Emp2L - Emp2;
-            Process::environment.globals["CURRENT ENERGY"] = Eccsd_t;
-            Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd_t - Escf;
-            Process::environment.globals["OCCD(T) CORRELATION ENERGY"] = Eccsd_t - Escf;
-            Process::environment.globals["OCCD(T) TOTAL ENERGY"] = Eccsd_t;
-            Process::environment.globals["(T) CORRECTION ENERGY"] = E_t;
+            variables_["CURRENT ENERGY"] = Eccsd_t;
+            variables_["CURRENT REFERENCE ENERGY"] = Escf;
+            variables_["CURRENT CORRELATION ENERGY"] = Eccsd_t - Escf;
+            variables_["OCCD(T) CORRELATION ENERGY"] = Eccsd_t - Escf;
+            variables_["OCCD(T) TOTAL ENERGY"] = Eccsd_t;
+            variables_["O(T) CORRECTION ENERGY"] = E_t;
 
             /* updates the wavefunction for checkpointing */
-            energy_ = Process::environment.globals["OCCD(T) TOTAL ENERGY"];
+            energy_ = variables_["OCCD(T) TOTAL ENERGY"];
             name_ = "CD-OCCD(T)";
 
 
@@ -4149,16 +4192,23 @@ void DFOCC::occdl_t_manager_cd() {
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\tUsing A=%9.5g as REMP mixing parameter\n",remp_a);
 
-    Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
     Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
     Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        variables_["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
+    }
+    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
     // Mem alloc for DF ints
     //if (df_ints_incore) {
@@ -4271,11 +4321,12 @@ void DFOCC::occdl_t_manager_cd() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
-        Process::environment.globals["CURRENT ENERGY"] = EccdL;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = EccdL - Escf;
-        Process::environment.globals["OCCD TOTAL ENERGY"] = EccdL;
-        Process::environment.globals["OCCD CORRELATION ENERGY"] = EccdL - Escf;
+        variables_["CURRENT ENERGY"] = EccdL;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+        variables_["CURRENT CORRELATION ENERGY"] = EccdL - Escf;
+        variables_["OCCD TOTAL ENERGY"] = EccdL;
+        variables_["OCCD CORRELATION ENERGY"] = EccdL - Escf;
+        variables_["OCCD REFERENCE CORRECTION ENERGY"] = Eref - Escf;
 
         // Save MOs to wfn
         save_mo_to_wfn();
@@ -4328,15 +4379,15 @@ void DFOCC::occdl_t_manager_cd() {
         }
 
         if (do_fno == "TRUE") Eccsd_at += Emp2L - Emp2;
-        Process::environment.globals["CURRENT ENERGY"] = Eccsd_at;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd_at - Escf;
-        Process::environment.globals["OCCD(AT) CORRELATION ENERGY"] = Eccsd_at - Escf;
-        Process::environment.globals["OCCD(AT) TOTAL ENERGY"] = Eccsd_at;
-        Process::environment.globals["(AT) CORRECTION ENERGY"] = E_at;
+        variables_["CURRENT ENERGY"] = Eccsd_at;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+        variables_["CURRENT CORRELATION ENERGY"] = Eccsd_at - Escf;
+        variables_["A-OCCD(T) CORRELATION ENERGY"] = Eccsd_at - Escf;
+        variables_["A-OCCD(T) TOTAL ENERGY"] = Eccsd_at;
+        variables_["A-O(T) CORRECTION ENERGY"] = E_at;
 
         /* updates the wavefunction for checkpointing */
-        energy_ = Process::environment.globals["OCCD(AT) TOTAL ENERGY"];
+        energy_ = variables_["A-OCCD(T) TOTAL ENERGY"];
         name_ = "CD-OCCD(AT)";
 
 
@@ -4484,23 +4535,23 @@ void DFOCC::oremp_manager_cd() {
     outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
 
-    Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
     Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
     Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
-        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
-        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
     }
     else {
-        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
+        variables_["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
-    Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
+    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
     // Malloc for PDMs
     gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
@@ -4593,11 +4644,16 @@ void DFOCC::oremp_manager_cd() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
-        Process::environment.globals["CURRENT ENERGY"] = ErempL;
-        Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-        Process::environment.globals["CURRENT CORRELATION ENERGY"] = ErempL - Escf;
-        Process::environment.globals["OREMP TOTAL ENERGY"] = ErempL;
-        Process::environment.globals["OREMP CORRELATION ENERGY"] = ErempL - Escf;
+        variables_["CURRENT ENERGY"] = ErempL;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+        variables_["CURRENT CORRELATION ENERGY"] = ErempL - Escf;
+        variables_["OREMP2 TOTAL ENERGY"] = ErempL;
+        variables_["OREMP2 CORRELATION ENERGY"] = ErempL - Escf;
+        variables_["OREMP2 REFERENCE CORRECTION ENERGY"] = Eref - Escf;
+
+        /* updates the wavefunction for checkpointing */
+        energy_ = variables_["CURRENT ENERGY"];
+        name_ = "CD-OREMP";
 
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
@@ -4799,21 +4855,21 @@ void DFOCC::remp_manager_cd() {
 
     energy_ = Eremp;
     variables_["CURRENT ENERGY"] = Eremp;
-    variables_["REMP TOTAL ENERGY"] = Eremp;
+    variables_["REMP2 TOTAL ENERGY"] = Eremp;
 
     variables_["CURRENT REFERENCE ENERGY"] = Escf;
     variables_["CURRENT CORRELATION ENERGY"] = Eremp - Escf;
-    variables_["REMP CORRELATION ENERGY"] = Eremp - Escf;
+    variables_["REMP2 CORRELATION ENERGY"] = Eremp - Escf;
 
     if (reference_ == "UNRESTRICTED") {
-        variables_["REMP OPPOSITE-SPIN CORRELATION ENERGY"] = ErempAB;
-        variables_["REMP SAME-SPIN CORRELATION ENERGY"] = ErempAA + ErempBB;
-        variables_["REMP DOUBLES ENERGY"] = ErempAB + ErempAA + ErempBB;
+        variables_["REMP2 OPPOSITE-SPIN CORRELATION ENERGY"] = ErempAB;
+        variables_["REMP2 SAME-SPIN CORRELATION ENERGY"] = ErempAA + ErempBB;
+        variables_["REMP2 DOUBLES ENERGY"] = ErempAB + ErempAA + ErempBB;
     }
     else {
-        variables_["REMP DOUBLES ENERGY"] = Ecorr;  // no ROHF
+        variables_["REMP2 DOUBLES ENERGY"] = Ecorr;  // no ROHF
     }
-    variables_["REMP SINGLES ENERGY"] = 0.0;  // no ROHF
+    variables_["REMP2 SINGLES ENERGY"] = 0.0;  // no ROHF
 
     ErempL = Eremp;
 

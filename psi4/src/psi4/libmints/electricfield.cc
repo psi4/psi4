@@ -197,4 +197,3 @@ void ElectricFieldInt::compute_with_functor(ContractionFunctor functor, SharedMa
 
 template void ElectricFieldInt::compute_with_functor(ContractOverDipolesFunctor, SharedMatrix);
 template void ElectricFieldInt::compute_with_functor(ContractOverDensityFieldFunctor, SharedMatrix);
-
