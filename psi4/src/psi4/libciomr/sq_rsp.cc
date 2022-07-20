@@ -40,7 +40,7 @@ namespace psi {
 /*!
 ** sq_rsp(): diagomalize a symmetric square matrix ('array').
 **
-** \param nm     = rows of matrix
+** \param nm     = rows of matrix (unused, present for historic reasons)
 ** \param n      = columns of matrix
 ** \param array  = matrix to diagonalize
 ** \param e_vals = array to hold eigenvalues
@@ -49,7 +49,7 @@ namespace psi {
 **               = 2 (no eigenvectors, eigenvalues in descending order)
 **               = 3 (eigenvectors and eigenvalues in descending order)
 ** \param e_vecs = matrix of eigenvectors (one column for each eigvector)
-** \param toler  = tolerance for eigenvalues?  Often 1.0E-14.
+** \param toler  = tolerance for eigenvalues?  Often 1.0E-14. (unused, present for historic reasons)
 **
 ** \ingroup CIOMR
 */
