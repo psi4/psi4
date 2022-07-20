@@ -32,31 +32,11 @@
 ** \ingroup CIOMR
 */
 
-#include "psi4/psifiles.h"
 #include "libciomr.h"
 #include <cstdlib>
 #include "psi4/libqt/qt.h"
 
 namespace psi {
-
-extern void tred2(int n, double** a, double* d, double* e, int matz);
-extern void tqli(int n, double* d, double** z, double* e, int matz, double toler);
-
-/* translation into c of a translation into FORTRAN77 of the EISPACK */
-/* matrix diagonalization routines */
-
-/**
-*  WARNING: Psi 3 Fortran routine sq_rsp  deprecated
-*  by Robert Parrish, robparrish@gmail.com
-*
-*  sq_rsp now calls the LAPACK method DSYEV for
-*  numerical stability, speed, and threading
-*
-*  the signature of this method remains the same
-*
-*  June 22, 2010
-**/
-
 /*!
 ** sq_rsp(): diagomalize a symmetric square matrix ('array').
 **
@@ -179,64 +159,5 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
             }
         }
     }
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //
-    //  DEPRECATED METHOD AND ASSOCIATED CALLS
-    //
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    /**
-      int i, j, ierr;
-      int ascend_order;
-      double *fv1, **temp;
-
-      // Modified by Ed - matz can have the values 0 through 3
-
-      if ((matz > 3) || (matz < 0)) {
-        matz = 0;
-        ascend_order = 1;
-      }
-      else
-        if (matz < 2)
-          ascend_order = 1;	// Eigenvalues in ascending order
-      else {
-        matz -= 2;
-        ascend_order = 0;	// Eigenvalues in descending order
-      }
-
-      fv1 = (double *) init_array(n);
-      temp = (double **) init_matrix(n,n);
-
-      if (n > nm) {
-        ierr = 10*n;
-        outfile->Printf("n = %d is greater than nm = %d in rsp\n",n,nm);
-        exit(PSI_RETURN_FAILURE);
-      }
-
-      for (i=0; i < n; i++) {
-        for (j=0; j < n; j++) {
-          e_vecs[i][j] = array[i][j];
-        }
-      }
-
-      tred2(n,e_vecs,e_vals,fv1,matz);
-
-      for (i=0; i < n; i++)
-        for (j=0; j < n; j++)
-          temp[i][j]=e_vecs[j][i];
-
-      tqli(n,e_vals,temp,fv1,matz,toler);
-
-      for (i=0; i < n; i++)
-        for (j=0; j < n; j++)
-          e_vecs[i][j]=temp[j][i];
-
-      if (ascend_order)
-        eigsort(e_vals,e_vecs,n);
-      else
-        eigsort(e_vals,e_vecs,(-1)*n);
-
-      free(fv1);
-      free_matrix(temp,n);
-    **/
 }
 }
