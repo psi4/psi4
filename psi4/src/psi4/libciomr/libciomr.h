@@ -73,7 +73,8 @@ PSI_API void arr_to_mat(double **a, double *b, int m, int n);
 PSI_API void print_array(double *a, int m, std::string out);
 PSI_API void print_mat(double **a, int rows, int cols, std::string out);
 
-PSI_API void rsp(int nm, int n, int nv, double *array, double *evals, int matz, double **evecs, double toler);
+PSI_API void rsp(int /*nm*/, const int n, const int nv, const double * const array, double *e_vals, const int matz,
+                 double * const * const e_vecs, double /*toler*/);
 PSI_API void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
 PSI_API void sq_to_tri(double **bmat, double *amat, int size);
 
