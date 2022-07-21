@@ -852,7 +852,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         of 90 would switch the two orbitals. -*/
         options.add("MCSCF_ROTATE", new ArrayType());
 
-        /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian, or One-Step. Defaults
+        /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian. Defaults
         to TS for RASSCF. -*/
         options.add_str("MCSCF_ALGORITHM", "TS", "TS AH");
 
