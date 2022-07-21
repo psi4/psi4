@@ -14,8 +14,6 @@ list(APPEND sources
   rsp.cc
   sq_rsp.cc
   sq_to_tri.cc
-  tqli.cc
-  tred2.cc
   tri_to_sq.cc
   tstart.cc
   zero.cc
