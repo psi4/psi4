@@ -4850,14 +4850,14 @@ def run_mrcc(name, **kwargs):
             ene = float(fields[5])
             if m == "MP(2)":
                 m = "MP2"
-            core.set_variable(m + ' TOTAL ENERGY', ene)
-            core.set_variable(m + ' CORRELATION ENERGY', ene - vscf)
+            ref_wfn.set_variable(m + ' TOTAL ENERGY', ene)
+            ref_wfn.set_variable(m + ' CORRELATION ENERGY', ene - vscf)
         except ValueError:
             continue
 
     # The last 'ene' in iface is the one the user requested.
-    core.set_variable('CURRENT ENERGY', ene)
-    core.set_variable('CURRENT CORRELATION ENERGY', ene - vscf)
+    ref_wfn.set_variable('CURRENT ENERGY', ene)
+    ref_wfn.set_variable('CURRENT CORRELATION ENERGY', ene - vscf)
 
     # Load the iface file
     iface = open('iface', 'r')
@@ -4886,6 +4886,10 @@ def run_mrcc(name, **kwargs):
     p4util.banner('Full results from MRCC')
     core.print_out('\n')
     core.print_out(iface_contents)
+
+    # Shove variables into global space
+    for k, v in ref_wfn.variables().items():
+        core.set_variable(k, v)
 
     return ref_wfn
 
