@@ -209,9 +209,6 @@ class Tensor2d {
     void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
     // cdsyev: diagonalize via lapack
     void cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
-    // davidson: diagonalize via davidson algorithm
-    void davidson(int n_eigval, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
-                  int print);
     // cdgesv: solve a linear equation via lapack
     void cdgesv(const SharedTensor1d &Xvec);
     void cdgesv(double *Xvec);

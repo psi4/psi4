@@ -372,11 +372,6 @@ void Array2d::gemm(bool transa, bool transb, double alpha, const Array2d* a, con
     }
 }  //
 
-void Array2d::davidson(int n_eigval, Array2d* eigvectors, Array1d* eigvalues, double cutoff, int print) {
-    david(A2d_, dim1_, n_eigval, eigvalues->A1d_, eigvectors->A2d_, cutoff, print);
-
-}  //
-
 void Array2d::add(const Array2d* Adum) {
     double *lhs, *rhs;
     size_t size = dim1_ * dim2_;

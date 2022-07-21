@@ -1490,12 +1490,6 @@ void Tensor2d::gemv(bool transa, const SharedTensor2d &a, const SharedTensor2d &
     }
 }  //
 
-void Tensor2d::davidson(int n_eigval, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
-                        int print) {
-    david(A2d_, dim1_, n_eigval, eigvalues->A1d_, eigvectors->A2d_, cutoff, print);
-
-}  //
-
 void Tensor2d::add(const SharedTensor2d &a) {
     size_t length = (size_t)dim1_ * (size_t)dim2_;
     C_DAXPY(length, 1.0, a->A2d_[0], 1, A2d_[0], 1);

@@ -491,15 +491,6 @@ void SymBlockMatrix::cdsyev(char jobz, char uplo, SymBlockMatrix *eigvectors, Sy
     }
 }  //
 
-void SymBlockMatrix::davidson(int n_eigval, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues, double cutoff,
-                              int print) {
-    for (int h = 0; h < nirreps_; h++) {
-        if (rowspi_[h]) {
-            david(matrix_[h], rowspi_[h], n_eigval, eigvalues->vector_[h], eigvectors->matrix_[h], cutoff, print);
-        }
-    }
-}  //
-
 void SymBlockMatrix::cdgesv(SymBlockVector *Xvec) {
     for (int h = 0; h < nirreps_; h++) {
         if (rowspi_[h]) {

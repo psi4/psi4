@@ -138,8 +138,6 @@ class Array2d {
     void copy(double **a);
     // cdsyev: diagonalize via lapack
     void cdsyev(char jobz, char uplo, Array2d *eigvectors, Array1d *eigvalues);
-    // davidson: diagonalize via davidson algorithm
-    void davidson(int n_eigval, Array2d *eigvectors, Array1d *eigvalues, double cutoff, int print);
     // cdgesv: solve a linear equation via lapack
     void cdgesv(Array1d *Xvec);
     void cdgesv(double *Xvec);

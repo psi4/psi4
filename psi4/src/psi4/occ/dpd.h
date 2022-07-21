@@ -93,8 +93,6 @@ class SymBlockMatrix {
     void read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
     void mgs();  // Modified Gram-Schmidt
     void gs();   // Gram-Schmidt
-    void davidson(int n_eigval, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues, double cutoff,
-                  int print);                                             // diagonalize via davidson alg.
     void cdsyev(char jobz, char uplo, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues);  // diagonalize via LAPACK
     void cdgesv(SymBlockVector *Xvec);                                    // solve lineq via LAPACK
     void lineq_flin(SymBlockVector *Xvec, double *det);                   // solve lineq via flin
