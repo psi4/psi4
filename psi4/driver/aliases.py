@@ -146,6 +146,7 @@ def allen_focal_point(**kwargs) -> CBSMetadata:
 
     """
 
+    import psi4
     if not psi4.addons("mrcc"):
         raise ImportError("Install MRCC (executable 'dmrcc') to use the allen_focal_point function.")
 
