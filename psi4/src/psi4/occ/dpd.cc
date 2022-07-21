@@ -479,14 +479,6 @@ bool SymBlockMatrix::load(std::shared_ptr<psi::PSIO> psio, int itap, const char 
     return true;
 }  //
 
-void SymBlockMatrix::diagonalize(SymBlockMatrix *eigvectors, SymBlockVector *eigvalues) {
-    for (int h = 0; h < nirreps_; h++) {
-        if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->vector_[h], 1, eigvectors->matrix_[h], 1.0e-14);
-        }
-    }
-}  //
-
 void SymBlockMatrix::cdsyev(char jobz, char uplo, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues) {
     for (int h = 0; h < nirreps_; h++) {
         if (rowspi_[h]) {
