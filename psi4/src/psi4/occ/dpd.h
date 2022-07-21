@@ -115,11 +115,11 @@ class SymBlockVector {
     int nirreps_;       // Number of irreps
 
    public:
-    SymBlockVector();  // default constructer
+    SymBlockVector();  // default constructor
     SymBlockVector(std::string name);
     SymBlockVector(int nirreps, int *ins_dimvec);
     SymBlockVector(std::string name, int nirreps, int *ins_dimvec);
-    ~SymBlockVector();  // destructer
+    ~SymBlockVector();  // destructor
 
     int *dimvec();
     void memalloc();

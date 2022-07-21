@@ -41,7 +41,7 @@ namespace adc {
 
 //
 //  This block-Davidson code is based on the in-core version put in lib/libqt/david.cc
-//  but written by utilizind DPD algorithm.
+//  but written by utilizing DPD algorithm.
 //
 //  S: Sigma vector for the response matrix with OV indices.
 //  F: The correction vectors for the basis of Ritz space.
