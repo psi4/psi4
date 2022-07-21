@@ -32,109 +32,83 @@
 ** \ingroup CIOMR
 */
 
-#include "psi4/psifiles.h"
 #include "libciomr.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/psifiles.h"
 
 #include <cstdlib>
 
 namespace psi {
-
-extern void tred2(int n, double **a, double *d, double *e, int matz);
-extern void tqli(int n, double *d, double **z, double *e, int matz, double toler);
-
-/* translation into c of a translation into FORTRAN77 of the EISPACK */
-/* matrix diagonalization routines */
-
 /*!
-** rsp(): diagonalize a symmetric matrix in packed (lower triangular) form
+** rsp(): diagonalize a symmetric matrix in packed (row-major lower triangular) form
 ** in 'array'. For square symmetric matrices, see sq_rsp().
 **
-** \param nm     = rows of matrix
+** \param nm     = rows of matrix (unused, present for historic reasons)
 ** \param n      = columns of matrix
 ** \param nv     = number of elements in lower triangle (n*(n+1)/2)
 ** \param array  = matrix to diagonalize (packed as linear array)
 ** \param e_vals = array to hold eigenvalues
 ** \param matz   = 0 (no eigenvectors, eigenvals in ascending order)
 **               = 1 (eigenvectors and eigenvalues in ascending order)
-**               = 2 (no eigenvectors, eigenvalues in descending order)
-**               = 3 (eigenvectors and eigenvalues in descending order)
 ** \param e_vecs = matrix of eigenvectors (one column for each eigvector)
-** \param toler  = tolerance for eigenvalues?  Often 1.0E-14.
+** \param toler  = tolerance for eigenvalues?  Often 1.0E-14. (unused, present for historic reasons)
 **
 ** Returns: none
 **
 ** \ingroup CIOMR
 */
-void rsp(int nm, int n, int nv, double *array, double *e_vals, int matz, double **e_vecs, double toler) {
-    int i, j, ij, ierr;
-    int ascend_order;
-    double *fv1 = nullptr;
-    double sw;
-
-    /* Modified by Ed - matz can have values 0 through 3 */
-
-    if ((matz > 3) || (matz < 0)) {
-        matz = 0;
-        ascend_order = 1;
-    } else if (matz < 2)
-        ascend_order = 1; /* Eigenvalues in ascending order */
-    else {
-        matz -= 2;
-        ascend_order = 0; /* Eigenvalues in descending order */
-    }
-
-    fv1 = (double *)init_array(n);
-    /*temp = (double **) init_matrix(n,n);*/
-
-    if (n > nm) {
-        ierr = 10 * n;
-        outfile->Printf("n = %d is greater than nm = %d in rsp\n", n, nm);
+void rsp(int /*nm*/, const int n, const int nv, const double * const array, double *e_vals, const int matz,
+             double * const * const e_vecs, double /*toler*/){
+    if ((matz > 1) || (matz < 0)){
+        outfile->Printf("matz values other than 0 and 1 are no longer supported by rsp(...)");
         exit(PSI_RETURN_FAILURE);
-    }
+    };
+    // Do you want eigenvectors?
+    bool eigenvectors = (matz == 1 || matz == 3) ? true : false;
+    // Ascending or Descending?
+    bool ascending = true;
 
-    if (nv < (n * (n + 1) / 2)) {
-        int num = n * (n + 1) / 2;
-        ierr = 20 * n;
-        outfile->Printf("nv = %d is less than n*(n+1)/2 = %d in rsp\n", nv, num);
-        exit(PSI_RETURN_FAILURE);
-    }
-
-    for (i = 0, ij = 0; i < n; i++) {
-        for (j = 0; j <= i; j++, ij++) {
-            e_vecs[i][j] = array[ij];
-            e_vecs[j][i] = array[ij];
+    // LAPACK expects column-major-packed arrays, so allocate a temporary and rearrange.
+    // This also takes care of users not expecting rsp to destroy the matrix they have passed in.
+    double* tmp_array = init_array(nv);
+    // To do the rearangement we run a column-major loop and calculate the packed row-major index (simpler)
+    // If anyone ever needs it, here is the index calculation for packed column-major arrays that start at zero:
+    // k = i-j + j*N - (j*(j-1))/2
+    for(int j=0, ij=0; j<n; j++){
+        for(int i=j; i<n; i++,ij++){
+            const int f = j + (i*(i+1))/2;
+            tmp_array[ij] = array[f];
         }
     }
-
-    tred2(n, e_vecs, e_vals, fv1, matz);
-
-    for (i = 0; i < n; i++)
-        for (j = 0; j < i; j++) {
-            sw = e_vecs[i][j];
-            e_vecs[i][j] = e_vecs[j][i];
-            e_vecs[j][i] = sw;
-            /*temp[i][j]=e_vecs[j][i];*/
+    // LAPACK needs more memory for temporary values
+    double* tmp_work = init_array(3*n);
+    if (eigenvectors){
+        // LAPACK needs a 1D array with N*N elements to put the eigenvectors in and cannot work with double**
+        double* tmp_eigvecs = init_array(n*n);
+        const auto info = C_DSPEV('V', 'L', n, tmp_array, e_vals, tmp_eigvecs, n, tmp_work);
+        if (info != 0){
+            outfile->Printf("DSPEV failed in a call of rsp(...), WITH eigenvectors");
+            exit(PSI_RETURN_FAILURE);
         }
-
-    tqli(n, e_vals, e_vecs, fv1, matz, toler);
-    /*tqli(n,e_vals,temp,fv1,matz,toler);*/
-
-    for (i = 0; i < n; i++)
-        for (j = 0; j < i; j++) {
-            sw = e_vecs[i][j];
-            e_vecs[i][j] = e_vecs[j][i];
-            e_vecs[j][i] = sw;
-            /*e_vecs[i][j]=temp[j][i];*/
+        // The eigenvectors are now in tmp_eigvecs in columns, flattened into 1D column major
+        // Copy them to the 2D row major array as columns
+        for(int j=0, ij=0; j<n; j++){
+            for(int i=0; i<n; i++,ij++){
+                e_vecs[i][j] = tmp_eigvecs[ij];
+            }
         }
-
-    if (ascend_order)
-        eigsort(e_vals, e_vecs, n);
-    else
-        eigsort(e_vals, e_vecs, -n);
-
-    free(fv1);
-    /*free_matrix(temp,n);*/
+        free(tmp_eigvecs);
+    } else {
+        // LAPACK promises to not reference the eigenvector array if we request no eigenvectors, so don't allocate
+        const auto info = C_DSPEV('N', 'L', n, tmp_array, e_vals, nullptr, n, tmp_work);
+        if (info != 0){
+            outfile->Printf("DSPEV failed in a call of rsp(...), WITHOUT eigenvectors");
+            exit(PSI_RETURN_FAILURE);
+        }
+    }
+    free(tmp_work);
+    free(tmp_array);
 }
 }
