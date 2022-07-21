@@ -125,8 +125,9 @@ def task_planner(driver: DriverEnum, method: str, molecule: core.Molecule, **kwa
     keywords = p4util.prepare_options_for_set_options()
 
     keywords["function_kwargs"] = {}
-    if "external_potentials" in kwargs:
-        keywords["function_kwargs"].update({"external_potentials": kwargs.pop("external_potentials")})
+    for fnk in ["external_potentials", "level"]:
+        if fnk in kwargs:
+            keywords["function_kwargs"].update({fnk: kwargs.pop(fnk)})
 
     # Need to add full path to pcm file
     if "PCM__PCMSOLVER_PARSED_FNAME" in keywords.keys():
