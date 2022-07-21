@@ -38,7 +38,7 @@
 
 namespace psi {
 /*!
-** sq_rsp(): diagomalize a symmetric square matrix ('array').
+** sq_rsp(): diagonalize a symmetric square matrix ('array').
 **
 ** \param nm     = rows of matrix (unused, present for historic reasons)
 ** \param n      = columns of matrix
