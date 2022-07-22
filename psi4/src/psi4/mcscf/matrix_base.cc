@@ -104,7 +104,10 @@ void MatrixBase::multiply(bool transpose_A, bool transpose_B, MatrixBase* A, Mat
 void MatrixBase::diagonalize(MatrixBase* eigenmatrix, VectorBase* eigenvalues) {
     // Diagonalize the block
     if (elements_ > 0 && (rows_ == cols_)) {
-        sq_rsp(rows_, cols_, matrix_, eigenvalues->get_vector(), 1, eigenmatrix->get_matrix(), 1.0e-14);
+        if (DSYEV_eigvec_asc(rows_, matrix_, eigenvalues->get_vector(), eigenmatrix->get_matrix()) != 0){
+            outfile->Printf("DSYEV failed in mcscf::MatrixBase::diagonalize()");
+            exit(PSI_RETURN_FAILURE);
+        }
     } else {
         outfile->Printf("MatrixBase::diagonalize(...) cannot diagonalize non-square matrices!");
         exit(PSI_RETURN_FAILURE);
