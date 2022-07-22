@@ -1723,10 +1723,6 @@ void Matrix::diagonalize(SharedMatrix &eigvectors, std::shared_ptr<Vector> &eigv
     diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
 }
 
-void Matrix::diagonalize(SharedMatrix &eigvectors, Vector &eigvalues, diagonalize_order nMatz) {
-    diagonalize(eigvectors.get(), &eigvalues, nMatz);
-}
-
 std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps() {
     Dimension rank(nirrep_);
     for (int h = 0; h < nirrep_; h++) {
