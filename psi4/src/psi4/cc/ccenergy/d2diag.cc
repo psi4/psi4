@@ -88,7 +88,7 @@ double CCEnergyWavefunction::d2diag_rhf() {
         if (To.params->rowtot[h]) {
             // Diagonalize To //
             Eo = init_array(To.params->rowtot[h]);
-            if (DSYEV_eigval_asc(To.params->rowtot[h], To.matrix[h], Eo) != 0){
+            if (DSYEV_ascending(To.params->rowtot[h], To.matrix[h], Eo) != 0){
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in D2 diagnostic!");
             }
             // Find maximum To eigenvalue //
@@ -101,7 +101,7 @@ double CCEnergyWavefunction::d2diag_rhf() {
         if (Tv.params->rowtot[h]) {
             // Diagonalize Tv //
             Ev = init_array(Tv.params->rowtot[h]);
-            if (DSYEV_eigval_asc(Tv.params->rowtot[h], Tv.matrix[h], Ev) != 0){
+            if (DSYEV_ascending(Tv.params->rowtot[h], Tv.matrix[h], Ev) != 0){
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in D2 diagnostic!");
             }
             // Find maximum Tv eigenvalue //

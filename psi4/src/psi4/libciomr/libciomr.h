@@ -80,8 +80,7 @@ PSI_DEPRECATED("sq_rsp() is a deprecated diagonaliaztion routine, and may be rem
                "Please use C_DSYEV instead.")
 PSI_API void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
 [[nodiscard]] double* DSYEV_copy_helper(const int N, const double* const* const array);
-[[nodiscard]] int DSYEV_eigvec_asc(const int N, const double *const *const array, double *e_vals, double *const *const e_vecs);
-[[nodiscard]] int DSYEV_eigval_asc(const int N, const double* const* const array, double* e_vals);
+[[nodiscard]] int DSYEV_ascending(const int N, const double *const *const array, double *e_vals, double *const *const e_vecs = nullptr);
 PSI_API void sq_to_tri(double **bmat, double *amat, int size);
 
 /* Functions under tri_to_block.c */

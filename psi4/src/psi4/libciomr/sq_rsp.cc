@@ -181,25 +181,26 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
 }
 
 /*!
-** DSYEV_eigvec_asc(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV, also computes eigenvectors
+** DSYEV_ascending(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV
 **
 ** \param n      = number of rows (and columns)
 ** \param array  = matrix to diagonalize (2D row major array)
 ** \param e_vals = array to hold eigenvalues (returned in ascending order)
-** \param e_vecs = matrix of eigenvectors (2D row major array, one column for each eigvector)
+** \param e_vecs = (optional) matrix of eigenvectors (2D row major array, one column for each eigvector)
 **
 ** \ingroup CIOMR
 */
-[[nodiscard]] int DSYEV_eigvec_asc(const int N, const double* const* const array, double* e_vals,
-                                   double* const* const e_vecs) {
+[[nodiscard]] int DSYEV_ascending(const int N, const double* const* const array, double* e_vals,
+                                  double* const* const e_vecs = nullptr) {
     // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
     // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
     double* tmp_matrix = DSYEV_copy_helper(N, array);
     // LAPACK also needs some extra memory to store temporaries in
     // TODO: query C_DSYEV for optimal workspace size
     double* tmp_work = init_array(3 * N);
-    const auto info = C_DSYEV('V', 'U', N, tmp_matrix, N, e_vals, tmp_work, 3 * N);
-    if (info == 0) {
+    const char jobtype = (e_vecs != nullptr) ? 'V' : 'N';
+    const auto info = C_DSYEV(jobtype, 'U', N, tmp_matrix, N, e_vals, tmp_work, 3 * N);
+    if ((info == 0) && (e_vecs != nullptr)) {
         // tmp_matrix has now been overwritten with the eigenvecs as the columns, flattened as column-major
         // Copy them to the columns of a row-major 2D array
         for (int j = 0, ij = 0; j < N; j++) {
@@ -208,28 +209,6 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
             }
         }
     }
-    free(tmp_work);
-    free(tmp_matrix);
-    return info;
-}
-
-/*!
-** DSYEV_eigval_asc(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV, only computes eigenvalues
-**
-** \param n      = number of rows (and columns)
-** \param array  = matrix to diagonalize (2D row major array)
-** \param e_vals = array to hold eigenvalues (returned in ascending order)
-**
-** \ingroup CIOMR
-*/
-[[nodiscard]] int DSYEV_eigval_asc(const int N, const double* const* const array, double* e_vals) {
-    // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
-    // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
-    double* tmp_matrix = DSYEV_copy_helper(N, array);
-    // LAPACK also needs some extra memory to store temporaries in
-    // TODO: query C_DSYEV for optimal workspace size
-    double* tmp_work = init_array(3 * N);
-    const auto info = C_DSYEV('N', 'U', N, tmp_matrix, N, e_vals, tmp_work, 3 * N);
     free(tmp_work);
     free(tmp_matrix);
     return info;
