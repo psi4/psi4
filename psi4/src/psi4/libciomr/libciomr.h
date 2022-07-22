@@ -76,7 +76,7 @@ PSI_API void print_mat(double **a, int rows, int cols, std::string out);
 PSI_API void rsp(int /*nm*/, const int n, const int nv, const double * const array, double *e_vals, const int matz,
                  double * const * const e_vecs, double /*toler*/);
 PSI_API void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
-int DSYEV_eigvec_asc(const int N, const double *const *const array, double *e_vals, double *const *const e_vecs);
+[[nodiscard]] int DSYEV_eigvec_asc(const int N, const double *const *const array, double *e_vals, double *const *const e_vecs);
 PSI_API void sq_to_tri(double **bmat, double *amat, int size);
 
 /* Functions under tri_to_block.c */

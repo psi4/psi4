@@ -173,7 +173,7 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
 **
 ** \ingroup CIOMR
 */
-int DSYEV_eigvec_asc(const int N, const double *const *const array, double *e_vals, double *const *const e_vecs){
+[[nodiscard]] int DSYEV_eigvec_asc(const int N, const double *const *const array, double *e_vals, double *const *const e_vecs){
         // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
         // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
         // While LAPACK technically needs column-major, we need not care about that. The switch is just a
