@@ -70,7 +70,7 @@ double SCF::energy(int cycle, double old_energy) {
         allocate1(double, eigenvalues, nci);
         allocate2(double, eigenvectors, nci, nci);
 
-        if (DSYEV_eigvec_asc(nci, H_tcscf, eigenvalues, eigenvectors) != 0){
+        if (DSYEV_ascending(nci, H_tcscf, eigenvalues, eigenvectors) != 0){
             outfile->Printf("DSYEV failed in mcscf::SCF::energy()");
             exit(PSI_RETURN_FAILURE);
         }

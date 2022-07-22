@@ -698,7 +698,7 @@ void CIWavefunction::H0block_fill() {
             size);
     }
 
-    if (DSYEV_eigvec_asc(size, H0block_->H0b, H0block_->H0b_eigvals, H0block_->H0b_diag) != 0){
+    if (DSYEV_ascending(size, H0block_->H0b, H0block_->H0b_eigvals, H0block_->H0b_diag) != 0){
         throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI H0block_fill!");
     }
 

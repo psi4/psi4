@@ -1657,7 +1657,7 @@ void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1
         outfile->Printf("Cannot diagonalize non-square matrix!\n");
         throw PSIEXCEPTION("Cannot diagonalize non-square matrix!");
     } else{
-        if (DSYEV_eigvec_asc(dim1_, A2d_, eigvalues->A1d_, eigvectors->A2d_) != 0){
+        if (DSYEV_ascending(dim1_, A2d_, eigvalues->A1d_, eigvectors->A2d_) != 0){
             outfile->Printf("DSYEV failure in dfoccwave::Tensor2d::diagonalize(...)\n");
             throw PSIEXCEPTION("DSYEV failure in dfoccwave::Tensor2d::diagonalize(...)");
         }

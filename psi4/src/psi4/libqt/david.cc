@@ -125,7 +125,7 @@ namespace psi {
             for (j = 0; j < init_dim; j++) G[i][j] = A[small2big[i]][small2big[j]];
         }
 
-        if (DSYEV_eigvec_asc(init_dim, G, lambda, alpha) != 0){
+        if (DSYEV_ascending(init_dim, G, lambda, alpha) != 0){
             outfile->Printf("DSYEV failed in libqt Davidson solver!");
             exit(PSI_RETURN_FAILURE);
         }
@@ -171,7 +171,7 @@ namespace psi {
         C_DGEMM('n', 'n', L, L, N, 1.0, &(b[0][0]), N, &(sigma[0][0]), maxdim, 0.0, &(G[0][0]), maxdim);
 
         /* diagonalize mini-matrix */
-        if (DSYEV_eigvec_asc(L, G, lambda, alpha) != 0){
+        if (DSYEV_ascending(L, G, lambda, alpha) != 0){
             outfile->Printf("DSYEV failed in libqt Davidson solver!");
             exit(PSI_RETURN_FAILURE);
         }

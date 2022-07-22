@@ -105,7 +105,7 @@ void ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_i
             global_dpd_->file2_close(&S);
         }
         if (first && !iter) poles_[irrep][num_root - 1].ps_value = G[num_root - 1][num_root - 1];
-        if (DSYEV_eigvec_asc(length, G, lambda, Alpha) != 0){
+        if (DSYEV_ascending(length, G, lambda, Alpha) != 0){
             throw PSIEXCEPTION("DSYEV diagonalizer failed in the ADC DPD-using Davidson solver!");
         }
 

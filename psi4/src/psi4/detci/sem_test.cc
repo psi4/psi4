@@ -188,7 +188,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
         // mmult(tmp_mat, 0, b, 1, G, 0, L, N, L, 0); /* G = tmp * B(T) */
 
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
-        if (DSYEV_eigvec_asc(L, G, lambda, alpha) != 0){
+        if (DSYEV_ascending(L, G, lambda, alpha) != 0){
             throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM_TEST!");
         }
 
@@ -241,7 +241,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
             /* solve the L x L eigenvalue problem M a = lambda a for M roots */
             for (k = 0; k < M; k++) {
-                if (DSYEV_eigvec_asc(L, Mmatrix[k], m_lambda[k], m_alpha[k]) != 0){
+                if (DSYEV_ascending(L, Mmatrix[k], m_lambda[k], m_alpha[k]) != 0){
                     throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM_TEST!");
                 }
                 if (print_ > 2) {
@@ -291,7 +291,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
             // mmult(tmp_mat, 0, b, 1, G, 0, L, N, L, 0); /* G = tmp * B(T) */
 
             /* solve the L x L eigenvalue problem G a = lambda a for M roots */
-            if (DSYEV_eigvec_asc(L, G, lambda, alpha) != 0){
+            if (DSYEV_ascending(L, G, lambda, alpha) != 0){
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM_TEST!");
             }
 
