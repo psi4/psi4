@@ -27,8 +27,10 @@
  */
 
 #include <cmath>
-#include "psi4/libciomr/libciomr.h"
 #include "scf.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
 namespace mcscf {
@@ -68,10 +70,12 @@ double SCF::energy(int cycle, double old_energy) {
         allocate1(double, eigenvalues, nci);
         allocate2(double, eigenvectors, nci, nci);
 
-        sq_rsp(nci, nci, H_tcscf, eigenvalues, 1, eigenvectors, 1.0e-14);
+        if (DSYEV_eigvec_asc(nci, H_tcscf, eigenvalues, eigenvectors) != 0){
+            outfile->Printf("DSYEV failed in mcscf::SCF::energy()");
+            exit(PSI_RETURN_FAILURE);
+        }
 
         total_energy = eigenvalues[root];
-
         if (std::fabs(old_energy - total_energy) < 1.0e-5) {
             for (int I = 0; I < nci; ++I) ci[I] = eigenvectors[I][root];
         }
