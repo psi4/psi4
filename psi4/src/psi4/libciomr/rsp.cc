@@ -59,6 +59,7 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
+PSI_DEPRECATED("rsp() is deprecated, and will be removed in Psi 1.8. Please use C_DSPEV instead.")
 void rsp(int /*nm*/, const int n, const int nv, const double * const array, double *e_vals, const int matz,
              double * const * const e_vecs, double /*toler*/){
     if ((matz > 1) || (matz < 0)){
