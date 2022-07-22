@@ -90,7 +90,13 @@ void ADCWfn::rhf_prepare_tensors() {
         }
         omega = init_array(Aovov.params->rowtot[h]);
         lambda = block_matrix(Aovov.params->rowtot[h], rpi_[h]);
-        if (rpi_[h]) david(Aovov.matrix[h], Aovov.params->coltot[h], rpi_[h], omega, lambda, 1e-14, 0);
+        if (rpi_[h]) {
+            const int num_root_coverged = david(Aovov.matrix[h], Aovov.params->coltot[h], rpi_[h], omega, lambda, 1e-14, 0);
+            if (num_root_coverged != rpi_[h]) {
+                outfile->Printf("Davidson solver failed to converge all roots in adc::ADCWfn::rhf_prepare_tensors()");
+                exit(PSI_RETURN_FAILURE);
+            }
+        }
         for (int root = 0; root < rpi_[h]; root++) {
             if (DEBUG_) printf("%d%3s, %10.7f\n", root + 1, irrep_[h].c_str(), omega[root]);
             omega_guess_->set(h, root, omega[root]);
