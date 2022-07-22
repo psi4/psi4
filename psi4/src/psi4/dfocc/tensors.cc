@@ -1653,8 +1653,15 @@ void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int st
 }  //
 
 void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff) {
-    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, 1, eigvectors->A2d_, cutoff);
-
+    if (dim1_ != dim2_){
+        outfile->Printf("Cannot diagonalize non-square matrix!\n");
+        throw PSIEXCEPTION("Cannot diagonalize non-square matrix!");
+    } else{
+        if (DSYEV_eigvec_asc(dim1_, A2d_, eigvalues->A1d_, eigvectors->A2d_) != 0){
+            outfile->Printf("DSYEV failure in dfoccwave::Tensor2d::diagonalize(...)\n");
+            throw PSIEXCEPTION("DSYEV failure in dfoccwave::Tensor2d::diagonalize(...)");
+        }
+    }
 }  //
 
 void Tensor2d::cdgesv(const SharedTensor1d &Xvec) {
