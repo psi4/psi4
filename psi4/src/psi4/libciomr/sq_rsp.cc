@@ -162,6 +162,25 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
 }
 
 /*!
+** DSYEV_copy_helper(): allocate a new 1D array and initialize it from a 2D row major array
+** The new 1D array will correspond to a column-major array, suitable for LAPACK. Do not forget to free()!
+**
+** \param n      = number of rows (and columns)
+** \param array  = matrix to copy (2D row major array)
+**
+** \ingroup CIOMR
+*/
+[[nodiscard]] double* DSYEV_copy_helper(const int N, const double* const* const array) {
+    double* tmp_matrix = init_array(N * N);
+    for (int i = 0, ij = 0; i < N; i++) {
+        for (int j = 0; j < N; j++, ij++) {
+            tmp_matrix[ij] = array[j][i];
+        }
+    }
+    return tmp_matrix;
+}
+
+/*!
 ** DSYEV_eigvec_asc(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV, also computes eigenvectors
 **
 ** \param n      = number of rows (and columns)
@@ -175,14 +194,7 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
                                    double* const* const e_vecs) {
     // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
     // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
-    // While LAPACK technically needs column-major, we need not care about that. The switch is just a
-    // transpose, so does not matter for a symmetric mtx
-    double* tmp_matrix = init_array(N * N);
-    for (int i = 0, ij = 0; i < N; i++) {
-        for (int j = 0; j < N; j++, ij++) {
-            tmp_matrix[ij] = array[i][j];
-        }
-    }
+    double* tmp_matrix = DSYEV_copy_helper(N, array);
     // LAPACK also needs some extra memory to store temporaries in
     // TODO: query C_DSYEV for optimal workspace size
     double* tmp_work = init_array(3 * N);
@@ -213,14 +225,7 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
 [[nodiscard]] int DSYEV_eigval_asc(const int N, const double* const* const array, double* e_vals) {
     // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
     // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
-    // While LAPACK technically needs column-major, we need not care about that. The switch is just a
-    // transpose, so does not matter for a symmetric mtx
-    double* tmp_matrix = init_array(N * N);
-    for (int i = 0, ij = 0; i < N; i++) {
-        for (int j = 0; j < N; j++, ij++) {
-            tmp_matrix[ij] = array[i][j];
-        }
-    }
+    double* tmp_matrix = DSYEV_copy_helper(N, array);
     // LAPACK also needs some extra memory to store temporaries in
     // TODO: query C_DSYEV for optimal workspace size
     double* tmp_work = init_array(3 * N);
