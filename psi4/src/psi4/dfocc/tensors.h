@@ -205,8 +205,8 @@ class Tensor2d {
     void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
     void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start);
     double get_max_element();
-    // diagonalize: diagonalize via rsp
-    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
+    // diagonalize: diagonalize via LAPACK DSYEV
+    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
     // cdgesv: solve a linear equation via lapack
     void cdgesv(const SharedTensor1d &Xvec);
     void cdgesv(double *Xvec);

@@ -1652,7 +1652,7 @@ void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int st
 
 }  //
 
-void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff) {
+void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues) {
     if (dim1_ != dim2_){
         outfile->Printf("Cannot diagonalize non-square matrix!\n");
         throw PSIEXCEPTION("Cannot diagonalize non-square matrix!");

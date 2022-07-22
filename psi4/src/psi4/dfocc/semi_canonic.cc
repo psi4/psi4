@@ -64,8 +64,8 @@ void DFOCC::semi_canonic() {
     }
 
     // Diagonalize Fock
-    FockooA->diagonalize(UooA, eigooA, cutoff);
-    FockvvA->diagonalize(UvvA, eigvvA, cutoff);
+    FockooA->diagonalize(UooA, eigooA);
+    FockvvA->diagonalize(UvvA, eigvvA);
 
     // Print orbital energies
     if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
@@ -156,8 +156,8 @@ void DFOCC::semi_canonic() {
         }
 
         // Diagonalize Fock
-        FockooB->diagonalize(UooB, eigooB, cutoff);
-        FockvvB->diagonalize(UvvB, eigvvB, cutoff);
+        FockooB->diagonalize(UooB, eigooB);
+        FockvvB->diagonalize(UvvB, eigvvB);
 
         // Print orbital energies
         if (occ_orb_energy == "TRUE" && mo_optimized == 1) {

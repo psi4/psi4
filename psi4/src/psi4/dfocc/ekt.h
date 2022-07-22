@@ -50,7 +50,6 @@ class Ektip {
     int norb_;
     int plevel_;
 
-    double cutoff_;
     double scale_;
     double scale2_;
 
