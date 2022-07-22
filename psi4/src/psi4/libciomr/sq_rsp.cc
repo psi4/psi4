@@ -53,8 +53,6 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
-PSI_DEPRECATED("sq_rsp() is a deprecated diagonaliaztion routine, and may be removed as soon as Psi 1.9. "
-               "Please use C_DSYEV instead.")
 void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double** e_vecs, double /*toler*/) {
     if ((matz > 3) || (matz < 0)) matz = 0;
     // Do you want eigenvectors?
