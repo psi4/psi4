@@ -71,7 +71,7 @@ namespace psi {
 ** Returns: number of converged roots
 ** \ingroup QT
 */
-int david(double **A, int N, int M, double *eps, double **v, double cutoff, int print) {
+[[nodiscard]] int david(double **A, int N, int M, double *eps, double **v, double cutoff, int print) {
     int i, j, k, L, I;
     double minimum;
     int min_pos, numf, iter, *conv, converged, maxdim, skip_check;

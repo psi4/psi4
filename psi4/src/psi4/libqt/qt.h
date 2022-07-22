@@ -93,7 +93,7 @@ void clean_timers();
 
 void print_block(double*, int, int, FILE*);
 
-int david(double** A, int N, int M, double* eps, double** v, double cutoff, int print);
+[[nodiscard]] int david(double** A, int N, int M, double* eps, double** v, double cutoff, int print);
 
 int* get_frzcpi();
 int* get_frzvpi();
