@@ -133,8 +133,6 @@ class Array2d {
     Array2d* transpose();
     void copy(const Array2d* Adum);
     void copy(double** a);
-    // diagonalize: diagonalize via rsp
-    void diagonalize(Array2d* eigvectors, Array1d* eigvalues, double cutoff);
     // cdsyev: diagonalize via lapack
     void cdsyev(char jobz, char uplo, Array2d* eigvectors, Array1d* eigvalues);
     // cdgesv: solve a linear equation via lapack

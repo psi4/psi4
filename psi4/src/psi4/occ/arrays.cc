@@ -441,11 +441,6 @@ void Array2d::copy(double** a) {
     if (size) memcpy(&(A2d_[0][0]), &(a[0][0]), size);
 }
 
-void Array2d::diagonalize(Array2d* eigvectors, Array1d* eigvalues, double cutoff) {
-    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, 1, eigvectors->A2d_, cutoff);
-
-}  //
-
 void Array2d::cdsyev(char jobz, char uplo, Array2d* eigvectors, Array1d* eigvalues) {
     if (dim1_) {
         int lwork = 3 * dim2_;
