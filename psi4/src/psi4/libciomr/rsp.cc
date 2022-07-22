@@ -33,7 +33,6 @@
 */
 
 #include "libciomr.h"
-#include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
@@ -68,8 +67,6 @@ void rsp(int /*nm*/, const int n, const int nv, const double * const array, doub
     };
     // Do you want eigenvectors?
     bool eigenvectors = (matz == 1 || matz == 3) ? true : false;
-    // Ascending or Descending?
-    bool ascending = true;
 
     // LAPACK expects column-major-packed arrays, so allocate a temporary and rearrange.
     // This also takes care of users not expecting rsp to destroy the matrix they have passed in.
