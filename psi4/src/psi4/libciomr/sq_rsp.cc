@@ -162,25 +162,6 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
 }
 
 /*!
-** DSYEV_copy_helper(): allocate a new 1D array and initialize it from a 2D row major array
-** The new 1D array will correspond to a column-major array, suitable for LAPACK. Do not forget to free()!
-**
-** \param n      = number of rows (and columns)
-** \param array  = matrix to copy (2D row major array)
-**
-** \ingroup CIOMR
-*/
-[[nodiscard]] double* DSYEV_copy_helper(const int N, const double* const* const array) {
-    double* tmp_matrix = init_array(N * N);
-    for (int i = 0, ij = 0; i < N; i++) {
-        for (int j = 0; j < N; j++, ij++) {
-            tmp_matrix[ij] = array[j][i];
-        }
-    }
-    return tmp_matrix;
-}
-
-/*!
 ** DSYEV_ascending(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV
 **
 ** \param n      = number of rows (and columns)
@@ -194,7 +175,13 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
                                   double* const* const e_vecs = nullptr) {
     // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
     // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
-    double* tmp_matrix = DSYEV_copy_helper(N, array);
+    // The new 1D array will correspond to a column-major array, suitable for LAPACK.
+    double* tmp_matrix = init_array(N * N);
+    for (int i = 0, ij = 0; i < N; i++) {
+        for (int j = 0; j < N; j++, ij++) {
+            tmp_matrix[ij] = array[j][i];
+        }
+    }
     // LAPACK also needs some extra memory to store temporaries in
     // TODO: query C_DSYEV for optimal workspace size
     double* tmp_work = init_array(3 * N);
@@ -211,6 +198,32 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
     }
     free(tmp_work);
     free(tmp_matrix);
+    return info;
+}
+
+/*!
+** DSYEV_descending(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV, with results reversed
+**
+** \param n      = number of rows (and columns)
+** \param array  = matrix to diagonalize (2D row major array)
+** \param e_vals = array to hold eigenvalues (returned in descending order)
+** \param e_vecs = (optional) matrix of eigenvectors (2D row major array, one column for each eigvector)
+**
+** \ingroup CIOMR
+*/
+[[nodiscard]] int DSYEV_descending(const int N, const double* const* const array, double* e_vals,
+                                   double* const* const e_vecs = nullptr) {
+    const auto info = DSYEV_ascending(N, array, e_vals, e_vecs);
+    // Reverse the order of eigenvalues
+    for (int i = 0; i < N / 2; i++) {
+        std::swap(e_vals[i], e_vals[N - i - 1]);
+    }
+    // Reverse the order of columns of the row-major 2D eigenvector array
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N / 2; j++) {
+            std::swap(e_vecs[i][j], e_vecs[i][N - j - 1]);
+        }
+    }
     return info;
 }
 }  // namespace psi
