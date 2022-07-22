@@ -856,13 +856,6 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// @}
 
     /// @{
-    /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.  Only for
-    /// symmetric matrices.
-    void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, std::shared_ptr<Vector>& eigvalues,
-                     diagonalize_order nMatz = ascending);
-    /// @}
-
-    /// @{
     /// General SVD, such that A = USV. U, S, and V must be allocated by the caller.
     void svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V);
     /// @}
