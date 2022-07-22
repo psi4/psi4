@@ -33,6 +33,7 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 
 #include <cstring>
 #include <iostream>
@@ -104,6 +105,9 @@ void MatrixBase::diagonalize(MatrixBase* eigenmatrix, VectorBase* eigenvalues) {
     // Diagonalize the block
     if (elements_ > 0 && (rows_ == cols_)) {
         sq_rsp(rows_, cols_, matrix_, eigenvalues->get_vector(), 1, eigenmatrix->get_matrix(), 1.0e-14);
+    } else {
+        outfile->Printf("MatrixBase::diagonalize(...) cannot diagonalize non-square matrices!");
+        exit(PSI_RETURN_FAILURE);
     }
 }
 
