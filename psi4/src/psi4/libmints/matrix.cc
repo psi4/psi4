@@ -1708,13 +1708,24 @@ double Matrix::vector_dot(const Matrix *const rhs) {
 double Matrix::vector_dot(const SharedMatrix &rhs) { return vector_dot(rhs.get()); }
 
 void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_order nMatz) {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
-    }
+    if (symmetry_) throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->pointer(h), static_cast<int>(nMatz),
-                   eigvectors->matrix_[h], 1.0e-14);
+            if (rowspi_[h] != colspi_[h]) throw PSIEXCEPTION("Matrix::diagonalize: non-square irrep!");
+
+            int info = -1;
+            if(nMatz == evals_only_ascending){
+                info = DSYEV_ascending(rowspi_[h], matrix_[h], eigvalues->pointer(h));
+            }else if(nMatz == ascending){
+                info = DSYEV_ascending(rowspi_[h], matrix_[h], eigvalues->pointer(h), eigvectors->matrix_[h]);
+            }else if(nMatz == evals_only_descending){
+                info = DSYEV_descending(rowspi_[h], matrix_[h], eigvalues->pointer(h));
+            }else if(nMatz == descending){
+                info = DSYEV_descending(rowspi_[h], matrix_[h], eigvalues->pointer(h), eigvectors->matrix_[h]);
+            }else{
+                throw PSIEXCEPTION("Matrix::diagonalize: illegal diagonalize_order!");
+            }
+            if (info != 0) throw PSIEXCEPTION("Matrix::diagonalize: DSYEV failed!");
         }
     }
 }
