@@ -1707,7 +1707,7 @@ double Matrix::vector_dot(const Matrix *const rhs) {
 
 double Matrix::vector_dot(const SharedMatrix &rhs) { return vector_dot(rhs.get()); }
 
-void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_order nMatz) {
+void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_order nMatz = ascending) {
     if (symmetry_) throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h]) {
@@ -1730,7 +1730,7 @@ void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_orde
     }
 }
 
-void Matrix::diagonalize(SharedMatrix &eigvectors, std::shared_ptr<Vector> &eigvalues, diagonalize_order nMatz) {
+void Matrix::diagonalize(SharedMatrix &eigvectors, std::shared_ptr<Vector> &eigvalues, diagonalize_order nMatz = ascending) {
     diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
 }
 
