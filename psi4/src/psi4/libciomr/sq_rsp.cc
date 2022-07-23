@@ -172,7 +172,7 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
 ** \ingroup CIOMR
 */
 [[nodiscard]] int DSYEV_ascending(const int N, const double* const* const array, double* e_vals,
-                                  double* const* const e_vecs = nullptr) {
+                                  double* const* const e_vecs/* = nullptr*/) {
     // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
     // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
     // The new 1D array will correspond to a column-major array, suitable for LAPACK.
@@ -212,7 +212,7 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
 ** \ingroup CIOMR
 */
 [[nodiscard]] int DSYEV_descending(const int N, const double* const* const array, double* e_vals,
-                                   double* const* const e_vecs = nullptr) {
+                                   double* const* const e_vecs/* = nullptr*/) {
     const auto info = DSYEV_ascending(N, array, e_vals, e_vecs);
     // Reverse the order of eigenvalues
     for (int i = 0; i < N / 2; i++) {
