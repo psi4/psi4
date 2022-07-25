@@ -222,7 +222,7 @@ void LibXCFunctional::set_omega(double omega) {
     bool match = false;
     for (int ipar = 0; ipar < npars; ipar++) {
         const char* name = xc_func_info_get_ext_params_name(xc_functional_.get()->info, ipar);
-        if (stricmp(name, "_omega") == 0) match = true;
+        if (std::string(name) == std::string("_omega")) match = true;
     }
 
     if (match) {
