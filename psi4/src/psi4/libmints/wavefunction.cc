@@ -739,6 +739,28 @@ void Wavefunction::initialize_singletons() {
     done = true;
 }
 
+const Dimension Wavefunction::doccpi(bool assume_socc_alpha) const {
+    std::vector<int> docc_vec;
+    for (int h = 0; h < nalphapi_.n(); h++) {
+        docc_vec.push_back(std::min(nalphapi_[h], nbetapi_[h]));
+        if (assume_socc_alpha && nbetapi_[h] > nalphapi_[h]) {
+            outfile->Printf("Warning! Irrep has more beta than alpha electrons.\n");
+        }
+    }
+    return docc_vec;
+}
+/// Returns the SOCC per irrep array. Not recommended for unrestricted code.
+const Dimension Wavefunction::soccpi(bool assume_socc_alpha) const {
+    std::vector<int> socc_vec;
+    for (int h = 0; h < nalphapi_.n(); h++) {
+        socc_vec.push_back(std::abs(nalphapi_[h] - nbetapi_[h]));
+        if (assume_socc_alpha && nbetapi_[h] > nalphapi_[h]) {
+            outfile->Printf("Warning! Irrep has more beta than alpha electrons.\n");
+        }
+    }
+    return socc_vec;
+}
+
 std::shared_ptr<Molecule> Wavefunction::molecule() const { return molecule_; }
 
 std::shared_ptr<PSIO> Wavefunction::psio() const { return psio_; }

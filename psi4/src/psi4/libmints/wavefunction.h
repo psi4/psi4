@@ -375,21 +375,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     static void initialize_singletons();
 
     /// Returns the DOCC per irrep array. Not recommended for unrestricted code.
-    const Dimension doccpi() const {
-        std::vector<int> docc_vec;
-        for (int h = 0; h < nalphapi_.n(); h++) {
-            docc_vec.push_back(std::min(nalphapi_[h], nbetapi_[h]));
-        }
-        return docc_vec;
-    }
+    const Dimension doccpi(bool assume_socc_alpha = true) const;
     /// Returns the SOCC per irrep array. Not recommended for unrestricted code.
-    const Dimension soccpi() const {
-        std::vector<int> socc_vec;
-        for (int h = 0; h < nalphapi_.n(); h++) {
-            socc_vec.push_back(std::abs(nalphapi_[h] - nbetapi_[h]));
-        }
-        return socc_vec;
-    }
+    const Dimension soccpi(bool assume_socc_alpha = true) const;
     /// Returns the number of SOs per irrep array.
     const Dimension& nsopi() const { return nsopi_; }
     /// Returns the number of MOs per irrep array.

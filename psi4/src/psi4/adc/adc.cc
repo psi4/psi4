@@ -47,8 +47,8 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) : Wavefunction(opti
     std::vector<std::string> irreps_ = molecule_->irrep_labels();
     aoccpi_ = nalphapi_ - frzcpi_;
     boccpi_ = nbetapi_ - frzcpi_;
-    avirpi_ = nmopi_ - nalphapi_ - frzvpi_;
-    bvirpi_ = nmopi_ - nbetapi_ - frzvpi_;
+    avirpi_ = nmopi_ - frzvpi_ - nalphapi_;
+    bvirpi_ = nmopi_ - frzvpi_ - nbetapi_;
 
     int naocc = aoccpi_.sum();
     int nbocc = boccpi_.sum();
