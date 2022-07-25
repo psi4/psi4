@@ -67,8 +67,9 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         outfile->Printf("Functional '%s' not found\n", xc_name.c_str());
         throw PSIEXCEPTION("Could not find required LibXC functional");
     }
-    
-    xclib_description_ = "   => LibXC <=\n\n    Version " + std::string(xc_version_string()) + "\n    " + xc_reference() + " (" + xc_reference_doi() + ")";
+
+    xclib_description_ = "   => LibXC <=\n\n    Version " + std::string(xc_version_string()) + "\n    " +
+                         xc_reference() + " (" + xc_reference_doi() + ")";
 
     // Extract citation information
     name_ = xc_name;
@@ -93,7 +94,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
 #ifdef XC_FAMILY_HYB_LDA
         || xc_functional_->info->family == XC_FAMILY_HYB_LDA
 #endif
-        ) {
+    ) {
         /* Range separation? */
         lrc_ = false;
         if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) {
@@ -215,14 +216,22 @@ double LibXCFunctional::query_density_cutoff() { return xc_functional_->dens_thr
 void LibXCFunctional::set_omega(double omega) {
     omega_ = omega;
     user_omega_ = true;
-    if ((xc_func_name_ == "XC_GGA_X_WPBEH") || (xc_func_name_ == "XC_GGA_X_HJS_PBE") ||
-        (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") || (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") ||
-        (xc_func_name_ == "XC_HYB_GGA_XC_WB97") || (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_V") ||
-        (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_D") || (xc_func_name_ == "XC_HYB_MGGA_X_M11")) {
+
+    // See if Libxc has an omega parameter for the functional
+    int npars = xc_func_info_get_n_ext_params(xc_functional_.get()->info);
+    bool match = false;
+    for (int ipar = 0; ipar < npars; ipar++) {
+        const char* name = xc_func_info_get_ext_params_name(xc_functional_.get()->info, ipar);
+        if (stricmp(name, "_omega") == 0) match = true;
+    }
+
+    if (match) {
         xc_func_set_ext_params_name(xc_functional_.get(), "_omega", omega);
     } else {
-        outfile->Printf("LibXCfunctional: set_omega is not defined for functional %s\n.", xc_func_name_.c_str());
-        throw PSIEXCEPTION("LibXCfunctional: set_omega not defined for input functional");
+        std::ostringstream oss;
+        oss << "LibXCfunctional: set_omega is not defined for functional " << xc_func_name_ << "!\n";
+        outfile->Printf(oss.str().c_str());
+        throw PSIEXCEPTION(oss.str());
     }
 }
 std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& functional) {
@@ -286,7 +295,8 @@ void LibXCFunctional::set_tweak(std::vector<double> values, bool quiet) {
 
     outfile->Printf(
         "Using `LibXCFunctional.set_tweak(std::vector<double>)` instead of "
-        "`LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and as soon as 1.5 it will stop working. "
+        "`LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and as soon as 1.5 it will stop "
+        "working. "
         "Allowed keys are: %s\n",
         allowed_keys_join.c_str());
 
@@ -359,14 +369,13 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
 }
 void LibXCFunctional::compute_functional(const std::map<std::string, SharedVector>& in,
                                          const std::map<std::string, SharedVector>& out, int npoints, int deriv) {
-// Uncomment below to enable the parallel_timer calls (which must individually be uncommented).
-/*
-        int rank = 0; 
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
-*/
-
+    // Uncomment below to enable the parallel_timer calls (which must individually be uncommented).
+    /*
+            int rank = 0;
+    #ifdef _OPENMP
+            rank = omp_get_thread_num();
+    #endif
+    */
 
     // => Input variables <= //
 
@@ -610,37 +619,40 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             // Data validation.
-            //parallel_timer_on("DFT NaN Check", rank);
+            // parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
                 for (int i = 0; i < npoints; i++) {
-                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_gamma_aa[i]) || std::isnan(v_tau_a[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 %.6e %.6e\n",
-                          rho_ap[i] / 2, rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4, tau_ap[i] / 2, tau_ap[i] / 2);
+                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_gamma_aa[i]) ||
+                        std::isnan(v_tau_a[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 %.6e %.6e\n", rho_ap[i] / 2,
+                                        rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4,
+                                        tau_ap[i] / 2, tau_ap[i] / 2);
                         found_nan = true;
                     }
                 }
             } else if (gga_) {
                 for (int i = 0; i < npoints; i++) {
                     if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_gamma_aa[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n",
-                          rho_ap[i] / 2, rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4);
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n", rho_ap[i] / 2,
+                                        rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4);
                         found_nan = true;
                     }
                 }
             } else {
                 for (int i = 0; i < npoints; i++) {
                     if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n",
-                          rho_ap[i] / 2, rho_ap[i] / 2);
+                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n", rho_ap[i] / 2, rho_ap[i] / 2);
                         found_nan = true;
                     }
                 }
             }
             if (found_nan) {
-                throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
+                throw PSIEXCEPTION(
+                    "V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a "
+                    "different one. Provide your input and output files for debugging.");
             }
-            //parallel_timer_off("DFT NaN Check", rank);
+            // parallel_timer_off("DFT NaN Check", rank);
         }
 
         // Compute second derivative
@@ -671,31 +683,33 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             // Data validation.
-            //parallel_timer_on("DFT NaN Check", rank);
+            // parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
                 throw PSIEXCEPTION("Second derivative for meta functionals not yet available.");
             } else if (gga_) {
                 for (int i = 0; i < npoints; i++) {
-                    if (std::isnan(v_rho_a_rho_a[i]) || std::isnan(v_gamma_aa_gamma_aa[i]) || std::isnan(v_rho_a_gamma_aa[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n",
-                          rho_ap[i] / 2, rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4);
+                    if (std::isnan(v_rho_a_rho_a[i]) || std::isnan(v_gamma_aa_gamma_aa[i]) ||
+                        std::isnan(v_rho_a_gamma_aa[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n", rho_ap[i] / 2,
+                                        rho_ap[i] / 2, gamma_aap[i] / 4, gamma_aap[i] / 4, gamma_aap[i] / 4);
                         found_nan = true;
                     }
                 }
             } else {
                 for (int i = 0; i < npoints; i++) {
                     if (std::isnan(v_rho_a_rho_a[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n",
-                          rho_ap[i] / 2, rho_ap[i] / 2);
+                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n", rho_ap[i] / 2, rho_ap[i] / 2);
                         found_nan = true;
                     }
                 }
             }
             if (found_nan) {
-                throw PSIEXCEPTION("V: Integrated DFT functional derivative to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
+                throw PSIEXCEPTION(
+                    "V: Integrated DFT functional derivative to get NaN. The functional is not numerically stable. "
+                    "Pick a different one. Provide your input and output files for debugging.");
             }
-            //parallel_timer_off("DFT NaN Check", rank);
+            // parallel_timer_off("DFT NaN Check", rank);
         }
 
     } else {  // End unpolarized
@@ -776,39 +790,41 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             // Data validation.
-            //parallel_timer_on("DFT NaN Check", rank);
+            // parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
                 for (int i = 0; i < npoints; i++) {
-                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_rho_b[i]) || std::isnan(v_gamma_aa[i]) ||
-                         std::isnan(v_gamma_ab[i]) || std::isnan(v_gamma_bb[i]) || std::isnan(v_tau_a[i]) || std::isnan(v_tau_b[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 %.6e %.6e\n",
-                          rho_ap[i], rho_bp[i], gamma_aap[i], gamma_abp[i], gamma_bbp[i], tau_ap[i], tau_bp[i]);
+                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_rho_b[i]) ||
+                        std::isnan(v_gamma_aa[i]) || std::isnan(v_gamma_ab[i]) || std::isnan(v_gamma_bb[i]) ||
+                        std::isnan(v_tau_a[i]) || std::isnan(v_tau_b[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 %.6e %.6e\n", rho_ap[i], rho_bp[i],
+                                        gamma_aap[i], gamma_abp[i], gamma_bbp[i], tau_ap[i], tau_bp[i]);
                         found_nan = true;
                     }
                 }
             } else if (gga_) {
                 for (int i = 0; i < npoints; i++) {
-                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_rho_b[i]) || std::isnan(v_gamma_aa[i]) ||
-                         std::isnan(v_gamma_ab[i]) || std::isnan(v_gamma_bb[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n",
-                          rho_ap[i], rho_bp[i], gamma_aap[i], gamma_abp[i], gamma_bbp[i]);
+                    if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_rho_b[i]) ||
+                        std::isnan(v_gamma_aa[i]) || std::isnan(v_gamma_ab[i]) || std::isnan(v_gamma_bb[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n", rho_ap[i], rho_bp[i],
+                                        gamma_aap[i], gamma_abp[i], gamma_bbp[i]);
                         found_nan = true;
                     }
                 }
             } else {
                 for (int i = 0; i < npoints; i++) {
                     if ((exc_ && std::isnan(v[i])) || std::isnan(v_rho_a[i]) || std::isnan(v_rho_b[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n",
-                          rho_ap[i], rho_bp[i]);
+                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n", rho_ap[i], rho_bp[i]);
                         found_nan = true;
                     }
                 }
             }
             if (found_nan) {
-                throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
+                throw PSIEXCEPTION(
+                    "V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a "
+                    "different one. Provide your input and output files for debugging.");
             }
-            //parallel_timer_off("DFT NaN Check", rank);
+            // parallel_timer_off("DFT NaN Check", rank);
         }
 
         // Compute second deriv
@@ -860,35 +876,38 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             }
 
             // Data validation.
-            //parallel_timer_on("DFT NaN Check", rank);
+            // parallel_timer_on("DFT NaN Check", rank);
             bool found_nan = false;
             if (meta_) {
                 throw PSIEXCEPTION("Second derivative for meta functionals not yet available.");
             } else if (gga_) {
                 for (int i = 0; i < npoints; i++) {
                     if (std::isnan(v_rho_a_rho_a[i]) || std::isnan(v_rho_a_rho_b[i]) || std::isnan(v_rho_b_rho_b[i]) ||
-                        std::isnan(v_gamma_aa_gamma_aa[i]) || std::isnan(v_gamma_aa_gamma_ab[i]) || std::isnan(v_gamma_aa_gamma_bb[i]) ||
-                        std::isnan(v_gamma_ab_gamma_ab[i]) || std::isnan(v_gamma_ab_gamma_bb[i]) || std::isnan(v_gamma_bb_gamma_bb[i]) ||
-                        std::isnan(v_rho_a_gamma_aa[i]) || std::isnan(v_rho_a_gamma_ab[i]) || std::isnan(v_rho_a_gamma_bb[i]) ||
-                        std::isnan(v_rho_b_gamma_aa[i]) || std::isnan(v_rho_b_gamma_ab[i]) || std::isnan(v_rho_b_gamma_bb[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n",
-                          rho_ap[i], rho_bp[i], gamma_aap[i], gamma_abp[i], gamma_bbp[i]);
+                        std::isnan(v_gamma_aa_gamma_aa[i]) || std::isnan(v_gamma_aa_gamma_ab[i]) ||
+                        std::isnan(v_gamma_aa_gamma_bb[i]) || std::isnan(v_gamma_ab_gamma_ab[i]) ||
+                        std::isnan(v_gamma_ab_gamma_bb[i]) || std::isnan(v_gamma_bb_gamma_bb[i]) ||
+                        std::isnan(v_rho_a_gamma_aa[i]) || std::isnan(v_rho_a_gamma_ab[i]) ||
+                        std::isnan(v_rho_a_gamma_bb[i]) || std::isnan(v_rho_b_gamma_aa[i]) ||
+                        std::isnan(v_rho_b_gamma_ab[i]) || std::isnan(v_rho_b_gamma_bb[i])) {
+                        outfile->Printf("NaN detected: %.6e %.6e %.6e %.6e %.6e 0 0 0 0\n", rho_ap[i], rho_bp[i],
+                                        gamma_aap[i], gamma_abp[i], gamma_bbp[i]);
                         found_nan = true;
                     }
                 }
             } else {
                 for (int i = 0; i < npoints; i++) {
                     if (std::isnan(v_rho_a_rho_a[i]) || std::isnan(v_rho_a_rho_b[i]) || std::isnan(v_rho_b_rho_b[i])) {
-                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n",
-                          rho_ap[i], rho_bp[i]);
+                        outfile->Printf("NaN detected: %.6e %.6e 0 0 0 0 0 0 0\n", rho_ap[i], rho_bp[i]);
                         found_nan = true;
                     }
                 }
             }
             if (found_nan) {
-                throw PSIEXCEPTION("V: Integrated DFT functional derivative to get NaN. The functional is not numerically stable. Pick a different one. Provide your input and output files for debugging.");
+                throw PSIEXCEPTION(
+                    "V: Integrated DFT functional derivative to get NaN. The functional is not numerically stable. "
+                    "Pick a different one. Provide your input and output files for debugging.");
             }
-            //parallel_timer_off("DFT NaN Check", rank);
+            // parallel_timer_off("DFT NaN Check", rank);
         }
         if (deriv > 2) {  // lgtm[cpp/constant-comparison]
             throw PSIEXCEPTION("TRYING TO COMPUTE DERIV >= 3 ");
