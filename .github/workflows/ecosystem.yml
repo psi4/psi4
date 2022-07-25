@@ -127,9 +127,9 @@ jobs:
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           # <lang>-compiler is a metapackage on c-f but not on defaults
-          sed -i "s;- c-compiler;- gcc_linux-64;g" build.yaml
-          sed -i "s;- cxx-compiler;- gxx_linux-64;g" build.yaml
-          sed -i "s;- fortran-compiler;- gfortran_linux-64;g" build.yaml
+          sed -i "s;- c-compiler;- gcc_linux-64=11.2.0;g" build.yaml
+          sed -i "s;- cxx-compiler;- gxx_linux-64=11.2.0;g" build.yaml
+          sed -i "s;- fortran-compiler;- gfortran_linux-64=11.2.0;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           # <lang>-compiler is a metapackage on c-f but not on defaults
