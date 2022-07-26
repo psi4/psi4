@@ -110,7 +110,7 @@ for fl in sorted(tests.rglob("*")):
             with open(cml) as fp:
                 cmakeliststxt = fp.read()
 
-            mobj = re.search(r"^\s*" + r"add_regression_test\(" + r"(?P<name>([a-zA-Z0-9-+_]+))" + r'\s+\"' + r"(?P<marks>([a-z0-9-;]+))" + r'\"\)', cmakeliststxt, re.MULTILINE)
+            mobj = re.search(r"^\s*" + r"add_regression_test\(" + r"(?P<name>([a-zA-Z0-9-+_]+))" + r'\s+\"' + r"(?P<marks>([a-z0-9-_;]+))" + r'\"\)', cmakeliststxt, re.MULTILINE)
             if mobj:
                 if mobj.group("name") != ctest_name:
                     complaints.append(f"{testdir}: mismatched directory ({ctest_name}) and ctest registration name ({mobj.group('name')}). `vi {cml}`")
@@ -136,7 +136,7 @@ for fl in sorted(tests.rglob("*")):
                 testinputpy = fp.read()
 
             pymarks = []
-            mobj = re.search(r'^@ctest_labeler\("' + r"(?P<pymarks>([a-z0-9-;]+))" + r'\"\)', testinputpy, re.MULTILINE)
+            mobj = re.search(r'^@ctest_labeler\("' + r"(?P<pymarks>([a-z0-9-_;]+))" + r'\"\)', testinputpy, re.MULTILINE)
             if mobj:
                 pymarks = mobj.group("pymarks").split(";")
 

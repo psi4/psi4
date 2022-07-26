@@ -1,3 +1,4 @@
+#! Distributed driver keywords test on H2O dimer
 
 geometry("""
 O 0 0 0
