@@ -43,8 +43,9 @@ foreach(test_name adc1 adc2 aediis-1
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
                   dct-grad3 dct-grad4 dct1 dct2 dct3 dct4 dct5 dct6 dct7 dct8 dct9
                   dct10 dct11 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp 
-		           dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
-                  dfccsd-t-grad1 dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-fc
+		          dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
+                  dfccsd-t-grad1 dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3
+                  dfmp2-4 dfmp2-fc dfmp2-freq1 dfmp2-freq2
                   dfmp2-grad1 dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
@@ -75,7 +76,7 @@ foreach(test_name adc1 adc2 aediis-1
                   opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9
                   opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-irc-3 opt-freeze-coords
                   opt-full-hess-every phi-ao
-                  props1 props2 props3 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2
+                  props1 props2 props3 props4 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2
                   psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1
                   psimrcc-fd-freq2 psimrcc-pt2 psimrcc-sp1 psithon1 psithon2
                   pubchem1 pubchem2 pywrap-alias pywrap-all pywrap-basis
