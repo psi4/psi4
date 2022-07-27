@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcelemental}))
     include(FindPythonModule)
-    find_python_module(qcelemental ATLEAST 0.24.0 QUIET)
+    find_python_module(qcelemental ATLEAST 0.25.0 QUIET)
 endif()
 
 if(${qcelemental_FOUND})
