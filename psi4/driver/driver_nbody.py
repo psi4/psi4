@@ -1006,7 +1006,7 @@ class ManyBodyComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list.values()]
 
-    def compute(self, client: Optional["qcportal.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.PortalClient"] = None):
         """Run quantum chemistry."""
 
         info = "\n" + p4util.banner(f" ManyBody Computations ", strNotOutfile=True) + "\n"
@@ -1020,7 +1020,7 @@ class ManyBodyComputer(BaseComputer):
     def prepare_results(
         self,
         results: Optional[Dict[str, SubTaskComputers]] = None,
-        client: Optional["qcportal.FractalClient"] = None,
+        client: Optional["qcportal.PortalClient"] = None,
     ) -> Dict[str, Any]:
         """Process the results from all n-body component molecular systems and model chemistry levels into final quantities.
 
@@ -1356,7 +1356,7 @@ class ManyBodyComputer(BaseComputer):
 
         return nbody_results
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.PortalClient"] = None) -> AtomicResult:
         """Return results as ManyBody-flavored QCSchema."""
 
         info = "\n" + p4util.banner(f" ManyBody Results ", strNotOutfile=True) + "\n"
