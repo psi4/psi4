@@ -1295,7 +1295,7 @@ class FiniteDifferenceComputer(BaseComputer):
         # uncalled function
         return [t.plan() for t in self.task_list.values()]
 
-    def compute(self, client: Optional["qcportal.FractalClient"] = None):
+    def compute(self, client: Optional["qcportal.PortalClient"] = None):
         """Run each job in task list."""
         instructions = "\n" + p4util.banner(f" FiniteDifference Computations", strNotOutfile=True) + "\n"
         logger.debug(instructions)
@@ -1305,7 +1305,7 @@ class FiniteDifferenceComputer(BaseComputer):
             for t in self.task_list.values():
                 t.compute(client=client)
 
-    def _prepare_results(self, client: Optional["qcportal.FractalClient"] = None):
+    def _prepare_results(self, client: Optional["qcportal.PortalClient"] = None):
         results_list = {k: v.get_results(client=client) for k, v in self.task_list.items()}
 
         # load AtomicComputer results into findifrec[reference]
@@ -1391,7 +1391,7 @@ class FiniteDifferenceComputer(BaseComputer):
             H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0
 
-    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+    def get_results(self, client: Optional["qcportal.PortalClient"] = None) -> AtomicResult:
         """Return results as FiniteDifference-flavored QCSchema."""
 
         instructions = "\n" + p4util.banner(f" FiniteDifference Results", strNotOutfile=True) + "\n"
