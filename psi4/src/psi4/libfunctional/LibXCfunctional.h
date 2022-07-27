@@ -98,6 +98,6 @@ class LibXCFunctional : public Functional {
     double vv10_c() { return vv10_c_; }
     double density_cutoff() { return density_cutoff_; }
 };
-}
+}  // namespace psi
 
 #endif

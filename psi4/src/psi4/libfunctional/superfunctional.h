@@ -240,6 +240,6 @@ class SuperFunctional {
     void py_print() const { print("outfile", 1); }
     void py_print_detail(int level) const { print("outfile", level); }
 };
-}
+}  // namespace psi
 
 #endif

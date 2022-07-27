@@ -84,6 +84,6 @@ void Functional::compute_functional(const std::map<std::string, SharedVector>& i
                                     const std::map<std::string, SharedVector>& out, int npoints, int deriv) {
     throw PSIEXCEPTION("Functional: pseudo-abstract class.");
 }
-double Functional::query_density_cutoff(){throw PSIEXCEPTION("Functional: pseudo-abstract class.");}
-void Functional::set_density_cutoff(double cut){throw PSIEXCEPTION("Functional: pseudo-abstract class.");}
-}
+double Functional::query_density_cutoff() { throw PSIEXCEPTION("Functional: pseudo-abstract class."); }
+void Functional::set_density_cutoff(double cut) { throw PSIEXCEPTION("Functional: pseudo-abstract class."); }
+}  // namespace psi
