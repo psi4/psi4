@@ -260,22 +260,21 @@ void DFHelper::prepare_sparsity() {
     if (sparsity_prepared_) return;
     timer_on("DFH: sparsity prep");
 
-    // prep info vectors
+    // => Initialize vectors <=
     std::vector<double> shell_max_vals(pshells_ * pshells_, 0.0);
     std::vector<double> fun_max_vals(nbf_ * nbf_, 0.0);
     schwarz_shell_mask_.resize(pshells_ * pshells_);
-    schwarz_fun_mask_.resize(nbf_ * nbf_);
+    schwarz_fun_count_.resize(nbf_ * nbf_);
     symm_ignored_columns_.resize(nbf_);
     symm_big_skips_.resize(nbf_ + 1);
     symm_small_skips_.resize(nbf_);
     small_skips_.resize(nbf_ + 1);
     big_skips_.resize(nbf_ + 1);
 
-    // prepare eri buffers
+    // => Populate a vector of TwoBodyAOInt to make ERIs, one per thread. <=
     size_t nthreads = (nthreads_ == 1 ? 1 : 2);  // for now
     auto rifactory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads);
-
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 #pragma omp parallel num_threads(nthreads) if (nbf_ > 1000)
     {
@@ -286,6 +285,7 @@ void DFHelper::prepare_sparsity() {
         if (rank) eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
+    // => For each shell pair and basis pair, store the max (mn|mn)-type integral for screening. <=
     double max_val = 0.0;
 #pragma omp parallel for num_threads(nthreads) if (nbf_ > 1000) schedule(guided) reduction(max : max_val)
     for (size_t MU = 0; MU < pshells_; ++MU) {
@@ -294,20 +294,20 @@ void DFHelper::prepare_sparsity() {
         rank = omp_get_thread_num();
 #endif
         const auto& buffers = eri[rank]->buffers();
-        size_t nummu = primary_->shell(MU).nfunction();
+        size_t nmu = primary_->shell(MU).nfunction();
         for (size_t NU = 0; NU <= MU; ++NU) {
-            size_t numnu = primary_->shell(NU).nfunction();
+            size_t nnu = primary_->shell(NU).nfunction();
             eri[rank]->compute_shell(MU, NU, MU, NU);
             const auto *buffer = buffers[0];
             // Loop over basis functions inside shell pair
-            for (size_t mu = 0; mu < nummu; ++mu) {
+            for (size_t mu = 0; mu < nmu; ++mu) {
                 size_t omu = primary_->shell(MU).function_index() + mu;
-                for (size_t nu = 0; nu < numnu; ++nu) {
+                for (size_t nu = 0; nu < nnu; ++nu) {
                     size_t onu = primary_->shell(NU).function_index() + nu;
 
                     // Find shell and function maximums
                     if (omu >= onu) {
-                        size_t index = mu * (numnu * nummu * numnu + numnu) + nu * (nummu * numnu + 1);
+                        size_t index = mu * (nnu * nmu * nnu + nnu) + nu * (nmu * nnu + 1);
                         double val = fabs(buffer[index]);
                         max_val = std::max(val, max_val);
                         if (shell_max_vals[MU * pshells_ + NU] <= val) {
@@ -324,28 +324,26 @@ void DFHelper::prepare_sparsity() {
         }
     }
 
-    // get screening tolerance
+    // => Prepare screening/indexing data <=
     double tolerance = cutoff_ * cutoff_ / max_val;
 
-    //#pragma omp parallel for simd num_threads(nthreads_) schedule(static)
-    for (size_t i = 0; i < pshells_ * pshells_; i++) schwarz_shell_mask_[i] = (shell_max_vals[i] < tolerance ? 0 : 1);
+    // ==> Is this shell pair significant? <==
+    for (size_t i = 0; i < pshells_ * pshells_; i++) schwarz_shell_mask_[i] = (shell_max_vals[i] >= tolerance);
 
-    //#pragma omp parallel for private(count) num_threads(nthreads_)
+    // ==> Is this basis function pair significant? Also start storing non-symmetric indexing. <==
     for (size_t i = 0, count = 0; i < nbf_; i++) {
         count = 0;
         for (size_t j = 0; j < nbf_; j++) {
             if (fun_max_vals[i * nbf_ + j] >= tolerance) {
                 count++;
-                schwarz_fun_mask_[i * nbf_ + j] = count;
+                schwarz_fun_count_[i * nbf_ + j] = count;
             } else
-                schwarz_fun_mask_[i * nbf_ + j] = 0;
+                schwarz_fun_count_[i * nbf_ + j] = 0;
         }
         small_skips_[i] = count;
     }
 
-    // build indexing skips for sparse, non-symmetric pQq integrals
-    // big_skips: outer indexing jumps. for the p index
-    // small_skips: size of q for each p index.
+    // ==> Non-symmetric indexing. <==
     big_skips_[0] = 0;
     size_t coltots = 0;
     for (size_t j = 0; j < nbf_; j++) {
@@ -356,16 +354,12 @@ void DFHelper::prepare_sparsity() {
     }
     small_skips_[nbf_] = coltots;
 
-    // build indexing skips for sparse, symmetric pQq integrals
-    // symm_big_skips: outer indexing jumps. for the p index
-    // symm_ignored_columns: number of columns that should be ignored, for a given p index,
-    //                              due to triangular symmetry
-    // symm_small_skips: size of q for each p index, technically small_skips[p] - symm_ignored_columns[p]
+    // ==> Symmetric indexing. <==
     for (size_t i = 0; i < nbf_; i++) {
         size_t size = 0;
         size_t skip = 0;
         for (size_t j = 0; j < nbf_; j++) {
-            if (schwarz_fun_mask_[i * nbf_ + j]) {
+            if (schwarz_fun_count_[i * nbf_ + j]) {
                 (j >= i ? size++ : skip++);
             }
         }
@@ -1115,7 +1109,7 @@ void DFHelper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t sto
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
                         size_t onu = primary_->shell(NU).function_index() + nu;
-                        if (!schwarz_fun_mask_[omu * nbf_ + onu]) {
+                        if (!schwarz_fun_count_[omu * nbf_ + onu]) {
                             continue;
                         }
                         for (size_t P = 0; P < numP; P++) {
@@ -1171,12 +1165,12 @@ void DFHelper::compute_sparse_pQq_blocking_Q(const size_t start, const size_t st
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
                         size_t onu = primary_->shell(NU).function_index() + nu;
-                        if (!schwarz_fun_mask_[omu * nbf_ + onu]) {
+                        if (!schwarz_fun_count_[omu * nbf_ + onu]) {
                             continue;
                         }
                         for (size_t P = 0; P < numP; P++) {
                             Mp[(big_skips_[omu] * block_size) / naux_ + (PHI + P - begin) * small_skips_[omu] +
-                               schwarz_fun_mask_[omu * nbf_ + onu] - 1] =
+                               schwarz_fun_count_[omu * nbf_ + onu] - 1] =
                                 buffer[rank][P * nummu * numnu + mu * numnu + nu];
                         }
                     }
@@ -1229,12 +1223,12 @@ void DFHelper::compute_sparse_pQq_blocking_p(const size_t start, const size_t st
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
                         size_t onu = primary_->shell(NU).function_index() + nu;
-                        if (!schwarz_fun_mask_[omu * nbf_ + onu]) {
+                        if (!schwarz_fun_count_[omu * nbf_ + onu]) {
                             continue;
                         }
                         for (size_t P = 0; P < numP; P++) {
                             Mp[big_skips_[omu] - startind + (PHI + P) * small_skips_[omu] +
-                               schwarz_fun_mask_[omu * nbf_ + onu] - 1] =
+                               schwarz_fun_count_[omu * nbf_ + onu] - 1] =
                                 buffer[rank][P * nummu * numnu + mu * numnu + nu];
                         }
                     }
@@ -1292,12 +1286,12 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
                         size_t onu = primary_->shell(NU).function_index() + nu;
 
                         // Remove sieved integrals or lower triangular
-                        if (!schwarz_fun_mask_[omu * nbf_ + onu] || omu > onu) {
+                        if (!schwarz_fun_count_[omu * nbf_ + onu] || omu > onu) {
                             continue;
                         }
 
                         for (size_t P = 0; P < numP; P++) {
-                            size_t jump = schwarz_fun_mask_[omu * nbf_ + onu] - schwarz_fun_mask_[omu * nbf_ + omu];
+                            size_t jump = schwarz_fun_count_[omu * nbf_ + onu] - schwarz_fun_count_[omu * nbf_ + omu];
                             size_t ind1 = symm_big_skips_[omu] - startind + (PHI + P) * symm_small_skips_[omu] + jump;
                             Mp[ind1] = buffer[rank][P * nummu * numnu + mu * numnu + nu];
                         }
@@ -1362,12 +1356,12 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
                         size_t onu = primary_->shell(NU).function_index() + nu;
 
                         // Remove sieved integrals or lower triangular
-                        if (!schwarz_fun_mask_[omu * nbf_ + onu] || omu > onu) {
+                        if (!schwarz_fun_count_[omu * nbf_ + onu] || omu > onu) {
                             continue;
                         }
 
                         for (size_t P = 0; P < numP; P++) {
-                            size_t jump = schwarz_fun_mask_[omu * nbf_ + onu] - schwarz_fun_mask_[omu * nbf_ + omu];
+                            size_t jump = schwarz_fun_count_[omu * nbf_ + onu] - schwarz_fun_count_[omu * nbf_ + omu];
                             size_t ind1 = symm_big_skips_[omu] - startind + (PHI + P) * symm_small_skips_[omu] + jump;
                             just_Mp[ind1] = buffer[rank][P * nummu * numnu + mu * numnu + nu];
                             param_Mp[ind1] = omega_alpha_ * buffer[rank][P * nummu * numnu + mu * numnu + nu] + omega_beta_ * wbuffer[rank][P * nummu * numnu + mu * numnu + nu];
@@ -1631,9 +1625,9 @@ void DFHelper::contract_metric_AO_core_symm(double* Qpq, double* Ppq, double* me
     for (size_t omu = begin; omu <= end; omu++) {
         for (size_t Q = 0; Q < naux_; Q++) {
             for (size_t onu = omu + 1; onu < nbf_; onu++) {
-                if (schwarz_fun_mask_[omu * nbf_ + onu]) {
-                    size_t ind1 = big_skips_[onu] + Q * small_skips_[onu] + schwarz_fun_mask_[onu * nbf_ + omu] - 1;
-                    size_t ind2 = big_skips_[omu] + Q * small_skips_[omu] + schwarz_fun_mask_[omu * nbf_ + onu] - 1;
+                if (schwarz_fun_count_[omu * nbf_ + onu]) {
+                    size_t ind1 = big_skips_[onu] + Q * small_skips_[onu] + schwarz_fun_count_[onu * nbf_ + omu] - 1;
+                    size_t ind2 = big_skips_[omu] + Q * small_skips_[omu] + schwarz_fun_count_[omu * nbf_ + onu] - 1;
                     Ppq[ind1] = Ppq[ind2];
                 }
             }
@@ -1658,9 +1652,9 @@ void DFHelper::copy_upper_lower_wAO_core_symm(double* Qpq, double* Ppq, size_t b
     for (size_t omu = begin; omu <= end; omu++) {
         for (size_t Q = 0; Q < naux_; Q++) {
             for (size_t onu = omu + 1; onu < nbf_; onu++) {
-                if (schwarz_fun_mask_[omu * nbf_ + onu]) {
-                    size_t ind1 = big_skips_[onu] + Q * small_skips_[onu] + schwarz_fun_mask_[onu * nbf_ + omu] - 1;
-                    size_t ind2 = big_skips_[omu] + Q * small_skips_[omu] + schwarz_fun_mask_[omu * nbf_ + onu] - 1;
+                if (schwarz_fun_count_[omu * nbf_ + onu]) {
+                    size_t ind1 = big_skips_[onu] + Q * small_skips_[onu] + schwarz_fun_count_[onu * nbf_ + omu] - 1;
+                    size_t ind2 = big_skips_[omu] + Q * small_skips_[omu] + schwarz_fun_count_[omu * nbf_ + onu] - 1;
                     Ppq[ind1] = Ppq[ind2];
                 }
             }
@@ -2126,7 +2120,7 @@ void DFHelper::first_transform_pQq(size_t bsize, size_t bcount, size_t block_siz
         rank = omp_get_thread_num();
 #endif
         for (size_t m = 0, sp_count = -1; m < nbf_; m++) {
-            if (schwarz_fun_mask_[k * nbf_ + m]) {
+            if (schwarz_fun_count_[k * nbf_ + m]) {
                 sp_count++;
                 C_DCOPY(bsize, &Bp[m * bsize], 1, &C_buffers[rank][sp_count * bsize], 1);
             }
@@ -3136,7 +3130,7 @@ void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMat
 #endif
 
             for (size_t m = k, sp_count = -1; m < nbf_; m++) {
-                if (schwarz_fun_mask_[k * nbf_ + m]) {
+                if (schwarz_fun_count_[k * nbf_ + m]) {
                     sp_count++;
                     D_buffers[rank][sp_count] = (m == k ? Dp[nbf_ * k + m] : 2 * Dp[nbf_ * k + m]);
                 }
@@ -3164,7 +3158,7 @@ void DFHelper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMat
         // unpack from sparse to dense
         for (size_t k = 0; k < nbf_; k++) {
             for (size_t m = k + 1, count = 0; m < nbf_; m++) {  // assumes diagonal exists to avoid if  FIXME
-                if (schwarz_fun_mask_[k * nbf_ + m]) {
+                if (schwarz_fun_count_[k * nbf_ + m]) {
                     count++;
                     Jp[k * nbf_ + m] += T2p[k * nbf_ + count];
                     Jp[m * nbf_ + k] += T2p[k * nbf_ + count];
@@ -3184,8 +3178,8 @@ void DFHelper::compute_J(const std::vector<SharedMatrix> D, std::vector<SharedMa
                          std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size) {
     for (size_t i = 0; i < J.size(); i++) {
         // grab orbital spaces
-        double* Dp = D[i]->pointer()[0];
-        double* Jp = J[i]->pointer()[0];
+        auto Dp = D[i]->pointer()[0];
+        auto Jp = J[i]->pointer()[0];
 
         // initialize Tmp (pQ)
         // TODO: Make T1p a std::vector, so we don't need to know the length.
@@ -3202,7 +3196,7 @@ void DFHelper::compute_J(const std::vector<SharedMatrix> D, std::vector<SharedMa
 #endif
 
             for (size_t m = 0, sp_count = -1; m < nbf_; m++) {
-                if (schwarz_fun_mask_[k * nbf_ + m]) {
+                if (schwarz_fun_count_[k * nbf_ + m]) {
                     sp_count++;
                     D_buffers[rank][sp_count] = Dp[nbf_ * k + m];
                 }
@@ -3228,7 +3222,7 @@ void DFHelper::compute_J(const std::vector<SharedMatrix> D, std::vector<SharedMa
         // unpack from sparse to dense
         for (size_t k = 0; k < nbf_; k++) {
             for (size_t m = 0, count = -1; m < nbf_; m++) {
-                if (schwarz_fun_mask_[k * nbf_ + m]) {
+                if (schwarz_fun_count_[k * nbf_ + m]) {
                     count++;
                     Jp[k * nbf_ + m] += T2p[k * nbf_ + count];
                 }
@@ -3266,7 +3260,7 @@ void DFHelper::compute_J_combined(std::vector<SharedMatrix> D, std::vector<Share
             rank = omp_get_thread_num();
 #endif
             for (size_t m = 0, sp_count = -1; m < nbf_; m++) {
-                if (schwarz_fun_mask_[k * nbf_ + m]) {
+                if (schwarz_fun_count_[k * nbf_ + m]) {
                     sp_count++;
                     D_buffers[rank][sp_count] = Dp[nbf_ * m + k];
                 }
@@ -3292,7 +3286,7 @@ void DFHelper::compute_J_combined(std::vector<SharedMatrix> D, std::vector<Share
 
         for (size_t k = 0; k < nbf_; k++) {
             for (size_t m = 0, count = -1; m < nbf_; m++) {
-                if (schwarz_fun_mask_[k * nbf_ + m]) {
+                if (schwarz_fun_count_[k * nbf_ + m]) {
                     count++;
                     Jp[k * nbf_ + m ] += T1p[k * nbf_ + count];
                 }
