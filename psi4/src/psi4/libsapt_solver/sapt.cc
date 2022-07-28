@@ -280,6 +280,12 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     CvirB_ = MonomerB->Ca_subset("AO", "VIR");
 }
 
+SharedMatrix SAPT::get_metric(std::shared_ptr<BasisSet> basis) const {
+    FittingMetric metric(basis);
+    metric.form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
+    return metric.get_metric();
+}
+
 void SAPT::get_denom() {
     auto evals_aoccA = std::make_shared<Vector>(aoccA_);
     auto evals_virA = std::make_shared<Vector>(nvirA_);

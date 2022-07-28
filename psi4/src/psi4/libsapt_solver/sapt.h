@@ -118,6 +118,7 @@ class SAPT : public Wavefunction {
     double **dBS_;
 
     void zero_disk(int, const char *, int, int);
+    SharedMatrix get_metric(std::shared_ptr<BasisSet> basis) const;
 
    public:
     SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
