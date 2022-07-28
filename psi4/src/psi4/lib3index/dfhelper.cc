@@ -327,9 +327,13 @@ void DFHelper::prepare_sparsity() {
     // => Prepare screening/indexing data <=
     double tolerance = cutoff_ * cutoff_ / max_val;
 
+    // WARNING: It's not clear why the below is commented out.
+    //#pragma omp parallel for simd num_threads(nthreads_) schedule(static)
     // ==> Is this shell pair significant? <==
     for (size_t i = 0; i < pshells_ * pshells_; i++) schwarz_shell_mask_[i] = (shell_max_vals[i] >= tolerance);
-
+    
+    // WARNING: It's not clear why the below is commented out.
+    //#pragma omp parallel for private(count) num_threads(nthreads_)
     // ==> Is this basis function pair significant? Also start storing non-symmetric indexing. <==
     for (size_t i = 0, count = 0; i < nbf_; i++) {
         count = 0;

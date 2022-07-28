@@ -398,19 +398,21 @@ class PSI_API DFHelper {
     // => index vectors for screened AOs <=
     // ==> Skips for non-symmetric "densities" <==
     // For a given basis function, how many basis functions have significant interactions?
+    // Used for "q" indexing.
     std::vector<size_t> small_skips_;
     // For a given basis function, how many significant (basis function, naux) pairs have we already passed?
-    // This is a running total, unlike small_skips.
+    // This is a running total, unlike small_skips. Used for "p" indexing.
     std::vector<size_t> big_skips_;
     // ==> Skips for symmetric "densities" <==
     // For a given basis function, how many basis functions have significant interaction AND have lesser index?
-    // This counts columns we ignore due to the density of the symmetry.
+    // This counts columns we ignore due to the density of the symmetry. Used for "q" indexing.
     std::vector<size_t> symm_ignored_columns_;
     // For a given basis function, how many basis functions have significant interaction AND have non-lesser index?
-    // Should be small_skips[p] - symm_ginored_columns[p].
+    // Should be small_skips[p] - symm_ginored_columns[p]. Used for "q" indexing.
     std::vector<size_t> symm_small_skips_;
     // For a given basis function, how many significant (non-lesser index basis function, naux)
     // pairs have we already passed? This is a running total, unlike symm_small_skips.
+    // Used for "p" indexing.
     std::vector<size_t> symm_big_skips_;
 
     // => shell info and blocking <=
