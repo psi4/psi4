@@ -41,13 +41,20 @@ def runner_asserter(inp, subject, method, basis, tnm):
         "mp2": mp2_type,
         "mp2.5": mp_type,
         "mp3": mp_type,
+        "remp2": cc_type,
         "lccd": cc_type,
         "lccsd": cc_type,
         "ccsd": cc_type,
         "ccsd(t)": cc_type,
         "a-ccsd(t)": cc_type,
+        "omp2": mp2_type,
+        "omp2.5": mp_type,
+        "omp3": mp_type,
+        "oremp2": cc_type,
         "olccd": cc_type,
         "occd": cc_type,
+        "occd(t)": cc_type,
+        "a-occd(t)": cc_type,
     }
     corl_type = corl_natural_values[method]
 
@@ -59,6 +66,8 @@ def runner_asserter(inp, subject, method, basis, tnm):
     atol = 1.0e-6
     if driver == "hessian":
         atol = 1.0e-5  # todo implement more elaborate e/g/h atol like at qcdb & qcng: https://github.com/qcdb/qcdb/blob/master/qcdb/tests/standard_suite_runner.py#L144-L152
+    if driver == "gradient" and inp["keywords"]["function_kwargs"]["dertype"] == 0:
+        atol = 2.0e-6
     chash = answer_hash(
         system=subject.name(), basis=basis, fcae=fcae, scf_type=scf_type, reference=reference, corl_type=corl_type,
     )
@@ -84,10 +93,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
             # "d_convergence": 9,
             # "r_convergence": 9,
             # "pcg_convergence": 9,
-            # "max_mograd_convergence": 5,
-            # "rms_mograd_convergence": 5,
-            # "mo_maxiter": 80,
-            # "e_convergence": 9,  # dfocc can't handle 1e-10
+            # "mo_maxiter": 150,
 
             # runtime conv crit
             "points": 5,
@@ -133,7 +139,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
     #         best practice is to set in C++ code on wfn, then copy wfn to P::e at end of proc.py routine.
     asserter_args = [
         {
-            "core": psi4.core,
+            "P::e": psi4.core,
             "wfn": wfn,
         },
         ref_block,
@@ -159,6 +165,9 @@ def runner_asserter(inp, subject, method, basis, tnm):
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_mp2p5)
             _asserter(asserter_args, contractual_args, contractual_mp3)
+        elif method == "remp2":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_remp2)
         elif method == "lccd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_lccd)
@@ -176,12 +185,36 @@ def runner_asserter(inp, subject, method, basis, tnm):
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_ccsd)
             _asserter(asserter_args, contractual_args, contractual_accsd_prt_pr)
+        elif method == "omp2":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_omp2)
+        elif method == "omp2.5":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_mp3)
+            _asserter(asserter_args, contractual_args, contractual_mp2p5)
+            _asserter(asserter_args, contractual_args, contractual_omp2p5)
+        elif method == "omp3":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_mp3)
+            _asserter(asserter_args, contractual_args, contractual_omp3)
+        elif method == "oremp2":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_remp2)  # assert skipped
+            _asserter(asserter_args, contractual_args, contractual_oremp2)
         elif method == "olccd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_olccd)
         elif method == "occd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_occd)
+        elif method == "occd(t)":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_occd)
+            _asserter(asserter_args, contractual_args, contractual_occd_prt_pr)
+        elif method == "a-occd(t)":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_occd)
+            _asserter(asserter_args, contractual_args, contractual_aoccd_prt_pr)
 
     if "wrong" in inp:
         errmatch, reason = inp["wrong"]
@@ -250,11 +283,16 @@ def _asserter(asserter_args: List, contractual_args: List[str], contractual_fn: 
                     ref_block[rpv], query_qcvar(obj, pv), label, atol=atol, return_message=True, quiet=True
                 )
                 assert compare_values(ref_block[rpv], query_qcvar(obj, pv), label, atol=atol), errmsg
-                # ADVICE: adding new tests, when a conventional reference is not present and isn't a priority, comment next two statements
-                tf, errmsg = compare_values(
-                    ref_block_conv[rpv], query_qcvar(obj, pv), label + "v. CONV", atol=atol_conv, return_message=True, quiet=True
-                )
-                assert compare_values(ref_block_conv[rpv], query_qcvar(obj, pv), label + " v. CONV", atol=atol_conv), errmsg
+
+                if isinstance(ref_block_conv[rpv], str) and ref_block_conv[rpv] == "KnownMissing":
+                    assert compare(False, False, label + " v. CONV SKIP"), f"{label} wrongly present in CONV"
+                else:
+                    # ADVICE: adding new tests, when a conventional reference is not present and isn't a priority, comment next two statements.
+                    #         To long-term forgive, as last resort, add `_knownmissing` to CONV in qcng _std_suite.
+                    tf, errmsg = compare_values(
+                        ref_block_conv[rpv], query_qcvar(obj, pv), label + " v. CONV", atol=atol_conv, return_message=True, quiet=True
+                    )
+                    assert compare_values(ref_block_conv[rpv], query_qcvar(obj, pv), label + " v. CONV", atol=atol_conv), errmsg
 
                 # Note that the double compare_values lines are to collect the errmsg in the first for assertion in the second.
                 #   If the errmsg isn't present in the assert, the string isn't accessible through `e.value`.

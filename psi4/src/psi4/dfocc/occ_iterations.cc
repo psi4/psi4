@@ -202,8 +202,10 @@ void DFOCC::occ_iterations() {
     //==========================================================================================
     //========================= Head of the Loop ===============================================
     //==========================================================================================
+    double last_rms_wog;
     do {
         itr_occ++;
+        last_rms_wog = rms_wog;
 
         //==========================================================================================
         //========================= New orbital step ===============================================
@@ -414,9 +416,7 @@ void DFOCC::occ_iterations() {
             throw PSIEXCEPTION("DF-OCC iterations are diverging");
         }
 
-
-
-    } while (rms_wog >= tol_grad || biggest_mograd >= mograd_max || std::fabs(DE) >= tol_Eod);
+    } while (rms_wog >= tol_grad || biggest_mograd >= mograd_max || std::fabs(DE) >= tol_Eod || std::fabs(last_rms_wog - rms_wog) >= 10 * tol_Eod);
 
     if (conver == 1) {
         mo_optimized = 1;

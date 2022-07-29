@@ -66,7 +66,8 @@ void OCCWave::omp2_manager() {
     if (ip_poles == "TRUE") omp2_ip_poles();
     if (ep_ip_poles == "TRUE") ep2_ip();
 
-    mp2_postprocessing();
+    // ordinary ROHF-MP2 not available in course of ROHF-OO
+    mp2_postprocessing(reference == "ROHF", reference == "ROHF");
 
     occ_iterations();
 
@@ -113,7 +114,7 @@ void OCCWave::omp2_manager() {
             if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
-        mp2_printing();
+        mp2_printing(reference == "ROHF");
 
         outfile->Printf("\n");
         outfile->Printf("\t============================================================================== \n");
@@ -137,6 +138,10 @@ void OCCWave::omp2_manager() {
         variables_["SOS-OMP2 TOTAL ENERGY"] = Esosmp2;
 
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
+
+        variables_["OMP2 REFERENCE CORRECTION ENERGY"] = Eref - Escf;
+        variables_["OMP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["OMP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
 
         variables_["OMP2 CORRELATION ENERGY"] = Emp2L - Escf;
         variables_["SCS-OMP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
@@ -290,7 +295,8 @@ void OCCWave::omp3_manager() {
     mp2_energy();
     timer_off("MP2 Energy");
 
-    mp2_postprocessing();
+    // ordinary ROHF-MP2 not available in course of ROHF-OO
+    mp2_postprocessing(reference == "ROHF", reference == "ROHF");
 
     timer_on("T2(2)");
     t2_2nd_sc();
@@ -303,7 +309,8 @@ void OCCWave::omp3_manager() {
     Emp3L_old = Emp3;
     if (ip_poles == "TRUE") omp3_ip_poles();
 
-    mp3_postprocessing();
+    // ordinary ROHF-MP3 not available in course of ROHF-OO
+    mp3_postprocessing(reference == "ROHF", reference == "ROHF");
 
     occ_iterations();
 
@@ -381,6 +388,10 @@ void OCCWave::omp3_manager() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
+        variables_["OMP3 REFERENCE CORRECTION ENERGY"] = Eref - Escf;
+        variables_["OMP3 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+        variables_["OMP3 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+
         variables_["OMP3 TOTAL ENERGY"] = Emp3L;
         variables_["SCS-OMP3 TOTAL ENERGY"] = Escsmp3;
         variables_["SOS-OMP3 TOTAL ENERGY"] = Esosmp3;
@@ -396,6 +407,7 @@ void OCCWave::omp3_manager() {
         std::map<std::string, double> spin_scale_energies = {
             {"SCS", Escsmp3}, {"SOS", Esosmp3}, {"CUSTOM", variables_["CUSTOM SCS-OMP3 TOTAL ENERGY"]}, {"NONE", Emp3}};
         variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
+        energy_ = variables_["CURRENT ENERGY"];
         variables_["CURRENT CORRELATION ENERGY"] =
             variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
@@ -521,7 +533,8 @@ void OCCWave::ocepa_manager() {
     EcorrL = Ecorr;
     EcepaL_old = Ecepa;
 
-    mp2_postprocessing();
+    // ordinary ROHF-MP2 not available in course of ROHF-OO
+    mp2_postprocessing(reference == "ROHF", reference == "ROHF");
 
     occ_iterations();
 
@@ -575,13 +588,6 @@ void OCCWave::ocepa_manager() {
         variables_["CURRENT CORRELATION ENERGY"] =
             variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
         energy_ = variables_["CURRENT ENERGY"];
-
-        // ordinary ROHF-MP2 not available in course of ROHF-OLCCD
-        if (reference == "ROHF") {
-            del_scalar_variable("MP2 CORRELATION ENERGY");
-            del_scalar_variable("MP2 SINGLES ENERGY");
-            del_scalar_variable("MP2 TOTAL ENERGY");
-        }
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
@@ -722,7 +728,8 @@ void OCCWave::oremp_manager() {
     EcorrL = Ecorr;
     EcepaL_old = Ecepa;
 
-    mp2_postprocessing();
+    // ordinary ROHF-MP2 not available in course of ROHF-OO
+    mp2_postprocessing(reference == "ROHF", reference == "ROHF");
 
     outfile->Printf("\tUsing A=%9.5g as REMP mixing parameter\n",remp_A);
 
@@ -761,30 +768,23 @@ void OCCWave::oremp_manager() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
-        variables_["OREMP TOTAL ENERGY"] = EcepaL;
+        variables_["OREMP2 TOTAL ENERGY"] = EcepaL;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
 
-        variables_["OREMP REFERENCE CORRECTION ENERGY"] = Eref - Escf;
-        variables_["OREMP CORRELATION ENERGY"] = EcepaL - Escf;
-        variables_["OREMP SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
-        variables_["OREMP OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
+        variables_["OREMP2 REFERENCE CORRECTION ENERGY"] = Eref - Escf;
+        variables_["OREMP2 CORRELATION ENERGY"] = EcepaL - Escf;
+        variables_["OREMP2 SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
+        variables_["OREMP2 OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
 
-        variables_["CUSTOM SCS-OREMP CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
-        variables_["CUSTOM SCS-OREMP TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OREMP CORRELATION ENERGY"];
+        variables_["CUSTOM SCS-OREMP2 CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
+        variables_["CUSTOM SCS-OREMP2 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OREMP2 CORRELATION ENERGY"];
 
-        std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-OREMP TOTAL ENERGY"]},
+        std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-OREMP2 TOTAL ENERGY"]},
                                                              {"NONE", EcepaL}};
         variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
         variables_["CURRENT CORRELATION ENERGY"] =
             variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
         energy_ = variables_["CURRENT ENERGY"];
-
-        // ordinary ROHF-MP2 not available in course of ROHF-OLCCD
-        if (reference == "ROHF") {
-            del_scalar_variable("MP2 CORRELATION ENERGY");
-            del_scalar_variable("MP2 SINGLES ENERGY");
-            del_scalar_variable("MP2 TOTAL ENERGY");
-        }
 
         if (natorb == "TRUE") nbo();
         if (occ_orb_energy == "TRUE") semi_canonic();
@@ -845,18 +845,18 @@ void OCCWave::remp_manager() {
     outfile->Printf("\n");
 
     // Set the global variables with the energies
-    variables_["REMP TOTAL ENERGY"] = Ecepa;
-    variables_["REMP CORRELATION ENERGY"] = Ecorr;
-    variables_["REMP SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
-    variables_["REMP OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
-    variables_["REMP SINGLES ENERGY"] = 0.0;  // CEPA is RHF/UHF only
-    variables_["REMP DOUBLES ENERGY"] = EcepaAB + EcepaAA + EcepaBB;
+    variables_["REMP2 TOTAL ENERGY"] = Ecepa;
+    variables_["REMP2 CORRELATION ENERGY"] = Ecorr;
+    variables_["REMP2 SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
+    variables_["REMP2 OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
+    variables_["REMP2 SINGLES ENERGY"] = 0.0;  // CEPA is RHF/UHF only
+    variables_["REMP2 DOUBLES ENERGY"] = EcepaAB + EcepaAA + EcepaBB;
     variables_["CURRENT REFERENCE ENERGY"] = Eref;
-    variables_["CUSTOM SCS-REMP CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
-    variables_["CUSTOM SCS-REMP TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-REMP CORRELATION ENERGY"];
+    variables_["CUSTOM SCS-REMP2 CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
+    variables_["CUSTOM SCS-REMP2 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-REMP2 CORRELATION ENERGY"];
     // EcepaL = Ecepa;
 
-    std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-REMP TOTAL ENERGY"]},
+    std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-REMP2 TOTAL ENERGY"]},
                                                          {"NONE", Ecepa}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
@@ -927,7 +927,8 @@ void OCCWave::omp2_5_manager() {
     mp2_energy();
     timer_off("MP2 Energy");
 
-    mp2_postprocessing();
+    // ordinary ROHF-MP2 not available in course of ROHF-OO
+    mp2_postprocessing(reference == "ROHF", reference == "ROHF");
 
     timer_on("T2(2)");
     t2_2nd_sc();
@@ -940,7 +941,8 @@ void OCCWave::omp2_5_manager() {
     Emp3L_old = Emp3;
     if (ip_poles == "TRUE") omp3_ip_poles();
 
-    mp2p5_postprocessing();
+    // ordinary ROHF-MP3 not available in course of ROHF-OO
+    mp2p5_postprocessing(reference == "ROHF", reference == "ROHF");
 
     occ_iterations();
 
@@ -1015,6 +1017,10 @@ void OCCWave::omp2_5_manager() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
+        variables_["OMP2.5 REFERENCE CORRECTION ENERGY"] = Eref - Escf;
+        variables_["OMP2.5 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+        variables_["OMP2.5 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+
         variables_["OMP2.5 TOTAL ENERGY"] = Emp3L;
         variables_["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
@@ -1022,6 +1028,7 @@ void OCCWave::omp2_5_manager() {
         std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-OMP2.5 TOTAL ENERGY"]},
                                                              {"NONE", Emp3L}};
         variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
+        energy_ = variables_["CURRENT ENERGY"];
         variables_["CURRENT CORRELATION ENERGY"] =
             variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 

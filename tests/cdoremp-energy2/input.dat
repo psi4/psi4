@@ -40,29 +40,29 @@ Avals=[0.00, 0.10, 0.20, 0.30, 1.00]
 #for A in Avals:
 #     psi4.print_out("running step %5.2f" % A)
 #     set remp_A=$A
-#     e_remp=energy('remp')
-#     compare_values(test_dict[remp_A], get_variable("REMP TOTAL ENERGY"), 6, "REMP Total Energy") #TEST
+#     e_remp=energy('remp2')
+#     compare_values(test_dict[remp_A], get_variable("REMP2 TOTAL ENERGY"), 6, "REMP2 Total Energy") #TEST
 
 compare_values(Enuc, h2o.nuclear_repulsion_energy(), 8, "Nuclear Repulsion Energy") #TEST
 
 set remp_A=0.00
-energy('oremp')
-compare_values(test_energy_dict["0.00"], variable("OREMP TOTAL ENERGY"), 8, "CD-OREMP(0.00) Total Energy") #TEST
+energy('oremp2')
+compare_values(test_energy_dict["0.00"], variable("OREMP2 TOTAL ENERGY"), 8, "CD-OREMP(0.00) Total Energy") #TEST
 
 set remp_A=0.10
-energy('oremp')
-compare_values(test_energy_dict["0.10"], variable("OREMP TOTAL ENERGY"), 8, "CD-OREMP(0.10) Total Energy") #TEST
+energy('oremp2')
+compare_values(test_energy_dict["0.10"], variable("OREMP2 TOTAL ENERGY"), 8, "CD-OREMP(0.10) Total Energy") #TEST
 
 
 set remp_A=0.20
-energy('oremp')
-compare_values(test_energy_dict["0.20"], variable("OREMP TOTAL ENERGY"), 8, "CD-OREMP(0.20) Total Energy") #TEST
+energy('oremp2')
+compare_values(test_energy_dict["0.20"], variable("OREMP2 TOTAL ENERGY"), 8, "CD-OREMP(0.20) Total Energy") #TEST
 
 set remp_A=0.30
-energy('oremp')
-compare_values(test_energy_dict["0.30"], variable("OREMP TOTAL ENERGY"), 8, "CD-OREMP(0.30) Total Energy") #TEST
+energy('oremp2')
+compare_values(test_energy_dict["0.30"], variable("OREMP2 TOTAL ENERGY"), 8, "CD-OREMP(0.30) Total Energy") #TEST
 
 
 set remp_A=1.00
-energy('oremp')
-compare_values(test_energy_dict["1.00"], variable("OREMP TOTAL ENERGY"), 8, "CD-OREMP(1.00) Total Energy") #TEST
+energy('oremp2')
+compare_values(test_energy_dict["1.00"], variable("OREMP2 TOTAL ENERGY"), 8, "CD-OREMP(1.00) Total Energy") #TEST

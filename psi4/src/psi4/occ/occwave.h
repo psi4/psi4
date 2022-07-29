@@ -111,12 +111,12 @@ class OCCWave : public Wavefunction {
     void oo_diis(DIISManager&);
 
     // Processing functions - print output, save variables
-    void mp2_printing(bool scf = false, bool include_singles = false);
-    void mp2p5_printing(bool scf = false);
-    void mp3_printing(bool scf = false);
-    void mp2_postprocessing(bool include_singles = false);
-    void mp2p5_postprocessing();
-    void mp3_postprocessing();
+    void mp2_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp2p5_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp3_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp2_postprocessing(bool include_singles = false, bool incomplete_singles = false);
+    void mp2p5_postprocessing(bool include_singles = false, bool incomplete_singles = false);
+    void mp3_postprocessing(bool include_singles = false, bool incomplete_singles = false);
 
     // OMP2
     void omp2_manager();

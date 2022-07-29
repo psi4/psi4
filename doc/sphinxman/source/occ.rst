@@ -211,23 +211,23 @@ The mixing ratio is determined by the parameter :math':`A`:
 .. math::
    \widehat{H}^{(0)}_\text{REMP} = (1-A)\widehat{H}^{(0)}_\text{RE} + A\widehat{H}^{(0)}_\text{MP}
 
-Technically, the second order of RE corresponds to LCCD for RHF and UHF references. REMP and its orbital-optimized variant OREMP
+Technically, the second order of RE corresponds to LCCD for RHF and UHF references. REMP2 and its orbital-optimized variant OREMP2
 are thus straightforward to implement in a (O)LCCD program by appropriate scaling of residuum vector contributions and density matrices.
 
 
 Publications resulting from the use of the orbital-optimized code should cite the following publications:
 
-* **OMP2** [Bozkaya:2011:omp2]_, [Bozkaya:2013:omp2grad]_, and [Bozkaya:2014:dfomp2grad]_
+* **OMP2** [Bozkaya:2011:omp2]_, [Bozkaya:2013:omp2grad]_, [Bozkaya:2014:dfomp2]_, and [Bozkaya:2014:dfomp2grad]_
 
 * **OMP3** [Bozkaya:2011:omp3]_ , [Bozkaya:2013:omp3]_, [Bozkaya:2013:omp3grad]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
 
 * **OMP2.5** [Bozkaya:2011:omp3]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
 
-* **OLCCD** [Bozkaya:2013:ocepa]_, and [Bozkaya:2013:dfolccd]_
+* **OLCCD** [Bozkaya:2013:ocepa]_, and [Bozkaya:2016:dfolccd]_
 
 * **OCCD** [Bozkaya:2020:dfoccd]_
 
-* **OREMP** [Behnle:2021:OREMP]_, and [Behnle:2022:OREMP]_
+* **OREMP2** [Behnle:2021:OREMP]_, and [Behnle:2022:OREMP]_
 
 Convergence Problems
 ~~~~~~~~~~~~~~~~~~~~
@@ -281,13 +281,13 @@ through "type select" values in the rightmost Table column.
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Orbital-Optimized LCCD                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | occd                    | Orbital-Optimized CCD                                        | ---                  | ----                 | |globals__cc_type| CONV   |
+    | occd                    | Orbital-Optimized CCD                                        | ---                  | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Density-Fitted Orbital-Optimized CCD                         | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Orbital-Optimized CCD                    | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | oremp                   | Orbital-Optimized 2nd order REMP hybrid perturbation theory  | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| CONV   |
+    | oremp2                  | Orbital-Optimized 2nd order REMP hybrid perturbation theory  | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Density-Fitted Orbital-Optimized REMP                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
@@ -412,7 +412,7 @@ Publications resulting from the use of the non-OO CC codes should cite the follo
 
 * **MP2.5** [Bozkaya:2011:omp3]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
 
-* **LCCD** [Bozkaya:2013:ocepa]_, and [Bozkaya:2013:dfolccd]_
+* **LCCD** [Bozkaya:2013:ocepa]_, and [Bozkaya:2016:dfolccd]_
 
 * **CCD** [Bozkaya:2020:dfoccd]_
 
@@ -485,13 +485,13 @@ Publications resulting from the use of the non-OO CC codes should cite the follo
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed OCCD(T)                                  | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | occd(at)                | Lambda-OCCD(T)                                               | ---                  | ---                  | |globals__cc_type| CONV   |
+    | a-occd(t)               | Lambda-OCCD(T)                                               | ---                  | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Density-Fitted Lambda-OCCD(T)                                | RHF/UHF              | ---                  | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Lambda-OCCD(T)                           | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | remp                    | 2nd order REMP hybrid perturbation theory                    | RHF/UHF              | ---                  | |globals__cc_type| CONV   |
+    | remp2                   | 2nd order REMP hybrid perturbation theory                    | RHF/UHF              | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Density-Fitted REMP                                          | RHF/UHF              | ---                  | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+

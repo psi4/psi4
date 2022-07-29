@@ -72,13 +72,14 @@ procedures = {
         'lccd'          : proc.select_lccd,
         'custom-scs-lccd' : proc.run_occ,
         'olccd'         : proc.select_olccd,
-        'occd'         : proc.run_dfocc,
+        'occd'          : proc.run_dfocc,
         'occd(t)'       : proc.run_dfocc,
-        'occd(at)'      : proc.run_dfocc,
+        'occd(at)'      : proc.run_dfocc,  # alias
+        'a-occd(t)'     : proc.run_dfocc,
         'custom-scs-olccd' : proc.run_occ,
-        'remp'          : proc.select_lccd,
-        'oremp'         : proc.select_lccd,
-        'dfocc'         : proc.run_dfocc,  # full control over dfocc
+        'remp2'         : proc.select_remp2,
+        'oremp2'        : proc.select_olccd,
+        # 'dfocc'         : proc.run_dfocc,  # full control over dfocc  # canceled Jul 2022 as Error raising and not useful
         'qchf'          : proc.run_qchf,
         'ccd'           : proc.run_dfocc,
         'sf-sapt'       : sapt.run_sf_sapt,
@@ -200,7 +201,7 @@ procedures = {
         'mp2d'          : proc.run_dfmp2d_gradient,  # alias to match dft aliasing
         'lccd'          : proc.select_lccd_gradient,
         'olccd'         : proc.select_olccd_gradient,
-        'oremp'         : proc.select_olccd_gradient,
+        'oremp2'        : proc.select_olccd_gradient,
         'ccd'           : proc.run_dfocc_gradient,
         'occd'          : proc.run_dfocc_gradient,
         # Upon adding a method to this list, add it to the docstring in driver.optimize below
@@ -233,7 +234,7 @@ procedures = {
         'omp2.5'       : proc.select_omp2p5_property,
         'omp3'         : proc.select_omp3_property,
         'olccd'        : proc.select_olccd_property,
-#        'oremp'        : proc.select_olccd_property,
+#        'oremp2'       : proc.select_olccd_property,
         'adc(1)'       : proc.run_adcc_property,
         'adc(2)'       : proc.run_adcc_property,
         'adc(2)-x'     : proc.run_adcc_property,

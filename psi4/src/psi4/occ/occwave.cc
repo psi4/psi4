@@ -142,8 +142,8 @@ void OCCWave::common_init() {
         } else {
             double temp;
             temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
-            if (temp < 6.0) {
-                temp = 6.0;
+            if (temp < 6.5) {
+                temp = 6.5;
             }
             tol_grad = pow(10.0, -temp);
             // tol_grad = 100.0*tol_Eod;

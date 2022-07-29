@@ -324,7 +324,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_ambit=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
@@ -364,7 +364,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_ambit=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
@@ -406,7 +406,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \

@@ -755,6 +755,8 @@ PSI Variables by Alpha
    CUSTOM SCS-MP2.5 CORRELATION ENERGY
    CUSTOM SCS-MP3 TOTAL ENERGY
    CUSTOM SCS-MP3 CORRELATION ENERGY
+   CUSTOM SCS-REMP2 TOTAL ENERGY
+   CUSTOM SCS-REMP2 CORRELATION ENERGY
    CUSTOM SCS-LCCD TOTAL ENERGY
    CUSTOM SCS-LCCD CORRELATION ENERGY
    CUSTOM SCS-OMP2 TOTAL ENERGY
@@ -763,6 +765,8 @@ PSI Variables by Alpha
    CUSTOM SCS-OMP2.5 CORRELATION ENERGY
    CUSTOM SCS-OMP3 TOTAL ENERGY
    CUSTOM SCS-OMP3 CORRELATION ENERGY
+   CUSTOM SCS-OREMP2 TOTAL ENERGY
+   CUSTOM SCS-OREMP2 CORRELATION ENERGY
    CUSTOM SCS-OLCCD TOTAL ENERGY
    CUSTOM SCS-OLCCD CORRELATION ENERGY
 
@@ -1160,6 +1164,7 @@ PSI Variables by Alpha
    CEPA(3) DOUBLES ENERGY
    CISD DOUBLES ENERGY
    QCISD DOUBLES ENERGY
+   REMP2 DOUBLES ENERGY
    LCCD DOUBLES ENERGY
    CCD DOUBLES ENERGY
    LCCSD DOUBLES ENERGY
@@ -1167,6 +1172,7 @@ PSI Variables by Alpha
    OMP2 DOUBLES ENERGY
    OMP2.5 DOUBLES ENERGY
    OMP3 DOUBLES ENERGY
+   OREMP2 DOUBLES ENERGY
    OLCCD DOUBLES ENERGY
 
    The doubles portion [Eh] of the named correlation energy
@@ -1181,10 +1187,12 @@ PSI Variables by Alpha
    CEPA(3) SINGLES ENERGY
    CISD SINGLES ENERGY
    QCISD SINGLES ENERGY
+   REMP2 SINGLES ENERGY
    LCCD SINGLES ENERGY
    CCD SINGLES ENERGY
    LCCSD SINGLES ENERGY
    CCSD SINGLES ENERGY
+   OREMP2 SINGLES ENERGY
    OLCCD SINGLES ENERGY
 
    The singles portion [Eh] of the named correlation energy.
@@ -1201,10 +1209,15 @@ PSI Variables by Alpha
    QCISD SAME-SPIN CORRELATION ENERGY
    ACPF SAME-SPIN CORRELATION ENERGY
    AQCC SAME-SPIN CORRELATION ENERGY
+   REMP2 SAME-SPIN CORRELATION ENERGY
    LCCD SAME-SPIN CORRELATION ENERGY
    CCD SAME-SPIN CORRELATION ENERGY
    LCCSD SAME-SPIN CORRELATION ENERGY
    CCSD SAME-SPIN CORRELATION ENERGY
+   OMP2 SAME-SPIN CORRELATION ENERGY
+   OMP2.5 SAME-SPIN CORRELATION ENERGY
+   OMP3 SAME-SPIN CORRELATION ENERGY
+   OREMP2 SAME-SPIN CORRELATION ENERGY
    OLCCD SAME-SPIN CORRELATION ENERGY
 
    The unscaled portion [Eh] of the named correlation energy
@@ -1221,10 +1234,15 @@ PSI Variables by Alpha
    QCISD OPPOSITE-SPIN CORRELATION ENERGY
    ACPF OPPOSITE-SPIN CORRELATION ENERGY
    AQCC OPPOSITE-SPIN CORRELATION ENERGY
+   REMP2 OPPOSITE-SPIN CORRELATION ENERGY
    LCCD OPPOSITE-SPIN CORRELATION ENERGY
    CCD OPPOSITE-SPIN CORRELATION ENERGY
    LCCSD OPPOSITE-SPIN CORRELATION ENERGY
    CCSD OPPOSITE-SPIN CORRELATION ENERGY
+   OMP2 OPPOSITE-SPIN CORRELATION ENERGY
+   OMP2.5 OPPOSITE-SPIN CORRELATION ENERGY
+   OMP3 OPPOSITE-SPIN CORRELATION ENERGY
+   OREMP2 OPPOSITE-SPIN CORRELATION ENERGY
    OLCCD OPPOSITE-SPIN CORRELATION ENERGY
 
    The unscaled portion [Eh] of the named correlation energy
@@ -1267,6 +1285,39 @@ PSI Variables by Alpha
    .. math:: E_{NN} = \sum_{i, j<i}^{N_{atom}}\frac{Z_i Z_j}{|\mathbf{R}_i - \mathbf{R}_j|}
       :label: ENN
 
+.. psivar:: OCCD TOTAL ENERGY
+   OCCD CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized coupled-cluster doubles level of theory.
+
+.. psivar:: OCCD REFERENCE CORRECTION ENERGY
+
+   The additional correction to the SCF reference energy [Eh]
+   for the orbital-optimized coupled cluster doubles level of theory.
+
+.. psivar:: OCCD(T) TOTAL ENERGY
+   OCCD(T) CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized coupled-cluster doubles with perturbative
+   triples level of theory.
+
+.. psivar:: O(T) CORRECTION ENERGY
+
+   The orbital-optimized coupled-cluster perturbative triples correction [Eh].
+
+.. psivar:: A-OCCD(T) TOTAL ENERGY
+   A-OCCD(T) CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized coupled-cluster doubles with asymmetric
+   perturbative triples level of theory.
+
+.. psivar:: A-O(T) CORRECTION ENERGY
+
+   The orbital-optimized coupled-cluster asymmetric perturbative triples correction [Eh].
+
 .. psivar:: OCEPA(0) TOTAL ENERGY
    OCEPA(0) CORRELATION ENERGY
 
@@ -1290,10 +1341,20 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the orbital-optimized MP2 level of theory.
 
+.. psivar:: OMP2 REFERENCE CORRECTION ENERGY
+
+   The additional correction to the SCF reference energy [Eh]
+   for the orbital-optimized MP2 level of theory.
+
 .. psivar:: OMP2.5 TOTAL ENERGY
    OMP2.5 CORRELATION ENERGY
 
    The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized MP2.5 level of theory.
+
+.. psivar:: OMP2.5 REFERENCE CORRECTION ENERGY
+
+   The additional correction to the SCF reference energy [Eh]
    for the orbital-optimized MP2.5 level of theory.
 
 .. psivar:: OMP3 TOTAL ENERGY
@@ -1301,6 +1362,22 @@ PSI Variables by Alpha
 
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the orbital-optimized MP3 level of theory.
+
+.. psivar:: OMP3 REFERENCE CORRECTION ENERGY
+
+   The additional correction to the SCF reference energy [Eh]
+   for the orbital-optimized MP3 level of theory.
+
+.. psivar:: OREMP2 TOTAL ENERGY
+   OREMP2 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized retain the excitation perturbation level of theory.
+
+.. psivar:: OREMP2 REFERENCE CORRECTION ENERGY
+
+   The additional correction to the SCF reference energy [Eh]
+   for the orbital-optimized retain the excitation perturbation level of theory.
 
 .. psivar:: ONE-ELECTRON ENERGY
 
@@ -1328,6 +1405,12 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the quadratic configuration interaction singles and doubles with
    perturbative triples correction level of theory.
+
+.. psivar:: REMP2 TOTAL ENERGY
+   REMP2 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the retain the excitation perturbation level of theory.
 
 .. psivar:: SAPT DISP ENERGY
    SAPT ELST ENERGY

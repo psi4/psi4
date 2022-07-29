@@ -169,7 +169,7 @@ class AtomicComputer(BaseComputer):
             raise_error=True,
             # local_options below suitable for serial mode where each job takes all the resources of the parent Psi4 job.
             #   distributed runs through QCFractal will likely need a different setup.
-            local_options={
+            task_config={
                 # B -> GiB
                 "memory": core.get_memory() / (2 ** 30),
                 "ncores": core.get_num_threads(),

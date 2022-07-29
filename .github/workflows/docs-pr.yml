@@ -74,7 +74,7 @@ jobs:
           -DENABLE_ecpint=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
           -DSPHINXMAN_STRICT=ON \
           -DSPHINX_ROOT=${CONDA_PREFIX}
 

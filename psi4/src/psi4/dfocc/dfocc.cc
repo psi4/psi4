@@ -160,11 +160,10 @@ void DFOCC::common_init() {
         } else {
             double temp;
             temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
-            if (temp < 4.0) {
-                temp = 4.0;
+            if (temp < 6.5) {
+                temp = 6.5;
             }
             tol_grad = pow(10.0, -temp);
-            // tol_grad = 100.0*tol_Eod;
             outfile->Printf("\tFor this energy convergence, default RMS orbital gradient is: %12.2e\n", tol_grad);
         }
 
@@ -178,10 +177,21 @@ void DFOCC::common_init() {
                 temp2 = 3.0;
             }
             mograd_max = pow(10.0, -temp2 - 1); // CHECK
-            // mograd_max = 10.0*tol_grad;
             outfile->Printf("\tFor this energy convergence, default MAX orbital gradient is: %12.2e\n", mograd_max);
         }
-    }  // end if (orb_opt_ == "TRUE")
+    } else if (orb_opt_ == "FALSE") {
+        if (options_["R_CONVERGENCE"].has_changed()) {
+            tol_t2 = options_.get_double("R_CONVERGENCE");
+        } else {
+            double temp;
+            temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
+            if (temp < 6.5) {
+                temp = 6.5;
+            }
+            tol_t2 = pow(10.0, -temp);
+            outfile->Printf("\tFor this energy convergence, default residual convergence is: %12.2e\n", tol_t2);
+        }
+    }  // end orb_opt_
 
     // Figure out REF
     if (reference == "RHF" || reference == "RKS")
