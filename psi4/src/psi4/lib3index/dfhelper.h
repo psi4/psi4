@@ -440,7 +440,7 @@ class PSI_API DFHelper {
     std::vector<bool> schwarz_shell_mask_;
     // What is the index of ij in significant basis function interactions for i? 0 = not significant. 2 means 1 before, 3 means 2 before, ect. Size nbf_ ** 2.
     // Ordering is based on the natural ordering of basis functions, not ordering of significance.
-    std::vector<size_t> schwarz_fun_count_;
+    std::vector<size_t> schwarz_fun_index_;
 
     // => Coulomb metric handling <=
     std::vector<std::pair<double, std::string>> metric_keys_;
