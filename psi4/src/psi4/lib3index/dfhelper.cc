@@ -271,12 +271,12 @@ void DFHelper::prepare_sparsity() {
     small_skips_.resize(nbf_ + 1);
     big_skips_.resize(nbf_ + 1);
 
-    // => Populate a vector of TwoBodyAOInt to make ERIs, one per thread. <=
-    size_t nthreads = (nthreads_ == 1 ? 1 : 2);  // for now
+    // => Populate a vector of TwoBodyAOInt to make ERIs, one per screening thread. <=
+    size_t screen_threads = (nthreads_ == 1 ? 1 : 2);  // TODO: Replace screen_threads with nthreads_?
     auto rifactory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(screen_threads);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-#pragma omp parallel num_threads(nthreads) if (nbf_ > 1000)
+#pragma omp parallel num_threads(screen_threads) if (nbf_ > 1000)
     {
         int rank = 0;
 #ifdef _OPENMP
@@ -287,7 +287,7 @@ void DFHelper::prepare_sparsity() {
 
     // => For each shell pair and basis pair, store the max (mn|mn)-type integral for screening. <=
     double max_val = 0.0;
-#pragma omp parallel for num_threads(nthreads) if (nbf_ > 1000) schedule(guided) reduction(max : max_val)
+#pragma omp parallel for num_threads(screen_threads) if (nbf_ > 1000) schedule(guided) reduction(max : max_val)
     for (size_t MU = 0; MU < pshells_; ++MU) {
         int rank = 0;
 #ifdef _OPENMP
