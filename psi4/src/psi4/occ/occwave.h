@@ -111,12 +111,12 @@ class OCCWave : public Wavefunction {
     void oo_diis(DIISManager&);
 
     // Processing functions - print output, save variables
-    void mp2_printing(bool scf = false, bool include_singles = false);
-    void mp2p5_printing(bool scf = false);
-    void mp3_printing(bool scf = false);
-    void mp2_postprocessing(bool include_singles = false);
-    void mp2p5_postprocessing();
-    void mp3_postprocessing();
+    void mp2_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp2p5_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp3_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp2_postprocessing(bool include_singles = false, bool incomplete_singles = false);
+    void mp2p5_postprocessing(bool include_singles = false, bool incomplete_singles = false);
+    void mp3_postprocessing(bool include_singles = false, bool incomplete_singles = false);
 
     // OMP2
     void omp2_manager();
@@ -159,6 +159,12 @@ class OCCWave : public Wavefunction {
     void w_int();
     void v_int();
     void cepa_energy();
+
+    // REMP
+    void t2_amps_remp();
+    void remp_manager();
+    void oremp_manager();
+    void remp_iterations();
 
     // MP2
     void denominators_rmp2();
@@ -310,6 +316,7 @@ class OCCWave : public Wavefunction {
     double s2_proj;
     double s2_lag;
     double s2_ref;
+    double remp_A;
 
     // OMP3
     double e3_scale;

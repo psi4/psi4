@@ -1,0 +1,2228 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 undefined 
+
+                         Git: Rev {changes_for_global_merge} 9766b6f 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 30 November 2021 01:58PM
+
+    Process ID: 25215
+    Host:       south
+    PSIDATADIR: /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    4
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! integral conventional REMP/cc-pVDZ energies for the H2O+ molecule.
+
+test_dict = { "0.00": -75.80164576260127,  #TEST
+              "0.10": -75.79910145590183,  #TEST
+              "0.20": -75.79678966353273,  #TEST
+              "0.30": -75.79466003892817,  #TEST
+              "1.00": -75.78294942486372 } #TEST
+
+molecule h2o {
+1 2
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+symmetry c1
+}
+
+set {
+  reference uhf
+  basis cc-pvdz
+  guess sad
+  scf_type out_of_core
+  freeze_core true
+  cc_type conv
+  e_convergence 1.0E-9
+  r_convergence 1.0E-8
+  qc_module occ
+}
+
+Avals=[0.00, 0.10, 0.20, 0.30, 1.00]
+
+
+#for A in Avals:
+#     psi4.print_out("running step %5.2f" % A)
+#     set remp_A=$A
+#     e_remp=energy('remp')
+#     compare_values(test_dict[remp_A], get_variable("REMP TOTAL ENERGY"), 6, "REMP Total Energy") #TEST
+
+
+
+set remp_A=0.00
+e_remp=energy('remp')
+compare_values(test_dict["0.00"], variable("REMP TOTAL ENERGY"), 6, "REMP(0.00) Total Energy") #TEST
+
+set remp_A=0.10
+e_remp=energy('remp')
+compare_values(test_dict["0.10"], variable("REMP TOTAL ENERGY"), 6, "REMP(0.10) Total Energy") #TEST
+
+set remp_A=0.20
+e_remp=energy('remp')
+compare_values(test_dict["0.20"], variable("REMP TOTAL ENERGY"), 6, "REMP(0.20) Total Energy") #TEST
+
+set remp_A=0.30
+e_remp=energy('remp')
+compare_values(test_dict["0.30"], variable("REMP TOTAL ENERGY"), 6, "REMP(0.30) Total Energy") #TEST
+
+set remp_A=1.00
+e_remp=energy('remp')
+compare_values(test_dict["1.00"], variable("REMP TOTAL ENERGY"), 6, "REMP(1.00) Total Energy") #TEST
+
+--------------------------------------------------------------------------
+
+Scratch directory: /scr/behnle/
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:02 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065655108083    15.994914619570
+         H            0.000000000000    -0.757365949175     0.520997104927     1.007825032230
+         H            0.000000000000     0.757365949175     0.520997104927     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
+  Rotational constants: A = 820325.17390  B = 437109.76779  C = 285161.58919 [MHz]
+  Nuclear repulsion =    9.187386457589815
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 3.4230868396E-02.
+  Reciprocal condition number of the overlap matrix is 9.2312643042E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.51052780814436   -7.55105e+01   0.00000e+00 
+   @UHF iter   1:   -75.59297510757604   -8.24473e-02   1.13724e-02 DIIS
+   @UHF iter   2:   -75.62902947039660   -3.60544e-02   3.07775e-03 DIIS
+   @UHF iter   3:   -75.63141603127693   -2.38656e-03   1.08976e-03 DIIS
+   @UHF iter   4:   -75.63180036068533   -3.84329e-04   3.53756e-04 DIIS
+   @UHF iter   5:   -75.63187465929177   -7.42986e-05   1.56819e-04 DIIS
+   @UHF iter   6:   -75.63189525485056   -2.05956e-05   4.78729e-05 DIIS
+   @UHF iter   7:   -75.63189740373724   -2.14889e-06   8.09722e-06 DIIS
+   @UHF iter   8:   -75.63189745376488   -5.00276e-08   1.25103e-06 DIIS
+   @UHF iter   9:   -75.63189745462479   -8.59913e-10   2.49843e-07 DIIS
+   @UHF iter  10:   -75.63189745466289   -3.80993e-11   4.17817e-08 DIIS
+   @UHF iter  11:   -75.63189745466400   -1.10845e-12   7.40709e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   6.087274240E-03
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.560872742E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -21.140116     2A     -1.913841     3A     -1.218289  
+       4A     -1.130152     5A     -1.097762  
+
+    Alpha Virtual:                                                        
+
+       6A     -0.141739     7A     -0.058355     8A      0.392700  
+       9A      0.447053    10A      0.672492    11A      0.714762  
+      12A      0.827147    13A      1.024661    14A      1.039614  
+      15A      1.238674    16A      1.385130    17A      1.531578  
+      18A      1.995638    19A      2.003995    20A      2.722514  
+      21A      2.773398    22A      3.000585    23A      3.326128  
+      24A      3.652695  
+
+    Beta Occupied:                                                        
+
+       1A    -21.095041     2A     -1.757773     3A     -1.180062  
+       4A     -1.045877  
+
+    Beta Virtual:                                                         
+
+       5A     -0.313565     6A     -0.127673     7A     -0.050162  
+       8A      0.391528     9A      0.463531    10A      0.736114  
+      11A      0.844549    12A      0.870042    13A      1.035530  
+      14A      1.070107    15A      1.268969    16A      1.437749  
+      17A      1.528504    18A      2.007227    19A      2.059735  
+      20A      2.826417    21A      2.877972    22A      3.032387  
+      23A      3.404869    24A      3.670432  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     1 ]
+
+  @UHF Final Energy:   -75.63189745466400
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1873864575898150
+    One-Electron Energy =                -118.0596541309884060
+    Two-Electron Energy =                  33.2403702187346042
+    Total Energy =                        -75.6318974546639993
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9991850
+  HONO-1 :    4  A 1.9980710
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0019290
+  LUNO+1 :    7  A 0.0008150
+  LUNO+2 :    8  A 0.0003016
+  LUNO+3 :    9  A 0.0000003
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.9765
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0132
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9897     Total:     0.9897
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.5156     Total:     2.5156
+
+
+*** tstop() called on south at Tue Nov 30 13:58:03 2021
+Module time:
+	user time   =       1.32 seconds =       0.02 minutes
+	system time =       0.45 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.32 seconds =       0.02 minutes
+	system time =       0.45 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:03 2021
+
+
+
+  Module OCC Options:
+  ----------------------------------------------------------------------------
+  ACTIVE                        => (empty)          
+  BASIS_RELATIVISTIC            => (empty)          
+  BENCH                         => (empty)          
+  CACHELEVEL                    => (empty)          
+  CCL_ENERGY                    => (empty)          
+  CC_DIIS_MAX_VECS              => (empty)          
+  CC_DIIS_MIN_VECS              => (empty)          
+  CC_MAXITER                    => (empty)          
+  CC_TYPE                       => CONV            !
+  CEPA_OS_SCALE                 => (empty)          
+  CEPA_SOS_SCALE                => (empty)          
+  CEPA_SS_SCALE                 => (empty)          
+  CEPA_TYPE                     => (empty)          
+  CI_TYPE                       => (empty)          
+  CUBEPROP_BASIS_FUNCTIONS      => (empty)          
+  CUBEPROP_FILEPATH             => (empty)          
+  CUBEPROP_ISOCONTOUR_THRESHOLD => (empty)          
+  CUBEPROP_ORBITALS             => (empty)          
+  CUBEPROP_TASKS                => (empty)          
+  CUBIC_BASIS_TOLERANCE         => (empty)          
+  CUBIC_BLOCK_MAX_POINTS        => (empty)          
+  CUBIC_GRID_OVERAGE            => (empty)          
+  CUBIC_GRID_SPACING            => (empty)          
+  CUTOFF                        => (empty)          
+  DEBUG                         => (empty)          
+  DERTYPE                       => (empty)          
+  DF_BASIS_CC                   => (empty)          
+  DIE_IF_NOT_CONVERGED          => (empty)          
+  DIIS_MAX_VECS                 => (empty)          
+  DIIS_MIN_VECS                 => (empty)          
+  DKH_ORDER                     => (empty)          
+  DOCC                          => (empty)          
+  DO_DIIS                       => (empty)          
+  DO_LEVEL_SHIFT                => (empty)          
+  DO_SCS                        => (empty)          
+  DO_SOS                        => (empty)          
+  E3_SCALE                      => (empty)          
+  EA_POLES                      => (empty)          
+  EKT_EA                        => (empty)          
+  EKT_IP                        => (empty)          
+  EP_EA_POLES                   => (empty)          
+  EP_IP_POLES                   => (empty)          
+  EP_MAXITER                    => (empty)          
+  EXTERNAL_POTENTIAL_SYMMETRY   => (empty)          
+  E_CONVERGENCE                 => 1e-09           !
+  FREEZE_CORE                   => TRUE            !
+  FROZEN_DOCC                   => (empty)          
+  FROZEN_UOCC                   => (empty)          
+  INTEGRAL_PACKAGE              => (empty)          
+  IP_POLES                      => (empty)          
+  LEVEL_SHIFT                   => (empty)          
+  LINEQ_SOLVER                  => (empty)          
+  LITERAL_CFOUR                 => (empty)          
+  MAT_NUM_COLUMN_PRINT          => (empty)          
+  MAX_MOGRAD_CONVERGENCE        => (empty)          
+  MAX_RADIAL_MOMENT             => (empty)          
+  MBIS_D_CONVERGENCE            => (empty)          
+  MBIS_MAXITER                  => (empty)          
+  MBIS_PRUNING_SCHEME           => (empty)          
+  MBIS_RADIAL_POINTS            => (empty)          
+  MBIS_SPHERICAL_POINTS         => (empty)          
+  MOGRAD_DAMPING                => (empty)          
+  MOLDEN_WITH_VIRTUAL           => (empty)          
+  MO_DIIS_NUM_VECS              => (empty)          
+  MO_MAXITER                    => (empty)          
+  MO_READ                       => (empty)          
+  MO_STEP_MAX                   => (empty)          
+  MO_WRITE                      => (empty)          
+  MP2_OS_SCALE                  => (empty)          
+  MP2_SOS_SCALE                 => (empty)          
+  MP2_SOS_SCALE2                => (empty)          
+  MP2_SS_SCALE                  => (empty)          
+  MP2_TYPE                      => (empty)          
+  MP_TYPE                       => (empty)          
+  NAT_ORBS                      => (empty)          
+  NUM_FROZEN_DOCC               => (empty)          
+  NUM_FROZEN_UOCC               => (empty)          
+  NUM_GPUS                      => (empty)          
+  OCC_ORBS_PRINT                => (empty)          
+  OEPROP                        => (empty)          
+  OPT_METHOD                    => (empty)          
+  ORB_OPT                       => FALSE           !
+  ORB_RESP_SOLVER               => (empty)          
+  ORTH_TYPE                     => (empty)          
+  OS_SCALE                      => (empty)          
+  PARENT_SYMMETRY               => (empty)          
+  PCG_BETA_TYPE                 => (empty)          
+  PCG_CONVERGENCE               => (empty)          
+  PCG_MAXITER                   => (empty)          
+  PCM                           => (empty)          
+  PE                            => (empty)          
+  PRINT                         => (empty)          
+  PRINT_NOONS                   => (empty)          
+  PROPERTIES                    => (empty)          
+  PROPERTIES_ORIGIN             => (empty)          
+  PUREAM                        => (empty)          
+  QC_MODULE                     => OCC             !
+  RAS1                          => (empty)          
+  RAS2                          => (empty)          
+  RAS3                          => (empty)          
+  RAS4                          => (empty)          
+  RELATIVISTIC                  => (empty)          
+  RELAXED                       => (empty)          
+  REMP_A                        => 0               !
+  RESTRICTED_DOCC               => (empty)          
+  RESTRICTED_UOCC               => (empty)          
+  RMS_MOGRAD_CONVERGENCE        => (empty)          
+  R_CONVERGENCE                 => 1e-08           !
+  SCF_TYPE                      => OUT_OF_CORE     !
+  SCS_TYPE                      => (empty)          
+  SOCC                          => (empty)          
+  SOS_TYPE                      => (empty)          
+  SPIN_SCALE_TYPE               => NONE            !
+  SS_SCALE                      => (empty)          
+  SYMMETRIZE                    => (empty)          
+  TPDM_ABCD_TYPE                => (empty)          
+  WFN                           => (empty)          
+  WFN_TYPE                      => REMP            !
+  WRITER_FILE_LABEL             => (empty)          
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                             REMP2  
+                    Program Written by Ugur Bozkaya,
+              Additional Contributions by J. P. Misiewicz
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	MO spaces per irreps... 
+
+	IRREP   FC   AOCC  BOCC  AVIR    BVIR  FV 
+	==========================================
+	   A     1     4     3    19     20     0
+	==========================================
+
+	Computing MP2 energy using SCF MOs (Canonical MP2)... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466400
+	REF Energy (a.u.)                  :   -75.63189745466400
+	Alpha-Alpha Contribution (a.u.)    :    -0.02403737176609
+	Alpha-Beta Contribution (a.u.)     :    -0.11591175599754
+	Beta-Beta Contribution (a.u.)      :    -0.01110284243605
+	Scaled_SS Correlation Energy (a.u.):    -0.01171340473405
+	Scaled_OS Correlation Energy (a.u.):    -0.13909410719705
+	SCS-MP2 Total Energy (a.u.)        :   -75.78270496659509
+	SOS-MP2 Total Energy (a.u.)        :   -75.78258273746080
+	SCSN-MP2 Total Energy (a.u.)       :   -75.69374423165976
+	SCS-MP2-VDW Total Energy (a.u.)    :   -75.79783460944194
+	SOS-PI-MP2 Total Energy (a.u.)     :   -75.79417391306056
+	MP2 Correlation Energy (a.u.)      :    -0.15105197019968
+	MP2 Total Energy (a.u.)            :   -75.78294942486367
+	============================================================================== 
+
+	Using A=        0 as REMP mixing parameter
+
+  
+ ============================================================================== 
+ ================ Performing REMP iterations ... ============================== 
+ ============================================================================== 
+
+  Iter    E_corr           E_total            DE           T2 RMS        
+  ----   -------------    ---------------    ----------   ----------    
+   1     -0.1510519702    -75.7829494249      0.00e+00     3.59e-05 
+   2     -0.1649625121    -75.7968599668     -1.39e-02     5.89e-06 
+   3     -0.1681596912    -75.8000571459     -3.20e-03     2.14e-06 
+   4     -0.1694362613    -75.8013337160     -1.28e-03     7.67e-07 
+   5     -0.1696758565    -75.8015733111     -2.40e-04     3.46e-07 
+   6     -0.1697330249    -75.8016304796     -5.72e-05     1.16e-07 
+   7     -0.1697444917    -75.8016419463     -1.15e-05     3.44e-08 
+   8     -0.1697481400    -75.8016455946     -3.65e-06     1.28e-08 
+   9     -0.1697483995    -75.8016458542     -2.60e-07     5.27e-09 
+  10     -0.1697481646    -75.8016456193      2.35e-07     1.50e-09 
+  11     -0.1697481853    -75.8016456399     -2.07e-08     4.92e-10 
+  12     -0.1697482590    -75.8016457137     -7.37e-08     1.49e-10 
+  13     -0.1697482900    -75.8016457447     -3.10e-08     6.29e-11 
+  14     -0.1697483010    -75.8016457557     -1.10e-08     2.76e-11 
+  15     -0.1697483051    -75.8016457598     -4.10e-09     1.19e-11 
+  16     -0.1697483073    -75.8016457619     -2.17e-09     3.83e-12 
+  17     -0.1697483078    -75.8016457625     -5.52e-10     1.68e-12 
+  18     -0.1697483079    -75.8016457626     -1.01e-10     7.00e-13 
+
+ ============================================================================== 
+ ======================== REMP ITERATIONS ARE CONVERGED ======================= 
+ ============================================================================== 
+
+	============================================================================== 
+	================ REMP2 FINAL RESULTS ================================ 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466400
+	REF Energy (a.u.)                  :   -75.63189745466400
+	Alpha-Alpha Contribution (a.u.)    :    -0.02341378457727
+	Alpha-Beta Contribution (a.u.)     :    -0.13589689886670
+	Beta-Beta Contribution (a.u.)      :    -0.01043762449332
+	REMP Correlation Energy (a.u.)     :    -0.16974830793728
+	REMP Total Energy (a.u.)           :   -75.80164576260128
+	============================================================================== 
+
+
+*** tstop() called on south at Tue Nov 30 13:58:03 2021
+Module time:
+	user time   =       0.93 seconds =       0.02 minutes
+	system time =       0.88 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.25 seconds =       0.04 minutes
+	system time =       1.34 seconds =       0.02 minutes
+	total time  =          1 seconds =       0.02 minutes
+    REMP(0.00) Total Energy...............................................................PASSED
+
+Scratch directory: /scr/behnle/
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:03 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065655108083    15.994914619570
+         H            0.000000000000    -0.757365949175     0.520997104927     1.007825032230
+         H            0.000000000000     0.757365949175     0.520997104927     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
+  Rotational constants: A = 820325.17390  B = 437109.76779  C = 285161.58919 [MHz]
+  Nuclear repulsion =    9.187386457589815
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 3.4230868396E-02.
+  Reciprocal condition number of the overlap matrix is 9.2312643042E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.51052780814436   -7.55105e+01   0.00000e+00 
+   @UHF iter   1:   -75.59297510757604   -8.24473e-02   1.13724e-02 DIIS
+   @UHF iter   2:   -75.62902947039663   -3.60544e-02   3.07775e-03 DIIS
+   @UHF iter   3:   -75.63141603127697   -2.38656e-03   1.08976e-03 DIIS
+   @UHF iter   4:   -75.63180036068542   -3.84329e-04   3.53756e-04 DIIS
+   @UHF iter   5:   -75.63187465929184   -7.42986e-05   1.56819e-04 DIIS
+   @UHF iter   6:   -75.63189525485060   -2.05956e-05   4.78729e-05 DIIS
+   @UHF iter   7:   -75.63189740373730   -2.14889e-06   8.09722e-06 DIIS
+   @UHF iter   8:   -75.63189745376498   -5.00277e-08   1.25103e-06 DIIS
+   @UHF iter   9:   -75.63189745462492   -8.59941e-10   2.49843e-07 DIIS
+   @UHF iter  10:   -75.63189745466293   -3.80140e-11   4.17817e-08 DIIS
+   @UHF iter  11:   -75.63189745466403   -1.09424e-12   7.40709e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   6.087274240E-03
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.560872742E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -21.140116     2A     -1.913841     3A     -1.218289  
+       4A     -1.130152     5A     -1.097762  
+
+    Alpha Virtual:                                                        
+
+       6A     -0.141739     7A     -0.058355     8A      0.392700  
+       9A      0.447053    10A      0.672492    11A      0.714762  
+      12A      0.827147    13A      1.024661    14A      1.039614  
+      15A      1.238674    16A      1.385130    17A      1.531578  
+      18A      1.995638    19A      2.003995    20A      2.722514  
+      21A      2.773398    22A      3.000585    23A      3.326128  
+      24A      3.652695  
+
+    Beta Occupied:                                                        
+
+       1A    -21.095041     2A     -1.757773     3A     -1.180062  
+       4A     -1.045877  
+
+    Beta Virtual:                                                         
+
+       5A     -0.313565     6A     -0.127673     7A     -0.050162  
+       8A      0.391528     9A      0.463531    10A      0.736114  
+      11A      0.844549    12A      0.870042    13A      1.035530  
+      14A      1.070107    15A      1.268969    16A      1.437749  
+      17A      1.528504    18A      2.007227    19A      2.059735  
+      20A      2.826417    21A      2.877972    22A      3.032387  
+      23A      3.404869    24A      3.670432  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     1 ]
+
+  @UHF Final Energy:   -75.63189745466403
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1873864575898150
+    One-Electron Energy =                -118.0596541309884770
+    Two-Electron Energy =                  33.2403702187346326
+    Total Energy =                        -75.6318974546640277
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9991850
+  HONO-1 :    4  A 1.9980710
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0019290
+  LUNO+1 :    7  A 0.0008150
+  LUNO+2 :    8  A 0.0003016
+  LUNO+3 :    9  A 0.0000003
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9765
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.0132
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.9897     Total:     0.9897
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:    -0.0000      Z:     2.5156     Total:     2.5156
+
+
+*** tstop() called on south at Tue Nov 30 13:58:04 2021
+Module time:
+	user time   =       1.18 seconds =       0.02 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       3.45 seconds =       0.06 minutes
+	system time =       1.71 seconds =       0.03 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:04 2021
+
+
+
+  Module OCC Options:
+  ----------------------------------------------------------------------------
+  ACTIVE                        => (empty)          
+  BASIS_RELATIVISTIC            => (empty)          
+  BENCH                         => (empty)          
+  CACHELEVEL                    => (empty)          
+  CCL_ENERGY                    => (empty)          
+  CC_DIIS_MAX_VECS              => (empty)          
+  CC_DIIS_MIN_VECS              => (empty)          
+  CC_MAXITER                    => (empty)          
+  CC_TYPE                       => CONV            !
+  CEPA_OS_SCALE                 => (empty)          
+  CEPA_SOS_SCALE                => (empty)          
+  CEPA_SS_SCALE                 => (empty)          
+  CEPA_TYPE                     => (empty)          
+  CI_TYPE                       => (empty)          
+  CUBEPROP_BASIS_FUNCTIONS      => (empty)          
+  CUBEPROP_FILEPATH             => (empty)          
+  CUBEPROP_ISOCONTOUR_THRESHOLD => (empty)          
+  CUBEPROP_ORBITALS             => (empty)          
+  CUBEPROP_TASKS                => (empty)          
+  CUBIC_BASIS_TOLERANCE         => (empty)          
+  CUBIC_BLOCK_MAX_POINTS        => (empty)          
+  CUBIC_GRID_OVERAGE            => (empty)          
+  CUBIC_GRID_SPACING            => (empty)          
+  CUTOFF                        => (empty)          
+  DEBUG                         => (empty)          
+  DERTYPE                       => (empty)          
+  DF_BASIS_CC                   => (empty)          
+  DIE_IF_NOT_CONVERGED          => (empty)          
+  DIIS_MAX_VECS                 => (empty)          
+  DIIS_MIN_VECS                 => (empty)          
+  DKH_ORDER                     => (empty)          
+  DOCC                          => (empty)          
+  DO_DIIS                       => (empty)          
+  DO_LEVEL_SHIFT                => (empty)          
+  DO_SCS                        => (empty)          
+  DO_SOS                        => (empty)          
+  E3_SCALE                      => (empty)          
+  EA_POLES                      => (empty)          
+  EKT_EA                        => (empty)          
+  EKT_IP                        => (empty)          
+  EP_EA_POLES                   => (empty)          
+  EP_IP_POLES                   => (empty)          
+  EP_MAXITER                    => (empty)          
+  EXTERNAL_POTENTIAL_SYMMETRY   => (empty)          
+  E_CONVERGENCE                 => 1e-09           !
+  FREEZE_CORE                   => TRUE            !
+  FROZEN_DOCC                   => (empty)          
+  FROZEN_UOCC                   => (empty)          
+  INTEGRAL_PACKAGE              => (empty)          
+  IP_POLES                      => (empty)          
+  LEVEL_SHIFT                   => (empty)          
+  LINEQ_SOLVER                  => (empty)          
+  LITERAL_CFOUR                 => (empty)          
+  MAT_NUM_COLUMN_PRINT          => (empty)          
+  MAX_MOGRAD_CONVERGENCE        => (empty)          
+  MAX_RADIAL_MOMENT             => (empty)          
+  MBIS_D_CONVERGENCE            => (empty)          
+  MBIS_MAXITER                  => (empty)          
+  MBIS_PRUNING_SCHEME           => (empty)          
+  MBIS_RADIAL_POINTS            => (empty)          
+  MBIS_SPHERICAL_POINTS         => (empty)          
+  MOGRAD_DAMPING                => (empty)          
+  MOLDEN_WITH_VIRTUAL           => (empty)          
+  MO_DIIS_NUM_VECS              => (empty)          
+  MO_MAXITER                    => (empty)          
+  MO_READ                       => (empty)          
+  MO_STEP_MAX                   => (empty)          
+  MO_WRITE                      => (empty)          
+  MP2_OS_SCALE                  => (empty)          
+  MP2_SOS_SCALE                 => (empty)          
+  MP2_SOS_SCALE2                => (empty)          
+  MP2_SS_SCALE                  => (empty)          
+  MP2_TYPE                      => (empty)          
+  MP_TYPE                       => (empty)          
+  NAT_ORBS                      => (empty)          
+  NUM_FROZEN_DOCC               => (empty)          
+  NUM_FROZEN_UOCC               => (empty)          
+  NUM_GPUS                      => (empty)          
+  OCC_ORBS_PRINT                => (empty)          
+  OEPROP                        => (empty)          
+  OPT_METHOD                    => (empty)          
+  ORB_OPT                       => FALSE           !
+  ORB_RESP_SOLVER               => (empty)          
+  ORTH_TYPE                     => (empty)          
+  OS_SCALE                      => (empty)          
+  PARENT_SYMMETRY               => (empty)          
+  PCG_BETA_TYPE                 => (empty)          
+  PCG_CONVERGENCE               => (empty)          
+  PCG_MAXITER                   => (empty)          
+  PCM                           => (empty)          
+  PE                            => (empty)          
+  PRINT                         => (empty)          
+  PRINT_NOONS                   => (empty)          
+  PROPERTIES                    => (empty)          
+  PROPERTIES_ORIGIN             => (empty)          
+  PUREAM                        => (empty)          
+  QC_MODULE                     => OCC             !
+  RAS1                          => (empty)          
+  RAS2                          => (empty)          
+  RAS3                          => (empty)          
+  RAS4                          => (empty)          
+  RELATIVISTIC                  => (empty)          
+  RELAXED                       => (empty)          
+  REMP_A                        => 0.1             !
+  RESTRICTED_DOCC               => (empty)          
+  RESTRICTED_UOCC               => (empty)          
+  RMS_MOGRAD_CONVERGENCE        => (empty)          
+  R_CONVERGENCE                 => 1e-08           !
+  SCF_TYPE                      => OUT_OF_CORE     !
+  SCS_TYPE                      => (empty)          
+  SOCC                          => (empty)          
+  SOS_TYPE                      => (empty)          
+  SPIN_SCALE_TYPE               => NONE            !
+  SS_SCALE                      => (empty)          
+  SYMMETRIZE                    => (empty)          
+  TPDM_ABCD_TYPE                => (empty)          
+  WFN                           => (empty)          
+  WFN_TYPE                      => REMP            !
+  WRITER_FILE_LABEL             => (empty)          
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                             REMP2  
+                    Program Written by Ugur Bozkaya,
+              Additional Contributions by J. P. Misiewicz
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	MO spaces per irreps... 
+
+	IRREP   FC   AOCC  BOCC  AVIR    BVIR  FV 
+	==========================================
+	   A     1     4     3    19     20     0
+	==========================================
+
+	Computing MP2 energy using SCF MOs (Canonical MP2)... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466403
+	REF Energy (a.u.)                  :   -75.63189745466403
+	Alpha-Alpha Contribution (a.u.)    :    -0.02403737176609
+	Alpha-Beta Contribution (a.u.)     :    -0.11591175599754
+	Beta-Beta Contribution (a.u.)      :    -0.01110284243605
+	Scaled_SS Correlation Energy (a.u.):    -0.01171340473405
+	Scaled_OS Correlation Energy (a.u.):    -0.13909410719705
+	SCS-MP2 Total Energy (a.u.)        :   -75.78270496659512
+	SOS-MP2 Total Energy (a.u.)        :   -75.78258273746083
+	SCSN-MP2 Total Energy (a.u.)       :   -75.69374423165979
+	SCS-MP2-VDW Total Energy (a.u.)    :   -75.79783460944196
+	SOS-PI-MP2 Total Energy (a.u.)     :   -75.79417391306058
+	MP2 Correlation Energy (a.u.)      :    -0.15105197019968
+	MP2 Total Energy (a.u.)            :   -75.78294942486370
+	============================================================================== 
+
+	Using A=      0.1 as REMP mixing parameter
+
+  
+ ============================================================================== 
+ ================ Performing REMP iterations ... ============================== 
+ ============================================================================== 
+
+  Iter    E_corr           E_total            DE           T2 RMS        
+  ----   -------------    ---------------    ----------   ----------    
+   1     -0.1678786742    -75.7997761288     -1.68e-02     1.04e-06 
+   2     -0.1674479525    -75.7993454072      4.31e-04     4.69e-07 
+   3     -0.1672315959    -75.7991290505      2.16e-04     1.58e-07 
+   4     -0.1672074082    -75.7991048629      2.42e-05     4.82e-08 
+   5     -0.1672042183    -75.7991016730      3.19e-06     9.22e-09 
+   6     -0.1672040323    -75.7991014870      1.86e-07     3.00e-09 
+   7     -0.1672039779    -75.7991014325      5.44e-08     1.05e-09 
+   8     -0.1672039975    -75.7991014521     -1.96e-08     3.02e-10 
+   9     -0.1672040089    -75.7991014635     -1.14e-08     7.10e-11 
+  10     -0.1672040063    -75.7991014610      2.54e-09     1.95e-11 
+  11     -0.1672040032    -75.7991014578      3.14e-09     6.89e-12 
+  12     -0.1672040019    -75.7991014565      1.30e-09     3.28e-12 
+  13     -0.1672040013    -75.7991014560      5.34e-10     9.66e-13 
+  14     -0.1672040012    -75.7991014559      9.99e-11     2.61e-13 
+
+ ============================================================================== 
+ ======================== REMP ITERATIONS ARE CONVERGED ======================= 
+ ============================================================================== 
+
+	============================================================================== 
+	================ REMP2 FINAL RESULTS ================================ 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466403
+	REF Energy (a.u.)                  :   -75.63189745466403
+	Alpha-Alpha Contribution (a.u.)    :    -0.02356979156837
+	Alpha-Beta Contribution (a.u.)     :    -0.13306195324279
+	Beta-Beta Contribution (a.u.)      :    -0.01057225642664
+	REMP Correlation Energy (a.u.)     :    -0.16720400123781
+	REMP Total Energy (a.u.)           :   -75.79910145590183
+	============================================================================== 
+
+
+*** tstop() called on south at Tue Nov 30 13:58:04 2021
+Module time:
+	user time   =       0.78 seconds =       0.01 minutes
+	system time =       0.68 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       4.23 seconds =       0.07 minutes
+	system time =       2.39 seconds =       0.04 minutes
+	total time  =          2 seconds =       0.03 minutes
+    REMP(0.10) Total Energy...............................................................PASSED
+
+Scratch directory: /scr/behnle/
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:04 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065655108083    15.994914619570
+         H            0.000000000000    -0.757365949175     0.520997104927     1.007825032230
+         H            0.000000000000     0.757365949175     0.520997104927     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
+  Rotational constants: A = 820325.17390  B = 437109.76779  C = 285161.58919 [MHz]
+  Nuclear repulsion =    9.187386457589815
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 3.4230868396E-02.
+  Reciprocal condition number of the overlap matrix is 9.2312643042E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.51052780814442   -7.55105e+01   0.00000e+00 
+   @UHF iter   1:   -75.59297510757604   -8.24473e-02   1.13724e-02 DIIS
+   @UHF iter   2:   -75.62902947039660   -3.60544e-02   3.07775e-03 DIIS
+   @UHF iter   3:   -75.63141603127698   -2.38656e-03   1.08976e-03 DIIS
+   @UHF iter   4:   -75.63180036068542   -3.84329e-04   3.53756e-04 DIIS
+   @UHF iter   5:   -75.63187465929184   -7.42986e-05   1.56819e-04 DIIS
+   @UHF iter   6:   -75.63189525485063   -2.05956e-05   4.78729e-05 DIIS
+   @UHF iter   7:   -75.63189740373726   -2.14889e-06   8.09722e-06 DIIS
+   @UHF iter   8:   -75.63189745376495   -5.00277e-08   1.25103e-06 DIIS
+   @UHF iter   9:   -75.63189745462483   -8.59885e-10   2.49843e-07 DIIS
+   @UHF iter  10:   -75.63189745466293   -3.80993e-11   4.17817e-08 DIIS
+   @UHF iter  11:   -75.63189745466404   -1.10845e-12   7.40709e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   6.087274240E-03
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.560872742E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -21.140116     2A     -1.913841     3A     -1.218289  
+       4A     -1.130152     5A     -1.097762  
+
+    Alpha Virtual:                                                        
+
+       6A     -0.141739     7A     -0.058355     8A      0.392700  
+       9A      0.447053    10A      0.672492    11A      0.714762  
+      12A      0.827147    13A      1.024661    14A      1.039614  
+      15A      1.238674    16A      1.385130    17A      1.531578  
+      18A      1.995638    19A      2.003995    20A      2.722514  
+      21A      2.773398    22A      3.000585    23A      3.326128  
+      24A      3.652695  
+
+    Beta Occupied:                                                        
+
+       1A    -21.095041     2A     -1.757773     3A     -1.180062  
+       4A     -1.045877  
+
+    Beta Virtual:                                                         
+
+       5A     -0.313565     6A     -0.127673     7A     -0.050162  
+       8A      0.391528     9A      0.463531    10A      0.736114  
+      11A      0.844549    12A      0.870042    13A      1.035530  
+      14A      1.070107    15A      1.268969    16A      1.437749  
+      17A      1.528504    18A      2.007227    19A      2.059735  
+      20A      2.826417    21A      2.877972    22A      3.032387  
+      23A      3.404869    24A      3.670432  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     1 ]
+
+  @UHF Final Energy:   -75.63189745466404
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1873864575898150
+    One-Electron Energy =                -118.0596541309883492
+    Two-Electron Energy =                  33.2403702187344976
+    Total Energy =                        -75.6318974546640419
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9991850
+  HONO-1 :    4  A 1.9980710
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0019290
+  LUNO+1 :    7  A 0.0008150
+  LUNO+2 :    8  A 0.0003016
+  LUNO+3 :    9  A 0.0000003
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9765
+
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.0132
+
+  Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.9897     Total:     0.9897
+
+  Dipole Moment: [D]
+     X:    -0.0000      Y:     0.0000      Z:     2.5156     Total:     2.5156
+
+
+*** tstop() called on south at Tue Nov 30 13:58:05 2021
+Module time:
+	user time   =       2.25 seconds =       0.04 minutes
+	system time =       0.56 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       6.51 seconds =       0.11 minutes
+	system time =       2.96 seconds =       0.05 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:05 2021
+
+
+
+  Module OCC Options:
+  ----------------------------------------------------------------------------
+  ACTIVE                        => (empty)          
+  BASIS_RELATIVISTIC            => (empty)          
+  BENCH                         => (empty)          
+  CACHELEVEL                    => (empty)          
+  CCL_ENERGY                    => (empty)          
+  CC_DIIS_MAX_VECS              => (empty)          
+  CC_DIIS_MIN_VECS              => (empty)          
+  CC_MAXITER                    => (empty)          
+  CC_TYPE                       => CONV            !
+  CEPA_OS_SCALE                 => (empty)          
+  CEPA_SOS_SCALE                => (empty)          
+  CEPA_SS_SCALE                 => (empty)          
+  CEPA_TYPE                     => (empty)          
+  CI_TYPE                       => (empty)          
+  CUBEPROP_BASIS_FUNCTIONS      => (empty)          
+  CUBEPROP_FILEPATH             => (empty)          
+  CUBEPROP_ISOCONTOUR_THRESHOLD => (empty)          
+  CUBEPROP_ORBITALS             => (empty)          
+  CUBEPROP_TASKS                => (empty)          
+  CUBIC_BASIS_TOLERANCE         => (empty)          
+  CUBIC_BLOCK_MAX_POINTS        => (empty)          
+  CUBIC_GRID_OVERAGE            => (empty)          
+  CUBIC_GRID_SPACING            => (empty)          
+  CUTOFF                        => (empty)          
+  DEBUG                         => (empty)          
+  DERTYPE                       => (empty)          
+  DF_BASIS_CC                   => (empty)          
+  DIE_IF_NOT_CONVERGED          => (empty)          
+  DIIS_MAX_VECS                 => (empty)          
+  DIIS_MIN_VECS                 => (empty)          
+  DKH_ORDER                     => (empty)          
+  DOCC                          => (empty)          
+  DO_DIIS                       => (empty)          
+  DO_LEVEL_SHIFT                => (empty)          
+  DO_SCS                        => (empty)          
+  DO_SOS                        => (empty)          
+  E3_SCALE                      => (empty)          
+  EA_POLES                      => (empty)          
+  EKT_EA                        => (empty)          
+  EKT_IP                        => (empty)          
+  EP_EA_POLES                   => (empty)          
+  EP_IP_POLES                   => (empty)          
+  EP_MAXITER                    => (empty)          
+  EXTERNAL_POTENTIAL_SYMMETRY   => (empty)          
+  E_CONVERGENCE                 => 1e-09           !
+  FREEZE_CORE                   => TRUE            !
+  FROZEN_DOCC                   => (empty)          
+  FROZEN_UOCC                   => (empty)          
+  INTEGRAL_PACKAGE              => (empty)          
+  IP_POLES                      => (empty)          
+  LEVEL_SHIFT                   => (empty)          
+  LINEQ_SOLVER                  => (empty)          
+  LITERAL_CFOUR                 => (empty)          
+  MAT_NUM_COLUMN_PRINT          => (empty)          
+  MAX_MOGRAD_CONVERGENCE        => (empty)          
+  MAX_RADIAL_MOMENT             => (empty)          
+  MBIS_D_CONVERGENCE            => (empty)          
+  MBIS_MAXITER                  => (empty)          
+  MBIS_PRUNING_SCHEME           => (empty)          
+  MBIS_RADIAL_POINTS            => (empty)          
+  MBIS_SPHERICAL_POINTS         => (empty)          
+  MOGRAD_DAMPING                => (empty)          
+  MOLDEN_WITH_VIRTUAL           => (empty)          
+  MO_DIIS_NUM_VECS              => (empty)          
+  MO_MAXITER                    => (empty)          
+  MO_READ                       => (empty)          
+  MO_STEP_MAX                   => (empty)          
+  MO_WRITE                      => (empty)          
+  MP2_OS_SCALE                  => (empty)          
+  MP2_SOS_SCALE                 => (empty)          
+  MP2_SOS_SCALE2                => (empty)          
+  MP2_SS_SCALE                  => (empty)          
+  MP2_TYPE                      => (empty)          
+  MP_TYPE                       => (empty)          
+  NAT_ORBS                      => (empty)          
+  NUM_FROZEN_DOCC               => (empty)          
+  NUM_FROZEN_UOCC               => (empty)          
+  NUM_GPUS                      => (empty)          
+  OCC_ORBS_PRINT                => (empty)          
+  OEPROP                        => (empty)          
+  OPT_METHOD                    => (empty)          
+  ORB_OPT                       => FALSE           !
+  ORB_RESP_SOLVER               => (empty)          
+  ORTH_TYPE                     => (empty)          
+  OS_SCALE                      => (empty)          
+  PARENT_SYMMETRY               => (empty)          
+  PCG_BETA_TYPE                 => (empty)          
+  PCG_CONVERGENCE               => (empty)          
+  PCG_MAXITER                   => (empty)          
+  PCM                           => (empty)          
+  PE                            => (empty)          
+  PRINT                         => (empty)          
+  PRINT_NOONS                   => (empty)          
+  PROPERTIES                    => (empty)          
+  PROPERTIES_ORIGIN             => (empty)          
+  PUREAM                        => (empty)          
+  QC_MODULE                     => OCC             !
+  RAS1                          => (empty)          
+  RAS2                          => (empty)          
+  RAS3                          => (empty)          
+  RAS4                          => (empty)          
+  RELATIVISTIC                  => (empty)          
+  RELAXED                       => (empty)          
+  REMP_A                        => 0.2             !
+  RESTRICTED_DOCC               => (empty)          
+  RESTRICTED_UOCC               => (empty)          
+  RMS_MOGRAD_CONVERGENCE        => (empty)          
+  R_CONVERGENCE                 => 1e-08           !
+  SCF_TYPE                      => OUT_OF_CORE     !
+  SCS_TYPE                      => (empty)          
+  SOCC                          => (empty)          
+  SOS_TYPE                      => (empty)          
+  SPIN_SCALE_TYPE               => NONE            !
+  SS_SCALE                      => (empty)          
+  SYMMETRIZE                    => (empty)          
+  TPDM_ABCD_TYPE                => (empty)          
+  WFN                           => (empty)          
+  WFN_TYPE                      => REMP            !
+  WRITER_FILE_LABEL             => (empty)          
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                             REMP2  
+                    Program Written by Ugur Bozkaya,
+              Additional Contributions by J. P. Misiewicz
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	MO spaces per irreps... 
+
+	IRREP   FC   AOCC  BOCC  AVIR    BVIR  FV 
+	==========================================
+	   A     1     4     3    19     20     0
+	==========================================
+
+	Computing MP2 energy using SCF MOs (Canonical MP2)... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466404
+	REF Energy (a.u.)                  :   -75.63189745466404
+	Alpha-Alpha Contribution (a.u.)    :    -0.02403737176609
+	Alpha-Beta Contribution (a.u.)     :    -0.11591175599754
+	Beta-Beta Contribution (a.u.)      :    -0.01110284243605
+	Scaled_SS Correlation Energy (a.u.):    -0.01171340473405
+	Scaled_OS Correlation Energy (a.u.):    -0.13909410719705
+	SCS-MP2 Total Energy (a.u.)        :   -75.78270496659513
+	SOS-MP2 Total Energy (a.u.)        :   -75.78258273746084
+	SCSN-MP2 Total Energy (a.u.)       :   -75.69374423165981
+	SCS-MP2-VDW Total Energy (a.u.)    :   -75.79783460944198
+	SOS-PI-MP2 Total Energy (a.u.)     :   -75.79417391306060
+	MP2 Correlation Energy (a.u.)      :    -0.15105197019968
+	MP2 Total Energy (a.u.)            :   -75.78294942486372
+	============================================================================== 
+
+	Using A=      0.2 as REMP mixing parameter
+
+  
+ ============================================================================== 
+ ================ Performing REMP iterations ... ============================== 
+ ============================================================================== 
+
+  Iter    E_corr           E_total            DE           T2 RMS        
+  ----   -------------    ---------------    ----------   ----------    
+   1     -0.1654093311    -75.7973067858     -1.44e-02     9.41e-07 
+   2     -0.1650505614    -75.7969480161      3.59e-04     3.58e-07 
+   3     -0.1649054089    -75.7968028636      1.45e-04     9.90e-08 
+   4     -0.1648934416    -75.7967908962      1.20e-05     2.60e-08 
+   5     -0.1648922878    -75.7967897425      1.15e-06     4.10e-09 
+   6     -0.1648922220    -75.7967896766      6.58e-08     1.11e-09 
+   7     -0.1648922031    -75.7967896578      1.89e-08     3.30e-10 
+   8     -0.1648922079    -75.7967896626     -4.79e-09     8.18e-11 
+   9     -0.1648922103    -75.7967896649     -2.38e-09     1.62e-11 
+  10     -0.1648922096    -75.7967896643      6.39e-10     3.83e-12 
+  11     -0.1648922091    -75.7967896637      5.66e-10     1.16e-12 
+  12     -0.1648922089    -75.7967896635      1.91e-10     4.72e-13 
+
+ ============================================================================== 
+ ======================== REMP ITERATIONS ARE CONVERGED ======================= 
+ ============================================================================== 
+
+	============================================================================== 
+	================ REMP2 FINAL RESULTS ================================ 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466404
+	REF Energy (a.u.)                  :   -75.63189745466404
+	Alpha-Alpha Contribution (a.u.)    :    -0.02369492881558
+	Alpha-Beta Contribution (a.u.)     :    -0.13051319175142
+	Beta-Beta Contribution (a.u.)      :    -0.01068408830166
+	REMP Correlation Energy (a.u.)     :    -0.16489220886866
+	REMP Total Energy (a.u.)           :   -75.79678966353271
+	============================================================================== 
+
+
+*** tstop() called on south at Tue Nov 30 13:58:06 2021
+Module time:
+	user time   =       0.67 seconds =       0.01 minutes
+	system time =       0.60 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       7.19 seconds =       0.12 minutes
+	system time =       3.56 seconds =       0.06 minutes
+	total time  =          4 seconds =       0.07 minutes
+    REMP(0.20) Total Energy...............................................................PASSED
+
+Scratch directory: /scr/behnle/
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:06 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065655108083    15.994914619570
+         H            0.000000000000    -0.757365949175     0.520997104927     1.007825032230
+         H            0.000000000000     0.757365949175     0.520997104927     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
+  Rotational constants: A = 820325.17390  B = 437109.76779  C = 285161.58919 [MHz]
+  Nuclear repulsion =    9.187386457589815
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 3.4230868396E-02.
+  Reciprocal condition number of the overlap matrix is 9.2312643042E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.51052780814439   -7.55105e+01   0.00000e+00 
+   @UHF iter   1:   -75.59297510757608   -8.24473e-02   1.13724e-02 DIIS
+   @UHF iter   2:   -75.62902947039663   -3.60544e-02   3.07775e-03 DIIS
+   @UHF iter   3:   -75.63141603127707   -2.38656e-03   1.08976e-03 DIIS
+   @UHF iter   4:   -75.63180036068539   -3.84329e-04   3.53756e-04 DIIS
+   @UHF iter   5:   -75.63187465929184   -7.42986e-05   1.56819e-04 DIIS
+   @UHF iter   6:   -75.63189525485058   -2.05956e-05   4.78729e-05 DIIS
+   @UHF iter   7:   -75.63189740373730   -2.14889e-06   8.09722e-06 DIIS
+   @UHF iter   8:   -75.63189745376498   -5.00277e-08   1.25103e-06 DIIS
+   @UHF iter   9:   -75.63189745462491   -8.59927e-10   2.49843e-07 DIIS
+   @UHF iter  10:   -75.63189745466291   -3.79998e-11   4.17817e-08 DIIS
+   @UHF iter  11:   -75.63189745466404   -1.13687e-12   7.40709e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   6.087274240E-03
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.560872742E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -21.140116     2A     -1.913841     3A     -1.218289  
+       4A     -1.130152     5A     -1.097762  
+
+    Alpha Virtual:                                                        
+
+       6A     -0.141739     7A     -0.058355     8A      0.392700  
+       9A      0.447053    10A      0.672492    11A      0.714762  
+      12A      0.827147    13A      1.024661    14A      1.039614  
+      15A      1.238674    16A      1.385130    17A      1.531578  
+      18A      1.995638    19A      2.003995    20A      2.722514  
+      21A      2.773398    22A      3.000585    23A      3.326128  
+      24A      3.652695  
+
+    Beta Occupied:                                                        
+
+       1A    -21.095041     2A     -1.757773     3A     -1.180062  
+       4A     -1.045877  
+
+    Beta Virtual:                                                         
+
+       5A     -0.313565     6A     -0.127673     7A     -0.050162  
+       8A      0.391528     9A      0.463531    10A      0.736114  
+      11A      0.844549    12A      0.870042    13A      1.035530  
+      14A      1.070107    15A      1.268969    16A      1.437749  
+      17A      1.528504    18A      2.007227    19A      2.059735  
+      20A      2.826417    21A      2.877972    22A      3.032387  
+      23A      3.404869    24A      3.670432  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     1 ]
+
+  @UHF Final Energy:   -75.63189745466404
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1873864575898150
+    One-Electron Energy =                -118.0596541309883349
+    Two-Electron Energy =                  33.2403702187344976
+    Total Energy =                        -75.6318974546640277
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9991850
+  HONO-1 :    4  A 1.9980710
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0019290
+  LUNO+1 :    7  A 0.0008150
+  LUNO+2 :    8  A 0.0003016
+  LUNO+3 :    9  A 0.0000003
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9765
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0132
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9897     Total:     0.9897
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.5156     Total:     2.5156
+
+
+*** tstop() called on south at Tue Nov 30 13:58:06 2021
+Module time:
+	user time   =       1.18 seconds =       0.02 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       8.40 seconds =       0.14 minutes
+	system time =       3.91 seconds =       0.07 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:06 2021
+
+
+
+  Module OCC Options:
+  ----------------------------------------------------------------------------
+  ACTIVE                        => (empty)          
+  BASIS_RELATIVISTIC            => (empty)          
+  BENCH                         => (empty)          
+  CACHELEVEL                    => (empty)          
+  CCL_ENERGY                    => (empty)          
+  CC_DIIS_MAX_VECS              => (empty)          
+  CC_DIIS_MIN_VECS              => (empty)          
+  CC_MAXITER                    => (empty)          
+  CC_TYPE                       => CONV            !
+  CEPA_OS_SCALE                 => (empty)          
+  CEPA_SOS_SCALE                => (empty)          
+  CEPA_SS_SCALE                 => (empty)          
+  CEPA_TYPE                     => (empty)          
+  CI_TYPE                       => (empty)          
+  CUBEPROP_BASIS_FUNCTIONS      => (empty)          
+  CUBEPROP_FILEPATH             => (empty)          
+  CUBEPROP_ISOCONTOUR_THRESHOLD => (empty)          
+  CUBEPROP_ORBITALS             => (empty)          
+  CUBEPROP_TASKS                => (empty)          
+  CUBIC_BASIS_TOLERANCE         => (empty)          
+  CUBIC_BLOCK_MAX_POINTS        => (empty)          
+  CUBIC_GRID_OVERAGE            => (empty)          
+  CUBIC_GRID_SPACING            => (empty)          
+  CUTOFF                        => (empty)          
+  DEBUG                         => (empty)          
+  DERTYPE                       => (empty)          
+  DF_BASIS_CC                   => (empty)          
+  DIE_IF_NOT_CONVERGED          => (empty)          
+  DIIS_MAX_VECS                 => (empty)          
+  DIIS_MIN_VECS                 => (empty)          
+  DKH_ORDER                     => (empty)          
+  DOCC                          => (empty)          
+  DO_DIIS                       => (empty)          
+  DO_LEVEL_SHIFT                => (empty)          
+  DO_SCS                        => (empty)          
+  DO_SOS                        => (empty)          
+  E3_SCALE                      => (empty)          
+  EA_POLES                      => (empty)          
+  EKT_EA                        => (empty)          
+  EKT_IP                        => (empty)          
+  EP_EA_POLES                   => (empty)          
+  EP_IP_POLES                   => (empty)          
+  EP_MAXITER                    => (empty)          
+  EXTERNAL_POTENTIAL_SYMMETRY   => (empty)          
+  E_CONVERGENCE                 => 1e-09           !
+  FREEZE_CORE                   => TRUE            !
+  FROZEN_DOCC                   => (empty)          
+  FROZEN_UOCC                   => (empty)          
+  INTEGRAL_PACKAGE              => (empty)          
+  IP_POLES                      => (empty)          
+  LEVEL_SHIFT                   => (empty)          
+  LINEQ_SOLVER                  => (empty)          
+  LITERAL_CFOUR                 => (empty)          
+  MAT_NUM_COLUMN_PRINT          => (empty)          
+  MAX_MOGRAD_CONVERGENCE        => (empty)          
+  MAX_RADIAL_MOMENT             => (empty)          
+  MBIS_D_CONVERGENCE            => (empty)          
+  MBIS_MAXITER                  => (empty)          
+  MBIS_PRUNING_SCHEME           => (empty)          
+  MBIS_RADIAL_POINTS            => (empty)          
+  MBIS_SPHERICAL_POINTS         => (empty)          
+  MOGRAD_DAMPING                => (empty)          
+  MOLDEN_WITH_VIRTUAL           => (empty)          
+  MO_DIIS_NUM_VECS              => (empty)          
+  MO_MAXITER                    => (empty)          
+  MO_READ                       => (empty)          
+  MO_STEP_MAX                   => (empty)          
+  MO_WRITE                      => (empty)          
+  MP2_OS_SCALE                  => (empty)          
+  MP2_SOS_SCALE                 => (empty)          
+  MP2_SOS_SCALE2                => (empty)          
+  MP2_SS_SCALE                  => (empty)          
+  MP2_TYPE                      => (empty)          
+  MP_TYPE                       => (empty)          
+  NAT_ORBS                      => (empty)          
+  NUM_FROZEN_DOCC               => (empty)          
+  NUM_FROZEN_UOCC               => (empty)          
+  NUM_GPUS                      => (empty)          
+  OCC_ORBS_PRINT                => (empty)          
+  OEPROP                        => (empty)          
+  OPT_METHOD                    => (empty)          
+  ORB_OPT                       => FALSE           !
+  ORB_RESP_SOLVER               => (empty)          
+  ORTH_TYPE                     => (empty)          
+  OS_SCALE                      => (empty)          
+  PARENT_SYMMETRY               => (empty)          
+  PCG_BETA_TYPE                 => (empty)          
+  PCG_CONVERGENCE               => (empty)          
+  PCG_MAXITER                   => (empty)          
+  PCM                           => (empty)          
+  PE                            => (empty)          
+  PRINT                         => (empty)          
+  PRINT_NOONS                   => (empty)          
+  PROPERTIES                    => (empty)          
+  PROPERTIES_ORIGIN             => (empty)          
+  PUREAM                        => (empty)          
+  QC_MODULE                     => OCC             !
+  RAS1                          => (empty)          
+  RAS2                          => (empty)          
+  RAS3                          => (empty)          
+  RAS4                          => (empty)          
+  RELATIVISTIC                  => (empty)          
+  RELAXED                       => (empty)          
+  REMP_A                        => 0.3             !
+  RESTRICTED_DOCC               => (empty)          
+  RESTRICTED_UOCC               => (empty)          
+  RMS_MOGRAD_CONVERGENCE        => (empty)          
+  R_CONVERGENCE                 => 1e-08           !
+  SCF_TYPE                      => OUT_OF_CORE     !
+  SCS_TYPE                      => (empty)          
+  SOCC                          => (empty)          
+  SOS_TYPE                      => (empty)          
+  SPIN_SCALE_TYPE               => NONE            !
+  SS_SCALE                      => (empty)          
+  SYMMETRIZE                    => (empty)          
+  TPDM_ABCD_TYPE                => (empty)          
+  WFN                           => (empty)          
+  WFN_TYPE                      => REMP            !
+  WRITER_FILE_LABEL             => (empty)          
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                             REMP2  
+                    Program Written by Ugur Bozkaya,
+              Additional Contributions by J. P. Misiewicz
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	MO spaces per irreps... 
+
+	IRREP   FC   AOCC  BOCC  AVIR    BVIR  FV 
+	==========================================
+	   A     1     4     3    19     20     0
+	==========================================
+
+	Computing MP2 energy using SCF MOs (Canonical MP2)... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466404
+	REF Energy (a.u.)                  :   -75.63189745466404
+	Alpha-Alpha Contribution (a.u.)    :    -0.02403737176609
+	Alpha-Beta Contribution (a.u.)     :    -0.11591175599754
+	Beta-Beta Contribution (a.u.)      :    -0.01110284243605
+	Scaled_SS Correlation Energy (a.u.):    -0.01171340473405
+	Scaled_OS Correlation Energy (a.u.):    -0.13909410719705
+	SCS-MP2 Total Energy (a.u.)        :   -75.78270496659513
+	SOS-MP2 Total Energy (a.u.)        :   -75.78258273746084
+	SCSN-MP2 Total Energy (a.u.)       :   -75.69374423165981
+	SCS-MP2-VDW Total Energy (a.u.)    :   -75.79783460944198
+	SOS-PI-MP2 Total Energy (a.u.)     :   -75.79417391306059
+	MP2 Correlation Energy (a.u.)      :    -0.15105197019968
+	MP2 Total Energy (a.u.)            :   -75.78294942486372
+	============================================================================== 
+
+	Using A=      0.3 as REMP mixing parameter
+
+  
+ ============================================================================== 
+ ================ Performing REMP iterations ... ============================== 
+ ============================================================================== 
+
+  Iter    E_corr           E_total            DE           T2 RMS        
+  ----   -------------    ---------------    ----------   ----------    
+   1     -0.1631621790    -75.7950596336     -1.21e-02     8.68e-07 
+   2     -0.1628655753    -75.7947630300      2.97e-04     2.78e-07 
+   3     -0.1627689517    -75.7946664063      9.66e-05     6.22e-08 
+   4     -0.1627630204    -75.7946604751      5.93e-06     1.38e-08 
+   5     -0.1627626121    -75.7946600668      4.08e-07     1.79e-09 
+   6     -0.1627625889    -75.7946600435      2.32e-08     4.00e-10 
+   7     -0.1627625827    -75.7946600373      6.20e-09     9.99e-11 
+   8     -0.1627625838    -75.7946600385     -1.12e-09     2.11e-11 
+   9     -0.1627625843    -75.7946600389     -4.66e-10     3.46e-12 
+
+ ============================================================================== 
+ ======================== REMP ITERATIONS ARE CONVERGED ======================= 
+ ============================================================================== 
+
+	============================================================================== 
+	================ REMP2 FINAL RESULTS ================================ 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466404
+	REF Energy (a.u.)                  :   -75.63189745466404
+	Alpha-Alpha Contribution (a.u.)    :    -0.02379427247760
+	Alpha-Beta Contribution (a.u.)     :    -0.12819125608449
+	Beta-Beta Contribution (a.u.)      :    -0.01077705570205
+	REMP Correlation Energy (a.u.)     :    -0.16276258426414
+	REMP Total Energy (a.u.)           :   -75.79466003892819
+	============================================================================== 
+
+
+*** tstop() called on south at Tue Nov 30 13:58:07 2021
+Module time:
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.45 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       8.89 seconds =       0.15 minutes
+	system time =       4.36 seconds =       0.07 minutes
+	total time  =          5 seconds =       0.08 minutes
+    REMP(0.30) Total Energy...............................................................PASSED
+
+Scratch directory: /scr/behnle/
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:07 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065655108083    15.994914619570
+         H            0.000000000000    -0.757365949175     0.520997104927     1.007825032230
+         H            0.000000000000     0.757365949175     0.520997104927     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
+  Rotational constants: A = 820325.17390  B = 437109.76779  C = 285161.58919 [MHz]
+  Nuclear repulsion =    9.187386457589815
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-09
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 3.4230868396E-02.
+  Reciprocal condition number of the overlap matrix is 9.2312643042E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -75.51052780814439   -7.55105e+01   0.00000e+00 
+   @UHF iter   1:   -75.59297510757605   -8.24473e-02   1.13724e-02 DIIS
+   @UHF iter   2:   -75.62902947039663   -3.60544e-02   3.07775e-03 DIIS
+   @UHF iter   3:   -75.63141603127698   -2.38656e-03   1.08976e-03 DIIS
+   @UHF iter   4:   -75.63180036068542   -3.84329e-04   3.53756e-04 DIIS
+   @UHF iter   5:   -75.63187465929180   -7.42986e-05   1.56819e-04 DIIS
+   @UHF iter   6:   -75.63189525485063   -2.05956e-05   4.78729e-05 DIIS
+   @UHF iter   7:   -75.63189740373730   -2.14889e-06   8.09722e-06 DIIS
+   @UHF iter   8:   -75.63189745376495   -5.00277e-08   1.25103e-06 DIIS
+   @UHF iter   9:   -75.63189745462491   -8.59956e-10   2.49843e-07 DIIS
+   @UHF iter  10:   -75.63189745466288   -3.79714e-11   4.17817e-08 DIIS
+   @UHF iter  11:   -75.63189745466406   -1.17950e-12   7.40709e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   6.087274240E-03
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.560872742E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -21.140116     2A     -1.913841     3A     -1.218289  
+       4A     -1.130152     5A     -1.097762  
+
+    Alpha Virtual:                                                        
+
+       6A     -0.141739     7A     -0.058355     8A      0.392700  
+       9A      0.447053    10A      0.672492    11A      0.714762  
+      12A      0.827147    13A      1.024661    14A      1.039614  
+      15A      1.238674    16A      1.385130    17A      1.531578  
+      18A      1.995638    19A      2.003995    20A      2.722514  
+      21A      2.773398    22A      3.000585    23A      3.326128  
+      24A      3.652695  
+
+    Beta Occupied:                                                        
+
+       1A    -21.095041     2A     -1.757773     3A     -1.180062  
+       4A     -1.045877  
+
+    Beta Virtual:                                                         
+
+       5A     -0.313565     6A     -0.127673     7A     -0.050162  
+       8A      0.391528     9A      0.463531    10A      0.736114  
+      11A      0.844549    12A      0.870042    13A      1.035530  
+      14A      1.070107    15A      1.268969    16A      1.437749  
+      17A      1.528504    18A      2.007227    19A      2.059735  
+      20A      2.826417    21A      2.877972    22A      3.032387  
+      23A      3.404869    24A      3.670432  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     1 ]
+
+  @UHF Final Energy:   -75.63189745466406
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1873864575898150
+    One-Electron Energy =                -118.0596541309884202
+    Two-Electron Energy =                  33.2403702187345687
+    Total Energy =                        -75.6318974546640419
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9991850
+  HONO-1 :    4  A 1.9980710
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0019290
+  LUNO+1 :    7  A 0.0008150
+  LUNO+2 :    8  A 0.0003016
+  LUNO+3 :    9  A 0.0000003
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9765
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0132
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9897     Total:     0.9897
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.5156     Total:     2.5156
+
+
+*** tstop() called on south at Tue Nov 30 13:58:07 2021
+Module time:
+	user time   =       1.43 seconds =       0.02 minutes
+	system time =       0.54 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =      10.34 seconds =       0.17 minutes
+	system time =       4.92 seconds =       0.08 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** tstart() called on south
+*** at Tue Nov 30 13:58:07 2021
+
+
+
+  Module OCC Options:
+  ----------------------------------------------------------------------------
+  ACTIVE                        => (empty)          
+  BASIS_RELATIVISTIC            => (empty)          
+  BENCH                         => (empty)          
+  CACHELEVEL                    => (empty)          
+  CCL_ENERGY                    => (empty)          
+  CC_DIIS_MAX_VECS              => (empty)          
+  CC_DIIS_MIN_VECS              => (empty)          
+  CC_MAXITER                    => (empty)          
+  CC_TYPE                       => CONV            !
+  CEPA_OS_SCALE                 => (empty)          
+  CEPA_SOS_SCALE                => (empty)          
+  CEPA_SS_SCALE                 => (empty)          
+  CEPA_TYPE                     => (empty)          
+  CI_TYPE                       => (empty)          
+  CUBEPROP_BASIS_FUNCTIONS      => (empty)          
+  CUBEPROP_FILEPATH             => (empty)          
+  CUBEPROP_ISOCONTOUR_THRESHOLD => (empty)          
+  CUBEPROP_ORBITALS             => (empty)          
+  CUBEPROP_TASKS                => (empty)          
+  CUBIC_BASIS_TOLERANCE         => (empty)          
+  CUBIC_BLOCK_MAX_POINTS        => (empty)          
+  CUBIC_GRID_OVERAGE            => (empty)          
+  CUBIC_GRID_SPACING            => (empty)          
+  CUTOFF                        => (empty)          
+  DEBUG                         => (empty)          
+  DERTYPE                       => (empty)          
+  DF_BASIS_CC                   => (empty)          
+  DIE_IF_NOT_CONVERGED          => (empty)          
+  DIIS_MAX_VECS                 => (empty)          
+  DIIS_MIN_VECS                 => (empty)          
+  DKH_ORDER                     => (empty)          
+  DOCC                          => (empty)          
+  DO_DIIS                       => (empty)          
+  DO_LEVEL_SHIFT                => (empty)          
+  DO_SCS                        => (empty)          
+  DO_SOS                        => (empty)          
+  E3_SCALE                      => (empty)          
+  EA_POLES                      => (empty)          
+  EKT_EA                        => (empty)          
+  EKT_IP                        => (empty)          
+  EP_EA_POLES                   => (empty)          
+  EP_IP_POLES                   => (empty)          
+  EP_MAXITER                    => (empty)          
+  EXTERNAL_POTENTIAL_SYMMETRY   => (empty)          
+  E_CONVERGENCE                 => 1e-09           !
+  FREEZE_CORE                   => TRUE            !
+  FROZEN_DOCC                   => (empty)          
+  FROZEN_UOCC                   => (empty)          
+  INTEGRAL_PACKAGE              => (empty)          
+  IP_POLES                      => (empty)          
+  LEVEL_SHIFT                   => (empty)          
+  LINEQ_SOLVER                  => (empty)          
+  LITERAL_CFOUR                 => (empty)          
+  MAT_NUM_COLUMN_PRINT          => (empty)          
+  MAX_MOGRAD_CONVERGENCE        => (empty)          
+  MAX_RADIAL_MOMENT             => (empty)          
+  MBIS_D_CONVERGENCE            => (empty)          
+  MBIS_MAXITER                  => (empty)          
+  MBIS_PRUNING_SCHEME           => (empty)          
+  MBIS_RADIAL_POINTS            => (empty)          
+  MBIS_SPHERICAL_POINTS         => (empty)          
+  MOGRAD_DAMPING                => (empty)          
+  MOLDEN_WITH_VIRTUAL           => (empty)          
+  MO_DIIS_NUM_VECS              => (empty)          
+  MO_MAXITER                    => (empty)          
+  MO_READ                       => (empty)          
+  MO_STEP_MAX                   => (empty)          
+  MO_WRITE                      => (empty)          
+  MP2_OS_SCALE                  => (empty)          
+  MP2_SOS_SCALE                 => (empty)          
+  MP2_SOS_SCALE2                => (empty)          
+  MP2_SS_SCALE                  => (empty)          
+  MP2_TYPE                      => (empty)          
+  MP_TYPE                       => (empty)          
+  NAT_ORBS                      => (empty)          
+  NUM_FROZEN_DOCC               => (empty)          
+  NUM_FROZEN_UOCC               => (empty)          
+  NUM_GPUS                      => (empty)          
+  OCC_ORBS_PRINT                => (empty)          
+  OEPROP                        => (empty)          
+  OPT_METHOD                    => (empty)          
+  ORB_OPT                       => FALSE           !
+  ORB_RESP_SOLVER               => (empty)          
+  ORTH_TYPE                     => (empty)          
+  OS_SCALE                      => (empty)          
+  PARENT_SYMMETRY               => (empty)          
+  PCG_BETA_TYPE                 => (empty)          
+  PCG_CONVERGENCE               => (empty)          
+  PCG_MAXITER                   => (empty)          
+  PCM                           => (empty)          
+  PE                            => (empty)          
+  PRINT                         => (empty)          
+  PRINT_NOONS                   => (empty)          
+  PROPERTIES                    => (empty)          
+  PROPERTIES_ORIGIN             => (empty)          
+  PUREAM                        => (empty)          
+  QC_MODULE                     => OCC             !
+  RAS1                          => (empty)          
+  RAS2                          => (empty)          
+  RAS3                          => (empty)          
+  RAS4                          => (empty)          
+  RELATIVISTIC                  => (empty)          
+  RELAXED                       => (empty)          
+  REMP_A                        => 1               !
+  RESTRICTED_DOCC               => (empty)          
+  RESTRICTED_UOCC               => (empty)          
+  RMS_MOGRAD_CONVERGENCE        => (empty)          
+  R_CONVERGENCE                 => 1e-08           !
+  SCF_TYPE                      => OUT_OF_CORE     !
+  SCS_TYPE                      => (empty)          
+  SOCC                          => (empty)          
+  SOS_TYPE                      => (empty)          
+  SPIN_SCALE_TYPE               => NONE            !
+  SS_SCALE                      => (empty)          
+  SYMMETRIZE                    => (empty)          
+  TPDM_ABCD_TYPE                => (empty)          
+  WFN                           => (empty)          
+  WFN_TYPE                      => REMP            !
+  WRITER_FILE_LABEL             => (empty)          
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                             REMP2  
+                    Program Written by Ugur Bozkaya,
+              Additional Contributions by J. P. Misiewicz
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	MO spaces per irreps... 
+
+	IRREP   FC   AOCC  BOCC  AVIR    BVIR  FV 
+	==========================================
+	   A     1     4     3    19     20     0
+	==========================================
+
+	Computing MP2 energy using SCF MOs (Canonical MP2)... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466406
+	REF Energy (a.u.)                  :   -75.63189745466406
+	Alpha-Alpha Contribution (a.u.)    :    -0.02403737176609
+	Alpha-Beta Contribution (a.u.)     :    -0.11591175599754
+	Beta-Beta Contribution (a.u.)      :    -0.01110284243605
+	Scaled_SS Correlation Energy (a.u.):    -0.01171340473405
+	Scaled_OS Correlation Energy (a.u.):    -0.13909410719705
+	SCS-MP2 Total Energy (a.u.)        :   -75.78270496659515
+	SOS-MP2 Total Energy (a.u.)        :   -75.78258273746086
+	SCSN-MP2 Total Energy (a.u.)       :   -75.69374423165982
+	SCS-MP2-VDW Total Energy (a.u.)    :   -75.79783460944199
+	SOS-PI-MP2 Total Energy (a.u.)     :   -75.79417391306062
+	MP2 Correlation Energy (a.u.)      :    -0.15105197019968
+	MP2 Total Energy (a.u.)            :   -75.78294942486373
+	============================================================================== 
+
+	Using A=        1 as REMP mixing parameter
+
+  
+ ============================================================================== 
+ ================ Performing REMP iterations ... ============================== 
+ ============================================================================== 
+
+  Iter    E_corr           E_total            DE           T2 RMS        
+  ----   -------------    ---------------    ----------   ----------    
+   1     -0.1510519702    -75.7829494249      0.00e+00     5.68e-06 
+   2     -0.1510519702    -75.7829494249      0.00e+00     0.00e+00 
+
+ ============================================================================== 
+ ======================== REMP ITERATIONS ARE CONVERGED ======================= 
+ ============================================================================== 
+
+	============================================================================== 
+	================ REMP2 FINAL RESULTS ================================ 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -75.63189745466406
+	REF Energy (a.u.)                  :   -75.63189745466406
+	Alpha-Alpha Contribution (a.u.)    :    -0.02403737176609
+	Alpha-Beta Contribution (a.u.)     :    -0.11591175599754
+	Beta-Beta Contribution (a.u.)      :    -0.01110284243605
+	REMP Correlation Energy (a.u.)     :    -0.15105197019967
+	REMP Total Energy (a.u.)           :   -75.78294942486373
+	============================================================================== 
+
+
+*** tstop() called on south at Tue Nov 30 13:58:08 2021
+Module time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =      10.53 seconds =       0.18 minutes
+	system time =       5.12 seconds =       0.09 minutes
+	total time  =          6 seconds =       0.10 minutes
+    REMP(1.00) Total Energy...............................................................PASSED
+
+    Psi4 stopped on: Tuesday, 30 November 2021 01:58PM
+    Psi4 wall time for execution: 0:00:05.83
+
+*** Psi4 exiting successfully. Buy a developer a beer!

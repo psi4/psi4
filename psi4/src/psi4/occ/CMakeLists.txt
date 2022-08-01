@@ -40,6 +40,7 @@ list(APPEND sources
   t2_2nd_general.cc
   t2_2nd_sc.cc
   t2_amps.cc
+  t2_amps_remp.cc
   tei_sort_iabc.cc
   tpdm_ref_corr_opdm.cc
   trans_ints_rhf.cc

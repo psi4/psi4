@@ -55,32 +55,35 @@ void OCCWave::cepa_iterations() {
                  // DIIS
     DIISManager t2_diis;
     if (nooA + nooB != 1) {
-        psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
-        t2_diis = DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
         if (reference_ == "RESTRICTED") {
             dpdbuf4 T;
+            psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "T2 <OO|VV>");
+            t2_diis = DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
             t2_diis.set_error_vector_size(&T);
             t2_diis.set_vector_size(&T);
             global_dpd_->buf4_close(&T);
+            psio_->close(PSIF_OCC_DPD, 1);
         }
 
         else if (reference_ == "UNRESTRICTED") {
             dpdbuf4 Taa, Tbb, Tab;
+            psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
             global_dpd_->buf4_init(&Taa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "T2 <OO|VV>");
             global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                    "T2 <oo|vv>");
             global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                    "T2 <Oo|Vv>");
+            t2_diis = DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
             t2_diis.set_error_vector_size(&Taa, &Tbb, &Tab);
             t2_diis.set_vector_size(&Taa, &Tbb, &Tab);
             global_dpd_->buf4_close(&Taa);
             global_dpd_->buf4_close(&Tbb);
             global_dpd_->buf4_close(&Tab);
+            psio_->close(PSIF_OCC_DPD, 1);
         }
-        psio_->close(PSIF_OCC_DPD, 1);
     }
 
     // head of loop
@@ -134,6 +137,107 @@ void OCCWave::cepa_iterations() {
     }
 
 }  // end main
+
+void OCCWave::remp_iterations() {
+    outfile->Printf("\n  \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ================ Performing REMP iterations ... ============================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf("\n");
+    outfile->Printf("  Iter    E_corr           E_total            DE           T2 RMS        \n");
+    outfile->Printf("  ----   -------------    ---------------    ----------   ----------    \n");
+
+    /********************************************************************************************/
+    /************************** NR iterations **************************************************/
+    /********************************************************************************************/
+    itr_occ = 0;
+    conver = 1;  // Assuming that the iterations will converge
+                 // DIIS
+    DIISManager t2_diis;
+    if (nooA + nooB != 1) {
+        if (reference_ == "RESTRICTED") {
+            dpdbuf4 T;
+            psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
+            global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "T2 <OO|VV>");
+            t2_diis = DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
+            t2_diis.set_error_vector_size(&T);
+            t2_diis.set_vector_size(&T);
+            global_dpd_->buf4_close(&T);
+            psio_->close(PSIF_OCC_DPD, 1);
+        }
+
+        else if (reference_ == "UNRESTRICTED") {
+            dpdbuf4 Taa, Tbb, Tab;
+            psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
+            global_dpd_->buf4_init(&Taa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "T2 <OO|VV>");
+            global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
+                                   "T2 <oo|vv>");
+            global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                                   "T2 <Oo|Vv>");
+            t2_diis = DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+            t2_diis.set_error_vector_size(&Taa, &Tbb, &Tab);
+            t2_diis.set_vector_size(&Taa, &Tbb, &Tab);
+            global_dpd_->buf4_close(&Taa);
+            global_dpd_->buf4_close(&Tbb);
+            global_dpd_->buf4_close(&Tab);
+            psio_->close(PSIF_OCC_DPD, 1);
+        }
+    }
+
+    // head of loop
+    do {
+        itr_occ++;
+        timer_on("T2");
+        t2_amps_remp(); // <- the only actual modification compared to regular CEPA(0)/D
+        timer_off("T2");
+        timer_on("CEPA Energy");
+        cepa_energy();
+        cepa_diis(t2_diis);    // <- CEPA diis can be reused without modifications
+        cepa_chemist();
+        timer_off("CEPA Energy");
+        Ecorr = Ecepa - Escf;
+        DE = Ecepa - Ecepa_old;
+        Ecepa_old = Ecepa;
+
+        if (reference_ == "UNRESTRICTED") {
+            rms_t2 = MAX0(rms_t2AA, rms_t2BB);
+            rms_t2 = MAX0(rms_t2, rms_t2AB);
+        }
+
+        outfile->Printf(" %3d     %12.10f    %12.10f  %12.2e %12.2e \n", itr_occ, Ecorr, Ecepa, DE, rms_t2);
+
+        if (itr_occ >= cc_maxiter) {
+            conver = 0;  // means iterations were NOT converged
+            break;
+        }
+
+        if (rms_t2 >= DIVERGE) {
+            throw PSIEXCEPTION("REMP iterations are diverging");
+        }
+
+    } while (std::fabs(DE) >= (0.5 * tol_Eod) || rms_t2 >= tol_t2);
+    // 0.5 scale battens down a touch tighter for spin components since tol_Eod can be satisfied by small energy increase
+
+    if (conver == 1) {
+        EcepaL = Ecepa;
+        outfile->Printf("\n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ======================== REMP ITERATIONS ARE CONVERGED ======================= \n");
+        outfile->Printf(" ============================================================================== \n");
+
+    }
+
+    else if (conver == 0) {
+        outfile->Printf("\n ======================= REMP IS NOT CONVERGED IN %2d ITERATIONS ============ \n",
+                        cc_maxiter);
+
+        throw PSIEXCEPTION("REMP iterations did not converge");
+    }
+
+}  // end main
+
 
 void OCCWave::cepa_diis(DIISManager& t2_diis) {
     psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);

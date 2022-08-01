@@ -767,6 +767,31 @@ def select_olccd(name, **kwargs):
         return func(name, **kwargs)
 
 
+def select_oremp2(name, **kwargs):
+    """Function selecting the algorithm for an OREMP2 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+
+    if func is None:
+        raise ManagedMethodError(['select_oremp2', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
 def select_olccd_gradient(name, **kwargs):
     """Function selecting the algorithm for an OLCCD gradient call
     and directing to specified or best-performance default modules.
@@ -788,6 +813,31 @@ def select_olccd_gradient(name, **kwargs):
 
     if func is None:
         raise ManagedMethodError(['select_olccd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_oremp2_gradient(name, **kwargs):
+    """Function selecting the algorithm for an OREMP2 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_oremp2_gradient', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -971,7 +1021,11 @@ def select_ccsd_t_(name, **kwargs):
                 func = run_dfocc
             elif module in ['', 'FNOCC']:
                 func = run_fnodfcc
-    elif reference in ['UHF', 'ROHF']:
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy
+    elif reference == 'ROHF':
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy
@@ -1161,6 +1215,30 @@ def select_adc2(name, **kwargs):
         return func(name, **kwargs)
 
 
+def select_remp2(name, **kwargs):
+    """Function selecting the algorithm for a REMP2 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ["RHF", "UHF"]:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ
+
+    if func is None:
+        raise ManagedMethodError(['select_remp2', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
 
 def build_disp_functor(name, restricted, save_pairwise_disp=False, **kwargs):
 
@@ -1263,7 +1341,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
             wfn.set_sad_fitting_basissets(sad_fitting_list)
             optstash.restore()
 
-    if hasattr(core, "EXTERN") and 'external_potentials' in kwargs: 
+    if hasattr(core, "EXTERN") and 'external_potentials' in kwargs:
         core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +
                        " keyword argument are specified. The external_potentials keyword argument will be ignored.\n")
         raise ValidationError("double extern")
@@ -1849,6 +1927,7 @@ def run_dct_property(name, **kwargs):
     optstash.restore()
     return dct_wfn
 
+
 def run_dfocc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density-fitted or Cholesky-decomposed
@@ -2205,120 +2284,51 @@ def run_occ(name, **kwargs):
         ['OCC', 'ORB_OPT'],
         ['OCC', 'WFN_TYPE'])
 
-    if name == 'mp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
-    elif name == 'scs-mp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
-    elif name == 'scs(n)-mp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSN')
-    elif name == 'scs-mp2-vdw':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCSVDW')
-    elif name == 'sos-mp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
-    elif name == 'sos-pi-mp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOSPI')
-    elif name == 'custom-scs-mp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+    director = {
+                  "mp2":     {"wfn_type": "OMP2",   "orb_opt": "FALSE", "spin_scale_type": "NONE",  },
+              "scs-mp2":     {"wfn_type": "OMP2",   "orb_opt": "FALSE", "spin_scale_type": "SCS",   },
+           "scs(n)-mp2":     {"wfn_type": "OMP2",   "orb_opt": "FALSE", "spin_scale_type": "SCSN",  },
+              "scs-mp2-vdw": {"wfn_type": "OMP2",   "orb_opt": "FALSE", "spin_scale_type": "SCSVDW",},
+              "sos-mp2":     {"wfn_type": "OMP2",   "orb_opt": "FALSE", "spin_scale_type": "SOS",   },
+           "sos-pi-mp2":     {"wfn_type": "OMP2",   "orb_opt": "FALSE", "spin_scale_type": "SOSPI", },
+       "custom-scs-mp2":     {"wfn_type": "OMP2",   "orb_opt": "FALSE", "spin_scale_type": "CUSTOM",},
 
-    elif name == 'omp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
-    elif name == 'scs-omp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
-    elif name == 'sos-omp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
-    elif name == 'custom-scs-omp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+                 "omp2":     {"wfn_type": "OMP2",   "orb_opt": "TRUE",  "spin_scale_type": "NONE",  },
+             "scs-omp2":     {"wfn_type": "OMP2",   "orb_opt": "TRUE",  "spin_scale_type": "SCS",   },
+             "sos-omp2":     {"wfn_type": "OMP2",   "orb_opt": "TRUE",  "spin_scale_type": "SOS",   },
+      "custom-scs-omp2":     {"wfn_type": "OMP2",   "orb_opt": "TRUE",  "spin_scale_type": "CUSTOM",},
 
-    elif name == 'mp2.5':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
-    elif name == 'custom-scs-mp2.5':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+                  "mp2.5":   {"wfn_type": "OMP2.5", "orb_opt": "FALSE", "spin_scale_type": "NONE",  },
+       "custom-scs-mp2.5":   {"wfn_type": "OMP2.5", "orb_opt": "FALSE", "spin_scale_type": "CUSTOM",},
 
-    elif name == 'omp2.5':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
-    elif name == 'custom-scs-omp2.5':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+                 "omp2.5":   {"wfn_type": "OMP2.5", "orb_opt": "TRUE",  "spin_scale_type": "NONE",  },
+      "custom-scs-omp2.5":   {"wfn_type": "OMP2.5", "orb_opt": "TRUE",  "spin_scale_type": "CUSTOM",},
 
-    elif name == 'mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
-    elif name == 'scs-mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
-    elif name == 'custom-scs-mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+                  "mp3":     {"wfn_type": "OMP3",   "orb_opt": "FALSE", "spin_scale_type": "NONE",  },
+              "scs-mp3":     {"wfn_type": "OMP3",   "orb_opt": "FALSE", "spin_scale_type": "SCS",   },
+       "custom-scs-mp3":     {"wfn_type": "OMP3",   "orb_opt": "FALSE", "spin_scale_type": "CUSTOM",},
 
-    elif name == 'omp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
-    elif name == 'scs-omp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SCS')
-    elif name == 'sos-omp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'SOS')
-    elif name == 'custom-scs-omp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+                 "omp3":     {"wfn_type": "OMP3",   "orb_opt": "TRUE",  "spin_scale_type": "NONE",  },
+             "scs-omp3":     {"wfn_type": "OMP3",   "orb_opt": "TRUE",  "spin_scale_type": "SCS",   },
+             "sos-omp3":     {"wfn_type": "OMP3",   "orb_opt": "TRUE",  "spin_scale_type": "SOS",   },
+      "custom-scs-omp3":     {"wfn_type": "OMP3",   "orb_opt": "TRUE",  "spin_scale_type": "CUSTOM",},
 
-    elif name == 'lccd':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
-    elif name == 'custom-scs-lccd':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+                "remp2":     {"wfn_type": "REMP",   "orb_opt": "FALSE", "spin_scale_type": "NONE",  },
 
-    elif name == 'olccd':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
-    elif name == 'custom-scs-olccd':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
+               "oremp2":     {"wfn_type": "OREMP",  "orb_opt": "TRUE",  "spin_scale_type": "NONE",  },
 
-    else:
-        raise ValidationError("""Invalid method %s""" % name)
+                 "lccd":     {"wfn_type": "OCEPA",  "orb_opt": "FALSE", "spin_scale_type": "NONE",  },
+      "custom-scs-lccd":     {"wfn_type": "OCEPA",  "orb_opt": "FALSE", "spin_scale_type": "CUSTOM",},
+
+                "olccd":     {"wfn_type": "OCEPA",  "orb_opt": "TRUE",  "spin_scale_type": "NONE",  },
+     "custom-scs-olccd":     {"wfn_type": "OCEPA",  "orb_opt": "TRUE",  "spin_scale_type": "CUSTOM",},
+    }
+
+    if name not in director:
+        raise ValidationError(f"Invalid method {name} for OCC energy")
+
+    for k, v in director[name].items():
+        core.set_local_option("OCC", k.upper(), v)
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2360,35 +2370,28 @@ def run_occ_gradient(name, **kwargs):
     if core.get_global_option('SCF_TYPE') in ['CD', 'DF', 'MEM_DF', 'DISK_DF']:
         raise ValidationError('OCC gradients need conventional SCF reference.')
 
-    if name == 'mp2':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2', 'conv-omp2']:
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+    director = {
+           "mp2":   {"wfn_type": "OMP2",   "orb_opt": "FALSE",},
+          "omp2":   {"wfn_type": "OMP2",   "orb_opt": "TRUE", },
+     "conv-omp2":   {"wfn_type": "OMP2",   "orb_opt": "TRUE", },
 
-    elif name == 'mp2.5':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    elif name == 'omp2.5':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+           "mp2.5": {"wfn_type": "OMP2.5", "orb_opt": "FALSE",},
+          "omp2.5": {"wfn_type": "OMP2.5", "orb_opt": "TRUE", },
 
-    elif name == 'mp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    elif name == 'omp3':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+           "mp3":   {"wfn_type": "OMP3",   "orb_opt": "FALSE",},
+          "omp3":   {"wfn_type": "OMP3",   "orb_opt": "TRUE", },
 
-    elif name == 'lccd':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    elif name == 'olccd':
-        core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
-    else:
-        raise ValidationError("""Invalid method %s""" % name)
+        "oremp2":   {"wfn_type": "OREMP",  "orb_opt": "TRUE", },
+
+          "lccd":   {"wfn_type": "OCEPA",  "orb_opt": "FALSE",},
+         "olccd":   {"wfn_type": "OCEPA",  "orb_opt": "TRUE", },
+    }
+
+    if name not in director:
+        raise ValidationError(f"Invalid method {name} for OCC gradient")
+
+    for k, v in director[name].items():
+        core.set_local_option("OCC", k.upper(), v)
 
     core.set_global_option('DERTYPE', 'FIRST')
 

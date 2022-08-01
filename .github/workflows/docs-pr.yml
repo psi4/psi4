@@ -54,6 +54,7 @@ jobs:
       run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx_automodapi/autodoc_enhancements.py
 
     # docs are not Ninja ready
+    # TODO-dfocc2: reset CMAKE_INSIST_FIND_PACKAGE_qcengine=ON after qcng v0.24.1
     - name: Configure with CMake (Conda Gnu + MKL)
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
@@ -74,7 +75,7 @@ jobs:
           -DENABLE_ecpint=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
           -DSPHINXMAN_STRICT=ON \
           -DSPHINX_ROOT=${CONDA_PREFIX}
 
