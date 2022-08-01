@@ -195,7 +195,7 @@ class PSI_API DFHelper {
     /// Initialize the object
     void initialize();
 
-    /// Prepare the sparsity matrix
+    /// Prepare screening and indexing metadata used for Schwarz screening.
     void prepare_sparsity();
 
     /// print tons of useful info
@@ -352,6 +352,7 @@ class PSI_API DFHelper {
     double omega_alpha_;
     double omega_beta_;
     bool debug_ = false;
+    // Can we early-exit prepare_sparsity?
     bool sparsity_prepared_ = false;
     int print_lvl_ = 1;
 
@@ -395,14 +396,29 @@ class PSI_API DFHelper {
                              std::vector<std::vector<double>>& C_buffers);
 
     // => index vectors for screened AOs <=
+    // ==> Skips for non-symmetric "densities" <==
+    // For a given basis function, how many basis functions have significant interactions?
+    // Used for "q" indexing.
     std::vector<size_t> small_skips_;
+    // For a given basis function, how many significant (basis function, naux) pairs have we already passed?
+    // This is a running total, unlike small_skips. Used for "p" indexing.
     std::vector<size_t> big_skips_;
+    // ==> Skips for symmetric "densities" <==
+    // For a given basis function, how many basis functions have significant interaction AND have lesser index?
+    // This counts columns we ignore due to the density of the symmetry. Used for "q" indexing.
     std::vector<size_t> symm_ignored_columns_;
+    // For a given basis function, how many basis functions have significant interaction AND have non-lesser index?
+    // Should be small_skips[p] - symm_ginored_columns[p]. Used for "q" indexing.
     std::vector<size_t> symm_small_skips_;
+    // For a given basis function, how many significant (non-lesser index basis function, naux)
+    // pairs have we already passed? This is a running total, unlike symm_small_skips.
+    // Used for "p" indexing.
     std::vector<size_t> symm_big_skips_;
 
     // => shell info and blocking <=
+    // Number of primary shells
     size_t pshells_;
+    // Number of auxiliary shells
     size_t Qshells_;
     // greatest number of functions in an aux_ shell
     double Qshell_max_;
@@ -420,9 +436,11 @@ class PSI_API DFHelper {
                                      size_t block_sizes, size_t total_mem, size_t memory_factor, size_t memory_bump);
 
     // => Schwarz Screening <=
-    std::vector<size_t> schwarz_fun_mask_;
-    std::vector<size_t> schwarz_shell_mask_;
-    std::vector<size_t> schwarz_fun_count_;
+    // Does shell pair (m, n) have any significant (mn|mn)-type integrals? Size pshells_ ** 2
+    std::vector<bool> schwarz_shell_mask_;
+    // What is the index of ij in significant basis function interactions for i? 0 = not significant. 2 means 1 before, 3 means 2 before, ect. Size nbf_ ** 2.
+    // Ordering is based on the natural ordering of basis functions, not ordering of significance.
+    std::vector<size_t> schwarz_fun_index_;
 
     // => Coulomb metric handling <=
     std::vector<std::pair<double, std::string>> metric_keys_;
@@ -518,11 +536,12 @@ class PSI_API DFHelper {
                     std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, size_t max_nocc, bool do_J, bool do_K,
                     bool do_wK, bool lr_symmetric);
     void compute_D(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
-    // D   : Density matrices are read from here
-    // J   : Coulomb matrices are written to here
-    // M1p : Intermediate populated now for wK later.
-    // T1p : Temporary matrix
-    // T2p : Temporary matrix
+    // Compute the J matrices (mn|rs) D_rs and store them into J, for an array of D.
+    // @param D: vector of densities to be contracted against AO basis integrals.
+    // @param J: vector of Coulomb integrals, one for each density
+    // @param M1p : Intermediate populated now for wK later.
+    // @param T1p : Temporary matrix
+    // @param T2p : Temporary matrix
     void compute_J(const std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                    std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size);
     void compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
@@ -538,6 +557,7 @@ class PSI_API DFHelper {
                     size_t max_nocc, bool do_J, bool do_K, bool do_wK);
 
     // => misc <=
+    // Utility function to fill double* with zero in parallel
     void fill(double* b, size_t count, double value);
 
 };  // End DF Helper class
