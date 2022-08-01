@@ -96,7 +96,6 @@ void DFHelper::prepare_blocking() {
 void DFHelper::AO_filename_maker(size_t i) {
     std::string name = start_filename("dfh.AO" + std::to_string(i));
     AO_names_.push_back(name);
-    AO_files_[name] = name;
 }
 
 std::string DFHelper::start_filename(std::string start) {
@@ -416,7 +415,7 @@ void DFHelper::prepare_AO() {
     // prepare files
     AO_filename_maker(1);
     AO_filename_maker(2);
-    std::string putf = AO_files_[AO_names_[1]];
+    std::string putf = AO_names_[1];
     std::string op = "ab";
 
     // Contract metric according to previously calculated scheme
@@ -1376,7 +1375,7 @@ void DFHelper::grab_AO(const size_t start, const size_t stop, double* Mp) {
     size_t begin = Qshell_aggs_[start];
     size_t end = Qshell_aggs_[stop + 1] - 1;
     size_t block_size = end - begin + 1;
-    std::string getf = AO_files_[AO_names_[1]];
+    auto getf = AO_names_[1];
 
     // presumably not thread safe or inherently sequential, but could revisit
     for (size_t i = 0, sta = 0; i < nbf_; i++) {
@@ -1738,8 +1737,7 @@ void DFHelper::clear_all() {
     files_.clear();
     sizes_.clear();
     tsizes_.clear();
-    transf_.clear();
-    transf_core_.clear();
+    clear_transformations();
 }
 
 std::pair<size_t, size_t> DFHelper::identify_order() {
@@ -1830,7 +1828,7 @@ void DFHelper::transform() {
     size_t wfinal = std::get<1>(info_);
 
     // prep AO file stream if STORE + !AO_core_
-    if (!direct_iaQ_ && !direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
+    if (!direct_iaQ_ && !direct_ && !AO_core_) stream_check(AO_names_[1], "rb");
 
     // get Q blocking scheme
     std::vector<std::pair<size_t, size_t>> Qsteps;
@@ -3013,7 +3011,7 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     size_t totsb = std::get<1>(info);
 
     // prep stream, blocking
-    if (!direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
+    if (!direct_ && !AO_core_) stream_check(AO_names_[1], "rb");
 
     std::vector<std::vector<double>> C_buffers(nthreads_);
 

@@ -415,15 +415,18 @@ class PSI_API DFHelper {
     // Used for "p" indexing.
     std::vector<size_t> symm_big_skips_;
 
-    // => shell info and blocking <=
+    // => Shell info and blocking : no screening involved <=
     // Number of primary shells
     size_t pshells_;
     // Number of auxiliary shells
     size_t Qshells_;
     // greatest number of functions in an aux_ shell
     double Qshell_max_;
+    // When we start primary shell i, how many functions have we passed? Length pshells_ + 1.
     std::vector<size_t> pshell_aggs_;
+    // When we start primary shell i, how many functions have we passed? Length Qshells_ + 1.
     std::vector<size_t> Qshell_aggs_;
+    // Populate all variables in this section. Should only ever be called by the constructor.
     void prepare_blocking();
 
     // => generalized blocking <=
@@ -515,7 +518,6 @@ class PSI_API DFHelper {
     std::map<std::string, std::tuple<std::string, std::string>> files_;
     std::map<std::string, std::tuple<size_t, size_t, size_t>> sizes_;
     std::map<std::string, std::tuple<size_t, size_t, size_t>> tsizes_;
-    std::map<std::string, std::string> AO_files_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
     std::string start_filename(std::string start);
