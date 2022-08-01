@@ -359,6 +359,7 @@ class PSI_API DFHelper {
     // => in-core machinery <=
     void AO_core();
     std::unique_ptr<double[]> Ppq_;
+    // Maps x -> (P|Q) ^ x.
     std::map<double, SharedMatrix> metrics_;
 
     // => in-core wK machinery <=
@@ -447,7 +448,9 @@ class PSI_API DFHelper {
 
     // => Coulomb metric handling <=
     std::vector<std::pair<double, std::string>> metric_keys_;
+    // Create J and write it to disk.
     void prepare_metric();
+    // Create J and cache it in metrics_.
     void prepare_metric_core();
     double* metric_prep_core(double m_pow);
     std::string return_metfile(double m_pow);
@@ -515,13 +518,23 @@ class PSI_API DFHelper {
     void get_tensor_AO(std::string file, double* Mp, size_t size, size_t start);
 
     // => internal handlers for FILE IO <=
+    // Map a base filename to the fullname of the p variant and then the original tensor.
     std::map<std::string, std::tuple<std::string, std::string>> files_;
+    // Map a full filename to the size of its three indices.
     std::map<std::string, std::tuple<size_t, size_t, size_t>> sizes_;
     std::map<std::string, std::tuple<size_t, size_t, size_t>> tsizes_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
+    // Given the base of a filename, return the full filename.
+    // "full" filename adds parts to the base to prevent files from overwriting each other.
     std::string start_filename(std::string start);
-    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op = 0);
+    // Given a base filename and the indices of its three dimensions, register the
+    // filename in files_ and the dimensions in sizes_. Creates an entry for both
+    // the tensor and the p variant. (The distinction is important for direct_iaQ.)
+    // Q = aux, p = left primary, q = right primary
+    // op = 0 if Qpq, 1 if pQq, 2 if pqQ
+    void filename_maker(std::string name, size_t Q, size_t p, size_t q, size_t op = 0);
+    // Store a filename for the i'th AO quantity is AO_names_.
     void AO_filename_maker(size_t i);
     void check_file_key(std::string);
     void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,
