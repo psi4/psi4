@@ -425,7 +425,7 @@ class PSI_API DFHelper {
     double Qshell_max_;
     // When we start primary shell i, how many functions have we passed? Length pshells_ + 1.
     std::vector<size_t> pshell_aggs_;
-    // When we start primary shell i, how many functions have we passed? Length Qshells_ + 1.
+    // When we start auxilliary shell i, how many functions have we passed? Length Qshells_ + 1.
     std::vector<size_t> Qshell_aggs_;
     // Populate all variables in this section. Should only ever be called by the constructor.
     void prepare_blocking();
@@ -534,7 +534,7 @@ class PSI_API DFHelper {
     // Q = aux, p = left primary, q = right primary
     // op = 0 if Qpq, 1 if pQq, 2 if pqQ
     void filename_maker(std::string name, size_t Q, size_t p, size_t q, size_t op = 0);
-    // Store a filename for the i'th AO quantity is AO_names_.
+    // Store a filename for the i'th AO quantity in AO_names_.
     void AO_filename_maker(size_t i);
     void check_file_key(std::string);
     void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,
