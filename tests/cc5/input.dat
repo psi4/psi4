@@ -1,4 +1,4 @@
-#! RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
+#! RHF CCSD(T) cc-pVDZ frozen-core energy of C4NH4 Anion
 
 molecule C4NH4 {
   -1 1

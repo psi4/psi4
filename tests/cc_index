@@ -11,11 +11,8 @@ cc4: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>)
 cc4a: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>),
   using frozen_docc option instead of freeze_core option
 
-cc5: RHF-CCSD(T)/aug-cc-pVTZ planar (C2v) C4NH4 single-point energy
-  (fzc, MO-basis <ab|cd>)  Note: one file exceeds 17 GB in this case.
-
-cc5a: RHF-CCSD(T)/cc-pVDZ planar (C2v) C4NH4 single-point energy
-  (fzc, MO-basis <ab|cd>) NB: Smaller version of cc5
+cc5: RHF-CCSD(T)/cc-pVDZ planar (C2v) C4NH4 single-point energy
+  (fzc, MO-basis <ab|cd>) 
 
 cc6: RHF-CCSD(T)/cc-pVDZ planar (C2v) C4NH4 single-point energy (fzc, AO-basis <ab|cd>)
 
