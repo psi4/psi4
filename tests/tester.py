@@ -43,6 +43,8 @@ def filter_marks(marks, nested):
             pass
         elif m == "quicktests":
             markstr.append("quick")
+        elif m == "longtests":
+            markstr.append("long")
         elif m == "smoketests":
             markstr.append("smoke")
         elif m == "addon":
