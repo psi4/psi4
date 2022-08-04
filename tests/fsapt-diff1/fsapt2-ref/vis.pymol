@@ -1,0 +1,12 @@
+set light_count,10
+set spec_count,1
+set shininess, 50 
+set specular,1 
+set ambient,0.1
+set direct,0.0
+set reflect,1.5
+set depth_cue
+set ray_shadows,0
+set ray_opaque_background, off
+bg white 
+set orthoscopic, off

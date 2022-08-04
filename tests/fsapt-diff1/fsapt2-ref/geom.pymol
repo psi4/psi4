@@ -1,0 +1,16 @@
+# Zero everything out
+reinitialize
+
+# Load Monomer A
+load Disp.pdb
+util.cbaw
+show sticks, all
+
+# Visualization
+@vis.pymol
+
+# Orientation
+@orient.pymol
+
+# Raytraced png
+png Geom.png, width=1200, height=1200, dpi=300, ray=1
