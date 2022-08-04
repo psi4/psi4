@@ -103,7 +103,7 @@ void rsp(int /*nm*/, const int n, const int nv, const double * const array, doub
     } else {
         // LAPACK promises to not reference the eigenvector array if we request no eigenvectors, so don't allocate
         const auto info = C_DSPEV('N', 'L', n, tmp_array, e_vals, nullptr, n, tmp_work);
-        if (info != 0){
+        if (info != 0) {
             outfile->Printf("DSPEV failed in a call of rsp(...), WITHOUT eigenvectors");
             exit(PSI_RETURN_FAILURE);
         }
