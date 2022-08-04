@@ -84,15 +84,15 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     // Now, copy over the full matrix, whenever nonzero columns are
     for (int h = 0; h < nirrep_; ++h) {
         if (nsopi_[h] == 0) continue;
-        auto* CStemp = new double[nsopi_[h]];
-        double** pC1 = SO_c1NO->pointer(h);
-        double** Smat = S_->pointer(h);
+        std::vector<double> CStemp(nsopi_[h]);
+        auto pC1 = SO_c1NO->pointer(h);
+        auto Smat = S_->pointer(h);
         int symcol = 0;
         for (int col = 0; col < nmo_; ++col) {
             // Compute orthonormalized self-overlap, to see if it's nonzero.
             // If it is, grab this orbital and store it in the symmetry NO matrix.
-            C_DGEMV('n', nsopi_[h], nsopi_[h], 1.0, Smat[0], nsopi_[h], &(pC1[0][col]), nmo_, 0.0, CStemp, 1);
-            double overlap = C_DDOT(nsopi_[h], CStemp, 1, &(pC1[0][col]), nmo_);
+            C_DGEMV('n', nsopi_[h], nsopi_[h], 1.0, Smat[0], nsopi_[h], &(pC1[0][col]), nmo_, 0.0, CStemp.data(), 1);
+            double overlap = C_DDOT(nsopi_[h], CStemp.data(), 1, &(pC1[0][col]), nmo_);
             if (overlap > 0.8) {
                 for (int row = 0; row < nsopi_[h]; ++row) {
                     Cno->set(h, row, symcol, pC1[row][col]);
@@ -101,7 +101,6 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
                 symcol++;
             }
         }
-        delete[] CStemp;
         if (symcol != nmopi_[h]) {
             outfile->Printf(
                 "Problem determining natural orbital and density matrix symmetries.\n"
@@ -644,20 +643,19 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia) {
     // Prestripe
     psio_->open(file, PSIO_OPEN_OLD);
     psio_address next_QIA = PSIO_ZERO;
-    double* temp = new double[nia];
-    ::memset((void*)temp, '\0', sizeof(double) * nia);
+    std::vector<double> temp(nia, 0);
     for (int Q = 0; Q < naux; Q++) {
-        psio_->write(file, "G(Q|ia)", (char*)temp, sizeof(double) * nia, next_QIA, &next_QIA);
+        psio_->write(file, "G(Q|ia)", (char*)temp.data(), sizeof(double) * nia, next_QIA, &next_QIA);
     }
-    delete[] temp;
+    std::vector<double>().swap(temp); // Dirty trick to clear temp memory immediately.
     next_QIA = PSIO_ZERO;
     psio_address next_IAQ = PSIO_ZERO;
 
     // Tensor blocks
     auto Qia = std::make_shared<Matrix>("G (Q|ia)", naux, max_nia);
     auto iaQ = std::make_shared<Matrix>("G (ia|Q)", max_nia, naux);
-    double** Qiap = Qia->pointer();
-    double** iaQp = iaQ->pointer();
+    auto Qiap = Qia->pointer();
+    auto iaQp = iaQ->pointer();
 
     // Loop through blocks
     for (int block = 0; block < ia_starts.size() - 1; block++) {
@@ -857,17 +855,16 @@ void RDFMP2::form_Aia() {
         nthread = options_.get_int("DF_INTS_NUM_THREADS");
     }
 #endif
-    std::shared_ptr<IntegralFactory> factory(
-        new IntegralFactory(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_));
+    IntegralFactory factory(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int thread = 0; thread < nthread; thread++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(factory.eri()));
         buffer.push_back(eri[thread]->buffer());
     }
 
     // Schwarz Sieve
-    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
+    const auto& shell_pairs = eri[0]->shell_pairs();
     const size_t npairs = shell_pairs.size();
 
     // Sizing
@@ -942,7 +939,7 @@ void RDFMP2::form_Aia() {
             int Q = QMN / npairs + Qstart;
             int MN = QMN % npairs;
 
-            std::pair<int, int> pair = shell_pairs[MN];
+            auto pair = shell_pairs[MN];
             int M = pair.first;
             int N = pair.second;
 
@@ -1528,15 +1525,14 @@ void RDFMP2::form_Amn_x_terms() {
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+    IntegralFactory rifactory(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < num_threads; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory.eri(1)));
     }
 
     // => ERI Sieve <= //
-    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
+    const auto& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Gradient Contribution <= //
@@ -1642,7 +1638,7 @@ void RDFMP2::form_Amn_x_terms() {
 
             eri[thread]->compute_shell_deriv1(P, 0, M, N);
 
-            const double* buffer = eri[thread]->buffer();
+            const auto buffer = eri[thread]->buffer();
             const auto &buffers = eri[thread]->buffers();
 
             int nP = ribasis_->shell(P).nfunction();
@@ -1731,16 +1727,15 @@ void RDFMP2::form_L() {
 
     // => Integrals <= //
 
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+    IntegralFactory rifactory(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < num_threads; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory.eri()));
     }
 
     // => ERI Sieve <= //
 
-    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
+    const auto& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -1792,7 +1787,7 @@ void RDFMP2::form_L() {
     auto Caoccp = Caocc_->pointer();
     auto Cavirp = Cavir_->pointer();
 
-    double* temp = new double[naocc * navir];
+    std::vector<double> temp(naocc * navir);
 
     // => Targets <= //
 
@@ -1874,7 +1869,7 @@ void RDFMP2::form_L() {
 
         // Sort G_P^ia to G_P^ai
         for (int p = 0; p < np; p++) {
-            ::memcpy((void*)temp, (void*)Giap[p], sizeof(double) * naocc * navir);
+            ::memcpy((void*)temp.data(), (void*)Giap[p], sizeof(double) * naocc * navir);
             for (int i = 0; i < naocc; i++) {
                 C_DCOPY(navir, &temp[i * navir], 1, &Giap[p][i], naocc);
             }
@@ -1892,8 +1887,6 @@ void RDFMP2::form_L() {
 
         C_DGEMM('T', 'N', nso, naocc, navir * (size_t)np, 1.0, Gamp[0], nso, Giap[0], naocc, 1.0, Lmip[0], naocc);
     }
-
-    delete[] temp;
 
     psio_->write_entry(PSIF_DFMP2_AIA, "L_mi", (char*)Lmip[0], sizeof(double) * nso * naocc);
     psio_->write_entry(PSIF_DFMP2_AIA, "L_ma", (char*)Lmap[0], sizeof(double) * nso * navir);
@@ -1918,11 +1911,11 @@ void RDFMP2::form_P() {
     auto PAb = std::make_shared<Matrix>("PAb", nfvir, navir);
     auto Ppq = std::make_shared<Matrix>("Ppq", nmo, nmo);
 
-    double** Pijp = Pij->pointer();
-    double** Pabp = Pab->pointer();
-    double** PIjp = PIj->pointer();
-    double** PAbp = PAb->pointer();
-    double** Ppqp = Ppq->pointer();
+    auto Pijp = Pij->pointer();
+    auto Pabp = Pab->pointer();
+    auto PIjp = PIj->pointer();
+    auto PAbp = PAb->pointer();
+    auto Ppqp = Ppq->pointer();
 
     auto Lmi = std::make_shared<Matrix>("L_mi", nso, naocc);
     auto Lma = std::make_shared<Matrix>("L_ma", nso, navir);
@@ -2679,12 +2672,11 @@ void UDFMP2::form_Aia() {
     }
 #endif
 
-    std::shared_ptr<IntegralFactory> factory(
-        new IntegralFactory(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_));
+    IntegralFactory factory(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int thread = 0; thread < nthread; thread++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(factory.eri()));
         buffer.push_back(eri[thread]->buffer());
     }
 
@@ -2772,7 +2764,7 @@ void UDFMP2::form_Aia() {
             int Q = QMN / npairs + Qstart;
             int MN = QMN % npairs;
 
-            std::pair<int, int> pair = shell_pairs[MN];
+            auto pair = shell_pairs[MN];
             int M = pair.first;
             int N = pair.second;
 
