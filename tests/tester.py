@@ -139,9 +139,9 @@ for fl in sorted(tests.rglob("*")):
 
             pymarks = []
             pyplugins = []
-            mobj = re.search(r'^@uusing\("' + r"(?P<pyplugins>([a-z0-9-_;]+))" + r'\"\)', testinputpy, re.MULTILINE)
+            mobj = re.findall(r'^@uusing\("' + r"([a-z0-9-_;]+)" + r'\"\)', testinputpy, re.MULTILINE)
             if mobj:
-                pyplugins = mobj.group("pyplugins").split(";")
+                pyplugins = mobj
 
             mobj = re.search(r'^@ctest_labeler\("' + r"(?P<pymarks>([a-z0-9-_;]+))" + r'\"\)', testinputpy, re.MULTILINE)
             if mobj:
