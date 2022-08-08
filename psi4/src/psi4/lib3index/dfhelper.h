@@ -44,7 +44,6 @@ namespace psi {
 class BasisSet;
 class Options;
 class Matrix;
-class ERISieve;
 class TwoBodyAOInt;
 
 // COMMON VARIABLE NAMES
