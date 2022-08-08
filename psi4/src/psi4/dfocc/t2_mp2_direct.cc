@@ -40,7 +40,7 @@ void DFOCC::t2_rmp2_direct(SharedTensor2d& T) {
     SharedTensor2d K;
     timer_on("T2_MP2");
     // Build amplitudes in Mulliken order
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     tei_iajb_chem_directAA(K);
     T->copy(K);
     T->apply_denom_chem(nfrzc, noccA, FockA);
@@ -54,7 +54,7 @@ void DFOCC::u2_rmp2_direct(SharedTensor2d& T, SharedTensor2d& U) {
     SharedTensor2d K;
     timer_on("T2_MP2");
     // Build amplitudes in Mulliken order
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     tei_iajb_chem_directAA(K);
     T->copy(K);
     T->apply_denom_chem(nfrzc, noccA, FockA);
@@ -73,8 +73,8 @@ void DFOCC::u2_rmp2_direct(SharedTensor2d& U) {
     SharedTensor2d K, T;
     timer_on("T2_MP2");
     // Build amplitudes in Mulliken order
-    T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     tei_iajb_chem_directAA(K);
     T->copy(K);
     T->apply_denom_chem(nfrzc, noccA, FockA);
@@ -93,12 +93,12 @@ void DFOCC::u2_rmp2_direct(SharedTensor2d& U) {
 void DFOCC::t2AA_ump2_direct(SharedTensor2d& T) {
     SharedTensor2d K, L, M;
     timer_on("T2AA_MP2");
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     tei_iajb_chem_directAA(L);
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
     M->sort(1324, L, 1.0, 0.0);
     L.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA);
     tei_pqrs_anti_symm_direct(K, M);
     M.reset();
     T->copy(K);
@@ -112,12 +112,12 @@ void DFOCC::t2AA_ump2_direct(SharedTensor2d& T) {
 void DFOCC::t2BB_ump2_direct(SharedTensor2d& T) {
     SharedTensor2d K, L, M;
     timer_on("T2BB_MP2");
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
     tei_iajb_chem_directBB(L);
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB);
     M->sort(1324, L, 1.0, 0.0);
     L.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB);
     tei_pqrs_anti_symm_direct(K, M);
     M.reset();
     T->copy(K);
@@ -131,9 +131,9 @@ void DFOCC::t2BB_ump2_direct(SharedTensor2d& T) {
 void DFOCC::t2AB_ump2_direct(SharedTensor2d& T) {
     SharedTensor2d K, L;
     timer_on("T2AB_MP2");
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
     tei_iajb_chem_directAB(L);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
     T->copy(K);
