@@ -217,10 +217,6 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->num_rot_orbs = CalcInfo_->nmo - CalcInfo_->num_fzc_orbs - CalcInfo_->num_fzv_orbs;
     CalcInfo_->num_ci_orbs = CalcInfo_->nmo - CalcInfo_->num_drc_orbs - CalcInfo_->num_drv_orbs;
 
-    if ((CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2 > IOFF_MAX) {
-        throw PsiException("error: IOFF_MAX not large enough!", __FILE__, __LINE__);
-    }
-
     CalcInfo_->num_alp_expl = CalcInfo_->num_alp - CalcInfo_->num_drc_orbs;
     CalcInfo_->num_bet_expl = CalcInfo_->num_bet - CalcInfo_->num_drc_orbs;
     CalcInfo_->npop = CalcInfo_->nmo - CalcInfo_->num_drv_orbs;
