@@ -109,7 +109,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
         # _recorder(qcprog, qc_module_in, driver, method, reference, fcae, scf_type, corl_type, "error", "nyi: " + reason)
         return
 
-    psi4.set_output_file("asdf")
+    psi4.set_output_file("asdf")  # easy name to find output files. TODO: why doesn't .out remain w/o this?
 
     ret, wfn = driver_call[driver](inp["call"], molecule=subject, return_wfn=True, **extra_kwargs)
     qc_module_out = "psi4-" + ("occ" if wfn.module() == "dfocc" else wfn.module())  # returns "psi4-<module>"
@@ -200,6 +200,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
             _asserter(asserter_args, contractual_args, contractual_oremp2)
         elif method == "olccd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_lccd)  # assert skipped
             _asserter(asserter_args, contractual_args, contractual_olccd)
 
     if "wrong" in inp:

@@ -37,7 +37,7 @@ namespace dfoccwave {
 
 void DFOCC::t2_2nd_gen() {
     // defs
-    SharedTensor2d K, L, M, I, T, Tnew, T1, T2, U, Tau, W, X, Y;
+    SharedTensor2d K, L, M, I, T, Tnew, T1, T2, U, Tau, W, X, Y, RT2;
 
     if (reference_ == "RESTRICTED") {
         // Read DF integrals
@@ -84,6 +84,13 @@ void DFOCC::t2_2nd_gen() {
 
         // Denom
         Tnew->apply_denom_chem(nfrzc, noccA, FockA);
+
+        // DIIS
+        RT2 = std::make_shared<Tensor2d>("RT2_2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        RT2->copy(Tnew);
+        RT2->subtract(T);
+        RT2->write_symm(psio_, PSIF_DFOCC_AMPS);
+        RT2.reset();
 
         // Reset T2_2
         rms_t2 = Tnew->rms(T);
@@ -184,6 +191,14 @@ void DFOCC::t2_2nd_gen() {
         T = std::make_shared<Tensor2d>("T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
         T->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
         rms_t2AA = Tnew->rms(T);
+
+        // DIIS
+        RT2 = std::make_shared<Tensor2d>("RT2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        RT2->copy(Tnew);
+        RT2->subtract(T);
+        RT2->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        RT2.reset();
+
         T->copy(Tnew);
         T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
         T.reset();
@@ -259,6 +274,14 @@ void DFOCC::t2_2nd_gen() {
         T = std::make_shared<Tensor2d>("T2_2 <ij|ab>", naoccB, naoccB, navirB, navirB);
         T->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
         rms_t2BB = Tnew->rms(T);
+
+        // DIIS
+        RT2 = std::make_shared<Tensor2d>("RT2_2 <ij|ab>", naoccB, naoccB, navirB, navirB);
+        RT2->copy(Tnew);
+        RT2->subtract(T);
+        RT2->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        RT2.reset();
+
         T->copy(Tnew);
         T->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
         T.reset();
@@ -325,6 +348,14 @@ void DFOCC::t2_2nd_gen() {
 
         // Reset T2_2
         rms_t2AB = Tnew->rms(T);
+
+        // DIIS
+        RT2 = std::make_shared<Tensor2d>("RT2_2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+        RT2->copy(Tnew);
+        RT2->subtract(T);
+        RT2->write(psio_, PSIF_DFOCC_AMPS);
+        RT2.reset();
+
         T->copy(Tnew);
         T->write(psio_, PSIF_DFOCC_AMPS);
         T.reset();
