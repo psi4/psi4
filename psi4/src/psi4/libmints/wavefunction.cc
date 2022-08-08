@@ -739,22 +739,22 @@ void Wavefunction::initialize_singletons() {
     done = true;
 }
 
-const Dimension Wavefunction::doccpi(bool assume_socc_alpha) const {
+const Dimension Wavefunction::doccpi(bool warn_on_beta_socc) const {
     std::vector<int> docc_vec;
     for (int h = 0; h < nalphapi_.n(); h++) {
         docc_vec.push_back(std::min(nalphapi_[h], nbetapi_[h]));
-        if (assume_socc_alpha && nbetapi_[h] > nalphapi_[h]) {
+        if (warn_on_beta_socc && nbetapi_[h] > nalphapi_[h]) {
             outfile->Printf("Warning! Irrep has more beta than alpha electrons.\n");
         }
     }
     return docc_vec;
 }
 /// Returns the SOCC per irrep array. Not recommended for unrestricted code.
-const Dimension Wavefunction::soccpi(bool assume_socc_alpha) const {
+const Dimension Wavefunction::soccpi(bool warn_on_beta_socc) const {
     std::vector<int> socc_vec;
     for (int h = 0; h < nalphapi_.n(); h++) {
         socc_vec.push_back(std::abs(nalphapi_[h] - nbetapi_[h]));
-        if (assume_socc_alpha && nbetapi_[h] > nalphapi_[h]) {
+        if (warn_on_beta_socc && nbetapi_[h] > nalphapi_[h]) {
             outfile->Printf("Warning! Irrep has more beta than alpha electrons.\n");
         }
     }
@@ -791,37 +791,11 @@ void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction
     reference_wavefunction_ = wfn;
 }
 
-void Wavefunction::force_doccpi(const Dimension &doccpi) {
-    auto socc = soccpi();
-    for (int h = 0; h < nirrep_; h++) {
-        if ((socc[h] + doccpi[h]) > nmopi_[h]) {
-            throw PSIEXCEPTION(
-                "Wavefunction::force_doccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
-                "the total number of molecular orbitals.");
-        }
-        nalphapi_[h] = doccpi[h] + socc[h];
-        nbetapi_[h] = doccpi[h];
-    }
+void Wavefunction::force_occpi(const Dimension &input_doccpi, const Dimension &input_soccpi) {
+    nalphapi_ = input_doccpi + input_soccpi;
+    nbetapi_ = input_doccpi;
     nalpha_ = nalphapi_.sum();
     nbeta_ = nbetapi_.sum();
-}
-
-void Wavefunction::force_soccpi(const Dimension &soccpi) {
-    if (same_a_b_dens_) {
-        throw PSIEXCEPTION(
-            "Wavefunction::force_soccpi: Cannot set soccpi since alpha and beta densities must be the same for this "
-            "Wavefunction.");
-    }
-    auto docc = doccpi();
-    for (int h = 0; h < nirrep_; h++) {
-        if ((soccpi[h] + doccpi()[h]) > nmopi_[h]) {
-            throw PSIEXCEPTION(
-                "Wavefunction::force_soccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
-                "the total number of molecular orbitals.");
-        }
-        nalphapi_[h] = docc[h] + soccpi[h];
-    }
-    nalpha_ = nalphapi_.sum();
 }
 
 void Wavefunction::set_frzvpi(const Dimension &frzvpi) {

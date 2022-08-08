@@ -375,9 +375,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     static void initialize_singletons();
 
     /// Returns the DOCC per irrep array. Not recommended for unrestricted code.
-    const Dimension doccpi(bool assume_socc_alpha = true) const;
+    const Dimension doccpi(bool warn_on_beta_socc = true) const;
     /// Returns the SOCC per irrep array. Not recommended for unrestricted code.
-    const Dimension soccpi(bool assume_socc_alpha = true) const;
+    const Dimension soccpi(bool warn_on_beta_socc = true) const;
     /// Returns the number of SOs per irrep array.
     const Dimension& nsopi() const { return nsopi_; }
     /// Returns the number of MOs per irrep array.
@@ -396,17 +396,11 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     FieldType get_dipole_perturbation_type() const;
 
     /**
-     * @brief Expert specialized use only. Sets the number of doubly occupied orbitals per irrep. Results in an
+     * @brief Expert specialized use only. Sets the number of doubly and singly occupied orbitals per irrep. Results in an
      * inconsistent Wavefunction object for SCF purposes, so caution is advised.
      * @param doccpi the new list of doubly occupied orbitals per irrep
      */
-    void force_doccpi(const Dimension& doccpi);
-    /**
-     * @brief Expert specialized use only. Sets the number of singly occupied orbitals per irrep. Results in an
-     * inconsistent Wavefunction object for SCF purposes, so caution is advised.
-     * @param soccpi the new list of singly occupied orbitals per irrep
-     */
-    void force_soccpi(const Dimension& soccpi);
+    void force_occpi(const Dimension& input_doccpi, const Dimension& input_soccpi);
 
     /// Sets the frozen virtual orbitals per irrep array.
     void set_frzvpi(const Dimension& frzvpi);

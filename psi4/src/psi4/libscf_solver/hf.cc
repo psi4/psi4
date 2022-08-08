@@ -1209,15 +1209,13 @@ void HF::print_occupation() {
         for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", socc[h]);
         outfile->Printf(" %4d ]\n", socc[nirrep_ - 1]);
     }
-    if (MOM_excited_) {
-        // Also print nalpha and nbeta per irrep, which are more physically meaningful
-        outfile->Printf("    NA   [ ");
-        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nalphapi_[h]);
-        outfile->Printf(" %4d ]\n", nalphapi_[nirrep_ - 1]);
-        outfile->Printf("    NB   [ ");
-        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nbetapi_[h]);
-        outfile->Printf(" %4d ]\n", nbetapi_[nirrep_ - 1]);
-    }
+    // Also print nalpha and nbeta per irrep, which are more physically meaningful
+    outfile->Printf("    NA   [ ");
+    for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nalphapi_[h]);
+    outfile->Printf(" %4d ]\n", nalphapi_[nirrep_ - 1]);
+    outfile->Printf("    NB   [ ");
+    for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nbetapi_[h]);
+    outfile->Printf(" %4d ]\n", nbetapi_[nirrep_ - 1]);
 
     outfile->Printf("\n");
 }

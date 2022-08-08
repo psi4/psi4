@@ -66,7 +66,7 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) : Wavefunction(opti
     if (!psio_) {
         throw PSIEXCEPTION("The wavefunction passed in lacks a PSIO object, crashing ADC. See GitHub issue #1851.");
     }
-    if (nopen_) throw PSIEXCEPTION("Openshell calculation has not been implemented yet!");
+    if (nopen_) throw PSIEXCEPTION("Open-shell calculation has not been implemented yet!");
 
     aoccount = 0, boccount = 0, avircount = 0, bvircount = 0;
     for (int h = 0; h < nirrep_; h++) {

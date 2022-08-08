@@ -253,14 +253,11 @@ void export_wavefunction(py::module& m) {
              "Returns the number of doubly occupied orbitals per irrep.")
         .def("density_fitted", &Wavefunction::density_fitted,
              "Returns whether this wavefunction was obtained using density fitting or not.")
-        .def("force_doccpi", &Wavefunction::force_doccpi,
-             "Specialized expert use only. Sets the number of doubly occupied oribtals per irrep. Note that this "
+        .def("force_occpi", &Wavefunction::force_occpi,
+             "Specialized expert use only. Sets the number of doubly and singly occupied oribtals per irrep. Note that this "
              "results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy, "assume_socc_alpha"_a = true,
              "Returns the number of singly occupied orbitals per irrep.")
-        .def("force_soccpi", &Wavefunction::force_soccpi,
-             "Specialized expert use only. Sets the number of singly occupied oribtals per irrep. Note that this "
-             "results in inconsistent Wavefunction objects for SCF, so caution is advised.")
         .def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy,
              "Returns the number of symmetry orbitals per irrep.")
         .def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy,
