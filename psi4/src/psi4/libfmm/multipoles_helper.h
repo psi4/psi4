@@ -26,18 +26,14 @@
  * @END LICENSE
  */
 
-#ifndef libfmm_fmm_tree_H
-#define libfmm_fmm_tree_H
+#ifndef libfmm_mpoles_helper_H
+#define libfmm_mpoles_helper_H
 
 #include "psi4/pragma.h"
 
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/onebody.h"
-#include "psi4/libmints/twobody.h"
-#include "psi4/libfmm/multipoles_helper.h"
 
 #include <functional>
 #include <memory>
@@ -45,301 +41,176 @@
 #include <vector>
 #include <unordered_map>
 
-// Extent normalization constant (to calculate extents of shell pairs)
-#define ENC (1.306076308436251)
-
 namespace psi {
 
-class Options;
+enum SolidHarmonicsType {Regular, Irregular};
 
-enum class ContractionType {
-    DIRECT,
-    DF_AUX_PRI,
-    DF_PRI_AUX,
-    METRIC
-};
+// Copied stuff from libmints/solidharmonics.cc
+static inline int npure(int l) { return 2 * l + 1; }
+static inline int icart(int a, int b, int c) { return (((((a + b + c + 1) << 1) - a) * (a + 1)) >> 1) - b - 1; }
+static inline int ipure(int, int m) { return m < 0 ? 2 * -m : (m == 0 ? 0 : 2 * m - 1); }
 
-class PSI_API ShellPair {
-    protected:
-      // The basis set of the first shell-pair index
-      std::shared_ptr<BasisSet> bs1_;
-      // The basis set of the second shell-pair index
-      std::shared_ptr<BasisSet> bs2_;
-      // The index of the shell-pair
-      std::pair<int, int> pair_index_;
-      // Exponent of most diffuse basis function in shell pair
-      double exp_;
-      // Center of shell pair (As defined in bagel FMM as the average)
-      Vector3 center_;
-      // Radial extent of shell pair
-      double extent_;
-      // The multipole moments (per basis pair (pq) the shell pair (PQ)), centered at the lowest level box the shell belongs to
-      std::vector<std::shared_ptr<RealSolidHarmonics>> mpoles_;
-      // Multipole coefficients of shellpair
-      std::shared_ptr<HarmonicCoefficients> mpole_coefs_;
+// Some more helper functions
+static inline int ncart(int l) { return (l+1)*(l+2)/2; }
 
-    public:
-      ShellPair(std::shared_ptr<BasisSet>& bs1, std::shared_ptr<BasisSet>& bs2, std::pair<int, int> pair_index, 
-                std::shared_ptr<HarmonicCoefficients>& mpole_coefs, double cfmm_extent_tol);
+// Some more useful Helper Functions
+static int choose(int n, int r) {
+    if (r < 0 || r > n) {
+        return 0;
+    }
+    int small = std::min(n, n-r);
+    int nCr = 1;
+    for (int t = 0; t < small; t++) {
+        nCr *= n;
+        nCr /= (t+1);
+        n -= 1;
+    }
+    return nCr;
+}
 
-      // Calculate the multipole moments of the Shell-Pair about a center
-      void calculate_mpoles(Vector3 box_center, std::shared_ptr<OneBodyAOInt>& s_ints,
-                            std::shared_ptr<OneBodyAOInt>& mpole_ints, int lmax);
+static int m_addr(int m) {
+    /*- Return the unsigned (array) address of m -*/
+    if (m <= 0) {
+        // 0, 1s, 2s, 3s, ...
+        return 2*(-m);
+    } else {
+        // 1c, 2c, 3c, ...
+        return 2*m-1;
+    }
+}
 
-      // Returns the shell pair index
-      std::pair<int, int> get_shell_pair_index() { return pair_index_; }
-      // Returns the center of the shell pair
-      Vector3 get_center() { return center_; }
-      // Returns the radial extent of the shell pair
-      double get_extent() { return extent_; }
-      // Returns the multipole moments of the shell pairs about a center
-      std::vector<std::shared_ptr<RealSolidHarmonics>>& get_mpoles() { return mpoles_; }
-      // Returns bs1 of shell pair
-      std::shared_ptr<BasisSet> bs1() { return bs1_; }
-      // Returns bs2 of shell pair
-      std::shared_ptr<BasisSet> bs2() { return bs2_; }
-};
+extern double factorial(int n);
 
-class PSI_API CFMMBox : public std::enable_shared_from_this<CFMMBox> {
+class PSI_API MultipoleRotationFactory {
 
     protected:
-      // Parent of the CFMMBox
-      std::weak_ptr<CFMMBox> parent_;
-      // Children of the CFMMBox
-      std::vector<std::shared_ptr<CFMMBox>> children_;
+      Vector3 R_a_;
+      Vector3 R_b_;
 
-      // The primary shell pairs belonging to this box (empty if none)
-      std::vector<std::shared_ptr<ShellPair>> primary_shell_pairs_;
-      // The auxiliary shell pairs belonging to this box (empty if none)
-      std::vector<std::shared_ptr<ShellPair>> auxiliary_shell_pairs_;
+      // New Z axis in rotated frame of reference
+      SharedMatrix Uz_;
 
-      // The box's origin (lower-left-front corner)
-      Vector3 origin_;
-      // Center of the box
-      Vector3 center_;
-      // Length of the box
-      double length_;
-      // Level the box is at (0 = root)
-      int level_;
-      // Maximum Multipole Angular Momentum
+      // Maximal Angular Momentum
       int lmax_;
-      // Well-separatedness criterion for this box
-      int ws_;
-      // Maximum well-separatedness for any given shell in the box 
-      // (same as ws_ except for the most diffuse boxes in the level)
-      int ws_max_;
 
-      // Number of threads the calculation is running on
-      int nthread_;
+      // Cached Rotation Matrices in a vector of Matrices
+      std::vector<SharedMatrix> D_cache_;
 
-      // Multipoles of the box (Density-Matrix contracted), one for each density matrix (calculated for the ket basis)
-      std::vector<std::shared_ptr<RealSolidHarmonics>> mpoles_;
-      // Far field vector of the box, one for each density matrix (based on the multipoles of the ket basis)
-      std::vector<std::shared_ptr<RealSolidHarmonics>> Vff_;
-
-      // A list of all the near-field boxes to this box
-      std::vector<std::shared_ptr<CFMMBox>> near_field_;
-      // A list of all of the local-far-field boxes to this box
-      std::vector<std::shared_ptr<CFMMBox>> local_far_field_;
-
-      // Returns a shared pointer to the CFMMBox object
-      std::shared_ptr<CFMMBox> get() { return shared_from_this(); }
+      double U(int l, int m, int M);
+      double V(int l, int m, int M);
+      double W(int l, int m, int M);
+      double P(int i, int l, int mu, int M);
       
+    inline double u(int l, int m, int M) {
+        if (std::abs(M) < l) {
+            return std::sqrt((double)(l+m)*(l-m) /((l+M)*(l-M)));
+        } else {
+            return std::sqrt((double)(l+m)*(l-m)/(2*l*(2*l-1)));
+        }
+    }
+
+    inline double v(int l, int m, int M) {
+        double dm0 = 0.0;
+        if (m == 0) dm0 = 1.0;
+        if (std::abs(M) < l) {
+            return 0.5 * (1.0 - 2.0*dm0) * std::sqrt((1.0+dm0)*(l+std::abs(m)-1)*(l+std::abs(m)) / ((l+M)*(l-M)));
+        } else {
+            return 0.5 * (1.0 - 2.0*dm0) * std::sqrt((1.0+dm0)*(l+std::abs(m)-1)*(l+std::abs(m)) / ((2*l)*(2*l-1)));
+        }
+    }
+
+    inline double w(int l, int m, int M) {
+        double dm0 = 0.0;
+        if (m == 0) dm0 = 1.0;
+        if (std::abs(M) < l) {
+            return 0.5 * (dm0 - 1) * std::sqrt((double)(l-std::abs(m)-1)*(l-std::abs(m)) / ((l+M)*(l-M)));
+        } else {
+            return 0.5 * (dm0 - 1) * std::sqrt((double)(l-std::abs(m)-1)*(l-std::abs(m)) / ((2*l)*(2*l-1)));
+        }
+    }
+
     public:
-      /// CFMMBox Constructor
-      CFMMBox(std::shared_ptr<CFMMBox> parent, std::vector<std::shared_ptr<ShellPair>> primary_shell_pairs,
-                std::vector<std::shared_ptr<ShellPair>> auxiliary_shell_pairs, Vector3 origin, double length,
-                int level, int lmax, int ws);
+      // Constructor
+      MultipoleRotationFactory(Vector3 R_a, Vector3 R_b, int lmax);
 
-      // Make children for this multipole box
-      void make_children();
-      // Sets the near field and local far field regions of the box
-      void set_regions();
+      SharedMatrix get_D(int l);
 
-      // Compute multipoles for the box are contracted with the density matrix (depending on contraction type)
-      void compute_multipoles(const std::vector<SharedMatrix>& D, ContractionType contraction_type);
+}; // End MultipoleRotationFactory
 
-      // Compute multipoles from children
-      void compute_mpoles_from_children();
-      // Computes the far field contribution from a far away sibling
-      void compute_far_field_contribution(std::shared_ptr<CFMMBox> lff_box);
-      // Compute the far field contibution from the parents
-      void add_parent_far_field_contribution();
+class PSI_API HarmonicCoefficients {
+    protected:
+      // Ylm[l][m] = sum (coeff * x^a * y^b * z^c), stores a tuple of (coeff, a, b, c), normalized according to Stone's convention
+      std::vector<std::vector<std::unordered_map<int, double>>> mpole_terms_;
+      // Helgaker Rs terms (used in generating mpole_terms_)
+      std::vector<std::vector<std::unordered_map<int, double>>> Rc_;
+      // Helgaker Rc terms (used in generating mpole_terms_)
+      std::vector<std::vector<std::unordered_map<int, double>>> Rs_;
+      // Maximum angular momentum
+      int lmax_;
+      // Regular or Irregular?
+      SolidHarmonicsType type_;
 
-      // => USEFUL SETTER METHODS <= //
+      // Compute terms if it were regular
+      void compute_terms_regular();
+      // Compute terms if it were irregular
+      void compute_terms_irregular();
 
-      // Set the maximum ws of the box
-      void set_ws_max(int ws_max) { ws_max_ = ws_max; }
-
-      // => USEFUL GETTER METHODS <= //
-
-      // Get the multipole level the box is on
-      int get_level() { return level_; }
-      // Get the ws criterion of the box
-      int get_ws() { return ws_; }
-      // Get the value of a particular multipole (for the Nth density matrix)
-      double get_mpole_val(int N, int l, int mu) { return mpoles_[N]->get_multipoles()[l][mu]; }
-      // Get the far field value of a multipole (for the Nth density matrix)
-      double get_Vff_val(int N, int l, int mu) { return Vff_[N]->get_multipoles()[l][mu]; }
-      // Get the children of the box
-      std::vector<std::shared_ptr<CFMMBox>>& get_children() { return children_; }
-      // Get the bra shell pairs of the box
-      std::vector<std::shared_ptr<ShellPair>>& get_primary_shell_pairs() { return primary_shell_pairs_; }
-      // Get the ket shell pairs of the box
-      std::vector<std::shared_ptr<ShellPair>>& get_auxiliary_shell_pairs() { return auxiliary_shell_pairs_; }
-      // Gets the number of shell pairs in the box
-      int nshell_pair() { return primary_shell_pairs_.size() + auxiliary_shell_pairs_.size(); }
-      // Gets the number of bra shell pairs in the box
-      int primary_nshell_pair() { return primary_shell_pairs_.size(); }
-      // Gets the number of ket shell pairs in the box
-      int auxiliary_nshell_pair() { return auxiliary_shell_pairs_.size(); }
-      // Get the center of this box
-      Vector3 center() { return center_; }
-      // Gets the near_field_boxes of the box
-      std::vector<std::shared_ptr<CFMMBox>>& near_field_boxes() { return near_field_; }
-      // Gets the local far field boxes of the box
-      std::vector<std::shared_ptr<CFMMBox>>& local_far_field_boxes() { return local_far_field_; }
-      // Get the multipoles
-      std::vector<std::shared_ptr<RealSolidHarmonics>>& multipoles() { return mpoles_; }
-      // Gets the far field vector
-      std::vector<std::shared_ptr<RealSolidHarmonics>>& far_field_vector() { return Vff_; }
-
-}; // End class CFMMBox
-
-class PSI_API CFMMTree {
+    public:
+      // Constructor
+      HarmonicCoefficients(int lmax, SolidHarmonicsType type);
+      // Returns a reference to the terms
+      std::unordered_map<int, double>& get_terms(int l, int mu) { return mpole_terms_[l][mu]; }
+    
+};
+    
+class PSI_API RealSolidHarmonics {
 
     protected:
-      // The molecule that this tree structure references
-      std::shared_ptr<Molecule> molecule_;
-      // The primary basis set
-      std::shared_ptr<BasisSet> primary_;
-      // The auxiliary basis set
-      std::shared_ptr<BasisSet> auxiliary_;
-      // List of all the significant primary shell-pairs in the molecule (U_SHELL, V_SHELL), U >= V
-      std::vector<std::shared_ptr<ShellPair>> primary_shell_pairs_;
-      // List of all the significant auxiliary shell-pairs in the molecule (SHELL, 0)
-      std::vector<std::shared_ptr<ShellPair>> auxiliary_shell_pairs_;
-      // What type of contraction is being performed? (Inferred by input parameters)
-      ContractionType contraction_type_;
-
-      // Number of Levels in the CFMM Tree
-      int nlevels_;
-      // Maximum Multipole Angular Momentum
+      // Values of the Real Solid Harmonics, normalized according to Stone's convention
+      std::vector<std::vector<double>> Ylm_;
+      // Maximum angular momentum
       int lmax_;
+      // Regular or Irregular?
+      SolidHarmonicsType type_;
+      // Center of the Harmonics
+      Vector3 center_;
 
-      // The tree structure (implemented as list for random access)
-      std::vector<std::shared_ptr<CFMMBox>> tree_;
-      // List of all the leaf boxes (sorted by number of shell pairs for parallel efficiency)
-      std::vector<std::shared_ptr<CFMMBox>> sorted_leaf_boxes_;
-      // Harmonic Coefficients used to calculate multipoles
-      std::shared_ptr<HarmonicCoefficients> mpole_coefs_;
-      // Numerical cutoff for ERI screening
-      double cutoff_;
+      // Return a translated copy of the multipoles if it were regular
+      std::shared_ptr<RealSolidHarmonics> translate_regular(Vector3 new_center);
+      // Return a translated copy of the multipoles if it were irregular
+      std::shared_ptr<RealSolidHarmonics> translate_irregular(Vector3 new_center);
 
-      // Options object
-      Options& options_;
-      // Number of threads
-      int nthread_;
-      // Print flag, defaults to 1
-      int print_;
-      // Bench flag, defaults to 0
-      int bench_;
-
-      // List of all the primary shell-pairs to compute
-      std::vector<std::pair<int, int>> primary_shellpair_tasks_;
-      // Index from the primary shell-pair index to the bra shell pair
-      std::vector<std::shared_ptr<ShellPair>> primary_shellpair_list_;
-      // The box each primary shell-pair belongs to
-      std::vector<std::shared_ptr<CFMMBox>> primary_shellpair_to_box_;
-      // List of all the near field boxes that belong to a given primary shell-pair
-      std::vector<std::vector<std::shared_ptr<CFMMBox>>> primary_shellpair_to_nf_boxes_;
-
-      // List of all the auxiliary shell-pairs to compute
-      std::vector<std::pair<int, int>> auxiliary_shellpair_tasks_;
-      // Index from the auxiliary shell-pair index to the bra shell pair
-      std::vector<std::shared_ptr<ShellPair>> auxiliary_shellpair_list_;
-      // The box each auxiliary shell-pair belongs to
-      std::vector<std::shared_ptr<CFMMBox>> auxiliary_shellpair_to_box_;
-      // List of all the near field boxes that belong to a given auxiliary shell-pair
-      std::vector<std::vector<std::shared_ptr<CFMMBox>>> auxiliary_shellpair_to_nf_boxes_;
-
-      // local far-field box pairs at a given level of the tree
-      std::vector<std::vector<std::pair<std::shared_ptr<CFMMBox>, std::shared_ptr<CFMMBox>>>> lff_task_pairs_per_level_;
-
-      // Use density-based integral screening?
-      bool density_screening_;
-      // ERI Screening Tolerance
-      double ints_tolerance_;
-
-      // => Functions called ONLY once <= //
-
-      // Make the root node of the CFMMTree
-      void make_root_node();
-      // Create children
-      void make_children();
-      // Sort the leaf nodes by number of shell-pairs
-      void sort_leaf_boxes();
-      // Set up near field and far field information for each box in the tree
-      void setup_regions();
-      // Setup shell-pair information and calculate multipoles for each shell-pair
-      void setup_shellpair_info();
-      // Set up information on local far field task pairs per level
-      void setup_local_far_field_task_pairs();
-      // Calculate the shell-pair multipoles at each leaf box (primary or auxiliary)
-      void calculate_shellpair_multipoles(bool is_primary);
-
-      // => Functions called ONCE per iteration <= //
-
-      // Calculate multipoles
-      void calculate_multipoles(const std::vector<SharedMatrix>& D);
-      // Helper method to compute far field
-      void compute_far_field();
-
-      // Build near-field J (Gateway function, links to specific J builds based on contraction 
-      void build_nf_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
-                      const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J,
-		      const std::vector<double>& Jmet_max);
-      // Build near-field J using Direct SCF algorithm (Jpq = (pq|rs)Drs)
-      void build_nf_direct_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
-                      const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J);
-      // Build gammaP's near field (gammaP = (P|uv)Duv)
-      void build_nf_gamma_P(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
-                      const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J,
-		      const std::vector<double>& Jmet_max);
-      // Build density-fitted J's near field (Jpq = (pq|Q)*gammaQ)
-      void build_nf_df_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
-                      const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J,
-		      const std::vector<double>& Jmet_max);
-      // Builds the near field interactions of the Coulomb metric with an auxiliary density
-      void build_nf_metric(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
-                      const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J);
-
-      // Build far-field J (long-range multipole interactions)
-      void build_ff_J(std::vector<SharedMatrix>& J);
-
-      // => ERI Screening <= //
-      bool shell_significant(int P, int Q, int R, int S, std::vector<std::shared_ptr<TwoBodyAOInt>>& ints,
-                             const std::vector<SharedMatrix>& D);
-    
     public:
-      /// Constructor (automatically sets up the tree)
-      /// Pass in null pointer if no primary or auxiliary
-      CFMMTree(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+      // Constructor
+      RealSolidHarmonics(int lmax, Vector3 center, SolidHarmonicsType type);
 
-      // Build the J matrix of CFMMTree
-      void build_J(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
-                    const std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J,
-		    const std::vector<double>& Jmet_max = {});
-      // Returns the max tree depth
-      int nlevels() { return nlevels_; }
-      // Returns the max multipole AM
-      int lmax() { return lmax_; }
-      // Flip the contraction type (for DF integrals)
-      void df_set_contraction(ContractionType contraction_type);
-      // Print the CFMM Tree out
-      void print_out();
+      // Returns a copy of a RealSolidHarmonics object
+      std::shared_ptr<RealSolidHarmonics> copy();
+      // Adds two harmonics together
+      void add(const RealSolidHarmonics& rsh);
+      void add(const std::shared_ptr<RealSolidHarmonics>& rsh);
+      // Element-wise multiplication of two multtipoles
+      double dot(const RealSolidHarmonics& rsh);
+      double dot(const std::shared_ptr<RealSolidHarmonics>& rsh);
+      // Scale the harmonics by a constant
+      void scale(double val);
+      // Adds to a specific harmonic term
+      void add(int l, int mu, double val) { Ylm_[l][mu] += val; }
+      // Get a specific multipole term
+      double get(int l, int mu) { return Ylm_[l][mu]; }
+      
+      // Returns a reference of Ylm, to be computed by something else
+      std::vector<std::vector<double>>& get_multipoles() { return Ylm_; }
 
-}; // End class CFMMTree
+      // Get an "internuclear" interaction tensor between two points separated by a distance R
+      SharedVector build_T_spherical(int la, int lb, double R);
+
+      // Translate the solid harmonics
+      std::shared_ptr<RealSolidHarmonics> translate(const Vector3& new_center);
+      // Calulate the far field effect this multipole series would have on another
+      std::shared_ptr<RealSolidHarmonics> far_field_vector(const Vector3& far_center);
+
+}; // End RealSolidHarmonics class
 
 } // namespace psi
 
