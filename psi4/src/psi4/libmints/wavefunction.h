@@ -375,8 +375,12 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     static void initialize_singletons();
 
     /// Returns the DOCC per irrep array. Not recommended for unrestricted code.
+    /// Flag `warn_on_beta_socc` triggers warning on singly occupied beta orbitals,
+    /// which break assumptions made in pre-1.7 DOCC/SOCC handling.
     const Dimension doccpi(bool warn_on_beta_socc = true) const;
     /// Returns the SOCC per irrep array. Not recommended for unrestricted code.
+    /// Flag `warn_on_beta_socc` triggers warning on singly occupied beta orbitals,
+    /// which break assumptions made in pre-1.7 DOCC/SOCC handling.
     const Dimension soccpi(bool warn_on_beta_socc = true) const;
     /// Returns the number of SOs per irrep array.
     const Dimension& nsopi() const { return nsopi_; }
