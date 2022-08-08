@@ -518,7 +518,7 @@ void PKMgrDisk::initialize_wK() {
 void PKMgrDisk::batch_sizing() {
     double batch_thresh = 0.1;
 
-    ijklBasisIterator AOintsiter(nbf(), sieve());
+    ijklBasisIterator AOintsiter(nbf());
 
     size_t old_pq = 0;
     size_t old_max = 0;
