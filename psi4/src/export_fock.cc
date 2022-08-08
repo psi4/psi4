@@ -102,7 +102,7 @@ void export_fock(py::module &m) {
         .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
         .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
 
-    py::class_<TLaplaceDenominator, std::shared_ptr<TLaplaceDenominator>>(m, "TLaplaceDenominator",     "docstring")
+    py::class_<TLaplaceDenominator, std::shared_ptr<TLaplaceDenominator>>(m, "TLaplaceDenominator", "docstring")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
         .def("denominator_occ", &TLaplaceDenominator::denominator_occ, "docstring")
         .def("denominator_vir", &TLaplaceDenominator::denominator_vir, "docstring");
