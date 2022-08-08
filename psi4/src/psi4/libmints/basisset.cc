@@ -227,6 +227,24 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         if (mol_valence <= 0)
             num_frozen_el -= period_to_full_shell(largest_shell - 1) - period_to_full_shell(largest_shell - 2);
         return num_frozen_el / 2;
+    } else if (local == "POLICY") {
+        // Look up what policy we've set
+        std::vector<int> freeze_core_policy;
+        freeze_core_policy = Process::environment.options.get_int_vector("FREEZE_CORE_POLICY");
+        int nfzc = 0;
+        for (int A = 0; A < mymol->natom(); A++) {
+            // Exclude ghosted atoms from core-freezing
+            double Z = mymol->Z(A);
+            if (Z > 0) {
+                // Add ECPs to Z, the number of electrons less ECP-treated electrons
+                int true_Z = n_ecp_core(mymol->label(A)) + Z - 1;
+                if (true_Z >= freeze_core_policy.size()) {
+                    throw PSIEXCEPTION("Atomic number encountered greater than length of FREEZE_CORE_POLICY");
+                }
+                nfzc += freeze_core_policy[true_Z];
+            }
+        }
+        return nfzc;
     } else {
         // Options are filtered in read_options.cc; allowed strings are:
         // TRUE, FALSE, -1, -2, -3
