@@ -1,5 +1,4 @@
 list(APPEND sources
-  fmm_tree.cc
   multipoles_helper.cc
   )
 
