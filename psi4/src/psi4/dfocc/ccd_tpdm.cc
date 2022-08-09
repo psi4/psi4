@@ -48,13 +48,13 @@ void DFOCC::ccd_tpdm() {
     //============================
 
     // G_ij^Q += P+(ij) V_ij^Q
-    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|IJ)", nQ, naoccA, naoccA));
-    V = SharedTensor2d(new Tensor2d("V (Q|IJ)", nQ, naoccA, naoccA));
+    G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|IJ)", nQ, naoccA, naoccA);
+    V = std::make_shared<Tensor2d>("V (Q|IJ)", nQ, naoccA, naoccA);
     V->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(V, 1.0);
     V.reset();
     // G_ij^Q -= P+(ij) 2*V'_ij^Q
-    V = SharedTensor2d(new Tensor2d("Vp (Q|IJ)", nQ, naoccA, naoccA));
+    V = std::make_shared<Tensor2d>("Vp (Q|IJ)", nQ, naoccA, naoccA);
     V->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(V, -2.0);
     V.reset();
@@ -62,7 +62,7 @@ void DFOCC::ccd_tpdm() {
     // symmetrize
     G->symmetrize3(G);
     G->scale(2.0);
-    G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+    G2 = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
     G2->set3_act_oo(nfrzc, G);
     G.reset();
     G2->write(psio_, PSIF_DFOCC_DENS);
@@ -74,24 +74,24 @@ void DFOCC::ccd_tpdm() {
     //============================
 
     // G_ia^Q = T_ia^Q
-    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|IA)", nQ, naoccA, navirA));
-    T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|IA)", nQ, naoccA, navirA);
+    T = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(T, 1.0);
     T.reset();
     // G_ia^Q += L_ia^Q
-    T = SharedTensor2d(new Tensor2d("L2 (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("L2 (Q|IA)", nQ, naoccA, navirA);
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(T, 1.0);
     T.reset();
     // G_ia^Q += 2*y_ia^Q
-    T = SharedTensor2d(new Tensor2d("Y (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("Y (Q|IA)", nQ, naoccA, navirA);
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(T, 2.0);
     T.reset();
 
     // G_ia^Q -= \sum(m) T_ma^Q G_im
-    T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     T->read(psio_, PSIF_DFOCC_AMPS);
     G->contract233(false, false, naoccA, navirA, GijA, T, -1.0, 1.0);
 
@@ -101,30 +101,30 @@ void DFOCC::ccd_tpdm() {
     T.reset();
 
     // G_ia^Q += \sum(me) U(ia,me) (G_em^Q - G_me^Q)
-    U = SharedTensor2d(new Tensor2d("G (Q|AI)", nQ, navirA, naoccA));
+    U = std::make_shared<Tensor2d>("G (Q|AI)", nQ, navirA, naoccA);
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("Temp (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("Temp (Q|IA)", nQ, naoccA, navirA);
     T->swap_3index_col(U);
     U.reset();
-    U = SharedTensor2d(new Tensor2d("G (Q|IA)", nQ, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("G (Q|IA)", nQ, naoccA, navirA);
     U->read(psio_, PSIF_DFOCC_AMPS);
     T->axpy(U, -1.0);
     U.reset();
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
     G->gemm(false, true, T, U, 1.0, 1.0);
     U.reset();
     T.reset();
 
     // Form overall OV Block
-    G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+    G2 = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
     G2->set3_act_ov(nfrzc, naoccA, navirA, nvirA, G);
     G.reset();
     G2->write(psio_, PSIF_DFOCC_DENS);
     if (print_ > 3) G2->print();
 
     // Form G_vo^Q
-    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VO)", nQ, nvirA, noccA));
+    G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VO)", nQ, nvirA, noccA);
     G->swap_3index_col(G2);
     G2.reset();
     G->write(psio_, PSIF_DFOCC_DENS);
@@ -136,42 +136,42 @@ void DFOCC::ccd_tpdm() {
     //============================
 
     // G_ab^Q -= P+(ab) 2*V_ab^Q
-    G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|AB)", nQ, navirA, navirA));
-    V = SharedTensor2d(new Tensor2d("V (Q|AB)", nQ, navirA, navirA));
+    G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|AB)", nQ, navirA, navirA);
+    V = std::make_shared<Tensor2d>("V (Q|AB)", nQ, navirA, navirA);
     V->read(psio_, PSIF_DFOCC_AMPS);
     G->axpy(V, -2.0);
     V.reset();
 
     // G_ab^Q += P+(ab) \sum(ef) Vt_aebf b_ef^Q
     // Read b_ef^Q
-    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
     bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // (+)Ut(mn, ae) = 1/2 (Ut_mn^ae + Ut_nm^ae) * (2 - \delta_{mn})
     // (-)Ut(mn, ae) = 1/2 (Ut_mn^ae - Ut_nm^ae) * (2 - \delta_{mn})
-    T = SharedTensor2d(new Tensor2d("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     T->read_symm(psio_, PSIF_DFOCC_AMPS);
-    U = SharedTensor2d(new Tensor2d("Ut2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    U = std::make_shared<Tensor2d>("Ut2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     U->sort(1324, T, 1.0, 0.0);
     T.reset();
-    Ts = SharedTensor2d(new Tensor2d("(+)Ut [I>=J|A>=B]", ntri_ijAA, ntri_abAA));
-    Ta = SharedTensor2d(new Tensor2d("(-)Ut [I>=J|A>=B]", ntri_ijAA, ntri_abAA));
+    Ts = std::make_shared<Tensor2d>("(+)Ut [I>=J|A>=B]", ntri_ijAA, ntri_abAA);
+    Ta = std::make_shared<Tensor2d>("(-)Ut [I>=J|A>=B]", ntri_ijAA, ntri_abAA);
     Ts->symm_row_packed4(U);
     Ta->antisymm_row_packed4(U);
     U.reset();
 
     // Symmetric & Anti-symmetric contributions
-    U = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
-    Tau = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    Tau = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     Tau->sort(1324, U, 1.0, 0.0);
     U.reset();
-    Vs = SharedTensor2d(new Tensor2d("(+)T[B] (F,M>=N)", navirA, ntri_ijAA));
-    Va = SharedTensor2d(new Tensor2d("(-)T[B] (F,M>=N)", navirA, ntri_ijAA));
-    S = SharedTensor2d(new Tensor2d("S[B] (F,A>=E)", navirA, ntri_abAA));
-    A = SharedTensor2d(new Tensor2d("A[B] (F,A>=E)", navirA, ntri_abAA));
-    V = SharedTensor2d(new Tensor2d("V[B] (A,EF)", navirA, navirA, navirA));
-    X = SharedTensor2d(new Tensor2d("TPDM[B] (Q|A)", nQ, navirA));
+    Vs = std::make_shared<Tensor2d>("(+)T[B] (F,M>=N)", navirA, ntri_ijAA);
+    Va = std::make_shared<Tensor2d>("(-)T[B] (F,M>=N)", navirA, ntri_ijAA);
+    S = std::make_shared<Tensor2d>("S[B] (F,A>=E)", navirA, ntri_abAA);
+    A = std::make_shared<Tensor2d>("A[B] (F,A>=E)", navirA, ntri_abAA);
+    V = std::make_shared<Tensor2d>("V[B] (A,EF)", navirA, navirA, navirA);
+    X = std::make_shared<Tensor2d>("TPDM[B] (Q|A)", nQ, navirA);
     // Main loop
     for (int b = 0; b < navirA; ++b) {
 // Form (+)Tau[b](f, m>=n)
@@ -235,7 +235,7 @@ void DFOCC::ccd_tpdm() {
     // symmetrize
     G->symmetrize3(G);
     G->scale(2.0);
-    G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+    G2 = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
     G2->set3_act_vv(G);
     G.reset();
     G2->write(psio_, PSIF_DFOCC_DENS, true, true);

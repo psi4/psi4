@@ -82,7 +82,7 @@ void DFOCC::effective_mograd_sc() {
 void DFOCC::z_vector_oo() {
     if (reference_ == "RESTRICTED") {
         // Build Zoo
-        ZklA = SharedTensor2d(new Tensor2d("Zvector (K|L)", noccA, noccA));
+        ZklA = std::make_shared<Tensor2d>("Zvector (K|L)", noccA, noccA);
 #pragma omp parallel for
         for (int k = 0; k < noccA; k++) {
             for (int l = 0; l < noccA; l++) {
@@ -98,7 +98,7 @@ void DFOCC::z_vector_oo() {
     else if (reference_ == "UNRESTRICTED") {
         // Build Zoo
         // Alpha
-        ZklA = SharedTensor2d(new Tensor2d("Zvector (K|L)", noccA, noccA));
+        ZklA = std::make_shared<Tensor2d>("Zvector (K|L)", noccA, noccA);
 #pragma omp parallel for
         for (int k = 0; k < noccA; k++) {
             for (int l = 0; l < noccA; l++) {
@@ -110,7 +110,7 @@ void DFOCC::z_vector_oo() {
         }
 
         // Beta
-        ZklB = SharedTensor2d(new Tensor2d("Zvector (k|l)", noccB, noccB));
+        ZklB = std::make_shared<Tensor2d>("Zvector (k|l)", noccB, noccB);
 #pragma omp parallel for
         for (int k = 0; k < noccB; k++) {
             for (int l = 0; l < noccB; l++) {
@@ -131,7 +131,7 @@ void DFOCC::z_vector_oo() {
 void DFOCC::z_vector_vv() {
     if (reference_ == "RESTRICTED") {
         // Build Zvv
-        ZcdA = SharedTensor2d(new Tensor2d("Zvector (C|D)", nvirA, nvirA));
+        ZcdA = std::make_shared<Tensor2d>("Zvector (C|D)", nvirA, nvirA);
 #pragma omp parallel for
         for (int c = 0; c < nvirA; c++) {
             for (int d = 0; d < nvirA; d++) {
@@ -147,7 +147,7 @@ void DFOCC::z_vector_vv() {
     else if (reference_ == "UNRESTRICTED") {
         // Build Zvv
         // Alpha
-        ZcdA = SharedTensor2d(new Tensor2d("Zvector (C|D)", nvirA, nvirA));
+        ZcdA = std::make_shared<Tensor2d>("Zvector (C|D)", nvirA, nvirA);
 #pragma omp parallel for
         for (int c = 0; c < nvirA; c++) {
             for (int d = 0; d < nvirA; d++) {
@@ -159,7 +159,7 @@ void DFOCC::z_vector_vv() {
         }
 
         // Beta
-        ZcdB = SharedTensor2d(new Tensor2d("Zvector (c|d)", nvirB, nvirB));
+        ZcdB = std::make_shared<Tensor2d>("Zvector (c|d)", nvirB, nvirB);
 #pragma omp parallel for
         for (int c = 0; c < nvirB; c++) {
             for (int d = 0; d < nvirB; d++) {
@@ -180,7 +180,7 @@ void DFOCC::z_vector_vv() {
 void DFOCC::z_vector_fc() {
     if (reference_ == "RESTRICTED") {
         // Build Zoo
-        ZklA = SharedTensor2d(new Tensor2d("Zvector <I|FC>", naoccA, nfrzc));
+        ZklA = std::make_shared<Tensor2d>("Zvector <I|FC>", naoccA, nfrzc);
 #pragma omp parallel for
         for (int k = 0; k < naoccA; k++) {
             for (int l = 0; l < nfrzc; l++) {
@@ -188,7 +188,7 @@ void DFOCC::z_vector_fc() {
                 ZklA->set(k, l, -WorbA->get(k + nfrzc, l) / (2.0 * value));
             }
         }
-        ZlkA = SharedTensor2d(new Tensor2d("Zvector <FC|I>", nfrzc, naoccA));
+        ZlkA = std::make_shared<Tensor2d>("Zvector <FC|I>", nfrzc, naoccA);
         ZlkA = ZklA->transpose();
 
     }  // end if (reference_ == "RESTRICTED")
@@ -196,7 +196,7 @@ void DFOCC::z_vector_fc() {
     else if (reference_ == "UNRESTRICTED") {
         // Build Zoo
         // Alpha
-        ZklA = SharedTensor2d(new Tensor2d("Zvector <I|FC>", naoccA, nfrzc));
+        ZklA = std::make_shared<Tensor2d>("Zvector <I|FC>", naoccA, nfrzc);
 #pragma omp parallel for
         for (int k = 0; k < naoccA; k++) {
             for (int l = 0; l < nfrzc; l++) {
@@ -204,11 +204,11 @@ void DFOCC::z_vector_fc() {
                 ZklA->set(k, l, -WorbA->get(k + nfrzc, l) / (2.0 * value));
             }
         }
-        ZlkA = SharedTensor2d(new Tensor2d("Zvector <FC|I>", nfrzc, naoccA));
+        ZlkA = std::make_shared<Tensor2d>("Zvector <FC|I>", nfrzc, naoccA);
         ZlkA = ZklA->transpose();
 
         // Beta
-        ZklB = SharedTensor2d(new Tensor2d("Zvector <i|FC>", naoccB, nfrzc));
+        ZklB = std::make_shared<Tensor2d>("Zvector <i|FC>", naoccB, nfrzc);
 #pragma omp parallel for
         for (int k = 0; k < naoccB; k++) {
             for (int l = 0; l < nfrzc; l++) {
@@ -216,7 +216,7 @@ void DFOCC::z_vector_fc() {
                 ZklB->set(k, l, -WorbB->get(k + nfrzc, l) / (2.0 * value));
             }
         }
-        ZlkB = SharedTensor2d(new Tensor2d("Zvector <FC|i>", nfrzc, naoccB));
+        ZlkB = std::make_shared<Tensor2d>("Zvector <FC|i>", nfrzc, naoccB);
         ZlkB = ZklB->transpose();
 
     }  // end if (reference_ == "UNRESTRICTED")
@@ -240,18 +240,18 @@ void DFOCC::fc_grad_terms() {
         // Seprable TPDM
         //=========================
         // Z_Q' = 4 \sum_{kl} b_{kl}^{Q} Z_kl
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|KL)", nQ_ref, naoccA, nfrzc));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KL)", nQ_ref, naoccA, nfrzc);
         L->form_b_kl(K);
         K.reset();
-        SharedTensor1d Zq = SharedTensor1d(new Tensor1d("DF_BASIS_SCF Zp_Q", nQ_ref));
+        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
         Zq->gemv(false, L, ZklA, 4.0, 0.0);
         L.reset();
 
         // GFM OO Block
         // F_ij += 2 \sum_{Q} b_ij^Q Z_Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFoo->gemv(true, K, Zq, 2.0, 1.0);
         K.reset();
@@ -259,9 +259,9 @@ void DFOCC::fc_grad_terms() {
         // GFM VO Block
         // F_ai += 2 \sum_{Q} b_ai^Q Z_Q'
         // W_ai += 2 \sum_{Q} b_ai^Q Z_Q'
-        IvoA = SharedTensor2d(new Tensor2d("MO-basis I <V|O>", nvirA, noccA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA));
+        IvoA = std::make_shared<Tensor2d>("MO-basis I <V|O>", nvirA, noccA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         L->swap_3index_col(K);
         K.reset();
@@ -271,7 +271,7 @@ void DFOCC::fc_grad_terms() {
         // TPDM
         // G_kl^Q += 2 Z_kl J_Q
         // G_lk^Q += 2 Z_kl J_Q
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
 #pragma omp parallel for
         for (int Q = 0; Q < nQ_ref; Q++) {
@@ -297,12 +297,12 @@ void DFOCC::fc_grad_terms() {
         Zq.reset();
 
         // Z_li^Q = 2 * \sum_{k} Z_lk b_ki^Q
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|KI)", nQ_ref, naoccA, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KI)", nQ_ref, naoccA, noccA);
         L->form_b_ki(K);
         K.reset();
-        Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|LI)", nQ_ref, nfrzc, noccA));
+        Z = std::make_shared<Tensor2d>("DF_BASIS_SCF Z (Q|LI)", nQ_ref, nfrzc, noccA);
         Z->contract233(false, false, nfrzc, noccA, ZlkA, L, 2.0, 0.0);
         L.reset();
 
@@ -323,9 +323,9 @@ void DFOCC::fc_grad_terms() {
 
         // GFM OO Block
         // F_ij -= \sum_{Q} \sum_{l} b_li^Q Z_lj^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA);
         L->form_b_li(K);
         K.reset();
         GFoo->contract(true, false, noccA, noccA, nQ_ref * nfrzc, L, Z, -1.0, 1.0);
@@ -334,9 +334,9 @@ void DFOCC::fc_grad_terms() {
         // GFM VO Block
         // F_ai -= \sum_{Q} \sum_{l} b_la^Q Z_li^Q'
         // W_ai -= \sum_{Q} \sum_{l} b_la^Q Z_li^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LA)", nQ_ref, nfrzc, nvirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|LA)", nQ_ref, nfrzc, nvirA);
         L->form_b_la(K);
         K.reset();
         IvoA->contract(true, false, nvirA, noccA, nQ_ref * nfrzc, L, Z, -1.0, 1.0);
@@ -344,12 +344,12 @@ void DFOCC::fc_grad_terms() {
         Z.reset();
 
         // Z_ki^Q = 2 * \sum_{l} Z_kl b_li^Q
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA);
         L->form_b_li(K);
         K.reset();
-        Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|KI)", nQ_ref, naoccA, noccA));
+        Z = std::make_shared<Tensor2d>("DF_BASIS_SCF Z (Q|KI)", nQ_ref, naoccA, noccA);
         Z->contract233(false, false, naoccA, noccA, ZklA, L, 2.0, 0.0);
         L.reset();
 
@@ -373,9 +373,9 @@ void DFOCC::fc_grad_terms() {
 
         // GFM OO Block
         // F_ij -= \sum_{Q} \sum_{k} b_ki^Q Z_kj^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|KI)", nQ_ref, naoccA, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KI)", nQ_ref, naoccA, noccA);
         L->form_b_ki(K);
         K.reset();
         GFoo->contract(true, false, noccA, noccA, nQ_ref * naoccA, L, Z, -1.0, 1.0);
@@ -384,9 +384,9 @@ void DFOCC::fc_grad_terms() {
         // GFM VO Block
         // F_ai -= \sum_{Q} \sum_{k} b_ka^Q Z_ki^Q'
         // W_ai -= \sum_{Q} \sum_{k} b_ka^Q Z_ki^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|KA)", nQ_ref, naoccA, nvirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KA)", nQ_ref, naoccA, nvirA);
         L->form_b_ka(K);
         K.reset();
         IvoA->contract(true, false, nvirA, noccA, nQ_ref * naoccA, L, Z, -1.0, 1.0);
@@ -424,19 +424,19 @@ void DFOCC::fc_grad_terms() {
         // Seprable TPDM : Alpha
         //=========================
         // Z_Q' = 2 \sum_{KL} b_{KL}^{Q} Z_KL
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|KL)", nQ_ref, naoccA, nfrzc));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KL)", nQ_ref, naoccA, nfrzc);
         L->form_b_kl(K);
         K.reset();
-        SharedTensor1d Zq = SharedTensor1d(new Tensor1d("DF_BASIS_SCF Zp_Q", nQ_ref));
+        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
         Zq->gemv(false, L, ZklA, 2.0, 0.0);
         L.reset();
 
         // Z_Q' += 2 \sum_{kl} b_{kl}^{Q} Z_kl
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|kl)", nQ_ref, naoccB, nfrzc));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|kl)", nQ_ref, naoccB, nfrzc);
         L->form_b_kl(K);
         K.reset();
         Zq->gemv(false, L, ZklB, 2.0, 1.0);
@@ -444,7 +444,7 @@ void DFOCC::fc_grad_terms() {
 
         // GFM OO Block
         // F_IJ += \sum_{Q} b_IJ^Q Z_Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFooA->gemv(true, K, Zq, 1.0, 1.0);
         K.reset();
@@ -452,9 +452,9 @@ void DFOCC::fc_grad_terms() {
         // GFM VO Block
         // F_AI += \sum_{Q} b_AI^Q Z_Q'
         // W_AI += \sum_{Q} b_AI^Q Z_Q'
-        IvoA = SharedTensor2d(new Tensor2d("MO-basis I <V|O>", nvirA, noccA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA));
+        IvoA = std::make_shared<Tensor2d>("MO-basis I <V|O>", nvirA, noccA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         L->swap_3index_col(K);
         K.reset();
@@ -464,7 +464,7 @@ void DFOCC::fc_grad_terms() {
         // TPDM
         // G_KL^Q += Z_KL J_Q
         // G_LK^Q += Z_KL J_Q
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
 #pragma omp parallel for
         for (int Q = 0; Q < nQ_ref; Q++) {
@@ -490,12 +490,12 @@ void DFOCC::fc_grad_terms() {
         // Zq.reset();
 
         // Z_LI^Q = \sum_{K} Z_LK b_KI^Q
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|KI)", nQ_ref, naoccA, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KI)", nQ_ref, naoccA, noccA);
         L->form_b_ki(K);
         K.reset();
-        Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|LI)", nQ_ref, nfrzc, noccA));
+        Z = std::make_shared<Tensor2d>("DF_BASIS_SCF Z (Q|LI)", nQ_ref, nfrzc, noccA);
         Z->contract233(false, false, nfrzc, noccA, ZlkA, L, 1.0, 0.0);
         L.reset();
 
@@ -516,9 +516,9 @@ void DFOCC::fc_grad_terms() {
 
         // GFM OO Block
         // F_IJ -= \sum_{Q} \sum_{L} b_LI^Q Z_LJ^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA);
         L->form_b_li(K);
         K.reset();
         GFooA->contract(true, false, noccA, noccA, nQ_ref * nfrzc, L, Z, -1.0, 1.0);
@@ -527,9 +527,9 @@ void DFOCC::fc_grad_terms() {
         // GFM VO Block
         // F_AI -= \sum_{Q} \sum_{L} b_LA^Q Z_LI^Q'
         // W_AI -= \sum_{Q} \sum_{L} b_LA^Q Z_LI^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LA)", nQ_ref, nfrzc, nvirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|LA)", nQ_ref, nfrzc, nvirA);
         L->form_b_la(K);
         K.reset();
         IvoA->contract(true, false, nvirA, noccA, nQ_ref * nfrzc, L, Z, -1.0, 1.0);
@@ -537,12 +537,12 @@ void DFOCC::fc_grad_terms() {
         Z.reset();
 
         // Z_KI^Q = \sum_{L} Z_KL b_LI^Q
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA);
         L->form_b_li(K);
         K.reset();
-        Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|KI)", nQ_ref, naoccA, noccA));
+        Z = std::make_shared<Tensor2d>("DF_BASIS_SCF Z (Q|KI)", nQ_ref, naoccA, noccA);
         Z->contract233(false, false, naoccA, noccA, ZklA, L, 1.0, 0.0);
         L.reset();
 
@@ -566,9 +566,9 @@ void DFOCC::fc_grad_terms() {
 
         // GFM OO Block
         // F_IJ -= \sum_{Q} \sum_{K} b_KI^Q Z_KJ^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|KI)", nQ_ref, naoccA, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KI)", nQ_ref, naoccA, noccA);
         L->form_b_ki(K);
         K.reset();
         GFooA->contract(true, false, noccA, noccA, nQ_ref * naoccA, L, Z, -1.0, 1.0);
@@ -577,9 +577,9 @@ void DFOCC::fc_grad_terms() {
         // GFM VO Block
         // F_AI -= \sum_{Q} \sum_{K} b_KA^Q Z_KI^Q'
         // W_AI -= \sum_{Q} \sum_{k} b_KA^Q Z_KI^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|KA)", nQ_ref, naoccA, nvirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|KA)", nQ_ref, naoccA, nvirA);
         L->form_b_ka(K);
         K.reset();
         IvoA->contract(true, false, nvirA, noccA, nQ_ref * naoccA, L, Z, -1.0, 1.0);
@@ -607,7 +607,7 @@ void DFOCC::fc_grad_terms() {
         //=========================
         // GFM oo Block
         // F_ij += \sum_{Q} b_ij^Q Z_Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFooB->gemv(true, K, Zq, 1.0, 1.0);
         K.reset();
@@ -615,9 +615,9 @@ void DFOCC::fc_grad_terms() {
         // GFM vo Block
         // F_ai += \sum_{Q} b_ai^Q Z_Q'
         // W_ai += \sum_{Q} b_ai^Q Z_Q'
-        IvoB = SharedTensor2d(new Tensor2d("MO-basis I <v|o>", nvirB, noccB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB));
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vo)", nQ_ref, nvirB, noccB));
+        IvoB = std::make_shared<Tensor2d>("MO-basis I <v|o>", nvirB, noccB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB);
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vo)", nQ_ref, nvirB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
         L->swap_3index_col(K);
         K.reset();
@@ -627,7 +627,7 @@ void DFOCC::fc_grad_terms() {
         // TPDM
         // G_kl^Q += Z_kl J_Q
         // G_lk^Q += Z_kl J_Q
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB, noccB));
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB, noccB);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
 #pragma omp parallel for
         for (int Q = 0; Q < nQ_ref; Q++) {
@@ -653,12 +653,12 @@ void DFOCC::fc_grad_terms() {
         Zq.reset();
 
         // Z_li^Q = \sum_{k} Z_lk b_ki^Q
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ki)", nQ_ref, naoccB, noccB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ki)", nQ_ref, naoccB, noccB);
         L->form_b_ki(K);
         K.reset();
-        Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|li)", nQ_ref, nfrzc, noccB));
+        Z = std::make_shared<Tensor2d>("DF_BASIS_SCF Z (Q|li)", nQ_ref, nfrzc, noccB);
         Z->contract233(false, false, nfrzc, noccB, ZlkB, L, 1.0, 0.0);
         L.reset();
 
@@ -679,9 +679,9 @@ void DFOCC::fc_grad_terms() {
 
         // GFM oo Block
         // F_ij -= \sum_{Q} \sum_{l} b_li^Q Z_lj^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|li)", nQ_ref, nfrzc, noccB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|li)", nQ_ref, nfrzc, noccB);
         L->form_b_li(K);
         K.reset();
         GFooB->contract(true, false, noccB, noccB, nQ_ref * nfrzc, L, Z, -1.0, 1.0);
@@ -690,9 +690,9 @@ void DFOCC::fc_grad_terms() {
         // GFM vo Block
         // F_ai -= \sum_{Q} \sum_{l} b_la^Q Z_li^Q'
         // W_ai -= \sum_{Q} \sum_{l} b_la^Q Z_li^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|la)", nQ_ref, nfrzc, nvirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|la)", nQ_ref, nfrzc, nvirB);
         L->form_b_la(K);
         K.reset();
         IvoB->contract(true, false, nvirB, noccB, nQ_ref * nfrzc, L, Z, -1.0, 1.0);
@@ -700,12 +700,12 @@ void DFOCC::fc_grad_terms() {
         Z.reset();
 
         // Z_ki^Q = \sum_{l} Z_kl b_li^Q
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|li)", nQ_ref, nfrzc, noccB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|li)", nQ_ref, nfrzc, noccB);
         L->form_b_li(K);
         K.reset();
-        Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|ki)", nQ_ref, naoccB, noccB));
+        Z = std::make_shared<Tensor2d>("DF_BASIS_SCF Z (Q|ki)", nQ_ref, naoccB, noccB);
         Z->contract233(false, false, naoccB, noccB, ZklB, L, 1.0, 0.0);
         L.reset();
 
@@ -729,9 +729,9 @@ void DFOCC::fc_grad_terms() {
 
         // GFM oo Block
         // F_ij -= \sum_{Q} \sum_{k} b_ki^Q Z_kj^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ki)", nQ_ref, naoccB, noccB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ki)", nQ_ref, naoccB, noccB);
         L->form_b_ki(K);
         K.reset();
         GFooB->contract(true, false, noccB, noccB, nQ_ref * naoccB, L, Z, -1.0, 1.0);
@@ -740,9 +740,9 @@ void DFOCC::fc_grad_terms() {
         // GFM VO Block
         // F_ai -= \sum_{Q} \sum_{k} b_ka^Q Z_ki^Q'
         // W_ai -= \sum_{Q} \sum_{k} b_ka^Q Z_ki^Q'
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB);
         K->read(psio_, PSIF_DFOCC_INTS);
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ka)", nQ_ref, naoccB, nvirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ka)", nQ_ref, naoccB, nvirB);
         L->form_b_ka(K);
         K.reset();
         IvoB->contract(true, false, nvirB, noccB, nQ_ref * naoccB, L, Z, -1.0, 1.0);
@@ -786,16 +786,16 @@ void DFOCC::oo_grad_terms() {
         // Seprable TPDM
         //=========================
         // G_ij^Q += 2 Z_ij J_Q
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
         Gsep->dirprd123(Jc, ZklA, 2.0, 1.0);
 
         // Read OO Ints
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
 
         // Z_Q' = 2 \sum_{kl} b_{kl}^{Q} Z_kl
-        SharedTensor1d Zq = SharedTensor1d(new Tensor1d("DF_BASIS_SCF Zp_Q", nQ_ref));
+        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
         Zq->gemv(false, K, ZklA, 2.0, 0.0);
 
 //  G_ij^Q += 2 Z_Q' \delta_{ij}
@@ -808,7 +808,7 @@ void DFOCC::oo_grad_terms() {
         }
 
         // Z_ij^Q' = 4 * \sum_{k} Z_ik b_kj^Q
-        Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|IJ)", nQ_ref, noccA, noccA));
+        Z = std::make_shared<Tensor2d>("DF_BASIS_SCF Z (Q|IJ)", nQ_ref, noccA, noccA);
         Z->contract233(false, false, noccA, noccA, ZklA, K, 4.0, 0.0);
 
         // G_ij^Q -= Z_ij^Q'
@@ -837,9 +837,9 @@ void DFOCC::oo_grad_terms() {
         // GFM VO Block
         // F_ai += 2 \sum_{Q} b_ai^Q Z_Q'
         // W_ai += 2 \sum_{Q} b_ai^Q Z_Q'
-        IvoA = SharedTensor2d(new Tensor2d("MO-basis I <V|O>", nvirA, noccA));
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA));
+        IvoA = std::make_shared<Tensor2d>("MO-basis I <V|O>", nvirA, noccA);
+        M = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
         M->read(psio_, PSIF_DFOCC_INTS);
         L->swap_3index_col(M);
         IvoA->gemv(true, L, Zq, 2.0, 0.0);
@@ -1238,14 +1238,14 @@ void DFOCC::vv_grad_terms() {
         //=========================
         // TPDM OO Block
         // Z_Q'' = 2 \sum_{cd} b_{cd}^{Q} Z_cd
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
-        SharedTensor1d Zq = SharedTensor1d(new Tensor1d("DF_BASIS_SCF Zp_Q", nQ_ref));
+        SharedTensor1d Zq = std::make_shared<Tensor1d>("DF_BASIS_SCF Zp_Q", nQ_ref);
         Zq->gemv(false, K, ZcdA, 2.0, 0.0);
         K.reset();
 
         //  G_ij^Q += 2 Z_Q'' \delta_{ij}
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
 #pragma omp parallel for
         for (int Q = 0; Q < nQ_ref; Q++) {
@@ -1260,7 +1260,7 @@ void DFOCC::vv_grad_terms() {
 
         // TPDM VV Block
         // G_ab^Q += 2 Z_ab J_Q
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
         Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
         Gsep->dirprd123(Jc, ZcdA, 2.0, 1.0);
         Gsep->write(psio_, PSIF_DFOCC_DENS, true, true);
@@ -1269,20 +1269,20 @@ void DFOCC::vv_grad_terms() {
 
         // TPDM OV Block
         // Read OV Ints
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
         L->read(psio_, PSIF_DFOCC_INTS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
         K->swap_3index_col(L);
         L.reset();
 
         // Z_ai^Q'' = 2 * \sum_{b} Z_ab b_bi^Q
-        Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|AI)", nQ_ref, nvirA, noccA));
+        Z = std::make_shared<Tensor2d>("DF_BASIS_SCF Z (Q|AI)", nQ_ref, nvirA, noccA);
         Z->contract233(false, false, nvirA, noccA, ZcdA, K, 2.0, 0.0);
 
         // G_ia^Q -= Z_ai^Q''
         // G_ai^Q -= Z_ai^Q''
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA));
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VO)", nQ_ref, nvirA, noccA));
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA);
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VO)", nQ_ref, nvirA, noccA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
         G->read(psio_, PSIF_DFOCC_DENS);
 #pragma omp parallel for
@@ -1307,7 +1307,7 @@ void DFOCC::vv_grad_terms() {
         //=========================
         // GFM OO Block
         // F_ij += 2 \sum_{Q} b_ij^Q Z_Q''
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         L->read(psio_, PSIF_DFOCC_INTS);
         GFoo->gemv(true, L, Zq, 2.0, 1.0);
         L.reset();
@@ -1329,14 +1329,14 @@ void DFOCC::vv_grad_terms() {
         // GFM VO Block
         // F_ai += 2 \sum_{Q} b_ai^Q Z_Q''
         // W_ai += 2 \sum_{Q} b_ai^Q Z_Q''
-        IvoA = SharedTensor2d(new Tensor2d("MO-basis I <V|O>", nvirA, noccA));
+        IvoA = std::make_shared<Tensor2d>("MO-basis I <V|O>", nvirA, noccA);
         IvoA->gemv(true, K, Zq, 2.0, 0.0);
 
         // GFM VO Block
         // F_ai -= \sum_{Q} \sum_{d} b_da^Q Z_di^Q''
         // w_ai -= \sum_{Q} \sum_{d} b_da^Q Z_di^Q''
         K.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         IvoA->contract(true, false, nvirA, noccA, nQ_ref * nvirA, K, Z, -1.0, 1.0);
         GFvo->add(IvoA);
