@@ -86,7 +86,7 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) : Wavefunction(opti
     outfile->Printf("\t*****************************************************\n");
     for (int h = 0; h < nirrep_; h++) {
         outfile->Printf("\t %3s   %3d   %3d   %3d   %3d   %3d   %3d   %3d   %3d\n", irreps_[h].c_str(), frzcpi_[h],
-                        docc[h] + socc[h], soccpi()[h], aoccpi_[h], avirpi_[h], boccpi_[h], bvirpi_[h], frzvpi_[h]);
+                        docc[h], socc[h], aoccpi_[h], avirpi_[h], boccpi_[h], bvirpi_[h], frzvpi_[h]);
     }
     outfile->Printf("\t*****************************************************\n\n");
 

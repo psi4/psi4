@@ -744,7 +744,7 @@ const Dimension Wavefunction::doccpi(bool warn_on_beta_socc) const {
     for (int h = 0; h < nalphapi_.n(); h++) {
         docc_vec.push_back(std::min(nalphapi_[h], nbetapi_[h]));
         if (warn_on_beta_socc && nbetapi_[h] > nalphapi_[h]) {
-            outfile->Printf("Warning! Irrep has more beta than alpha electrons.\n");
+            outfile->Printf("Warning! Irrep has more beta than alpha electrons in symmetry %d orbitals.\n", d);
         }
     }
     return docc_vec;
@@ -755,7 +755,7 @@ const Dimension Wavefunction::soccpi(bool warn_on_beta_socc) const {
     for (int h = 0; h < nalphapi_.n(); h++) {
         socc_vec.push_back(std::abs(nalphapi_[h] - nbetapi_[h]));
         if (warn_on_beta_socc && nbetapi_[h] > nalphapi_[h]) {
-            outfile->Printf("Warning! Irrep has more beta than alpha electrons.\n");
+            outfile->Printf("Warning! Irrep has more beta than alpha electrons in symmetry %d orbitals.\n", h);
         }
     }
     return socc_vec;
