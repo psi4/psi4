@@ -35,6 +35,7 @@
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/matrix.h"
 
+#include <cmath>
 #include <functional>
 #include <memory>
 #include <tuple>
@@ -54,21 +55,14 @@ static inline int ipure(int, int m) { return m < 0 ? 2 * -m : (m == 0 ? 0 : 2 * 
 static inline int ncart(int l) { return (l+1)*(l+2)/2; }
 
 // Some more useful Helper Functions
-static int choose(int n, int r) {
+static inline double choose(int n, int r) {
     if (r < 0 || r > n) {
-        return 0;
+        return 0.0;
     }
-    int small = std::min(n, n-r);
-    int nCr = 1;
-    for (int t = 0; t < small; t++) {
-        nCr *= n;
-        nCr /= (t+1);
-        n -= 1;
-    }
-    return nCr;
+    return 1.0 / ((n+1) * std::beta(n-r+1,r+1));
 }
 
-static int m_addr(int m) {
+static inline int m_addr(int m) {
     /*- Return the unsigned (array) address of m -*/
     if (m <= 0) {
         // 0, 1s, 2s, 3s, ...
@@ -81,21 +75,30 @@ static int m_addr(int m) {
 
 extern double factorial(int n);
 
+/**
+ * Class MultipoleRotationFactory
+ * 
+ * Generates the Wigner D matrices required 
+ * for the rotation of real solid harmonics.
+ * 
+ * Reference: J. Ivanic and K. Ruedenberg, J. Phys. Chem. 1996, 100, 6342-6347
+ */
 class PSI_API MultipoleRotationFactory {
 
     protected:
       Vector3 R_a_;
       Vector3 R_b_;
 
-      // New Z axis in rotated frame of reference
+      /// New Z axis in rotated frame of reference
       SharedMatrix Uz_;
 
-      // Maximal Angular Momentum
+      /// Maximal Angular Momentum
       int lmax_;
 
-      // Cached Rotation Matrices in a vector of Matrices
+      /// Cached Rotation Matrices in a vector of Matrices
       std::vector<SharedMatrix> D_cache_;
 
+      /// Multipole rotation matrix generation intermediates, from Ivanic Table 2
       double U(int l, int m, int M);
       double V(int l, int m, int M);
       double W(int l, int m, int M);
@@ -130,35 +133,45 @@ class PSI_API MultipoleRotationFactory {
     }
 
     public:
-      // Constructor
+      /// Constructor
       MultipoleRotationFactory(Vector3 R_a, Vector3 R_b, int lmax);
 
       SharedMatrix get_D(int l);
 
 }; // End MultipoleRotationFactory
 
+/**
+ * Class HarmonicCoefficients
+ * 
+ * Creates a map of term-wise cartesian harmonic
+ * contributions of spherical harmonics (for Regular or Irregular Harmonics)
+ * 
+ * NOTE: Recursions are built from Helgaker 9.13.78 - 9.13.82 (for regular harmonics),
+ * and they are then re-normalized according to Stone B.1.3 (from Helgaker 9.13.14)
+ * 
+ */
 class PSI_API HarmonicCoefficients {
     protected:
-      // Ylm[l][m] = sum (coeff * x^a * y^b * z^c), stores a tuple of (coeff, a, b, c), normalized according to Stone's convention
+      /// Ylm[l][m] = sum (coeff * x^a * y^b * z^c), stores a tuple of (coeff, a, b, c), normalized according to Stone's convention
       std::vector<std::vector<std::unordered_map<int, double>>> mpole_terms_;
-      // Helgaker Rs terms (used in generating mpole_terms_)
+      /// Helgaker Rs terms (used in generating mpole_terms_)
       std::vector<std::vector<std::unordered_map<int, double>>> Rc_;
-      // Helgaker Rc terms (used in generating mpole_terms_)
+      /// Helgaker Rc terms (used in generating mpole_terms_)
       std::vector<std::vector<std::unordered_map<int, double>>> Rs_;
-      // Maximum angular momentum
+      /// Maximum angular momentum
       int lmax_;
-      // Regular or Irregular?
+      /// Regular or Irregular?
       SolidHarmonicsType type_;
 
-      // Compute terms if it were regular
+      /// Compute terms if it were regular (Helgaker 9.13.78 - 9.13.82)
       void compute_terms_regular();
-      // Compute terms if it were irregular
+      /// Compute terms if it were irregular (TODO: Implement Helgaker 9.13.85 - 9.13.89)
       void compute_terms_irregular();
 
     public:
-      // Constructor
+      /// Constructor
       HarmonicCoefficients(int lmax, SolidHarmonicsType type);
-      // Returns a reference to the terms
+      /// Returns a reference to the terms
       std::unordered_map<int, double>& get_terms(int l, int mu) { return mpole_terms_[l][mu]; }
     
 };
@@ -166,48 +179,48 @@ class PSI_API HarmonicCoefficients {
 class PSI_API RealSolidHarmonics {
 
     protected:
-      // Values of the Real Solid Harmonics, normalized according to Stone's convention
+      /// Values of the Real Solid Harmonics, normalized according to Stone's convention
       std::vector<std::vector<double>> Ylm_;
-      // Maximum angular momentum
+      /// Maximum angular momentum
       int lmax_;
-      // Regular or Irregular?
+      /// Regular or Irregular?
       SolidHarmonicsType type_;
-      // Center of the Harmonics
+      /// Center of the Harmonics
       Vector3 center_;
 
-      // Return a translated copy of the multipoles if it were regular
+      /// Return a translated copy of the multipoles if it were regular
       std::shared_ptr<RealSolidHarmonics> translate_regular(Vector3 new_center);
-      // Return a translated copy of the multipoles if it were irregular
+      /// Return a translated copy of the multipoles if it were irregular
       std::shared_ptr<RealSolidHarmonics> translate_irregular(Vector3 new_center);
 
     public:
-      // Constructor
+      /// Constructor
       RealSolidHarmonics(int lmax, Vector3 center, SolidHarmonicsType type);
 
-      // Returns a copy of a RealSolidHarmonics object
+      /// Returns a copy of a RealSolidHarmonics object
       std::shared_ptr<RealSolidHarmonics> copy();
-      // Adds two harmonics together
+      /// Adds two harmonics together
       void add(const RealSolidHarmonics& rsh);
       void add(const std::shared_ptr<RealSolidHarmonics>& rsh);
-      // Element-wise multiplication of two multtipoles
+      /// Element-wise multiplication of two multtipoles
       double dot(const RealSolidHarmonics& rsh);
       double dot(const std::shared_ptr<RealSolidHarmonics>& rsh);
-      // Scale the harmonics by a constant
+      /// Scale the harmonics by a constant
       void scale(double val);
-      // Adds to a specific harmonic term
+      /// Adds to a specific harmonic term
       void add(int l, int mu, double val) { Ylm_[l][mu] += val; }
-      // Get a specific multipole term
+      /// Get a specific multipole term
       double get(int l, int mu) { return Ylm_[l][mu]; }
       
-      // Returns a reference of Ylm, to be computed by something else
+      /// Returns a reference of Ylm, to be computed by something else
       std::vector<std::vector<double>>& get_multipoles() { return Ylm_; }
 
-      // Get an "internuclear" interaction tensor between two points separated by a distance R
+      /// Get an "internuclear" interaction tensor between two points separated by a distance R
       SharedVector build_T_spherical(int la, int lb, double R);
 
-      // Translate the solid harmonics
+      /// Translate the solid harmonics
       std::shared_ptr<RealSolidHarmonics> translate(const Vector3& new_center);
-      // Calulate the far field effect this multipole series would have on another
+      /// Calulate the far field effect this multipole series would have on another
       std::shared_ptr<RealSolidHarmonics> far_field_vector(const Vector3& far_center);
 
 }; // End RealSolidHarmonics class

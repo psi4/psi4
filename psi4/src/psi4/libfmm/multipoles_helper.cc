@@ -163,10 +163,12 @@ HarmonicCoefficients::HarmonicCoefficients(int lmax, SolidHarmonicsType type) {
     if (type_ == Irregular) compute_terms_irregular();
 }
 
+/// TODO: Implement Helgaker 9.13.85 - 9.13.89
 void HarmonicCoefficients::compute_terms_irregular() {
     throw FeatureNotImplemented("libfmm", "RealSolidHarmonics::compute_terms_irregular()", __FILE__, __LINE__);
 }
 
+/// Helgaker 9.13.78 - 9.13.82
 void HarmonicCoefficients::compute_terms_regular() {
 
     for (int l = 0; l <= lmax_; l++) {
@@ -360,6 +362,9 @@ void HarmonicCoefficients::compute_terms_regular() {
             }
         }
 
+        // => Renormalization <= //
+        
+        // Convert FROM Helgaker Convention (Equ. 9.13.14) TO Stone Convention (Equ B.1.3)
         for (int m = -l; m <= l; m++) {
             // m is signed address
             // mu is unsigned address
