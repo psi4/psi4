@@ -121,12 +121,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- Specifies a custom frozen-core policy on a per-element basis. Input
     should be a list of integers representing the number of orbitals to freeze
-    for each atomic number. For example, to specify that elements H-Be should
-    have 0 frozen orbitals, B-Mg should have 1, and Al should have 2, you would
-    provide the input ``[0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2]``. Please
-    make sure to fill in the list up to the highest atomic number included in
-    any calculations. This option is only used if |globals__freeze_core| is set
-    to ``POLICY``. -*/
+    for each atomic number MINUS one (so H is 0, He is 1, etc). For example, to
+    specify that elements H-Be should have 0 frozen orbitals, B-Mg should have
+    1, and Al should have 2, you would provide the input ``[0, 0, 0, 0, 1, 1,
+    1, 1, 1, 1, 1, 1, 2]``. Please make sure to fill in the list up to the
+    highest atomic number included in any calculations. This option is only
+    used if |globals__freeze_core| is set to ``POLICY``. -*/
     options.add("FREEZE_CORE_POLICY", new ArrayType());
 
     options.add("NUM_GPUS", 1);
