@@ -307,6 +307,7 @@ jobs:
         conda info
         conda list
 
+    # TODO-dfocc2: reset x3 CMAKE_INSIST_FIND_PACKAGE_qcengine=ON after qcng v0.24.1
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'
       run: |
@@ -324,7 +325,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_ambit=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
@@ -364,7 +365,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_ambit=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
@@ -406,7 +407,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \

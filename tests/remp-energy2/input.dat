@@ -1,0 +1,61 @@
+#! integral conventional unrestricted REMP/cc-pVDZ energies for the H2O+ molecule.
+#! results were independently verified against the initial wavels implementation
+
+
+test_dict = { "0.00": -75.80164576260127,  #TEST
+              "0.10": -75.79910145590183,  #TEST
+              "0.20": -75.79678966353273,  #TEST
+              "0.30": -75.79466003892817,  #TEST
+              "1.00": -75.78294942486372 } #TEST
+
+molecule h2o {
+1 2
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+symmetry c1
+}
+
+set {
+  reference uhf
+  basis cc-pvdz
+  guess sad
+  scf_type out_of_core
+  freeze_core true
+  cc_type conv
+  e_convergence 1.0E-9
+  r_convergence 1.0E-8
+  qc_module occ
+}
+
+Avals=[0.00, 0.10, 0.20, 0.30, 1.00]
+
+
+#for A in Avals:
+#     psi4.print_out("running step %5.2f" % A)
+#     set remp_A=$A
+#     e_remp=energy('remp2')
+#     compare_values(test_dict[remp_A], get_variable("REMP2 TOTAL ENERGY"), 6, "REMP2 Total Energy") #TEST
+
+
+
+set remp_A=0.00
+e_remp=energy('remp2')
+compare_values(test_dict["0.00"], variable("REMP2 TOTAL ENERGY"), 6, "REMP(0.00) Total Energy") #TEST
+
+set remp_A=0.10
+e_remp=energy('remp2')
+compare_values(test_dict["0.10"], variable("REMP2 TOTAL ENERGY"), 6, "REMP(0.10) Total Energy") #TEST
+
+set remp_A=0.20
+e_remp=energy('remp2')
+compare_values(test_dict["0.20"], variable("REMP2 TOTAL ENERGY"), 6, "REMP(0.20) Total Energy") #TEST
+
+set remp_A=0.30
+e_remp=energy('remp2')
+compare_values(test_dict["0.30"], variable("REMP2 TOTAL ENERGY"), 6, "REMP(0.30) Total Energy") #TEST
+
+set remp_A=1.00
+e_remp=energy('remp2')
+compare_values(test_dict["1.00"], variable("REMP2 TOTAL ENERGY"), 6, "REMP(1.00) Total Energy") #TEST
+

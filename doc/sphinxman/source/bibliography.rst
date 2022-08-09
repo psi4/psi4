@@ -315,7 +315,7 @@ Bibliography
    *J. Chem. Phys.* **136**, 204114 (2012).
 
 .. [Bozkaya:2013:ocepa]
-   U. Bozkaya and C. D. Sherrill
+   U. Bozkaya and C. D. Sherrill,
    *J. Chem. Phys.* **139**, 054104 (2013).
 
 .. [Bozkaya:2013:omp3grad]
@@ -594,3 +594,27 @@ Bibliography
    C. Ochsenfeld, C. A. White, M. Head-Gordon
    *J. Chem. Phys.* **109**, 1663 (1998)
    https://doi.org/10.1063/1.476741
+
+.. [Behnle:2019:REMP]
+   "REMP: A hybrid perturbation theory providing improved electronic wavefunctions and properties",
+   S. Behnle and R. F. Fink,
+   *J. Chem. Phys.* **150**, 1241077 (2019).
+   https://doi.org/10.1063/1.5086168
+
+.. [Behnle:2021:OREMP]
+   "OO-REMP: Approaching Chemical Accuracy with Second-Order Perturbation Theory",
+   S. Behnle and R. F. Fink,
+   *J. Chem. Theory Comput.* **17**, 3259 (2021).
+   https://doi.org/10.1021/acs.jctc.1c00280
+
+.. [Behnle:2022:OREMP]
+   "UREMP, RO-REMP, and OO-REMP: Hybrid perturbation theories for open-shell electronic structure calculations",
+   S. Behnle and R. F. Fink
+   *J. Chem. Phys.* **156**, 124103 (2022).
+   https://doi.org/10.1063/5.0081285
+
+.. [Fink:2006:RE]
+   "Two new unitary-invariant and size-consistent perturbation theoretical approaches to the electron correlation energy",
+   R. F. Fink
+   *Chem. Phys. Lett.*, **428**, 461 (2006)
+

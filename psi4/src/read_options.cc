@@ -267,7 +267,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- MBIS Number of Spherical Points -*/
     options.add_int("MBIS_SPHERICAL_POINTS", 302);
     /*- Pruning scheme for MBIS Grid -*/
-    options.add_str("MBIS_PRUNING_SCHEME", "ROBUST", 
+    options.add_str("MBIS_PRUNING_SCHEME", "ROBUST",
                     "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
     /*- Maximum Radial Moment to Calculate -*/
     options.add_int("MAX_RADIAL_MOMENT", 4);
@@ -2089,7 +2089,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         previous approximate solution (for each root)? This doubles the
         number of resulting vectors but generally improves convergence. -*/
         options.add_bool("COLLAPSE_WITH_LAST", true);
-        /*- Has the same effect as "COLLAPSE_WITH_LAST" but only in 
+        /*- Has the same effect as "COLLAPSE_WITH_LAST" but only in
         CC3 computations and after the initial solution of EOM CCSD.
         May help efficiency, but hazardous when solving for higher roots. -*/
         options.add_bool("COLLAPSE_WITH_LAST_CC3", false);
@@ -2876,6 +2876,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("PCG_CONVERGENCE", 1e-6);
         /*- Damping factor for the orbital gradient (Rendell et al., JCP, vol. 87, pp. 5976, 1987) -*/
         options.add_double("MOGRAD_DAMPING", 1.0);
+        /*- mixing parameter for the REMP hybrid perturbation theory, A specifies the Moller-Plesset fraction -*/
+        options.add_double("REMP_A", 0.15E0);
 
         /*- The solver will be used for simultaneous linear equations. -*/
         options.add_str("LINEQ_SOLVER", "CDGESV", "CDGESV FLIN POPLE");
@@ -2898,7 +2900,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Type of the SOS method -*/
         options.add_str("SOS_TYPE", "SOS", "SOS SOSPI");
         /*- Type of the wavefunction. -*/
-        options.add_str("WFN_TYPE", "OMP2", "OMP2 OMP3 OCEPA OMP2.5");
+        options.add_str("WFN_TYPE", "OMP2", "OMP2 OMP3 OCEPA OMP2.5 REMP OREMP");
         /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC
         algorithm. The DIRECT option (default) means it will not be computed and stored, instead its contribution will
         be directly added to Generalized-Fock Matrix. -*/
