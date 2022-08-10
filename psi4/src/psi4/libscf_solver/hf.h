@@ -109,9 +109,8 @@ class HF : public Wavefunction {
     bool broken_symmetry_;
 
     // Initial SAD doubly occupied may be more than ndocc
-    // int sad_nocc_[8];
-    Dimension original_doccpi_;
-    Dimension original_soccpi_;
+    Dimension original_nalphapi_;
+    Dimension original_nbetapi_;
     int original_nalpha_;
     int original_nbeta_;
     // Reset occupations in SCF iteration?

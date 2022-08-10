@@ -54,8 +54,6 @@ void DCTSolver::init() {
         reference_wavefunction_->get_dipole_field_strength());
     scf_energy_ = reference_wavefunction_->energy();
     ntriso_ = nso_ * (nso_ + 1) / 2;
-    soccpi_ = reference_wavefunction_->soccpi();
-    doccpi_ = reference_wavefunction_->doccpi();
     frzcpi_ = reference_wavefunction_->frzcpi();
     frzvpi_ = reference_wavefunction_->frzvpi();
     nmopi_ = reference_wavefunction_->nmopi();

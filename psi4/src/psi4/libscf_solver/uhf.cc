@@ -132,13 +132,12 @@ void UHF::finalize() {
         for (int m = 0; m < Lagrangian_->rowdim(h); ++m) {
             for (int n = 0; n < Lagrangian_->coldim(h); ++n) {
                 double sum = 0.0;
-                for (int i = 0; i < doccpi_[h]; ++i) {
-                    sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i) +
-                           epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
-                }
-                for (int i = doccpi_[h]; i < doccpi_[h] + soccpi_[h]; ++i)
+                for (int i = 0; i < nalphapi_[h]; ++i) {
                     sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
-
+                }
+                for (int i = 0; i < nbetapi_[h]; ++i) {
+                    sum += epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
+                }
                 Lagrangian_->set(h, m, n, sum);
             }
         }
@@ -542,8 +541,8 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
 
     // Setup jk
-    std::vector<SharedMatrix>& Cl = jk_->C_left();
-    std::vector<SharedMatrix>& Cr = jk_->C_right();
+    auto& Cl = jk_->C_left();
+    auto& Cr = jk_->C_right();
     Cl.clear();
     Cr.clear();
 
@@ -739,8 +738,8 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 }
 std::vector<SharedMatrix> UHF::cphf_Hx(std::vector<SharedMatrix> x_vec) {
     // Compute quantities
-    std::vector<SharedMatrix> onel = onel_Hx(x_vec);
-    std::vector<SharedMatrix> twoel = twoel_Hx(x_vec, true, "MO");
+    auto onel = onel_Hx(x_vec);
+    auto twoel = twoel_Hx(x_vec, true, "MO");
 
     for (size_t i = 0; i < onel.size(); i++) {
         onel[i]->add(twoel[i]);
@@ -780,25 +779,25 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
-        SharedMatrix Caocc_ao = Ca_subset("AO", "ALL");
-        SharedMatrix Cbocc_ao = Cb_subset("AO", "ALL");
-        SharedMatrix Fa_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
-        SharedMatrix Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
-        SharedMatrix IFock_ao_a = linalg::triplet(Caocc_ao, Fa_ao, Caocc_ao, true, false, false);
-        SharedMatrix IFock_ao_b = linalg::triplet(Cbocc_ao, Fb_ao, Cbocc_ao, true, false, false);
+        auto Caocc_ao = Ca_subset("AO", "ALL");
+        auto Cbocc_ao = Cb_subset("AO", "ALL");
+        auto Fa_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        auto Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
+        auto IFock_ao_a = linalg::triplet(Caocc_ao, Fa_ao, Caocc_ao, true, false, false);
+        auto IFock_ao_b = linalg::triplet(Cbocc_ao, Fb_ao, Cbocc_ao, true, false, false);
         Precon_ao_a = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
         Precon_ao_b = std::make_shared<Matrix>("Precon", nbeta_, nmo_ - nbeta_);
 
-        double* denom_ap = Precon_ao_a->pointer()[0];
-        double** f_ap = IFock_ao_a->pointer();
+        auto denom_ap = Precon_ao_a->pointer()[0];
+        auto f_ap = IFock_ao_a->pointer();
         for (size_t i = 0, target = 0; i < nalpha_; i++) {
             for (size_t a = nalpha_; a < nmo_; a++) {
                 denom_ap[target++] = -f_ap[i][i] + f_ap[a][a];
             }
         }
 
-        double* denom_bp = Precon_ao_b->pointer()[0];
-        double** f_bp = IFock_ao_b->pointer();
+        auto denom_bp = Precon_ao_b->pointer()[0];
+        auto f_bp = IFock_ao_b->pointer();
         for (size_t i = 0, target = 0; i < nbeta_; i++) {
             for (size_t a = nbeta_; a < nmo_; a++) {
                 denom_bp[target++] = -f_bp[i][i] + f_bp[a][a];
@@ -1059,13 +1058,13 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
     // => Build gradient and preconditioner <= //
 
     // Grab occ and vir orbitals
-    SharedMatrix Cocc_a = Ca_subset("SO", "OCC");
-    SharedMatrix Cvir_a = Ca_subset("SO", "VIR");
-    SharedMatrix Gradient_a = linalg::triplet(Cocc_a, Fa_, Cvir_a, true, false, false);
+    auto Cocc_a = Ca_subset("SO", "OCC");
+    auto Cvir_a = Ca_subset("SO", "VIR");
+    auto Gradient_a = linalg::triplet(Cocc_a, Fa_, Cvir_a, true, false, false);
 
-    SharedMatrix Cocc_b = Cb_subset("SO", "OCC");
-    SharedMatrix Cvir_b = Cb_subset("SO", "VIR");
-    SharedMatrix Gradient_b = linalg::triplet(Cocc_b, Fb_, Cvir_b, true, false, false);
+    auto Cocc_b = Cb_subset("SO", "OCC");
+    auto Cvir_b = Cb_subset("SO", "VIR");
+    auto Gradient_b = linalg::triplet(Cocc_b, Fb_, Cvir_b, true, false, false);
 
     // Make sure the MO gradient is reasonably small
     if ((Gradient_a->absmax() > 0.3) || (Gradient_b->absmax() > 0.3)) {
@@ -1074,7 +1073,7 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
         }
         return 0;
     }
-    std::vector<SharedMatrix> ret_x =
+    auto ret_x =
         cphf_solve({Gradient_a, Gradient_b}, soscf_conv, soscf_max_iter, soscf_print ? 2 : 0);
 
     // => Rotate orbitals <= //

@@ -54,7 +54,7 @@ void CCEnergyWavefunction::form_df_ints(Options &options, int **cachelist, int *
      * Set up the DF tensor machinery
      */
     std::shared_ptr<BasisSet> dfBasis = get_basisset("DF_BASIS_CC");
-    int nocc = doccpi_.sum();
+    int nocc = doccpi().sum();
     int nvir = nmo_ - nocc;
     int nbf = basisset_->nbf();
     int nbf2 = nbf * nbf;

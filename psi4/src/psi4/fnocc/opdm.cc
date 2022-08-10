@@ -91,16 +91,16 @@ void CoupledPair::OPDM() {
     }
     // active doubly occupied
     for (int h = 0; h < nirrep_; h++) {
-        int norbs = doccpi_[h] - frzcpi_[h];
+        int norbs = nalphapi_[h] - frzcpi_[h];
         for (int i = 0; i < norbs; i++) {
             reorder[irrepoffset[h] + i + frzcpi_[h]] = count++;
         }
     }
     // active virtual
     for (int h = 0; h < nirrep_; h++) {
-        int norbs = nmopi_[h] - frzvpi_[h] - doccpi_[h];
+        int norbs = nmopi_[h] - frzvpi_[h] - nalphapi_[h];
         for (int i = 0; i < norbs; i++) {
-            reorder[irrepoffset[h] + i + doccpi_[h]] = count++;
+            reorder[irrepoffset[h] + i + nalphapi_[h]] = count++;
         }
     }
     // frozen virtual

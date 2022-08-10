@@ -57,7 +57,6 @@ void DFOCC::get_moinfo() {
         nmo_ = reference_wavefunction_->nmo();
         nmopi_ = reference_wavefunction_->nmopi();
         nsopi_ = reference_wavefunction_->nsopi();
-        doccpi_ = reference_wavefunction_->doccpi();
         frzcpi_ = reference_wavefunction_->frzcpi();
         frzvpi_ = reference_wavefunction_->frzvpi();
         nalphapi_ = reference_wavefunction_->nalphapi();
@@ -76,7 +75,7 @@ void DFOCC::get_moinfo() {
         // figure out number of MO spaces
         nfrzc = frzcpi_[0];
         nfrzv = frzvpi_[0];
-        noccA = doccpi_[0];
+        noccA = nalphapi_.sum();
         nvirA = nmo_ - noccA;         // Number of virtual orbitals
         naoccA = noccA - nfrzc;       // Number of active occupied orbitals
         navirA = nvirA - nfrzv;       // Number of active virtual orbitals
@@ -162,8 +161,6 @@ void DFOCC::get_moinfo() {
         nmo_ = reference_wavefunction_->nmo();
         nmopi_ = reference_wavefunction_->nmopi();
         nsopi_ = reference_wavefunction_->nsopi();
-        doccpi_ = reference_wavefunction_->doccpi();
-        soccpi_ = reference_wavefunction_->soccpi();
         frzcpi_ = reference_wavefunction_->frzcpi();
         frzvpi_ = reference_wavefunction_->frzvpi();
         nalphapi_ = reference_wavefunction_->nalphapi();
@@ -182,8 +179,8 @@ void DFOCC::get_moinfo() {
         // figure out number of MO spaces
         nfrzc = frzcpi_[0];
         nfrzv = frzvpi_[0];
-        noccA = doccpi_[0] + soccpi_[0];
-        noccB = doccpi_[0];
+        noccA = nalphapi_.sum();
+        noccB = nbetapi_.sum();
         nvirA = nmo_ - noccA;         // Number of virtual orbitals
         nvirB = nmo_ - noccB;         // Number of virtual orbitals
         naoccA = noccA - nfrzc;       // Number of active occupied orbitals

@@ -16,7 +16,8 @@ if(${ENABLE_v2rdm_casscf})
 
         ExternalProject_Add(v2rdm_casscf_external
             DEPENDS psi4-core
-            URL https://github.com/loriab/v2rdm_casscf/archive/929d7fc.tar.gz
+            # Re-change source URL once V2RDM is compatible with Vector/IntVector change and docc/socc change.
+            URL https://github.com/loriab/v2rdm_casscf/archive/v2rdm8.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

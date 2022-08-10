@@ -78,9 +78,9 @@ void CCEnergyWavefunction::get_moinfo() {
         moinfo_.escf = energy_;
     moinfo_.sopi = nsopi_;
     moinfo_.orbspi = nmopi_;
-    moinfo_.openpi = soccpi_;
+    moinfo_.openpi = soccpi();
     // We'll remove the frzcpi later in this file.
-    moinfo_.clsdpi = doccpi_;
+    moinfo_.clsdpi = doccpi();
 
     auto nirreps = moinfo_.nirreps;
 

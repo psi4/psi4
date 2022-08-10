@@ -698,10 +698,10 @@ void DCTSolver::compute_orbital_gradient_VO(bool separate_gbargamma) {
         // and not the full gamma for the other 2RDM terms.
         // All we need is (gbargamma)^a_p gamma^p_i.
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nmopi_), Slice(zero, nmopi_));
-        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(doccpi_, nmopi_), Slice(zero, nmopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(zero, soccpi_ + doccpi_));
-        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nmopi_), Slice(zero, doccpi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(nalphapi_, nmopi_), Slice(zero, nmopi_));
+        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(nbetapi_, nmopi_), Slice(zero, nmopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(zero, nalphapi_));
+        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nmopi_), Slice(zero, nbetapi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
         auto beta_jk = linalg::doublet(gbar_beta_block, gamma_beta_block, false, false);
 

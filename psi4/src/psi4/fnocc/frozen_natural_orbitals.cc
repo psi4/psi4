@@ -72,7 +72,7 @@ void FrozenNO::common_init() {
     nfzv = frzvpi_.sum();
     nso = nsopi_.sum();
     nmo = nmopi_.sum();
-    ndocc = doccpi_.sum();
+    ndocc = doccpi().sum();
     ndoccact = ndocc - nfzc;
     nvirt = nmo - ndocc;
 
@@ -132,10 +132,10 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     // orbital energies:
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
-    auto aOccOrbsPI = doccpi_ + soccpi_ - frzcpi_;
-    auto bOccOrbsPI = doccpi_ - frzcpi_;
-    auto aVirOrbsPI = nmopi_ - doccpi_ - soccpi_ - frzvpi_;
-    auto bVirOrbsPI = nmopi_ - doccpi_ - frzvpi_;
+    auto aOccOrbsPI = nalphapi_ - frzcpi_;
+    auto bOccOrbsPI = nbetapi_ - frzcpi_;
+    auto aVirOrbsPI = nmopi_ - nalphapi_ - frzvpi_;
+    auto bVirOrbsPI = nmopi_ - nbetapi_ - frzvpi_;
     auto numAOcc = aOccOrbsPI.sum();
     auto numBOcc = bOccOrbsPI.sum();
     auto numAVir = aVirOrbsPI.sum();
@@ -148,10 +148,10 @@ void FrozenNO::ComputeNaturalOrbitals() {
     auto epsA = reference_wavefunction_->epsilon_a();
     auto epsB = reference_wavefunction_->epsilon_b();
     for (int h = 0; h < nirrep_; ++h) {
-        for (int a = frzcpi_[h]; a < doccpi_[h] + soccpi_[h]; ++a) aOccEvals[aOccCount++] = epsA->get(h, a);
-        for (int b = frzcpi_[h]; b < doccpi_[h]; ++b) bOccEvals[bOccCount++] = epsB->get(h, b);
-        for (int a = doccpi_[h] + soccpi_[h]; a < nmopi_[h]; ++a) aVirEvals[aVirCount++] = epsA->get(h, a);
-        for (int b = doccpi_[h]; b < nmopi_[h]; ++b) bVirEvals[bVirCount++] = epsB->get(h, b);
+        for (int a = frzcpi_[h]; a < nalphapi_[h]; ++a) aOccEvals[aOccCount++] = epsA->get(h, a);
+        for (int b = frzcpi_[h]; b < nbetapi_[h]; ++b) bOccEvals[bOccCount++] = epsB->get(h, b);
+        for (int a = nalphapi_[h]; a < nmopi_[h]; ++a) aVirEvals[aVirCount++] = epsA->get(h, a);
+        for (int b = nbetapi_[h]; b < nmopi_[h]; ++b) bVirEvals[bVirCount++] = epsB->get(h, b);
     }
 
     global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
@@ -303,14 +303,14 @@ void FrozenNO::ComputeNaturalOrbitals() {
             for (int a = 0; a < v; a++) {
                 double dum = 0.0;
                 for (int b = 0; b < v; b++) {
-                    dum += c_oldv[mu][doccpi_[h] + b] * c_newv[b][a];
+                    dum += c_oldv[mu][nalphapi_[h] + b] * c_newv[b][a];
                 }
                 tp[mu][a] = dum;
             }
         }
         for (int mu = 0; mu < nsopi_[h]; mu++) {
             for (int a = 0; a < v; a++) {
-                c_oldv[mu][doccpi_[h] + a] = tp[mu][a];
+                c_oldv[mu][nalphapi_[h] + a] = tp[mu][a];
             }
         }
     }
@@ -413,7 +413,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
 
     auto Fab = std::make_shared<Matrix>("Fab(NO)", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
     for (int h = 0; h < nirrep_; h++) {
-        int o = doccpi_[h];
+        int o = nalphapi_[h];
         int vnew = newVirOrbsPI[h];
         int vold = aVirOrbsPI[h];
         double** Fnew = Fab->pointer(h);
@@ -431,8 +431,7 @@ void FrozenNO::ComputeNaturalOrbitals() {
     }
 
     // semicanonicalize orbitals:
-    std::shared_ptr<Matrix> eigvecF =
-        std::make_shared<Matrix>("Fab eigenvectors", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
+    auto eigvecF = std::make_shared<Matrix>("Fab eigenvectors", nirrep_, newVirOrbsPI, newVirOrbsPI, symmetry);
     auto eigvalF = std::make_shared<Vector>("Fab eigenvalues", nirrep_, newVirOrbsPI);
     Fab->diagonalize(eigvecF, eigvalF);
 
@@ -448,14 +447,14 @@ void FrozenNO::ComputeNaturalOrbitals() {
             for (int a = 0; a < v; a++) {
                 double dum = 0.0;
                 for (int b = 0; b < v; b++) {
-                    dum += c_oldv[mu][doccpi_[h] + b] * c_newv[b][a];
+                    dum += c_oldv[mu][nalphapi_[h] + b] * c_newv[b][a];
                 }
                 tp[mu][a] = dum;
             }
         }
         for (int mu = 0; mu < nsopi_[h]; mu++) {
             for (int a = 0; a < v; a++) {
-                c_oldv[mu][doccpi_[h] + a] = tp[mu][a];
+                c_oldv[mu][nalphapi_[h] + a] = tp[mu][a];
             }
         }
     }
@@ -468,10 +467,10 @@ void FrozenNO::ComputeNaturalOrbitals() {
     // put modified orbital energies back into epsilon_a
     std::shared_ptr<Vector> eps = epsilon_a_;
     for (int h = 0; h < nirrep_; h++) {
-        double* epsp = eps->pointer(h);
-        double* eigp = eigvalF->pointer(h);
+        auto epsp = eps->pointer(h);
+        auto eigp = eigvalF->pointer(h);
         for (int a = 0; a < newVirOrbsPI[h]; a++) {
-            epsp[doccpi_[h] + a] = eigp[a];
+            epsp[nalphapi_[h] + a] = eigp[a];
         }
     }
 
