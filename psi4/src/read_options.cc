@@ -1833,8 +1833,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("CACHELEVEL", 2);
         /*- The algorithm to use for the $\left\langle VV||VV\right \rangle$ terms -*/
         options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-        /*- Do compute the approximate excitation level? See Stanton and Bartlett, JCP, 98, 1993, 7034. !expert -*/
-        options.add_bool("AEL", false);
         /*- The type of gauge to use for properties -*/
         options.add_str("GAUGE", "LENGTH");
         /*- Do relax the one-particle density matrix? -*/
