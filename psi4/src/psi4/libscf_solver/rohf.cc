@@ -1254,6 +1254,7 @@ bool ROHF::stability_analysis() {
             double** temp = block_matrix(npairs, npairs);
             C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, A.matrix[h][0], npairs, U[0], npairs, 0.0, temp[0], npairs);
             C_DGEMM('n', 'n', npairs, npairs, npairs, 1.0, U[0], npairs, temp[0], npairs, 0.0, A.matrix[h][0], npairs);
+            free_block(temp);
 
             auto* evals = new double[rank];
             double** evecs = block_matrix(rank, rank);
