@@ -1,6 +1,6 @@
 from addons import *
 
-@ctest_labeler("occ")
-def test_oremp_engrad1():
+@ctest_labeler("dfocc")
+def test_dfremp_2():
     ctest_runner(__file__)
 

@@ -68,6 +68,7 @@ void DFOCC::common_init() {
     ss_scale = options_.get_double("MP2_SS_SCALE");
     sos_scale = options_.get_double("MP2_SOS_SCALE");
     sos_scale2 = options_.get_double("MP2_SOS_SCALE2");
+    remp_a = options_.get_double("REMP_A");
     // cepa_os_scale_=options_.get_double("CEPA_OS_SCALE");
     // cepa_ss_scale_=options_.get_double("CEPA_SS_SCALE");
     // cepa_sos_scale_=options_.get_double("CEPA_SOS_SCALE");
@@ -115,9 +116,6 @@ void DFOCC::common_init() {
     if (!psio_) {
         throw PSIEXCEPTION("The wavefunction passed in lacks a PSIO object, crashing DFOCC. See GitHub issue #1851.");
     }
-
-    // title
-    title();
 
     //   Given default conjugate gradient convergence, set the criteria by what should
     //   be necessary to achive the target energy convergence.
@@ -179,6 +177,14 @@ void DFOCC::common_init() {
         reference_ = "RESTRICTED";
     else if (reference == "UHF" || reference == "UKS" || reference == "ROHF")
         reference_ = "UNRESTRICTED";
+
+    // title
+    if (wfn_type_ == "DF-OREMP") {
+        remp_title();
+    } else if (!((wfn_type_ == "DF-CCSD" || wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") && reference_ == "UNRESTRICTED")) {
+        title();
+    }
+
 
     // Only ROHF-CC energy is available, not the gradients
     if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype == "FIRST") {
@@ -544,6 +550,10 @@ double DFOCC::compute_energy() {
         olccd_manager();
     else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "FALSE")
         lccd_manager();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        oremp_manager();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "FALSE")
+        remp_manager();
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE" && do_cd == "TRUE")
         cd_omp2_manager();
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE" && do_cd == "TRUE")
@@ -568,6 +578,10 @@ double DFOCC::compute_energy() {
         olccd_manager_cd();
     else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE")
         lccd_manager_cd();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        oremp_manager_cd();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "TRUE")
+        remp_manager_cd();
     else if (wfn_type_ == "QCHF")
         qchf_manager();
     else {
@@ -591,12 +605,36 @@ double DFOCC::compute_energy() {
         Etotal = Emp3L;
     else if (wfn_type_ == "DF-OLCCD")
         Etotal = ElccdL;
+    else if (wfn_type_ == "DF-OREMP")
+        Etotal = ElccdL;        //CSB this might need adjustment // FIXME (behnle#1#14.06.2021): maybe replace by an own variable
     else if (wfn_type_ == "QCHF")
         Etotal = Eref;
 
     return Etotal;
 
 }  // end of compute_energy
+
+void DFOCC::remp_title() {
+    outfile->Printf("\n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf("\n");
+    if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        outfile->Printf("                     DF-OREMP   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "FALSE")
+        outfile->Printf("                       DF-REMP   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        outfile->Printf("                    CD-OREMP   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "TRUE")
+        outfile->Printf("                    CD-REMP   \n");
+    outfile->Printf("              Program Written by Stefan Behnle\n");
+    outfile->Printf("\n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf("\n");
+}
 
 }  // namespace dfoccwave
 }  // namespace psi

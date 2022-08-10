@@ -224,6 +224,7 @@ procedures = {
         'omp2.5'       : proc.select_omp2p5_property,
         'omp3'         : proc.select_omp3_property,
         'olccd'        : proc.select_olccd_property,
+        # TODO 'oremp2'       : proc.select_olccd_property,
         'adc(1)'       : proc.run_adcc_property,
         'adc(2)'       : proc.run_adcc_property,
         'adc(2)-x'     : proc.run_adcc_property,
