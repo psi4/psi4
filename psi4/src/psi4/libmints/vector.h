@@ -184,7 +184,13 @@ class IrrepedVector {
     T *pointer(int h = 0) { return vector_[h]; }
     const T *pointer(int h = 0) const { return vector_[h]; }
 
-    T get(int m) const { return get(0, m); }
+    // Exploit contiguous memory storage to handle elements across all irreps.
+    T get(int m) const {
+        if (m >= dimpi_.sum()) {
+            throw PSIEXCEPTION("Cannot get element " + std::to_string(m) +  " since there are only " + std::to_string(dimpi_.sum()) +  " elements.");
+        }
+        return v_[m];
+    }
     T get(int h, int m) const {
         if (h >= nirrep()) {
             throw PSIEXCEPTION("Cannot get an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");
@@ -195,7 +201,13 @@ class IrrepedVector {
         return vector_[h][m];
     }
 
-    void set(int m, T val) { set(0, m, val); }
+    // Exploit contiguous memory storage to handle elements across all irreps.
+    void set(int m, T val) {
+        if (m >= dimpi_.sum()) {
+            throw PSIEXCEPTION("Cannot set element " + std::to_string(m) +  " since there are only " + std::to_string(dimpi_.sum()) +  " elements.");
+        }
+        v_[m] = val;
+    }
     void set(int h, int m, T val) {
         if (h >= nirrep()) {
             throw PSIEXCEPTION("Cannot set an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");
@@ -206,7 +218,13 @@ class IrrepedVector {
         vector_[h][m] = val;
     }
 
-    void add(int m, T val) { add(0, m, val); }
+    // Exploit contiguous memory storage to handle elements across all irreps.
+    void add(int m, T val) {
+        if (m >= dimpi_.sum()) {
+            throw PSIEXCEPTION("Cannot add to element " + std::to_string(m) +  " since there are only " + std::to_string(dimpi_.sum()) +  " elements.");
+        }
+        v_[m] += val;
+    }
     void add(int h, int m, T val) {
         if (h >= nirrep()) {
             throw PSIEXCEPTION("Cannot add to an element of irrep " + std::to_string(h) +  ", since there are only " + std::to_string(nirrep()) +  " irreps.");

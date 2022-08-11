@@ -173,3 +173,7 @@ def test_bounds(tested_class):
     with pytest.raises(RuntimeError):
         vec.set(0, 1000, 0)
 
+    vec.set(1, 1000)
+    assert 1000 == vec.get(1)
+    vec.add(1, 1000)
+    assert 2000 == vec.get(1)
