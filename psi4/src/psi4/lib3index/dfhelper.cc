@@ -94,9 +94,8 @@ void DFHelper::prepare_blocking() {
 }
 
 void DFHelper::AO_filename_maker(size_t i) {
-    std::string name = start_filename("dfh.AO" + std::to_string(i));
+    auto name = start_filename("dfh.AO" + std::to_string(i));
     AO_names_.push_back(name);
-    AO_files_[name] = name;
 }
 
 std::string DFHelper::start_filename(std::string start) {
@@ -107,29 +106,28 @@ std::string DFHelper::start_filename(std::string start) {
     return name;
 }
 
-void DFHelper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op) {
-    std::string pfilename = start_filename("dfh.p" + name);
-    std::string filename = start_filename("dfh" + name);
+void DFHelper::filename_maker(std::string name, size_t Q, size_t p, size_t q, size_t op) {
+    auto pfilename = start_filename("dfh.p" + name);
+    auto filename = start_filename("dfh" + name);
 
-    std::tuple<std::string, std::string> files(pfilename.c_str(), filename.c_str());
+    std::tuple<std::string, std::string> files(pfilename, filename);
     files_[name] = files;
 
     bool is_transf = transf_.count(name);
 
     // direct_iaQ is special, because it has two different sizes
     if (direct_iaQ_ && is_transf) {
-        sizes_[pfilename] = std::make_tuple(a0, a1, a2);
-        sizes_[filename] = std::make_tuple(a1, a2, a0);
+        sizes_[pfilename] = std::make_tuple(Q, p, q);
+        sizes_[filename] = std::make_tuple(p, q, Q);
 
     } else {
-        // op = (0 if Qpq, 1 if pQq, 2 if pqQ)
         std::tuple<size_t, size_t, size_t> sizes;
         if (op == 0) {
-            sizes = std::make_tuple(a0, a1, a2);
+            sizes = std::make_tuple(Q, p, q);
         } else if (op == 1) {
-            sizes = std::make_tuple(a1, a0, a2);
+            sizes = std::make_tuple(p, Q, q);
         } else {
-            sizes = std::make_tuple(a1, a2, a0);
+            sizes = std::make_tuple(p, q, Q);
         }
 
         sizes_[pfilename] = sizes;
@@ -416,7 +414,7 @@ void DFHelper::prepare_AO() {
     // prepare files
     AO_filename_maker(1);
     AO_filename_maker(2);
-    std::string putf = AO_files_[AO_names_[1]];
+    std::string putf = AO_names_[1];
     std::string op = "ab";
 
     // Contract metric according to previously calculated scheme
@@ -1376,7 +1374,7 @@ void DFHelper::grab_AO(const size_t start, const size_t stop, double* Mp) {
     size_t begin = Qshell_aggs_[start];
     size_t end = Qshell_aggs_[stop + 1] - 1;
     size_t block_size = end - begin + 1;
-    std::string getf = AO_files_[AO_names_[1]];
+    auto getf = AO_names_[1];
 
     // presumably not thread safe or inherently sequential, but could revisit
     for (size_t i = 0, sta = 0; i < nbf_; i++) {
@@ -1388,9 +1386,9 @@ void DFHelper::grab_AO(const size_t start, const size_t stop, double* Mp) {
 }
 void DFHelper::prepare_metric_core() {
     timer_on("DFH: metric construction");
-    auto Jinv = std::make_shared<FittingMetric>(aux_, true);
-    Jinv->form_fitting_metric();
-    metrics_[1.0] = Jinv->get_metric();
+    FittingMetric J(aux_, true);
+    J.form_fitting_metric();
+    metrics_[1.0] = J.get_metric();
     timer_off("DFH: metric construction");
 }
 double* DFHelper::metric_prep_core(double m_pow) {
@@ -1417,17 +1415,15 @@ double* DFHelper::metric_prep_core(double m_pow) {
 }
 void DFHelper::prepare_metric() {
     // construct metric
-    auto Jinv = std::make_shared<FittingMetric>(aux_, true);
-    Jinv->form_fitting_metric();
-    SharedMatrix metric = Jinv->get_metric();
-    double* Mp = metric->pointer()[0];
+    FittingMetric J(aux_, true);
+    J.form_fitting_metric();
+    auto metric = J.get_metric();
+    auto Mp = metric->pointer()[0];
 
     // create file
-    std::string filename = "metric";
-    filename.append(".");
-    filename.append(std::to_string(1.0));
+    std::string filename = "metric.1.0";
     filename_maker(filename, naux_, naux_, 1);
-    metric_keys_.push_back(std::make_pair(1.0, filename));
+    metric_keys_.emplace_back(1.0, filename);
     // store
     std::string putf = std::get<0>(files_[filename]);
     put_tensor(putf, Mp, 0, naux_ - 1, 0, naux_ - 1, "wb");
@@ -1738,8 +1734,7 @@ void DFHelper::clear_all() {
     files_.clear();
     sizes_.clear();
     tsizes_.clear();
-    transf_.clear();
-    transf_core_.clear();
+    clear_transformations();
 }
 
 std::pair<size_t, size_t> DFHelper::identify_order() {
@@ -1830,7 +1825,7 @@ void DFHelper::transform() {
     size_t wfinal = std::get<1>(info_);
 
     // prep AO file stream if STORE + !AO_core_
-    if (!direct_iaQ_ && !direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
+    if (!direct_iaQ_ && !direct_ && !AO_core_) stream_check(AO_names_[1], "rb");
 
     // get Q blocking scheme
     std::vector<std::pair<size_t, size_t>> Qsteps;
@@ -3013,7 +3008,7 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     size_t totsb = std::get<1>(info);
 
     // prep stream, blocking
-    if (!direct_ && !AO_core_) stream_check(AO_files_[AO_names_[1]], "rb");
+    if (!direct_ && !AO_core_) stream_check(AO_names_[1], "rb");
 
     std::vector<std::vector<double>> C_buffers(nthreads_);
 
