@@ -80,10 +80,11 @@ def test_set(tested_class):
 
 def test_int_vs_float():
     dim = Dimension(1)
+    foo = IntVector(dim)
     with pytest.raises(TypeError):
-        IntVector.set(0, 0.1)
+        foo.set(0, 0.1)
     with pytest.raises(TypeError):
-        IntVector.add(0, 0.1)
+        foo.add(0, 0.1)
 
 def test_iota():
     dim = Dimension([5, 3, 2])
