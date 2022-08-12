@@ -85,12 +85,6 @@ void DirectJK::common_init() {
     df_ints_num_threads_ = Process::environment.get_n_threads();
 #endif
 
-    incfock_ = options_.get_bool("INCFOCK");
-    incfock_count_ = 0;
-    do_incfock_iter_ = false;
-    if (options_.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
-        throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
-    }
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     linK_ = options_.get_bool("DO_LINK");
 
@@ -142,87 +136,6 @@ void DirectJK::preiterations() {
         checkBrian();
     }
 #endif
-}
-
-void DirectJK::incfock_setup() {
-
-    // The prev_D_ao_ condition is used to handle stability analysis case
-    if (initial_iteration_ || prev_D_ao_.size() != D_ao_.size()) {
-        initial_iteration_ = true;
-
-        prev_D_ao_.clear();
-        delta_D_ao_.clear();
-
-        if (do_wK_) {
-            prev_wK_ao_.clear();
-            delta_wK_ao_.clear();
-        }
-
-        if (do_J_) {
-            prev_J_ao_.clear();
-            delta_J_ao_.clear();
-        }
-
-        if (do_K_) {
-            prev_K_ao_.clear();
-            delta_K_ao_.clear();
-        }
-    
-        for (size_t N = 0; N < D_ao_.size(); N++) {
-            prev_D_ao_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
-            delta_D_ao_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
-
-            if (do_wK_) {
-                prev_wK_ao_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
-                delta_wK_ao_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
-            }
-                
-            if (do_J_) {
-                prev_J_ao_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
-                delta_J_ao_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
-            }
-        
-            if (do_K_) {
-                prev_K_ao_.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
-                delta_K_ao_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
-            }
-        }
-    } else {
-        for (size_t N = 0; N < D_ao_.size(); N++) {
-            delta_D_ao_[N]->copy(D_ao_[N]);
-            delta_D_ao_[N]->subtract(prev_D_ao_[N]);
-        }
-    }
-}
-void DirectJK::incfock_postiter() {
-    if (do_incfock_iter_) {
-        for (size_t N = 0; N < D_ao_.size(); N++) {
-
-            if (do_wK_) {
-                prev_wK_ao_[N]->add(delta_wK_ao_[N]);
-                wK_ao_[N]->copy(prev_wK_ao_[N]);
-            }
-
-            if (do_J_) {
-                prev_J_ao_[N]->add(delta_J_ao_[N]);
-                J_ao_[N]->copy(prev_J_ao_[N]);
-            }
-
-            if (do_K_) {
-                prev_K_ao_[N]->add(delta_K_ao_[N]);
-                K_ao_[N]->copy(prev_K_ao_[N]);
-            }
-
-            prev_D_ao_[N]->copy(D_ao_[N]);
-        }
-    } else {
-        for (size_t N = 0; N < D_ao_.size(); N++) {
-            if (do_wK_) prev_wK_ao_[N]->copy(wK_ao_[N]);
-            if (do_J_) prev_J_ao_[N]->copy(J_ao_[N]);
-            if (do_K_) prev_K_ao_[N]->copy(K_ao_[N]);
-            prev_D_ao_[N]->copy(D_ao_[N]);
-        }
-    }
 }
 
 void DirectJK::compute_JK() {
@@ -390,18 +303,7 @@ void DirectJK::compute_JK() {
     }
 #endif
 
-    if (incfock_) {
-        timer_on("DirectJK: INCFOCK Preprocessing");
-        incfock_setup();
-        int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
-        double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
-        double Dnorm = Process::environment.globals["SCF D NORM"];
-        // Do IFB on this iteration?
-        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
-        
-        if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
-        timer_off("DirectJK: INCFOCK Preprocessing");
-    }
+    if (incfock_) incfock_setup();
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     
@@ -454,11 +356,7 @@ void DirectJK::compute_JK() {
         }
     }
 
-    if (incfock_) {
-        timer_on("DirectJK: INCFOCK Postprocessing");
-        incfock_postiter();
-        timer_off("DirectJK: INCFOCK Postprocessing");
-    }
+    if (incfock_) incfock_postiter();
 
     if (initial_iteration_) initial_iteration_ = false;
 }

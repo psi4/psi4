@@ -96,12 +96,16 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
+        jk->set_incfock(false);
+
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "DISK_DF") {
         DiskDFJK* jk = new DiskDFJK(primary, auxiliary);
         _set_dfjk_options<DiskDFJK>(jk, options);
         if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+
+        jk->set_incfock(false);
 
         return std::shared_ptr<JK>(jk);
 
@@ -112,6 +116,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         _set_dfjk_options<MemDFJK>(jk, options);
         if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
 
+        jk->set_incfock(false);
+
         return std::shared_ptr<JK>(jk);
     } else if (jk_type == "PK") {
         PKJK* jk = new PKJK(primary, options);
@@ -120,6 +126,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
+
+        jk->set_incfock(false);
 
         return std::shared_ptr<JK>(jk);
 
@@ -131,6 +139,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+
+        jk->set_incfock(false);
 
         return std::shared_ptr<JK>(jk);
 
@@ -145,6 +155,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
+        if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
+
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "COSX") {
@@ -156,8 +168,9 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
 
-        return jk;
+        if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
 
+        return jk;
     } else {
         std::stringstream message;
         message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
@@ -229,6 +242,13 @@ void JK::common_init() {
     omega_alpha_ = 1.0;
     omega_beta_ = 0.0;
     early_screening_ = false;
+
+    incfock_ = Process::environment.options.get_bool("INCFOCK");
+    incfock_count_ = 0;
+    do_incfock_iter_ = false;
+    if (Process::environment.options.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
+        throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
+    }
 
     num_computed_shells_ = 0L;
     computed_shells_per_iter_ = {};
@@ -554,6 +574,103 @@ void JK::AO2USO() {
     delete[] temp;
 }
 void JK::initialize() { preiterations(); }
+
+void JK::incfock_setup() {
+    timer_on("JK: Incfock Setup");
+
+    // The prev_D_ao_ condition is used to handle stability analysis case
+    if (initial_iteration_ || prev_D_ao_.size() != D_ao_.size()) {
+        initial_iteration_ = true;
+
+        prev_D_ao_.clear();
+        delta_D_ao_.clear();
+
+        if (do_wK_) {
+            prev_wK_ao_.clear();
+            delta_wK_ao_.clear();
+        }
+
+        if (do_J_) {
+            prev_J_ao_.clear();
+            delta_J_ao_.clear();
+        }
+
+        if (do_K_) {
+            prev_K_ao_.clear();
+            delta_K_ao_.clear();
+        }
+
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            prev_D_ao_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+            delta_D_ao_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+
+            if (do_wK_) {
+                prev_wK_ao_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+                delta_wK_ao_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+            }
+
+            if (do_J_) {
+                prev_J_ao_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                delta_J_ao_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+            }
+
+            if (do_K_) {
+                prev_K_ao_.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                delta_K_ao_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+            }
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            delta_D_ao_[N]->copy(D_ao_[N]);
+            delta_D_ao_[N]->subtract(prev_D_ao_[N]);
+        }
+    }
+
+    int reset = Process::environment.options.get_int("INCFOCK_FULL_FOCK_EVERY");
+    double incfock_conv = Process::environment.options.get_double("INCFOCK_CONVERGENCE");
+    double Dnorm = Process::environment.globals["SCF D NORM"];
+    // Do incfock on this iteration?
+    do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        
+    if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
+
+    timer_off("JK: Incfock Setup");
+}
+
+void JK::incfock_postiter() {
+    timer_on("JK: Incfock Post-iterations");
+
+    if (do_incfock_iter_) {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+
+            if (do_wK_) {
+                prev_wK_ao_[N]->add(delta_wK_ao_[N]);
+                wK_ao_[N]->copy(prev_wK_ao_[N]);
+            }
+
+            if (do_J_) {
+                prev_J_ao_[N]->add(delta_J_ao_[N]);
+                J_ao_[N]->copy(prev_J_ao_[N]);
+            }
+
+            if (do_K_) {
+                prev_K_ao_[N]->add(delta_K_ao_[N]);
+                K_ao_[N]->copy(prev_K_ao_[N]);
+            }
+
+            prev_D_ao_[N]->copy(D_ao_[N]);
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            if (do_wK_) prev_wK_ao_[N]->copy(wK_ao_[N]);
+            if (do_J_) prev_J_ao_[N]->copy(J_ao_[N]);
+            if (do_K_) prev_K_ao_[N]->copy(K_ao_[N]);
+            prev_D_ao_[N]->copy(D_ao_[N]);
+        }
+    }
+
+    timer_on("JK: Incfock Post-iterations");
+}
 
 void JK::compute() {
     // Is this density symmetric?

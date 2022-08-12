@@ -299,7 +299,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_off("HF: Form G")
 
         # Check if special J/K construction algorithms were used
-        incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
+        incfock_performed = self.jk().incfock_last_iter()
         linK_performed = hasattr(self.jk(), "do_linK") and self.jk().do_linK()
 
         upcm = 0.0
@@ -503,8 +503,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 # clear any cached matrices associated with incremental fock construction
                 # the change in the screening spoils the linearity in the density matrix
-                if hasattr(self.jk(), 'clear_D_prev'):
-                    self.jk().clear_D_prev()
+                self.jk().reset_incfock()
 
                 core.print_out("  Energy and wave function converged with early screening.\n")
                 core.print_out("  Performing final iteration with tighter screening.\n\n")

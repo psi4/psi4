@@ -298,7 +298,7 @@ void DFJCOSK::print_header() const {
         if (do_wK_) outfile->Printf("    Omega:              %11.3E\n", omega_);
         outfile->Printf("    Integrals threads:  %11d\n", nthreads_);
         outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf("    Incremental Fock :  %11s\n", (options_.get_bool("COSX_INCFOCK") ? "Yes" : "No"));
+        outfile->Printf("    Incremental Fock :  %11s\n", (incfock_ ? "Yes" : "No"));
         outfile->Printf("    J Screening Type:   %11s\n", screen_type.c_str());
         outfile->Printf("    J Screening Cutoff: %11.0E\n", cutoff_);
         outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSX_INTS_TOLERANCE"));
@@ -317,47 +317,28 @@ void DFJCOSK::compute_JK() {
     // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
     if (do_wK_) throw PSIEXCEPTION("COSK does not support wK integrals yet!");
 
-    // D_eff, the effective pseudo-density matrix is either:
+    if (incfock_) incfock_setup();
+
+    //   D_eff, the effective pseudo-density matrix is either:
     //   (1) the regular density: D_eff == D_lr = C_lo x C*ro
     //   (2) the difference density: D_eff == dD_lr = (C_lo x C_ro)_{iter} - (C_lo x C_ro)_{iter - 1}
-    //
-    std::vector<SharedMatrix> D_eff(njk);
-
-    if(options_.get_bool("COSX_INCFOCK")) {
-
-        // If there is no previous pseudo-density, this iteration is normal
-        if(D_prev_.size() != njk) {
-            D_eff = D_ao_;
-            zero();
-        } else { // Otherwise, the iteraction is incremental
-            for (size_t jki = 0; jki < njk; jki++) {
-                D_eff[jki] = D_ao_[jki]->clone();
-                D_eff[jki]->subtract(D_prev_[jki]);
-            }
-        }
-
-        // Save a copy of the density for the next iteration
-        D_prev_.clear();
-        for(auto const &Di : D_ao_) {
-            D_prev_.push_back(Di->clone());
-        }
-
-    } else {
-        D_eff = D_ao_;
-        zero();
-    }
+    auto& D_eff = (do_incfock_iter_ ? delta_D_ao_ : D_ao_);
+    auto& J_eff = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
+    auto& K_eff = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
 
     if (do_J_) {
         timer_on("DFJ");
-        build_J(D_eff, J_ao_);
+        build_J(D_eff, J_eff);
         timer_off("DFJ");
     }
     
     if (do_K_) {
         timer_on("COSK");
-        build_K(D_eff, K_ao_);
+        build_K(D_eff, K_eff);
         timer_off("COSK");
     }
+
+    if (incfock_) incfock_postiter();
 
 }
 
