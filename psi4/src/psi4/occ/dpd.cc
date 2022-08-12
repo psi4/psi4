@@ -445,40 +445,6 @@ void SymBlockMatrix::gemm(bool transa, bool transb, double alpha, const SymBlock
     }
 }  //
 
-bool SymBlockMatrix::load(PSIO *psio, int itap, const char *label, int dim) {
-    int ntri = 0.5 * dim * (dim + 1);
-    double *mybuffer = init_array(ntri);
-    memset(mybuffer, 0.0, sizeof(double) * ntri);
-    IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, "outfile");
-
-    double **Asq;
-    Asq = block_matrix(dim, dim);
-    memset(Asq[0], 0.0, sizeof(double) * dim * dim);
-    tri_to_sq(mybuffer, Asq, dim);
-    free(mybuffer);
-
-    set(Asq);
-    free_block(Asq);
-    return true;
-}  //
-
-bool SymBlockMatrix::load(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim) {
-    int ntri = 0.5 * dim * (dim + 1);
-    double *mybuffer = init_array(ntri);
-    memset(mybuffer, 0.0, sizeof(double) * ntri);
-    IWL::read_one(psio.get(), itap, label, mybuffer, ntri, 0, 0, "outfile");
-
-    double **Asq;
-    Asq = block_matrix(dim, dim);
-    memset(Asq[0], 0.0, sizeof(double) * dim * dim);
-    tri_to_sq(mybuffer, Asq, dim);
-    free(mybuffer);
-
-    set(Asq);
-    free_block(Asq);
-    return true;
-}  //
-
 /********************************************************************************************/
 /************************** SymBlockVector **************************************************/
 /********************************************************************************************/

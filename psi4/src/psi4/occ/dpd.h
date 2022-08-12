@@ -85,8 +85,6 @@ class SymBlockMatrix {
     void gemm(bool transa, bool transb, double alpha, const SymBlockMatrix *a, const SymBlockMatrix *b, double beta);
     int *rowspi();
     int *colspi();
-    bool load(PSIO *psio, int itap, const char *label, int dim);
-    bool load(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
 
     friend class SymBlockVector;
 };
