@@ -105,7 +105,6 @@ struct dpdshift4 {
 };
 
 struct dpdbuf4 {
-    int dpdnum; /* dpd structure reference */
     int anti;   /* Is this buffer antisymmetric? */
     dpdparams4 *params;
     dpdfile4 file;
