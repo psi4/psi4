@@ -83,7 +83,7 @@ T get_block(const T& self, const Slice& slice) {
 }
 
 template <class T>
-class IrrepedVector {
+class IrreppedVector {
    protected:
     /// Actual data, of size dimpi_.sum()
     std::vector<T> v_;
@@ -128,36 +128,36 @@ class IrrepedVector {
     };
 
    public:
-    explicit IrrepedVector(int dim) : dimpi_(1) {
+    explicit IrreppedVector(int dim) : dimpi_(1) {
         dimpi_[0] = dim;
         alloc();
     };
 
-    explicit IrrepedVector(const std::string & name, int dim) : dimpi_(1) {
+    explicit IrreppedVector(const std::string & name, int dim) : dimpi_(1) {
         dimpi_[0] = dim;
         alloc();
         name_ = name;
     };
 
-    explicit IrrepedVector(const Dimension &dimpi) {
+    explicit IrreppedVector(const Dimension &dimpi) {
         dimpi_ = dimpi;
         alloc();
         name_ = dimpi.name();
     };
 
-    explicit IrrepedVector(const std::string &name, const Dimension &dimpi) {
+    explicit IrreppedVector(const std::string &name, const Dimension &dimpi) {
         dimpi_ = dimpi;
         alloc();
         name_ = name;
     };
 
     /// Copy constructor
-    IrrepedVector(const IrrepedVector<T>& vector) {
+    IrreppedVector(const IrreppedVector<T>& vector) {
         name_ = vector.name_;
         copy(vector);
     }
 
-    ~IrrepedVector() { release(); }
+    ~IrreppedVector() { release(); }
 
     /// Re-initialize the vector. Should usually prefer creating new object.
     void init(const Dimension &v) {
@@ -166,14 +166,14 @@ class IrrepedVector {
         alloc();
     };
 
-    /// Copy IrrepedVector's data into this.
-    void copy(const IrrepedVector<T>& vector) {
+    /// Copy IrreppedVector's data into this.
+    void copy(const IrreppedVector<T>& vector) {
         dimpi_ = vector.dimpi_;
         v_ = vector.v_;
         assign_pointer_offsets();
     }
 
-    IrrepedVector<T> clone() { return IrrepedVector<T>(*this) ; }
+    IrreppedVector<T> clone() { return IrreppedVector<T>(*this) ; }
 
     T &operator()(int i) { return vector_[0][i]; }
     const T &operator()(int i) const { return vector_[0][i]; }
@@ -254,12 +254,12 @@ class IrrepedVector {
         }
     }
 
-    void sort(const IrrepedVector<int>& idxs) {
+    void sort(const IrreppedVector<int>& idxs) {
         auto orig = clone();
         if (dimpi_ != idxs.dimpi()) {
             throw PSIEXCEPTION("Indexing vector and vector to sort must have the same dimension.");
         }
-        // WARNING! Function also requires each irreped block to be a permutation of 0, 1, 2...
+        // WARNING! Function also requires each irrepped block to be a permutation of 0, 1, 2...
         for (int h = 0; h < nirrep(); h++) {
             for (int i = 0; i < dimpi_[h]; i++) {
                 set(h, i, orig.get(h, idxs.get(h, i)));
@@ -278,8 +278,8 @@ class IrrepedVector {
         }
     }
 
-    IrrepedVector<T> get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
-    void set_block(const Slice &slice, const IrrepedVector<T>& block) {
+    IrreppedVector<T> get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
+    void set_block(const Slice &slice, const IrreppedVector<T>& block) {
         // check if slice is within bounds
         for (int h = 0; h < nirrep(); h++) {
             if (slice.end()[h] > dimpi_[h]) {
@@ -302,18 +302,18 @@ class IrrepedVector {
 };
 
 /*! \ingroup MINTS */
-class PSI_API Vector final : public IrrepedVector<double> {
+class PSI_API Vector final : public IrreppedVector<double> {
    protected:
 
     /// Numpy Shape
     std::vector<int> numpy_shape_;
 
    public:
-    explicit Vector(int dim) : IrrepedVector<double>(dim) {}; 
-    explicit Vector(const std::string& name, int dim) : IrrepedVector<double>(name, dim) {}; 
-    explicit Vector(const Dimension &dimpi) : IrrepedVector<double>(dimpi) {}; 
-    explicit Vector(const std::string& name, const Dimension &dimpi) : IrrepedVector<double>(name, dimpi) {}; 
-    Vector(const Vector& vector) : IrrepedVector<double>(vector) {};
+    explicit Vector(int dim) : IrreppedVector<double>(dim) {};
+    explicit Vector(const std::string& name, int dim) : IrreppedVector<double>(name, dim) {};
+    explicit Vector(const Dimension &dimpi) : IrreppedVector<double>(dimpi) {};
+    explicit Vector(const std::string& name, const Dimension &dimpi) : IrreppedVector<double>(name, dimpi) {};
+    Vector(const Vector& vector) : IrreppedVector<double>(vector) {};
 
     // Convert occ's Array1d into Vector.
     // Defined in occ/arrays.cc. Remove when no longer needed.
@@ -323,8 +323,8 @@ class PSI_API Vector final : public IrrepedVector<double> {
     Vector get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
 
     /// Adds other elt/vector to this
-    void add(int m, double val) { IrrepedVector<double>::add(m, val); }
-    void add(int h, int m, double val) { IrrepedVector<double>::add(h, m, val); }
+    void add(int m, double val) { IrreppedVector<double>::add(m, val); }
+    void add(int h, int m, double val) { IrreppedVector<double>::add(h, m, val); }
     void add(const Vector &other);
 
     /// Subtracts other vector from this
@@ -332,7 +332,7 @@ class PSI_API Vector final : public IrrepedVector<double> {
 
     void axpy(double scale, const Vector &other);
 
-    void print(std::string outfile = "outfile") const { IrrepedVector<double>::print(outfile, "%20.15f"); };
+    void print(std::string outfile = "outfile") const { IrreppedVector<double>::print(outfile, "%20.15f"); };
 
     /**
      * General matrix vector multiplication into this, alpha * AX + beta Y -> Y
@@ -370,18 +370,18 @@ class PSI_API Vector final : public IrrepedVector<double> {
 };
 
 /*! \ingroup MINTS */
-class PSI_API IntVector : public IrrepedVector<int> {
+class PSI_API IntVector : public IrreppedVector<int> {
    public:
-    explicit IntVector(int dim) : IrrepedVector<int>(dim) {}; 
-    explicit IntVector(const std::string& name, int dim) : IrrepedVector<int>(name, dim) {};
-    explicit IntVector(const Dimension &dimpi) : IrrepedVector<int>(dimpi) {}; 
-    explicit IntVector(const std::string& name, const Dimension &dimpi) : IrrepedVector<int>(name, dimpi) {};
-    IntVector(const IntVector& vector) : IrrepedVector<int>(vector) {};
+    explicit IntVector(int dim) : IrreppedVector<int>(dim) {};
+    explicit IntVector(const std::string& name, int dim) : IrreppedVector<int>(name, dim) {};
+    explicit IntVector(const Dimension &dimpi) : IrreppedVector<int>(dimpi) {};
+    explicit IntVector(const std::string& name, const Dimension &dimpi) : IrreppedVector<int>(name, dimpi) {};
+    IntVector(const IntVector& vector) : IrreppedVector<int>(vector) {};
 
     IntVector clone() { return IntVector(*this) ; }
     IntVector get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
 
-    void print(std::string outfile = "outfile") const { IrrepedVector<int>::print(outfile, "%10d"); };
+    void print(std::string outfile = "outfile") const { IrreppedVector<int>::print(outfile, "%10d"); };
 
     static IntVector iota(const Dimension &dim);
 };
