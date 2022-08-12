@@ -83,8 +83,6 @@ class SymBlockMatrix {
     void print();
     void set_to_identity();
     void gemm(bool transa, bool transb, double alpha, const SymBlockMatrix *a, const SymBlockMatrix *b, double beta);
-    int *rowspi();
-    int *colspi();
 
     friend class SymBlockVector;
 };

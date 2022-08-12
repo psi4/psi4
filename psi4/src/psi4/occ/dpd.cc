@@ -86,9 +86,6 @@ SymBlockMatrix::~SymBlockMatrix() {
     if (colspi_) delete[] colspi_;
 }  //
 
-int *SymBlockMatrix::rowspi() { return rowspi_; }
-int *SymBlockMatrix::colspi() { return colspi_; }
-
 SymBlockMatrix *SymBlockMatrix::generate(int nirreps, int *ins_rowspi, int *ins_colspi) {
     return new SymBlockMatrix(nirreps, ins_rowspi, ins_colspi);
 }
