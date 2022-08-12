@@ -55,9 +55,6 @@ namespace cchbar {
 **
 ** TDC, Feb 2004
 */
-
-void purge_cc2_Wabei();
-
 void cc2_Wabei_build() {
     int omit = 0;
     int e, E;
@@ -396,9 +393,6 @@ void cc2_Wabei_build() {
         global_dpd_->buf4_sort(&W, PSIF_CC2_HET1, rspq, 11, 5, "CC2 WaBeI (eI,aB)");
         global_dpd_->buf4_close(&W);
 
-        /* purge before final sort */
-
-        /*     purge_cc2_Wabei(); */
     } else if (params.ref == 2) { /* UHF */
 
         /* sort to Wabei (ei,ab) */
@@ -416,113 +410,6 @@ void cc2_Wabei_build() {
         global_dpd_->buf4_close(&W);
     }
     timer_off("Wabei_sort");
-}
-
-void purge_cc2_Wabei() {
-    dpdfile4 W;
-    int *occpi, *virtpi;
-    int h, a, b, e, f, i, j, m, n;
-    int A, B, E, F, I, J, M, N;
-    int mn, ei, ma, ef, me, jb, mb, ij, ab;
-    int asym, bsym, esym, fsym, isym, jsym, msym, nsym;
-    int *occ_off, *vir_off;
-    int *occ_sym, *vir_sym;
-    int *openpi, nirreps;
-
-    nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    occ_off = moinfo.occ_off;
-    vir_off = moinfo.vir_off;
-    occ_sym = moinfo.occ_sym;
-    vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
-
-    /* Purge Wabei matrix elements */
-    global_dpd_->file4_init(&W, PSIF_CC_TMP2, 0, 11, 7, "CC2 WABEI (EI,A>B)");
-    for (h = 0; h < nirreps; h++) {
-        global_dpd_->file4_mat_irrep_init(&W, h);
-        global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (ei = 0; ei < W.params->rowtot[h]; ei++) {
-            e = W.params->roworb[h][ei][0];
-            esym = W.params->psym[e];
-            E = e - vir_off[esym];
-            for (ab = 0; ab < W.params->coltot[h]; ab++) {
-                a = W.params->colorb[h][ab][0];
-                b = W.params->colorb[h][ab][1];
-                asym = W.params->rsym[a];
-                bsym = W.params->ssym[b];
-                A = a - vir_off[asym];
-                B = b - vir_off[bsym];
-                if ((E >= (virtpi[esym] - openpi[esym])) || (A >= (virtpi[asym] - openpi[asym])) ||
-                    (B >= (virtpi[bsym] - openpi[bsym])))
-                    W.matrix[h][ei][ab] = 0.0;
-            }
-        }
-        global_dpd_->file4_mat_irrep_wrt(&W, h);
-        global_dpd_->file4_mat_irrep_close(&W, h);
-    }
-    global_dpd_->file4_close(&W);
-
-    global_dpd_->file4_init(&W, PSIF_CC_TMP2, 0, 11, 7, "CC2 Wabei (ei,a>b)");
-    for (h = 0; h < nirreps; h++) {
-        global_dpd_->file4_mat_irrep_init(&W, h);
-        global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (ei = 0; ei < W.params->rowtot[h]; ei++) {
-            i = W.params->roworb[h][ei][1];
-            isym = W.params->qsym[i];
-            I = i - occ_off[isym];
-            for (ab = 0; ab < W.params->coltot[h]; ab++) {
-                if (I >= (occpi[isym] - openpi[isym])) W.matrix[h][ei][ab] = 0.0;
-            }
-        }
-        global_dpd_->file4_mat_irrep_wrt(&W, h);
-        global_dpd_->file4_mat_irrep_close(&W, h);
-    }
-    global_dpd_->file4_close(&W);
-
-    global_dpd_->file4_init(&W, PSIF_CC_TMP2, 0, 11, 5, "CC2 WAbEi (Ei,Ab)");
-    for (h = 0; h < nirreps; h++) {
-        global_dpd_->file4_mat_irrep_init(&W, h);
-        global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (ei = 0; ei < W.params->rowtot[h]; ei++) {
-            e = W.params->roworb[h][ei][0];
-            i = W.params->roworb[h][ei][1];
-            esym = W.params->psym[e];
-            isym = W.params->qsym[i];
-            E = e - vir_off[esym];
-            I = i - occ_off[isym];
-            for (ab = 0; ab < W.params->coltot[h]; ab++) {
-                a = W.params->colorb[h][ab][0];
-                asym = W.params->rsym[a];
-                bsym = W.params->ssym[b];
-                A = a - vir_off[asym];
-                if ((E >= (virtpi[esym] - openpi[esym])) || (I >= (occpi[isym] - openpi[isym])) ||
-                    (A >= (virtpi[asym] - openpi[asym])))
-                    W.matrix[h][ei][ab] = 0.0;
-            }
-        }
-        global_dpd_->file4_mat_irrep_wrt(&W, h);
-        global_dpd_->file4_mat_irrep_close(&W, h);
-    }
-    global_dpd_->file4_close(&W);
-
-    global_dpd_->file4_init(&W, PSIF_CC_TMP2, 0, 11, 5, "CC2 WaBeI (eI,aB)");
-    for (h = 0; h < nirreps; h++) {
-        global_dpd_->file4_mat_irrep_init(&W, h);
-        global_dpd_->file4_mat_irrep_rd(&W, h);
-        for (ei = 0; ei < W.params->rowtot[h]; ei++) {
-            for (ab = 0; ab < W.params->coltot[h]; ab++) {
-                b = W.params->colorb[h][ab][1];
-                bsym = W.params->ssym[b];
-                B = b - vir_off[bsym];
-                if (B >= (virtpi[bsym] - openpi[bsym])) W.matrix[h][ei][ab] = 0.0;
-            }
-        }
-        global_dpd_->file4_mat_irrep_wrt(&W, h);
-        global_dpd_->file4_mat_irrep_close(&W, h);
-    }
-    global_dpd_->file4_close(&W);
 }
 
 }  // namespace cchbar

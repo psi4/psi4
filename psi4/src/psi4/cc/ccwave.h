@@ -136,7 +136,6 @@ class CCEnergyWavefunction : public Wavefunction {
     void FT2_CC2();
     void purge_cc2_Wmnij();
     void purge_cc2_Wmbij();
-    void purge_cc2_Wabei();
     void t1_ijab();
     void cc3_Wmnie();
     void cc3_Wamef();
