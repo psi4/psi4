@@ -441,54 +441,12 @@ void Array2d::copy(double** a) {
     if (size) memcpy(&(A2d_[0][0]), &(a[0][0]), size);
 }
 
-void Array2d::cdsyev(char jobz, char uplo, Array2d* eigvectors, Array1d* eigvalues) {
-    if (dim1_) {
-        int lwork = 3 * dim2_;
-        double** work = block_matrix(dim1_, lwork);
-        memset(work[0], 0.0, sizeof(double) * dim1_ * lwork);
-        C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_, &(work[0][0]), lwork);
-        free_block(work);
-    }
-}  //
-
-void Array2d::cdgesv(Array1d* Xvec) {
-    if (dim1_) {
-        int errcod;
-        int* ipiv = init_int_array(dim1_);
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-        free(ipiv);
-    }
-}  //
-
 void Array2d::cdgesv(Array1d* Xvec, int errcod) {
     if (dim1_) {
         int* ipiv = init_int_array(dim1_);
         memset(ipiv, 0, sizeof(int) * dim1_);
         errcod = 0;
         errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-        free(ipiv);
-    }
-}  //
-
-void Array2d::cdgesv(double* Xvec) {
-    if (dim1_) {
-        int errcod;
-        int* ipiv = init_int_array(dim1_);
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-        free(ipiv);
-    }
-}  //
-
-void Array2d::cdgesv(double* Xvec, int errcod) {
-    if (dim1_) {
-        int* ipiv = init_int_array(dim1_);
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
         free(ipiv);
     }
 }  //
