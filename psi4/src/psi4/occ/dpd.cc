@@ -479,66 +479,6 @@ bool SymBlockMatrix::load(std::shared_ptr<psi::PSIO> psio, int itap, const char 
     return true;
 }  //
 
-void SymBlockMatrix::diagonalize(SymBlockMatrix *eigvectors, SymBlockVector *eigvalues) {
-    for (int h = 0; h < nirreps_; h++) {
-        if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->vector_[h], 1, eigvectors->matrix_[h], 1.0e-14);
-        }
-    }
-}  //
-
-void SymBlockMatrix::cdsyev(char jobz, char uplo, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues) {
-    for (int h = 0; h < nirreps_; h++) {
-        if (rowspi_[h]) {
-            int lwork = 3 * rowspi_[h];
-            double **work = block_matrix(nirreps_, lwork);
-            memset(work[0], 0.0, sizeof(double) * nirreps_ * lwork);
-            C_DSYEV(jobz, uplo, rowspi_[h], &(matrix_[h][0][0]), colspi_[h], eigvalues->vector_[h], &(work[h][0]),
-                    lwork);
-        }
-    }
-}  //
-
-void SymBlockMatrix::davidson(int n_eigval, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues, double cutoff,
-                              int print) {
-    for (int h = 0; h < nirreps_; h++) {
-        if (rowspi_[h]) {
-            david(matrix_[h], rowspi_[h], n_eigval, eigvalues->vector_[h], eigvectors->matrix_[h], cutoff, print);
-        }
-    }
-}  //
-
-void SymBlockMatrix::cdgesv(SymBlockVector *Xvec) {
-    for (int h = 0; h < nirreps_; h++) {
-        if (rowspi_[h]) {
-            int errcod;
-            int *ipiv = init_int_array(rowspi_[h]);
-            memset(ipiv, 0, sizeof(int) * rowspi_[h]);
-            errcod = 0;
-            errcod = C_DGESV(rowspi_[h], 1, &(matrix_[h][0][0]), colspi_[h], &(ipiv[0]), Xvec->vector_[h], colspi_[h]);
-            delete[] ipiv;
-        }
-    }
-}  //
-
-// void flin(double **a, double *b, int in, int im, double *det)
-void SymBlockMatrix::lineq_flin(SymBlockVector *Xvec, double *det) {
-    for (int h = 0; h < nirreps_; h++) {
-        if (rowspi_[h]) {
-            flin(matrix_[h], Xvec->vector_[h], rowspi_[h], 1, det);
-        }
-    }
-}  //
-
-// int pople(double **A, double *x, int dimen, int num_vecs, double tolerance, std::string out_fname, int print_lvl)
-void SymBlockMatrix::lineq_pople(SymBlockVector *Xvec, int num_vecs, double cutoff) {
-    for (int h = 0; h < nirreps_; h++) {
-        if (rowspi_[h]) {
-            pople(matrix_[h], Xvec->vector_[h], rowspi_[h], num_vecs, cutoff, "outfile", 0);
-        }
-    }
-}  //
-
 void SymBlockMatrix::mgs() {
     double rmgs1, rmgs2, sum1;
 
