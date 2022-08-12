@@ -66,8 +66,6 @@ class DFOCC : public Wavefunction {
     void t1_1st_sc();
     void t2_1st_sc();
     void t2_1st_gen();
-    // void t2_1st_scs_sc();
-    // void t2_1st_scs_gen();
     void Fint_zero();
     void fock();
     void separable_tpdm();
