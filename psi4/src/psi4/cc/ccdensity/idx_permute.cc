@@ -45,13 +45,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf, int **bucket_map, int p,
     int p_sym, q_sym, r_sym, s_sym;
     int pq_sym, rs_sym, rq_sym, ps_sym, qp_sym, sp_sym, sr_sym, qr_sym;
     int pq, rs, rq, ps, qp, sr, qr, sp;
-    int perm_pq, perm_rs;
     dpdparams4 *Params;
     int this_bucket;
 
     Params = File->params;
-    perm_pq = Params->perm_pq;
-    perm_rs = Params->perm_rs;
 
     /* Get the orbital symmetries */
     p_sym = Params->psym[p];
