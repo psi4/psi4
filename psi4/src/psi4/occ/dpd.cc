@@ -479,48 +479,6 @@ bool SymBlockMatrix::load(std::shared_ptr<psi::PSIO> psio, int itap, const char 
     return true;
 }  //
 
-void SymBlockMatrix::write(PSIO *psio, int itap, bool saveSubBlocks) {
-    // Check to see if the file is open
-    bool already_open = false;
-    if (psio->open_check(itap)) {
-        already_open = true;
-    } else {
-        psio->open(itap, PSIO_OPEN_OLD);
-    }
-
-    if (saveSubBlocks) {
-        for (int h = 0; h < nirreps_; h++) {
-            std::string str(name_);
-            str += " Irrep " + std::to_string(h);
-
-            // Write the sub-blocks
-            if (colspi_[h] > 0 && rowspi_[h] > 0)
-                psio->write_entry(itap, const_cast<char *>(name_.c_str()), (char *)matrix_[h][0],
-                                  sizeof(double) * colspi_[h] * rowspi_[h]);
-        }
-    } else {
-        double **fullblock = to_block_matrix();
-        // Need to know the size
-        int sizer = 0, sizec = 0;
-        for (int h = 0; h < nirreps_; h++) {
-            sizer += rowspi_[h];
-            sizec += colspi_[h];
-        }
-
-        // Write the full block
-        if (sizer > 0 && sizec > 0)
-            psio->write_entry(itap, const_cast<char *>(name_.c_str()), (char *)fullblock[0],
-                              sizeof(double) * sizer * sizec);
-        free_block(fullblock);
-    }
-
-    if (!already_open) psio->close(itap, 1);  // Close and keep
-}  //
-
-void SymBlockMatrix::write(std::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks) {
-    write(psio.get(), itap, saveSubBlocks);
-}  //
-
 /********************************************************************************************/
 /************************** SymBlockVector **************************************************/
 /********************************************************************************************/
