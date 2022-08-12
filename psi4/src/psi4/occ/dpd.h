@@ -91,10 +91,6 @@ class SymBlockMatrix {
     void write(std::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks);
     void read(std::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks);
     void read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
-    void read_oooo(std::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi,
-                   Array3i *oo_pairidx);
-    void read_oovv(std::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off,
-                   int *vir_off, int *occpi, int *virpi, Array3i *oo_pairidx, Array3i *vv_pairidx);
 
     friend class SymBlockVector;
 };
