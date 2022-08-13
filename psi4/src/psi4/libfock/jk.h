@@ -521,7 +521,7 @@ class PSI_API JK {
     /**
      * Set whether or not to perform incremental Fock build?
      */
-    bool set_incfock(bool incfock) { incfock_ = incfock; }
+    void set_incfock(bool incfock) { incfock_ = incfock; }
     /**
      * Returns whether or not an incremental Fock build was performed during the last SCF iteration
      */
@@ -530,7 +530,7 @@ class PSI_API JK {
      * @brief Resets the incfock iteration number
      * 
      */
-    bool reset_incfock() { incfock_count_ = 0; }
+    void reset_incfock() { incfock_count_ = 0; }
 
     // => Computers <= //
 
