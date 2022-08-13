@@ -198,9 +198,6 @@ void export_fock(py::module &m) {
     py::class_<DirectJK, std::shared_ptr<DirectJK>, JK>(m, "DirectJK", "docstring")
         .def("do_linK", &DirectJK::do_linK, "Use the linK exchange algorithm?");
 
-    py::class_<DFJCOSK, std::shared_ptr<DFJCOSK>, JK>(m, "DFJCOSK", "docstring")
-        .def("clear_D_prev", &DFJCOSK::clear_D_prev, "Clear previous D matrices.");
-
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
                     [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return scf::SADGuess(basis, atomic_bases, Process::environment.options); })

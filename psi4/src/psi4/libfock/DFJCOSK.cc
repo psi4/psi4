@@ -328,18 +328,19 @@ void DFJCOSK::compute_JK() {
 
     if (do_J_) {
         timer_on("DFJ");
+        for (auto& Jmat : J_eff) Jmat->zero();
         build_J(D_eff, J_eff);
         timer_off("DFJ");
     }
     
     if (do_K_) {
         timer_on("COSK");
+        for (auto& Kmat : K_eff) Kmat->zero();
         build_K(D_eff, K_eff);
         timer_off("COSK");
     }
 
     if (incfock_) incfock_postiter();
-
 }
 
 void DFJCOSK::postiterations() {}

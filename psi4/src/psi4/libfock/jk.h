@@ -317,6 +317,7 @@ class PSI_API JK {
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
+    /// Is incfock performed this SCF iteration? (if incfock_ is true)
     bool do_incfock_iter_;
 
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
@@ -330,9 +331,6 @@ class PSI_API JK {
     std::vector<SharedMatrix> delta_J_ao_;
     std::vector<SharedMatrix> delta_K_ao_;
     std::vector<SharedMatrix> delta_wK_ao_;
-
-    /// Is the JK currently on a guess iteration
-    bool initial_iteration_ = true;
 
     /// Set up Incfock variables per iteration
     void incfock_setup();
@@ -532,7 +530,7 @@ class PSI_API JK {
      * @brief Resets the incfock iteration number
      * 
      */
-    bool reset_incfock() { initial_iteration_ = true, incfock_count_ = 0; }
+    bool reset_incfock() { incfock_count_ = 0; }
 
     // => Computers <= //
 
@@ -802,11 +800,6 @@ class PSI_API DirectJK : public JK {
     void compute_JK() override;
     /// Delete integrals, files, etc
     void postiterations() override;
-
-    /// Set up Incfock variables per iteration
-    void incfock_setup();
-    /// Post-iteration Incfock processing
-    void incfock_postiter();
 
     /**
      * @author Andy Jiang, Georgia Tech, December 2021

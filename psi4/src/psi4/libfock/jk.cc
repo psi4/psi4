@@ -578,9 +578,11 @@ void JK::initialize() { preiterations(); }
 void JK::incfock_setup() {
     timer_on("JK: Incfock Setup");
 
-    // The prev_D_ao_ condition is used to handle stability analysis case
-    if (initial_iteration_ || prev_D_ao_.size() != D_ao_.size()) {
-        initial_iteration_ = true;
+    // The prev_D_ao_ condition is used to check if it's the first iteration,
+    // as well as to handle stability analysis case
+    if (prev_D_ao_.size() != D_ao_.size()) {
+        // Reset incfock count
+        incfock_count_ = 0;
 
         prev_D_ao_.clear();
         delta_D_ao_.clear();
@@ -630,15 +632,15 @@ void JK::incfock_setup() {
     double incfock_conv = Process::environment.options.get_double("INCFOCK_CONVERGENCE");
     double Dnorm = Process::environment.globals["SCF D NORM"];
     // Do incfock on this iteration?
-    do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+    do_incfock_iter_ = (Dnorm >= incfock_conv) && (incfock_count_ % reset != 0);
         
-    if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
+    if (incfock_count_ == 0 || Dnorm >= incfock_conv) incfock_count_ += 1;
 
     timer_off("JK: Incfock Setup");
 }
 
 void JK::incfock_postiter() {
-    timer_on("JK: Incfock Post-iterations");
+    timer_on("JK: Incfock Postiteration");
 
     if (do_incfock_iter_) {
         for (size_t N = 0; N < D_ao_.size(); N++) {
@@ -669,7 +671,7 @@ void JK::incfock_postiter() {
         }
     }
 
-    timer_on("JK: Incfock Post-iterations");
+    timer_off("JK: Incfock Postiteration");
 }
 
 void JK::compute() {

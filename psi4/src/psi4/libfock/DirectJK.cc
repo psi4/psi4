@@ -357,8 +357,7 @@ void DirectJK::compute_JK() {
     }
 
     if (incfock_) incfock_postiter();
-
-    if (initial_iteration_) initial_iteration_ = false;
+    
 }
 void DirectJK::postiterations() {}
 
