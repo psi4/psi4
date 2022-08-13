@@ -155,7 +155,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
+        // QUESTION: Should Direct JK use incfock by default or not?
+        // if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
 
         return std::shared_ptr<JK>(jk);
 
