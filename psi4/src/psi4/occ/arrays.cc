@@ -181,25 +181,6 @@ double Array1d::dot(const Array1d* y) {
     return value;
 }  //
 
-void Array1d::gbmv(bool transa, double alpha, const Array2d* a, const Array1d* b, double beta) {
-    char ta = transa ? 't' : 'n';
-    int m, n, k, kl, ku, incx, incy, lda;
-
-    m = a->dim1_;
-    n = a->dim2_;
-    k = b->dim1_;
-    kl = m - 1;  // # of subdiagonal of matrix A, at most kl = m - 1
-    ku = n - 1;  // # of superdiagonal of matrix A, at most ku = n - 1
-    lda = kl + ku + 1;
-    incx = 1;  // increments in elements of b vector
-    incy = 1;  // increments in elements of A1d_
-
-    // A1d_ = alpha * A * b + beta, where A is a band matrix
-    if (m && n) {
-        C_DGBMV(ta, m, n, kl, ku, alpha, &(a->A2d_[0][0]), lda, b->A1d_, incx, beta, A1d_, incy);
-    }
-}  //
-
 void Array1d::gemv(bool transa, double alpha, const Array2d* a, const Array1d* b, double beta) {
     char ta = transa ? 't' : 'n';
     int m, n, k, kl, ku, incx, incy, lda;
@@ -242,16 +223,6 @@ void Array1d::copy(const Array1d* x) {
     size_t size;
     size = dim1_ * sizeof(double);
     if (size) memcpy(&(A1d_[0]), &(x->A1d_[0]), size);
-}  //
-
-void Array1d::row_vector(Array2d* A, int n) {
-    int dim = A->dim2();
-    for (int i = 0; i < dim; i++) A1d_[i] = A->get(n, i);
-}  //
-
-void Array1d::column_vector(Array2d* A, int n) {
-    int dim = A->dim1();
-    for (int i = 0; i < dim; i++) A1d_[i] = A->get(i, n);
 }  //
 
 void Array1d::dirprd(Array1d* a, Array1d* b) {
@@ -463,97 +434,9 @@ void Array2d::lineq_pople(Array1d* Xvec, int num_vecs, double cutoff) {
     }
 }  //
 
-void Array2d::level_shift(double value) {
-    for (int i = 0; i < dim1_; ++i) {
-        subtract(i, i, value);
-    }
-
-}  //
-
-void Array2d::outer_product(const Array1d* x, const Array1d* y) {
-    for (int i = 0; i < x->dim1_; i++) {
-        for (int j = 0; j < y->dim1_; j++) {
-            A2d_[i][j] = x->A1d_[i] * y->A1d_[j];
-        }
-    }
-
-}  //
-
 // TODO:
 // DGER compute the rank-one update of a general matrix: A <-- A + alpha * x * yT
 // dger(m, n, alpha, x, incx, y, incy, a, lda);
-
-void Array2d::scale(double a) {
-    size_t size;
-    size = dim1_ * dim2_;
-    if (size) C_DSCAL(size, a, &(A2d_[0][0]), 1);
-}  //
-
-void Array2d::scale_row(int m, double a) { C_DSCAL(dim1_, a, &(A2d_[m][0]), 1); }  //
-
-void Array2d::scale_column(int n, double a) { C_DSCAL(dim2_, a, &(A2d_[0][n]), dim1_); }  //
-
-void Array2d::identity() {
-    zero();
-    for (int i = 0; i < dim1_; ++i) A2d_[i][i] = 1.0;
-}  //
-
-double Array2d::trace() {
-    double value = 0.0;
-    for (int i = 0; i < dim1_; ++i) value += A2d_[i][i];
-    return value;
-}  //
-
-void Array2d::transform(const Array2d* a, const Array2d* transformer) {
-    auto* temp = new Array2d(a->dim1_, transformer->dim2_);
-    temp->zero();
-    temp->gemm(false, false, 1.0, a, transformer, 0.0);
-    gemm(true, false, 1.0, transformer, temp, 0.0);
-    delete temp;
-}  //
-
-void Array2d::back_transform(const Array2d* a, const Array2d* transformer) {
-    auto* temp = new Array2d(a->dim1_, transformer->dim2_);
-    temp->zero();
-    temp->gemm(false, true, 1.0, a, transformer, 0.0);
-    gemm(false, false, 1.0, transformer, temp, 0.0);
-    delete temp;
-}  //
-
-void Array2d::pseudo_transform(const Array2d* a, const Array2d* transformer) {
-    auto* temp = new Array2d(a->dim1_, transformer->dim2_);
-    temp->zero();
-    temp->gemm(false, false, 1.0, a, transformer, 0.0);
-    gemm(false, false, 1.0, transformer, temp, 0.0);
-    delete temp;
-}  //
-
-void Array2d::triple_gemm(const Array2d* a, const Array2d* b, const Array2d* c) {
-    if (a->dim2_ == b->dim1_ && b->dim2_ == c->dim1_ && a->dim1_ == dim1_ && c->dim2_ == dim2_) {
-        auto* bc = new Array2d(b->dim1_, c->dim2_);
-        bc->zero();
-        bc->gemm(false, false, 1.0, b, c, 0.0);
-        gemm(false, false, 1.0, a, bc, 0.0);
-        delete bc;
-    } else {
-        outfile->Printf("\n Warning!!! Matrix dimensions do NOT match in triple_gemm().\n");
-    }
-
-}  //
-
-double Array2d::vector_dot(Array2d* rhs) {
-    double value = 0.0;
-    size_t size = dim1_ * dim2_;
-    if (size) value += C_DDOT(size, (&A2d_[0][0]), 1, &(rhs->A2d_[0][0]), 1);
-    return value;
-}  //
-
-double Array2d::vector_dot(double** rhs) {
-    double value = 0.0;
-    size_t size = dim1_ * dim2_;
-    if (size) value += C_DDOT(size, (&A2d_[0][0]), 1, &(rhs[0][0]), 1);
-    return value;
-}  //
 
 /*
 void Array2d::write(psi::PSIO* psio, size_t fileno)
@@ -638,73 +521,6 @@ bool Array2d::read(shared_ptr<psi::PSIO> psio, int itap, const char *label, int 
     return true;
 }//
 */
-
-double** Array2d::to_block_matrix() {
-    double** temp = block_matrix(dim1_, dim2_);
-    memcpy(&(temp[0][0]), &(A2d_[0][0]), dim1_ * dim2_ * sizeof(double));
-    return temp;
-}  //
-
-double* Array2d::to_lower_triangle() {
-    if (dim1_ != dim2_) return nullptr;
-    int ntri = 0.5 * dim1_ * (dim1_ + 1);
-    auto* tri = new double[ntri];
-    double** temp = to_block_matrix();
-    sq_to_tri(temp, tri, dim1_);
-    free_block(temp);
-    return tri;
-}  //
-
-void Array2d::mgs() {
-    double rmgs1, rmgs2;
-
-    for (int k = 0; k < dim1_; k++) {  // loop-1
-        rmgs1 = 0.0;
-
-        for (int i = 0; i < dim1_; i++) {
-            rmgs1 += A2d_[i][k] * A2d_[i][k];
-        }
-
-        rmgs1 = std::sqrt(rmgs1);
-
-        for (int i = 0; i < dim1_; i++) {
-            A2d_[i][k] /= rmgs1;
-        }
-
-        for (int j = (k + 1); j < dim1_; j++) {  // loop-2
-            rmgs2 = 0.0;
-
-            for (int i = 0; i < dim1_; i++) {
-                rmgs2 += A2d_[i][k] * A2d_[i][j];
-            }
-
-            for (int i = 0; i < dim1_; i++) {
-                A2d_[i][j] -= rmgs2 * A2d_[i][k];
-            }
-        }  // end 2
-    }      // end 1
-
-}  //
-
-void Array2d::gs() {
-    if (dim1_ != 0 && dim2_ != 0) {
-        schmidt(A2d_, dim1_, dim2_, "outfile");
-    }
-}  //
-
-double* Array2d::row_vector(int n) {
-    auto* temp = new double[dim2_];
-    memset(temp, 0, dim2_ * sizeof(double));
-    for (int i = 0; i < dim2_; i++) temp[i] = A2d_[n][i];
-    return temp;
-}  //
-
-double* Array2d::column_vector(int n) {
-    auto* temp = new double[dim1_];
-    memset(temp, 0, dim1_ * sizeof(double));
-    for (int i = 0; i < dim1_; i++) temp[i] = A2d_[i][n];
-    return temp;
-}  //
 
 /********************************************************************************************/
 /************************** 3d array ********************************************************/
