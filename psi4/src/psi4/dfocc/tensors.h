@@ -208,7 +208,6 @@ class Tensor2d {
     // diagonalize: diagonalize via LAPACK DSYEV
     void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
     // cdgesv: solve a linear equation via lapack
-    void cdgesv(const SharedTensor1d &Xvec);
     void cdgesv(const SharedTensor1d &Xvec, int errcod);
     // lineq_flin: solve a linear equation via FLIN
     void lineq_flin(const SharedTensor1d &Xvec, double *det);

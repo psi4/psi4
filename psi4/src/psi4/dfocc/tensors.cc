@@ -1664,17 +1664,6 @@ void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1
     }
 }  //
 
-void Tensor2d::cdgesv(const SharedTensor1d &Xvec) {
-    if (dim1_) {
-        int errcod;
-        auto *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-        delete[] ipiv;
-    }
-}  //
-
 void Tensor2d::cdgesv(const SharedTensor1d &Xvec, int errcod) {
     if (dim1_) {
         auto *ipiv = new int[dim1_];
