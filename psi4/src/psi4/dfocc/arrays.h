@@ -136,19 +136,6 @@ class Array2d {
     Array2d *transpose();
     void copy(const Array2d *Adum);
     void copy(double **a);
-    // cdsyev: diagonalize via lapack
-    void cdsyev(char jobz, char uplo, Array2d *eigvectors, Array1d *eigvalues);
-    // cdgesv: solve a linear equation via lapack
-    void cdgesv(Array1d *Xvec);
-    void cdgesv(double *Xvec);
-    void cdgesv(Array1d *Xvec, int errcod);
-    void cdgesv(double *Xvec, int errcod);
-    // lineq_flin: solve a linear equation via FLIN
-    void lineq_flin(Array1d *Xvec, double *det);
-    void lineq_flin(double *Xvec, double *det);
-    // lineq_pople: solve a linear equation via Pople's algorithm
-    void lineq_pople(Array1d *Xvec, int num_vecs, double cutoff);
-    void lineq_pople(double *Xvec, int num_vecs, double cutoff);
     // gemm: matrix multiplication C = A * B
     void gemm(bool transa, bool transb, const Array2d *a, const Array2d *b, double alpha, double beta);
     // contract: general contraction C(m,n) = \sum_{k} A(m,k) * B(k,n)
