@@ -1569,7 +1569,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do reduce numerical COSX errors with overlap fitting? !expert -*/
         options.add_bool("COSX_OVERLAP_FITTING", true);
         /*- Do allow for improved COSX screening performance by constructing the Fock matrix incrementally? !expert -*/
-        options.add_bool("COSX_INCFOCK", true);
+        options.add_bool("COSX_INCFOCK", false);
 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
