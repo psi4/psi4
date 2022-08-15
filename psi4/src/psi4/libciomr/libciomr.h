@@ -77,6 +77,11 @@ PSI_API void rsp(int nm, int n, int nv, double *array, double *evals, int matz, 
 PSI_API void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
 PSI_API void sq_to_tri(double **bmat, double *amat, int size);
 
+[[nodiscard]] int DSYEV_ascending(const int N, const double *const *const array, double *e_vals,
+                                  double *const *const e_vecs = nullptr);
+[[nodiscard]] int DSYEV_descending(const int N, const double *const *const array, double *e_vals,
+                                   double *const *const e_vecs = nullptr);
+
 /* Functions under tri_to_block.c */
 PSI_API void tri_to_block(double *a, double **b, int num_ir, int *num_so, int *ioff);
 PSI_API void block_to_tri(double *a, double **b, int num_ir, int *num_so, int *ioff);
