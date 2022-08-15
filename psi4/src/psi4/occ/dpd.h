@@ -93,13 +93,6 @@ class SymBlockMatrix {
     void read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
     void mgs();  // Modified Gram-Schmidt
     void gs();   // Gram-Schmidt
-    void diagonalize(SymBlockMatrix *eigvectors, SymBlockVector *eigvalues);
-    void cdsyev(char jobz, char uplo, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues);  // diagonalize via acml
-    void davidson(int n_eigval, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues, double cutoff,
-                  int print);                                             // diagonalize via davidson alg.
-    void cdgesv(SymBlockVector *Xvec);                                    // solve lineq via acml
-    void lineq_flin(SymBlockVector *Xvec, double *det);                   // solve lineq via flin
-    void lineq_pople(SymBlockVector *Xvec, int num_vecs, double cutoff);  // solve lineq via pople
     void read_oooo(std::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi,
                    Array3i *oo_pairidx);
     void read_oovv(std::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off,
