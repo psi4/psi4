@@ -1,5 +1,7 @@
 list(APPEND sources
   block_matrix.cc
+  dsyev_ascending.cc
+  dsyev_descending.cc
   eigsort.cc
   eivout.cc
   flin.cc
