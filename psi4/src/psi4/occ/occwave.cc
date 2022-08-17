@@ -81,6 +81,7 @@ void OCCWave::common_init() {
     ss_scale = options_.get_double("SS_SCALE");
     e3_scale = options_.get_double("E3_SCALE");
     lambda_damping = options_.get_double("MOGRAD_DAMPING");
+    remp_A = options_.get_double("REMP_A");
 
     orth_type = options_.get_str("ORTH_TYPE");
     opt_method = options_.get_str("OPT_METHOD");
@@ -141,8 +142,8 @@ void OCCWave::common_init() {
         } else {
             double temp;
             temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
-            if (temp < 6.0) {
-                temp = 6.0;
+            if (temp < 6.5) {
+                temp = 6.5;
             }
             tol_grad = pow(10.0, -temp);
             // tol_grad = 100.0*tol_Eod;
@@ -386,6 +387,10 @@ void OCCWave::title() {
         outfile->Printf("                             OMP2.5 (OO-MP2.5)   \n");
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE")
         outfile->Printf("                             MP2.5  \n");
+    else if (wfn_type_ == "REMP" && orb_opt_ == "FALSE")
+        outfile->Printf("                             REMP2  \n");
+    else if (wfn_type_ == "OREMP" && orb_opt_ == "TRUE")
+        outfile->Printf("                           OO-REMP2  \n");
     outfile->Printf("                    Program Written by Ugur Bozkaya,\n");
     outfile->Printf("              Additional Contributions by J. P. Misiewicz\n");
     outfile->Printf("\n");
@@ -418,6 +423,11 @@ double OCCWave::compute_energy() {
         mem_release();
         throw FeatureNotImplemented("OCC module analytic gradients", "Frozen core/virtual", __FILE__, __LINE__);
     }
+   else if ((wfn_type_ == "REMP" || wfn_type_ == "=REMP") && dertype != "NONE") {
+        mem_release();
+        throw FeatureNotImplemented("OCC module analytic gradients", "no gradients for REMP yet", __FILE__, __LINE__);
+    }
+
 
     // Call the appropriate manager
     if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE")
@@ -436,6 +446,10 @@ double OCCWave::compute_energy() {
         omp2_5_manager();
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE")
         mp2_5_manager();
+    else if (wfn_type_ == "REMP" && orb_opt_ == "FALSE")
+        remp_manager();
+    else if (wfn_type_ == "OREMP" && orb_opt_ == "TRUE")
+        oremp_manager();
 
     // Write MO coefficients to Cmo.psi
     if (write_mo_coeff == "TRUE") {
@@ -479,7 +493,7 @@ double OCCWave::compute_energy() {
         return Emp2L;
     else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5")
         return Emp3L;
-    else if (wfn_type_ == "OCEPA")
+    else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP")
         return EcepaL;
     else if (wfn_type_ == "CEPA")
         return Ecepa;
@@ -496,7 +510,7 @@ void OCCWave::nbo() {
     outfile->Printf("\n");
 
     auto Udum = std::make_shared<Matrix>("Udum", nirrep_, nmopi_, nmopi_);
-    auto diag = std::make_shared<Vector>("Natural orbital occupation numbers", nirrep_, nmopi_);
+    auto diag = std::make_shared<Vector>("Natural orbital occupation numbers", nmopi_);
 
     // Diagonalizing Alpha-OPDM
     Udum->zero();

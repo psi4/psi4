@@ -553,12 +553,12 @@ void DFCoupledCluster::AllocateMemory() {
     eps = (double *)malloc((ndoccact + nvirt) * sizeof(double));
     std::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
     for (int h = 0; h < nirrep_; h++) {
-        for (int norb = frzcpi_[h]; norb < doccpi_[h]; norb++) {
+        for (int norb = frzcpi_[h]; norb < nalphapi_[h]; norb++) {
             eps[count++] = eps_test->get(h, norb);
         }
     }
     for (int h = 0; h < nirrep_; h++) {
-        for (int norb = doccpi_[h]; norb < nmopi_[h] - frzvpi_[h]; norb++) {
+        for (int norb = nalphapi_[h]; norb < nmopi_[h] - frzvpi_[h]; norb++) {
             eps[count++] = eps_test->get(h, norb);
         }
     }
@@ -607,11 +607,11 @@ void DFCoupledCluster::AllocateMemory() {
                        : (nfzv + ndocc + nvirt) * ndocc * nQmax;
     double df_memory = nQ * (o * o + o * v) + max;
 
-    total_memory *= 8. / 1024. / 1024.;
-    df_memory *= 8. / 1024. / 1024.;
+    total_memory *= 8. / 1024. / 1024. / 1024.;
+    df_memory *= 8. / 1024. / 1024. / 1024.;
 
-    double available_memory = (double)memory / 1024.0 / 1024.0;
-    double size_of_t2 = 8.0 * o * o * v * v / 1024.0 / 1024.0;
+    double available_memory = (double)memory / 1024.0 / 1024.0 / 1024.;
+    double size_of_t2 = 8.0 * o * o * v * v / 1024.0 / 1024.0 / 1024.;
 
     if (available_memory < total_memory + df_memory) {
         if (available_memory > total_memory + df_memory - size_of_t2) {
@@ -631,11 +631,11 @@ void DFCoupledCluster::AllocateMemory() {
     }
 
     outfile->Printf("  ==> Memory <==\n\n");
-    outfile->Printf("        Total memory available:          %9.2lf mb\n", available_memory);
-    outfile->Printf("        CCSD memory requirements:        %9.2lf mb\n",
+    outfile->Printf("        Total memory available:          %9.3lf [GiB]\n", available_memory);
+    outfile->Printf("        CCSD memory requirements:        %9.3lf [GiB]\n",
                     df_memory + total_memory - size_of_t2 * t2_on_disk);
-    outfile->Printf("            3-index integrals:           %9.2lf mb\n", df_memory);
-    outfile->Printf("            CCSD intermediates:          %9.2lf mb\n", total_memory - size_of_t2 * t2_on_disk);
+    outfile->Printf("            3-index integrals:           %9.3lf [GiB]\n", df_memory);
+    outfile->Printf("            CCSD intermediates:          %9.3lf [GiB]\n", total_memory - size_of_t2 * t2_on_disk);
 
     if (options_.get_bool("COMPUTE_TRIPLES")) {
         int nthreads = Process::environment.get_n_threads();
@@ -644,7 +644,7 @@ void DFCoupledCluster::AllocateMemory() {
             isLowMemory = true;
             mem_t = 8. * (2L * o * o * v * v + o * o * o * v + o * v + 5L * o * o * o * nthreads);
         }
-        outfile->Printf("        (T) algorithm:                   %9.2lf mb (%s-memory)\n", mem_t / 1024. / 1024., isLowMemory ? "low" : "high");
+        outfile->Printf("        (T) algorithm:                   %9.3lf [GiB] (%s-memory)\n", mem_t / (1024. * 1024. * 1024.), isLowMemory ? "low" : "high");
 
     }
     outfile->Printf("\n");

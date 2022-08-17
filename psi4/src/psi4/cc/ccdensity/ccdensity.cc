@@ -121,7 +121,6 @@ void tdensity(const struct TD_Params& S);
 void td_print();
 void oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S);
 void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S);
-void ael(struct RHO_Params *rho_params);
 void cleanup();
 void td_cleanup();
 void x_oe_intermediates_rhf(const struct RHO_Params& rho_params);

@@ -36,7 +36,6 @@
 
 namespace psi {
 
-class ERISieve;
 class BasisSet;
 class PSIO;
 class TwoBodyAOInt;
@@ -63,9 +62,6 @@ protected:
     int deriv_;
 
     std::shared_ptr<BasisSet> primary_;
-
-    /// Sieve, must be static throughout the life of the object
-    std::shared_ptr<ERISieve> sieve_;
 
     SharedMatrix Ca_;
     SharedMatrix Cb_;

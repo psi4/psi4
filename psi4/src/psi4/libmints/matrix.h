@@ -43,6 +43,7 @@ struct dpdbuf4;
 
 class PSIO;
 class Vector;
+class IntVector;
 using SharedVector = std::shared_ptr<Vector>;
 class Dimension;
 class Molecule;
@@ -841,12 +842,24 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     void axpy(double a, SharedMatrix X);
 
+    /**
+     * General matrix vector multiplication into this, alpha * AX + beta Y -> Y
+     *
+     * @ transa Do transpose A?
+     * @ alpha Scaling factor
+     * @ A Matrix to multiply by.
+     * @ X Vector to multiply by.
+     * @ beta Scaling factor for current input.
+     */
+    SharedVector gemv(bool transa, double alpha, const Vector& A);
+
     /** Summation collapse along either rows (0) or columns (1), always producing a column matrix
-     * \param dim 0 (row sum) or 1 (col sum)
-     * \return \sum_{i} M_{ij} => T_j if dim = 0 or
+     * @param target 0 (row sum) or 1 (col sum)
+     * @param dim Dimension. Sum over the first dim[h] elements of the row/col.
+     * @return \sum_{i} M_{ij} => T_j if dim = 0 or
      *         \sum_{j} M_{ij} => T_i if dim = 1
      */
-    SharedMatrix collapse(int dim = 0);
+    SharedVector collapse(const Dimension dim, int target = 0) const;
 
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
@@ -1000,6 +1013,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     void expm(int n = 2, bool scale = false);
 
+    ///
+    void sort_cols(const IntVector& sortvec);
     /// Swap rows i and j
     void swap_rows(int h, int i, int j);
     /// Swap cols i and j

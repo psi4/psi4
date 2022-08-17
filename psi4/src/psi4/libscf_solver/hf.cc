@@ -125,6 +125,7 @@ void HF::common_init() {
 
     // Read in DOCC and SOCC from memory
     input_docc_ = false;
+    Dimension docc(nirrep_);
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
         // Map the symmetry of the input DOCC, to account for displacements
@@ -140,18 +141,19 @@ void HF::common_init() {
             for (int h = 0; h < full_nirreps; ++h) {
                 temp_docc[h] = options_["DOCC"][h].to_integer();
             }
-            doccpi_ = map_irreps(temp_docc);
+            docc = map_irreps(temp_docc);
         } else {
             // This is a normal calculation; check the dimension against the current point group
             // then read
             if (options_["DOCC"].size() != nirrep_) throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
             for (int h = 0; h < nirrep_; ++h) {
-                doccpi_[h] = options_["DOCC"][h].to_integer();
+                docc[h] = options_["DOCC"][h].to_integer();
             }
         }
     }  // else take the reference wavefunctions doccpi
 
     input_socc_ = false;
+    Dimension socc(nirrep_);
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
         // Map the symmetry of the input SOCC, to account for displacements
@@ -167,33 +169,22 @@ void HF::common_init() {
             for (int h = 0; h < full_nirreps; ++h) {
                 temp_socc[h] = options_["SOCC"][h].to_integer();
             }
-            soccpi_ = map_irreps(temp_socc);
+            socc = map_irreps(temp_socc);
         } else {
             // This is a normal calculation; check the dimension against the current point group
             // then read
             if (options_["SOCC"].size() != nirrep_) throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             for (int h = 0; h < nirrep_; ++h) {
-                soccpi_[h] = options_["SOCC"][h].to_integer();
+                socc[h] = options_["SOCC"][h].to_integer();
             }
         }
     }  // else take the reference wavefunctions soccpi
 
-    // Check that we have enough basis functions
-    for (int h = 0; h < nirrep_; ++h) {
-        if (doccpi_[h] + soccpi_[h] > nsopi_[h]) {
-            throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
-        }
-    }
-
     if (input_socc_ || input_docc_) {
-        int alphacount = 0;
-        int betacount = 0;
-        for (int h = 0; h < nirrep_; h++) {
-            nalphapi_[h] = doccpi_[h] + soccpi_[h];
-            nbetapi_[h] = doccpi_[h];
-            alphacount += nalphapi_[h];
-            betacount += nbetapi_[h];
-        }
+        nalphapi_ = docc + socc;
+        nbetapi_ = docc;
+        int alphacount = nalphapi_.sum();
+        int betacount = nbetapi_.sum();
         if (alphacount != nalpha_) {
             std::ostringstream oss;
             oss << "Got " << alphacount << " alpha electrons, expected " << nalpha_ << ".\n";
@@ -208,6 +199,13 @@ void HF::common_init() {
         }
     }
 
+    // Check that we have enough basis functions
+    for (int h = 0; h < nirrep_; ++h) {
+        if (std::max(nalphapi_[h], nbetapi_[h]) > nsopi_[h]) {
+            throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
+        }
+    }
+
     // Set additional information
     nuclearrep_ = molecule_->nuclear_repulsion_energy(dipole_field_strength_);
     charge_ = molecule_->molecular_charge();
@@ -215,8 +213,8 @@ void HF::common_init() {
     nelectron_ = nbeta_ + nalpha_;
 
     // Copy data for storage
-    original_doccpi_ = doccpi_;
-    original_soccpi_ = soccpi_;
+    original_nalphapi_ = nalphapi_;
+    original_nbetapi_ = nbetapi_;
     original_nalpha_ = nalpha_;
     original_nbeta_ = nbeta_;
 
@@ -336,7 +334,7 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     if ((reference != "ROHF") && (tsize != nmopi_)) {
         throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
     }
-    tsize = x->colspi() + x->rowspi() - soccpi_;
+    tsize = x->colspi() + x->rowspi() - soccpi();
     if ((reference == "ROHF") && (tsize != nmopi_)) {
         throw PSIEXCEPTION("HF::rotate_orbitals: x dimensions do not match nmo_ dimension.");
     }
@@ -361,11 +359,8 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     U->expm(4, true);
 
     // Need to build a new one here incase nmo != nso
-    SharedMatrix tmp = linalg::doublet(C, U, false, false);
+    auto tmp = linalg::doublet(C, U, false, false);
     C->copy(tmp);
-
-    U.reset();
-    tmp.reset();
 }
 void HF::initialize_gtfock_jk() {
     // Build the JK from options, symmetric type
@@ -424,6 +419,8 @@ void HF::find_occupation() {
     if (MOM_performed_) {
         MOM();
     } else {
+        auto old_nalphapi = nalphapi_;
+        auto old_nbetapi = nbetapi_;
         if (!input_docc_ && !input_socc_) {
             assert(nirrep_ == epsilon_a_->nirrep());
             assert(nirrep_ == epsilon_b_->nirrep());
@@ -462,19 +459,9 @@ void HF::find_occupation() {
             for (int i = 0; i < nbeta_; ++i) nbetapi_[pairs_b[i].second]++;
         }
 
-        // Copies of socc and docc
-        Dimension old_socc = soccpi_;
-        Dimension old_docc = doccpi_;
-
         if (!input_docc_ && !input_socc_) {
-            int alphacount = 0;
-            int betacount = 0;
-            for (int h = 0; h < nirrep_; ++h) {
-                soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
-                doccpi_[h] = std::min(nalphapi_[h], nbetapi_[h]);
-                alphacount += doccpi_[h] + soccpi_[h];
-                betacount += doccpi_[h];
-            }
+            int alphacount = nalphapi_.sum();
+            int betacount = nbetapi_.sum();
             if (alphacount != nalpha_) {
                 std::ostringstream oss;
                 oss << "Count " << alphacount << " alpha electrons, expected " << nalpha_ << ".\n";
@@ -489,7 +476,7 @@ void HF::find_occupation() {
             }
         }
 
-        bool occ_changed = (soccpi_ != old_socc) || (doccpi_ != old_docc);
+        bool occ_changed = (nalphapi_ != old_nalphapi) || (nbetapi_ != old_nbetapi);
 
         // If print > 2 (diagnostics), print always
         if ((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0) {
@@ -601,7 +588,7 @@ void HF::form_H() {
 
                     basisset_->compute_phi(phi_ao.pointer(), x, y, z);
                     // Transform phi_ao to SO basis
-                    phi_so.gemv(true, 1.0, &u, &phi_ao, 0.0);
+                    phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
                     for (int i = 0; i < nso; i++)
                         for (int j = 0; j < nso; j++) V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
                 }  // npoints
@@ -642,7 +629,7 @@ void HF::form_H() {
 
                             basisset_->compute_phi(phi_ao.pointer(), x, y, z);
 
-                            phi_so.gemv(true, 1.0, &u, &phi_ao, 0.0);
+                            phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
 
                             for (int i = 0; i < nso; i++)
                                 for (int j = 0; j < nso; j++)
@@ -670,11 +657,11 @@ void HF::form_H() {
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && H_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        SharedMatrix Vprime = external_pot_->computePotentialMatrix(basisset_);
+        auto Vprime = external_pot_->computePotentialMatrix(basisset_);
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
-            SharedMatrix Vprimesym = factory_->create_shared_matrix("External Potential");
+            auto Vprimesym = factory_->create_shared_matrix("External Potential");
             Vprimesym->apply_symmetry(Vprime, AO2SO_);
             Vprime = Vprimesym;
         }
@@ -719,6 +706,8 @@ void HF::form_Shalf() {
     else
         throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
 
+    bool used_brian = false;
+
 #if USING_BrianQC
     if (brianEnable) {
         double S_cutoff = options_.get_double("S_TOLERANCE");
@@ -745,46 +734,26 @@ void HF::form_Shalf() {
 
         if (print_) outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n", nso_ - nmo_, nso_);
 
-        // Double check occupation vectors
-        for (int h = 0; h < nirrep_; ++h) {
-            if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
-                throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
-            }
-        }
-
-        // Refreshes twice in RHF, no big deal
-        epsilon_a_->init(nmopi_);
-        Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
-        epsilon_b_->init(nmopi_);
-        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
-
-        // Extra matrix dimension changes for specific derived classes
-        prepare_canonical_orthogonalization();
-
-        if (print_ > 3) {
-            S_->print("outfile");
-            X_->print("outfile");
-        }
-
-        return;
-    }
+        used_brian = true;
 #endif
 
-    double lindep_tolerance = options_.get_double("S_TOLERANCE");
-    double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
+    if (!used_brian) {
+        double lindep_tolerance = options_.get_double("S_TOLERANCE");
+        double cholesky_tolerance = options_.get_double("S_CHOLESKY_TOLERANCE");
 
-    BasisSetOrthogonalization orthog(method, S_, lindep_tolerance, cholesky_tolerance, print_);
+        BasisSetOrthogonalization orthog(method, S_, lindep_tolerance, cholesky_tolerance, print_);
 
-    // Transform
-    X_ = orthog.basis_to_orthog_basis();
+        // Transform
+        X_ = orthog.basis_to_orthog_basis();
 
-    // Update nmo_
-    nmopi_ = X_->colspi();
-    nmo_ = nmopi_.sum();
+        // Update nmo_
+        nmopi_ = X_->colspi();
+        nmo_ = nmopi_.sum();
+    }
 
     // Double check occupation vectors
     for (int h = 0; h < X_->nirrep(); ++h) {
-        if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+        if (std::max(nalphapi_[h], nbetapi_[h]) > nmopi_[h]) {
             throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
         }
     }
@@ -792,7 +761,9 @@ void HF::form_Shalf() {
     epsilon_a_->init(nmopi_);
     Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
     epsilon_b_->init(nmopi_);
-    Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+    if (!same_a_b_orbs_) {
+        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+    }
 
     // Extra matrix dimension changes for specific derived classes
     prepare_canonical_orthogonalization();
@@ -1046,8 +1017,6 @@ void HF::guess() {
             nbetapi_ = guess_Cb_->colspi();
             nalpha_ = nalphapi_.sum();
             nbeta_ = nbetapi_.sum();
-            soccpi_ = nalphapi_ - nbetapi_;
-            doccpi_ = nalphapi_ - soccpi_;
         }
 
         format_guess();
@@ -1157,7 +1126,7 @@ void HF::guess() {
         if (print_)
             outfile->Printf("  SCF Guess: Superposition of Atomic Potentials (doi:10.1021/acs.jctc.8b01089).\n\n");
 
-        std::shared_ptr<psi::VBase> builder = VBase::build_V(basisset_, functional_, options_, "SAP");
+        auto builder = VBase::build_V(basisset_, functional_, options_, "SAP");
         builder->initialize();
 
         // Print info on the integration grid
@@ -1227,28 +1196,28 @@ void HF::check_phases() {
 }
 
 void HF::print_occupation() {
-    std::vector<std::string> labels = molecule_->irrep_labels();
-    std::string reference = options_.get_str("REFERENCE");
+    auto labels = molecule_->irrep_labels();
+    auto reference = options_.get_str("REFERENCE");
     outfile->Printf("          ");
     for (int h = 0; h < nirrep_; ++h) outfile->Printf(" %4s ", labels[h].c_str());
     outfile->Printf("\n");
+    auto docc = doccpi();
+    auto socc = soccpi();
     outfile->Printf("    DOCC [ ");
-    for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", doccpi_[h]);
-    outfile->Printf(" %4d ]\n", doccpi_[nirrep_ - 1]);
+    for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", docc[h]);
+    outfile->Printf(" %4d ]\n", docc[nirrep_ - 1]);
     if (reference != "RHF" && reference != "RKS") {
         outfile->Printf("    SOCC [ ");
-        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", soccpi_[h]);
-        outfile->Printf(" %4d ]\n", soccpi_[nirrep_ - 1]);
+        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", socc[h]);
+        outfile->Printf(" %4d ]\n", socc[nirrep_ - 1]);
     }
-    if (MOM_excited_) {
-        // Also print nalpha and nbeta per irrep, which are more physically meaningful
-        outfile->Printf("    NA   [ ");
-        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nalphapi_[h]);
-        outfile->Printf(" %4d ]\n", nalphapi_[nirrep_ - 1]);
-        outfile->Printf("    NB   [ ");
-        for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nbetapi_[h]);
-        outfile->Printf(" %4d ]\n", nbetapi_[nirrep_ - 1]);
-    }
+    // Also print nalpha and nbeta per irrep, which are more physically meaningful
+    outfile->Printf("    NA   [ ");
+    for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nalphapi_[h]);
+    outfile->Printf(" %4d ]\n", nalphapi_[nirrep_ - 1]);
+    outfile->Printf("    NB   [ ");
+    for (int h = 0; h < nirrep_ - 1; ++h) outfile->Printf(" %4d,", nbetapi_[h]);
+    outfile->Printf(" %4d ]\n", nbetapi_[nirrep_ - 1]);
 
     outfile->Printf("\n");
 }
@@ -1306,10 +1275,8 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
 
 void HF::reset_occupation() {
     // RHF style for now
-    doccpi_ = original_doccpi_;
-    soccpi_ = original_soccpi_;
-    nalphapi_ = doccpi_ + soccpi_;
-    nbetapi_ = doccpi_;
+    nalphapi_ = original_nalphapi_;
+    nbetapi_ = original_nbetapi_;
 
     // These may not match the per irrep. Will remap correctly next find_occupation call
     nalpha_ = original_nalpha_;

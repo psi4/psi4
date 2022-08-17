@@ -41,14 +41,14 @@ void DFOCC::mp2_direct() {
     timer_on("MP2");
     if (reference_ == "RESTRICTED") {
         // Build amplitudes in Mulliken order
-        T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        T = std::make_shared<Tensor2d>("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         tei_iajb_chem_directAA(K);
         T->copy(K);
         T->apply_denom_chem(nfrzc, noccA, FockA);
 
         // form U(ia,jb)
-        U = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
+        U = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
         U->sort(1432, T, 1.0, 0.0);
         U->scale(-1.0);
         U->axpy(T, 2.0);
@@ -61,8 +61,8 @@ void DFOCC::mp2_direct() {
 
         /*
         // Form U(Q,ia) = \sum_{jb} b_jb^Q u_jb^ia
-        T = SharedTensor2d(new Tensor2d("U2_1 (Q|IA)", nQ, naoccA * navirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA));
+        T = std::make_shared<Tensor2d>("U2_1 (Q|IA)", nQ, naoccA * navirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA);
         T->gemm(false, false, K, U, 1.0, 0.0);
         U.reset();
         Ecorr = T->vector_dot(K);
@@ -75,15 +75,15 @@ void DFOCC::mp2_direct() {
 
     else if (reference_ == "UNRESTRICTED") {
         // T2AA
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         tei_iajb_chem_directAA(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1AA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        t2_1AA = std::make_shared<Tensor2d>("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA);
         t2_1AA->copy(K);
         t2_1AA->apply_denom(nfrzc, noccA, FockA);
         Emp2AA = 0.25 * t2_1AA->vector_dot(K);
@@ -93,15 +93,15 @@ void DFOCC::mp2_direct() {
         Escsnmp2AA = 1.76 * Emp2AA;
 
         // T2BB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
         tei_iajb_chem_directBB(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1BB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+        t2_1BB = std::make_shared<Tensor2d>("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB);
         t2_1BB->copy(K);
         t2_1BB->apply_denom(nfrzc, noccB, FockB);
         Emp2BB = 0.25 * t2_1BB->vector_dot(K);
@@ -111,12 +111,12 @@ void DFOCC::mp2_direct() {
         Escsnmp2BB = 1.76 * Emp2BB;
 
         // T2AB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
         tei_iajb_chem_directAB(L);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         K->sort(1324, L, 1.0, 0.0);
         L.reset();
-        t2_1AB = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        t2_1AB = std::make_shared<Tensor2d>("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         t2_1AB->copy(K);
         t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
         Emp2AB = t2_1AB->vector_dot(K);
@@ -165,13 +165,13 @@ void DFOCC::ccsd_mp2() {
     timer_on("MP2");
     if (reference_ == "RESTRICTED") {
         // Build amplitudes in Mulliken order
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
         t2->copy(K);
         t2->apply_denom_chem(nfrzc, noccA, FockA);
 
         // Form U(ia,jb) = 2*T(ia,jb) - T (ib,ja)
-        U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         ccsd_u2_amps(U, t2);
         Ecorr = U->vector_dot(K);
         U.reset();
@@ -184,15 +184,15 @@ void DFOCC::ccsd_mp2() {
 
     else if (reference_ == "UNRESTRICTED") {
         // T2AA
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         tei_iajb_chem_directAA(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1AA = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        t2_1AA = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
         t2_1AA->copy(K);
         t2_1AA->apply_denom(nfrzc, noccA, FockA);
         t2_1AA->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
@@ -203,15 +203,15 @@ void DFOCC::ccsd_mp2() {
         Escsnmp2AA = 1.76 * Emp2AA;
 
         // T2BB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
         tei_iajb_chem_directBB(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1BB = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+        t2_1BB = std::make_shared<Tensor2d>("T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
         t2_1BB->copy(K);
         t2_1BB->apply_denom(nfrzc, noccB, FockB);
         t2_1BB->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
@@ -222,12 +222,12 @@ void DFOCC::ccsd_mp2() {
         Escsnmp2BB = 1.76 * Emp2BB;
 
         // T2AB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
         tei_iajb_chem_directAB(L);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         K->sort(1324, L, 1.0, 0.0);
         L.reset();
-        t2_1AB = SharedTensor2d(new Tensor2d("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        t2_1AB = std::make_shared<Tensor2d>("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         t2_1AB->copy(K);
         t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
         t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
@@ -276,28 +276,28 @@ void DFOCC::ccsd_mp2_low() {
     timer_on("MP2");
     if (reference_ == "RESTRICTED") {
         // Build amplitudes in Mulliken order
-        T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        T = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         tei_iajb_chem_directAA(K);
         T->copy(K);
         T->apply_denom_chem(nfrzc, noccA, FockA);
         T->write_symm(psio_, PSIF_DFOCC_AMPS);
 
         // Form T'(ib,ja) = T(ia,jb)
-        U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
+        U = std::make_shared<Tensor2d>("T2p (IA|JB)", naoccA, navirA, naoccA, navirA);
         U->sort(1432, T, 1.0, 0.0);
         U->write_symm(psio_, PSIF_DFOCC_AMPS);
         U.reset();
 
         // Form Tau(ia,jb) = T(ia,jb) + t(ia) * t(jb)
-        U = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
+        U = std::make_shared<Tensor2d>("Tau (IA|JB)", naoccA, navirA, naoccA, navirA);
         U->dirprd224(t1A, t1A);
         U->add(T);
         U->write_symm(psio_, PSIF_DFOCC_AMPS);
         U.reset();
 
         // Form U(ia,jb) = 2*T(ia,jb) - T (ib,ja)
-        U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         U->sort(1432, T, 1.0, 0.0);
         U->scale(-1.0);
         U->axpy(T, 2.0);
@@ -314,15 +314,15 @@ void DFOCC::ccsd_mp2_low() {
 
     else if (reference_ == "UNRESTRICTED") {
         // T2AA
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         tei_iajb_chem_directAA(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1AA = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        t2_1AA = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
         t2_1AA->copy(K);
         t2_1AA->apply_denom(nfrzc, noccA, FockA);
         t2_1AA->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
@@ -333,15 +333,15 @@ void DFOCC::ccsd_mp2_low() {
         Escsnmp2AA = 1.76 * Emp2AA;
 
         // T2BB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
         tei_iajb_chem_directBB(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1BB = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+        t2_1BB = std::make_shared<Tensor2d>("T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
         t2_1BB->copy(K);
         t2_1BB->apply_denom(nfrzc, noccB, FockB);
         t2_1BB->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
@@ -352,12 +352,12 @@ void DFOCC::ccsd_mp2_low() {
         Escsnmp2BB = 1.76 * Emp2BB;
 
         // T2AB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
         tei_iajb_chem_directAB(L);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         K->sort(1324, L, 1.0, 0.0);
         L.reset();
-        t2_1AB = SharedTensor2d(new Tensor2d("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        t2_1AB = std::make_shared<Tensor2d>("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         t2_1AB->copy(K);
         t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
         t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
@@ -406,13 +406,13 @@ void DFOCC::ccd_mp2() {
     timer_on("MP2");
     if (reference_ == "RESTRICTED") {
         // Build amplitudes in Mulliken order
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
         t2->copy(K);
         t2->apply_denom_chem(nfrzc, noccA, FockA);
 
         // Form U(ia,jb) = 2*T(ia,jb) - T (ib,ja)
-        U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         ccsd_u2_amps(U, t2);
         Ecorr = U->vector_dot(K);
         U.reset();
@@ -424,21 +424,21 @@ void DFOCC::ccd_mp2() {
 
     else if (reference_ == "UNRESTRICTED") {
         // T2AA
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         tei_iajb_chem_directAA(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1AA = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        t2_1AA = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
         t2_1AA->copy(K);
         t2_1AA->apply_denom(nfrzc, noccA, FockA);
         t2_1AA->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
         // Form T2(IA|JB)
-        t2p_1 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        t2p_1 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
         t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
         // t2p_1->write(psio_, PSIF_DFOCC_AMPS);
@@ -452,21 +452,21 @@ void DFOCC::ccd_mp2() {
         Escsnmp2AA = 1.76 * Emp2AA;
 
         // T2BB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
         tei_iajb_chem_directBB(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1BB = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+        t2_1BB = std::make_shared<Tensor2d>("T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
         t2_1BB->copy(K);
         t2_1BB->apply_denom(nfrzc, noccB, FockB);
         t2_1BB->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
         // Form T2(ia|jb)
-        t2p_1 = SharedTensor2d(new Tensor2d("T2 (ia|jb)", naoccB, navirB, naoccB, navirB));
+        t2p_1 = std::make_shared<Tensor2d>("T2 (ia|jb)", naoccB, navirB, naoccB, navirB);
         t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
         t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
         t2p_1.reset();
@@ -479,18 +479,18 @@ void DFOCC::ccd_mp2() {
         Escsnmp2BB = 1.76 * Emp2BB;
 
         // T2AB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
         tei_iajb_chem_directAB(L);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         K->sort(1324, L, 1.0, 0.0);
         L.reset();
-        t2_1AB = SharedTensor2d(new Tensor2d("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        t2_1AB = std::make_shared<Tensor2d>("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         t2_1AB->copy(K);
         t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
         t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
 
         // Form T2(IA|jb)
-        t2p_1 = SharedTensor2d(new Tensor2d("T2 (IA|jb)", naoccA, navirA, naoccB, navirB));
+        t2p_1 = std::make_shared<Tensor2d>("T2 (IA|jb)", naoccA, navirA, naoccB, navirB);
         t2p_1->sort(1324, t2_1AB, 1.0, 0.0);
         t2p_1->write(psio_, PSIF_DFOCC_AMPS);
         t2p_1.reset();
@@ -542,21 +542,21 @@ void DFOCC::ccd_mp2_low() {
     timer_on("MP2");
     if (reference_ == "RESTRICTED") {
         // Build amplitudes in Mulliken order
-        T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        T = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         tei_iajb_chem_directAA(K);
         T->copy(K);
         T->apply_denom_chem(nfrzc, noccA, FockA);
         T->write_symm(psio_, PSIF_DFOCC_AMPS);
 
         // Form T'(ib,ja) = T(ia,jb)
-        U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
+        U = std::make_shared<Tensor2d>("T2p (IA|JB)", naoccA, navirA, naoccA, navirA);
         U->sort(1432, T, 1.0, 0.0);
         U->write_symm(psio_, PSIF_DFOCC_AMPS);
         U.reset();
 
         // Form U(ia,jb) = 2*T(ia,jb) - T (ib,ja)
-        U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         U->sort(1432, T, 1.0, 0.0);
         U->scale(-1.0);
         U->axpy(T, 2.0);
@@ -572,15 +572,15 @@ void DFOCC::ccd_mp2_low() {
 
     else if (reference_ == "UNRESTRICTED") {
         // T2AA
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         tei_iajb_chem_directAA(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1AA = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        t2_1AA = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
         t2_1AA->copy(K);
         t2_1AA->apply_denom(nfrzc, noccA, FockA);
         t2_1AA->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
@@ -591,15 +591,15 @@ void DFOCC::ccd_mp2_low() {
         Escsnmp2AA = 1.76 * Emp2AA;
 
         // T2BB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
         tei_iajb_chem_directBB(L);
-        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+        M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB);
         M->sort(1324, L, 1.0, 0.0);
         L.reset();
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB);
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        t2_1BB = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+        t2_1BB = std::make_shared<Tensor2d>("T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
         t2_1BB->copy(K);
         t2_1BB->apply_denom(nfrzc, noccB, FockB);
         t2_1BB->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
@@ -610,12 +610,12 @@ void DFOCC::ccd_mp2_low() {
         Escsnmp2BB = 1.76 * Emp2BB;
 
         // T2AB
-        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+        L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
         tei_iajb_chem_directAB(L);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         K->sort(1324, L, 1.0, 0.0);
         L.reset();
-        t2_1AB = SharedTensor2d(new Tensor2d("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        t2_1AB = std::make_shared<Tensor2d>("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
         t2_1AB->copy(K);
         t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
         t2_1AB->write(psio_, PSIF_DFOCC_AMPS);

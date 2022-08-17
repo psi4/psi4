@@ -54,8 +54,6 @@ void DCTSolver::init() {
         reference_wavefunction_->get_dipole_field_strength());
     scf_energy_ = reference_wavefunction_->energy();
     ntriso_ = nso_ * (nso_ + 1) / 2;
-    soccpi_ = reference_wavefunction_->soccpi();
-    doccpi_ = reference_wavefunction_->doccpi();
     frzcpi_ = reference_wavefunction_->frzcpi();
     frzvpi_ = reference_wavefunction_->frzvpi();
     nmopi_ = reference_wavefunction_->nmopi();
@@ -100,8 +98,8 @@ void DCTSolver::init() {
     ao_s_ = std::make_shared<Matrix>("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_);
     so_h_ = Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_);
     s_half_inv_ = std::make_shared<Matrix>("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_);
-    epsilon_a_ = std::make_shared<Vector>(nirrep_, nsopi_);
-    epsilon_b_ = std::make_shared<Vector>(nirrep_, nsopi_);
+    epsilon_a_ = std::make_shared<Vector>(nsopi_);
+    epsilon_b_ = std::make_shared<Vector>(nsopi_);
     kappa_mo_a_ = std::make_shared<Matrix>("MO basis Kappa (Alpha)", nirrep_, nmopi_, nmopi_);
     kappa_mo_b_ = std::make_shared<Matrix>("MO basis Kappa (Beta)", nirrep_, nmopi_, nmopi_);
     tau_so_a_ = std::make_shared<Matrix>("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_);
@@ -112,8 +110,8 @@ void DCTSolver::init() {
     bvir_tau_ = Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
 
     // Compute MO offsets
-    aocc_off_ = new int[nirrep_];
-    avir_off_ = new int[nirrep_];
+    aocc_off_ = std::vector<int>(nirrep_);
+    avir_off_ = std::vector<int>(nirrep_);
     double ocount = naoccpi_[0];
     double vcount = navirpi_[0];
     aocc_off_[0] = 0;
@@ -125,8 +123,8 @@ void DCTSolver::init() {
         vcount += navirpi_[h];
     }
 
-    bocc_off_ = new int[nirrep_];
-    bvir_off_ = new int[nirrep_];
+    bocc_off_ = std::vector<int>(nirrep_);
+    bvir_off_ = std::vector<int>(nirrep_);
     ocount = nboccpi_[0];
     vcount = nbvirpi_[0];
     bocc_off_[0] = 0;
@@ -187,7 +185,7 @@ void DCTSolver::init() {
     Matrix eigvec(nirrep_, nsopi_, nsopi_);
     Matrix eigtemp(nirrep_, nsopi_, nsopi_);
     Matrix eigtemp2(nirrep_, nsopi_, nsopi_);
-    Vector eigval(nirrep_, nsopi_);
+    Vector eigval(nsopi_);
     ao_s_->diagonalize(eigvec, eigval);
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     for (int h = 0; h < nirrep_; ++h) {

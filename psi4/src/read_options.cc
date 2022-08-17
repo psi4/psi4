@@ -114,8 +114,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     number of frozen orbitals can be attained by using the keywords
     |globals__num_frozen_docc| (gives the total number of orbitals to freeze,
     program picks the lowest-energy orbitals) or |globals__frozen_docc| (gives
-    the number of orbitals to freeze per irreducible representation) -*/
-    options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE 1 0 -1 -2 -3");
+    the number of orbitals to freeze per irreducible representation) or by
+    the option ``POLICY`` in combination with appropriate inputs to
+    |globals__freeze_core_policy|. At present, ``POLICY`` is an experimental
+    option and is subject to change.-*/
+    options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE 1 0 -1 -2 -3 POLICY");
+
+    /*- NOTE: This is an experimental feature and subject to change! Specifies
+    a custom frozen-core policy on a per-element basis. Input should be a list
+    of integers representing the number of orbitals to freeze for each atomic
+    number MINUS one (so H is 0, He is 1, etc). For example, to specify that
+    elements H-Be should have 0 frozen orbitals, B-Mg should have 1, and Al
+    should have 2, you would provide the input ``[0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 2]``. Please make sure to fill in the list up to the highest atomic
+    number included in any calculations. This option is only used if
+    |globals__freeze_core| is set to ``POLICY``. -*/
+    options.add("FREEZE_CORE_POLICY", new ArrayType());
 
     options.add("NUM_GPUS", 1);
     /*- Do use pure angular momentum basis functions?
@@ -267,7 +281,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- MBIS Number of Spherical Points -*/
     options.add_int("MBIS_SPHERICAL_POINTS", 302);
     /*- Pruning scheme for MBIS Grid -*/
-    options.add_str("MBIS_PRUNING_SCHEME", "ROBUST", 
+    options.add_str("MBIS_PRUNING_SCHEME", "ROBUST",
                     "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
     /*- Maximum Radial Moment to Calculate -*/
     options.add_int("MAX_RADIAL_MOMENT", 4);
@@ -852,7 +866,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         of 90 would switch the two orbitals. -*/
         options.add("MCSCF_ROTATE", new ArrayType());
 
-        /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian, or One-Step. Defaults
+        /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian. Defaults
         to TS for RASSCF. -*/
         options.add_str("MCSCF_ALGORITHM", "TS", "TS AH");
 
@@ -1569,7 +1583,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do reduce numerical COSX errors with overlap fitting? !expert -*/
         options.add_bool("COSX_OVERLAP_FITTING", true);
         /*- Do allow for improved COSX screening performance by constructing the Fock matrix incrementally? !expert -*/
-        options.add_bool("COSX_INCFOCK", true);
+        options.add_bool("COSX_INCFOCK", false);
 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
@@ -1833,8 +1847,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("CACHELEVEL", 2);
         /*- The algorithm to use for the $\left\langle VV||VV\right \rangle$ terms -*/
         options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-        /*- Do compute the approximate excitation level? See Stanton and Bartlett, JCP, 98, 1993, 7034. !expert -*/
-        options.add_bool("AEL", false);
         /*- The type of gauge to use for properties -*/
         options.add_str("GAUGE", "LENGTH");
         /*- Do relax the one-particle density matrix? -*/
@@ -2089,7 +2101,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         previous approximate solution (for each root)? This doubles the
         number of resulting vectors but generally improves convergence. -*/
         options.add_bool("COLLAPSE_WITH_LAST", true);
-        /*- Has the same effect as "COLLAPSE_WITH_LAST" but only in 
+        /*- Has the same effect as "COLLAPSE_WITH_LAST" but only in
         CC3 computations and after the initial solution of EOM CCSD.
         May help efficiency, but hazardous when solving for higher roots. -*/
         options.add_bool("COLLAPSE_WITH_LAST_CC3", false);
@@ -2876,6 +2888,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("PCG_CONVERGENCE", 1e-6);
         /*- Damping factor for the orbital gradient (Rendell et al., JCP, vol. 87, pp. 5976, 1987) -*/
         options.add_double("MOGRAD_DAMPING", 1.0);
+        /*- mixing parameter for the REMP hybrid perturbation theory, A specifies the Moller-Plesset fraction -*/
+        options.add_double("REMP_A", 0.15E0);
 
         /*- The solver will be used for simultaneous linear equations. -*/
         options.add_str("LINEQ_SOLVER", "CDGESV", "CDGESV FLIN POPLE");
@@ -2898,7 +2912,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Type of the SOS method -*/
         options.add_str("SOS_TYPE", "SOS", "SOS SOSPI");
         /*- Type of the wavefunction. -*/
-        options.add_str("WFN_TYPE", "OMP2", "OMP2 OMP3 OCEPA OMP2.5");
+        options.add_str("WFN_TYPE", "OMP2", "OMP2 OMP3 OCEPA OMP2.5 REMP OREMP");
         /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC
         algorithm. The DIRECT option (default) means it will not be computed and stored, instead its contribution will
         be directly added to Generalized-Fock Matrix. -*/

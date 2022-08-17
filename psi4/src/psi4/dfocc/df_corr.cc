@@ -51,7 +51,7 @@ namespace dfoccwave {
 
 void DFOCC::trans_corr() {
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_);
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     trans_ab = 1;
@@ -101,7 +101,7 @@ void DFOCC::trans_corr() {
 //=======================================================
 void DFOCC::trans_mp2() {
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_);
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form B(Q,ia)
@@ -255,7 +255,7 @@ void DFOCC::formJ(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet
     free_block(J_copy);
 
     // write J
-    Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
+    Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ);
     Jmhalf->set(J_mhalf);
     Jmhalf->write(psio_, PSIF_DFOCC_INTS);
     Jmhalf.reset();
@@ -403,7 +403,7 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
     C_DGEMM('N','N', nQ, nso2_, nQ, 1.0, J_mhalf[0], nQ, Ap[0], nso2_, 0.0, Cp[0], nso2_);
     free_block(J_mhalf);
     free_block(Ap);
-    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso2_));
+    cQso = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mn)", nQ, nso2_);
     cQso->set(Cp);
     free_block(Cp);
     cQso->write(psio_, PSIF_DFOCC_INTS);
@@ -416,8 +416,8 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
 //          form b(Q,ij) : active
 //=======================================================
 void DFOCC::b_ij() {
-    bQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mI)", nQ, nso_ * naoccA));
-    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA * naoccA));
+    bQnoA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mI)", nQ, nso_ * naoccA);
+    bQijA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA * naoccA);
     bQnoA->contract(false, false, nQ * nso_, naoccA, nso_, bQso, CaoccA, 1.0, 0.0);
     bQijA->contract233(true, false, naoccA, naoccA, CaoccA, bQnoA, 1.0, 0.0);
     bQnoA.reset();
@@ -425,8 +425,8 @@ void DFOCC::b_ij() {
     bQijA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        bQnoB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mi)", nQ, nso_ * naoccB));
-        bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB * naoccB));
+        bQnoB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mi)", nQ, nso_ * naoccB);
+        bQijB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ij)", nQ, naoccB * naoccB);
         bQnoB->contract(false, false, nQ * nso_, naoccB, nso_, bQso, CaoccB, 1.0, 0.0);
         bQijB->contract233(true, false, naoccB, naoccB, CaoccB, bQnoB, 1.0, 0.0);
         bQnoB.reset();
@@ -440,30 +440,30 @@ void DFOCC::b_ij() {
 //          form b(Q,ij) : all
 //=======================================================
 void DFOCC::b_oo() {
-    bQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mO)", nQ, nso_ * noccA));
-    bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+    bQnoA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mO)", nQ, nso_ * noccA);
+    bQooA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA);
     bQnoA->contract(false, false, nQ * nso_, noccA, nso_, bQso, CoccA, 1.0, 0.0);
     bQooA->contract233(true, false, noccA, noccA, CoccA, bQnoA, 1.0, 0.0);
     bQnoA.reset();
     bQooA->write(psio_, PSIF_DFOCC_INTS);
 
     // Form active b(Q,ij)
-    bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    bQijA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     bQijA->form_b_ij(nfrzc, bQooA);
     bQooA.reset();
     bQijA->write(psio_, PSIF_DFOCC_INTS);
     bQijA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        bQnoB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mo)", nQ, nso_ * noccB));
-        bQooB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB));
+        bQnoB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mo)", nQ, nso_ * noccB);
+        bQooB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB);
         bQnoB->contract(false, false, nQ * nso_, noccB, nso_, bQso, CoccB, 1.0, 0.0);
         bQooB->contract233(true, false, noccB, noccB, CoccB, bQnoB, 1.0, 0.0);
         bQnoB.reset();
         bQooB->write(psio_, PSIF_DFOCC_INTS);
 
         // Form active b(Q,ij)
-        bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB, naoccB));
+        bQijB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ij)", nQ, naoccB, naoccB);
         bQijB->form_b_ij(nfrzc, bQooB);
         bQooB.reset();
         bQijB->write(psio_, PSIF_DFOCC_INTS);
@@ -476,8 +476,8 @@ void DFOCC::b_oo() {
 //          form b(Q,ia) : active
 //=======================================================
 void DFOCC::b_ia() {
-    bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA));
-    bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA));
+    bQnvA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA);
+    bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA);
     bQnvA->contract(false, false, nQ * nso_, navirA, nso_, bQso, CavirA, 1.0, 0.0);
     bQiaA->contract233(true, false, naoccA, navirA, CaoccA, bQnvA, 1.0, 0.0);
     bQiaA->write(psio_, PSIF_DFOCC_INTS);
@@ -486,8 +486,8 @@ void DFOCC::b_ia() {
     bQnvA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ma)", nQ, nso_ * navirB));
-        bQiaB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ia)", nQ, naoccB * navirB));
+        bQnvB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ma)", nQ, nso_ * navirB);
+        bQiaB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ia)", nQ, naoccB * navirB);
         bQnvB->contract(false, false, nQ * nso_, navirB, nso_, bQso, CavirB, 1.0, 0.0);
         bQiaB->contract233(true, false, naoccB, navirB, CaoccB, bQnvB, 1.0, 0.0);
         bQiaB->write(psio_, PSIF_DFOCC_INTS);
@@ -502,8 +502,8 @@ void DFOCC::b_ia() {
 //          form b(Q,ov) : all
 //=======================================================
 void DFOCC::b_ov() {
-    bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mV)", nQ, nso_ * nvirA));
-    bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
+    bQnvA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mV)", nQ, nso_ * nvirA);
+    bQovA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA);
     bQnvA->contract(false, false, nQ * nso_, nvirA, nso_, bQso, CvirA, 1.0, 0.0);
     bQovA->contract233(true, false, noccA, nvirA, CoccA, bQnvA, 1.0, 0.0);
     bQovA->write(psio_, PSIF_DFOCC_INTS);
@@ -511,15 +511,15 @@ void DFOCC::b_ov() {
     bQnvA.reset();
 
     // Form active b(Q,ia)
-    bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     bQiaA->form_b_ia(nfrzc, bQovA);
     bQovA.reset();
     bQiaA->write(psio_, PSIF_DFOCC_INTS);
     bQiaA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mv)", nQ, nso_ * nvirB));
-        bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB, nvirB));
+        bQnvB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mv)", nQ, nso_ * nvirB);
+        bQovB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ov)", nQ, noccB, nvirB);
         bQnvB->contract(false, false, nQ * nso_, nvirB, nso_, bQso, CvirB, 1.0, 0.0);
         bQovB->contract233(true, false, noccB, nvirB, CoccB, bQnvB, 1.0, 0.0);
         bQovB->write(psio_, PSIF_DFOCC_INTS);
@@ -527,7 +527,7 @@ void DFOCC::b_ov() {
         bQnvB.reset();
 
         // Form active b(Q,ia)
-        bQiaB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ia)", nQ, naoccB, navirB));
+        bQiaB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ia)", nQ, naoccB, navirB);
         bQiaB->form_b_ia(nfrzc, bQovB);
         bQovB.reset();
         bQiaB->write(psio_, PSIF_DFOCC_INTS);
@@ -540,8 +540,8 @@ void DFOCC::b_ov() {
 //          form b(Q,ab) : active
 //=======================================================
 void DFOCC::b_ab() {
-    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
-    bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA));
+    bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
+    bQnvA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA);
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
     bQabA->contract233(true, false, navirA, navirA, CavirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
@@ -549,8 +549,8 @@ void DFOCC::b_ab() {
     bQabA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
-        bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ma)", nQ, nso_ * navirB));
+        bQabB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB);
+        bQnvB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ma)", nQ, nso_ * navirB);
         bQnvB->read(psio_, PSIF_DFOCC_INTS);
         bQabB->contract233(true, false, navirB, navirB, CavirB, bQnvB, 1.0, 0.0);
         bQnvB.reset();
@@ -564,30 +564,30 @@ void DFOCC::b_ab() {
 //          form b(Q,vv) : all
 //=======================================================
 void DFOCC::b_vv() {
-    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
-    bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mV)", nQ, nso_ * nvirA));
+    bQvvA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
+    bQnvA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mV)", nQ, nso_ * nvirA);
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
     bQvvA->contract233(true, false, nvirA, nvirA, CvirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
     bQvvA->write(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form active b(Q,ab)
-    bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
     bQabA->form_b_ab(bQvvA);
     bQvvA.reset();
     bQabA->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
-        bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mv)", nQ, nso_ * nvirB));
+        bQvvB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB);
+        bQnvB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mv)", nQ, nso_ * nvirB);
         bQnvB->read(psio_, PSIF_DFOCC_INTS);
         bQvvB->contract233(true, false, nvirB, nvirB, CvirB, bQnvB, 1.0, 0.0);
         bQnvB.reset();
         bQvvB->write(psio_, PSIF_DFOCC_INTS, true, true);
 
         // Form active b(Q,ab)
-        bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
+        bQabB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB);
         bQabB->form_b_ab(bQvvB);
         bQvvB.reset();
         bQabB->write(psio_, PSIF_DFOCC_INTS, true, true);
@@ -600,8 +600,8 @@ void DFOCC::b_vv() {
 //          form c(Q,ij): active
 //=======================================================
 void DFOCC::c_ij() {
-    cQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mI)", nQ, nso_ * naoccA));
-    cQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|IJ)", nQ, naoccA * naoccA));
+    cQnoA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mI)", nQ, nso_ * naoccA);
+    cQijA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|IJ)", nQ, naoccA * naoccA);
     cQnoA->contract(false, false, nQ * nso_, naoccA, nso_, cQso, CaoccA, 1.0, 0.0);
     cQijA->contract233(true, false, naoccA, naoccA, CaoccA, cQnoA, 1.0, 0.0);
     cQnoA.reset();
@@ -609,8 +609,8 @@ void DFOCC::c_ij() {
     cQijA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        cQnoB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mi)", nQ, nso_ * naoccB));
-        cQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|ij)", nQ, naoccB * naoccB));
+        cQnoB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mi)", nQ, nso_ * naoccB);
+        cQijB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|ij)", nQ, naoccB * naoccB);
         cQnoB->contract(false, false, nQ * nso_, naoccB, nso_, cQso, CaoccB, 1.0, 0.0);
         cQijB->contract233(true, false, naoccB, naoccB, CaoccB, cQnoB, 1.0, 0.0);
         cQnoB.reset();
@@ -624,8 +624,8 @@ void DFOCC::c_ij() {
 //          form c(Q,ij): all
 //=======================================================
 void DFOCC::c_oo() {
-    cQnoA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mO)", nQ, nso_ * noccA));
-    cQooA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|OO)", nQ, noccA * noccA));
+    cQnoA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mO)", nQ, nso_ * noccA);
+    cQooA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|OO)", nQ, noccA * noccA);
     cQnoA->contract(false, false, nQ * nso_, noccA, nso_, cQso, CoccA, 1.0, 0.0);
     cQooA->contract233(true, false, noccA, noccA, CoccA, cQnoA, 1.0, 0.0);
     cQnoA.reset();
@@ -633,8 +633,8 @@ void DFOCC::c_oo() {
     cQooA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        cQnoB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mo)", nQ, nso_ * noccB));
-        cQooB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|oo)", nQ, noccB * noccB));
+        cQnoB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mo)", nQ, nso_ * noccB);
+        cQooB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|oo)", nQ, noccB * noccB);
         cQnoB->contract(false, false, nQ * nso_, noccB, nso_, cQso, CoccB, 1.0, 0.0);
         cQooB->contract233(true, false, noccB, noccB, CoccB, cQnoB, 1.0, 0.0);
         cQnoB.reset();
@@ -648,8 +648,8 @@ void DFOCC::c_oo() {
 //          form c(Q,ia) : active
 //=======================================================
 void DFOCC::c_ia() {
-    cQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mA)", nQ, nso_ * navirA));
-    cQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|IA)", nQ, naoccA * navirA));
+    cQnvA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mA)", nQ, nso_ * navirA);
+    cQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|IA)", nQ, naoccA * navirA);
     cQnvA->contract(false, false, nQ * nso_, navirA, nso_, cQso, CavirA, 1.0, 0.0);
     cQiaA->contract233(true, false, naoccA, navirA, CaoccA, cQnvA, 1.0, 0.0);
     if (trans_ab == 0) cQnvA.reset();
@@ -657,8 +657,8 @@ void DFOCC::c_ia() {
     cQiaA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        cQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|ma)", nQ, nso_ * navirB));
-        cQiaB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|ia)", nQ, naoccB * navirB));
+        cQnvB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|ma)", nQ, nso_ * navirB);
+        cQiaB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|ia)", nQ, naoccB * navirB);
         cQnvB->contract(false, false, nQ * nso_, navirB, nso_, cQso, CavirB, 1.0, 0.0);
         cQiaB->contract233(true, false, naoccB, navirB, CaoccB, cQnvB, 1.0, 0.0);
         if (trans_ab == 0) cQnvB.reset();
@@ -672,8 +672,8 @@ void DFOCC::c_ia() {
 //          form c(Q,ia) : all
 //=======================================================
 void DFOCC::c_ov() {
-    cQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mV)", nQ, nso_ * nvirA));
-    cQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|OV)", nQ, noccA * nvirA));
+    cQnvA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mV)", nQ, nso_ * nvirA);
+    cQovA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|OV)", nQ, noccA * nvirA);
     cQnvA->contract(false, false, nQ * nso_, nvirA, nso_, cQso, CvirA, 1.0, 0.0);
     cQovA->contract233(true, false, noccA, nvirA, CoccA, cQnvA, 1.0, 0.0);
     if (trans_ab == 0) cQnvA.reset();
@@ -681,8 +681,8 @@ void DFOCC::c_ov() {
     cQovA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        cQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mv)", nQ, nso_ * nvirB));
-        cQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|ov)", nQ, noccB * nvirB));
+        cQnvB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mv)", nQ, nso_ * nvirB);
+        cQovB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|ov)", nQ, noccB * nvirB);
         cQnvB->contract(false, false, nQ * nso_, nvirB, nso_, cQso, CvirB, 1.0, 0.0);
         cQovB->contract233(true, false, noccB, nvirB, CoccB, cQnvB, 1.0, 0.0);
         if (trans_ab == 0) cQnvB.reset();
@@ -696,14 +696,14 @@ void DFOCC::c_ov() {
 //          form c(Q,ab) : active
 //=======================================================
 void DFOCC::c_ab() {
-    cQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|AB)", nQ, navirA * navirA));
+    cQabA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|AB)", nQ, navirA * navirA);
     cQabA->contract233(true, false, navirA, navirA, CavirA, cQnvA, 1.0, 0.0);
     cQnvA.reset();
     cQabA->write(psio_, PSIF_DFOCC_INTS);
     cQabA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        cQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|ab)", nQ, navirB * navirB));
+        cQabB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|ab)", nQ, navirB * navirB);
         cQabB->contract233(true, false, navirB, navirB, CavirB, cQnvB, 1.0, 0.0);
         cQnvB.reset();
         cQabB->write(psio_, PSIF_DFOCC_INTS);
@@ -716,14 +716,14 @@ void DFOCC::c_ab() {
 //          form c(Q,ab) : all
 //=======================================================
 void DFOCC::c_vv() {
-    cQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|VV)", nQ, nvirA * nvirA));
+    cQvvA = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|VV)", nQ, nvirA * nvirA);
     cQvvA->contract233(true, false, nvirA, nvirA, CvirA, cQnvA, 1.0, 0.0);
     cQnvA.reset();
     cQvvA->write(psio_, PSIF_DFOCC_INTS);
     cQvvA.reset();
 
     if (reference_ == "UNRESTRICTED") {
-        cQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|VV)", nQ, nvirB * nvirB));
+        cQvvB = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|VV)", nQ, nvirB * nvirB);
         cQvvB->contract233(true, false, nvirB, nvirB, CvirB, cQnvB, 1.0, 0.0);
         cQnvB.reset();
         cQvvB->write(psio_, PSIF_DFOCC_INTS);
@@ -768,7 +768,7 @@ void DFOCC::b_so_non_zero() {
     int nmn_nz, syc;
 
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_);
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     ndf_nz = 0;
@@ -791,7 +791,7 @@ void DFOCC::b_so_non_zero() {
     // outfile->Printf("\tNumber of non-zero AO-basis DF-CC integrals : %3d\n", ndf_nz);
     // outfile->Printf("\tPercent of non-zero DF-CC integrals         : %2.2f\n", perct_);
 
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC NONZERO B (Q|mn)", ndf_nz, 1));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC NONZERO B (Q|mn)", ndf_nz, 1);
     ndf_nz = 0;
 #pragma omp parallel for
     for (int Q = 0; Q < nQ; ++Q) {
@@ -809,7 +809,7 @@ void DFOCC::b_so_non_zero() {
     }
     // K->write(psio_, PSIF_DFOCC_INTS);
 
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC AO-Basis (mn|ls)", nso_, nso_, nso_, nso_));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC AO-Basis (mn|ls)", nso_, nso_, nso_, nso_);
     L->gemm(true, false, bQso, bQso, 1.0, 0.0);
     // L->print();
 
@@ -867,7 +867,7 @@ void DFOCC::b_so_non_zero() {
     outfile->Printf("\tPercent of non-zero (mn|ls) integrals       : %2.2f\n", perct_);
 
     // screening
-    G = SharedTensor2d(new Tensor2d("Presecreening (mn|mn)", nso_, nso_));
+    G = std::make_shared<Tensor2d>("Presecreening (mn|mn)", nso_, nso_);
 
 #pragma omp parallel for
     for (int m = 0; m < nso_; ++m) {
@@ -968,8 +968,8 @@ void DFOCC::ldl_abcd_ints() {
     outfile->Printf("\t----    ---------------    ------------------ \n");
 
     // Pair to idx mapping
-    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
-    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    pair_to_idx1 = std::make_shared<Tensor1i>("AB -> A", n);
+    pair_to_idx2 = std::make_shared<Tensor1i>("AB -> B", n);
 #pragma omp parallel for
     for (int a = 0; a < navirA; ++a) {
         for (int b = 0; b < navirA; ++b) {
@@ -981,7 +981,7 @@ void DFOCC::ldl_abcd_ints() {
 
     /*
     // compute diagonals (AB|AB)
-    D = SharedTensor1d(new Tensor1d("D", n));
+    D = std::make_shared<Tensor1d>("D", n);
     #pragma omp parallel for
     for(int a = 0 ; a < navirA; ++a){
         for(int b = 0 ; b < navirA; ++b){
@@ -996,7 +996,7 @@ void DFOCC::ldl_abcd_ints() {
     */
 
     // compute diagonals <AB|AB>
-    D = SharedTensor1d(new Tensor1d("D", n));
+    D = std::make_shared<Tensor1d>("D", n);
 #pragma omp parallel for
     for (int a = 0; a < navirA; ++a) {
         int aa = ab_idxAA->get(a, a);
@@ -1017,8 +1017,8 @@ void DFOCC::ldl_abcd_ints() {
     }
 
     // Initialize mapping arrays
-    o2n = SharedTensor1i(new Tensor1i("Old -> New", n));
-    n2o = SharedTensor1i(new Tensor1i("New -> Old", n));
+    o2n = std::make_shared<Tensor1i>("Old -> New", n);
+    n2o = std::make_shared<Tensor1i>("New -> Old", n);
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         o2n->set(i, i);
@@ -1052,7 +1052,7 @@ void DFOCC::ldl_abcd_ints() {
     outfile->Printf("\t%3d     %12.8f          %3d\n", Q, dmax, nQ_cd);
 
     // compute the off-diagonal
-    R1 = SharedTensor1d(new Tensor1d("R1", n));
+    R1 = std::make_shared<Tensor1d>("R1", n);
     int j0 = n2o->get(Q);
     int c0 = pair_to_idx1->get(j0);
     int d0 = pair_to_idx2->get(j0);
@@ -1071,7 +1071,7 @@ void DFOCC::ldl_abcd_ints() {
     }
 
     // Compute the first L vector
-    L1 = SharedTensor1d(new Tensor1d("L1", n));
+    L1 = std::make_shared<Tensor1d>("L1", n);
     L1->set(0, 1.0);
 #pragma omp parallel for
     for (int i = Q + 1; i < n; i++) {
@@ -1080,7 +1080,7 @@ void DFOCC::ldl_abcd_ints() {
     }
 
     // Form the global L matrix
-    L = SharedTensor2d(new Tensor2d("L <AB|Q>", n, nQ_cd));
+    L = std::make_shared<Tensor2d>("L <AB|Q>", n, nQ_cd);
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         L->set(i, 0, L1->get(i));
@@ -1103,7 +1103,7 @@ void DFOCC::ldl_abcd_ints() {
 
         /*
         // Revert L to the original ordering
-        L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+        L2 = std::make_shared<Tensor2d>("L-copy", n, nQ_cd);
         L2->copy(L);
         #pragma omp parallel for
         for(int i = 0; i < n; i++) {
@@ -1146,7 +1146,7 @@ void DFOCC::ldl_abcd_ints() {
 
         /*
         // Reorder L to the new ordering
-        L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+        L2 = std::make_shared<Tensor2d>("L-copy", n, nQ_cd);
         L2->copy(L);
         #pragma omp parallel for
         for(int i = 0; i < n; i++) {
@@ -1163,7 +1163,7 @@ void DFOCC::ldl_abcd_ints() {
 
         // Form U1
         // U[Q](P) = L(P,Q)*D(P)
-        U1 = SharedTensor1d(new Tensor1d("U1", nQ_cd));
+        U1 = std::make_shared<Tensor1d>("U1", nQ_cd);
 #pragma omp parallel for
         for (int P = 0; P < nQ_cd; P++) {
             U1->set(P, L->get(Q, P) * D->get(P));
@@ -1209,7 +1209,7 @@ void DFOCC::ldl_abcd_ints() {
 
         // Form the global L matrix
         nQ_cd++;
-        L2 = SharedTensor2d(new Tensor2d("New L", n, nQ_cd));
+        L2 = std::make_shared<Tensor2d>("New L", n, nQ_cd);
 // copy previous L
 #pragma omp parallel for
         for (int i = 0; i < n; i++) {
@@ -1218,7 +1218,7 @@ void DFOCC::ldl_abcd_ints() {
             }
         }
         L.reset();
-        L = SharedTensor2d(new Tensor2d("L <AB|Q>", n, nQ_cd));
+        L = std::make_shared<Tensor2d>("L <AB|Q>", n, nQ_cd);
         L->copy(L2);
         L2.reset();
 // add L1
@@ -1235,7 +1235,7 @@ void DFOCC::ldl_abcd_ints() {
     //========================= End of the Loop ================================================
     //==========================================================================================
     // Form U
-    U = SharedTensor2d(new Tensor2d("U <Q|CD>", nQ_cd, n));
+    U = std::make_shared<Tensor2d>("U <Q|CD>", nQ_cd, n);
 #pragma omp parallel for
     for (int Q = 0; Q < nQ_cd; Q++) {
         for (int i = 0; i < n; i++) {
@@ -1244,7 +1244,7 @@ void DFOCC::ldl_abcd_ints() {
     }
 
     // Revert L to the original ordering
-    L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+    L2 = std::make_shared<Tensor2d>("L-copy", n, nQ_cd);
     L2->copy(L);
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
@@ -1256,7 +1256,7 @@ void DFOCC::ldl_abcd_ints() {
     L2.reset();
 
     // Revert U to the original ordering
-    L2 = SharedTensor2d(new Tensor2d("L-copy", nQ_cd, n));
+    L2 = std::make_shared<Tensor2d>("L-copy", nQ_cd, n);
     L2->copy(U);
 #pragma omp parallel for
     for (int i = 0; i < nQ_cd; i++) {
@@ -1273,13 +1273,13 @@ void DFOCC::ldl_abcd_ints() {
 
     /*
     // Verification
-    LU = SharedTensor2d(new Tensor2d("LU", n, n));
+    LU = std::make_shared<Tensor2d>("LU", n, n);
     LU->gemm(false,false,L,U,1.0,0.0);
 
     // Form exact <AB|CD>
-    J = SharedTensor2d(new Tensor2d("J (AC|BD)", navirA, navirA, navirA, navirA));
+    J = std::make_shared<Tensor2d>("J (AC|BD)", navirA, navirA, navirA, navirA);
     J->gemm(true, false, bQabA, bQabA, 1.0, 0.0);
-    K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));
+    K = std::make_shared<Tensor2d>("K <AB|CD>", navirA, navirA, navirA, navirA);
     K->sort(1324, J, 1.0, 0.0);
     J.reset();
 
@@ -1332,8 +1332,8 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     outfile->Printf("\tLDL decomposition threshold: %8.2le\n", tol_ldl);
 
     // Pair to idx mapping
-    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
-    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    pair_to_idx1 = std::make_shared<Tensor1i>("AB -> A", n);
+    pair_to_idx2 = std::make_shared<Tensor1i>("AB -> B", n);
 #pragma omp parallel for
     for (int a = 0; a < dim1; ++a) {
         for (int b = 0; b < dim2; ++b) {
@@ -1345,7 +1345,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
 
     /*
     // compute diagonals (PQ|PQ)
-    D = SharedTensor1d(new Tensor1d("D", n));
+    D = std::make_shared<Tensor1d>("D", n);
     #pragma omp parallel for
     for(int a = 0 ; a < dim1; ++a){
         for(int b = 0 ; b < dim2; ++b){
@@ -1360,7 +1360,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     */
 
     // compute diagonals <PQ|PQ>
-    D = SharedTensor1d(new Tensor1d("D", n));
+    D = std::make_shared<Tensor1d>("D", n);
 #pragma omp parallel for
     for (int a = 0; a < dim1; ++a) {
         int aa = (a * dim2) + a;
@@ -1381,8 +1381,8 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     }
 
     // Initialize mapping arrays
-    o2n = SharedTensor1i(new Tensor1i("Old -> New", n));
-    n2o = SharedTensor1i(new Tensor1i("New -> Old", n));
+    o2n = std::make_shared<Tensor1i>("Old -> New", n);
+    n2o = std::make_shared<Tensor1i>("New -> Old", n);
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         o2n->set(i, i);
@@ -1416,7 +1416,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     // outfile->Printf("\t%3d     %12.8f     %3d\n",Q,dmax,nQ_cd);
 
     // compute the off-diagonal
-    R1 = SharedTensor1d(new Tensor1d("R1", n));
+    R1 = std::make_shared<Tensor1d>("R1", n);
     int j0 = n2o->get(Q);
     int c0 = pair_to_idx1->get(j0);
     int d0 = pair_to_idx2->get(j0);
@@ -1435,7 +1435,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     }
 
     // Compute the first L vector
-    L1 = SharedTensor1d(new Tensor1d("L1", n));
+    L1 = std::make_shared<Tensor1d>("L1", n);
     L1->set(0, 1.0);
 #pragma omp parallel for
     for (int i = Q + 1; i < n; i++) {
@@ -1444,7 +1444,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     }
 
     // Form the global L matrix
-    L = SharedTensor2d(new Tensor2d("L <AB|Q>", n, nQ_cd));
+    L = std::make_shared<Tensor2d>("L <AB|Q>", n, nQ_cd);
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         L->set(i, 0, L1->get(i));
@@ -1466,7 +1466,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
         }
 
         // Revert L to the original ordering
-        L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+        L2 = std::make_shared<Tensor2d>("L-copy", n, nQ_cd);
         L2->copy(L);
 #pragma omp parallel for
         for (int i = 0; i < n; i++) {
@@ -1507,7 +1507,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
         // outfile->Printf("\t%3d     %12.8f          %3d\n",Q,dmax,nQ_cd);
 
         // Reorder L to the new ordering
-        L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+        L2 = std::make_shared<Tensor2d>("L-copy", n, nQ_cd);
         L2->copy(L);
 #pragma omp parallel for
         for (int i = 0; i < n; i++) {
@@ -1523,7 +1523,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
 
         // Form U1
         // U[Q](P) = L(P,Q)*D(P)
-        U1 = SharedTensor1d(new Tensor1d("U1", nQ_cd));
+        U1 = std::make_shared<Tensor1d>("U1", nQ_cd);
         for (int P = 0; P < nQ_cd; P++) {
             U1->set(P, L->get(Q, P) * D->get(P));
         }
@@ -1565,7 +1565,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
 
         // Form the global L matrix
         nQ_cd++;
-        L2 = SharedTensor2d(new Tensor2d("New L", n, nQ_cd));
+        L2 = std::make_shared<Tensor2d>("New L", n, nQ_cd);
 // copy previous L
 #pragma omp parallel for
         for (int i = 0; i < n; i++) {
@@ -1579,7 +1579,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
         for (int i = 0; i < n; i++) {
             L2->set(i, Q, L1->get(i));
         }
-        L = SharedTensor2d(new Tensor2d("L <AB|Q>", n, nQ_cd));
+        L = std::make_shared<Tensor2d>("L <AB|Q>", n, nQ_cd);
         L->copy(L2);
         L2.reset();
 
@@ -1591,7 +1591,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     //========================= End of the Loop ================================================
     //==========================================================================================
     // Form U
-    U = SharedTensor2d(new Tensor2d("U <Q|CD>", nQ_cd, n));
+    U = std::make_shared<Tensor2d>("U <Q|CD>", nQ_cd, n);
 #pragma omp parallel for
     for (int Q = 0; Q < nQ_cd; Q++) {
         for (int i = 0; i < n; i++) {
@@ -1600,7 +1600,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     }
 
     // Revert L to the original ordering
-    L2 = SharedTensor2d(new Tensor2d("L-copy", n, nQ_cd));
+    L2 = std::make_shared<Tensor2d>("L-copy", n, nQ_cd);
     L2->copy(L);
 #pragma omp parallel for
     for (int i = 0; i < n; i++) {
@@ -1612,7 +1612,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
     L2.reset();
 
     // Revert U to the original ordering
-    L2 = SharedTensor2d(new Tensor2d("L-copy", nQ_cd, n));
+    L2 = std::make_shared<Tensor2d>("L-copy", nQ_cd, n);
     L2->copy(U);
 #pragma omp parallel for
     for (int i = 0; i < nQ_cd; i++) {
@@ -1629,13 +1629,13 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d& bQ) {
 
     /*
     // Verification
-    LU = SharedTensor2d(new Tensor2d("LU", n, n));
+    LU = std::make_shared<Tensor2d>("LU", n, n);
     LU->gemm(false,false,L,U,1.0,0.0);
 
     // Form exact <AB|CD>
-    J = SharedTensor2d(new Tensor2d("J (AC|BD)", navirA, navirA, navirA, navirA));
+    J = std::make_shared<Tensor2d>("J (AC|BD)", navirA, navirA, navirA, navirA);
     J->gemm(true, false, bQabA, bQabA, 1.0, 0.0);
-    K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));
+    K = std::make_shared<Tensor2d>("K <AB|CD>", navirA, navirA, navirA, navirA);
     K->sort(1324, J, 1.0, 0.0);
     J.reset();
 
@@ -1683,7 +1683,7 @@ void DFOCC::cd_aob_cints() {
     outfile->Printf("\tCD decomposition threshold: %8.2le\n", tol_ldl);
 
     // SO basis
-    bQ = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQ = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_);
     bQ->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Initial dimension
@@ -1693,8 +1693,8 @@ void DFOCC::cd_aob_cints() {
     outfile->Printf("\tNumber of complete CD factors:   %5li\n", n);
 
     // Pair to idx mapping
-    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
-    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    pair_to_idx1 = std::make_shared<Tensor1i>("AB -> A", n);
+    pair_to_idx2 = std::make_shared<Tensor1i>("AB -> B", n);
 #pragma omp parallel for
     for (int a = 0; a < dim1; ++a) {
         for (int b = 0; b < dim2; ++b) {
@@ -1810,7 +1810,7 @@ void DFOCC::cd_aob_cints() {
     outfile->Printf("\tNumber of computed CD factors:   %5li\n", nQ_cd);
 
     // Form L
-    U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
+    U = std::make_shared<Tensor2d>("L <Q|AB>", nQ_cd, n_);
 #pragma omp parallel for
     for (size_t P = 0; P < Q; P++) {
         int PP = static_cast<int>(P);
@@ -1826,13 +1826,13 @@ void DFOCC::cd_aob_cints() {
 
     /*
     // Verification
-    LU = SharedTensor2d(new Tensor2d("LU", n_, n_));
+    LU = std::make_shared<Tensor2d>("LU", n_, n_);
     LU->gemm(true,false,U,U,1.0,0.0);
     LU->print();
     LU.reset();
 
     // Form exact (AB|CD)
-    J = SharedTensor2d(new Tensor2d("J (AC|BD)", dim1, dim2, dim1, dim2));
+    J = std::make_shared<Tensor2d>("J (AC|BD)", dim1, dim2, dim1, dim2);
     J->gemm(true, false, bQ, bQ, 1.0, 0.0);
     J->print();
     J.reset();
@@ -1867,9 +1867,9 @@ void DFOCC::cd_abcd_cints() {
     outfile->Printf("\tCD decomposition threshold: %8.2le\n", tol_ldl);
 
     // SO basis
-    // bQ = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    // bQ = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
     // bQ->read(psio_, PSIF_DFOCC_INTS, true, true);
-    bQ = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    bQ = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA);
     bQ->read(psio_, PSIF_DFOCC_INTS);
 
     // Initial dimension
@@ -1881,8 +1881,8 @@ void DFOCC::cd_abcd_cints() {
 
     /*
     // Pair to idx mapping
-    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
-    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    pair_to_idx1 = std::make_shared<Tensor1i>("AB -> A", n);
+    pair_to_idx2 = std::make_shared<Tensor1i>("AB -> B", n);
     #pragma omp parallel for
     for(int a = 0 ; a < dim1; ++a){
         for(int b = 0 ; b < dim2; ++b){
@@ -2019,7 +2019,7 @@ for(size_t i = 0; i < n; i++) {
     outfile->Printf("\tNumber of computed CD factors:   %5li\n", nQ_cd);
 
     // Form L
-    U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
+    U = std::make_shared<Tensor2d>("L <Q|AB>", nQ_cd, n_);
 #pragma omp parallel for
     for (size_t P = 0; P < Q; P++) {
         int PP = static_cast<int>(P);
@@ -2035,14 +2035,14 @@ for(size_t i = 0; i < n; i++) {
 
     /*
     // Verification
-    LU = SharedTensor2d(new Tensor2d("LU", n_, n_));
+    LU = std::make_shared<Tensor2d>("LU", n_, n_);
     LU->gemm(true,false,U,U,1.0,0.0);
     LU->print();
     LU.reset();
 
     // Form exact (AB|CD)
-    //J = SharedTensor2d(new Tensor2d("J (AB|CD)", dim1, dim2, dim1, dim2));
-    J = SharedTensor2d(new Tensor2d("J (A>=B|C>=D)", n_, n_));
+    //J = std::make_shared<Tensor2d>("J (AB|CD)", dim1, dim2, dim1, dim2);
+    J = std::make_shared<Tensor2d>("J (A>=B|C>=D)", n_, n_);
     J->gemm(true, false, bQ, bQ, 1.0, 0.0);
     J->print();
     J.reset();
@@ -2077,7 +2077,7 @@ void DFOCC::cd_abcd_xints() {
     outfile->Printf("\tCD decomposition threshold: %8.2le\n", tol_ldl);
 
     // SO basis
-    bQ = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    bQ = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
     bQ->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Initial dimension
@@ -2087,8 +2087,8 @@ void DFOCC::cd_abcd_xints() {
     outfile->Printf("\tNumber of complete CD factors:   %5li\n", n);
 
     // Pair to idx mapping
-    pair_to_idx1 = SharedTensor1i(new Tensor1i("AB -> A", n));
-    pair_to_idx2 = SharedTensor1i(new Tensor1i("AB -> B", n));
+    pair_to_idx1 = std::make_shared<Tensor1i>("AB -> A", n);
+    pair_to_idx2 = std::make_shared<Tensor1i>("AB -> B", n);
 #pragma omp parallel for
     for (int a = 0; a < dim1; ++a) {
         for (int b = 0; b < dim2; ++b) {
@@ -2206,7 +2206,7 @@ void DFOCC::cd_abcd_xints() {
     outfile->Printf("\tNumber of computed CD factors:   %5li\n", nQ_cd);
 
     // Form L
-    U = SharedTensor2d(new Tensor2d("L <Q|AB>", nQ_cd, n_));
+    U = std::make_shared<Tensor2d>("L <Q|AB>", nQ_cd, n_);
 #pragma omp parallel for
     for (size_t P = 0; P < Q; P++) {
         int PP = static_cast<int>(P);
@@ -2222,15 +2222,15 @@ void DFOCC::cd_abcd_xints() {
 
     /*
     // Verification
-    LU = SharedTensor2d(new Tensor2d("LU", n_, n_));
+    LU = std::make_shared<Tensor2d>("LU", n_, n_);
     LU->gemm(true,false,U,U,1.0,0.0);
     LU->print();
     LU.reset();
 
     // Form exact <AB|CD>
-    J = SharedTensor2d(new Tensor2d("J (AC|BD)", dim1, dim2, dim1, dim2));
+    J = std::make_shared<Tensor2d>("J (AC|BD)", dim1, dim2, dim1, dim2);
     J->gemm(true, false, bQ, bQ, 1.0, 0.0);
-    K = SharedTensor2d(new Tensor2d("K <AB|CD>", navirA, navirA, navirA, navirA));
+    K = std::make_shared<Tensor2d>("K <AB|CD>", navirA, navirA, navirA, navirA);
     K->sort(1324, J, 1.0, 0.0);
     J.reset();
     K->print();

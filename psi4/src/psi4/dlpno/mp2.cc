@@ -849,23 +849,23 @@ void DLPNOMP2::pno_transform() {
 
         // Diagonalization of pair density gives PNOs (in basis of the LMO's virtual domain) and PNO occ numbers
         auto X_pno_ij = std::make_shared<Matrix>("eigenvectors", nvir_ij, nvir_ij);
-        SharedVector pno_occ = std::make_shared<Vector>("eigenvalues", nvir_ij);
+        Vector pno_occ("eigenvalues", nvir_ij);
         D_ij->diagonalize(X_pno_ij, pno_occ, descending);
 
         int nvir_ij_final = 0;
         for (size_t a = 0; a < nvir_ij; ++a) {
-            if (fabs(pno_occ->get(a)) >= T_CUT_PNO_) {
+            if (fabs(pno_occ.get(a)) >= T_CUT_PNO_) {
                 nvir_ij_final++;
             }
         }
 
-        Dimension zero = Dimension(1);
-        Dimension dim_final = Dimension(1);
+        Dimension zero(1);
+        Dimension dim_final(1);
         dim_final.fill(nvir_ij_final);
 
         // This transformation gives orbitals that are orthonormal but not canonical
         X_pno_ij = X_pno_ij->get_block({zero, X_pno_ij->rowspi()}, {zero, dim_final});
-        pno_occ = pno_occ->get_block({zero, dim_final});
+        pno_occ = pno_occ.get_block({zero, dim_final});
 
         SharedMatrix pno_canon;
         SharedVector e_pno_ij;

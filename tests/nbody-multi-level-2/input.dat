@@ -1,4 +1,5 @@
-#! Multilevel computation of helium tetramer
+#! many-body different levels of theory on each body of helium tetramer
+
 memory 300 mb
 
 molecule m {

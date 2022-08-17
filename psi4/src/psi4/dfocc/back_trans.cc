@@ -55,32 +55,32 @@ void DFOCC::back_trans() {
         // Separable TPDM
         //=========================
         // OO Block Sep + OO block Ref
-        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
+        Gref = std::make_shared<Tensor2d>("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA);
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA);
         Gref->read(psio_, PSIF_DFOCC_DENS);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
         Gmo->add(Gref);
         Gref.reset();
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_);
         G->contract(false, true, nQ_ref * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
         Gmo.reset();
-        Gao = SharedTensor2d(new Tensor2d("3-Center Reference Density", nQ_ref, nso_, nso_));
+        Gao = std::make_shared<Tensor2d>("3-Center Reference Density", nQ_ref, nso_, nso_);
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
         G.reset();
 
         // OV Block
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA));
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_);
         G->contract(false, true, nQ_ref * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
         Gmo.reset();
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 1.0);
         G.reset();
 
         // VV Block
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA);
         Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|Vn)", nQ_ref, nvirA, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|Vn)", nQ_ref, nvirA, nso_);
         G->contract(false, true, nQ_ref * nvirA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
         Gmo.reset();
         Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
@@ -91,27 +91,27 @@ void DFOCC::back_trans() {
         Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
-        bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
+        bQso = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_);
         bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
-        Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref));
+        Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref);
         Jmhalf->read(psio_, PSIF_DFOCC_INTS);
-        cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso_, nso_));
+        cQso = std::make_shared<Tensor2d>("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso_, nso_);
         cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
         bQso.reset();
         Jmhalf.reset();
 
         // Packed c_mn^Q
-        cQso2 = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|m>=n)", nQ_ref, ntri_so));
+        cQso2 = std::make_shared<Tensor2d>("DF_BASIS_SCF C (Q|m>=n)", nQ_ref, ntri_so);
         cQso2->symm_packed(cQso);
         cQso.reset();
 
         // LTM of G_mn^Q
-        Gao2 = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|n>=n)", nQ_ref, ntri_so));
+        Gao2 = std::make_shared<Tensor2d>("RefSep 3-Index TPDM (Q|n>=n)", nQ_ref, ntri_so);
         Gao2->ltm(Gao);
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("Metric Reference Density", nQ_ref, nQ_ref));
+        G = std::make_shared<Tensor2d>("Metric Reference Density", nQ_ref, nQ_ref);
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
@@ -122,29 +122,29 @@ void DFOCC::back_trans() {
         // Correlation TPDM
         //=========================
         // OV Block
-        Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA));
+        Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
-        G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_);
         G->contract(false, true, nQ * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
         Gmo.reset();
-        Gao = SharedTensor2d(new Tensor2d("3-Center Correlation Density", nQ, nso_, nso_));
+        Gao = std::make_shared<Tensor2d>("3-Center Correlation Density", nQ, nso_, nso_);
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 0.0);
         G.reset();
 
         if (wfn_type_ != "DF-OMP2") {
             // OO Block
-            Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA));
+            Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA);
             Gmo->read(psio_, PSIF_DFOCC_DENS);
-            G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
+            G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_);
             G->contract(false, true, nQ * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
             Gmo.reset();
             Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 1.0);
             G.reset();
 
             // VV Block
-            Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA));
+            Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA);
             Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
-            G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|Vn)", nQ, nvirA, nso_));
+            G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|Vn)", nQ, nvirA, nso_);
             G->contract(false, true, nQ * nvirA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
             Gmo.reset();
             Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
@@ -156,27 +156,27 @@ void DFOCC::back_trans() {
         Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
-        bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+        bQso = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_);
         bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
-        Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
+        Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ);
         Jmhalf->read(psio_, PSIF_DFOCC_INTS);
-        cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso_, nso_));
+        cQso = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mn)", nQ, nso_, nso_);
         cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
         bQso.reset();
         Jmhalf.reset();
 
         // Packed c_mn^Q
-        cQso2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|m>=n)", nQ, ntri_so));
+        cQso2 = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|m>=n)", nQ, ntri_so);
         cQso2->symm_packed(cQso);
         cQso.reset();
 
         // LTM of G_mn^Q
-        Gao2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|n>=n)", nQ, ntri_so));
+        Gao2 = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|n>=n)", nQ, ntri_so);
         Gao2->ltm(Gao);
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("Metric Correlation Density", nQ, nQ));
+        G = std::make_shared<Tensor2d>("Metric Correlation Density", nQ, nQ);
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
@@ -202,63 +202,63 @@ void DFOCC::back_trans() {
         // Separable TPDM
         //=========================
         // OO Block sep + OO Block ref
-        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
+        Gref = std::make_shared<Tensor2d>("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA);
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA);
         Gref->read(psio_, PSIF_DFOCC_DENS);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
         Gmo->add(Gref);
         Gref.reset();
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_);
         G->contract(false, true, nQ_ref * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
         Gmo.reset();
-        Gao = SharedTensor2d(new Tensor2d("3-Center Reference Density", nQ_ref, nso_, nso_));
+        Gao = std::make_shared<Tensor2d>("3-Center Reference Density", nQ_ref, nso_, nso_);
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
         G.reset();
 
         // oo Block sep + oo block ref
-        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|oo>", nQ_ref, noccB, noccB));
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|oo>", nQ_ref, noccB, noccB));
+        Gref = std::make_shared<Tensor2d>("Reference 3-Index TPDM <Q|oo>", nQ_ref, noccB, noccB);
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|oo>", nQ_ref, noccB, noccB);
         Gref->read(psio_, PSIF_DFOCC_DENS);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
         Gmo->add(Gref);
         Gref.reset();
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|on)", nQ_ref, noccB, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|on)", nQ_ref, noccB, nso_);
         G->contract(false, true, nQ_ref * noccB, nso_, noccB, Gmo, CoccB, 1.0, 0.0);
         Gmo.reset();
         Gao->contract233(false, false, nso_, nso_, CoccB, G, 1.0, 1.0);
         G.reset();
 
         // OV Block
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA));
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_);
         G->contract(false, true, nQ_ref * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
         Gmo.reset();
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 1.0);
         G.reset();
 
         // ov Block
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|ov>", nQ_ref, noccB, nvirB));
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|ov>", nQ_ref, noccB, nvirB);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|on)", nQ_ref, noccB, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|on)", nQ_ref, noccB, nso_);
         G->contract(false, true, nQ_ref * noccB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
         Gmo.reset();
         Gao->contract233(false, false, nso_, nso_, CoccB, G, 2.0, 1.0);
         G.reset();
 
         // VV Block
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA);
         Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|Vn)", nQ_ref, nvirA, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|Vn)", nQ_ref, nvirA, nso_);
         G->contract(false, true, nQ_ref * nvirA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
         Gmo.reset();
         Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
         G.reset();
 
         // vv Block
-        Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|vv>", nQ_ref, nvirB, nvirB));
+        Gmo = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|vv>", nQ_ref, nvirB, nvirB);
         Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vn)", nQ_ref, nvirB, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|vn)", nQ_ref, nvirB, nso_);
         G->contract(false, true, nQ_ref * nvirB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
         Gmo.reset();
         Gao->contract233(false, false, nso_, nso_, CvirB, G, 1.0, 1.0);
@@ -269,27 +269,27 @@ void DFOCC::back_trans() {
         Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
-        bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
+        bQso = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_);
         bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
-        Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref));
+        Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref);
         Jmhalf->read(psio_, PSIF_DFOCC_INTS);
-        cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso_, nso_));
+        cQso = std::make_shared<Tensor2d>("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso_, nso_);
         cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
         bQso.reset();
         Jmhalf.reset();
 
         // Packed c_mn^Q
-        cQso2 = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|m>=n)", nQ_ref, ntri_so));
+        cQso2 = std::make_shared<Tensor2d>("DF_BASIS_SCF C (Q|m>=n)", nQ_ref, ntri_so);
         cQso2->symm_packed(cQso);
         cQso.reset();
 
         // LTM of G_mn^Q
-        Gao2 = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|n>=n)", nQ_ref, ntri_so));
+        Gao2 = std::make_shared<Tensor2d>("RefSep 3-Index TPDM (Q|n>=n)", nQ_ref, ntri_so);
         Gao2->ltm(Gao);
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("Metric Reference Density", nQ_ref, nQ_ref));
+        G = std::make_shared<Tensor2d>("Metric Reference Density", nQ_ref, nQ_ref);
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
@@ -300,19 +300,19 @@ void DFOCC::back_trans() {
         // Correlation TPDM
         //=========================
         // OV Block
-        Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA));
+        Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
-        G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_);
         G->contract(false, true, nQ * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
         Gmo.reset();
-        Gao = SharedTensor2d(new Tensor2d("3-Center Correlation Density", nQ, nso_, nso_));
+        Gao = std::make_shared<Tensor2d>("3-Center Correlation Density", nQ, nso_, nso_);
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 0.0);
         G.reset();
 
         // ov Block
-        Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|ov>", nQ, noccB, nvirB));
+        Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|ov>", nQ, noccB, nvirB);
         Gmo->read(psio_, PSIF_DFOCC_DENS);
-        G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|on)", nQ, noccB, nso_));
+        G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|on)", nQ, noccB, nso_);
         G->contract(false, true, nQ * noccB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
         Gmo.reset();
         Gao->contract233(false, false, nso_, nso_, CoccB, G, 2.0, 1.0);
@@ -320,36 +320,36 @@ void DFOCC::back_trans() {
 
         if (wfn_type_ != "DF-OMP2") {
             // OO Block
-            Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA));
+            Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA);
             Gmo->read(psio_, PSIF_DFOCC_DENS);
-            G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
+            G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_);
             G->contract(false, true, nQ * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
             Gmo.reset();
             Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 1.0);
             G.reset();
 
             // oo Block
-            Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|oo>", nQ, noccB, noccB));
+            Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|oo>", nQ, noccB, noccB);
             Gmo->read(psio_, PSIF_DFOCC_DENS);
-            G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|on)", nQ, noccB, nso_));
+            G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|on)", nQ, noccB, nso_);
             G->contract(false, true, nQ * noccB, nso_, noccB, Gmo, CoccB, 1.0, 0.0);
             Gmo.reset();
             Gao->contract233(false, false, nso_, nso_, CoccB, G, 1.0, 1.0);
             G.reset();
 
             // VV Block
-            Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA));
+            Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA);
             Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
-            G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|Vn)", nQ, nvirA, nso_));
+            G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|Vn)", nQ, nvirA, nso_);
             G->contract(false, true, nQ * nvirA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
             Gmo.reset();
             Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
             G.reset();
 
             // vv Block
-            Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|vv>", nQ, nvirB, nvirB));
+            Gmo = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|vv>", nQ, nvirB, nvirB);
             Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
-            G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|vn)", nQ, nvirB, nso_));
+            G = std::make_shared<Tensor2d>("3-Index Correlation TPDM (Q|vn)", nQ, nvirB, nso_);
             G->contract(false, true, nQ * nvirB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
             Gmo.reset();
             Gao->contract233(false, false, nso_, nso_, CvirB, G, 1.0, 1.0);
@@ -361,27 +361,27 @@ void DFOCC::back_trans() {
         Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
-        bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+        bQso = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_);
         bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
-        Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
+        Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ);
         Jmhalf->read(psio_, PSIF_DFOCC_INTS);
-        cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso_, nso_));
+        cQso = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|mn)", nQ, nso_, nso_);
         cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
         bQso.reset();
         Jmhalf.reset();
 
         // Packed c_mn^Q
-        cQso2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|m>=n)", nQ, ntri_so));
+        cQso2 = std::make_shared<Tensor2d>("DF_BASIS_CC C (Q|m>=n)", nQ, ntri_so);
         cQso2->symm_packed(cQso);
         cQso.reset();
 
         // LTM of G_mn^Q
-        Gao2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|n>=n)", nQ, ntri_so));
+        Gao2 = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|n>=n)", nQ, ntri_so);
         Gao2->ltm(Gao);
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("Metric Correlation Density", nQ, nQ));
+        G = std::make_shared<Tensor2d>("Metric Correlation Density", nQ, nQ);
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();

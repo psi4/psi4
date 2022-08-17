@@ -98,8 +98,6 @@ void CIWavefunction::common_init() {
     // Data should come from get_dimension(space)
     for (int h = 0; h < nirrep_; ++h) {
         frzcpi_[h] = CalcInfo_->dropped_docc[h];
-        doccpi_[h] = CalcInfo_->docc[h];
-        soccpi_[h] = CalcInfo_->socc[h];
         frzvpi_[h] = CalcInfo_->dropped_uocc[h];
     }
 

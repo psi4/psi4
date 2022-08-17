@@ -60,7 +60,7 @@ std::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(std::shared_ptr<MintsHelper> 
     Options& options = Process::environment.options;
 
     if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
-        DFCorrGrad* jk = new DFCorrGrad(mints);
+        auto jk = std::make_shared<DFCorrGrad>(mints);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
@@ -70,7 +70,7 @@ std::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(std::shared_ptr<MintsHelper> 
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return std::shared_ptr<CorrGrad>(jk);
+        return jk;
 
     } else {
         throw PSIEXCEPTION("CorrGrad::build_CorrGrad: Unknown SCF Type");

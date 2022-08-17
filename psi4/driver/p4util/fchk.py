@@ -141,7 +141,7 @@ def compare_fchkfiles(expected: str, computed: str, atol_exponent: Union[int, fl
             test = compare_integers(ref, calc, f" int value: {line}")
             index += 1
         else:
-            test = compare_strings(line, fchk_ref[index], f"FCK text line {index+1}.")
+            test = compare_strings(fchk_ref[index], line, f"FCK text line {index+1}.")
             index += 1
         tests.append(test)
 

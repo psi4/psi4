@@ -57,13 +57,13 @@ void SCF::save_info() {
     for (int h = 0; h < nirreps; ++h) frz.push_back(0);
     std::vector<std::pair<double, int> > sorted_evals;
     for (int h = 0; h < nirreps; ++h)
-        for (int i = 0; i < sopi[h]; ++i) sorted_evals.push_back(std::make_pair(epsilon->get(h, i), h));
+        for (int i = 0; i < sopi[h]; ++i) sorted_evals.emplace_back(epsilon->get(h, i), h);
     sort(sorted_evals.begin(), sorted_evals.end());
     for (int i = 0; i < nfrzc; ++i) frz[sorted_evals[i].second]++;
 
     for (int h = 0; h < nirreps; ++h) {
-        doccpi_[h] = docc[h];
-        soccpi_[h] = actv[h];
+        nalphapi_[h] = docc[h] + actv[h];
+        nbetapi_[h] = docc[h];
         nmopi_[h] = nsopi_[h];
         frzcpi_[h] = frz[h];
         frzvpi_[h] = 0;

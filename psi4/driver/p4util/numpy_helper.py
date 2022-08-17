@@ -93,7 +93,7 @@ def array_to_matrix(
     Converts a `NumPy array
     <https://numpy.org/doc/stable/reference/arrays.ndarray.html>`_ or list of
     NumPy arrays into a |PSIfour| :class:`~psi4.core.Matrix` or
-    :class:`~psi4.core.Vector` (irreped if list).
+    :class:`~psi4.core.Vector` (irrepped if list).
 
     Parameters
     ----------
@@ -136,7 +136,7 @@ def array_to_matrix(
     # What type is it? MRO can help.
     arr_type = self.__mro__[0]
 
-    # Irreped case
+    # Irrepped case
     if isinstance(arr, (list, tuple)):
         if (dim1 is not None) or (dim2 is not None):
             raise ValidationError("Array_to_Matrix: If passed input is list of arrays dimension cannot be specified.")
@@ -174,7 +174,7 @@ def array_to_matrix(
     else:
         if arr_type == core.Matrix:
 
-            # Build an irreped array back out
+            # Build an irrepped array back out
             if dim1 is not None:
                 if dim2 is None:
                     raise ValidationError("Array_to_Matrix: If dim1 is supplied must supply dim2 also")
@@ -209,7 +209,7 @@ def array_to_matrix(
                 return ret
 
         elif arr_type == core.Vector:
-            # Build an irreped array back out
+            # Build an irrepped array back out
             if dim1 is not None:
                 if dim2 is not None:
                     raise ValidationError("Array_to_Matrix: If dim2 should not be supplied for 1D vectors.")
@@ -255,7 +255,7 @@ def _to_array(
     copy
         Copy the data if `True`, return a view otherwise
     dense
-        Converts irreped Psi4 objects to diagonally blocked dense arrays if
+        Converts irrepped Psi4 objects to diagonally blocked dense arrays if
         `True`. Returns a list of arrays otherwise.
 
     Returns
@@ -382,7 +382,7 @@ def _np_write(
     prefix: str = "",
 ) -> Optional[Dict[str, Any]]:
     """
-    Writes the irreped matrix to a NumPy uncompressed file using :func:`numpy.savez`.
+    Writes the irrepped matrix to a NumPy uncompressed file using :func:`numpy.savez`.
 
     Can return the packed data for saving many matrices into the same file.
 
@@ -578,7 +578,7 @@ def _chain_dot(*args, **kwargs) -> core.Matrix:
 
 def _irrep_access(self, *args, **kwargs):
     """
-    Warns user when iterating/accessing an irreped object.
+    Warns user when iterating/accessing an irrepped object.
     """
     raise ValidationError("Attempted to access by index/iteration a Psi4 data object that supports multiple"
                           " irreps. Please use .np or .nph explicitly.")

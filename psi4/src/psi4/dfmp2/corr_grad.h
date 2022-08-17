@@ -35,7 +35,6 @@
 
 namespace psi {
 
-class ERISieve;
 class BasisSet;
 class PSIO;
 class MintsHelper;
@@ -159,9 +158,6 @@ class DFCorrGrad : public CorrGrad {
     int df_ints_num_threads_;
     /// Condition cutoff in fitting metric, defaults to 1.0E-12
     double condition_;
-
-    /// Sieve, must be static throughout the life of the object
-    std::shared_ptr<ERISieve> sieve_;
 
     void common_init();
 

@@ -35,6 +35,7 @@
 namespace psi {
 namespace occwave {
 
+// Form the diagonal blocks of the generalized Fock matrix, i.e. the occ-occ and the virt-virt block
 void OCCWave::gfock_diag() {
     // outfile->Printf("\n gfock_diag is starting... \n");
     //===========================================================================================
@@ -96,7 +97,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                            "Tau_1 <OO|VV>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                            "Tau <OO|VV>");
                 }
@@ -111,6 +112,13 @@ void OCCWave::gfock_diag() {
                     global_dpd_->buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"),
                                            0, "X <OO|VV>");
                     global_dpd_->buf4_scm(&X, 0.5);
+                    global_dpd_->buf4_close(&X);
+                }
+                // OREMP
+                if (wfn_type_ == "OREMP") {
+                    global_dpd_->buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"),
+                                           0, "X <OO|VV>");
+                    global_dpd_->buf4_scm(&X, 1.0E0-remp_A);
                     global_dpd_->buf4_close(&X);
                 }
             }
@@ -133,7 +141,6 @@ void OCCWave::gfock_diag() {
         global_dpd_->contract442(&K, &G, &GF, 2, 2, 8.0, 1.0);
         global_dpd_->buf4_close(&K);
         global_dpd_->buf4_close(&G);
-
         if (wfn_type_ != "OMP2") {
             if (twopdm_abcd_type == "DIRECT") {
                 // Fab += \sum{m,n,f} X_mnfa * t_mn^fb(1)
@@ -142,7 +149,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                            "T2_1 <OO|VV>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                            "T2 <OO|VV>");
                 }
@@ -228,7 +235,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                            "T2_1 <OO|VV>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                            "T2 <OO|VV>");
                 }
@@ -245,6 +252,13 @@ void OCCWave::gfock_diag() {
                     global_dpd_->buf4_scm(&X, 0.5);
                     global_dpd_->buf4_close(&X);
                 }
+                // OREMP
+                if (wfn_type_ == "OREMP") {
+                    global_dpd_->buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"),
+                                           0, "X <OO|VV>");
+                    global_dpd_->buf4_scm(&X, 1.0E0-remp_A);
+                    global_dpd_->buf4_close(&X);
+                }
 
                 // X_mnac = 1/4 \sum{e,f} t_mn^ef * <ac||ef> = 1/2 \sum{e,f} t_mn^ef * <ac|ef>
                 global_dpd_->buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), 0,
@@ -254,7 +268,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                            "T2_1 <oo|vv>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                            "T2 <oo|vv>");
                 }
@@ -271,6 +285,13 @@ void OCCWave::gfock_diag() {
                     global_dpd_->buf4_scm(&X, 0.5);
                     global_dpd_->buf4_close(&X);
                 }
+                // OREMP
+                if (wfn_type_ == "OREMP") {
+                    global_dpd_->buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"),
+                                           0, "X <oo|vv>");
+                    global_dpd_->buf4_scm(&X, 1.0E0-remp_A);
+                    global_dpd_->buf4_close(&X);
+                }
 
                 // X_MnAc = \sum{E,f} t_Mn^Ef * <Ac|Ef>
                 global_dpd_->buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), 0,
@@ -280,7 +301,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                            "T2_1 <Oo|Vv>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                            "T2 <Oo|Vv>");
                 }
@@ -295,6 +316,13 @@ void OCCWave::gfock_diag() {
                     global_dpd_->buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"),
                                            0, "X <Oo|Vv>");
                     global_dpd_->buf4_scm(&X, 0.5);
+                    global_dpd_->buf4_close(&X);
+                }
+                // OREMP
+                if (wfn_type_ == "OREMP") {
+                    global_dpd_->buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"),
+                                           0, "X <Oo|Vv>");
+                    global_dpd_->buf4_scm(&X, 1.0E0-remp_A);
                     global_dpd_->buf4_close(&X);
                 }
 
@@ -469,7 +497,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                            "T2_1 <OO|VV>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                            "T2 <OO|VV>");
                 }
@@ -537,7 +565,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                            "T2_1 <Oo|Vv>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                            "T2 <Oo|Vv>");
                 }
@@ -583,7 +611,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                            "T2_1 <oo|vv>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                            "T2 <oo|vv>");
                 }
@@ -651,7 +679,7 @@ void OCCWave::gfock_diag() {
                 if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                            "T2_1 <Oo|Vv>");
-                } else if (wfn_type_ == "OCEPA") {
+                } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
                     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                            "T2 <Oo|Vv>");
                 }

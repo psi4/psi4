@@ -1,4 +1,4 @@
-#! Distributed driver keywords test on H2O dimer
+#! check distributed driver is correctly passing function kwargs
 
 geometry("""
 O 0 0 0

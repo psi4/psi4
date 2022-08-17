@@ -97,10 +97,15 @@ void export_fock(py::module &m) {
         .def("computed_shells_per_iter", &JK::computed_shells_per_iter, "Array containing the number of ERI shell quartets computed (not screened out) during each compute call.")
         .def("print_header", &JK::print_header, "docstring");
 
-    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")
+    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
-        .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
-        .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
+        .def("denominator_occ", &LaplaceDenominator::denominator_occ, "Returns the occupied orbital Laplace weights of the factorized doubles denominator (nweights * nocc)")
+        .def("denominator_vir", &LaplaceDenominator::denominator_vir, "Returns the virtual orbital Laplace weights of the factorized doubles denominator (nweights * nvirt)");
+
+    py::class_<TLaplaceDenominator, std::shared_ptr<TLaplaceDenominator>>(m, "TLaplaceDenominator", "Computer class for a Laplace factorization of the six-index energy denominator in coupled-cluster theory")
+        .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
+        .def("denominator_occ", &TLaplaceDenominator::denominator_occ, "Returns the occupied orbital Laplace weights of the factorized triples denominator (nweights * nocc)")
+        .def("denominator_vir", &TLaplaceDenominator::denominator_vir, "Returns the virtual orbital Laplace weights of the factorized triples denominator (nweights * nvirt)");
 
     py::class_<DFTensor, std::shared_ptr<DFTensor>>(m, "DFTensor", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())

@@ -157,7 +157,7 @@ class CCEnergyWavefunction : public Wavefunction {
     void pair_energies(std::vector<double>& epair_aa, std::vector<double>& epair_ab) const;
     // Use input AA and AB pair energies to save pair energies to the wavefunction and print them.
     void print_pair_energies(const std::vector<double>& emp2_aa, const std::vector<double>& emp2_ab, const std::vector<double>& ecc_aa, const std::vector<double>& ecc_ab);
-
+    // Form density-fitted integrals and connect them to DPD. Only implemented for RHF.
     void form_df_ints(Options &options, int **cachelist, int *cachefiles);
 
     /* diagnostics */

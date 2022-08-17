@@ -45,53 +45,48 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) : Wavefunction(opti
     module_ = "adc";
 
     std::vector<std::string> irreps_ = molecule_->irrep_labels();
-    aoccpi_ = new int[nirrep_];
-    boccpi_ = new int[nirrep_];
-    avirpi_ = new int[nirrep_];
-    bvirpi_ = new int[nirrep_];
+    aoccpi_ = nalphapi_ - frzcpi_;
+    boccpi_ = nbetapi_ - frzcpi_;
+    avirpi_ = nmopi_ - frzvpi_ - nalphapi_;
+    bvirpi_ = nmopi_ - frzvpi_ - nbetapi_;
 
-    int naocc = 0, nbocc = 0, navir = 0, nbvir = 0;
+    int naocc = aoccpi_.sum();
+    int nbocc = boccpi_.sum();
+    int navir = avirpi_.sum();
+    int nbvir = bvirpi_.sum();
+
     int aoccount = 0, boccount = 0, avircount = 0, bvircount = 0;
-    for (int h = 0; h < nirrep_; h++) {
-        aoccpi_[h] = doccpi_[h] + soccpi_[h] - frzcpi_[h];
-        boccpi_[h] = doccpi_[h] - frzcpi_[h];
-        avirpi_[h] = nmopi_[h] - doccpi_[h] - soccpi_[h] - frzvpi_[h];
-        bvirpi_[h] = nmopi_[h] - doccpi_[h] - frzvpi_[h];
 
-        naocc += aoccpi_[h];
-        nbocc += boccpi_[h];
-        navir += avirpi_[h];
-        nbvir += bvirpi_[h];
-    }
     aocce_ = new double[naocc];
     bocce_ = new double[nbocc];
     avire_ = new double[navir];
     bvire_ = new double[nbvir];
 
-    nopen_ = 0;
-    for (int h = 0; h < nirrep_; h++) nopen_ += soccpi_[h];
+    nopen_ = soccpi().sum();
     if (!psio_) {
         throw PSIEXCEPTION("The wavefunction passed in lacks a PSIO object, crashing ADC. See GitHub issue #1851.");
     }
-    if (nopen_) throw PSIEXCEPTION("Openshell calculation has not been implemented yet!");
+    if (nopen_) throw PSIEXCEPTION("Open-shell calculation has not been implemented yet!");
 
     aoccount = 0, boccount = 0, avircount = 0, bvircount = 0;
     for (int h = 0; h < nirrep_; h++) {
-        for (int a = frzcpi_[h]; a < doccpi_[h] + soccpi_[h]; a++) aocce_[aoccount++] = epsilon_a_->get(h, a);
+        for (int a = frzcpi_[h]; a < nalphapi_[h]; a++) aocce_[aoccount++] = epsilon_a_->get(h, a);
 
-        for (int b = frzcpi_[h]; b < doccpi_[h]; b++) bocce_[boccount++] = epsilon_b_->get(h, b);
+        for (int b = frzcpi_[h]; b < nbetapi_[h]; b++) bocce_[boccount++] = epsilon_b_->get(h, b);
 
-        for (int a = doccpi_[h] + soccpi_[h]; a < nmopi_[h] - frzvpi_[h]; a++)
+        for (int a = nalphapi_[h]; a < nmopi_[h] - frzvpi_[h]; a++)
             avire_[avircount++] = epsilon_a_->get(h, a);
 
-        for (int b = doccpi_[h]; b < nmopi_[h] - frzvpi_[h]; b++) bvire_[bvircount++] = epsilon_b_->get(h, b);
+        for (int b = nbetapi_[h]; b < nmopi_[h] - frzvpi_[h]; b++) bvire_[bvircount++] = epsilon_b_->get(h, b);
     }
 
+    const auto docc = doccpi();
+    const auto socc = soccpi();
     outfile->Printf("\n\n\tIrrep  Core  Docc  Socc  aOcc  aVir  bOcc  bVir  FVir\n");
     outfile->Printf("\t*****************************************************\n");
     for (int h = 0; h < nirrep_; h++) {
         outfile->Printf("\t %3s   %3d   %3d   %3d   %3d   %3d   %3d   %3d   %3d\n", irreps_[h].c_str(), frzcpi_[h],
-                        doccpi_[h], soccpi_[h], aoccpi_[h], avirpi_[h], boccpi_[h], bvirpi_[h], frzvpi_[h]);
+                        docc[h], socc[h], aoccpi_[h], avirpi_[h], boccpi_[h], bvirpi_[h], frzvpi_[h]);
     }
     outfile->Printf("\t*****************************************************\n\n");
 
@@ -108,9 +103,9 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) : Wavefunction(opti
             outfile->Printf("dim of states_per_irrep vector must be %d\n", nirrep_);
             throw PsiException("adc input comparison error ROOTS_PER_IRREP and nirrep_", __FILE__, __LINE__);
         }
-        rpi_ = options_.get_int_vector("ROOTS_PER_IRREP");
+        rpi_ = Dimension(options_.get_int_vector("ROOTS_PER_IRREP"));
     } else {
-        rpi_ = std::vector<int>(nirrep_, 1);
+        rpi_ = Dimension(std::vector<int>(nirrep_, 1));
     }
 
     // Setting up dimensions for each irrep block and totoal dimension of S manifold.

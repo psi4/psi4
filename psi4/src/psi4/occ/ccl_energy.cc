@@ -263,7 +263,7 @@ void OCCWave::ccl_energy() {
         Emp3L_old = Emp3L;
     }
 
-    else if (wfn_type_ == "OCEPA") {
+    else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
         EcorrL = Ecc_rdm - Escf;
         EcepaL = Ecc_rdm;
         DE = EcepaL - EcepaL_old;

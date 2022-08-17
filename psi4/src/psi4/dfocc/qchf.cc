@@ -327,13 +327,13 @@ void DFOCC::idp_hf() {
 
         if (nidpA > 0) {
             idp_returnA = 1;
-            wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
-            kappaA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector of current step", nidpA));
-            kappa_newA = SharedTensor1d(new Tensor1d("Alpha new orb rot params vector of current step", nidpA));
-            kappa_barA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector with respect to scf MOs", nidpA));
-            // wog_intA = SharedTensor1d(new Tensor1d("Alpha Interpolated MO grad vector", nidpA));
-            idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
-            idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
+            wogA = std::make_shared<Tensor1d>("Alpha MO grad vector", nidpA);
+            kappaA = std::make_shared<Tensor1d>("Alpha orb rot params vector of current step", nidpA);
+            kappa_newA = std::make_shared<Tensor1d>("Alpha new orb rot params vector of current step", nidpA);
+            kappa_barA = std::make_shared<Tensor1d>("Alpha orb rot params vector with respect to scf MOs", nidpA);
+            // wog_intA = std::make_shared<Tensor1d>("Alpha Interpolated MO grad vector", nidpA);
+            idprowA = std::make_shared<Tensor1i>("Alpha IDP Row", nidpA);
+            idpcolA = std::make_shared<Tensor1i>("Alpha IDP Col", nidpA);
 
             // set idpA
             dim = 0;
@@ -375,13 +375,13 @@ void DFOCC::idp_hf() {
 
         if (nidpA > 0) {
             idp_returnA = 1;
-            wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
-            kappaA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector of current step", nidpA));
-            kappa_newA = SharedTensor1d(new Tensor1d("Alpha new orb rot params vector of current step", nidpA));
-            kappa_barA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector with respect to scf MOs", nidpA));
-            // wog_intA = SharedTensor1d(new Tensor1d("Alpha Interpolated MO grad vector", nidpA));
-            idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
-            idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
+            wogA = std::make_shared<Tensor1d>("Alpha MO grad vector", nidpA);
+            kappaA = std::make_shared<Tensor1d>("Alpha orb rot params vector of current step", nidpA);
+            kappa_newA = std::make_shared<Tensor1d>("Alpha new orb rot params vector of current step", nidpA);
+            kappa_barA = std::make_shared<Tensor1d>("Alpha orb rot params vector with respect to scf MOs", nidpA);
+            // wog_intA = std::make_shared<Tensor1d>("Alpha Interpolated MO grad vector", nidpA);
+            idprowA = std::make_shared<Tensor1i>("Alpha IDP Row", nidpA);
+            idpcolA = std::make_shared<Tensor1i>("Alpha IDP Col", nidpA);
 
             // set idpA
             dim = 0;
@@ -400,13 +400,13 @@ void DFOCC::idp_hf() {
 
         if (nidpB > 0) {
             idp_returnB = 1;
-            wogB = SharedTensor1d(new Tensor1d("Beta MO grad vector", nidpB));
-            kappaB = SharedTensor1d(new Tensor1d("Beta orb rot params vector of current step", nidpB));
-            kappa_newB = SharedTensor1d(new Tensor1d("Beta new orb rot params vector of current step", nidpB));
-            kappa_barB = SharedTensor1d(new Tensor1d("Beta orb rot params vector with respect to scf MOs", nidpB));
-            // wog_intB = SharedTensor1d(new Tensor1d("Beta Interpolated MO grad vector", nidpB));
-            idprowB = SharedTensor1i(new Tensor1i("Beta IDP Row", nidpB));
-            idpcolB = SharedTensor1i(new Tensor1i("Beta IDP Col", nidpB));
+            wogB = std::make_shared<Tensor1d>("Beta MO grad vector", nidpB);
+            kappaB = std::make_shared<Tensor1d>("Beta orb rot params vector of current step", nidpB);
+            kappa_newB = std::make_shared<Tensor1d>("Beta new orb rot params vector of current step", nidpB);
+            kappa_barB = std::make_shared<Tensor1d>("Beta orb rot params vector with respect to scf MOs", nidpB);
+            // wog_intB = std::make_shared<Tensor1d>("Beta Interpolated MO grad vector", nidpB);
+            idprowB = std::make_shared<Tensor1i>("Beta IDP Row", nidpB);
+            idpcolB = std::make_shared<Tensor1i>("Beta IDP Col", nidpB);
 
             // set idpB
             dim = 0;
@@ -431,14 +431,14 @@ void DFOCC::idp_hf() {
 //=======================================================
 void DFOCC::gwh() {
     // Memalloc
-    SharedTensor2d Fso = SharedTensor2d(new Tensor2d("SO-basis Fock Matrix", nso_, nso_));
-    SharedTensor2d Fsop = SharedTensor2d(new Tensor2d("SO-basis Fock' Matrix", nso_, nso_));
-    SharedTensor2d Smhalf = SharedTensor2d(new Tensor2d("S^-1/2", nso_, nso_));
-    SharedTensor2d Cmop = SharedTensor2d(new Tensor2d("C' matrix", nso_, nmo_));
-    SharedTensor2d Uso = SharedTensor2d(new Tensor2d("SO-basis U", nso_, nso_));
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("Temp", nso_, nso_));
-    SharedTensor1d e_orb = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <n|n>", nso_));
-    SharedTensor1d DiagS = std::shared_ptr<Tensor1d>(new Tensor1d("Diag S", nso_));
+    SharedTensor2d Fso = std::make_shared<Tensor2d>("SO-basis Fock Matrix", nso_, nso_);
+    SharedTensor2d Fsop = std::make_shared<Tensor2d>("SO-basis Fock' Matrix", nso_, nso_);
+    SharedTensor2d Smhalf = std::make_shared<Tensor2d>("S^-1/2", nso_, nso_);
+    SharedTensor2d Cmop = std::make_shared<Tensor2d>("C' matrix", nso_, nmo_);
+    SharedTensor2d Uso = std::make_shared<Tensor2d>("SO-basis U", nso_, nso_);
+    SharedTensor2d temp = std::make_shared<Tensor2d>("Temp", nso_, nso_);
+    SharedTensor1d e_orb = std::make_shared<Tensor1d>("epsilon <n|n>", nso_);
+    SharedTensor1d DiagS = std::make_shared<Tensor1d>("Diag S", nso_);
 
     // F_mn = 1/2 * S_mn (H_mm + H_nn)
     for (int mu = 0; mu < nso_; mu++) {
@@ -488,8 +488,8 @@ void DFOCC::gwh() {
 //          Canonic
 //=======================================================
 void DFOCC::canonic() {
-    SharedTensor2d UeigA = std::shared_ptr<Tensor2d>(new Tensor2d("UooA", nmo_, nmo_));
-    SharedTensor1d eigA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|A>", nmo_));
+    SharedTensor2d UeigA = std::make_shared<Tensor2d>("UooA", nmo_, nmo_);
+    SharedTensor1d eigA = std::make_shared<Tensor1d>("epsilon <A|A>", nmo_);
 
     // Diagonalize Fock
     FockA->diagonalize(UeigA, eigA, cutoff);
@@ -499,7 +499,7 @@ void DFOCC::canonic() {
     UorbA->copy(UeigA);
 
     // Get new MOs
-    SharedTensor2d Ca_new = std::shared_ptr<Tensor2d>(new Tensor2d("New alpha MO coefficients", nso_, nmo_));
+    SharedTensor2d Ca_new = std::make_shared<Tensor2d>("New alpha MO coefficients", nso_, nmo_);
     Ca_new->gemm(false, false, CmoA, UorbA, 1.0, 0.0);
     CmoA->copy(Ca_new);
     Ca_new.reset();
@@ -512,8 +512,8 @@ void DFOCC::canonic() {
     //========================= UHF REFERENCE ==================================================
     //==========================================================================================
     if (reference_ == "UNRESTRICTED") {
-        SharedTensor2d UeigB = std::shared_ptr<Tensor2d>(new Tensor2d("UeigB", nmo_, nmo_));
-        SharedTensor1d eigB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|a>", nmo_));
+        SharedTensor2d UeigB = std::make_shared<Tensor2d>("UeigB", nmo_, nmo_);
+        SharedTensor1d eigB = std::make_shared<Tensor1d>("epsilon <a|a>", nmo_);
 
         // Diagonalize Fock
         FockB->diagonalize(UeigB, eigB, cutoff);
@@ -523,7 +523,7 @@ void DFOCC::canonic() {
         UorbB->copy(UeigB);
 
         // Get new MOs
-        SharedTensor2d Cb_new = std::shared_ptr<Tensor2d>(new Tensor2d("New beta MO coefficients", nso_, nmo_));
+        SharedTensor2d Cb_new = std::make_shared<Tensor2d>("New beta MO coefficients", nso_, nmo_);
         Cb_new->gemm(false, false, CmoB, UorbB, 1.0, 0.0);
         CmoB->copy(Cb_new);
         Cb_new.reset();
@@ -549,18 +549,18 @@ void DFOCC::kappa_qchf() {
 
     if (reference_ == "RESTRICTED") {
         // Memalloc
-        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
-        zvec_newA = SharedTensor1d(new Tensor1d("Alpha New Z-Vector", noccA * nvirA));
-        Minv_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG M inverse", noccA * nvirA));
-        sigma_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG sigma", noccA * nvirA));
-        r_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG r", noccA * nvirA));
-        r_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new r", noccA * nvirA));
-        z_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG z", noccA * nvirA));
-        z_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new z", noccA * nvirA));
-        p_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG p", noccA * nvirA));
-        p_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new p", noccA * nvirA));
-        dr_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG dr", noccA * nvirA));
-        residualA = SharedTensor1d(new Tensor1d("Alpha Residual Vector", noccA * nvirA));
+        zvectorA = std::make_shared<Tensor1d>("Alpha Z-Vector", noccA * nvirA);
+        zvec_newA = std::make_shared<Tensor1d>("Alpha New Z-Vector", noccA * nvirA);
+        Minv_pcgA = std::make_shared<Tensor1d>("Alpha PCG M inverse", noccA * nvirA);
+        sigma_pcgA = std::make_shared<Tensor1d>("Alpha PCG sigma", noccA * nvirA);
+        r_pcgA = std::make_shared<Tensor1d>("Alpha PCG r", noccA * nvirA);
+        r_pcg_newA = std::make_shared<Tensor1d>("Alpha PCG new r", noccA * nvirA);
+        z_pcgA = std::make_shared<Tensor1d>("Alpha PCG z", noccA * nvirA);
+        z_pcg_newA = std::make_shared<Tensor1d>("Alpha PCG new z", noccA * nvirA);
+        p_pcgA = std::make_shared<Tensor1d>("Alpha PCG p", noccA * nvirA);
+        p_pcg_newA = std::make_shared<Tensor1d>("Alpha PCG new p", noccA * nvirA);
+        dr_pcgA = std::make_shared<Tensor1d>("Alpha PCG dr", noccA * nvirA);
+        residualA = std::make_shared<Tensor1d>("Alpha Residual Vector", noccA * nvirA);
 
         // Build kappa0 and M
         for (int a = 0, ai = 0; a < nvirA; a++) {
@@ -670,24 +670,24 @@ void DFOCC::kappa_qchf() {
         nidp_tot = nidpA + nidpB;
 
         // Memalloc
-        zvector = SharedTensor1d(new Tensor1d("UHF Z-Vector", nidp_tot));
-        zvec_new = SharedTensor1d(new Tensor1d("New UHF Z-Vector", nidp_tot));
-        Minv_pcg = SharedTensor1d(new Tensor1d("PCG M inverse", nidp_tot));
-        sigma_pcg = SharedTensor1d(new Tensor1d("PCG sigma", nidp_tot));
-        r_pcg = SharedTensor1d(new Tensor1d("PCG r", nidp_tot));
-        r_pcg_new = SharedTensor1d(new Tensor1d("PCG new r", nidp_tot));
-        z_pcg = SharedTensor1d(new Tensor1d("PCG z", nidp_tot));
-        z_pcg_new = SharedTensor1d(new Tensor1d("PCG new z", nidp_tot));
-        p_pcg = SharedTensor1d(new Tensor1d("PCG p", nidp_tot));
-        p_pcg_new = SharedTensor1d(new Tensor1d("PCG new p", nidp_tot));
-        dr_pcg = SharedTensor1d(new Tensor1d("PCG dr", nidp_tot));
-        residual = SharedTensor1d(new Tensor1d("Residual Vector", nidp_tot));
-        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
-        zvectorB = SharedTensor1d(new Tensor1d("Beta Z-Vector", noccB * nvirB));
-        sigma_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG sigma", noccA * nvirA));
-        sigma_pcgB = SharedTensor1d(new Tensor1d("Beta PCG sigma", noccB * nvirB));
-        p_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG p", noccA * nvirA));
-        p_pcgB = SharedTensor1d(new Tensor1d("Beta PCG p", noccB * nvirB));
+        zvector = std::make_shared<Tensor1d>("UHF Z-Vector", nidp_tot);
+        zvec_new = std::make_shared<Tensor1d>("New UHF Z-Vector", nidp_tot);
+        Minv_pcg = std::make_shared<Tensor1d>("PCG M inverse", nidp_tot);
+        sigma_pcg = std::make_shared<Tensor1d>("PCG sigma", nidp_tot);
+        r_pcg = std::make_shared<Tensor1d>("PCG r", nidp_tot);
+        r_pcg_new = std::make_shared<Tensor1d>("PCG new r", nidp_tot);
+        z_pcg = std::make_shared<Tensor1d>("PCG z", nidp_tot);
+        z_pcg_new = std::make_shared<Tensor1d>("PCG new z", nidp_tot);
+        p_pcg = std::make_shared<Tensor1d>("PCG p", nidp_tot);
+        p_pcg_new = std::make_shared<Tensor1d>("PCG new p", nidp_tot);
+        dr_pcg = std::make_shared<Tensor1d>("PCG dr", nidp_tot);
+        residual = std::make_shared<Tensor1d>("Residual Vector", nidp_tot);
+        zvectorA = std::make_shared<Tensor1d>("Alpha Z-Vector", noccA * nvirA);
+        zvectorB = std::make_shared<Tensor1d>("Beta Z-Vector", noccB * nvirB);
+        sigma_pcgA = std::make_shared<Tensor1d>("Alpha PCG sigma", noccA * nvirA);
+        sigma_pcgB = std::make_shared<Tensor1d>("Beta PCG sigma", noccB * nvirB);
+        p_pcgA = std::make_shared<Tensor1d>("Alpha PCG p", noccA * nvirA);
+        p_pcgB = std::make_shared<Tensor1d>("Beta PCG p", noccB * nvirB);
 
         // Build kappa0 and M
         // alpha

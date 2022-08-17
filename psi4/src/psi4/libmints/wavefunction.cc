@@ -145,8 +145,6 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     frequencies_ = vectors["frequencies"];
 
     // set dimensions
-    doccpi_ = dimensions["doccpi"];
-    soccpi_ = dimensions["soccpi"];
     frzcpi_ = dimensions["frzcpi"];
     frzvpi_ = dimensions["frzvpi"];
     nalphapi_ = dimensions["nalphapi"];
@@ -213,8 +211,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     energy_ = other->energy_;
     efzc_ = other->efzc_;
 
-    doccpi_ = other->doccpi_;
-    soccpi_ = other->soccpi_;
     frzcpi_ = other->frzcpi_;
     frzvpi_ = other->frzvpi_;
     nalphapi_ = other->nalphapi_;
@@ -302,8 +298,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     efzc_ = other->efzc_;
     variables_ = other->variables_;
 
-    doccpi_ = other->doccpi_;
-    soccpi_ = other->soccpi_;
     frzcpi_ = other->frzcpi_;
     frzvpi_ = other->frzvpi_;
     nalphapi_ = other->nalphapi_;
@@ -326,8 +320,8 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     if (other->Db_) Db_ = other->Db_->clone();
     if (other->Fa_) Fa_ = other->Fa_->clone();
     if (other->Fb_) Fb_ = other->Fb_->clone();
-    if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
-    if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
+    if (other->epsilon_a_) epsilon_a_ = std::make_shared<Vector>(std::move(other->epsilon_a_->clone()));
+    if (other->epsilon_b_) epsilon_b_ = std::make_shared<Vector>(std::move(other->epsilon_b_->clone()));
 
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
@@ -390,10 +384,6 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->efzc_ = efzc_;
 
     // collapse all the Dimension objects down to one element
-    wfn->doccpi_.init(1, doccpi_.name());
-    wfn->doccpi_[0] = doccpi_.sum();
-    wfn->soccpi_.init(1, soccpi_.name());
-    wfn->soccpi_[0] = soccpi_.sum();
     wfn->frzcpi_.init(1, frzcpi_.name());
     wfn->frzcpi_[0] = frzcpi_.sum();
     wfn->frzvpi_.init(1, frzvpi_.name());
@@ -501,8 +491,6 @@ void Wavefunction::common_init() {
     nmopi_ = Dimension(nirrep_, "MOs per irrep");
     nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
     nbetapi_ = Dimension(nirrep_, "Beta electrons per irrep");
-    doccpi_ = Dimension(nirrep_, "Doubly occupied orbitals per irrep");
-    soccpi_ = Dimension(nirrep_, "Singly occupied orbitals per irrep");
     frzcpi_ = Dimension(nirrep_, "Frozen core orbitals per irrep");
     frzvpi_ = Dimension(nirrep_, "Frozen virtual orbitals per irrep");
 
@@ -513,8 +501,6 @@ void Wavefunction::common_init() {
     nmo_ = basisset_->nbf();
     for (int k = 0; k < nirrep_; k++) {
         nmopi_[k] = 0;
-        doccpi_[k] = 0;
-        soccpi_[k] = 0;
         nalphapi_[k] = 0;
         nbetapi_[k] = 0;
     }
@@ -753,6 +739,28 @@ void Wavefunction::initialize_singletons() {
     done = true;
 }
 
+const Dimension Wavefunction::doccpi(bool warn_on_beta_socc) const {
+    std::vector<int> docc_vec;
+    for (int h = 0; h < nalphapi_.n(); h++) {
+        docc_vec.push_back(std::min(nalphapi_[h], nbetapi_[h]));
+        if (warn_on_beta_socc && nbetapi_[h] > nalphapi_[h]) {
+            outfile->Printf("Warning! Irrep has more beta than alpha electrons in symmetry %d orbitals.\n", h);
+        }
+    }
+    return docc_vec;
+}
+/// Returns the SOCC per irrep array. Not recommended for unrestricted code.
+const Dimension Wavefunction::soccpi(bool warn_on_beta_socc) const {
+    std::vector<int> socc_vec;
+    for (int h = 0; h < nalphapi_.n(); h++) {
+        socc_vec.push_back(std::abs(nalphapi_[h] - nbetapi_[h]));
+        if (warn_on_beta_socc && nbetapi_[h] > nalphapi_[h]) {
+            outfile->Printf("Warning! Irrep has more beta than alpha electrons in symmetry %d orbitals.\n", h);
+        }
+    }
+    return socc_vec;
+}
+
 std::shared_ptr<Molecule> Wavefunction::molecule() const { return molecule_; }
 
 std::shared_ptr<PSIO> Wavefunction::psio() const { return psio_; }
@@ -783,37 +791,11 @@ void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction
     reference_wavefunction_ = wfn;
 }
 
-void Wavefunction::force_doccpi(const Dimension &doccpi) {
-    for (int h = 0; h < nirrep_; h++) {
-        if ((soccpi_[h] + doccpi[h]) > nmopi_[h]) {
-            throw PSIEXCEPTION(
-                "Wavefunction::force_doccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
-                "the total number of molecular orbitals.");
-        }
-        doccpi_[h] = doccpi[h];
-        nalphapi_[h] = doccpi_[h] + soccpi_[h];
-        nbetapi_[h] = doccpi_[h];
-    }
-    nalpha_ = doccpi_.sum() + soccpi_.sum();
-    nbeta_ = doccpi_.sum();
-}
-
-void Wavefunction::force_soccpi(const Dimension &soccpi) {
-    if (same_a_b_dens_) {
-        throw PSIEXCEPTION(
-            "Wavefunction::force_soccpi: Cannot set soccpi since alpha and beta densities must be the same for this "
-            "Wavefunction.");
-    }
-    for (int h = 0; h < nirrep_; h++) {
-        if ((soccpi[h] + doccpi_[h]) > nmopi_[h]) {
-            throw PSIEXCEPTION(
-                "Wavefunction::force_soccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
-                "the total number of molecular orbitals.");
-        }
-        soccpi_[h] = soccpi[h];
-        nalphapi_[h] = doccpi_[h] + soccpi_[h];
-    }
-    nalpha_ = doccpi_.sum() + soccpi_.sum();
+void Wavefunction::force_occpi(const Dimension &input_doccpi, const Dimension &input_soccpi) {
+    nalphapi_ = input_doccpi + input_soccpi;
+    nbetapi_ = input_doccpi;
+    nalpha_ = nalphapi_.sum();
+    nbeta_ = nbetapi_.sum();
 }
 
 void Wavefunction::set_frzvpi(const Dimension &frzvpi) {

@@ -257,89 +257,9 @@ def mcscf_solver(ref_wfn):
             if mcscf_target_conv_type == 'AH':
                 approx_integrals_only = False
                 ah_step = True
-            elif mcscf_target_conv_type == 'OS':
-                approx_integrals_only = False
-                mcscf_current_step_type = 'OS, Prep'
-                break
             else:
                 continue
         #raise p4util.PsiException("")
-
-    # If we converged do not do onestep
-    if converged or (mcscf_target_conv_type != 'OS'):
-        one_step_iters = []
-
-    # If we are not converged load in Dvec and build iters array
-    else:
-        one_step_iters = range(mcscf_iter + 1, mcscf_max_macroiteration + 1)
-        dvec = ciwfn.D_vector()
-        dvec.init_io_files(True)
-        dvec.read(0, 0)
-        dvec.symnormalize(1.0, 0)
-
-        ci_grad = ciwfn.new_civector(1, mcscf_d_file + 1, True, True)
-        ci_grad.set_nvec(1)
-        ci_grad.init_io_files(True)
-
-    # Loop for onestep
-    for mcscf_iter in one_step_iters:
-
-        # Transform integrals and update the MCSCF object
-        ciwfn.transform_mcscf_integrals(ciwfn.H(), False)
-        ciwfn.form_opdm()
-        ciwfn.form_tpdm()
-
-        # Update MCSCF object
-        Cocc = ciwfn.get_orbitals("DOCC")
-        Cact = ciwfn.get_orbitals("ACT")
-        Cvir = ciwfn.get_orbitals("VIR")
-        opdm = ciwfn.get_opdm(-1, -1, "SUM", False)
-        tpdm = ciwfn.get_tpdm("SUM", True)
-        mcscf_obj.update(Cocc, Cact, Cvir, opdm, tpdm)
-
-        orb_grad_rms = mcscf_obj.gradient_rms()
-
-        # Warning! Does not work for SA-MCSCF
-        current_energy = mcscf_obj.current_total_energy()
-        current_energy += mcscf_nuclear_energy
-
-        ciwfn.set_variable("CI ROOT %d TOTAL ENERGY" % 1, current_energy)
-        ciwfn.set_variable("CURRENT ENERGY", current_energy)
-        ciwfn.set_energy(current_energy)
-
-        docc_energy = mcscf_obj.current_docc_energy()
-        ci_energy = mcscf_obj.current_ci_energy()
-
-        # Compute CI gradient
-        ciwfn.sigma(dvec, ci_grad, 0, 0)
-        ci_grad.scale(2.0, 0)
-        ci_grad.axpy(-2.0 * ci_energy, dvec, 0, 0)
-
-        ci_grad_rms = ci_grad.norm(0)
-        orb_grad_rms = mcscf_obj.gradient().rms()
-
-        ediff = current_energy - eold
-
-        print_iteration(mtype, mcscf_iter, current_energy, ediff, orb_grad_rms, ci_grad_rms,
-                        nci_iter, norb_iter, mcscf_current_step_type)
-        mcscf_current_step_type = 'OS'
-
-        eold = current_energy
-
-        if (orb_grad_rms < mcscf_orb_grad_conv) and (abs(ediff) < abs(mcscf_e_conv)):
-
-            core.print_out("\n       %s has converged!\n\n" % mtype)
-            converged = True
-            break
-
-        # Take a step
-        converged, norb_iter, nci_iter, step = qc_iteration(dvec, ci_grad, ciwfn, mcscf_obj)
-
-        # Rotate integrals to new frame
-        total_step.add(step)
-        orbs_mat = mcscf_obj.Ck(ciwfn.get_orbitals("ROT"), step)
-        ciwfn.set_orbitals("ROT", orbs_mat)
-
 
     core.print_out(mtype + " Final Energy: %20.15f\n" % current_energy)
 
@@ -349,11 +269,6 @@ def mcscf_solver(ref_wfn):
             raise p4util.PsiException("MCSCF: Iterations did not converge!")
         else:
             core.print_out("\nWarning! MCSCF iterations did not converge!\n\n")
-
-    # Print out CI vector information
-    if mcscf_target_conv_type == 'OS':
-        dvec.close_io_files()
-        ci_grad.close_io_files()
 
     # For orbital invariant methods we transform the orbitals to the natural or
     # semicanonical basis. Frozen doubly occupied and virtual orbitals are not

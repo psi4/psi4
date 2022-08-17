@@ -96,17 +96,17 @@ class ADCWfn : public Wavefunction {
     // Number of components of transition amplitudes printed in outfile
     int num_amps_;
     // Number of alpha active occupied MOs per irrep
-    int *aoccpi_;
+    Dimension aoccpi_;
     // Number of alpha active virtual MOs per irrep
-    int *avirpi_;
+    Dimension avirpi_;
     // Number of beta active occupied MOs per irrep
-    int *boccpi_;
+    Dimension boccpi_;
     // Number of beta active virtual MOs per irrep
-    int *bvirpi_;
+    Dimension bvirpi_;
     // Number of doubly occupied MOs per irrep
     int *clsdpi_;
     // Roots sought per irrep
-    std::vector<int> rpi_;
+    Dimension rpi_;
     // Number of sngly excited configurations per irrep
     int *nxspi_;
     // Irreps for X, Y and Z

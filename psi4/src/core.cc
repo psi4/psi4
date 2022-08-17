@@ -979,11 +979,6 @@ void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(
 
 SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
 
-std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
-    auto empty = std::make_shared<psi::Vector>();
-    return empty;  // charges not added to process.h for environment - yet(?)
-}
-
 void py_psi_set_memory(size_t mem, bool quiet) {
     Process::environment.set_memory(mem);
     if (!quiet) {
@@ -1208,7 +1203,6 @@ PYBIND11_MODULE(core, core) {
              "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE ONLY.");
     core.def("set_legacy_gradient", py_psi_set_gradient, "grad"_a,
         "Assigns the global gradient to the values in the (nat, 3) Matrix argument. FOR INTERNAL OPTKING USE ONLY.");
-    core.def("get_atomic_point_charges", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.get_atomic_point_charges removed since hasn't been working as intended. Use Wavefunction.get_atomic_point_charges() instead."); }, ".. deprecated:: 1.4");
     core.def("set_memory_bytes", py_psi_set_memory, "memory"_a, "quiet"_a = false,
              "Sets the memory available to Psi (in bytes); prefer :func:`psi4.driver.set_memory`.");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");

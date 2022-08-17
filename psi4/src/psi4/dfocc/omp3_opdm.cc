@@ -41,14 +41,14 @@ void DFOCC::omp3_opdm() {
     timer_on("opdm");
     if (reference_ == "RESTRICTED") {
         // G1_ij = -(G_ij + G_ji)
-        T = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
+        T = std::make_shared<Tensor2d>("G Intermediate <I|J>", naoccA, naoccA);
         T->symmetrize(GijA);
         T->scale(-2.0);
         G1c_oo->set_act_oo(nfrzc, naoccA, T);
         T.reset();
 
         //  G1_ab = -(G_ab + G_ba)
-        T = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
+        T = std::make_shared<Tensor2d>("G Intermediate <A|B>", navirA, navirA);
         T->symmetrize(GabA);
         T->scale(-2.0);
         G1c_vv->set_act_vv(T);

@@ -119,6 +119,12 @@ void OCCWave::tpdm_oovv() {
             global_dpd_->buf4_scm(&G, 0.5);
             global_dpd_->buf4_close(&G);
         }
+        if (wfn_type_ == "OREMP") {
+            global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                                   "TPDM <OO|VV>");
+            global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
+            global_dpd_->buf4_close(&G);
+        }
 
         // G (IJ,AB) += 1/4 (2T_IJ^AB - T_JI^AB)
         global_dpd_->buf4_init(&Tau, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
@@ -164,7 +170,6 @@ void OCCWave::tpdm_oovv() {
                                "TPDM <Oo|Vv>");
         global_dpd_->buf4_scm(&G, 0.25);
         global_dpd_->buf4_close(&G);
-
         // Print
         if (print_ > 3) {
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
@@ -210,6 +215,7 @@ void OCCWave::tpdm_oooo() {
         global_dpd_->buf4_scm(&G, 0.125);
         // For OMP2.5 G(IJ,KL) = 1/16 (V_IJKL + V_ILKJ)
         if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&G);
     }  // end if (reference_ == "RESTRICTED")
 
@@ -225,6 +231,7 @@ void OCCWave::tpdm_oooo() {
         global_dpd_->buf4_scm(&G, 0.25);
         // For OMP2.5 G(IJ,KL) = 1/8 (V_IJKL + V_ILKJ)
         if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&G);
 
         // Beta-Beta spin case
@@ -238,6 +245,7 @@ void OCCWave::tpdm_oooo() {
         global_dpd_->buf4_scm(&G, 0.25);
         // For OMP2.5 G(IJ,KL) = 1/8 (V_IJKL + V_ILKJ)
         if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&G);
 
         // Alpha-Beta spin case
@@ -251,6 +259,7 @@ void OCCWave::tpdm_oooo() {
         global_dpd_->buf4_scm(&G, 0.25);
         // For OMP2.5 G(IJ,KL) = 1/8 (V_IJKL + V_ILKJ)
         if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&G);
 
     }  // end if (reference_ == "UNRESTRICTED")
@@ -454,6 +463,7 @@ void OCCWave::ocepa_tpdm_vvvv() {
             global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                                    "TPDM <VV|VV>");
             global_dpd_->contract444(&L, &T, &G, 1, 1, 0.5, 0.0);
+            if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
             global_dpd_->buf4_close(&T);
             global_dpd_->buf4_close(&L);
             global_dpd_->buf4_close(&G);
@@ -481,6 +491,7 @@ void OCCWave::ocepa_tpdm_vvvv() {
                                    "TPDM <VV|VV>");
             // G_ABCD(2) += 1/4\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
             global_dpd_->contract444(&L, &T, &G, 1, 1, 0.25, 1.0);
+            if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
             global_dpd_->buf4_close(&G);
             global_dpd_->buf4_close(&T);
             global_dpd_->buf4_close(&L);
@@ -527,6 +538,7 @@ void OCCWave::ocepa_tpdm_vvvv() {
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                                "TPDM <VV|VV>");
         global_dpd_->contract444(&L, &T, &G, 1, 1, 0.125, 0.0);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -540,6 +552,7 @@ void OCCWave::ocepa_tpdm_vvvv() {
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), 0,
                                "TPDM <vv|vv>");
         global_dpd_->contract444(&L, &T, &G, 1, 1, 0.125, 0.0);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -553,6 +566,7 @@ void OCCWave::ocepa_tpdm_vvvv() {
         global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), 0,
                                "TPDM <Vv|Vv>");
         global_dpd_->contract444(&L, &T, &G, 1, 1, 0.25, 0.0);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&T);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -603,6 +617,7 @@ void OCCWave::tpdm_ovov() {
         global_dpd_->buf4_scm(&G, -0.25);
         // OMP2.5: G(IA,JB) = -1/8 (V_IAJB +  V_IBJA)
         if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&G);
 
         /*
@@ -630,6 +645,7 @@ void OCCWave::tpdm_ovov() {
                                "TPDM <OV|OV>");
         global_dpd_->buf4_scm(&G, -0.5);
         if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&G);
 
         // Build G_iajb
@@ -642,6 +658,7 @@ void OCCWave::tpdm_ovov() {
                                "TPDM <ov|ov>");
         global_dpd_->buf4_scm(&G, -0.5);
         if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&G);
 
         // Build G_IaJb
@@ -654,6 +671,7 @@ void OCCWave::tpdm_ovov() {
                                "TPDM <Ov|Ov>");
         global_dpd_->buf4_scm(&G, -0.5);
         if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+        if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
         global_dpd_->buf4_close(&G);
 
     }  // end if (reference_ == "UNRESTRICTED")
@@ -681,6 +699,7 @@ void OCCWave::tpdm_vovo() {
                            "TPDM <Vo|Vo>");
     global_dpd_->buf4_scm(&G, -0.5);
     if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+    if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
     global_dpd_->buf4_close(&G);
 
     psio_->close(PSIF_OCC_DENSITY, 1);
@@ -707,6 +726,7 @@ void OCCWave::tpdm_ovvo() {
                            "TPDM <Ov|Vo>");
     global_dpd_->buf4_scm(&G, 0.5);
     if (wfn_type_ == "OMP2.5") global_dpd_->buf4_scm(&G, 0.5);
+    if (wfn_type_ == "OREMP") global_dpd_->buf4_scm(&G, 1.0E0-remp_A);
     global_dpd_->buf4_close(&G);
 
     // VoOv block is here!

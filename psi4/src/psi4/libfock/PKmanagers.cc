@@ -518,7 +518,7 @@ void PKMgrDisk::initialize_wK() {
 void PKMgrDisk::batch_sizing() {
     double batch_thresh = 0.1;
 
-    ijklBasisIterator AOintsiter(nbf(), sieve());
+    ijklBasisIterator AOintsiter(nbf());
 
     size_t old_pq = 0;
     size_t old_max = 0;
@@ -1056,7 +1056,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
     }
 
     // Loop over significant shell pairs from ERISieve
-    const std::vector<std::pair<int, int>>& sh_pairs = sieve()->shell_pairs();
+    const auto& sh_pairs = tb[0]->shell_pairs();
     size_t npairs = sh_pairs.size();
     // We avoid having one more branch in the loop by moving it outside
     if (!wK) {
@@ -1072,7 +1072,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
             for (size_t j = 0; j <= i; ++j) {
                 int RR = sh_pairs[j].first;
                 int SS = sh_pairs[j].second;
-                if (sieve()->shell_significant(PP, QQ, RR, SS)) {
+                if (tb[thread]->shell_significant(PP, QQ, RR, SS)) {
                     int P = PP;
                     int Q = QQ;
                     int R = RR;
@@ -1111,7 +1111,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
             for (size_t j = 0; j <= i; ++j) {
                 int RR = sh_pairs[j].first;
                 int SS = sh_pairs[j].second;
-                if (sieve()->shell_significant(PP, QQ, RR, SS)) {
+                if (tb[thread]->shell_significant(PP, QQ, RR, SS)) {
                     int P = PP;
                     int Q = QQ;
                     int R = RR;

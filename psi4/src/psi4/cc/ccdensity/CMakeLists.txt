@@ -26,7 +26,6 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_ROHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_UHF.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/ael.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/build_A.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/build_A_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/build_A_ROHF.cc

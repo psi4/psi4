@@ -52,7 +52,6 @@ typedef std::shared_ptr<PKWorker> SharedPKWrkr;
   ijklBasisIterator: Iterator that goes through all two-electron integral
   indices, in increasing order of canonical index ijkl.
   Used to determine what goes in which bucket for PK.
-  Will be extended to include sieving.
 -*/
 
 class ijklBasisIterator {
@@ -60,11 +59,10 @@ class ijklBasisIterator {
     int nbas_;
     int i_, j_, k_, l_;
     bool done_;
-    std::shared_ptr<ERISieve> sieve_;
 
    public:
     // Constructor
-    ijklBasisIterator(int nbas, std::shared_ptr<ERISieve> sieve) : nbas_(nbas), done_(false), sieve_(sieve) {}
+    ijklBasisIterator(int nbas) : nbas_(nbas), done_(false) {}
 
     // Iterator functions
     void first();

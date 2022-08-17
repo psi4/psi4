@@ -49,7 +49,7 @@ void OCCWave::ep2_ip() {
     //===========================================================================================
     if (reference_ == "RESTRICTED") {
         // Memory allocation for diagonal self-energy
-        auto eOccOrbA = std::make_shared<Vector>("eOccOrbA", nirrep_, occpiA);
+        auto eOccOrbA = std::make_shared<Vector>("eOccOrbA", occpiA);
 
         dpdbuf4 K, T, D;
 
@@ -57,8 +57,8 @@ void OCCWave::ep2_ip() {
         psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
         // Build denominators D_jk^ia = E_j + E_k - E_i - E_a
-        auto *aOccEvals = new double[nacooA];
-        auto *aVirEvals = new double[nacvoA];
+        auto aOccEvals = std::vector<double>(nacooA);
+        auto aVirEvals = std::vector<double>(nacvoA);
 
         // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
         // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
@@ -253,8 +253,8 @@ void OCCWave::ep2_ip() {
         outfile->Printf("\t----------------------------------------------- \n");
 
         Molecule &mol = *reference_wavefunction_->molecule().get();
-        CharacterTable ct = mol.point_group()->char_table();
-        std::string pgroup = mol.point_group()->symbol();
+        auto ct = mol.point_group()->char_table();
+        auto pgroup = mol.point_group()->symbol();
 
         // print alpha occ orb energy
         outfile->Printf("\tAlpha occupied orbitals\n");
@@ -269,8 +269,6 @@ void OCCWave::ep2_ip() {
         eOccOrbA.reset();
         delete evals_A;
         delete irrep_A;
-        delete[] aOccEvals;
-        delete[] aVirEvals;
 
     }  // end if (reference_ == "RESTRICTED")
 
@@ -279,8 +277,8 @@ void OCCWave::ep2_ip() {
     //===========================================================================================
     else if (reference_ == "UNRESTRICTED") {
         // Memory allocation
-        auto eOccOrbA = std::make_shared<Vector>("eOccOrbA", nirrep_, occpiA);
-        auto eOccOrbB = std::make_shared<Vector>("eOccOrbB", nirrep_, occpiB);
+        auto eOccOrbA = std::make_shared<Vector>("eOccOrbA", occpiA);
+        auto eOccOrbB = std::make_shared<Vector>("eOccOrbB", occpiB);
         eOccOrbA->zero();
         eOccOrbB->zero();
 

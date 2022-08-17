@@ -326,7 +326,7 @@ void Tensor1d::gemv(bool transa, int m, int n, const SharedTensor2d &a, const Sh
 
 double Tensor1d::xay(const SharedTensor2d &a, const SharedTensor1d &y) {
     double value = 0.0;
-    SharedTensor1d ay = SharedTensor1d(new Tensor1d(a->dim1_));
+    SharedTensor1d ay = std::make_shared<Tensor1d>(a->dim1_);
     ay->gemv(false, a, y, 1.0, 0.0);
     value = dot(ay);
     return value;
@@ -986,15 +986,15 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", a->d1_, a->d3_, a->d4_, a->d2_));
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", d1_, d3_, d4_, d2_));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d3_, a->d4_, a->d2_);
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_, d3_, d4_, d2_);
         temp1->sort(1342, a, 1.0, 0.0);
 
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, temp1->A2d_[0], lda, b->A2d_[0], ldb, 0.0, temp2->A2d_[0], ldc);
         }
         temp1.reset();
-        SharedTensor2d temp3 = SharedTensor2d(new Tensor2d("temp3", d1_, d2_, d3_, d4_));
+        SharedTensor2d temp3 = std::make_shared<Tensor2d>("temp3", d1_, d2_, d3_, d4_);
         temp3->sort(1423, temp2, 1.0, 0.0);
         temp2.reset();
         scale(beta);
@@ -1013,15 +1013,15 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = k;
         ldc = n;
 
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", a->d1_, a->d3_, a->d4_, a->d2_));
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", d1_, d3_, d4_, d2_));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d3_, a->d4_, a->d2_);
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_, d3_, d4_, d2_);
         temp1->sort(1342, a, 1.0, 0.0);
 
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, temp1->A2d_[0], lda, b->A2d_[0], ldb, 0.0, temp2->A2d_[0], ldc);
         }
         temp1.reset();
-        SharedTensor2d temp3 = SharedTensor2d(new Tensor2d("temp3", d1_, d2_, d3_, d4_));
+        SharedTensor2d temp3 = std::make_shared<Tensor2d>("temp3", d1_, d2_, d3_, d4_);
         temp3->sort(1423, temp2, 1.0, 0.0);
         temp2.reset();
         scale(beta);
@@ -1040,15 +1040,15 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", a->d1_, a->d2_, a->d4_, a->d3_));
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", d1_, d2_, d4_, d3_));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d2_, a->d4_, a->d3_);
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_, d2_, d4_, d3_);
         temp1->sort(1243, a, 1.0, 0.0);
 
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, temp1->A2d_[0], lda, b->A2d_[0], ldb, 0.0, temp2->A2d_[0], ldc);
         }
         temp1.reset();
-        SharedTensor2d temp3 = SharedTensor2d(new Tensor2d("temp3", d1_, d2_, d3_, d4_));
+        SharedTensor2d temp3 = std::make_shared<Tensor2d>("temp3", d1_, d2_, d3_, d4_);
         temp3->sort(1243, temp2, 1.0, 0.0);
         temp2.reset();
         scale(beta);
@@ -1067,15 +1067,15 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = k;
         ldc = n;
 
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", a->d1_, a->d2_, a->d4_, a->d3_));
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", d1_, d2_, d4_, d3_));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d2_, a->d4_, a->d3_);
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_, d2_, d4_, d3_);
         temp1->sort(1243, a, 1.0, 0.0);
 
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, temp1->A2d_[0], lda, b->A2d_[0], ldb, 0.0, temp2->A2d_[0], ldc);
         }
         temp1.reset();
-        SharedTensor2d temp3 = SharedTensor2d(new Tensor2d("temp3", d1_, d2_, d3_, d4_));
+        SharedTensor2d temp3 = std::make_shared<Tensor2d>("temp3", d1_, d2_, d3_, d4_);
         temp3->sort(1243, temp2, 1.0, 0.0);
         temp2.reset();
         scale(beta);
@@ -1323,7 +1323,7 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = k;
         ldc = n;
 
-        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", b->d2_, b->d1_, b->d3_, b->d4_));
+        SharedTensor2d temp = std::make_shared<Tensor2d>("temp", b->d2_, b->d1_, b->d3_, b->d4_);
         temp->sort(2134, b, 1.0, 0.0);
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->A2d_[0][0]), lda, &(temp->A2d_[0][0]), ldb, beta, &(A2d_[0][0]), ldc);
@@ -1342,7 +1342,7 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
-        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", b->d1_, b->d2_, b->d4_, b->d3_));
+        SharedTensor2d temp = std::make_shared<Tensor2d>("temp", b->d1_, b->d2_, b->d4_, b->d3_);
         temp->sort(1243, b, 1.0, 0.0);
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->A2d_[0][0]), lda, &(temp->A2d_[0][0]), ldb, beta, &(A2d_[0][0]), ldc);
@@ -1376,7 +1376,7 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
-        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", a->d4_, a->d1_, a->d2_, a->d3_));
+        SharedTensor2d temp = std::make_shared<Tensor2d>("temp", a->d4_, a->d1_, a->d2_, a->d3_);
         temp->sort(4123, a, 1.0, 0.0);
 
         if (m && n && k) {
@@ -1396,8 +1396,8 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp", a->d4_, a->d1_, a->d2_, a->d3_));
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp", b->d1_, b->d2_, b->d4_, b->d3_));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp", a->d4_, a->d1_, a->d2_, a->d3_);
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp", b->d1_, b->d2_, b->d4_, b->d3_);
         temp1->sort(4123, a, 1.0, 0.0);
         temp2->sort(1243, b, 1.0, 0.0);
         if (m && n && k) {
@@ -1419,8 +1419,8 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = k;
         ldc = n;
 
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", a->d2_, a->d1_, a->d3_, a->d4_));
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", b->d2_, b->d1_, b->d3_, b->d4_));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d2_, a->d1_, a->d3_, a->d4_);
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", b->d2_, b->d1_, b->d3_, b->d4_);
         temp1->sort(2134, a, 1.0, 0.0);
         temp2->sort(2134, b, 1.0, 0.0);
         if (m && n && k) {
@@ -1442,8 +1442,8 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", a->d1_, a->d2_, a->d4_, a->d3_));
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", b->d1_, b->d2_, b->d4_, b->d3_));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d2_, a->d4_, a->d3_);
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", b->d1_, b->d2_, b->d4_, b->d3_);
         temp1->sort(1243, a, 1.0, 0.0);
         temp2->sort(1243, b, 1.0, 0.0);
         if (m && n && k) {
@@ -1507,7 +1507,7 @@ void Tensor2d::add(double **a) {
 }  //
 
 void Tensor2d::add(double alpha, const SharedTensor2d &Adum) {
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d(Adum->dim1_, Adum->dim2_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>(Adum->dim1_, Adum->dim2_);
     temp->copy(Adum);
     temp->scale(alpha);
     add(temp);
@@ -1562,7 +1562,7 @@ double **Tensor2d::transpose2() {
 }  //
 
 SharedTensor2d Tensor2d::transpose() {
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d(dim2_, dim1_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>(dim2_, dim1_);
 #pragma omp parallel for
     for (int i = 0; i < dim2_; ++i) {
         for (int j = 0; j < dim1_; ++j) {
@@ -1784,32 +1784,32 @@ double Tensor2d::trace() {
 }  //
 
 void Tensor2d::transform(const SharedTensor2d &a, const SharedTensor2d &transformer) {
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d(a->dim1_, transformer->dim2_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>(a->dim1_, transformer->dim2_);
     temp->gemm(false, false, a, transformer, 1.0, 0.0);
     gemm(true, false, transformer, temp, 1.0, 0.0);
 }  //
 
 void Tensor2d::back_transform(const SharedTensor2d &a, const SharedTensor2d &transformer) {
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d(a->dim1_, transformer->dim2_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>(a->dim1_, transformer->dim2_);
     temp->gemm(false, true, a, transformer, 1.0, 0.0);
     gemm(false, false, transformer, temp, 1.0, 0.0);
 }  //
 
 void Tensor2d::back_transform(const SharedTensor2d &a, const SharedTensor2d &transformer, double alpha, double beta) {
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d(a->dim1_, transformer->dim2_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>(a->dim1_, transformer->dim2_);
     temp->gemm(false, true, a, transformer, 1.0, 0.0);
     gemm(false, false, transformer, temp, alpha, beta);
 }  //
 
 void Tensor2d::pseudo_transform(const SharedTensor2d &a, const SharedTensor2d &transformer) {
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d(a->dim1_, transformer->dim2_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>(a->dim1_, transformer->dim2_);
     temp->gemm(false, false, a, transformer, 1.0, 0.0);
     gemm(false, false, transformer, temp, 1.0, 0.0);
 }  //
 
 void Tensor2d::triple_gemm(const SharedTensor2d &a, const SharedTensor2d &b, const SharedTensor2d &c) {
     if (a->dim2_ == b->dim1_ && b->dim2_ == c->dim1_ && a->dim1_ == dim1_ && c->dim2_ == dim2_) {
-        SharedTensor2d bc = SharedTensor2d(new Tensor2d(b->dim1_, c->dim2_));
+        SharedTensor2d bc = std::make_shared<Tensor2d>(b->dim1_, c->dim2_);
         bc->gemm(false, false, b, c, 1.0, 0.0);
         gemm(false, false, a, bc, 1.0, 0.0);
     } else {
@@ -1903,7 +1903,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_
     // Form Lower triangular part
     if (three_index && symm) {
         int ntri_col = 0.5 * d2_ * (d2_ + 1);
-        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, ntri_col));
+        SharedTensor2d temp = std::make_shared<Tensor2d>("temp", d1_, ntri_col);
 #pragma omp parallel for
         for (int R = 0; R < d1_; R++) {
             for (int p = 0; p < d2_; p++) {
@@ -1945,7 +1945,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const std::string &filenam
     // Form Lower triangular part
     if (three_index && symm) {
         int ntri_col = 0.5 * d2_ * (d2_ + 1);
-        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, ntri_col));
+        SharedTensor2d temp = std::make_shared<Tensor2d>("temp", d1_, ntri_col);
 #pragma omp parallel for
         for (int R = 0; R < d1_; R++) {
             for (int p = 0; p < d2_; p++) {
@@ -1986,7 +1986,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const std::string &filenam
 void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     // Form Lower triangular part
     int ntri_col = 0.5 * dim1_ * (dim1_ + 1);
-    SharedTensor1d temp = SharedTensor1d(new Tensor1d("temp", ntri_col));
+    SharedTensor1d temp = std::make_shared<Tensor1d>("temp", ntri_col);
 #pragma omp parallel for
     for (int p = 0; p < dim1_; p++) {
         for (int q = 0; q <= p; q++) {
@@ -2020,7 +2020,7 @@ void Tensor2d::write_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     } else if (dim2_ == 1) {
         ntri_col = 1;
     }
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", ntri_row, ntri_col));
+    SharedTensor2d temp = std::make_shared<Tensor2d>("temp", ntri_row, ntri_col);
 #pragma omp parallel for
     for (int p = 1; p < d1_; p++) {
         for (int q = 0; q < p; q++) {
@@ -2105,7 +2105,7 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_i
     // Form Lower triangular part
     if (three_index && symm) {
         int ntri_col = 0.5 * d2_ * (d2_ + 1);
-        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, ntri_col));
+        SharedTensor2d temp = std::make_shared<Tensor2d>("temp", d1_, ntri_col);
 
         // Check to see if the file is open
         bool already_open = false;
@@ -2146,7 +2146,7 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_i
 void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     // Form Lower triangular part
     int ntri_col = 0.5 * dim1_ * (dim1_ + 1);
-    SharedTensor1d temp = SharedTensor1d(new Tensor1d("temp", ntri_col));
+    SharedTensor1d temp = std::make_shared<Tensor1d>("temp", ntri_col);
 
     // Check to see if the file is open
     bool already_open = false;
@@ -2182,7 +2182,7 @@ void Tensor2d::read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
         ntri_col = 1;
     }
 
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", ntri_row, ntri_col));
+    SharedTensor2d temp = std::make_shared<Tensor2d>("temp", ntri_row, ntri_col);
 
     // Check to see if the file is open
     bool already_open = false;
@@ -3849,7 +3849,7 @@ void Tensor2d::form_b_la(const SharedTensor2d &A) {
 }  //
 
 void Tensor2d::symmetrize() {
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d(dim2_, dim1_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>(dim2_, dim1_);
     temp = transpose();
     add(temp);
     scale(0.5);
@@ -3876,7 +3876,7 @@ void Tensor2d::symmetrize(const SharedTensor2d &A) {
 }  //
 
 void Tensor2d::symmetrize3(const SharedTensor2d &A) {
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, d3_, d2_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>("temp", d1_, d3_, d2_);
     temp->swap_3index_col(A);
     add(temp);
     scale(0.5);
@@ -4259,7 +4259,7 @@ void Tensor2d::cont444(int t_a1, int t_a2, int f_a1, int f_a2, const SharedTenso
         // outfile->Printf("\tDimensions of A: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
 
         // Sort A(..,..) to A(pq,tu)
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", d1_, d2_, dim_t, dim_u));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", d1_, d2_, dim_t, dim_u);
 #pragma omp parallel for
         for (int p = 0; p < d1_; p++) {
             for (int q = 0; q < d2_; q++) {
@@ -4357,7 +4357,7 @@ void Tensor2d::cont444(int t_a1, int t_a2, int f_a1, int f_a2, const SharedTenso
         // outfile->Printf("\tDimensions of B: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
 
         // Sort B(..,..) to B(tu,rs)
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", dim_t, dim_u, d3_, d4_));
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", dim_t, dim_u, d3_, d4_);
 #pragma omp parallel for
         for (int t = 0; t < dim_t; t++) {
             for (int u = 0; u < dim_u; u++) {
@@ -4504,7 +4504,7 @@ void Tensor2d::cont444(bool delete_a, int t_a1, int t_a2, int f_a1, int f_a2, Sh
         // outfile->Printf("\tDimensions of A: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
 
         // Sort A(..,..) to A(pq,tu)
-        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", d1_, d2_, dim_t, dim_u));
+        SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", d1_, d2_, dim_t, dim_u);
 #pragma omp parallel for
         for (int p = 0; p < d1_; p++) {
             for (int q = 0; q < d2_; q++) {
@@ -4603,7 +4603,7 @@ void Tensor2d::cont444(bool delete_a, int t_a1, int t_a2, int f_a1, int f_a2, Sh
         // outfile->Printf("\tDimensions of B: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
 
         // Sort B(..,..) to B(tu,rs)
-        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", dim_t, dim_u, d3_, d4_));
+        SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", dim_t, dim_u, d3_, d4_);
 #pragma omp parallel for
         for (int t = 0; t < dim_t; t++) {
             for (int u = 0; u < dim_u; u++) {
@@ -4849,7 +4849,7 @@ void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, 
     // outfile->Printf("\tDimensions of A: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
 
     // Sort A(..,..) to A(pq,tu)
-    SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", d1_, d2_, dim_t, dim_u));
+    SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", d1_, d2_, dim_t, dim_u);
 #pragma omp parallel for
     for (int p = 0; p < d1_; p++) {
         for (int q = 0; q < d2_; q++) {
@@ -4949,7 +4949,7 @@ void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, 
     // outfile->Printf("\tDimensions of B: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
 
     // Sort B(..,..) to B(tu,rs)
-    SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", dim_t, dim_u, d3_, d4_));
+    SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", dim_t, dim_u, d3_, d4_);
 #pragma omp parallel for
     for (int t = 0; t < dim_t; t++) {
         for (int u = 0; u < dim_u; u++) {
@@ -5132,7 +5132,7 @@ void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, 
 
     // Sort A(..,..) to A(pq,tu)
     sort_a = (f_a1 * 1000) + (f_a2 * 100) + (t_a1 * 10) + t_a2;
-    SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", d1_a, d2_a, d3_a, d4_a));
+    SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", d1_a, d2_a, d3_a, d4_a);
     temp1->sort(sort_a, A, 1.0, 0.0);
     A.reset();
     // temp1->print();
@@ -5201,7 +5201,7 @@ void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, 
 
     // Sort B(..,..) to B(tu,rs)
     sort_b = (t_b1 * 1000) + (t_b2 * 100) + (f_b1 * 10) + f_b2;
-    SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", d1_b, d2_b, d3_b, d4_b));
+    SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_b, d2_b, d3_b, d4_b);
     temp2->sort(sort_b, B, 1.0, 0.0);
     B.reset();
     // temp2->print();
@@ -5316,7 +5316,7 @@ void Tensor2d::cont343(std::string idx_c, std::string idx_a, std::string idx_b, 
     // outfile->Printf("\tDimensions of B: %2d, %2d, %2d, %2d  \n", r1,r2,c1,c2);
 
     // Sort B(..,..) to B(rs,pq)
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", A->d2_, A->d3_, d2_, d3_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>("temp", A->d2_, A->d3_, d2_, d3_);
 #pragma omp parallel for
     for (int r = 0; r < A->d2_; r++) {
         for (int s = 0; s < A->d3_; s++) {
@@ -5524,7 +5524,7 @@ void Tensor2d::cont442(std::string idx_c, std::string idx_a, std::string idx_b, 
         c2 = f_a1;
 
     // Sort A(..,..) to A(pr,st)
-    SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", dim1_, dim_r, dim_s, dim_t));
+    SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", dim1_, dim_r, dim_s, dim_t);
 #pragma omp parallel for
     for (int p = 0; p < dim1_; p++) {
         for (int r = 0; r < dim_r; r++) {
@@ -5622,7 +5622,7 @@ void Tensor2d::cont442(std::string idx_c, std::string idx_a, std::string idx_b, 
         c2 = f_b1;
 
     // Sort B(..,..) to B(rs,tq)
-    SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", dim_r, dim_s, dim_t, dim2_));
+    SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", dim_r, dim_s, dim_t, dim2_);
 #pragma omp parallel for
     for (int r = 0; r < dim_r; r++) {
         for (int s = 0; s < dim_s; s++) {
@@ -5803,7 +5803,7 @@ void Tensor2d::cont424(std::string idx_c, std::string idx_a, std::string idx_b, 
         c2 = f_a3;
 
     // Sort A(..,..) to A(pq,rt)
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, d2_, d3_, dim_t));
+    SharedTensor2d temp = std::make_shared<Tensor2d>("temp", d1_, d2_, d3_, dim_t);
 #pragma omp parallel for
     for (int p = 0; p < d1_; p++) {
         for (int q = 0; q < d2_; q++) {
@@ -5986,7 +5986,7 @@ void Tensor2d::cont244(std::string idx_c, std::string idx_a, std::string idx_b, 
         c2 = f_b3;
 
     // Sort B(..,..) to B(tq,rs)
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", dim_t, d2_, d3_, d4_));
+    SharedTensor2d temp = std::make_shared<Tensor2d>("temp", dim_t, d2_, d3_, d4_);
 #pragma omp parallel for
     for (int t = 0; t < dim_t; t++) {
         for (int q = 0; q < d2_; q++) {
@@ -6184,7 +6184,7 @@ void Tensor2d::cont323(std::string idx_c, std::string idx_a, std::string idx_b, 
         c1 = f_a1;
 
     // Sort A(Q,..) to A(Q,pr)
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, d2_, dim_r));
+    SharedTensor2d temp = std::make_shared<Tensor2d>("temp", d1_, d2_, dim_r);
 #pragma omp parallel for
     for (int Q = 0; Q < dim1_; Q++) {
         for (int p = 0; p < d2_; p++) {
@@ -6278,7 +6278,7 @@ void Tensor2d::cont332(std::string idx_c, std::string idx_a, std::string idx_b, 
         ca = f_a1;
 
     // Sort A(Q,..) to A(Q,rp)
-    SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", A->d1_, dim_r, dim1_));
+    SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", A->d1_, dim_r, dim1_);
 #pragma omp parallel for
     for (int Q = 0; Q < A->d1_; Q++) {
         for (int r = 0; r < dim_r; r++) {
@@ -6317,7 +6317,7 @@ void Tensor2d::cont332(std::string idx_c, std::string idx_a, std::string idx_b, 
         cb = f_b1;
 
     // Sort B(Q,..) to B(Q,rq)
-    SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", B->d1_, dim_r, dim2_));
+    SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", B->d1_, dim_r, dim2_);
 #pragma omp parallel for
     for (int Q = 0; Q < B->d1_; Q++) {
         for (int r = 0; r < dim_r; r++) {
@@ -6675,7 +6675,7 @@ if (size) {
 void Tensor2i::subtract(int i, int j, int value) { A2i_[i][j] -= value; }  //
 
 SharedTensor2i Tensor2i::transpose() {
-    SharedTensor2i temp = SharedTensor2i(new Tensor2i(dim2_, dim1_));
+    SharedTensor2i temp = std::make_shared<Tensor2i>(dim2_, dim1_);
 
     for (int i = 0; i < dim2_; ++i) {
         for (int j = 0; j < dim1_; ++j) {

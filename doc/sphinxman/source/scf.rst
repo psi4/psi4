@@ -782,10 +782,10 @@ a cutoff for the value of basis functions at grid points. This keyword is
 used to determine the radial extent of the each basis shell, and it is the
 COSX analogue to |scf__dft_basis_tolerance|.
 
-The |scf__cosx_incfock| keyword (defaults to ``true``) increases performance
+The |scf__cosx_incfock| keyword (defaults to ``false``) increases performance
 by constructing the Fock matrix from differences in the density matrix, which
-are more amenable to screening. Consider disabling this keyword if SCF energy
-convergence issues are observed, particularly when using diffuse basis functions.
+are more amenable to screening. This option is disabled by default because of
+potential SCF convergence issues, particularly when using diffuse basis functions.
 The |scf__cosx_overlap_fitting| keyword (defaults to ``true``) reduces numerical
 integration errors using the method described in [Izsak:2011:144105]_ and is
 always recommended.

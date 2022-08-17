@@ -40,9 +40,9 @@ void DFOCC::ccd_F_intr_low() {
     SharedTensor2d K, T, U, Tau;
 
     // Read ints
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    Tau = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    Tau = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     Tau->read(psio_, PSIF_DFOCC_AMPS);
 
     // F_mi +=  \sum_{Q,e} T_ie^Q b_me^Q

@@ -40,10 +40,10 @@ void DFOCC::semi_canonic() {
     // tell oter functions tat orbitals are already semi canonical.
     orbs_already_sc = 1;
 
-    SharedTensor2d UooA = std::shared_ptr<Tensor2d>(new Tensor2d("UooA", naoccA, naoccA));
-    SharedTensor2d UvvA = std::shared_ptr<Tensor2d>(new Tensor2d("UvvA", navirA, navirA));
-    SharedTensor2d FockooA = std::shared_ptr<Tensor2d>(new Tensor2d("Fock <I|J>", naoccA, naoccA));
-    SharedTensor2d FockvvA = std::shared_ptr<Tensor2d>(new Tensor2d("Fock <A|B>", navirA, navirA));
+    SharedTensor2d UooA = std::make_shared<Tensor2d>("UooA", naoccA, naoccA);
+    SharedTensor2d UvvA = std::make_shared<Tensor2d>("UvvA", navirA, navirA);
+    SharedTensor2d FockooA = std::make_shared<Tensor2d>("Fock <I|J>", naoccA, naoccA);
+    SharedTensor2d FockvvA = std::make_shared<Tensor2d>("Fock <A|B>", navirA, navirA);
 
 // Fockoo alpha spin case
 #pragma omp parallel for
@@ -113,7 +113,7 @@ void DFOCC::semi_canonic() {
     }
 
     // Get new MOs
-    SharedTensor2d Ca_new = std::shared_ptr<Tensor2d>(new Tensor2d("New alpha MO coefficients", nso_, nmo_));
+    SharedTensor2d Ca_new = std::make_shared<Tensor2d>("New alpha MO coefficients", nso_, nmo_);
     Ca_new->gemm(false, false, CmoA, UorbA, 1.0, 0.0);
     CmoA->copy(Ca_new);
     Ca_new.reset();
@@ -132,10 +132,10 @@ void DFOCC::semi_canonic() {
     //========================= UHF REFERENCE ==================================================
     //==========================================================================================
     if (reference_ == "UNRESTRICTED") {
-        SharedTensor2d UooB = std::shared_ptr<Tensor2d>(new Tensor2d("UooB", naoccB, naoccB));
-        SharedTensor2d UvvB = std::shared_ptr<Tensor2d>(new Tensor2d("UvvB", navirB, navirB));
-        SharedTensor2d FockooB = std::shared_ptr<Tensor2d>(new Tensor2d("Fock <i|j>", naoccB, naoccB));
-        SharedTensor2d FockvvB = std::shared_ptr<Tensor2d>(new Tensor2d("Fock <a|b>", navirB, navirB));
+        SharedTensor2d UooB = std::make_shared<Tensor2d>("UooB", naoccB, naoccB);
+        SharedTensor2d UvvB = std::make_shared<Tensor2d>("UvvB", navirB, navirB);
+        SharedTensor2d FockooB = std::make_shared<Tensor2d>("Fock <i|j>", naoccB, naoccB);
+        SharedTensor2d FockvvB = std::make_shared<Tensor2d>("Fock <a|b>", navirB, navirB);
 
 // Fockoo beta spin case
 #pragma omp parallel for
@@ -205,7 +205,7 @@ void DFOCC::semi_canonic() {
         }
 
         // Get new MOs
-        SharedTensor2d Cb_new = std::shared_ptr<Tensor2d>(new Tensor2d("New beta MO coefficients", nso_, nmo_));
+        SharedTensor2d Cb_new = std::make_shared<Tensor2d>("New beta MO coefficients", nso_, nmo_);
         Cb_new->gemm(false, false, CmoB, UorbB, 1.0, 0.0);
         CmoB->copy(Cb_new);
         Cb_new.reset();

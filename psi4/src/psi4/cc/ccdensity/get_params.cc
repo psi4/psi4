@@ -98,9 +98,6 @@ void get_params(Options& options) {
     // params.aobasis = 0;
     params.aobasis = options.get_bool("AO_BASIS");
 
-    params.ael = 0;
-    params.ael = options.get_bool("AEL");
-
     params.gauge = options.get_str("GAUGE");
     if (params.gauge != "LENGTH" && params.gauge != "VELOCITY") {
         printf("Invalid choice of gauge: %s\n", params.gauge.c_str());

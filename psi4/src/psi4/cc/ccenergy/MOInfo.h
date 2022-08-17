@@ -50,7 +50,7 @@ struct MOInfo {
     int *sosym;                      /* SO symmetry (Pitzer) */
     int *orbspi;                     /* no. of MOs per irrep */
     Dimension clsdpi;                /* no. of closed-shells per irrep excl. frdocc */
-    int *openpi;                     /* no. of open-shells per irrep */
+    Dimension openpi;                /* no. of open-shells per irrep */
     int *uoccpi;                     /* no. of unoccupied orbitals per irr. ex. fruocc */
     int *frdocc;                     /* no. of frozen core orbitals per irrep */
     int *fruocc;                     /* no. of frozen unoccupied orbitals per irrep */

@@ -1783,7 +1783,7 @@ int DCTSolver::iterate_nr_conjugate_gradients() {
 
         // Compute new conjugate direction vector orthogonal to the previous search direction
         D_->scale(beta);
-        D_->add(S_);
+        D_->add(*S_);
 
         // Compute RMS of the residual
         residual_rms = std::sqrt(residual_rms / nidp_);

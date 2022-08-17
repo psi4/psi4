@@ -132,9 +132,9 @@ class PSI_API TwoBodyAOInt {
     std::vector<double> function_sqrt_;
     /// Max density per matrix (Outer loop over density matrices, inner loop over shell pairs)
     std::vector<std::vector<double>> max_dens_shell_pair_;
-    /// Significant unique function pairs, in reduced triangular indexing
+    /// Significant unique function pairs, in row-major, lower triangular indexing
     PairList function_pairs_;
-    /// Significant unique shell pairs, in reduced triangular indexing
+    /// Significant unique shell pairs, in row-major, lower triangular indexing
     PairList shell_pairs_, shell_pairs_bra_, shell_pairs_ket_;
     /// The largest value of any integral as predicted by the sieving method
     double max_integral_;

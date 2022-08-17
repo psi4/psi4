@@ -114,12 +114,11 @@ void CUHF::finalize() {
         for (int m = 0; m < Lagrangian_->rowdim(h); ++m) {
             for (int n = 0; n < Lagrangian_->coldim(h); ++n) {
                 double sum = 0.0;
-                for (int i = 0; i < doccpi_[h]; ++i) {
-                    sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i) +
-                           epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
-                }
-                for (int i = doccpi_[h]; i < doccpi_[h] + soccpi_[h]; ++i)
+                for (int i = 0; i < nalphapi_[h]; ++i) {
                     sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
+                }
+                for (int i = 0; i < nbetapi_[h]; ++i)
+                    sum += epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
 
                 Lagrangian_->set(h, m, n, sum);
             }
@@ -273,8 +272,8 @@ void CUHF::form_F() {
     //            [   0   Fm_vo Fm_vv ]
     //
     for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < doccpi_[h]; ++i) {
-            for (int j = doccpi_[h] + soccpi_[h]; j < nmopi_[h]; ++j) {
+        for (int i = 0; i < nbetapi_[h]; ++i) {
+            for (int j = nalphapi_[h]; j < nmopi_[h]; ++j) {
                 Fm_->set(h, i, j, 0.0);
                 Fm_->set(h, j, i, 0.0);
             }

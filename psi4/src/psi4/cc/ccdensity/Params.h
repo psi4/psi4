@@ -76,7 +76,6 @@ struct Params {
     int L_irr;
     double R0;
     double L0;
-    int ael;
     double cceom_energy;
     double overlap1;   /* <L1|R1> */
     double overlap2;   /* <L2|R2> */
