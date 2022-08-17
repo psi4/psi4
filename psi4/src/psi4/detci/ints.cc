@@ -1039,7 +1039,7 @@ void CIWavefunction::pitzer_to_ci_order_onel(SharedMatrix src, SharedVector dest
 }
 void CIWavefunction::pitzer_to_ci_order_twoel(SharedMatrix src, SharedVector dest) {
     if ((src->nirrep() != 1) || dest->nirrep() != 1) {
-        throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_twoel irreped matrices are not supported.");
+        throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_twoel irrepped matrices are not supported.");
     }
     if (dest->dim(0) != CalcInfo_->num_ci_tri2) {
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_onel: Destination vector must be of size ncitri2.");

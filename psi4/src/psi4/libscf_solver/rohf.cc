@@ -119,7 +119,7 @@ void ROHF::semicanonicalize() {
         throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbital energies are not the same.");
     // Now, make space for the new orbitals
     Cb_ = SharedMatrix(Ca_->clone());
-    epsilon_b_ = SharedVector(epsilon_b_->clone());
+    epsilon_b_ = std::make_shared<Vector>(std::move(epsilon_b_->clone()));
     Ca_->set_name("Alpha semicanonical orbitals");
     Cb_->set_name("Beta semicanonical orbitals");
     epsilon_a_->set_name("Alpha semicanonical orbital energies");

@@ -350,7 +350,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     std::vector<SharedVector> aux_dens_inv;
     for (size_t i = 0; i < densities.size(); i++) {
         aux_dens_inv.push_back(std::make_shared<Vector>(naux));
-        aux_dens_inv[i]->gemv(false, 1.0, metric_inv_.get(), aux_dens[i].get(), 0.0);
+        aux_dens_inv[i]->gemv(false, 1.0, *metric_inv_, *aux_dens[i], 0.0);
     }
 
     // ==> Contract (PQS) S -> PQ <== //

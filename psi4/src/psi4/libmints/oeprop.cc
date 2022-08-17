@@ -264,8 +264,8 @@ void Prop::set_Db_mo(SharedMatrix D) {
 void OEProp::add(const std::string& prop) { tasks_.insert(prop); }
 void OEProp::add(std::vector<std::string> props) { tasks_.insert(props.begin(), props.end()); }
 void OEProp::clear() { tasks_.clear(); }
-SharedVector Prop::epsilon_a() { return SharedVector(epsilon_a_->clone()); }
-SharedVector Prop::epsilon_b() { return SharedVector(epsilon_b_->clone()); }
+SharedVector Prop::epsilon_a() { return std::make_shared<Vector>(std::move(epsilon_a_->clone())); }
+SharedVector Prop::epsilon_b() { return std::make_shared<Vector>(std::move(epsilon_b_->clone())); }
 SharedMatrix Prop::Da_ao() {
     std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
     double* temp_ptr = temp.data();
@@ -1784,13 +1784,13 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         rho_block = point_func->point_values()["RHO_A"];
 
         if (!same_dens_) {
-            rho_block->add(point_func->point_values()["RHO_B"]);
+            rho_block->add(*point_func->point_values()["RHO_B"]);
         }
 
-        double* x = block->x();
-        double* y = block->y();
-        double* z = block->z();
-        double* w = block->w();
+        auto x = block->x();
+        auto y = block->y();
+        auto z = block->z();
+        auto w = block->w();
 
         for (size_t p = 0; p < num_points; p++) {
             x_points[running_points + p] = x[p];

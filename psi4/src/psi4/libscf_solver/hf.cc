@@ -588,7 +588,7 @@ void HF::form_H() {
 
                     basisset_->compute_phi(phi_ao.pointer(), x, y, z);
                     // Transform phi_ao to SO basis
-                    phi_so.gemv(true, 1.0, &u, &phi_ao, 0.0);
+                    phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
                     for (int i = 0; i < nso; i++)
                         for (int j = 0; j < nso; j++) V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
                 }  // npoints
@@ -629,7 +629,7 @@ void HF::form_H() {
 
                             basisset_->compute_phi(phi_ao.pointer(), x, y, z);
 
-                            phi_so.gemv(true, 1.0, &u, &phi_ao, 0.0);
+                            phi_so.gemv(true, 1.0, u, phi_ao, 0.0);
 
                             for (int i = 0; i < nso; i++)
                                 for (int j = 0; j < nso; j++)
@@ -761,7 +761,9 @@ void HF::form_Shalf() {
     epsilon_a_->init(nmopi_);
     Ca_->init(nirrep_, nsopi_, nmopi_, "Alpha MO coefficients");
     epsilon_b_->init(nmopi_);
-    Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+    if (!same_a_b_orbs_) {
+        Cb_->init(nirrep_, nsopi_, nmopi_, "Beta MO coefficients");
+    }
 
     // Extra matrix dimension changes for specific derived classes
     prepare_canonical_orthogonalization();
