@@ -70,7 +70,7 @@ double SCF::energy(int cycle, double old_energy) {
 
         if (DSYEV_ascending(nci, H_tcscf, eigenvalues, eigenvectors) != 0){
             outfile->Printf("DSYEV failed in mcscf::SCF::energy()");
-            throw PsiException("DSYEV failed in mcscf::SCF::energy()", __FILE__, __LINE__);
+            throw PSIEXCEPTION("DSYEV failed in mcscf::SCF::energy()");
         }
 
         total_energy = eigenvalues[root];

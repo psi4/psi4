@@ -297,7 +297,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
         if (DSYEV_ascending(L, G, lambda[iter2], alpha[iter2]) != 0){
             outfile->Printf("DSYEV diagonalizer failed in DETCI SEM!");
-            throw PsiException("DSYEV diagonalizer failed in DETCI SEM!", __FILE__, __LINE__);
+            throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM!");
         }
         if (print_ > 4) {
             outfile->Printf("\n     G eigenvectors and eigenvalues:\n");
@@ -560,7 +560,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
         if (DSYEV_ascending(L, G, lambda[iter2], alpha[iter2]) != 0){
             outfile->Printf("DSYEV diagonalizer failed in DETCI SEM!");
-            throw PsiException("DSYEV diagonalizer failed in DETCI SEM!", __FILE__, __LINE__);
+            throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM!");
         }
 
         if (print_ > 4) {
@@ -631,7 +631,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             for (k = 0; k < nroots; k++) {
                 if (DSYEV_ascending(L, M[k], m_lambda[iter2][k], m_alpha[iter2][k]) != 0){
                     outfile->Printf("DSYEV diagonalizer failed in DETCI SEM!");
-                    throw PsiException("DSYEV diagonalizer failed in DETCI SEM!", __FILE__, __LINE__);
+                    throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM!");
                 }
                 if (print_ > 2) {
                     outfile->Printf("\n M eigenvectors and eigenvalues root %d:\n", k);
@@ -688,7 +688,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             /* solve the L x L eigenvalue problem M a = lambda a for M roots */
             if (DSYEV_ascending(L, M[0], m_lambda[0][0], m_alpha[0][0]) != 0){
                 outfile->Printf("DSYEV diagonalizer failed in DETCI SEM!");
-                throw PsiException("DSYEV diagonalizer failed in DETCI SEM!", __FILE__, __LINE__);
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM!");
             }
             for (i = 0; i < L; i++) {
                 m_lambda[0][0][i] = -1.0 * sqrt(m_lambda[0][0][i]) + CalcInfo_->enuc + CalcInfo_->edrc;
@@ -919,7 +919,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             /* solve the L x L eigenvalue problem G a = lambda a for M roots */
             if (DSYEV_ascending(L, G, lambda[iter2], alpha[iter2]) != 0){
                 outfile->Printf("DSYEV diagonalizer failed in DETCI SEM!");
-                throw PsiException("DSYEV diagonalizer failed in DETCI SEM!", __FILE__, __LINE__);
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM!");
             }
 
             if (print_ > 4) {

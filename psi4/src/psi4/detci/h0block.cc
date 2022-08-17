@@ -700,7 +700,7 @@ void CIWavefunction::H0block_fill() {
 
     if (DSYEV_ascending(size, H0block_->H0b, H0block_->H0b_eigvals, H0block_->H0b_diag) != 0){
         outfile->Printf("DSYEV diagonalizer failed in DETCI H0block_fill!");
-        throw PsiException("DSYEV diagonalizer failed in DETCI H0block_fill!", __FILE__, __LINE__);
+        throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI H0block_fill!");
     }
 
     if (print_) {
