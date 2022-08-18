@@ -38,6 +38,8 @@
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 
@@ -124,7 +126,10 @@ int david(double **A, int N, int M, double *eps, double **v, double cutoff, int 
             for (j = 0; j < init_dim; j++) G[i][j] = A[small2big[i]][small2big[j]];
         }
 
-        sq_rsp(init_dim, init_dim, G, lambda, 1, alpha, 1e-12);
+        if (DSYEV_ascending(init_dim, G, lambda, alpha) != 0){
+            outfile->Printf("DSYEV failed in libqt Davidson solver!");
+            throw PSIEXCEPTION("DSYEV failed in libqt Davidson solver!");
+        }
 
         for (i = 0; i < init_dim; i++) {
             for (j = 0; j < init_dim; j++) b[i][small2big[j]] = alpha[j][i];
@@ -167,7 +172,10 @@ int david(double **A, int N, int M, double *eps, double **v, double cutoff, int 
         C_DGEMM('n', 'n', L, L, N, 1.0, &(b[0][0]), N, &(sigma[0][0]), maxdim, 0.0, &(G[0][0]), maxdim);
 
         /* diagonalize mini-matrix */
-        sq_rsp(L, L, G, lambda, 1, alpha, 1e-12);
+        if (DSYEV_ascending(L, G, lambda, alpha) != 0){
+            outfile->Printf("DSYEV failed in libqt Davidson solver!");
+            throw PSIEXCEPTION("DSYEV failed in libqt Davidson solver!");
+        }
 
         /* form preconditioned residue vectors */
         for (k = 0; k < M; k++)
