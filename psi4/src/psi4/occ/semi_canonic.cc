@@ -89,8 +89,8 @@ void OCCWave::semi_canonic() {
     }
 
     // Diagonalize Fock
-    FockooA->diagonalize(UooA, eigooA);
-    FockvvA->diagonalize(UvvA, eigvvA);
+    FockooA->diagonalize(*UooA, eigooA);
+    FockvvA->diagonalize(*UvvA, eigvvA);
 
     // Print orbital energies
     if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
@@ -222,8 +222,8 @@ void OCCWave::semi_canonic() {
         }
 
         // Diagonalize Fock
-        FockooB->diagonalize(UooB, eigooB);
-        FockvvB->diagonalize(UvvB, eigvvB);
+        FockooB->diagonalize(*UooB, eigooB);
+        FockvvB->diagonalize(*UvvB, eigvvB);
 
         // print orbital energies
         if (occ_orb_energy == "TRUE" && mo_optimized == 1 && reference_ == "UNRESTRICTED") {
