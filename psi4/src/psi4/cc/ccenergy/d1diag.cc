@@ -39,6 +39,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "psi4/cc/ccwave.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 namespace ccenergy {
@@ -56,7 +57,7 @@ namespace ccenergy {
  * */
 
 double CCEnergyWavefunction::d1diag_t1_rhf() {
-    double **T, **C, *E;
+    double **T, *E;
     dpdfile2 T1;
 
     auto nirreps = moinfo_.nirreps;
@@ -81,15 +82,16 @@ double CCEnergyWavefunction::d1diag_t1_rhf() {
             */
 
             E = init_array(T1.params->rowtot[h]);
-            C = block_matrix(T1.params->rowtot[h], T1.params->rowtot[h]);
-            sq_rsp(T1.params->rowtot[h], T1.params->rowtot[h], T, E, 0, C, 1e-12);
+            if (DSYEV_ascending(T1.params->rowtot[h], T, E) != 0){
+                outfile->Printf("DSYEV diagonalizer failed in D1 diagnostic!");
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
+            }
 
             /* Find maximum eigenvalue of T */
             for (int i = 0; i < T1.params->rowtot[h]; i++)
                 if (E[i] > max) max = E[i];
 
             free_block(T);
-            free_block(C);
             free(E);
         }
     }
@@ -108,7 +110,7 @@ static double d1diag_subblock(double **Tave, int row0, int rown, int col0, int c
     double max = 0.;
     double **Tsub;
     double **Tsq;
-    double *E, **C;
+    double *E;
 
     if (nrow && ncol) {
         Tsub = block_matrix(nrow, ncol);
@@ -124,14 +126,15 @@ static double d1diag_subblock(double **Tave, int row0, int rown, int col0, int c
         /* newmm(Tsub, 0, Tsub, 1, Tsq, nrow, ncol, nrow, 1.0, 0.0); */
 
         E = init_array(nrow);
-        C = block_matrix(nrow, nrow);
-        sq_rsp(nrow, nrow, Tsq, E, 0, C, 1e-12);
+        if (DSYEV_ascending(nrow, Tsq, E) != 0){
+            outfile->Printf("DSYEV diagonalizer failed in D1 diagnostic!");
+            throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
+        }
 
         /* Find maximum eigenvalue of T */
         for (int i = 0; i < nrow; i++)
             if (E[i] > max) max = E[i];
 
-        free_block(C);
         free(E);
         free_block(Tsq);
         free_block(Tsub);

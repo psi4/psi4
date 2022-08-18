@@ -39,6 +39,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "psi4/cc/ccwave.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 namespace ccenergy {
@@ -50,8 +51,8 @@ namespace ccenergy {
  * */
 
 double CCEnergyWavefunction::d2diag_rhf() {
-    double **Co, *Eo;
-    double **Cv, *Ev;
+    double *Eo;
+    double *Ev;
     dpdbuf4 Tikab, Tjkab;
     dpdbuf4 Tijac, Tijbc;
     dpdfile2 To, Tv;
@@ -89,28 +90,28 @@ double CCEnergyWavefunction::d2diag_rhf() {
         if (To.params->rowtot[h]) {
             // Diagonalize To //
             Eo = init_array(To.params->rowtot[h]);
-            Co = block_matrix(To.params->rowtot[h], To.params->rowtot[h]);
-            sq_rsp(To.params->rowtot[h], To.params->rowtot[h], To.matrix[h], Eo, 0, Co, 1e-12);
+            if (DSYEV_ascending(To.params->rowtot[h], To.matrix[h], Eo) != 0){
+                outfile->Printf("DSYEV diagonalizer failed in D2 diagnostic!");
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in D2 diagnostic!");
+            }
             // Find maximum To eigenvalue //
             for (int i = 0; i < To.params->rowtot[h]; i++) {
                 if (Eo[i] > max) max = Eo[i];
             }
-            free_block(Co);
             free(Eo);
         }
 
         if (Tv.params->rowtot[h]) {
             // Diagonalize Tv //
             Ev = init_array(Tv.params->rowtot[h]);
-            Cv = block_matrix(Tv.params->rowtot[h], Tv.params->rowtot[h]);
-            sq_rsp(Tv.params->rowtot[h], Tv.params->rowtot[h], Tv.matrix[h], Ev, 0, Cv, 1e-12);
-
+            if (DSYEV_ascending(Tv.params->rowtot[h], Tv.matrix[h], Ev) != 0){
+                outfile->Printf("DSYEV diagonalizer failed in D2 diagnostic!");
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in D2 diagnostic!");
+            }
             // Find maximum Tv eigenvalue //
             for (int i = 0; i < Tv.params->rowtot[h]; i++) {
                 if (Ev[i] > max) max = Ev[i];
             }
-
-            free_block(Cv);
             free(Ev);
         }
     }
