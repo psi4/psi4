@@ -3211,7 +3211,7 @@ void OrientationMgr::diagonalize(LMatrix const &M, LMatrix *Q_out, LVector *D_ou
     Ip[2][1] = Ip[1][2] = (std::fabs(M.yz) < EPSILON ? 0.0 : M.yz);
     Matrix VV("Eigenvectors", 3, 3);
     Vector DD("Eigenvalues", 3);
-    I.diagonalize(&VV, &DD);  // Note: This line ONLY works for symmetric matrices!
+    I.diagonalize(VV, DD);  // Note: This line ONLY works for symmetric matrices!
     double *evals = DD.pointer();
     D_out->x = evals[0];
     D_out->y = evals[1];
