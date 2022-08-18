@@ -910,7 +910,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &nocc
 
 SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi,
                                                  const std::string &basis, const std::string &subset) const {
-    std::vector<std::vector<int>> positions = subset_occupation(noccpi, subset);
+    auto positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
     for (int h = 0; h < (int)positions.size(); h++) {

@@ -404,8 +404,8 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (Db_) hf_wfn->Db_ = Db_subset("AO");
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
     if (Fb_) hf_wfn->Fb_ = Fb_subset("AO");
-    if (epsilon_a_) hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
-    if (epsilon_b_) hf_wfn->epsilon_b_ = epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
+    if (epsilon_a_) hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nalphapi_, "AO", "ALL");
+    if (epsilon_b_) hf_wfn->epsilon_b_ = epsilon_subset_helper(epsilon_b_, nbetapi_, "AO", "ALL");
     // H_ ans X_ reset in the HF constructor, copy them over here
     SharedMatrix SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
