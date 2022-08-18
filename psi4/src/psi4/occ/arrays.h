@@ -133,23 +133,12 @@ class Array2d {
     Array2d* transpose();
     void copy(const Array2d* Adum);
     void copy(double** a);
-    // diagonalize: diagonalize via rsp
-    void diagonalize(Array2d* eigvectors, Array1d* eigvalues, double cutoff);
-    // cdsyev: diagonalize via lapack
-    void cdsyev(char jobz, char uplo, Array2d* eigvectors, Array1d* eigvalues);
-    // davidson: diagonalize via davidson algorithm
-    void davidson(int n_eigval, Array2d* eigvectors, Array1d* eigvalues, double cutoff, int print);
     // cdgesv: solve a linear equation via lapack
-    void cdgesv(Array1d* Xvec);
-    void cdgesv(double* Xvec);
     void cdgesv(Array1d* Xvec, int errcod);
-    void cdgesv(double* Xvec, int errcod);
     // lineq_flin: solve a linear equation via FLIN
     void lineq_flin(Array1d* Xvec, double* det);
-    void lineq_flin(double* Xvec, double* det);
     // lineq_pople: solve a linear equation via Pople's algorithm
     void lineq_pople(Array1d* Xvec, int num_vecs, double cutoff);
-    void lineq_pople(double* Xvec, int num_vecs, double cutoff);
     // gemm: matrix multiplication
     void gemm(bool transa, bool transb, double alpha, const Array2d* a, const Array2d* b, double beta);
     // level_shift: A[i][i] = A[i][i] - value

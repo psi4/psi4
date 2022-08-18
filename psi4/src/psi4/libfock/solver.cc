@@ -253,9 +253,9 @@ void CGRSolver::guess() {
 }
 void CGRSolver::residual() {
     for (size_t N = 0; N < b_.size(); ++N) {
-        r_[N]->copy(Ap_[N].get());
+        r_[N]->copy(*Ap_[N]);
         r_[N]->scale(-1.0);
-        r_[N]->add(b_[N]);
+        r_[N]->add(*b_[N]);
     }
 
     if (debug_) {
@@ -457,7 +457,7 @@ void CGRSolver::update_p() {
     for (size_t N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
         p_[N]->scale(beta_[N]);
-        p_[N]->add(z_[N]);
+        p_[N]->add(*z_[N]);
     }
 
     if (debug_) {

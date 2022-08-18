@@ -478,7 +478,7 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
     for(size_t jki = 0; jki < njk; jki++) {
         for(size_t thread = 0; thread < nthreads_; thread++) {
-            H[jki]->add(GT[jki][thread]);
+            H[jki]->add(*GT[jki][thread]);
         }
         C_DGESV(nbf_aux, 1, J_metric_->clone()->pointer()[0], nbf_aux, ipiv.data(), H[jki]->pointer(), nbf_aux);
     }

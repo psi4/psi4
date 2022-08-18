@@ -307,8 +307,8 @@ void FittingMetric::form_fitting_metric() {
     }
 
     // Form indexing
-    pivots_ = std::make_shared<IntVector>(nauxpi.n(), nauxpi);
-    rev_pivots_ = std::make_shared<IntVector>(nauxpi.n(), nauxpi);
+    pivots_ = std::make_shared<IntVector>(nauxpi);
+    rev_pivots_ = std::make_shared<IntVector>(nauxpi);
     for (int h = 0; h < auxpet->nirrep(); h++) {
         int* piv = pivots_->pointer(h);
         int* rpiv = pivots_->pointer(h);

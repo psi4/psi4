@@ -114,8 +114,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     number of frozen orbitals can be attained by using the keywords
     |globals__num_frozen_docc| (gives the total number of orbitals to freeze,
     program picks the lowest-energy orbitals) or |globals__frozen_docc| (gives
-    the number of orbitals to freeze per irreducible representation) -*/
-    options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE 1 0 -1 -2 -3");
+    the number of orbitals to freeze per irreducible representation) or by
+    the option ``POLICY`` in combination with appropriate inputs to
+    |globals__freeze_core_policy|. At present, ``POLICY`` is an experimental
+    option and is subject to change.-*/
+    options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE 1 0 -1 -2 -3 POLICY");
+
+    /*- NOTE: This is an experimental feature and subject to change! Specifies
+    a custom frozen-core policy on a per-element basis. Input should be a list
+    of integers representing the number of orbitals to freeze for each atomic
+    number MINUS one (so H is 0, He is 1, etc). For example, to specify that
+    elements H-Be should have 0 frozen orbitals, B-Mg should have 1, and Al
+    should have 2, you would provide the input ``[0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+    1, 1, 2]``. Please make sure to fill in the list up to the highest atomic
+    number included in any calculations. This option is only used if
+    |globals__freeze_core| is set to ``POLICY``. -*/
+    options.add("FREEZE_CORE_POLICY", new ArrayType());
 
     options.add("NUM_GPUS", 1);
     /*- Do use pure angular momentum basis functions?

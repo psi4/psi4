@@ -320,8 +320,8 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     if (other->Db_) Db_ = other->Db_->clone();
     if (other->Fa_) Fa_ = other->Fa_->clone();
     if (other->Fb_) Fb_ = other->Fb_->clone();
-    if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
-    if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
+    if (other->epsilon_a_) epsilon_a_ = std::make_shared<Vector>(std::move(other->epsilon_a_->clone()));
+    if (other->epsilon_b_) epsilon_b_ = std::make_shared<Vector>(std::move(other->epsilon_b_->clone()));
 
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
@@ -910,7 +910,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &nocc
 
 SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi,
                                                  const std::string &basis, const std::string &subset) const {
-    std::vector<std::vector<int>> positions = subset_occupation(noccpi, subset);
+    auto positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
     for (int h = 0; h < (int)positions.size(); h++) {
