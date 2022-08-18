@@ -104,7 +104,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
     SharedMatrix pI(molecule_->inertia_tensor());
     Vector ev(3);
     Matrix X(3, 3);
-    pI->diagonalize(&X, &ev);
+    pI->diagonalize(X, ev);
 
     //    outfile->Printf( "pI[0][1] = %20.14lf\n", pI->get(0, 1));
     //    molecule_->inertia_tensor()->print();

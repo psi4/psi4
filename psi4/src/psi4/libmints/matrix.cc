@@ -1707,7 +1707,7 @@ double Matrix::vector_dot(const Matrix *const rhs) {
 
 double Matrix::vector_dot(const SharedMatrix &rhs) { return vector_dot(rhs.get()); }
 
-void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_order nMatz/* = ascending*/) {
+void Matrix::diagonalize(Matrix &eigvectors, Vector &eigvalues, diagonalize_order nMatz/* = ascending*/) {
     if (symmetry_) throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h]) {
@@ -1715,13 +1715,13 @@ void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_orde
 
             int info = -1;
             if(nMatz == evals_only_ascending){
-                info = DSYEV_ascending(rowspi_[h], matrix_[h], eigvalues->pointer(h));
+                info = DSYEV_ascending(rowspi_[h], matrix_[h], eigvalues.pointer(h));
             }else if(nMatz == ascending){
-                info = DSYEV_ascending(rowspi_[h], matrix_[h], eigvalues->pointer(h), eigvectors->matrix_[h]);
+                info = DSYEV_ascending(rowspi_[h], matrix_[h], eigvalues.pointer(h), eigvectors.matrix_[h]);
             }else if(nMatz == evals_only_descending){
-                info = DSYEV_descending(rowspi_[h], matrix_[h], eigvalues->pointer(h));
+                info = DSYEV_descending(rowspi_[h], matrix_[h], eigvalues.pointer(h));
             }else if(nMatz == descending){
-                info = DSYEV_descending(rowspi_[h], matrix_[h], eigvalues->pointer(h), eigvectors->matrix_[h]);
+                info = DSYEV_descending(rowspi_[h], matrix_[h], eigvalues.pointer(h), eigvectors.matrix_[h]);
             }else{
                 throw PSIEXCEPTION("Matrix::diagonalize: illegal diagonalize_order!");
             }
@@ -1731,7 +1731,7 @@ void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_orde
 }
 
 void Matrix::diagonalize(SharedMatrix &eigvectors, std::shared_ptr<Vector> &eigvalues, diagonalize_order nMatz/* = ascending*/) {
-    diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
+    diagonalize(*eigvectors, *eigvalues, nMatz);
 }
 
 std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps() {

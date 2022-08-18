@@ -1354,7 +1354,7 @@ Vector Molecule::rotational_constants(double zero_tol) const {
     SharedMatrix pI(inertia_tensor());
     Vector evals(3);
     auto eigenvectors = std::make_shared<Matrix>(3, 3);
-    pI->diagonalize(eigenvectors.get(), &evals);
+    pI->diagonalize(*eigenvectors, evals);
 
     // Conversion factor from moments to rotational constants.
     double im2rotconst = pc_h / (8 * pc_pi * pc_pi * pc_c);
@@ -2566,7 +2566,7 @@ void Molecule::set_full_point_group(double zero_tol) {
         SharedMatrix It(inertia_tensor());
         Vector I_evals(3);
         auto I_evects = std::make_shared<Matrix>(3, 3);
-        It->diagonalize(I_evects.get(), &I_evals);
+        It->diagonalize(*I_evects, I_evals);
         // I_evects->print_out();
         // outfile->Printf("I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
 

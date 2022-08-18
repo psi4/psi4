@@ -186,7 +186,7 @@ void DCTSolver::init() {
     Matrix eigtemp(nirrep_, nsopi_, nsopi_);
     Matrix eigtemp2(nirrep_, nsopi_, nsopi_);
     Vector eigval(nirrep_, nsopi_);
-    ao_s_->diagonalize(&eigvec, &eigval);
+    ao_s_->diagonalize(eigvec, eigval);
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nsopi_[h]; ++i) {
