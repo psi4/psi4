@@ -62,6 +62,15 @@ void PKJK::common_init() {
     nthreads_ = Process::environment.get_n_threads();
 #endif
 }
+
+bool PKJK::shell_significant(int M, int N, int R, int S,
+    const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+    const std::vector<SharedMatrix>& D) 
+{
+    return PKmanager_->shell_significant(M, N, R, S, ints, D);
+} 
+
+
 size_t PKJK::memory_estimate() {
     size_t nbf = (size_t)primary_->nbf();
     return nbf * nbf * nbf * nbf;
