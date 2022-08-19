@@ -51,42 +51,13 @@ void DFOCC::update_mo() {
         /************************** Build kappa_bar *************************************************/
         /********************************************************************************************/
         kappa_barA->add(kappaA);
+        if (itr_occ>1) oo_diis();
 
         /********************************************************************************************/
         /************************ DO DIIS ***********************************************************/
         /********************************************************************************************/
-        if (do_diis_ == 1) {
-            // starting with itr = 1
-            itr_diis++;
 
-            // Form Diis Error Vector & Extrapolant Alpha Spin Case
-            if (itr_diis <= num_vecs) {
-                for (int i = 0; i < nidpA; i++) {
-                    errvecsA->set(itr_diis - 1, i, wogA->get(i));
-                    vecsA->set(itr_diis - 1, i, kappa_barA->get(i));
-                }
-            }
-
-            if (itr_diis > num_vecs) {
-                for (int j = 0; j < (num_vecs - 1); j++) {
-                    for (int i = 0; i < nidpA; i++) {
-                        errvecsA->set(j, i, errvecsA->get(j + 1, i));
-                        vecsA->set(j, i, vecsA->get(j + 1, i));
-                    }
-                }
-
-                for (int i = 0; i < nidpA; i++) {
-                    errvecsA->set(num_vecs - 1, i, wogA->get(i));
-                    vecsA->set(num_vecs - 1, i, kappa_barA->get(i));
-                }
-            }
-
-            // Extrapolate
-            if (itr_diis >= num_vecs) {
-                diis(nidpA, vecsA, errvecsA, kappa_barA, wog_intA);
-            }
-
-        }  // end if (do_diis_ == 1)
+        // replaced by coupled DIIS in oo_diis() above
 
         /********************************************************************************************/
         /************************** Construct Korb **************************************************/
@@ -156,65 +127,13 @@ void DFOCC::update_mo() {
         /********************************************************************************************/
         kappa_barA->add(kappaA);
         kappa_barB->add(kappaB);
+        if (itr_occ>1) oo_diis();
 
         /********************************************************************************************/
         /************************ DO DIIS ***********************************************************/
         /********************************************************************************************/
-        if (do_diis_ == 1) {
-            // starting with itr = 1
-            itr_diis++;
 
-            // Form Diis Error Vector & Extrapolant Alpha Spin Case
-            if (itr_diis <= num_vecs) {
-                for (int i = 0; i < nidpA; i++) {
-                    errvecsA->set(itr_diis - 1, i, wogA->get(i));
-                    vecsA->set(itr_diis - 1, i, kappa_barA->get(i));
-                }
-            }
-
-            if (itr_diis > num_vecs) {
-                for (int j = 0; j < (num_vecs - 1); j++) {
-                    for (int i = 0; i < nidpA; i++) {
-                        errvecsA->set(j, i, errvecsA->get(j + 1, i));
-                        vecsA->set(j, i, vecsA->get(j + 1, i));
-                    }
-                }
-
-                for (int i = 0; i < nidpA; i++) {
-                    errvecsA->set(num_vecs - 1, i, wogA->get(i));
-                    vecsA->set(num_vecs - 1, i, kappa_barA->get(i));
-                }
-            }
-
-            // Form Diis Error Vector & Extrapolant Beta Spin Case
-            if (itr_diis <= num_vecs) {
-                for (int i = 0; i < nidpB; i++) {
-                    errvecsB->set(itr_diis - 1, i, wogB->get(i));
-                    vecsB->set(itr_diis - 1, i, kappa_barB->get(i));
-                }
-            }
-
-            if (itr_diis > num_vecs) {
-                for (int j = 0; j < (num_vecs - 1); j++) {
-                    for (int i = 0; i < nidpB; i++) {
-                        errvecsB->set(j, i, errvecsB->get(j + 1, i));
-                        vecsB->set(j, i, vecsB->get(j + 1, i));
-                    }
-                }
-
-                for (int i = 0; i < nidpB; i++) {
-                    errvecsB->set(num_vecs - 1, i, wogB->get(i));
-                    vecsB->set(num_vecs - 1, i, kappa_barB->get(i));
-                }
-            }
-
-            // Extrapolate
-            if (itr_diis >= num_vecs) {
-                diis(nidpA, vecsA, errvecsA, kappa_barA, wog_intA);
-                diis(nidpB, vecsB, errvecsB, kappa_barB, wog_intB);
-            }
-
-        }  // end if (do_diis_ == 1)
+        // replaced by coupled DIIS in oo_diis() above
 
         /********************************************************************************************/
         /************************** Construct Korb **************************************************/

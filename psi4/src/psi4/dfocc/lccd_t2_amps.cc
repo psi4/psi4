@@ -98,6 +98,7 @@ void DFOCC::lccd_t2_amps() {
         Tau->subtract(t2);
         t2->copy(Tnew);
         Tnew.reset();
+        if (orb_opt_ == "TRUE") Tau->write_symm(psio_, PSIF_DFOCC_AMPS);
 
         // DIIS
         if (orb_opt_ == "FALSE" || mo_optimized == 1) {
@@ -364,7 +365,8 @@ void DFOCC::lccd_t2_amps() {
         if (orb_opt_ == "FALSE" || mo_optimized == 1) {
             // RAA
             RAA = std::make_shared<Tensor2d>("RT2 <IJ|AB>", ntri_anti_ijAA, ntri_anti_abAA);
-            RAA->read(psio_, PSIF_DFOCC_AMPS);
+            RAA->read(psio_, PSIF_DFOCC_AMPS); // Out of curiosity: why does this work at all???? Quantities in the antisymmetric format <ab|cd>
+                                               // are usually processed using read_anti_symm/write_anti_symm. Why does a simple "read" suffice here??
             std::shared_ptr<Matrix> RT2AA(new Matrix("RT2AA", ntri_anti_ijAA, ntri_anti_abAA));
             RAA->to_matrix(RT2AA);
             RAA.reset();
@@ -425,6 +427,22 @@ void DFOCC::lccd_t2_amps() {
         //=========================
         // Reset & Energy
         //=========================
+        lccd_energy();
+
+        // Free ints
+        bQijA.reset();
+        bQijB.reset();
+        bQiaA.reset();
+        bQiaB.reset();
+        bQabA.reset();
+        bQabB.reset();
+    }  // else if (reference_ == "UNRESTRICTED")
+
+}  // end lccd_t2_amps
+
+void DFOCC::lccd_energy() {
+    SharedTensor2d K, L, M, I, T, Tnew, T1, T2, U, Tau, W, X, Y;
+    SharedTensor2d R, RAA, RBB, RAB, TAA, TBB, TAB;
 
         // Reset T2AA
         Tnew = std::make_shared<Tensor2d>("New T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
@@ -514,21 +532,11 @@ void DFOCC::lccd_t2_amps() {
         U->write(psio_, PSIF_DFOCC_AMPS);
         U.reset();
 
-        // Free ints
-        bQijA.reset();
-        bQijB.reset();
-        bQiaA.reset();
-        bQiaB.reset();
-        bQabA.reset();
-        bQabB.reset();
-
         // combined rms
         double rms_ss = MAX0(rms_t2AA, rms_t2BB);
         rms_t2 = MAX0(rms_ss, rms_t2AB);
 
-    }  // else if (reference_ == "UNRESTRICTED")
-
-}  // end lccd_t2_amps
+}  // end lccd_energy
 
 }  // namespace dfoccwave
 }  // namespace psi
