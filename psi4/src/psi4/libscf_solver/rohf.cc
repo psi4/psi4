@@ -119,7 +119,7 @@ void ROHF::semicanonicalize() {
         throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbital energies are not the same.");
     // Now, make space for the new orbitals
     Cb_ = SharedMatrix(Ca_->clone());
-    epsilon_b_ = SharedVector(epsilon_b_->clone());
+    epsilon_b_ = std::make_shared<Vector>(std::move(epsilon_b_->clone()));
     Ca_->set_name("Alpha semicanonical orbitals");
     Cb_->set_name("Beta semicanonical orbitals");
     epsilon_a_->set_name("Alpha semicanonical orbital energies");
@@ -1288,7 +1288,7 @@ bool ROHF::stability_analysis() {
 }
 
 std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
-    std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
+    auto wfn = Wavefunction::c1_deep_copy(basis);
     auto hf_wfn = std::make_shared<ROHF>(wfn, functional_, wfn->options(), wfn->psio());
 
     // now just have to copy the matrices that RHF initializes
@@ -1302,11 +1302,11 @@ std::shared_ptr<ROHF> ROHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
     if (Fb_) hf_wfn->Fb_ = Fb_subset("AO");
     if (epsilon_a_) {
-        hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+        hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nalphapi_, "AO", "ALL");
         hf_wfn->epsilon_b_ = hf_wfn->epsilon_a_;
     }
     // H_ ans X_ reset in the HF constructor, copy them over here
-    SharedMatrix SO2AO = aotoso()->transpose();
+    auto SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
     if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
 

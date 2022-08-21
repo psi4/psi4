@@ -33,6 +33,7 @@
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/psifiles.h"
 
 namespace psi {
@@ -139,6 +140,7 @@ class DFOCC : public Wavefunction {
     void save_mo_to_wfn();
     void remove_binary_file(int fileno);
     void ekt_ip();
+    void oo_diis();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new,
               SharedTensor1d &errvec_new);
@@ -443,6 +445,7 @@ class DFOCC : public Wavefunction {
     void lccd_WabefT2AB();
     void lccd_pdm_3index_intr();
     void lccdl_energy();
+    void lccd_energy();
 
     // CCSD
     void ccsd_manager();
@@ -583,10 +586,8 @@ class DFOCC : public Wavefunction {
 
     // DIIS
     std::shared_ptr<DIISManager> ccsdDiisManager;
-    std::shared_ptr<DIISManager> ccsdDiisManagerAA;
-    std::shared_ptr<DIISManager> ccsdDiisManagerBB;
-    std::shared_ptr<DIISManager> ccsdDiisManagerAB;
     std::shared_ptr<DIISManager> ccsdlDiisManager;
+    std::shared_ptr<DIISManager> orbitalDIIS;
 
     int natom;
     int nmo;      // Number of MOs

@@ -96,8 +96,8 @@ void CoupledCluster::common_init() {
     Da_ = SharedMatrix(reference_wavefunction_->Da());
     Ca_ = SharedMatrix(reference_wavefunction_->Ca());
     Fa_ = SharedMatrix(reference_wavefunction_->Fa());
-    epsilon_a_ = std::make_shared<Vector>(nirrep_, nsopi_);
-    epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
+    epsilon_a_ = std::make_shared<Vector>(nsopi_);
+    epsilon_a_->copy(*reference_wavefunction_->epsilon_a());
     nalpha_ = reference_wavefunction_->nalpha();
     nbeta_ = reference_wavefunction_->nbeta();
 

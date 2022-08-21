@@ -111,7 +111,7 @@ void DFOCC::ccd_iterations() {
     // delete
     if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
 
-    // Mem alloc for DF ints
+    // Mem dealloc for DF ints
     if (df_ints_incore) {
         if (cc_lambda_ == "FALSE") {
             bQijA.reset();

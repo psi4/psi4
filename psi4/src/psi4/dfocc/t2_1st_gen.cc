@@ -37,7 +37,7 @@ namespace psi {
 namespace dfoccwave {
 
 void DFOCC::t2_1st_gen() {
-    SharedTensor2d K, L, M, X;
+    SharedTensor2d K, L, M, X, RT2;
     timer_on("1st-order T2");
     Fint_zero();
 
@@ -68,7 +68,7 @@ void DFOCC::t2_1st_gen() {
         t2p_1new->axpy(X, 2.0);
         X.reset();
 
-        // Aplly denominators
+        // Apply denominators
         if (regularization == "FALSE")
             t2p_1new->apply_denom_chem(nfrzc, noccA, FockA);
         else if (regularization == "TRUE")
@@ -76,8 +76,13 @@ void DFOCC::t2_1st_gen() {
 
         // rms
         rms_t2 = 0.0;
-        rms_t2 = t2p_1new->rms(t2p_1);
-        // t2p_1new->print();
+        rms_t2 = t2p_1new->rms(t2p_1);  // calculate RMS of t2p_1new w.r.t. t2p_1
+        // form and store the residuum for DIIS
+        RT2 = std::make_shared<Tensor2d>("RT2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
+        RT2->copy(t2p_1new);
+        RT2->subtract(t2p_1);
+        RT2->write_symm(psio_,PSIF_DFOCC_AMPS);
+        RT2.reset();
 
         // reset
         t2p_1->copy(t2p_1new);
@@ -143,6 +148,12 @@ void DFOCC::t2_1st_gen() {
         // rms
         rms_t2AA = 0.0;
         rms_t2AA = t2_1newAA->rms(t2_1AA);
+        // form and store the residuum for DIIS
+        RT2 = std::make_shared<Tensor2d>("RT2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        RT2->copy(t2_1newAA);
+        RT2->subtract(t2_1AA);
+        RT2->write_anti_symm(psio_,PSIF_DFOCC_AMPS);
+        RT2.reset();
 
         // reset
         t2_1AA->copy(t2_1newAA);
@@ -193,6 +204,12 @@ void DFOCC::t2_1st_gen() {
         // rms
         rms_t2BB = 0.0;
         rms_t2BB = t2_1newBB->rms(t2_1BB);
+        // DIIS data
+        RT2 = std::make_shared<Tensor2d>("RT2_1 <ij|ab>", naoccB, naoccB, navirB, navirB);
+        RT2->copy(t2_1newBB);
+        RT2->subtract(t2_1BB);
+        RT2->write_anti_symm(psio_,PSIF_DFOCC_AMPS);
+        RT2.reset();
 
         // reset
         t2_1BB->copy(t2_1newBB);
@@ -240,6 +257,12 @@ void DFOCC::t2_1st_gen() {
         // rms
         rms_t2AB = 0.0;
         rms_t2AB = t2_1newAB->rms(t2_1AB);
+        // DIIS data
+        RT2 = std::make_shared<Tensor2d>("RT2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+        RT2->copy(t2_1newAB);
+        RT2->subtract(t2_1AB);
+        RT2->write(psio_,PSIF_DFOCC_AMPS);
+        RT2.reset();
 
         // reset
         t2_1AB->copy(t2_1newAB);
@@ -263,7 +286,7 @@ void DFOCC::t2_1st_gen() {
 //   MP3: T2(1)
 //======================================================================
 void DFOCC::mp3_t2_1st_gen() {
-    SharedTensor2d K, L, M, X;
+    SharedTensor2d K, L, M, X, Tau;
     timer_on("1st-order T2");
     Fint_zero();
 
@@ -294,12 +317,19 @@ void DFOCC::mp3_t2_1st_gen() {
         t2p_1new->axpy(X, 2.0);
         X.reset();
 
-        // Aplly denominators
+        // Apply denominators
         t2p_1new->apply_denom_chem(nfrzc, noccA, FockA);
 
         // rms
         rms_t2 = 0.0;
         rms_t2 = t2p_1new->rms(t2p_1);
+
+        // DIIS stuff
+        Tau = std::make_shared<Tensor2d>("RT2_1 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        Tau->copy(t2p_1new);
+        Tau->subtract(t2p_1);
+        Tau->write_symm(psio_,PSIF_DFOCC_AMPS);
+        Tau.reset();
 
         // reset
         t2p_1->copy(t2p_1new);
@@ -355,6 +385,13 @@ void DFOCC::mp3_t2_1st_gen() {
         rms_t2AA = 0.0;
         rms_t2AA = t2_1newAA->rms(t2_1AA);
 
+        // stuff for DIIS
+        Tau = std::make_shared<Tensor2d>("RT2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        Tau->copy(t2_1newAA);
+        Tau->subtract(t2_1AA);
+        Tau->write_anti_symm(psio_,PSIF_DFOCC_AMPS);
+        Tau.reset();
+
         // reset
         t2_1AA->copy(t2_1newAA);
         t2_1newAA.reset();
@@ -402,6 +439,13 @@ void DFOCC::mp3_t2_1st_gen() {
         rms_t2BB = 0.0;
         rms_t2BB = t2_1newBB->rms(t2_1BB);
 
+        // stuff for DIIS
+        Tau = std::make_shared<Tensor2d>("RT2_1 <ij|ab>", naoccB, naoccB, navirB, navirB);
+        Tau->copy(t2_1newBB);
+        Tau->subtract(t2_1BB);
+        Tau->write_anti_symm(psio_,PSIF_DFOCC_AMPS);
+        Tau.reset();
+
         // reset
         t2_1BB->copy(t2_1newBB);
         t2_1newBB.reset();
@@ -445,6 +489,13 @@ void DFOCC::mp3_t2_1st_gen() {
         // rms
         rms_t2AB = 0.0;
         rms_t2AB = t2_1newAB->rms(t2_1AB);
+
+        // stuff for DIIS
+        Tau = std::make_shared<Tensor2d>("RT2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+        Tau->copy(t2_1newAB);
+        Tau->subtract(t2_1AB);
+        Tau->write(psio_,PSIF_DFOCC_AMPS);
+        Tau.reset();
 
         // reset
         t2_1AB->copy(t2_1newAB);

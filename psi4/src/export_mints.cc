@@ -314,7 +314,6 @@ void export_mints(py::module& m) {
     typedef void (Vector::*vector_setitem_2)(int, int, double);
     typedef double (Vector::*vector_getitem_1)(int) const;
     typedef double (Vector::*vector_getitem_2)(int, int) const;
-    typedef void (Vector::*vector_one)(const Vector& other);
     typedef double (Vector::*vector_one_double)(const Vector& other);
     typedef void (Vector::*vector_two)(double scale, const Vector& other);
 
@@ -348,30 +347,35 @@ void export_mints(py::module& m) {
         .def("begin", &Slice::begin, "Get the first element of this slice")
         .def("end", &Slice::end, "Get the past-the-end element of this slice");
 
-    py::class_<Vector, std::shared_ptr<Vector>>(m, "Vector", "Class for creating and manipulating vectors",
+    py::class_<IrreppedVector<double>, std::shared_ptr<IrreppedVector<double>>>(m, "ProtoVector");
+
+    py::class_<Vector, std::shared_ptr<Vector>, IrreppedVector<double>>(m, "Vector", "Class for creating and manipulating vectors",
                                                 py::dynamic_attr())
         .def(py::init<int>())
         .def(py::init<const Dimension&>())
         .def(py::init<const std::string&, int>())
         .def(py::init<const std::string&, const Dimension&>())
-        .def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
+        .def_property("name", &Vector::name, &Vector::set_name,
                       "The name of the Vector. Used in printing.")
+        .def("init", &Vector::init, "Reallocate the data of the Vector. Consider making a new object.")
         .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m", "m"_a)
         .def("get", vector_getitem_2(&Vector::get), "Returns a single element value located at m in irrep h", "h"_a,
              "m"_a)
         .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", "m"_a, "val"_a)
         .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
-        .def("copy", vector_one(&Vector::copy), "Returns a copy of the matrix")
+        .def("add", vector_setitem_1(&Vector::add), "Add to a single element value located at m", "m"_a, "val"_a)
+        .def("add", vector_setitem_2(&Vector::add), "Add to a single element value located at m in irrep h", "h"_a, "m"_a,
+             "val"_a)
+        .def("copy", &Vector::copy, "Copy another vector into this.")
         .def(
             "clone",
             [](Vector& vec) {
-                std::shared_ptr<Vector> result = std::move(vec.clone());
-                return result;
+                return std::make_shared<Vector>(std::move(vec.clone()));
             },
             "Clone the vector")
         .def("zero", &Vector::zero, "Zeros the vector")
-        .def("print_out", &Vector::print_out, "Prints the vector to the output file")
+        .def("print_out", [](Vector& vec) {vec.print();}, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
         .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
@@ -425,15 +429,43 @@ void export_mints(py::module& m) {
             },
             py::return_value_policy::reference_internal);
 
-    typedef void (IntVector::*int_vector_set)(int, int, int);
-    py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "Class handling vectors with integer values")
+    py::class_<IrreppedVector<int>, std::shared_ptr<IrreppedVector<int>>>(m, "ProtoIntVector");
+
+    typedef int (IntVector::*int_vector_get_1)(int) const;
+    typedef int (IntVector::*int_vector_get_2)(int, int) const;
+    typedef void (IntVector::*int_vector_set_1)(int, int);
+    typedef void (IntVector::*int_vector_set_2)(int, int, int);
+    py::class_<IntVector, std::shared_ptr<IntVector>, IrreppedVector<int>>(m, "IntVector", "Class handling vectors with integer values")
         .def(py::init<int>())
-        .def("get", &IntVector::get, "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
-        .def("set", int_vector_set(&IntVector::set), "Sets a single element value located at m in irrep h", "h"_a,
+        .def(py::init<const Dimension&>())
+        .def(py::init<const std::string&, int>())
+        .def(py::init<const std::string&, const Dimension&>())
+        .def_property("name", &IntVector::name, &IntVector::set_name,
+                      "The name of the IntVector. Used in printing.")
+        .def("init", &IntVector::init, "Reallocate the data of the Vector. Consider making a new object.")
+        .def("get", int_vector_get_1(&IntVector::get), "Returns a single element value located at m", "m"_a)
+        .def("get", int_vector_get_2(&IntVector::get), "Returns a single element value located at m in irrep h", "h"_a, "m"_a)
+        .def("set", int_vector_set_1(&IntVector::set), "Sets a single element value located at m", "m"_a, "val"_a)
+        .def("set", int_vector_set_2(&IntVector::set), "Sets a single element value located at m in irrep h", "h"_a,
              "m"_a, "val"_a)
-        .def("print_out", &IntVector::print_out, "Prints the vector to the output file")
-        .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", "h"_a)
-        .def("nirrep", &IntVector::nirrep, "Returns the number of irreps");
+        .def("add", int_vector_set_1(&IntVector::add), "Add to a single element value located at m", "m"_a, "val"_a)
+        .def("add", int_vector_set_2(&IntVector::add), "Add to a single element value located at m in irrep h", "h"_a, "m"_a,
+             "val"_a)
+        .def("copy", &IntVector::copy, "Copy another vector into this.")
+        .def(
+            "clone",
+            [](IntVector& vec) {
+                return std::make_shared<IntVector>(std::move(vec.clone()));
+            },
+            "Clone the vector")
+        .def("zero", &IntVector::zero, "Zeros the vector")
+        .def("print_out", [](IntVector& vec) {vec.print();}, "Prints the vector to the output file")
+        .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", "h"_a = 0)
+        .def("dimpi", &IntVector::dimpi, "Returns the Dimension object")
+        .def("nirrep", &IntVector::nirrep, "Returns the number of irreps")
+        .def("get_block", &IntVector::get_block, "Get a vector block", "slice"_a)
+        .def("set_block", &IntVector::set_block, "Set a vector block", "slice"_a, "block"_a)
+        .def_static("iota", &IntVector::iota);
 
     py::enum_<diagonalize_order>(m, "DiagonalizeOrder", "Defines ordering of eigenvalues after diagonalization")
         .value("Ascending", ascending)

@@ -209,8 +209,21 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon,
                                  const std::string& basis, const std::string& subset) const;
+    // Return the desired subset of orbital energies.
+    // @param epsilon The vector of orbital energies
+    // @param noccpi The dimension of "occupied" orbitals for the case of interest.
+    //               Usual use case: nalphapi_ or nbetapi_?
+    // @param basis "AO", "SO", or "MO" - should the return vector use symmetry
+    // @param subset A label appended to the return vector name, "Epsilon {basis} {subset}"
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis,
                                        const std::string& subset) const;
+    // Helper function needed by the helper functions.
+    // Return the desired MO indices, per irrep.
+    // @param noccpi The dimension of occupied indices used as the source-of-
+    //               truth for the dimension of occupied orbitals.
+    // @param subset "FROZEN_OCC", "FROZEN_VIR", "ACTIVE_OCC", "ACTIVE_VIR"
+    //               "ACTIVE", "OCC", "VIR", or "ALL". The space, the indices
+    //                of which are to be returned.
     std::vector<std::vector<int>> subset_occupation(const Dimension& noccpi, const std::string& subset) const;
 
     /// Should nuclear electrostatic potentials be available, they will be here

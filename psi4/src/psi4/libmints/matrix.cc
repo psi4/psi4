@@ -1451,35 +1451,42 @@ void Matrix::axpy(double a, SharedMatrix X) {
     }
 }
 
-SharedMatrix Matrix::collapse(int dim) {
-    if (dim < 0 || dim > 1) throw PSIEXCEPTION("Matrix::collapse: dim must be 0 (row sum) or 1 (col sum)");
+SharedVector Matrix::gemv(bool transa, double alpha, const Vector& A) {
+    auto return_vec = std::make_shared<Vector>(transa ? colspi_ : rowspi_);
+    return_vec->gemv(transa, alpha, *this, A, 0);
+    return return_vec;
+}
+
+SharedVector Matrix::collapse(Dimension dim, int target) const {
+    if (target < 0 || target > 1) throw PSIEXCEPTION("Matrix::collapse: dim must be 0 (row sum) or 1 (col sum)");
 
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::collapse is not supported for this non-totally-symmetric thing.");
     }
 
-    Dimension ones(nirrep_);
-    for (int h = 0; h < nirrep_; h++) {
-        ones[h] = 1;
-    }
-
-    auto T = std::make_shared<Matrix>("T", ((dim == 0) ? colspi_ : rowspi_), ones);
+    auto T = std::make_shared<Vector>("T", ((target == 0) ? colspi_ : rowspi_));
 
     for (int h = 0; h < nirrep_; h++) {
         int nrow = rowspi_[h];
         int ncol = colspi_[h];
-        double **Mp = matrix_[h];
-        double **Tp = T->pointer(h);
-        if (dim == 0) {
+        auto Mp = matrix_[h];
+        auto Tp = T->pointer(h);
+        if (target == 0) {
+            if (dim.get(h) > nrow) {
+                throw PSIEXCEPTION("Matrix::collapse cannot collapse more rows than the matrix has..");
+            }
             for (int j = 0; j < ncol; j++) {
-                for (int i = 0; i < nrow; i++) {
-                    Tp[j][0] += Mp[i][j];
+                for (int i = 0; i < dim.get(h); i++) {
+                    Tp[j] += Mp[i][j];
                 }
             }
         } else {
+            if (dim.get(h) > ncol) {
+                throw PSIEXCEPTION("Matrix::collapse cannot collapse more rows than the matrix has..");
+            }
             for (int i = 0; i < nrow; i++) {
-                for (int j = 0; j < ncol; j++) {
-                    Tp[i][0] += Mp[i][j];
+                for (int j = 0; j < dim.get(h); j++) {
+                    Tp[i] += Mp[i][j];
                 }
             }
         }
@@ -1956,6 +1963,21 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigv
     return X;
 }
 
+void Matrix::sort_cols(const IntVector& idxs) {
+    auto orig = clone();
+    if (colspi_ != idxs.dimpi()) {
+        throw PSIEXCEPTION("Matrix::sort Indexing vector and columns to sort must have the same dimension.");
+    }
+    // WARNING! Function also requires each irrep to be a permutation of 0, 1, 2...
+    for (int h = 0; h < nirrep_; h++) {
+        auto rows = rowspi_[h];
+        auto cols = colspi_[h];
+        auto idxh = idxs.pointer(h);
+        for (int a = 0; a < cols; a++) {
+            C_DCOPY(rows, &orig->pointer(h)[0][idxh[a]], cols, &(matrix_[h][0][a]), cols);
+        }
+    }
+}
 void Matrix::swap_rows(int h, int i, int j) {
     C_DSWAP(colspi_[h ^ symmetry_], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1);
 }

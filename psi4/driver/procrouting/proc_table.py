@@ -74,8 +74,8 @@ procedures = {
         'olccd'         : proc.select_olccd,
         'custom-scs-olccd' : proc.run_occ,
         'remp2'         : proc.select_remp2,
-        'oremp2'        : proc.select_oremp2,
-        'dfocc'         : proc.run_dfocc,  # full control over dfocc
+        'oremp2'        : proc.select_olccd,
+        # 'dfocc'         : proc.run_dfocc,  # full control over dfocc  # canceled Jul 2022 as Error raising and not useful
         'qchf'          : proc.run_qchf,
         'ccd'           : proc.run_dfocc,
         'sf-sapt'       : sapt.run_sf_sapt,
@@ -192,7 +192,7 @@ procedures = {
         'mp2d'          : proc.run_dfmp2d_gradient,  # alias to match dft aliasing
         'lccd'          : proc.select_lccd_gradient,
         'olccd'         : proc.select_olccd_gradient,
-        'oremp2'        : proc.select_oremp2_gradient,
+        'oremp2'        : proc.select_olccd_gradient,
         'ccd'           : proc.run_dfocc_gradient,
         # Upon adding a method to this list, add it to the docstring in driver.optimize below
     },

@@ -643,8 +643,8 @@ void DCTSolver::print_opdm() {
     // Diagonalize OPDM to obtain NOs
     auto aevecs = std::make_shared<Matrix>("Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_);
     auto bevecs = std::make_shared<Matrix>("Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_);
-    auto aevals = std::make_shared<Vector>("Eigenvalues (Alpha)", nirrep_, nmopi_);
-    auto bevals = std::make_shared<Vector>("Eigenvalues (Beta)", nirrep_, nmopi_);
+    auto aevals = std::make_shared<Vector>("Eigenvalues (Alpha)", nmopi_);
+    auto bevals = std::make_shared<Vector>("Eigenvalues (Beta)", nmopi_);
 
     a_opdm->diagonalize(aevecs, aevals, descending);
     b_opdm->diagonalize(bevecs, bevals, descending);
@@ -818,10 +818,10 @@ void DCTSolver::build_tau_U() {
         auto bocc_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
         auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
         auto bvir_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
-        auto aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", nirrep_, naoccpi_);
-        auto bocc_evals = std::make_shared<Vector>("Eigenvalues (Beta Occupied)", nirrep_, nboccpi_);
-        auto avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", nirrep_, navirpi_);
-        auto bvir_evals = std::make_shared<Vector>("Eigenvalues (Beta Virtual)", nirrep_, nbvirpi_);
+        auto aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", naoccpi_);
+        auto bocc_evals = std::make_shared<Vector>("Eigenvalues (Beta Occupied)", nboccpi_);
+        auto avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", navirpi_);
+        auto bvir_evals = std::make_shared<Vector>("Eigenvalues (Beta Virtual)", nbvirpi_);
         aocc_tau_old->diagonalize(aocc_evecs, aocc_evals);
         bocc_tau_old->diagonalize(bocc_evecs, bocc_evals);
         avir_tau_old->diagonalize(avir_evecs, avir_evals);
