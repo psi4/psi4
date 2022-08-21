@@ -4,7 +4,6 @@ target_sources(cc
     #${CMAKE_CURRENT_SOURCE_DIR}/add_core_UHF.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/densgrid_RHF.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/resort_gamma.cc
-    #${CMAKE_CURRENT_SOURCE_DIR}/resort_tei.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/G.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Gabcd.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Gciab.cc
@@ -38,12 +37,10 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/build_ex_tdensity.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/cache.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ccdensity.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/classify.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/deanti.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/deanti_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/deanti_ROHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/deanti_UHF.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/distribute.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/dump_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/dump_ROHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/dump_UHF.cc
@@ -60,7 +57,6 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ex_td_setup.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ex_tdensity.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ex_tdensity_intermediates.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/file_build.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/fold.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/fold_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/fold_ROHF.cc
@@ -70,8 +66,6 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_params.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_rho_params.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_td_params.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/idx_error.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/idx_permute.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/kinetic.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/lag.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ltdensity.cc
