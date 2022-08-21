@@ -70,7 +70,6 @@ void onepdm(const struct RHO_Params&);
 void sortone(const struct RHO_Params&);
 void twopdm();
 void energy(const struct RHO_Params&);
-// void resort_tei();
 // void resort_gamma();
 void lag(const struct RHO_Params& rho_params);
 void build_X();
