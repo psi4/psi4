@@ -468,11 +468,6 @@ void Array2d::contract233(bool transa, bool transb, int m, int n, const Array2d 
     }
 }  //
 
-void Array2d::davidson(int n_eigval, Array2d *eigvectors, Array1d *eigvalues, double cutoff, int print) {
-    david(A2d_, dim1_, n_eigval, eigvalues->A1d_, eigvectors->A2d_, cutoff, print);
-
-}  //
-
 void Array2d::add(const Array2d *Adum) {
     double *lhs, *rhs;
     size_t size = dim1_ * dim2_;
@@ -550,87 +545,6 @@ void Array2d::copy(double **a) {
     size_t size = dim1_ * dim2_ * sizeof(double);
     if (size) memcpy(&(A2d_[0][0]), &(a[0][0]), size);
 }
-
-void Array2d::diagonalize(Array2d *eigvectors, Array1d *eigvalues, double cutoff) {
-    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, 1, eigvectors->A2d_, cutoff);
-
-}  //
-
-void Array2d::cdsyev(char jobz, char uplo, Array2d *eigvectors, Array1d *eigvalues) {
-    if (dim1_) {
-        int lwork = 3 * dim2_;
-        double **work = block_matrix(dim1_, lwork);
-        memset(work[0], 0.0, sizeof(double) * dim1_ * lwork);
-        C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_, &(work[0][0]), lwork);
-        free_block(work);
-    }
-}  //
-
-void Array2d::cdgesv(Array1d *Xvec) {
-    if (dim1_) {
-        int errcod;
-        int *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-        delete[] ipiv;
-    }
-}  //
-
-void Array2d::cdgesv(Array1d *Xvec, int errcod) {
-    if (dim1_) {
-        int *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
-        delete[] ipiv;
-    }
-}  //
-
-void Array2d::cdgesv(double *Xvec) {
-    if (dim1_) {
-        int errcod;
-        int *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-        delete[] ipiv;
-    }
-}  //
-
-void Array2d::cdgesv(double *Xvec, int errcod) {
-    if (dim1_) {
-        int *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-        delete[] ipiv;
-    }
-}  //
-
-void Array2d::lineq_flin(Array1d *Xvec, double *det) {
-    if (dim1_) {
-        flin(A2d_, Xvec->A1d_, dim1_, 1, det);
-    }
-}  //
-
-void Array2d::lineq_flin(double *Xvec, double *det) {
-    if (dim1_) {
-        flin(A2d_, Xvec, dim1_, 1, det);
-    }
-}  //
-
-void Array2d::lineq_pople(Array1d *Xvec, int num_vecs, double cutoff) {
-    if (dim1_) {
-        pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, "outfile", 0);
-    }
-}  //
-
-void Array2d::lineq_pople(double *Xvec, int num_vecs, double cutoff) {
-    if (dim1_) {
-        pople(A2d_, Xvec, dim1_, num_vecs, cutoff, "outfile", 0);
-    }
-}  //
 
 void Array2d::level_shift(double value) {
     for (int i = 0; i < dim1_; ++i) {

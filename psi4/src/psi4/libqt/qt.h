@@ -93,7 +93,7 @@ void clean_timers();
 
 void print_block(double*, int, int, FILE*);
 
-int david(double** A, int N, int M, double* eps, double** v, double cutoff, int print);
+[[nodiscard]] int david(double** A, int N, int M, double* eps, double** v, double cutoff, int print);
 
 int* get_frzcpi();
 int* get_frzvpi();
@@ -378,6 +378,7 @@ int C_DSBTRD(char vect, char uplo, int n, int kd, double* ab, int ldab, double* 
 int C_DSGESV(int n, int nrhs, double* a, int lda, int* ipiv, double* b, int ldb, double* x, int ldx, double* work,
              int* iter);
 int C_DSPCON(char uplo, int n, double* ap, int* ipiv, double anorm, double* rcond, double* work, int* iwork);
+PSI_API
 int C_DSPEV(char jobz, char uplo, int n, double* ap, double* w, double* z, int ldz, double* work);
 int C_DSPEVD(char jobz, char uplo, int n, double* ap, double* w, double* z, int ldz, double* work, int lwork,
              int* iwork, int liwork);
@@ -417,6 +418,7 @@ int C_DSTEVR(char jobz, char range, int n, double* d, double* e, double vl, doub
 int C_DSTEVX(char jobz, char range, int n, double* d, double* e, double vl, double vu, int il, int iu, double abstol,
              int* m, double* w, double* z, int ldz, double* work, int* iwork, int* ifail);
 int C_DSYCON(char uplo, int n, double* a, int lda, int* ipiv, double anorm, double* rcond, double* work, int* iwork);
+PSI_API
 int C_DSYEV(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork);
 PSI_API
 int C_DSYEVD(char jobz, char uplo, int n, double* a, int lda, double* w, double* work, int lwork, int* iwork,

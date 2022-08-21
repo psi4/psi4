@@ -32,35 +32,15 @@
 ** \ingroup CIOMR
 */
 
-#include "psi4/psifiles.h"
 #include "libciomr.h"
 #include <cstdlib>
 #include "psi4/libqt/qt.h"
 
 namespace psi {
-
-extern void tred2(int n, double** a, double* d, double* e, int matz);
-extern void tqli(int n, double* d, double** z, double* e, int matz, double toler);
-
-/* translation into c of a translation into FORTRAN77 of the EISPACK */
-/* matrix diagonalization routines */
-
-/**
-*  WARNING: Psi 3 Fortran routine sq_rsp  deprecated
-*  by Robert Parrish, robparrish@gmail.com
-*
-*  sq_rsp now calls the LAPACK method DSYEV for
-*  numerical stability, speed, and threading
-*
-*  the signature of this method remains the same
-*
-*  June 22, 2010
-**/
-
 /*!
-** sq_rsp(): diagomalize a symmetric square matrix ('array').
+** sq_rsp(): diagonalize a symmetric square matrix ('array').
 **
-** \param nm     = rows of matrix
+** \param nm     = rows of matrix (unused, present for historic reasons)
 ** \param n      = columns of matrix
 ** \param array  = matrix to diagonalize
 ** \param e_vals = array to hold eigenvalues
@@ -69,7 +49,7 @@ extern void tqli(int n, double* d, double** z, double* e, int matz, double toler
 **               = 2 (no eigenvectors, eigenvalues in descending order)
 **               = 3 (eigenvectors and eigenvalues in descending order)
 ** \param e_vecs = matrix of eigenvectors (one column for each eigvector)
-** \param toler  = tolerance for eigenvalues?  Often 1.0E-14.
+** \param toler  = tolerance for eigenvalues?  Often 1.0E-14. (unused, present for historic reasons)
 **
 ** \ingroup CIOMR
 */
@@ -179,64 +159,71 @@ void sq_rsp(int /*nm*/, int n, double** array, double* e_vals, int matz, double*
             }
         }
     }
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    //
-    //  DEPRECATED METHOD AND ASSOCIATED CALLS
-    //
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    /**
-      int i, j, ierr;
-      int ascend_order;
-      double *fv1, **temp;
+}
 
-      // Modified by Ed - matz can have the values 0 through 3
-
-      if ((matz > 3) || (matz < 0)) {
-        matz = 0;
-        ascend_order = 1;
-      }
-      else
-        if (matz < 2)
-          ascend_order = 1;	// Eigenvalues in ascending order
-      else {
-        matz -= 2;
-        ascend_order = 0;	// Eigenvalues in descending order
-      }
-
-      fv1 = (double *) init_array(n);
-      temp = (double **) init_matrix(n,n);
-
-      if (n > nm) {
-        ierr = 10*n;
-        outfile->Printf("n = %d is greater than nm = %d in rsp\n",n,nm);
-        exit(PSI_RETURN_FAILURE);
-      }
-
-      for (i=0; i < n; i++) {
-        for (j=0; j < n; j++) {
-          e_vecs[i][j] = array[i][j];
+/*!
+** DSYEV_ascending(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV
+**
+** \param n      = number of rows (and columns)
+** \param array  = matrix to diagonalize (2D row major array)
+** \param e_vals = array to hold eigenvalues (returned in ascending order)
+** \param e_vecs = (optional) matrix of eigenvectors (2D row major array, one column for each eigvector)
+**
+** \ingroup CIOMR
+*/
+[[nodiscard]] int DSYEV_ascending(const int N, const double* const* const array, double* e_vals,
+                                  double* const* const e_vecs/* = nullptr*/) {
+    // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
+    // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
+    // The new 1D array will correspond to a column-major array, suitable for LAPACK.
+    double* tmp_matrix = init_array(N * N);
+    for (int i = 0, ij = 0; i < N; i++) {
+        for (int j = 0; j < N; j++, ij++) {
+            tmp_matrix[ij] = array[j][i];
         }
-      }
-
-      tred2(n,e_vecs,e_vals,fv1,matz);
-
-      for (i=0; i < n; i++)
-        for (j=0; j < n; j++)
-          temp[i][j]=e_vecs[j][i];
-
-      tqli(n,e_vals,temp,fv1,matz,toler);
-
-      for (i=0; i < n; i++)
-        for (j=0; j < n; j++)
-          e_vecs[i][j]=temp[j][i];
-
-      if (ascend_order)
-        eigsort(e_vals,e_vecs,n);
-      else
-        eigsort(e_vals,e_vecs,(-1)*n);
-
-      free(fv1);
-      free_matrix(temp,n);
-    **/
+    }
+    // LAPACK also needs some extra memory to store temporaries in
+    // TODO: query C_DSYEV for optimal workspace size
+    double* tmp_work = init_array(3 * N);
+    const char jobtype = (e_vecs != nullptr) ? 'V' : 'N';
+    const auto info = C_DSYEV(jobtype, 'U', N, tmp_matrix, N, e_vals, tmp_work, 3 * N);
+    if ((info == 0) && (e_vecs != nullptr)) {
+        // tmp_matrix has now been overwritten with the eigenvecs as the columns, flattened as column-major
+        // Copy them to the columns of a row-major 2D array
+        for (int j = 0, ij = 0; j < N; j++) {
+            for (int i = 0; i < N; i++, ij++) {
+                e_vecs[i][j] = tmp_matrix[ij];
+            }
+        }
+    }
+    free(tmp_work);
+    free(tmp_matrix);
+    return info;
 }
+
+/*!
+** DSYEV_descending(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV, with results reversed
+**
+** \param n      = number of rows (and columns)
+** \param array  = matrix to diagonalize (2D row major array)
+** \param e_vals = array to hold eigenvalues (returned in descending order)
+** \param e_vecs = (optional) matrix of eigenvectors (2D row major array, one column for each eigvector)
+**
+** \ingroup CIOMR
+*/
+[[nodiscard]] int DSYEV_descending(const int N, const double* const* const array, double* e_vals,
+                                   double* const* const e_vecs/* = nullptr*/) {
+    const auto info = DSYEV_ascending(N, array, e_vals, e_vecs);
+    // Reverse the order of eigenvalues
+    for (int i = 0; i < N / 2; i++) {
+        std::swap(e_vals[i], e_vals[N - i - 1]);
+    }
+    // Reverse the order of columns of the row-major 2D eigenvector array
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N / 2; j++) {
+            std::swap(e_vecs[i][j], e_vecs[i][N - j - 1]);
+        }
+    }
+    return info;
 }
+}  // namespace psi

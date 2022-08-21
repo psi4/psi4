@@ -205,24 +205,14 @@ class Tensor2d {
     void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
     void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start);
     double get_max_element();
-    // diagonalize: diagonalize via rsp
-    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
-    // cdsyev: diagonalize via lapack
-    void cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
-    // davidson: diagonalize via davidson algorithm
-    void davidson(int n_eigval, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
-                  int print);
+    // diagonalize: diagonalize via LAPACK DSYEV
+    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
     // cdgesv: solve a linear equation via lapack
-    void cdgesv(const SharedTensor1d &Xvec);
-    void cdgesv(double *Xvec);
     void cdgesv(const SharedTensor1d &Xvec, int errcod);
-    void cdgesv(double *Xvec, int errcod);
     // lineq_flin: solve a linear equation via FLIN
     void lineq_flin(const SharedTensor1d &Xvec, double *det);
-    void lineq_flin(double *Xvec, double *det);
     // pople: solve a linear equation via Pople's algorithm
     void lineq_pople(const SharedTensor1d &Xvec, int num_vecs, double cutoff);
-    void lineq_pople(double *Xvec, int num_vecs, double cutoff);
 
     // gemm: matrix multiplication C = A * B
     void gemm(bool transa, bool transb, const SharedTensor2d &a, const SharedTensor2d &b, double alpha, double beta);

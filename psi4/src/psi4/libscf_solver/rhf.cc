@@ -960,7 +960,9 @@ bool RHF::stability_analysis() {
 
             global_dpd_->buf4_mat_irrep_init(&Asing, h);
             global_dpd_->buf4_mat_irrep_rd(&Asing, h);
-            sq_rsp(dim, dim, Asing.matrix[h], evals, 1, evecs, 1e-12);
+            if (DSYEV_ascending(dim, Asing.matrix[h], evals, evecs) != 0){
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in RHF stability check!");
+            }
             global_dpd_->buf4_mat_irrep_close(&Asing, h);
 
             int mindim = dim < 5 ? dim : 5;
@@ -971,7 +973,9 @@ bool RHF::stability_analysis() {
 
             global_dpd_->buf4_mat_irrep_init(&Atrip, h);
             global_dpd_->buf4_mat_irrep_rd(&Atrip, h);
-            sq_rsp(dim, dim, Atrip.matrix[h], evals, 1, evecs, 1e-12);
+            if (DSYEV_ascending(dim, Atrip.matrix[h], evals, evecs) != 0){
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in RHF stability check!");
+            }
             global_dpd_->buf4_mat_irrep_close(&Atrip, h);
 
             for (int i = 0; i < mindim; i++) triplet_eval_sym.push_back(std::make_pair(evals[i], h));

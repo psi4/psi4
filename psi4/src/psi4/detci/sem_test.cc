@@ -188,7 +188,9 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
         // mmult(tmp_mat, 0, b, 1, G, 0, L, N, L, 0); /* G = tmp * B(T) */
 
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
-        sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
+        if (DSYEV_ascending(L, G, lambda, alpha) != 0){
+            throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM_TEST!");
+        }
 
         if (N < 100 && print_ >= 3) {
             outfile->Printf("\n b matrix\n");
@@ -239,7 +241,9 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
             /* solve the L x L eigenvalue problem M a = lambda a for M roots */
             for (k = 0; k < M; k++) {
-                sq_rsp(L, L, Mmatrix[k], m_lambda[k], 1, m_alpha[k], 1.0E-14);
+                if (DSYEV_ascending(L, Mmatrix[k], m_lambda[k], m_alpha[k]) != 0){
+                    throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM_TEST!");
+                }
                 if (print_ > 2) {
                     outfile->Printf("\n M eigenvectors and eigenvalues root %d:\n", k);
                     eivout(m_alpha[k], m_lambda[k], L, L, "outfile");
@@ -287,7 +291,9 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
             // mmult(tmp_mat, 0, b, 1, G, 0, L, N, L, 0); /* G = tmp * B(T) */
 
             /* solve the L x L eigenvalue problem G a = lambda a for M roots */
-            sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
+            if (DSYEV_ascending(L, G, lambda, alpha) != 0){
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI SEM_TEST!");
+            }
 
             if (N < 100 && print_ >= 3) {
                 outfile->Printf(" Reformed G matrix (%d)\n", iter - 1);

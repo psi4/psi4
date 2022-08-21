@@ -26,17 +26,11 @@
  * @END LICENSE
  */
 
-#include <iostream>
 #include <cmath>
-
-#include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsi4util/libpsi4util.h"
-
 #include "scf.h"
-#include "sblock_matrix.h"
-
-extern FILE* outfile;
+#include "psi4/libqt/qt.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/psifiles.h"
 
 namespace psi {
 namespace mcscf {
@@ -60,34 +54,6 @@ double SCF::energy(int cycle, double old_energy) {
     total_energy = electronic_energy + moinfo_scf->get_nuclear_energy();
 
     if (reference == tcscf) {
-        //     SBlockMatrix Dtc_sum("Dtc sum",nirreps,sopi,sopi);
-        //
-        //     // Compute diagonal elements of H
-        //     for(int I = 0 ; I < nci; ++I){
-        //       Dtc_sum  = Dc;
-        //       Dtc_sum += Dtc[I];
-        //       construct_G(Dtc_sum,G,"PK");
-        //       T  = H;
-        //       T.scale(2.0);
-        //       T += G;
-        //       H_tcscf[I][I] = dot(Dtc_sum,T) + moinfo_scf->get_nuclear_energy();
-        //     }
-        //
-        //     // Compute off-diagonal elements of H
-        //     for(int I = 0 ; I < nci; ++I){
-        //       for(int J = I + 1; J < nci; ++J){
-        //         construct_G(Dtc[I],G,"K");
-        //         H_tcscf[I][J] = H_tcscf[J][I] = - dot(Dtc[J],G);
-        //       }
-        //     }
-
-        //     outfile->Printf("\n  Hamiltonian");
-        //     for(int I = 0 ; I < nci; ++I){
-        //       outfile->Printf("\n    ");
-        //       for(int J = 0 ; J < nci; ++J)
-        //         outfile->Printf(" %11.8f ",H_tcscf[I][J]);
-        //     }
-
         // Compute the CI gradient
         norm_ci_grad = 0.0;
         for (int I = 0; I < nci; ++I) {
@@ -104,10 +70,12 @@ double SCF::energy(int cycle, double old_energy) {
         allocate1(double, eigenvalues, nci);
         allocate2(double, eigenvectors, nci, nci);
 
-        sq_rsp(nci, nci, H_tcscf, eigenvalues, 1, eigenvectors, 1.0e-14);
+        if (DSYEV_ascending(nci, H_tcscf, eigenvalues, eigenvectors) != 0){
+            outfile->Printf("DSYEV failed in mcscf::SCF::energy()");
+            exit(PSI_RETURN_FAILURE);
+        }
 
         total_energy = eigenvalues[root];
-
         if (std::fabs(old_energy - total_energy) < 1.0e-5) {
             for (int I = 0; I < nci; ++I) ci[I] = eigenvectors[I][root];
         }

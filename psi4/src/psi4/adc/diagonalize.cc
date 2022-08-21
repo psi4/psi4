@@ -41,7 +41,7 @@ namespace adc {
 
 //
 //  This block-Davidson code is based on the in-core version put in lib/libqt/david.cc
-//  but written by utilizind DPD algorithm.
+//  but written by utilizing DPD algorithm.
 //
 //  S: Sigma vector for the response matrix with OV indices.
 //  F: The correction vectors for the basis of Ritz space.
@@ -105,7 +105,9 @@ void ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_i
             global_dpd_->file2_close(&S);
         }
         if (first && !iter) poles_[irrep][num_root - 1].ps_value = G[num_root - 1][num_root - 1];
-        sq_rsp(length, length, G, lambda, 1, Alpha, 1e-12);
+        if (DSYEV_ascending(length, G, lambda, Alpha) != 0){
+            throw PSIEXCEPTION("DSYEV diagonalizer failed in the ADC DPD-using Davidson solver!");
+        }
 
         // Constructing the corretion vectors
         for (int k = 0; k < rpi_[irrep]; k++) {

@@ -46,7 +46,6 @@ namespace psi {
 **
 ** Note that shift information is freed here as well.
 */
-
 int DPD::buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep) {
     int h, nirreps, rowtot, coltot, my_irrep;
     long int size;
@@ -84,5 +83,4 @@ int DPD::buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep) {
 
     return 0;
 }
-
 }  // namespace psi

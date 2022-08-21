@@ -62,12 +62,10 @@ namespace psi {
 **      already used in the file.  PSIO::tocprint(int filenum) can be used to print
 **      the labels currently used in in filenum and is quite useful for debugging.
 */
-
 int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum, int file_pqnum, int file_rsnum,
                    int anti, const std::string& label) {
     int h, nirreps, nump, nrows, p, Gp, Gr, offset;
 
-    Buf->dpdnum = dpd_default;
     Buf->params = &(dpd_list[dpd_default]->params4[pqnum][rsnum]);
 
     Buf->anti = anti;

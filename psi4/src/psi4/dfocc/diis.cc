@@ -79,9 +79,13 @@ void DFOCC::diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, Shar
     /********************************************************************************************/
     /************************** Solve LINEQ *****************************************************/
     /********************************************************************************************/
-    if (lineq == "CDGESV")
-        Bmat->cdgesv(Cvec);
-    else if (lineq == "FLIN") {
+    if (lineq == "CDGESV"){
+        int lapack_info;
+        Bmat->cdgesv(Cvec, lapack_info);
+        if(lapack_info != 0){
+            throw PsiException("Linear equation solver CDGESV failed!", __FILE__, __LINE__);
+        }
+    }else if (lineq == "FLIN") {
         double det = 0.0;
         Bmat->lineq_flin(Cvec, &det);
         if (std::fabs(det) < DIIS_MIN_DET) {

@@ -73,8 +73,14 @@ PSI_API void arr_to_mat(double **a, double *b, int m, int n);
 PSI_API void print_array(double *a, int m, std::string out);
 PSI_API void print_mat(double **a, int rows, int cols, std::string out);
 
-PSI_API void rsp(int nm, int n, int nv, double *array, double *evals, int matz, double **evecs, double toler);
+PSI_DEPRECATED("rsp() is deprecated, and will be removed in Psi 1.8. Please use C_DSPEV instead.")
+PSI_API void rsp(int /*nm*/, const int n, const int nv, const double * const array, double *e_vals, const int matz,
+                 double * const * const e_vecs, double /*toler*/);
+PSI_DEPRECATED("sq_rsp() is a deprecated diagonaliaztion routine, and may be removed as soon as Psi 1.9. "
+               "Please use C_DSYEV instead.")
 PSI_API void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
+[[nodiscard]] int DSYEV_ascending(const int N, const double *const *const array, double *e_vals, double *const *const e_vecs = nullptr);
+[[nodiscard]] int DSYEV_descending(const int N, const double* const* const array, double* e_vals, double* const* const e_vecs = nullptr);
 PSI_API void sq_to_tri(double **bmat, double *amat, int size);
 
 /* Functions under tri_to_block.c */

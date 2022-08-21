@@ -1264,7 +1264,10 @@ bool ROHF::stability_analysis() {
             auto* evals = new double[rank];
             double** evecs = block_matrix(rank, rank);
 
-            sq_rsp(rank, rank, A.matrix[h], evals, 1, evecs, 1e-12);
+            if (DSYEV_ascending(rank, A.matrix[h], evals, evecs) != 0){
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in ROHF stability check!");
+            }
+
             global_dpd_->buf4_mat_irrep_close(&A, h);
             int mindim = rank < 15 ? rank : 15;
             for (int i = 0; i < mindim; i++) eval_sym.push_back(std::make_pair(evals[i], h));

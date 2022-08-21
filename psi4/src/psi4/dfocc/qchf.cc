@@ -449,7 +449,7 @@ void DFOCC::gwh() {
     }
 
     // Diagonalize
-    Sso->diagonalize(Uso, DiagS, cutoff);
+    Sso->diagonalize(Uso, DiagS);
 
     // Form S^(-1/2)
     for (int p = 0; p < nso_; p++) {
@@ -465,7 +465,7 @@ void DFOCC::gwh() {
     Fsop->gemm(false, false, temp, Smhalf, 1.0, 0.0);
 
     // Obtain the orbitals
-    Fsop->diagonalize(Cmop, e_orb, cutoff);
+    Fsop->diagonalize(Cmop, e_orb);
     CmoA->gemm(false, false, Smhalf, Cmop, 1.0, 0.0);
     if (reference_ == "UNRESTRICTED") CmoB->copy(CmoA);
 
@@ -492,7 +492,7 @@ void DFOCC::canonic() {
     SharedTensor1d eigA = std::make_shared<Tensor1d>("epsilon <A|A>", nmo_);
 
     // Diagonalize Fock
-    FockA->diagonalize(UeigA, eigA, cutoff);
+    FockA->diagonalize(UeigA, eigA);
 
     // Build U
     UorbA->zero();
@@ -516,7 +516,7 @@ void DFOCC::canonic() {
         SharedTensor1d eigB = std::make_shared<Tensor1d>("epsilon <a|a>", nmo_);
 
         // Diagonalize Fock
-        FockB->diagonalize(UeigB, eigB, cutoff);
+        FockB->diagonalize(UeigB, eigB);
 
         // Build U
         UorbB->zero();

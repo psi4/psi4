@@ -46,7 +46,6 @@ Ektip::Ektip(std::string name, int nocc, int norb, const SharedTensor2d& GFock, 
     scale_ = scale_gf;
     scale2_ = scale_ps;
     nvir_ = norb_ - nocc_;
-    cutoff_ = 1.0E-10;
 
     // malloc
     GF_ = std::make_shared<Tensor2d>("MO-basis GFM", norb_, norb_);
@@ -118,7 +117,7 @@ void Ektip::compute_ektip() {
     G1_copy_.reset();
 
     // Diagonalize OPDM
-    G1_->diagonalize(Uvec_, diagG1_, cutoff_);
+    G1_->diagonalize(Uvec_, diagG1_);
 
     // Make sure all eigenvalues are positive
     for (int i = 0; i < norb_; ++i) {
@@ -142,7 +141,7 @@ void Ektip::compute_ektip() {
     GFp_->gemm(false, false, temp_, G1half_, 1.0, 0.0);
 
     // Diagonalize GFock to get orbital energies
-    GFp_->diagonalize(Uvecp_, eorb_, cutoff_);
+    GFp_->diagonalize(Uvecp_, eorb_);
     Uvec_->gemm(false, false, G1half_, Uvecp_, 1.0, 0.0);
 
     // Pole strength
