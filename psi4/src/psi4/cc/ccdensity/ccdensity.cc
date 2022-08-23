@@ -70,7 +70,7 @@ void onepdm(const struct RHO_Params&);
 void sortone(const struct RHO_Params&);
 void twopdm();
 void energy(const struct RHO_Params&);
-// Note: resort_tei() is to be used by a frozen-core CC gradient implementation in the future.
+// Note: resort_tei() may be used by a frozen-core CC gradient implementation in the future.
 // See https://github.com/psi4/psi4/pull/2696 for discussion.
 // void resort_tei();
 // void resort_gamma();
