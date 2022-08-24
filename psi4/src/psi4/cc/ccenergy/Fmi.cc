@@ -34,8 +34,8 @@
 #include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
-#include "MOInfo.h"
 #include "psi4/cc/ccwave.h"
+#include "psi4/libmints/matrix.h"
 
 namespace psi {
 namespace ccenergy {
@@ -68,64 +68,20 @@ void CCEnergyWavefunction::Fmi_build() {
         global_dpd_->file2_close(&fij);
     }
 
-    if (params_.ref == 0) { /** RHF **/
+    // For RHF, we don't zero.
+    // This is probably cancelled by a difference in whether the amplitude update step is += or =.
+    if (params_.ref == 1 || params_.ref == 2) { /** ROHF | UHF **/
+        int param = params_.ref == 1 ? 0 : 2; // ROHF needs 0, UHF needs 2
         global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
-        global_dpd_->file2_mat_init(&FMI);
-        global_dpd_->file2_mat_rd(&FMI);
-
-        /*
-        for(int h = 0; h < moinfo.nirreps; h++) {
-          for(int m = 0; m < FMI.params->rowtot[h]; m++)
-            FMI.matrix[h][m][m] = 0;
-        }
-        */
-
-        global_dpd_->file2_mat_wrt(&FMI);
-        global_dpd_->file2_mat_close(&FMI);
+        Matrix temp(&FMI);
+        temp.zero_diagonal();
+        temp.write_to_dpdfile2(&FMI);
         global_dpd_->file2_close(&FMI);
-    } else if (params_.ref == 1) { /** ROHF **/
-        global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
-        global_dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmi");
 
-        global_dpd_->file2_mat_init(&FMI);
-        global_dpd_->file2_mat_rd(&FMI);
-        global_dpd_->file2_mat_init(&Fmi);
-        global_dpd_->file2_mat_rd(&Fmi);
-
-        for (int h = 0; h < moinfo_.nirreps; h++) {
-            for (int m = 0; m < FMI.params->rowtot[h]; m++) FMI.matrix[h][m][m] = 0;
-
-            for (int m = 0; m < Fmi.params->rowtot[h]; m++) Fmi.matrix[h][m][m] = 0;
-        }
-
-        global_dpd_->file2_mat_wrt(&FMI);
-        global_dpd_->file2_mat_close(&FMI);
-        global_dpd_->file2_mat_wrt(&Fmi);
-        global_dpd_->file2_mat_close(&Fmi);
-
-        global_dpd_->file2_close(&FMI);
-        global_dpd_->file2_close(&Fmi);
-    } else if (params_.ref == 2) { /** UHF **/
-        global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
-        global_dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, 2, 2, "Fmi");
-
-        global_dpd_->file2_mat_init(&FMI);
-        global_dpd_->file2_mat_rd(&FMI);
-        global_dpd_->file2_mat_init(&Fmi);
-        global_dpd_->file2_mat_rd(&Fmi);
-
-        for (int h = 0; h < moinfo_.nirreps; h++) {
-            for (int m = 0; m < FMI.params->rowtot[h]; m++) FMI.matrix[h][m][m] = 0;
-
-            for (int m = 0; m < Fmi.params->rowtot[h]; m++) Fmi.matrix[h][m][m] = 0;
-        }
-
-        global_dpd_->file2_mat_wrt(&FMI);
-        global_dpd_->file2_mat_close(&FMI);
-        global_dpd_->file2_mat_wrt(&Fmi);
-        global_dpd_->file2_mat_close(&Fmi);
-
-        global_dpd_->file2_close(&FMI);
+        global_dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, param, param, "Fmi");
+        temp = Matrix(&Fmi);
+        temp.zero_diagonal();
+        temp.write_to_dpdfile2(&Fmi);
         global_dpd_->file2_close(&Fmi);
     }
 
