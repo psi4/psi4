@@ -87,8 +87,10 @@ size_t PSIO::rd_toclen(size_t unit) {
     errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
 
     if (errcod != sizeof(size_t)){
-        perror("READ failed in rd_toclen(). Error description from the OS: ");
-        fflush(stderr);
+        if (errcod == -1){
+            perror("READ failed in rd_toclen(). Error description from the OS: ");
+            fflush(stderr);
+        }
         return (0); /* assume that all is well (see comments above) */
     }
 
