@@ -100,7 +100,8 @@ jobs:
         msgpack-python \
         conda-forge::qcelemental \
         conda-forge::qcengine \
-        scipy
+        numpy=1.22.3 \
+        scipy=1.7.3
       source activate p4env
       which python
       conda list
