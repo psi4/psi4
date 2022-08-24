@@ -76,13 +76,21 @@ size_t PSIO::rd_toclen(size_t unit) {
 
     errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
 
-    if (errcod == -1) psio_error(unit, PSIO_ERROR_LSEEK);
+    if (errcod == -1){
+        perror("LSEEK failed. Error description from the OS: ");
+        fflush(stderr);
+        psio_error(unit, PSIO_ERROR_LSEEK);
+    }
 
     /* Read the value */
 
     errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
 
-    if (errcod != sizeof(size_t)) return (0); /* assume that all is well (see comments above) */
+    if (errcod != sizeof(size_t)){
+        perror("READ failed in rd_toclen(). Error description from the OS: ");
+        fflush(stderr);
+        return (0); /* assume that all is well (see comments above) */
+    }
 
     return (len);
 }
@@ -99,8 +107,10 @@ void PSIO::wt_toclen(size_t unit, size_t len) {
     errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
 
     if (errcod == -1) {
-        ::fprintf(stderr, "Error in PSIO_WT_TOCLEN()!\n");
-        exit(_error_exit_code_);
+        perror("LSEEK failed. Error description from the OS: ");
+        ::fprintf(stderr, "Error in PSIO_WT_TOCLEN()! Cannot seek vol[0] to its beginning, unit %zu.\n", unit);
+        fflush(stderr);
+        throw PSIEXCEPTION("PSIO Error");
     }
 
     /* Write the value */
@@ -108,6 +118,7 @@ void PSIO::wt_toclen(size_t unit, size_t len) {
     errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
 
     if (errcod != sizeof(size_t)) {
+        perror("WRITE failed. Error description from the OS: ");
         ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %zu.\n", unit);
         fflush(stderr);
         throw PSIEXCEPTION("PSIO Error");
