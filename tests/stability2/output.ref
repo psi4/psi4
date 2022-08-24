@@ -226,7 +226,7 @@ compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")           
 	First half integral transformation complete.
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
-    Lowest ROHF->ROHF stability eigenvalues:-
+    Lowest ROHF->ROHF stability eigenvalues:
       B1 0.022220        B2 0.022220        A1 0.094068        B1 0.194516  
       B2 0.194516        A1 0.213961        A2 0.213961        A1 0.338722  
       A2 0.359135        A1 0.387962        A1 0.413653        B2 0.434411  
