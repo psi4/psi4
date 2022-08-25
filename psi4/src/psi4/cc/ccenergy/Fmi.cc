@@ -69,7 +69,8 @@ void CCEnergyWavefunction::Fmi_build() {
     }
 
     // For RHF, we don't zero.
-    // This is probably cancelled by a difference in whether the amplitude update step is += or =.
+    // This is because the amplitude update in Psi's RHF uses the full residual while Psi's ROHF and UHF updates separate
+    // out the diagonal contributions from the Fock matrix [cf. Eqs. (1) and (2) of Stanton et al., J. Chem. Phys. 94, 4334-4345 (1991)].
     if (params_.ref == 1 || params_.ref == 2) { /** ROHF | UHF **/
         int param = params_.ref == 1 ? 0 : 2; // ROHF needs 0, UHF needs 2
         global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
