@@ -980,9 +980,9 @@ bool RHF::stability_analysis() {
             free(evals);
         }
 
-        outfile->Printf("    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        outfile->Printf("    Lowest singlet (RHF->RHF) stability eigenvalues:\n");
         print_stability_analysis(singlet_eval_sym);
-        outfile->Printf("    Lowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        outfile->Printf("    Lowest triplet (RHF->UHF) stability eigenvalues:\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
