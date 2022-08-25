@@ -173,7 +173,7 @@ class IrreppedVector {
         assign_pointer_offsets();
     }
 
-    IrreppedVector<T> clone() { return IrreppedVector<T>(*this) ; }
+    IrreppedVector<T> clone() const { return IrreppedVector<T>(*this) ; }
 
     T &operator()(int i) { return vector_[0][i]; }
     const T &operator()(int i) const { return vector_[0][i]; }
@@ -319,7 +319,7 @@ class PSI_API Vector final : public IrreppedVector<double> {
     // Defined in occ/arrays.cc. Remove when no longer needed.
     explicit Vector(const Dimension &dimpi, const occwave::Array1d &array);
 
-    Vector clone() { return Vector(*this); }
+    Vector clone() const { return Vector(*this); }
     Vector get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
 
     /// Adds other elt/vector to this
@@ -378,7 +378,7 @@ class PSI_API IntVector : public IrreppedVector<int> {
     explicit IntVector(const std::string& name, const Dimension &dimpi) : IrreppedVector<int>(name, dimpi) {};
     IntVector(const IntVector& vector) : IrreppedVector<int>(vector) {};
 
-    IntVector clone() { return IntVector(*this) ; }
+    IntVector clone() const { return IntVector(*this) ; }
     IntVector get_block(const Slice &slice) const { return psi::get_block(*this, slice); };
 
     void print(std::string outfile = "outfile") const { IrreppedVector<int>::print(outfile, "%10d"); };
