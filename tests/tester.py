@@ -43,6 +43,8 @@ def filter_marks(marks, nested):
             pass
         elif m == "quicktests":
             markstr.append("quick")
+        elif m == "longtests":
+            markstr.append("long")
         elif m == "smoketests":
             markstr.append("smoke")
         elif m == "addon":
@@ -110,7 +112,7 @@ for fl in sorted(tests.rglob("*")):
             with open(cml) as fp:
                 cmakeliststxt = fp.read()
 
-            mobj = re.search(r"^\s*" + r"add_regression_test\(" + r"(?P<name>([a-zA-Z0-9-+_]+))" + r'\s+\"' + r"(?P<marks>([a-z0-9-;]+))" + r'\"\)', cmakeliststxt, re.MULTILINE)
+            mobj = re.search(r"^\s*" + r"add_regression_test\(" + r"(?P<name>([a-zA-Z0-9-+_]+))" + r'\s+\"' + r"(?P<marks>([a-z0-9-_;]+))" + r'\"\)', cmakeliststxt, re.MULTILINE)
             if mobj:
                 if mobj.group("name") != ctest_name:
                     complaints.append(f"{testdir}: mismatched directory ({ctest_name}) and ctest registration name ({mobj.group('name')}). `vi {cml}`")
@@ -136,11 +138,16 @@ for fl in sorted(tests.rglob("*")):
                 testinputpy = fp.read()
 
             pymarks = []
-            mobj = re.search(r'^@ctest_labeler\("' + r"(?P<pymarks>([a-z0-9-;]+))" + r'\"\)', testinputpy, re.MULTILINE)
+            pyplugins = []
+            mobj = re.findall(r'^@uusing\("' + r"([a-z0-9-_;]+)" + r'\"\)', testinputpy, re.MULTILINE)
+            if mobj:
+                pyplugins = mobj
+
+            mobj = re.search(r'^@ctest_labeler\("' + r"(?P<pymarks>([a-z0-9-_;]+))" + r'\"\)', testinputpy, re.MULTILINE)
             if mobj:
                 pymarks = mobj.group("pymarks").split(";")
 
-            if set(marks) != set(pymarks):
+            if (set(marks) - set(pyplugins)) != set(pymarks):
                 complaints.append(f"{testdir}: mismatched marks ctest ({markstr}) and pytest ({';'.join(pymarks)}). `vi {testdir}/CMakeLists.txt {testdir}/test_input.py`")
 
             mobj = re.search(r"^def test_" + r"(?P<name>([a-zA-Z0-9_]+))" + r"\(", testinputpy, re.MULTILINE)
