@@ -313,12 +313,14 @@ class PSI_API JK {
 
     // => Incremental Fock build variables and routines <= //
 
-    /// Perform Incremental Fock Build for J and K Matrices? (default false)
+    /// Perform Incremental Fock Build for J and K Matrices?
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     /// Is incfock performed this SCF iteration? (if incfock_ is true)
-    bool do_incfock_iter_;
+    bool perform_incfock_;
+    /// Disable incfock for this iteration?
+    bool disable_incfock_;
 
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
@@ -525,12 +527,11 @@ class PSI_API JK {
     /**
      * Returns whether or not an incremental Fock build was performed during the last SCF iteration
      */
-    bool incfock_last_iter() { return do_incfock_iter_; }
+    bool incfock_last_iter() { return perform_incfock_; }
     /**
-     * @brief Resets the incfock iteration number
-     * 
+     * @brief Set whether or not to disable incfock for this SCF iteration
      */
-    void reset_incfock() { incfock_count_ = 0; }
+    void set_disable_incfock(bool disable_incfock) { disable_incfock_ = disable_incfock; }
 
     // => Computers <= //
 

@@ -97,7 +97,7 @@ void export_fock(py::module &m) {
         .def("computed_shells_per_iter", &JK::computed_shells_per_iter, "Array containing the number of ERI shell quartets computed (not screened out) during each compute call.")
         .def("print_header", &JK::print_header, "docstring")
         .def("incfock_last_iter", &JK::incfock_last_iter, "Was the last Fock build incremental?")
-        .def("reset_incfock", &JK::reset_incfock, "Reset the incfock iteration number (0 means no incfock)");
+        .def("set_disable_incfock", &JK::set_disable_incfock, "Set whether or not to disable incfock for this SCF iteration", "disable_incfock"_a);
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())

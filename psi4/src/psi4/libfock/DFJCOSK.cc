@@ -322,9 +322,9 @@ void DFJCOSK::compute_JK() {
     //   D_eff, the effective pseudo-density matrix is either:
     //   (1) the regular density: D_eff == D_lr = C_lo x C*ro
     //   (2) the difference density: D_eff == dD_lr = (C_lo x C_ro)_{iter} - (C_lo x C_ro)_{iter - 1}
-    auto& D_eff = (do_incfock_iter_ ? delta_D_ao_ : D_ao_);
-    auto& J_eff = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
-    auto& K_eff = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
+    auto& D_eff = (perform_incfock_ ? delta_D_ao_ : D_ao_);
+    auto& J_eff = (perform_incfock_ ? delta_J_ao_ : J_ao_);
+    auto& K_eff = (perform_incfock_ ? delta_K_ao_ : K_ao_);
 
     if (do_J_) {
         timer_on("DFJ");

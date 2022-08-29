@@ -503,7 +503,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 # clear any cached matrices associated with incremental fock construction
                 # the change in the screening spoils the linearity in the density matrix
-                self.jk().reset_incfock()
+                self.jk().set_disable_incfock(True)
 
                 core.print_out("  Energy and wave function converged with early screening.\n")
                 core.print_out("  Performing final iteration with tighter screening.\n\n")

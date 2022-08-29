@@ -307,10 +307,10 @@ void DirectJK::compute_JK() {
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     
-    std::vector<SharedMatrix>& D_ref = (do_incfock_iter_ ? delta_D_ao_ : D_ao_);
-    std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
-    std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
-    std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? delta_wK_ao_ : wK_ao_);
+    std::vector<SharedMatrix>& D_ref = (perform_incfock_ ? delta_D_ao_ : D_ao_);
+    std::vector<SharedMatrix>& J_ref = (perform_incfock_ ? delta_J_ao_ : J_ao_);
+    std::vector<SharedMatrix>& K_ref = (perform_incfock_ ? delta_K_ao_ : K_ao_);
+    std::vector<SharedMatrix>& wK_ref = (perform_incfock_ ? delta_wK_ao_ : wK_ao_);
 
     // Passed in as a dummy when J (and/or K) is not built
     std::vector<SharedMatrix> temp;

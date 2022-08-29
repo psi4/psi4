@@ -155,8 +155,10 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        // QUESTION: Should Direct JK use incfock by default or not?
-        // if (!options["INCFOCK"].has_changed()) jk->set_incfock(true);
+        if (!options["INCFOCK"].has_changed()) {
+            if (options.get_str("SCREENING") == "DENSITY") jk->set_incfock(true);
+            else jk->set_incfock(false);
+        }
 
         return std::shared_ptr<JK>(jk);
 
@@ -246,7 +248,8 @@ void JK::common_init() {
 
     incfock_ = Process::environment.options.get_bool("INCFOCK");
     incfock_count_ = 0;
-    do_incfock_iter_ = false;
+    perform_incfock_ = false;
+    if (incfock_) disable_incfock_ = false;
     if (Process::environment.options.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
@@ -633,7 +636,7 @@ void JK::incfock_setup() {
     double incfock_conv = Process::environment.options.get_double("INCFOCK_CONVERGENCE");
     double Dnorm = Process::environment.globals["SCF D NORM"];
     // Do incfock on this iteration?
-    do_incfock_iter_ = (Dnorm >= incfock_conv) && (incfock_count_ % reset != 0);
+    perform_incfock_ = !disable_incfock_ && (Dnorm >= incfock_conv) && (incfock_count_ % reset != 0);
         
     if (incfock_count_ == 0 || Dnorm >= incfock_conv) incfock_count_ += 1;
 
@@ -643,7 +646,7 @@ void JK::incfock_setup() {
 void JK::incfock_postiter() {
     timer_on("JK: Incfock Postiteration");
 
-    if (do_incfock_iter_) {
+    if (perform_incfock_) {
         for (size_t N = 0; N < D_ao_.size(); N++) {
 
             if (do_wK_) {
