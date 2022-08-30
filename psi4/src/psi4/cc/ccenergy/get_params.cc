@@ -161,7 +161,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
     if (options["BRUECKNER_ORBS_R_CONVERGENCE"].has_changed())
         params_.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
     else
-        params_.bconv = 100.0 * params_.e_convergence;
+        params_.bconv = 50.0 * params_.e_convergence;
 
     params_.print_mp2_amps = options.get_bool("MP2_AMPS_PRINT");
     params_.print_pair_energies = options.get_bool("PAIR_ENERGIES_PRINT");
