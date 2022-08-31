@@ -2790,9 +2790,6 @@ def run_bccd(name, **kwargs):
     else:
         raise ValidationError("proc.py:run_bccd name %s not recognized" % name)
 
-    if (corl_type := method_algorithm_type(name).now) != "CONV":
-        raise ValidationError(f"Invalid type {corl_type} for CCENERGY energy through `run_bccd`. See Capabilities Table")
-
     # Bypass routine scf if user did something special to get it to converge
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
