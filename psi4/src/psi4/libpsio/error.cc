@@ -116,7 +116,7 @@ void psio_error(size_t unit, size_t errval, std::string prev_msg /* = ""*/) {
             prev_msg += "PSIO_ERROR: " + std::to_string(PSIO_ERROR_WRITE) + " (error writing to file)\n";
             break;
         case PSIO_ERROR_MAXUNIT:
-            prev_msg += "PSIO_ERROR: " + std::to_string(PSIO_MAXUNIT) + " (Maximum unit number exceeded)\n";
+            prev_msg += "PSIO_ERROR: " + std::to_string(PSIO_ERROR_MAXUNIT) + " (Maximum unit number exceeded)\n";
             prev_msg += " Open failed because unit " + std::to_string(unit) + " exceeds PSIO_MAXUNIT = ";
             prev_msg += std::to_string(PSIO_MAXUNIT) + ".\n";
             break;
