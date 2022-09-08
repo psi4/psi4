@@ -59,3 +59,16 @@ def test_gradient(inp):
     assert compare_values(findif_gradient, analytic_gradient, 5, "analytic vs. findif gradient")
     assert compare_values(reference_gradient, analytic_gradient.np, 5, "analytic vs. reference gradient")
 
+def test_gradient_ref():
+    h2o = psi4.geometry("""
+        O
+        H 1 0.958
+        H 1 0.958 2 104.5
+    """)
+
+    psi4.set_options({"basis": "cc-pVDZ"})
+    mp2_wfn = psi4.energy("mp2", return_wfn=True)[1]
+    with pytest.raises(TypeError):
+        psi4.gradient("scf", ref_wfn=mp2_wfn)
+    scf_wfn = psi4.energy("scf", return_wfn=True)[1]
+    psi4.gradient("scf", ref_wfn=scf_wfn)
