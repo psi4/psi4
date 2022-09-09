@@ -56,10 +56,10 @@ SharedMatrix scfhess(std::shared_ptr<scf::HF> ref_wfn, Options &options)
     SharedMatrix H;
     if( ref_wfn->same_a_b_orbs() && ref_wfn->same_a_b_dens()) {
         // RHF
-        RSCFDeriv hessian_computer(std::static_pointer_cast<scf::RHF>(ref_wfn), options);
+        RSCFDeriv hessian_computer(std::dynamic_pointer_cast<scf::RHF>(ref_wfn), options);
         H = hessian_computer.compute_hessian();
     } else {
-        USCFDeriv hessian_computer(std::static_pointer_cast<scf::UHF>(ref_wfn), options);
+        USCFDeriv hessian_computer(std::dynamic_pointer_cast<scf::UHF>(ref_wfn), options);
         H = hessian_computer.compute_hessian();
     }
     ref_wfn->set_hessian(H);
