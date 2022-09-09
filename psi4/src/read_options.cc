@@ -1174,8 +1174,20 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("FISAPT_CHARGE_COMPLETENESS", 0.8);
         /*- Manual link bond specification [[Atom1, Atom2], ...] -*/
         options.add("FISAPT_MANUAL_LINKS", new ArrayType());
-        /*- Where do sigma links go (to C or to AB)? -*/
-        options.add_str("FISAPT_LINK_ASSIGNMENT", "C", "C AB");
+        /*- Where do sigma links go (to C, AB, or split into IHOs)? -*/
+        options.add_str("FISAPT_LINK_ASSIGNMENT", "C", "C AB SAO0 SAO1 SAO2 SIAO0 SIAO1 SIAO2");
+        /*- Orthogonalization of link orbitals for FISAPT_LINK_ASSIGNMENT=SAOx/SIAOx -*/
+        /*- Link A orthogonalized to A in whole (interacting) molecule or in the (noninteracting) fragment? -*/
+        options.add_str("FISAPT_LINK_ORTHO", "FRAGMENT", "FRAGMENT WHOLE NONE");
+        /*- Calculate separate exchange corrections for parallel and perpendicular spin coupling of link orbitals? -*/
+        /*- When false, only the averaged out exchange corrections are computed. -*/
+        options.add_bool("FISAPT_EXCH_PARPERP", false);
+        /*- Generate cube files for unsplit link orbitals (IBOs)? -*/
+        options.add_bool("FISAPT_CUBE_LINKIBOS", false);
+        /*- Generate cube files for split link orbitals (IHOs)? -*/
+        options.add_bool("FISAPT_CUBE_LINKIHOS", false);
+        /*- Generate cube files for fragment density matrices? -*/
+        options.add_bool("FISAPT_CUBE_DENSMAT", false);
 
         // => F-SAPT Options <= //
 
