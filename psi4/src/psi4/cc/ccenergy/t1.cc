@@ -35,7 +35,6 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "Params.h"
-#include "MOInfo.h"
 #include "psi4/cc/ccwave.h"
 
 namespace psi {
@@ -105,7 +104,7 @@ void CCEnergyWavefunction::t1_build() {
         global_dpd_->file2_mat_rd(&newtIA);
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "2 tIjAb - tIjBa");
         global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-        for (int Gma = 0; Gma < moinfo_.nirreps; Gma++) {
+        for (int Gma = 0; Gma < nirrep_; Gma++) {
             Gmi = Gma; /* T1 is totally symmetric */
 
             global_dpd_->buf4_mat_irrep_row_init(&F, Gma);
@@ -122,12 +121,12 @@ void CCEnergyWavefunction::t1_build() {
                 Gi = Ga; /* T1 is totally symmetric */
                 A = a - F.params->qoff[Ga];
 
-                nrows = moinfo_.occpi[Gi];
+                nrows = act_occpi_[Gi];
                 ncols = F.params->coltot[Gma];
 
-                if (nrows && ncols && moinfo_.virtpi[Ga])
+                if (nrows && ncols && act_virpi_[Ga])
                     C_DGEMV('n', nrows, ncols, 1.0, T2.matrix[Gmi][T2.row_offset[Gmi][m]], ncols, F.matrix[Gma][0], 1,
-                            1.0, &newtIA.matrix[Gi][0][A], moinfo_.virtpi[Ga]);
+                            1.0, &newtIA.matrix[Gi][0][A], act_virpi_[Ga]);
             }
 
             global_dpd_->buf4_mat_irrep_close(&T2, Gmi);

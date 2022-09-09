@@ -159,6 +159,8 @@ void CCEnergyWavefunction::get_moinfo() {
         moinfo_.virtpi = init_int_array(nirreps);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep", (char *)moinfo_.occpi, sizeof(int) * nirreps);
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep", (char *)moinfo_.virtpi, sizeof(int) * nirreps);
+        act_occpi_ = Dimension(std::vector<int>(moinfo_.occpi, moinfo_.occpi + nirreps));
+        act_virpi_ = Dimension(std::vector<int>(moinfo_.virtpi, moinfo_.virtpi + nirreps));
         moinfo_.occ_sym = init_int_array(nactive);
         moinfo_.vir_sym = init_int_array(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orb Symmetry", (char *)moinfo_.occ_sym, sizeof(int) * nactive);
