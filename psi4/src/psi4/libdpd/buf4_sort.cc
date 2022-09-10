@@ -333,7 +333,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
 
                             /* Irreps on the source */
                             const int Gpr = Gp ^ Gr;
-                            Gqs = Gq ^ Gs;
+                            const int Gqs = Gq ^ Gs;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -561,8 +561,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gps = Gp ^ Gs;
-                            Gqr = Gq ^ Gr;
+                            const int Gps = Gp ^ Gs;
+                            const int Gqr = Gq ^ Gr;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -637,7 +637,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                                         const int s = OutBuf.params->colorb[Grs][rs][1];
                                         const int Gr = OutBuf.params->rsym[r];
                                         const int Gs = Grs ^ Gr;
-                                        Gps = Gp ^ Gs;
+                                        const int Gps = Gp ^ Gs;
 
                                         if (Gps == Grow) {
                                             const int ps = InBuf->params->rowidx[p][s] - in_row_start;
@@ -664,7 +664,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                                         const int s = OutBuf.params->colorb[Grs][rs][1];
                                         const int Gr = OutBuf.params->rsym[r];
                                         const int Gs = Grs ^ Gr;
-                                        Gps = Gp ^ Gs;
+                                        const int Gps = Gp ^ Gs;
 
                                         if (Gps == Grow) {
                                             const int ps = InBuf->params->rowidx[p][s] - in_row_start;
@@ -714,7 +714,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                                         const int s = OutBuf.params->colorb[Grs][rs][1];
                                         const int Gr = OutBuf.params->rsym[r];
                                         const int Gs = Grs ^ Gr;
-                                        Gps = Gp ^ Gs;
+                                        const int Gps = Gp ^ Gs;
 
                                         if (Gps == Grow) {
                                             const int ps = InBuf->params->rowidx[p][s] - in_row_start;
@@ -741,7 +741,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                                         const int s = OutBuf.params->colorb[Grs][rs][1];
                                         const int Gr = OutBuf.params->rsym[r];
                                         const int Gs = Grs ^ Gr;
-                                        Gps = Gp ^ Gs;
+                                        const int Gps = Gp ^ Gs;
 
                                         if (Gps == Grow) {
                                             const int ps = InBuf->params->rowidx[p][s] - in_row_start;
@@ -788,7 +788,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                             const int Gs = Gr ^ r_irrep;
 
                             const int Gpr = Gp ^ Gr;
-                            Gsq = Gs ^ Gq;
+                            const int Gsq = Gs ^ Gq;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -840,8 +840,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gps = Gp ^ Gs;
-                            Grq = Gr ^ Gq;
+                            const int Gps = Gp ^ Gs;
+                            const int Grq = Gr ^ Gq;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1160,8 +1160,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Grp = Gr ^ Gp;
-                            Gqs = Gq ^ Gs;
+                            const int Grp = Gr ^ Gp;
+                            const int Gqs = Gq ^ Gs;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1213,8 +1213,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gsp = Gs ^ Gp;
-                            Gqr = Gq ^ Gr;
+                            const int Gsp = Gs ^ Gp;
+                            const int Gqr = Gq ^ Gr;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1265,8 +1265,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Grp = Gr ^ Gp;
-                            Gsq = Gs ^ Gq;
+                            const int Grp = Gr ^ Gp;
+                            const int Gsq = Gs ^ Gq;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1317,8 +1317,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gsp = Gs ^ Gp;
-                            Grq = Gr ^ Gq;
+                            const int Gsp = Gs ^ Gp;
+                            const int Grq = Gr ^ Gq;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1370,8 +1370,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Grq = Gr ^ Gq;
-                            Gps = Gp ^ Gs;
+                            const int Grq = Gr ^ Gq;
+                            const int Gps = Gp ^ Gs;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1423,7 +1423,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gsq = Gs ^ Gq;
+                            const int Gsq = Gs ^ Gq;
                             const int Gpr = Gp ^ Gr;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
@@ -1476,8 +1476,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gqr = Gq ^ Gr;
-                            Gps = Gp ^ Gs;
+                            const int Gqr = Gq ^ Gr;
+                            const int Gps = Gp ^ Gs;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1529,7 +1529,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gqs = Gq ^ Gs;
+                            const int Gqs = Gq ^ Gs;
                             const int Gpr = Gp ^ Gr;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
@@ -1722,8 +1722,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gsq = Gs ^ Gq;
-                            Grp = Gr ^ Gp;
+                            const int Gsq = Gs ^ Gq;
+                            const int Grp = Gr ^ Gp;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1855,8 +1855,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gqr = Gq ^ Gr;
-                            Gsp = Gs ^ Gp;
+                            const int Gqr = Gq ^ Gr;
+                            const int Gsp = Gs ^ Gp;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
@@ -1908,8 +1908,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         for (int Gr = 0; Gr < nirreps; Gr++) {
                             const int Gs = Gr ^ r_irrep;
 
-                            Gqs = Gq ^ Gs;
-                            Grp = Gr ^ Gp;
+                            const int Gqs = Gq ^ Gs;
+                            const int Grp = Gr ^ Gp;
 
                             for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
                                 const int P = OutBuf.params->poff[Gp] + p;
