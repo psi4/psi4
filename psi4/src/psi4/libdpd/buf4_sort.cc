@@ -117,7 +117,6 @@ namespace psi {
 
 int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum, const std::string& label) {
     dpdbuf4 OutBuf;
-    long int rowtot, coltot, core_total, maxrows;
     int Grow, Gcol;
     int out_rows_per_bucket, out_nbuckets, out_rows_left, out_row_start, n;
     int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
@@ -133,11 +132,12 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
     buf4_init(&OutBuf, outfilenum, my_irrep, pqnum, rsnum, pqnum, rsnum, 0, label);
 
     /* select in-core vs. out-of-core algorithms */
-    core_total = 0;
     int incore = 1;
     {
+        long int core_total = 0;
         for (int h = 0; h < nirreps; h++) {
-            coltot = InBuf->params->coltot[h ^ my_irrep];
+            const long int coltot = InBuf->params->coltot[h ^ my_irrep];
+            long int maxrows;
             if (coltot) {
                 maxrows = DPD_BIGNUM / coltot;
                 if (maxrows < 1) {
@@ -146,7 +146,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                 }
             } else
                 maxrows = DPD_BIGNUM;
-            rowtot = InBuf->params->rowtot[h];
+            long int rowtot = InBuf->params->rowtot[h];
             for (; rowtot > maxrows; rowtot -= maxrows) {
                 if (core_total > (core_total + 2 * maxrows * coltot))
                     incore = 0;
