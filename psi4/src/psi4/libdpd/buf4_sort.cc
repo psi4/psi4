@@ -135,6 +135,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
     /* select in-core vs. out-of-core algorithms */
     core_total = 0;
     int incore = 1;
+    {
     for (int h = 0; h < nirreps; h++) {
         coltot = InBuf->params->coltot[h ^ my_irrep];
         if (coltot) {
@@ -156,6 +157,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
         core_total += 2 * rowtot * coltot;
     }
     if (core_total > dpd_memfree()) incore = 0;
+    }
 
 #ifdef DPD_DEBUG
     if (incore == 0) {
