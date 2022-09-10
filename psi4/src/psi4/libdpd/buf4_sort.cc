@@ -117,7 +117,6 @@ namespace psi {
 
 int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum, const std::string& label) {
     dpdbuf4 OutBuf;
-    int Grow, Gcol;
     int out_rows_per_bucket, out_nbuckets, out_rows_left, out_row_start, n;
     int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
     int rows_per_bucket, nbuckets, rows_left;
@@ -379,8 +378,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                     for (n = 0; n < (out_rows_left ? out_nbuckets - 1 : out_nbuckets); n++) {
                         out_row_start = n * out_rows_per_bucket;
 
-                        for (Grow = 0; Grow < nirreps; Grow++) { /*Grow = Gpr*/
-                            Gcol = Grow ^ my_irrep;              /*Gcol = Gqs*/
+                        for (int Grow = 0; Grow < nirreps; Grow++) { /*Grow = Gpr*/
+                            const int Gcol = Grow ^ my_irrep;              /*Gcol = Gqs*/
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
                             in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
@@ -458,8 +457,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                     if (out_rows_left) {
                         out_row_start = n * out_rows_per_bucket;
 
-                        for (Grow = 0; Grow < nirreps; Grow++) {
-                            Gcol = Grow ^ my_irrep;
+                        for (int Grow = 0; Grow < nirreps; Grow++) {
+                            const int Gcol = Grow ^ my_irrep;
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
                             in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
@@ -608,8 +607,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                     for (n = 0; n < (out_rows_left ? out_nbuckets - 1 : out_nbuckets); n++) {
                         out_row_start = n * out_rows_per_bucket;
 
-                        for (Grow = 0; Grow < nirreps; Grow++) {
-                            Gcol = Grow ^ my_irrep;
+                        for (int Grow = 0; Grow < nirreps; Grow++) {
+                            const int Gcol = Grow ^ my_irrep;
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
                             in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
@@ -685,8 +684,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                     if (out_rows_left) {
                         out_row_start = n * out_rows_per_bucket;
 
-                        for (Grow = 0; Grow < nirreps; Grow++) {
-                            Gcol = Grow ^ my_irrep;
+                        for (int Grow = 0; Grow < nirreps; Grow++) {
+                            const int Gcol = Grow ^ my_irrep;
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
                             in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
