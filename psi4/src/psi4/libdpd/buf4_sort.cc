@@ -117,7 +117,7 @@ namespace psi {
 int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum,
                    const std::string& label) {
     dpdbuf4 OutBuf;
-    int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
+    int in_nbuckets, in_rows_left, in_row_start, m;
     int rows_per_bucket, nbuckets, rows_left;
 
     const int nirreps = InBuf->params->nirreps;
@@ -385,9 +385,12 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             const int Gcol = Grow ^ my_irrep;        /*Gcol = Gqs*/
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
-                            in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
-                            if (in_rows_per_bucket > InBuf->params->rowtot[Grow])
-                                in_rows_per_bucket = InBuf->params->rowtot[Grow];
+                            const int in_rows_per_bucket = [&InBuf, Gcol, Grow] {
+                                int irpb = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
+                                if (irpb > InBuf->params->rowtot[Grow]) irpb = InBuf->params->rowtot[Grow];
+                                return irpb;
+                            }();
+
                             in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
                             if (in_nbuckets == 1)
                                 in_rows_left = in_rows_per_bucket;
@@ -464,9 +467,12 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             const int Gcol = Grow ^ my_irrep;
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
-                            in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
-                            if (in_rows_per_bucket > InBuf->params->rowtot[Grow])
-                                in_rows_per_bucket = InBuf->params->rowtot[Grow];
+                            const int in_rows_per_bucket = [&InBuf, Gcol, Grow] {
+                                int irpb = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
+                                if (irpb > InBuf->params->rowtot[Grow]) irpb = InBuf->params->rowtot[Grow];
+                                return irpb;
+                            }();
+
                             in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
                             if (in_nbuckets == 1)
                                 in_rows_left = in_rows_per_bucket;
@@ -617,9 +623,12 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             const int Gcol = Grow ^ my_irrep;
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
-                            in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
-                            if (in_rows_per_bucket > InBuf->params->rowtot[Grow])
-                                in_rows_per_bucket = InBuf->params->rowtot[Grow];
+                            const int in_rows_per_bucket = [&InBuf, Gcol, Grow] {
+                                int irpb = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
+                                if (irpb > InBuf->params->rowtot[Grow]) irpb = InBuf->params->rowtot[Grow];
+                                return irpb;
+                            }();
+
                             in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
                             if (in_nbuckets == 1)
                                 in_rows_left = in_rows_per_bucket;
@@ -694,9 +703,12 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             const int Gcol = Grow ^ my_irrep;
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
-                            in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
-                            if (in_rows_per_bucket > InBuf->params->rowtot[Grow])
-                                in_rows_per_bucket = InBuf->params->rowtot[Grow];
+                            const int in_rows_per_bucket = [&InBuf, Gcol, Grow] {
+                                int irpb = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
+                                if (irpb > InBuf->params->rowtot[Grow]) irpb = InBuf->params->rowtot[Grow];
+                                return irpb;
+                            }();
+
                             in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
                             if (in_nbuckets == 1)
                                 in_rows_left = in_rows_per_bucket;
@@ -1653,10 +1665,12 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     const int out_rows_left =
                         (out_nbuckets == 1) ? out_rows_per_bucket : OutBuf.params->rowtot[Gpq] % out_rows_per_bucket;
 
-                    in_rows_per_bucket =
-                        (dpd_memfree() - InBuf->params->coltot[Gpq]) / (2 * InBuf->params->coltot[Gpq]);
-                    if (in_rows_per_bucket > InBuf->params->rowtot[Grs])
-                        in_rows_per_bucket = InBuf->params->rowtot[Grs];
+                    const int in_rows_per_bucket = [&InBuf, Gpq, Grs] {
+                        int irpb = (dpd_memfree() - InBuf->params->coltot[Gpq]) / (2 * InBuf->params->coltot[Gpq]);
+                        if (irpb > InBuf->params->rowtot[Grs]) irpb = InBuf->params->rowtot[Grs];
+                        return irpb;
+                    }();
+
                     in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grs] / (double)in_rows_per_bucket);
                     if (in_nbuckets == 1)
                         in_rows_left = in_rows_per_bucket;
