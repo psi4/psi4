@@ -116,10 +116,7 @@ namespace psi {
 ** -RAK, Nov. 2005*/
 
 int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const std::string& label) {
-    int h, nirreps, row, col, my_irrep, r_irrep;
-    int p, q, r, s, P, Q, R, S, pq, rs, sr, pr, qs, qp, rq, qr, ps, sp, rp, sq;
-    int PQ, RS;
-    int Gp, Gq, Gr, Gs, Gpq, Grs, Gpr, Gqs, Grq, Gqr, Gps, Gsp, Grp, Gsq;
+    int Gqs, Grq, Gqr, Gps, Gsp, Grp, Gsq;
     dpdbuf4 OutBuf;
     int incore;
     long int rowtot, coltot, core_total, maxrows;
@@ -128,8 +125,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
     int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
     int rows_per_bucket, nbuckets, rows_left;
 
-    nirreps = InBuf->params->nirreps;
-    my_irrep = InBuf->file.my_irrep;
+    const int nirreps = InBuf->params->nirreps;
+    const int my_irrep = InBuf->file.my_irrep;
 
 #ifdef DPD_TIMER
     timer_on("buf4_sort");
@@ -140,7 +137,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
     /* select in-core vs. out-of-core algorithms */
     incore = 1;
     core_total = 0;
-    for (h = 0; h < nirreps; h++) {
+    for (int h = 0; h < nirreps; h++) {
         coltot = InBuf->params->coltot[h ^ my_irrep];
         if (coltot) {
             maxrows = DPD_BIGNUM / coltot;
@@ -218,7 +215,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 
     /* Init input and output buffers and read in all blocks of the input */
     if (incore) {
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             buf4_mat_irrep_init(&OutBuf, h);
             buf4_mat_irrep_init(InBuf, h);
             buf4_mat_irrep_rd(InBuf, h);
@@ -239,20 +236,20 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 
             /* p->p; q->q; s->r; r->s = pqsr */
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
-                        p = OutBuf.params->roworb[h][pq][0];
-                        q = OutBuf.params->roworb[h][pq][1];
+                    for (int pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
+                        const int p = OutBuf.params->roworb[h][pq][0];
+                        const int q = OutBuf.params->roworb[h][pq][1];
 
-                        row = InBuf->params->rowidx[p][q];
+                        const int row = InBuf->params->rowidx[p][q];
 
-                        for (rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-                            r = OutBuf.params->colorb[r_irrep][rs][0];
-                            s = OutBuf.params->colorb[r_irrep][rs][1];
+                        for (int rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+                            const int r = OutBuf.params->colorb[r_irrep][rs][0];
+                            const int s = OutBuf.params->colorb[r_irrep][rs][1];
 
-                            sr = InBuf->params->colidx[s][r];
+                            const int sr = InBuf->params->colidx[s][r];
 
                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][sr];
                         }
@@ -260,8 +257,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                 }
             } else { /* out-of-core pqsr -> pqrs */
 
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
+                for (int Gpq = 0; Gpq < nirreps; Gpq++) {
+                    const int Grs = Gpq ^ my_irrep;
                     rows_per_bucket = dpd_memfree() / 2 / InBuf->params->coltot[Grs];
 
                     if (rows_per_bucket > InBuf->params->rowtot[Gpq]) rows_per_bucket = InBuf->params->rowtot[Gpq];
@@ -279,12 +276,12 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                     for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
                         buf4_mat_irrep_rd_block(InBuf, Gpq, n * rows_per_bucket, rows_per_bucket);
 
-                        for (pq = 0; pq < rows_per_bucket; pq++) {
-                            for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                r = OutBuf.params->colorb[Grs][rs][0];
-                                s = OutBuf.params->colorb[Grs][rs][1];
+                        for (int pq = 0; pq < rows_per_bucket; pq++) {
+                            for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                const int r = OutBuf.params->colorb[Grs][rs][0];
+                                const int s = OutBuf.params->colorb[Grs][rs][1];
 
-                                sr = InBuf->params->colidx[s][r];
+                                const int sr = InBuf->params->colidx[s][r];
 
                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][pq][sr];
                             }
@@ -295,12 +292,12 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                     if (rows_left) {
                         buf4_mat_irrep_rd_block(InBuf, Gpq, n * rows_per_bucket, rows_left);
 
-                        for (pq = 0; pq < rows_left; pq++) {
-                            for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                r = OutBuf.params->colorb[Grs][rs][0];
-                                s = OutBuf.params->colorb[Grs][rs][1];
+                        for (int pq = 0; pq < rows_left; pq++) {
+                            for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                const int r = OutBuf.params->colorb[Grs][rs][0];
+                                const int s = OutBuf.params->colorb[Grs][rs][1];
 
-                                sr = InBuf->params->colidx[s][r];
+                                const int sr = InBuf->params->colidx[s][r];
 
                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][pq][sr];
                             }
@@ -327,32 +324,32 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 
             /* p->p; r->q; q->r; s->s = prqs */
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             /* Irreps on the source */
-                            Gpr = Gp ^ Gr;
+                            const int Gpr = Gp ^ Gr;
                             Gqs = Gq ^ Gs;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        pr = InBuf->params->rowidx[P][R];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int pr = InBuf->params->rowidx[P][R];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            qs = InBuf->params->colidx[Q][S];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int qs = InBuf->params->colidx[Q][S];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gpr][pr][qs];
                                         }
@@ -364,8 +361,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                 }
             } else { /* pqrs <- prqs */
 
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
+                for (int Gpq = 0; Gpq < nirreps; Gpq++) {
+                    const int Grs = Gpq ^ my_irrep;
 
                     out_rows_per_bucket = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
                     if (out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
@@ -403,23 +400,23 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                                 in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_per_bucket);
 
-                                for (pq = 0; pq < out_rows_per_bucket; pq++) {
-                                    p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                    q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                    Gp = OutBuf.params->psym[p];
-                                    Gq = Gpq ^ Gp;
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        Gr = OutBuf.params->rsym[r];
-                                        Gs = Grs ^ Gr;
-                                        Gpr = Gp ^ Gr;
+                                for (int pq = 0; pq < out_rows_per_bucket; pq++) {
+                                    const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                    const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                    const int Gp = OutBuf.params->psym[p];
+                                    const int Gq = Gpq ^ Gp;
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int Gr = OutBuf.params->rsym[r];
+                                        const int Gs = Grs ^ Gr;
+                                        const int Gpr = Gp ^ Gr;
 
                                         if (Gpr == Grow) {
-                                            pr = InBuf->params->rowidx[p][r] - in_row_start;
+                                            const int pr = InBuf->params->rowidx[p][r] - in_row_start;
                                             /* check if the current value is in the current in_bucket or not */
                                             if (pr >= 0 && pr < in_rows_per_bucket) {
-                                                qs = InBuf->params->colidx[q][s];
+                                                const int qs = InBuf->params->colidx[q][s];
                                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grow][pr][qs];
                                             }
                                         }
@@ -431,23 +428,23 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_left);
 
                                 /* pqrs <- prqs */
-                                for (pq = 0; pq < out_rows_per_bucket; pq++) {
-                                    p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                    q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                    Gp = OutBuf.params->psym[p];
-                                    Gq = Gpq ^ Gp;
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        Gr = OutBuf.params->rsym[r];
-                                        Gs = Grs ^ Gr;
-                                        Gpr = Gp ^ Gr;
+                                for (int pq = 0; pq < out_rows_per_bucket; pq++) {
+                                    const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                    const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                    const int Gp = OutBuf.params->psym[p];
+                                    const int Gq = Gpq ^ Gp;
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int Gr = OutBuf.params->rsym[r];
+                                        const int Gs = Grs ^ Gr;
+                                        const int Gpr = Gp ^ Gr;
 
                                         if (Gpr == Grow) {
-                                            pr = InBuf->params->rowidx[p][r] - in_row_start;
+                                            const int pr = InBuf->params->rowidx[p][r] - in_row_start;
                                             /* check if the current value is in core or not */
                                             if (pr >= 0 && pr < in_rows_left) {
-                                                qs = InBuf->params->colidx[q][s];
+                                                const int qs = InBuf->params->colidx[q][s];
                                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grow][pr][qs];
                                             }
                                         }
@@ -482,23 +479,23 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                                 in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_per_bucket);
 
-                                for (pq = 0; pq < out_rows_left; pq++) {
-                                    p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                    q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                    Gp = OutBuf.params->psym[p];
-                                    Gq = Gpq ^ Gp;
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        Gr = OutBuf.params->rsym[r];
-                                        Gs = Grs ^ Gr;
-                                        Gpr = Gp ^ Gr;
+                                for (int pq = 0; pq < out_rows_left; pq++) {
+                                    const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                    const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                    const int Gp = OutBuf.params->psym[p];
+                                    const int Gq = Gpq ^ Gp;
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int Gr = OutBuf.params->rsym[r];
+                                        const int Gs = Grs ^ Gr;
+                                        const int Gpr = Gp ^ Gr;
 
                                         if (Gpr == Grow) {
-                                            pr = InBuf->params->rowidx[p][r] - in_row_start;
+                                            const int pr = InBuf->params->rowidx[p][r] - in_row_start;
                                             /* check if the current value is in the current in_bucket or not */
                                             if (pr >= 0 && pr < in_rows_per_bucket) {
-                                                qs = InBuf->params->colidx[q][s];
+                                                const int qs = InBuf->params->colidx[q][s];
                                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grow][pr][qs];
                                             }
                                         }
@@ -509,23 +506,23 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                                 in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_left);
 
-                                for (pq = 0; pq < out_rows_left; pq++) {
-                                    p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                    q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                    Gp = OutBuf.params->psym[p];
-                                    Gq = Gpq ^ Gp;
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        Gr = OutBuf.params->rsym[r];
-                                        Gs = Grs ^ Gr;
-                                        Gpr = Gp ^ Gr;
+                                for (int pq = 0; pq < out_rows_left; pq++) {
+                                    const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                    const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                    const int Gp = OutBuf.params->psym[p];
+                                    const int Gq = Gpq ^ Gp;
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int Gr = OutBuf.params->rsym[r];
+                                        const int Gs = Grs ^ Gr;
+                                        const int Gpr = Gp ^ Gr;
 
                                         if (Gpr == Grow) {
-                                            pr = InBuf->params->rowidx[p][r] - in_row_start;
+                                            const int pr = InBuf->params->rowidx[p][r] - in_row_start;
                                             /* check if the current value is in core or not */
                                             if (pr >= 0 && pr < in_rows_left) {
-                                                qs = InBuf->params->colidx[q][s];
+                                                const int qs = InBuf->params->colidx[q][s];
                                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grow][pr][qs];
                                             }
                                         }
@@ -557,31 +554,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* p->p; r->q; s->r; q->s = psqr */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gps = Gp ^ Gs;
                             Gqr = Gq ^ Gr;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        qr = InBuf->params->colidx[Q][R];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int qr = InBuf->params->colidx[Q][R];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            ps = InBuf->params->rowidx[P][S];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int ps = InBuf->params->rowidx[P][S];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gps][ps][qr];
                                         }
@@ -592,8 +589,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                     }
                 }
             } else {
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
+                for (int Gpq = 0; Gpq < nirreps; Gpq++) {
+                    const int Grs = Gpq ^ my_irrep;
 
                     /* determine how many rows of OutBuf we can store in half of the core */
                     out_rows_per_bucket = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
@@ -631,24 +628,23 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                                 in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_per_bucket);
 
-                                for (pq = 0; pq < out_rows_per_bucket; pq++) {
-                                    p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                    q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                    Gp = OutBuf.params->psym[p];
-                                    Gq = Gpq ^ Gp;
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        Gr = OutBuf.params->rsym[r];
-                                        Gs = Grs ^ Gr;
-
+                                for (int pq = 0; pq < out_rows_per_bucket; pq++) {
+                                    const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                    const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                    const int Gp = OutBuf.params->psym[p];
+                                    const int Gq = Gpq ^ Gp;
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int Gr = OutBuf.params->rsym[r];
+                                        const int Gs = Grs ^ Gr;
                                         Gps = Gp ^ Gs;
 
                                         if (Gps == Grow) {
-                                            ps = InBuf->params->rowidx[p][s] - in_row_start;
+                                            const int ps = InBuf->params->rowidx[p][s] - in_row_start;
                                             /* check if the current value is in the current in_bucket or not */
                                             if (ps >= 0 && ps < in_rows_per_bucket) {
-                                                qr = InBuf->params->colidx[q][r];
+                                                const int qr = InBuf->params->colidx[q][r];
                                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grow][ps][qr];
                                             }
                                         }
@@ -659,24 +655,23 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                                 in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_left);
 
-                                for (pq = 0; pq < out_rows_per_bucket; pq++) {
-                                    p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                    q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                    Gp = OutBuf.params->psym[p];
-                                    Gq = Gpq ^ Gp;
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        Gr = OutBuf.params->rsym[r];
-                                        Gs = Grs ^ Gr;
-
+                                for (int pq = 0; pq < out_rows_per_bucket; pq++) {
+                                    const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                    const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                    const int Gp = OutBuf.params->psym[p];
+                                    const int Gq = Gpq ^ Gp;
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int Gr = OutBuf.params->rsym[r];
+                                        const int Gs = Grs ^ Gr;
                                         Gps = Gp ^ Gs;
 
                                         if (Gps == Grow) {
-                                            ps = InBuf->params->rowidx[p][s] - in_row_start;
+                                            const int ps = InBuf->params->rowidx[p][s] - in_row_start;
                                             /* check if the current value is in core or not */
                                             if (ps >= 0 && ps < in_rows_left) {
-                                                qr = InBuf->params->colidx[q][r];
+                                                const int qr = InBuf->params->colidx[q][r];
                                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grow][ps][qr];
                                             }
                                         }
@@ -710,24 +705,23 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                                 in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_per_bucket);
 
-                                for (pq = 0; pq < out_rows_left; pq++) {
-                                    p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                    q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                    Gp = OutBuf.params->psym[p];
-                                    Gq = Gpq ^ Gp;
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        Gr = OutBuf.params->rsym[r];
-                                        Gs = Grs ^ Gr;
-
+                                for (int pq = 0; pq < out_rows_left; pq++) {
+                                    const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                    const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                    const int Gp = OutBuf.params->psym[p];
+                                    const int Gq = Gpq ^ Gp;
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int Gr = OutBuf.params->rsym[r];
+                                        const int Gs = Grs ^ Gr;
                                         Gps = Gp ^ Gs;
 
                                         if (Gps == Grow) {
-                                            ps = InBuf->params->rowidx[p][s] - in_row_start;
+                                            const int ps = InBuf->params->rowidx[p][s] - in_row_start;
                                             /* check if the current value is in the current in_bucket or not */
                                             if (ps >= 0 && ps < in_rows_per_bucket) {
-                                                qr = InBuf->params->colidx[q][r];
+                                                const int qr = InBuf->params->colidx[q][r];
                                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grow][ps][qr];
                                             }
                                         }
@@ -738,24 +732,23 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                                 in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_left);
 
-                                for (pq = 0; pq < out_rows_left; pq++) {
-                                    p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                    q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                    Gp = OutBuf.params->psym[p];
-                                    Gq = Gpq ^ Gp;
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        Gr = OutBuf.params->rsym[r];
-                                        Gs = Grs ^ Gr;
-
+                                for (int pq = 0; pq < out_rows_left; pq++) {
+                                    const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                    const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                    const int Gp = OutBuf.params->psym[p];
+                                    const int Gq = Gpq ^ Gp;
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int Gr = OutBuf.params->rsym[r];
+                                        const int Gs = Grs ^ Gr;
                                         Gps = Gp ^ Gs;
 
                                         if (Gps == Grow) {
-                                            ps = InBuf->params->rowidx[p][s] - in_row_start;
+                                            const int ps = InBuf->params->rowidx[p][s] - in_row_start;
                                             /* check if the current value is in core or not */
                                             if (ps >= 0 && ps < in_rows_left) {
-                                                qr = InBuf->params->colidx[q][r];
+                                                const int qr = InBuf->params->colidx[q][r];
                                                 OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grow][ps][qr];
                                             }
                                         }
@@ -787,31 +780,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* p->p; s->q; q->r; r->s = prsq */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
-                            Gpr = Gp ^ Gr;
+                            const int Gpr = Gp ^ Gr;
                             Gsq = Gs ^ Gq;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        pr = InBuf->params->rowidx[P][R];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int pr = InBuf->params->rowidx[P][R];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            sq = InBuf->params->colidx[S][Q];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int sq = InBuf->params->colidx[S][Q];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gpr][pr][sq];
                                         }
@@ -840,31 +833,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* p->p; s->q; r->r; q->s = psrq */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gps = Gp ^ Gs;
                             Grq = Gr ^ Gq;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        rq = InBuf->params->colidx[R][Q];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int rq = InBuf->params->colidx[R][Q];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            ps = InBuf->params->rowidx[P][S];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int ps = InBuf->params->rowidx[P][S];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gps][ps][rq];
                                         }
@@ -893,27 +886,27 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* q->p; p->q; r->r; s->s = qprs */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
-                        p = OutBuf.params->roworb[h][pq][0];
-                        q = OutBuf.params->roworb[h][pq][1];
-                        qp = InBuf->params->rowidx[q][p];
+                    for (int pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
+                        const int p = OutBuf.params->roworb[h][pq][0];
+                        const int q = OutBuf.params->roworb[h][pq][1];
+                        const int qp = InBuf->params->rowidx[q][p];
 
-                        for (rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-                            r = OutBuf.params->colorb[r_irrep][rs][0];
-                            s = OutBuf.params->colorb[r_irrep][rs][1];
+                        for (int rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+                            const int r = OutBuf.params->colorb[r_irrep][rs][0];
+                            const int s = OutBuf.params->colorb[r_irrep][rs][1];
 
-                            col = InBuf->params->colidx[r][s];
+                            const int col = InBuf->params->colidx[r][s];
 
                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][qp][col];
                         }
                     }
                 }
             } else {
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
+                for (int Gpq = 0; Gpq < nirreps; Gpq++) {
+                    const int Grs = Gpq ^ my_irrep;
 
                     /* determine how many rows of OutBuf/InBuf we can store in half the core */
                     rows_per_bucket = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
@@ -934,11 +927,11 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                         for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
                             in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
-                            for (pq = 0; pq < rows_per_bucket; pq++) {
+                            for (int pq = 0; pq < rows_per_bucket; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
+                                const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                const int qp = InBuf->params->rowidx[q][p] - in_row_start;
                                 if (qp >= 0 && qp < rows_per_bucket) {
                                     C_DCOPY(OutBuf.params->coltot[Grs], InBuf->matrix[Gpq][qp], 1,
                                             OutBuf.matrix[Gpq][pq], 1);
@@ -949,11 +942,11 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                         if (rows_left) {
                             in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
-                            for (pq = 0; pq < rows_per_bucket; pq++) {
+                            for (int pq = 0; pq < rows_per_bucket; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
+                                const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                const int qp = InBuf->params->rowidx[q][p] - in_row_start;
                                 if (qp >= 0 && qp < rows_left) {
                                     C_DCOPY(OutBuf.params->coltot[Grs], InBuf->matrix[Gpq][qp], 1,
                                             OutBuf.matrix[Gpq][pq], 1);
@@ -970,11 +963,11 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                         for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
                             in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
-                            for (pq = 0; pq < rows_left; pq++) {
+                            for (int pq = 0; pq < rows_left; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
+                                const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                const int qp = InBuf->params->rowidx[q][p] - in_row_start;
                                 if (qp >= 0 && qp < rows_per_bucket) {
                                     C_DCOPY(OutBuf.params->coltot[Grs], InBuf->matrix[Gpq][qp], 1,
                                             OutBuf.matrix[Gpq][pq], 1);
@@ -985,11 +978,11 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                         if (rows_left) {
                             in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
-                            for (pq = 0; pq < rows_left; pq++) {
+                            for (int pq = 0; pq < rows_left; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
+                                const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                const int qp = InBuf->params->rowidx[q][p] - in_row_start;
                                 if (qp >= 0 && qp < rows_left) {
                                     C_DCOPY(OutBuf.params->coltot[Grs], InBuf->matrix[Gpq][qp], 1,
                                             OutBuf.matrix[Gpq][pq], 1);
@@ -1017,26 +1010,26 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* q->p; p->q; s->r; r->s = qpsr */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
-                        p = OutBuf.params->roworb[h][pq][0];
-                        q = OutBuf.params->roworb[h][pq][1];
-                        qp = InBuf->params->rowidx[q][p];
+                    for (int pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
+                        const int p = OutBuf.params->roworb[h][pq][0];
+                        const int q = OutBuf.params->roworb[h][pq][1];
+                        const int qp = InBuf->params->rowidx[q][p];
 
-                        for (rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-                            r = OutBuf.params->colorb[r_irrep][rs][0];
-                            s = OutBuf.params->colorb[r_irrep][rs][1];
-                            sr = InBuf->params->colidx[s][r];
+                        for (int rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+                            const int r = OutBuf.params->colorb[r_irrep][rs][0];
+                            const int s = OutBuf.params->colorb[r_irrep][rs][1];
+                            const int sr = InBuf->params->colidx[s][r];
 
                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][qp][sr];
                         }
                     }
                 }
             } else {
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
+                for (int Gpq = 0; Gpq < nirreps; Gpq++) {
+                    const int Grs = Gpq ^ my_irrep;
 
                     /* determine how many rows of OutBuf/InBuf we can store in half the core */
                     rows_per_bucket = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
@@ -1058,16 +1051,16 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                             in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
 
-                            for (pq = 0; pq < rows_per_bucket; pq++) {
+                            for (int pq = 0; pq < rows_per_bucket; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
+                                const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                const int qp = InBuf->params->rowidx[q][p] - in_row_start;
                                 if (qp >= 0 && qp < rows_per_bucket) {
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        sr = InBuf->params->colidx[s][r];
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int sr = InBuf->params->colidx[s][r];
                                         OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][qp][sr];
                                     }
                                 }
@@ -1077,16 +1070,16 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                             in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
 
-                            for (pq = 0; pq < rows_per_bucket; pq++) {
+                            for (int pq = 0; pq < rows_per_bucket; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
+                                const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                const int qp = InBuf->params->rowidx[q][p] - in_row_start;
                                 if (qp >= 0 && qp < rows_left) {
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        sr = InBuf->params->colidx[s][r];
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int sr = InBuf->params->colidx[s][r];
                                         OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][qp][sr];
                                     }
                                 }
@@ -1103,16 +1096,16 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                             in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
 
-                            for (pq = 0; pq < rows_left; pq++) {
+                            for (int pq = 0; pq < rows_left; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
+                                const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                const int qp = InBuf->params->rowidx[q][p] - in_row_start;
                                 if (qp >= 0 && qp < rows_per_bucket) {
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        sr = InBuf->params->colidx[s][r];
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int sr = InBuf->params->colidx[s][r];
                                         OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][qp][sr];
                                     }
                                 }
@@ -1122,16 +1115,16 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                             in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
 
-                            for (pq = 0; pq < rows_left; pq++) {
+                            for (int pq = 0; pq < rows_left; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
-                                p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
-                                q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
-                                qp = InBuf->params->rowidx[q][p] - in_row_start;
+                                const int p = OutBuf.params->roworb[Gpq][pq + out_row_start][0];
+                                const int q = OutBuf.params->roworb[Gpq][pq + out_row_start][1];
+                                const int qp = InBuf->params->rowidx[q][p] - in_row_start;
                                 if (qp >= 0 && qp < rows_left) {
-                                    for (rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
-                                        r = OutBuf.params->colorb[Grs][rs][0];
-                                        s = OutBuf.params->colorb[Grs][rs][1];
-                                        sr = InBuf->params->colidx[s][r];
+                                    for (int rs = 0; rs < OutBuf.params->coltot[Grs]; rs++) {
+                                        const int r = OutBuf.params->colorb[Grs][rs][0];
+                                        const int s = OutBuf.params->colorb[Grs][rs][1];
+                                        const int sr = InBuf->params->colidx[s][r];
                                         OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Gpq][qp][sr];
                                     }
                                 }
@@ -1160,31 +1153,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* q->p; r->q; p->r; s->s = rpqs */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Grp = Gr ^ Gp;
                             Gqs = Gq ^ Gs;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        rp = InBuf->params->rowidx[R][P];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int rp = InBuf->params->rowidx[R][P];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            qs = InBuf->params->colidx[Q][S];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int qs = InBuf->params->colidx[Q][S];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Grp][rp][qs];
                                         }
@@ -1213,31 +1206,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* q->p; r->q; s->r; p->s = spqr */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gsp = Gs ^ Gp;
                             Gqr = Gq ^ Gr;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        qr = InBuf->params->colidx[Q][R];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int qr = InBuf->params->colidx[Q][R];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            sp = InBuf->params->rowidx[S][P];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int sp = InBuf->params->rowidx[S][P];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsp][sp][qr];
                                         }
@@ -1265,31 +1258,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* q->p; s->q; p->r; r->s = rpsq */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Grp = Gr ^ Gp;
                             Gsq = Gs ^ Gq;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        rp = InBuf->params->rowidx[R][P];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int rp = InBuf->params->rowidx[R][P];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            sq = InBuf->params->colidx[S][Q];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int sq = InBuf->params->colidx[S][Q];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Grp][rp][sq];
                                         }
@@ -1317,31 +1310,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 
             /* q->p; s->q; r->r; p->s = sprq */
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gsp = Gs ^ Gp;
                             Grq = Gr ^ Gq;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        rq = InBuf->params->colidx[R][Q];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int rq = InBuf->params->colidx[R][Q];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            sp = InBuf->params->rowidx[S][P];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int sp = InBuf->params->rowidx[S][P];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsp][sp][rq];
                                         }
@@ -1370,31 +1363,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* r->p; q->q; p->r; s->s = rqps */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Grq = Gr ^ Gq;
                             Gps = Gp ^ Gs;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        rq = InBuf->params->rowidx[R][Q];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int rq = InBuf->params->rowidx[R][Q];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            ps = InBuf->params->colidx[P][S];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int ps = InBuf->params->colidx[P][S];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Grq][rq][ps];
                                         }
@@ -1423,31 +1416,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* r->p; q->q; s->r; p->s = sqpr */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gsq = Gs ^ Gq;
-                            Gpr = Gp ^ Gr;
+                            const int Gpr = Gp ^ Gr;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        pr = InBuf->params->colidx[P][R];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int pr = InBuf->params->colidx[P][R];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            sq = InBuf->params->rowidx[S][Q];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int sq = InBuf->params->rowidx[S][Q];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsq][sq][pr];
                                         }
@@ -1476,31 +1469,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* r->p; p->q; q->r; s->s = qrps */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gqr = Gq ^ Gr;
                             Gps = Gp ^ Gs;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        qr = InBuf->params->rowidx[Q][R];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int qr = InBuf->params->rowidx[Q][R];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            ps = InBuf->params->colidx[P][S];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int ps = InBuf->params->colidx[P][S];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqr][qr][ps];
                                         }
@@ -1529,31 +1522,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* r->p; p->q; s->r; q->s = qspr */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gqs = Gq ^ Gs;
-                            Gpr = Gp ^ Gr;
+                            const int Gpr = Gp ^ Gr;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        pr = InBuf->params->colidx[P][R];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int pr = InBuf->params->colidx[P][R];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            qs = InBuf->params->rowidx[Q][S];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int qs = InBuf->params->rowidx[Q][S];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqs][qs][pr];
                                         }
@@ -1582,20 +1575,20 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* r->p; s->q; q->r; p->s = srpq */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
-                        p = OutBuf.params->roworb[h][pq][0];
-                        q = OutBuf.params->roworb[h][pq][1];
+                    for (int pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
+                        const int p = OutBuf.params->roworb[h][pq][0];
+                        const int q = OutBuf.params->roworb[h][pq][1];
 
-                        col = InBuf->params->colidx[p][q];
+                        const int col = InBuf->params->colidx[p][q];
 
-                        for (rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-                            r = OutBuf.params->colorb[r_irrep][rs][0];
-                            s = OutBuf.params->colorb[r_irrep][rs][1];
+                        for (int rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+                            const int r = OutBuf.params->colorb[r_irrep][rs][0];
+                            const int s = OutBuf.params->colorb[r_irrep][rs][1];
 
-                            row = InBuf->params->rowidx[s][r];
+                            const int row = InBuf->params->rowidx[s][r];
 
                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
                         }
@@ -1620,28 +1613,28 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* r->p; s->q; p->r; q->s = rspq */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
-                        p = OutBuf.params->roworb[h][pq][0];
-                        q = OutBuf.params->roworb[h][pq][1];
+                    for (int pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
+                        const int p = OutBuf.params->roworb[h][pq][0];
+                        const int q = OutBuf.params->roworb[h][pq][1];
 
-                        col = InBuf->params->colidx[p][q];
+                        const int col = InBuf->params->colidx[p][q];
 
-                        for (rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-                            r = OutBuf.params->colorb[r_irrep][rs][0];
-                            s = OutBuf.params->colorb[r_irrep][rs][1];
+                        for (int rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+                            const int r = OutBuf.params->colorb[r_irrep][rs][0];
+                            const int s = OutBuf.params->colorb[r_irrep][rs][1];
 
-                            row = InBuf->params->rowidx[r][s];
+                            const int row = InBuf->params->rowidx[r][s];
 
                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[r_irrep][row][col];
                         }
                     }
                 }
             } else {
-                for (Gpq = 0; Gpq < nirreps; Gpq++) {
-                    Grs = Gpq ^ my_irrep;
+                for (int Gpq = 0; Gpq < nirreps; Gpq++) {
+                    const int Grs = Gpq ^ my_irrep;
 
                     out_rows_per_bucket =
                         (dpd_memfree() - OutBuf.params->coltot[Grs]) / (2 * OutBuf.params->coltot[Grs]);
@@ -1689,10 +1682,10 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
                             buf4_mat_irrep_rd_block(InBuf, Grs, in_row_start,
                                                     (m == in_nbuckets - 1 ? in_rows_left : in_rows_per_bucket));
 
-                            for (pq = 0; pq < (n == out_nbuckets - 1 ? out_rows_left : out_rows_per_bucket); pq++) {
-                                PQ = pq + n * out_rows_per_bucket;
-                                for (RS = 0; RS < (m == in_nbuckets - 1 ? in_rows_left : in_rows_per_bucket); RS++) {
-                                    rs = RS + m * in_rows_per_bucket;
+                            for (int pq = 0; pq < (n == out_nbuckets - 1 ? out_rows_left : out_rows_per_bucket); pq++) {
+                                const int PQ = pq + n * out_rows_per_bucket;
+                                for (int RS = 0; RS < (m == in_nbuckets - 1 ? in_rows_left : in_rows_per_bucket); RS++) {
+                                    const int rs = RS + m * in_rows_per_bucket;
                                     OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grs][RS][PQ];
                                 }
                             }
@@ -1722,31 +1715,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* s->p; q->q; r->r; p->s = sqrp */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gsq = Gs ^ Gq;
                             Grp = Gr ^ Gp;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        rp = InBuf->params->colidx[R][P];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int rp = InBuf->params->colidx[R][P];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            sq = InBuf->params->rowidx[S][Q];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int sq = InBuf->params->rowidx[S][Q];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsq][sq][rp];
                                         }
@@ -1780,20 +1773,20 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* s->p; r->q; q->r; p->s = srqp */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
-                        p = OutBuf.params->roworb[h][pq][0];
-                        q = OutBuf.params->roworb[h][pq][1];
+                    for (int pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
+                        const int p = OutBuf.params->roworb[h][pq][0];
+                        const int q = OutBuf.params->roworb[h][pq][1];
 
-                        col = InBuf->params->colidx[q][p];
+                        const int col = InBuf->params->colidx[q][p];
 
-                        for (rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-                            r = OutBuf.params->colorb[r_irrep][rs][0];
-                            s = OutBuf.params->colorb[r_irrep][rs][1];
+                        for (int rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+                            const int r = OutBuf.params->colorb[r_irrep][rs][0];
+                            const int s = OutBuf.params->colorb[r_irrep][rs][1];
 
-                            row = InBuf->params->rowidx[s][r];
+                            const int row = InBuf->params->rowidx[s][r];
 
                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[r_irrep][row][col];
                         }
@@ -1817,20 +1810,20 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* s->p; r->q; p->r; q->s = rsqp */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
-                        p = OutBuf.params->roworb[h][pq][0];
-                        q = OutBuf.params->roworb[h][pq][1];
+                    for (int pq = 0; pq < OutBuf.params->rowtot[h]; pq++) {
+                        const int p = OutBuf.params->roworb[h][pq][0];
+                        const int q = OutBuf.params->roworb[h][pq][1];
 
-                        col = InBuf->params->colidx[q][p];
+                        const int col = InBuf->params->colidx[q][p];
 
-                        for (rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-                            r = OutBuf.params->colorb[r_irrep][rs][0];
-                            s = OutBuf.params->colorb[r_irrep][rs][1];
+                        for (int rs = 0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+                            const int r = OutBuf.params->colorb[r_irrep][rs][0];
+                            const int s = OutBuf.params->colorb[r_irrep][rs][1];
 
-                            row = InBuf->params->rowidx[r][s];
+                            const int row = InBuf->params->rowidx[r][s];
 
                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
                         }
@@ -1855,31 +1848,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* s->p; p->q; q->r; r->s = qrsp */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gqr = Gq ^ Gr;
                             Gsp = Gs ^ Gp;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        qr = InBuf->params->rowidx[Q][R];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int qr = InBuf->params->rowidx[Q][R];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            sp = InBuf->params->colidx[S][P];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int sp = InBuf->params->colidx[S][P];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqr][qr][sp];
                                         }
@@ -1908,31 +1901,31 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
             /* s->p; p->q; r->r; q->s = qsrp */
 
             if (incore) {
-                for (h = 0; h < nirreps; h++) {
-                    r_irrep = h ^ my_irrep;
+                for (int h = 0; h < nirreps; h++) {
+                    const int r_irrep = h ^ my_irrep;
 
-                    for (Gp = 0; Gp < nirreps; Gp++) {
-                        Gq = Gp ^ h;
-                        for (Gr = 0; Gr < nirreps; Gr++) {
-                            Gs = Gr ^ r_irrep;
+                    for (int Gp = 0; Gp < nirreps; Gp++) {
+                        const int Gq = Gp ^ h;
+                        for (int Gr = 0; Gr < nirreps; Gr++) {
+                            const int Gs = Gr ^ r_irrep;
 
                             Gqs = Gq ^ Gs;
                             Grp = Gr ^ Gp;
 
-                            for (p = 0; p < OutBuf.params->ppi[Gp]; p++) {
-                                P = OutBuf.params->poff[Gp] + p;
-                                for (q = 0; q < OutBuf.params->qpi[Gq]; q++) {
-                                    Q = OutBuf.params->qoff[Gq] + q;
-                                    pq = OutBuf.params->rowidx[P][Q];
+                            for (int p = 0; p < OutBuf.params->ppi[Gp]; p++) {
+                                const int P = OutBuf.params->poff[Gp] + p;
+                                for (int q = 0; q < OutBuf.params->qpi[Gq]; q++) {
+                                    const int Q = OutBuf.params->qoff[Gq] + q;
+                                    const int pq = OutBuf.params->rowidx[P][Q];
 
-                                    for (r = 0; r < OutBuf.params->rpi[Gr]; r++) {
-                                        R = OutBuf.params->roff[Gr] + r;
-                                        rp = InBuf->params->colidx[R][P];
+                                    for (int r = 0; r < OutBuf.params->rpi[Gr]; r++) {
+                                        const int R = OutBuf.params->roff[Gr] + r;
+                                        const int rp = InBuf->params->colidx[R][P];
 
-                                        for (s = 0; s < OutBuf.params->spi[Gs]; s++) {
-                                            S = OutBuf.params->soff[Gs] + s;
-                                            rs = OutBuf.params->colidx[R][S];
-                                            qs = InBuf->params->rowidx[Q][S];
+                                        for (int s = 0; s < OutBuf.params->spi[Gs]; s++) {
+                                            const int S = OutBuf.params->soff[Gs] + s;
+                                            const int rs = OutBuf.params->colidx[R][S];
+                                            const int qs = InBuf->params->rowidx[Q][S];
 
                                             OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqs][qs][rp];
                                         }
@@ -1954,7 +1947,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
     }
 
     if (incore) {
-        for (h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirreps; h++) {
             buf4_mat_irrep_wrt(&OutBuf, h);
             buf4_mat_irrep_close(&OutBuf, h);
             buf4_mat_irrep_close(InBuf, h);
