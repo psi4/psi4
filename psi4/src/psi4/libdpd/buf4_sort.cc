@@ -41,7 +41,6 @@
 #include <cstdlib>
 #include <cmath>
 
-using std::string;
 namespace psi {
 
 /*
@@ -115,7 +114,8 @@ namespace psi {
 ** spqr: IC     ** sprq: IC
 ** -RAK, Nov. 2005*/
 
-int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum, const std::string& label) {
+int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum,
+                   const std::string& label) {
     dpdbuf4 OutBuf;
     int out_nbuckets, out_rows_left, out_row_start, n;
     int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
@@ -363,7 +363,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                 for (int Gpq = 0; Gpq < nirreps; Gpq++) {
                     const int Grs = Gpq ^ my_irrep;
 
-                    const int out_rows_per_bucket = [&OutBuf, Grs, Gpq]{
+                    const int out_rows_per_bucket = [&OutBuf, Grs, Gpq] {
                         int orpb = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
                         if (orpb > OutBuf.params->rowtot[Gpq]) orpb = OutBuf.params->rowtot[Gpq];
                         return orpb;
@@ -382,7 +382,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                         out_row_start = n * out_rows_per_bucket;
 
                         for (int Grow = 0; Grow < nirreps; Grow++) { /*Grow = Gpr*/
-                            const int Gcol = Grow ^ my_irrep;              /*Gcol = Gqs*/
+                            const int Gcol = Grow ^ my_irrep;        /*Gcol = Gqs*/
 
                             /* determine how many rows of InBuf we can store in the other half of the core */
                             in_rows_per_bucket = dpd_memfree() / (2 * InBuf->params->coltot[Gcol]);
@@ -595,7 +595,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                     const int Grs = Gpq ^ my_irrep;
 
                     /* determine how many rows of OutBuf we can store in half of the core */
-                    const int out_rows_per_bucket = [&OutBuf, Grs, Gpq]{
+                    const int out_rows_per_bucket = [&OutBuf, Grs, Gpq] {
                         int orpb = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
                         if (orpb > OutBuf.params->rowtot[Gpq]) orpb = OutBuf.params->rowtot[Gpq];
                         return orpb;
@@ -1641,7 +1641,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
                 for (int Gpq = 0; Gpq < nirreps; Gpq++) {
                     const int Grs = Gpq ^ my_irrep;
 
-                    const int out_rows_per_bucket = [&OutBuf, Grs, Gpq]{
+                    const int out_rows_per_bucket = [&OutBuf, Grs, Gpq] {
                         int orpb = (dpd_memfree() - OutBuf.params->coltot[Grs]) / (2 * OutBuf.params->coltot[Grs]);
                         if (orpb > OutBuf.params->rowtot[Gpq]) orpb = OutBuf.params->rowtot[Gpq];
                         return orpb;
@@ -1691,7 +1691,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
 
                             for (int pq = 0; pq < (n == out_nbuckets - 1 ? out_rows_left : out_rows_per_bucket); pq++) {
                                 const int PQ = pq + n * out_rows_per_bucket;
-                                for (int RS = 0; RS < (m == in_nbuckets - 1 ? in_rows_left : in_rows_per_bucket); RS++) {
+                                for (int RS = 0; RS < (m == in_nbuckets - 1 ? in_rows_left : in_rows_per_bucket);
+                                     RS++) {
                                     const int rs = RS + m * in_rows_per_bucket;
                                     OutBuf.matrix[Gpq][pq][rs] = InBuf->matrix[Grs][RS][PQ];
                                 }
@@ -1970,7 +1971,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
     return 0;
 }
 
-int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, string pq, string rs, const std::string& label) {
+int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices index, const std::string pq,
+                   const std::string rs, const std::string& label) {
     return buf4_sort(InBuf, outfilenum, index, pairnum(pq), pairnum(rs), label);
 }
 
