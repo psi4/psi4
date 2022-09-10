@@ -117,8 +117,7 @@ namespace psi {
 int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum,
                    const std::string& label) {
     dpdbuf4 OutBuf;
-
-    int rows_per_bucket, nbuckets, rows_left;
+    int nbuckets, rows_left;
 
     const int nirreps = InBuf->params->nirreps;
     const int my_irrep = InBuf->file.my_irrep;
@@ -257,9 +256,12 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
 
                 for (int Gpq = 0; Gpq < nirreps; Gpq++) {
                     const int Grs = Gpq ^ my_irrep;
-                    rows_per_bucket = dpd_memfree() / 2 / InBuf->params->coltot[Grs];
+                    const int rows_per_bucket = [&InBuf, Grs, Gpq] {
+                        int rpb = dpd_memfree() / 2 / InBuf->params->coltot[Grs];
+                        if (rpb > InBuf->params->rowtot[Gpq]) rpb = InBuf->params->rowtot[Gpq];
+                        return rpb;
+                    }();
 
-                    if (rows_per_bucket > InBuf->params->rowtot[Gpq]) rows_per_bucket = InBuf->params->rowtot[Gpq];
                     if (!rows_per_bucket) dpd_error("buf4_sort_pqsr: Not enough memory for one row!", "outfile");
 
                     nbuckets = (int)ceil(((double)InBuf->params->rowtot[Gpq]) / ((double)rows_per_bucket));
@@ -930,8 +932,12 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     const int Grs = Gpq ^ my_irrep;
 
                     /* determine how many rows of OutBuf/InBuf we can store in half the core */
-                    rows_per_bucket = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
-                    if (rows_per_bucket > OutBuf.params->rowtot[Gpq]) rows_per_bucket = OutBuf.params->rowtot[Gpq];
+                    const int rows_per_bucket = [&OutBuf, Grs, Gpq] {
+                        int rpb = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
+                        if (rpb > OutBuf.params->rowtot[Gpq]) rpb = OutBuf.params->rowtot[Gpq];
+                        return rpb;
+                    }();
+
                     nbuckets = (int)ceil((double)OutBuf.params->rowtot[Gpq] / (double)rows_per_bucket);
                     if (nbuckets == 1)
                         rows_left = rows_per_bucket;
@@ -1054,8 +1060,12 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     const int Grs = Gpq ^ my_irrep;
 
                     /* determine how many rows of OutBuf/InBuf we can store in half the core */
-                    rows_per_bucket = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
-                    if (rows_per_bucket > OutBuf.params->rowtot[Gpq]) rows_per_bucket = OutBuf.params->rowtot[Gpq];
+                    const int rows_per_bucket = [&OutBuf, Grs, Gpq] {
+                        int rpb = dpd_memfree() / (2 * OutBuf.params->coltot[Grs]);
+                        if (rpb > OutBuf.params->rowtot[Gpq]) rpb = OutBuf.params->rowtot[Gpq];
+                        return rpb;
+                    }();
+
                     nbuckets = (int)ceil((double)OutBuf.params->rowtot[Gpq] / (double)rows_per_bucket);
                     if (nbuckets == 1)
                         rows_left = rows_per_bucket;
