@@ -117,7 +117,6 @@ namespace psi {
 int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum,
                    const std::string& label) {
     dpdbuf4 OutBuf;
-    int n;
     int in_rows_per_bucket, in_nbuckets, in_rows_left, in_row_start, m;
     int rows_per_bucket, nbuckets, rows_left;
 
@@ -272,6 +271,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     buf4_mat_irrep_init_block(InBuf, Gpq, rows_per_bucket);
                     buf4_mat_irrep_init_block(&OutBuf, Gpq, rows_per_bucket);
 
+                    int n;
                     for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
                         buf4_mat_irrep_rd_block(InBuf, Gpq, n * rows_per_bucket, rows_per_bucket);
 
@@ -377,6 +377,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     /* allocate space for the bucket of rows */
                     buf4_mat_irrep_init_block(&OutBuf, Gpq, out_rows_per_bucket);
 
+                    int n;
                     for (n = 0; n < (out_rows_left ? out_nbuckets - 1 : out_nbuckets); n++) {
                         const int out_row_start = n * out_rows_per_bucket;
 
@@ -608,6 +609,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     /* allocate space for the bucket of rows */
                     buf4_mat_irrep_init_block(&OutBuf, Gpq, out_rows_per_bucket);
 
+                    int n;
                     for (n = 0; n < (out_rows_left ? out_nbuckets - 1 : out_nbuckets); n++) {
                         const int out_row_start = n * out_rows_per_bucket;
 
@@ -924,7 +926,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     buf4_mat_irrep_init_block(&OutBuf, Gpq, rows_per_bucket);
                     buf4_mat_irrep_init_block(InBuf, Gpq, rows_per_bucket);
 
-                    int out_row_start;
+                    int out_row_start, n;
                     for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
                         out_row_start = n * rows_per_bucket;
 
@@ -1048,7 +1050,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     buf4_mat_irrep_init_block(&OutBuf, Gpq, rows_per_bucket);
                     buf4_mat_irrep_init_block(InBuf, Gpq, rows_per_bucket);
 
-                    int out_row_start;
+                    int out_row_start, n;
                     for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
                         out_row_start = n * rows_per_bucket;
 
@@ -1679,7 +1681,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     buf4_mat_irrep_init_block(&OutBuf, Gpq, out_rows_per_bucket);
                     buf4_mat_irrep_init_block(InBuf, Grs, in_rows_per_bucket);
 
-                    for (n = 0; n < out_nbuckets; n++) {
+                    for (int n = 0; n < out_nbuckets; n++) {
                         const int out_row_start = n * out_rows_per_bucket;
 
                         for (m = 0; m < in_nbuckets; m++) {
