@@ -117,7 +117,7 @@ namespace psi {
 int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum,
                    const std::string& label) {
     dpdbuf4 OutBuf;
-    int in_nbuckets, in_rows_left, in_row_start, m;
+    int in_row_start, m;
     int rows_per_bucket, nbuckets, rows_left;
 
     const int nirreps = InBuf->params->nirreps;
@@ -391,11 +391,11 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 return irpb;
                             }();
 
-                            in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
-                            if (in_nbuckets == 1)
-                                in_rows_left = in_rows_per_bucket;
-                            else
-                                in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
+                            const int in_nbuckets =
+                                (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
+                            const int in_rows_left = (in_nbuckets == 1)
+                                                         ? in_rows_per_bucket
+                                                         : InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
                             /* allocate space for the bucket of rows */
                             buf4_mat_irrep_init_block(InBuf, Grow, in_rows_per_bucket);
@@ -473,11 +473,11 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 return irpb;
                             }();
 
-                            in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
-                            if (in_nbuckets == 1)
-                                in_rows_left = in_rows_per_bucket;
-                            else
-                                in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
+                            const int in_nbuckets =
+                                (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
+                            const int in_rows_left = (in_nbuckets == 1)
+                                                         ? in_rows_per_bucket
+                                                         : InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
                             /* allocate space for the bucket of rows */
                             buf4_mat_irrep_init_block(InBuf, Grow, in_rows_per_bucket);
@@ -629,11 +629,11 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 return irpb;
                             }();
 
-                            in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
-                            if (in_nbuckets == 1)
-                                in_rows_left = in_rows_per_bucket;
-                            else
-                                in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
+                            const int in_nbuckets =
+                                (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
+                            const int in_rows_left = (in_nbuckets == 1)
+                                                         ? in_rows_per_bucket
+                                                         : InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
                             /* allocate space for the bucket of rows */
                             buf4_mat_irrep_init_block(InBuf, Grow, in_rows_per_bucket);
@@ -709,11 +709,11 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 return irpb;
                             }();
 
-                            in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
-                            if (in_nbuckets == 1)
-                                in_rows_left = in_rows_per_bucket;
-                            else
-                                in_rows_left = InBuf->params->rowtot[Grow] % in_rows_per_bucket;
+                            const int in_nbuckets =
+                                (int)ceil((double)InBuf->params->rowtot[Grow] / (double)in_rows_per_bucket);
+                            const int in_rows_left = (in_nbuckets == 1)
+                                                         ? in_rows_per_bucket
+                                                         : InBuf->params->rowtot[Grow] % in_rows_per_bucket;
 
                             /* allocate space for the bucket of rows */
                             buf4_mat_irrep_init_block(InBuf, Grow, in_rows_per_bucket);
@@ -1671,11 +1671,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                         return irpb;
                     }();
 
-                    in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grs] / (double)in_rows_per_bucket);
-                    if (in_nbuckets == 1)
-                        in_rows_left = in_rows_per_bucket;
-                    else
-                        in_rows_left = InBuf->params->rowtot[Grs] % in_rows_per_bucket;
+                    const int in_nbuckets = (int)ceil((double)InBuf->params->rowtot[Grs] / (double)in_rows_per_bucket);
+                    const int in_rows_left =
+                        (in_nbuckets == 1) ? in_rows_per_bucket : InBuf->params->rowtot[Grs] % in_rows_per_bucket;
 
 #ifdef DPD_DEBUG
                     outfile->Printf(stdout, "Gpq = %d\n", Gpq);
