@@ -136,27 +136,27 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
     core_total = 0;
     int incore = 1;
     {
-    for (int h = 0; h < nirreps; h++) {
-        coltot = InBuf->params->coltot[h ^ my_irrep];
-        if (coltot) {
-            maxrows = DPD_BIGNUM / coltot;
-            if (maxrows < 1) {
-                outfile->Printf("\nLIBDPD Error: too many rows in buf4_sort_axpy.\n");
-                dpd_error("buf4_sort_axpy", "outfile");
+        for (int h = 0; h < nirreps; h++) {
+            coltot = InBuf->params->coltot[h ^ my_irrep];
+            if (coltot) {
+                maxrows = DPD_BIGNUM / coltot;
+                if (maxrows < 1) {
+                    outfile->Printf("\nLIBDPD Error: too many rows in buf4_sort_axpy.\n");
+                    dpd_error("buf4_sort_axpy", "outfile");
+                }
+            } else
+                maxrows = DPD_BIGNUM;
+            rowtot = InBuf->params->rowtot[h];
+            for (; rowtot > maxrows; rowtot -= maxrows) {
+                if (core_total > (core_total + 2 * maxrows * coltot))
+                    incore = 0;
+                else
+                    core_total += 2 * maxrows * coltot;
             }
-        } else
-            maxrows = DPD_BIGNUM;
-        rowtot = InBuf->params->rowtot[h];
-        for (; rowtot > maxrows; rowtot -= maxrows) {
-            if (core_total > (core_total + 2 * maxrows * coltot))
-                incore = 0;
-            else
-                core_total += 2 * maxrows * coltot;
+            if (core_total > (core_total + 2 * rowtot * coltot)) incore = 0;
+            core_total += 2 * rowtot * coltot;
         }
-        if (core_total > (core_total + 2 * rowtot * coltot)) incore = 0;
-        core_total += 2 * rowtot * coltot;
-    }
-    if (core_total > dpd_memfree()) incore = 0;
+        if (core_total > dpd_memfree()) incore = 0;
     }
 
 #ifdef DPD_DEBUG
