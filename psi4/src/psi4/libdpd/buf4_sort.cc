@@ -115,8 +115,7 @@ namespace psi {
 ** spqr: IC     ** sprq: IC
 ** -RAK, Nov. 2005*/
 
-int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const std::string& label) {
-    int Gqs, Grq, Gqr, Gps, Gsp, Grp, Gsq;
+int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum, const std::string& label) {
     dpdbuf4 OutBuf;
     int incore;
     long int rowtot, coltot, core_total, maxrows;
