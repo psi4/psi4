@@ -117,7 +117,6 @@ namespace psi {
 
 int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum, const std::string& label) {
     dpdbuf4 OutBuf;
-    int incore;
     long int rowtot, coltot, core_total, maxrows;
     int Grow, Gcol;
     int out_rows_per_bucket, out_nbuckets, out_rows_left, out_row_start, n;
@@ -134,8 +133,8 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, const int outfilenum, const enum indices inde
     buf4_init(&OutBuf, outfilenum, my_irrep, pqnum, rsnum, pqnum, rsnum, 0, label);
 
     /* select in-core vs. out-of-core algorithms */
-    incore = 1;
     core_total = 0;
+    int incore = 1;
     for (int h = 0; h < nirreps; h++) {
         coltot = InBuf->params->coltot[h ^ my_irrep];
         if (coltot) {
