@@ -117,7 +117,7 @@ namespace psi {
 int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices index, const int pqnum, const int rsnum,
                    const std::string& label) {
     dpdbuf4 OutBuf;
-    int in_row_start, m;
+
     int rows_per_bucket, nbuckets, rows_left;
 
     const int nirreps = InBuf->params->nirreps;
@@ -401,8 +401,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             buf4_mat_irrep_init_block(InBuf, Grow, in_rows_per_bucket);
 
                             /* pqrs <- prqs */
+                            int m;
                             for (m = 0; m < (in_rows_left ? in_nbuckets - 1 : in_nbuckets); m++) {
-                                in_row_start = m * in_rows_per_bucket;
+                                const int in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_per_bucket);
 
                                 for (int pq = 0; pq < out_rows_per_bucket; pq++) {
@@ -429,7 +430,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 }
                             }
                             if (in_rows_left) {
-                                in_row_start = m * in_rows_per_bucket;
+                                const int in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_left);
 
                                 /* pqrs <- prqs */
@@ -483,8 +484,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             buf4_mat_irrep_init_block(InBuf, Grow, in_rows_per_bucket);
 
                             /* pqrs <- prqs */
+                            int m;
                             for (m = 0; m < (in_rows_left ? in_nbuckets - 1 : in_nbuckets); m++) {
-                                in_row_start = m * in_rows_per_bucket;
+                                const int in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_per_bucket);
 
                                 for (int pq = 0; pq < out_rows_left; pq++) {
@@ -511,7 +513,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 }
                             }
                             if (in_rows_left) {
-                                in_row_start = m * in_rows_per_bucket;
+                                const int in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_left);
 
                                 for (int pq = 0; pq < out_rows_left; pq++) {
@@ -638,8 +640,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             /* allocate space for the bucket of rows */
                             buf4_mat_irrep_init_block(InBuf, Grow, in_rows_per_bucket);
 
+                            int m;
                             for (m = 0; m < (in_rows_left ? in_nbuckets - 1 : in_nbuckets); m++) {
-                                in_row_start = m * in_rows_per_bucket;
+                                const int in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_per_bucket);
 
                                 for (int pq = 0; pq < out_rows_per_bucket; pq++) {
@@ -666,7 +669,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 }
                             }
                             if (in_rows_left) {
-                                in_row_start = m * in_rows_per_bucket;
+                                const int in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_left);
 
                                 for (int pq = 0; pq < out_rows_per_bucket; pq++) {
@@ -718,8 +721,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             /* allocate space for the bucket of rows */
                             buf4_mat_irrep_init_block(InBuf, Grow, in_rows_per_bucket);
 
+                            int m;
                             for (m = 0; m < (in_rows_left ? in_nbuckets - 1 : in_nbuckets); m++) {
-                                in_row_start = m * in_rows_per_bucket;
+                                const int in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_per_bucket);
 
                                 for (int pq = 0; pq < out_rows_left; pq++) {
@@ -746,7 +750,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 }
                             }
                             if (in_rows_left) {
-                                in_row_start = m * in_rows_per_bucket;
+                                const int in_row_start = m * in_rows_per_bucket;
                                 buf4_mat_irrep_rd_block(InBuf, Grow, in_row_start, in_rows_left);
 
                                 for (int pq = 0; pq < out_rows_left; pq++) {
@@ -942,8 +946,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
                         out_row_start = n * rows_per_bucket;
 
+                        int m;
                         for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
-                            in_row_start = m * rows_per_bucket;
+                            const int in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
                             for (int pq = 0; pq < rows_per_bucket; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
@@ -956,9 +961,8 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 }
                             }
                         }
-
                         if (rows_left) {
-                            in_row_start = m * rows_per_bucket;
+                            const int in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
                             for (int pq = 0; pq < rows_per_bucket; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
@@ -978,8 +982,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     if (rows_left) {
                         out_row_start = n * rows_per_bucket;
 
+                        int m;
                         for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
-                            in_row_start = m * rows_per_bucket;
+                            const int in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
                             for (int pq = 0; pq < rows_left; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
@@ -992,9 +997,8 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                                 }
                             }
                         }
-
                         if (rows_left) {
-                            in_row_start = m * rows_per_bucket;
+                            const int in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
                             for (int pq = 0; pq < rows_left; pq++) {
                                 /* check to see if this row is contained in the current input-bucket */
@@ -1066,8 +1070,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     for (n = 0; n < (rows_left ? nbuckets - 1 : nbuckets); n++) {
                         out_row_start = n * rows_per_bucket;
 
+                        int m;
                         for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
-                            in_row_start = m * rows_per_bucket;
+                            const int in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
 
                             for (int pq = 0; pq < rows_per_bucket; pq++) {
@@ -1086,7 +1091,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             }
                         }
                         if (rows_left) {
-                            in_row_start = m * rows_per_bucket;
+                            const int in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
 
                             for (int pq = 0; pq < rows_per_bucket; pq++) {
@@ -1111,8 +1116,9 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     if (rows_left) {
                         out_row_start = n * rows_per_bucket;
 
+                        int m;
                         for (m = 0; m < (rows_left ? nbuckets - 1 : nbuckets); m++) {
-                            in_row_start = m * rows_per_bucket;
+                            const int in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_per_bucket);
 
                             for (int pq = 0; pq < rows_left; pq++) {
@@ -1131,7 +1137,7 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                             }
                         }
                         if (rows_left) {
-                            in_row_start = m * rows_per_bucket;
+                            const int in_row_start = m * rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Gpq, in_row_start, rows_left);
 
                             for (int pq = 0; pq < rows_left; pq++) {
@@ -1696,8 +1702,8 @@ int DPD::buf4_sort(dpdbuf4* InBuf, const int outfilenum, const enum indices inde
                     for (int n = 0; n < out_nbuckets; n++) {
                         const int out_row_start = n * out_rows_per_bucket;
 
-                        for (m = 0; m < in_nbuckets; m++) {
-                            in_row_start = m * in_rows_per_bucket;
+                        for (int m = 0; m < in_nbuckets; m++) {
+                            const int in_row_start = m * in_rows_per_bucket;
                             buf4_mat_irrep_rd_block(InBuf, Grs, in_row_start,
                                                     (m == in_nbuckets - 1 ? in_rows_left : in_rows_per_bucket));
 
