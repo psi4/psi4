@@ -61,7 +61,7 @@ namespace ccenergy {
 ** TDC, 5/03
 */
 
-int CCEnergyWavefunction::rotate() {
+bool CCEnergyWavefunction::rotate() {
     dpdfile2 T1;
     double **U, **S, **X;
     double *evals, *work, **MO_S;
@@ -72,56 +72,36 @@ int CCEnergyWavefunction::rotate() {
     double ***Foo, ***Fvv;             /* occ-occ and vir-vir block of Fock matrix */
     int phase_ok = 1, max_col;
 
-    auto nirreps = moinfo_.nirreps;
     auto nso = moinfo_.nso;
     auto nmo = moinfo_.nmo;
-    auto offset = init_int_array(nirreps);
-    for (int h = 1; h < nirreps; h++) offset[h] = offset[h - 1] + moinfo_.orbspi[h - 1];
+    auto offset = init_int_array(nirrep_);
+    for (int h = 1; h < nirrep_; h++) offset[h] = offset[h - 1] + moinfo_.orbspi[h - 1];
 
-    /* First check to see if we've already converged the orbitals */
+    // => Check if orbitals are converged <=
+    // ==> Compute max T amplitude (infinity norm) <==
     auto max = 0.0;
     if (params_.ref == 0) { /** RHF **/
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-        global_dpd_->file2_mat_init(&T1);
-        global_dpd_->file2_mat_rd(&T1);
-
-        for (int h = 0; h < nirreps; h++)
-            for (int i = 0; i < moinfo_.occpi[h]; i++)
-                for (int a = 0; a < moinfo_.virtpi[h]; a++)
-                    if (std::fabs(T1.matrix[h][i][a]) > max) max = std::fabs(T1.matrix[h][i][a]);
-
-        global_dpd_->file2_mat_close(&T1);
+        Matrix t1(&T1);
+        max = t1.absmax();
         global_dpd_->file2_close(&T1);
     } else if (params_.ref == 2) { /** UHF **/
 
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-        global_dpd_->file2_mat_init(&T1);
-        global_dpd_->file2_mat_rd(&T1);
-
-        for (int h = 0; h < nirreps; h++)
-            for (int i = 0; i < moinfo_.aoccpi[h]; i++)
-                for (int a = 0; a < moinfo_.avirtpi[h]; a++)
-                    if (std::fabs(T1.matrix[h][i][a]) > max) max = std::fabs(T1.matrix[h][i][a]);
-
-        global_dpd_->file2_mat_close(&T1);
+        Matrix t1_a(&T1);
+        max = t1_a.absmax();
         global_dpd_->file2_close(&T1);
 
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-        global_dpd_->file2_mat_init(&T1);
-        global_dpd_->file2_mat_rd(&T1);
-
-        for (int h = 0; h < nirreps; h++)
-            for (int i = 0; i < moinfo_.boccpi[h]; i++)
-                for (int a = 0; a < moinfo_.bvirtpi[h]; a++)
-                    if (std::fabs(T1.matrix[h][i][a]) > max) max = std::fabs(T1.matrix[h][i][a]);
-
-        global_dpd_->file2_mat_close(&T1);
+        Matrix t1_b(&T1);
+        max = std::max(max, t1_b.absmax());
         global_dpd_->file2_close(&T1);
     }
 
+    // ==> Check max T amplitude against threshhold <==
     if (std::fabs(max) <= params_.bconv) {
         outfile->Printf("    Brueckner orbitals converged.  Maximum T1 = %15.12f\n", std::fabs(max));
-        return (1);
+        return true;
     } else
         outfile->Printf("    Rotating orbitals.  Maximum T1 = %15.12f\n", std::fabs(max));
 
@@ -134,11 +114,10 @@ int CCEnergyWavefunction::rotate() {
         U = block_matrix(nmo, nmo);
         for (int i = 0; i < nmo; i++) U[i][i] = 1.0;
 
-        max = 0.0;
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
         global_dpd_->file2_mat_init(&T1);
         global_dpd_->file2_mat_rd(&T1);
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             for (int i = 0; i < moinfo_.occpi[h]; i++) {
                 auto ii = moinfo_.qt2pitzer[moinfo_.qt_occ[i] + moinfo_.occ_off[h]];
                 for (int a = 0; a < moinfo_.virtpi[h]; a++) {
@@ -196,7 +175,7 @@ int CCEnergyWavefunction::rotate() {
 
         /* build the SO-basis density for the new MOs */
         D = block_matrix(nso, nso);
-        for (int h = 0; h < nirreps; h++)
+        for (int h = 0; h < nirrep_; h++)
             for (int p = offset[h]; p < offset[h] + moinfo_.orbspi[h]; p++)
                 for (int q = offset[h]; q < offset[h] + moinfo_.orbspi[h]; q++)
                     for (int i = offset[h]; i < offset[h] + moinfo_.frdocc[h] + moinfo_.occpi[h]; i++)
@@ -227,10 +206,10 @@ int CCEnergyWavefunction::rotate() {
     */
 
         /* extract the occ-occ and vir-vir block of the Fock matrix */
-        Foo = (double ***)malloc(nirreps * sizeof(double **));
-        Fvv = (double ***)malloc(nirreps * sizeof(double **));
+        Foo = (double ***)malloc(nirrep_ * sizeof(double **));
+        Fvv = (double ***)malloc(nirrep_ * sizeof(double **));
         X = block_matrix(nmo, nmo);
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             /* leave the frozen orbitals alone */
             for (int i = offset[h]; i < offset[h] + moinfo_.frdocc[h]; i++) X[i][i] = 1.0;
             for (int end = offset[h] + moinfo_.orbspi[h], start = end - moinfo_.fruocc[h],
@@ -379,7 +358,7 @@ int CCEnergyWavefunction::rotate() {
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
         global_dpd_->file2_mat_init(&T1);
         global_dpd_->file2_mat_rd(&T1);
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             for (int i = 0; i < moinfo_.aoccpi[h]; i++) {
                 auto ii = moinfo_.qt2pitzer_a[moinfo_.qt_aocc[i] + moinfo_.aocc_off[h]];
                 for (int a = 0; a < moinfo_.avirtpi[h]; a++) {
@@ -445,7 +424,7 @@ int CCEnergyWavefunction::rotate() {
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
         global_dpd_->file2_mat_init(&T1);
         global_dpd_->file2_mat_rd(&T1);
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             for (int i = 0; i < moinfo_.boccpi[h]; i++) {
                 auto ii = moinfo_.qt2pitzer_b[moinfo_.qt_bocc[i] + moinfo_.bocc_off[h]];
                 for (int a = 0; a < moinfo_.bvirtpi[h]; a++) {
@@ -507,7 +486,7 @@ int CCEnergyWavefunction::rotate() {
         /* build the SO-basis alpha and beta densities for the new MOs */
         D_a = block_matrix(nso, nso);
         D_b = block_matrix(nso, nso);
-        for (int h = 0; h < nirreps; h++)
+        for (int h = 0; h < nirrep_; h++)
             for (int p = offset[h]; p < offset[h] + moinfo_.orbspi[h]; p++)
                 for (int q = offset[h]; q < offset[h] + moinfo_.orbspi[h]; q++) {
                     for (int i = offset[h]; i < offset[h] + moinfo_.frdocc[h] + moinfo_.aoccpi[h]; i++)
@@ -537,10 +516,10 @@ int CCEnergyWavefunction::rotate() {
 
         /** alpha Fock semicanonicalization **/
 
-        Foo = (double ***)malloc(nirreps * sizeof(double **));
-        Fvv = (double ***)malloc(nirreps * sizeof(double **));
+        Foo = (double ***)malloc(nirrep_ * sizeof(double **));
+        Fvv = (double ***)malloc(nirrep_ * sizeof(double **));
         X = block_matrix(nmo, nmo);
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             /* leave the frozen orbitals alone */
             for (int i = offset[h]; i < offset[h] + moinfo_.frdocc[h]; i++) X[i][i] = 1.0;
             for (int end = offset[h] + moinfo_.orbspi[h], start = end - moinfo_.fruocc[h],
@@ -644,10 +623,10 @@ int CCEnergyWavefunction::rotate() {
 
         /** beta Fock semicanonicalization **/
 
-        Foo = (double ***)malloc(nirreps * sizeof(double **));
-        Fvv = (double ***)malloc(nirreps * sizeof(double **));
+        Foo = (double ***)malloc(nirrep_ * sizeof(double **));
+        Fvv = (double ***)malloc(nirrep_ * sizeof(double **));
         X = block_matrix(nmo, nmo);
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             /* leave the frozen orbitals alone */
             for (int i = offset[h]; i < offset[h] + moinfo_.frdocc[h]; i++) X[i][i] = 1.0;
             for (int end = offset[h] + moinfo_.orbspi[h], start = end - moinfo_.fruocc[h],
@@ -754,7 +733,7 @@ int CCEnergyWavefunction::rotate() {
     free_block(SO_S);
     free(offset);
 
-    return 0;
+    return false;
 }
 }  // namespace ccenergy
 }  // namespace psi

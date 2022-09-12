@@ -120,7 +120,7 @@ class CCEnergyWavefunction : public Wavefunction {
     void cachedone_uhf(int **cachelist);
 
     /* Brueckner */
-    int rotate();
+    bool rotate();
     double **fock_build(double **D);
 
     /* CC2 / CC3 */
