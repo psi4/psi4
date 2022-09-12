@@ -1,6 +1,11 @@
 ## Description
 <!-- Provide a brief description of the PR's purpose here. -->
 
+## API & Changelog Entry
+<!-- Suggest notable points or changes in API that should be recorded in release notes. -->
+- [ ] RN 1
+- [ ] RN 2
+
 ## Todos
 <!-- Notable points (developer or user-interest) that this PR has or will accomplish. -->
 - [ ] Feature1
