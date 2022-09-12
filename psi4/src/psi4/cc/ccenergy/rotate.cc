@@ -78,7 +78,7 @@ bool CCEnergyWavefunction::rotate() {
     for (int h = 1; h < nirrep_; h++) offset[h] = offset[h - 1] + moinfo_.orbspi[h - 1];
 
     // => Check if orbitals are converged <=
-    // ==> Compute max T amplitude (infinity norm) <==
+    // ==> Compute infinity norm (max value) of T1 amplitudes <==
     auto max = 0.0;
     if (params_.ref == 0) { /** RHF **/
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -98,7 +98,7 @@ bool CCEnergyWavefunction::rotate() {
         global_dpd_->file2_close(&T1);
     }
 
-    // ==> Check max T amplitude against threshhold <==
+    // ==> Check norm of T1 against threshhold <==
     if (std::fabs(max) <= params_.bconv) {
         outfile->Printf("    Brueckner orbitals converged.  Maximum T1 = %15.12f\n", std::fabs(max));
         return true;
@@ -111,67 +111,23 @@ bool CCEnergyWavefunction::rotate() {
     int stat = 0;
     if (params_.ref == 0) { /* RHF */
 
-        U = block_matrix(nmo, nmo);
-        for (int i = 0; i < nmo; i++) U[i][i] = 1.0;
+        // ==> Orbital Step: phi_new = exp(T1 - T1^) phi_old <==
+        // Technically, U is exp(T1^ - T1). We account for this by transposing in the GEMM where we use U.
+        Matrix U(nmopi_, nmopi_);
+
+        Slice occ_slice(frzcpi_, nalphapi_);
+        Slice vir_slice(nalphapi_, nmopi_ - frzvpi_);
 
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-        global_dpd_->file2_mat_init(&T1);
-        global_dpd_->file2_mat_rd(&T1);
-        for (int h = 0; h < nirrep_; h++) {
-            for (int i = 0; i < moinfo_.occpi[h]; i++) {
-                auto ii = moinfo_.qt2pitzer[moinfo_.qt_occ[i] + moinfo_.occ_off[h]];
-                for (int a = 0; a < moinfo_.virtpi[h]; a++) {
-                    auto aa = moinfo_.qt2pitzer[moinfo_.qt_vir[a] + moinfo_.vir_off[h]];
-
-                    U[ii][aa] = T1.matrix[h][i][a];
-                    U[aa][ii] = -T1.matrix[h][i][a];
-                }
-            }
-        }
-        global_dpd_->file2_mat_close(&T1);
+        Matrix K_OV(&T1);
+        U.set_block(occ_slice, vir_slice, K_OV);
+        U.subtract(U.transpose());
         global_dpd_->file2_close(&T1);
+        U.expm(4, true);
 
-        scf = Ca_->to_block_matrix();
+        auto Ca_new = linalg::doublet(*Ca_, U, false, true);
         scf_orig = Ca_->to_block_matrix();
-        scf_new = block_matrix(nso, nmo);
-        C_DGEMM('n', 't', nso, nmo, nmo, 1, &(scf[0][0]), nmo, &(U[0][0]), nmo, 0, &(scf_new[0][0]), nmo);
-        free_block(U);
-        free_block(scf);
-
-        /* transform the overlap into the new MO basis */
-        MO_S = block_matrix(nmo, nmo);
-        X = block_matrix(nso, nso);
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_new[0][0]), nmo, &(SO_S[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_new[0][0]), nmo, 0, &(MO_S[0][0]), nmo);
-        free_block(X);
-
-        /* build S^-1/2 for this basis */
-        evals = init_array(nmo);
-        work = init_array(nmo * 3);
-        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals, work, nmo * 3))) {
-            outfile->Printf("rotate(): Error in overlap diagonalization. stat = %d\n", stat);
-            throw PsiException("rotate(): Error in overlap diagonalization.", __FILE__, __LINE__);
-        }
-        S = block_matrix(nmo, nmo);
-        for (int i = 0; i < nmo; i++) {
-            if (std::fabs(evals[i]) > 1e-8)
-                S[i][i] = 1 / sqrt(evals[i]);
-            else
-                S[i][i] = 0.0;
-        }
-        free(evals);
-        free(work);
-        X = block_matrix(nmo, nmo);
-        C_DGEMM('t', 'n', nmo, nmo, nmo, 1, &(MO_S[0][0]), nso, &(S[0][0]), nmo, 0, &(X[0][0]), nmo);
-        C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(X[0][0]), nmo, &(MO_S[0][0]), nso, 0, &(S[0][0]), nmo);
-        free_block(X);
-
-        /* orthogonalize the new MO basis */
-        scf = block_matrix(nso, nmo);
-        C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(scf_new[0][0]), nmo, &(S[0][0]), nmo, 0, &(scf[0][0]), nmo);
-        free_block(S);
-        free_block(MO_S);
-        free_block(scf_new);
+        scf = Ca_new.to_block_matrix();
 
         /* build the SO-basis density for the new MOs */
         D = block_matrix(nso, nso);
@@ -351,137 +307,40 @@ bool CCEnergyWavefunction::rotate() {
 
     } else if (params_.ref == 2) { /* UHF */
 
-        /* AA block */
-        U = block_matrix(nmo, nmo);
-        for (int i = 0; i < nmo; i++) U[i][i] = 1.0;
+        // ==> Orbital Step: phi_new = exp(T1 - T1^) phi_old <==
+        // Technically, U is exp(T1^ - T1). We account for this by transposing in the GEMM where we use U.
+
+        // Alpha block
+        Matrix Ua(nmopi_, nmopi_);
+        Slice occ_slice_a(frzcpi_, nalphapi_);
+        Slice vir_slice_a(nalphapi_, nmopi_ - frzvpi_);
 
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-        global_dpd_->file2_mat_init(&T1);
-        global_dpd_->file2_mat_rd(&T1);
-        for (int h = 0; h < nirrep_; h++) {
-            for (int i = 0; i < moinfo_.aoccpi[h]; i++) {
-                auto ii = moinfo_.qt2pitzer_a[moinfo_.qt_aocc[i] + moinfo_.aocc_off[h]];
-                for (int a = 0; a < moinfo_.avirtpi[h]; a++) {
-                    auto aa = moinfo_.qt2pitzer_a[moinfo_.qt_avir[a] + moinfo_.avir_off[h]];
-
-                    U[ii][aa] = T1.matrix[h][i][a];
-                    U[aa][ii] = -T1.matrix[h][i][a];
-                }
-            }
-        }
-        global_dpd_->file2_mat_close(&T1);
+        Matrix K_OV(&T1);
+        Ua.set_block(occ_slice_a, vir_slice_a, K_OV);
+        Ua.subtract(Ua.transpose());
         global_dpd_->file2_close(&T1);
+        Ua.expm(4, true);
 
-        scf = Ca_->to_block_matrix();
+        auto Ca_new = linalg::doublet(*Ca_, Ua, false, true);
         scf_a_orig = Ca_->to_block_matrix();
+        scf_a = Ca_new.to_block_matrix();
 
-        scf_new = block_matrix(nso, nmo);
-        C_DGEMM('n', 't', nso, nmo, nmo, 1, &(scf[0][0]), nmo, &(U[0][0]), nmo, 0, &(scf_new[0][0]), nmo);
-        free_block(U);
-        free_block(scf);
-
-        MO_S = block_matrix(nmo, nmo);
-
-        /* transform the overlap into the new alpha MO basis */
-        X = block_matrix(nso, nso);
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_new[0][0]), nmo, &(SO_S[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_new[0][0]), nmo, 0, &(MO_S[0][0]), nmo);
-        free_block(X);
-
-        evals = init_array(nmo);
-        work = init_array(nmo * 3);
-        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals, work, nmo * 3))) {
-            outfile->Printf("rotate(): Error in overlap diagonalization. stat = %d\n", stat);
-            throw PsiException("rotate(): Error in overlap diagonalization.", __FILE__, __LINE__);
-        }
-
-        /* build S^-1/2 for this basis */
-        S = block_matrix(nmo, nmo);
-        for (int i = 0; i < nmo; i++) {
-            if (std::fabs(evals[i]) > 1e-8)
-                S[i][i] = 1 / sqrt(evals[i]);
-            else
-                S[i][i] = 0.0;
-        }
-        free(evals);
-        free(work);
-        X = block_matrix(nmo, nmo);
-        C_DGEMM('t', 'n', nmo, nmo, nmo, 1, &(MO_S[0][0]), nso, &(S[0][0]), nmo, 0, &(X[0][0]), nmo);
-        C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(X[0][0]), nmo, &(MO_S[0][0]), nso, 0, &(S[0][0]), nmo);
-        free_block(X);
-
-        /* orthogonalize the basis */
-        scf_a = block_matrix(nso, nmo);
-        C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(scf_new[0][0]), nmo, &(S[0][0]), nmo, 0, &(scf_a[0][0]), nmo);
-        free_block(S);
-        free_block(MO_S);
-        free_block(scf_new);
-
-        /* BB block */
-        U = block_matrix(nmo, nmo);
-        for (int i = 0; i < nmo; i++) U[i][i] = 1.0;
+        // Beta block
+        Matrix Ub(nmopi_, nmopi_);
+        Slice occ_slice_b(frzcpi_, nbetapi_);
+        Slice vir_slice_b(nbetapi_, nmopi_ - frzvpi_);
 
         global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-        global_dpd_->file2_mat_init(&T1);
-        global_dpd_->file2_mat_rd(&T1);
-        for (int h = 0; h < nirrep_; h++) {
-            for (int i = 0; i < moinfo_.boccpi[h]; i++) {
-                auto ii = moinfo_.qt2pitzer_b[moinfo_.qt_bocc[i] + moinfo_.bocc_off[h]];
-                for (int a = 0; a < moinfo_.bvirtpi[h]; a++) {
-                    auto aa = moinfo_.qt2pitzer_b[moinfo_.qt_bvir[a] + moinfo_.bvir_off[h]];
-
-                    U[ii][aa] = T1.matrix[h][i][a];
-                    U[aa][ii] = -T1.matrix[h][i][a];
-                }
-            }
-        }
-        global_dpd_->file2_mat_close(&T1);
+        Matrix K_ov(&T1);
+        Ub.set_block(occ_slice_b, vir_slice_b, K_ov);
+        Ub.subtract(Ub.transpose());
         global_dpd_->file2_close(&T1);
+        Ub.expm(4, true);
 
-        scf = Cb_->to_block_matrix();
+        auto Cb_new = linalg::doublet(*Cb_, Ub, false, true);
         scf_b_orig = Cb_->to_block_matrix();
-
-        scf_new = block_matrix(nso, nmo);
-        C_DGEMM('n', 't', nso, nmo, nmo, 1, &(scf[0][0]), nmo, &(U[0][0]), nmo, 0, &(scf_new[0][0]), nmo);
-        free_block(U);
-        free_block(scf);
-
-        MO_S = block_matrix(nmo, nmo);
-
-        /* transform the overlap into the new beta MO basis */
-        X = block_matrix(nso, nso);
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_new[0][0]), nmo, &(SO_S[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_new[0][0]), nmo, 0, &(MO_S[0][0]), nmo);
-        free_block(X);
-
-        evals = init_array(nmo);
-        work = init_array(nmo * 3);
-        if ((stat = C_DSYEV('v', 'u', nmo, &(MO_S[0][0]), nmo, evals, work, nmo * 3))) {
-            outfile->Printf("rotate(): Error in overlap diagonalization. stat = %d\n", stat);
-            throw PsiException("rotate(): Error in Foo diagonalization.", __FILE__, __LINE__);
-        }
-
-        /* build S^-1/2 for this basis */
-        S = block_matrix(nmo, nmo);
-        for (int i = 0; i < nmo; i++) {
-            if (std::fabs(evals[i]) > 1e-8)
-                S[i][i] = 1 / sqrt(evals[i]);
-            else
-                S[i][i] = 0.0;
-        }
-        free(evals);
-        free(work);
-        X = block_matrix(nmo, nmo);
-        C_DGEMM('t', 'n', nmo, nmo, nmo, 1, &(MO_S[0][0]), nso, &(S[0][0]), nmo, 0, &(X[0][0]), nmo);
-        C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(X[0][0]), nmo, &(MO_S[0][0]), nso, 0, &(S[0][0]), nmo);
-        free_block(X);
-
-        /* orthogonalize the basis */
-        scf_b = block_matrix(nso, nmo);
-        C_DGEMM('n', 'n', nmo, nmo, nmo, 1, &(scf_new[0][0]), nmo, &(S[0][0]), nmo, 0, &(scf_b[0][0]), nmo);
-        free_block(S);
-        free_block(MO_S);
-        free_block(scf_new);
+        scf_b = Cb_new.to_block_matrix();
 
         /* build the SO-basis alpha and beta densities for the new MOs */
         D_a = block_matrix(nso, nso);
