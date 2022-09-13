@@ -2790,7 +2790,6 @@ def run_bccd(name, **kwargs):
     else:
         raise ValidationError("proc.py:run_bccd name %s not recognized" % name)
 
-
     # Bypass routine scf if user did something special to get it to converge
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
@@ -2816,6 +2815,21 @@ def run_bccd(name, **kwargs):
         except Exception:
             raise PastureRequiredError("RUN_CCTRANSORT")
 
+    hold_qcvars = {
+        "MP2 TOTAL ENERGY": None,
+        "MP2 CORRELATION ENERGY": None,
+        "MP2 SAME-SPIN CORRELATION ENERGY": None,
+        "MP2 OPPOSITE-SPIN CORRELATION ENERGY": None,
+        "MP2 SINGLES ENERGY": None,
+        "MP2 DOUBLES ENERGY": None,
+        "CCSD TOTAL ENERGY": None,
+        "CCSD CORRELATION ENERGY": None,
+        "CCSD SAME-SPIN CORRELATION ENERGY": None,
+        "CCSD OPPOSITE-SPIN CORRELATION ENERGY": None,
+        "CCSD SINGLES ENERGY": None,
+        "CCSD DOUBLES ENERGY": None,
+    }
+
     while True:
         sort_func(ref_wfn)
 
@@ -2830,11 +2844,48 @@ def run_bccd(name, **kwargs):
             break
         bcc_iter_cnt += 1
 
+        if bcc_iter_cnt == 1:
+            for pv in hold_qcvars:
+                hold_qcvars[pv] = ref_wfn.variable(pv)
+
+    ref_wfn.set_variable("BCCD TOTAL ENERGY", ref_wfn.variable("CCSD TOTAL ENERGY"))
+    ref_wfn.set_variable("BCCD CORRELATION ENERGY", ref_wfn.variable("BCCD TOTAL ENERGY") - ref_wfn.variable("SCF TOTAL ENERGY"))
+    ref_wfn.set_variable("CURRENT CORRELATION ENERGY", ref_wfn.variable("BCCD CORRELATION ENERGY"))
+
+    # copy back canonical MP2 and CCSD from initial iteration
+    for pv, v in hold_qcvars.items():
+        if v is not None:
+            ref_wfn.set_variable(pv, v)
+            core.set_variable(pv, v)
+
     if name == 'bccd(t)':
         core.cctriples(ref_wfn)
+        ref_wfn.set_variable("B(T) CORRECTION ENERGY", ref_wfn.variable("(T) CORRECTION ENERGY"))
+        ref_wfn.set_variable("BCCD(T) TOTAL ENERGY", ref_wfn.variable("CCSD(T) TOTAL ENERGY"))
+        ref_wfn.set_variable("BCCD(T) CORRELATION ENERGY", ref_wfn.variable("BCCD(T) TOTAL ENERGY") - ref_wfn.variable("SCF TOTAL ENERGY"))  # note != CCSD(T) CORRELATION ENERGY
+        ref_wfn.set_variable("CURRENT CORRELATION ENERGY", ref_wfn.variable("BCCD(T) CORRELATION ENERGY"))
+
+        for pv in ["(T) CORRECTION ENERGY", "CCSD(T) TOTAL ENERGY", "CCSD(T) CORRELATION ENERGY"]:
+            ref_wfn.del_variable(pv)
+            core.del_variable(pv)
+
+    for pv in [
+        "BCCD TOTAL ENERGY",
+        "BCCD CORRELATION ENERGY",
+        "B(T) CORRECTION ENERGY",
+        "BCCD(T) TOTAL ENERGY",
+        "BCCD(T) CORRELATION ENERGY",
+        "CURRENT CORRELATION ENERGY",
+    ]:
+        if ref_wfn.has_variable(pv):
+            core.set_variable(pv, ref_wfn.variable(pv))
+
+    # Notes
+    # * BCCD or BCCD(T) correlation energy is total energy of last Brueckner iteration minus HF energy of first Brueckner iteration
 
     optstash.restore()
     return ref_wfn
+
 
 def run_tdscf_excitations(wfn,**kwargs):
 
