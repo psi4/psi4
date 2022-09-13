@@ -1,13 +1,17 @@
 ## Description
 <!-- Provide a brief description of the PR's purpose here. -->
 
-## API & Changelog Entry
-<!-- Suggest notable points or changes in API that should be recorded in release notes. -->
+
+## User API & Changelog headlines
+<!-- A bullet-point format description of how this PR affects the user.
+     This is detined for the release notes. May be empty. -->
 - [ ] RN 1
 - [ ] RN 2
 
-## Todos
-<!-- Notable points (developer or user-interest) that this PR has or will accomplish. -->
+## Dev notes & details
+<!-- A bullet-point format description of what this PR does "at a glance."
+     Target audience is code reviewers and other devs skimming PRs.
+     Should be more technical than user notes. Should never be empty. -->
 - [ ] Feature1
 - [ ] Feature2
 
