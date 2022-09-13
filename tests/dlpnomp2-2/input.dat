@@ -7,6 +7,8 @@ ref_dfmp2_tot            =    -76.3632013590074              #TEST
                                                
 ref_dlpnomp2_corl        =     -0.2983320108291              #TEST
 ref_dlpnomp2_tot         =    -76.3631796087154              #TEST
+ref_dlpnomp2_corl += 0.000020259  # after https://github.com/psi4/psi4/pull/2707
+ref_dlpnomp2_tot  += 0.000020259  # after https://github.com/psi4/psi4/pull/2707
 
 molecule h2o {
 O
