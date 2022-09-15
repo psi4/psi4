@@ -29,9 +29,10 @@
 #ifndef SCF_GRAD_H
 #define SCF_GRAD_H
 
+#include "psi4/libfock/jk.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/typedefs.h"
-#include "psi4/libfock/jk.h"
+#include "psi4/libscf_solver/hf.h"
 
 namespace psi {
 class SuperFunctional;
@@ -55,7 +56,7 @@ protected:
     std::map<std::string, SharedMatrix> hessians_;
 
 public:
-    SCFDeriv(SharedWavefunction ref_wfn, Options& options);
+    SCFDeriv(std::shared_ptr<scf::HF> ref_wfn, Options& options);
     ~SCFDeriv() override;
 
     double compute_energy() override { throw PSIEXCEPTION("SCFDeriv not implemented for the requested reference type."); }
@@ -68,7 +69,7 @@ class RSCFDeriv : public SCFDeriv {
 protected:
     std::shared_ptr<scf::RHF> rhf_wfn_;
 public:
-    RSCFDeriv(std::shared_ptr<scf::RHF> rhf_wfn, Options& options): SCFDeriv(std::dynamic_pointer_cast<Wavefunction>(rhf_wfn), options), rhf_wfn_(rhf_wfn) {}
+    RSCFDeriv(std::shared_ptr<scf::RHF> rhf_wfn, Options& options): SCFDeriv(std::static_pointer_cast<scf::HF>(rhf_wfn), options), rhf_wfn_(rhf_wfn) {}
     ~RSCFDeriv() override {}
     virtual SharedMatrix hessian_response() override;
 };
@@ -132,7 +133,7 @@ protected:
                             int nso, int n1occ, int n2occ, int n1vir);
 
 public:
-    USCFDeriv(std::shared_ptr<scf::UHF> uhf_wfn, Options& options): SCFDeriv(std::dynamic_pointer_cast<Wavefunction>(uhf_wfn), options), uhf_wfn_(uhf_wfn) {}
+    USCFDeriv(std::shared_ptr<scf::UHF> uhf_wfn, Options& options): SCFDeriv(std::static_pointer_cast<scf::HF>(uhf_wfn), options), uhf_wfn_(uhf_wfn) {}
     ~USCFDeriv() override {}
     virtual SharedMatrix hessian_response() override;
 };

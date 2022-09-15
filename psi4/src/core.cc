@@ -52,6 +52,7 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libscf_solver/hf.h"
 #include "psi4/libqt/qt.h"
 
 #include "python_data_type.h"
@@ -211,10 +212,10 @@ SharedWavefunction gdma_interface(SharedWavefunction, Options&, const std::strin
 
 // Matrix returns
 namespace scfgrad {
-SharedMatrix scfgrad(SharedWavefunction, Options&);
+SharedMatrix scfgrad(std::shared_ptr<scf::HF>, Options&);
 }
 namespace scfgrad {
-SharedMatrix scfhess(SharedWavefunction, Options&);
+SharedMatrix scfhess(std::shared_ptr<scf::HF>, Options&);
 }
 
 // Does not create a wavefunction
@@ -325,12 +326,12 @@ void py_psi_opt_clean(void) { opt::opt_clean(); }
 //     return mints::mints(Process::environment.options);
 // }
 
-SharedMatrix py_psi_scfgrad(SharedWavefunction ref_wfn) {
+SharedMatrix py_psi_scfgrad(std::shared_ptr<scf::HF> ref_wfn) {
     py_psi_prepare_options_for_module("SCF");
     return scfgrad::scfgrad(ref_wfn, Process::environment.options);
 }
 
-SharedMatrix py_psi_scfhess(SharedWavefunction ref_wfn) {
+SharedMatrix py_psi_scfhess(std::shared_ptr<scf::HF> ref_wfn) {
     py_psi_prepare_options_for_module("SCF");
     return scfgrad::scfhess(ref_wfn, Process::environment.options);
 }

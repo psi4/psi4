@@ -73,14 +73,13 @@ extern bool brianEnableDFT;
 namespace psi {
 namespace scfgrad {
 
-SCFDeriv::SCFDeriv(SharedWavefunction ref_wfn, Options& options) :
+SCFDeriv::SCFDeriv(std::shared_ptr<scf::HF> ref_wfn, Options& options) :
     Wavefunction(options)
 {
     shallow_copy(ref_wfn);
     common_init();
-    scf::HF* scfwfn = (scf::HF*)ref_wfn.get();
-    functional_ = scfwfn->functional();
-    potential_ = scfwfn->V_potential();
+    functional_ = ref_wfn->functional();
+    potential_ = ref_wfn->V_potential();
     if (ref_wfn->has_array_variable("-D Gradient")) {
         gradients_["-D Gradient"] = ref_wfn->array_variable("-D Gradient");
     }
