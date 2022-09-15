@@ -48,7 +48,6 @@ namespace psi {
 namespace detcas {
 
 #define MAX_RAS_SPACES 4
-#define IOFF_MAX 50604
 #ifdef INDEX
 #undef INDEX
 #endif

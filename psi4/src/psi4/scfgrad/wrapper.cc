@@ -38,7 +38,7 @@
 namespace psi{
 namespace scfgrad {
 
-SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
+SharedMatrix scfgrad(std::shared_ptr<scf::HF> ref_wfn, Options &options)
 {
     tstart();
 
@@ -49,7 +49,7 @@ SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
     return G;
 }
 
-SharedMatrix scfhess(SharedWavefunction ref_wfn, Options &options)
+SharedMatrix scfhess(std::shared_ptr<scf::HF> ref_wfn, Options &options)
 {
     tstart();
 

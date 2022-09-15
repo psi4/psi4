@@ -54,26 +54,26 @@ e, wfn = psi4.energy("", levels=levels_1, bsse_type=['cp','nocp','vmfc'], return
 
 for var in vars_1:
     energy = wfn.variable(var)
-    compare_values(energy, ref1[var], 8, var + " 4-body HF-6-31g") 
+    compare_values(energy, ref1[var], 8, var + " 4-body HF-6-31g") #TEST
 
 clean_variables()
 
 e, wfn = psi4.energy("", levels=levels_2, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
 for var in vars_2:
     energy = wfn.variable(var)
-    compare_values(energy, ref2[var], 8, var) 
+    compare_values(energy, ref2[var], 8, var) #TEST 
 
 clean_variables()
 
 e, wfn = psi4.energy("", levels=levels_3, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
 for var in vars_3:
     energy = wfn.variable(var)
-    compare_values(energy, ref3[var], 8, var) 
+    compare_values(energy, ref3[var], 8, var) #TEST
 
 clean_variables()
 
 e, wfn = psi4.energy("", levels=levels_4, bsse_type=['cp','nocp','vmfc'], return_wfn=True, return_total_data=True)
 for var in vars_2:
     energy = wfn.variable(var)
-    compare_values(energy, ref4[var], 8, var) 
+    compare_values(energy, ref4[var], 8, var)  #TEST
 

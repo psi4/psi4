@@ -38,7 +38,6 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/dimension.h"
@@ -134,31 +133,14 @@ void CCEnergyWavefunction::get_moinfo() {
         psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orb Offsets", (char *)moinfo_.bvir_off,
                         sizeof(int) * moinfo_.nirreps);
 
-        /* Get CC->QT and QT->CC active occupied and virtual reordering arrays */
-        moinfo_.qt_aocc = init_int_array(nactive);
-        moinfo_.qt_bocc = init_int_array(nactive);
-        moinfo_.qt_avir = init_int_array(nactive);
-        moinfo_.qt_bvir = init_int_array(nactive);
-        moinfo_.cc_aocc = init_int_array(nactive);
-        moinfo_.cc_bocc = init_int_array(nactive);
-        moinfo_.cc_avir = init_int_array(nactive);
-        moinfo_.cc_bvir = init_int_array(nactive);
-
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Alpha Active Occ Order", (char *)moinfo_.qt_aocc, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Beta Active Occ Order", (char *)moinfo_.qt_bocc, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Alpha Active Virt Order", (char *)moinfo_.qt_avir, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Beta Active Virt Order", (char *)moinfo_.qt_bvir, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "QT->CC Alpha Active Occ Order", (char *)moinfo_.cc_aocc, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "QT->CC Beta Active Occ Order", (char *)moinfo_.cc_bocc, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "QT->CC Alpha Active Virt Order", (char *)moinfo_.cc_avir, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "QT->CC Beta Active Virt Order", (char *)moinfo_.cc_bvir, sizeof(int) * nactive);
-
     } else { /** RHF or ROHF **/
 
         moinfo_.occpi = init_int_array(nirreps);
         moinfo_.virtpi = init_int_array(nirreps);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep", (char *)moinfo_.occpi, sizeof(int) * nirreps);
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep", (char *)moinfo_.virtpi, sizeof(int) * nirreps);
+        act_occpi_ = Dimension(std::vector<int>(moinfo_.occpi, moinfo_.occpi + nirreps));
+        act_virpi_ = Dimension(std::vector<int>(moinfo_.virtpi, moinfo_.virtpi + nirreps));
         moinfo_.occ_sym = init_int_array(nactive);
         moinfo_.vir_sym = init_int_array(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orb Symmetry", (char *)moinfo_.occ_sym, sizeof(int) * nactive);
@@ -170,15 +152,6 @@ void CCEnergyWavefunction::get_moinfo() {
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orb Offsets", (char *)moinfo_.vir_off,
                         sizeof(int) * moinfo_.nirreps);
 
-        /* Get CC->QT and QT->CC active occupied and virtual reordering arrays */
-        moinfo_.qt_occ = init_int_array(nactive);
-        moinfo_.qt_vir = init_int_array(nactive);
-        moinfo_.cc_occ = init_int_array(nactive);
-        moinfo_.cc_vir = init_int_array(nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Active Occ Order", (char *)moinfo_.qt_occ, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Active Virt Order", (char *)moinfo_.qt_vir, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "QT->CC Active Occ Order", (char *)moinfo_.cc_occ, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "QT->CC Active Virt Order", (char *)moinfo_.cc_vir, sizeof(int) * nactive);
     }
 
     /* Build sosym array (for AO-basis BT2) */
@@ -233,31 +206,6 @@ void CCEnergyWavefunction::get_moinfo() {
             }
         }
         moinfo_.Cbv = Cb;
-    }
-
-    /* Compute spatial-orbital reordering arrays */
-    if (params_.ref == 0 || params_.ref == 1) {
-        moinfo_.pitzer2qt = init_int_array(moinfo_.nmo);
-        moinfo_.qt2pitzer = init_int_array(moinfo_.nmo);
-        reorder_qt(moinfo_.clsdpi, moinfo_.openpi, moinfo_.frdocc, moinfo_.fruocc, moinfo_.pitzer2qt, moinfo_.orbspi,
-                   moinfo_.nirreps);
-        for (int i = 0; i < moinfo_.nmo; i++) {
-            j = moinfo_.pitzer2qt[i];
-            moinfo_.qt2pitzer[j] = i;
-        }
-    } else if (params_.ref == 2) {
-        moinfo_.pitzer2qt_a = init_int_array(moinfo_.nmo);
-        moinfo_.qt2pitzer_a = init_int_array(moinfo_.nmo);
-        moinfo_.pitzer2qt_b = init_int_array(moinfo_.nmo);
-        moinfo_.qt2pitzer_b = init_int_array(moinfo_.nmo);
-        reorder_qt_uhf(moinfo_.clsdpi, moinfo_.openpi, moinfo_.frdocc, moinfo_.fruocc, moinfo_.pitzer2qt_a,
-                       moinfo_.pitzer2qt_b, moinfo_.orbspi, moinfo_.nirreps);
-        for (int i = 0; i < moinfo_.nmo; i++) {
-            j = moinfo_.pitzer2qt_a[i];
-            moinfo_.qt2pitzer_a[j] = i;
-            j = moinfo_.pitzer2qt_b[i];
-            moinfo_.qt2pitzer_b[j] = i;
-        }
     }
 
     /* Adjust clsdpi array for frozen orbitals */
@@ -326,14 +274,6 @@ void CCEnergyWavefunction::cleanup() {
         free(moinfo_.bocc_off);
         free(moinfo_.avir_off);
         free(moinfo_.bvir_off);
-        free(moinfo_.qt_aocc);
-        free(moinfo_.qt_bocc);
-        free(moinfo_.qt_avir);
-        free(moinfo_.qt_bvir);
-        free(moinfo_.cc_aocc);
-        free(moinfo_.cc_bocc);
-        free(moinfo_.cc_avir);
-        free(moinfo_.cc_bvir);
     } else {
         free(moinfo_.occpi);
         free(moinfo_.virtpi);
@@ -341,10 +281,6 @@ void CCEnergyWavefunction::cleanup() {
         free(moinfo_.vir_sym);
         free(moinfo_.occ_off);
         free(moinfo_.vir_off);
-        free(moinfo_.qt_occ);
-        free(moinfo_.qt_vir);
-        free(moinfo_.cc_occ);
-        free(moinfo_.cc_vir);
     }
 }
 

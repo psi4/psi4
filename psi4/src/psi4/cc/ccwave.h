@@ -120,7 +120,7 @@ class CCEnergyWavefunction : public Wavefunction {
     void cachedone_uhf(int **cachelist);
 
     /* Brueckner */
-    int rotate();
+    bool rotate();
     double **fock_build(double **D);
 
     /* CC2 / CC3 */
@@ -199,6 +199,8 @@ class CCEnergyWavefunction : public Wavefunction {
     void diis_invert_B(double **B, double *C, int dimension, double tolerance);
 
     /* member variables */
+    Dimension act_occpi_;
+    Dimension act_virpi_;
     MOInfo moinfo_;
     Params params_;
     Local local_;

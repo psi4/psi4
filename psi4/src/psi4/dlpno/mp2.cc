@@ -402,15 +402,15 @@ void DLPNOMP2::prep_sparsity() {
     int naux = ribasis_->nbf();
     int naocc = nalpha_ - nfrzc();
 
-    auto bf_to_atom_ = std::vector<int>(nbf);
-    auto ribf_to_atom_ = std::vector<int>(naux);
+    auto bf_to_atom = std::vector<int>(nbf);
+    auto ribf_to_atom = std::vector<int>(naux);
 
     for (size_t i = 0; i < nbf; ++i) {
-        bf_to_atom_[i] = basisset_->function_to_center(i);
+        bf_to_atom[i] = basisset_->function_to_center(i);
     }
 
     for (size_t i = 0; i < naux; ++i) {
-        ribf_to_atom_[i] = ribasis_->function_to_center(i);
+        ribf_to_atom[i] = ribasis_->function_to_center(i);
     }
 
     outfile->Printf("  ==> Forming Local MO Domains <==\n");
@@ -437,7 +437,7 @@ void DLPNOMP2::prep_sparsity() {
             double p_uu = P_i->get(u, u);
 
             for (size_t v = 0; v < nbf; v++) {
-                int centerV = basisset_->function_to_center(u);
+                int centerV = basisset_->function_to_center(v);
                 double p_vv = P_i->get(v, v);
 
                 // off-diag pops (p_uv) split between u and v prop to diag pops
@@ -478,7 +478,7 @@ void DLPNOMP2::prep_sparsity() {
         lmo_to_paos_[i] = contract_lists(lmo_to_paos_temp, atom_to_bf_);
 
         // contains the same information as previous map
-        lmo_to_paoatoms_[i] = block_list(lmo_to_paos_[i], bf_to_atom_);
+        lmo_to_paoatoms_[i] = block_list(lmo_to_paos_[i], bf_to_atom);
     }
 
     // map from LMO to local occupied domain (other LMOs)
@@ -553,7 +553,7 @@ void DLPNOMP2::prep_sparsity() {
                 lmo_to_bfs[i].push_back(bf_ind);
             }
         }
-        lmo_to_atoms[i] = block_list(lmo_to_bfs[i], bf_to_atom_);
+        lmo_to_atoms[i] = block_list(lmo_to_bfs[i], bf_to_atom);
     }
 
     // which basis functions (on which atoms) contribute to each projected AO?
@@ -566,7 +566,7 @@ void DLPNOMP2::prep_sparsity() {
                 pao_to_bfs[u].push_back(bf_ind);
             }
         }
-        pao_to_atoms[u] = block_list(pao_to_bfs[u], bf_to_atom_);
+        pao_to_atoms[u] = block_list(pao_to_bfs[u], bf_to_atom);
     }
 
     // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
