@@ -609,7 +609,7 @@ void Matrix::set_column(int h, int m, SharedVector vec) {
     }
 }
 
-SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) {
+SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) const {
     // check if slices are within bounds
     for (int h = 0; h < nirrep_; h++) {
         if (rows.end()[h] > rowspi_[h]) {
@@ -641,7 +641,7 @@ SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) {
     return block;
 }
 
-SharedMatrix Matrix::get_block(const Slice &slice) {
+SharedMatrix Matrix::get_block(const Slice &slice) const {
     return get_block(slice, slice);
 }
 
