@@ -315,6 +315,8 @@ public:
     /// Return the global shared object
     static std::shared_ptr<PSIO> shared_object();
 
+    void PSIO::rewind_toclen(const size_t unit);
+
     /** Read the length of the TOC for a given unit directly from the file.
        **
        ** \param unit = PSI unit number from which to read the toclen.

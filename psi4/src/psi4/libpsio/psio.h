@@ -35,6 +35,7 @@
 
 namespace psi {
 
+std::string decode_errno(const int errno_in);
 int psio_init();
 int psio_ipv1_config();
 int psio_state();

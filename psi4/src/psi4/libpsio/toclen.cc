@@ -48,13 +48,12 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
-size_t PSIO::toclen(size_t unit) {
+size_t PSIO::toclen(const size_t unit) {
     size_t len = 0;
-    psio_tocentry *this_entry;
-
-    this_entry = psio_unit[unit].toc;
+    psio_tocentry *this_entry = psio_unit[unit].toc;
 
     while (this_entry != nullptr) {
         ++len;
@@ -64,66 +63,57 @@ size_t PSIO::toclen(size_t unit) {
     return (len);
 }
 
-size_t PSIO::rd_toclen(size_t unit) {
-    int errcod, stream;
-    psio_ud *this_unit;
+/// @brief Seek the stream of the vol[0] of a unit to its beginning
+/// @param unit : file unit number to rewind
+void PSIO::rewind_toclen(const size_t unit) {
+    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
+    const auto sys_errno = errno;
+    if (errcod == -1) {
+        std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(sys_errno);
+        errmsg += "\nCannot seek vol[0] to its beginning, unit ";
+        errmsg += std::to_string(unit) + ".\n";
+        psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
+    }
+}
+
+size_t PSIO::rd_toclen(const size_t unit) {
+    // Seek to the beginning
+    rewind_toclen(unit);
+
+    // Read the value
     size_t len;
-
-    this_unit = &(psio_unit[unit]);
-
-    /* Seek vol[0] to its beginning */
-    stream = this_unit->vol[0].stream;
-
-    errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
-
-    if (errcod == -1){
-        perror("LSEEK failed. Error description from the OS: ");
-        fflush(stderr);
-        psio_error(unit, PSIO_ERROR_LSEEK);
-    }
-
-    /* Read the value */
-
-    errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
-
-    if (errcod != sizeof(size_t)){
-        if (errcod == -1){
-            perror("READ failed in rd_toclen(). Error description from the OS: ");
-            fflush(stderr);
+    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
+    const auto sys_errno = errno;
+    if (errcod != sizeof(size_t)) {
+#ifdef DEBUG
+        if (errcod == -1) {
+            std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(sys_errno);
+            errmsg += "\nError in PSIO::rd_toclen()! Cannot read TOC length, unit ";
+            errmsg += std::to_string(unit) + ".\n";
+            errmsg += "Assuming a length of zero and continuing...\n";
+            outfile->Printf(errmsg);
         }
-        return (0); /* assume that all is well (see comments above) */
+#endif
+        return (0);  // assume that all is well (see comments in psio.hpp)
     }
-
     return (len);
 }
 
-void PSIO::wt_toclen(size_t unit, size_t len) {
-    int errcod, stream;
-    psio_ud *this_unit;
+void PSIO::wt_toclen(const size_t unit, const size_t len) {
+    // Seek to the beginning
+    rewind_toclen(unit);
 
-    this_unit = &(psio_unit[unit]);
-
-    /* Seek vol[0] to its beginning */
-    stream = this_unit->vol[0].stream;
-
-    errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
-
-    if (errcod == -1) {
-        perror("LSEEK failed. Error description from the OS: ");
-        ::fprintf(stderr, "Error in PSIO_WT_TOCLEN()! Cannot seek vol[0] to its beginning, unit %zu.\n", unit);
-        fflush(stderr);
-        throw PSIEXCEPTION("PSIO Error");
-    }
-
-    /* Write the value */
-
-    errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
-
+    // Write the value
+    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
+    const auto sys_errno = errno;
     if (errcod != sizeof(size_t)) {
-        perror("WRITE failed. Error description from the OS: ");
-        ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %zu.\n", unit);
-        fflush(stderr);
-        throw PSIEXCEPTION("PSIO Error");
+        std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
+        errmsg += "\nError in PSIO::wt_toclen()! Cannot write TOC length, unit ";
+        errmsg += std::to_string(unit) + ".\n";
+        psio_error(unit, PSIO_ERROR_WRITE, errmsg);
     }
 }
 

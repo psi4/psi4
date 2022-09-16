@@ -30,8 +30,6 @@
  ** \file
  ** \ingroup PSIO
  */
-
-#include <cerrno>
 #include <cstring>
 #include "psi4/libpsio/psio.h"
 
@@ -44,5 +42,5 @@ namespace psi {
  ** operating system. This can be used to figure out why a preceeding system call (eg. lseek) has failed. The error
  ** message is returned as a convenient std::string.
  */
-std::string decode_errno() { return std::string(std::strerror(errno)); }
+std::string decode_errno(const int errno_in) { return std::string(std::strerror(errno_in)); }
 }  // namespace psi
