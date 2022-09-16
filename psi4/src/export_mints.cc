@@ -500,7 +500,7 @@ void export_mints(py::module& m) {
     typedef void (Matrix::*matrix_load_psio2)(std::shared_ptr<psi::PSIO>&, size_t, Matrix::SaveType);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
     typedef void (Matrix::*set_block_shared)(const Slice&, const Slice&, SharedMatrix);
-    typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&);
+    typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&) const;
 
     py::enum_<Matrix::SaveType>(m, "SaveType", "The layout of the matrix for saving")
         .value("Full", Matrix::SaveType::Full)
