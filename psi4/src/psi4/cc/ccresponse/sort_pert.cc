@@ -54,63 +54,28 @@ namespace ccresponse {
 ** TDC, 10/05
 */
 
-void sort_pert(const char *pert, double **pertints, int irrep) {
-    int p, q, Gp, Gq, P, Q, i;
+void write_blocks(const Matrix& mat) {
+    Slice occ_slice(Dimension(moinfo.nirreps), moinfo.act_occpi);
+    Slice vir_slice(moinfo.act_occpi, moinfo.act_pi);
+
     dpdfile2 f;
-    char prefix[32], lbl[32];
 
-    sprintf(lbl, "%s_IJ", pert);
-    global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
-    global_dpd_->file2_mat_init(&f);
-    for (Gp = 0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
-        Gq = irrep ^ Gp;
-
-        for (p = 0; p < moinfo.occpi[Gp]; p++) {
-            P = moinfo.qt2pitzer[moinfo.qt_occ[p + moinfo.occ_off[Gp]]];
-            for (q = 0; q < moinfo.occpi[Gq]; q++) {
-                Q = moinfo.qt2pitzer[moinfo.qt_occ[q + moinfo.occ_off[Gq]]];
-                f.matrix[Gp][p][q] = pertints[P][Q];
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&f);
-    global_dpd_->file2_mat_close(&f);
+    auto block = mat.get_block(occ_slice);
+    auto lbl = mat.name() + "_IJ";
+    global_dpd_->file2_init(&f, PSIF_CC_OEI, mat.symmetry(), 0, 0, lbl);
+    block->write_to_dpdfile2(&f);
     global_dpd_->file2_close(&f);
 
-    sprintf(lbl, "%s_AB", pert);
-    global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
-    global_dpd_->file2_mat_init(&f);
-    for (Gp = 0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
-        Gq = irrep ^ Gp;
-
-        for (p = 0; p < moinfo.virtpi[Gp]; p++) {
-            P = moinfo.qt2pitzer[moinfo.qt_vir[p + moinfo.vir_off[Gp]]];
-            for (q = 0; q < moinfo.virtpi[Gq]; q++) {
-                Q = moinfo.qt2pitzer[moinfo.qt_vir[q + moinfo.vir_off[Gq]]];
-                f.matrix[Gp][p][q] = pertints[P][Q];
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&f);
-    global_dpd_->file2_mat_close(&f);
+    block = mat.get_block(vir_slice);
+    lbl = mat.name() + "_AB";
+    global_dpd_->file2_init(&f, PSIF_CC_OEI, mat.symmetry(), 1, 1, lbl);
+    block->write_to_dpdfile2(&f);
     global_dpd_->file2_close(&f);
 
-    sprintf(lbl, "%s_IA", pert);
-    global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
-    global_dpd_->file2_mat_init(&f);
-    for (Gp = 0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
-        Gq = irrep ^ Gp;
-
-        for (p = 0; p < moinfo.occpi[Gp]; p++) {
-            P = moinfo.qt2pitzer[moinfo.qt_occ[p + moinfo.occ_off[Gp]]];
-            for (q = 0; q < moinfo.virtpi[Gq]; q++) {
-                Q = moinfo.qt2pitzer[moinfo.qt_vir[q + moinfo.vir_off[Gq]]];
-                f.matrix[Gp][p][q] = pertints[P][Q];
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&f);
-    global_dpd_->file2_mat_close(&f);
+    block = mat.get_block(occ_slice, vir_slice);
+    lbl = mat.name() + "_IA";
+    global_dpd_->file2_init(&f, PSIF_CC_OEI, mat.symmetry(), 0, 1, lbl);
+    block->write_to_dpdfile2(&f);
     global_dpd_->file2_close(&f);
 }
 

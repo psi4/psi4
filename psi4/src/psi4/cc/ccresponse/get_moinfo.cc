@@ -156,6 +156,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         moinfo.occpi = init_int_array(nirreps);
         moinfo.virtpi = init_int_array(nirreps);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep", (char *)moinfo.occpi, sizeof(int) * nirreps);
+        moinfo.act_occpi = Dimension(std::vector<int>(moinfo.occpi, moinfo.occpi + nirreps));
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep", (char *)moinfo.virtpi, sizeof(int) * nirreps);
 
         moinfo.occ_sym = init_int_array(nactive);
@@ -180,16 +181,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         psio_read_entry(PSIF_CC_INFO, "QT->CC Active Virt Order", (char *)moinfo.cc_vir, sizeof(int) * nactive);
     }
 
-    /* Compute spatial-orbital reordering arrays */
-    moinfo.pitzer2qt = init_int_array(moinfo.nmo);
-    moinfo.qt2pitzer = init_int_array(moinfo.nmo);
-    reorder_qt(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, moinfo.pitzer2qt, moinfo.orbspi,
-               moinfo.nirreps);
-    for (i = 0; i < moinfo.nmo; i++) {
-        j = moinfo.pitzer2qt[i];
-        moinfo.qt2pitzer[j] = i;
-    }
-
     /* Adjust clsdpi array for frozen orbitals */
     for (i = 0; i < nirreps; i++) moinfo.clsdpi[i] -= moinfo.frdocc[i];
 
@@ -204,13 +195,14 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     actpi = init_int_array(nirreps);
     for (h = 0; h < nirreps; h++) actpi[h] = moinfo.orbspi[h] - moinfo.frdocc[h] - moinfo.fruocc[h];
     moinfo.actpi = actpi;
-
+    moinfo.act_pi = Dimension(std::vector<int>(moinfo.actpi, moinfo.actpi + nirreps));
     if (params.ref == 0 || params.ref == 1) /* RHF/ROHF */
         moinfo.scf = wfn->Ca()->to_block_matrix();
     else if (params.ref == 2) { /* UHF */
         moinfo.scf_alpha = wfn->Ca()->to_block_matrix();
         moinfo.scf_beta = wfn->Cb()->to_block_matrix();
     }
+    moinfo.Ca = wfn->Ca_subset("SO", "ACTIVE");
 
     /* Get the active virtual orbitals */
     if (params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
@@ -226,15 +218,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         }
         moinfo.C = C;
     }
-
-    /* Prepare memory for property integrals */
-    moinfo.MU = (double ***)malloc(3 * sizeof(double **));
-    moinfo.L = (double ***)malloc(3 * sizeof(double **));
-    moinfo.Lcc = (double ***)malloc(3 * sizeof(double **));
-    moinfo.P = (double ***)malloc(3 * sizeof(double **));
-    moinfo.Pcc = (double ***)malloc(3 * sizeof(double **));
-    moinfo.Q = (double ****)malloc(3 * sizeof(double ***));
-    for (i = 0; i < 3; i++) moinfo.Q[i] = (double ***)malloc(3 * sizeof(double **));
 }
 
 /* Frees memory allocated in get_moinfo() and dumps out the energy. */
@@ -283,14 +266,6 @@ void cleanup() {
     //    free(moinfo.fruocc);
     //    free(moinfo.frdocc);
     free(moinfo.actpi);
-
-    free(moinfo.MU);
-    free(moinfo.L);
-    free(moinfo.P);
-    for (i = 0; i < 3; i++) free(moinfo.Q[i]);
-    free(moinfo.Q);
-    free(moinfo.pitzer2qt);
-    free(moinfo.qt2pitzer);
 
     free(moinfo.mu_irreps);
     free(moinfo.l_irreps);

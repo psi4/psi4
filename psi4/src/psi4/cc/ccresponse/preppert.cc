@@ -49,7 +49,7 @@
 namespace psi {
 namespace ccresponse {
 
-void sort_pert(const char *pert, double **pertints, int irrep);
+void write_blocks(const Matrix& mat);
 
 /* preppert(): Prepare DPD structures for all currently needed one-electron
 ** property integrals in the MO basis.
@@ -58,104 +58,62 @@ void sort_pert(const char *pert, double **pertints, int irrep);
 */
 
 void preppert(std::shared_ptr<BasisSet> primary) {
-    int i, j, ij;
-
-    char **cartcomp = (char **)malloc(3 * sizeof(char *));
-    cartcomp[0] = strdup("X");
-    cartcomp[1] = strdup("Y");
-    cartcomp[2] = strdup("Z");
-    char lbl[32];
+    std::vector<std::string> cartstr {"X", "Y", "Z"};
 
     MintsHelper mints(primary, Process::environment.options, 0);
-    std::vector<SharedMatrix> dipole = mints.so_dipole();
-    std::vector<SharedMatrix> nabla = mints.so_nabla();
-    std::vector<SharedMatrix> angmom = mints.so_angular_momentum();
-    std::vector<SharedMatrix> trquad = mints.so_traceless_quadrupole();
-
-    int nso = moinfo.nso;
-    int nmo = moinfo.nmo;
-
-    double **TMP2 = block_matrix(nso, nso);
+    auto dipole = mints.so_dipole();
+    auto nabla = mints.so_nabla();
+    auto angmom = mints.so_angular_momentum();
+    auto trquad = mints.so_traceless_quadrupole();
 
     // Electric dipole integrals
-    for (i = 0; i < 3; i++) {
-        double **TMP1 = dipole[i]->to_block_matrix();
-        double **TMP3 = block_matrix(nmo, nmo);
-        C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo.scf[0], nmo, 0, TMP2[0], nso);
-        C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
-        moinfo.MU[i] = TMP3;
-        sprintf(lbl, "Mu_%1s", cartcomp[i]);
-        sort_pert(lbl, moinfo.MU[i], moinfo.mu_irreps[i]);
+    for (int i = 0; i < 3; i++) {
+        dipole[i]->transform(moinfo.Ca);
+        dipole[i]->set_name("Mu_" + cartstr[i]);
+        write_blocks(*dipole[i]);
     }
 
     // Velocity-gauge electric dipole integrals
-    for (i = 0; i < 3; i++) {
-        double **TMP1 = nabla[i]->to_block_matrix();
-        double **TMP3 = block_matrix(nmo, nmo);
-        C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo.scf[0], nmo, 0, TMP2[0], nso);
-        C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
-        moinfo.P[i] = TMP3;
-        sprintf(lbl, "P_%1s", cartcomp[i]);
-        sort_pert(lbl, moinfo.P[i], moinfo.mu_irreps[i]);
+    for (int i = 0; i < 3; i++) {
+        nabla[i]->transform(moinfo.Ca);
+        nabla[i]->set_name("P_" + cartstr[i]);
+        write_blocks(*nabla[i]);
     }
 
     // Complex conjugate of velocity-gauge electric dipole integrals
-    for (i = 0; i < 3; i++) nabla[i]->scale(-1.0);
-    for (i = 0; i < 3; i++) {
-        double **TMP1 = nabla[i]->to_block_matrix();
-        double **TMP3 = block_matrix(nmo, nmo);
-        C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo.scf[0], nmo, 0, TMP2[0], nso);
-        C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
-        moinfo.Pcc[i] = TMP3;
-        sprintf(lbl, "P*_%1s", cartcomp[i]);
-        sort_pert(lbl, moinfo.Pcc[i], moinfo.mu_irreps[i]);
+    for (int i = 0; i < 3; i++) {
+        nabla[i]->scale(-1.0);
+        nabla[i]->set_name("P*_" + cartstr[i]);
+        write_blocks(*nabla[i]);
     }
 
     // Magnetic dipole integrals (these require a -1/2 prefactor)
-    for (i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
         angmom[i]->scale(-0.5);
-        double **TMP1 = angmom[i]->to_block_matrix();
-        double **TMP3 = block_matrix(nmo, nmo);
-        sprintf(lbl, "L_%1s", cartcomp[i]);
-        //    outfile->Printf( "%s Angular Momentum Integrals (SO)\n",lbl);
-        //    mat_print(TMP1,nmo, nmo, "outfile");
-        C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo.scf[0], nmo, 0, TMP2[0], nso);
-        C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
-        moinfo.L[i] = TMP3;
-        sort_pert(lbl, moinfo.L[i], moinfo.l_irreps[i]);
+        angmom[i]->transform(moinfo.Ca);
+        angmom[i]->set_name("L_" + cartstr[i]);
+        write_blocks(*angmom[i]);
     }
 
     // Complex conjugate of magnetic dipole integrals
-    for (i = 0; i < 3; i++) angmom[i]->scale(-1.0);
-    for (i = 0; i < 3; i++) {
-        double **TMP1 = angmom[i]->to_block_matrix();
-        double **TMP3 = block_matrix(nmo, nmo);
-        C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo.scf[0], nmo, 0, TMP2[0], nso);
-        C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
-        moinfo.Lcc[i] = TMP3;
-        sprintf(lbl, "L*_%1s", cartcomp[i]);
-        sort_pert(lbl, moinfo.Lcc[i], moinfo.l_irreps[i]);
+    for (int i = 0; i < 3; i++) {
+        angmom[i]->scale(-1.0);
+        angmom[i]->set_name("L*_" + cartstr[i]);
+        write_blocks(*angmom[i]);
     }
 
     // Traceless quadrupole integrals
-    for (i = 0, ij = 0; i < 3; i++) {
-        for (j = i; j < 3; j++, ij++) {
-            double **TMP1 = trquad[ij]->to_block_matrix();
-            double **TMP3 = block_matrix(nmo, nmo);
-            C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo.scf[0], nmo, 0, TMP2[0], nso);
-            C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
-            moinfo.Q[i][j] = TMP3;
-            sprintf(lbl, "Q_%1s%1s", cartcomp[i], cartcomp[j]);
-            sort_pert(lbl, moinfo.Q[i][j], moinfo.mu_irreps[i] ^ moinfo.mu_irreps[j]);
+    for (int i = 0, ij = 0; i < 3; i++) {
+        for (int j = i; j < 3; j++, ij++) {
+            trquad[ij]->transform(moinfo.Ca);
+            trquad[ij]->set_name("Q_" + cartstr[i] + cartstr[j]);
+            write_blocks(*trquad[ij]);
             if (i != j) {
-                moinfo.Q[j][i] = TMP3;
-                sprintf(lbl, "Q_%1s%1s", cartcomp[j], cartcomp[i]);
-                sort_pert(lbl, moinfo.Q[j][i], moinfo.mu_irreps[j] ^ moinfo.mu_irreps[i]);
+                trquad[ij]->set_name("Q_" + cartstr[j] + cartstr[i]);
+                write_blocks(*trquad[ij]);
             }
         }
     }
-
-    free_block(TMP2);
 }
 
 }  // namespace ccresponse
