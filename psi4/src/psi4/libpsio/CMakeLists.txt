@@ -3,6 +3,7 @@ list(APPEND sources
   change_namespace.cc
   close.cc
   done.cc
+  decode_errno.cc
   error.cc
   filemanager.cc
   filescfg.cc
