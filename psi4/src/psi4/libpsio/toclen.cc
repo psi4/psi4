@@ -106,7 +106,7 @@ size_t PSIO::rd_toclen(const size_t unit) {
             outfile->Printf(errmsg);
         }
 #endif
-        return (0);  // assume that all is well (see comments in psio.hpp)
+        return (0);  // assume that all is well (see comments above)
     }
     return (len);
 }
