@@ -315,19 +315,8 @@ public:
     /// Return the global shared object
     static std::shared_ptr<PSIO> shared_object();
 
-    void rewind_toclen(const size_t unit);
-
-    /** Read the length of the TOC for a given unit directly from the file.
-       **
-       ** \param unit = PSI unit number from which to read the toclen.
-       **
-       ** NB: Note that we do not exit if the read request of the toclen from
-       ** the file fails. This is because the request may be to an new file
-       ** for which the toclen has not yet been written.  (We allow the user
-       ** to open files with status PSIO_OPEN_OLD even if they don't exist,
-       ** because sometimes you can't know this in advance.)
-       */
-    size_t rd_toclen(size_t unit);
+    void rewind_toclen(const size_t unit); // Seek the stream of the vol[0] of a unit to its beginning.
+    size_t rd_toclen(size_t unit); // Read the length of the TOC for a given unit directly from the file.
 
     /// grab the filename of unit and strdup into name.
     void get_filename(size_t unit, char **name, bool remove_namespace = false);
@@ -341,7 +330,6 @@ private:
 
     /// Process ID
     std::string pid_;
-
 
     /// Current default namespace (for PREFIX.NAMESPACE.UNIT numbering)
     static std::string default_namespace_;
@@ -362,16 +350,11 @@ private:
     /// grab the path to volume of unit and strdup into path.
     void get_volpath(size_t unit, size_t volume, char **path);
     /// return the last TOC entry
-    psio_tocentry* toclast(size_t unit);
-    /// Compute the length of the TOC for a given unit using the in-core TOC list.
-    size_t toclen(size_t unit);
-    /** Write the length of the TOC for a given unit directly to the file.
-       **
-       ** \param unit = PSI unit number to which to write the toclen.
-       **
-       ** \ingroup PSIO
-       */
-    void wt_toclen(size_t unit, size_t toclen);
+    psio_tocentry *toclast(size_t unit);
+
+    size_t toclen(size_t unit); // Compute the length of the TOC for a given unit using the in-core TOC list.
+    void wt_toclen(size_t unit, size_t toclen); // Write the length of the TOC for a given unit directly to the file.
+    
     /// Read the table of contents for file number 'unit'.
     void tocread(size_t unit);
 

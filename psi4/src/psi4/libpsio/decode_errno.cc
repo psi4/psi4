@@ -35,12 +35,11 @@
 
 namespace psi {
 
-/*!
- ** \ingroup PSIO
- **
- ** decode_errno(): Decode the current value of the errno variable to obtain a human-readable error message from the
- ** operating system. This can be used to figure out why a preceeding system call (eg. lseek) has failed. The error
- ** message is returned as a convenient std::string.
- */
+/// @brief Decode the current value of the errno variable to obtain a human-readable error message from the operating
+/// system. This can be used to figure out why a preceeding system call (eg. lseek) has failed. Callers should save the
+/// value of errno into a local variable **immediately** after the call that should be checked returns, because there
+/// are a lot of things in C++ that can potentially fail and overwrite the global errno with a new error code.
+/// @param errno_in : the error code from the OS
+/// @return Human-readable error message from the OS. May or may not be in English.
 std::string decode_errno(const int errno_in) { return std::string(std::strerror(errno_in)); }
 }  // namespace psi

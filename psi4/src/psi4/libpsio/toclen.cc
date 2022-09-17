@@ -51,6 +51,9 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
+/// @brief Compute the length of the TOC for a given unit using the in-core TOC list
+/// @param unit : file unit number
+/// @return length of the TOC for a given unit
 size_t PSIO::toclen(const size_t unit) {
     size_t len = 0;
     psio_tocentry *this_entry = psio_unit[unit].toc;
@@ -77,10 +80,15 @@ void PSIO::rewind_toclen(const size_t unit) {
     }
 }
 
+/// @brief Read the length of the TOC for a given unit directly from the file. Note that we do not exit if the read
+/// request of the toclen from the file fails. This is because the request may be to an new file for which the toclen
+/// has not yet been written. (We allow the user open files with status PSIO_OPEN_OLD even if they don't exist, because
+/// sometimes you can't know this in advance.)
+/// @param unit : file unit number to read TOC length from
+/// @return length of the TOC for a given unit
 size_t PSIO::rd_toclen(const size_t unit) {
     // Seek to the beginning
     rewind_toclen(unit);
-
     // Read the value
     size_t len;
     const auto stream = psio_unit[unit].vol[0].stream;
@@ -101,10 +109,12 @@ size_t PSIO::rd_toclen(const size_t unit) {
     return (len);
 }
 
+/// @brief Write the length of the TOC for a given unit directly to the file.
+/// @param unit : file unit number to write TOC length to
+/// @param len  : length value to write
 void PSIO::wt_toclen(const size_t unit, const size_t len) {
     // Seek to the beginning
     rewind_toclen(unit);
-
     // Write the value
     const auto stream = psio_unit[unit].vol[0].stream;
     const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
