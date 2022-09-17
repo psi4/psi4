@@ -69,6 +69,7 @@ size_t PSIO::toclen(const size_t unit) {
 /// @brief Seek the stream of the vol[0] of a unit to its beginning
 /// @param unit : file unit number to rewind
 void PSIO::rewind_toclen(const size_t unit) {
+    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
     const auto stream = psio_unit[unit].vol[0].stream;
     const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
     const auto sys_errno = errno;
@@ -87,6 +88,7 @@ void PSIO::rewind_toclen(const size_t unit) {
 /// @param unit : file unit number to read TOC length from
 /// @return length of the TOC for a given unit
 size_t PSIO::rd_toclen(const size_t unit) {
+    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
     // Seek to the beginning
     rewind_toclen(unit);
     // Read the value
@@ -113,6 +115,7 @@ size_t PSIO::rd_toclen(const size_t unit) {
 /// @param unit : file unit number to write TOC length to
 /// @param len  : length value to write
 void PSIO::wt_toclen(const size_t unit, const size_t len) {
+    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
     // Seek to the beginning
     rewind_toclen(unit);
     // Write the value
