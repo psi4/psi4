@@ -486,8 +486,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param cols Columns slice
      * @return SharedMatrix object
      */
-    SharedMatrix get_block(const Slice& rows, const Slice& cols);
-    SharedMatrix get_block(const Slice& slice);
+    SharedMatrix get_block(const Slice& rows, const Slice& cols) const;
+    SharedMatrix get_block(const Slice& slice) const;
 
     /**
      * Set a matrix block
