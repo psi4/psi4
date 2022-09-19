@@ -17,6 +17,7 @@ set {
   scf_type pk
   basis 6-31G(d)
   reference rhf
+  ensure_bt_convergence True
 }
 
 thisenergy = optimize('SCF')

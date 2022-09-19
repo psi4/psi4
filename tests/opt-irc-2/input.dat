@@ -41,6 +41,7 @@ set {
   geom_maxiter    150
   irc_direction   backward
   cart_hess_read  true  # read hessian back in from output.hcn.hess
+  irc_points 25
 }
 
 energy = optimize('scf')

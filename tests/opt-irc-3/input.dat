@@ -25,6 +25,7 @@ set {
   opt_type                   irc
   geom_maxiter               10
   irc_step_size              0.5
+  hess_update                bofill
 }
 
 frequencies('scf', dertype=1)
