@@ -1152,6 +1152,8 @@ def optimize(name, **kwargs):
     elif engine != 'optking':
         raise ValidationError(f"Optimizer {engine} is not supported.")
 
+    import optking
+
     name = driver_util.upgrade_interventions(name)
     if hasattr(name, '__call__'):
         lowername = name
@@ -1163,19 +1165,8 @@ def optimize(name, **kwargs):
     return_wfn = kwargs.pop('return_wfn', False)
 
     return_history = kwargs.pop('return_history', False)
-    if return_history:
-        # Add wfn once the deep copy issues are worked out
-        step_energies = []
-        step_gradients = []
-        step_coordinates = []
 
-    # For CBS and nbody wrappers, need to set retention on INTCO file
-    if custom_gradient or ('/' in lowername) or kwargs.get('bsse_type', None) is not None:
-        core.IOManager.shared_object().set_specific_retention(1, True)
-
-    full_hess_every = core.get_option('OPTKING', 'FULL_HESS_EVERY')
-    steps_since_last_hessian = 0
-
+    # This might be incorrect now?
     if custom_gradient and core.has_option_changed('OPTKING', 'FULL_HESS_EVERY'):
         raise ValidationError("Optimize: Does not support custom Hessian's yet.")
     else:
@@ -1184,7 +1175,6 @@ def optimize(name, **kwargs):
     _filter_renamed_methods("optimize", lowername)
 
     optstash = p4util.OptionsState(
-        ['OPTKING', 'INTRAFRAG_STEP_LIMIT'],
         ['FINDIF', 'HESSIAN_WRITE'],
         ['OPTKING', 'CART_HESS_READ'],
         ['SCF', 'GUESS_PERSIST'],  # handle on behalf of cbs()
@@ -1201,17 +1191,33 @@ def optimize(name, **kwargs):
         molecule.fix_com(True)
     molecule.update_geometry()
 
-    # Shifting the geometry so need to copy the active molecule
-    moleculeclone = molecule.clone()
+    if core.get_option('OPTKING', 'OPT_RESTART'):
+        # Recreate all of optking's internal classes to restart an optimization
+        # This has not been well tested - Experimental
+        opt_object = optking.opt_helper.CustomHelper(molecule)
+        with open(f"{core.get_writer_file_prefix(molecule.name())}.1.dat", 'r') as f:
+            stashed_opt = json.load(f)
+        opt_object.from_dict(stashed_opt)
+    else:
+        # create an OptHelper to run an optimization through
+        # Optking will ignore any keywords it doesn't recognize.
+        params = p4util.prepare_options_for_modules()
+        optimizer_params = {k: v.get('value') for k, v in params.pop("OPTKING").items() if v.get('has_changed')}
+        opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
 
     initial_sym = moleculeclone.schoenflies_symbol()
     while n <= core.get_option('OPTKING', 'GEOM_MAXITER'):
         current_sym = moleculeclone.schoenflies_symbol()
         if initial_sym != current_sym:
-            raise ValidationError("""Point group changed! (%s <-- %s) You should restart """
-                                  """using the last geometry in the output, after """
-                                  """carefully making sure all symmetry-dependent """
-                                  """input, such as DOCC, is correct.""" % (current_sym, initial_sym))
+
+            # Try to resymmetrize molecule if slightly broken.
+            molecule.symmetrize(core.get_local_option("OPTKING", "CARTESIAN_SYM_TOLERANCE"))
+
+            if molecule.schoenflies_symbol() != initial_sym:
+                raise ValidationError("""Point group changed! (%s <-- %s) You should restart """
+                                      """using the last geometry in the output, after """
+                                      """carefully making sure all symmetry-dependent """
+                                      """input, such as DOCC, is correct.""" % (current_sym, initial_sym))
         kwargs['opt_iter'] = n
         core.set_variable('GEOMETRY ITERATIONS', n)
 
@@ -1220,87 +1226,78 @@ def optimize(name, **kwargs):
         if (n > 1) and (not core.get_option('SCF', 'GUESS_PERSIST')):
             core.set_local_option('SCF', 'GUESS', 'READ')
 
-        # Before computing gradient, save previous molecule and wavefunction if this is an IRC optimization
-        if (n > 1) and (core.get_option('OPTKING', 'OPT_TYPE') == 'IRC'):
-            old_thisenergy = core.variable('CURRENT ENERGY')
+        # We'll currently ignore the possibility that the gradient isn't needed
+        opt_calcs = opt_object.calculations_needed() # tuple of strings ('energy', 'gradient', etc)
 
-        # Compute the gradient - preserve opt data despite core.clean calls in gradient
-        core.IOManager.shared_object().set_specific_retention(1, True)
-        G, wfn = gradient(lowername, return_wfn=True, molecule=moleculeclone, **kwargs)
+        # Compute the gradient - no longer need to worry about opt_data being wiped
+        G, wfn = gradient(lowername, return_wfn=True, molecule=molecule, **kwargs)
         thisenergy = core.variable('CURRENT ENERGY')
+        opt_object.E = thisenergy
+        opt_object.gX = G.np
 
-        # above, used to be getting energy as last of energy list from gradient()
-        # thisenergy below should ultimately be testing on wfn.energy()
+        if core.get_option('OPTKING', 'CART_HESS_READ') and (n == 1):
+            opt_object.params.cart_hess_read = True
+            opt_object.params.hessian_file = f"{core.get_writer_file_prefix(molecule.name())}.hess"
+                # compute Hessian as requested; frequency wipes out gradient so stash it
+        elif 'hessian' in opt_calcs:
+            # compute hessian as requested.
 
-        # Record optimization steps
-        # Add wavefunctions later
-        if return_history:
-            step_energies.append(thisenergy)
-            step_coordinates.append(moleculeclone.geometry())
-            step_gradients.append(G.clone())
+            # TODO test optimize dertype=0
+            # procedures proctable analytic hessians
+            # TODO check distributed driver working (mp2?)
+            _, hess_wfn = frequencies(hessian_with_method,
+                                      molecule=molecule,
+                                      ref_gradient=G,
+                                      return_wfn=True,
+                                      **kwargs)
+            opt_object.HX = hess_wfn.hessian().np
 
-        core.set_legacy_gradient(G)
+        # force optking to update its molecule to psi4's.
+        # This allows for psi4 to rotate as desired. If optimizing in cartesians. rotation is not allowed
+        # Process gradient / hessian. Take step. Print summary to output for user
+        opt_object.molsys.geom = core.get_active_molecule().geometry().np
+        core.print_out(opt_object.pre_step_str())  # print optking's molecule
+        opt_object.compute()  # process E, gX, H
+        opt_object.take_step()
+        core.print_out(opt_object.post_step_str())  # print convergence and step info
 
-        # opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
-        # if opt_func.__name__ == 'complete_basis_set':
-        #     core.IOManager.shared_object().set_specific_retention(1, True)
+        # Update psi4's molecule with new step. (Psi4 can rotate this molecule)
+        molecule.set_geometry(core.Matrix.from_array(opt_object.molsys.geom))
+        molecule.update_geometry()
 
-        if full_hess_every > -1:
-            core.set_global_option('HESSIAN_WRITE', True)
+        opt_status = opt_object.status()  # Query optking for convergence, failure or continuing opt.
+        if opt_status == 'CONVERGED':
 
-        # compute Hessian as requested; frequency wipes out gradient so stash it
-        if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
-            G = core.get_legacy_gradient()  # TODO
-            core.IOManager.shared_object().set_specific_retention(1, True)
-            core.IOManager.shared_object().set_specific_path(1, './')
-            frequencies(hessian_with_method, molecule=moleculeclone, ref_gradient=G, **kwargs)
-            steps_since_last_hessian = 0
-            core.set_legacy_gradient(G)
-            core.set_global_option('CART_HESS_READ', True)
-        elif (full_hess_every == -1) and core.get_global_option('CART_HESS_READ') and (n == 1):
-            pass
-            # Do nothing; user said to read existing hessian once
-        else:
-            core.set_global_option('CART_HESS_READ', False)
-            steps_since_last_hessian += 1
+            # Last geom is normally last in history. For IRC last geom is last in IRC trajectory
+            # Not sure how to handle ensuring that wfn corresponds to last point.
+            final_energy, final_geom = opt_object.summarize_result()
 
-        # Take step. communicate to/from/within optking through legacy_molecule
-        core.set_legacy_molecule(moleculeclone)
-        optking_rval = core.optking()
-        moleculeclone = core.get_legacy_molecule()
-        moleculeclone.update_geometry()
-        if optking_rval == core.PsiReturnType.EndLoop:
-            # if this is the end of an IRC run, set wfn, energy, and molecule to that
-            # of the last optimized IRC point
-            if core.get_option('OPTKING', 'OPT_TYPE') == 'IRC':
-                thisenergy = old_thisenergy
+            # Changing environment to optimized geometry as expected by user
+            molecule.set_geometry(core.Matrix.from_array(final_geom))
+            molecule.update_geometry()
+
             print('Optimizer: Optimization complete!')
             core.print_out('\n    Final optimized geometry and variables:\n')
-            moleculeclone.print_in_input_format()
-            # Mark the optimization data as disposable now that the optimization is done.
-            core.IOManager.shared_object().set_specific_retention(1, False)
-            # Check if user wants to see the intcos; if so, don't delete them.
-            if not core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT'):
-                if not core.get_option('OPTKING', 'KEEP_INTCOS'):
-                    core.opt_clean()
-            # Changing environment to optimized geometry as expected by user
-            molecule.set_geometry(moleculeclone.geometry())
+            molecule.print_in_input_format()
+
             for postcallback in hooks['optimize']['post']:
                 postcallback(lowername, wfn=wfn, **kwargs)
             core.clean()
-
-            # Cleanup binary file 1
-            if custom_gradient or ('/' in lowername) or kwargs.get('bsse_type', None) is not None:
-                core.IOManager.shared_object().set_specific_retention(1, False)
 
             optstash.restore()
 
             if return_history:
                 history = {
-                    'energy': step_energies,
-                    'gradient': step_gradients,
-                    'coordinates': step_coordinates,
+                    'energy': [step.E for step in opt_object.history.steps],
+                    'gradient': [step.cart_grad for step in opt_object.history.steps],
+                    'coordinates': [step.geom for step in opt_object.history.steps],
                 }
+
+            # Create OptimizationResult like Schema. Not validated since optimize() does not pass AtomicResults.
+            opt_data = opt_object.close()
+            if core.get_local_option('OPTKING', 'WRITE_OPT_HISTORY'):
+                with open(f"{core.get_writer_file_prefix(molecule.name())}.opt.json", 'w+') as f:
+                    json.dump(opt_data, f, indent=2)
 
             if return_wfn and return_history:
                 return (thisenergy, wfn, history)
@@ -1311,26 +1308,25 @@ def optimize(name, **kwargs):
             else:
                 return thisenergy
 
-        elif optking_rval == core.PsiReturnType.Failure:
+        elif opt_status == 'FAILED':
+
             print('Optimizer: Optimization failed!')
-            # Mark the optimization data as disposable now that the optimization is done.
-            core.IOManager.shared_object().set_specific_retention(1, False)
-            if not core.get_option('OPTKING', 'KEEP_INTCOS'):
-                core.opt_clean()
-            molecule.set_geometry(moleculeclone.geometry())
+            molecule.set_geometry(core.Matrix.from_array(opt_object.molsys.geom))
+            molecule.update_geometry()
             core.clean()
             optstash.restore()
+
+            opt_data = opt_object.to_dict()
+            if core.get_option('OPTKING', 'WRITE_OPT_HISTORY'):
+                with open(f"{core.get_writer_file_prefix(molecule.name())}.opt.json", 'w+') as f:
+                    json.dump(opt_data, f, indent=2)
+
             raise OptimizationConvergenceError("""geometry optimization""", n - 1, wfn)
-            return thisenergy
 
         core.print_out('\n    Structure for next step:\n')
-        moleculeclone.print_in_input_format()
+        molecule.print_in_input_format()
 
         n += 1
-
-    if not core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT'):
-        if not core.get_option('OPTKING', 'KEEP_INTCOS'):
-            core.opt_clean()
 
     optstash.restore()
     raise OptimizationConvergenceError("""geometry optimization""", n - 1, wfn)
