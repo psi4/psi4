@@ -78,22 +78,4 @@ void PSIO::get_filename(size_t unit, char **name, bool remove_namespace) {
     // assume that the default has been provided already
     abort();
 }
-
-int psio_get_filename_default(char **name) {
-    std::string kval;
-    kval = _default_psio_lib_->filecfg_kwd("PSI", "NAME", -1);
-    if (!kval.empty()) {
-        *name = strdup(kval.c_str());
-        return (1);
-    }
-    kval = _default_psio_lib_->filecfg_kwd("DEFAULT", "NAME", -1);
-    if (!kval.empty()) {
-        *name = strdup(kval.c_str());
-        return (1);
-    }
-
-    // assume that the default has been provided already
-    abort();
-}
-
 }  // namespace psi

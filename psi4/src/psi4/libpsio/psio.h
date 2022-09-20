@@ -43,7 +43,6 @@ int psio_open(size_t unit, int status);
 int psio_close(size_t unit, int keep);
 std::string psio_getpid();
 
-int psio_get_filename_default(char **name);
 PSI_API psio_address psio_get_address(psio_address start, size_t shift);
 psio_address psio_get_global_address(psio_address entry_start, psio_address rel_address);
 int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols);
