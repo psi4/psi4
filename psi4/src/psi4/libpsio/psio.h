@@ -40,6 +40,7 @@
 #define SYSTEM_LSEEK ::_lseeki64
 #define SYSTEM_OPEN ::_open
 #define SYSTEM_CLOSE ::_close
+#define SYSTEM_UNLINK ::_unlink
 #define PSIO_OPEN_OLD_FLAGS _O_BINARY | _O_CREAT | _O_RDWR
 #define PSIO_OPEN_NEW_FLAGS _O_BINARY | _O_CREAT | _O_RDWR | _O_TRUNC
 #define PERMISSION_MODE _S_IWRITE
@@ -50,6 +51,7 @@
 #define SYSTEM_LSEEK ::lseek
 #define SYSTEM_OPEN ::open
 #define SYSTEM_CLOSE ::close
+#define SYSTEM_UNLINK ::unlink
 #define PSIO_OPEN_OLD_FLAGS O_CREAT | O_RDWR
 #define PSIO_OPEN_NEW_FLAGS O_CREAT | O_RDWR | O_TRUNC
 #define PERMISSION_MODE S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH

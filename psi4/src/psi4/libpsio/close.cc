@@ -32,16 +32,6 @@
  ** \file
  ** \ingroup PSIO
  */
-
-#ifdef _MSC_VER
-#include <io.h>
-#define SYSTEM_CLOSE ::_close
-#define SYSTEM_UNLINK ::_unlink
-#else
-#include <unistd.h>
-#define SYSTEM_CLOSE ::close
-#define SYSTEM_UNLINK ::unlink
-#endif
 #include <cstring>
 #include <cstdlib>
 #include "psi4/libpsio/psio.h"
