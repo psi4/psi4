@@ -37,7 +37,6 @@ namespace psi {
 
 std::string decode_errno(const int errno_in);
 int psio_init();
-int psio_ipv1_config();
 void psio_error(size_t unit, size_t errval, std::string prev_msg = "");
 int psio_open(size_t unit, int status);
 int psio_close(size_t unit, int keep);
@@ -46,29 +45,19 @@ std::string psio_getpid();
 PSI_API psio_address psio_get_address(psio_address start, size_t shift);
 psio_address psio_get_global_address(psio_address entry_start, psio_address rel_address);
 int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols);
-// size_t psio_get_length(psio_address sadd, psio_address eadd);
-psio_address psio_get_entry_end(size_t unit, const char *key);
 
 int psio_tocwrite(size_t unit);
-int psio_tocread(size_t unit);
 void psio_tocprint(size_t unit);
 psio_tocentry *psio_tocscan(size_t unit, const char *key);
 bool psio_tocentry_exists(size_t unit, const char *key);
-psio_tocentry *psio_toclast(size_t unit);
 
 int psio_write(size_t unit, const char *key, char *buffer, size_t size, psio_address sadd, psio_address *eadd);
 int psio_read(size_t unit, const char *key, char *buffer, size_t size, psio_address sadd, psio_address *eadd);
 int psio_write_entry(size_t unit, const char *key, char *buffer, size_t size);
 int psio_read_entry(size_t unit, const char *key, char *buffer, size_t size);
-int psio_write_block(size_t unit, const char *key, char *buffer, size_t blksiz, size_t start_blk, size_t end_blk);
-int psio_read_block(size_t unit, const char *key, char *buffer, size_t blksiz, size_t start_blk, size_t end_blk);
 
 int psio_open_check(size_t unit);
-
 size_t psio_rd_toclen(size_t unit);
-void psio_wt_toclen(size_t unit, size_t toclen);
-
-
 }  // namespace psi
 
 #endif /* #ifndef PSIO_H */
