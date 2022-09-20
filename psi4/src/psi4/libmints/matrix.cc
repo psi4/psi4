@@ -2818,7 +2818,7 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
 
     if (outFile->my_irrep != symmetry_) {
         std::stringstream msg;
-        msg << "Symmetry mismatch. Matrix has symmetry " << outFile->my_irrep << " where dpdfile has "
+        msg << "Symmetry mismatch. Matrix has symmetry " << outFile->my_irrep << " whereas dpdfile has "
             << symmetry_ << " symmetry.";
         throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
     }
