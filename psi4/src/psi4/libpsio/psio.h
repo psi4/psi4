@@ -57,7 +57,6 @@ void psio_tocprint(size_t unit);
 psio_tocentry *psio_tocscan(size_t unit, const char *key);
 bool psio_tocentry_exists(size_t unit, const char *key);
 psio_tocentry *psio_toclast(size_t unit);
-int psio_tocclean(size_t unit, const char *key);
 
 int psio_write(size_t unit, const char *key, char *buffer, size_t size, psio_address sadd, psio_address *eadd);
 int psio_read(size_t unit, const char *key, char *buffer, size_t size, psio_address sadd, psio_address *eadd);
