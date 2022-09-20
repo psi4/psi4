@@ -33,15 +33,6 @@
 
 #include "psi4/libpsio/psio.h"
 #include "psi4/psi4-dec.h"
-
-#ifdef _MSC_VER
-#include <io.h>
-#define SYSTEM_LSEEK ::_lseeki64
-#else
-#include <unistd.h>
-#define SYSTEM_LSEEK ::lseek
-#endif
-
 /* This is strictly used to avoid overflow errors on lseek() calls */
 #define PSIO_BIGNUM 10000
 

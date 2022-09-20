@@ -33,6 +33,14 @@
 #include "psi4/libpsio/config.h"
 #include <string>
 
+#ifdef _MSC_VER
+#include <io.h>
+#define SYSTEM_LSEEK ::_lseeki64
+#else
+#include <unistd.h>
+#define SYSTEM_LSEEK ::lseek
+#endif
+
 namespace psi {
 
 std::string decode_errno(const int errno_in);
