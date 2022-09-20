@@ -80,17 +80,4 @@ void PSIO::tocclean(size_t unit, const char *key) {
     wt_toclen(unit, this_unit->toclen);
     tocwrite(unit);
 }
-
-/*!
- ** PSIO_TOCCLEAN(): Delete all TOC entries after the given key.
- ** If a blank key is given, the entire TOC will be wiped.
- **
- ** \ingroup PSIO
- */
-
-int psio_tocclean(size_t unit, const char *key) {
-    _default_psio_lib_->tocclean(unit, key);
-    return 0;
-}
-
 }  // namespace psi
