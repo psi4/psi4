@@ -10,9 +10,13 @@ concurrency:
   group: latest-docs-group
   cancel-in-progress: true
 
+permissions: {}
 jobs:
 
   docs:
+    permissions:
+      contents: write # to push local changes (ad-m/github-push-action)
+
     runs-on: ubuntu-latest
     name: Latest Docs
     defaults:
