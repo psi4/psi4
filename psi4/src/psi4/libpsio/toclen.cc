@@ -32,13 +32,6 @@
  */
 
 #include <cstdio>
-#ifdef _MSC_VER
-#include <io.h>
-#define SYSTEM_WRITE ::_write
-#else
-#include <unistd.h>
-#define SYSTEM_WRITE ::write
-#endif
 #include <cstdlib>
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsio/psio.h"
