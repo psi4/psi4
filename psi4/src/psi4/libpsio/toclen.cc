@@ -48,7 +48,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
 /// @brief Compute the length of the TOC for a given unit using the in-core TOC list
@@ -97,15 +96,12 @@ size_t PSIO::rd_toclen(const size_t unit) {
     const auto errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
     const auto sys_errno = errno;
     if (errcod != sizeof(size_t)) {
-#ifdef DEBUG
         if (errcod == -1) {
             std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(sys_errno);
             errmsg += "\nError in PSIO::rd_toclen()! Cannot read TOC length, unit ";
             errmsg += std::to_string(unit) + ".\n";
-            errmsg += "Assuming a length of zero and continuing...\n";
-            outfile->Printf(errmsg);
+            psio_error(unit, PSIO_ERROR_READ, errmsg);
         }
-#endif
         return (0);  // assume that all is well (see comments above)
     }
     return (len);
