@@ -35,9 +35,11 @@
 
 #ifdef _MSC_VER
 #include <io.h>
+#define SYSTEM_READ ::_read
 #define SYSTEM_LSEEK ::_lseeki64
 #else
 #include <unistd.h>
+#define SYSTEM_READ ::read
 #define SYSTEM_LSEEK ::lseek
 #endif
 

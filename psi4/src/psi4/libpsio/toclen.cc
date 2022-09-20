@@ -34,11 +34,9 @@
 #include <cstdio>
 #ifdef _MSC_VER
 #include <io.h>
-#define SYSTEM_READ ::_read
 #define SYSTEM_WRITE ::_write
 #else
 #include <unistd.h>
-#define SYSTEM_READ ::read
 #define SYSTEM_WRITE ::write
 #endif
 #include <cstdlib>
