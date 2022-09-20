@@ -68,8 +68,6 @@ int psio_open_check(size_t unit);
 size_t psio_rd_toclen(size_t unit);
 void psio_wt_toclen(size_t unit, size_t toclen);
 
-int psio_set_filescfg_kwd(const char *kwdgrp, const char *kwd, int unit, const char *kwdval);
-const char *psio_get_filescfg_kwd(const char *kwdgrp, const char *kwd, int unit);
 
 }  // namespace psi
 
