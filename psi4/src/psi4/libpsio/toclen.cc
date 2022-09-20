@@ -81,9 +81,9 @@ void PSIO::rewind_toclen(const size_t unit) {
 }
 
 /// @brief Read the length of the TOC for a given unit directly from the file. Note that we do not exit if the read
-/// request of the toclen from the file fails. This is because the request may be to an new file for which the toclen
-/// has not yet been written. (We allow the user open files with status PSIO_OPEN_OLD even if they don't exist, because
-/// sometimes you can't know this in advance.)
+/// request of the toclen from the file fails to read the expected number of bytes. This is because the request may be
+/// to an new file for which the toclen has not yet been written. (We allow the user open files with status
+/// PSIO_OPEN_OLD even if they don't exist, because sometimes you can't know this in advance.)
 /// @param unit : file unit number to read TOC length from
 /// @return length of the TOC for a given unit
 size_t PSIO::rd_toclen(const size_t unit) {
