@@ -77,7 +77,6 @@ void psio_wt_toclen(size_t unit, size_t toclen);
 int psio_set_filescfg_kwd(const char *kwdgrp, const char *kwd, int unit, const char *kwdval);
 const char *psio_get_filescfg_kwd(const char *kwdgrp, const char *kwd, int unit);
 
-bool psio_tocdel(size_t unit, const char *key);
 }  // namespace psi
 
 #endif /* #ifndef PSIO_H */
