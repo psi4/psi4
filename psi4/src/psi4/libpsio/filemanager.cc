@@ -26,13 +26,6 @@
  * @END LICENSE
  */
 
-#ifdef _MSC_VER
-#include <io.h>
-#define SYSTEM_UNLINK ::_unlink
-#else
-#include <unistd.h>
-#define SYSTEM_UNLINK ::unlink
-#endif
 #include <cstdio>
 #include <cstdlib>
 #include <string>
