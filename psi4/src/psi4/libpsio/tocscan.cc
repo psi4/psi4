@@ -98,14 +98,4 @@ bool PSIO::tocentry_exists(size_t unit, const char *key) {
     if (!already_open) close(unit, 1);  // keep
     return (false);
 }
-
-/*!
- ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
- ** a pointer to the entry or nullptr to the caller.
- **
- ** \ingroup PSIO
- */
-
-bool psio_tocentry_exists(size_t unit, const char *key) { return _default_psio_lib_->tocentry_exists(unit, key); }
-
 }  // namespace psi
