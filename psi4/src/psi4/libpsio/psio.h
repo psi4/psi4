@@ -67,7 +67,6 @@ int psio_read_entry(size_t unit, const char *key, char *buffer, size_t size);
 int psio_write_block(size_t unit, const char *key, char *buffer, size_t blksiz, size_t start_blk, size_t end_blk);
 int psio_read_block(size_t unit, const char *key, char *buffer, size_t blksiz, size_t start_blk, size_t end_blk);
 int psio_rw(size_t unit, char *buffer, psio_address address, size_t size, int wrt);
-int psio_zero_disk(size_t unit, const char *key, size_t rows, size_t cols);
 
 int psio_open_check(size_t unit);
 
