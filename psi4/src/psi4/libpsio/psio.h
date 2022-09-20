@@ -57,7 +57,6 @@ int psio_write_entry(size_t unit, const char *key, char *buffer, size_t size);
 int psio_read_entry(size_t unit, const char *key, char *buffer, size_t size);
 
 int psio_open_check(size_t unit);
-size_t psio_rd_toclen(size_t unit);
 }  // namespace psi
 
 #endif /* #ifndef PSIO_H */
