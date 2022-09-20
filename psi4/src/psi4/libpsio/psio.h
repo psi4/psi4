@@ -43,7 +43,6 @@ int psio_open(size_t unit, int status);
 int psio_close(size_t unit, int keep);
 std::string psio_getpid();
 
-size_t psio_get_numvols_default();
 int psio_get_volpath_default(size_t volume, char **path);
 int psio_get_filename_default(char **name);
 PSI_API psio_address psio_get_address(psio_address start, size_t shift);
