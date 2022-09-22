@@ -53,6 +53,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf(" ================ Performing DF-OMP2.5 iterations... ========================== \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE")
         outfile->Printf(" ================ Performing DF-OLCCD iterations... =========================== \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "FALSE")
+        outfile->Printf(" ================ Performing DF-OREMP iterations... =========================== \n");
     else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE")
         outfile->Printf(" ================ Performing CD-OMP2 iterations... ============================ \n");
     else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE")
@@ -61,6 +63,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf(" ================ Performing CD-OMP2.5 iterations... ============================ \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "TRUE")
         outfile->Printf(" ================ Performing CD-OLCCD iterations... ============================ \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "TRUE")
+        outfile->Printf(" ================ Performing CD-OREMP iterations... ============================ \n");
     outfile->Printf(" ============================================================================== \n");
     if (wfn_type_ == "DF-OMP2" && do_cd == "FALSE")
         outfile->Printf("\t            Minimizing DF-MP2-L Functional \n");
@@ -70,6 +74,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf("\t            Minimizing DF-MP2.5-L Functional \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE")
         outfile->Printf("\t            Minimizing DF-LCCD-L Functional \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "FALSE")
+        outfile->Printf("\t            Minimizing DF-REMP-L Functional \n");
     else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE")
         outfile->Printf("\t            Minimizing CD-MP2-L Functional \n");
     else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE")
@@ -78,6 +84,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf("\t            Minimizing CD-MP2.5-L Functional \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "TRUE")
         outfile->Printf("\t            Minimizing CD-LCCD-L Functional \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "TRUE")
+        outfile->Printf("\t            Minimizing CD-REMP-L Functional \n");
     outfile->Printf("\t            ------------------------------ \n");
     outfile->Printf(" Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
     outfile->Printf(" ----    ---------------    ----------     -----------      -----------     ---------- \n");
@@ -90,6 +98,7 @@ void DFOCC::occ_iterations() {
     conver = 1;  // Assuming that the MOs will be optimized.
     mo_optimized = 0;
     itr_diis = 0;
+    ErempL = Emp2;
 
     // If diis?
     // if (noccA + noccB != 1) {
@@ -250,6 +259,13 @@ void DFOCC::occ_iterations() {
             timer_off("T2");
         }
 
+        else if (wfn_type_ == "DF-OREMP") {
+            timer_on("T2");
+            Fint_zero();
+            remp_t2_amps();
+            timer_off("T2");
+        }
+
         //==========================================================================================
         //========================= PDMs ===========================================================
         //==========================================================================================
@@ -270,6 +286,13 @@ void DFOCC::occ_iterations() {
             lccd_pdm_3index_intr();
             omp3_opdm();
             olccd_tpdm();
+            sep_tpdm_cc();
+        }
+
+        else if (wfn_type_ == "DF-OREMP") {
+            lccd_pdm_3index_intr();
+            omp3_opdm();
+            oremp_tpdm();
             sep_tpdm_cc();
         }
 
@@ -298,7 +321,7 @@ void DFOCC::occ_iterations() {
             mp2l_energy();
         else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5")
             mp3l_energy();
-        else if (wfn_type_ == "DF-OLCCD")
+        else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP")
             lccdl_energy();
 
         //==========================================================================================
@@ -335,9 +358,10 @@ void DFOCC::occ_iterations() {
         } else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") {
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, Emp3L, DE, rms_wog,
                             biggest_mograd, rms_t2);
-        } else if (wfn_type_ == "DF-OLCCD")
+        } else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP") {
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, ElccdL, DE, rms_wog,
                             biggest_mograd, rms_t2);
+        }
 
         //==========================================================================================
         //========================= Convergence? ===================================================
@@ -365,6 +389,8 @@ void DFOCC::occ_iterations() {
             outfile->Printf(" ======================== DF-OMP2.5 ITERATIONS ARE CONVERGED ================== \n");
         else if (wfn_type_ == "DF-OLCCD")
             outfile->Printf(" ======================== DF-OLCCD ITERATIONS ARE CONVERGED =================== \n");
+        else if (wfn_type_ == "DF-OREMP")
+            outfile->Printf(" ======================== DF-OREMP ITERATIONS ARE CONVERGED =================== \n");
         outfile->Printf(" ============================================================================== \n");
 
     }
@@ -381,6 +407,9 @@ void DFOCC::occ_iterations() {
                             mo_maxiter);
         else if (wfn_type_ == "DF-OLCCD")
             outfile->Printf("\n ======================== DF-OLCCD IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
+                            mo_maxiter);
+        else if (wfn_type_ == "DF-OREMP")
+            outfile->Printf("\n ======================== DF-OREMP IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
                             mo_maxiter);
 
         throw PSIEXCEPTION("DF-OCC iterations did not converge");
@@ -401,7 +430,7 @@ void DFOCC::save_mo_to_wfn() {
 
     // Save MOs to wfn_; We cannot semicanonicalize them, as we'd need to do the same to all MO-basis quantities
     if (reference_ == "RESTRICTED") {
-        SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
+        SharedMatrix Ca = std::make_shared<Matrix>("Alpha MO Coefficients", nso_, nmo_);
         CmoA->to_shared_matrix(Ca);
         Ca_->copy(Ca);
 
@@ -411,7 +440,7 @@ void DFOCC::save_mo_to_wfn() {
             SharedVector aevals(new Vector("Eigenvalues (Alpha)", nmo_));
 
             // Diagonaliz OPDM
-            SharedMatrix a_opdm = SharedMatrix(new Matrix("Alpha OPDM", nmo_, nmo_));
+            auto a_opdm = std::make_shared<Matrix>("Alpha OPDM", nmo_, nmo_);
             G1->to_shared_matrix(a_opdm);
             // scale by 1/2 because MoldenWrite expect only alpha part
             a_opdm->scale(0.5);
@@ -443,8 +472,8 @@ void DFOCC::save_mo_to_wfn() {
     }
 
     else if (reference_ == "UNRESTRICTED") {
-        SharedMatrix Ca = SharedMatrix(new Matrix("Alpha MO Coefficients", nso_, nmo_));
-        SharedMatrix Cb = SharedMatrix(new Matrix("Beta MO Coefficients", nso_, nmo_));
+        SharedMatrix Ca = std::make_shared<Matrix>("Alpha MO Coefficients", nso_, nmo_);
+        SharedMatrix Cb = std::make_shared<Matrix>("Beta MO Coefficients", nso_, nmo_);
         CmoA->to_shared_matrix(Ca);
         CmoB->to_shared_matrix(Cb);
 
@@ -459,8 +488,8 @@ void DFOCC::save_mo_to_wfn() {
             SharedVector bevals(new Vector("Eigenvalues (Beta)", nmo_));
 
             // Diagonaliz OPDM
-            SharedMatrix a_opdm = SharedMatrix(new Matrix("Alpha OPDM", nmo_, nmo_));
-            SharedMatrix b_opdm = SharedMatrix(new Matrix("Alpha OPDM", nmo_, nmo_));
+            SharedMatrix a_opdm = std::make_shared<Matrix>("Alpha OPDM", nmo_, nmo_);
+            SharedMatrix b_opdm = std::make_shared<Matrix>("Alpha OPDM", nmo_, nmo_);
             G1A->to_shared_matrix(a_opdm);
             G1B->to_shared_matrix(b_opdm);
             a_opdm->diagonalize(aevecs, aevals, descending);

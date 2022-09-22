@@ -60,6 +60,7 @@ class DFOCC : public Wavefunction {
     void pt_title();
     void pat_title();
     void pdm_title();
+    void remp_title();
     void ref_energy();
     void mp2_energy();
     void scs_mp2_energy();
@@ -449,6 +450,15 @@ class DFOCC : public Wavefunction {
     void lccdl_energy();
     void lccd_energy();
 
+    // REMP & OO-REMP
+    void remp_manager();
+    void oremp_manager();
+    void remp_manager_cd();
+    void oremp_manager_cd();
+    void remp_iterations();
+    void remp_t2_amps();
+    void oremp_tpdm();
+
     // CCSD
     void ccsd_manager();
     void ccsd_manager_cd();
@@ -740,6 +750,7 @@ class DFOCC : public Wavefunction {
     double sos_scale;
     double sos_scale2;
     double e3_scale;
+    double remp_a;
     double rms_t2;
     double rms_t2AA;
     double rms_t2AB;
@@ -782,6 +793,15 @@ class DFOCC : public Wavefunction {
     double ElccdAB;
     double ElccdL;
     double ElccdL_old;
+
+    // OREMP
+    double Eremp;
+    double Eremp_old;
+    double ErempAA;
+    double ErempBB;
+    double ErempAB;
+    double ErempL;
+    double ErempL_old;
 
     // CCSD
     double Eccsd;

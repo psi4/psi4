@@ -251,7 +251,8 @@ void DFOCC::lccdl_energy() {
     double Eoo = 0.0;
     double Eov = 0.0;
     double Evv = 0.0;
-    ElccdL_old = ElccdL;
+
+    if (wfn_type_ == "DF-OLCCD" | wfn_type_ == "DF-OREMP" ) ElccdL_old = ElccdL;
 
     if (reference_ == "RESTRICTED") {
         // DE = \sum_{p,q} G_pq f_pq
@@ -355,8 +356,11 @@ void DFOCC::lccdl_energy() {
 
     }  // else if (reference_ == "UNRESTRICTED")
 
-    ElccdL = Eref + EcorrL;
-    DE = ElccdL - ElccdL_old;
+    if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP") {
+        ElccdL = Eref + EcorrL;
+        ErempL = ElccdL;
+        DE = ElccdL - ElccdL_old;
+    }
 
     /*
     outfile->Printf("\n\tEnergies re-computed from CC density: \n");

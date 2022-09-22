@@ -65,10 +65,10 @@ void DFOCC::separable_tpdm() {
         //=========================
         // G_ij (ref) =
         G2c_oo = std::make_shared<Tensor2d>("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA);
-        G2c_oo->copy(bQooA);
+        G2c_oo->copy(bQooA); //b_ij^Q
         bQooA.reset();
         G2c_oo->scale(-1.0);
-        for (int Q = 0; Q < nQ_ref; Q++) {
+        for (int Q = 0; Q < nQ_ref; Q++) {   //delta(i,j)J_Q
             double value = Jc->get(Q);
             for (int i = 0; i < noccA; i++) {
                 int ii = oo_idxAA->get(i, i);
@@ -96,7 +96,7 @@ void DFOCC::separable_tpdm() {
         // G_ij^Q
         G2c_oo = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA);
         for (int Q = 0; Q < nQ_ref; Q++) {
-            double value = 2.0 * (g1Qc->get(Q) + g1Qt->get(Q));
+            double value = 2.0 * (g1Qc->get(Q) + g1Qt->get(Q));  // g1Qc is gamma_Q, g1Qt is gamma^tilde
             for (int i = 0; i < noccA; i++) {
                 int ii = oo_idxAA->get(i, i);
                 G2c_oo->set(Q, ii, value);

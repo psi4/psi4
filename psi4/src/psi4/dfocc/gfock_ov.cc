@@ -43,6 +43,7 @@ void DFOCC::gfock_ov() {
     SharedTensor2d G;
 
     if (reference_ == "RESTRICTED") {
+        // no reference contributions: G_ab(ref)=0, G_ab^Q(ref)=0
         //=========================
         // Correlation Contribution
         //=========================

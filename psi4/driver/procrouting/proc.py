@@ -1180,6 +1180,12 @@ def select_remp2(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'OCC']:
                 func = run_occ
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
 
     if func is None:
         raise ManagedMethodError(['select_remp2', name, 'CC_TYPE', mtd_type, reference, module])
@@ -1924,6 +1930,9 @@ def run_dfocc(name, **kwargs):
            "mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
           "omp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
 
+         "remp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+        "oremp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+
           "lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
          "olccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
 
@@ -2015,6 +2024,9 @@ def run_dfocc_gradient(name, **kwargs):
 
            "mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
           "omp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
+
+         "remp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+        "oremp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
 
           "lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
          "olccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},

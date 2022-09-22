@@ -418,6 +418,7 @@ void DFOCC::lccd_t2_1st_sc() {
         Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
     }  // else if (reference_ == "UNRESTRICTED")
     Elccd = Emp2;
+    Eremp = Emp2;
     timer_off("1st-order T2");
 }  // end lccd_t2_1st_sc
 

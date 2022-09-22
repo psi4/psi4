@@ -69,7 +69,7 @@ void DFOCC::omp3_opdm() {
 
         // Build G1
         G1->copy(G1c);
-        for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
+        for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0); //CSB the reference contribution
 
         if (print_ > 2) {
             G1->print();

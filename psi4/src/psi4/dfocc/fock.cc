@@ -49,7 +49,7 @@ void DFOCC::fock() {
                 int ii = oo_idxAA->get(i, i);
                 value += K->get(Q, ii);
             }
-            Jc->set(Q, 2.0 * value);
+            Jc->set(Q, 2.0 * value);  // F += 2*J...
         }
 
         // F_ij = h_ij + \sum_{Q} b_ij^Q J^Q - \sum_{Q} \sum_{m} b_mi^Q b_mj^Q
@@ -111,7 +111,7 @@ void DFOCC::fock() {
                 int ii = oo_idxAA->get(i, i);
                 value += K->get(Q, ii);
             }
-            Jc->set(Q, value);
+            Jc->set(Q, value);  // alpha spin contribution to the Coulomb operator
         }
         K.reset();
 
@@ -124,7 +124,7 @@ void DFOCC::fock() {
                 int ii = oo_idxBB->get(i, i);
                 value += K->get(Q, ii);
             }
-            Jc->add(Q, value);
+            Jc->add(Q, value);  // beta spin contribution to the Coulomb operator
         }
         K.reset();
 

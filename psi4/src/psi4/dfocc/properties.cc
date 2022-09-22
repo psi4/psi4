@@ -43,9 +43,11 @@ void DFOCC::oeprop() {
 
     timer_on("oeprop");
     // This density finagling won't be necessary if you just set the density on the wavefunction.
-    // However, CD-OMP2/OLCCD have oeprop enabled but gradients disabled for undocumented reasons.
-    // Accordingly, we'll play it safe and not set the density for those cases just yet.
-    // ...Which means we can't assume the density to be set in general. Sad. - JPM 07/2020
+    // We do need to set density explicitly on CD-OMP2/OLCCD, at least, since one-electron properties
+    // accessible for CD but CD gradients (which would set the density automatically) are not. (That
+    // is, CD gradient tech available in the literature but none in Psi4, even for CD-HF.)
+    // This should wait until after the current dfocc push. - JPM 08/2022
+
     auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
     auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
     if (reference_ == "RESTRICTED") {
