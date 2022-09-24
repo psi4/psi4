@@ -49,6 +49,7 @@ int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols);
 int psio_tocwrite(size_t unit);
 void psio_tocprint(size_t unit);  // debug printing
 psio_tocentry *psio_tocscan(size_t unit, const char *key);
+bool psio_tocentry_exists(size_t unit, const char *key);
 
 int psio_write(size_t unit, const char *key, char *buffer, size_t size, psio_address sadd, psio_address *eadd);
 int psio_read(size_t unit, const char *key, char *buffer, size_t size, psio_address sadd, psio_address *eadd);
