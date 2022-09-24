@@ -850,7 +850,7 @@ void DLPNOMP2::pno_transform() {
         // Diagonalization of pair density gives PNOs (in basis of the LMO's virtual domain) and PNO occ numbers
         auto X_pno_ij = std::make_shared<Matrix>("eigenvectors", nvir_ij, nvir_ij);
         Vector pno_occ("eigenvalues", nvir_ij);
-        D_ij->diagonalize(X_pno_ij, pno_occ, descending);
+        D_ij->diagonalize(*X_pno_ij, pno_occ, descending);
 
         int nvir_ij_final = 0;
         for (size_t a = 0; a < nvir_ij; ++a) {

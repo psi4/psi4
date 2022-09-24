@@ -143,9 +143,9 @@ void OCCWave::ekt_ea() {
     UvecA->zero();
     Diag_g1A.zero();
     if (reference_ == "RESTRICTED")
-        G1tilde->diagonalize(UvecA, Diag_g1A);
+        G1tilde->diagonalize(*UvecA, Diag_g1A);
     else if (reference_ == "UNRESTRICTED")
-        G1tildeA->diagonalize(UvecA, Diag_g1A);
+        G1tildeA->diagonalize(*UvecA, Diag_g1A);
 
     // Make sure all eigenvalues are positive
     for (int h = 0; h < nirrep_; ++h) {
@@ -183,7 +183,7 @@ void OCCWave::ekt_ea() {
     // Diagonalize GFock to get orbital energies
     eorbA.zero();
     Uvec_primeA->zero();
-    GFock_primeA->diagonalize(Uvec_primeA, eorbA);
+    GFock_primeA->diagonalize(*Uvec_primeA, eorbA);
     UvecA->gemm(false, false, 1.0, g1HalfA, Uvec_primeA, 0.0);
 
     // Pole strength
@@ -329,7 +329,7 @@ void OCCWave::ekt_ea() {
         // Diagonalize OPDM
         UvecB->zero();
         Diag_g1B.zero();
-        G1tildeB->diagonalize(UvecB, Diag_g1B);
+        G1tildeB->diagonalize(*UvecB, Diag_g1B);
 
         // Make sure all eigenvalues are positive
         for (int h = 0; h < nirrep_; ++h) {
