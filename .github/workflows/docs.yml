@@ -10,6 +10,9 @@ concurrency:
   group: latest-docs-group
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
 
   docs:
