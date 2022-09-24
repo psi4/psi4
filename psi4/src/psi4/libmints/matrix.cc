@@ -2805,14 +2805,6 @@ void Matrix::back_transform(const Matrix &transformer) {
 
 double Matrix::vector_dot(const Matrix &rhs) { return vector_dot(&rhs); }
 
-void Matrix::diagonalize(Matrix &eigvectors, Vector &eigvalues, int nMatz) {
-    for (int h = 0; h < nirrep_; ++h) {
-        if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues.pointer(h), nMatz, eigvectors.matrix_[h], 1.0e-14);
-        }
-    }
-}
-
 void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
     global_dpd_->file2_mat_init(outFile);
 
