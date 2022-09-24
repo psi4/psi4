@@ -863,14 +863,20 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
 
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
+    PSI_DEPRECATED("This Matrix::diagonalize overload is deprecated and will be removed in 1.7.")
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, diagonalize_order nMatz = ascending);
+    
+    void diagonalize(Matrix& eigvectors, Vector& eigvalues, diagonalize_order nMatz = ascending);
     void diagonalize(SharedMatrix& eigvectors, std::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
+
+    PSI_DEPRECATED("This Matrix::diagonalize overload is deprecated and will be removed in 1.7.")
     void diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
     /// @{
     /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.  Only for
     /// symmetric matrices.
+    PSI_DEPRECATED("This Matrix::diagonalize overload is deprecated and will be removed in 1.7.")
     void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, std::shared_ptr<Vector>& eigvalues,
                      diagonalize_order nMatz = ascending);
     /// @}
@@ -1097,6 +1103,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
     /// Diagonalize a symmetric matrix. Eigvectors and eigvalues must be created by caller.
+    PSI_DEPRECATED("This Matrix::diagonalize overload is deprecated and will be removed in 1.7.")
     void diagonalize(Matrix& eigvectors, Vector& eigvalues, int nMatz = 1);
 
     /// @{

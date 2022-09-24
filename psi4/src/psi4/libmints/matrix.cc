@@ -1729,6 +1729,10 @@ void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_orde
     }
 }
 
+void Matrix::diagonalize(Matrix &eigvectors, Vector &eigvalues, diagonalize_order nMatz/* = ascending*/) {
+    diagonalize(&eigvectors, &eigvalues, nMatz);
+}
+
 void Matrix::diagonalize(SharedMatrix &eigvectors, std::shared_ptr<Vector> &eigvalues, diagonalize_order nMatz) {
     diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
 }
