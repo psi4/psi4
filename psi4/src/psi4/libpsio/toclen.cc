@@ -125,4 +125,7 @@ void PSIO::wt_toclen(const size_t unit, const size_t len) {
         psio_error(unit, PSIO_ERROR_WRITE, errmsg);
     }
 }
+
+size_t psio_rd_toclen(size_t unit) { return _default_psio_lib_->rd_toclen(unit); }
+
 }  // namespace psi

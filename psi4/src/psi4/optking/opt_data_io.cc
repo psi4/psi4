@@ -65,7 +65,7 @@ bool opt_io_is_present() {
 
 #if defined(OPTKING_PACKAGE_PSI)
   psio_open(PSI_OPTDATA_FILE_NUM, PSIO_OPEN_OLD);
-  if (_default_psio_lib_->rd_toclen(PSI_OPTDATA_FILE_NUM) > 0)
+  if (psio_rd_toclen(PSI_OPTDATA_FILE_NUM) > 0)
     file_present = true;
   psio_close(PSI_OPTDATA_FILE_NUM, 1);
 
