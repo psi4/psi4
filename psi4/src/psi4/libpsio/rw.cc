@@ -83,7 +83,20 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
     buf_offset = 0;
     if (wrt) {
         errcod_uli = SYSTEM_WRITE(this_unit->vol[first_vol].stream, &(buffer[buf_offset]), this_page_total);
-        if (errcod_uli != this_page_total) psio_error(unit, PSIO_ERROR_WRITE);
+        if (errcod_uli != this_page_total){
+            if (errcod_uli == -1){
+                const errno_t sys_errno = errno;
+                std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
+                errmsg += "\nError writing the first partial page, unit ";
+                errmsg += std::to_string(unit) + ".\n";
+                psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+            }else{
+                std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
+                errmsg += "\nError writing the first partial page, unit ";
+                errmsg += std::to_string(unit) + ".\n";
+                psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+            }
+        }
     } else {
         errcod_uli = SYSTEM_READ(this_unit->vol[first_vol].stream, &(buffer[buf_offset]), this_page_total);
         if (errcod_uli != this_page_total) psio_error(unit, PSIO_ERROR_READ);
@@ -100,7 +113,20 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
         this_page_total = PSIO_PAGELEN;
         if (wrt) {
             errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), this_page_total);
-            if (errcod_uli != this_page_total) psio_error(unit, PSIO_ERROR_WRITE);
+            if (errcod_uli != this_page_total){
+                if (errcod_uli == -1){
+                    const errno_t sys_errno = errno;
+                    std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
+                    errmsg += "\nError writing a full page, unit ";
+                    errmsg += std::to_string(unit) + ".\n";
+                    psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+                }else{
+                    std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
+                    errmsg += "\nError writing a full page, unit ";
+                    errmsg += std::to_string(unit) + ".\n";
+                    psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+                }
+            }
         } else {
             errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), this_page_total);
             if (errcod_uli != this_page_total) psio_error(unit, PSIO_ERROR_READ);
@@ -114,7 +140,20 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
     if (bytes_left) {
         if (wrt) {
             errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), bytes_left);
-            if (errcod_uli != bytes_left) psio_error(unit, PSIO_ERROR_WRITE);
+            if (errcod_uli != bytes_left){
+                if (errcod_uli == -1){
+                    const errno_t sys_errno = errno;
+                    std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
+                    errmsg += "\nError writing the last partial page, unit ";
+                    errmsg += std::to_string(unit) + ".\n";
+                    psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+                }else{
+                    std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
+                    errmsg += "\nError writing the last partial page, unit ";
+                    errmsg += std::to_string(unit) + ".\n";
+                    psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+                }
+            }
         } else {
             errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), bytes_left);
             if (errcod_uli != bytes_left) psio_error(unit, PSIO_ERROR_READ);
