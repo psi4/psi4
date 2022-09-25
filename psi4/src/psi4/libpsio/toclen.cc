@@ -84,9 +84,7 @@ size_t PSIO::rd_toclen(const size_t unit) {
     const auto sys_errno = errno;
     if (errcod != sizeof(size_t)) {
         if (errcod == -1) {
-            std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(sys_errno);
-            errmsg += "\nError in PSIO::rd_toclen()! Cannot read TOC length, unit ";
-            errmsg += std::to_string(unit) + ".\n";
+            const std::string errmsg = psio_read_err_msg("Error in PSIO::rd_toclen()! Cannot read TOC length", unit, sys_errno);
             psio_error(unit, PSIO_ERROR_READ, errmsg);
         }
         return (0);  // assume that all is well (see comments above)
