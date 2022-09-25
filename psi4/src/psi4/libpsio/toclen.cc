@@ -106,9 +106,7 @@ void PSIO::wt_toclen(const size_t unit, const size_t len) {
     const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
     const auto sys_errno = errno;
     if (errcod != sizeof(size_t)) {
-        std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
-        errmsg += "\nError in PSIO::wt_toclen()! Cannot write TOC length, unit ";
-        errmsg += std::to_string(unit) + ".\n";
+        const std::string errmsg = psio_write_err_msg("Error in PSIO::wt_toclen()! Cannot write TOC length", unit, sys_errno);
         psio_error(unit, PSIO_ERROR_WRITE, errmsg);
     }
 }

@@ -86,14 +86,10 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
         if (errcod_uli != this_page_total){
             if (errcod_uli == -1){
                 const errno_t sys_errno = errno;
-                std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
-                errmsg += "\nError writing the first partial page, unit ";
-                errmsg += std::to_string(unit) + ".\n";
+                const std::string errmsg = psio_write_err_msg("Error writing the first partial page", unit, sys_errno);
                 psio_error(unit, PSIO_ERROR_WRITE, errmsg);
             }else{
-                std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
-                errmsg += "\nError writing the first partial page, unit ";
-                errmsg += std::to_string(unit) + ".\n";
+                const std::string errmsg = psio_write_err_msg("Error writing the first partial page", unit);
                 psio_error(unit, PSIO_ERROR_WRITE, errmsg);
             }
         }
@@ -116,14 +112,10 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
             if (errcod_uli != this_page_total){
                 if (errcod_uli == -1){
                     const errno_t sys_errno = errno;
-                    std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
-                    errmsg += "\nError writing a full page, unit ";
-                    errmsg += std::to_string(unit) + ".\n";
+                    const std::string errmsg = psio_write_err_msg("Error writing a full page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }else{
-                    std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
-                    errmsg += "\nError writing a full page, unit ";
-                    errmsg += std::to_string(unit) + ".\n";
+                    const std::string errmsg = psio_write_err_msg("Error writing a full page", unit);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }
             }
@@ -143,14 +135,10 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
             if (errcod_uli != bytes_left){
                 if (errcod_uli == -1){
                     const errno_t sys_errno = errno;
-                    std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
-                    errmsg += "\nError writing the last partial page, unit ";
-                    errmsg += std::to_string(unit) + ".\n";
+                    const std::string errmsg = psio_write_err_msg("Error writing the last partial page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }else{
-                    std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
-                    errmsg += "\nError writing the last partial page, unit ";
-                    errmsg += std::to_string(unit) + ".\n";
+                    const std::string errmsg = psio_write_err_msg("Error writing the last partial page", unit);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }
             }
