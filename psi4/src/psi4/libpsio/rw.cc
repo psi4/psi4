@@ -50,7 +50,6 @@ namespace psi {
  ** \ingroup PSIO
  */
 void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int wrt) {
-    int errcod;
     size_t i;
     size_t errcod_uli;
     size_t page, offset;
@@ -67,12 +66,10 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
 
     /* Seek all volumes to correct starting positions */
     first_vol = page % numvols;
-    errcod = psio_volseek(&(this_unit->vol[first_vol]), page, offset, numvols);
-    if (errcod == -1) psio_error(unit, PSIO_ERROR_LSEEK);
+    psio_volseek(&(this_unit->vol[first_vol]), page, offset, numvols, unit);
     for (i = 1, this_page = page + 1; i < numvols; i++, this_page++) {
         this_vol = this_page % numvols;
-        errcod = psio_volseek(&(this_unit->vol[this_vol]), this_page, (size_t)0, numvols);
-        if (errcod == -1) psio_error(unit, PSIO_ERROR_LSEEK);
+        psio_volseek(&(this_unit->vol[this_vol]), this_page, (size_t)0, numvols, unit);
     }
 
     /* Number of bytes left on the first page */
