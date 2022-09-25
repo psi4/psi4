@@ -60,7 +60,7 @@
 namespace psi {
 
 std::string decode_errno(const errno_t errno_in);
-std::string lseek_err_msg(const std::string& context, const size_t unit, const errno_t errno_in);
+std::string psio_lseek_err_msg(const std::string& context, const size_t unit, const errno_t errno_in);
 std::string psio_write_err_msg(const std::string& context, const size_t unit, const errno_t errno_in);
 std::string psio_write_err_msg(const std::string& context, const size_t unit);
 

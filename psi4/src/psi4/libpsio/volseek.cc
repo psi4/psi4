@@ -48,7 +48,7 @@ void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const s
     // Set file pointer to beginning of file
     if (SYSTEM_LSEEK(stream, 0, SEEK_SET) == -1) {
         const errno_t sys_errno = errno;
-        const std::string errmsg = lseek_err_msg("Cannot seek to the beginning of file", unit, sys_errno);
+        const std::string errmsg = psio_lseek_err_msg("Cannot seek to the beginning of file", unit, sys_errno);
         psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
     }
 
@@ -57,7 +57,7 @@ void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const s
     for (; page > bignum; page -= bignum) {
         if (SYSTEM_LSEEK(stream, PSIO_BIGNUM * PSIO_PAGELEN, SEEK_CUR) == -1) {
             const errno_t sys_errno = errno;
-            const std::string errmsg = lseek_err_msg("Cannot seek through the file", unit, sys_errno);
+            const std::string errmsg = psio_lseek_err_msg("Cannot seek through the file", unit, sys_errno);
             psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
         }
     }
@@ -66,7 +66,7 @@ void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const s
     const size_t final_offset = (page / numvols) * PSIO_PAGELEN + offset;
     if (SYSTEM_LSEEK(stream, final_offset, SEEK_CUR) == -1) {
         const errno_t sys_errno = errno;
-        const std::string errmsg = lseek_err_msg("Cannot seek to final position", unit, sys_errno);
+        const std::string errmsg = psio_lseek_err_msg("Cannot seek to final position", unit, sys_errno);
         psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
     }
 }
