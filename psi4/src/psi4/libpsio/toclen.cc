@@ -60,11 +60,9 @@ void PSIO::rewind_toclen(const size_t unit) {
     if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
     const auto stream = psio_unit[unit].vol[0].stream;
     const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
-    const auto sys_errno = errno;
     if (errcod == -1) {
-        std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(sys_errno);
-        errmsg += "\nCannot seek vol[0] to its beginning, unit ";
-        errmsg += std::to_string(unit) + ".\n";
+        const errno_t sys_errno = errno;
+        const std::string errmsg = lseek_err_msg("Cannot seek vol[0] to its beginning", unit, sys_errno);
         psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
     }
 }
