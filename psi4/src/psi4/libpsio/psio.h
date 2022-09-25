@@ -59,7 +59,7 @@
 
 namespace psi {
 
-std::string decode_errno(const int errno_in);
+std::string decode_errno(const errno_t errno_in);
 int psio_init();
 void psio_error(size_t unit, size_t errval, std::string prev_msg = "");
 int psio_open(size_t unit, int status);
