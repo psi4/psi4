@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_optking}))
     include(FindPythonModule)
-    find_python_module(optking ATLEAST 0.1.1 QUIET)
+    find_python_module(optking ATLEAST 0.2.0 QUIET)
 endif()
 
 if(${optking_FOUND})
@@ -19,7 +19,7 @@ else()
 
     ExternalProject_Add(optking_external
         BUILD_ALWAYS 1
-        URL https://github.com/psi-rking/archive/v0.1.1.tar.gz
+        URL https://github.com/psi-rking/archive/v0.2.0tar.gz
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
