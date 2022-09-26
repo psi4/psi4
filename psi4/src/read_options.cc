@@ -2755,6 +2755,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("WRITE_TRAJECTORY", false);
         /*- Should an xyz trajectory file be kept (useful for visualization)? -*/
         options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
+        /*- Write the full history to disk. Produces a non validated OptimizationResult. -*/
+        options.add_bool("WRITE_OPT_HISTORY", false);
 
     }
     if (name == "FINDIF" || options.read_globals()) {

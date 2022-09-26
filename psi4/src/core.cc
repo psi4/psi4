@@ -156,10 +156,6 @@ void py_psi_plugin_close_all();
 
 extern std::map<std::string, plugin_info> plugins;
 
-namespace opt {
-psi::PsiReturnType optking(psi::Options&);
-void opt_clean();
-}  // namespace opt
 // Forward declare /src/bin/ methods
 namespace psi {
 
@@ -310,12 +306,12 @@ void py_psi_prepare_options_for_module(std::string const& name) {
     Process::environment.options.validate_options();
 }
 
-int py_psi_optking() {
-    py_psi_prepare_options_for_module("OPTKING");
-    return opt::optking(Process::environment.options);
-}
+// int py_psi_optking() {
+//     py_psi_prepare_options_for_module("OPTKING");
+//     return opt::optking(Process::environment.options);
+// }
 
-void py_psi_opt_clean(void) { opt::opt_clean(); }
+// void py_psi_opt_clean(void) { opt::opt_clean(); }
 
 // int py_psi_mints()
 // {
@@ -1333,7 +1329,7 @@ PYBIND11_MODULE(core, core) {
              "Reads in the density matrices from Kallay's MRCC code.");
     core.def("sapt", py_psi_sapt, "dimer_wfn"_a, "monoa_wfn"_a, "monob_wfn"_a, "Runs the symmetry adapted perturbation theory code.");
     core.def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
-    core.def("optking", py_psi_optking, "Runs the geometry optimization code.");
+    // core.def("optking", py_psi_optking, "Runs the geometry optimization code.");
     core.def("cctransort", py_psi_cctransort, "ref_wfn"_a,
              "Runs cctransort that transforms and reorders integrals for use in the coupled cluster codes.");
     core.def("ccenergy", py_psi_ccenergy, "ref_wfn"_a, "Runs the coupled cluster energy code.");
@@ -1350,7 +1346,6 @@ PYBIND11_MODULE(core, core) {
     core.def("cceom", py_psi_cceom, "ref_wfn"_a, "Runs the equation of motion coupled cluster code for excited states.");
     core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
-    core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
         auto mode = std::ostream::trunc;

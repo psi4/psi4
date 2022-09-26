@@ -1205,9 +1205,9 @@ def optimize(name, **kwargs):
         optimizer_params = {k: v.get('value') for k, v in params.pop("OPTKING").items() if v.get('has_changed')}
         opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
 
-    initial_sym = moleculeclone.schoenflies_symbol()
+    initial_sym = molecule.schoenflies_symbol()
     while n <= core.get_option('OPTKING', 'GEOM_MAXITER'):
-        current_sym = moleculeclone.schoenflies_symbol()
+        current_sym = molecule.schoenflies_symbol()
         if initial_sym != current_sym:
 
             # Try to resymmetrize molecule if slightly broken.
@@ -1271,7 +1271,7 @@ def optimize(name, **kwargs):
             # Last geom is normally last in history. For IRC last geom is last in IRC trajectory
             # Not sure how to handle ensuring that wfn corresponds to last point.
             final_energy, final_geom = opt_object.summarize_result()
-
+            
             # Changing environment to optimized geometry as expected by user
             molecule.set_geometry(core.Matrix.from_array(final_geom))
             molecule.update_geometry()
