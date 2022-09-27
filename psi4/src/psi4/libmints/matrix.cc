@@ -1387,7 +1387,23 @@ void Matrix::gemm(const char &transa, const char &transb, const int &m, const in
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix *const a, const Matrix *const b, double beta) {
     if (nirrep_ != a->nirrep_ || nirrep_ != b->nirrep_)
         throw PSIEXCEPTION("Matrix::gemm error: Number of irreps do not equal.");
-
+    // Check matrix sizes
+    int tRows;
+    int tCols;
+    int tRowsa;
+    int tColsa;
+    int tRowsb;
+    int tColsb;
+    for (int h = 0; h < nirrep; ++h) {
+        tRows += rowspi_[h];
+        tCols += colspi_[h];
+        tRowsa += transa ? a->colspi_[h] : a->rowspi_[h];
+        tColsa += transa ? a->rowspi_[h] : a->colspi_[h];
+        tRowsb += transb ? b->colspi_[h] : b->rowspi_[h];
+        tColsb += transb ? b->rowspi_[h] : b->colspi_[h];
+    }
+    if (tRows != tRowsa || tCols != tColsb || tColsa != tRowsb)
+        throw PSIEXCEPTION("Matrix::gemm error: Number of rows and columns do not match.");
     // Check symmetry
     if (symmetry_ != (a->symmetry_ ^ b->symmetry_)) {
         outfile->Printf("Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
