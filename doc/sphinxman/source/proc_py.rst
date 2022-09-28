@@ -36,13 +36,13 @@ Adding Methods to Driver
 ``proc.py``
 -----------
 
-This is concerned at present with normal methods added first to the
-procedures table in driver.py that associates method names with functions
-to run them located in proc.py .
+Methods that are computable by only one module should be added to the ``procedures`` dictionary in
+:source:`psi4/driver/procrouting/proc_table.py`
+that associates method names with functions
+to run them located in :source:`psi4/driver/procrouting/proc.py`.
 
 The function should start with a declaration, as below. ``methodname`` is
-never seen by users, so it's good to be specific; if there's lots of
-modules that can run mp2, call methodname modulenamemethodname, perhaps.
+never seen by users, so it's good to be specific to method or module.
 The function must always take as arguments ``(name, **kwargs)``. ::
 
     # energy method
@@ -62,7 +62,7 @@ case of all other py-side options (in kwargs) has already been handled by
     # never include
     kwargs = kwargs_lower(kwargs)
 
-It's often necessary to The function often needs to set options for the
+The function often needs to set options for the
 c-side modules it calls. In order that the state of the options set by the
 user remains when control is returned to the user, an
 :py:class:`~psi4.driver.p4util.OptionsState` object is set up. See
@@ -125,32 +125,53 @@ Direct any post-scf modules to be run. ::
 If an :py:class:`~psi4.driver.p4util.OptionsState` object was set up, those options
 need to be returned to the original user state with the following. ::
 
-    # include if optstash = OptionsState( was set up previously
+    # include if optstash = OptionsState(...) was set up previously
     optstash.restore()
 
-No function should return anything. ``CURRENT ENERGY`` will be set by
-:py:func:`~psi4.driver.energy`, etc. ::
+Current best practice is to store as much as possible on the wavefunction, not in globals. The
+driver should handle interactions with globals. When QCVariables are stored on the wavefunction in
+the module, copy to globals with the below::
 
-    # never include
-    return returnvalue
+    # Shove variables into global space
+    for k, v in dfmp2_wfn.variables().items():
+        core.set_variable(k, v)
+
+The function should return the wavefunction, except for rare cases like EFP where no wavefunction available.
+For now, ``CURRENT ENERGY`` will be set by
+:py:func:`~psi4.driver.energy`, etc. In future, this will be extracted from the wavefunction. ::
+
+    # return highest or most prominent wavefunction (like dimer for SAPT)
+    return fnocc_wfn
 
 
 Managed Methods
 ---------------
 
-When functionality overlaps between modules, a pattern is needed to (1)
-access each route through the code without contrivances like ``ccsd2``,
-``_ccsd``, ``sdci`` and (2) apportion defaulting among the modules, taking
-into account reference (RHF/UHF/ROHF) and calc type (CONV, DF, CD).
-Managed methods handle both these cases through the addition of a new
+There are several conditions when a method and derivative combination should be *managed*:
+
+* when functionality overlaps between modules, a pattern is needed to
+  access each route through the code;
+
+* when functionality doesn't overlap completely, a pattern is needed to apportion defaulting among
+  the modules, taking into account reference (RHF/UHF/ROHF), calc type (CONV/DF/CD), and possibly
+  |globals__freeze_core| state (AE/FC).
+
+* for higher-level derivatives, when, say, gradient functionality for mtd+ref+type+fcae doesn't
+  exactly match energy functionality, a pattern is needed to decide analytic vs. finite difference.
+
+* when default type is not available for a method (e.g., CCD governed by |globals__cc_type| that
+  defaults to ``CONV`` but only ``DF`` and ``CD`` CCD is available), an informative error message is needed.
+
+Managed methods handle these cases through the addition of a new
 keyword |globals__qc_module| and a set of type keywords analogous to
 |globals__mp2_type|: |globals__mp_type|,
 |globals__ci_type|, |globals__cc_type|, which can have values ``CONV``,
 ``DF``, and ``CD``. These are all *global* keywords, as their values are
 shared among modules rather than (or in addition to) being used internally
 by the module). We're sticking with |globals__scf_type| and
-|globals__mp2_type| defaulting to ``DF``, while everything higher defaults
-to ``CONV``. In :source:`psi4/driver/driver.py`, a managed method calls a
+|globals__mp2_type| defaulting to ``DF``, while most everything higher defaults
+to ``CONV``. (Exceptions are MP2.5 and MP3 that default to ``DF``.)
+In :source:`psi4/driver/procrouting/proc_table.py`, a managed method calls a
 "select" function rather than a "run" function. ::
 
     procedures = {
@@ -160,7 +181,7 @@ to ``CONV``. In :source:`psi4/driver/driver.py`, a managed method calls a
             'dct'           : run_dct,
 
 Then in :source:`psi4/driver/procrouting/proc.py`, the select function runs through
-reference (always outer loop) and type (inner loop) to specify the proc
+reference, type, and possibly freeze_core to specify the proc
 function to call for any able, non-default module (*e.g.*, ``mtd_type ==
 'DETCI'`` ) or able, default module (*e.g.*, ``mtd_typd == ['', 'FNOCC']`` ).
 Don't worry about 'else' statements as anything that falls through will be

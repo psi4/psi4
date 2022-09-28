@@ -5,6 +5,95 @@ from qcengine.programs.tests.standard_suite_ref import answer_hash, compute_deri
 # in-repo extensions for _std_suite above
 # * ideally empty. PR to QCEngine ASAP and empty this after QCEngine release.
 _std_suite_psi4_extension = [
+    # <<<  CONV-AE-CONV  >>>
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd",
+        },
+        "data": {
+            "CISD CORRELATION ENERGY": -0.08142433,  # detci != vcc ???  # locally, replacing the rohf cisd vcc=tce value by the detci=guga value. correct sdsc label unclear.
+            "FCI CORRELATION ENERGY": -0.084637876308811,  # detci
+        },
+    },
+    {
+        "meta": {
+            "system": "nh2",
+            "basis": "aug-cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd",
+        },
+        "data": {
+            "CISD CORRELATION ENERGY": -0.1723668643052676,  # detci != vcc ???
+        },
+    },
+    {
+        "meta": {
+            "system": "nh2",
+            "basis": "cfour-qz2p",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd",
+        },
+        "data": {
+            "CISD CORRELATION ENERGY": -0.21038651,  # detci != vcc ???
+        },
+    },
+
+    # <<<  CONV-FC-CONV  >>>
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "fc",
+            "corl_type": "conv",
+            "sdsc": "sd",
+        },
+        "data": {
+            "CISD CORRELATION ENERGY": -0.08045048714872,  # detci only != vcc ???
+            "FCI CORRELATION ENERGY": -0.083612606639434,  # detci
+        },
+    },
+    {
+        "meta": {
+            "system": "nh2",
+            "basis": "aug-cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "fc",
+            "corl_type": "conv",
+            "sdsc": "sd",
+        },
+        "data": {
+            "CISD CORRELATION ENERGY": -0.170209639586457,  # detci only != vcc ???
+        },
+    },
+    {
+        "meta": {
+            "system": "nh2",
+            "basis": "cfour-qz2p",
+            "scf_type": "pk",
+            "reference": "rohf",
+            "fcae": "fc",
+            "corl_type": "conv",
+            "sdsc": "sd",
+        },
+        "data": {
+            "CISD CORRELATION ENERGY": -0.186640254417867,  # detci only != vcc ???
+        },
+    },
     # <<<  CD-AE-CD  >>>
     # <<<  CD-FC-CD  >>>
 ]

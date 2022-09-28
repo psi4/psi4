@@ -72,6 +72,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     prog_debug_profile.rst manage_release.rst plugin_psi4fockci.rst
     brianqc.rst tdscf.rst prog_integrals.rst prog_tour.rst mcscf.rst
     code_style.rst nitpick-exceptions external_apis.rst ecpint.rst
+    capabilities.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
@@ -207,6 +208,36 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
                 ${psi4_SOURCE_DIR}/tests/*/*/input.dat
         COMMENT "Autodoc test cases")
 
+
+    # Autodoc capabilities
+    # * tables are generated in pairs: one to build directory for Sphinx to use and one for the repo for devs to track
+    add_custom_command(
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt --sphinx --quiet --writefile         "source/autodoc_capabilities_details.rst"   --mode details
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt          --quiet --writefile "${CCSD}/source/preview_capabilities_details.rst"   --mode details
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt --sphinx --quiet --writefile         "source/autodoc_capabilities_summary.rst"   --mode summary
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt          --quiet --writefile "${CCSD}/source/preview_capabilities_summary.rst"   --mode summary
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt --sphinx --quiet --writefile         "source/autodoc_capabilities_ccenergy.rst"  --mode ccenergy
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt          --quiet --writefile "${CCSD}/source/preview_capabilities_ccenergy.rst"  --mode ccenergy
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt --sphinx --quiet --writefile         "source/autodoc_capabilities_fnocc.rst"     --mode fnocc --driver e
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt          --quiet --writefile "${CCSD}/source/preview_capabilities_fnocc.rst"     --mode fnocc --driver e
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt --sphinx --quiet --writefile         "source/autodoc_capabilities_dfmp2.rst"     --mode dfmp2
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt          --quiet --writefile "${CCSD}/source/preview_capabilities_dfmp2.rst"     --mode dfmp2
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt --sphinx --quiet --writefile         "source/autodoc_capabilities_occ_oo.rst"    --mode occ_oo
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt          --quiet --writefile "${CCSD}/source/preview_capabilities_occ_oo.rst"    --mode occ_oo
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt --sphinx --quiet --writefile         "source/autodoc_capabilities_occ_nonoo.rst" --mode occ_nonoo --second-in-rst
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt          --quiet --writefile "${CCSD}/source/preview_capabilities_occ_nonoo.rst" --mode occ_nonoo --second-in-rst
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt --sphinx --quiet --writefile         "source/autodoc_capabilities_scf.rst"       --mode scf --driver egh
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_capabilities.py --stdsuite ${CCSD}/../../samples/stdsuite_psi4.txt          --quiet --writefile "${CCSD}/source/preview_capabilities_scf.rst"       --mode scf --driver egh
+        OUTPUT  ${CCBD}/source/autodoc_capabilities_details.rst
+                ${CCBD}/source/autodoc_capabilities_summary.rst
+                ${CCBD}/source/autodoc_capabilities_ccenergy.rst
+                ${CCBD}/source/autodoc_capabilities_fnocc.rst
+                ${CCBD}/source/autodoc_capabilities_dfmp2.rst
+                ${CCBD}/source/autodoc_capabilities_occ_oo.rst
+                ${CCBD}/source/autodoc_capabilities_occ_nonoo.rst
+                ${CCBD}/source/autodoc_capabilities_scf.rst
+        DEPENDS ${CCSD}/document_capabilities.py
+        COMMENT "Autodoc capabilities")
 
     # Autodoc stubs
     add_custom_command(
@@ -354,6 +385,14 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
                 ${CCBD}/source/autodoc_available_databases.rst
                 ${CCBD}/source/autodoc_testsuite_corepsi4.rst
                 ${CCBD}/source/autodoc_testsuite_dftd3.rst
+                ${CCBD}/source/autodoc_capabilities_details.rst
+                ${CCBD}/source/autodoc_capabilities_summary.rst
+                ${CCBD}/source/autodoc_capabilities_ccenergy.rst
+                ${CCBD}/source/autodoc_capabilities_fnocc.rst
+                ${CCBD}/source/autodoc_capabilities_dfmp2.rst
+                ${CCBD}/source/autodoc_capabilities_occ_oo.rst
+                ${CCBD}/source/autodoc_capabilities_occ_nonoo.rst
+                ${CCBD}/source/autodoc_capabilities_scf.rst
                 ${CCBD}/source/api/psi4.core.set_variable.rst
                 ${CCBD}/source/autodoc_dft_energy.rst
                 ${CCBD}/source/autodoc_dft_opt.rst

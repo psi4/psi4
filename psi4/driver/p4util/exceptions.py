@@ -40,6 +40,8 @@ __all__ = [
     "TestComparisonError",
     "UpgradeHelper",
     "ValidationError",
+    "docs_table_link",
+    "sanitize_method",
 ]
 
 from typing import Any, Dict, List, Optional
@@ -374,22 +376,62 @@ class ManagedMethodError(PsiException):
     ----------
     message
         Human readable string describing the exception.
+    stats
+        Dictionary of conditions for which method request was made.
+        Keys are:
+
+          - driver : {"energy", "gradient", "hessian", "properties"}
+          - derivative_int : {0, 1, 2, "prop"}, integer representation of driver
+          - method : str, model/method/level-of-theory
+          - link : str, link address to table in docs
+          - method_type : (str, str), raw value and str repr of governing variable and algorithm
+          - reference : (str, str), raw value and str repr of reference type
+          - qc_module : (str, str), raw value and str repr of targeted implementation
+          - fcae : (str, str), raw value and str repr of all-electron/frozen-core status
 
     """
     message: str
+    stats: Dict[str, Any]
 
     def __init__(self, circs: List[str]):
-        if circs[5] == '':
-            modulemsg = "not available"
-        else:
-            modulemsg = f"not directable to QC_MODULE '{circs[5]}'"
 
-        if len(circs) == 7:
-            msg = f"""{circs[0]}: Method '{circs[1]}' with {circs[2]} '{circs[3]}', FREEZE_CORE '{not circs[6]}', and REFERENCE '{circs[4]}' {modulemsg}"""
+        if circs[0].endswith("_property"):
+            driver = "properties"
+            derivative_int = "prop"  # differs from QCSchema Driver.derivative_int that uses `0` here
+        elif circs[0].endswith("_hessian"):
+            driver = "hessian"
+            derivative_int = 2
+        elif circs[0].endswith("_gradient"):
+            driver = "gradient"
+            derivative_int = 1
         else:
-            msg = f"""{circs[0]}: Method '{circs[1]}' with {circs[2]} '{circs[3]}' and REFERENCE '{circs[4]}' {modulemsg}"""
+            driver = "energy"
+            derivative_int = 0
+
+        docslink = docs_table_link(circs[1], mode=("summary" if circs[5] == "" else "details"))
+        all_electron = circs[6] if (len(circs) == 7) else "(n/a)"
+
+        stats = {
+            # use QCSchema AtomicInput keys where available
+            "driver": driver,
+            "derivative_int": derivative_int,
+            "method": circs[1],
+            "link": docslink,
+            "method_type": (circs[3], f"{circs[2].upper()}={circs[3]}"),
+            "reference": (circs[4], f"REFERENCE={circs[4]}"),
+            "qc_module": (circs[5], f"QC_MODULE={circs[5] or '(auto)'}"),
+            # Note on fcae: most select_* functions don't consider this circumstance. Index 0 of tuple documents this.
+            #   Index 1 of tuple always returns the circumstance, regardless of whether considered, so user can look up availability in table.
+            "fcae": (all_electron, f"FREEZE_CORE={core.get_global_option('FREEZE_CORE')}"),
+        }
+
+        # Note that this message is not generally seen, as driver_util catches and edits it from `stats`
+        conditions2 = [stats[k][1] for k in ["method_type", "reference", "fcae", "qc_module"]]
+        msg = f"Method={stats['method']} is not available for target derivative level (dertype={derivative_int}) under conditions {', '.join(conditions2)}. See {stats['link']}."
+
         PsiException.__init__(self, msg)
-        self.message = '\nPsiException: %s\n\n' % msg
+        self.message = msg
+        self.stats = stats
 
 
 # Dftd3Error ceased to be used by v1.4. Class removed by v1.7
@@ -438,3 +480,35 @@ class PastureRequiredError(PsiException):
         msg += PastureRequiredError.install_instructions.format(module_args=module_cmake_args)
         self.message = '\nPsiException: {}\n\n'.format(msg)
         core.print_out(self.message)
+
+
+def sanitize_method(name: str) -> str:
+    """Replace characters in method name so that suitable for function name or Sphinx table anchor
+    (both as-is) or HTML table link (replace underscore in returned string by dash).
+
+    """
+    return name.lower(
+        ).replace("(", "_pr"  # ccsd(t)
+        ).replace(")", "_pr"
+        ).replace(".", "p"    # mp2.5
+        ).replace("+", "p"    # ccsd+t(ccsd)
+        ).replace("-", ""     # ccsdt-1a
+        )
+
+
+def docs_table_link(name: str, mode: str) -> str:
+    """Compose a link to *mode* documentation table at row for method *name*. Does not check method row exists."""
+
+    DOCS_BASE = "https://psicode.org/psi4manual/master/"
+
+    if mode == "summary":
+        anchor = "introduction.html#ss"
+    elif mode == "details":
+        anchor = "capabilities.html#dd"
+    else:
+        raise KeyError("invalid table mode")
+
+    # Sphinx reST anchors with underscore build into HTML docs with dash
+    sanitized_method = sanitize_method(name).replace("_", "-")
+
+    return f"{DOCS_BASE}{anchor}-{sanitized_method}"

@@ -173,10 +173,11 @@ def test_mrcc():
     """)
 
     psi4.set_options({
+        'qc_module': 'mrcc',
         'basis': 'cc-pvdz',
         'freeze_core': 'true'})
 
-    psi4.energy('mrccsdt')
+    psi4.energy('ccsdt')
 
     assert psi4.compare_values(  8.801465529972, psi4.variable("NUCLEAR REPULSION ENERGY"), 6, 'NRE')
     assert psi4.compare_values(-76.021418445155, psi4.variable("SCF TOTAL ENERGY"), 6, 'SCF')

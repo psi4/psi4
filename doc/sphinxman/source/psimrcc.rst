@@ -92,16 +92,16 @@ in which all determinants are connected to each other by no more than two
 excitations.  In practice, this usually means that the active space can have
 at most two particles, or at most two holes.  Examples would include 
 CAS(2,2), CAS(2,8), CAS(4,3), etc., where CAS(n,m) refers to a
-complete-active-space configuration interaction (CAS-CI) reference with n
+complete-active-space configuration interaction (CASCI) reference with n
 electrons in m orbitals.  If the user specifies active spaces that do not fit
 these limitations, then the code will still run, but some relevant
 determinants will be missing, and the answer obtained will be an approximation
 to the true Mk-MRCC procedure.
 
 The PSIMRCC code itself does not perform orbital optimization.  Hence, the
-references used might be considered CAS-CI references, but not CASSCF
+references used might be considered CASCI references, but not CASSCF
 references (CASSCF implies that the orbitals have been optimized specifically
-to minimize the energy of the CAS-CI reference).  However, if one wishes to
+to minimize the energy of the CASCI reference).  However, if one wishes to
 use two-configuration self-consistent-field (TCSCF) orbitals, those can
 be obtained using the multi-configuration self-consistent-field (MCSCF)
 component of PSIMRCC (specifying |mcscf__reference| to be ``twocon``).

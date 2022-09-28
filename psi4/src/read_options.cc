@@ -188,7 +188,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN MRCC");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
@@ -202,7 +202,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_str("MP_TYPE", "CONV", "DF CONV CD");
     // The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest
     // integral files, while CONV results in no approximations being made.
-    /*- Algorithm to use for CC or CEPA computation (e.g., CCD, CCSD(T), CEPA(3), ACPF).
+    /*- Algorithm to use for CC or CEPA computation (e.g., CCD, CCSD(T), CEPA(3), ACPF, REMP).
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("CC_TYPE", "CONV", "DF CONV CD");
     /*- Algorithm to use for CI computation (e.g., CID or CISD).

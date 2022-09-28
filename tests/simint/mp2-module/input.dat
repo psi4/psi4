@@ -178,8 +178,9 @@ clean()
 # <<<  ROHF CONV  >>>
 
 scftot =     -25.943606522029
-mp2corl =     -0.060939211739
-mp2tot =     -26.004545733768
+# detci mp2 should not be allowed, so switching to zapt2
+mp2corl =     -0.05889685
+mp2tot = mp2corl + scftot
 
 set reference rohf
 set mp2_type conv
@@ -194,10 +195,10 @@ clean_variables()
 clean()
 
 set qc_module detci
-david = energy('mp2', molecule=bh_h2p)
+david = energy('zapt2', molecule=bh_h2p)
 compare_values(scftot, variable('hf total energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
-compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
-compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
+compare_values(mp2corl, variable('zapt2 correlation energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
+compare_values(mp2tot, variable('zapt2 total energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
 compare_values(mp2tot, david, 6, 'mp2 rohf conv: 2 detci')  #TEST
 clean_variables()
 clean()

@@ -32,7 +32,7 @@ from typing import Dict, Optional, Tuple, Union
 
 from psi4 import core
 from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError
+from psi4.driver.p4util.exceptions import docs_table_link, ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError
 from psi4.driver.procrouting import *
 
 
@@ -106,83 +106,11 @@ def upgrade_interventions(method):
         else:
             raise e
 
+    if lowermethod.startswith("mrcc"):
+        raise UpgradeHelper(method, method[2:], 1.7,
+            f' Replace "mr"-prefixed methods in driver calls (e.g., `energy("{method}")`) by the plain method and specify the MRCC addon by option (e.g., `set qc_module mrcc; energy("{method[2:]}")`).')
+
     return lowermethod
-
-
-def parse_arbitrary_order(name: str) -> Tuple[str, Union[str, int, None]]:
-    r"""Function to parse name string into a method family like CI or MRCC and specific
-    level information like 4 for CISDTQ or MRCCSDTQ.
-
-    """
-
-    name = name.lower()
-    mtdlvl_mobj = re.match(r"""\A(?P<method>[a-z]+)(?P<level>\d+)\Z""", name)
-
-    # matches 'mrccsdt(q)'
-    if name.startswith('mrcc'):
-
-        # avoid undoing fn's good work when called twice
-        if name == 'mrcc':
-            return name, None
-
-        # grabs 'sdt(q)'
-        ccfullname = name[4:]
-
-        # A negative order indicates perturbative method
-        methods = {
-            'sd'          : { 'method': 1, 'order':  2, 'fullname': 'CCSD'         },
-            'sdt'         : { 'method': 1, 'order':  3, 'fullname': 'CCSDT'        },
-            'sdtq'        : { 'method': 1, 'order':  4, 'fullname': 'CCSDTQ'       },
-            'sdtqp'       : { 'method': 1, 'order':  5, 'fullname': 'CCSDTQP'      },
-            'sdtqph'      : { 'method': 1, 'order':  6, 'fullname': 'CCSDTQPH'     },
-            'sd(t)'       : { 'method': 3, 'order': -3, 'fullname': 'CCSD(T)'      },
-            'sdt(q)'      : { 'method': 3, 'order': -4, 'fullname': 'CCSDT(Q)'     },
-            'sdtq(p)'     : { 'method': 3, 'order': -5, 'fullname': 'CCSDTQ(P)'    },
-            'sdtqp(h)'    : { 'method': 3, 'order': -6, 'fullname': 'CCSDTQP(H)'   },
-            'sd(t)_l'     : { 'method': 4, 'order': -3, 'fullname': 'CCSD(T)_L'    },
-            'sdt(q)_l'    : { 'method': 4, 'order': -4, 'fullname': 'CCSDT(Q)_L'   },
-            'sdtq(p)_l'   : { 'method': 4, 'order': -5, 'fullname': 'CCSDTQ(P)_L'  },
-            'sdtqp(h)_l'  : { 'method': 4, 'order': -6, 'fullname': 'CCSDTQP(H)_L' },
-            'sdt-1a'      : { 'method': 5, 'order':  3, 'fullname': 'CCSDT-1a'     },
-            'sdtq-1a'     : { 'method': 5, 'order':  4, 'fullname': 'CCSDTQ-1a'    },
-            'sdtqp-1a'    : { 'method': 5, 'order':  5, 'fullname': 'CCSDTQP-1a'   },
-            'sdtqph-1a'   : { 'method': 5, 'order':  6, 'fullname': 'CCSDTQPH-1a'  },
-            'sdt-1b'      : { 'method': 6, 'order':  3, 'fullname': 'CCSDT-1b'     },
-            'sdtq-1b'     : { 'method': 6, 'order':  4, 'fullname': 'CCSDTQ-1b'    },
-            'sdtqp-1b'    : { 'method': 6, 'order':  5, 'fullname': 'CCSDTQP-1b'   },
-            'sdtqph-1b'   : { 'method': 6, 'order':  6, 'fullname': 'CCSDTQPH-1b'  },
-            '2'           : { 'method': 7, 'order':  2, 'fullname': 'CC2'          },
-            '3'           : { 'method': 7, 'order':  3, 'fullname': 'CC3'          },
-            '4'           : { 'method': 7, 'order':  4, 'fullname': 'CC4'          },
-            '5'           : { 'method': 7, 'order':  5, 'fullname': 'CC5'          },
-            '6'           : { 'method': 7, 'order':  6, 'fullname': 'CC6'          },
-            'sdt-3'       : { 'method': 8, 'order':  3, 'fullname': 'CCSDT-3'      },
-            'sdtq-3'      : { 'method': 8, 'order':  4, 'fullname': 'CCSDTQ-3'     },
-            'sdtqp-3'     : { 'method': 8, 'order':  5, 'fullname': 'CCSDTQP-3'    },
-            'sdtqph-3'    : { 'method': 8, 'order':  6, 'fullname': 'CCSDTQPH-3'   }
-        }  # yapf: disable
-
-        # looks for 'sdt(q)' in dictionary
-        if ccfullname in methods:
-            return 'mrcc', methods[ccfullname]
-        else:
-            raise ValidationError(f"""MRCC method '{name}' invalid.""")
-
-    elif mtdlvl_mobj:
-        namestump = mtdlvl_mobj.group('method')
-        namelevel = int(mtdlvl_mobj.group('level'))
-
-        if namestump in ['mp', 'zapt', 'ci']:
-            # Let mp2, mp3, mp4 pass through to select functions
-            if namestump == 'mp' and namelevel in [2, 3, 4]:
-                return name, None
-            # Otherwise return method and order
-            else:
-                return namestump, namelevel
-        else:
-            return name, None
-    else:
-        return name, None
 
 
 def parse_cotton_irreps(irrep: Union[str, int], point_group: str) -> int:
@@ -295,6 +223,25 @@ def negotiate_derivative_type(
         return sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, proc_messages, verbose)
 
 
+def _alternative_methods_message(method_name, dertype, *, messages, proc):
+    alt_method_name = p4util.text.find_approximate_string_matches(method_name, proc["energy"].keys(), 2)
+    if method_name in alt_method_name:
+        alt_method_name.remove(method_name)
+
+    alternatives = ''
+    query = "Or did you mean?" if messages else "Did you mean?"
+    if len(alt_method_name) > 0:
+        alternatives = f" {query} {' '.join(alt_method_name)}"
+
+    assert dertype == "any"
+    if messages:
+        stats = messages[0]
+        conditions2 = [stats[k][1] for k in ["method_type", "reference", "fcae", "qc_module"]]
+        return f"Method={stats['method']} is not available for {dertype} derivative level under conditions {', '.join(conditions2)}. See {stats['link']}.{alternatives}"
+    else:
+        return f"Method={method_name} is not available for {dertype} derivative level.{alternatives}"
+
+
 def highest_analytic_derivative_available(method: str,
                                           proc: Optional[Dict] = None,
                                           managed_keywords: Optional[Dict] = None) -> Tuple[int, Dict[int,str]]:
@@ -325,15 +272,6 @@ def highest_analytic_derivative_available(method: str,
         When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
 
     """
-    def alternative_methods_message(method_name, dertype, proc):
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name, proc['energy'].keys(), 2)
-
-        alternatives = ''
-        if len(alt_method_name) > 0:
-            alternatives = f""" Did you mean? {' '.join(alt_method_name)}"""
-
-        return f"""Derivative method ({method_name}) and derivative level ({dertype}) are not available.{alternatives}"""
-
     if managed_keywords is None:
         managed_keywords = {}
 
@@ -349,44 +287,50 @@ def highest_analytic_derivative_available(method: str,
             try:
                 proc["hessian"][method](method, probe=True, **managed_keywords)
             except ManagedMethodError as e:
-                proc_messages[2] = e.message
+                proc_messages[2] = e.stats
                 dertype = 1
                 if proc['gradient'][method].__name__.startswith('select_'):
                     try:
                         proc["gradient"][method](method, probe=True, **managed_keywords)
                     except ManagedMethodError as e:
-                        proc_messages[1] = e.message
+                        proc_messages[1] = e.stats
                         dertype = 0
                         if proc['energy'][method].__name__.startswith('select_'):
                             try:
                                 proc["energy"][method](method, probe=True, **managed_keywords)
-                            except ManagedMethodError:
-                                raise MissingMethodError(alternative_methods_message(method, "any", proc))
+                            except ManagedMethodError as e:
+                                proc_messages[0] = e.stats
+                                raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
     elif method in proc['gradient']:
         dertype = 1
+        proc_messages[2] = {"method": method, "link": docs_table_link(method, mode="summary")}
         if proc['gradient'][method].__name__.startswith('select_'):
             try:
                 proc["gradient"][method](method, probe=True, **managed_keywords)
             except ManagedMethodError as e:
-                proc_messages[1] = e.message
+                proc_messages[1] = e.stats
                 dertype = 0
                 if proc['energy'][method].__name__.startswith('select_'):
                     try:
                         proc["energy"][method](method, probe=True, **managed_keywords)
-                    except ManagedMethodError:
-                        raise MissingMethodError(alternative_methods_message(method, "any", proc))
+                    except ManagedMethodError as e:
+                        proc_messages[0] = e.stats
+                        raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
     elif method in proc['energy']:
         dertype = 0
+        proc_messages[1] = {"method": method, "link": docs_table_link(method, mode="summary")}
+        proc_messages[2] = proc_messages[1]
         if proc['energy'][method].__name__.startswith('select_'):
             try:
                 proc["energy"][method](method, probe=True, **managed_keywords)
-            except ManagedMethodError:
-                raise MissingMethodError(alternative_methods_message(method, "any", proc))
+            except ManagedMethodError as e:
+                proc_messages[0] = e.stats
+                raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
     if dertype == '(auto)':
-        raise MissingMethodError(alternative_methods_message(method, "any", proc))
+        raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
     return dertype, proc_messages
 
@@ -421,15 +365,6 @@ def highest_analytic_properties_available(method: str,
         When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
 
     """
-    def alternative_methods_message(method_name, dertype, proc):
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name, proc['energy'].keys(), 2)
-
-        alternatives = ''
-        if len(alt_method_name) > 0:
-            alternatives = f""" Did you mean? {' '.join(alt_method_name)}"""
-
-        return f"""Derivative method ({method_name}) and derivative level ({dertype}) are not available.{alternatives}"""
-
     if managed_keywords is None:
         managed_keywords = {}
 
@@ -444,11 +379,12 @@ def highest_analytic_properties_available(method: str,
         if proc["properties"][method].__name__.startswith('select_'):
             try:
                 proc["properties"][method](method, probe=True, **managed_keywords)
-            except ManagedMethodError:
-                raise MissingMethodError(alternative_methods_message(method, "any", proc))
+            except ManagedMethodError as e:
+                proc_messages[0] = e.message
+                raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
     if dertype == '(auto)':
-        raise MissingMethodError(alternative_methods_message(method, "any", proc))
+        raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
     return dertype, proc_messages
 
@@ -518,9 +454,13 @@ def sort_derivative_type(
         if user_dertype <= dertype:
             dertype = user_dertype
         else:
-            msg = f"""Derivative level requested ({user_dertype}) exceeds that available ({highest_analytic_dertype})."""
-            if proc_messages.get(user_dertype, False):
-                msg += f""" Details: {proc_messages[user_dertype]}."""
+            stats = proc_messages[user_dertype]
+            msg = f"Method={stats['method']} is not available for requested derivative level (reqd={user_dertype} > avail={highest_analytic_dertype})"
+            try:
+                conditions2 = [stats[k][1] for k in ["method_type", "reference", "fcae", "qc_module"]]
+                msg += f" under conditions {', '.join(conditions2)}. See {stats['link']}."
+            except KeyError:
+                msg += " under any conditions. See (possibly) {stats['link']}."
             raise MissingMethodError(msg)
 
     # hack section

@@ -253,6 +253,13 @@ for fctl in sorted(funcdict.keys()):
 
         fenergy.write('+-%35s-+-%140s-+\n' % (35 * '-', 140 * '-'))
 
+        if ((not funcdict[fctl]['is_c_hybrid']) and (not funcdict[fctl]['is_c_lrc']) and (not funcdict[fctl]['name'].lower().endswith("-nl"))):
+            if ((not funcdict[fctl]['dispersion']) and (not funcdict[fctl]['name'].lower().endswith("3c"))):  # td + disp untested, so excluded for not
+                fenergy.write('| %-35s | %-140s |\n' %
+                    ("td-" + funcdict[fctl]['name'].lower(), "TDDFT " + funcdict[fctl]['description']))
+
+                fenergy.write('+-%35s-+-%140s-+\n' % (35 * '-', 140 * '-'))
+
         if ((not funcdict[fctl]['is_c_hybrid']) and (not funcdict[fctl]['is_c_lrc']) and (not funcdict[fctl]['is_x_lrc'])):
             if funcdict[fctl]['dispersion']:
                 fopt.write('| %-35s | %-140s |\n' %

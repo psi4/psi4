@@ -611,17 +611,12 @@ void DFOCC::ccsd_manager_cd() {
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
-    Process::environment.globals["CURRENT ENERGY"] = Eccsd;
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd - Escf;
-    Process::environment.globals["CCSD TOTAL ENERGY"] = Eccsd;
-    Process::environment.globals["CCSD CORRELATION ENERGY"] = Eccsd - Escf;
+    variables_["CURRENT ENERGY"] = Eccsd;
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
     variables_["CURRENT CORRELATION ENERGY"] = Eccsd - Escf;
     variables_["CCSD TOTAL ENERGY"] = Eccsd;
     variables_["CCSD CORRELATION ENERGY"] = Eccsd - Escf;
     if ((reference == "RHF") or (reference == "UHF")) {
-        Process::environment.globals["CCSD DOUBLES ENERGY"] = Eccsd - Escf;
-        Process::environment.globals["CCSD SINGLES ENERGY"] = 0.0;
         variables_["CCSD DOUBLES ENERGY"] = Eccsd - Escf;
         variables_["CCSD SINGLES ENERGY"] = 0.0;
     }
@@ -1635,23 +1630,23 @@ void DFOCC::ccd_manager_cd() {
     outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
 
-    Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
     Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
     Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
     Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
     Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
     if (reference_ == "UNRESTRICTED") {
-        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
-        Process::environment.globals["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
     }
     else {
-        Process::environment.globals["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
+        variables_["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
     }
-    Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
+    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
     // Perform CCD iterations
     timer_on("CCD");
@@ -1673,11 +1668,18 @@ void DFOCC::ccd_manager_cd() {
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
-    Process::environment.globals["CURRENT ENERGY"] = Eccd;
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccd - Escf;
-    Process::environment.globals["CCD TOTAL ENERGY"] = Eccd;
-    Process::environment.globals["CCD CORRELATION ENERGY"] = Eccd - Escf;
+    variables_["CURRENT ENERGY"] = Eccd;
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
+    variables_["CURRENT CORRELATION ENERGY"] = Eccd - Escf;
+    variables_["CCD TOTAL ENERGY"] = Eccd;
+    variables_["CCD CORRELATION ENERGY"] = Eccd - Escf;
+
+    if ((reference == "RHF") or (reference == "UHF")) {
+        variables_["CCD DOUBLES ENERGY"] = Eccd - Escf;
+        variables_["CCD SINGLES ENERGY"] = 0.0;
+    }
+
+    energy_ = variables_["CCD TOTAL ENERGY"];
 
     // CCDL
     if (dertype == "FIRST" || cc_lambda_ == "TRUE") {

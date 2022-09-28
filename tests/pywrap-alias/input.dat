@@ -67,8 +67,14 @@ compare_values(-5.580830858501, variable('MP11 TOTAL ENERGY'), 7, "[6]  MP11 sp"
 clean()
 
 banner('zapt4')
+try:
+    energy('zapt4')
+except psi4.UpgradeHelper:
+    pass
+set reference rohf
 energy('zapt4')
 compare_values(-5.580407221960, variable('ZAPT4 TOTAL ENERGY'), 7, "[7]  ZAPT4 sp")  #TEST
+set reference rhf
 clean()
 
 banner('fci')

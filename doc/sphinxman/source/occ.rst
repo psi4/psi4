@@ -234,51 +234,37 @@ course users can use any DFT functional available in |PSIfour|.
 Methods
 ~~~~~~~
 
-The orbital-optimized MPn and OLCCD methods currently supported in
-|Psifour| are outlined in Table :ref:`Orbital-Optimzed OCC/DFOCC
-Methods <table:occ_oo_calls>`. The following methods are available
-and can be controlled through OCC (conventional integrals ``CONV``)
-and DFOCC (density-fitted ``DF`` and Cholesky-decomposed ``CD``)
-keywords. Switching between the integrals treatments is controlled
-through "type select" values in the rightmost Table column.
+The various orbital-optimized methods supported by the OCC/DFOCC
+modules in |Psifour| are summarized in Table :ref:`OCC OO
+Methods <table:occ_oo_calls>` and detailed in Table :ref:`OCC
+OO Capabilities <table:occ_stdsuite_oo>`. Note that while two
+separate libraries OCC (conventional integrals ``CONV``) and DFOCC
+(density-fitted ``DF`` and Cholesky-decomposed ``CD``) together provide
+the methods described on this page, they are controlled through one
+|globals__qc_module| value ``OCC``. Without ``set qc_module occ``,
+these methods may default to implementations in :ref:`other modules
+<table:managedmethods>` based on efficiency considerations.
 
 .. _`table:occ_oo_calls`:
 
-.. table:: Orbital-Optimized MP and LCCD capabilities of OCC/DFOCC modules
+.. table:: Orbital-optimized theoretical methods accessible through OCC/DFOCC
 
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | name                    | calls method                                                 |  Energy              | Gradient             | type select               |
-    +=========================+==============================================================+======================+======================+===========================+
-    | omp2                    | Orbital-Optimized MP2                                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__mp2_type| CONV  |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted Orbital-Optimized MP2                         | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__mp2_type| DF    |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Orbital-Optimized MP2                    | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__mp2_type| CD    |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | omp3                    | Orbital-Optimized MP3                                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__mp_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted Orbital-Optimized MP3                         | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__mp_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Orbital-Optimized MP3                    | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__mp_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | omp2.5                  | Orbital-Optimized MP2.5                                      | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__mp_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted Orbital-Optimized MP2.5                       | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__mp_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Orbital-Optimized MP2.5                  | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__mp_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | olccd                   | Orbital-Optimized Linear CCD                                 | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted Orbital-Optimized LCCD                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Orbital-Optimized LCCD                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | oremp2                  | Orbital-Optimized 2nd order REMP hybrid perturbation theory  | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted Orbital-Optimized REMP                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Orbital-Optimized REMP                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+   +-------------------------+---------------------------------------------------------------+-------+
+   | name                    | calls method                                                  |  OO   |
+   +=========================+===============================================================+=======+
+   | omp2                    | orbital-optimized second-order MP perturbation theory         |  E/G  |
+   +-------------------------+---------------------------------------------------------------+-------+
+   | omp2.5                  | orbital-optimized average of MP2 and MP3                      |  E/G  |
+   +-------------------------+---------------------------------------------------------------+-------+
+   | omp3                    | orbital-optimized third-order MP perturbation theory          |  E/G  |
+   +-------------------------+---------------------------------------------------------------+-------+
+   | oremp2                  | orbital-optimized second-order REMP hybrid PT                 |  E/G  |
+   +-------------------------+---------------------------------------------------------------+-------+
+   | olccd                   | orbital-optimized linear coupled cluster doubles              |  E/G  |
+   +-------------------------+---------------------------------------------------------------+-------+
+
+.. include:: autodoc_capabilities_occ_oo.rst
+
 
 .. _`table:occ_scsoo_calls`:
 
@@ -373,19 +359,16 @@ Advanced DFOCC Keywords
 Conventional (Non-OO) Coupled-Cluster and |MollerPlesset| Perturbation Theories
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Non-orbital-optimized counterparts to higher order MPn methods are also
-available. The following methods are available and can be controlled
-through OCC (conventional integrals ``CONV``) and DFOCC (density-fitted
-``DF`` and Cholesky-decomposed ``CD``) keywords. Switching between
-the integrals treatments is controlled through 'type select' values;
-see rightmost column in Table :ref:`Conventional OCC/DFOCC Methods
-<table:occ_nonoo_calls>`.
-
-Depending on efficiency considerations, the OCC & DFOCC modules may
-or may not be the default in |PSIfour| for available methods. (See
-:ref:`Cross-module Redundancies <table:managedmethods>` for gory
-details.) To call the OCC/DFOCC implementation of any method below in
-preference to the default module, issue ``set qc_module occ``.
+The various non-orbital-optimized methods supported by the OCC/DFOCC
+modules in |Psifour| are summarized in Table :ref:`OCC non-OO
+Methods <table:occ_nonoo_calls>` and detailed in Table :ref:`OCC
+non-OO Capabilities <table:occ_stdsuite_nonoo>`. Note that while two
+separate libraries OCC (conventional integrals ``CONV``) and DFOCC
+(density-fitted ``DF`` and Cholesky-decomposed ``CD``) together provide
+the methods described on this page, they are controlled through one
+|globals__qc_module| value ``OCC``. Without ``set qc_module occ``,
+these methods may default to implementations in :ref:`other modules
+<table:managedmethods>` based on efficiency considerations.
 
 Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globals__mp_type| to ``CONV`` to get previous behavior.
 
@@ -395,63 +378,29 @@ Publications resulting from the use of the non-OO CC codes should cite the follo
 
 .. _`table:occ_nonoo_calls`:
 
-.. table:: Conventional (non-OO) CC and MP capabilities of OCC/DFOCC modules
+.. table:: Non-OO theoretical methods accessible through OCC/DFOCC
 
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | name                    | calls method                                                 |  Energy              | Gradient             | type select               |
-    +=========================+==============================================================+======================+======================+===========================+
-    | mp2                     | MP2                                                          | RHF/UHF/ROHF         | RHF/UHF              | |globals__mp2_type| CONV  |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted MP2                                           | RHF/UHF/ROHF         | RHF/UHF              | |globals__mp2_type| DF    |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed MP2                                      | RHF/UHF/ROHF         | ---                  | |globals__mp2_type| CD    |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | mp3                     | MP3                                                          | RHF/UHF              | RHF/UHF              | |globals__mp_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted MP3                                           | RHF/UHF              | RHF/UHF              | |globals__mp_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed MP3                                      | RHF/UHF              | ---                  | |globals__mp_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | mp2.5                   | MP2.5                                                        | RHF/UHF              | RHF/UHF              | |globals__mp_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted MP2.5                                         | RHF/UHF              | RHF/UHF              | |globals__mp_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed MP2.5                                    | RHF/UHF              | ---                  | |globals__mp_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | lccd                    | Linearized CCD                                               | RHF/UHF              | RHF/UHF              | |globals__cc_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted LCCD                                          | RHF/UHF              | RHF/UHF              | |globals__cc_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed LCCD                                     | RHF/UHF              | ---                  | |globals__cc_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | ccd                     | CCD                                                          | ---                  | ---                  | |globals__cc_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted CCD                                           | RHF                  | RHF                  | |globals__cc_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed CCD                                      | RHF                  | ---                  | |globals__cc_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | ccsd                    | CCSD                                                         | ---                  | ---                  | |globals__cc_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted CCSD                                          | RHF                  | RHF                  | |globals__cc_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed CCSD                                     | RHF                  | ---                  | |globals__cc_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | ccsd(t)                 | CCSD(T)                                                      | ---                  | ---                  | |globals__cc_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted CCSD(T)                                       | RHF                  | RHF                  | |globals__cc_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed CCSD(T)                                  | RHF                  | ---                  | |globals__cc_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | a-ccsd(t)               | Lambda-CCSD(T)                                               | ---                  | ---                  | |globals__cc_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted Lambda-CCSD(T)                                | RHF                  | ---                  | |globals__cc_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Lambda-CCSD(T)                           | RHF                  | ---                  | |globals__cc_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | remp2                   | 2nd order REMP hybrid perturbation theory                    | RHF/UHF              | ---                  | |globals__cc_type| CONV   |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted REMP                                          | RHF/UHF              | ---                  | |globals__cc_type| DF     |
-    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed REMP                                     | RHF/UHF              | ---                  | |globals__cc_type| CD     |
-    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | name                    | calls method                                                  | plain |  FNO  |
+   +=========================+===============================================================+=======+=======+
+   | mp2                     | second-order MP perturbation theory                           |  E/G  |  n/a  |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | mp2.5                   | average of MP2 and MP3                                        |  E/G  |       |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | mp3                     | third-order MP perturbation theory                            |  E/G  |       |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | remp2                   | second-order retaining-the-excitation-degree MP hybrid PT     |  E    |       |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | lccd                    | linear coupled cluster doubles                                |  E/G  |       |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | ccd                     | coupled cluster doubles                                       |  E/G  |       |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | ccsd                    | coupled cluster singles and doubles                           |  E/G  |       |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | ccsd(t)                 | coupled cluster singles and doubles with perturbative triples |  E/G  |       |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+   | a-ccsd(t)               | CCSD with asymmetric perturbative triples                     |  E    |       |
+   +-------------------------+---------------------------------------------------------------+-------+-------+
+
+.. include:: autodoc_capabilities_occ_nonoo.rst
 

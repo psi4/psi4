@@ -33,6 +33,7 @@ funcs = []
 
 funcs.append({
     "name": "MP2MP2",
+    "description": "2nd-order MP perturbation theory",
     "x_hf": {
         "alpha": 1.0
     },
@@ -44,6 +45,7 @@ funcs.append({
 
 funcs.append({
     "name": "MP2D",
+    "description": "2nd-order MP perturbation theory plus dispersion",
     "alias": ["MP2-D"],
     "x_hf": {
         "alpha": 1.0

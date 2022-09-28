@@ -38,7 +38,7 @@ data = {
     pytest.param({'name': 'mp2', 'options': {'mp2_type': 'df', 'freeze_core': 'true', 'num_frozen_uocc': 4}, 'ref': data["df-mp2 fc/fv"]}, id='df-omp2 fc/fv'),
     pytest.param({'name': 'dct', 'options': {'dct_type': 'df'}, 'ref': data["df-dct"]}, id='df-rdct'),
     pytest.param({'name': 'dct', 'options': {'dct_type': 'df', 'reference': 'uhf'}, 'ref': data["df-dct"]}, id='df-udct'),
-    pytest.param({'name': 'cc2', 'options': {'cc_type': 'df'}, 'ref': data["df-cc2"]}, id='df-cc2')
+    pytest.param({'name': 'cc2', 'options': {'cc_type': 'df', 'qc_module': 'ccenergy'}, 'ref': data["df-cc2"]}, id='df-cc2')
     ]
 )
 def test_gradient(inp):
