@@ -1255,7 +1255,7 @@ def optimize(name, **kwargs):
         # force optking to update its molecule to psi4's.
         # This allows for psi4 to rotate as desired. If optimizing in cartesians. rotation is not allowed
         # Process gradient / hessian. Take step. Print summary to output for user
-        opt_object.molsys.geom = core.get_active_molecule().geometry().np
+        opt_object.molsys.geom = molecule.geometry().np
         core.print_out(opt_object.pre_step_str())  # print optking's molecule
         opt_object.compute()  # process E, gX, H
         opt_object.take_step()
@@ -1271,7 +1271,7 @@ def optimize(name, **kwargs):
             # Last geom is normally last in history. For IRC last geom is last in IRC trajectory
             # Not sure how to handle ensuring that wfn corresponds to last point.
             final_energy, final_geom = opt_object.summarize_result()
-            
+
             # Changing environment to optimized geometry as expected by user
             molecule.set_geometry(core.Matrix.from_array(final_geom))
             molecule.update_geometry()

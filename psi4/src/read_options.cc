@@ -2581,7 +2581,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("IRC_STEP_SIZE", 0.2);
         /*- IRC mapping direction -*/
         options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
-        /*- Number of IRC points to collect before stopping -*/
+        /*- Maximum number of IRC points to collect before stopping. -*/
         options.add_int("IRC_POINTS", 20);
         /*- Initial maximum step size in bohr or radian along an internal coordinate -*/
         options.add_double("INTRAFRAG_STEP_LIMIT", 0.5);
