@@ -1415,13 +1415,13 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix *const a,
         int ldc = colspi_[Hc ^ symmetry_];
         if (m != mcheck || n != ncheck || k != kcheck)
         {
-            outfile->Printf("Row and column block dimensions of A");
+            outfile->Printf("Row and column block dimensions of A\n");
             a->rowspi_.print();
             a->colspi_.print();
-            outfile->Printf("Row and column block dimensions of B");
+            outfile->Printf("Row and column block dimensions of B\n");
             b->rowspi_.print();
             b->colspi_.print();
-            outfile->Printf("Row and column block dimensions of C");
+            outfile->Printf("Row and column block dimensions of C\n");
             rowspi_.print();
             colspi_.print();
             outfile->Printf(" Asym: %d, Bsym: %d, Csym: %d\n", a->symmetry(), b->symmetry(), symmetry());
