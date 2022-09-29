@@ -80,12 +80,6 @@ void Process::Environment::set_molecule(const std::shared_ptr<Molecule> &molecul
 
 std::shared_ptr<Molecule> Process::Environment::molecule() const { return molecule_; }
 
-void Process::Environment::set_legacy_molecule(const std::shared_ptr<Molecule> &legacy_molecule) {
-    legacy_molecule_ = legacy_molecule;
-}
-
-std::shared_ptr<Molecule> Process::Environment::legacy_molecule() const { return legacy_molecule_; }
-
 Process::Environment Process::get_environment() { return environment; }
 
 size_t Process::Environment::get_memory() const { return memory_; }

@@ -379,7 +379,6 @@ void CIWavefunction::setup_mcscf_ints_ao() {
     std::string scf_type = options_.get_str("SCF_TYPE");
     if (scf_type == "GTFOCK") {
 #ifdef HAVE_JK_FACTORY
-        Process::environment.set_legacy_molecule(molecule_);
         jk_ = std::make_shared<GTFockJK>(basisset_);
 #else
         throw PSIEXCEPTION("GTFock was not compiled in this version");
