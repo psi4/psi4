@@ -1947,8 +1947,8 @@ def test_qcisd_prt_pr_energy_default(inp, dertype, basis, subjects, clsd_open_pm
         # ROHF FC: gms != detci by 1e-5. detci value stored in psi4 ref_local file
         # pytest.param({"xptd": {"sdsc": "sd"}, "keywords": {"reference": "rhf",  "ci_type": "conv", "qc_module": "detci", "freeze_core": "true",                                   }}, id="fci  rhf    conv fc:   detci"),
         # pytest.param({"xptd": {"sdsc": "sd"}, "keywords": {"reference": "rohf", "ci_type": "conv", "qc_module": "detci", "freeze_core": "true",                                   }}, id="fci rohf    conv fc:   detci"),
-        # pytest.param({"xptd": {"sdsc": "sd"}, "keywords": {"reference": "rhf",  "ci_type": "conv", "qc_module": "detci", "freeze_core": "false",                                  }}, id="fci  rhf    conv ae:   detci"),  # 6m
-        # pytest.param({"xptd": {"sdsc": "sd"}, "keywords": {"reference": "rohf", "ci_type": "conv", "qc_module": "detci", "freeze_core": "false",                                  }}, id="fci rohf    conv ae:   detci"),  # 15m
+        # pytest.param({"xptd": {"sdsc": "sd"}, "keywords": {"reference": "rhf",  "ci_type": "conv", "qc_module": "detci", "freeze_core": "false",                                  }}, id="fci  rhf    conv ae:   detci"),
+        # pytest.param({"xptd": {"sdsc": "sd"}, "keywords": {"reference": "rohf", "ci_type": "conv", "qc_module": "detci", "freeze_core": "false",                                  }}, id="fci rohf    conv ae:   detci"),
         # yapf: enable
     ],
 )
@@ -1989,12 +1989,12 @@ def test_fci_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
         # pytest.param({"xptd": {},                                   "keywords": {"reference": "rohf", "ci_type": "cd",                       "freeze_core": "false",                    }}, id="fci rohf    cd   ae: dd     ", marks=_nyi25),
 
         ###### default qc_module, ci_type
-        pytest.param({"xptd": {"qc_module": "detci"},               "keywords": {"reference": "rhf",                                         "freeze_core": "true",                     }}, id="fci  rhf         fc: dd     ",             ),
+        pytest.param({"xptd": {"qc_module": "detci"},               "keywords": {"reference": "rhf",                                         "freeze_core": "true",                     }}, id="fci  rhf         fc: dd     ",             ),  # seconds
         pytest.param({"xptd": {},                                   "keywords": {"reference": "uhf",                                         "freeze_core": "true",                     }}, id="fci  uhf         fc: dd     ", marks=_nyi25),
-        pytest.param({"xptd": {"qc_module": "detci", "sdsc": "sd"}, "keywords": {"reference": "rohf",                                        "freeze_core": "true",                     }}, id="fci rohf         fc: dd     ",             ),
-        pytest.param({"xptd": {"qc_module": "detci"},               "keywords": {"reference": "rhf",                                         "freeze_core": "false",                    }}, id="fci  rhf         ae: dd     ",             ),
+        pytest.param({"xptd": {"qc_module": "detci", "sdsc": "sd"}, "keywords": {"reference": "rohf",                                        "freeze_core": "true",                     }}, id="fci rohf         fc: dd     ",             ),  # seconds
+        pytest.param({"xptd": {"qc_module": "detci"},               "keywords": {"reference": "rhf",                                         "freeze_core": "false",                    }}, id="fci  rhf         ae: dd     ",             ),  # 6m
         pytest.param({"xptd": {},                                   "keywords": {"reference": "uhf",                                         "freeze_core": "false",                    }}, id="fci  uhf         ae: dd     ", marks=_nyi25),
-        pytest.param({"xptd": {"qc_module": "detci", "sdsc": "sd"}, "keywords": {"reference": "rohf",                                        "freeze_core": "false",                    }}, id="fci rohf         ae: dd     ",             ),
+        pytest.param({"xptd": {"qc_module": "detci", "sdsc": "sd"}, "keywords": {"reference": "rohf",                                        "freeze_core": "false",                    }}, id="fci rohf         ae: dd     ",             ),  # 30m
         # yapf: enable
     ],
 )

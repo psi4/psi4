@@ -218,22 +218,22 @@ methods = [
 ]
 
 notes_holder = {
-    ("lccsd", None): (", cepa(0)", None),
-    ("a-ccsd(t)", None): ("FN", "a-CCSD(T) also known as CCSD(aT), Lambda-CCSD(T), and CCSD(T)_L"),
-    ("mp2", "DFMP2"): ("FN", "Also available for DFT references RKS/UKS"),
-    ("omp2", "OCC"): ("FN", "Also available for DFT references RKS/UKS"),
-    ("omp2.5", "OCC"): ("FN", "Also available for DFT references RKS/UKS"),
-    ("omp3", "OCC"): ("FN", "Also available for DFT references RKS/UKS"),
-    ("oremp2", "OCC"): ("FN", "Also available for DFT references RKS/UKS"),
-    ("olccd", "OCC"): ("FN", "Also available for DFT references RKS/UKS"),
-    ("svwn", None): (", LSDA DFT", None),
-    ("pbe", None): (", GGA DFT", None),
-    ("b3lyp", None): (", Hybrid DFT", None),
-    ("wb97x", None): (", LRC DFT", None),
-    ("b2plyp", None): (", DH DFT", "DH-DFT only available with DF-MP2"),
-    ("cisd", None): (", ci\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI"),
-    ("zapt2", None): (", zapt\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI"),
-    ("mp4", None): (", mp\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI"),
+    ("lccsd", None): (", cepa(0)", None, None),
+    ("a-ccsd(t)", None): ("FN", "a-CCSD(T) also known as CCSD(aT), Lambda-CCSD(T), and CCSD(T)_L", None),
+    ("mp2", "DFMP2"): ("FN", "Also available for DFT references RKS/UKS", None),
+    ("omp2", "OCC"): ("FN", "Also available for DFT references RKS/UKS", None),
+    ("omp2.5", "OCC"): ("FN", "Also available for DFT references RKS/UKS", None),
+    ("omp3", "OCC"): ("FN", "Also available for DFT references RKS/UKS", None),
+    ("oremp2", "OCC"): ("FN", "Also available for DFT references RKS/UKS", None),
+    ("olccd", "OCC"): ("FN", "Also available for DFT references RKS/UKS", None),
+    ("svwn", None): (", LSDA DFT", None, None),
+    ("pbe", None): (", GGA DFT", None, None),
+    ("b3lyp", None): (", Hybrid DFT", None, None),
+    ("wb97x", None): (", LRC DFT", None, None),
+    ("b2plyp", None): (", DH DFT", "DH-DFT only available with DF-MP2", None),
+    ("cisd", None): (", ci\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
+    ("zapt2", None): (", zapt\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", None),
+    ("mp4", None): (", mp\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
 }
 
 
@@ -246,7 +246,9 @@ def method_title_append(mtd, mod):
 
     for key in keys:
         if key in notes_holder:
-            append, note = notes_holder[key]
+            append, note, skip = notes_holder[key]
+            if skip and args.mode in skip:
+                continue
             if append != "FN":
                 mtd += append
             if note:
@@ -261,16 +263,19 @@ def method_title_append(mtd, mod):
 def module_title_append(mtd, mod):
     global notes
 
-    key = (mtd, mod)
-    if key in notes_holder:
-        append, note = notes_holder[key]
-        if append != "FN":
-            mtd += append
-        if note:
-            notes.append(note)
-            notes = unique(notes)
-            idx = notes.index(note) + 10
-            mod += f"\ [#{fn_lbl}{idx}]_"
+    keys = [(mtd, mod)]
+    for key in keys:
+        if key in notes_holder:
+            append, note, skip = notes_holder[key]
+            if skip and args.mode in skip:
+                continue
+            if append != "FN":
+                mtd += append
+            if note:
+                notes.append(note)
+                notes = unique(notes)
+                idx = notes.index(note) + 10
+                mod += f"\ [#{fn_lbl}{idx}]_"
 
     return mod
 

@@ -160,7 +160,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
 
         assert re.search(errmatch, str(e.value)), f"Not found: {errtype} '{errmatch}' in {e.value}"
         if "scftype" not in tnm:
-            _recorder(qcprog, qc_module_in, driver, method, reference, fcae, scf_type, corl_type, "error", "nyi: " + reason)
+            _recorder(qcprog, qc_module_in, driver, method, reference, fcae, sdsc, scf_type, corl_type, "error", "nyi: " + reason)
         return
 
     psi4.set_output_file("asdf")  # easy name to find output files. TODO: why doesn't .out remain w/o this?
@@ -323,7 +323,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
 
         assert errmatch in str(e.value), f"Not found: AssertionError '{errmatch}' for '{reason}' in {e.value}"
         if "scftype" not in tnm:
-            _recorder(qcprog, qc_module_out, driver, method, reference, fcae, scf_type, corl_type, "wrong", reason + f" First wrong at `{errmatch}`.")
+            _recorder(qcprog, qc_module_out, driver, method, reference, fcae, sdsc, scf_type, corl_type, "wrong", reason + f" First wrong at `{errmatch}`.")
         pytest.xfail(reason)
 
     # primary label checks
@@ -375,10 +375,10 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # yapf: enable
 
     if "scftype" not in tnm:
-        _recorder(qcprog, qc_module_out, driver, method, reference, fcae, scf_type, corl_type, "fd" if using_fd else "pass", defaultness)
+        _recorder(qcprog, qc_module_out, driver, method, reference, fcae, sdsc, scf_type, corl_type, "fd" if using_fd else "pass", defaultness)
         if "default" in tnm:
             # add'l entry for "default" line
-            _recorder(qcprog, "aaaa-", driver, method, reference, fcae, scf_type, corl_type, "fd" if using_fd else "pass", defaultness if defaultness == "defaultdefault" else "")
+            _recorder(qcprog, "aaaa-", driver, method, reference, fcae, sdsc, scf_type, corl_type, "fd" if using_fd else "pass", defaultness if defaultness == "defaultdefault" else "")
 
     # assert 0
 
@@ -425,7 +425,7 @@ def _asserter(asserter_args: List, contractual_args: List[str], contractual_fn: 
                 assert compare(False, query_has_qcvar(obj, pv), label + " SKIP"), f"{label} wrongly present"
 
 
-def _recorder(engine, module, driver, method, reference, fcae, scf_type, corl_type, status, note):
+def _recorder(engine, module, driver, method, reference, fcae, sdsc, scf_type, corl_type, status, note):
     with open("stdsuite_psi4.txt", "a") as fp:
         stuff = {
             "module": module,
@@ -433,6 +433,7 @@ def _recorder(engine, module, driver, method, reference, fcae, scf_type, corl_ty
             "method": method,
             "reference": reference,
             "fcae": fcae,
+            "sdsc": sdsc,
             "scf_type": scf_type,
             "corl_type": corl_type,
             "status": status,

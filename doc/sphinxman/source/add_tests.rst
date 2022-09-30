@@ -168,7 +168,7 @@ The compare_values function (along with several relatives in :source:`psi4/drive
 --------------
 
 When your test case is in final form, run it locally, rename the output to ``output.ref``, and check it into the repository alongside ``input.dat``.
-While this isn't used for any testing machinery (except for the nearly decommissioned :source:`tests/psitest.pl` for CC tests; full decommission expected by v1.6), it can be handy for users or developers to consult.
+While this isn't used for any testing machinery, it can be handy for users or developers to consult.
 
 .. _`faq:psithon_through_pytest`:
 

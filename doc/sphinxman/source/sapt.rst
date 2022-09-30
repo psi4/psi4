@@ -1024,5 +1024,5 @@ A simple water dimer computation using SAPT0-D may look like::
 
 Given the naturally pairwise-atomic nature of these empirical dispersion corrections,
 integration with existing FSAPT functionality is also available simply by calling
-``energy("fsapt0-d3mbj")``. See :ref:`FSAPT <fisapt>` documentation for more details on using FSAPT
+``energy("fsapt0-d3mbj")``. See :ref:`FSAPT <sec:fisapt>` documentation for more details on using FSAPT
 for functional group analyses.
