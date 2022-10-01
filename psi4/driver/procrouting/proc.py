@@ -48,7 +48,7 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver import psifiles as psif
-from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, UpgradeHelper, ValidationError
+from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, UpgradeHelper, ValidationError, docs_table_link
 #from psi4.driver.molutil import *
 from psi4.driver.qcdb.basislist import corresponding_basis
 # never import driver, wrappers, or aliases into this file
@@ -2061,6 +2061,8 @@ def run_dfocc(name, **kwargs):
     (non-)orbital-optimized MPN or CC computation.
 
     """
+    dtl = docs_table_link("dummy", "occ_nonoo")
+
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
         ['DFOCC', 'WFN_TYPE'],
@@ -2086,7 +2088,7 @@ def run_dfocc(name, **kwargs):
             if core.get_global_option('SCF_TYPE') != 'CD':
                 core.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
         else:
-            raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC. See Capabilities Table""")
+            raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC. See Capabilities Table at {dtl}""")
 
     if name in ["mp2.5", "mp3"] and not core.has_global_option_changed("MP_TYPE"):
         core.print_out(f"    Information: {name.upper()} default algorithm changed to DF in August 2020. Use `set mp_type conv` for previous behavior.\n")
@@ -2170,6 +2172,8 @@ def run_dfocc_gradient(name, **kwargs):
     a density-fitted (non-)orbital-optimized MPN or CC computation.
 
     """
+    dtl = docs_table_link("dummy", "occ_nonoo")
+
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
         ['REFERENCE'],
@@ -2211,7 +2215,7 @@ def run_dfocc_gradient(name, **kwargs):
 
     # throw exception for CONV (approximately)
     if (corl_type := method_algorithm_type(name).now) not in ["DF", "CD"]:
-        raise ValidationError(f"Invalid type {corl_type} for DFOCC gradient. See Capabilities Table")
+        raise ValidationError(f"Invalid type {corl_type} for DFOCC gradient. See Capabilities Table at {dtl}")
 
     proc_util.check_disk_df(name.upper(), optstash)
 
@@ -2339,6 +2343,8 @@ def run_qchf(name, **kwargs):
     an quadratically-convergent SCF computation.
 
     """
+    dtl = docs_table_link("dummy", "occ_nonoo")
+
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
         ['DF_BASIS_SCF'],
@@ -2351,7 +2357,7 @@ def run_qchf(name, **kwargs):
 
     # throw exception for CONV
     if (corl_type := method_algorithm_type(name).now) not in ["DISK_DF", "DF", "CD"]:
-        raise ValidationError(f"Invalid type {corl_type} for QCHF energy through `run_qchf`. See Capabilities Table")
+        raise ValidationError(f"Invalid type {corl_type} for QCHF energy through `run_qchf`. See Capabilities Table at {dtl}")
 
     core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
     core.set_local_option('DFOCC', 'WFN_TYPE', 'QCHF')
@@ -2965,6 +2971,8 @@ def run_bccd(name, **kwargs):
     a Brueckner CCD calculation.
 
     """
+    dtl = docs_table_link("dummy", "ccenergy")
+
     optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['CCSORT', 'WFN'],
@@ -2986,7 +2994,7 @@ def run_bccd(name, **kwargs):
         raise ValidationError("proc.py:run_bccd name %s not recognized" % name)
 
     if (corl_type := method_algorithm_type(name).now) != "CONV":
-        raise ValidationError(f"Invalid type {corl_type} for CCENERGY energy through `run_bccd`. See Capabilities Table")
+        raise ValidationError(f"Invalid type {corl_type} for CCENERGY energy through `run_bccd`. See Capabilities Table at {dtl}")
 
     # Bypass routine scf if user did something special to get it to converge
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -4031,6 +4039,8 @@ def run_detci(name, **kwargs):
     CIn, MPn, and ZAPTn.
 
     """
+    # dtl = docs_table_link("dummy", "detci")
+
     optstash = p4util.OptionsState(
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
@@ -4046,7 +4056,7 @@ def run_detci(name, **kwargs):
 
     # throw exception for DF/CD. many of these pre-trapped by select_* functions but some escape, incl. zapt
     if (corl_type := method_algorithm_type(name).now) != "CONV":
-        raise ValidationError(f"Invalid type {corl_type} for DETCI energy through `run_detci`. See Capabilities Table")
+        raise ValidationError(f"Invalid type {corl_type} for DETCI energy through `run_detci`.")  # See Capabilities Table")
 
     mtdlvl_mobj = re.match(r"""\A(?P<method>[a-z]+)(?P<level>\d+)\Z""", name.lower())
 
@@ -5056,6 +5066,7 @@ def run_fnodfcc(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+    dtl = docs_table_link("dummy", "fnocc")
 
     # stash user options
     optstash = p4util.OptionsState(
@@ -5082,7 +5093,7 @@ def run_fnodfcc(name, **kwargs):
 
             proc_util.check_disk_df(name.upper(), optstash)
         else:
-            raise ValidationError(f"Invalid type {type_val} for FNOCC energy through `run_fnodfcc`. See Capabilities Table")
+            raise ValidationError(f"Invalid type {type_val} for FNOCC energy through `run_fnodfcc`. See Capabilities Table at {dtl}")
 
     director = {
                  # Note "nat_orbs" not set defensively False for non-"fno" calls
@@ -5098,12 +5109,12 @@ def run_fnodfcc(name, **kwargs):
 
     # throw exception for open-shells
     if (ref := core.get_option("SCF", "REFERENCE")) != "RHF":
-        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table.")
+        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table at {dtl}.")
 
     # throw exception for CONV (approximately). after defaulting logic, throw exception for SCF_TYPE CONV (approximately)
     set_cholesky_from(method_algorithm_type(name).now)
     if (scf_type := core.get_global_option("SCF_TYPE")) not in ["CD", "DISK_DF"]:
-        raise ValidationError(f"Invalid {scf_type=} for FNOCC energy through `run_fnodfcc`. See Capabilities Table")
+        raise ValidationError(f"Invalid {scf_type=} for FNOCC energy through `run_fnodfcc`. See Capabilities Table at {dtl}")
 
     for k, v in director[name].items():
         core.set_local_option("FNOCC", k.upper(), v)
@@ -5156,6 +5167,7 @@ def run_fnocc(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+    dtl = docs_table_link("dummy", "fnocc")
 
     # stash user options:
     optstash = p4util.OptionsState(
@@ -5208,11 +5220,11 @@ def run_fnocc(name, **kwargs):
 
     # throw exception for open-shells
     if (ref := core.get_option("SCF", "REFERENCE")) != "RHF":
-        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table.")
+        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table at {dtl}")
 
     # throw exception for DF/CD. most of these pre-trapped by select_* functions but some escape, incl. mp4(sdq) and qcisd variants
     if (corl_type := method_algorithm_type(name).now) != "CONV":
-        raise ValidationError(f"Invalid type {corl_type} for FNOCC energy through `run_fnocc`. See Capabilities Table")
+        raise ValidationError(f"Invalid type {corl_type} for FNOCC energy through `run_fnocc`. See Capabilities Table at {dtl}")
 
     for k, v in director[name].items():
         core.set_local_option("FNOCC", k.upper(), v)
@@ -5265,6 +5277,7 @@ def run_cepa(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+    dtl = docs_table_link("dummy", "fnocc")
 
     # save user options
     optstash = p4util.OptionsState(
@@ -5310,11 +5323,11 @@ def run_cepa(name, **kwargs):
 
     # throw exception for open-shells
     if (ref := core.get_option("SCF", "REFERENCE")) != "RHF":
-        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table.")
+        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table at {dtl}")
 
     # throw exception for DF/CD. some of these pre-trapped by select_* functions but others escape, incl. cepa variants
     if (corl_type := method_algorithm_type(name).now) != "CONV":
-        raise ValidationError(f"Invalid type {corl_type} for FNOCC energy through `run_cepa`. See Capabilities Table")
+        raise ValidationError(f"Invalid type {corl_type} for FNOCC energy through `run_cepa`. See Capabilities Table at {dtl}")
 
     for k, v in director[name].items():
         core.set_local_option("FNOCC", k.upper(), v)

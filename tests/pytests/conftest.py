@@ -2,6 +2,22 @@ import os
 import pytest
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--runnoci", action="store_true", default=False, help="run the noci tests in stdsuite"
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--runnoci"):
+        # --runnoci given in cli: do not skip noci tests
+        return
+    skip_noci = pytest.mark.skip(reason="need --runnoci option to run")
+    for item in items:
+        if "noci" in item.keywords:
+            item.add_marker(skip_noci)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def set_up_overall(request, tmp_path_factory):
     import psi4

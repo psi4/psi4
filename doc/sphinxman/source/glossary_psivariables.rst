@@ -1152,6 +1152,8 @@ PSI Variables by Alpha
    CEPA(1) DOUBLES ENERGY
    CEPA(2) DOUBLES ENERGY
    CEPA(3) DOUBLES ENERGY
+   ACPF DOUBLES ENERGY
+   AQCC DOUBLES ENERGY
    CISD DOUBLES ENERGY
    QCISD DOUBLES ENERGY
    REMP2 DOUBLES ENERGY
@@ -1175,6 +1177,8 @@ PSI Variables by Alpha
    CEPA(1) SINGLES ENERGY
    CEPA(2) SINGLES ENERGY
    CEPA(3) SINGLES ENERGY
+   ACPF SINGLES ENERGY
+   AQCC SINGLES ENERGY
    CISD SINGLES ENERGY
    QCISD SINGLES ENERGY
    REMP2 SINGLES ENERGY
@@ -1365,6 +1369,11 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the quadratic configuration interaction singles and doubles with
    perturbative triples correction level of theory.
+
+.. psivar:: QCISD(T) CORRECTION ENERGY
+
+   The quadratic configuration interaction singles and doubles perturbative
+   triples correction [Eh].
 
 .. psivar:: REMP2 TOTAL ENERGY
    REMP2 CORRELATION ENERGY

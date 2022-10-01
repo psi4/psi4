@@ -505,10 +505,25 @@ def docs_table_link(name: str, mode: str) -> str:
         anchor = "introduction.html#ss"
     elif mode == "details":
         anchor = "capabilities.html#dd"
+    elif mode == "ccenergy":
+        anchor = "cc.html#table-ccenergy-stdsuite"
+    elif mode == "dfmp2":
+        anchor = "dfmp2.html#table-dfmp2-stdsuite"
+    elif mode == "fnocc":
+        anchor = "fnocc.html#table-fnocc-stdsuite"
+    elif mode == "occ_nonoo":
+        anchor = "occ.html#table-occ-stdsuite-nonoo"
+    elif mode == "occ_oo":
+        anchor = "occ.html#table-occ-stdsuite-oo"
+    elif mode == "scf":
+        anchor = "dft.html#table-scf-stdsuite"
     else:
         raise KeyError("invalid table mode")
 
     # Sphinx reST anchors with underscore build into HTML docs with dash
     sanitized_method = sanitize_method(name).replace("_", "-")
 
-    return f"{DOCS_BASE}{anchor}-{sanitized_method}"
+    if mode in ["summary", "details"]:
+        return f"{DOCS_BASE}{anchor}-{sanitized_method}"
+    else:
+        return f"{DOCS_BASE}{anchor}"

@@ -607,7 +607,7 @@ Python
     |PSIfour| 1.6 supports Python 3.8, 3.9, and 3.10.
     The future plan is to support the two or three latest Python versions.
     The current master supports 3.8, 3.9, and 3.10.
-    
+
 .. index:: license
 
 License
@@ -628,11 +628,21 @@ orbital quantum number. Many parts of |PSIfour| can recognize and
 exploit the largest Abelian subgroup of the molecular point group.
 Table :ref:`Methods <table:methods>` displays the range of theoretical methods
 available in |PSIfour|.
-For more details, see Tables :ref:`Energy <table:energy_gen>`,
-:ref:`Energy (DFT) <table:energy_dft>`, :ref:`Energy (MRCC) <table:energy_mrcc>`,
-:ref:`Energy (CFOUR) <table:energy_cfour>`, :ref:`Gradient <table:grad_gen>`,
-:ref:`Gradient (CFOUR) <table:grad_cfour>`, and :ref:`Frequency <table:freq_gen>`.
 
+Geometry optimization can be performed using either analytic gradients
+or energy points. Likewise, vibrational frequencies can be
+computed by analytic second derivatives, by finite
+differences of analytic gradients, or by finite differences of energies.
+|PSIfour| can also compute an extensive list of one-electron properties.
+
+For more tables with capabilities details:
+
+* :ref:`Full Capabilities <table:methods>` (first below) lists all methods
+* :ref:`Capabilities Breakdown <table:stdsuite>` (second below) lists selected methods by reference, etc.
+* :ref:`Module Capabilities <table:managedmethods>` lists selected methods by implementation
+* :ref:`Energy <table:energy_gen>`, :ref:`Energy (DFT) <table:energy_dft>`, :ref:`Energy (MRCC) <table:energy_mrcc>`, :ref:`Energy (CFOUR) <table:energy_cfour>` fully list energy target methods
+* :ref:`Gradient <table:grad_gen>`, :ref:`Gradient (CFOUR) <table:grad_cfour>` fully list gradient target methods
+* :ref:`Frequency <table:freq_gen>` fully lists Hessian target methods
 
 .. _`table:methods`:
 
@@ -771,12 +781,6 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
 .. * composite: g2
 .. * narrow alternate scf: mcscf, qchf
 
-
-Geometry optimization can be performed using either analytic gradients
-or energy points. Likewise, vibrational frequencies can be
-computed by analytic second derivatives, by finite
-differences of analytic gradients, or by finite differences of energies.
-|PSIfour| can also compute an extensive list of one-electron properties.
 
 .. include:: autodoc_capabilities_summary.rst
 

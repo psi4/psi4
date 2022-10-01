@@ -155,6 +155,11 @@ def allen_focal_point(**kwargs) -> CBSMetadata:
     #  cbs() driver knows it's safe to use "free" values resulting from
     #  MRCC CCSD calcs. This logic can be made smarter if needed.
 
+    # TODO: Setting QC_MODULE isn't the right fix to allow mrcc methods.
+    #  Right fix would be passing managed keywords into the deriv negotiation.
+    #  That's too involved, so deferring.
+    psi4.core.set_global_option("QC_MODULE", "MRCC")
+
     scf = {  # HF
         'wfn': 'hf',
         'basis': kwargs.pop('scf_basis', 'cc-pV[Q56]Z'),
