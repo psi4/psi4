@@ -1423,7 +1423,7 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix *const a,
             outfile->Printf("Row and column block dimensions of C\n");
             rowspi_.print();
             colspi_.print();
-            outfile->Printf(" Asym: %d, Bsym: %d, Csym: %d\n", a->symmetry(), b->symmetry(), symmetry());
+            outfile->Printf("Asym: %d, Bsym: %d, Csym: %d\n", a->symmetry(), b->symmetry(), symmetry());
             outfile->Printf("Mismatch in index Ha = %d\n", Ha);
             throw PSIEXCEPTION("Matrix::gemm error: Number of rows and columns do not match.");
         }
