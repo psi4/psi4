@@ -56,19 +56,24 @@ DFJLinK::DFJLinK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
     timer_off("DFJLinK::Setup");
 }
 
-DFJCOSK::~DFJCOSK() {}
+DFJLinK::~DFJLinK() {}
 
-void DFJCOSK::common_init() {
+void DFJLinK::common_init() {
 
     nthreads_ = 1;
 #ifdef _OPENMP
     nthreads_ = Process::environment.get_n_threads();
 #endif
 
-    // this JK class uses SCF-iteration-dependent screening
-    // COSK is integrated on a small grid in early SCF iterations
-    // and a large grid for the final iterations
-    early_screening_ = true;
+    incfock_ = options_.get_bool("INCFOCK");
+    incfock_count_ = 0;
+    do_incfock_iter_ = false;
+    if (options_.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
+        throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
+    }
+    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
+   
+    set_cutoff(options_.get_double("INTS_TOLERANCE"));
 
     // => Direct Density-Fitted Coulomb Setup <= //
 
@@ -90,112 +95,24 @@ void DFJCOSK::common_init() {
     }
     timer_off("ERI Computers");
 
-    // => Chain of Spheres Exchange Setup <= //
-
-    timer_on("Grid Construction");
-
-    // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
-
-    // Create a small DFTGrid for the initial SCF iterations
-    std::map<std::string, std::string> grid_init_str_options = {
-        {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
-        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
-        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
-        {"DFT_GRID_NAME",      ""},
-        {"DFT_BLOCK_SCHEME",   "OCTREE"},
-    };
-    std::map<std::string, int> grid_init_int_options = {
-        {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_INITIAL")}, 
-        {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_INITIAL")},
-        {"DFT_BLOCK_MIN_POINTS", 100},
-        {"DFT_BLOCK_MAX_POINTS", 256},
-    };
-    std::map<std::string, double> grid_init_float_options = {
-        {"DFT_BASIS_TOLERANCE",   options_.get_double("COSX_BASIS_TOLERANCE")}, 
-        {"DFT_BS_RADIUS_ALPHA",   1.0},
-        {"DFT_PRUNING_ALPHA",     1.0},
-        {"DFT_BLOCK_MAX_RADIUS",  3.0},
-        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
-    };
-    grid_init_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_init_int_options, grid_init_str_options, grid_init_float_options, options_);
-
-    // Create a large DFTGrid for the final SCF iteration
-    std::map<std::string, std::string> grid_final_str_options = {
-        {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
-        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
-        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
-        {"DFT_GRID_NAME",      ""},
-        {"DFT_BLOCK_SCHEME",   "OCTREE"},
-    };
-    std::map<std::string, int> grid_final_int_options = {
-        {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_FINAL")}, 
-        {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_FINAL")},
-        {"DFT_BLOCK_MIN_POINTS", 100},
-        {"DFT_BLOCK_MAX_POINTS", 256},
-    };
-    std::map<std::string, double> grid_final_float_options = {
-        {"DFT_BASIS_TOLERANCE",   options_.get_double("COSX_BASIS_TOLERANCE")}, 
-        {"DFT_BS_RADIUS_ALPHA",   1.0},
-        {"DFT_PRUNING_ALPHA",     1.0},
-        {"DFT_BLOCK_MAX_RADIUS",  3.0},
-        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
-    };
-    grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
-
-    timer_off("Grid Construction");
-
-    // => Overlap Fitting Metric <= //
-
-    // Fit an overlap metric (Q) for both grids to reduce numerical error
-
-    // DOI 10.1063/1.3646921, EQ. 18
-    // Note: the above reference defines Q as S_an @ S_num^{-1} @ X
-    // Here, Q refers to just S_ @ S_num^{-1} (no X)
-    // This Q is contracted with X later to agree with the literature definition
-
-    timer_on("Numeric Overlap");
-
-    // compute the numeric overlap matrix for each grid
-    auto S_num_init = compute_numeric_overlap(*grid_init_, primary_);
-    auto S_num_final = compute_numeric_overlap(*grid_final_, primary_ );
-
-    timer_off("Numeric Overlap");
-
-    timer_on("Analytic Overlap");
-
-    // compute the analytic overlap matrix
-    MintsHelper helper(primary_, options_);
-    auto S_an = helper.ao_overlap();
-
-    timer_off("Analytic Overlap");
-
-    // form the overlap metric (Q) for each grid
-
-    timer_on("Overlap Metric Solve");
-
-    int nbf = primary_->nbf();
-    std::vector<int> ipiv(nbf);
-
-    // solve: Q_init_ = S_an @ S_num_init_^{-1}
-    Q_init_ = S_an->clone();
-    C_DGESV(nbf, nbf, S_num_init.pointer()[0], nbf, ipiv.data(), Q_init_->pointer()[0], nbf);
-
-    // solve: Q_final_ = S_an @ S_num_final_^{-1}
-    Q_final_ = S_an->clone();
-    C_DGESV(nbf, nbf, S_num_final.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
-
-    timer_off("Overlap Metric Solve");
-
+    // => Linear Exchange Setup <= //
+    
+    // sett up LinK integral tolerance
+    if (options_["LINK_INTS_TOLERANCE"].has_changed()) {
+        linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
+    } else {
+        linK_ints_cutoff_ = options_.get_double("INTS_TOLERANCE");
+    }
 }
 
-size_t DFJCOSK::memory_estimate() {
+size_t DFJLinK::memory_estimate() {
     return 0;  // Memory is O(N^2), which psi4 counts as effectively 0
 }
 
-void DFJCOSK::print_header() const {
+void DFJLinK::print_header() const {
     std::string screen_type = options_.get_str("SCREENING");
     if (print_) {
-        outfile->Printf("  ==> DFJCOSK: Density-Fitted J and Semi-Numerical K <==\n\n");
+        outfile->Printf("  ==> DFJLinK: Density-Fitted J and Linear Exchange K <==\n\n");
 
         outfile->Printf("    J tasked:           %11s\n", (do_J_ ? "Yes" : "No"));
         outfile->Printf("    K tasked:           %11s\n", (do_K_ ? "Yes" : "No"));
@@ -204,12 +121,8 @@ void DFJCOSK::print_header() const {
         outfile->Printf("    Integrals threads:  %11d\n", nthreads_);
         outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf("    Incremental Fock :  %11s\n", (options_.get_bool("COSX_INCFOCK") ? "Yes" : "No"));
-        outfile->Printf("    J Screening Type:   %11s\n", screen_type.c_str());
-        outfile->Printf("    J Screening Cutoff: %11.0E\n", cutoff_);
-        outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSX_INTS_TOLERANCE"));
-        outfile->Printf("    K Density Cutoff:   %11.0E\n", options_.get_double("COSX_DENSITY_TOLERANCE"));
-        outfile->Printf("    K Basis Cutoff:     %11.0E\n", options_.get_double("COSX_BASIS_TOLERANCE"));
-        outfile->Printf("    K Overlap Fitting:  %11s\n", (options_.get_bool("COSX_OVERLAP_FITTING") ? "Yes" : "No"));
+        outfile->Printf("    Screening Type:   %11s\n", screen_type.c_str());
+        outfile->Printf("    Screening Cutoff: %11.0E\n", cutoff_);
     }
 }
 
