@@ -1708,4 +1708,6 @@ void export_mints(py::module& m) {
     py::class_<ERISieve, std::shared_ptr<ERISieve>>(m, "ERISieve", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, double, bool>())
         .def("shell_significant", &ERISieve::shell_significant);
+
+    m.def("test_matrix_dpd_interface", &psi::test_matrix_dpd_interface);
 }

@@ -2816,9 +2816,11 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
         throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
     }
 
-    if (outFile->my_irrep != 0) {
-        throw FeatureNotImplemented("libmints Matrix class", "Matrices whose irrep is not the symmetric one", __FILE__,
-                                    __LINE__);
+    if (outFile->my_irrep != symmetry_) {
+        std::stringstream msg;
+        msg << "Symmetry mismatch. Matrix has symmetry " << outFile->my_irrep << " whereas dpdfile has "
+            << symmetry_ << " symmetry.";
+        throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
     }
 
     for (int h = 0; h < nirrep_; ++h) {
@@ -2835,7 +2837,6 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
             throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
         }
 
-        // TODO: optimize this with memcopys
         size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
         if (size) memcpy(&(outFile->matrix[h][0][0]), &(matrix_[h][0][0]), size);
     }
@@ -3587,4 +3588,34 @@ void free(double **Block) {
 }
 }  // namespace detail
 }  // namespace linalg
+
+bool test_matrix_dpd_interface() {
+    _default_psio_lib_->open(PSIF_OEI, PSIO_OPEN_OLD);
+    // Matrix values are insignificant.
+    // For those who like trivia, X dipole from STO-6G water (specified via ZMAT)
+    Dimension dimpi({4, 0, 1, 2});
+    Matrix mat(dimpi, dimpi, 2);
+    mat.set(0, 0, 0, -0.05373657897553);
+    mat.set(0, 1, 0, -0.64149916027709);
+    mat.set(0, 3, 0, -0.40632695574458);
+    mat.set(2, 0, 0, +0.05373657897553);
+    mat.set(2, 0, 1, +0.64149916027709);
+    mat.set(2, 0, 3, +0.40632695574458);
+
+    dpdfile2 io;
+    std::vector<int> cachefiles(PSIO_MAXUNIT);
+    auto cachelist = init_int_matrix(5, 5);
+
+    std::vector<int *> spaces;
+    spaces.push_back(dimpi);
+    std::vector<int> sym_vec {0, 0, 3, 0, 2, 0, 3};
+    spaces.push_back(sym_vec.data());
+    dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, 1, spaces);
+    dpd_list[0]->file2_init(&io, PSIF_OEI, 2, 0, 0, "Test Matrix");
+    mat.write_to_dpdfile2(&io);
+    Matrix mat2(&io);
+    free_int_matrix(cachelist);
+    _default_psio_lib_->close(PSIF_OEI, 1);
+    return mat.equal(mat2);
+}
 }  // namespace psi

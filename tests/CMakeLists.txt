@@ -63,7 +63,8 @@ foreach(test_name adc1 adc2 aediis-1
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient
                   fd-freq-gradient-large fd-gradient freq-isotope1 freq-isotope2 fnocc1 fnocc2
                   fnocc3 fnocc4 fnocc5 fnocc6 fnocc7 frac frac-ip-fitting frac-sym frac-traverse ghosts gibbs
-                  lccd-grad1 lccd-grad2 matrix1 mbis-1 mbis-2 mbis-3 mbis-4 mbis-5 mbis-6 mcscf1 mcscf2 mcscf3
+                  lccd-grad1 lccd-grad2 matrix1 matrix2
+                  mbis-1 mbis-2 mbis-3 mbis-4 mbis-5 mbis-6 mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 mints15 molden1 molden2 mom mom-h2o-3 mom-h2o-4
                   mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
