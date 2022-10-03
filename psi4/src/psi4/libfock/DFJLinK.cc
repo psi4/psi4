@@ -78,22 +78,30 @@ void DFJLinK::common_init() {
     // => Direct Density-Fitted Coulomb Setup <= //
 
     // pre-compute coulomb fitting metric
-    timer_on("Coulomb Metric");
+    timer_on("DFJLinK: Coulomb Metric");
     FittingMetric J_metric_obj(auxiliary_, true);
     J_metric_obj.form_fitting_metric();
     J_metric_ = J_metric_obj.get_metric();
-    timer_off("Coulomb Metric");
+    timer_off("DFJLinK: Coulomb Metric");
 
-    // pre-construct per-thread TwoBodyAOInt objects for computing 3-index ERIs
-    timer_on("ERI Computers");
-    eri_computers_.resize(nthreads_);
+    // pre-construct per-thread TwoBodyAOInt objects for computing 3- and 4-index ERIs
+    timer_on("DFJLinK: ERI Computers");
+    eri_computers_["4-Center"].emplace({}) = 
+    eri_computers_["3-Center"].emplace({}) = 
+    
+    eri_computers_["4-Center"].resize(nthreads_);
+    eri_computers_["3-Center"].resize(nthreads_);
+    
     auto zero = BasisSet::zero_ao_basis_set();
     IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
-    eri_computers_[0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
+    IntegralFactory factory(primary_, primary_, primary_, primary_);
+    eri_computers_["4-Center"][0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
+    eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
     for(int rank = 1; rank < nthreads_; rank++) {
-        eri_computers_[rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_.front()->clone());
+        eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
+        eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_.front()->clone());
     }
-    timer_off("ERI Computers");
+    timer_off("DFJLinK: ERI Computers");
 
     // => Linear Exchange Setup <= //
     
@@ -267,7 +275,7 @@ void DFJLinK::compute_JK() {
     if (initial_iteration_) initial_iteration_ = false;
 }
 
-void DFJCOSK::postiterations() {}
+void DFJLinK::postiterations() {}
 
 void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
     
