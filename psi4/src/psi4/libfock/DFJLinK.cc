@@ -209,12 +209,34 @@ void DFJLinK::incfock_postiter() {
     }
 }
 
-void DFJCOSK::compute_JK() {
+void DFJLinK::compute_JK() {
+ 
+    // zero out J, K, and wK matrices
+    zero();
 
     int njk = D_ao_.size();
 
-    // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
-    if (do_wK_) throw PSIEXCEPTION("COSK does not support wK integrals yet!");
+    if (incfock_) {
+        timer_on("DFJLinK: INCFOCK Preprocessing");
+        incfock_setup();
+        int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
+        double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
+        double Dnorm = Process::environment.globals["SCF D NORM"];
+        // Do IFB on this iteration?
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        
+        if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
+        timer_off("DFJLinK: INCFOCK Preprocessing");
+    }
+    
+    auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+
+    std::vector<SharedMatrix>& D_ref = (do_incfock_iter_ ? delta_D_ao_ : D_ao_);
+    std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
+    std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
+    std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? delta_wK_ao_ : wK_ao_);
+
+    if (do_wK_) throw PSIEXCEPTION("DFJLinK does not support wK integrals yet!");
 
     // D_eff, the effective pseudo-density matrix is either:
     //   (1) the regular density: D_eff == D_lr = C_lo x C*ro
@@ -222,42 +244,27 @@ void DFJCOSK::compute_JK() {
     //
     std::vector<SharedMatrix> D_eff(njk);
 
-    if(options_.get_bool("COSX_INCFOCK")) {
-
-        // If there is no previous pseudo-density, this iteration is normal
-        if(D_prev_.size() != njk) {
-            D_eff = D_ao_;
-            zero();
-        } else { // Otherwise, the iteraction is incremental
-            for (size_t jki = 0; jki < njk; jki++) {
-                D_eff[jki] = D_ao_[jki]->clone();
-                D_eff[jki]->subtract(D_prev_[jki]);
-            }
-        }
-
-        // Save a copy of the density for the next iteration
-        D_prev_.clear();
-        for(auto const &Di : D_ao_) {
-            D_prev_.push_back(Di->clone());
-        }
-
-    } else {
-        D_eff = D_ao_;
-        zero();
-    }
-
     if (do_J_) {
-        timer_on("DFJ");
-        build_J(D_eff, J_ao_);
-        timer_off("DFJ");
+        timer_on("DFJLinK: J");
+        //build_J(D_eff, J_ao_);
+        build_J(D_ref, J_ref);
+        timer_off("DFJLinK: J");
     }
     
     if (do_K_) {
-        timer_on("COSK");
-        build_K(D_eff, K_ao_);
-        timer_off("COSK");
+        timer_on("DFJLinK: K");
+        //build_K(D_eff, K_ao_);
+        build_J(D_ref, K_ref);
+        timer_off("DFJLinK: K");
+    }
+    
+    if (incfock_) {
+        timer_on("DFJLinK: INCFOCK Postprocessing");
+        incfock_postiter();
+        timer_off("DFJLinK: INCFOCK Postprocessing");
     }
 
+    if (initial_iteration_) initial_iteration_ = false;
 }
 
 void DFJCOSK::postiterations() {}
