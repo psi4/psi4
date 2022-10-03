@@ -61,8 +61,6 @@ void transL(const MintsHelper &mints, double sign);
 void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S) {
     int i, j, k;
     int no, nv, nt;
-    double lt_x, lt_y, lt_z;
-    double rt_x, rt_y, rt_z;
     double rs_lx, rs_ly, rs_lz;
     double rs_rx, rs_ry, rs_rz;
     double rs_x, rs_y, rs_z;
@@ -76,27 +74,19 @@ void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *
     outfile->Printf("\n\tLength-Gauge Rotational Strength for %d%3s\n", S->root + 1, moinfo.labels[S->irrep].c_str());
     outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
-    lt_x = lt_y = lt_z = 0.0;
-    rt_x = rt_y = rt_z = 0.0;
     rs_lx = rs_ly = rs_lz = 0.0;
     rs_rx = rs_ry = rs_rz = 0.0;
     rs_x = rs_y = rs_z = 0.0;
 
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            lt_x += moinfo.ltd[i][j] * moinfo.dip[0][i][j];
-            lt_y += moinfo.ltd[i][j] * moinfo.dip[1][i][j];
-            lt_z += moinfo.ltd[i][j] * moinfo.dip[2][i][j];
-        }
+    auto lt_x = moinfo.ltd_mat.vector_dot(moinfo.dip[0]);
+    auto lt_y = moinfo.ltd_mat.vector_dot(moinfo.dip[1]);
+    auto lt_z = moinfo.ltd_mat.vector_dot(moinfo.dip[2]);
 
     transL(mints, +1.0);
 
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            rt_x += moinfo.rtd[i][j] * moinfo.L[0][i][j];
-            rt_y += moinfo.rtd[i][j] * moinfo.L[1][i][j];
-            rt_z += moinfo.rtd[i][j] * moinfo.L[2][i][j];
-        }
+    auto rt_x = moinfo.rtd_mat.vector_dot(moinfo.L[0]);
+    auto rt_y = moinfo.rtd_mat.vector_dot(moinfo.L[1]);
+    auto rt_z = moinfo.rtd_mat.vector_dot(moinfo.L[2]);
 
     rs_lx = lt_x * rt_x;
     rs_ly = lt_y * rt_y;
@@ -107,28 +97,15 @@ void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *
 
     // Complex Conjugate
 
-    lt_x = lt_y = lt_z = 0.0;
-    rt_x = rt_y = rt_z = 0.0;
-
-    for (i = 0; i < 3; i++)
-        for (j = 0; j < nmo; j++)
-            for (k = 0; k < nmo; k++) moinfo.L[i][j][k] = 0.0;
-
     transL(mints, -1.0);
 
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            lt_x += moinfo.ltd[i][j] * moinfo.L[0][i][j];
-            lt_y += moinfo.ltd[i][j] * moinfo.L[1][i][j];
-            lt_z += moinfo.ltd[i][j] * moinfo.L[2][i][j];
-        }
+    lt_x = moinfo.ltd_mat.vector_dot(moinfo.L[0]);
+    lt_y = moinfo.ltd_mat.vector_dot(moinfo.L[1]);
+    lt_z = moinfo.ltd_mat.vector_dot(moinfo.L[2]);
 
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            rt_x += moinfo.rtd[i][j] * moinfo.dip[0][i][j];
-            rt_y += moinfo.rtd[i][j] * moinfo.dip[1][i][j];
-            rt_z += moinfo.rtd[i][j] * moinfo.dip[2][i][j];
-        }
+    rt_x = moinfo.rtd_mat.vector_dot(moinfo.dip[0]);
+    rt_y = moinfo.rtd_mat.vector_dot(moinfo.dip[1]);
+    rt_z = moinfo.rtd_mat.vector_dot(moinfo.dip[2]);
 
     rs_rx = lt_x * rt_x;
     rs_ry = lt_y * rt_y;
@@ -154,29 +131,21 @@ void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *
     outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n", S->root + 1, moinfo.labels[S->irrep].c_str());
     outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
-    lt_x = lt_y = lt_z = 0.0;
-    rt_x = rt_y = rt_z = 0.0;
     rs_lx = rs_ly = rs_lz = 0.0;
     rs_rx = rs_ry = rs_rz = 0.0;
     rs_x = rs_y = rs_z = 0.0;
 
     transp(mints, +1.0);
 
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            lt_x += moinfo.ltd[i][j] * moinfo.nabla[0][i][j];
-            lt_y += moinfo.ltd[i][j] * moinfo.nabla[1][i][j];
-            lt_z += moinfo.ltd[i][j] * moinfo.nabla[2][i][j];
-        }
+    lt_x = moinfo.ltd_mat.vector_dot(moinfo.nabla[0]);
+    lt_y = moinfo.ltd_mat.vector_dot(moinfo.nabla[1]);
+    lt_z = moinfo.ltd_mat.vector_dot(moinfo.nabla[2]);
 
     transL(mints, +1.0);
 
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            rt_x += moinfo.rtd[i][j] * moinfo.L[0][i][j];
-            rt_y += moinfo.rtd[i][j] * moinfo.L[1][i][j];
-            rt_z += moinfo.rtd[i][j] * moinfo.L[2][i][j];
-        }
+    rt_x = moinfo.rtd_mat.vector_dot(moinfo.L[0]);
+    rt_y = moinfo.rtd_mat.vector_dot(moinfo.L[1]);
+    rt_z = moinfo.rtd_mat.vector_dot(moinfo.L[2]);
 
     rs_lx = lt_x * rt_x;
     rs_ly = lt_y * rt_y;
@@ -186,34 +155,17 @@ void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *
     outfile->Printf("\t<n|mu_m|0>              %11.8lf \t %11.8lf \t %11.8lf\n", rt_x, rt_y, rt_z);
 
     // Complex Conjugate
-
-    lt_x = lt_y = lt_z = 0.0;
-    rt_x = rt_y = rt_z = 0.0;
-
-    for (i = 0; i < 3; i++)
-        for (j = 0; j < nmo; j++)
-            for (k = 0; k < nmo; k++) {
-                moinfo.nabla[i][j][k] = 0.0;
-                moinfo.L[i][j][k] = 0.0;
-            }
-
     transL(mints, -1.0);
 
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            lt_x += moinfo.ltd[i][j] * moinfo.L[0][i][j];
-            lt_y += moinfo.ltd[i][j] * moinfo.L[1][i][j];
-            lt_z += moinfo.ltd[i][j] * moinfo.L[2][i][j];
-        }
+    lt_x = moinfo.ltd_mat.vector_dot(moinfo.L[0]);
+    lt_y = moinfo.ltd_mat.vector_dot(moinfo.L[1]);
+    lt_z = moinfo.ltd_mat.vector_dot(moinfo.L[2]);
 
     transp(mints, -1.0);
 
-    for (i = 0; i < nmo; i++)
-        for (j = 0; j < nmo; j++) {
-            rt_x += moinfo.rtd[i][j] * moinfo.nabla[0][i][j];
-            rt_y += moinfo.rtd[i][j] * moinfo.nabla[1][i][j];
-            rt_z += moinfo.rtd[i][j] * moinfo.nabla[2][i][j];
-        }
+    rt_x = moinfo.rtd_mat.vector_dot(moinfo.nabla[0]);
+    rt_y = moinfo.rtd_mat.vector_dot(moinfo.nabla[1]);
+    rt_z = moinfo.rtd_mat.vector_dot(moinfo.nabla[2]);
 
     rs_rx = lt_x * rt_x;
     rs_ry = lt_y * rt_y;

@@ -59,16 +59,6 @@ void td_cleanup() {
     psio_open(PSIF_CC_GL, PSIO_OPEN_NEW);
     psio_open(PSIF_CC_GR, PSIO_OPEN_NEW);
 
-    if ((params.ref == 0) || (params.ref == 1)) {
-        free_block(moinfo.ltd);
-        free_block(moinfo.rtd);
-    } else if (params.ref == 2) {
-        free_block(moinfo.ltd_a);
-        free_block(moinfo.ltd_b);
-        free_block(moinfo.rtd_a);
-        free_block(moinfo.rtd_b);
-    }
-
     return;
 }
 
