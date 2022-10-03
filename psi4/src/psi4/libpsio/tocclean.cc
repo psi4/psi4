@@ -42,6 +42,12 @@ PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.hpp"
 namespace psi {
 
+/*!
+ ** PSIO_TOCCLEAN(): Delete all TOC entries after the given key.
+ ** If a blank key is given, the entire TOC will be wiped.
+ **
+ ** \ingroup PSIO
+ */
 void PSIO::tocclean(size_t unit, const char *key) {
     psio_tocentry *this_entry, *last_entry, *prev_entry;
     psio_ud *this_unit;
@@ -74,17 +80,4 @@ void PSIO::tocclean(size_t unit, const char *key) {
     wt_toclen(unit, this_unit->toclen);
     tocwrite(unit);
 }
-
-/*!
- ** PSIO_TOCCLEAN(): Delete all TOC entries after the given key.
- ** If a blank key is given, the entire TOC will be wiped.
- **
- ** \ingroup PSIO
- */
-
-int psio_tocclean(size_t unit, const char *key) {
-    _default_psio_lib_->tocclean(unit, key);
-    return 0;
-}
-
 }  // namespace psi

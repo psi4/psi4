@@ -78,14 +78,4 @@ PSIO::~PSIO() {
     state_ = 0;
     files_keywords_.clear();
 }
-
-int psio_done() {
-    if (_default_psio_lib_) {
-        // The old pointer implementation of this used to set the pointer to zero for
-        // the test used in psio_init.  This is not necessary with smart pointers
-        _default_psio_lib_.reset();
-    }
-    return true;
-}
-
 }  // namespace psi

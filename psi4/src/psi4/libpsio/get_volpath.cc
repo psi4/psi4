@@ -69,25 +69,4 @@ void PSIO::get_volpath(size_t unit, size_t volume, char **path) {
     // assume default has been provided
     abort();
 }
-
-int psio_get_volpath_default(size_t volume, char **path) {
-    std::string kval;
-    char volumeX[20];
-    sprintf(volumeX, "VOLUME%zu", volume + 1);
-
-    kval = _default_psio_lib_->filecfg_kwd("PSI", volumeX, -1);
-    if (!kval.empty()) {
-        *path = strdup(kval.c_str());
-        return (1);
-    }
-    kval = _default_psio_lib_->filecfg_kwd("DEFAULT", volumeX, -1);
-    if (!kval.empty()) {
-        *path = strdup(kval.c_str());
-        return (1);
-    }
-
-    // assume default has been provided
-    abort();
-}
-
 }  // namespace psi

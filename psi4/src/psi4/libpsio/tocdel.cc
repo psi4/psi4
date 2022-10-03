@@ -66,7 +66,4 @@ bool PSIO::tocdel(size_t unit, const char *key) {
 
     return true;
 }
-
-bool psio_tocdel(size_t unit, const char *key) { return _default_psio_lib_->tocdel(unit, key); }
-
 }  // namespace psi

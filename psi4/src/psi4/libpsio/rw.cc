@@ -47,6 +47,17 @@
 
 namespace psi {
 
+/*!
+ ** PSIO_RW(): Central function for all reads and writes on a PSIO unit.
+ **
+ ** \params unit    = The PSI unit number.
+ ** \params buffer  = The buffer containing the bytes for the read/write event.
+ ** \params address = the PSIO global address for the start of the read/write.
+ ** \params size    = The number of bytes to read/write.
+ ** \params         = Indicates if the call is to read (0) or write (0) the input data.
+ **
+ ** \ingroup PSIO
+ */
 void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int wrt) {
     int errcod;
     size_t i;
@@ -122,22 +133,4 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
         }
     }
 }
-
-/*!
- ** PSIO_RW(): Central function for all reads and writes on a PSIO unit.
- **
- ** \params unit    = The PSI unit number.
- ** \params buffer  = The buffer containing the bytes for the read/write event.
- ** \params address = the PSIO global address for the start of the read/write.
- ** \params size    = The number of bytes to read/write.
- ** \params         = Indicates if the call is to read (0) or write (0) the input data.
- **
- ** \ingroup PSIO
- */
-
-int psio_rw(size_t unit, char *buffer, psio_address address, size_t size, int wrt) {
-    _default_psio_lib_->rw(unit, buffer, address, size, wrt);
-    return 1;
-}
-
 }  // namespace psi

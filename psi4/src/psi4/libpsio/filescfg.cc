@@ -78,14 +78,4 @@ const std::string& PSIO::filecfg_kwd(const char* kwdgrp, const char* kwd, int un
     else
         return nullstr;
 }
-
-int psio_set_filescfg_kwd(const char* kwdgrp, const char* kwd, int unit, const char* kwdval) {
-    _default_psio_lib_->filecfg_kwd(kwdgrp, kwd, unit, kwdval);
-    return 1;
-}
-
-const char* psio_get_filescfg_kwd(const char* kwdgrp, const char* kwd, int unit) {
-    return _default_psio_lib_->filecfg_kwd(kwdgrp, kwd, unit).c_str();
-}
-
 }  // namespace psi
