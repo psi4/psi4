@@ -1299,6 +1299,117 @@ class PSI_API DFJCOSK : public JK {
     void clear_D_prev() { D_prev_.clear();}
 };
 
+/**
+ * Class DFJLinK
+ *
+ * JK implementation using the direct density-fitted coulomb algorithm of Weigend
+ * and the Linear Exchange algorithm of Ochsenfeld
+ * TODO: Combine DFJLink with DFJCOSX to start CompositeJK
+ */
+class PSI_API DFJLinK : public JK {
+   protected:
+    /// Number of threads
+    int nthreads_;
+    /// Options object
+    Options& options_;
+
+    // => Incremental Fock build variables <= //
+    
+    /// Perform Incremental Fock Build for J and K Matrices? (default false)
+    bool incfock_;
+    /// The number of times INCFOCK has been performed (includes resets)
+    int incfock_count_;
+    bool do_incfock_iter_;
+
+    // => Density Fitting Stuff <= //
+
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+    /// Coulomb Metric
+    SharedMatrix J_metric_;
+    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
+    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
+
+    // => LinK variables <= //
+
+    // Density-based ERI Screening tolerance to use in the LinK algorithm
+    double linK_ints_cutoff_;
+
+    std::string name() override { return "DFJCOSK"; }
+    size_t memory_estimate() override;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    /// Do we need to backtransform to C1 under the hood?
+    bool C1() const override { return true; }
+    /// Setup integrals, files, etc
+    void preiterations() override;
+    /// Compute J/K for current C/D
+    void compute_JK() override;
+    /// Delete integrals, files, etc
+    void postiterations() override;
+
+    // Perform Density matrix-based integral screening?
+    bool density_screening_;
+
+    /// Set up Incfock variables per iteration
+    void incfock_setup();
+    /// Post-iteration Incfock processing
+    void incfock_postiter();
+
+    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
+    std::vector<SharedMatrix> prev_D_ao_;
+    std::vector<SharedMatrix> prev_J_ao_;
+    std::vector<SharedMatrix> prev_K_ao_;
+    std::vector<SharedMatrix> prev_wK_ao_;
+
+    // Delta D, J, K, wK Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> delta_D_ao_;
+    std::vector<SharedMatrix> delta_J_ao_;
+    std::vector<SharedMatrix> delta_K_ao_;
+    std::vector<SharedMatrix> delta_wK_ao_;
+
+    // Is the JK currently on a guess iteration
+    bool initial_iteration_ = true;
+
+    /// Build the coulomb (J) matrix
+    void build_J(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& J);
+
+    /// Build the exchange (K) matrix
+    void build_K(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& K);
+
+    /// Common initialization
+    void common_init();
+
+    /**
+    * Return number of ERI shell quartets computed during the JK build process.
+    */
+    size_t num_computed_shells() override;
+
+   public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    DFJLinK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+    /// Destructor
+    ~DFJLinK() override;
+
+    // => Knobs <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    void print_header() const override;
+};
 
 }
 
