@@ -126,7 +126,88 @@ void DFJLinK::print_header() const {
     }
 }
 
-void DFJCOSK::preiterations() {}
+void DFJLinK::preiterations() {}
+
+void DFJLinK::incfock_setup() {
+
+    // The prev_D_ao_ condition is used to handle stability analysis case
+    if (initial_iteration_ || prev_D_ao_.size() != D_ao_.size()) {
+        initial_iteration_ = true;
+
+        prev_D_ao_.clear();
+        delta_D_ao_.clear();
+
+        if (do_wK_) {
+            prev_wK_ao_.clear();
+            delta_wK_ao_.clear();
+        }
+
+        if (do_J_) {
+            prev_J_ao_.clear();
+            delta_J_ao_.clear();
+        }
+
+        if (do_K_) {
+            prev_K_ao_.clear();
+            delta_K_ao_.clear();
+        }
+    
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            prev_D_ao_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+            delta_D_ao_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+
+            if (do_wK_) {
+                prev_wK_ao_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+                delta_wK_ao_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+            }
+                
+            if (do_J_) {
+                prev_J_ao_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                delta_J_ao_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+            }
+        
+            if (do_K_) {
+                prev_K_ao_.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                delta_K_ao_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+            }
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            delta_D_ao_[N]->copy(D_ao_[N]);
+            delta_D_ao_[N]->subtract(prev_D_ao_[N]);
+        }
+    }
+}
+void DFJLinK::incfock_postiter() {
+    if (do_incfock_iter_) {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+
+            if (do_wK_) {
+                prev_wK_ao_[N]->add(delta_wK_ao_[N]);
+                wK_ao_[N]->copy(prev_wK_ao_[N]);
+            }
+
+            if (do_J_) {
+                prev_J_ao_[N]->add(delta_J_ao_[N]);
+                J_ao_[N]->copy(prev_J_ao_[N]);
+            }
+
+            if (do_K_) {
+                prev_K_ao_[N]->add(delta_K_ao_[N]);
+                K_ao_[N]->copy(prev_K_ao_[N]);
+            }
+
+            prev_D_ao_[N]->copy(D_ao_[N]);
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            if (do_wK_) prev_wK_ao_[N]->copy(wK_ao_[N]);
+            if (do_J_) prev_J_ao_[N]->copy(J_ao_[N]);
+            if (do_K_) prev_K_ao_[N]->copy(K_ao_[N]);
+            prev_D_ao_[N]->copy(D_ao_[N]);
+        }
+    }
+}
 
 void DFJCOSK::compute_JK() {
 
