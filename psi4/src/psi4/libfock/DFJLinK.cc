@@ -597,409 +597,413 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 
 }
 
-void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K) {
+// To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
+void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
+                  std::vector<SharedMatrix>& K) {
+
+    if (!lr_symmetric_) {
+        throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
+    }
+
+    timer_on("build_linK()");
+
+    // ==> Prep Auxiliary Quantities <== //
+
+    // => Zeroing <= //
+    for (auto& Kmat : K) {
+        Kmat->zero();
+    }
 
     // => Sizing <= //
-    int njk = D.size();
-    int nbf = primary_->nbf();
     int nshell = primary_->nshell();
-    int natom = primary_->molecule()->natom();
+    int nbf = primary_->nbf();
+    int nthread = df_ints_num_threads_;
 
-    // => Knobs <= //
-    //double gscreen = options_.get_double("COSX_INTS_TOLERANCE");
-    double kscreen = options_.get_double("COSX_INTS_TOLERANCE");
-    double dscreen = options_.get_double("COSX_DENSITY_TOLERANCE");
-    bool overlap_fitted = options_.get_bool("COSX_OVERLAP_FITTING");
+    // => Atom Blocking <= //
+    std::vector<int> shell_endpoints_for_atom;
+    std::vector<int> basis_endpoints_for_shell;
 
-    // use a small DFTGrid grid (and overlap metric) for early SCF iterations
-    // otherwise use a large DFTGrid
-    auto grid = early_screening_ ? grid_init_ : grid_final_;
-    auto Q = early_screening_ ? Q_init_ : Q_final_;
-
-    // => Initialization <= //
-
-    // per-thread ElectrostaticInt object (for computing one-electron "pseudospectral" integrals)
-    std::vector<std::shared_ptr<ElectrostaticInt>> int_computers(nthreads_);
-
-    // per-thread BasisFunctions object (for computing basis function values at grid points)
-    std::vector<std::shared_ptr<BasisFunctions>> bf_computers(nthreads_);
-
-    // per-thread K Matrix buffers (for accumulating thread contributions to K)
-    std::vector<std::vector<SharedMatrix>> KT(njk, std::vector<SharedMatrix>(nthreads_));
-
-    // initialize per-thread objects
-    IntegralFactory factory(primary_);
-    for(size_t thread = 0; thread < nthreads_; thread++) {
-        int_computers[thread] = std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory.electrostatic()));
-        bf_computers[thread] = std::make_shared<BasisFunctions>(primary_, grid->max_points(), grid->max_functions());
-        for(size_t jki = 0; jki < njk; jki++) {
-            KT[jki][thread] = std::make_shared<Matrix>(nbf, nbf);
+    int atomic_ind = -1;
+    for (int P = 0; P < nshell; P++) {
+        if (primary_->shell(P).ncenter() > atomic_ind) {
+            shell_endpoints_for_atom.push_back(P);
+            atomic_ind++;
         }
+        basis_endpoints_for_shell.push_back(primary_->shell_to_basis_function(P));
+    }
+    shell_endpoints_for_atom.push_back(nshell);
+    basis_endpoints_for_shell.push_back(nbf);
+
+    size_t natom = shell_endpoints_for_atom.size() - 1;
+
+    size_t max_functions_per_atom = 0L;
+    for (size_t atom = 0; atom < natom; atom++) {
+        size_t size = 0L;
+        for (int P = shell_endpoints_for_atom[atom]; P < shell_endpoints_for_atom[atom + 1]; P++) {
+            size += primary_->shell(P).nfunction();
+        }
+        max_functions_per_atom = std::max(max_functions_per_atom, size);
     }
 
-    // precompute bounds for the one-electron integrals
-    auto esp_bound = compute_esp_bound(*primary_);
-    auto esp_boundp = esp_bound.pointer();
-
-    // inter-atom and inter-shell distances [Bohr]
-    auto dist = primary_->molecule()->distance_matrix();
-    auto shell_dist = std::make_shared<Matrix>(nshell, nshell);
-    for(size_t s1 = 0; s1 < nshell; s1++) {
-        size_t c1 = primary_->shell_to_center(s1);
-        for(size_t s2 = 0; s2 < nshell; s2++) {
-            size_t c2 = primary_->shell_to_center(s2);
-            shell_dist->set(s1, s2, dist.get(c1, c2));
+    if (debug_) {
+        outfile->Printf("  ==> LinK: Atom Blocking <==\n\n");
+        for (size_t atom = 0; atom < natom; atom++) {
+            outfile->Printf("  Atom: %3d, Atom Start: %4d, Atom End: %4d\n", atom, shell_endpoints_for_atom[atom],
+                            shell_endpoints_for_atom[atom + 1]);
+            for (int P = shell_endpoints_for_atom[atom]; P < shell_endpoints_for_atom[atom + 1]; P++) {
+                int size = primary_->shell(P).nfunction();
+                int off = primary_->shell(P).function_index();
+                int off2 = basis_endpoints_for_shell[P];
+                outfile->Printf("    Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P, size, off,
+                                off2);
+            }
         }
+        outfile->Printf("\n");
     }
 
-    // extent of each basis shell [Bohr]
-    auto shell_extents = grid->extents()->shell_extents();
+    // ==> Prep Atom Pairs <== //
+    // Atom-pair blocking inherited from DirectJK code
+    // TODO: Test shell-pair blocking
 
-    // map of shell pairs with overlapping extents
-    std::vector<std::vector<int>> shell_extent_map(nshell);
-    for(size_t s1 = 0; s1 < nshell; s1++) {
-        for(size_t s2 = 0; s2 < nshell; s2++) {
-            if (shell_dist->get(s1, s2) <= shell_extents->get(s2) + shell_extents->get(s1)) {
-                shell_extent_map[s1].push_back(s2);
+    std::vector<std::pair<int, int>> atom_pairs;
+    for (size_t Patom = 0; Patom < natom; Patom++) {
+        for (size_t Qatom = 0; Qatom <= Patom; Qatom++) {
+            bool found = false;
+            for (int P = shell_endpoints_for_atom[Patom]; P < shell_endpoints_for_atom[Patom + 1]; P++) {
+                for (int Q = shell_endpoints_for_atom[Qatom]; Q < shell_endpoints_for_atom[Qatom + 1]; Q++) {
+                    if (ints[0]->shell_pair_significant(P, Q)) {
+                        found = true;
+                        atom_pairs.emplace_back(Patom, Qatom);
+                        break;
+                    }
+                }
+                if (found) break;
             }
         }
     }
 
-    // => Integral Computation <= //
-    
-    // benchmarking statistics
-    size_t int_shells_total = 0;
-    size_t int_shells_computed = 0;
+    // ==> Prep Bra-Bra Shell Pairs <== //
 
-    timer_on("Grid Loop");
+    // A comparator used for sorting integral screening values
+    auto screen_compare = [](const std::pair<int, double> &a, 
+                                    const std::pair<int, double> &b) { return a.second > b.second; };
 
-    // The primary COSK loop over blocks of grid points
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads_) reduction(+ : int_shells_total, int_shells_computed)
-    for (size_t bi = 0; bi < grid->blocks().size(); bi++) {
+    std::vector<std::vector<int>> significant_bras(nshell);
+    double max_integral = ints[0]->max_integral();
 
-        int rank = 0;
+#pragma omp parallel for
+    for (size_t P = 0; P < nshell; P++) {
+        std::vector<std::pair<int, double>> PQ_shell_values;
+        for (size_t Q = 0; Q < nshell; Q++) {
+            double pq_pq = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
+            double schwarz_value = std::sqrt(pq_pq * max_integral);
+            if (schwarz_value >= cutoff_) {
+                PQ_shell_values.emplace_back(Q, schwarz_value);
+            }
+        }
+        std::sort(PQ_shell_values.begin(), PQ_shell_values.end(), screen_compare);
+
+        for (const auto& value : PQ_shell_values) {
+            significant_bras[P].push_back(value.first);
+        }
+    }
+
+    // ==> Prep Bra-Ket Shell Pairs <== //
+
+    // => Calculate Shell Ceilings <= //
+    std::vector<double> shell_ceilings(nshell, 0.0);
+
+    // sqrt(Umax|Umax) in Ochsenfeld Eq. 3
+#pragma omp parallel for
+    for (int P = 0; P < nshell; P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            double val = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
+            shell_ceilings[P] = std::max(shell_ceilings[P], val);
+#pragma omp critical
+            shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
+        }
+    }
+
+    std::vector<std::vector<int>> significant_kets(nshell);
+
+    // => Use shell ceilings to compute significant ket-shells for each bra-shell <= //
+#pragma omp parallel for
+    for (size_t P = 0; P < nshell; P++) {
+        std::vector<std::pair<int, double>> PR_shell_values;
+        for (size_t R = 0; R < nshell; R++) {
+            double screen_val = shell_ceilings[P] * shell_ceilings[R] * ints[0]->shell_pair_max_density(P, R);
+            if (screen_val >= linK_ints_cutoff_) {
+                PR_shell_values.emplace_back(R, screen_val);
+            }
+        }
+        std::sort(PR_shell_values.begin(), PR_shell_values.end(), screen_compare);
+
+        for (const auto& value : PR_shell_values) {
+            significant_kets[P].push_back(value.first);
+        }
+    }
+
+    size_t natom_pair = atom_pairs.size();
+
+    // ==> Intermediate Buffers <== //
+
+    // Temporary buffers used during the K contraction process to
+    // Take full advantage of permutational symmetry of ERIs
+    std::vector<std::vector<SharedMatrix>> KT;
+
+    // To prevent race conditions, give every thread a buffer
+    for (int thread = 0; thread < nthread; thread++) {
+        std::vector<SharedMatrix> K2;
+        for (size_t ind = 0; ind < D.size(); ind++) {
+            // (pq|rs) can be contracted into Kpr, Kps, Kqr, Kqs (hence the 4)
+            K2.push_back(std::make_shared<Matrix>("KT (linK)", 4 * max_functions_per_atom, nbf));
+        }
+        KT.push_back(K2);
+    }
+
+    // Number of computed shell quartets is tracked for benchmarking purposes
+    size_t computed_shells = 0L;
+
+    // ==> Integral Formation Loop <== //
+
+#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
+    for (size_t ipair = 0L; ipair < natom_pair; ipair++) { // O(N) shell-pairs in asymptotic limit
+
+        int Patom = atom_pairs[ipair].first;
+        int Qatom = atom_pairs[ipair].second;
+        
+        // Number of shells per atom
+        int nPshell = shell_endpoints_for_atom[Patom + 1] - shell_endpoints_for_atom[Patom];
+        int nQshell = shell_endpoints_for_atom[Qatom + 1] - shell_endpoints_for_atom[Qatom];
+
+        // First shell per atom
+        int Pstart = shell_endpoints_for_atom[Patom];
+        int Qstart = shell_endpoints_for_atom[Qatom];
+
+        // Number of basis functions per atom
+        int nPbasis = basis_endpoints_for_shell[Pstart + nPshell] - basis_endpoints_for_shell[Pstart];
+        int nQbasis = basis_endpoints_for_shell[Qstart + nQshell] - basis_endpoints_for_shell[Qstart];
+
+        int thread = 0;
 #ifdef _OPENMP
-        rank = omp_get_thread_num();
+        thread = omp_get_thread_num();
 #endif
 
-        // grid points in this block
-        auto block = grid->blocks()[bi];
-        int npoints_block = block->npoints();
-        auto x = block->x();
-        auto y = block->y();
-        auto z = block->z();
-        auto w = block->w();
+        // Keep track of contraction indices for stripeout (Towards end of this function)
+        std::vector<std::unordered_set<int>> P_stripeout_list(nPshell);
+        std::vector<std::unordered_set<int>> Q_stripeout_list(nQshell);
 
-        // significant basis functions and shells at these grid points
-        // significance determined via basis extent
-        const auto &bf_map = block->functions_local_to_global();
-        const auto &shell_map = block->shells_local_to_global();
-        int nbf_block = bf_map.size();
-        int ns_block = shell_map.size();
+        bool touched = false;
+        for (int P = Pstart; P < Pstart + nPshell; P++) {
+            for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
 
-        // lists of all basis functions and shells
-        //
-        // The use of these "all" lists adds O(N^2) cost to the COSK grid loop (w/ small prefactor)
-        // This cost is negligible relative to the esp integral computation, which is O(N) (w/ a much larger prefactor),
-        // but future COSK work could remove this potential bottleneck
-        std::vector<int> bf_map_all;
-        std::vector<int> shell_map_all;
-        for (size_t bf = 0; bf < nbf; bf++) bf_map_all.push_back(bf);
-        for (size_t s = 0; s < nshell; s++) shell_map_all.push_back(s);
-        int nbf_block_all = bf_map_all.size();
-        int ns_block_all = shell_map_all.size();
+                if (Q > P) continue;
+                if (!ints[0]->shell_pair_significant(P, Q)) continue;
 
-        // => Bookkeeping <= //
+                int dP = P - Pstart;
+                int dQ = Q - Qstart;
 
-        // map index in shell_map_all to first index in bf_map_all
-        std::vector<int> shell_map_all_to_bf_map_all;
-        if (shell_map_all.size() > 0) {
-            shell_map_all_to_bf_map_all.push_back(0);
-            for(size_t shell_map_ind = 0; (shell_map_ind + 1) < shell_map_all.size(); shell_map_ind++) {
-                size_t MU = shell_map_all[shell_map_ind];
-                shell_map_all_to_bf_map_all.push_back(primary_->shell(MU).nfunction() + shell_map_all_to_bf_map_all.back());
-            }
-        }
-        
-        // map index in shell_map to first index in bf_map
-        std::vector<int> shell_map_to_bf_map;
-        if (shell_map.size() > 0) {
-            shell_map_to_bf_map.push_back(0);
-            for(size_t shell_map_ind = 0; (shell_map_ind + 1) < shell_map.size(); shell_map_ind++) {
-                size_t MU = shell_map[shell_map_ind];
-                shell_map_to_bf_map.push_back(primary_->shell(MU).nfunction() + shell_map_to_bf_map.back());
-            }
-        }
+                // => Formation of Significant Shell Pair List ML <= //
 
-        // map back from global shell index to local shell index
-        std::map<size_t, size_t> shell_map_inv;
-        for (size_t shell_ind = 0; shell_ind < shell_map.size(); shell_ind++) {
-            shell_map_inv[shell_map[shell_ind]] = shell_ind;
-        }
+                // Significant ket shell pairs RS for bra shell pair PQ
+                // represents the merge of ML_P and ML_Q (mini-lists) as defined in Oschenfeld
+                // Unordered set structure allows for automatic merging as new elements are added
+                std::unordered_set<int> ML_PQ;
 
-        // => Process Density Matrix <= //
+                // Form ML_P as part of ML_PQ
+                for (const int R : significant_kets[P]) {
+                    bool is_significant = false;
+                    for (const int S : significant_bras[R]) {
+                        double screen_val = ints[0]->shell_pair_max_density(P, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
 
-        // significant cols of D for this grid block
-        std::vector<SharedMatrix> D_block(njk);
-        for(size_t jki = 0; jki < njk; jki++) {
-            D_block[jki] = std::make_shared<Matrix>(nbf_block_all, nbf_block);
-        }
-
-        for(size_t jki = 0; jki < njk; jki++) {
-            auto Dp = D[jki]->pointer();
-            auto D_blockp = D_block[jki]->pointer();
-            for (size_t tau_ind = 0; tau_ind < nbf_block_all; tau_ind++) {
-                size_t tau = bf_map_all[tau_ind];
-                for (size_t kappa_ind = 0; kappa_ind < nbf_block; kappa_ind++) {
-                    size_t kappa = bf_map[kappa_ind];
-                    D_blockp[tau_ind][kappa_ind] = Dp[tau][kappa];
-                }
-            }
-        }
-
-        // shell-pair maxima of D_block
-        auto D_block_shell = std::make_shared<Matrix>(ns_block_all, ns_block);
-        auto D_block_shellp = D_block_shell->pointer();
-
-        for (size_t TAU_ind = 0; TAU_ind < ns_block_all; TAU_ind++) {
-            size_t TAU = shell_map_all[TAU_ind];
-            size_t tau_start = shell_map_all_to_bf_map_all[TAU_ind];
-            size_t num_tau = primary_->shell(TAU).nfunction();
-            for (size_t KAPPA_ind = 0; KAPPA_ind < ns_block; KAPPA_ind++) {
-                size_t KAPPA = shell_map[KAPPA_ind];
-                size_t kappa_start = shell_map_to_bf_map[KAPPA_ind];
-                size_t num_kappa = primary_->shell(KAPPA).nfunction();
-                for(size_t jki = 0; jki < njk; jki++) {
-                    auto D_blockp = D_block[jki]->pointer();
-                    for (size_t bf1 = tau_start; bf1 < tau_start + num_tau; bf1++) {
-                        for (size_t bf2 = kappa_start; bf2 < kappa_start + num_kappa; bf2++) {
-                            D_block_shellp[TAU_ind][KAPPA_ind] = std::max(D_block_shellp[TAU_ind][KAPPA_ind], std::abs(D_blockp[bf1][bf2]));
+                        if (screen_val >= linK_ints_cutoff_) {
+                            if (!is_significant) is_significant = true;
+                            int RS = (R >= S) ? (R * nshell + S) : (S * nshell + R);
+                            if (RS > P * nshell + Q) continue;
+                            ML_PQ.emplace(RS);
+                            Q_stripeout_list[dQ].emplace(S);
                         }
+                        else break;
                     }
+                    if (!is_significant) break;
                 }
-            }
-        }
 
-        // significant TAU shells determined from sparsity of the density matrix 
-        // i.e. KAPPA -> TAU sparsity. Refered to by Neese as a "p-junction"
-        std::vector<int> shell_map_tau;
+                // Form ML_Q as part of ML_PQ
+                for (const int R : significant_kets[Q]) {
+                    bool is_significant = false;
+                    for (const int S : significant_bras[R]) {
+                        double screen_val = ints[0]->shell_pair_max_density(Q, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
 
-        for(size_t TAU = 0; TAU < ns_block_all; TAU++) {
-            for(size_t KAPPA_ind = 0; KAPPA_ind < ns_block; KAPPA_ind++) {
-                size_t KAPPA = shell_map[KAPPA_ind];
-                if (D_block_shellp[TAU][KAPPA_ind] > dscreen) {
-                    shell_map_tau.push_back(TAU);
-                    break;
-                }
-            }
-        }
-
-        // => X Matrix <= //
-
-        // DOI 10.1016/j.chemphys.2008.10.036, EQ. 4
-
-        // compute basis functions at these grid points
-        bf_computers[rank]->compute_functions(block);
-        auto point_values = bf_computers[rank]->basis_values()["PHI"];
-
-        // resize the buffer of basis function values
-        auto X_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
-        auto X_blockp = X_block->pointer();
-        for (size_t p = 0; p < npoints_block; p++) {
-            for (size_t k = 0; k < nbf_block; k++) {
-                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
-            }
-        }
-
-        // absmax of X matrix over basis functions (row maximum) needed for screening
-        Vector X_block_bfmax(npoints_block);
-        auto X_block_bfmaxp = X_block_bfmax.pointer();
-        for (size_t p = 0; p < npoints_block; p++) {
-            for (size_t k = 0; k < nbf_block; k++) {
-                X_block_bfmaxp[p] = std::max(X_block_bfmaxp[p], std::abs(X_blockp[p][k]));
-            }
-        }
-
-        double X_block_max = X_block->absmax();
-
-        // => F Matrix <= //
-
-        // DOI 10.1016/j.chemphys.2008.10.036, EQ. 6
-
-        // contract density with basis functions values at these grid points
-        std::vector<SharedMatrix> F_block(njk);
-        for(size_t jki = 0; jki < njk; jki++) {
-            F_block[jki] = linalg::doublet(X_block, D_block[jki], false, true);
-        }
-        
-        // shell maxima of F_block
-        auto F_block_shell = std::make_shared<Matrix>(npoints_block, nshell);
-        auto F_block_shellp = F_block_shell->pointer();
-
-        // grid point maxima of F_block_gmax
-        auto F_block_gmax = std::make_shared<Vector>(nshell);
-        auto F_block_gmaxp = F_block_gmax->pointer();
-
-        for (size_t p = 0; p < npoints_block; p++) {
-            for (size_t TAU_local = 0; TAU_local < shell_map_all.size(); TAU_local++) {
-                size_t TAU = shell_map_all[TAU_local];
-                size_t num_tau = primary_->shell(TAU).nfunction();
-                size_t tau_start = shell_map_all_to_bf_map_all[TAU_local];
-                for(size_t jki = 0; jki < njk; jki++) {
-                    auto F_blockp = F_block[jki]->pointer();
-                    for (size_t tau = tau_start; tau < tau_start + num_tau; tau++) {
-                        F_block_shellp[p][TAU_local] = std::max(F_block_shellp[p][TAU_local], std::abs(F_blockp[p][tau]));
-                        F_block_gmaxp[TAU_local] = std::max(F_block_gmaxp[TAU_local], std::abs(F_blockp[p][tau]));
+                        if (screen_val >= linK_ints_cutoff_) {
+                            if (!is_significant) is_significant = true;
+                            int RS = (R >= S) ? (R * nshell + S) : (S * nshell + R);
+                            if (RS > P * nshell + Q) continue;
+                            ML_PQ.emplace(RS);
+                            P_stripeout_list[dP].emplace(S);
+                        }
+                        else break;
                     }
+                    if (!is_significant) break;
                 }
-            }
-        }
 
-        // => Q Matrix <= //
+                // Loop over significant RS pairs
+                for (const int RS : ML_PQ) {
 
-        // DOI 10.1063/1.3646921, EQ. 18
+                    int R = RS / nshell;
+                    int S = RS % nshell;
 
-        // slice of overlap metric (Q) made up of significant basis functions at this grid point
-        auto Q_block = std::make_shared<Matrix>(nbf_block, nbf_block);
-        for(size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
-            size_t mu = bf_map[mu_local];
-            for(size_t nu_local = 0; nu_local < nbf_block; nu_local++) {
-                size_t nu = bf_map[nu_local];
-                Q_block->set(mu_local, nu_local, Q->get(mu, nu));
-            }
-        }
+                    if (!ints[0]->shell_pair_significant(R, S)) continue;
+                    if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
-        // now Q_block agrees with EQ. 18 (see note about Q_init_ and Q_final_ in common_init())
-        Q_block = linalg::doublet(X_block, Q_block, false, true);
+                    if (ints[thread]->compute_shell(P, Q, R, S) == 0)
+                        continue;
+                    computed_shells++;
 
-        // => G Matrix <= //
+                    const double* buffer = ints[thread]->buffer();
 
-        // DOI 10.1016/j.chemphys.2008.10.036, EQ. 7
+                    // Number of basis functions in shells P, Q, R, S
+                    int shell_P_nfunc = primary_->shell(P).nfunction();
+                    int shell_Q_nfunc = primary_->shell(Q).nfunction();
+                    int shell_R_nfunc = primary_->shell(R).nfunction();
+                    int shell_S_nfunc = primary_->shell(S).nfunction();
 
-        std::vector<SharedMatrix> G_block(njk);
-        for(size_t jki = 0; jki < njk; jki++) {
-            G_block[jki] = std::make_shared<Matrix>(nbf_block_all, npoints_block);
-        }
+                    // Basis Function Starting index for shell
+                    int shell_P_start = primary_->shell(P).function_index();
+                    int shell_Q_start = primary_->shell(Q).function_index();
+                    int shell_R_start = primary_->shell(R).function_index();
+                    int shell_S_start = primary_->shell(S).function_index();
 
-        if(rank == 0) timer_on("ESP Integrals");
+                    // Basis Function offset from first basis function in the atom
+                    int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
+                    int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
 
-        const auto & int_buff = int_computers[rank]->buffers()[0];
+                    for (size_t ind = 0; ind < D.size(); ind++) {
+                        double** Kp = K[ind]->pointer();
+                        double** Dp = D[ind]->pointer();
+                        double** KTp = KT[thread][ind]->pointer();
+                        const double* buffer2 = buffer;
 
-        // calculate A_NU_TAU at all grid points in this block
-        // contract A_NU_TAU with F_TAU to get G_NU
-        for (size_t TAU : shell_map_tau) {
-            const size_t num_tau = primary_->shell(TAU).nfunction();
-            const size_t tau_start = shell_map_all_to_bf_map_all[TAU];
-            const size_t center_TAU = primary_->shell_to_center(TAU);
-            const double x_TAU = primary_->molecule()->x(center_TAU);
-            const double y_TAU = primary_->molecule()->y(center_TAU);
-            const double z_TAU = primary_->molecule()->z(center_TAU);
+                        if (!touched) {
+                            ::memset((void*)KTp[0L * max_functions_per_atom], '\0', nPbasis * nbf * sizeof(double));
+                            ::memset((void*)KTp[1L * max_functions_per_atom], '\0', nPbasis * nbf * sizeof(double));
+                            ::memset((void*)KTp[2L * max_functions_per_atom], '\0', nQbasis * nbf * sizeof(double));
+                            ::memset((void*)KTp[3L * max_functions_per_atom], '\0', nQbasis * nbf * sizeof(double));
+                        }
 
-            // TAU -> NU sparity determined by shell extents
-            for (size_t NU : shell_extent_map[TAU]) {
-                const size_t num_nu = primary_->shell(NU).nfunction();
-                const size_t nu_start = shell_map_all_to_bf_map_all[NU];
-                const size_t center_NU = primary_->shell_to_center(NU);
-                const double x_NU = primary_->molecule()->x(center_NU);
-                const double y_NU = primary_->molecule()->y(center_NU);
-                const double z_NU = primary_->molecule()->z(center_NU);
+                        // Four pointers needed for PR, PS, QR, QS
+                        double* K1p = KTp[0L * max_functions_per_atom];
+                        double* K2p = KTp[1L * max_functions_per_atom];
+                        double* K3p = KTp[2L * max_functions_per_atom];
+                        double* K4p = KTp[3L * max_functions_per_atom];
 
-                // is this value of NU also a possible value of TAU for this grid block?
-                // i.e. can we use permutational symmetry of this (NU|TAU) integral shell pair?
-                bool symm = (NU != TAU) && std::binary_search(shell_map_tau.begin(), shell_map_tau.end(), NU);
+                        double prefactor = 1.0;
+                        if (P == Q) prefactor *= 0.5;
+                        if (R == S) prefactor *= 0.5;
+                        if (P == R && Q == S) prefactor *= 0.5;
 
-                // we've already done these integrals
-                if (symm && TAU > NU) continue;
+                        // => Computing integral contractions to K buffers <= //
+                        for (int p = 0; p < shell_P_nfunc; p++) {
+                            for (int q = 0; q < shell_Q_nfunc; q++) {
+                                for (int r = 0; r < shell_R_nfunc; r++) {
+                                    for (int s = 0; s < shell_S_nfunc; s++) {
 
-                // benchmarking
-                int_shells_total += npoints_block;
+                                        K1p[(p + shell_P_offset) * nbf + r + shell_R_start] +=
+                                            prefactor * (Dp[q + shell_Q_start][s + shell_S_start]) * (*buffer2);
+                                        K2p[(p + shell_P_offset) * nbf + s + shell_S_start] +=
+                                            prefactor * (Dp[q + shell_Q_start][r + shell_R_start]) * (*buffer2);
+                                        K3p[(q + shell_Q_offset) * nbf + r + shell_R_start] +=
+                                            prefactor * (Dp[p + shell_P_start][s + shell_S_start]) * (*buffer2);
+                                        K4p[(q + shell_Q_offset) * nbf + s + shell_S_start] +=
+                                            prefactor * (Dp[p + shell_P_start][r + shell_R_start]) * (*buffer2);
 
-                // can we screen the whole block over K_uv = (X_ug (A_vtg (F_tg)) upper bound?
-                double k_bound = X_block_max * esp_boundp[NU][TAU] * F_block_gmaxp[TAU];
-                if (symm) k_bound = std::max(k_bound, X_block_max * esp_boundp[TAU][NU] * F_block_gmaxp[NU]);
-                if (k_bound < kscreen) continue;
-
-                for (size_t g = 0; g < npoints_block; g++) {
-
-                    // grid-point specific screening
-                    // account for the distance between the grid point and the shell pair
-                    double dist_TAU_g = std::sqrt((x_TAU - x[g]) * (x_TAU - x[g]) + (y_TAU - y[g]) * (y_TAU - y[g]) + (z_TAU - z[g]) * (z_TAU - z[g]));
-                    double dist_NU_g = std::sqrt((x_NU - x[g]) * (x_NU - x[g]) + (y_NU - y[g]) * (y_NU - y[g]) + (z_NU - z[g]) * (z_NU - z[g]));
-                    double dist_NUTAU_g = std::min(dist_TAU_g - shell_extents->get(TAU), dist_NU_g - shell_extents->get(NU));
-                    double dist_decay = 1.0 / std::max(1.0, dist_NUTAU_g);
-
-                    // can we screen this single point over K_uv = (X_ug (A_vtg (F_tg))) upper bound?
-                    k_bound = X_block_bfmaxp[g] * esp_boundp[NU][TAU] * dist_decay * F_block_shellp[g][TAU];
-                    if (symm) k_bound = std::max(k_bound, X_block_bfmaxp[g] * esp_boundp[TAU][NU] * dist_decay * F_block_shellp[g][NU]);
-                    if (k_bound < kscreen) continue;
-
-                    // calculate pseudospectral integral shell pair (A_NU_TAU) at gridpoint g
-                    int_computers[rank]->set_origin({x[g], y[g], z[g]});
-                    int_computers[rank]->compute_shell(NU, TAU);
-
-                    // benchmarking
-                    int_shells_computed++;
-
-                    // contract A_nu_tau with F_tau to get contribution to G_nu 
-                    // symmetry permitting, also contract A_nu_tau with F_nu to get contribution to G_tau
-                    for(size_t jki = 0; jki < njk; jki++) {
-                        auto F_blockp = F_block[jki]->pointer();
-                        auto G_blockp = G_block[jki]->pointer();
-                        for (size_t nu = nu_start, index = 0; nu < (nu_start + num_nu); ++nu) {
-                            for (size_t tau = tau_start; tau < (tau_start + num_tau); ++tau, index++) {
-                                G_blockp[nu][g] += int_buff[index] * F_blockp[g][tau];
-                                if (symm) G_blockp[tau][g] += int_buff[index] * F_blockp[g][nu];
+                                        buffer2++;
+                                    }
+                                }
                             }
                         }
                     }
-
-                }
-            }
-
-        }
-
-        if(rank == 0) timer_off("ESP Integrals");
-
-        // Contract X (or Q if overlap fitting) with G to get contribution to K
-        for(size_t jki = 0; jki < njk; jki++) {
-            SharedMatrix KT_block;
-            if (overlap_fitted) {
-                KT_block = linalg::doublet(Q_block, G_block[jki], true, true);
-            } else {
-                KT_block = linalg::doublet(X_block, G_block[jki], true, true);
-            }
-            auto KT_blockp = KT_block->pointer();
-            auto KTp = KT[jki][rank]->pointer();
-            for(size_t mu_ind = 0; mu_ind < bf_map.size(); mu_ind++) {
-                size_t mu = bf_map[mu_ind];
-                for(size_t nu_ind = 0; nu_ind < bf_map_all.size(); nu_ind++) {
-                    size_t nu = bf_map_all[nu_ind];
-                    KTp[mu][nu] += KT_blockp[mu_ind][nu_ind];
+                    touched = true;
                 }
             }
         }
 
-    }
+        // => Master shell quartet loops <= //
 
-    timer_off("Grid Loop");
+        if (!touched) continue;
 
-    // Reduce per-thread contributions
-    for(size_t jki = 0; jki < njk; jki++) {
-        for (size_t thread = 0; thread < nthreads_; thread++) {
-            K[jki]->add(KT[jki][thread]);
-        }
-        if (lr_symmetric_) {
-            K[jki]->hermitivitize();
-        }
+        // => Stripe out (Writing to K matrix) <= //
+
+        for (size_t ind = 0; ind < D.size(); ind++) {
+            double** KTp = KT[thread][ind]->pointer();
+            double** Kp = K[ind]->pointer();
+
+            double* K1p = KTp[0L * max_functions_per_atom];
+            double* K2p = KTp[1L * max_functions_per_atom];
+            double* K3p = KTp[2L * max_functions_per_atom];
+            double* K4p = KTp[3L * max_functions_per_atom];
+
+            // K_PR and K_PS
+            for (int P = Pstart; P < Pstart + nPshell; P++) {
+                int dP = P - Pstart;
+                int shell_P_start = primary_->shell(P).function_index();
+                int shell_P_nfunc = primary_->shell(P).nfunction();
+                int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
+                for (const int S : P_stripeout_list[dP]) {
+                    int shell_S_start = primary_->shell(S).function_index();
+                    int shell_S_nfunc = primary_->shell(S).nfunction();
+
+                    for (int p = 0; p < shell_P_nfunc; p++) {
+                        for (int s = 0; s < shell_S_nfunc; s++) {
+#pragma omp atomic
+                            Kp[shell_P_start + p][shell_S_start + s] += K1p[(p + shell_P_offset) * nbf + s + shell_S_start];
+#pragma omp atomic
+                            Kp[shell_P_start + p][shell_S_start + s] += K2p[(p + shell_P_offset) * nbf + s + shell_S_start];
+                        }
+                    }
+
+                }
+            }
+
+            // K_QR and K_QS
+            for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
+                int dQ = Q - Qstart;
+                int shell_Q_start = primary_->shell(Q).function_index();
+                int shell_Q_nfunc = primary_->shell(Q).nfunction();
+                int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
+                for (const int S : Q_stripeout_list[dQ]) {
+                    int shell_S_start = primary_->shell(S).function_index();
+                    int shell_S_nfunc = primary_->shell(S).nfunction();
+
+                    for (int q = 0; q < shell_Q_nfunc; q++) {
+                        for (int s = 0; s < shell_S_nfunc; s++) {
+#pragma omp atomic
+                            Kp[shell_Q_start + q][shell_S_start + s] += K3p[(q + shell_Q_offset) * nbf + s + shell_S_start];
+#pragma omp atomic
+                            Kp[shell_Q_start + q][shell_S_start + s] += K4p[(q + shell_Q_offset) * nbf + s + shell_S_start];
+                        }
+                    }
+
+                }
+            }
+
+        }  // End stripe out
+
+    }  // End master task list
+
+    for (auto& Kmat : K) {
+        Kmat->scale(2.0);
+        Kmat->hermitivitize();
     }
 
     if (bench_) {
         auto mode = std::ostream::app;
-        PsiOutStream printer("bench.dat", mode);
-        size_t ints_per_atom = int_shells_computed  / (size_t) natom;
-        printer.Printf("COSK ESP Shells: %zu,%zu,%zu\n", ints_per_atom, int_shells_computed, int_shells_total);
+        auto printer = PsiOutStream("bench.dat", mode);
+        size_t ntri = nshell * (nshell + 1L) / 2L;
+        size_t possible_shells = ntri * (ntri + 1L) / 2L;
+        printer.Printf("(LinK) Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
+                        possible_shells, computed_shells / (double)possible_shells);
     }
-
+    timer_off("build_linK()");
 }
 
 }  // namespace psi
