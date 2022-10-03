@@ -50,105 +50,10 @@ using namespace psi;
 
 namespace psi {
 
-Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisSet> &primary) {
-
-    // DOI 10.1063/1.3646921, EQ. 9
-
-    int nbf = primary->nbf();
-    BasisFunctions bf_computer(primary, grid.max_points(), grid.max_functions());
-    Matrix S_num("Numerical Overlap", nbf, nbf);
-    auto S_nump = S_num.pointer();
-
-    // This loop could be parallelized over blocks of grid points. However, the cost of the loop is
-    // so small (< 10 seconds for a 200 heavy atom system), parallelism isn't necessary
-
-    for (const auto &block : grid.blocks()) {
-
-        // grid points in this block
-        int npoints_block = block->npoints();
-        int nbf_block = block->local_nbf();
-        auto w = block->w();
-
-        // compute basis functions at these grid points
-        bf_computer.compute_functions(block);
-        auto point_values = bf_computer.basis_values()["PHI"];
-
-        // resize the buffer of basis function values
-        Matrix X_block("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
-        auto X_blockp = X_block.pointer();
-        for (size_t p = 0; p < npoints_block; p++) {
-            for (size_t k = 0; k < nbf_block; k++) {
-                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
-            }
-        }
-
-        // significant basis functions at these grid points
-        const auto &bf_map = block->functions_local_to_global();
-
-        auto S_num_block = linalg::doublet(X_block, X_block, true, false);
-        auto S_num_blockp = S_num_block.pointer();
-
-        for (size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
-            size_t mu = bf_map[mu_local];
-            for (size_t nu_local = 0; nu_local < nbf_block; nu_local++) {
-                size_t nu = bf_map[nu_local];
-                S_nump[mu][nu] += S_num_blockp[mu_local][nu_local];
-            }
-        }
-
-    }
-
-    S_num.hermitivitize();
-
-    return S_num;
-
-}
-
-Matrix compute_esp_bound(const BasisSet &primary) {
-
-    // DOI 10.1016/j.chemphys.2008.10.036, EQ. 20
-    // This is a pretty loose ESP bound, which should eventually be swapped out for something tighter
-    // The bound is also only based on the overlap between the basis functions, not the distance 
-    // between the basis functions and the grid point.
-
-    int nshell = primary.nshell();
-
-    Matrix esp_bound("Shell Integral Bound", nshell, nshell);
-    auto esp_boundp = esp_bound.pointer();
-
-    auto dist = primary.molecule()->distance_matrix();
-    auto distp = dist.pointer();
-
-    for (size_t s1=0; s1 < nshell; s1++) {
-        int c1 = primary.shell_to_center(s1);
-        int np1 = primary.shell(s1).nprimitive();
-        for (size_t s2=0; s2 < nshell; s2++) {
-            int c2 = primary.shell_to_center(s2);
-            int np2 = primary.shell(s2).nprimitive();
-
-            double r2 = distp[c1][c2] * distp[c1][c2] ;
-            for(size_t pi1 = 0; pi1 < np1; pi1++) {
-                for(size_t pi2 = 0; pi2 < np2; pi2++) {
-                    double exp1 = primary.shell(s1).exp(pi1);
-                    double exp2 = primary.shell(s2).exp(pi2);
-                    double coef1 = primary.shell(s1).coef(pi1);
-                    double coef2 = primary.shell(s2).coef(pi2);
-                    esp_boundp[s1][s2] += coef1 * coef2 * std::exp(-1 * r2 * exp1 * exp2 / (exp1 + exp2)) * 2 * M_PI / (exp1 + exp2);
-                }
-            }
-
-            esp_boundp[s1][s2] = std::abs(esp_boundp[s1][s2]);
-        }
-    }
-
-    return esp_bound;
-
-}
-
-DFJCOSK::DFJCOSK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) { 
-    timer_on("DFJCOSK::Setup");
+DFJLinK::DFJLinK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) { 
+    timer_on("DFJLinK::Setup");
     common_init(); 
-    timer_off("DFJCOSK::Setup");
+    timer_off("DFJLinK::Setup");
 }
 
 DFJCOSK::~DFJCOSK() {}
