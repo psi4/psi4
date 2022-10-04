@@ -1387,7 +1387,7 @@ void Matrix::gemm(const char &transa, const char &transb, const int &m, const in
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix *const a, const Matrix *const b, double beta) {
     if (nirrep_ != a->nirrep_ || nirrep_ != b->nirrep_)
         throw PSIEXCEPTION("Matrix::gemm error: Number of irreps do not equal.");
-    
+
     // Check symmetry
     if (symmetry_ != (a->symmetry_ ^ b->symmetry_)) {
         outfile->Printf("Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
@@ -1413,8 +1413,7 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix *const a,
         int lda = a->colspi_[Ha ^ a->symmetry_];
         int ldb = b->colspi_[Hb ^ b->symmetry_];
         int ldc = colspi_[Hc ^ symmetry_];
-        if (m != mcheck || n != ncheck || k != kcheck)
-        {
+        if (m != mcheck || n != ncheck || k != kcheck) {
             outfile->Printf("Row and column block dimensions of A\n");
             a->rowspi_.print();
             a->colspi_.print();
