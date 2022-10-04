@@ -6,7 +6,7 @@ from psi4.core import Dimension, Matrix, Slice, doublet
 import psi4
 from utils import compare_arrays
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 def check_dense_mat(m, exp_r, exp_c, exp_name=None):
     assert m.rows() == exp_r
@@ -228,7 +228,7 @@ def test_doublets(adl, adr, Ga, bdl, bdr, Gb, at, bt):
         assert compare_arrays(expected[blk_idx], res_blocks[blk_idx], 8, f"Block[{blk_idx}]")
 
 def test_set_matrix():
-    # I want blank symmetric matrix. I'll send an off-block.
+    # Use set_matrix to zero a block of a non-totally symmetric matrix.
     dim = Dimension([3, 2])
     mat = Matrix("Name", dim, dim, 1)
     control_mat = Matrix("Name", dim, dim, 1)
