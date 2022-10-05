@@ -1,15 +1,15 @@
 import pytest
-from .utils import *
-from .addons import using
+from utils import *
+from addons import uusing
 
 from qcelemental.testing import compare_values
 
 import psi4
 
-pytestmark = [pytest.mark.quick, pytest.mark.mdi]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.mdi]
 
 @pytest.mark.smoke
-@using("mdi")
+@uusing("mdi")
 def test_mdi_water():
 
     psi4.geometry("""

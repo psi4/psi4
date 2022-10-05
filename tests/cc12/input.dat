@@ -2,8 +2,9 @@
 
 scf_0       =   -76.021709716552  #TEST
 ccsd_0      =   -76.231133524444  #TEST
-eomccsd_ref = [ -75.814603692260, -75.539103963086, -75.831943898862, -75.396306147194,  #TEST
-                -75.909915072934, -75.311455726994, -75.734249213528, -75.649833933279 ] #TEST
+eomccsd_ref = [ (-75.814603692260, "A1", 1), (-75.539103963086, "A1", 2), (-75.831943898862, "A2", 0), (-75.396306147194, "A2", 1),  #TEST
+                (-75.909915072934, "B1", 0), (-75.311455726994, "B1", 1), (-75.734249213528, "B2", 0), (-75.649833933279, "B2", 1) ] #TEST
+eomccsd_ref.sort()
 
 molecule h2o {
   O
@@ -20,7 +21,6 @@ energy('eom-ccsd')
 
 compare_values(scf_0, variable("SCF TOTAL ENERGY"), 6, "SCF energy")                 #TEST
 compare_values(ccsd_0, variable("CCSD TOTAL ENERGY"), 6, "CCSD energy")              #TEST
-for root in range(1,9):                                                                  #TEST
-    ref = eomccsd_ref[root-1]                                                            #TEST
-    val = variable("CC ROOT %d TOTAL ENERGY" % root)                                 #TEST
-    compare_values(ref, val, 6, "EOM-CCSD root %d" %root)                                #TEST
+for (ref, h, i) in eomccsd_ref: # TEST
+    val = variable(f"CCSD ROOT {i} (IN {h}) TOTAL ENERGY")                                 #TEST
+    compare_values(ref, val, 6, f"EOM-CCSD root {i} (IN {h})")                                #TEST

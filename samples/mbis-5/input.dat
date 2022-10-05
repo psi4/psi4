@@ -42,7 +42,7 @@ set {
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
-oeprop(wfn, 'MBIS_CHARGES', title='ZnO SCF')
+oeprop(wfn, 'MBIS_VOLUME_RATIOS', title='ZnO SCF')
 
 #NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
 charges = wfn.array_variable('MBIS CHARGES')

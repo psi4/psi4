@@ -4,8 +4,9 @@ import psi4
 import pytest
 import numpy as np
 import random
-from .utils import *
+from utils import *
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 @pytest.fixture(scope="module", params=["spherical", "cartesian"])
 def build_system(request):

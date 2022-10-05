@@ -16,7 +16,7 @@ if(${ENABLE_v2rdm_casscf})
 
         ExternalProject_Add(v2rdm_casscf_external
             DEPENDS psi4-core
-            URL https://github.com/loriab/v2rdm_casscf/archive/929d7fc.tar.gz
+            URL https://github.com/loriab/v2rdm_casscf/archive/dfdaae7.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -31,6 +31,8 @@ if(${ENABLE_v2rdm_casscf})
                        -Dpsi4_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/psi4
                        -Dpybind11_DIR=${pybind11_DIR}
                        -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}

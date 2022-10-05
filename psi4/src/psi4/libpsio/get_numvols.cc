@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -57,17 +57,4 @@ size_t PSIO::get_numvols(size_t unit) {
     // assume that the default has been provided already
     abort();
 }
-
-size_t psio_get_numvols_default() {
-    std::string charnum;
-
-    charnum = _default_psio_lib_->filecfg_kwd("PSI", "NVOLUME", -1);
-    if (!charnum.empty()) return ((size_t)atoi(charnum.c_str()));
-    charnum = _default_psio_lib_->filecfg_kwd("DEFAULT", "NVOLUME", -1);
-    if (!charnum.empty()) return ((size_t)atoi(charnum.c_str()));
-
-    // assume that the default has been provided already
-    abort();
-}
-
 }  // namespace psi

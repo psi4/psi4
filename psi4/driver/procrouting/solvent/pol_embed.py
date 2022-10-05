@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -197,5 +197,5 @@ class CppeInterface:
             prefactors = []
             for multipole in site.multipoles:
                 prefactors.extend(cppe.prefactors(multipole.k) * multipole.values)
-            integrals = self.mints.ao_multipole_potential(site.position, max_k=multipole.k)
+            integrals = self.mints.ao_multipole_potential(order=multipole.k, origin=site.position)
             self.V_es += sum(pref * intv.np for pref, intv in zip(prefactors, integrals))

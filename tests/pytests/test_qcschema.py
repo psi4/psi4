@@ -8,11 +8,11 @@ import qcelemental as qcel
 
 import psi4
 
-from .utils import *
+from utils import *
 
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 @pytest.fixture(scope="function")
 def result_data_fixture():
@@ -52,7 +52,7 @@ def test_qcschema_energy(result_data_fixture):
     assert compare_integers(True, 'beer' in ret.stdout, "Stdout Beer")
 
     # Check Array data
-    assert compare_integers(True, isinstance(ret.extras["qcvars"]["MAYER_INDICES"], np.ndarray),
+    assert compare_integers(True, isinstance(ret.extras["qcvars"]["MAYER INDICES"], np.ndarray),
                             "Extras: Mayer Indices is Array")
     assert compare_integers(True, ret.provenance.routine == "psi4.schema_runner.run_qcschema", "Provenance: Routine")
 
@@ -76,7 +76,7 @@ def test_qcschema_keyword_error(result_data_fixture):
     ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
 
     assert compare_integers(False, ret.success, "Computation Status")
-    assert compare_integers(True, "unicorn" in ret.error.error_message, "Error Message")
+    assert compare_integers(True, "UNICORN" in ret.error.error_message, "Error Message")
 
 
 @pytest.mark.parametrize("input_enc, input_fn, output_enc, output_fn, ", [
@@ -93,7 +93,7 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
     if (input_enc == "msgpack-ext") or (output_enc == "msgpack-ext"):
         try:
             import msgpack
-        except:
+        except ImportError:
             pytest.skip("Msgpack could not be found, skipping.")
 
     inputs = {input_fn: data.serialize(input_enc)}

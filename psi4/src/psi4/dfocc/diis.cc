@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -42,10 +42,10 @@ void DFOCC::diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, Shar
     /********************************************************************************************/
     /************************** memalloc ********************************************************/
     /********************************************************************************************/
-    SharedTensor2d Bmat = SharedTensor2d(new Tensor2d("DIIS B Matrix", nvar, nvar));
-    SharedTensor1d Cvec = SharedTensor1d(new Tensor1d("DIIS C Vector", nvar));
-    SharedTensor1d vrow = SharedTensor1d(new Tensor1d("DIIS vrow", dimvec));
-    SharedTensor1d vcol = SharedTensor1d(new Tensor1d("DIIS vcol", dimvec));
+    SharedTensor2d Bmat = std::make_shared<Tensor2d>("DIIS B Matrix", nvar, nvar);
+    SharedTensor1d Cvec = std::make_shared<Tensor1d>("DIIS C Vector", nvar);
+    SharedTensor1d vrow = std::make_shared<Tensor1d>("DIIS vrow", dimvec);
+    SharedTensor1d vcol = std::make_shared<Tensor1d>("DIIS vcol", dimvec);
 
     /********************************************************************************************/
     /************************** Form B matrix ***************************************************/

@@ -1,6 +1,6 @@
 import pytest
-from .addons import using
-from .utils import *
+from addons import uusing
+from utils import *
 
 import math
 
@@ -10,10 +10,35 @@ import qcelemental as qcel
 import psi4
 from psi4.driver import qcdb
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
-def hide_test_xtpl_fn_fn_error():
+def test_variables_deprecated():
+    psi4.geometry("he")
+    psi4.set_options({"basis": "cc-pvtz", "qc_module": "occ"})
+    psi4.energy("mp2")
+
+    qcvars = psi4.core.variables()
+    assert "SCS(N)-MP2 CORRELATION ENERGY" in qcvars.keys()
+    assert "SCSN-MP2 CORRELATION ENERGY" not in qcvars.keys()
+
+    qcvars = psi4.core.variables(include_deprecated_keys=True)
+    assert "SCS(N)-MP2 CORRELATION ENERGY" in qcvars.keys()
+    assert "SCSN-MP2 CORRELATION ENERGY" in qcvars.keys()
+
+
+@pytest.mark.parametrize("call",
+    [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies, psi4.properties])
+def test_typo_method_calls(call):
+    psi4.geometry('He')
+    err_substr = "Did you mean?"
+
+    with pytest.raises(Exception) as e:
+        call('ccsdd', basis='cc-pvdz')
+    assert err_substr in str(e.value)
+
+
+def test_xtpl_fn_fn_error():
     psi4.geometry('He')
 
     with pytest.raises(psi4.UpgradeHelper) as e:
@@ -22,14 +47,33 @@ def hide_test_xtpl_fn_fn_error():
     assert 'Replace extrapolation function with function name' in str(e.value)
 
 
-def hide_test_xtpl_cbs_fn_error():
+@pytest.mark.parametrize("call",
+    [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies, psi4.properties])
+def test_xtpl_cbs_fn_error(call):
     psi4.geometry('He')
 
     with pytest.raises(psi4.UpgradeHelper) as e:
-        psi4.energy(psi4.cbs, scf_basis='cc-pvdz')
+        call(psi4.cbs, scf_basis='cc-pvdz')
         #psi4.energy(psi4.driver.driver_cbs.complete_basis_set, scf_basis='cc-pvdz')
 
     assert 'Replace cbs or complete_basis_set function with cbs string' in str(e.value)
+
+
+def test_xtpl_gold_fn_error():
+    psi4.geometry('He')
+    from psi4.driver.aliases import sherrill_gold_standard
+
+    with pytest.raises(psi4.UpgradeHelper) as e:
+        psi4.energy(sherrill_gold_standard, scf_basis='cc-pvdz')
+
+    assert 'Replace function `energy(sherrill_gold_standard)' in str(e.value)
+
+
+def test_qmmm_class_error():
+    with pytest.raises(psi4.UpgradeHelper) as e:
+        psi4.QMMM()
+
+    assert 'Replace object with a list of charges and locations in Bohr passed as keyword argument' in str(e.value)
 
 
 @pytest.mark.parametrize("inp,out", [
@@ -57,7 +101,7 @@ def test_parse_cotton_irreps_error(inp):
 
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>
 
-@using("networkx")
+@uusing("networkx")
 def test_deprecated_qcdb_align_b787():
 
     soco10 = """
@@ -98,16 +142,19 @@ def test_deprecated_qcdb_align_scramble():
 
 # <<<  TODO Deprecated! Delete when the error messages are removed.  >>>
 
-def test_deprecated_dcft_calls():
+@pytest.mark.parametrize("call",
+    [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies])
+def test_deprecated_dcft_calls(call):
     psi4.geometry('He')
     err_substr = "All instances of 'dcft' should be replaced with 'dct'."
 
-    driver_calls = [psi4.energy, psi4.optimize, psi4.gradient, psi4.hessian, psi4.frequencies]
+    with pytest.raises(psi4.UpgradeHelper) as e:
+        call('dcft', basis='cc-pvdz')
+    assert err_substr in str(e.value)
 
-    for call in driver_calls:
-        with pytest.raises(psi4.UpgradeHelper) as e:
-            call('dcft', basis='cc-pvdz')
-        assert err_substr in str(e.value)
+
+def test_deprecated_dcft_options():
+    err_substr = "All instances of 'dcft' should be replaced with 'dct'."
 
     # The errors trapped below are C-side, so they're nameless, Py-side.
     with pytest.raises(Exception) as e:
@@ -123,13 +170,8 @@ def test_deprecated_dcft_calls():
 
 def test_deprecated_component_dipole():
 
-    #with pytest.warns(FutureWarning) as e:
-    psi4.set_variable("current dipole x", 5)
-
-    with pytest.warns(FutureWarning) as e:
-        ans = psi4.variable("current dipole x")
-
-    assert ans == 5
+    with pytest.raises(psi4.UpgradeHelper) as e:
+        psi4.variable("current dipole x")
 
 def test_deprecated_set_module_options():
     err_substr = "instead of `psi4.set_options({<module>__<keys>: <vals>})`"

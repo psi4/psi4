@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,7 +40,7 @@ namespace dfoccwave {
 
 void DFOCC::pair_index() {
     // SO
-    so_idx = SharedTensor2i(new Tensor2i("so_idx", nso_, nso_));
+    so_idx = std::make_shared<Tensor2i>("so_idx", nso_, nso_);
     for (int i = 0; i < nso_; i++) {
         for (int j = 0; j < nso_; j++) {
             so_idx->set(i, j, j + (i * nso_));
@@ -48,7 +48,7 @@ void DFOCC::pair_index() {
     }
 
     // Active OO
-    ij_idxAA = SharedTensor2i(new Tensor2i("IJ_idx", naoccA, naoccA));
+    ij_idxAA = std::make_shared<Tensor2i>("IJ_idx", naoccA, naoccA);
     for (int i = 0; i < naoccA; i++) {
         for (int j = 0; j < naoccA; j++) {
             ij_idxAA->set(i, j, j + (i * naoccA));
@@ -56,7 +56,7 @@ void DFOCC::pair_index() {
     }
 
     // All OO
-    oo_idxAA = SharedTensor2i(new Tensor2i("OO_idx", noccA, noccA));
+    oo_idxAA = std::make_shared<Tensor2i>("OO_idx", noccA, noccA);
     for (int i = 0; i < noccA; i++) {
         for (int j = 0; j < noccA; j++) {
             oo_idxAA->set(i, j, j + (i * noccA));
@@ -64,7 +64,7 @@ void DFOCC::pair_index() {
     }
 
     // Active OV
-    ia_idxAA = SharedTensor2i(new Tensor2i("IA_idx", naoccA, navirA));
+    ia_idxAA = std::make_shared<Tensor2i>("IA_idx", naoccA, navirA);
     for (int i = 0; i < naoccA; i++) {
         for (int a = 0; a < navirA; a++) {
             ia_idxAA->set(i, a, a + (i * navirA));
@@ -72,7 +72,7 @@ void DFOCC::pair_index() {
     }
 
     // All OV
-    ov_idxAA = SharedTensor2i(new Tensor2i("OV_idx", noccA, nvirA));
+    ov_idxAA = std::make_shared<Tensor2i>("OV_idx", noccA, nvirA);
     for (int i = 0; i < noccA; i++) {
         for (int a = 0; a < nvirA; a++) {
             ov_idxAA->set(i, a, a + (i * nvirA));
@@ -80,7 +80,7 @@ void DFOCC::pair_index() {
     }
 
     // Active VO
-    ai_idxAA = SharedTensor2i(new Tensor2i("AI_idx", navirA, naoccA));
+    ai_idxAA = std::make_shared<Tensor2i>("AI_idx", navirA, naoccA);
     for (int a = 0; a < navirA; a++) {
         for (int i = 0; i < naoccA; i++) {
             ai_idxAA->set(a, i, i + (a * naoccA));
@@ -88,7 +88,7 @@ void DFOCC::pair_index() {
     }
 
     // All VO
-    vo_idxAA = SharedTensor2i(new Tensor2i("VO_idx", nvirA, noccA));
+    vo_idxAA = std::make_shared<Tensor2i>("VO_idx", nvirA, noccA);
     for (int a = 0; a < nvirA; a++) {
         for (int i = 0; i < noccA; i++) {
             vo_idxAA->set(a, i, i + (a * noccA));
@@ -96,7 +96,7 @@ void DFOCC::pair_index() {
     }
 
     // Active VV
-    ab_idxAA = SharedTensor2i(new Tensor2i("AB_idx", navirA, navirA));
+    ab_idxAA = std::make_shared<Tensor2i>("AB_idx", navirA, navirA);
     for (int a = 0; a < navirA; a++) {
         for (int b = 0; b < navirA; b++) {
             ab_idxAA->set(a, b, b + (a * navirA));
@@ -104,7 +104,7 @@ void DFOCC::pair_index() {
     }
 
     // All VV
-    vv_idxAA = SharedTensor2i(new Tensor2i("VV_idx", nvirA, nvirA));
+    vv_idxAA = std::make_shared<Tensor2i>("VV_idx", nvirA, nvirA);
     for (int a = 0; a < nvirA; a++) {
         for (int b = 0; b < nvirA; b++) {
             vv_idxAA->set(a, b, b + (a * nvirA));
@@ -114,7 +114,7 @@ void DFOCC::pair_index() {
     // UNRESTRICTED
     if (reference_ == "UNRESTRICTED") {
         // Active Oo
-        ij_idxAB = SharedTensor2i(new Tensor2i("Ij_idx", naoccA, naoccB));
+        ij_idxAB = std::make_shared<Tensor2i>("Ij_idx", naoccA, naoccB);
         for (int i = 0; i < naoccA; i++) {
             for (int j = 0; j < naoccB; j++) {
                 ij_idxAB->set(i, j, j + (i * naoccB));
@@ -122,7 +122,7 @@ void DFOCC::pair_index() {
         }
 
         // Active oO
-        ij_idxBA = SharedTensor2i(new Tensor2i("iJ_idx", naoccB, naoccA));
+        ij_idxBA = std::make_shared<Tensor2i>("iJ_idx", naoccB, naoccA);
         for (int i = 0; i < naoccB; i++) {
             for (int j = 0; j < naoccA; j++) {
                 ij_idxBA->set(i, j, j + (i * naoccA));
@@ -130,7 +130,7 @@ void DFOCC::pair_index() {
         }
 
         // Active oo
-        ij_idxBB = SharedTensor2i(new Tensor2i("ij_idx", naoccB, naoccB));
+        ij_idxBB = std::make_shared<Tensor2i>("ij_idx", naoccB, naoccB);
         for (int i = 0; i < naoccB; i++) {
             for (int j = 0; j < naoccB; j++) {
                 ij_idxBB->set(i, j, j + (i * naoccB));
@@ -138,7 +138,7 @@ void DFOCC::pair_index() {
         }
 
         // All Oo
-        oo_idxAB = SharedTensor2i(new Tensor2i("Oo_idx", noccA, noccB));
+        oo_idxAB = std::make_shared<Tensor2i>("Oo_idx", noccA, noccB);
         for (int i = 0; i < noccA; i++) {
             for (int j = 0; j < noccB; j++) {
                 oo_idxAB->set(i, j, j + (i * noccB));
@@ -146,7 +146,7 @@ void DFOCC::pair_index() {
         }
 
         // All oo
-        oo_idxBB = SharedTensor2i(new Tensor2i("oo_idx", noccB, noccB));
+        oo_idxBB = std::make_shared<Tensor2i>("oo_idx", noccB, noccB);
         for (int i = 0; i < noccB; i++) {
             for (int j = 0; j < noccB; j++) {
                 oo_idxBB->set(i, j, j + (i * noccB));
@@ -154,7 +154,7 @@ void DFOCC::pair_index() {
         }
 
         // Active Ov
-        ia_idxAB = SharedTensor2i(new Tensor2i("Ia_idx", naoccA, navirB));
+        ia_idxAB = std::make_shared<Tensor2i>("Ia_idx", naoccA, navirB);
         for (int i = 0; i < naoccA; i++) {
             for (int a = 0; a < navirB; a++) {
                 ia_idxAB->set(i, a, a + (i * navirB));
@@ -162,7 +162,7 @@ void DFOCC::pair_index() {
         }
 
         // Active oV
-        ia_idxBA = SharedTensor2i(new Tensor2i("iA_idx", naoccB, navirA));
+        ia_idxBA = std::make_shared<Tensor2i>("iA_idx", naoccB, navirA);
         for (int i = 0; i < naoccB; i++) {
             for (int a = 0; a < navirA; a++) {
                 ia_idxBA->set(i, a, a + (i * navirA));
@@ -170,7 +170,7 @@ void DFOCC::pair_index() {
         }
 
         // Active ov
-        ia_idxBB = SharedTensor2i(new Tensor2i("ia_idx", naoccB, navirB));
+        ia_idxBB = std::make_shared<Tensor2i>("ia_idx", naoccB, navirB);
         for (int i = 0; i < naoccB; i++) {
             for (int a = 0; a < navirB; a++) {
                 ia_idxBB->set(i, a, a + (i * navirB));
@@ -178,7 +178,7 @@ void DFOCC::pair_index() {
         }
 
         // All Ov
-        ov_idxAB = SharedTensor2i(new Tensor2i("Ov_idx", noccA, nvirB));
+        ov_idxAB = std::make_shared<Tensor2i>("Ov_idx", noccA, nvirB);
         for (int i = 0; i < noccA; i++) {
             for (int a = 0; a < nvirB; a++) {
                 ov_idxAB->set(i, a, a + (i * nvirB));
@@ -186,7 +186,7 @@ void DFOCC::pair_index() {
         }
 
         // All ov
-        ov_idxBB = SharedTensor2i(new Tensor2i("ov_idx", noccB, nvirB));
+        ov_idxBB = std::make_shared<Tensor2i>("ov_idx", noccB, nvirB);
         for (int i = 0; i < noccB; i++) {
             for (int a = 0; a < nvirB; a++) {
                 ov_idxBB->set(i, a, a + (i * nvirB));
@@ -194,7 +194,7 @@ void DFOCC::pair_index() {
         }
 
         // Active Vo
-        ai_idxAB = SharedTensor2i(new Tensor2i("Ai_idx", navirA, naoccB));
+        ai_idxAB = std::make_shared<Tensor2i>("Ai_idx", navirA, naoccB);
         for (int a = 0; a < navirA; a++) {
             for (int i = 0; i < naoccB; i++) {
                 ai_idxAB->set(a, i, i + (a * naoccB));
@@ -202,7 +202,7 @@ void DFOCC::pair_index() {
         }
 
         // Active vO
-        ai_idxBA = SharedTensor2i(new Tensor2i("aI_idx", navirB, naoccA));
+        ai_idxBA = std::make_shared<Tensor2i>("aI_idx", navirB, naoccA);
         for (int a = 0; a < navirB; a++) {
             for (int i = 0; i < naoccA; i++) {
                 ai_idxBA->set(a, i, i + (a * naoccA));
@@ -210,7 +210,7 @@ void DFOCC::pair_index() {
         }
 
         // Active vo
-        ai_idxBB = SharedTensor2i(new Tensor2i("ai_idx", navirB, naoccB));
+        ai_idxBB = std::make_shared<Tensor2i>("ai_idx", navirB, naoccB);
         for (int a = 0; a < navirB; a++) {
             for (int i = 0; i < naoccB; i++) {
                 ai_idxBB->set(a, i, i + (a * naoccB));
@@ -218,7 +218,7 @@ void DFOCC::pair_index() {
         }
 
         // All Vo
-        vo_idxAB = SharedTensor2i(new Tensor2i("Vo_idx", nvirA, noccB));
+        vo_idxAB = std::make_shared<Tensor2i>("Vo_idx", nvirA, noccB);
         for (int a = 0; a < nvirA; a++) {
             for (int i = 0; i < noccB; i++) {
                 vo_idxAB->set(a, i, i + (a * noccB));
@@ -226,7 +226,7 @@ void DFOCC::pair_index() {
         }
 
         // All vo
-        vo_idxBB = SharedTensor2i(new Tensor2i("vo_idx", nvirB, noccB));
+        vo_idxBB = std::make_shared<Tensor2i>("vo_idx", nvirB, noccB);
         for (int a = 0; a < nvirB; a++) {
             for (int i = 0; i < noccB; i++) {
                 vo_idxBB->set(a, i, i + (a * noccB));
@@ -234,7 +234,7 @@ void DFOCC::pair_index() {
         }
 
         // Active Vv
-        ab_idxAB = SharedTensor2i(new Tensor2i("Ab_idx", navirA, navirB));
+        ab_idxAB = std::make_shared<Tensor2i>("Ab_idx", navirA, navirB);
         for (int a = 0; a < navirA; a++) {
             for (int b = 0; b < navirB; b++) {
                 ab_idxAB->set(a, b, b + (a * navirB));
@@ -242,7 +242,7 @@ void DFOCC::pair_index() {
         }
 
         // Active vV
-        ab_idxBA = SharedTensor2i(new Tensor2i("aB_idx", navirB, navirA));
+        ab_idxBA = std::make_shared<Tensor2i>("aB_idx", navirB, navirA);
         for (int a = 0; a < navirB; a++) {
             for (int b = 0; b < navirA; b++) {
                 ab_idxBA->set(a, b, b + (a * navirA));
@@ -250,7 +250,7 @@ void DFOCC::pair_index() {
         }
 
         // Active vv
-        ab_idxBB = SharedTensor2i(new Tensor2i("ab_idx", navirB, navirB));
+        ab_idxBB = std::make_shared<Tensor2i>("ab_idx", navirB, navirB);
         for (int a = 0; a < navirB; a++) {
             for (int b = 0; b < navirB; b++) {
                 ab_idxBB->set(a, b, b + (a * navirB));
@@ -258,7 +258,7 @@ void DFOCC::pair_index() {
         }
 
         // All Vv
-        vv_idxAB = SharedTensor2i(new Tensor2i("Vv_idx", nvirA, nvirB));
+        vv_idxAB = std::make_shared<Tensor2i>("Vv_idx", nvirA, nvirB);
         for (int a = 0; a < nvirA; a++) {
             for (int b = 0; b < nvirB; b++) {
                 vv_idxAB->set(a, b, b + (a * nvirB));
@@ -266,7 +266,7 @@ void DFOCC::pair_index() {
         }
 
         // All vv
-        vv_idxBB = SharedTensor2i(new Tensor2i("vv_idx", nvirB, nvirB));
+        vv_idxBB = std::make_shared<Tensor2i>("vv_idx", nvirB, nvirB);
         for (int a = 0; a < nvirB; a++) {
             for (int b = 0; b < nvirB; b++) {
                 vv_idxBB->set(a, b, b + (a * nvirB));

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,19 +40,6 @@ using namespace pybind11::literals;
 void export_oeprop(py::module &m) {
     py::class_<Prop, std::shared_ptr<Prop> >(m, "Prop", "docstring");
 
-    py::class_<TaskListComputer, std::shared_ptr<TaskListComputer> >(m, "TaskListComputer", "docstring")
-        .def("set_title", &TaskListComputer::set_title, "docstring");
-
-    //     def(init<std::shared_ptr<Wavefunction> >()).
-    //     def("print_header", pure_virtual(&Prop::print_header)).
-    //     def("compute", pure_virtual(&Prop::compute)).
-    //     def("set_Da_ao", &Prop::set_Da_ao, "docstring").
-    //     def("set_Db_ao", &Prop::set_Db_ao, "docstring").
-    //     def("set_Da_so", &Prop::set_Da_so, "docstring").
-    //     def("set_Db_so", &Prop::set_Db_so, "docstring").
-    //     def("set_Da_mo", &Prop::set_Da_mo, "docstring").
-    //     def("set_Db_mo", &Prop::set_Db_mo, "docstring");
-
     py::class_<ESPPropCalc, std::shared_ptr<ESPPropCalc>, Prop>(
         m, "ESPPropCalc", "ESPPropCalc gives access to routines calculating the ESP on a grid")
         .def(py::init<std::shared_ptr<Wavefunction> >())
@@ -61,14 +48,11 @@ void export_oeprop(py::module &m) {
         .def("compute_field_over_grid_in_memory", &ESPPropCalc::compute_field_over_grid_in_memory,
              "Computes field on specified grid Nx3 (as SharedMatrix)");
 
-    py::class_<OEProp, std::shared_ptr<OEProp>, TaskListComputer>(m, "OEProp", "docstring")
-        .
-        // TODO had no_init but init member present
-        def(py::init<std::shared_ptr<Wavefunction> >())
-        .def("add", &OEProp::oepy_add, "docstring")
-        .def("compute", &OEProp::oepy_compute, "docstring")
-        //        def("set_title", &OEProp::set_title, "docstring").
-        .def("clear", &OEProp::clear, "docstring")
+    py::class_<OEProp, std::shared_ptr<OEProp>>(m, "OEProp", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction> >())
+        .def("add", py::overload_cast<const std::string&>(&OEProp::add), "Append the given task to the list of properties to compute.")
+        .def("compute", &OEProp::compute, "Compute the properties.")
+        .def("clear", &OEProp::clear, "Clear the list of properties to compute.")
         .def("set_Da_ao", &OEProp::set_Da_ao, "docstring", "Da"_a, "symmetry"_a = 0)
         .def("set_Db_ao", &OEProp::set_Db_ao, "docstring", "Db"_a, "symmetry"_a = 0)
         .def("set_Da_so", &OEProp::set_Da_so, "docstring")
@@ -78,7 +62,13 @@ void export_oeprop(py::module &m) {
         .def("Vvals", &OEProp::Vvals, "The electrostatic potential (in a.u.) at each grid point")
         .def("Exvals", &OEProp::Exvals, "The x component of the field (in a.u.) at each grid point")
         .def("Eyvals", &OEProp::Eyvals, "The y component of the field (in a.u.) at each grid point")
-        .def("Ezvals", &OEProp::Ezvals, "The z component of the field (in a.u.) at each grid point");
+        .def("Ezvals", &OEProp::Ezvals, "The z component of the field (in a.u.) at each grid point")
+        .def("set_title", &OEProp::set_title,
+             "Title OEProp for print purposes. As a side effect, saves variables as title + propertyname and only that. "
+             "Follow up with side names, if the side effect is undesired,", "title"_a)
+        .def("set_names", &OEProp::set_names,
+             "Instruct OEProp to save variables under all specified names. The property name will "
+             "be inserted at every occurrence of {}, like Python format strings. Wipes other names-to-save-by.");
 
     // class_<GridProp, std::shared_ptr<GridProp> >("GridProp", "docstring").
     //    def("add", &GridProp::gridpy_add, "docstring").

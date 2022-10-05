@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -105,7 +105,7 @@ void OCCWave::mp2_energy(bool include_singles) {
 
     if (reference_ == "RESTRICTED") {
         // Same-spin contribution
-        std::string temp = (wfn_type_ == "OCEPA") ? "2" : (wfn_type_ == "OMP2") ? "" : "2_1";
+        std::string temp = (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") ? "2" : (wfn_type_ == "OMP2") ? "" : "2_1";
         std::string t_same = "T" + temp + "AA <OO|VV>";
         global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                t_same.c_str());
@@ -134,7 +134,7 @@ void OCCWave::mp2_energy(bool include_singles) {
     }  // end rhf
 
     else if (reference_ == "UNRESTRICTED") {
-        std::string temp = (wfn_type_ == "OCEPA") ? "2" : "2_1";
+        std::string temp = (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") ? "2" : "2_1";
         std::string t_alpha = "T" + temp + " <OO|VV>";
         // Compute Energy
         // Alpha-Alpha spin contribution

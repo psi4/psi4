@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,8 +32,6 @@ PSIF_OPTKING                =    1  #
 PSIF_GRAD                   =   11  # geometry optimization, geometry, and gradient; currently is an ASCII file like output.grad
 PSIF_INTCO                  =   12  # internal coordinates file, currently is ASCII file like output.intco
 PSIF_3INDEX                 =   16  # 
-PSIF_DSCF                   =   31  # 
-PSIF_CHKPT                  =   32  # new libpsio checkpoint file number
 PSIF_SO_TEI                 =   33  # 
 PSIF_SO_PK                  =   34  # 
 PSIF_OEI                    =   35  # 
@@ -43,7 +41,6 @@ PSIF_SO_R12                 =   38  #
 PSIF_SO_R12T1               =   39  # 
 PSIF_DERINFO                =   40  # 
 PSIF_SO_PRESORT             =   41  # 
-PSIF_OLD_CHKPT              =   42  # Until we have flexible PSIF_CHKPT this will store previous calculation info
 PSIF_CIVECT                 =   43  # CI vector from DETCI along with string and determinant info
 PSIF_AO_DGDBX               =   44  # B-field derivative AO integrals over GIAO Gaussians -- only bra-ket permutational symmetry holds
 PSIF_AO_DGDBY               =   45  # 
@@ -57,9 +54,6 @@ PSIF_LIBTRANS_DPD           =   61  # libtrans: All transformed integrals in DPD
 PSIF_LIBTRANS_A_HT          =   62  # libtrans: Alpha half-transformed integrals in DPD format
 PSIF_LIBTRANS_B_HT          =   63  # libtrans: Beta half-transformed integrals in DPD format
 PSIF_LIBDIIS                =   64  # Storage for libdiis
-PSIF_DFT_GRID               =   65  # Storage for DFT/pseudospectral grid
-PSIF_DF_TENSOR              =   66  # 
-PSIF_PS_TENSOR              =   67  # 
 PSIF_TPDM_PRESORT           =   71  # 
 PSIF_MO_TEI                 =   72  # 
 PSIF_MO_OPDM                =   73  # 
@@ -67,7 +61,6 @@ PSIF_MO_TPDM                =   74  #
 PSIF_MO_LAG                 =   75  # 
 PSIF_AO_OPDM                =   76  # PSIF_AO_OPDM also contains AO Lagrangian
 PSIF_AO_TPDM                =   77  # 
-PSIF_DBOC                   =   78  # dboc:
 PSIF_MO_R12                 =   79  # 
 PSIF_MO_R12T2               =   80  # 
 PSIF_MO_AA_TEI              =   81  # 
@@ -79,16 +72,11 @@ PSIF_MO_AB_TPDM             =   86  #
 PSIF_AA_PRESORT             =   87  # AA UHF twopdm presort file
 PSIF_BB_PRESORT             =   88  # BB UHF twopdm presort file
 PSIF_AB_PRESORT             =   89  # AB UHF twopdm presort file
-PSIF_MO_HESS                =   90  # 
-PSIF_CPHF                   =   91  # 
 PSIF_SO_PKSUPER1            =   92  # 
 PSIF_SO_PKSUPER2            =   93  # 
 PSIF_HALFT0                 =   94  # 
 PSIF_HALFT1                 =   95  # 
-PSIF_DFSCF_A                =   96  # B Matrix containing 3-index tensor in AOs for use with DF-SCF
 PSIF_DFSCF_BJ               =   97  # B Matrix containing 3-index tensor in AOs with J^-1/2 for use with DF-SCF
-PSIF_DFSCF_K                =   98  # Exchange tensor for DF-SCF
-PSIF_DFSCF_BJI              =   99  # The three-center integrals for DF-SCF
 PSIF_CC_INFO                =  100  # 
 PSIF_CC_OEI                 =  101  # 
 PSIF_CC_AINTS               =  102  # 
@@ -169,8 +157,6 @@ PSIF_SAPT_BB_DF_INTS        =  195  # SAPT BB DF Ints
 PSIF_SAPT_AMPS              =  196  # SAPT Amplitudes
 PSIF_SAPT_TEMP              =  197  # SAPT Temporary worlds fastest code file
 PSIF_SAPT_LRINTS            =  198  # SAPT0 2-Body linear response LDA integrals
-PSIF_SO_D1OEI               =  199  # Derivative OEIs are stored in file 199
-PSIF_SO_D1ERI               =  200  # Derivative ERIs are stored in files 200, 201, 202, etc. File 200
 PSIF_3B_SAPT_TRIMER         =  220  # SAPT Three-Body Trimer
 PSIF_3B_SAPT_DIMER_AB       =  221  # SAPT Three-Body Dimer AB
 PSIF_3B_SAPT_DIMER_AC       =  222  # SAPT Three-Body Dimer AC

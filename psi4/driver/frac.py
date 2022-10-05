@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,7 +26,13 @@
 # @END LICENSE
 #
 
-from typing import Callable, Union
+__all__ = [
+    "frac_nuke",
+    "frac_traverse",
+    "ip_fitting",
+]
+
+from typing import Callable, Dict, Union
 
 from psi4 import core
 from psi4.driver import p4util
@@ -34,12 +40,12 @@ from psi4.driver import driver
 from psi4.driver.p4util.exceptions import *
 
 
-def frac_traverse(name, **kwargs):
+def frac_traverse(name: Union[str, Callable], **kwargs) -> Dict[float, float]:
     """Scan electron occupancy from +1 electron to -1.
 
     Parameters
     ----------
-    name : str or Callable
+    name
         DFT functional string name or function defining functional
         whose omega is to be optimized.
     molecule : :ref:`molecule <op_py_molecule>`, optional
@@ -72,7 +78,7 @@ def frac_traverse(name, **kwargs):
 
     Returns
     -------
-    dict
+    ~typing.Dict[float, float]
         Dictionary associating SCF energies with occupations.
 
     """
@@ -278,7 +284,7 @@ def frac_traverse(name, **kwargs):
     return E
 
 
-def frac_nuke(name, **kwargs):
+def frac_nuke(name: Union[str, Callable], **kwargs) -> Dict[float, float]:
     """Pull all the electrons out, one at a time"""
     optstash = p4util.OptionsState(
         ['SCF', 'GUESS'],

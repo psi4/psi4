@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,7 +35,6 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.h"
-#include "psi4/libdiis/diismanager.h"
 
 namespace psi {
 namespace dct {
@@ -106,8 +105,8 @@ void DCTSolver::compute_lagrangian_OO_RHF(bool separate_gbargamma) {
     // If we have gbar_gamma separate, just like when computing the OO gradient, we compute these terms special.
     if (separate_gbargamma) {
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), Slice(zero, nsopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(zero, soccpi_ + doccpi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, nalphapi_), Slice(zero, nsopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(zero, nalphapi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
 
         global_dpd_->file2_init(&H, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "X JK <O|O>");
@@ -244,8 +243,8 @@ void DCTSolver::compute_lagrangian_VV_RHF(bool separate_gbargamma) {
 
     if (separate_gbargamma) {
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nsopi_), Slice(zero, nsopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(soccpi_ + doccpi_, nsopi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(nalphapi_, nsopi_), Slice(zero, nsopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(nalphapi_, nsopi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
 
         global_dpd_->file2_init(&H, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "X JK <V|V>");

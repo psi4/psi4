@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,9 +41,6 @@
 #include "psi4/physconst.h"
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libdiis/diisentry.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdpd/dpd.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
@@ -95,6 +92,8 @@ UHF::~UHF() {}
 void UHF::common_init() {
     name_ = "UHF";
 
+    mix_performed_ = false;
+
     // TODO: Move that to the base object
     step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
     step_increment_ = options_.get_double("FOLLOW_STEP_INCREMENT");
@@ -103,10 +102,8 @@ void UHF::common_init() {
     Fb_ = SharedMatrix(factory_->create_matrix("F beta"));
     Da_ = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_ = SharedMatrix(factory_->create_matrix("SCF beta density"));
-    Dt_ = SharedMatrix(factory_->create_matrix("D total"));
     Da_old_ = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
     Db_old_ = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
-    Dt_old_ = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
     Ca_ = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
     Cb_ = SharedMatrix(factory_->create_matrix("beta MO coefficients (C)"));
@@ -135,22 +132,19 @@ void UHF::finalize() {
         for (int m = 0; m < Lagrangian_->rowdim(h); ++m) {
             for (int n = 0; n < Lagrangian_->coldim(h); ++n) {
                 double sum = 0.0;
-                for (int i = 0; i < doccpi_[h]; ++i) {
-                    sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i) +
-                           epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
-                }
-                for (int i = doccpi_[h]; i < doccpi_[h] + soccpi_[h]; ++i)
+                for (int i = 0; i < nalphapi_[h]; ++i) {
                     sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
-
+                }
+                for (int i = 0; i < nbetapi_[h]; ++i) {
+                    sum += epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
+                }
                 Lagrangian_->set(h, m, n, sum);
             }
         }
     }
 
-    Dt_.reset();
     Da_old_.reset();
     Db_old_.reset();
-    Dt_old_.reset();
     Ga_.reset();
     Gb_.reset();
 
@@ -162,7 +156,6 @@ void UHF::finalize() {
 void UHF::save_density_and_energy() {
     Da_old_->copy(Da_);
     Db_old_->copy(Db_);
-    Dt_old_->copy(Dt_);
 }
 void UHF::form_V() {
     // // Push the C matrix on
@@ -290,14 +283,30 @@ void UHF::form_C(double shift) {
         shifted_F->add(Fb_);
         diagonalize_F(shifted_F, Cb_, epsilon_b_);
     }
-    if (options_.get_bool("GUESS_MIX") && (iteration_ == 0)) {
-        if (Ca_->nirrep() == 1) {
-            outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n\n", nalpha_, nalpha_ + 1);
-            Ca_->rotate_columns(0, nalpha_ - 1, nalpha_, pc_pi * 0.25);
-            Cb_->rotate_columns(0, nbeta_ - 1, nbeta_, -pc_pi * 0.25);
-        } else {
+    if (options_.get_bool("GUESS_MIX") && !mix_performed_) {
+        if (Ca_->nirrep() != 1) {
+            outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n", nalpha_, nalpha_ + 1);
             throw InputException("Warning: cannot mix alpha HOMO/LUMO orbitals. Run in C1 symmetry.",
                                  "to 'symmetry c1'", __FILE__, __LINE__);
+        }
+
+        // SAD doesn't have orbitals in iteration 0, other guesses do
+        bool have_orbitals = !sad_ || (sad_ && iteration_ > 0);
+        if (have_orbitals) {
+            Ca_->rotate_columns(0, nalpha_ - 1, nalpha_, pc_pi * 0.25);
+            if (nbeta_ > 0) {
+                outfile->Printf("  Mixing beta HOMO/LUMO orbitals (%d,%d)\n", nbeta_, nbeta_ + 1);
+                Cb_->rotate_columns(0, nbeta_ - 1, nbeta_, -pc_pi * 0.25);
+            }
+            mix_performed_ = true;
+
+            // Since we've changed the orbitals, delete the DIIS history
+            // so that we don't fall back to spin-restricted orbitals
+            if (initialized_diis_manager_) {
+                diis_manager_.attr("delete_diis_file")();
+                diis_manager_ = py::none();
+                initialized_diis_manager_ = false;
+            }
         }
     }
     find_occupation();
@@ -328,9 +337,6 @@ void UHF::form_D() {
         C_DGEMM('N', 'T', nso, nso, nb, 1.0, Cb[0], nmo, Cb[0], nmo, 0.0, Db[0], nso);
     }
 
-    Dt_->copy(Da_);
-    Dt_->add(Db_);
-
     if (debug_) {
         outfile->Printf("in UHF::form_D:\n");
         Da_->print();
@@ -342,15 +348,12 @@ void UHF::damping_update(double damping_percentage) {
     Da_->axpy(damping_percentage, Da_old_);
     Db_->scale(1.0 - damping_percentage);
     Db_->axpy(damping_percentage, Db_old_);
-    Dt_->copy(Da_);
-    Dt_->add(Db_);
 }
 
-// TODO: Once Dt_ is refactored to D_ the only difference between this and RHF::compute_initial_E is a factor of 0.5
 double UHF::compute_initial_E() {
-    Dt_->copy(Da_);
-    Dt_->add(Db_);
-    return nuclearrep_ + 0.5 * (Dt_->vector_dot(H_));
+    auto Dt = Da_->clone();
+    Dt->add(Db_);
+    return nuclearrep_ + 0.5 * (Dt->vector_dot(H_));
 }
 
 double UHF::compute_E() {
@@ -538,13 +541,12 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
 
     // Setup jk
-    std::vector<SharedMatrix>& Cl = jk_->C_left();
-    std::vector<SharedMatrix>& Cr = jk_->C_right();
+    auto& Cl = jk_->C_left();
+    auto& Cr = jk_->C_right();
     Cl.clear();
     Cr.clear();
 
     int nvecs = x_vec.size() / 2;
-    // Compute Fij x_ia - Fab x_ia
 
     // We actually want to compute all alpha then all beta, its smart enough to figure out the half transform
     SharedMatrix Cao, Cbo, Cav, Cbv;
@@ -593,6 +595,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
 
     // Compute JK
+    // J_mn = I_mnpq Ca_pi Ca_qa Xa_ai, I_mnpq Cb_pi Cb_qa Xb_ai pairs
     jk_->compute();
 
     const std::vector<SharedMatrix>& J = jk_->J();
@@ -643,8 +646,11 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     std::vector<SharedMatrix> ret;
     if (combine) {
         for (size_t i = 0; i < nvecs; i++) {
+            // Scale the Xa -> alpha Coulomb terms.
             J[i]->scale(2.0);
+            // Add the Xb -> alpha Coulomb terms.
             J[i]->axpy(2.0, J[nvecs + i]);
+            // X -> alpha terms in the AO/SO basis are the same as the X -> beta.
             J[nvecs + i]->copy(J[i]);
             if (functional_->needs_xc()) {
                 J[i]->axpy(2.0, Vx[2 * i]);
@@ -678,8 +684,11 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                 "in your input.");
         }
         for (size_t i = 0; i < nvecs; i++) {
+            // Add opposite-spin terms to alpha.
             J[i]->add(J[nvecs + i]);
+            // Before MO transformation, beta and alpha are the same.
             J[nvecs + i]->copy(J[i]);
+            // Augment same-spin Coulomb terms with exchange-correlation.
             if (functional_->needs_xc()) {
                 J[i]->add(Vx[2 * i]);
                 J[nvecs + i]->add(Vx[2 * i + 1]);
@@ -729,8 +738,8 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 }
 std::vector<SharedMatrix> UHF::cphf_Hx(std::vector<SharedMatrix> x_vec) {
     // Compute quantities
-    std::vector<SharedMatrix> onel = onel_Hx(x_vec);
-    std::vector<SharedMatrix> twoel = twoel_Hx(x_vec, true, "MO");
+    auto onel = onel_Hx(x_vec);
+    auto twoel = twoel_Hx(x_vec, true, "MO");
 
     for (size_t i = 0; i < onel.size(); i++) {
         onel[i]->add(twoel[i]);
@@ -741,7 +750,7 @@ std::vector<SharedMatrix> UHF::cphf_Hx(std::vector<SharedMatrix> x_vec) {
 std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol, int max_iter,
                                           int print_lvl) {
     if ((x_vec.size() % 2) != 0) {
-        throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
+        throw PSIEXCEPTION("UHF::cphf_solve expect incoming vector to alternate A/B");
     }
 
     std::time_t start, stop;
@@ -770,25 +779,25 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
-        SharedMatrix Caocc_ao = Ca_subset("AO", "ALL");
-        SharedMatrix Cbocc_ao = Cb_subset("AO", "ALL");
-        SharedMatrix Fa_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
-        SharedMatrix Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
-        SharedMatrix IFock_ao_a = linalg::triplet(Caocc_ao, Fa_ao, Caocc_ao, true, false, false);
-        SharedMatrix IFock_ao_b = linalg::triplet(Cbocc_ao, Fb_ao, Cbocc_ao, true, false, false);
+        auto Caocc_ao = Ca_subset("AO", "ALL");
+        auto Cbocc_ao = Cb_subset("AO", "ALL");
+        auto Fa_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        auto Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
+        auto IFock_ao_a = linalg::triplet(Caocc_ao, Fa_ao, Caocc_ao, true, false, false);
+        auto IFock_ao_b = linalg::triplet(Cbocc_ao, Fb_ao, Cbocc_ao, true, false, false);
         Precon_ao_a = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
         Precon_ao_b = std::make_shared<Matrix>("Precon", nbeta_, nmo_ - nbeta_);
 
-        double* denom_ap = Precon_ao_a->pointer()[0];
-        double** f_ap = IFock_ao_a->pointer();
+        auto denom_ap = Precon_ao_a->pointer()[0];
+        auto f_ap = IFock_ao_a->pointer();
         for (size_t i = 0, target = 0; i < nalpha_; i++) {
             for (size_t a = nalpha_; a < nmo_; a++) {
                 denom_ap[target++] = -f_ap[i][i] + f_ap[a][a];
             }
         }
 
-        double* denom_bp = Precon_ao_b->pointer()[0];
-        double** f_bp = IFock_ao_b->pointer();
+        auto denom_bp = Precon_ao_b->pointer()[0];
+        auto f_bp = IFock_ao_b->pointer();
         for (size_t i = 0, target = 0; i < nbeta_; i++) {
             for (size_t a = nbeta_; a < nmo_; a++) {
                 denom_bp[target++] = -f_bp[i][i] + f_bp[a][a];
@@ -1049,13 +1058,13 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
     // => Build gradient and preconditioner <= //
 
     // Grab occ and vir orbitals
-    SharedMatrix Cocc_a = Ca_subset("SO", "OCC");
-    SharedMatrix Cvir_a = Ca_subset("SO", "VIR");
-    SharedMatrix Gradient_a = linalg::triplet(Cocc_a, Fa_, Cvir_a, true, false, false);
+    auto Cocc_a = Ca_subset("SO", "OCC");
+    auto Cvir_a = Ca_subset("SO", "VIR");
+    auto Gradient_a = linalg::triplet(Cocc_a, Fa_, Cvir_a, true, false, false);
 
-    SharedMatrix Cocc_b = Cb_subset("SO", "OCC");
-    SharedMatrix Cvir_b = Cb_subset("SO", "VIR");
-    SharedMatrix Gradient_b = linalg::triplet(Cocc_b, Fb_, Cvir_b, true, false, false);
+    auto Cocc_b = Cb_subset("SO", "OCC");
+    auto Cvir_b = Cb_subset("SO", "VIR");
+    auto Gradient_b = linalg::triplet(Cocc_b, Fb_, Cvir_b, true, false, false);
 
     // Make sure the MO gradient is reasonably small
     if ((Gradient_a->absmax() > 0.3) || (Gradient_b->absmax() > 0.3)) {
@@ -1064,7 +1073,7 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
         }
         return 0;
     }
-    std::vector<SharedMatrix> ret_x =
+    auto ret_x =
         cphf_solve({Gradient_a, Gradient_b}, soscf_conv, soscf_max_iter, soscf_print ? 2 : 0);
 
     // => Rotate orbitals <= //
@@ -1073,32 +1082,6 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
 
     return cphf_nfock_builds_;
 }
-
-double UHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
-    SharedMatrix gradient_a = form_FDSmSDF(Fa_, Da_);
-    SharedMatrix gradient_b = form_FDSmSDF(Fb_, Db_);
-
-    if (save_fock) {
-        if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
-                                                          DIISManager::OnDisk);
-            diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, gradient_a.get(), DIISEntry::Matrix,
-                                                 gradient_b.get());
-            diis_manager_->set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());
-            initialized_diis_manager_ = true;
-        }
-
-        diis_manager_->add_entry(4, gradient_a.get(), gradient_b.get(), Fa_.get(), Fb_.get());
-    }
-
-    if (options_.get_bool("DIIS_RMS_ERROR")) {
-        return std::sqrt(0.5 * (std::pow(gradient_a->rms(), 2) + std::pow(gradient_b->rms(), 2)));
-    } else {
-        return std::max(gradient_a->absmax(), gradient_b->absmax());
-    }
-}
-
-bool UHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }
 
 bool UHF::stability_analysis() {
     if (functional_->needs_xc()) {
@@ -1271,7 +1254,7 @@ void UHF::compute_nos() {
 }
 
 std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
-    std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
+    auto wfn = Wavefunction::c1_deep_copy(basis);
     auto hf_wfn = std::make_shared<UHF>(wfn, functional_, wfn->options(), wfn->psio());
 
     // now just have to copy the matrices that UHF initializes
@@ -1282,10 +1265,10 @@ std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (Db_) hf_wfn->Db_ = Db_subset("AO");
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
     if (Fb_) hf_wfn->Fb_ = Fb_subset("AO");
-    if (epsilon_a_) hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
-    if (epsilon_b_) hf_wfn->epsilon_b_ = epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
+    if (epsilon_a_) hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nalphapi_, "AO", "ALL");
+    if (epsilon_b_) hf_wfn->epsilon_b_ = epsilon_subset_helper(epsilon_b_, nbetapi_, "AO", "ALL");
     // H_ ans X_ reset in the HF constructor, copy them over here
-    SharedMatrix SO2AO = aotoso()->transpose();
+    auto SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
     if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
 

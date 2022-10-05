@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -72,6 +72,7 @@ class PSI_API ExternalPotential {
     void setName(const std::string& name) { name_ = name; }
 
     /// Add a charge Z at (x,y,z)
+    /// Apr 2022: now always [a0] rather than units of Molecule
     void addCharge(double Z, double x, double y, double z);
 
     /// get the vector of charges
@@ -98,7 +99,7 @@ class PSI_API ExternalPotential {
     double computeNuclearEnergy(std::shared_ptr<Molecule> mol);
 
     // Compute the interaction of this potential with an external potential
-    double computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern, bool in_angstrom=false);
+    double computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern);
 
     /// Print a trace of the external potential
     void print(std::string out_fname = "outfile") const;

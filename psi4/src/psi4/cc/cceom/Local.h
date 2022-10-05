@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -51,7 +51,6 @@ struct Local {
     int *pairdom_len;
     int *pairdom_nrlen;
     int *weak_pairs;
-    int ghost;
     int do_singles;
     double ***V;
     double ***W;

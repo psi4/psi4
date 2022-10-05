@@ -26,10 +26,6 @@ refQdpACPF = -5.78358853279     #TEST
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
 compare_values(refscf, variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
 compare_values(refacpf, variable("ACPF CORRELATION ENERGY"), 8, "ACPF correlation energy")         #TEST
-with warnings.catch_warnings():  #TEST
-    warnings.simplefilter("ignore")  #TEST
-    compare_values(refDipACPF, variable("ACPF DIPOLE Z"), 5, "ACPF Z Component of dipole")             #TEST
-    compare_values(refQdpACPF, variable("ACPF QUADRUPOLE ZZ"), 5, "ACPF ZZ Component of quadrupole")   #TEST
 compare_values(refDipACPF / constants.dipmom_au2debye, variable("ACPF DIPOLE")[2], 5, "ACPF Z Component of dipole")             #TEST
 compare_values(refQdpACPF / (constants.dipmom_au2debye * constants.bohr2angstroms), variable("ACPF QUADRUPOLE")[2][2], 5, "ACPF ZZ Component of quadrupole")   #TEST
 

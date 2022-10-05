@@ -31,6 +31,8 @@ if(${ENABLE_cct3})
                        -Dpsi4_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/psi4
                        -Dpybind11_DIR=${pybind11_DIR}
                        -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}

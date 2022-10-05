@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -28,27 +28,44 @@
 r"""Module to provide mechanism to store and restore option states in driver.
 
 """
+
+__all__ = [
+    "OptionState",
+    "OptionsStateCM",
+    "OptionsState",
+]
+
 import sys
 from contextlib import contextmanager
+from typing import Optional, Iterator, List
 
 from psi4 import core
 
 from .exceptions import ValidationError
 
 
-class OptionState(object):
-    """Class to store the state of a single *option*. If *module* given, the *option*
-    value and has_changed value is stored for global, local to *module*, and used by
-    *module* scopes; otherwise (used for BASIS keywords), only global scope is stored.
-    Class can store, print, and restore option values. ::
+class OptionState():
+    """Store the state (value and changed status) of a single `option`.
 
-        >>> OptionState('E_CONVERGENCE', 'SCF')
+    Parameters
+    ----------
+    option
+        Name of read_options keyword. All caps.
+    module
+        Name of read_options module or None if global. All caps.
+        If `module` given, the `option` value and has_changed value is stored
+        for global, local to `module`, and used by `module` scopes. Otherwise
+        (used for BASIS keywords), only global scope is stored.
 
-        >>> print(OptionState('DF_BASIS_MP2'))
+    Examples
+    --------
+    >>> OptionState('E_CONVERGENCE', 'SCF')
+
+    >>> print(OptionState('DF_BASIS_MP2'))
 
     """
 
-    def __init__(self, option, module=None):
+    def __init__(self, option: str, module: Optional[str] = None):
         self.option = option.upper()
         if module:
             self.module = module.upper()
@@ -86,6 +103,7 @@ class OptionState(object):
         return text
 
     def restore(self):
+        """Restore value and has_changed status to saved condition."""
         core.set_global_option(self.option, self.value_global)
         if not self.haschanged_global:
             core.revoke_global_option_changed(self.option)
@@ -95,28 +113,44 @@ class OptionState(object):
                 core.revoke_local_option_changed(self.module, self.option)
 
 
-class OptionsState(object):
-    """Class to contain multiple :py:func:`~psi4.driver.p4util.OptionState` objects.
-    Used in python driver functions to collect several options before altering
-    them, then restoring before function return. ::
+class OptionsState():
+    """Store multiple :py:func:`OptionState` objects.
+    Use in driver functions to collect several keywords before altering them,
+    then restore them before function return.
 
-        >>> optstash = OptionsState(
-                ['DF_BASIS_SCF'],
-                ['SCF_TYPE'],
-                ['SCF', 'REFERENCE'])
+    Parameters
+    ----------
+    largs
+        Specify which keywords to store value and has_changed state.
 
-        >>> print(optstash)
+    Examples
+    --------
+    >>> optstash = OptionsState(
+            ['DF_BASIS_SCF'],
+            ['SCF_TYPE'],
+            ['SCF', 'REFERENCE'])
 
-        >>> optstash.restore()
+    >>> print(optstash)
+
+    >>> optstash.restore()
 
     """
 
-    def __init__(self, *largs):
+    def __init__(self, *largs: List[List[str]]):
         self.data = {}
         for item in largs:
             self.add_option(item)
 
-    def add_option(self, item):
+    def add_option(self, item: List[str]):
+        """Store info for another keyword, `item`.
+
+        Parameters
+        ----------
+        item
+            A one-membered list with a global keyword or a two-membered list
+            with a module keyword and module.
+
+        """
         if len(item) == 2:
             key = (item[1], item[0])
         elif len(item) == 1:
@@ -139,12 +173,19 @@ class OptionsState(object):
         return text
 
     def restore(self):
+        """Restore value and has_changed status of each keyword to saved condition."""
         for key, item in self.data.items():
             item.restore()
 
 
 @contextmanager
-def OptionsStateCM(osd):
+def OptionsStateCM(osd) -> Iterator[None]:
+    """Return a context manager that will collect the state (value and changed
+    status) of a list of keywords `osd` that can initialize
+    :py:class:`OptionsState` on entry to the with-statement and restore the
+    collected state when exiting the with-statement.
+
+    """
     oso = OptionsState(osd)
     yield
     oso.restore()

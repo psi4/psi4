@@ -8,6 +8,7 @@ list(APPEND sources
   block_matrix.cc
   buf4_axpbycz.cc
   buf4_axpy.cc
+  buf4_axpy_matrix.cc
   buf4_close.cc
   buf4_copy.cc
   buf4_dirprd.cc
@@ -39,6 +40,7 @@ list(APPEND sources
   buf4_symm.cc
   buf4_symm2.cc
   buf4_trace.cc
+  buf4_zero.cc
   cc3_sigma_RHF.cc
   cc3_sigma_RHF_ic.cc
   cc3_sigma_UHF.cc
@@ -58,6 +60,7 @@ list(APPEND sources
   error.cc
   file2_axpbycz.cc
   file2_axpy.cc
+  file2_axpy_matrix.cc
   file2_cache.cc
   file2_close.cc
   file2_copy.cc
@@ -73,6 +76,7 @@ list(APPEND sources
   file2_print.cc
   file2_scm.cc
   file2_trace.cc
+  file2_zero.cc
   file4_cache.cc
   file4_close.cc
   file4_init.cc

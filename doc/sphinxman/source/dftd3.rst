@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -28,7 +28,7 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. index:: DFTD3
+.. index:: DFTD3, DFTD4
 .. _`sec:dftd3`:
 
 Interface to DFTD3 by S. Grimme
@@ -172,21 +172,21 @@ All parameters characterizing the dispersion correction are taken from
 `Grimme's website <https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/get-the-current-version-of-dft-d3>`_
 or else from the literature.
 
-Running DFTD3
-~~~~~~~~~~~~~
+Running DFTD3 or DFTD4
+~~~~~~~~~~~~~~~~~~~~~~
 
 A number of *a posteriori* dispersion corrections are available in
 |PSIfour|.  While some are computed within |PSIfours| codebase (-D1, -D2,
--CHG, -DAS2009, -DAS2010), the -D3 correction and its variants are
-available only through the ``DFTD3`` program.  Once installed, the
-``dftd3``/|PSIfour| interface is transparent, and all corrections are
+-CHG, -DAS2009, -DAS2010), the -D3 or -D4 corrections and their variants are
+available only through the ``DFTD3`` or ``DFTD4`` programs. Once installed, the
+``dftd3``/|PSIfour| and ``dftd4``/|PSIfour| interfaces are transparent, and all corrections are
 interfaced exactly alike.
 
 Dispersion corrections are built into DFT functionals, so appending an *a
 posteriori* correction to a computation is as simple as
 ``energy('b2plyp-d')`` *vs.* ``energy('b2plyp')``. For example, the
 following input file computes (with much redundant work) for water a
-B3LYP, a B3LYP-D2, and a B3LYP-D3 (zero-damping) energy. ::
+B3LYP, a B3LYP-D2, a B3LYP-D3 (zero-damping), and a B3LYP-D4 (Becke-Johnson damping) energy. ::
 
    molecule h2o {
         O
@@ -199,6 +199,7 @@ B3LYP, a B3LYP-D2, and a B3LYP-D3 (zero-damping) energy. ::
     energy('b3lyp')
     energy('b3lyp-d')
     energy('b3lyp-d3')
+    energy('b3lyp-d4')
 
 Consult the table :ref:`-D Functionals <table:dft_disp>` to see for each
 functional what corrections are available and what default parameters
@@ -206,6 +207,7 @@ define them. The dispersion correction is available after a calculation in
 the PSI variable :psivar:`DISPERSION CORRECTION ENERGY`.
 By default, the output from the ``dftd3``
 program is suppressed; to see it in the output file, set print > 2.
+No text output is available from the ``dftd4`` program.
 
 
 .. _`table:dashd`:
@@ -245,6 +247,12 @@ program is suppressed; to see it in the output file, set print > 2.
    +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -DAS2010                            | Podeszwa & Szalewicz dispersion formula [#f9]_                        | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
    +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
+   | -D4                                 | alias to -D4BJEEQATM                                                  |                                 |                                                                                |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
+   | -D4BJ                               | alias to -D4BJEEQATM                                                  |                                 |                                                                                |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
+   | -D4BJEEQATM                         | -D4 [#f11]_                                                           | ``dftd4``                       | [:math:`a_1`, :math:`a_2`, :math:`alp`, :math:`s_6`, :math:`s_8`, :math:`s_9`] |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
 
 
 Three-Body Dispersion Corrections
@@ -266,7 +274,7 @@ The dispersion coefficients are defined as
 See the `DFT-D3 documentation <https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/man.pdf>`_ 
 for more details.
 
-For now, the three-body correction can be called by using the :py:func:`~qcdb.Molecule.run_dftd3`
+For now, the three-body correction can be called by using the :py:func:`~psi4.core.Molecule.run_dftd3`
 function with `d3-atmgr` as the passed functional string. 
 For example, the three-body ATM dispersion correction for a neon trimer could
 be computed with::
@@ -299,6 +307,8 @@ be computed with::
 .. [#f10] Keyword not used for user-defined functionals where the ``dft_dict["dispersion"]["params"]``
    is easily editable for this purpose. See :ref:`sec:dftdictbuilder`
 
+.. [#f11] [Caldeweyher:2019:154122]_
+
 A few practical examples:
 
 * DFT-D2 single point with default parameters (``dftd3`` not called) ::
@@ -324,10 +334,16 @@ A few practical examples:
    energy('pbe-d2', engine='dftd3')
 
 If only dispersion corrections (rather than total energies) are of
-interest, the ``dftd3`` program can be run independently of the scf
-through the python function :py:func:`~qcdb.Molecule.run_dftd3`. (This function
-is the same |PSIfour|/``dftd3`` interface that is called during an scf job.)
-This route is much faster than running a DFT-D energy.
+interest, the dispersion programs can be run independently of the scf
+through the python function :py:func:`~qcdb.Molecule.run_dftd3` or :py:func:`~qcdb.Molecule.run_dftd4`. (These functions
+call QCEngine, which is the same |PSIfour| + ``dftd3``/``dftd4`` interface that is called during an scf job.)
+This "D-only" route is much faster than running a DFT-D energy.
+
+Note that in a DFT+D energy or gradient calculation, user-specified
+dispersion parameters override any information provided about the
+functional. The same holds true for a ``dftd3`` "D-only" calculation. But
+in a ``dftd4`` "D-only" calculation, functional information overrides
+any user-specified dispersion parameters.
 
 * Some set-up::
 
@@ -356,6 +372,8 @@ This route is much faster than running a DFT-D energy.
    -0.00024762
 
 .. autofunction:: qcdb.Molecule.run_dftd3
+
+.. autofunction:: qcdb.Molecule.run_dftd4
 
 .. autoclass:: psi4.driver.procrouting.empirical_dispersion.EmpiricalDispersion
 

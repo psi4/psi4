@@ -68,7 +68,7 @@ oei_dict = {"S" : "OVERLAP", "T" : "KINETIC", "V" : "POTENTIAL"}
 deriv1_mat = {}
 deriv1_np = {}
 
-Gradient = {};
+Gradient = {}
 
 Gradient["N"] = np.zeros((natoms, 3))
 Gradient["S"] = np.zeros((natoms, 3))

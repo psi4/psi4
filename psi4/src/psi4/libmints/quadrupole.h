@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -31,13 +31,11 @@
 
 #include <vector>
 #include "typedefs.h"
-#include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/integral.h"
 namespace psi {
 
 class Molecule;
-class GaussianShell;
 
 /*! \ingroup MINTS
  *  \class QuadrupoleInt
@@ -45,14 +43,12 @@ class GaussianShell;
  *  Use an IntegralFactory to create this object.
  */
 class QuadrupoleInt : public OneBodyAOInt {
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
-
-    // This the work horse function.
-    void compute_pair(const GaussianShell &, const GaussianShell &) override;
 
    public:
     QuadrupoleInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     ~QuadrupoleInt() override;
+
+    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
 
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);
 };

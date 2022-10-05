@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,6 +26,26 @@
 # @END LICENSE
 #
 """Module with utility functions used by several Python functions."""
+
+__all__ = [
+    "all_casings",
+    "drop_duplicates",
+    "expand_psivars",
+    "format_molecule_for_input",
+    "format_options_for_input",
+    "get_psifile",
+    "getattr_ignorecase",
+    "hold_options_state",
+    "import_ignorecase",
+    "kwargs_lower",
+    "mat2arr",
+    "prepare_options_for_modules",
+    "prepare_options_for_set_options",
+    "provenance_stamp",
+    "plump_qcvar",
+    "state_to_atomicinput",
+]
+
 import os
 import ast
 import sys
@@ -33,12 +53,13 @@ import math
 import pickle
 import inspect
 import warnings
-import contextlib
+from contextlib import contextmanager
 import collections
-from typing import List, Union
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Union
+from types import ModuleType
 
 import numpy as np
-import qcelemental as qcel
+from qcelemental.models import AtomicInput
 
 from psi4 import core
 from psi4.metadata import __version__
@@ -46,12 +67,20 @@ from .exceptions import ValidationError
 from . import p4regex
 
 
-def kwargs_lower(kwargs):
-    """Function to rebuild and return *kwargs* dictionary
-    with all keys made lowercase. Should be called by every
-    function that could be called directly by the user.
-    Also turns boolean-like values into actual booleans.
-    Also turns values lowercase if sensible.
+def kwargs_lower(kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    """Function to rebuild and return *kwargs* dictionary sanitized. Should be
+    called by every function that could be called directly by the user.
+
+    Parameters
+    ----------
+    kwargs
+        Input kwargs for any user-facing function.
+
+    Returns
+    -------
+    lowered : Dict[str, Any]
+        Sanitized kwargs with all keys made lowercase. Also turns boolean-like
+        values into actual booleans. Also turns values lowercase if sensible.
 
     """
     caseless_kwargs = {}
@@ -92,9 +121,20 @@ def kwargs_lower(kwargs):
     return caseless_kwargs
 
 
-def get_psifile(fileno, pidspace=str(os.getpid())):
-    """Function to return the full path and filename for psi file
-    *fileno* (e.g., psi.32) in current namespace *pidspace*.
+def get_psifile(fileno: int, pidspace: str = str(os.getpid())) -> str:
+    """Form full path and filename for psi scratch file.
+
+    Parameters
+    ----------
+    fileno
+        Psi file, e.g., ``psi.32``.
+    pidspace
+        Current namespace. Defaults to ``os.getpid()``.
+
+    Returns
+    -------
+    flpath : str
+        Full path and filename for psi file.
 
     """
     psioh = core.IOManager.shared_object()
@@ -105,16 +145,33 @@ def get_psifile(fileno, pidspace=str(os.getpid())):
     return targetfile
 
 
-def format_molecule_for_input(mol, name='', forcexyz=False):
+def format_molecule_for_input(
+    mol: Union[str, core.Molecule],
+    name: str = '',
+    forcexyz: bool = False) -> str:
     """Function to return a string of the output of
-    :py:func:`inputparser.process_input` applied to the XYZ
+    :py:func:`~psi4.driver.inputparser.process_input` applied to the XYZ
     format of molecule, passed as either fragmented
     geometry string *mol* or molecule instance *mol*.
     Used to capture molecule information from database
     modules and for distributed (sow/reap) input files.
-    For the reverse, see :py:func:`molutil.geometry`.
+    For the reverse, see :py:func:`~psi4.driver.geometry`.
+
+    Parameters
+    ----------
+    mol
+        Fragmented geometry string or molecule instance.
+    name
+        Name to call the resulting molecule.
+    forcexyz
+        Use Cartesians, even for Z-Matrix molecules.
 
     """
+    warnings.warn(
+        "Using `psi4.driver.p4util.format_molecule_for_input` instead of `Molecule.to_string(dtype='psi4')` is deprecated, and as soon as 1.8 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     # when mol is already a string
     if isinstance(mol, str):
         mol_string = mol
@@ -136,7 +193,7 @@ def format_molecule_for_input(mol, name='', forcexyz=False):
     return commands
 
 
-def format_options_for_input(molecule=None, **kwargs):
+def format_options_for_input(molecule: Optional[core.Molecule] = None, **kwargs) -> str:
     """Function to return a string of commands to replicate the
     current state of user-modified options. Used to capture C++
     options information for distributed (sow/reap) input files.
@@ -146,6 +203,11 @@ def format_options_for_input(molecule=None, **kwargs):
        - Does not cover local (as opposed to global) options.
 
     """
+    warnings.warn(
+        "Using `psi4.driver.p4util.format_molecule_for_input` instead of `Molecule.to_string(dtype='psi4')` is deprecated, and as soon as 1.8 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+
     if molecule is not None:
         symmetry = molecule.find_point_group(0.00001).symbol()
     commands = ''
@@ -173,34 +235,14 @@ def format_options_for_input(molecule=None, **kwargs):
     return commands
 
 
-def format_kwargs_for_input(filename, lmode=1, **kwargs):
-    """Function to pickle to file *filename* the options dictionary
-    *kwargs*. Mode *lmode* =2 pickles appropriate settings for
-    reap mode. Used to capture Python options information for
-    distributed (sow/reap) input files.
+def drop_duplicates(seq: Iterable) -> List:
+    """Return a copy of collection *seq* without any duplicate entries.
 
-    """
-    warnings.warn(
-        "Using `psi4.driver.p4util.format_kwargs_for_input` is deprecated, and in 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.get_legacy_gradient()
-
-    if lmode == 2:
-        kwargs['mode'] = 'reap'
-        kwargs['linkage'] = os.getpid()
-    filename.write('''\npickle_kw = ("""'''.encode('utf-8'))
-    pickle.dump(kwargs, filename)
-    filename.write('''""")\n'''.encode('utf-8'))
-    filename.write("""\nkwargs = pickle.loads(pickle_kw)\n""".encode('utf-8'))
-    if lmode == 2:
-        kwargs['mode'] = 'sow'
-        del kwargs['linkage']
-
-
-def drop_duplicates(seq):
-    """Function that given an array *seq*, returns an array without any duplicate
-    entries. There is no guarantee of which duplicate entry is dropped.
+    Parameters
+    ----------
+    seq
+        Collection to be de-duplicated. There is no guarantee of which
+        duplicate entry is dropped.
 
     """
     noDupes = []
@@ -208,9 +250,15 @@ def drop_duplicates(seq):
     return noDupes
 
 
-def all_casings(input_string):
-    """Return a generator of all lettercase permutations of `input_string`."""
+def all_casings(input_string: str) -> Iterator[str]:
+    """Return a generator of all lettercase permutations of `input_string`.
 
+    Parameters
+    ----------
+    input_string
+        String of which to permute the case.
+
+    """
     if not input_string:
         yield ""
     else:
@@ -224,94 +272,60 @@ def all_casings(input_string):
                 yield first.upper() + sub_casing
 
 
-def getattr_ignorecase(module, attr):
-    """Function to extract attribute *attr* from *module* if *attr*
-    is available in any possible lettercase permutation. Returns
-    attribute if available, None if not.
+def getattr_ignorecase(module: str, attr: str):
+    """Extract attribute *attr* from *module* if *attr*
+    is available in any possible lettercase permutation.
+
+    Parameters
+    ----------
+    module
+        Object on which to seek `attr`.
+    attr
+        Name of attribute with uncertain case.
+
+    Returns
+    -------
+    attribute : Any
+        Module attribute returned if available. None if not.
 
     """
-    array = None
-    for per in list(all_casings(attr)):
+    obj_attr = None
+    for permutation in list(all_casings(attr)):
         try:
-            getattr(module, per)
+            getattr(module, permutation)
         except AttributeError:
             pass
         else:
-            array = getattr(module, per)
+            obj_attr = getattr(module, permutation)
             break
 
-    return array
+    return obj_attr
 
 
-def import_ignorecase(module):
-    """Function to import *module* in any possible lettercase
-    permutation. Returns module object if available, None if not.
+def import_ignorecase(module: str) -> ModuleType:
+    """Import loader for *module* in any possible lettercase permutation.
+
+    Parameters
+    ----------
+    module
+        Name of module with uncertain case.
+
+    Returns
+    -------
+    types.ModuleType
+        Module object.
 
     """
     modobj = None
-    for per in list(all_casings(module)):
+    for permutation in list(all_casings(module)):
         try:
-            modobj = __import__(per)
+            modobj = __import__(permutation)
         except ImportError:
             pass
         else:
             break
 
     return modobj
-
-
-def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=False, label='electronic energy'):
-    """Function to examine file *sowout* from a sow/reap distributed job
-    for formatted line with electronic energy information about index
-    *sownum* to be used for construction of *quantity* computations as
-    directed by master input file with *linkage* kwarg. When file *sowout*
-    is missing or incomplete files, function will either return zero
-    (*allvital* is ``False``) or terminate (*allvital* is ``True``) since
-    some sow/reap procedures can produce meaningful results (database)
-    from an incomplete set of sown files, while others cannot (gradient,
-    hessian).
-
-    """
-    warnings.warn(
-        "Using `psi4.driver.p4util.extract_sowreap_from_output` is deprecated, and in 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-
-    E = 0.0
-
-    try:
-        freagent = open('%s.out' % (sowout), 'r')
-    except IOError:
-        if allvital:
-            raise ValidationError('Aborting upon output file \'%s.out\' not found.\n' % (sowout))
-        else:
-            return 0.0
-    else:
-        while True:
-            line = freagent.readline()
-            if not line:
-                if E == 0.0:
-                    raise ValidationError(
-                        'Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
-                break
-            s = line.strip().split(None, 10)
-            if (len(s) != 0) and (s[0:3] == [quantity, 'RESULT:', 'computation']):
-                if int(s[3]) != linkage:
-                    raise ValidationError(
-                        'Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' %
-                        (sowout, str(s[3]), str(linkage)))
-                if s[6] != str(sownum + 1):
-                    raise ValidationError(
-                        'Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.' %
-                        (sowout, s[6], str(sownum + 1)))
-                if label == 'electronic energy' and s[8:10] == ['electronic', 'energy']:
-                    E = float(s[10])
-                    core.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
-                if label == 'electronic gradient' and s[8:10] == ['electronic', 'gradient']:
-                    E = ast.literal_eval(s[-1])
-                    core.print_out('%s RESULT: electronic gradient = %r\n' % (quantity, E))
-        freagent.close()
-    return E
 
 
 _modules = [
@@ -331,6 +345,7 @@ _modules = [
     "DFEP2",
     "DFMP2",
     "DFOCC",
+    "DLPNO",
     "DMRG",
     "EFP",
     "FINDIF",
@@ -354,17 +369,30 @@ _modules = [
 ]
 
 
-def reset_pe_options(pofm):
-    """Acts on Process::environment.options to clear it, the set it to state encoded in `pofm`.
+@contextmanager
+def hold_options_state() -> Iterator[None]:
+    """Return a context manager that will collect the current state of
+    ``Process:environment.options`` on entry to the with-statement and clear
+    and restore the collected keywords state when exiting the with-statement.
+
+    """
+    pofm = prepare_options_for_modules(
+        changedOnly=True, commandsInsteadDict=False, globalsOnly=False, stateInsteadMediated=True
+    )
+    yield
+    _reset_pe_options(pofm)
+
+
+def _reset_pe_options(pofm: Dict):
+    """Acts on ``Process::environment.options`` to clear it, then set it to
+    state encoded in `pofm`.
 
     Parameters
     ----------
-    pofm : dict
-        Result of psi4.driver.p4util.prepare_options_for_modules(changedOnly=True, commandsInsteadDict=False)
-
-    Returns
-    -------
-    None
+    pofm
+        Result of :py:func:`prepare_options_for_modules` with
+        ``changedOnly=True``, ``commandsInsteadDict=False``, and
+        ``stateInsteadMediated=True``.
 
     """
     core.clean_options()
@@ -378,49 +406,94 @@ def reset_pe_options(pofm):
             if dlo['has_changed']:
                 core.set_local_option(module, lo, dlo['value'])
 
+    ## this is a more defensive version if defaults may have changed
+    # for go, dgo in pofm['GLOBALS'].items():
+    #    core.set_global_option(go, dgo['value'])
+    #    if not dgo['has_changed']:
+    #        core.revoke_global_option_changed(go)
+    # for module in _modules:
+    #    for lo, dlo in pofm[module].items():
+    #        core.set_local_option(module, lo, dlo['value'])
+    #        if not dlo['has_changed']:
+    #            core.revoke_local_option_changed(module, lo)
 
-def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
-    """Function to return a string of commands to replicate the
-    current state of user-modified options. Used to capture C++
-    options information for distributed (sow/reap) input files.
+
+def prepare_options_for_modules(
+    changedOnly: bool = False,
+    commandsInsteadDict: bool = False,
+    globalsOnly: bool = False,
+    stateInsteadMediated: bool = False,
+) -> Union[Dict, str]:
+    """Capture current state of :py:class:`psi4.core.Options` information.
+
+    Parameters
+    ----------
+    changedOnly
+        Record info only for options that have been set (may still be default).
+        When False, records values for every option.
+    commandsInsteadDict
+        Return string of commands to exec to reset options in current form.
+        When False, return nested dictionary with globals in 'GLOBALS' subdictionary
+        and locals in subdictionaries by module.
+    globalsOnly
+        Record only global options to save time querying the
+        :py:class:`~psi4.core.Options` object.
+        When False, record module-level options, too.
+    stateInsteadMediated
+        When ``True``, querying this function for options to be later *reset* into the same
+        state -- the raw values and has_changed status at the global and local levels.
+        When ``False``, querying this function for mediated options to be *used* -- the results
+        of the globals/locals handshake as computed by the Options object itself. Here,
+        ``dict[module][option][value]`` is the value to be used by module.
+
+    Returns
+    -------
+    Dict
+        When `commandsInsteadDict` is False.
+    str
+        When `commandsInsteadDict` is True.
+
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - Need some option to get either all or changed
-
-       - Need some option to either get dict or set string or psimod command list
-
        - command return doesn't revoke has_changed setting for unchanged with changedOnly=False
 
+       - not all kwargs are independent
+
     """
+    has_changed_snapshot = {module: core.options_to_python(module) for module in _modules}
     options = collections.defaultdict(dict)
     commands = ''
     for opt in core.get_global_option_list():
-        if core.has_global_option_changed(opt) or not changedOnly:
+        hoc = core.has_global_option_changed(opt)
+        if hoc or not changedOnly:
             if opt in ['DFT_CUSTOM_FUNCTIONAL', 'EXTERN']:  # Feb 2017 hack
                 continue
             val = core.get_global_option(opt)
-            options['GLOBALS'][opt] = {'value': val, 'has_changed': core.has_global_option_changed(opt)}
+            options['GLOBALS'][opt] = {'value': val, 'has_changed': hoc}
             if isinstance(val, str):
                 commands += """core.set_global_option('%s', '%s')\n""" % (opt, val)
             else:
                 commands += """core.set_global_option('%s', %s)\n""" % (opt, val)
-            #if changedOnly:
-            #    print('Appending module %s option %s value %s has_changed %s.' % \
-            #        ('GLOBALS', opt, core.get_global_option(opt), core.has_global_option_changed(opt)))
-        for module in _modules:
-            if core.option_exists_in_module(module, opt):
-                hoc = core.has_option_changed(module, opt)
-                if hoc or not changedOnly:
+        if globalsOnly:
+            continue
+
+        opt_snapshot = {k: v[opt] for k, v in has_changed_snapshot.items() if opt in v}
+        for module, (lhoc, ohoc) in opt_snapshot.items():
+            if stateInsteadMediated:
+                hoc = lhoc
+            else:
+                hoc = ohoc
+            if hoc or not changedOnly:
+                if stateInsteadMediated:
+                    val = core.get_local_option(module, opt)
+                else:
                     val = core.get_option(module, opt)
-                    options[module][opt] = {'value': val, 'has_changed': hoc}
-                    if isinstance(val, str):
-                        commands += """core.set_local_option('%s', '%s', '%s')\n""" % (module, opt, val)
-                    else:
-                        commands += """core.set_local_option('%s', '%s', %s)\n""" % (module, opt, val)
-                    #if changedOnly:
-                    #    print('Appending module %s option %s value %s has_changed %s.' % \
-                    #        (module, opt, core.get_option(module, opt), hoc))
+                options[module][opt] = {'value': val, 'has_changed': hoc}
+                if isinstance(val, str):
+                    commands += """core.set_local_option('%s', '%s', '%s')\n""" % (module, opt, val)
+                else:
+                    commands += """core.set_local_option('%s', '%s', %s)\n""" % (module, opt, val)
 
     if commandsInsteadDict:
         return commands
@@ -428,21 +501,22 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
         return options
 
 
-def prepare_options_for_set_options():
-    """Capture current state of C++ psi4.core.Options information for reloading by `psi4.set_options()`.
+def prepare_options_for_set_options() -> Dict[str, Any]:
+    """Collect current state of :py:class:`psi4.core.Options` information for
+    reloading by :py:func:`~psi4.driver.p4util.set_options`.
 
     Returns
     -------
-    dict
-        Dictionary where keys are option names to be set globally or module__option
-        mangled names to be set locally. Values are option values.
+    Dict[str, Any]
+        Dictionary where keys are keyword names, either plain for those to be
+        set globally or mangled "module__keyword" for those to be set locally,
+        and values are keyword values.
 
     """
     flat_options = {}
     has_changed_snapshot = {module: core.options_to_python(module) for module in _modules}
 
     for opt in core.get_global_option_list():
-
         handled_locally = False
         ghoc = core.has_global_option_changed(opt)
         opt_snapshot = {k: v[opt] for k, v in has_changed_snapshot.items() if opt in v}
@@ -461,12 +535,68 @@ def prepare_options_for_set_options():
             # some options are globals section (not level) so not in any module
             flat_options[opt] = core.get_global_option(opt)
 
+    # The normal machinery to forward plugin options to Psi goes through 'plugin_load'.
+    # Forte doesn't use this. Pending a larger options rewrite (move to a Python dictionary?),
+    # we need the following dirty hack.
+
+    try:
+        import forte # Needed for Forte options to run.
+    except ImportError:
+        pass
+    else:
+        # Initialization tasks with Psi options
+        psi_options = core.get_options()
+        current_module = psi_options.get_current_module()
+        # Get the current Forte options from Forte
+        forte_options = forte.ForteOptions()
+        forte.register_forte_options(forte_options)
+        psi_options.set_current_module("FORTE")
+        try:
+            forte_options.get_options_from_psi4(psi_options)
+        except RuntimeError:
+            # If we're in this case, Forte hasn't pushed its options to Psi.
+            pass
+        else:
+            # Load changed Forte options into `flat_options`
+            for name, metadata in forte_options.dict().items():
+                if metadata["value"] != metadata["default_value"]:
+                    flat_options[f"forte__{name.lower()}"] = metadata["value"]
+        finally:
+            # Restore current module
+            psi_options.set_current_module(current_module)
     return flat_options
 
 
-def state_to_atomicinput(*, driver, method, basis=None, molecule=None, function_kwargs=None) -> "AtomicInput":
-    """Form a QCSchema for job input from the current state of Psi4 settings."""
+def state_to_atomicinput(
+    *,
+    driver: str,
+    method: str,
+    basis: Optional[str] = None,
+    molecule: Optional[core.Molecule] = None,
+    function_kwargs: Optional[Dict[str, Any]] = None) -> AtomicInput:
+    """Form a QCSchema for job input from the current state of |PSIfour| settings.
 
+    Parameters
+    ----------
+    driver
+        {'energy', 'gradient', 'hessian'}
+        Target derivative level.
+    method
+        Level of theory for job.
+    basis
+        Basis set for job, if not to be extracted from :term:`BASIS <BASIS (MINTS)>`.
+    molecule
+        Molecule for job, if not the active one from
+        :py:func:`~psi4.core.get_active_molecule`.
+    function_kwargs
+        Additional keyword arguments to pass to the driver function.
+
+    Returns
+    -------
+    ~qcelemental.models.AtomicInput
+        QCSchema instance including current keyword set and provenance.
+
+    """
     if molecule is None:
         molecule = core.get_active_molecule()
 
@@ -477,7 +607,7 @@ def state_to_atomicinput(*, driver, method, basis=None, molecule=None, function_
     kw_basis = keywords.pop("basis", None)
     basis = basis or kw_basis
 
-    resi = qcel.models.AtomicInput(
+    resi = AtomicInput(
          **{
             "driver": driver,
             "extras": {
@@ -495,13 +625,22 @@ def state_to_atomicinput(*, driver, method, basis=None, molecule=None, function_
     return resi
 
 
-def mat2arr(mat):
-    """Function to convert core.Matrix *mat* to Python array of arrays.
-    Expects core.Matrix to be flat with respect to symmetry.
+def mat2arr(mat: core.Matrix) -> List[List[float]]:
+    """Convert Matrix to List.
+
+    Parameters
+    ----------
+    mat
+        |PSIfour| matrix. Should be flat with respect to symmetry.
+
+    Returns
+    -------
+    List[List[float]]
+        Pure Python representation of `mat`.
 
     """
     warnings.warn(
-        "Using `psi4.driver.p4util.mat2arr` instead of `MatrixInstance.to_array().tolist()` is deprecated, and in 1.4 it will stop working\n",
+        "Using `psi4.driver.p4util.mat2arr` instead of `MatrixInstance.to_array().tolist()` is deprecated, and as soon as 1.4 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 
@@ -516,43 +655,34 @@ def mat2arr(mat):
     return arr
 
 
-def format_currentstate_for_input(func, name, allButMol=False, **kwargs):
-    """Function to return an input file in preprocessed psithon.
-    Captures memory, molecule, options, function, method, and kwargs.
-    Used to write distributed (sow/reap) input files.
+def expand_psivars(
+    pvdefs: Dict[str, Dict[str, Union[List[str], Callable]]],
+    verbose: Optional[int] = None):
+    """From rules on building QCVariables from others, set new variables to
+    P::e if all the contributors are available.
+
+    Parameters
+    ----------
+    pvdefs
+        Dictionary with keys with names of QCVariables to be created and values
+        with dictionary of two keys: 'args', the QCVariables that contribute to
+        the key and 'func', a function (or lambda) to combine them.
+    verbose
+        Control print level. If unspecified (None), value taken from
+        :term:`PRINT <PRINT (GLOBALS)>`. Status printing when verbose > 2.
+
+    Examples
+    --------
+    >>> pv1 = dict()
+    >>> pv1['SAPT CCD DISP'] = {'func': lambda x: x[0] * x[1] + x[2] + x[3] + x[4],
+                                'args': ['SAPT EXCHSCAL', 'SAPT EXCH-DISP20 ENERGY', 'SAPT DISP2(CCD) ENERGY',
+                                     'SAPT DISP22(S)(CCD) ENERGY', 'SAPT EST.DISP22(T)(CCD) ENERGY']}
+    >>> pv1['SAPT0 ELST ENERGY'] = {'func': sum, 'args': ['SAPT ELST10,R ENERGY']}
+    >>> expand_psivars(pv1)
 
     """
-    warnings.warn(
-        "Using `psi4.driver.p4util.format_currentstate_for_input` is deprecated, and in 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-
-    commands = """\n# This is a psi4 input file auto-generated from the %s() wrapper.\n\n""" % (inspect.stack()[1][3])
-    commands += """memory %d mb\n\n""" % (int(0.000001 * core.get_memory()))
-    if not allButMol:
-        molecule = core.get_active_molecule()
-        molecule.update_geometry()
-        commands += format_molecule_for_input(molecule)
-        commands += '\n'
-    commands += prepare_options_for_modules(changedOnly=True, commandsInsteadDict=True)
-    commands += """\n%s('%s', """ % (func.__name__, name.lower())
-    for key in kwargs.keys():
-        commands += """%s=%r, """ % (key, kwargs[key])
-    commands += ')\n\n'
-
-    return commands
-
-
-def expand_psivars(pvdefs):
-    """Dictionary *pvdefs* has keys with names of PsiVariables to be
-    created and values with dictionary of two keys: 'args', the
-    PsiVariables that contribute to the key and 'func', a function (or
-    lambda) to combine them. This function builds those PsiVariables if
-    all the contributors are available. Helpful printing is available when
-    PRINT > 2.
-
-    """
-    verbose = core.get_global_option('PRINT')
+    if verbose is None:
+        verbose = core.get_global_option('PRINT')
 
     for pvar, action in pvdefs.items():
         if verbose >= 2:
@@ -578,29 +708,49 @@ def expand_psivars(pvdefs):
                 print("""SUCCESS""")
 
 
-def provenance_stamp(routine):
-    """Return dictionary satisfying QCSchema,
-    https://github.com/MolSSI/QCSchema/blob/master/qcschema/dev/definitions.py#L23-L41
-    with Psi4's credentials for creator and version. The
-    generating routine's name is passed in through `routine`.
-
-    """
-    return {'creator': 'Psi4', 'version': __version__, 'routine': routine}
-
-
-def plump_qcvar(val: Union[float, str, List], shape_clue: str, ret: str = 'np') -> Union[float, np.ndarray, core.Matrix]:
-    """Prepare serialized QCVariable for set_variable by convert flat arrays into shaped ones and floating strings.
+def provenance_stamp(routine: str, module: str = None) -> Dict[str, str]:
+    """Prepare QCSchema Provenance with |PSIfour| credentials.
 
     Parameters
     ----------
-    val :
+    routine
+        Name of driver function generating the QCSchema.
+    module
+        Primary contributing |PSIfour| library, like ``ccenergy`` or ``dfmp2``.
+
+    Returns
+    -------
+    provenance : Dict[str, str]
+        Dictionary satisfying QCSchema, with |PSIfour| credentials for creator
+        and version.
+        https://github.com/MolSSI/QCSchema/blob/master/qcschema/dev/definitions.py#L23-L41
+
+    """
+    prov = {'creator': 'Psi4', 'version': __version__, 'routine': routine}
+    if module:
+        prov["module"] = module
+
+    return prov
+
+
+def plump_qcvar(
+    val: Union[float, str, List],
+    shape_clue: str,
+    ret: str = 'np') -> Union[float, np.ndarray, core.Matrix]:
+    """Prepare serialized QCVariable for :py:func:`~psi4.core.set_variable` by
+    converting flat arrays into shaped ones and floating strings.
+
+    Parameters
+    ----------
+    val
         flat (?, ) list or scalar or string, probably from JSON storage.
     shape_clue
         Label that includes (case insensitive) one of the following as
         a clue to the array's natural dimensions: 'gradient', 'hessian'
     ret
         {'np', 'psi4'}
-        Whether to return `np.ndarray` or `psi4.core.Matrix`.
+        Whether for arrays to return :py:class:`numpy.ndarray` or
+        :py:class:`psi4.core.Matrix`.
 
     Returns
     -------

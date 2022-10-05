@@ -33,10 +33,6 @@ properties('scf', properties=props)
 
 
 
-# prefer array dipole/quadrupole over deprecated scalar variables in section above
-
 properties('B3LYP', properties=props)
 
 
-
-# prefer array dipole/quadrupole over deprecated scalar variables in section above

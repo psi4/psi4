@@ -1,9 +1,11 @@
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
-from qcengine.testing import using
+from addons import uusing, using
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
 @pytest.mark.parametrize('engine', [
@@ -36,7 +38,7 @@ def test_h2o(inp, engine):
     assert compare_values(inp['ref_nuc'], h2o.nuclear_repulsion_energy(), 3)
 
 
-@using('geometric')
+@uusing("geometric")
 @pytest.mark.parametrize('inp', [
     pytest.param({'name': 'hf', 'options': {'scf_type': 'df'}, 'ref_ene' : -76.02079629252714, 'ref_nuc': 9.265341708725257}, id='rhf(df)'),
     pytest.param({'name': 'hf', 'options': {'scf_type': 'pk'}, 'ref_ene' : -76.02082389228, 'ref_nuc': 9.26528625744628}, id='rhf(pk)'),

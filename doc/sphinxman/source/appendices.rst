@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -51,8 +51,10 @@ Basis Sets
    basissets_byelement
    basissets_byfamily
 
-PSI Variables
-=============
+.. _`sec:appendices:qcvars`:
+
+QCVariables (aka PSI Variables)
+===============================
 
 .. toctree::
    :maxdepth: 2

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -31,6 +31,7 @@
 
 #include "psi4/psi4-dec.h"
 #include <psi4/libmints/typedefs.h>
+#include "psi4/libpsi4util/exception.h"
 
 #include <map>
 #include <list>
@@ -43,8 +44,10 @@ namespace psi {
 class BasisSet;
 class Options;
 class Matrix;
-class ERISieve;
 class TwoBodyAOInt;
+
+// COMMON VARIABLE NAMES
+// lr_symmetric: Are the two C matrices in our J/K-esque contraction equal?
 
 class PSI_API DFHelper {
    public:
@@ -143,8 +146,14 @@ class PSI_API DFHelper {
     ///
     /// Do we calculate omega exchange and regular hf exchange together?
     /// @param wcombine boolean: all exchange in one matrix
-    ///
-    void set_wcombine(bool wcombine) {wcombine_ = wcombine;}
+    /// TODO: re-enable after all bugs are fixed.
+    // void set_wcombine(bool wcombine) {wcombine_ = wcombine;}
+    void set_wcombine(bool wcombine) {
+        if (wcombine) {
+            throw PSIEXCEPTION("JK: wcombine option is currently not available.");
+        }
+        wcombine_ = wcombine;
+    }
     bool get_wcombine() { return wcombine_; }
 
     ///
@@ -185,7 +194,7 @@ class PSI_API DFHelper {
     /// Initialize the object
     void initialize();
 
-    /// Prepare the sparsity matrix
+    /// Prepare screening and indexing metadata used for Schwarz screening.
     void prepare_sparsity();
 
     /// print tons of useful info
@@ -342,12 +351,14 @@ class PSI_API DFHelper {
     double omega_alpha_;
     double omega_beta_;
     bool debug_ = false;
+    // Can we early-exit prepare_sparsity?
     bool sparsity_prepared_ = false;
     int print_lvl_ = 1;
 
     // => in-core machinery <=
     void AO_core();
     std::unique_ptr<double[]> Ppq_;
+    // Maps x -> (P|Q) ^ x.
     std::map<double, SharedMatrix> metrics_;
 
     // => in-core wK machinery <=
@@ -385,37 +396,60 @@ class PSI_API DFHelper {
                              std::vector<std::vector<double>>& C_buffers);
 
     // => index vectors for screened AOs <=
+    // ==> Skips for non-symmetric "densities" <==
+    // For a given basis function, how many basis functions have significant interactions?
+    // Used for "q" indexing.
     std::vector<size_t> small_skips_;
+    // For a given basis function, how many significant (basis function, naux) pairs have we already passed?
+    // This is a running total, unlike small_skips. Used for "p" indexing.
     std::vector<size_t> big_skips_;
+    // ==> Skips for symmetric "densities" <==
+    // For a given basis function, how many basis functions have significant interaction AND have lesser index?
+    // This counts columns we ignore due to the density of the symmetry. Used for "q" indexing.
     std::vector<size_t> symm_ignored_columns_;
+    // For a given basis function, how many basis functions have significant interaction AND have non-lesser index?
+    // Should be small_skips[p] - symm_ginored_columns[p]. Used for "q" indexing.
     std::vector<size_t> symm_small_skips_;
+    // For a given basis function, how many significant (non-lesser index basis function, naux)
+    // pairs have we already passed? This is a running total, unlike symm_small_skips.
+    // Used for "p" indexing.
     std::vector<size_t> symm_big_skips_;
 
-    // => shell info and blocking <=
+    // => Shell info and blocking : no screening involved <=
+    // Number of primary shells
     size_t pshells_;
+    // Number of auxiliary shells
     size_t Qshells_;
     // greatest number of functions in an aux_ shell
     double Qshell_max_;
+    // When we start primary shell i, how many functions have we passed? Length pshells_ + 1.
     std::vector<size_t> pshell_aggs_;
+    // When we start auxilliary shell i, how many functions have we passed? Length Qshells_ + 1.
     std::vector<size_t> Qshell_aggs_;
+    // Populate all variables in this section. Should only ever be called by the constructor.
     void prepare_blocking();
 
     // => generalized blocking <=
     std::pair<size_t, size_t> pshell_blocks_for_AO_build(const size_t mem, size_t symm,
                                                          std::vector<std::pair<size_t, size_t>>& b);
+    // returns pair(largest buffer size, largest block size)
     std::pair<size_t, size_t> Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
                                                           std::vector<std::pair<size_t, size_t>>& b);
     void metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps, size_t blocking_index,
                                      size_t block_sizes, size_t total_mem, size_t memory_factor, size_t memory_bump);
 
     // => Schwarz Screening <=
-    std::vector<size_t> schwarz_fun_mask_;
-    std::vector<size_t> schwarz_shell_mask_;
-    std::vector<size_t> schwarz_fun_count_;
+    // Does shell pair (m, n) have any significant (mn|mn)-type integrals? Size pshells_ ** 2
+    std::vector<bool> schwarz_shell_mask_;
+    // What is the index of ij in significant basis function interactions for i? 0 = not significant. 2 means 1 before, 3 means 2 before, ect. Size nbf_ ** 2.
+    // Ordering is based on the natural ordering of basis functions, not ordering of significance.
+    std::vector<size_t> schwarz_fun_index_;
 
     // => Coulomb metric handling <=
     std::vector<std::pair<double, std::string>> metric_keys_;
+    // Create J and write it to disk.
     void prepare_metric();
+    // Create J and cache it in metrics_.
     void prepare_metric_core();
     double* metric_prep_core(double m_pow);
     std::string return_metfile(double m_pow);
@@ -476,18 +510,30 @@ class PSI_API DFHelper {
                      std::pair<size_t, size_t> a3);
     void get_tensor_(std::string file, double* b, const size_t start1, const size_t stop1, const size_t start2,
                      const size_t stop2);
+    // Write to `file` from `Mp`, starting at position `start` in `file` and reading length `size`.
+    // The file is opened in mode `op`.
     void put_tensor_AO(std::string file, double* Mp, size_t size, size_t start, std::string op);
+    // Read from `file` into `Mp`, starting at position `start` in `file` and reading length `size`
     void get_tensor_AO(std::string file, double* Mp, size_t size, size_t start);
 
     // => internal handlers for FILE IO <=
+    // Map a base filename to the fullname of the p variant and then the original tensor.
     std::map<std::string, std::tuple<std::string, std::string>> files_;
+    // Map a full filename to the size of its three indices.
     std::map<std::string, std::tuple<size_t, size_t, size_t>> sizes_;
     std::map<std::string, std::tuple<size_t, size_t, size_t>> tsizes_;
-    std::map<std::string, std::string> AO_files_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
+    // Given the base of a filename, return the full filename.
+    // "full" filename adds parts to the base to prevent files from overwriting each other.
     std::string start_filename(std::string start);
-    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op = 0);
+    // Given a base filename and the indices of its three dimensions, register the
+    // filename in files_ and the dimensions in sizes_. Creates an entry for both
+    // the tensor and the p variant. (The distinction is important for direct_iaQ.)
+    // Q = aux, p = left primary, q = right primary
+    // op = 0 if Qpq, 1 if pQq, 2 if pqQ
+    void filename_maker(std::string name, size_t Q, size_t p, size_t q, size_t op = 0);
+    // Store a filename for the i'th AO quantity in AO_names_.
     void AO_filename_maker(size_t i);
     void check_file_key(std::string);
     void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,
@@ -504,7 +550,13 @@ class PSI_API DFHelper {
                     std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, size_t max_nocc, bool do_J, bool do_K,
                     bool do_wK, bool lr_symmetric);
     void compute_D(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
-    void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
+    // Compute the J matrices (mn|rs) D_rs and store them into J, for an array of D.
+    // @param D: vector of densities to be contracted against AO basis integrals.
+    // @param J: vector of Coulomb integrals, one for each density
+    // @param M1p : Intermediate populated now for wK later.
+    // @param T1p : Temporary matrix
+    // @param T2p : Temporary matrix
+    void compute_J(const std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                    std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size);
     void compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                         std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size);
@@ -512,12 +564,14 @@ class PSI_API DFHelper {
     void compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K,
                    double* Tp, double* Jtmp, double* Mp, size_t bcount, size_t block_size,
                    std::vector<std::vector<double>>& C_buffers, bool lr_symmetric);
+    // returns tuple(largest AO buffer size, largest Q block size)
     std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc,
                                                           bool lr_symmetric);
     void compute_wK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> wK,
                     size_t max_nocc, bool do_J, bool do_K, bool do_wK);
 
     // => misc <=
+    // Utility function to fill double* with zero in parallel
     void fill(double* b, size_t count, double value);
 
 };  // End DF Helper class

@@ -1,12 +1,12 @@
 import numpy as np
 
 import pytest
-from .utils import *
-from .addons import using
+from utils import *
+from addons import using
 
 import psi4
 
-
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
 @pytest.fixture
@@ -85,7 +85,7 @@ def name_dft_test(val):
     pytest.param(           'dlDF', 0.4620507089, '6-31G'),  # Q-Chem
     pytest.param('DSD-PBEB95-D3BJ', 0.44615418,   '6-31G', marks=using("dftd3")),  # Q-Chem
     pytest.param('DSD-PBEP86-D3BJ', 0.44599836,   '6-31G', marks=using("dftd3")),  # Q-Chem
-    pytest.param('DSD-PBEPBE-D3BJ', 0.44608512,   '6-31G', marks=[using("dftd3"), pytest.mark.quick]),  # Q-Chem
+    pytest.param('DSD-PBEPBE-D3BJ', 0.44608512,   '6-31G', marks=[*using("dftd3"), pytest.mark.quick]),  # Q-Chem
     pytest.param(           'EDF1', 0.4557270241, '6-31G'),  # Q-Chem
     pytest.param(           'EDF2', 0.457161542,  '6-31G'),  # Q-Chem
     pytest.param(            'GAM', 0.4509109774, '6-31G'),  # Q-Chem
@@ -154,7 +154,7 @@ def name_dft_test(val):
     pytest.param(        'wB97M-V', 0.4544676075, '6-31G'),  # Q-Chem
     pytest.param(          'wB97X', 0.4564711283, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-D', 0.4575912358, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(       'wB97X-D3', 0.4570744381, '6-31G', marks=[using("dftd3")]),   # Q-Chem
+    pytest.param(       'wB97X-D3', 0.4570744381, '6-31G', marks=using("dftd3")),   # Q-Chem
     pytest.param(        'wB97X-V', 0.455302602,  '6-31G'),  # Q-Chem
     pytest.param(         'wM05-D', 0.4560790902, '6-31G'),  # Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(        'wM06-D3', 0.4563459267, '6-31G', marks=using("dftd3")),  # https://gitlab.com/libxc/libxc/-/issues/180
@@ -176,6 +176,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
 
 
 
+@pytest.mark.nbody
 @pytest.mark.scf
 @pytest.mark.dft
 @pytest.mark.long
@@ -277,7 +278,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(   'wB97M-V', -0.0152233456,  '6-31G'),  #   Q-Chem
     pytest.param(     'wB97X', -0.0156289024,  '6-31G'),  #   Q-Chem
     pytest.param(   'wB97X-D', -0.0146246032,  '6-31G'),  #   Q-Chem
-    pytest.param(  'wB97X-D3', -0.0148666307,  '6-31G', marks=[using("dftd3")]), #  Q-Chem
+    pytest.param(  'wB97X-D3', -0.0148666307,  '6-31G', marks=using("dftd3")), #  Q-Chem
     pytest.param('wB97X-D3BJ', -0.01295664452, 'cc-pVDZ', marks=using("dftd3")), #   Orca
     pytest.param(   'wB97X-V', -0.0151102751,  '6-31G'),  #   Q-Chem
     pytest.param(    'wM05-D', -0.0147496512,  '6-31G'),  #   Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180

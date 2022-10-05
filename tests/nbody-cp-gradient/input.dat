@@ -114,7 +114,7 @@ for i in cp_scheme: #TEST
 
     for result in [
         energy_dict[i],
-        wfn.variable(i),
+        wfn.variable("1_"+i),
         wfn_mol.variable("CURRENT ENERGY"),
         variable("CURRENT ENERGY"),
     ]:
@@ -122,7 +122,7 @@ for i in cp_scheme: #TEST
 
     for result in [
         gradient_dict[i],
-        wfn.variable(f"PTYPE {i}"),
+        wfn.variable(f"GRADIENT 1_{i}"),
         wfn_mol.variable("CURRENT GRADIENT"),
         variable("CURRENT GRADIENT"),
     ]:
@@ -163,6 +163,8 @@ for result in [  #TEST
 ]:  #TEST
     compare_values(ref_2cp_grad, result, 8, 'CP-Corrected Gradient')  #TEST
 
+compare(12, wfn.variable("NBODY NUMBER"), "rtd=T nbody number")  #TEST
+
 
 # compute nbody again with return_total_data=False
 # * note CURRENT ENERGY moved from first to second testing block
@@ -197,3 +199,4 @@ for result in [  #TEST
 ]:  #TEST
     compare_values(ref_2cp_grad_ie, result, 8, 'rtd=F CP-Corrected Gradient')  #TEST
 
+compare(12, wfn.variable("NBODY NUMBER"), "rtd=F nbody number")  #TEST

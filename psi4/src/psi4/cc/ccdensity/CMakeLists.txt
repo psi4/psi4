@@ -26,7 +26,6 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_ROHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_UHF.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/ael.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/build_A.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/build_A_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/build_A_ROHF.cc
@@ -39,12 +38,12 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/build_ex_tdensity.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/cache.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ccdensity.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/classify.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/classify.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/deanti.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/deanti_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/deanti_ROHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/deanti_UHF.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/distribute.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/distribute.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/dump_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/dump_ROHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/dump_UHF.cc
@@ -61,7 +60,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ex_td_setup.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ex_tdensity.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ex_tdensity_intermediates.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/file_build.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/file_build.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/fold.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/fold_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/fold_ROHF.cc
@@ -71,8 +70,8 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_params.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_rho_params.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_td_params.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/idx_error.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/idx_permute.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/idx_error.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/idx_permute.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/kinetic.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/lag.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ltdensity.cc
@@ -104,10 +103,12 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/td_print.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/td_setup.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tdensity.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/to_matrix.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/transL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/transdip.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/transp.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/twopdm.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/wfn_saver.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/x_Gabcd.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/x_Gciab.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/x_Gciab_uhf.cc

@@ -1,11 +1,11 @@
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
 import numpy as np
 
-pytestmark = pytest.mark.skip
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.skip]
 
 ref = {
     "conv": {

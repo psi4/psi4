@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -89,6 +89,10 @@ void DiskJK::preiterations() {
     mints.reset();
 }
 void DiskJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
     auto psio = std::make_shared<PSIO>();
     IWL* iwl = new IWL(psio.get(), PSIF_SO_TEI, cutoff_, 1, 1);
     Label* lblptr = iwl->labels();

@@ -4,7 +4,9 @@ Tests for the memory estimators on JK objects
 
 import psi4
 import pytest
-from .utils import *
+from utils import *
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 def _build_system(basis): 
     mol = psi4.geometry("""

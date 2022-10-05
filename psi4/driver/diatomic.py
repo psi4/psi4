@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,7 +26,12 @@
 # @END LICENSE
 #
 
-from typing import Dict, List
+__all__ = [
+    "anharmonicity",
+    "least_squares_fit_polynomial",
+]
+
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -35,8 +40,15 @@ from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 
 
-def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials=True, weighted=True, polynomial_order=4):
-    """Performs and unweighted least squares fit of a polynomial, with specified order
+def least_squares_fit_polynomial(
+    xvals: List[float],
+    fvals: List[float],
+    localization_point: float,
+    no_factorials: bool = True,
+    weighted: bool = True,
+    polynomial_order: int = 4,
+):
+    """Performs an unweighted least squares fit of a polynomial, with specified order
        to an array of input function values (fvals) evaluated at given locations (xvals).
        See https://doi.org/10.1063/1.4862157, particularly eqn (7) for details. """
     xpts = np.array(xvals) - localization_point
@@ -58,7 +70,7 @@ def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials
     return fit
 
 
-def anharmonicity(rvals: List, energies: List, plot_fit: str = '', mol = None) -> Dict:
+def anharmonicity(rvals: List[float], energies: List[float], plot_fit: str = '', mol = None) -> Dict[str, Any]:
     """Generates spectroscopic constants for a diatomic molecules.
        Fits a diatomic potential energy curve using a weighted least squares approach
        (c.f. https://doi.org/10.1063/1.4862157, particularly eqn. 7), locates the minimum
@@ -126,7 +138,7 @@ def anharmonicity(rvals: List, energies: List, plot_fit: str = '', mol = None) -
         core.print_out("       E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))
         if abs(g) < thres:
             break
-        re -= g/H;
+        re -= g/H
         if i == maxit-1:
             raise ConvergenceError("diatomic geometry optimization", maxit)
     core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))

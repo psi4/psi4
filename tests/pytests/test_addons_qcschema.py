@@ -2,7 +2,7 @@ import json
 import pprint
 
 import pytest
-from .addons import hardware_nvidia_gpu, using
+from addons import hardware_nvidia_gpu, uusing, using
 import qcengine as qcng
 
 import psi4
@@ -19,10 +19,10 @@ import psi4
 #    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
 #    pprint.pprint(atres.dict())
 
-pytestmark = [pytest.mark.quick, pytest.mark.smoke]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.smoke]
 
 
-@using("gdma")
+@uusing("gdma")
 def test_gdma():
     """gdma1"""
     #! Water RHF/cc-pVTZ distributed multipole analysis
@@ -72,7 +72,7 @@ def test_gdma():
     assert psi4.compare_matrices(ref_tot_mat, totvals, 6, "DMA Total Multipoles")
 
 
-@using("ipi")
+@uusing("ipi")
 def test_ipi_broker1():
     """ipi_broker1"""
 
@@ -150,7 +150,7 @@ def test_ipi_broker1():
 #    assert psi4.compare_values(reftotal, b._potential,                                  7, "Total energy (Broker)")
 #    assert psi4.compare_arrays(frc,     -b._force,                                      4, "Total force (Broker)")
 
-#@using("mrcc")
+#@uusing("mrcc")
 #def test_mrcc():
 #    """mrcc/ccsdt"""
 #    #! CCSDT cc-pVDZ energy for the H2O molecule using MRCC
@@ -182,7 +182,7 @@ def test_ipi_broker1():
 #    assert psi4.compare_values(-76.239133655413, psi4.variable("CURRENT ENERGY"), 6, 'CCSDT')
 
 
-@using("chemps2")
+@uusing("chemps2")
 def test_chemps2():
     """chemps2/scf-n2"""
     #! dmrg-scf on N2
@@ -193,7 +193,7 @@ def test_chemps2():
     assert psi4.compare_values(-109.1035023353, atres.return_result, 6, "DMRG Energy")
 
 
-@using('mp2d')
+@uusing("mp2d")
 def test_mp2d():
 
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "C", "H", "H", "H", "H", "C", "C", "H", "H"], "geometry": [3.8623510442091865e-17, -1.261539587380886, -4.02163254721969, -3.862351044209187e-17, 1.261539587380886, -4.02163254721969, 1.745390733721485, -2.3286206872737854, -4.0245162692871395, -1.7453907337214847, -2.3286206872737854, -4.0245162692871395, -1.745390733721485, 2.3286206872737854, -4.0245162692871395, 1.7453907337214847, 2.3286206872737854, -4.0245162692871395, -5.7777898331617076e-34, 0.0, 5.47454736883822, -5.7777898331617076e-34, 0.0, 3.193150937439626, -5.7777898331617076e-34, 0.0, 1.1789145370276326, -5.7777898331617076e-34, 0.0, 7.484131263529336], "name": "C4H6", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 12.0, 1.00782503223, 1.00782503223, 1.00782503223, 1.00782503223, 12.0, 12.0, 1.00782503223, 1.00782503223], "real": [true, true, true, true, true, true, true, true, true, true], "atom_labels": ["", "", "", "", "", "", "", "", "", ""], "atomic_numbers": [6, 6, 1, 1, 1, 1, 6, 6, 1, 1], "mass_numbers": [12, 12, 1, 1, 1, 1, 12, 12, 1, 1], "fragments": [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9]], "fragment_charges": [0.0, 0.0], "fragment_multiplicities": [1, 1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "mp2-d", "basis": "cc-pvdz"}, "keywords": {}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
@@ -205,7 +205,7 @@ def test_mp2d():
     assert psi4.compare_values(expected, atres.properties.scf_dispersion_correction_energy, 7, 'mp2d disp E')
 
 
-@using("dftd3")
+@uusing("dftd3")
 def test_dftd3():
     """dftd3/energy"""
 
@@ -239,7 +239,7 @@ def test_dftd3():
                                'Ethene -D3 (calling dftd3 -bj)')
 
 
-@using("libefp")
+@uusing("libefp")
 def test_libefp():
     """libefp/qchem-qmefp-sp"""
     #! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
@@ -305,7 +305,7 @@ def test_libefp():
 #    psi4.core.print_variables()
 
 
-@using("pcmsolver")
+@uusing("pcmsolver")
 def test_pcmsolver():
     """pcmsolver/scf"""
     #! pcm
@@ -445,7 +445,7 @@ def test_json():
 
 
 #@pytest.mark.smoke
-#@using("cfour")
+#@uusing("cfour")
 #def test_cfour():
 #    """cfour/sp-rhf-ccsd_t_"""
 #    #! single-point CCSD(T)/qz2p on water
@@ -486,7 +486,7 @@ def test_json():
 #    assert psi4.compare_values(-0.282969089769, psi4.variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
 
 
-@using("v2rdm_casscf")
+@uusing("v2rdm_casscf")
 def test_v2rdm_casscf():
     """v2rdm_casscf/tests/v2rdm1"""
     #! cc-pvdz N2 (6,6) active space Test DQG
@@ -513,7 +513,7 @@ def test_v2rdm_casscf():
 
 
 #@hardware_nvidia_gpu
-#@using("gpu_dfcc")
+#@uusing("gpu_dfcc")
 #def test_gpu_dfcc():
 #    """gpu_dfcc/tests/gpu_dfcc1"""
 #    #! cc-pvdz (H2O)2 Test DF-CCSD vs GPU-DF-CCSD
@@ -562,8 +562,9 @@ def test_v2rdm_casscf():
 #    assert psi4.compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD total energy")
 
 
-@using("dftd3")
-@using("gcp")
+@pytest.mark.nbody
+@uusing("dftd3")
+@uusing("gcp")
 def test_grimme_3c():
 
     # NOTES
@@ -581,7 +582,7 @@ def test_grimme_3c():
     assert psi4.compare_values(-0.00240232, atres.return_result, 6, 'S22-16 HF-3c/minix')
 
 
-@using("dkh")
+@uusing("dkh")
 def test_dkh():
     """dkh/molpro-2order"""
 
@@ -592,8 +593,8 @@ def test_dkh():
     assert psi4.compare_values(-128.66891610, atres.return_result, 6, '2nd order vs Molpro')
 
 
-#@using("ambit")
-#@using("forte")
+#@uusing("ambit")
+#@uusing("forte")
 #def disabled_test_forte():
 #    """aci-10: Perform aci on benzyne"""
 #
@@ -663,7 +664,7 @@ def test_dkh():
 #    assert psi4.compare_values(refacipt2, psi4.variable("ACI+PT2 ENERGY"),8,"ACI+PT2 energy")
 
 
-@using("snsmp2")
+@uusing("snsmp2")
 def test_snsmp2():
     """snsmp2/he-he"""
 
@@ -678,14 +679,14 @@ def test_snsmp2():
     assert psi4.compare_values(0.00176708227, atres.return_result, 5, "SNS-MP2 IE [Eh]")
 
 
-@using("resp")
+@uusing("resp")
 def test_resp():
     """resp/tests/test_resp_1"""
 
     pytest.xfail("RESP calls Psi4, not the reverse, so no AtomicInput possible")
 
 
-@using("fockci")
+@uusing("fockci")
 def test_psi4fockci():
     """psi4fockci/n2"""
 
@@ -705,7 +706,7 @@ def test_psi4fockci():
     assert psi4.compare_values(-108.600832070267, atres.extras["qcvars"]["CI ROOT 0 TOTAL ENERGY"], 7, "2SF-EA Energy")
 
 
-@using("cppe")
+@uusing("cppe")
 def test_cppe():
     #! PE-SCF of PNA in presence of 6 water molecules
     #! Reference data from Q-Chem calculation
@@ -749,7 +750,7 @@ def test_cppe():
 
 
 #@pytest.mark.smoke
-#@using("cct3")
+#@uusing("cct3")
 #def test_cct3():
 #    import cct3
 #

@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -45,7 +45,7 @@ parser.add_argument("-o", "--output", help="""\
 Redirect output elsewhere.
 Default: when input filename is 'input.dat', 'output.dat'.
 Otherwise, output filename defaults to input filename with
-any '.in' or 'dat' extension replaced by '.out'""")
+'.out' extension""")
 parser.add_argument("-a", "--append", action='store_true',
                     help="Appends results to output file. Default: Truncate first")
 parser.add_argument("-V", "--version", action='store_true',
@@ -64,6 +64,8 @@ parser.add_argument("-m", "--messy", action='store_true',
 parser.add_argument("--psiapi-path", action='store_true',
                     help="""Generates a bash command to source correct Python """
                          """interpreter and path for ``python -c "import psi4"``""")
+parser.add_argument("--module", action='store_true',
+                    help="""Generates the path to PsiAPI loading.""")
 parser.add_argument("-v", "--verbose", action='store_true', help="Prints Psithon to Python translation.")
 parser.add_argument("--inplace", action='store_true',
                     help="Runs Psi4 from the source directory. !Warning! expert option.")
@@ -72,13 +74,15 @@ parser.add_argument("-l", "--psidatadir",
 parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
 parser.add_argument("--qcschema", "--schema", action='store_true',
-                    help="Runs input file as QCSchema. Can either be JSON or MessagePack input.")
+                    help="Runs input file as QCSchema. Can either be JSON or MessagePack input. Use `--output` to not overwrite schema input file.")
 parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
                     help="Runs pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
 parser.add_argument("--mdi", default=None,
                     help="Sets MDI configuration options")
+parser.add_argument("--loglevel", default=20,
+                    help="Sets logging level: WARN=30, INFO=20, DEBUG=10.")
 
 # For plugins
 parser.add_argument("--plugin-name", help="""\
@@ -140,12 +144,10 @@ if len(unknown) > 2:
 if (args["output"] is None) and (args["qcschema"] is False):
     if args["input"] == "input.dat":
         args["output"] = "output.dat"
-    elif args["input"].endswith(".in"):
-        args["output"] = args["input"][:-2] + "out"
-    elif args["input"].endswith(".dat"):
-        args["output"] = args["input"][:-3] + "out"
     else:
-        args["output"] = args["input"] + ".dat"
+        pinput = Path(args["input"])
+        presuffix = pinput.suffix if pinput.suffix in [".out", ".log"] else ""
+        args["output"] = str(pinput.with_suffix(presuffix + ".out"))
 
 # Plugin compile line
 if args['plugin_compile']:
@@ -153,8 +155,7 @@ if args['plugin_compile']:
 
     plugincachealongside = os.path.isfile(share_cmake_dir + os.path.sep + 'psi4PluginCache.cmake')
     if plugincachealongside:
-        print("""cmake -C {}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={} .""".format(
-            share_cmake_dir, cmake_install_prefix))
+        print(f"""cmake -C {share_cmake_dir}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={cmake_install_prefix} .""")
         sys.exit()
     else:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
@@ -163,6 +164,10 @@ if args['psiapi_path']:
     pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
     bin_dir = Path(cmake_install_prefix) / 'bin'
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
+    sys.exit()
+
+if args["module"]:
+    print(lib_dir)
     sys.exit()
 
 # Transmit any argument psidatadir through environ
@@ -224,7 +229,7 @@ _clean_functions = [psi4.core.clean, psi4.extras.clean_numpy_files]
 if args["append"] is None:
     args["append"] = False
 if (args["output"] != "stdout") and (args["qcschema"] is False):
-    psi4.core.set_output_file(args["output"], args["append"])
+    psi4.set_output_file(args["output"], args["append"], loglevel=int(args["loglevel"]))
 
 # Set a few options
 psi4.core.set_num_threads(int(args["nthread"]), quiet=True)

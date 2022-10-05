@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -112,7 +112,7 @@ void BasisSetOrthogonalization::compute_overlap_eig() {
             }
         }
     }
-    outfile->Printf("  Minimum eigenvalue in the overlap matrix is %14.10E.\n", min_S_);
+    if (print_) outfile->Printf("  Minimum eigenvalue in the overlap matrix is %14.10E.\n", min_S_);
 
     // Find reciprocal condition number
     rcond_ = DBL_MAX;
@@ -129,7 +129,7 @@ void BasisSetOrthogonalization::compute_overlap_eig() {
         // Reciprocal condition number
         rcond_ = std::min(rcond_, e_min / e_max);
     }
-    outfile->Printf("  Reciprocal condition number of the overlap matrix is %14.10E.\n", rcond_);
+    if (print_) outfile->Printf("  Reciprocal condition number of the overlap matrix is %14.10E.\n", rcond_);
 }
 
 void BasisSetOrthogonalization::compute_inverse() {

@@ -61,8 +61,9 @@ set {
   max_radial_moment 4
 }
 
+set scf_properties ['MBIS_CHARGES', 'MBIS_VOLUME_RATIOS']
+
 e, wfn = energy('b3lyp/cc-pvdz', return_wfn=True)
-oeprop(wfn, 'MBIS_CHARGES', title='H20 DFT')
 
 #NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
 charges = wfn.array_variable('MBIS CHARGES')

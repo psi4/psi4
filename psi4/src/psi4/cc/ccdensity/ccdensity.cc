@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,21 +38,23 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "psi4/libpsio/psio.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libdpd/dpd.h"
-#include "psi4/libiwl/iwl.h"
-#include "psi4/liboptions/liboptions.h"
-#include "psi4/psi4-dec.h"
 #include <cmath>
-#include "psi4/psifiles.h"
+#include "ccdensity.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
 #include "globals.h"
+#include "psi4/cc/ccwave.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libiwl/iwl.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
 namespace psi {
 
 class Molecule;
@@ -68,6 +70,8 @@ void onepdm(const struct RHO_Params&);
 void sortone(const struct RHO_Params&);
 void twopdm();
 void energy(const struct RHO_Params&);
+// Note: resort_tei() may be used by a frozen-core CC gradient implementation in the future.
+// See https://github.com/psi4/psi4/pull/2696 for discussion.
 // void resort_tei();
 // void resort_gamma();
 void lag(const struct RHO_Params& rho_params);
@@ -117,9 +121,8 @@ void get_td_params(Options &options);
 void td_setup(const struct TD_Params& S);
 void tdensity(const struct TD_Params& S);
 void td_print();
-void oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S);
-void rotational_strength(MintsHelper &mints, struct TD_Params *S);
-void ael(struct RHO_Params *rho_params);
+void oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S);
+void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S);
 void cleanup();
 void td_cleanup();
 void x_oe_intermediates_rhf(const struct RHO_Params& rho_params);
@@ -130,12 +133,13 @@ void V_cc2();
 void ex_tdensity(char hand, const struct TD_Params& S, const struct TD_Params& U);
 void ex_td_setup(const struct TD_Params& S, const struct TD_Params& U);
 void ex_td_cleanup();
-void ex_oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params *S, struct TD_Params *U,
+void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U,
                             struct XTD_Params *xtd_data);
-void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
+void ex_rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_td_print(std::vector<struct XTD_Params>);
+SharedMatrix block_to_matrix(double **);
 
-PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
+PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn, Options &options) {
     int i;
     int **cachelist, *cachefiles;
     struct iwlbuf OutBuf;
@@ -162,9 +166,9 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
         std::vector<int *> spaces;
         spaces.push_back(moinfo.occpi);
-        spaces.push_back(moinfo.occ_sym);
+        spaces.push_back(moinfo.occ_sym.data());
         spaces.push_back(moinfo.virtpi);
-        spaces.push_back(moinfo.vir_sym);
+        spaces.push_back(moinfo.vir_sym.data());
         delete dpd_list[0];
         dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
         dpd_set_default(0);
@@ -174,13 +178,13 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
         std::vector<int *> spaces;
         spaces.push_back(moinfo.aoccpi);
-        spaces.push_back(moinfo.aocc_sym);
+        spaces.push_back(moinfo.aocc_sym.data());
         spaces.push_back(moinfo.avirtpi);
-        spaces.push_back(moinfo.avir_sym);
+        spaces.push_back(moinfo.avir_sym.data());
         spaces.push_back(moinfo.boccpi);
-        spaces.push_back(moinfo.bocc_sym);
+        spaces.push_back(moinfo.bocc_sym.data());
         spaces.push_back(moinfo.bvirtpi);
-        spaces.push_back(moinfo.bvir_sym);
+        spaces.push_back(moinfo.bvir_sym.data());
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
     }
 
@@ -340,6 +344,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
         auto Pb = std::make_shared<Matrix>("P beta", Cb->colspi(), Cb->colspi());
         int mo_offset = 0;
 
+        /*
         for (int h = 0; h < Ca->nirrep(); h++) {
             int nmo = nmopi[h];
             int nfv = frzvpi[h];
@@ -363,48 +368,58 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             }
             mo_offset += nmo;
         }
+        */
+
+        SharedMatrix Pa_x, Pb_x;
+        if (ref_wfn->same_a_b_dens()) {
+            Pa_x = block_to_matrix(moinfo.opdm);
+        } else {
+            Pa_x = block_to_matrix(moinfo.opdm_a);
+            Pb_x = block_to_matrix(moinfo.opdm_b);
+        }
+
+        std::string short_name;
+        if (params.wfn == "EOM_CC2") {
+            short_name = "CC2";
+        } else if (params.wfn == "EOM_CC3") {
+            short_name = "CC3";
+        } else if (params.wfn == "EOM_CCSD") {
+            short_name = "CCSD";
+        }
 
         /* Transform Da/b to so basis and set in wfn */
         // If this becomes a wavefunction subclass someday, just redefine the densities directly.
         if (ref_wfn->same_a_b_dens()) {
-            Pa->scale(0.5);
-            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
+            Pa_x->scale(0.5);
+            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa_x, ref_wfn->Ca(), false, false, true);
             if (i == 0) {
                 auto ref_Da_so = ref_wfn->Da();
                 ref_Da_so->copy(Pa_so);
             } else {
-                auto var_title = "CC ROOT " + std::to_string(i) + " Da";
-                ref_wfn->set_array_variable(var_title, Pa_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "ALPHA", Pa_so);
             }
         } else {
-            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
-            auto Pb_so = linalg::triplet(ref_wfn->Cb(), Pb, ref_wfn->Cb(), false, false, true);
+            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa_x, ref_wfn->Ca(), false, false, true);
+            auto Pb_so = linalg::triplet(ref_wfn->Cb(), Pb_x, ref_wfn->Cb(), false, false, true);
             if (i == 0) {
                 auto ref_Da_so = ref_wfn->Da();
                 auto ref_Db_so = ref_wfn->Db();
                 ref_Da_so->copy(Pa_so);
                 ref_Db_so->copy(Pb_so);
             } else {
-                auto var_title = "CC ROOT " + std::to_string(i) + " Da";
-                ref_wfn->set_array_variable(var_title, Pa_so);
-                var_title = "CC ROOT " + std::to_string(i) + " Db";
-                ref_wfn->set_array_variable(var_title, Pb_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "ALPHA", Pa_so);
+                density_saver(*ref_wfn, &(rho_params[i]), "BETA", Pb_so);
             }
         }
 
         // For psivar scraper
 
-        // Process::environment.globals["CC ROOT n DIPOLE"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE"]
-        // Process::environment.globals["CC ROOT n DIPOLE X"]
-        // Process::environment.globals["CC ROOT n DIPOLE Y"]
-        // Process::environment.globals["CC ROOT n DIPOLE Z"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE XX"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE XY"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE XZ"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE YY"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE YZ"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE ZZ"]
+        // Process::environment.globals["CCname ROOT n DIPOLE"]
+        // Process::environment.globals["CCname ROOT n DIPOLE - h TRANSITION"]
+        // Process::environment.globals["CCname ROOT n (h) DIPOLE"]
+        // Process::environment.globals["CCname ROOT n QUADRUPOLE"]
+        // Process::environment.globals["CCname ROOT n QUADRUPOLE - h TRANSITION"]
+        // Process::environment.globals["CCname ROOT n (h) QUADRUPOLE"]
 
         free_block(moinfo.opdm);
         free_block(moinfo.opdm_a);
@@ -435,10 +450,10 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             td_setup(td_params[i]);
             tdensity(td_params[i]);
             outfile->Printf("Doing transition\n");
-            oscillator_strength(ref_wfn, &(td_params[i]));
+            oscillator_strength(*ref_wfn, &(td_params[i]));
             outfile->Printf("Doing transition\n");
             if (params.ref == 0) {
-                rotational_strength(mints, &(td_params[i]));
+                rotational_strength(*ref_wfn, &(td_params[i]));
             }
             outfile->Printf("Doing transition\n");
             td_cleanup();
@@ -511,10 +526,10 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                                     moinfo.labels[td_params[state2].irrep].c_str());
 
                     // ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
-                    ex_oscillator_strength(ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
+                    ex_oscillator_strength(*ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
                     if (params.ref == 0) {
                         // ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
-                        ex_rotational_strength(mints, &(td_params[state1]), &(td_params[state2]), &xtd_data);
+                        ex_rotational_strength(*ref_wfn, &(td_params[state1]), &(td_params[state2]), &xtd_data);
                     }
 
                     xtd_params.push_back(xtd_data);
@@ -528,7 +543,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
     }  // End params.transition IF loop
 
-    // outfile->Printf("I am here\n");
     dpd_close(0);
 
     if (params.ref == 2)

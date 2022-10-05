@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -84,6 +84,7 @@ void CIWavefunction::common_init() {
     set_ras_parameters();     /* set fermi levels and the like            */
 
     // Print out information
+    print_ = Parameters_->print_;
     print_parameters();
     print_ras_parameters();
 
@@ -97,8 +98,6 @@ void CIWavefunction::common_init() {
     // Data should come from get_dimension(space)
     for (int h = 0; h < nirrep_; ++h) {
         frzcpi_[h] = CalcInfo_->dropped_docc[h];
-        doccpi_[h] = CalcInfo_->docc[h];
-        soccpi_[h] = CalcInfo_->socc[h];
         frzvpi_[h] = CalcInfo_->dropped_uocc[h];
     }
 
@@ -441,6 +440,14 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize) 
         else
             throw PSIEXCEPTION("CIWavefunction::get_tpdm: Spin type must be AA, AB, BB, or SUM.");
     }
+}
+
+void CIWavefunction::reset_ci_H0block() {
+    // Free H0block
+    H0block_free();
+
+    // initialize H0block
+    H0block_init(CIblks_->vectlen);
 }
 
 /*

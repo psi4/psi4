@@ -1,12 +1,12 @@
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
 import numpy as np
-from .addons import using
+from addons import uusing, using
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 __potentials = {
     'pna_6w':
@@ -135,6 +135,112 @@ EXCLISTS
 17   16  18
 18   16  17
     """,
+    'fa_6w':
+    """
+@COORDINATES
+18
+AA
+O      1.37900000    -1.35200000    -0.48400000       1
+H      1.18600000    -0.72200000     0.21400000       2
+H      2.29400000    -1.59200000    -0.32400000       3
+O      1.42500000     0.33300000    -2.72900000       4
+H      1.30700000    -0.34900000    -2.06400000       5
+H      1.13400000    -0.08900000    -3.54000000       6
+O      4.29400000    -1.30600000     0.06100000       7
+H      4.95600000    -1.96300000     0.28600000       8
+H      4.29200000    -0.71800000     0.81900000       9
+O      3.98200000     2.78500000     0.13700000      10
+H      4.09400000     2.22800000    -0.63600000      11
+H      4.67200000     3.44400000     0.04300000      12
+O      4.16800000     0.93400000    -1.93300000      13
+H      3.32100000     0.80000000    -2.36400000      14
+H      4.32300000     0.10400000    -1.47700000      15
+O      4.04800000     0.63600000     2.07500000      16
+H      3.14700000     0.62300000     2.40600000      17
+H      4.08600000     1.44400000     1.55900000      18
+@MULTIPOLES
+ORDER 0
+18
+1      -0.67045583
+2       0.33515422
+3       0.33530161
+4      -0.67050747
+5       0.33519144
+6       0.33531603
+7      -0.67066479
+8       0.33531583
+9       0.33534896
+10     -0.67089070
+11      0.33535776
+12      0.33553294
+13     -0.67044145
+14      0.33519962
+15      0.33524183
+16     -0.67037463
+17      0.33511103
+18      0.33526361
+ORDER 1
+18
+1       0.17894445     0.09656937     0.21253723
+2       0.04884710    -0.15095807    -0.16593541
+3      -0.21893712     0.05923713    -0.03599684
+4      -0.10142372    -0.27373245    -0.03627740
+5       0.02726784     0.16133126    -0.16093139
+6       0.06906228     0.09862369     0.19544604
+7       0.16366342    -0.01709409     0.24378024
+8      -0.15791510     0.15848298    -0.05139271
+9       0.00247103    -0.14225970    -0.18016059
+10      0.19898527     0.02538936    -0.21501891
+11     -0.02464054     0.13486323     0.18412433
+12     -0.16441150    -0.15905255     0.02008407
+13     -0.17148359    -0.23892595     0.00621216
+14      0.20244137     0.02943083     0.10415918
+15     -0.03954998     0.19755020    -0.11007177
+16     -0.21363994     0.19691128    -0.04586300
+17      0.21495511     0.00564913    -0.08055200
+18     -0.01194324    -0.19285216     0.12418791
+@POLARIZABILITIES
+ORDER 1 1
+18
+1       2.90095972    -0.48593669     0.06252920     2.25092339     0.62087796     2.38032361
+2       0.62174511    -0.24371926    -0.40911109     1.67072095     0.94840430     1.81286002
+3       2.61053449    -0.48732062     0.28970806     0.82702180    -0.24083031     0.66489403
+4       1.72325126     0.33486576     0.23783027     2.60895950    -0.15361348     3.19876384
+5       0.81129923     0.09435729    -0.24402237     1.66781011    -1.11658600     1.62577949
+6       0.98737562     0.19941275     0.53774655     0.95398044     0.86196752     2.16123330
+7       2.24668082    -0.65013285     0.26630395     2.71820604     0.43662994     2.56274751
+8       1.74480064    -0.95949887     0.25678782     1.68682327    -0.43932810     0.67060643
+9       0.65540923     0.11878107    -0.11728873     1.47324807     1.03600835     1.97296037
+10      2.33555918     0.58665533    -0.27550116     2.66857200     0.53987402     2.51887357
+11      0.64903064    -0.26947869    -0.09543050     1.39252746     0.98169315     2.05938551
+12      1.80086399     1.01521997    -0.04120678     1.70057782    -0.24242931     0.59621530
+13      2.70102584     0.02659006     0.64581219     2.68231281    -0.47790836     2.14923320
+14      2.35356456     0.20998540     0.79364949     0.57188772     0.23189383     1.17912767
+15      0.62940227    -0.39218205     0.06157844     2.24009742    -0.85280913     1.23428608
+16      2.82815510     0.01283732    -0.46076830     2.58053390    -0.63634811     2.12535906
+17      2.53931016     0.09662115    -0.67561346     0.57598509     0.11841870     0.99064943
+18      0.52378920     0.14388522     0.01748888     2.19896244    -0.90746061     1.38040786
+EXCLISTS
+18 3
+1     2   3
+2     1   3
+3     1   2
+4     5   6
+5     4   6
+6     4   5
+7     8   9
+8     7   9
+9     7   8
+10   11  12
+11   10  12
+12   10  11
+13   14  15
+14   13  15
+15   13  14
+16   17  18
+17   16  18
+18   16  17 
+    """,
     'h2o_spillout':
     """
 @COORDINATES
@@ -248,7 +354,7 @@ __geoms = {
     H  0.000000000000    -0.803611003426     0.554794694632
     H  0.000000000000     0.803611003426     0.554794694632
     """,
-    'fa':
+    'formamide':
     """
     O     22.931000    21.390000    23.466000
     C     22.287000    21.712000    22.485000
@@ -257,6 +363,17 @@ __geoms = {
     H     23.729000    22.867000    21.735000
     H     22.234000    23.026000    20.88300
     """,
+    'formaldehyde':
+    """
+    C 2.0092420208996 3.8300915804899 0.8199294419789
+    O 2.1078857690998 2.0406638776593 2.1812021228452
+    H 2.0682421748693 5.7438044586615 1.5798996515014
+    H 1.8588483602149 3.6361694243085 -1.2192956060942
+    symmetry c1
+    units au
+    no_reorient
+    no_com
+    """
 }
 
 
@@ -267,7 +384,8 @@ def _dump_potential(potname):
     return potfile
 
 
-@using('cppe')
+@pytest.mark.quick
+@uusing("cppe")
 def test_cppe_scf_alpha():
     """Tests the PE-SCF ground state energies and static dipole polarizability"""
     alpha_diag = [36.14995, 35.10354, 78.45963]
@@ -299,13 +417,14 @@ def _base_tdscf_test(molecule, ref_scf_energy, ref_pe_energy, exc_energies, osc_
     e_calc = []
     r_calc = []
     for i in range(len(exc_energies)):
-        e_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
-        r_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
+        e_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
+        r_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A TRANSITION'))
     assert compare_arrays(exc_energies, e_calc, 4, f'PE EXCITATION ENERGY')
     assert compare_arrays(osc_strengths, r_calc, 4, f'PE OSCILLATOR STRENGTH')
 
 
-@using('cppe')
+@pytest.mark.quick
+@uusing("cppe")
 def test_cppe_tdscf_rhf():
     """Tests PE-TDSCF excited states (restricted)"""
     ref_pe_energy = -0.03424830892844
@@ -329,7 +448,8 @@ def test_cppe_tdscf_rhf():
     _base_tdscf_test(mol, ref_scf_energy, ref_pe_energy, exc_energies, osc_strengths)
 
 
-@using('cppe')
+@pytest.mark.quick
+@uusing("cppe")
 def test_cppe_tdscf_uhf():
     """Tests PE-TDSCF excited states (unrestricted)"""
     ref_pe_energy = -0.0205612607760474
@@ -359,18 +479,22 @@ def test_cppe_tdscf_uhf():
     _base_tdscf_test(mol, ref_scf_energy, ref_pe_energy, exc_energies, osc_strengths)
 
 
+@pytest.mark.quick
+@pytest.mark.ecp
+@uusing("ecpint")
+@uusing("cppe")
 @pytest.mark.parametrize("inp", [
     pytest.param({
         'potname': 'h2o_spillout',
         "ref": -169.106418687201
-    }, id='h2o', marks=using('cppe')),
+    }, id='h2o'),
     pytest.param({
         'potname': 'h2s_spillout',
         "ref": -169.104593047406
-    }, id='h2s', marks=using('cppe')),
+    }, id='h2s'),
 ])
 def test_cppe_pe_ecp(inp):
-    mol = psi4.geometry(__geoms['fa'])
+    mol = psi4.geometry(__geoms['formamide'])
     potfile = _dump_potential(inp['potname'])
     psi4.set_options({
         'basis': 'aug-cc-pVDZ',
@@ -382,4 +506,66 @@ def test_cppe_pe_ecp(inp):
         'pe__pe_ecp': True,
     })
     scf_energy, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
-    assert compare_values(inp["ref"], scf_energy, 9, "Total PE-SCF Energy with PE(ECP)")
+    assert compare_values(inp["ref"], scf_energy, 7, "Total PE-SCF Energy with PE(ECP)")
+
+
+@pytest.mark.quick
+@uusing("cppe")
+@uusing("adcc")
+def test_pe_adc1():
+    """LR-PE-ADC(1)/sto-3g formaldehyde in presence of 6 water molecules
+    cross-reference against PE-CIS from Psi4 itself"""
+    mol = psi4.geometry(__geoms['formaldehyde'])
+    potfile = _dump_potential('pna_6w')
+    psi4.set_options({
+        'basis': 'sto-3g',
+        'pe': True,
+        'scf_type': 'pk',
+        'pe__potfile': potfile,
+        'roots_per_irrep': [5],
+        'qc_module': 'adcc',
+        'tdscf_states': 5,
+        'tdscf_tda': True,
+    })
+    
+    _, wfn_tdhf = psi4.energy('td-hf', return_wfn=True)
+    _, wfn_adc = psi4.properties('adc(1)', properties=["oscillator_strength", "dipole"], environment='linear_response', return_wfn=True)
+
+    for i in range(5):
+        assert compare_values(wfn_tdhf.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY'),
+                              wfn_adc.variable(f'ADC ROOT 0 -> ROOT {i+1} EXCITATION ENERGY'),
+                              5, f"PE-ADC(1) Excitation Energy Root {i+1}")
+
+
+@uusing("cppe")
+@uusing("adcc")
+def test_pe_adc2():
+    """PE-ADC(2)/cc-pvdz formaldehyde in presence of 6 water molecules
+    including ptSS/ptLR corrections for excitation energies
+    Reference data from Q-Chem calculation"""
+    mol = psi4.geometry(__geoms['formaldehyde'])
+    potfile = _dump_potential('fa_6w')
+    psi4.set_options({
+        'basis': 'cc-pvdz',
+        'pe': True,
+        'scf_type': 'pk',
+        'pe__potfile': potfile,
+        'roots_per_irrep': [5],
+        'qc_module': 'adcc',
+    })
+    _, wfn = psi4.properties('adc(2)', properties=["oscillator_strength", "dipole"],
+                             environment=True, return_wfn=True)
+    energies_uncorrected = [0.15963251547743104, 0.3125861355885466, 0.36222631191059046,
+                            0.37972031238708653, 0.4118959244399415]
+    pe_ptlr_correction = [-2.9325959339722013e-05, -0.0002702545175242051,
+                          -9.683446473705203e-05, -0.0001339512804427152,
+                          -0.00270463988662346]
+    pe_ptss_correction =  [-0.0005980584740534286, -0.00275711791912612,
+                           -0.0008560754671915091, -0.0017443433408762471,
+                           -0.0005800145567153289]
+    ref_energies = np.array(energies_uncorrected)
+    ref_energies += np.array(pe_ptlr_correction) + np.array(pe_ptss_correction)
+    
+    for i in range(5):
+        en = wfn.variable(f"ADC(2) ROOT 0 -> ROOT {i+1} EXCITATION ENERGY")
+        assert compare_values(en, ref_energies[i], 5, f"pt-PE-ADC(2) Excitation Energy Root {i+1}")

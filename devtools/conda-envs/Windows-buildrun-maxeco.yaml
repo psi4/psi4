@@ -1,0 +1,47 @@
+name: baseenv
+channels:
+  - conda-forge
+dependencies:
+  - blas=*=mkl
+  - python=3.9
+    # build
+  - boost-cpp
+  - cmake
+
+
+  - eigen
+
+  - mkl-devel=2021.4
+  - ninja
+  - pybind11
+    # qc req'd
+  - gau2grid
+  - psi4/label/dev::libint2
+  - psi4/label/dev::qcelemental
+  - psi4/label/dev::qcengine
+  - libxc
+  - mkl=2021.4
+  - msgpack-python
+  - networkx
+  - numpy
+  - scipy
+  - toml
+  - qcelemental
+  - qcengine
+  - psi4/label/dev::dftd3
+  - dftd4-python
+  - psi4/label/dev::gcp
+  - geometric
+  - pymdi
+  - psi4/label/dev::resp
+  - psi4/label/dev::snsmp2
+  - conda-forge::pytest>=7.0.1
+  - pytest-xdist
+  - pip
+  - pip:
+      - git+https://github.com/i-pi/i-pi.git@master-py3
+
+# toml needed for psi4 to load parameters from dftd4-python
+# one of mkl=2021.4 or mkl-devel=2021.4 needed to avoid DLL runtime error
+    # qc opt'l
+    # runtime

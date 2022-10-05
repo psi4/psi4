@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,6 +41,8 @@ PSI_API long int Position(long int i, long int j);
 
 namespace psi {
 namespace fnocc {
+
+std::tuple<SharedMatrix, SharedMatrix> spin_adapt(SharedMatrix ss, SharedMatrix os);
 
 class CoupledCluster : public Wavefunction {
    public:
@@ -92,10 +94,12 @@ class CoupledCluster : public Wavefunction {
 
     /// SCS-MP2 function and variables
     void SCS_MP2();
+    // WARNING! If FNO is in used, these energies at first neglect the FNO correction but add it later.
     double emp2, emp2_os, emp2_ss, emp2_os_fac, emp2_ss_fac;
 
     /// SCS-CCSD function and variables
     void SCS_CCSD();
+    // WARNING! If FNO is in used, these energies at first neglect the FNO correction but add it later.
     double eccsd, eccsd_os, eccsd_ss, eccsd_os_fac, eccsd_ss_fac;
 
     /// cc or qci (t)
@@ -261,6 +265,9 @@ class PSI_API DFCoupledCluster : public CoupledCluster {
     double *Fij, *Fab, *Fia, *Fai;
     SharedMatrix H;
 
+    /// FNO deltas for pair energies. Should in principle apply in non-DF case as well.
+    SharedMatrix delta_pair_energies_ss, delta_pair_energies_os;
+
     /// generate t1-transformed 3-index integrals
     virtual void T1Integrals();
     /// generate t1-transformed Fock matrix
@@ -268,6 +275,8 @@ class PSI_API DFCoupledCluster : public CoupledCluster {
 
     /// evaluate cc diagrams
     virtual void CCResidual();
+
+    std::tuple<double, double, SharedMatrix, SharedMatrix> ComputePair(const std::string& name);
 
     /// SCS-MP2 function and variables
     virtual void SCS_MP2();

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -45,7 +45,6 @@ namespace psi {
 namespace ccdensity {
 
 void get_td_params(Options& options) {
-    int i, j, k, l;
     char lbl[32];
 
     params.nstates = 0;
@@ -58,12 +57,11 @@ void get_td_params(Options& options) {
         params.prop_root -= 1;
         params.nstates = 1;
     } else if (options["ROOTS_PER_IRREP"].has_changed()) {
-        i = options["ROOTS_PER_IRREP"].size();
-        if (i != moinfo.nirreps) {
+        if (options["ROOTS_PER_IRREP"].size() != moinfo.nirreps) {
             outfile->Printf("Dim. of states_per_irrep vector must be %d\n", moinfo.nirreps);
             throw PsiException("ccdensity: error", __FILE__, __LINE__);
         }
-        for (i = 0; i < moinfo.nirreps; ++i) {
+        for (int i = 0; i < moinfo.nirreps; ++i) {
             params.nstates += options["ROOTS_PER_IRREP"][i].to_integer();
         }
     } else {
@@ -76,12 +74,12 @@ void get_td_params(Options& options) {
 
     */
 
-    td_params = (struct TD_Params*)malloc(params.nstates * sizeof(struct TD_Params));
+    td_params.resize(params.nstates);
 
-    l = 0;
+    int l = 0;
     if (options["PROP_SYM"].has_changed() && options["PROP_ROOT"].has_changed()) {
         td_params[0].irrep = params.prop_sym ^ moinfo.sym;
-        k = td_params[0].root = params.prop_root;
+        auto k = td_params[0].root = params.prop_root;
 
         if (params.wfn == "CC2" || params.wfn == "EOM_CC2") {
             sprintf(lbl, "EOM CC2 Energy for root %d %d", td_params[0].irrep, k);
@@ -111,9 +109,9 @@ void get_td_params(Options& options) {
         sprintf(td_params[l].R2BB_lbl, "Rijab %d %d", td_params[0].irrep, k);
         sprintf(td_params[l].R2AB_lbl, "RIjAb %d %d", td_params[0].irrep, k);
     } else if (options["ROOTS_PER_IRREP"].has_changed()) {
-        for (i = 0; i < moinfo.nirreps; ++i) {
-            j = options["ROOTS_PER_IRREP"][i].to_integer();
-            for (k = 0; k < j; ++k) {
+        for (int i = 0; i < moinfo.nirreps; ++i) {
+            auto j = options["ROOTS_PER_IRREP"][i].to_integer();
+            for (int k = 0; k < j; ++k) {
                 td_params[l].irrep = i ^ moinfo.sym;
                 td_params[l].root = k;
 

@@ -13,4 +13,7 @@ set {
     omega = [0.05, 0.1, au]
 }
 
-properties('ccsd', properties=['polarizability'])
+wfn = properties('ccsd', properties=['polarizability'], return_wfn=True)[1]
+
+
+

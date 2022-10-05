@@ -1,0 +1,310 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.6a1.dev43 
+
+                         Git: Rev {ediis_single_class} f12f63b dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, and A. Jiang
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 07 February 2022 03:26PM
+
+    Process ID: 37039
+    Host:       dhcp189-153.emerson.emory.edu
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! ADIIS test case, from 10.1063/1.3304922 
+
+molecule {
+2 1
+Cd       0.0000000000      0.0000000000      0.0000000000    
+N        0.0000000000      0.0000000000     -2.2600010635    
+N       -0.6854437203      0.0000000000     -4.3480354859    
+C        0.6760533303      0.0000000000     -4.3850694419    
+C        1.0852404753      0.0000000000     -3.0912317094    
+C       -1.0447523879      0.0000000000     -3.0602202054    
+H        1.2315299626      0.0000000000     -5.3007589304    
+H        2.0886410569      0.0000000000     -2.7110772355    
+H       -2.0687499916      0.0000000000     -2.7265149874    
+H       -1.3131700977      0.0000000000     -5.1747180497    
+}
+
+set guess core    # With this guess, un-accelerated DIIS will fail.
+set scf_type pk
+set basis 3-21G
+set scf_initial_accelerator adiis
+set maxiter 15
+energy = energy('scf')
+
+compare_values(-5663.1433914266744978, energy, 6, "SCF Energy")
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+
+*** tstart() called on dhcp189-153.emerson.emory.edu
+*** at Mon Feb  7 15:26:19 2022
+
+   => Loading Basis Set <=
+
+    Name: 3-21G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1    entry CD         line  1001 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/3-21g.gbs 
+    atoms 2-3  entry N          line    79 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/3-21g.gbs 
+    atoms 4-6  entry C          line    68 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/3-21g.gbs 
+    atoms 7-10 entry H          line    21 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/3-21g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 2, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         CD          -0.005837361987     1.291676487638     0.000000000000   113.903365090000
+         N           -0.005837361987    -0.968324575862     0.000000000000    14.003074004430
+         N            0.679606358313    -3.056358998262     0.000000000000    14.003074004430
+         C           -0.681890692287    -3.093392954262     0.000000000000    12.000000000000
+         C           -1.091077837287    -1.799555221762     0.000000000000    12.000000000000
+         C            1.038915025913    -1.768543717762     0.000000000000    12.000000000000
+         H           -1.237367324587    -4.009082442762     0.000000000000     1.007825032230
+         H           -2.094478418887    -1.419400747862     0.000000000000     1.007825032230
+         H            2.062912629613    -1.434838499762     0.000000000000     1.007825032230
+         H            1.307332735713    -3.883041562062     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      0.32896  B =      0.03006  C =      0.02755 [cm^-1]
+  Rotational constants: A =   9861.94816  B =    901.30547  C =    825.83094 [MHz]
+  Nuclear repulsion =  435.839875272121731
+
+  Charge       = 2
+  Multiplicity = 1
+  Electrons    = 82
+  Nalpha       = 41
+  Nbeta        = 41
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 3-21G
+    Blend: 3-21G
+    Number of shells: 47
+    Number of basis functions: 92
+    Number of Cartesian functions: 92
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                  10
+      Number of AO shells:              47
+      Number of primitives:             90
+      Number of atomic orbitals:        92
+      Number of basis functions:        92
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 18305562 doubles for integral storage.
+  We computed 473566 shell quartets total.
+  Whereas there are 636756 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 1.2361964450E-03.
+  Reciprocal condition number of the overlap matrix is 2.4933157904E-04.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        71      71      31      31      31       0
+     A"        21      21      10      10      10       0
+   -------------------------------------------------------
+    Total      92      92      41      41      41       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ap   App 
+    DOCC [    32,    9 ]
+
+   @RHF iter   1: -5544.26200103442716   -5.54426e+03   4.70688e-01 ADIIS
+    Occupation by irrep:
+             Ap   App 
+    DOCC [    31,   10 ]
+
+   @RHF iter   2: -5405.84264418823113    1.38419e+02   1.31829e-01 ADIIS
+   @RHF iter   3: -5656.45992991362436   -2.50617e+02   3.84336e-02 ADIIS/DIIS
+   @RHF iter   4: -5641.45555526529643    1.50044e+01   5.37623e-02 ADIIS/DIIS
+   @RHF iter   5: -5662.24472376795075   -2.07892e+01   1.98472e-02 ADIIS/DIIS
+   @RHF iter   6: -5663.09571130533459   -8.50988e-01   4.13293e-03 ADIIS/DIIS
+   @RHF iter   7: -5663.13861803125565   -4.29067e-02   9.85657e-04 ADIIS/DIIS
+   @RHF iter   8: -5663.14254314299978   -3.92511e-03   3.36660e-04 ADIIS/DIIS
+   @RHF iter   9: -5663.14317898901209   -6.35846e-04   1.43721e-04 ADIIS/DIIS
+   @RHF iter  10: -5663.14335029095037   -1.71302e-04   6.19597e-05 DIIS
+   @RHF iter  11: -5663.14338715335361   -3.68624e-05   2.27677e-05 DIIS
+   @RHF iter  12: -5663.14339101239420   -3.85904e-06   9.38628e-06 DIIS
+   @RHF iter  13: -5663.14339136977378   -3.57380e-07   4.06514e-06 DIIS
+   @RHF iter  14: -5663.14339142666449   -5.68907e-08   8.63995e-07 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap  -950.424269     2Ap  -142.031616     3Ap  -131.759370  
+       1App -131.759266     4Ap  -131.758212     5Ap   -28.243002  
+       6Ap   -23.801438     2App  -23.801077     7Ap   -23.797321  
+       8Ap   -16.618283     3App  -16.618280     9Ap   -16.615530  
+       4App  -16.615341    10Ap   -16.614512    11Ap   -15.875185  
+      12Ap   -15.870037    13Ap   -11.591743    14Ap   -11.514651  
+      15Ap   -11.510266    16Ap    -4.964242    17Ap    -3.470805  
+       5App   -3.470050    18Ap    -3.464961    19Ap    -1.702769  
+      20Ap    -1.521611    21Ap    -1.337791    22Ap    -1.285906  
+       6App   -1.285790    23Ap    -1.284190    24Ap    -1.280676  
+       7App   -1.280193    25Ap    -1.152165    26Ap    -1.127968  
+      27Ap    -1.085009    28Ap    -0.939147     8App   -0.938544  
+      29Ap    -0.910232    30Ap    -0.901180    31Ap    -0.843037  
+       9App   -0.756723    10App   -0.637744  
+
+    Virtual:                                                              
+
+      32Ap    -0.415408    33Ap    -0.287178    11App   -0.280210  
+      34Ap    -0.201844    35Ap    -0.159375    12App   -0.140904  
+      36Ap    -0.109286    13App   -0.096374    14App   -0.067888  
+      37Ap    -0.054785    38Ap    -0.012916    39Ap     0.028805  
+      40Ap     0.071510    41Ap     0.074311    42Ap     0.127195  
+      43Ap     0.139216    44Ap     0.270871    45Ap     0.276395  
+      46Ap     0.400398    47Ap     0.454065    15App    0.651097  
+      48Ap     0.653485    49Ap     0.693732    16App    0.716518  
+      50Ap     0.724011    17App    0.773533    51Ap     0.787719  
+      52Ap     0.807943    53Ap     0.906222    54Ap     0.997719  
+      55Ap     1.004703    18App    1.006728    56Ap     1.067328  
+      57Ap     1.081526    19App    1.084151    58Ap     1.106776  
+      59Ap     1.114186    20App    1.134185    60Ap     1.225658  
+      61Ap     1.245200    21App    1.278763    62Ap     1.378567  
+      63Ap     1.523736    64Ap     1.668714    65Ap     1.681833  
+      66Ap     1.764780    67Ap     1.845571    68Ap     2.704777  
+      69Ap     2.777540    70Ap     4.719026    71Ap   210.651790  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [    31,   10 ]
+
+  @RHF Final Energy: -5663.14339142666449
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            435.8398752721217306
+    One-Electron Energy =               -8653.0469385568540019
+    Two-Electron Energy =                2554.0636718580667548
+    Total Energy =                      -5663.1433914266654028
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.1328      Y:   -31.9130      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.4983      Y:    32.6309      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.6311      Y:     0.7179      Z:     0.0000     Total:     0.9558
+
+  Dipole Moment: [D]
+     X:     1.6040      Y:     1.8246      Z:     0.0000     Total:     2.4294
+
+
+*** tstop() called on dhcp189-153.emerson.emory.edu at Mon Feb  7 15:26:24 2022
+Module time:
+	user time   =       1.81 seconds =       0.03 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+Total time:
+	user time   =       1.81 seconds =       0.03 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+    SCF Energy............................................................................PASSED
+
+    Psi4 stopped on: Monday, 07 February 2022 03:26PM
+    Psi4 wall time for execution: 0:00:05.59
+
+*** Psi4 exiting successfully. Buy a developer a beer!

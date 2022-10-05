@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,8 +37,6 @@
 namespace psi {
 // TODO:  This is all in typedefs.h ....
 class BasisSet;
-class GaussianShell;
-class ObaraSaikaTwoCenterVIRecursion;
 class OneBodyAOInt;
 class IntegralFactory;
 class SphericalTransform;
@@ -51,39 +49,25 @@ class CdSalcList;
  * Use an IntegralFactory to create this object.
  */
 class RelPotentialInt : public OneBodyAOInt {
-    /// Computes integrals between two shell objects.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    /// Computes integrals between two shell objects.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;
 
    protected:
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion* potential_recur_;
 
     /// Matrix of coordinates/charges of partial charges
     SharedMatrix Zxyz_;
 
+    /// Computes integrals between two shell objects.
+    void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
    public:
     /// Constructor. Assumes nuclear centers/charges as the potential
     RelPotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                     int deriv = 0);
     ~RelPotentialInt() override;
 
-    /// Computes the first derivatives and stores them in result
-    void compute_deriv1(std::vector<SharedMatrix>& result) override;
-
-    /// Computes the second derivatives and store them in result
-    void compute_deriv2(std::vector<SharedMatrix>& result) override;
-
     /// Set the field of charges
     void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
 
     /// Get the field of charges
     SharedMatrix charge_field() const { return Zxyz_; }
-
-    /// Does the method provide first derivatives?
-    bool has_deriv1() override { return true; }
 };
 
 class RelPotentialSOInt : public OneBodySOInt {
@@ -92,15 +76,6 @@ class RelPotentialSOInt : public OneBodySOInt {
    public:
     RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>&, const std::shared_ptr<IntegralFactory>&);
     RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>&, const IntegralFactory*);
-
-    /**
-     * Computes one-electron integral derivative matrices.
-     * Specifically handles CdSalc SO potential integral derivatives.
-     *
-     * \param result Where the integral derivatives are going.
-     * \param cdsalcs The Cartesian displacement SALCs that you are interested in.
-     */
-    void compute_deriv1(std::vector<SharedMatrix> result, const CdSalcList& cdsalcs) override;
 };
 
 }  // namespace psi

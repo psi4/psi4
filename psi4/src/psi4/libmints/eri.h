@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -108,7 +108,7 @@ class TwoElectronInt : public TwoBodyAOInt {
     int max_cart_;
 
     //! Computes the fundamental
-    Fjt* fjt_;
+    Fjt *fjt_;
 
     //! The number of integrals in the current shell quartet
     size_t batchsize_;
@@ -133,7 +133,7 @@ class TwoElectronInt : public TwoBodyAOInt {
     std::shared_ptr<std::vector<std::vector<L1ShellPair>>> pairs12_, pairs34_;
 
     //! Evaluates how much memory (in doubles) is needed to store shell pair data
-    size_t memory_to_store_shell_pairs(const std::shared_ptr<BasisSet>&, const std::shared_ptr<BasisSet>&);
+    size_t memory_to_store_shell_pairs(const std::shared_ptr<BasisSet> &, const std::shared_ptr<BasisSet> &);
 
     //! Original shell index requested
     int osh1_, osh2_, osh3_, osh4_;
@@ -145,12 +145,12 @@ class TwoElectronInt : public TwoBodyAOInt {
 
    public:
     //! Constructor. Use an IntegralFactory to create this object.
-    TwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    TwoElectronInt(const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
 
     ~TwoElectronInt() override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(const AOShellCombinationsIterator&) override;
+    size_t compute_shell(const AOShellCombinationsIterator &) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     size_t compute_shell(int s1, int s2, int s3, int s4) override;
@@ -164,48 +164,53 @@ class TwoElectronInt : public TwoBodyAOInt {
 
 class ERI : public TwoElectronInt {
    public:
-    ERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    ERI(const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
     ~ERI() override;
 };
 
+// LIBINT2 - cgtg
 class F12 : public TwoElectronInt {
    public:
-    F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+    F12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv = 0,
         bool use_shell_pairs = false);
     ~F12() override;
 };
 
+// LIBINT2 - NOT NEEDED
 class F12Scaled : public TwoElectronInt {
    public:
-    F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+    F12Scaled(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv = 0,
               bool use_shell_pairs = false);
     ~F12Scaled() override;
 };
 
+// LIBINT2 - MODIFIED F12
 class F12Squared : public TwoElectronInt {
    public:
-    F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+    F12Squared(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv = 0,
                bool use_shell_pairs = false);
     ~F12Squared() override;
 };
 
+// LIBINT2 - cgtg_x_coulomb
 class F12G12 : public TwoElectronInt {
    public:
-    F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+    F12G12(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv = 0,
            bool use_shell_pairs = false);
     ~F12G12() override;
 };
 
+// LIBINT2 - delcgtg2
 class F12DoubleCommutator : public TwoElectronInt {
    public:
-    F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv = 0,
+    F12DoubleCommutator(std::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv = 0,
                         bool use_shell_pairs = false);
     ~F12DoubleCommutator() override;
 };
 
 class ErfERI : public TwoElectronInt {
    public:
-    ErfERI(double omega, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    ErfERI(double omega, const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
     ~ErfERI() override;
 
     void setOmega(double omega);
@@ -213,7 +218,7 @@ class ErfERI : public TwoElectronInt {
 
 class ErfComplementERI : public TwoElectronInt {
    public:
-    ErfComplementERI(double omega, const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    ErfComplementERI(double omega, const IntegralFactory *integral, int deriv = 0, bool use_shell_pairs = false);
     ~ErfComplementERI() override;
 
     void setOmega(double omega);
@@ -249,7 +254,7 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
 
    public:
     //! Constructor. Use an IntegralFactory to create this object.
-    Libint2TwoElectronInt(const IntegralFactory* integral, int deriv = 0, double screening_threshold = 0,
+    Libint2TwoElectronInt(const IntegralFactory *integral, int deriv = 0, double screening_threshold = 0,
                           bool use_shell_pairs = false, bool needs_exchange = false);
 
     Libint2TwoElectronInt(const Libint2TwoElectronInt &rhs);
@@ -257,10 +262,11 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
     ~Libint2TwoElectronInt() override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(const AOShellCombinationsIterator& shellIter) override;
+    size_t compute_shell(const AOShellCombinationsIterator &shellIter) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int s1, int s2, int s3, int s4, bool is_bra) override;
+    size_t compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int s1, int s2, int s3, int s4,
+                                   bool is_bra) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     size_t compute_shell(int s1, int s2, int s3, int s4) override;
@@ -272,53 +278,163 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
     size_t compute_shell_deriv2(int s1, int s2, int s3, int s4) override;
 
     virtual void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) = 0;
+                                  const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                                  const libint2::ShellPair *sp34 = nullptr) = 0;
     virtual void libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) = 0;
+                                  const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                                  const libint2::ShellPair *sp34 = nullptr) = 0;
     virtual void libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) = 0;
+                                  const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                                  const libint2::ShellPair *sp34 = nullptr) = 0;
 
     void compute_shell_blocks(int shellpair12, int shellpair34, int npair12 = -1, int npair34 = -1) override;
 };
 
 class Libint2ERI : public Libint2TwoElectronInt {
    public:
-    Libint2ERI(const IntegralFactory* integral, double screening_threshold, int deriv = 0, bool use_shell_pairs = false,
+    Libint2ERI(const IntegralFactory *integral, double screening_threshold, int deriv = 0, bool use_shell_pairs = false,
                bool needs_exchange = false);
     ~Libint2ERI() override;
-    Libint2ERI* clone() const override { return new Libint2ERI(*this); }
+    Libint2ERI *clone() const override { return new Libint2ERI(*this); }
 
    protected:
     void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
     void libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
     void libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
 };
 
 class Libint2ErfERI : public Libint2TwoElectronInt {
    public:
-    Libint2ErfERI(double omega, const IntegralFactory* integral, double screening_threshold, int deriv = 0,
+    Libint2ErfERI(double omega, const IntegralFactory *integral, double screening_threshold, int deriv = 0,
                   bool use_shell_pairs = false, bool needs_exchange = false);
     ~Libint2ErfERI() override;
-    Libint2ErfERI* clone() const override { return new Libint2ErfERI(*this); }
+    Libint2ErfERI *clone() const override { return new Libint2ErfERI(*this); }
 
    protected:
     void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
     void libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
     void libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
-                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12=nullptr, const libint2::ShellPair *sp34=nullptr) override;
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
 };
 
 class Libint2ErfComplementERI : public Libint2TwoElectronInt {
    public:
-    Libint2ErfComplementERI(double omega, const IntegralFactory* integral, double screening_threshold, int deriv = 0,
-                  bool use_shell_pairs = false, bool needs_exchange = false);
+    Libint2ErfComplementERI(double omega, const IntegralFactory *integral, double screening_threshold, int deriv = 0,
+                            bool use_shell_pairs = false, bool needs_exchange = false);
     ~Libint2ErfComplementERI() override;
-    Libint2ErfComplementERI* clone() const override { return new Libint2ErfComplementERI(*this); }
+    Libint2ErfComplementERI *clone() const override { return new Libint2ErfComplementERI(*this); }
+
+   protected:
+    void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+    void libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+    void libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+};
+
+class Libint2F12 : public Libint2TwoElectronInt {
+   public:
+    Libint2F12(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
+               double screening_threshold, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);
+    ~Libint2F12() override;
+    Libint2F12 *clone() const override { return new Libint2F12(*this); }
+
+   protected:
+    void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+    void libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+    void libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+};
+
+inline std::vector<std::pair<double, double>> take_square(std::vector<std::pair<double, double>> input) {
+    auto n = input.size();
+    std::vector<std::pair<double, double>> output;
+    for (int i = 0; i < n; ++i) {
+        auto e_i = input[i].first;
+        auto c_i = input[i].second;
+        for (int j = i; j < n; ++j) {
+            auto e_j = input[j].first;
+            auto c_j = input[j].second;
+            double scale = i == j ? 1.0 : 2.0;
+            output.emplace_back(std::make_pair(e_i + e_j, scale * c_i * c_j));
+        }
+    }
+    return output;
+}
+
+class Libint2F12Squared : public Libint2F12 {
+   public:
+    Libint2F12Squared(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
+                      double screening_threshold, int deriv = 0, bool use_shell_pairs = false,
+                      bool needs_exchange = false)
+        : Libint2F12(take_square(exp_coeff), integral, screening_threshold, deriv, use_shell_pairs, needs_exchange) {}
+};
+
+class Libint2F12G12 : public Libint2TwoElectronInt {
+   public:
+    Libint2F12G12(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
+                  double screening_threshold, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);
+    ~Libint2F12G12() override;
+    Libint2F12G12 *clone() const override { return new Libint2F12G12(*this); }
+
+   protected:
+    void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+    void libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+    void libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+};
+
+class Libint2F12DoubleCommutator : public Libint2TwoElectronInt {
+   public:
+    Libint2F12DoubleCommutator(std::vector<std::pair<double, double>> exp_coeff, const IntegralFactory *integral,
+                               double screening_threshold, int deriv = 0, bool use_shell_pairs = false,
+                               bool needs_exchange = false);
+    ~Libint2F12DoubleCommutator() override;
+    Libint2F12DoubleCommutator *clone() const override { return new Libint2F12DoubleCommutator(*this); }
+
+   protected:
+    void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+    void libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+    void libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                          const libint2::Shell &sh4, const libint2::ShellPair *sp12 = nullptr,
+                          const libint2::ShellPair *sp34 = nullptr) override;
+};
+
+class Libint2YukawaERI : public Libint2TwoElectronInt {
+   public:
+    Libint2YukawaERI(double zeta, const IntegralFactory* integral, double screening_threshold, int deriv = 0,
+                  bool use_shell_pairs = false, bool needs_exchange = false);
+    ~Libint2YukawaERI() override;
+    Libint2YukawaERI* clone() const override { return new Libint2YukawaERI(*this); }
 
    protected:
     void libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,

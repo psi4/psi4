@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -85,7 +85,7 @@ class OrientMols(object):
         self.Catommap = []
 
         try:
-            if ((self.Pmol.nallatom() == self.Cmol.nallatom()) and \
+            if ((self.Pmol.nallatom() == self.Cmol.nallatom()) and
                (abs(self.Pmol.nuclear_repulsion_energy() - self.Cmol.nuclear_repulsion_energy()) < 1.0e-3)):
                 self.create_orientation_from_molecules(self.Pmol, self.Cmol)
             else:
@@ -194,9 +194,9 @@ class OrientMols(object):
 
             if len(axPhse[Psort[Paxs]]) == 0:
                 print('qcdb.orient.create_orientation_from_molecules debug info')
-                print('\nrotor', rotor, 'Paxs', Paxs, 'Caxs', Caxs, \
-                    'allowed', allowed, 'P(axs)', Psort.index(Paxs), 'C(Caxs)', Csort.index(Caxs), \
-                    '\nPcolS: ', PcolS, '\nCcolS: ', CcolS, '\nCcolMS: ', CcolMS, \
+                print('\nrotor', rotor, 'Paxs', Paxs, 'Caxs', Caxs,
+                    'allowed', allowed, 'P(axs)', Psort.index(Paxs), 'C(Caxs)', Csort.index(Caxs),
+                    '\nPcolS: ', PcolS, '\nCcolS: ', CcolS, '\nCcolMS: ', CcolMS,
                     'axExch', axExch, 'axPhse', axPhse)
                 print('\nPgeom: ')
                 for item in Pgeom:
@@ -252,9 +252,9 @@ class OrientMols(object):
         else:
             print('else of for', exfp, mapMat)
             print('qcdb.orient.create_orientation_from_molecules debug info')
-            print('\nPatm', Patm, 'Catm', Catm, 'Pwhite', Pwhite, \
-                'Cwhite', Cwhite, 'sameElem', sameElem, 'allowed', allowed, \
-                '\nCgeom[Catm]: ', Cgeom[Catm], '\nPgeom[Patm]: ', Pgeom[Patm], \
+            print('\nPatm', Patm, 'Catm', Catm, 'Pwhite', Pwhite,
+                'Cwhite', Cwhite, 'sameElem', sameElem, 'allowed', allowed,
+                '\nCgeom[Catm]: ', Cgeom[Catm], '\nPgeom[Patm]: ', Pgeom[Patm],
                 '\nmapMat', mapMat)
             print('\nPgeom: ')
             for item in Pgeom:

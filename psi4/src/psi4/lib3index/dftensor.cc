@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -104,6 +104,19 @@ void DFTensor::common_init() {
     }
 
     naux_ = auxiliary_->nbf();
+
+    // Qso construction requires Aso+Bso+metric to be held in core. For a small safety margin we take 95% of the total
+    // memory. In practice this only becomes an issue for heavy (>1000 bfs) calculations with large aux sets.
+    double required_mem = (size_t(nbf_) * nbf_ * naux_ * 2 + size_t(naux_) * naux_) * sizeof(double) / (1024.0 * 1024.0 * 1024.0);
+    double memory = (double)Process::environment.get_memory() / (1024.0 * 1024.0 * 1024.0) * 0.95;
+    outfile->Printf("  DFTensor Memory: Qso construction needs %.3f GiB; user supplied %.3f GiB. \n", required_mem, memory);
+    if (required_mem > memory) {
+        std::stringstream error;
+        error << "DFTensor: The Qso requires at least " << required_mem
+              << "[GiB].  We need that plus some more, but we only got " << memory
+              << "[GiB].";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
 
     build_metric();
 }

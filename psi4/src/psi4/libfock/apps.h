@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -120,45 +120,6 @@ class RBase : public Wavefunction {
 
 // => APPLIED CLASSES <= //
 
-class RCIS : public RBase {
-   protected:
-    std::vector<std::tuple<double, int, int, int> > states_;
-    std::vector<SharedMatrix> singlets_;
-    std::vector<SharedMatrix> triplets_;
-    std::vector<double> E_singlets_;
-    std::vector<double> E_triplets_;
-
-    void sort_states();
-
-    virtual void print_header();
-    virtual void print_wavefunctions();
-    virtual void print_amplitudes();
-    virtual void print_transitions();
-    virtual void print_densities();
-
-    virtual SharedMatrix TDmo(SharedMatrix T1, bool singlet = true);
-    virtual SharedMatrix TDso(SharedMatrix T1, bool singlet = true);
-    virtual SharedMatrix TDao(SharedMatrix T1, bool singlet = true);
-
-    virtual SharedMatrix Dmo(SharedMatrix T1, bool diff = false);
-    virtual SharedMatrix Dso(SharedMatrix T1, bool diff = false);
-    virtual SharedMatrix Dao(SharedMatrix T1, bool diff = false);
-
-    virtual std::pair<SharedMatrix, std::shared_ptr<Vector> > Nmo(SharedMatrix T1, bool diff = false);
-    virtual std::pair<SharedMatrix, std::shared_ptr<Vector> > Nso(SharedMatrix T1, bool diff = false);
-    virtual std::pair<SharedMatrix, std::shared_ptr<Vector> > Nao(SharedMatrix T1, bool diff = false);
-
-    virtual std::pair<SharedMatrix, SharedMatrix> ADmo(SharedMatrix T1);
-    virtual std::pair<SharedMatrix, SharedMatrix> ADso(SharedMatrix T1);
-    virtual std::pair<SharedMatrix, SharedMatrix> ADao(SharedMatrix T1);
-
-   public:
-    RCIS(SharedWavefunction ref_wfn, Options& options);
-    ~RCIS() override;
-
-    double compute_energy() override;
-};
-
 class RTDHF : public RBase {
    protected:
     std::vector<SharedMatrix> singlets_X_;
@@ -210,37 +171,5 @@ class RCPHF : public RBase {
     void add_task(const std::string& task);
 };
 
-class RCPKS : public RCPHF {
-   protected:
-    void print_header() override;
-
-   public:
-    RCPKS(SharedWavefunction ref_wfn, Options& options);
-    ~RCPKS() override;
-
-    double compute_energy() override;
-};
-
-class RTDA : public RCIS {
-   protected:
-    void print_header() override;
-
-   public:
-    RTDA(SharedWavefunction ref_wfn, Options& options);
-    ~RTDA() override;
-
-    double compute_energy() override;
-};
-
-class RTDDFT : public RTDHF {
-   protected:
-    void print_header() override;
-
-   public:
-    RTDDFT(SharedWavefunction ref_wfn, Options& options);
-    ~RTDDFT() override;
-
-    double compute_energy() override;
-};
 }
 #endif

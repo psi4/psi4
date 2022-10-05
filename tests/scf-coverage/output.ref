@@ -242,7 +242,7 @@ compare_matrices(ref_nos, scf_wfn.Ca(), 8, "Water Anion UHF NOS")
 	First half integral transformation complete.
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
-    Lowest singlet (RHF->RHF) stability eigenvalues:-
+    Lowest singlet (RHF->RHF) stability eigenvalues:
      B2u 0.087722       B3u 0.087722       B1u 0.087722       B1u 0.215168  
      B2u 0.215168       B3u 0.215168        Ag 0.221210        Ag 0.360268  
      B1g 0.360268       B2g 0.360268       B3g 0.360268        Ag 0.360268  
@@ -250,7 +250,7 @@ compare_matrices(ref_nos, scf_wfn.Ca(), 8, "Water Anion UHF NOS")
      B1u 2.330381       B2u 2.330381       B3u 2.330381        Ag 2.492258  
      B1g 2.492258       B2g 2.492258       B3g 2.492258      
 
-    Lowest triplet (RHF->UHF) stability eigenvalues:-
+    Lowest triplet (RHF->UHF) stability eigenvalues:
      B1u -0.031105      B2u -0.031105      B3u -0.031105       Ag 0.096444  
      B1u 0.120856       B2u 0.120856       B3u 0.120856        Ag 0.277388  
      B1g 0.277388       B2g 0.277388       B3g 0.277388        Ag 0.277388  

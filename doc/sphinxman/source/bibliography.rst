@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -200,7 +200,8 @@ Bibliography
 
 .. [Verma:2015]
    P. Verma, W. D. Derricotte, F. A. Evangelista,
-   *J. Chem. Theory Comput.* **DOI: 10.1021/acs.jctc.5b00817** (2015).
+   *J. Chem. Theory Comput.* (2015).
+   https://doi.org/10.1021/acs.jctc.5b00817
 
 .. [Jeziorski:1981:1668]
    B. Jeziorski and H. J. Monkhorst,
@@ -314,7 +315,7 @@ Bibliography
    *J. Chem. Phys.* **136**, 204114 (2012).
 
 .. [Bozkaya:2013:ocepa]
-   U. Bozkaya and C. D. Sherrill
+   U. Bozkaya and C. D. Sherrill,
    *J. Chem. Phys.* **139**, 054104 (2013).
 
 .. [Bozkaya:2013:omp3grad]
@@ -438,23 +439,23 @@ Bibliography
 
 .. [Lehtola:2019:1593]
    S. Lehtola
-   *J. Chem. Theory Comput.* **15**, 1593 (2019), doi: 10.1021/acs.jctc.8b01089.
+   *J. Chem. Theory Comput.* **15**, 1593 (2019), https://doi.org/10.1021/acs.jctc.8b01089.
 
 .. [Lehtola:2019:241102]
    S. Lehtola
-   *J. Chem. Phys.* **151**, 241102 (2019), doi: 10.1063/1.5139948.
+   *J. Chem. Phys.* **151**, 241102 (2019), https://doi.org/10.1063/1.5139948.
 
  .. [Lehtola:2019:25945]
    S. Lehtola
-   *Int. J. Quantum Chem.* **119**, e25945 (2019), doi: 10.1002/qua.25945.
+   *Int. J. Quantum Chem.* **119**, e25945 (2019), https://doi.org/10.1002/qua.25945.
 
 .. [Lehtola:2020:012516]
    S. Lehtola
-   *Phys. Rev. A.* **101**, 012516 (2020), doi: 10.1103/PhysRevA.101.012516.
+   *Phys. Rev. A.* **101**, 012516 (2020), https://doi.org/10.1103/PhysRevA.101.012516.
 
 .. [Lehtola:2020:032504]
    S. Lehtola
-   *Phys. Rev. A.* **101**, 032504 (2020), doi: 10.1103/PhysRevA.101.032504.
+   *Phys. Rev. A.* **101**, 032504 (2020), https://doi.org/10.1103/PhysRevA.101.032504.
 
 .. [Lehtola:2020:04224]
    S. Lehtola
@@ -490,28 +491,28 @@ Bibliography
 
 .. [stratmann:1998]
    R. Eric Stratmann, G. E. Scuseria, and M. J. Frisch
-   *J. Chem. Phys.* **109**, 8218 (1998), doi: 10.1063/1.477483.
+   *J. Chem. Phys.* **109**, 8218 (1998), https://doi.org/10.1063/1.477483.
 
 .. [Pedersen1995-du]
    T. B. Pedersen, A. E. Hansen
-   *Chem. Phys. Lett.* **246**, 1 (1995), doi: 10.1016/0009-2614(95)01036-9.
+   *Chem. Phys. Lett.* **246**, 1 (1995), https://doi.org/10.1016/0009-2614(95)01036-9.
 
 .. [Lestrange2015-xn]
    P. J. Lestrange, F. Egidi, X. Li
-   *J. Chem. Phys.* **143**, 234103 (2015), doi: 10.1063/1.4937410.
+   *J. Chem. Phys.* **143**, 234103 (2015), https://doi.org/10.1063/1.4937410.
 
 .. [Rizzo2011-to]
-    A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy, doi: 10.1002/9781118008720.ch2.
+    A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy, https://doi.org/10.1002/9781118008720.ch2.
 
 .. [Dreuw2005-wp]
    A. Dreuw, M. Head-Gordon
-   *Chem. Rev.* **105**, 4009 (2005), doi: 10.1021/cr0505627.
+   *Chem. Rev.* **105**, 4009 (2005), https://doi.org/10.1021/cr0505627.
 
 .. [Norman2018-tn]
    P. Norman, K. Ruud, T. Saue, "Principles and Practices of Molecular Properties: Theory, Modeling, and Simulations". John Wiley & Sons, 2018
 
 .. [Verstraelen:2016]
-   T. Verstraelen et al. "Minimal Basis Iterative Stockholder: Atoms in Molecules for Force-Field Development". *J. Chem. Theory and Comput.* doi: 10.1021/acs.jctc.6b00456.
+   T. Verstraelen et al. "Minimal Basis Iterative Stockholder: Atoms in Molecules for Force-Field Development". *J. Chem. Theory and Comput.* https://doi.org/10.1021/acs.jctc.6b00456.
 
 ..
    [Misquitta:2005:214103]
@@ -527,6 +528,30 @@ Bibliography
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).
 
+.. [Hylleraas:1930:209]
+   E. Hylleraas
+   *Z. Phys.* **65**, 209 (1930).
+
+.. [Pulay:1986:357]
+   P. Pulay and S. Saeb\ |o_slash|\ ,
+   *Theor. Chim. Acta* **69**, 357 (1986).
+
+.. [Pinski:2015:034108]
+   P. Pinski, C. Riplinger, E. Valeev, and F. Neese,
+   *J. Chem. Phys.* **143**, 034108 (2015).
+
+.. [Liakos:2015:1525]
+   D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
+   *J. Chem. Theory Comput.* **11**, 1525 (2015).
+
+.. [Neese:2009:98]
+   F. Neese, F. Wennmohs, and A. Hansen
+   *Chem. Phys.* **356**, 98-109 (2009)
+
+.. [Izsak:2011:144105]
+   R. Izs\ |a_acute|\ k and F. Neese
+   *J. Chem. Phys.* **135**, 144105 (2011)
+   
 .. [Smith:2018:3504]
     10.1021/acs.jctc.8b00286,
     "PSI4NUMPY: An Interactive Quantum Chemistry Programming Environment for Reference Implementations and Rapid Development",
@@ -536,3 +561,60 @@ Bibliography
 .. [Schriber:2021:234107]
     J. B. Schriber, D. A. Sirianni, D. G. A. Smith, L. A. Burns, D. Sitkoff, D. L. Cheney, C. D. Sherrill
     *J. Chem. Phys.* **154**, 234107 (2021).
+
+.. [Caldeweyher:2019:154122]
+   "A generally applicable atomic-charge dependent London dispersion correction",
+   E. Caldeweyher,  S. Ehlert,  A. Hansen, H. Neugebauer, S. Spicher, C. Bannwarth, and S. Grimme,
+   *J. Chem. Phys.* **150**, 154122 (2019).
+   https://doi.org/10.1063/1.5090222
+
+.. [Haser:1989:104]
+   M. Haser and R. Ahlrichs,
+   *J. Comp. Chem.* **10(1)**, 104 (1989).
+   https://doi.org/10.1002/jcc.540100111
+   
+.. [Thompson:2017:144101]
+   T. H. Thompson and C. Ochsenfeld
+   *J. Chem. Phys.* **147**, 144101 (2017).
+   https://doi.org/10.1063/1.4994190
+   
+.. [Smith:2020:184108]
+    "PSI4 1.4: Open-source software for high-throughput quantum chemistry",
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish, M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio, A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer, R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni, J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein, B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov, K. Patkowski, A. E. DePrince III, U. Bozkaya, R. King, F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill
+    *J. Chem. Phys.* **152**, 184108 (2020).
+    https://doi.org/10.1063/5.0006002
+
+.. [Waldrop:2021:024103]
+   "Nonapproximated third-order exchange induction energy in symmetry-adapted perturbation theory",
+   J. M. Waldrop and K. Patkowski
+   *J. Chem. Phys.* **154**, 024103 (2021).
+   https://doi.org/10.1063/1.4994190
+   
+.. [Ochsenfeld:1998:1663]
+   C. Ochsenfeld, C. A. White, M. Head-Gordon
+   *J. Chem. Phys.* **109**, 1663 (1998)
+   https://doi.org/10.1063/1.476741
+
+.. [Behnle:2019:REMP]
+   "REMP: A hybrid perturbation theory providing improved electronic wavefunctions and properties",
+   S. Behnle and R. F. Fink,
+   *J. Chem. Phys.* **150**, 1241077 (2019).
+   https://doi.org/10.1063/1.5086168
+
+.. [Behnle:2021:OREMP]
+   "OO-REMP: Approaching Chemical Accuracy with Second-Order Perturbation Theory",
+   S. Behnle and R. F. Fink,
+   *J. Chem. Theory Comput.* **17**, 3259 (2021).
+   https://doi.org/10.1021/acs.jctc.1c00280
+
+.. [Behnle:2022:OREMP]
+   "UREMP, RO-REMP, and OO-REMP: Hybrid perturbation theories for open-shell electronic structure calculations",
+   S. Behnle and R. F. Fink
+   *J. Chem. Phys.* **156**, 124103 (2022).
+   https://doi.org/10.1063/5.0081285
+
+.. [Fink:2006:RE]
+   "Two new unitary-invariant and size-consistent perturbation theoretical approaches to the electron correlation energy",
+   R. F. Fink
+   *Chem. Phys. Lett.*, **428**, 461 (2006)
+

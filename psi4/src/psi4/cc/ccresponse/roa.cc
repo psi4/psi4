@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -528,18 +528,19 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             ref_wfn->set_array_variable(tag_tensor_pl2.str(),tensor_mat_pl2);
         }
 
-        std::stringstream* tag_quad = new std::stringstream[3];
+        // For psivar scraper
+
+        // Process::environment.globals["CC2 QUADRUPOLE POLARIZABILITY TENSOR @ xNM"]
+        // Process::environment.globals["CCSD QUADRUPOLE POLARIZABILITY TENSOR @ xNM"]
+
+        std::stringstream tag_quad;
         if (params.wfn == "CC2") {
-            outfile->Printf("\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
-            tag_quad[0] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ " << om_nm << "NM";
-            tag_quad[1] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ " << om_nm << "NM";
-            tag_quad[2] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ " << om_nm << "NM";
+            outfile->Printf("\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^3)/E_h]:\n");
+            tag_quad << "CC2 QUADRUPOLE POLARIZABILITY TENSOR @ " << om_nm << "NM";
         }
         else {
-            outfile->Printf("\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
-            tag_quad[0] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ " << om_nm << "NM";
-            tag_quad[1] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ " << om_nm << "NM";
-            tag_quad[2] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ " << om_nm << "NM";
+            outfile->Printf("\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^3)/E_h]:\n");
+            tag_quad << "CCSD QUADRUPOLE POLARIZABILITY TENSOR @ " << om_nm << "NM";
         }
         outfile->Printf("  -------------------------------------------------------------------------\n");
         outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
@@ -547,15 +548,15 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
                         pc_hartree2wavenumbers * params.omega[i]);
         outfile->Printf("  -------------------------------------------------------------------------\n");
         for (alpha = 0; alpha < 3; alpha++) mat_print(tensor_rQ[i][alpha], 3, 3, "outfile");
+        auto tmp = std::make_shared<Matrix>(3, 9);
         for (alpha = 0; alpha < 3; alpha++) {
-            auto tmp = std::make_shared<Matrix>(3, 3);
             for (int m = 0; m < 3; m++) {
                 for (int n = 0; n < 3; n++) {
-                    tmp->set(m,n,tensor_rQ[i][alpha][m][n]);
+                    tmp->set(alpha, 3*m+n,tensor_rQ[i][alpha][m][n]);
                 }
             }
-            ref_wfn->set_array_variable(tag_quad[alpha].str(),tmp);
         }
+        ref_wfn->set_array_variable(tag_quad.str(),tmp);
 
     } /* loop i over nomega */
 

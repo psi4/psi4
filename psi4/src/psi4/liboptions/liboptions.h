@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -451,12 +451,10 @@ class PSI_API Options {
     int get_int(std::string key) const;
     double get_double(std::string key) const;
     std::string get_str(std::string key) const;
-    int* get_int_array(std::string key) const;
     void fill_int_array(std::string key, int* empty_array) const;
     std::vector<int> get_int_vector(std::string key) const;
     double* get_double_array(std::string key) const;
     std::vector<double> get_double_vector(std::string key) const;
-    const char* get_cstr(std::string key) const;
 
     Data& operator[](std::string key);
 

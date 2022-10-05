@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,7 +37,6 @@ namespace scf {
 
 class UHF : public HF {
    protected:
-    SharedMatrix Dt_, Dt_old_;
     SharedMatrix Da_old_, Db_old_;
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
 
@@ -45,6 +44,9 @@ class UHF : public HF {
     bool stability_analysis_pk();
 
     void common_init();
+
+    // Guess mix performed?
+    bool mix_performed_;
 
     // Scaling factor for orbital rotation
     double step_scale_;
@@ -69,9 +71,7 @@ class UHF : public HF {
     virtual bool same_a_b_orbs() const { return false; }
     virtual bool same_a_b_dens() const { return false; }
 
-    bool diis() override;
     void save_density_and_energy() override;
-    double compute_orbital_gradient(bool save_diis, int max_diis_vectors) override;
 
     void form_C(double shift = 0.0) override;
     void form_D() override;

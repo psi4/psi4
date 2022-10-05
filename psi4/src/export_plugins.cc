@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -109,7 +109,7 @@ SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction re
         return info.plugin(ref_wfn, Process::environment.options);
     } else if (Process::environment.legacy_wavefunction()) {
         outfile->Printf(
-            "Using the legacy wavefunction from global memory instead of explicit wavefunction passing is deprecated, and in 1.5 it will stop working.");
+            "Using the legacy wavefunction from global memory instead of explicit wavefunction passing is deprecated, and as soon as 1.5 it will stop working.");
         return info.plugin(Process::environment.legacy_wavefunction(), Process::environment.options);
     } else {
         throw PSIEXCEPTION("Psi4::plugin: No wavefunction passed into the plugin, aborting");

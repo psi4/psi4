@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -42,10 +42,14 @@
 
 #include "psi4/libpsi4util/exception.h"
 
+namespace libint2 {
+class Engine;
+class Shell;
+}  // namespace libint2
+
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
@@ -60,6 +64,8 @@ class PSI_API OneBodyAOInt {
 
     Vector3 origin_;
 
+    // These are scratch arrays that are used for the integral engines that do not yet use Libint2
+    // under the hood.  When everything is converted to use Libint2, they can be deleted.
     double* buffer_;
     double* target_;
     double* tformbuf_;
@@ -72,18 +78,34 @@ class PSI_API OneBodyAOInt {
 
     int buffer_size_;
 
+    /// Libint2 engines
+    std::unique_ptr<libint2::Engine> engine0_;
+    std::unique_ptr<libint2::Engine> engine1_;  // derivatives
+    std::unique_ptr<libint2::Engine> engine2_;  // hessians
+
+    /// Pointers to each chunk of (derivative/multipole) integrals.  For simple integral types
+    /// (e.g. overlap, kinetic) there is only one chunk of integrals.  For dipole integrals
+    /// there are three such buffers in memory at a given time, pointed to by these pointers.
+    /// The ordering of the dipoles is x, y, z; generally CCA library ordering is used to determine
+    /// the layout of operators and derivatives.  The Libint2 wiki has a detailed description of this.
+    std::vector<const double*> buffers_;
+
+    std::vector<std::pair<int, int>> shellpairs_;
+
     OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                  int deriv = 0);
-
-    virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2) = 0;
-    virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
-    virtual void compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2);
-
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
-    void pure_transform(const GaussianShell&, const GaussianShell&, int = 1);
+    void pure_transform(const libint2::Shell &s1, const libint2::Shell &s2, int nchunks = 1);
 
-    /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(const GaussianShell&, const GaussianShell&, int nchunk = 1);
+    /// Compute integrals for a given shell pair
+    virtual void compute_pair(const libint2::Shell&, const libint2::Shell&);
+    /// Compute first derivative integrals for a given shell pair
+    virtual void compute_pair_deriv1(const libint2::Shell&, const libint2::Shell&);
+    /// Compute second derivative integrals for a given shell pair
+    virtual void compute_pair_deriv2(const libint2::Shell&, const libint2::Shell&);
+    /// Whether the operator is antisymmetric with respect to interchange of the bra and ket
+    virtual bool is_antisymmetric() const { return false; }
+
 
    public:
     virtual ~OneBodyAOInt();
@@ -95,14 +117,10 @@ class PSI_API OneBodyAOInt {
     /// Basis set on center two.
     std::shared_ptr<BasisSet> basis2();
 
+    const auto& shellpairs() const { return shellpairs_; }
+
     /// Number of chunks. Normally 1, but dipoles (3) quadrupoles (6).
     int nchunk() const { return nchunk_; }
-
-    /// Buffer where the integrals are placed.
-    const double* buffer() const;
-
-    /// Compute the integrals between basis function in the given shell pair.
-    void compute_shell(int, int);
 
     /*! @{
      * Computes all integrals and stores them in result
@@ -123,12 +141,8 @@ class PSI_API OneBodyAOInt {
     /// What order of derivative was requested?
     int deriv() const { return deriv_; }
 
-    /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<SharedMatrix>& result);
-
-    /// Computes the second derivatives and stores them in result
-    virtual void compute_deriv2(std::vector<SharedMatrix>& result);
-
+    /// Compute the integrals between basis function in the given shell pair.
+    virtual void compute_shell(int, int);
     /// Computes the integrals between basis function in the given shell pair
     virtual void compute_shell_deriv1(int, int);
     /// Computes the integrals between basis function in the given shell pair
@@ -144,10 +158,20 @@ class PSI_API OneBodyAOInt {
     Vector3 origin() const { return origin_; }
 
     /// Set the origin (useful for properties)
-    void set_origin(const Vector3& _origin) { origin_ = _origin; }
+    virtual void set_origin(const Vector3& _origin) { origin_ = _origin; }
+
+    /// Buffer where each chunk of integrals is placed
+    const std::vector<const double*>& buffers() const { return buffers_; }
 };
 
 typedef std::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
+
+/// For a pair of basis sets, provides a list of integer pairs that index all significant (i.e. whose overlap is
+/// above the threshold) pairs that exist.  If the basis sets are different, the full Cartesian product is considered
+/// but if they are the same, only the lower triangular significant pairs are returned.
+std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr<BasisSet> bs1,
+                                                                 std::shared_ptr<BasisSet> bs2, double threshold);
+
 }  // namespace psi
 
 #endif

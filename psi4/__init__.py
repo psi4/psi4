@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -36,9 +36,10 @@ if pymod.startswith(os.path.sep + os.path.sep):
 pymod_dir_step = os.path.sep.join(['..'] * pymod.count(os.path.sep))
 data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_DATADIR@', 'psi4'])
 executable = os.path.abspath(os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_BINDIR@', 'psi4']))
-
-# from . import config
-# data_dir = config.psidatadir
+from pathlib import Path
+if not Path(executable).exists():
+    # Win conda recipe moves psi4 executable unknown to CMake
+    executable = str((Path(psi4_module_loc) / ".." / ".." / ".." / "Scripts" / "psi4.exe").resolve())
 
 if "PSIDATADIR" in os.environ.keys():
     data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
@@ -47,19 +48,12 @@ elif "CMAKE_INSTALL_DATADIR" in data_dir:
 
 data_dir = os.path.abspath(data_dir)
 if not os.path.isdir(data_dir):
-    raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
-                    "      Current value of PSIDATADIR is %s" % data_dir)
+    raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {data_dir}")
 
 # Init core
-try:
-    from . import core
-except ImportError as err:
-    if 'CXXABI' in str(err):
-        raise ImportError("{0}\nLikely cause: GCC >= 4.9 not in [DY]LD_LIBRARY_PATH".format(err))
-    else:
-        raise ImportError("{0}".format(err))
+from . import core
 
-from psi4.core import set_output_file, get_num_threads, set_num_threads
+from psi4.core import get_num_threads, set_num_threads
 core.initialize()
 
 if "PSI_SCRATCH" in os.environ.keys():
@@ -90,7 +84,7 @@ from .header import print_header
 from .metadata import __version__, version_formatter
 
 # A few extraneous functions
-from .extras import get_input_directory, addons, test
+from .extras import get_input_directory, addons, test, set_output_file
 from psi4.core import get_variable  # kill off in 1.4
 from psi4.core import variable, set_variable
 
@@ -104,3 +98,9 @@ if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
     sys.path.insert(1, "@cppe_PYMOD@")
 if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
     sys.path.insert(1, "@pylibefp_PYMOD@")
+
+# Create a custom logger
+import logging
+root = logging.getLogger()  # create root
+root.setLevel("ERROR")
+logger = logging.getLogger(__name__)  # create initial psi4 from root to be configured later in extras

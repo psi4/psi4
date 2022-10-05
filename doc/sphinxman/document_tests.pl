@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -69,8 +69,8 @@ my %ExeFolder = (
    "json/"      => "json",
    "psi4numpy/" => "psi4numpy",
    "python/"    => "python",
-   "adcc/"      => "adcc",
    "brianqc/"   => "brianqc",
+   "dftd4/"     => "dftd4",
 );
 
 foreach my $exe (keys %ExeFolder) {
@@ -102,8 +102,8 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^python$/;
     next if $File =~ /^json$/;
     next if $File =~ /^psi4numpy$/;
-    next if $File =~ /^adcc$/;
     next if $File =~ /^brianqc$/;
+    next if $File =~ /^dftd4$/;
     next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
 }

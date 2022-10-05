@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,13 +37,14 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdpd/dpd.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
+#include "ccdensity.h"
+#include "Frozen.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
-#include "psi4/libmints/mintshelper.h"
 #define EXTERN
 #include "globals.h"
 
@@ -52,11 +53,11 @@ namespace ccdensity {
 
 #define _au2cgs 471.44353920
 
-void transdip(MintsHelper &mints);
-void transp(MintsHelper &mints, double sign);
-void transL(MintsHelper &mints, double sign);
+void transdip(const MintsHelper &mints);
+void transp(const MintsHelper &mints, double sign);
+void transL(const MintsHelper &mints, double sign);
 
-void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data) {
+void ex_rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data) {
     int i, j, k;
     int no, nv, nt;
     double lt_x, lt_y, lt_z;
@@ -68,6 +69,7 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
     double conv;
     double delta_ee;
     int nmo = moinfo.nmo;
+    const auto& mints = *wfn.mintshelper();
 
     transdip(mints);
 
@@ -149,6 +151,13 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
     outfile->Printf("\n");
     outfile->Printf("\tRotational Strength (au)                 %11.8lf\n", rs);
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
+    
+    // Save rotatory strength to wfn.
+    // Process::environment.globals["CCname ROOT m -> ROOT n ROTATORY STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n ROTATORY STRENGTH (LEN) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) ROTATORY STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (LEN)"]
+    scalar_saver_excited(wfn, S, U, "ROTATORY STRENGTH (LEN)", rs);
 
     outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n", S->root + 1, moinfo.labels[S->irrep].c_str(),
                     U->root + 1, moinfo.labels[U->irrep].c_str());
@@ -245,6 +254,13 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
     outfile->Printf("\n");
     outfile->Printf("\tRotational Strength (au)                 %11.8lf\n", rs);
     outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n", rs * _au2cgs);
+
+    // Save rotatory strength to wfn.
+    // Process::environment.globals["CCname ROOT m -> ROOT n ROTATORY STRENGTH (VEL)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)"]
+    // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)"]
+    scalar_saver_excited(wfn, S, U, "ROTATORY STRENGTH (VEL)", rs);
 
     return;
 }

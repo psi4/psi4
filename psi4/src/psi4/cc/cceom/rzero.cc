@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -52,7 +52,7 @@ extern void scm_C(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, 
  * with the ground state left eigenvector (1+lambda) */
 
 /* for ROHF and UHF */
-void rzero(int C_irr, int *converged) {
+void rzero(int C_irr, const std::vector<bool>& converged) {
     double rzero = 0.0, energy, norm, dotval;
     double dot_IA, dot_ia, dot_IJAB, dot_ijab, dot_IjAb;
     dpdfile2 RIA, Ria, RIA2, Ria2, FIA, Fia, LIA, Lia;
@@ -286,7 +286,7 @@ void rzero(int C_irr, int *converged) {
 /* normalizes R and produces copies of R that are ROHF-like */
 /* sort_amps then produces the others sorted versions of R */
 
-void rzero_rhf(int C_irr, int *converged) {
+void rzero_rhf(int C_irr, const std::vector<bool>& converged) {
     double r1, r2, rzero = 0.0, energy, norm, dotval;
     double dot_IA, dot_ia, dot_IJAB, dot_ijab, dot_IjAb;
     dpdfile2 RIA, FIA, LIA, Lia, Ria;

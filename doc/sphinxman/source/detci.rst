@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -116,7 +116,7 @@ important keywords.  Additional information is available in the complete
 list of keywords for DETCI provided in Appendix :ref:`apdx:detci`.
 
 For single-reference CI computations, the easiest way to invoke a CI
-computation with DETCI is simply to call :py:func:`~psi4.energy`, :py:func:`~psi4.optimize`, *etc.*,
+computation with DETCI is simply to call :py:func:`~psi4.driver.energy`, :py:func:`~psi4.driver.optimize`, *etc.*,
 with the common name for that CI wavefunction, like ``energy('cisd')`` 
 for a CISD single-point energy.  The Python driver
 recognizes ``cisd``, ``cisdt``, and ``cisdtq``.  As mentioned above, codes

@@ -23,7 +23,7 @@ set scf {
 set occ do_scs on
 
 banner('gold standard')
-energy(sherrill_gold_standard)
+energy('sherrill_gold_standard')
 compare_values(-5.66406119, variable('CBS TOTAL ENERGY'), 7, "[1]  Au std")  #TEST
 clean()
 
@@ -55,6 +55,12 @@ energy('mp4')
 compare_values(-5.58040727035, variable('MP4 TOTAL ENERGY'), 7, '[5]  MP4 fnocc')  #TEST
 clean()
 
+banner('mp5')
+energy('mp5')
+compare_values(-5.580735737, variable('MP5 TOTAL ENERGY'), 6, '[5b]  MP5')  #TEST
+compare_values(-0.02964776, variable('MP5 correlation ENERGY'), 6, '[5b]  MP5')  #TEST
+clean()
+
 banner('mp11')
 energy('mp11')
 compare_values(-5.580830858501, variable('MP11 TOTAL ENERGY'), 7, "[6]  MP11 sp")  #TEST
@@ -77,7 +83,7 @@ clean()
 
 banner('cbs()')
 set scf_type pk
-energy(cbs, scf_type='scf', scf_basis='cc-pvdz')
+energy('cbs', scf_type='scf', scf_basis='cc-pvdz')
 compare_values(-5.55609846, variable('CBS TOTAL ENERGY'), 7, "[10] cbs()")  #TEST
 clean()
 

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -28,7 +28,7 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. index:: 
+.. index::
    single: Orbital-Optimized Methods, OMP2
    single: Orbital-Optimized Methods, OMP3
    single: Orbital-Optimized Methods, OMP2.5
@@ -196,7 +196,18 @@ yields
 
 This final equation corresponds to the usual Newton-Raphson step.
 
-Publications resulting from the use of the orbital-optimized code should cite the following publications: 
+* OREMP
+
+The REMP hybrid perturbation theory is a constrained mixture of the |MollerPlesset| perturbation theory and the
+Retaining the Excitation degree perturbation theory([Fink:2006:RE]_, [Behnle:2019:REMP]_).
+The mixing ratio is determined by the parameter :math':`A`:
+
+.. math::
+   \widehat{H}^{(0)}_\text{REMP} = (1-A)\widehat{H}^{(0)}_\text{RE} + A\widehat{H}^{(0)}_\text{MP}
+
+Technically, the second order of RE corresponds to LCCD for RHF and UHF references. REMP2 and its orbital-optimized variant OREMP2
+are thus straightforward to implement in a (O)LCCD program by appropriate scaling of residual vector contributions and density matrices.
+
 
 * **OMP2** [Bozkaya:2011:omp2]_ and [Bozkaya:2013:omp2grad]_
 
@@ -208,6 +219,7 @@ Publications resulting from the use of the orbital-optimized code should cite th
 
 * **LCCD** [Bozkaya:2013:ocepa]_
 
+* **OREMP2** [Behnle:2021:OREMP]_, and [Behnle:2022:OREMP]_
 
 Convergence Problems
 ~~~~~~~~~~~~~~~~~~~~
@@ -261,6 +273,12 @@ through "type select" values in the rightmost Table column.
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Orbital-Optimized LCCD                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    | oremp2                  | Orbital-Optimized 2nd order REMP hybrid perturbation theory  | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| CONV   |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Density-Fitted Orbital-Optimized REMP                        | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| DF     |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Cholesky-Decomposed Orbital-Optimized REMP                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
+    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
 
 .. _`table:occ_scsoo_calls`:
 
@@ -299,6 +317,7 @@ through "type select" values in the rightmost Table column.
 .. index:: OMP3; setting keywords
 .. index:: OMP2.5; setting keywords
 .. index:: OLCCD; setting keywords
+.. index:: OREMP; setting keywords
 
 Basic OCC Keywords
 ~~~~~~~~~~~~~~~~~~
@@ -315,7 +334,6 @@ Advanced OCC Keywords
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. include:: /autodir_options_c/occ__opt_method.rst
-.. include:: /autodir_options_c/occ__mo_diis_num_vecs.rst
 .. include:: /autodir_options_c/occ__lineq_solver.rst
 .. include:: /autodir_options_c/occ__orth_type.rst
 .. include:: /autodir_options_c/occ__mp2_os_scale.rst
@@ -371,6 +389,10 @@ preference to the default module, issue ``set qc_module occ``.
 
 Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globals__mp_type| to ``CONV`` to get previous behavior.
 
+Publications resulting from the use of the non-OO CC codes should cite the following publications:
+
+* **REMP** [Behnle:2019:REMP]_, [Behnle:2022:OREMP]
+
 .. _`table:occ_nonoo_calls`:
 
 .. table:: Conventional (non-OO) CC and MP capabilities of OCC/DFOCC modules
@@ -420,10 +442,16 @@ Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globa
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed CCSD(T)                                  | RHF                  | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    | ccsd(at)                | Lambda-CCSD(T)                                               | ---                  | ---                  | |globals__cc_type| CONV   |
+    | a-ccsd(t)               | Lambda-CCSD(T)                                               | ---                  | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Density-Fitted Lambda-CCSD(T)                                | RHF                  | ---                  | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Lambda-CCSD(T)                           | RHF                  | ---                  | |globals__cc_type| CD     |
+    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    | remp2                   | 2nd order REMP hybrid perturbation theory                    | RHF/UHF              | ---                  | |globals__cc_type| CONV   |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Density-Fitted REMP                                          | RHF/UHF              | ---                  | |globals__cc_type| DF     |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Cholesky-Decomposed REMP                                     | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
 

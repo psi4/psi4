@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -25,48 +25,47 @@
  *
  * @END LICENSE
  */
-
-#ifndef _psi_src_lib_libmints_multipolepotential_h_
-#define _psi_src_lib_libmints_multipolepotential_h_
+#pragma once
 
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
+#include "psi4/libmints/mcmurchiedavidson.h"
 
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class OneBodyAOInt;
 class SphericalTransform;
 
 /*! \ingroup MINTS
  *  \class MultipolePotentialInt
  *  \brief Computes multipole potential integrals, needed for EFP/PE calculations.
- *  Currently computes potential integrals up to order max_k,
- *  where the maximum is max_k = 3 (octupoles)
  *
  *  Use an IntegralFactory to create this object.
  *  The compute method takes a vector of SharedMatrix objects, which will be populated
- *  in alphabetical order of Cartesian components.
+ *  in CCA lexicographic (alphabetical) order of Cartesian components.
  */
-class MultipolePotentialInt : public OneBodyAOInt {
-    // OS Recursion for this type of potential integral
-    ObaraSaikaTwoCenterMultipolePotentialRecursion mvi_recur_;
+class MultipolePotentialInt : public OneBodyAOInt, public mdintegrals::MDHelper {
+    // maximum multipole potential order to compute (order of the 1/R derivative)
+    int order_;
 
-    // maximum multipole order to compute
-    int max_k_;
+    //! CCA-ordered Cartesian components for the multipoles
+    std::vector<std::vector<std::array<int, 3>>> comps_der_;
 
-    //! Computes the electric field between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
+    //! Boys function evaluator from Libint2
+    std::shared_ptr<const libint2::FmEval_Chebyshev7<double>> fm_eval_;
+
+    //! R matrix (9.5.31)
+    std::vector<double> R;
+
+    //! Computes the multipole potential between two Gaussian shells.
+    void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     MultipolePotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                          int max_k = 0, int deriv = 0);
+                          int order, int deriv = 0);
     //! Virtual destructor
     ~MultipolePotentialInt() override;
 };
 
 }  // namespace psi
-
-#endif

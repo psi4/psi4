@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -47,12 +47,15 @@ namespace psi {
 **               buffer in the product.
 **   dpdbuf4 *Y: A pointer to the rightmost dpd four-index
 **               buffer in the product.
+**   dpdbuf4 *Z: A pointer to the product dpd four-index
+**               buffer.
 **   int target_X: Indicates which pair of indices (0 = bra, 1 =
 **                 ket) of X is the target pair.
 **   int target_Y: Indicates which pair of indices (0 = bra, 1 =
 **                 ket) of Y is the target pair.
 **   double alpha: A prefactor for the product alpha * X * Y.
 **   double beta: A prefactor for the target beta * Z.
+** -> i.e. form Z = alpha*X*Y + beta*Z by tensor contraction of X and Y
 */
 
 int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z, int target_X, int target_Y, double alpha, double beta) {

@@ -2,9 +2,9 @@
 
 | **Status** | [![Azure DevOps builds](https://img.shields.io/azure-devops/build/psi4/e80489d7-9619-4512-8e7b-255e355b3ab8/1?logo=azure%20devops)](https://dev.azure.com/psi4/psi4/_build?definitionId=1) [![Codecov coverage](https://img.shields.io/codecov/c/github/psi4/psi4.svg?logo=Codecov&logoColor=white)](https://codecov.io/gh/psi4/psi4) [![LGTM analysis](https://img.shields.io/lgtm/grade/python/g/psi4/psi4.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psi4/psi4/context:python) [![LGTM analysis](https://img.shields.io/lgtm/grade/cpp/g/psi4/psi4.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psi4/psi4/context:cpp) |
 | :------ | :------- |
-| **Latest Release** | [![Last release tag](https://img.shields.io/github/release/psi4/psi4.svg)](https://github.com/psi4/psi4/releases)  [![Commits since release](https://img.shields.io/github/commits-since/psi4/psi4/v1.4.svg)](https://github.com/psi4/psi4/releases/tag/v1.4) [![python](https://img.shields.io/badge/python-3.6%2C%203.7%2C%203.8%2C%203.9-blue.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) |
+| **Latest Release** | [![Last release tag](https://img.shields.io/github/release/psi4/psi4.svg)](https://github.com/psi4/psi4/releases)  [![Commits since release](https://img.shields.io/github/commits-since/psi4/psi4/v1.6.svg)](https://github.com/psi4/psi4/releases/tag/v1.5) [![python](https://img.shields.io/badge/python-3.8%2C%203.9%2C%203.10-blue.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) |
 | **Communication** | [![User site](https://img.shields.io/badge/home-Psi4-5077AB.svg)](https://psicode.org/) [![docs latest](https://img.shields.io/badge/docs-latest-5077AB.svg?logo=read%20the%20docs)](https://psicode.org/psi4manual/master/index.html) [![chat on forum](https://img.shields.io/badge/chat-on_forum-808493.svg?logo=Discourse&logoColor=white)](http://forum.psicode.org/) [![dev chat on slack](https://img.shields.io/badge/dev_chat-on_slack-808493.svg?logo=slack)](https://join.slack.com/t/psi4/shared_invite/zt-5s36s4rb-SQH6_AWyfWOqlKYN3cFs4Q) |
-| **Foundation** | [![license](https://img.shields.io/github/license/psi4/psi4.svg)](https://opensource.org/licenses/LGPL-3.0) [![platforms](https://img.shields.io/badge/Platforms-Linux%2C%20MacOS%2C%20Windows%2C%20Windows%20WSL-orange.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) [![python](https://img.shields.io/badge/python-3.7+-blue.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) |
+| **Foundation** | [![license](https://img.shields.io/github/license/psi4/psi4.svg)](https://opensource.org/licenses/LGPL-3.0) [![platforms](https://img.shields.io/badge/Platforms-Linux%2C%20MacOS%2C%20Windows%2C%20Windows%20WSL-orange.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) [![python](https://img.shields.io/badge/python-3.8%2C%203.9%2C%203.10-blue.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) |
 | **Installation** | [![obtain latest](https://img.shields.io/badge/obtain-latest-green.svg)](https://psicode.netlify.com/installs/latest) [![Conda](https://img.shields.io/conda/v/psi4/psi4.svg)](https://anaconda.org/psi4/psi4) [![Anaconda-Server Badge](https://anaconda.org/psi4/psi4/badges/latest_release_relative_date.svg)](https://anaconda.org/psi4/psi4) |
 | **Demo** | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/psi4/psi4/master?filepath=doc%2Fsphinxman%2Fsource%2Fpsiapi.ipynb) |
 
@@ -68,7 +68,7 @@ License [![license](https://img.shields.io/github/license/psi4/psi4.svg)](https:
 
 Psi4: an open-source quantum chemistry software package
 
-Copyright (c) 2007-2021 The Psi4 Developers.
+Copyright (c) 2007-2022 The Psi4 Developers.
 
 The copyrights for code used from other parties are included in
 the corresponding files.

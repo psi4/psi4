@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here
+    \brief Compute the MP2 energy for RHF, UHF references.
 */
 #include <cstdio>
 #include <cstdlib>
@@ -53,6 +53,7 @@ double CCEnergyWavefunction::mp2_energy() {
         return 0.0;
 }
 
+// Assumes "fIA", "D <ij||ab>", "dIjAb" and "dIA" are created.
 double CCEnergyWavefunction::rhf_mp2_energy() {
     double T2_energy, T1_energy;
     dpdfile2 F, T1, D1;

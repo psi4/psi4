@@ -85,6 +85,7 @@ for rxn in [4, 8, 16, 20]:
 
     if rxn == 4:
 
+    clean()
     E = energy('hf/minix', molecule=di)
     E1 = energy('hf/minix', molecule=ma)
     E2 = energy('hf/minix', molecule=mb)

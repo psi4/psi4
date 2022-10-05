@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -277,3 +277,178 @@ performs much cheaper cloning operations to create the other objects for each
 thread.  Moreover, if integral objects are created only in the initialization
 of each code that uses them, and stored persistently, the cost of integral
 object creation is further reduced.
+
+
+One Electron Integrals in |PSIfour|
+-----------------------------------
+
+After version 1.5, we started transitioning the one electron integral code over to
+use Libint2 instead of the old handwritten Obara-Saika code.  There are a
+number of reasons motivating this switch.  For methods requiring
+potentials and fields evaluated at many external sites, such as PCM and
+polarizable embedding, the efficiency of the one electron integrals can be rate
+limiting.  We also started to introduce integral screening, and it is important
+to balance the screening used for one- and two-electron terms carefully, so this
+is a good opportunity to re-evaluate the code.  Finally, given the complexity
+of the OS recursion code, the switch to an external library leaves a more
+compact codebase to maintain.  The one electron integrals which are not provided by Libint2
+are now handled by a new implementation of the McMurchie-Davidson (M-D) algorithm,
+leading to removal of the OS code in version 1.6. An overview of the one electron integrals
+is shown in table :ref:`table:oei_impl_summary`, together with the implementation they use.
+The tips below serve as a guide to what changed,
+why it changed, and how to interface with |PSIfour|'s one-electron integral
+machinery now.
+
+Calling ``compute_shell(int P, int Q)``
+.......................................
+
+The hand-implemented OS recursion code also took care of the Cartesian->pure
+transformation (if required by the basis set).  The mechanism for handling this
+was to provide a public facing ``compute_shell(int P, int Q)`` method for the
+caller; this then looked up the appropriate ``GaussianShell`` objects that were
+passed into the corresponding (private) ``compute_pair(GaussianShell &s1,
+GaussianShell &s2)`` function that computed the integrals and transformed them
+to the spherical harmonic basis, if needed.  The switch to Libint2 integrals
+preserves this mechanism, but the ``compute_shell(int P, int Q)`` simply looks
+up the appropriate Libint2-compatible shells and hands them off to the
+re-written, private ``compute_pair()`` routines, which call Libint2 directly.
+Therefore, any calls to shell-pair level integral computations should look the
+same as before the introduction of Libint2, however access to the integrals has
+changed, as described below.
+
+Accessing integrals
+...................
+
+Before the Libint2 transition, one electron integrals were computed in a flat
+array, internally called `buffer_`, which was accessed through the integral
+object's ``buffer()`` method.  For integrals with multiple operators, e.g.,
+dipole operators that have three distinct components, the buffer was simply
+elongated by the appropriate amount and the caller was responsible for striding
+through each resulting batch correctly.  The Libint2 engines instead return a
+list of pointers into each operator's batch of integrals, the ordering of which
+are detailed on the Libint2 wiki.  For this reason, the call to ``buffer()``
+that returns a single buffer must be replaced with a call to ``buffer()`` to
+get a list of pointers; we recommend that be assigned the type ``const auto
+&``.  For simple integrals, such as overlap or kinetic, only the buffer
+corresponding to the zeroth element of this array contains integrals.
+
+Derivative Integrals
+....................
+
+The old one electron integral code used translational invariance relations to
+minimze the number of integrals to be computed, leaving the caller with some
+bookkeeping to do to compute all terms.  For example, consider an overlap
+integral: its value depends only on the relative separation of the two centers
+and not their absolute positions in space.  Therefore, the derivative with
+respect to center A is the negative of the same derivative with respect to
+center B, so one is trivially gleaned from the other.  Extending this to second
+derivatives, the same principle leads to the fact that double derivatives with
+respect to center A are equal to double derivatives with respect to center B,
+which are also equal to the negative of the mixed double derivatives with
+respect to both center A and B.  The old code only provided the double
+derivative with respect to center A, leaving the caller to determine the other
+values.  The Libint2 engine instead provides all integrals, so the caller
+simply needs to loop over all of the buffers provided in the appropriate order.
+
+Changes to External Potential Engines
+.....................................
+
+Benchmarking showed that early versions of the old code spent a non-negligible
+amount of time performing the Cartesian to spherical harmonic transformation of
+the integrals, which is needed for most modern basis sets.  To improve
+performance, we instead backtransformed the density to the Cartesian
+representation (denoted "CartAO") and computed / contracted all integrals in
+this Cartesian basis, eliminating the need to transform to spherical harmonics
+as the integrals are computed.  This bottleneck no longer exists, so these
+extra transformation steps have been removed as part of the switch to Libint2,
+and the affected codes (PCM and CPPE interfaces) now compute the potential and
+field integrals in the representation required by the basis set.
+
+Also, note that the way external point charges are specified has changed.
+Previously, a set of N external point charges would be specified by passing a
+matrix with dimensions N rows and 4 columns -- corresponding to charge, x, y, z
+-- to the ``set_charge_field()`` member of the potential integral class.  The
+same information is now passed using the more verbose
+``std::vector<std::pair<double, std::array<double, 3>>>`` type instead, to be
+consistent with Libint2's convention.
+
+New Operators Available
+.......................
+
+Libint2 provides a range of integrals that were previously not available in
+|PSIfour|, such as the Erfc attenuated nuclear potential integrals needed for
+Ewald methods.  If new integrals are added to Libint2 but are not yet
+interfaced to |PSIfour|, please open an issue on the |PSIfour| GitHub page to
+alert the developers, who will be able to add the appropriate code.
+Available integrals classes and parameters currently documented at 
+`Libint2 C++11 Interface Wiki <https://github.com/evaleev/libint/wiki/using-modern-CPlusPlus-API#create-an-integral-engine>`_
+
+
+Shell Pairs
+...........
+
+To ensure consistency between one- and two-electron terms when screening, and
+for efficiency reasons, shell pair lists should be used to iterate over pairs
+of Gaussian shells.  These lists contain integer pair numbers, corresponding to
+the pairs of shells that have sufficient overlap to survive the screening
+process.  Iterating over these lists is simple:
+
+.. code-block:: cpp
+
+    const auto& shell_pairs = Vint->shellpairs();
+    size_t n_pairs = shell_pairs.size();
+    for (size_t p = 0; p < n_pairs; ++p) {
+         auto P = shell_pairs[p].first;
+         auto Q = shell_pairs[p].second;
+         // do something with shells P and Q
+    }
+
+Note that list considers all P,Q pairs if the two basis sets differ, but only
+P>=Q if the basis sets are the same; the caller should account for this
+restricted summation in the latter case.
+
+
+One Electron Integral Algorithm Overview
+........................................
+
+The following table summarizes which implementation is used
+for each type of one electron integral in |PSIfour|.
+
+.. _`table:oei_impl_summary`:
+
+.. table:: Algorithms used for One Electron Integrals
+
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Integral                   | Class                      | Implementation  | Comment                                                            |
+    +============================+============================+=================+====================================================================+
+    | Three-Center Overlap       | ``ThreeCenterOverlapInt``  | Libint2         | using ``libint2::Operator::delta`` for 4-center integrals          |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Angular Momentum           | ``AngularMomentumInt``     | M-D             |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Dipole                     | ``DipoleInt``              | Libint2         | no derivatives supported                                           |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Electric Field             | ``ElectricFieldInt``       | Libint2         | using first derivative of ``libint2::Operator::nuclear``           |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Coulomb Potential          | ``ElectrostaticInt``       | Libint2         | evaluated for a single origin and unity charge                     |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Kinetic                    | ``KineticInt``             | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Multipole Potential        | ``MultipolePotentialInt``  | M-D             | arbitrary order derivative of 1/R supported                        |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Multipole Moments          | ``MultipoleInt``           | M-D             | arbitrary order multipoles supported, including nuclear gradients  |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Nabla Operator             | ``NablaInt``               | Libint2         | using first derivative of ``libint2::Operator::overlap``           |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Overlap                    | ``OverlapInt``             | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Nuclear Coulomb Potential  | ``PotentialInt``           | Libint2         | assumes nuclear centers/charges as the potential                   |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | PCM Potential              | ``PCMPotentialInt``        | Libint2         | parallelized over charge points                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Quadrupole                 | ``QuadrupoleInt``          | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Traceless Quadrupole       | ``TracelessQuadrupoleInt`` | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+    | Relativistic Potential     | ``RelPotentialInt``        | Libint2         |                                                                    |
+    +----------------------------+----------------------------+-----------------+--------------------------------------------------------------------+
+

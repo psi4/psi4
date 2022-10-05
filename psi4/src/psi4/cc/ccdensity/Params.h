@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,8 +46,8 @@ struct Params {
     int cachelev;
     int aobasis;
     int ref;
-    int onepdm;            /* produce ONLY the onepdm for properties */
-    int onepdm_grid_dump;  // dump the onepdm on a grid to a dx file
+    bool onepdm;            /* produce ONLY the onepdm for properties */
+    bool onepdm_grid_dump;  // dump the onepdm on a grid to a dx file
     int relax_opdm;
     int use_zeta;
     int calc_xi;
@@ -57,6 +57,11 @@ struct Params {
     int transition;
     int dertype;
     std::string wfn;
+    // TODO: Make meaning of variable invariant.
+    //       Initially, this variable means number of states, but later
+    //       it changes to number of excited states. This inconsistency
+    //       should be fixed. Resolving the problem is not safe until the
+    //       ccdensity module is documented.
     int nstates;
     int prop_sym;
     int prop_root;
@@ -71,7 +76,6 @@ struct Params {
     int L_irr;
     double R0;
     double L0;
-    int ael;
     double cceom_energy;
     double overlap1;   /* <L1|R1> */
     double overlap2;   /* <L2|R2> */
@@ -116,9 +120,14 @@ struct RHO_Params {
     char opdm_b_lbl[32];
 };
 
+// TODO: Refactor TD_Params and XTD_Params into Root_Params and Transition_Params.
+// Map pairs of state identifiers to Transition_Params, and be able to grab the EOM
+// from Root_Params. All ex_* files that duplicate another file can be then made obsolete.
+
+// Describes both an excited state and the transition to it, from the ground state.
 struct TD_Params {
-    int irrep;
-    int root;
+    int irrep;           // Irrep index of the transition between states.
+    int root;            // Index of the target root within irrep, excluding the ground state.
     double R0;
     double cceom_energy;
     char L1A_lbl[32];
@@ -138,6 +147,7 @@ struct TD_Params {
     double einstein_b;
 };
 
+// Describes a transition between excited states.
 struct XTD_Params {
     int irrep1;
     int irrep2;

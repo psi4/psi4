@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -26,48 +26,32 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_angularmomentum_h_
-#define _psi_src_lib_libmints_angularmomentum_h_
+#pragma once
 
-#include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-#include <memory>
-PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
+#include "psi4/libmints/mcmurchiedavidson.h"
 
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
- *  \class DipoleInt
- *  \brief Computes dipole integrals.
+ *  \class AngularMomentumInt
+ *  \brief Computes angular momentum integrals.
  *
  * Use an IntegralFactory to create this object. */
-class AngularMomentumInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
-
-    //! Computes the dipole between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    //! Computes the dipole derivative between two gaussian shells.
-    //    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
-
+class AngularMomentumInt : public OneBodyAOInt, public mdintegrals::MDHelper {
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    AngularMomentumInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+    AngularMomentumInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                        int deriv = 0);
     //! Virtual destructor
     ~AngularMomentumInt() override;
 
-    //! Does the method provide first derivatives?
-    bool has_deriv1() override { return true; }
+    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
+
+    bool is_antisymmetric() const override { return true; }
 };
 
 }  // namespace psi
-
-#endif

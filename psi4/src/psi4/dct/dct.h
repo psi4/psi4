@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -288,8 +288,6 @@ class DCTSolver : public Wavefunction {
     bool orbitalsDone_;
     /// Controls convergence of the density cumulant updates
     bool cumulantDone_;
-    /// Controls convergence of the idempotent one-particle density
-    bool densityConverged_;
     /// Controls convergence of the DCT energy
     bool energyConverged_;
     /// Whether the user requested the DCT functional that is variationally orbitally-optimized
@@ -365,13 +363,13 @@ class DCTSolver : public Wavefunction {
     /// The number of virtual beta orbitals per irrep
     Dimension nbvirpi_;
     /// Alpha occupied MO offset
-    int* aocc_off_;
+    std::vector<int> aocc_off_;
     /// Alpha virtual MO offset
-    int* avir_off_;
+    std::vector<int> avir_off_;
     /// Beta occupied MO offset
-    int* bocc_off_;
+    std::vector<int> bocc_off_;
     /// Beta virtual MO offset
-    int* bvir_off_;
+    std::vector<int> bvir_off_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero

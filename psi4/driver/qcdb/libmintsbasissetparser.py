@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -118,9 +118,9 @@ class Gaussian94BasisSetParser(object):
         shell = re.compile(r'^\s*(\w+|L=\d+)\s*(\d+)\s*(-?\d+\.\d+)\s*$')  # Match beginning of contraction
         blank_line = re.compile(r'^\s*$')
         NUMBER = r'((?:[-+]?\d*\.\d+(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+\.\d*(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+))'
-        primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + '\s*$')  # Match s, p, d, f, g, ... functions
-        primitives2 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + '\s*$')  # match sp functions
-        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + r'\s+' + NUMBER + '\s*$')  # Match rpower, exponent, coefficient
+        primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s*$')  # Match s, p, d, f, g, ... functions
+        primitives2 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')  # match sp functions
+        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')  # Match rpower, exponent, coefficient
 
         # s, p and s, p, d can be grouped together in Pople-style basis sets
         sp = 'SP'
@@ -146,7 +146,7 @@ class Gaussian94BasisSetParser(object):
         gaussian_type = 'Pure'
 
         if self.force_puream_or_cartesian:
-            if self.forced_is_puream == False:
+            if not self.forced_is_puream:
                 gaussian_type = 'Cartesian'
 
         # Need a dummy center for the shell.

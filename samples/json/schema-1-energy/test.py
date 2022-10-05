@@ -1,4 +1,4 @@
-#! test QC_JSON Schema for energy
+#! test QCSchema for energy
 
 import numpy as np
 import psi4
@@ -8,8 +8,9 @@ import json
 json_data = {
   "schema_name": "qcschema_input",
   "schema_version": 1,
-  "return_output": True,
   "molecule": {
+    "schema_name": "qcschema_molecule",
+    "schema_version": 2,
     "geometry": [
       0.0,
       0.0,
@@ -80,19 +81,19 @@ expected_properties = {
   "ccsd_prt_pr_total_energy": expected_return_result,
 }
 
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
 with open("output.json", "w") as ofile:                                                    #TEST
-    json.dump(json_ret, ofile, indent=2)                                                   #TEST
+    json.dump(json_ret.json(), ofile, indent=2)                                                   #TEST
 
-psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
-psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
-psi4.compare_integers(True, "MAYER_INDICES" in json_ret["extras"]["qcvars"], "Mayer Indices Found")                           #TEST
+psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST
+psi4.compare_values(expected_return_result, json_ret.return_result, 5, "Return Value")  #TEST
+psi4.compare_integers(True, "MAYER INDICES" in json_ret.extras["qcvars"], "Mayer Indices Found")                           #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+    psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST
 
-assert "Density-fitted CCSD" in json_ret["raw_output"] #TEST
+assert "Density-fitted CCSD" in json_ret.stdout #TEST
 
 # Expected output with exact MP2
 expected_return_result = -76.2283674281634
@@ -122,18 +123,19 @@ json_data["model"] = {
   }
 json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
-json_data["return_output"] = True
 json_data["extras"] = {"current_qcvars_only": True}
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
-psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
-psi4.compare_integers(True, "MAYER INDICES" in json_ret["extras"]["qcvars"], "Mayer Indices Found")                           #TEST
+#print(json.dumps(json_ret.json(), indent=2))
+#import pprint
+#pprint.pprint(json_ret.dict(), width=200)
 
-# print(json.dumps(json_ret, indent=2))
+psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST
+psi4.compare_values(expected_return_result, json_ret.return_result, 5, "Return Value")  #TEST
+psi4.compare_integers(True, "MAYER INDICES" in json_ret.extras["qcvars"], "Mayer Indices Found")                           #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+    psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST
 
-assert "Ugur Bozkaya" in json_ret["raw_output"]
+assert "Ugur Bozkaya" in json_ret.stdout
 

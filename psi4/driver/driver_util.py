@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -27,101 +27,89 @@
 #
 
 import re
+import math
+from typing import Dict, Optional, Tuple, Union
 
 from psi4 import core
-from psi4.driver import qcdb
 from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
+from psi4.driver.p4util.exceptions import ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError
 from psi4.driver.procrouting import *
 
 
-def _method_exists(ptype, method_name):
-    r"""
-    Quick check to see if this method exists, if it does not exist we raise a convenient flag.
-    """
-    if method_name not in procedures[ptype].keys():
-        alternatives = ""
-        alt_method_name = p4util.text.find_approximate_string_matches(method_name,
-                                                                procedures[ptype].keys(), 2)
-        if len(alt_method_name) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
-        Cptype = ptype[0].upper() + ptype[1:]
-        raise ValidationError('%s method "%s" is not available.%s' % (Cptype, method_name, alternatives))
-
-
-def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec, verbose=1):
+def negotiate_convergence_criterion(dermode: Union[Tuple[str, str], Tuple[int, int]], method: str, return_optstash: bool = False):
     r"""
     This function will set local SCF and global energy convergence criterion
     to the defaults listed at:
     http://www.psicode.org/psi4manual/master/scf.html#convergence-and-
-    algorithm-defaults. SCF will be converged more tightly if a post-SCF
-    method is select (pscf_Ec, and pscf_Dc) else the looser (scf_Ec, and
-    scf_Dc convergence criterion will be used).
+    algorithm-defaults. SCF will be converged more tightly (pscf_Ec and pscf_Dc)
+    if a post-SCF method is selected. For a final SCF method, the looser
+    (scf_Ec and scf_Dc) convergence criterion will be used.
 
-    ptype -         Procedure type (energy, gradient, etc). Nearly always test on
+    dermode -       Tuple of target and means derivative level or ("prop", "prop"). E.g., analytic gradient
+                    is (1, 1); frequency by energies is (2, 0). Nearly always test on
                     procedures['energy'] since that's guaranteed to exist for a method.
-    method_name -   Name of the method
-    scf_Ec -        E convergence criterion for scf target method
+    method -        Name of the method
+    scf_Ec -        E convergence criterion for scf             target method
     pscf_Ec -       E convergence criterion for scf of post-scf target method
-    scf_Dc -        D convergence criterion for scf target method
+    scf_Dc -        D convergence criterion for scf             target method
     pscf_Dc -       D convergence criterion for scf of post-scf target method
-    gen_Ec -        E convergence criterion for post-scf target method
+    gen_Ec -        E convergence criterion for        post-scf target method
 
     """
-    optstash = p4util.OptionsState(
-        ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'],
-        ['E_CONVERGENCE'])
 
-    # Kind of want to move this out of here
-    _method_exists(ptype, method_name)
+    scf_Ec, pscf_Ec, scf_Dc, pscf_Dc, gen_Ec = {
+        (0, 0): [6, 8, 6, 8, 6],
+        (1, 0): [8, 10, 8, 10, 8],
+        (2, 0): [10, 11, 10, 11, 10],
+        (1, 1): [8, 10, 8, 10, 8],
+        (2, 1): [8, 10, 8, 10, 8],
+        (2, 2): [8, 10, 8, 10, 8],
+        ("prop", "prop"): [6, 10, 6, 10, 8]
+    }[dermode]
 
-    if verbose >= 2:
-        print('      Setting convergence', end=' ')
     # Set method-dependent scf convergence criteria, check against energy routines
-    if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][method_name] in [proc.run_scf, proc.run_tdscf_energy]:
-            core.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
-            if verbose >= 2:
-                print(scf_Ec, end=' ')
-        else:
-            core.set_local_option('SCF', 'E_CONVERGENCE', pscf_Ec)
-            if verbose >= 2:
-                print(pscf_Ec, end=' ')
-    else:
-        if verbose >= 2:
-            print('CUSTOM', core.get_option('SCF', 'E_CONVERGENCE'), end=' ')
-
-    if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][method_name] in [proc.run_scf, proc.run_tdscf_energy]:
-            core.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
-            if verbose >= 2:
-                print(scf_Dc, end=' ')
-        else:
-            core.set_local_option('SCF', 'D_CONVERGENCE', pscf_Dc)
-            if verbose >= 2:
-                print(pscf_Dc, end=' ')
-    else:
-        if verbose >= 2:
-            print('CUSTOM', core.get_option('SCF', 'D_CONVERGENCE'), end=' ')
-
     # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not core.has_global_option_changed('E_CONVERGENCE'):
-        if procedures['energy'][method_name] != proc.run_scf:
-            core.set_global_option('E_CONVERGENCE', gen_Ec)
-            if verbose >= 2:
-                print(gen_Ec, end=' ')
+    cc = {}
+    if procedures['energy'][method] in [proc.run_scf, proc.run_tdscf_energy]:
+        if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
+            cc['SCF__E_CONVERGENCE'] = math.pow(10, -scf_Ec)
+        if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
+            cc['SCF__D_CONVERGENCE'] = math.pow(10, -scf_Dc)
     else:
-        if procedures['energy'][method_name] != proc.run_scf:
-            if verbose >= 2:
-                print('CUSTOM', core.get_global_option('E_CONVERGENCE'), end=' ')
+        if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
+            cc['SCF__E_CONVERGENCE'] = math.pow(10, -pscf_Ec)
+        if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
+            cc['SCF__D_CONVERGENCE'] = math.pow(10, -pscf_Dc)
+        if not core.has_global_option_changed('E_CONVERGENCE'):
+            cc['E_CONVERGENCE'] = math.pow(10, -gen_Ec)
 
-    if verbose >= 2:
-        print('')
-    return optstash
+    if return_optstash:
+        optstash = p4util.OptionsState(['SCF', 'E_CONVERGENCE'], ['SCF', 'D_CONVERGENCE'], ['E_CONVERGENCE'])
+        p4util.set_options(cc)
+        return optstash
+
+    else:
+        return cc
 
 
-def parse_arbitrary_order(name):
+def upgrade_interventions(method):
+    try:
+        lowermethod = method.lower()
+    except AttributeError as e:
+        if method.__name__ == 'cbs':
+            raise UpgradeHelper(method, repr(method.__name__), 1.6,
+                                ' Replace cbs or complete_basis_set function with cbs string.')
+        elif method.__name__ in ['sherrill_gold_standard', 'allen_focal_point']:
+            raise UpgradeHelper(
+                method.__name__, '"' + method.__name__ + '"', 1.6,
+                f' Replace function `energy({method.__name__})` with string `energy("{method.__name__}")` or similar.')
+        else:
+            raise e
+
+    return lowermethod
+
+
+def parse_arbitrary_order(name: str) -> Tuple[str, Union[str, int, None]]:
     r"""Function to parse name string into a method family like CI or MRCC and specific
     level information like 4 for CISDTQ or MRCCSDTQ.
 
@@ -197,25 +185,25 @@ def parse_arbitrary_order(name):
         return name, None
 
 
-def parse_cotton_irreps(irrep, point_group):
+def parse_cotton_irreps(irrep: Union[str, int], point_group: str) -> int:
     """Return validated Cotton ordering index of `irrep` within `point_group`.
 
     Parameters
     ----------
-    irrep : str or int
+    irrep
         Irreducible representation. Either label (case-insensitive) or 1-based index (int or str).
-    point_group : str
+    point_group
         Molecular point group label (case-insensitive).
 
     Returns
     -------
     int
-        1-based index for `irrep` within `point_group` in Cotton ordering.
+        1-based index for **irrep** within **point_group** in Cotton ordering.
 
     Raises
     ------
     ValidationError
-        If `irrep` out-of-bounds or invalid or if `point_group` doesn't exist.
+        If **irrep** out-of-bounds or invalid or if **point_group** doesn't exist.
 
     """
     cotton = {
@@ -242,45 +230,102 @@ def parse_cotton_irreps(irrep, point_group):
     raise ValidationError(f"""Irrep '{irrep}' not valid for point group '{point_group}'.""")
 
 
-def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_strategy=False, proc=None):
+def negotiate_derivative_type(
+    target_dertype: str,
+    method: str,
+    user_dertype: Optional[int],
+    verbose: int = 1,
+    proc: Optional[Dict] = None,
+) -> Union[Tuple[int, int], Tuple[str, str]]:
     r"""Find the best derivative level (0, 1, 2) and strategy (analytic, finite difference)
-    for `method` to achieve `ptype` within constraints of `user_dertype`.
+    for `method` to achieve `target_dertype` within constraints of `user_dertype`.
 
-    Procedures
+    Parameters
     ----------
-    ptype : {'energy', 'gradient', 'hessian'}
+    target_dertype: {"energy", "gradient", "hessian", "properties"}
         Type of calculation targeted by driver.
-    method : str
+    method
         Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
-    user_dertype : int or None
-        User input on which derivative level should be employed to achieve `ptype`.
-    verbose : int, optional
+    user_dertype
+        User input on which derivative level should be employed to achieve `target_dertype`.
+    verbose
         Control amount of output printing.
-    return_strategy : bool, optional
-        See below. Form in which to return negotiated dertype.
-    proc : dict, optional
+    proc
         For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
+    managed_keywords
+        NYI Keywords that influence managed methods.
 
     Returns
     -------
-    int : {0, 1, 2}
-        When `return_strategy=False`, highest accessible derivative level
-        for `method` to achieve `ptype` within constraints of `user_dertype`.
-    str : {'analytic', '1_0', '2_1', '2_0'}
-        When `return_strategy=True`, highest accessible derivative strategy
-        for `method` to achieve `ptype` within constraints of `user_dertype`.
+    tuple : (int, int)
+        "second" is highest accessible derivative level for `method` to achieve
+        `target_dertype` "first" within constraints of `user_dertype`. When
+        "first" == "second", analytic is the best strategy, otherwise finite
+        difference of target "first" by means of "second".
 
     Raises
     ------
     ValidationError
-        When input validation fails. When `user_dertype` exceeds `ptype`.
+        When input validation fails. When `user_dertype` exceeds `target_dertype`.
     MissingMethodError
         When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
 
     """
-    egh = ['energy', 'gradient', 'hessian']
+    if target_dertype == "properties":
+        if isinstance(method, list):
+            # untested
+            analytic = [highest_analytic_properties_available(mtd, proc) for mtd in method]
+            if verbose > 1:
+                print(method, analytic, '->', min(analytic, key=lambda t: t[0]))
+            highest_analytic_dertype, proc_messages = min(analytic, key=lambda t: t[0])
+        else:
+            highest_analytic_dertype, proc_messages = highest_analytic_properties_available(method, proc)
 
-    def alternative_methods_message(method_name, dertype):
+        return (target_dertype[:4], highest_analytic_dertype)  # i.e., ("prop", "prop")
+
+    else:
+        if isinstance(method, list):
+            analytic = [highest_analytic_derivative_available(mtd, proc) for mtd in method]
+            if verbose > 1:
+                print(method, analytic, '->', min(analytic, key=lambda t: t[0]))
+            highest_analytic_dertype, proc_messages = min(analytic, key=lambda t: t[0])
+        else:
+            highest_analytic_dertype, proc_messages = highest_analytic_derivative_available(method, proc)
+
+        return sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, proc_messages, verbose)
+
+
+def highest_analytic_derivative_available(method: str,
+                                          proc: Optional[Dict] = None,
+                                          managed_keywords: Optional[Dict] = None) -> Tuple[int, Dict[int,str]]:
+    """Find the highest dertype program can provide for method, as encoded in procedures and managed methods.
+
+    Managed methods return finer grain "is available" info. For example, "is analytic ROHF DF HF gradient available?"
+    from managed method, not just "is HF gradient available?" from procedures.
+
+    Parameters
+    ----------
+    method
+        Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
+    proc
+        For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
+    managed_keywords
+        Keywords that influence managed methods.
+
+    Returns
+    -------
+    int
+        Highest available analytic derivative for `method`.
+    dict
+        Detailed error messages to be passed along. Keys are dertype.
+
+    Raises
+    ------
+    MissingMethodError
+        When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
+
+    """
+    def alternative_methods_message(method_name, dertype, proc):
         alt_method_name = p4util.text.find_approximate_string_matches(method_name, proc['energy'].keys(), 2)
 
         alternatives = ''
@@ -289,104 +334,207 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
 
         return f"""Derivative method ({method_name}) and derivative level ({dertype}) are not available.{alternatives}"""
 
-    # Validate input dertypes
-    if ptype not in egh:
-        raise ValidationError("_find_derivative_type: ptype must either be gradient or hessian.")
-
-    if not (user_dertype is None or isinstance(user_dertype, int)):
-        raise ValidationError(f"user_dertype ({user_dertype}) should only be None or int!")
+    if managed_keywords is None:
+        managed_keywords = {}
 
     if proc is None:
         proc = procedures
 
     dertype = "(auto)"
+    proc_messages = {}
 
-    # Find the highest dertype program can provide for method, as encoded in procedures and managed methods
-    #   Managed methods return finer grain "is available" info. For example, "is analytic ROHF DF HF gradient available?"
-    #   from managed method, not just "is HF gradient available?" from procedures.
     if method in proc['hessian']:
         dertype = 2
         if proc['hessian'][method].__name__.startswith('select_'):
             try:
-                proc['hessian'][method](method, probe=True)
-            except ManagedMethodError:
+                proc["hessian"][method](method, probe=True, **managed_keywords)
+            except ManagedMethodError as e:
+                proc_messages[2] = e.message
                 dertype = 1
                 if proc['gradient'][method].__name__.startswith('select_'):
                     try:
-                        proc['gradient'][method](method, probe=True)
-                    except ManagedMethodError:
+                        proc["gradient"][method](method, probe=True, **managed_keywords)
+                    except ManagedMethodError as e:
+                        proc_messages[1] = e.message
                         dertype = 0
                         if proc['energy'][method].__name__.startswith('select_'):
                             try:
-                                proc['energy'][method](method, probe=True)
+                                proc["energy"][method](method, probe=True, **managed_keywords)
                             except ManagedMethodError:
-                                raise MissingMethodError(alternative_methods_message(method, 'any'))
+                                raise MissingMethodError(alternative_methods_message(method, "any", proc))
 
     elif method in proc['gradient']:
         dertype = 1
         if proc['gradient'][method].__name__.startswith('select_'):
             try:
-                proc['gradient'][method](method, probe=True)
-            except ManagedMethodError:
+                proc["gradient"][method](method, probe=True, **managed_keywords)
+            except ManagedMethodError as e:
+                proc_messages[1] = e.message
                 dertype = 0
                 if proc['energy'][method].__name__.startswith('select_'):
                     try:
-                        proc['energy'][method](method, probe=True)
+                        proc["energy"][method](method, probe=True, **managed_keywords)
                     except ManagedMethodError:
-                        raise MissingMethodError(alternative_methods_message(method, 'any'))
+                        raise MissingMethodError(alternative_methods_message(method, "any", proc))
 
     elif method in proc['energy']:
         dertype = 0
         if proc['energy'][method].__name__.startswith('select_'):
             try:
-                proc['energy'][method](method, probe=True)
+                proc["energy"][method](method, probe=True, **managed_keywords)
             except ManagedMethodError:
-                raise MissingMethodError(alternative_methods_message(method, 'any'))
+                raise MissingMethodError(alternative_methods_message(method, "any", proc))
 
-    highest_der_program_can_provide = dertype
+    if dertype == '(auto)':
+        raise MissingMethodError(alternative_methods_message(method, "any", proc))
+
+    return dertype, proc_messages
+
+
+def highest_analytic_properties_available(method: str,
+                                          proc: Optional[Dict] = None,
+                                          managed_keywords: Optional[Dict] = None) -> Tuple[str, Dict[int,str]]:
+    """Find whether propgram can provide analytic properties for method, as encoded in procedures and managed methods.
+
+    Managed methods return finer grain "is available" info. For example, "is analytic ROHF DF HF gradient available?"
+    from managed method, not just "is HF gradient available?" from procedures.
+
+    Parameters
+    ----------
+    method
+        Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
+    proc
+        For testing only! Procedures table to look up `method`. Default is psi4.driver.procedures .
+    managed_keywords
+        Keywords that influence managed methods.
+
+    Returns
+    -------
+    str
+        "prop" if analytic properties available for `method`.
+    dict
+        Detailed error messages to be passed along. Keys are dertype.
+
+    Raises
+    ------
+    MissingMethodError
+        When `method` is unavailable at all. When `user_dertype` exceeds what available for `method`.
+
+    """
+    def alternative_methods_message(method_name, dertype, proc):
+        alt_method_name = p4util.text.find_approximate_string_matches(method_name, proc['energy'].keys(), 2)
+
+        alternatives = ''
+        if len(alt_method_name) > 0:
+            alternatives = f""" Did you mean? {' '.join(alt_method_name)}"""
+
+        return f"""Derivative method ({method_name}) and derivative level ({dertype}) are not available.{alternatives}"""
+
+    if managed_keywords is None:
+        managed_keywords = {}
+
+    if proc is None:
+        proc = procedures
+
+    dertype = "(auto)"
+    proc_messages = {}
+
+    if method in proc["properties"]:
+        dertype = "prop"
+        if proc["properties"][method].__name__.startswith('select_'):
+            try:
+                proc["properties"][method](method, probe=True, **managed_keywords)
+            except ManagedMethodError:
+                raise MissingMethodError(alternative_methods_message(method, "any", proc))
+
+    if dertype == '(auto)':
+        raise MissingMethodError(alternative_methods_message(method, "any", proc))
+
+    return dertype, proc_messages
+
+
+def sort_derivative_type(
+    target_dertype,
+    highest_analytic_dertype: int,
+    user_dertype: Union[int, None],
+    proc_messages: Dict[int, str],
+    verbose: int = 1,
+) -> Tuple[int, int]:
+    r"""Find the best derivative level (0, 1, 2) and strategy (analytic, finite difference)
+    to achieve `target_dertype` within constraints of `user_dertype` and `highest_analytic_dertype`.
+
+    Parameters
+    ----------
+    target_dertype: {'energy', 'gradient', 'hessian'}
+        Type of calculation targeted by driver.
+    highest_analytic_dertype
+        Highest derivative level program can provide analytically.
+    user_dertype
+        User input on which derivative level should be employed to achieve `target_dertype`.
+    proc_messages
+        Dertype-indexed detailed message to be appended to user error.
+    verbose
+        Control amount of output printing.
+
+    Returns
+    -------
+    tuple : (int, int)
+        "second" is highest accessible derivative level `highest_analytic_dertype` to achieve
+        `target_dertype` "first" within constraints of `user_dertype`. When
+        "first" == "second", analytic is the best strategy, otherwise finite
+        difference of target "first" by means of "second".
+
+    Raises
+    ------
+    ValidationError
+        When input validation fails. When `user_dertype` exceeds `target_dertype`.
+    MissingMethodError
+        When `user_dertype` exceeds what available for `method`.
+
+    """
+    egh = ['energy', 'gradient', 'hessian']
+
+    # Validate input dertypes
+    if target_dertype not in egh:
+        raise ValidationError(f"target_dertype ({target_dertype}) must be in {egh}.")
+
+    if not (user_dertype is None or isinstance(user_dertype, int)):
+        raise ValidationError(f"user_dertype ({user_dertype}) should only be None or int!")
+
+    dertype = highest_analytic_dertype
 
     # Negotiations. In particular:
     # * don't return higher derivative than targeted by driver
     # * don't return higher derivative than spec'd by user. that is, user can downgrade derivative
     # * alert user to conflict between driver and user_dertype
 
-    if user_dertype is not None and user_dertype > egh.index(ptype):
-        raise ValidationError(f'User dertype ({user_dertype}) excessive for target calculation ({ptype})')
+    if user_dertype is not None and user_dertype > egh.index(target_dertype):
+        raise ValidationError(f'User dertype ({user_dertype}) excessive for target calculation ({target_dertype})')
 
-    if dertype != "(auto)" and egh.index(ptype) < dertype:
-        dertype = egh.index(ptype)
+    if egh.index(target_dertype) < dertype:
+        dertype = egh.index(target_dertype)
 
-    if dertype != "(auto)" and user_dertype is not None:
+    if user_dertype is not None:
         if user_dertype <= dertype:
             dertype = user_dertype
         else:
-            raise MissingMethodError(alternative_methods_message(method, user_dertype))
+            msg = f"""Derivative level requested ({user_dertype}) exceeds that available ({highest_analytic_dertype})."""
+            if proc_messages.get(user_dertype, False):
+                msg += f""" Details: {proc_messages[user_dertype]}."""
+            raise MissingMethodError(msg)
+
+    # hack section
+    if core.get_global_option('PCM') and dertype != 0:
+        core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
+        dertype = 0
+
+    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+        core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
+        dertype = 0
 
     if verbose > 1:
         print(
-            f'Dertivative negotiations: target/driver={egh.index(ptype)}, best_available={highest_der_program_can_provide}, user_dertype={user_dertype}, FINAL={dertype}'
+            f'Derivative negotiations: target/driver={egh.index(target_dertype)}, best_available={highest_analytic_dertype}, user_dertype={user_dertype} -> FINAL={dertype}'
         )
 
-    #if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
-    #    raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
-
-    #if (core.get_global_option('PCM')) and (dertype != 0):
-    #    core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
-    #    dertype = 0
-
-    # Summary validation (superfluous)
-    if dertype == '(auto)' or method not in proc[['energy', 'gradient', 'hessian'][dertype]]:
-        raise MissingMethodError(alternative_methods_message(method, dertype))
-
-    if return_strategy:
-        if ptype == egh[dertype]:
-            return 'analytic'
-        elif ptype == 'gradient' and egh[dertype] == 'energy':
-            return '1_0'
-        elif ptype == 'hessian' and egh[dertype] == 'gradient':
-            return '2_1'
-        elif ptype == 'hessian' and egh[dertype] == 'energy':
-            return '2_0'
-
-    else:
-        return dertype
+    return (egh.index(target_dertype), dertype)

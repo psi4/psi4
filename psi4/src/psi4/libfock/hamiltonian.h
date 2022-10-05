@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -198,48 +198,6 @@ class MatrixUHamiltonian : public UHamiltonian {
                  std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b) override;
 };
 
-class CISRHamiltonian : public RHamiltonian {
-   protected:
-    bool singlet_;
-    SharedMatrix Caocc_;
-    SharedMatrix Cavir_;
-    std::shared_ptr<Vector> eps_aocc_;
-    std::shared_ptr<Vector> eps_avir_;
-
-   public:
-    CISRHamiltonian(std::shared_ptr<JK> jk, SharedMatrix Caocc, SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc,
-                    std::shared_ptr<Vector> eps_avir, std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
-    ~CISRHamiltonian() override;
-
-    void print_header() const override;
-    std::shared_ptr<Vector> diagonal() override;
-    void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b) override;
-
-    virtual std::vector<SharedMatrix> unpack(const std::shared_ptr<Vector>& x);
-
-    void set_singlet(bool singlet) { singlet_ = singlet; }
-};
-
-class TDHFRHamiltonian : public RHamiltonian {
-   protected:
-    bool singlet_;
-    SharedMatrix Caocc_;
-    SharedMatrix Cavir_;
-    std::shared_ptr<Vector> eps_aocc_;
-    std::shared_ptr<Vector> eps_avir_;
-
-   public:
-    TDHFRHamiltonian(std::shared_ptr<JK> jk, SharedMatrix Caocc, SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc,
-                     std::shared_ptr<Vector> eps_avir, std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
-    ~TDHFRHamiltonian() override;
-
-    void print_header() const override;
-    std::shared_ptr<Vector> diagonal() override;
-    void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b) override;
-
-    void set_singlet(bool singlet) { singlet_ = singlet; }
-};
-
 class CPHFRHamiltonian : public RHamiltonian {
    protected:
     SharedMatrix Caocc_;
@@ -258,45 +216,6 @@ class CPHFRHamiltonian : public RHamiltonian {
 
     virtual std::map<std::string, SharedVector> pack(const std::map<std::string, std::shared_ptr<Matrix> >& b);
     virtual std::vector<SharedMatrix> unpack(const std::vector<SharedVector>& x);
-};
-
-class TDARHamiltonian : public CISRHamiltonian {
-   protected:
-    SharedMatrix Cocc_;
-
-   public:
-    TDARHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v, SharedMatrix Cocc, SharedMatrix Caocc,
-                    SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc, std::shared_ptr<Vector> eps_avir);
-    ~TDARHamiltonian() override;
-
-    void print_header() const override;
-    void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b) override;
-};
-
-class TDDFTRHamiltonian : public TDHFRHamiltonian {
-   protected:
-    SharedMatrix Cocc_;
-
-   public:
-    TDDFTRHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v, SharedMatrix Cocc, SharedMatrix Caocc,
-                      SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc, std::shared_ptr<Vector> eps_avir);
-    ~TDDFTRHamiltonian() override;
-
-    void print_header() const override;
-    void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b) override;
-};
-
-class CPKSRHamiltonian : public CPHFRHamiltonian {
-   protected:
-    SharedMatrix Cocc_;
-
-   public:
-    CPKSRHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v, SharedMatrix Cocc, SharedMatrix Caocc,
-                     SharedMatrix Cavir, std::shared_ptr<Vector> eps_aocc, std::shared_ptr<Vector> eps_avir);
-    ~CPKSRHamiltonian() override;
-
-    void print_header() const override;
-    void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b) override;
 };
 
 // "Hamiltonian" for UHF stability analysis.

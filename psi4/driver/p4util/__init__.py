@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,17 +26,23 @@
 # @END LICENSE
 #
 
-from .optproc import *
-from .text import *
-from .procutil import *
-from .util import *
-from .testing import *
+"""
+Miscellaneous tools for driver and users.
+"""
+
 from .exceptions import *
+from .fchk import *
+from .fcidump import *
 from .inpsight import *
 from .numpy_helper import *
+from .optproc import *
 from .p4regex import *
+from .procutil import *
+from .prop_util import *
 from .python_helpers import *
 from .solvers import *
-from .prop_util import *
-from .spectrum import spectrum
-from . import writer
+from .spectrum import *
+from .testing import *
+from .text import *
+from .util import *
+from .writer import *

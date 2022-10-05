@@ -2,30 +2,33 @@ name: test
 channels:
   - conda-forge
 dependencies:
-  - blas=*=mkl  # not needed but an example of disuading solver from openblas and old psi
+  - blas=*=mkl
   - intel-openmp!=2019.5
     # build
-  - cmake >=3.15
+  - cmake>=3.15
   - doxygen
   - gxx_linux-64
     # core
   - eigen
-  - mpfr
   - networkx
-  - psi4/label/dev::pybind11-headers
+  - pybind11
   - python=3.8.*
     # qc
   - psi4/label/dev::gau2grid
   - psi4/label/dev::libint2
   - psi4/label/dev::libxc
+  - psi4/label/dev::libecpint
   - qcengine
+  - qcportal=0.15.8
     # docs
   - ipykernel
   - jupyter_client
   - nbsphinx
   - python-graphviz
-  - sphinx >=3.5
+  - sphinx
   - sphinx-autodoc-typehints
   - sphinx-automodapi
   - psi4/label/dev::sphinx-psi-theme
+  - jinja2<3.0
+  - autodoc-pydantic
 

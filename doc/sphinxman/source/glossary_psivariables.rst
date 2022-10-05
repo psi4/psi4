@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -68,28 +68,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the averaged coupled-pair functional level of theory, (3,).
 
-.. psivar:: ACPF DIPOLE X
-   ACPF DIPOLE Y
-   ACPF DIPOLE Z
-
-   The three components of the dipole [Debye] for the
-   averaged coupled-pair functional level of theory.
-   Deprecated in favor of :psivar:`ACPF DIPOLE`.
-
 .. psivar:: ACPF QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the averaged coupled-pair functional level of theory, (3, 3).
-
-.. psivar:: ACPF QUADRUPOLE XX
-   ACPF QUADRUPOLE XY
-   ACPF QUADRUPOLE XZ
-   ACPF QUADRUPOLE YY
-   ACPF QUADRUPOLE YZ
-   ACPF QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the
-   averaged coupled-pair functional level of theory.
-   Deprecated in favor of :psivar:`ACPF QUADRUPOLE`.
 
 .. psivar:: ACPF TOTAL ENERGY
    ACPF CORRELATION ENERGY
@@ -97,32 +78,167 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the averaged coupled-pair functional level of theory.
 
+.. psivar:: ADC ROOT 0 -> ROOT n EXCITATION ENERGY
+   TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY
+
+   The excitation energy [Eh} from ground state to root *n*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY
+
+   The excitation energy [Eh] from the ground state (which is of irrep *h*)
+   to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY
+   TD-fctl ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY
+
+   The excitation energy [Eh] from the ground state (which is of irrep *h*)
+   to root *n* (which is of irrep *i*).
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION
+
+   The excitation energy [Eh] from the ground state to root *n*, and the
+   transition is of irrep *h*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+   TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+
+   The electric transition dipole moment [e a0] in length gauge, for the transition
+   from the ground state to root *n*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+
+   The electric transition dipole moment [e a0] in length gauge, for the transition
+   from the ground state, which is of irrep *h*, to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
+
+   The electric transition dipole moment [e a0] in length gauge, for the transition
+   from the ground state, which is of irrep *h*, to root *n*, which is of irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
+
+   The electric transition dipole moment [e a0] in length gauge, for the transition
+   from the ground state to root *n*, and the transition is of *h* symmetry.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN)
+   CCname ROOT m -> ROOT n OSCILLATOR STRENGTH (LEN)
+   TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN)
+
+   The length-gauge oscillator strength of the transition from root *m* to root *n*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)
+   CCname ROOT m (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)
+
+   The length-gauge oscillator strength of the transition from root *m* within irrep *h*
+   to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)
+   CCname ROOT m (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)
+
+   The length-gauge oscillator strength of the transition from root *m* to root *n*,
+   which are in irreps *h* and *i*, respectively..
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION
+   CCname ROOT m -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION
+
+   The length-gauge oscillator strength of the transition from root *m* to root *n*,
+   and the transition is of irrep *h*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL)
+   TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL)
+
+   The velocity-gauge oscillator strength of the transition from the ground state to root *n*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (VEL)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (VEL)
+
+   The velocity-gauge oscillator strength of the transition from the ground state within irrep *h*
+   to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (VEL)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (VEL)
+
+   The velocity-gauge oscillator strength of the transition from the ground state to root *n*,
+   which are in irreps *h* and *i*, respectively..
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL) - h TRANSITION
+
+   The velocity-gauge oscillator strength of the transition from the ground state to root *n*,
+   and the transition is of irrep *h*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL)
+   CCname ROOT m -> ROOT n ROTATORY STRENGTH (VEL)
+   TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL)
+
+   The velocity-gauge oscillator strength of the transition from root *m* to root *n*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)
+   CCname ROOT m (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)
+
+   The velocity-gauge oscillator strength of the transition from root *m* within irrep *h*
+   to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)
+   CCname ROOT m (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)
+
+   The velocity-gauge oscillator strength of the transition from root *m* to root *n*,
+   which are in irreps *h* and *i*, respectively..
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION
+   CCname ROOT m -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION
+
+   The velocity-gauge oscillator strength of the transition from root *m* to root *n*,
+   and the transition is of irrep *h*.
+   DFT functional labeled if canonical.
+
+.. psivar:: ADC ROOT n TOTAL ENERGY - h TRANSITION
+
+   The total ADC energy of root *n* within irrep *h*. This variable is only defined for Psi's
+   built-in ADC and will be removed for 1.7.
+
+.. psivar:: ADC ROOT 0 -> ROOT n CORRELATION ENERGY - h TRANSITION
+
+   The correlation energy contribution to the excitation energy from the ground state to
+   root *n* within irrep *h*. This variable is only defined for Psi's built-in ADC and will be removed for 1.7.
+
 .. psivar:: AQCC DIPOLE
 
    Dipole array [e a0] for the averaged quadratic coupled-cluster level of theory, (3,).
 
-.. psivar:: AQCC DIPOLE X
-   AQCC DIPOLE Y
-   AQCC DIPOLE Z
-
-   The three components of the dipole [Debye] for the
-   averaged quadratic coupled-cluster level of theory.
-   Deprecated in favor of :psivar:`AQCC DIPOLE`.
-
 .. psivar:: AQCC QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the averaged quadratic coupled-cluster level of theory, (3, 3).
-
-.. psivar:: AQCC QUADRUPOLE XX
-   AQCC QUADRUPOLE XY
-   AQCC QUADRUPOLE XZ
-   AQCC QUADRUPOLE YY
-   AQCC QUADRUPOLE YZ
-   AQCC QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the
-   averaged quadratic coupled-cluster level of theory.
-   Deprecated in favor of :psivar:`AQCC QUADRUPOLE`.
 
 .. psivar:: AQCC TOTAL ENERGY
    AQCC CORRELATION ENERGY
@@ -133,6 +249,14 @@ PSI Variables by Alpha
 
    Value 1 (0) when the Brueckner orbitals have (have not) converged.
 
+.. psivar:: CBS NUMBER
+   NBODY NUMBER
+   FINDIF NUMBER
+
+   Number of tasks [] the named procedure performs. These are immediate
+   tasks, so if procedures are nested, the total number of tasks is
+   the product.
+
 .. psivar:: CBS TOTAL ENERGY
    CBS CORRELATION ENERGY
    CBS REFERENCE ENERGY
@@ -141,39 +265,152 @@ PSI Variables by Alpha
    energy [Eh] and correlation correction components [Eh] for the compound
    method requested through cbs().
 
-.. psivar:: CC ROOT n DIPOLE
+.. psivar:: CCname ROOT n TOTAL ENERGY
+   TD-fctl ROOT n TOTAL ENERGY
 
-   Dipole array [e a0] for the requested coupled cluster level of theory and root *n* (number starts at GS = 0), (3,).
+   The total electronic energy [Eh] for the requested theory and root *n* (*n* starts at 0).
+   DFT functional labeled if canonical.
 
-.. psivar:: CC ROOT n DIPOLE X
-   CC ROOT n DIPOLE Y
-   CC ROOT n DIPOLE Z
+.. psivar:: CCname ROOT n (IN h) TOTAL ENERGY
+   TD-fctl ROOT n (IN h) TOTAL ENERGY
 
-   The three components of the dipole [Debye] for the requested
-   coupled cluster level of theory and root *n* (number starts at GS = 0).
-   Deprecated in favor of :psivar:`CC ROOT n DIPOLE`.
+   The total electronic energy [Eh] for the requested theory and root *n* within irrep *h* (*n* starts at 0).
+   DFT functional labeled if canonical.
 
-.. psivar:: CC ROOT n QUADRUPOLE
+.. psivar:: CCname ROOT n (h) TOTAL ENERGY
+   TD-fctl ROOT n (h) TOTAL ENERGY
 
-   Redundant quadrupole array [e a0^2] for the requested coupled cluster level of theory and root *n* (number starts at GS = 0), (3, 3).
+   The total electronic energy [Eh] for the requested theory and root *n*, which is of irrep *h* (*n* starts at 0).
+   DFT functional labeled if canonical.
 
-.. psivar:: CC ROOT n QUADRUPOLE XX
-   CC ROOT n QUADRUPOLE XY
-   CC ROOT n QUADRUPOLE XZ
-   CC ROOT n QUADRUPOLE YY
-   CC ROOT n QUADRUPOLE YZ
-   CC ROOT n QUADRUPOLE ZZ
+.. psivar:: CCname ROOT n TOTAL ENERGY - h TRANSITION
+   TD-fctl ROOT n TOTAL ENERGY - h TRANSITION
 
-   The six components of the quadrupole [Debye Ang] for the requested
-   coupled cluster level of theory and root *n* (numbering starts at GS = 0).
-   Deprecated in favor of :psivar:`CC ROOT n QUADRUPOLE`.
+   The total electronic energy [Eh] for the requested theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0).
 
-.. psivar:: CC ROOT n TOTAL ENERGY
-   CC ROOT n CORRELATION ENERGY
+.. psivar:: CCname ROOT n CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
-   for the requested coupled cluster level of theory and root
-   *n* (numbering starts at GS = 0).
+   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n* (*n* starts at 0).
+   DFT functional labeled if canonical.
+
+.. psivar:: CCname ROOT n (IN h) CORRELATION ENERGY
+
+   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n* within irrep *h* (*n* starts at 0).
+
+.. psivar:: CCname ROOT n (h) CORRELATION ENERGY
+
+   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n*, which is of irrep *h* (*n* starts at 0).
+
+.. psivar:: CCname ROOT n CORRELATION ENERGY - h TRANSITION
+
+   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0).
+
+.. psivar:: CCname ROOT n DIPOLE
+
+   Dipole array [e a0] for the requested coupled cluster level of theory and root *n* (*n* starts at 0), (3,).
+
+.. psivar:: CCname ROOT n (IN h) DIPOLE
+
+   Dipole array [e a0] for the requested coupled cluster level of theory and root *n* within irrep *h* (*n* starts at 0), (3,).
+
+.. psivar:: CCname ROOT n (h) DIPOLE
+
+   Dipole array [e a0] for the requested coupled cluster level of theory and root *n*, which is of irrep *h* (*n* starts at 0), (3,).
+
+.. psivar:: CCname ROOT n DIPOLE - h TRANSITION
+
+   Dipole array [e a0] for the requested coupled cluster level of theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0), (3,).
+
+.. psivar:: CCname ROOT n QUADRUPOLE
+
+   Redundant quadrupole array [e a0^2] for the requested coupled cluster level of theory and root *n* (*n* starts at 0), (3,3).
+
+.. psivar:: CCname ROOT n (IN h) QUADRUPOLE
+
+   Redundant quadrupole array [e a0^2] for the requested coupled cluster level of theory and root *n* within irrep *h* (*n* starts at 0), (3,3).
+
+.. psivar:: CCname ROOT n (h) QUADRUPOLE
+
+   Redundant quadrupole array [e a0^2] for the requested coupled cluster level of theory and root *n*, which is of irrep *h* (*n* starts at 0), (3,3).
+
+.. psivar:: CCname ROOT n QUADRUPOLE - h TRANSITION
+
+   Redundant quadrupole array [e a0^2] for the requested coupled cluster level of theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0), (3,3).
+
+.. psivar:: CCname ROOT m -> ROOT n EINSTEIN A (LEN)
+
+   The Einstein A coefficient, the spontaneous emission 'probability.'
+   Units are in [1/s].
+   Describes the transition between roots *m* and *n*.
+
+.. psivar:: CCname ROOT m (IN h) -> ROOT n (IN i) EINSTEIN A (LEN)
+
+   The Einstein A coefficient, the spontaneous emission 'probability.'
+   Units are in [1/s].
+   Describes the transition between root *m* within irrep *h* and root *n* which irrep *i*.
+
+.. psivar:: CCname ROOT m (h) -> ROOT n (i) EINSTEIN A (LEN)
+
+   The Einstein A coefficient, the spontaneous emission 'probability.'
+   Units are in [1/s].
+   Describes the transition between roots *m* and *n*, which are in irreps *h* and *i*, respectively..
+
+.. psivar:: CCname ROOT m -> ROOT n EINSTEIN A (LEN) - h TRANSITION
+
+   The Einstein A coefficient, the spontaneous emission 'probability.'
+   Units are in [1/s].
+   Describes the irrep *h* transition between roots *m* and *n*.
+
+.. psivar:: CCname ROOT m -> ROOT n EINSTEIN B (LEN)
+
+   The Einstein B coefficient, the stimulated emission 'probability'
+   in terms of energy density. Units are in [m^3 / J / s^2].
+   Describes the transition between roots *m* and *n*.
+
+.. psivar:: CCname ROOT m (IN h) -> ROOT n (IN i) EINSTEIN B (LEN)
+
+   The Einstein B coefficient, the stimulated emission 'probability'
+   in terms of energy density. Units are in [m^3 / J / s^2].
+   Describes the transition between root *m* within irrep *h* and root *n* which irrep *i*.
+
+.. psivar:: CCname ROOT m (h) -> ROOT n (i) EINSTEIN B (LEN)
+
+   The Einstein B coefficient, the stimulated emission 'probability'
+   in terms of energy density. Units are in [m^3 / J / s^2].
+   Describes the transition between roots *m* and *n*, which are in irreps *h* and *i*, respectively..
+
+.. psivar:: CCname ROOT m -> ROOT n EINSTEIN B (LEN) - h TRANSITION
+
+   The Einstein B coefficient, the stimulated emission 'probability'
+   in terms of energy density. Units are in [m^3 / J / s^2].
+   Describes the irrep *h* transition between roots *m* and *n*.
+
+.. psivar:: CCname ROOT m -> ROOT n ROTATORY STRENGTH (LEN)
+   TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (LEN)
+
+   The length-gauge rotatory strength of the transition from root *m* to root *n*.
+   DFT functional labeled if canonical.
+
+.. psivar:: CCname ROOT m (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (LEN)
+   TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (LEN)
+
+   The length-gauge oscillator strength of the transition from root *m* within irrep *h*
+   to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: CCname ROOT m (h) -> ROOT n (i) ROTATORY STRENGTH (LEN)
+   TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (LEN)
+
+   The length-gauge oscillator strength of the transition from root *m* to root *n*,
+   which are in irreps *h* and *i*, respectively..
+   DFT functional labeled if canonical.
+
+.. psivar:: CCname ROOT m -> ROOT n ROTATORY STRENGTH (LEN) - h TRANSITION
+   TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (LEN) - h TRANSITION
+
+   The length-gauge oscillator strength of the transition from root *m* to root *n*,
+   and the transition is of irrep *h*.
+   DFT functional labeled if canonical.
 
 .. psivar:: CC TOTAL ENERGY
    CC CORRELATION ENERGY
@@ -202,43 +439,53 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the requested coupled cluster level of theory and root, (3,).
 
-.. psivar:: CC DIPOLE X
-   CC DIPOLE Y
-   CC DIPOLE Z
-
-   The three components of the dipole [Debye] for the requested
-   coupled cluster level of theory and root.
-   Deprecated in favor of :psivar:`CC DIPOLE`.
-
 .. psivar:: CC2 DIPOLE POLARIZABILITY @ xNM
+   CCSD DIPOLE POLARIZABILITY @ xNM
 
-   The dipole polarizability [au] calculated at the CC2 level
-   for a given (x) wavelength, (x) rounded to nearest integer.
+   The dipole polarizability in atomic units [(e^2 a0^2)/E_h] calculated at
+   the CC level for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CC2 DIPOLE POLARIZABILITY TENSOR @ xNM
+   CCSD DIPOLE POLARIZABILITY TENSOR @ xNM
+
+   The dipole polarizability tensor in atomic units [(e^2 a0^2)/E_h] calculated at
+   the CC level for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CC2 QUADRUPOLE POLARIZABILITY @ xNM
+   CCSD QUADRUPOLE POLARIZABILITY @ xNM
+
+   The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
+   the CC level for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CC2 QUADRUPOLE POLARIZABILITY TENSOR @ xNM
+   CCSD QUADRUPOLE POLARIZABILITY TENSOR @ xNM
+
+   The quadrupole polarizability in atomic units [(e^2 a0^3)/E_h] calculated at
+   the CC level for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 SPECIFIC ROTATION (LEN) @ xNM
+   CCSD SPECIFIC ROTATION (LEN) @ xNM
 
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC level in the
    length gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 SPECIFIC ROTATION (VEL) @ xNM
+   CCSD SPECIFIC ROTATION (VEL) @ xNM
 
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC level in the
    velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CC2 SPECIFIC ROTATION (MVG) @ xNM
+   CCSD SPECIFIC ROTATION (MVG) @ xNM
 
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
+   The specific rotation [deg/(dm (g/cm^3))] calculated at the CC level in the
    modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
-.. psivar:: CC QUADRUPOLE XX
-   CC QUADRUPOLE XY
-   CC QUADRUPOLE XZ
-   CC QUADRUPOLE YY
-   CC QUADRUPOLE YZ
-   CC QUADRUPOLE ZZ
+.. psivar:: CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
+   CCSD ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
 
-   The six components of the quadrupole [Debye Ang] for the requested
-   coupled cluster level of theory and root.
+   The origin-dependence of the CC specific rotation in deg/[dm (g/cm^3)]/bohr and the
+   length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CCD TOTAL ENERGY
    CCD CORRELATION ENERGY
@@ -246,10 +493,41 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the coupled-cluster doubles level of theory.
 
-.. psivar:: CCSD PAIR ENERGIES
+.. psivar:: CC ALPHA-ALPHA PAIR ENERGIES
+   CCSD ALPHA-ALPHA PAIR ENERGIES
+   CC2 ALPHA-ALPHA PAIR ENERGIES
+   CC3 ALPHA-ALPHA PAIR ENERGIES
+   MP2 ALPHA-ALPHA PAIR ENERGIES
 
-   The restricted-reference pair energies for coupled-cluster singles and doubles
-   level of theory. Size number of active doubly occupied orbitals, square.
+   Restricted-reference same-spin pair energies for coupled-cluster theories.
+   Size number of active doubly occupied orbitals, square.
+
+.. psivar:: CC ALPHA-BETA PAIR ENERGIES
+   CCSD ALPHA-BETA PAIR ENERGIES
+   CC2 ALPHA-BETA PAIR ENERGIES
+   CC3 ALPHA-BETA PAIR ENERGIES
+   MP2 ALPHA-BETA PAIR ENERGIES
+
+   Restricted-reference opposite-spin (alpha first) pair energies for coupled-cluster
+   theories. Size number of active doubly occupied orbitals, square.
+
+.. psivar:: CC SINGLET PAIR ENERGIES
+   CCSD SINGLET PAIR ENERGIES
+   CC2 SINGLET PAIR ENERGIES
+   CC3 SINGLET PAIR ENERGIES
+   MP2 SINGLET PAIR ENERGIES
+
+   Restricted-reference singlet-adapted pair energies for coupled-cluster theories.
+   Size number of active doubly occupied orbitals, square.
+
+.. psivar:: CC TRIPLET PAIR ENERGIES
+   CCSD TRIPLET PAIR ENERGIES
+   CC2 TRIPLET PAIR ENERGIES
+   CC3 TRIPLET PAIR ENERGIES
+   MP2 TRIPLET PAIR ENERGIES
+
+   Restricted-reference triplet-adapted pair energies for coupled-cluster theories.
+   Size number of active doubly occupied orbitals, square.
 
 .. psivar:: CCSD TOTAL ENERGY
    CCSD CORRELATION ENERGY
@@ -268,13 +546,15 @@ PSI Variables by Alpha
    CCSD(T) CORRELATION ENERGY
    CCSD(AT) TOTAL ENERGY
    CCSD(AT) CORRELATION ENERGY
+   A-CCSD(T) TOTAL ENERGY
+   A-CCSD(T) CORRELATION ENERGY
    CCSDT(Q) TOTAL ENERGY
    CCSDT(Q) CORRELATION ENERGY
    CC(n-1)(n) TOTAL ENERGY
    CC(n-1)(n) CORRELATION ENERGY
 
    The total electronic energy [Eh] and correlation energy component [Eh]
-   for the perturbatively corrected coupled-cluster (CCSD(T), CCSD(AT), CCSDT(Q),
+   for the perturbatively corrected coupled-cluster (CCSD(T), A-CCSD(T) = CCSD(AT), CCSDT(Q),
    up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
 
 .. psivar:: CCSDT-1a TOTAL ENERGY
@@ -329,52 +609,13 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the modified CCSDT(Q) level of theory.
 
-.. psivar:: CCSD DIPOLE POLARIZABILITY @ xNM
-
-   The dipole polarizability [au] calculated at the CCSD level
-   for a given (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CCSD SPECIFIC ROTATION (LEN) @ xNM
-
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
-   length gauge for a given (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CCSD SPECIFIC ROTATION (VEL) @ xNM
-
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
-   velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CCSD SPECIFIC ROTATION (MVG) @ xNM
-
-   The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
-   modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
-
 .. psivar:: CEPA(0) DIPOLE
 
    Dipole array [e a0] for the coupled electron pair approximation variant 0 level of theory, (3,).
 
-.. psivar:: CEPA(0) DIPOLE X
-   CEPA(0) DIPOLE Y
-   CEPA(0) DIPOLE Z
-
-   The three components of the dipole [Debye] for the
-   coupled electron pair approximation variant 0 level of theory.
-   Deprecated in favor of :psivar:`CEPA(0) DIPOLE`.
-
 .. psivar:: CEPA(0) QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the coupled electron pair approximation variant 0 level of theory, (3, 3).
-
-.. psivar:: CEPA(0) QUADRUPOLE XX
-   CEPA(0) QUADRUPOLE XY
-   CEPA(0) QUADRUPOLE XZ
-   CEPA(0) QUADRUPOLE YY
-   CEPA(0) QUADRUPOLE YZ
-   CEPA(0) QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the
-   coupled electron pair approximation variant 0 level of theory.
-   Deprecated in favor of :psivar:`CEPA(0) QUADRUPOLE`.
 
 .. psivar:: CEPA(0) TOTAL ENERGY
    CEPA(0) CORRELATION ENERGY
@@ -396,83 +637,25 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the requested configuration interaction level of theory, (3,).
 
-.. psivar:: CI DIPOLE X
-   CI DIPOLE Y
-   CI DIPOLE Z
-
-   The three components of the dipole [Debye] for the requested
-   configuration interaction level of theory and root.
-   Deprecated in favor of :psivar:`CI DIPOLE`.
-
 .. psivar:: CI QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the requested configuration interaction level of theory, (3, 3).
-
-.. psivar:: CI QUADRUPOLE XX
-   CI QUADRUPOLE XY
-   CI QUADRUPOLE XZ
-   CI QUADRUPOLE YY
-   CI QUADRUPOLE YZ
-   CI QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the requested
-   configuration interaction level of theory and root.
-   Deprecated in favor of :psivar:`CI QUADRUPOLE`.
 
 .. psivar:: CI ROOT n -> ROOT m DIPOLE
 
    Transition dipole array [e a0] between roots *n* and *m* for the requested configuration interaction level of theory, (3,).
 
-.. psivar:: CI ROOT n -> ROOT m DIPOLE X
-   CI ROOT n -> ROOT m DIPOLE Y
-   CI ROOT n -> ROOT m DIPOLE Z
-
-   The three components of the transition dipole [Debye] between roots *n*
-   and *m* for the requested configuration interaction level of theory.
-   Deprecated in favor of :psivar:`CI ROOT n -> ROOT m DIPOLE`.
-
 .. psivar:: CI ROOT n -> ROOT m QUADRUPOLE
 
    Redundant transition quadrupole array [e a0^2] between roots *n* and *m* for the requested configuration interaction level of theory, (3, 3).
-
-.. psivar:: CI ROOT n -> ROOT m QUADRUPOLE XX
-   CI ROOT n -> ROOT m QUADRUPOLE XY
-   CI ROOT n -> ROOT m QUADRUPOLE XZ
-   CI ROOT n -> ROOT m QUADRUPOLE YY
-   CI ROOT n -> ROOT m QUADRUPOLE YZ
-   CI ROOT n -> ROOT m QUADRUPOLE ZZ
-
-   The three components of the transition quadrupole [Debye Ang] between
-   roots *n* and *m* for the requested configuration interaction level of
-   theory.
-   Deprecated in favor of :psivar:`CI ROOT n -> ROOT m QUADRUPOLE`.
 
 .. psivar:: CI ROOT n DIPOLE
 
    Dipole array [e a0] for the requested configuration interaction level of theory and root *n*, (3,).
 
-.. psivar:: CI ROOT n DIPOLE X
-   CI ROOT n DIPOLE Y
-   CI ROOT n DIPOLE Z
-
-   The three components of the dipole [Debye] for the requested
-   configuration interaction level of theory and root *n*.
-   Deprecated in favor of :psivar:`CI ROOT n DIPOLE`.
-
 .. psivar:: CI ROOT n QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the requested configuration interaction level of theory and root *n*, (3, 3).
-
-.. psivar:: CI ROOT n QUADRUPOLE XX
-   CI ROOT n QUADRUPOLE XY
-   CI ROOT n QUADRUPOLE XZ
-   CI ROOT n QUADRUPOLE YY
-   CI ROOT n QUADRUPOLE YZ
-   CI ROOT n QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the requested
-   configuration interaction level of theory and root *n*.
-   Deprecated in favor of :psivar:`CI ROOT n QUADRUPOLE`.
 
 .. psivar:: CI ROOT n TOTAL ENERGY
    CI ROOT n CORRELATION ENERGY
@@ -497,28 +680,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the configuration interaction singles and doubles level of theory, (3,).
 
-.. psivar:: CISD DIPOLE X
-   CISD DIPOLE Y
-   CISD DIPOLE Z
-
-   The three components of the dipole [Debye] for the
-   configuration interaction singles and doubles level of theory and root.
-   Deprecated in favor of :psivar:`CISD DIPOLE`.
-
 .. psivar:: CISD QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the configuration interaction singles and doubles level of theory, (3, 3).
-
-.. psivar:: CISD QUADRUPOLE XX
-   CISD QUADRUPOLE XY
-   CISD QUADRUPOLE XZ
-   CISD QUADRUPOLE YY
-   CISD QUADRUPOLE YZ
-   CISD QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the
-   configuration interaction singles and doubles level of theory and root.
-   Deprecated in favor of :psivar:`CISD QUADRUPOLE`.
 
 .. psivar:: CISD TOTAL ENERGY
    CISD CORRELATION ENERGY
@@ -591,6 +755,8 @@ PSI Variables by Alpha
    CUSTOM SCS-MP2.5 CORRELATION ENERGY
    CUSTOM SCS-MP3 TOTAL ENERGY
    CUSTOM SCS-MP3 CORRELATION ENERGY
+   CUSTOM SCS-REMP2 TOTAL ENERGY
+   CUSTOM SCS-REMP2 CORRELATION ENERGY
    CUSTOM SCS-LCCD TOTAL ENERGY
    CUSTOM SCS-LCCD CORRELATION ENERGY
    CUSTOM SCS-OMP2 TOTAL ENERGY
@@ -599,6 +765,8 @@ PSI Variables by Alpha
    CUSTOM SCS-OMP2.5 CORRELATION ENERGY
    CUSTOM SCS-OMP3 TOTAL ENERGY
    CUSTOM SCS-OMP3 CORRELATION ENERGY
+   CUSTOM SCS-OREMP2 TOTAL ENERGY
+   CUSTOM SCS-OREMP2 CORRELATION ENERGY
    CUSTOM SCS-OLCCD TOTAL ENERGY
    CUSTOM SCS-OLCCD CORRELATION ENERGY
 
@@ -843,6 +1011,14 @@ PSI Variables by Alpha
 
    The total electronic energy [Eh] for the local CCSD level of theory.
 
+.. psivar:: LEFT-RIGHT CC2 EIGENVECTOR OVERLAP
+   LEFT-RIGHT CC3 EIGENVECTOR OVERLAP
+   LEFT-RIGHT CCSD EIGENVECTOR OVERLAP
+   LEFT-RIGHT CCSD(T) EIGENVECTOR OVERLAP
+
+   The overlap between the right-hand coupled coupled cluster eigenvector and the
+   left-hand eigenvector from the coupled cluster lambda (response) equations.
+
 .. psivar:: LOWDIN CHARGES
 
    Property of partial atomic charges [e] by the method of L\ |o_dots|\ wdin, (nat,).
@@ -892,88 +1068,29 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the named method, (3,).
 
-.. psivar:: mtd DIPOLE X
-   mtd DIPOLE Y
-   mtd DIPOLE Z
-
-   The three components of the named method dipole [Debye].
-   Deprecated in favor of :psivar:`mtd DIPOLE`.
-
 .. psivar:: mtd QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the named method, (3, 3).
-
-.. psivar:: mtd QUADRUPOLE XX
-   mtd QUADRUPOLE XY
-   mtd QUADRUPOLE XZ
-   mtd QUADRUPOLE YY
-   mtd QUADRUPOLE YZ
-   mtd QUADRUPOLE ZZ
-
-   The six components of the named method quadrupole [Debye Ang].
-   Deprecated in favor of :psivar:`mtd QUADRUPOLE`.
 
 .. psivar:: mtd OCTUPOLE
 
    Redundant octupole array [e a0^3] for the named method, (3, 3, 3).
 
-.. psivar:: mtd OCTUPOLE XXX
-   mtd OCTUPOLE XXY
-   mtd OCTUPOLE XXZ
-   mtd OCTUPOLE XYY
-   mtd OCTUPOLE XYZ
-   mtd OCTUPOLE XZZ
-   mtd OCTUPOLE YYY
-   mtd OCTUPOLE YYZ
-   mtd OCTUPOLE YZZ
-   mtd OCTUPOLE ZZZ
-
-   The ten components of the named method octupole [Debye Ang^2].
-   Deprecated in favor of :psivar:`mtd OCTUPOLE`.
-
 .. psivar:: mtd HEXADECAPOLE
 
    Redundant hexadecapole array [e a0^4] for the named method, (3, 3, 3, 3).
-
-.. psivar:: mtd HEXADECAPOLE XXXX
-   mtd HEXADECAPOLE XXXY
-   mtd HEXADECAPOLE ZZZZ
-
-   The 15 components of the named method hexadecapole [Debye Ang^3].
-   Deprecated in favor of :psivar:`mtd HEXADECAPOLE`.
 
 .. psivar:: mtd 32-POLE
 
    Redundant 32-pole array [e a0^5] for the named method, (3, 3, 3, 3, 3).
 
-.. psivar:: mtd 32-POLE XXXXX
-   mtd 32-POLE XXXXY
-   mtd 32-POLE ZZZZZ
-
-   The 21 components of the named method 32-pole [Debye Ang^4].
-   Deprecated in favor of :psivar:`mtd 32-POLE`.
-
 .. psivar:: mtd 64-POLE
 
    Redundant 64-pole array [e a0^6] for the named method, (3, 3, 3, 3, 3, 3).
 
-.. psivar:: mtd 64-POLE XXXXXX
-   mtd 64-POLE XXXXXY
-   mtd 64-POLE ZZZZZZ
-
-   The 28 components of the named method 64-pole [Debye Ang^5].
-   Deprecated in favor of :psivar:`mtd 64-POLE`.
-
 .. psivar:: mtd 128-POLE
 
    Redundant 128-pole array [e a0^7] for the named method, (3, 3, 3, 3, 3, 3, 3).
-
-.. psivar:: mtd 128-POLE XXXXXXX
-   mtd 128-POLE XXXXXXY
-   mtd 128-POLE ZZZZZZZ
-
-   The 36 components of the named method 128-pole [Debye Ang^6].
-   Deprecated in favor of :psivar:`mtd 128-POLE`.
 
 .. psivar:: MP2 TOTAL ENERGY
    MP2 CORRELATION ENERGY
@@ -1047,6 +1164,7 @@ PSI Variables by Alpha
    CEPA(3) DOUBLES ENERGY
    CISD DOUBLES ENERGY
    QCISD DOUBLES ENERGY
+   REMP2 DOUBLES ENERGY
    LCCD DOUBLES ENERGY
    CCD DOUBLES ENERGY
    LCCSD DOUBLES ENERGY
@@ -1054,6 +1172,7 @@ PSI Variables by Alpha
    OMP2 DOUBLES ENERGY
    OMP2.5 DOUBLES ENERGY
    OMP3 DOUBLES ENERGY
+   OREMP2 DOUBLES ENERGY
    OLCCD DOUBLES ENERGY
 
    The doubles portion [Eh] of the named correlation energy
@@ -1068,10 +1187,12 @@ PSI Variables by Alpha
    CEPA(3) SINGLES ENERGY
    CISD SINGLES ENERGY
    QCISD SINGLES ENERGY
+   REMP2 SINGLES ENERGY
    LCCD SINGLES ENERGY
    CCD SINGLES ENERGY
    LCCSD SINGLES ENERGY
    CCSD SINGLES ENERGY
+   OREMP2 SINGLES ENERGY
    OLCCD SINGLES ENERGY
 
    The singles portion [Eh] of the named correlation energy.
@@ -1088,10 +1209,15 @@ PSI Variables by Alpha
    QCISD SAME-SPIN CORRELATION ENERGY
    ACPF SAME-SPIN CORRELATION ENERGY
    AQCC SAME-SPIN CORRELATION ENERGY
+   REMP2 SAME-SPIN CORRELATION ENERGY
    LCCD SAME-SPIN CORRELATION ENERGY
    CCD SAME-SPIN CORRELATION ENERGY
    LCCSD SAME-SPIN CORRELATION ENERGY
    CCSD SAME-SPIN CORRELATION ENERGY
+   OMP2 SAME-SPIN CORRELATION ENERGY
+   OMP2.5 SAME-SPIN CORRELATION ENERGY
+   OMP3 SAME-SPIN CORRELATION ENERGY
+   OREMP2 SAME-SPIN CORRELATION ENERGY
    OLCCD SAME-SPIN CORRELATION ENERGY
 
    The unscaled portion [Eh] of the named correlation energy
@@ -1108,10 +1234,15 @@ PSI Variables by Alpha
    QCISD OPPOSITE-SPIN CORRELATION ENERGY
    ACPF OPPOSITE-SPIN CORRELATION ENERGY
    AQCC OPPOSITE-SPIN CORRELATION ENERGY
+   REMP2 OPPOSITE-SPIN CORRELATION ENERGY
    LCCD OPPOSITE-SPIN CORRELATION ENERGY
    CCD OPPOSITE-SPIN CORRELATION ENERGY
    LCCSD OPPOSITE-SPIN CORRELATION ENERGY
    CCSD OPPOSITE-SPIN CORRELATION ENERGY
+   OMP2 OPPOSITE-SPIN CORRELATION ENERGY
+   OMP2.5 OPPOSITE-SPIN CORRELATION ENERGY
+   OMP3 OPPOSITE-SPIN CORRELATION ENERGY
+   OREMP2 OPPOSITE-SPIN CORRELATION ENERGY
    OLCCD OPPOSITE-SPIN CORRELATION ENERGY
 
    The unscaled portion [Eh] of the named correlation energy
@@ -1168,8 +1299,9 @@ PSI Variables by Alpha
 
 .. psivar:: OLCCD REFERENCE CORRECTION ENERGY
 
-   The additional correction to the SCF reference energy [Eh]
-   for the orbital-optimized linearized coupled cluster doubles level of theory.
+   The difference [Eh] between the single-determinant energy of the final and
+   initial orbitals for the orbital-optimized linearized coupled cluster
+   doubles level of theory.
 
 .. psivar:: OMP2 TOTAL ENERGY
    OMP2 CORRELATION ENERGY
@@ -1177,17 +1309,45 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the orbital-optimized MP2 level of theory.
 
+.. psivar:: OMP2 REFERENCE CORRECTION ENERGY
+
+   The difference [Eh] between the single-determinant energy of the final and
+   initial orbitals for the orbital-optimized MP2 level of theory.
+
 .. psivar:: OMP2.5 TOTAL ENERGY
    OMP2.5 CORRELATION ENERGY
 
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the orbital-optimized MP2.5 level of theory.
 
+.. psivar:: OMP2.5 REFERENCE CORRECTION ENERGY
+
+   The difference [Eh] between the single-determinant energy of the final and
+   initial orbitals for the orbital-optimized MP2.5 level of theory.
+
 .. psivar:: OMP3 TOTAL ENERGY
    OMP3 CORRELATION ENERGY
 
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the orbital-optimized MP3 level of theory.
+
+.. psivar:: OMP3 REFERENCE CORRECTION ENERGY
+
+   The difference [Eh] between the single-determinant energy of the final and
+   initial orbitals for the orbital-optimized MP3 level of theory.
+
+.. psivar:: OREMP2 TOTAL ENERGY
+   OREMP2 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the orbital-optimized retaining-the-excitation-degree |MollerPlesset|
+   hybrid perturbation theory level.
+
+.. psivar:: OREMP2 REFERENCE CORRECTION ENERGY
+
+   The difference [Eh] between the single-determinant energy of the final and
+   initial orbitals for the orbital-optimized retaining-the-excitation-degree
+   |MollerPlesset| hybrid perturbation theory level.
 
 .. psivar:: ONE-ELECTRON ENERGY
 
@@ -1215,6 +1375,13 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the quadratic configuration interaction singles and doubles with
    perturbative triples correction level of theory.
+
+.. psivar:: REMP2 TOTAL ENERGY
+   REMP2 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the retaining-the-excitation-degree |MollerPlesset| hybrid perturbation
+   theory level.
 
 .. psivar:: SAPT DISP ENERGY
    SAPT ELST ENERGY
@@ -1364,6 +1531,11 @@ PSI Variables by Alpha
 
    A induction-classified SAPT term energy [Eh] implemented for SAPT2+3.
 
+.. psivar:: SAPT EXCH-IND30(S^INF) ENERGY
+   SAPT EXCH-IND30,R(S^INF) ENERGY
+
+   A induction-classified SAPT term energy [Eh] implemented for SAPT2+3. See :ref:`sec:saptinf`.
+
 .. psivar:: SAPT DISP30 ENERGY
    SAPT EXCH-DISP30 ENERGY
    SAPT EXCH-IND-DISP30 ENERGY
@@ -1504,26 +1676,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the SCF stage, (3,).
 
-.. psivar:: SCF DIPOLE X
-   SCF DIPOLE Y
-   SCF DIPOLE Z
-
-   The three components of the SCF dipole [Debye].
-   Deprecated in favor of :psivar:`SCF DIPOLE`.
-
 .. psivar:: SCF QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the SCF stage, (3, 3).
-
-.. psivar:: SCF QUADRUPOLE XX
-   SCF QUADRUPOLE XY
-   SCF QUADRUPOLE XZ
-   SCF QUADRUPOLE YY
-   SCF QUADRUPOLE YZ
-   SCF QUADRUPOLE ZZ
-
-   The six components of the SCF quadrupole [Debye Ang].
-   Deprecated in favor of :psivar:`SCF QUADRUPOLE`.
 
 .. psivar:: SCF TOTAL ENERGY
 
@@ -1662,38 +1817,148 @@ PSI Variables by Alpha
    by 1.4 opposite-spin and 0 same-spin contributions, with
    any singles carried along.
 
-.. psivar:: TDDFT ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
-   TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
-   ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
-   EOM-CCSD ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+.. psivar:: TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
 
-   The excitation energy of given method from ground state to root m
-   in h symmetry (if available). DFT functional labeled if canonical.
+   The electric transition dipole moment [e a0] in velocity gauge, for the transition
+   from the ground state to root *m*.
+   DFT functional labeled if canonical.
 
-.. psivar:: TDDFT ROOT n TOTAL ENERGY - h SYMMETRY
-   TD-fctl ROOT n TOTAL ENERGY - h SYMMETRY
-   ADC ROOT n TOTAL ENERGY - h SYMMETRY
-   EOM-CCSD ROOT n TOTAL ENERGY - h SYMMETRY
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
 
-   The total energy of given method from ground state to root m in h symmetry.
+   The electric transition dipole moment [e a0] in velocity gauge, for the transition
+   from the ground state, which is of irrep *h*, to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h SYMMETRY
-   EOM-CCSD ROOT 0 -> ROOT m CORRELATION ENERGY - h SYMMETRY
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
 
-   The correlation energy of given method from ground state reference energy to root m in h symmetry.
+   The electric transition dipole moment [e a0] in velocity gauge, for the transition
+   from the ground state, which is of irrep *h*, to root *n*, which is of irrep *i*.
+   DFT functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h SYMMETRY
-   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h SYMMETRY
+.. psivar:: TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h TRANSITION
 
-   The oscillator strength in length or velocity gauge of named method
-   from ground state to root m in h symmetry (if available). DFT
+   The electric transition dipole moment [e a0] in velocity gauge, for the transition
+   from the ground state to root *n*, and the transition is of *h* symmetry.
+   DFT functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n MAGNETIC TRANSITION DIPOLE MOMENT
+
+   The magnetic transition dipole moment, for the transition
+   from the ground state to root *n*.
+   DFT functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) MAGNETIC TRANSITION DIPOLE MOMENT
+
+   The magnetic transition dipole moment, for the transition
+   from the ground state, which is of irrep *h*, to root *n* within irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) MAGNETIC TRANSITION DIPOLE MOMENT
+
+   The magnetic transition dipole moment, for the transition
+   from the ground state, which is of irrep *h*, to root *n*, which is of irrep *i*.
+   DFT functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n MAGNETIC TRANSITION DIPOLE MOMENT - h TRANSITION
+
+   The magnetic transition dipole moment, for the transition
+   from the ground state to root *n*, and the transition is of *h* symmetry.
+   DFT functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR ALPHA
+
+   The left alpha spin eigenvectors of the named method
+   from ground state to root *n*. DFT
    functional labeled if canonical.
 
-.. psivar:: TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h SYMMETRY
-   TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h SYMMETRY
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) LEFT EIGENVECTOR ALPHA
 
-   The rotatory strength in length or velocity gauge of named method
-   from ground state to root m in h symmetry (if available). DFT
+   The left alpha spin eigenvectors of the named method
+   from ground state, which is in irrep *h*, to root *n* within irrep *i*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) LEFT EIGENVECTOR ALPHA
+
+   The left alpha spin eigenvectors of the named method
+   from ground state, which is in irrep *h*, to root *n*, which is in irrep *i*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR ALPHA - h TRANSITION
+
+   The left alpha spin eigenvectors of the named method
+   from ground state to root *n*, and the transition is of irrep *h*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR BETA
+
+   The left beta spin eigenvectors of the named method
+   from ground state to root *n*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) LEFT EIGENVECTOR BETA
+
+   The left beta spin eigenvectors of the named method
+   from ground state, which is in irrep *h*, to root *n* within irrep *i*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) LEFT EIGENVECTOR BETA
+
+   The left beta spin eigenvectors of the named method
+   from ground state, which is in irrep *h*, to root *n*, which is in irrep *i*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR BETA - h TRANSITION
+
+   The left beta spin eigenvectors of the named method
+   from ground state to root *n*, and the transition is of irrep *h*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR ALPHA
+
+   The right alpha spin eigenvectors of the named method
+   from ground state to root *n*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) RIGHT EIGENVECTOR ALPHA
+
+   The right alpha spin eigenvectors of the named method
+   from ground state, which is in irrep *h*, to root *n* within irrep *i*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) RIGHT EIGENVECTOR ALPHA
+
+   The right alpha spin eigenvectors of the named method
+   from ground state, which is in irrep *h*, to root *n*, which is in irrep *i*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR ALPHA - h TRANSITION
+
+   The right alpha spin eigenvectors of the named method
+   from ground state to root *n*, and the transition is of irrep *h*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR BETA
+
+   The right beta spin eigenvectors of the named method
+   from ground state to root *n*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) RIGHT EIGENVECTOR BETA
+
+   The right beta spin eigenvectors of the named method
+   from ground state, which is in irrep *h*, to root *n* within irrep *i*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 (h) -> ROOT n (i) RIGHT EIGENVECTOR BETA
+
+   The right beta spin eigenvectors of the named method
+   from ground state, which is in irrep *h*, to root *n*, which is in irrep *i*. DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR BETA - h TRANSITION
+
+   The right alpha and beta spin eigenvectors of the named method
+   from ground state to root *n*, and the transition is of irrep *h*. DFT
    functional labeled if canonical.
 
 .. psivar:: THERMAL ENERGY

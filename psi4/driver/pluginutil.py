@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,15 +26,20 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "create_plugin",
+    "sanitize_name",
+]
+
 import os
 import sys
+from pathlib import Path
 
 from psi4 import core
-from psi4.driver.util.filesystem import *
 from psi4.driver.util import tty
 
 
-def sanitize_name(name):
+def sanitize_name(name: str) -> str:
     """Function to return *name* in coded form, stripped of
     characters that confuse filenames, characters into lowercase,
     ``+`` into ``p``, ``*`` into ``s``, and ``(``, ``)``, ``-``,
@@ -75,7 +80,11 @@ def sanitize_name(name):
             # Preprocessor tokens
             "if", "elif", "else", "endif", "defined", "ifdef", "ifndef",
             "define", "undef", "include", "line", "error", "pragma",
-            "_pragma"
+            "_pragma",
+
+            # C++20
+            "char8_t", "consteval", "constinit", "co_await", "co_return",
+            "co_yield", "reflexpr",
         ]
 
         if temp in cpp_keywords:
@@ -88,10 +97,10 @@ def sanitize_name(name):
 
 # Determine the available plugins
 available_plugins = []
-psidatadir = core.get_datadir()
-plugin_path = join_path(psidatadir, "plugin")
+psidatadir = Path(core.get_datadir())
+plugin_path = psidatadir / "plugin"
 for sdir in os.listdir(plugin_path):
-    if os.path.isdir(join_path(plugin_path, sdir)):
+    if (plugin_path / sdir).is_dir():
         available_plugins.append(sdir)
 
 
@@ -102,12 +111,13 @@ def create_plugin(name: str, template: str) -> None:
     ----------
     name
         Name of plugin. Should not have any fancy characters or reserved keywords.
-    template : {{{available_plugins}}}
+    template
+        {{{available_plugins}}}
         Which existing template to model off of.
 
     """
     name = sanitize_name(name)
-    template_path = join_path(plugin_path, template)
+    template_path = plugin_path / template
 
     # Create, but do not overwrite, plugin directory
     if os.path.exists(name):
@@ -141,9 +151,8 @@ def create_plugin(name: str, template: str) -> None:
             target_file = source_file[0:-9]
 
         try:
-            print(join_path(template_path, source_file))
-            with open(join_path(template_path, source_file), 'r') as temp_file:
-                contents = temp_file.read()
+            print(template_path / source_file)
+            contents = (template_path / source_file).read_text()
         except IOError as err:
             tty.error("""Unable to open {} template.""".format(source_file))
             tty.error(err)
@@ -155,9 +164,8 @@ def create_plugin(name: str, template: str) -> None:
         contents = contents.replace('@sources@', ' '.join(source_files))
 
         try:
-            with open(join_path(name, target_file), 'w') as temp_file:
-                temp_file.write(contents)
-                created_files.append(target_file)
+            (Path(name) / target_file).write_text(contents)
+            created_files.append(target_file)
         except IOError as err:
             tty.error("""Unable to create {}""".format(target_file))
             tty.error(err)

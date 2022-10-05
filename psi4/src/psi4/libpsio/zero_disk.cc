@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -42,6 +42,11 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 
+/*!
+ ** PSIO_ZERO_DISK()
+ **
+ ** \ingroup PSIO
+ */
 void PSIO::zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
     double *buf = new double[cols];
     ::memset(static_cast<void *>(buf), '\0', cols * sizeof(double));
@@ -53,16 +58,4 @@ void PSIO::zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
 
     delete[] buf;
 }
-
-/*!
- ** PSIO_ZERO_DISK()
- **
- ** \ingroup PSIO
- */
-
-int psio_zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
-    _default_psio_lib_->zero_disk(unit, key, rows, cols);
-    return 1;
-}
-
 }  // namespace psi

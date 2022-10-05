@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,64 +46,14 @@ class SymBlockMatrix {
 
    public:
     SymBlockMatrix();  // default constructer
-    SymBlockMatrix(std::string name);
-    SymBlockMatrix(int nirreps, int *ins_rowspi, int *ins_colspi);
     SymBlockMatrix(std::string name, int nirreps, int *ins_rowspi, int *ins_colspi);
     ~SymBlockMatrix();  // destructer
 
-    SymBlockMatrix *generate(int nirreps, int *ins_rowspi, int *ins_colspi);
-    SymBlockMatrix *generate(std::string name, int nirreps, int *ins_rowspi, int *ins_colspi);
-    SymBlockMatrix *transpose();
-    void init(std::string name, int nirreps, int *ins_rowspi, int *ins_colspi);
     void memalloc();
     void release();
     void zero();
-    void zero_diagonal();
-    double trace();
-    SymBlockMatrix *transpose(int *ins_rowspi, int *ins_colspi);
-    void copy(const SymBlockMatrix *Adum);
-    void add(const SymBlockMatrix *Adum);
-    void add(int h, int i, int j, double value);
-    void subtract(const SymBlockMatrix *Adum);
-    void subtract(int h, int i, int j, double value);
-    void scale(double a);
-    void scale_row(int h, int m, double a);
-    void scale_column(int h, int n, double a);
-    double sum_of_squares();
-    double rms();
-    double rms(SymBlockMatrix *Atemp);
-    void set(double value);
-    void set(int h, int i, int j, double value);
-    void set(double **Asq);
     void set(dpdbuf4 G);
     double get(int h, int m, int n);
-    double *to_lower_triangle();
-    double **to_block_matrix();
-    void print(std::string out_fname);
-    void print();
-    void set_to_identity();
-    void gemm(bool transa, bool transb, double alpha, const SymBlockMatrix *a, const SymBlockMatrix *b, double beta);
-    int *rowspi();
-    int *colspi();
-    bool load(PSIO *psio, int itap, const char *label, int dim);
-    bool load(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
-    void write(PSIO *psio, int itap, bool saveSubBlocks);
-    void write(std::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks);
-    void read(std::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks);
-    void read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
-    void mgs();  // Modified Gram-Schmidt
-    void gs();   // Gram-Schmidt
-    void diagonalize(SymBlockMatrix *eigvectors, SymBlockVector *eigvalues);
-    void cdsyev(char jobz, char uplo, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues);  // diagonalize via acml
-    void davidson(int n_eigval, SymBlockMatrix *eigvectors, SymBlockVector *eigvalues, double cutoff,
-                  int print);                                             // diagonalize via davidson alg.
-    void cdgesv(SymBlockVector *Xvec);                                    // solve lineq via acml
-    void lineq_flin(SymBlockVector *Xvec, double *det);                   // solve lineq via flin
-    void lineq_pople(SymBlockVector *Xvec, int num_vecs, double cutoff);  // solve lineq via pople
-    void read_oooo(std::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi,
-                   Array3i *oo_pairidx);
-    void read_oovv(std::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off,
-                   int *vir_off, int *occpi, int *virpi, Array3i *oo_pairidx, Array3i *vv_pairidx);
 
     friend class SymBlockVector;
 };

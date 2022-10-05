@@ -32,5 +32,5 @@ e, wfn = energy('hf/cc-pvdz', return_wfn=True)
 tdscf(wfn)
 
 for n, ref in enumerate(UHF_TDA_cc_pvdz):
-    ex_en = wfn.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
-    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+    ex_en = wfn.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")

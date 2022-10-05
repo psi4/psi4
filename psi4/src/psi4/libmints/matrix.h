@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -43,6 +43,7 @@ struct dpdbuf4;
 
 class PSIO;
 class Vector;
+class IntVector;
 using SharedVector = std::shared_ptr<Vector>;
 class Dimension;
 class Molecule;
@@ -289,7 +290,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     enum SaveType { Full
     PSI_DEPRECATED(
         "Using `Matrix::SaveType::Full` instead of `Matrix::SaveType::SubBlocks` is deprecated, "
-        "and in 1.5 it will stop working"),
+        "and as soon as 1.5 it will stop working"),
     SubBlocks, LowerTriangle, ThreeIndexLowerTriangle };
 
     /**
@@ -485,8 +486,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param cols Columns slice
      * @return SharedMatrix object
      */
-    SharedMatrix get_block(const Slice& rows, const Slice& cols);
-    SharedMatrix get_block(const Slice& slice);
+    SharedMatrix get_block(const Slice& rows, const Slice& cols) const;
+    SharedMatrix get_block(const Slice& slice) const;
 
     /**
      * Set a matrix block
@@ -708,6 +709,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void accumulate_product(const SharedMatrix&, const SharedMatrix&);
     /// Scales this matrix
     void scale(double);
+    /// Takes the square root of this matrix (element-wise)
+    void sqrt_this();
     /// Returns the sum of the squares of this
     double sum_of_squares();
     /// Returns the rms of this
@@ -839,12 +842,24 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     void axpy(double a, SharedMatrix X);
 
+    /**
+     * General matrix vector multiplication into this, alpha * AX + beta Y -> Y
+     *
+     * @ transa Do transpose A?
+     * @ alpha Scaling factor
+     * @ A Matrix to multiply by.
+     * @ X Vector to multiply by.
+     * @ beta Scaling factor for current input.
+     */
+    SharedVector gemv(bool transa, double alpha, const Vector& A);
+
     /** Summation collapse along either rows (0) or columns (1), always producing a column matrix
-     * \param dim 0 (row sum) or 1 (col sum)
-     * \return \sum_{i} M_{ij} => T_j if dim = 0 or
+     * @param target 0 (row sum) or 1 (col sum)
+     * @param dim Dimension. Sum over the first dim[h] elements of the row/col.
+     * @return \sum_{i} M_{ij} => T_j if dim = 0 or
      *         \sum_{j} M_{ij} => T_i if dim = 1
      */
-    SharedMatrix collapse(int dim = 0);
+    SharedVector collapse(const Dimension dim, int target = 0) const;
 
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
@@ -998,6 +1013,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     void expm(int n = 2, bool scale = false);
 
+    ///
+    void sort_cols(const IntVector& sortvec);
     /// Swap rows i and j
     void swap_rows(int h, int i, int j);
     /// Swap cols i and j
@@ -1129,49 +1146,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param theta - the angle (in radians) about which to rotate
      */
     void rotate_columns(int h, int i, int j, double theta);
-
-    PSI_DEPRECATED(
-        "Using `Matrix::matrix` instead of `linalg::detail::matrix` is deprecated, and in 1.4 it will "
-        "stop working")
-    static double** matrix(int nrow, int ncol) { return linalg::detail::matrix(nrow, ncol); }
-
-    PSI_DEPRECATED(
-        "Using `Matrix::free` instead of `linalg::detail::free` is deprecated, and in 1.4 it will "
-        "stop working")
-    static void free(double** Block) { linalg::detail::free(Block); }
-
-    PSI_DEPRECATED(
-        "Using `Matrix::create` instead of `auto my_mat = std::make_shared<Matrix>(name, rows, cols);` "
-        "is deprecated, and in 1.4 it will "
-        "stop working")
-    static SharedMatrix create(const std::string& name, const Dimension& rows, const Dimension& cols) {
-        return std::make_shared<Matrix>(name, rows, cols);
-    }
-
-    PSI_DEPRECATED(
-        "Using `Matrix::horzcat` instead of `linalg::horzcat` is deprecated, and in 1.4 it will "
-        "stop working")
-    static SharedMatrix horzcat(const std::vector<SharedMatrix>& mats) { return linalg::horzcat(mats); }
-
-    PSI_DEPRECATED(
-        "Using `Matrix::vertcat` instead of `linalg::vertcat` is deprecated, and in 1.4 it will "
-        "stop working")
-    static SharedMatrix vertcat(const std::vector<SharedMatrix>& mats) { return linalg::vertcat(mats); }
-
-    PSI_DEPRECATED(
-        "Using `Matrix::doublet` instead of `doublet` is deprecated, and in 1.4 it will "
-        "stop working")
-    static SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false,
-                                bool transB = false) {
-        return linalg::doublet(A, B, transA, transB);
-    }
-
-    PSI_DEPRECATED(
-        "Using `Matrix::triplet` instead of `triplet` is deprecated, and in 1.4 it will "
-        "stop working")
-    static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C,
-                                bool transA = false, bool transB = false, bool transC = false) {
-        return linalg::triplet(A, B, C, transA, transB, transC);
-    }
 };
+
+bool test_matrix_dpd_interface();
+
 }  // namespace psi

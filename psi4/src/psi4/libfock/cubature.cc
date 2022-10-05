@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -80,7 +80,7 @@ struct BrianBlock {
 };
 
 static std::array<std::vector<std::vector<BrianBlock>>, 4> brianStandardGrids;
-std::vector<BrianBlock>* brianStoreGridDataInto = nullptr;
+std::vector<BrianBlock> *brianStoreGridDataInto = nullptr;
 
 struct BrianGrid {
     std::vector<brianInt> atomBlockCounts;
@@ -2569,7 +2569,8 @@ void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, int r
             (*brianStoreGridDataInto)[i_grp].angularPoints.resize(numAngPoints);
             for (int i_ang = 0; i_ang < numAngPoints; i_ang++) {
                 // we compensate for an extra factor of 4*pi in Psi4's angular grid generation
-                (*brianStoreGridDataInto)[i_grp].angularPoints[i_ang] = {anggrid[i_ang].x, anggrid[i_ang].y, anggrid[i_ang].z, anggrid[i_ang].w / (4.0 * M_PI)};
+                (*brianStoreGridDataInto)[i_grp].angularPoints[i_ang] = {
+                    anggrid[i_ang].x, anggrid[i_ang].y, anggrid[i_ang].z, anggrid[i_ang].w / (4.0 * M_PI)};
             }
         }
 #endif
@@ -2829,8 +2830,7 @@ NuclearWeightMgr::NuclearWeightMgr(std::shared_ptr<Molecule> mol, int scheme) {
     } else if (scheme == BECKE || scheme == TREUTLER || scheme == SBECKE) {
         for (int i = 0; i < natom; i++) {
             for (int j = 0; j < i; j++) {
-                double rad_ratio =
-                    GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
+                double rad_ratio = GetBSRadius(mol->true_atomic_number(i)) / GetBSRadius(mol->true_atomic_number(j));
                 double chi = (scheme == BECKE || scheme == SBECKE) ? rad_ratio : sqrt(rad_ratio);
                 double a = getAfromChi(chi);
                 amatrix_[i][j] = a;
@@ -2937,11 +2937,10 @@ double NuclearWeightMgr::GetStratmannCutoff(int A) const {
     // mu = 1+(-1\pm sqrt(1+4*a*(nu-1)))/(2*a)
     // If
     double aij = maxAMatrixEntry;
-    double mucutoff = (aij == 0) ? -0.64  // Then nu = mu, so to get nu < -0.64 we need mu < -0.64
-                                 : (aij >= 1 / 6.56)
-                                       ? -1  // If aij > 1/6.56 = 1/(4*(1+0.64)), then there's no solution.
-                                       : (aij > 0) ? (1 - sqrt(4 * aij * (aij + 0.64) + 1)) / (2 * aij)
-                                                   : (1 + sqrt(4 * aij * (aij + 0.64) + 1)) / (2 * aij)  // aij < 0
+    double mucutoff = (aij == 0)          ? -0.64  // Then nu = mu, so to get nu < -0.64 we need mu < -0.64
+                      : (aij >= 1 / 6.56) ? -1     // If aij > 1/6.56 = 1/(4*(1+0.64)), then there's no solution.
+                      : (aij > 0)         ? (1 - sqrt(4 * aij * (aij + 0.64) + 1)) / (2 * aij)
+                                          : (1 + sqrt(4 * aij * (aij + 0.64) + 1)) / (2 * aij)  // aij < 0
         ;
 
     return distToNearestAtom * (1 + mucutoff) / 2;
@@ -3720,8 +3719,9 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
 }
 
 void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
-    options_ = opt;                                                // Save a copy
-    std::vector<std::vector<MassPoint>> grid(molecule_->natom());  // This is just for the first pass.
+    options_ = opt;  // Save a copy
+    atomic_grids_.clear();
+    atomic_grids_.resize(molecule_->natom());
 
     OrientationMgr std_orientation(molecule_);
     RadialPruneMgr prune(opt);
@@ -3800,7 +3800,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
                         for (int j = 0; j < numAngPts; j++) {
                             // we compensate for an extra factor of 4*pi in Psi4's angular grid generation
-                            atomBlocks[A][currentBlockIndex].angularPoints.push_back({anggrid[j].x, anggrid[j].y, anggrid[j].z, anggrid[j].w / (4.0 * M_PI)});
+                            atomBlocks[A][currentBlockIndex].angularPoints.push_back(
+                                {anggrid[j].x, anggrid[j].y, anggrid[j].z, anggrid[j].w / (4.0 * M_PI)});
                         }
                     }
 
@@ -3814,9 +3815,11 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                     MassPoint mp = {r[i] * anggrid[j].x, r[i] * anggrid[j].y, r[i] * anggrid[j].z,
                                     wr[i] * anggrid[j].w};
                     mp = std_orientation.MoveIntoPosition(mp, A);
-                    mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);  // This ain't gonna fly. Must abate this
-                                                                               // mickey mouse a most rikky tikki tavi.
-                    if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
+                    mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);
+
+                    if (std::abs(mp.w) > weightcut) {
+                        atomic_grids_[A].push_back(mp);
+                    }
                     assert(!std::isnan(mp.w));
                 }
             }
@@ -3833,10 +3836,10 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
             for (int i = 0; i < npts; i++) {
                 MassPoint mp = std_orientation.MoveIntoPosition(sg[i], A);
-                mp.w *= nuc.computeNuclearWeight(
-                    mp, A,
-                    stratmannCutoff);  // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
+                mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);
+                if (std::abs(mp.w) > weightcut) {
+                    atomic_grids_[A].push_back(mp);
+                }
                 assert(!std::isnan(mp.w));
             }
         }
@@ -3851,16 +3854,15 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         brianInt angularOffset = 0;
 
         for (int A = 0; A < molecule_->natom(); A++) {
-            brianGrid.atomRotationMatrices.insert(brianGrid.atomRotationMatrices.end(), atomRotations[A].begin(), atomRotations[A].end());
+            brianGrid.atomRotationMatrices.insert(brianGrid.atomRotationMatrices.end(), atomRotations[A].begin(),
+                                                  atomRotations[A].end());
 
             brianGrid.atomBlockCounts.push_back(atomBlocks[A].size());
             brianGrid.atomBlockOffsets.push_back(atomBlockOffset);
             for (int blockIndex = 0; blockIndex < atomBlocks[A].size(); blockIndex++) {
-
                 brianGrid.blockRadialCounts.push_back(atomBlocks[A][blockIndex].radialPoints.size());
                 brianGrid.blockRadialOffsets.push_back(radialOffset);
-                for (int radialIndex = 0; radialIndex < atomBlocks[A][blockIndex].radialPoints.size(); radialIndex++)
-                {
+                for (int radialIndex = 0; radialIndex < atomBlocks[A][blockIndex].radialPoints.size(); radialIndex++) {
                     brianGrid.radialCoordinates.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].r);
                     brianGrid.radialWeights.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].w);
                 }
@@ -3868,8 +3870,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
                 brianGrid.blockAngularCounts.push_back(atomBlocks[A][blockIndex].angularPoints.size());
                 brianGrid.blockAngularOffsets.push_back(angularOffset);
-                for (int angularIndex = 0; angularIndex < atomBlocks[A][blockIndex].angularPoints.size(); angularIndex++)
-                {
+                for (int angularIndex = 0; angularIndex < atomBlocks[A][blockIndex].angularPoints.size();
+                     angularIndex++) {
                     brianGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].x);
                     brianGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].y);
                     brianGrid.angularCoordinates.push_back(atomBlocks[A][blockIndex].angularPoints[angularIndex].z);
@@ -3882,65 +3884,54 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         }
 
         if (brianBuildingNLCGrid) {
-            brianCOMSetNLCGrid(&brianCookie,
-                brianGrid.atomBlockCounts.data(),
-                brianGrid.atomBlockOffsets.data(),
-                brianGrid.blockRadialCounts.data(),
-                brianGrid.blockRadialOffsets.data(),
-                brianGrid.radialCoordinates.data(),
-                brianGrid.radialWeights.data(),
-                brianGrid.blockAngularCounts.data(),
-                brianGrid.blockAngularOffsets.data(),
-                brianGrid.angularCoordinates.data(),
-                brianGrid.angularWeights.data(),
-                brianGrid.atomRotationMatrices.data()
-            );
+            brianCOMSetNLCGrid(&brianCookie, brianGrid.atomBlockCounts.data(), brianGrid.atomBlockOffsets.data(),
+                               brianGrid.blockRadialCounts.data(), brianGrid.blockRadialOffsets.data(),
+                               brianGrid.radialCoordinates.data(), brianGrid.radialWeights.data(),
+                               brianGrid.blockAngularCounts.data(), brianGrid.blockAngularOffsets.data(),
+                               brianGrid.angularCoordinates.data(), brianGrid.angularWeights.data(),
+                               brianGrid.atomRotationMatrices.data());
             checkBrian();
         } else {
-            brianCOMSetDFTGrid(&brianCookie,
-                brianGrid.atomBlockCounts.data(),
-                brianGrid.atomBlockOffsets.data(),
-                brianGrid.blockRadialCounts.data(),
-                brianGrid.blockRadialOffsets.data(),
-                brianGrid.radialCoordinates.data(),
-                brianGrid.radialWeights.data(),
-                brianGrid.blockAngularCounts.data(),
-                brianGrid.blockAngularOffsets.data(),
-                brianGrid.angularCoordinates.data(),
-                brianGrid.angularWeights.data(),
-                brianGrid.atomRotationMatrices.data()
-            );
+            brianCOMSetDFTGrid(&brianCookie, brianGrid.atomBlockCounts.data(), brianGrid.atomBlockOffsets.data(),
+                               brianGrid.blockRadialCounts.data(), brianGrid.blockRadialOffsets.data(),
+                               brianGrid.radialCoordinates.data(), brianGrid.radialWeights.data(),
+                               brianGrid.blockAngularCounts.data(), brianGrid.blockAngularOffsets.data(),
+                               brianGrid.angularCoordinates.data(), brianGrid.angularWeights.data(),
+                               brianGrid.atomRotationMatrices.data());
             checkBrian();
         }
     }
 #endif
 
     npoints_ = 0;
-    for (int i = 0; i < grid.size(); ++i) {
-        npoints_ += grid[i].size();
+    for (const auto &grid_per_atom : atomic_grids_) {
+        npoints_ += grid_per_atom.size();
     }
+
     x_ = new double[npoints_];
     y_ = new double[npoints_];
     z_ = new double[npoints_];
     w_ = new double[npoints_];
-    index_ = new int[npoints_];
 
     int grid_vector_index = 0;
-    for (int i = 0; i < grid.size(); i++) {
-        for (int j = 0; j < grid[i].size(); ++j) {
-            x_[grid_vector_index] = grid[i][j].x;
-            y_[grid_vector_index] = grid[i][j].y;
-            z_[grid_vector_index] = grid[i][j].z;
-            w_[grid_vector_index] = grid[i][j].w;
-            index_[i] = grid_vector_index;
+    for (const auto &grid_per_atom : atomic_grids_) {  // loop over all atoms
+        for (const auto &Q : grid_per_atom) {          // grid points of a given atom
+            x_[grid_vector_index] = Q.x;
+            y_[grid_vector_index] = Q.y;
+            z_[grid_vector_index] = Q.z;
+            w_[grid_vector_index] = Q.w;
             ++grid_vector_index;
         }
     }
 }
 
+PSI_DEPRECATED(
+    "MolecularGrid: This grid builder is outdated"
+    "and, as soon as 1.7 it will stop working.")
 void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const std::vector<std::vector<double>> &rs,
                                          const std::vector<std::vector<double>> &ws,
                                          const std::vector<std::vector<int>> &Ls) {
+    // This version is not used anywhere and is outdated. Should probably be removed asap.
     options_ = opt;  // Save a copy
     // std::vector<MassPoint> grid; // This is just for the first pass.
     std::vector<std::vector<MassPoint>> grid(molecule_->natom());  // This is just for the first pass.
@@ -3948,7 +3939,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
     OrientationMgr std_orientation(molecule_);
     RadialPruneMgr prune(opt);
     NuclearWeightMgr nuc(molecule_, opt.nucscheme);
-    double weightcut=opt.weights_cutoff;
+    double weightcut = opt.weights_cutoff;
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
@@ -3991,7 +3982,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
                 mp.w *= nuc.computeNuclearWeight(
                     mp, A,
                     stratmannCutoff);  // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi.
-                if (std::abs(mp.w) > weightcut) {grid[A].push_back(mp);}
+                if (std::abs(mp.w) > weightcut) {
+                    grid[A].push_back(mp);
+                }
                 assert(!std::isnan(mp.w));
             }
         }
@@ -4005,7 +3998,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
     y_ = new double[npoints_];
     z_ = new double[npoints_];
     w_ = new double[npoints_];
-    index_ = new int[npoints_];
 
     int grid_vector_index = 0;
     for (int i = 0; i < grid.size(); i++) {
@@ -4014,7 +4006,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
             y_[grid_vector_index] = grid[i][j].y;
             z_[grid_vector_index] = grid[i][j].z;
             w_[grid_vector_index] = grid[i][j].w;
-            index_[i] = grid_vector_index;
             ++grid_vector_index;
         }
     }
@@ -4276,25 +4267,34 @@ void BlockOPoints::print(std::string out, int print) {
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options &options)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
-    std::map<std::string, std::string> opts_map;
+    std::map<std::string, std::string> str_opts_map;
     std::map<std::string, int> int_opts_map;
-    buildGridFromOptions(int_opts_map, opts_map);
+    std::map<std::string, double> float_opts_map;
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
-                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map, Options &options)
+                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options &options)
     : MolecularGrid(molecule), primary_(primary), options_(options) {
-    buildGridFromOptions(int_opts_map, opts_map);
+    std::map<std::string, double> float_opts_map;
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
+}
+DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
+                 std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map,
+                 std::map<std::string, double> float_opts_map, Options &options)
+    : MolecularGrid(molecule), primary_(primary), options_(options) {
+    buildGridFromOptions(int_opts_map, str_opts_map, float_opts_map);
 }
 DFTGrid::~DFTGrid() {}
 
 void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
-                                   std::map<std::string, std::string> opts_map) {
+                                   std::map<std::string, std::string> str_opts_map,
+                                   std::map<std::string, double> float_opts_map) {
     std::map<std::string, std::string> full_str_options;
     std::vector<std::string> str_keys = {"DFT_RADIAL_SCHEME", "DFT_PRUNING_SCHEME", "DFT_NUCLEAR_SCHEME",
-                                         "DFT_GRID_NAME"};
+                                         "DFT_GRID_NAME", "DFT_BLOCK_SCHEME"};
     for (auto key : str_keys) {
-        if (opts_map.find(key) != opts_map.end()) {
-            full_str_options[key] = opts_map[key];
+        if (str_opts_map.find(key) != str_opts_map.end()) {
+            full_str_options[key] = str_opts_map[key];
         } else {
             full_str_options[key] = options_.get_str(key);
         }
@@ -4302,8 +4302,13 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     }
 
     std::map<std::string, int> full_int_options;
-    std::vector<std::string> int_keys = {"DFT_BLOCK_MAX_POINTS", "DFT_BLOCK_MIN_POINTS", "DFT_SPHERICAL_POINTS",
-                                         "DFT_RADIAL_POINTS"};
+    std::vector<std::string> int_keys = {"DFT_BLOCK_MAX_POINTS",
+                                         "DFT_BLOCK_MIN_POINTS",
+                                         "DFT_SPHERICAL_POINTS",
+                                         "DFT_RADIAL_POINTS",
+                                         "PRINT",
+                                         "DEBUG",
+                                         "BENCH"};
     for (auto key : int_keys) {
         if (int_opts_map.find(key) != int_opts_map.end()) {
             full_int_options[key] = int_opts_map[key];
@@ -4313,15 +4318,39 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
         // printf("%s : %d\n", key.c_str(), full_int_options[key]);
     }
 
+    std::map<std::string, double> full_float_options;
+    std::vector<std::string> float_keys = {"DFT_BS_RADIUS_ALPHA",
+                                           "DFT_PRUNING_ALPHA",
+                                           "DFT_WEIGHTS_TOLERANCE",
+                                           "DFT_BLOCK_MAX_RADIUS",
+                                           "DFT_BASIS_TOLERANCE"};
+    for (const auto& key : float_keys) {
+        if (float_opts_map.find(key) != float_opts_map.end()) {
+            full_float_options[key] = float_opts_map[key];
+        } else {
+            full_float_options[key] = options_.get_double(key);
+        }
+    }
+
+    // TODO: Move both the double and bool parts from a global to a grid specific option.
+    //  possibly via an approach listed here:
+    //  https://stackoverflow.com/questions/24702235/c-stdmap-holding-any-type-of-value/24702596
     MolecularGridOptions opt;
-    opt.bs_radius_alpha = options_.get_double("DFT_BS_RADIUS_ALPHA");
-    opt.pruning_alpha = options_.get_double("DFT_PRUNING_ALPHA");
+    opt.bs_radius_alpha = full_float_options["DFT_BS_RADIUS_ALPHA"];
+    opt.pruning_alpha = full_float_options["DFT_PRUNING_ALPHA"];
     opt.radscheme = RadialGridMgr::WhichScheme(full_str_options["DFT_RADIAL_SCHEME"].c_str());
     opt.nucscheme = NuclearWeightMgr::WhichScheme(full_str_options["DFT_NUCLEAR_SCHEME"].c_str());
     opt.namedGrid = StandardGridMgr::WhichGrid(full_str_options["DFT_GRID_NAME"].c_str());
     opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
     opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
-    opt.weights_cutoff = options_.get_double("DFT_WEIGHTS_TOLERANCE");
+    opt.weights_cutoff = full_float_options["DFT_WEIGHTS_TOLERANCE"];
+    opt.blockscheme = full_str_options["DFT_BLOCK_SCHEME"];
+    opt.remove_distant_points = options_.get_bool("DFT_REMOVE_DISTANT_POINTS");
+
+    // printing and debug options
+    opt.print = full_int_options["PRINT"];
+    opt.debug = full_int_options["DEBUG"];
+    opt.bench = full_int_options["BENCH"];
 
     // handle pruning options
     static const std::vector<std::string> function_names = {"FLAT",       "P_SLATER",   "D_SLATER",    "LOG_SLATER",
@@ -4341,7 +4370,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
             opt.prunefunction = RadialPruneMgr::WhichPruneFunction(opt.prunescheme.c_str());
         }
     }
-    //note: NONE is just FLAT in hiding but meant to make it clear to the user that
+    // NONE is an alias for FLAT that makes it clear to the user that
     // no pruning is done
     if (opt.prunescheme == "NONE") {
         opt.prunetype = "FUNCTION";
@@ -4353,17 +4382,21 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
         throw PSIEXCEPTION("Invalid number of spherical points (not a Lebedev number)");
     }
 
-    MolecularGrid::buildGridFromOptions(opt);
-
     // Blocking/sieving info
     int max_points = full_int_options["DFT_BLOCK_MAX_POINTS"];
     int min_points = full_int_options["DFT_BLOCK_MIN_POINTS"];
-    double max_radius = options_.get_double("DFT_BLOCK_MAX_RADIUS");
-    double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
+    double max_radius = full_float_options["DFT_BLOCK_MAX_RADIUS"];
+    double epsilon = full_float_options["DFT_BASIS_TOLERANCE"];
     auto extents = std::make_shared<BasisExtents>(primary_, epsilon);
+    timer_on("build grid");
+    MolecularGrid::buildGridFromOptions(opt);
+    timer_off("build grid");
+    timer_on("post-process grid");
     postProcess(extents, max_points, min_points, max_radius);
+    timer_off("post-process grid");
 }
 
+// REFACTOR NOTE: PS grids are not used. Not all possible MolecularGridOptions are being set.
 PseudospectralGrid::PseudospectralGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
                                        Options &options)
     : MolecularGrid(molecule), primary_(primary), filename_(""), options_(options) {
@@ -4407,27 +4440,22 @@ MolecularGrid::~MolecularGrid() {
         delete[] y_;
         delete[] z_;
         delete[] w_;
-        delete[] index_;
     }
 }
 
 void MolecularGrid::block(int max_points, int min_points, double max_radius) {
-    // Hack
-    Options &options_ = Process::environment.options;
-
-    // Reassign
     std::shared_ptr<GridBlocker> blocker;
-    if (options_.get_str("DFT_BLOCK_SCHEME") == "NAIVE") {
-        blocker = std::shared_ptr<GridBlocker>(
-            new NaiveGridBlocker(npoints_, x_, y_, z_, w_, index_, max_points, min_points, max_radius, extents_));
-    } else if (options_.get_str("DFT_BLOCK_SCHEME") == "OCTREE") {
-        blocker = std::shared_ptr<GridBlocker>(
-            new OctreeGridBlocker(npoints_, x_, y_, z_, w_, index_, max_points, min_points, max_radius, extents_));
+    if (options_.blockscheme == "NAIVE") {
+        blocker = std::make_shared<NaiveGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
+    } else if (options_.blockscheme == "OCTREE") {
+        blocker = std::make_shared<OctreeGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
+    } else if (options_.blockscheme == "ATOMIC") {
+        blocker = std::make_shared<AtomicGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_, molecule_, atomic_grids_);
     }
 
-    blocker->set_print(options_.get_int("PRINT"));
-    blocker->set_debug(options_.get_int("DEBUG"));
-    blocker->set_bench(options_.get_int("BENCH"));
+    blocker->set_print(options_.print);
+    blocker->set_debug(options_.debug);
+    blocker->set_bench(options_.bench);
 
     blocker->block();
 
@@ -4435,55 +4463,62 @@ void MolecularGrid::block(int max_points, int min_points, double max_radius) {
     delete[] y_;
     delete[] z_;
     delete[] w_;
-    delete[] index_;
 
     x_ = blocker->x();
     y_ = blocker->y();
     z_ = blocker->z();
     w_ = blocker->w();
-    index_ = blocker->index();
 
     npoints_ = blocker->npoints();
     max_points_ = blocker->max_points();
     max_functions_ = blocker->max_functions();
     collocation_size_ = blocker->collocation_size();
 
-    const std::vector<std::shared_ptr<BlockOPoints>> &block = blocker->blocks();
-    for (size_t i = 0; i < block.size(); i++) {
-        blocks_.push_back(block[i]);
+    blocks_ = blocker->blocks();
+    if (options_.blockscheme == "ATOMIC") {
+        atomic_blocks_ = blocker->atomic_blocks();
     }
 }
 
 void MolecularGrid::remove_distant_points(double Rmax) {
     if (Rmax == std::numeric_limits<double>::max()) return;
 
-    int natom = molecule_->natom();
     int npoints2 = npoints_;
     int offset = 0;
-    for (int Q = 0; Q < npoints_; Q++) {
-        Vector3 v = molecule_->xyz(0);
-        double R = (x_[Q] - v[0]) * (x_[Q] - v[0]) + (y_[Q] - v[1]) * (y_[Q] - v[1]) + (z_[Q] - v[2]) * (z_[Q] - v[2]);
-        for (int A = 1; A < natom; A++) {
-            v = molecule_->xyz(A);
-            double R2 =
-                (x_[Q] - v[0]) * (x_[Q] - v[0]) + (y_[Q] - v[1]) * (y_[Q] - v[1]) + (z_[Q] - v[2]) * (z_[Q] - v[2]);
-            if (R > R2) {
-                R = R2;
+    int point_index = 0;
+    std::vector<std::vector<MassPoint>> temp_grids(molecule_->natom());
+    for (int atom = 0; atom < atomic_grids_.size(); ++atom) {
+        for (int Q = 0; Q < atomic_grids_[atom].size(); ++Q) {
+            auto P = atomic_grids_[atom][Q];
+            Vector3 v = molecule_->xyz(atom);
+            double R = (P.x - v[0]) * (P.x - v[0]) + (P.y - v[1]) * (P.y - v[1]) + (P.z - v[2]) * (P.z - v[2]);
+            for (int A = 0; A < molecule_->natom(); A++) {
+                if (Q == A) continue;
+                v = molecule_->xyz(A);
+                double R2 = (P.x - v[0]) * (P.x - v[0]) + (P.y - v[1]) * (P.y - v[1]) + (P.z - v[2]) * (P.z - v[2]);
+                if (R > R2) {
+                    R = R2;
+                }
             }
-        }
-
-        if (R > Rmax * Rmax) {
-            npoints2--;
-        } else {
-            x_[offset] = x_[Q];
-            y_[offset] = y_[Q];
-            z_[offset] = z_[Q];
-            w_[offset] = w_[Q];
-            index_[offset] = index_[Q];
-            offset++;
+            if (R > Rmax * Rmax) {
+                npoints2--;
+            } else {
+                temp_grids[atom].push_back(P);
+                x_[offset] = x_[point_index];
+                y_[offset] = y_[point_index];
+                z_[offset] = z_[point_index];
+                w_[offset] = w_[point_index];
+                offset++;
+            }
+            ++point_index;
         }
     }
     npoints_ = npoints2;
+    atomic_grids_ = temp_grids;
+    // free up allocated storage capacity.
+    for (size_t i = 0; i < atomic_grids_.size(); i++){
+        atomic_grids_[i].shrink_to_fit();
+    }
 }
 
 void MolecularGrid::postProcess(std::shared_ptr<BasisExtents> extents, int max_points, int min_points,
@@ -4492,7 +4527,9 @@ void MolecularGrid::postProcess(std::shared_ptr<BasisExtents> extents, int max_p
     primary_ = extents_->basis();
 
     // => Remove points that are very distant <= //
-    remove_distant_points(extents_->maxR());
+    if (options_.remove_distant_points) {
+        remove_distant_points(extents_->maxR());
+    }
 
     block(max_points, min_points, max_radius);
 }
@@ -4507,6 +4544,7 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     }
     printer->Printf("    Nuclear Scheme         = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
     printer->Printf("\n");
+    printer->Printf("    Blocking Scheme        = %14s\n", options_.blockscheme.c_str());
     printer->Printf("    BS radius alpha        = %14g\n", options_.bs_radius_alpha);
     printer->Printf("    Pruning alpha          = %14g\n", options_.pruning_alpha);
     printer->Printf("    Radial Points          = %14d\n", options_.nradpts);
@@ -4541,8 +4579,8 @@ void MolecularGrid::print_details(std::string out, int /*print*/) const {
 }
 
 GridBlocker::GridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref, double const *z_ref,
-                         double const *w_ref, int const *index_ref, const int max_points, const int min_points,
-                         const double max_radius, std::shared_ptr<BasisExtents> extents)
+                         double const *w_ref, const int max_points, const int min_points, const double max_radius,
+                         std::shared_ptr<BasisExtents> extents)
     : debug_(0),
       print_(1),
       npoints_ref_(npoints_ref),
@@ -4550,46 +4588,121 @@ GridBlocker::GridBlocker(const int npoints_ref, double const *x_ref, double cons
       y_ref_(y_ref),
       z_ref_(z_ref),
       w_ref_(w_ref),
-      index_ref_(index_ref),
       tol_max_points_(max_points),
       tol_min_points_(min_points),
       tol_max_radius_(max_radius),
       extents_(extents) {}
 GridBlocker::~GridBlocker() {}
+
+AtomicGridBlocker::AtomicGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref,
+                                     double const *z_ref, double const *w_ref, const int max_points,
+                                     const int min_points, const double max_radius,
+                                     std::shared_ptr<BasisExtents> extents, const std::shared_ptr<Molecule> molecule,
+                                     const std::vector<std::vector<MassPoint>> atomic_grids)
+    : GridBlocker(npoints_ref, x_ref, y_ref, z_ref, w_ref, max_points, min_points, max_radius, extents),
+      molecule_(molecule),
+      atomic_grids_(atomic_grids) {}
+AtomicGridBlocker::~AtomicGridBlocker() {}
+void AtomicGridBlocker::block() {
+    npoints_ = npoints_ref_;
+    max_points_ = tol_max_points_;
+
+    auto nat = molecule_->natom();
+
+    // TODO: add option to re-assign grid points to closest atom.
+    // Needed to make a spatial close subdivision for atomic blocking.
+
+    // Need this for BlockOPoints.
+    x_ = new double[npoints_];
+    y_ = new double[npoints_];
+    z_ = new double[npoints_];
+    w_ = new double[npoints_];
+
+    atomic_blocks_.clear();
+    atomic_blocks_.resize(molecule_->natom());
+
+    // naive subdivision
+    blocks_.clear();
+    size_t block_index = 0;
+    size_t point_index = 0;
+    for (size_t i = 0; i < atomic_grids_.size(); i++) {
+        size_t points_per_atom = atomic_grids_[i].size();
+        for (size_t Q = 0; Q < points_per_atom; Q += max_points_) {
+            size_t n = (Q + max_points_ >= points_per_atom ? points_per_atom - Q : max_points_);
+            // Need to split up the MassPoint into individual components and assign to arrays.
+            for (size_t N = 0; N < n; N++) {
+                x_[point_index + N] = atomic_grids_[i][Q + N].x;
+                y_[point_index + N] = atomic_grids_[i][Q + N].y;
+                z_[point_index + N] = atomic_grids_[i][Q + N].z;
+                w_[point_index + N] = atomic_grids_[i][Q + N].w;
+            }
+            auto bop = std::make_shared<BlockOPoints>(block_index, n, &x_[point_index], &y_[point_index],
+                                                      &z_[point_index], &w_[point_index], extents_);
+            if (bop->local_nbf()) {
+                bop->set_parent_atom(i);
+                blocks_.push_back(bop);
+                atomic_blocks_[i].push_back(bop);
+            }
+            block_index += 1;
+            point_index += n;
+        }
+    }
+    // Determine max_functions per block and collocation size.
+    max_functions_ = 0;
+    collocation_size_ = 0;
+    for (size_t A = 0; A < blocks_.size(); A++) {
+        collocation_size_ += blocks_[A]->local_nbf() * blocks_[A]->npoints();
+        if ((size_t)max_functions_ < blocks_[A]->local_nbf()) {
+            max_functions_ = blocks_[A]->local_nbf();
+        }
+    }
+
+};
+
 NaiveGridBlocker::NaiveGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref, double const *z_ref,
-                                   double const *w_ref, int const *index_ref, const int max_points,
-                                   const int min_points, const double max_radius, std::shared_ptr<BasisExtents> extents)
-    : GridBlocker(npoints_ref, x_ref, y_ref, z_ref, w_ref, index_ref, max_points, min_points, max_radius, extents) {}
+                                   double const *w_ref, const int max_points, const int min_points,
+                                   const double max_radius, std::shared_ptr<BasisExtents> extents)
+    : GridBlocker(npoints_ref, x_ref, y_ref, z_ref, w_ref, max_points, min_points, max_radius, extents) {}
 NaiveGridBlocker::~NaiveGridBlocker() {}
 void NaiveGridBlocker::block() {
     npoints_ = npoints_ref_;
     max_points_ = tol_max_points_;
-    max_functions_ = extents_->basis()->nbf();
-    collocation_size_ = static_cast<size_t>(max_points_) * max_functions_;
 
     x_ = new double[npoints_];
     y_ = new double[npoints_];
     z_ = new double[npoints_];
     w_ = new double[npoints_];
-    index_ = new int[npoints_];
 
     ::memcpy((void *)x_, (void *)x_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)y_, (void *)y_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)z_, (void *)z_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)w_, (void *)w_ref_, sizeof(double) * npoints_);
-    ::memcpy((void *)index_, (void *)index_ref_, sizeof(int) * npoints_);
 
     blocks_.clear();
     for (size_t Q = 0; Q < npoints_; Q += max_points_) {
         size_t n = (Q + max_points_ >= npoints_ ? npoints_ - Q : max_points_);
-        blocks_.push_back(std::make_shared<BlockOPoints>(Q, n, &x_[Q], &y_[Q], &z_[Q], &w_[Q], extents_));
+        auto bop = std::make_shared<BlockOPoints>(Q, n, &x_[Q], &y_[Q], &z_[Q], &w_[Q], extents_);
+        // prevent blocks without bf that will crash collocation caching
+        if (bop->local_nbf()) {
+            blocks_.push_back(bop);
+        }
     }
+
+    max_functions_ = 0;
+    collocation_size_ = 0;
+    for (size_t A = 0; A < blocks_.size(); A++) {
+        collocation_size_ += blocks_[A]->local_nbf() * blocks_[A]->npoints();
+        if ((size_t)max_functions_ < blocks_[A]->local_nbf()) {
+            max_functions_ = blocks_[A]->local_nbf();
+        }
+    }
+
 }
 OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref,
-                                     double const *z_ref, double const *w_ref, int const *index_ref,
-                                     const int max_points, const int min_points, const double max_radius,
+                                     double const *z_ref, double const *w_ref, const int max_points,
+                                     const int min_points, const double max_radius,
                                      std::shared_ptr<BasisExtents> extents)
-    : GridBlocker(npoints_ref, x_ref, y_ref, z_ref, w_ref, index_ref, max_points, min_points, max_radius, extents) {}
+    : GridBlocker(npoints_ref, x_ref, y_ref, z_ref, w_ref, max_points, min_points, max_radius, extents) {}
 OctreeGridBlocker::~OctreeGridBlocker() {}
 void OctreeGridBlocker::block() {
     // K-PR Octree algorithm (Rob Parrish and Justin Turney)
@@ -4752,7 +4865,6 @@ void OctreeGridBlocker::block() {
     y_ = new double[npoints_];
     z_ = new double[npoints_];
     w_ = new double[npoints_];
-    index_ = new int[npoints_];
 
     int index = 0;
     int unique_block = 0;
@@ -4769,7 +4881,6 @@ void OctreeGridBlocker::block() {
             y_[index] = y[delta];
             z_[index] = z[delta];
             w_[index] = w[delta];
-            index_[index] = index_ref_[delta];
             if (bench_)
                 printer->Printf("   %4d %15.6E %15.6E %15.6E %15.6E\n", unique_block, x_[index], y_[index], z_[index],
                                 w_[index]);
@@ -4911,7 +5022,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha, i
 std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha, int Z) {
     RadialGrid *grid = new RadialGrid();
 
-    // // Treutler/Ahlrichs 1995 mapping parameters
+    // Treutler/Ahlrichs 1995 mapping parameters
     // clang-format off
     static const std::vector<double> TreutlerEta =  { 1.0,
       0.800, 0.900,

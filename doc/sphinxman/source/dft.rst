@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -45,6 +45,8 @@ DFT: Density Functional Theory
 Both density functional theory and Hartree--Fock theory are controlled
 through the SCF module, and the :ref:`SCF Introduction <sec:scfintro>`
 section is also relevant here.
+
+.. note:: Starting version 1.5, the |scf__wcombine| option is temporarily disabled.
 
 .. note:: Starting version 1.4 (tag v1.4a1 in the development repository), |PSIfour| uses an updated and extended (to 104 elements) set
           of Bragg-Slater radii. This leads to minimal deviations in absolute energies (1E-06 au) and
@@ -617,7 +619,7 @@ IP Fitting
 
 In collaboration with the Bredas group, we have developed an automatic procedure
 for IP fitting of LRC functionals, based on a modified Regula-Falsi method. To
-perform IP fitting, one simply calls the :py:func:`~psi4.ip_fitting` Python macro, after
+perform IP fitting, one simply calls the :py:func:`~psi4.driver.frac.ip_fitting` Python macro, after
 setting up a standard LRC UKS computation. A representative example is::
 
     memory 512 MB
@@ -660,7 +662,7 @@ reuse of integrals/guess orbitals across a range of fractional occupations, this
 code is able to perform fractional occupation curves for systems with up to 60
 atoms, across a wide range of the particle number :math:`N`.
 
-Two python macros exist for this code. The first is :py:func:`~psi4.frac_traverse`, which is
+Two python macros exist for this code. The first is :py:func:`~psi4.driver.frac.frac_traverse`, which is
 used to investigate the fractional occupation behavior within one electron above
 and below the neutral. An example is::
 
@@ -682,9 +684,9 @@ and below the neutral. An example is::
     # Many optional arguments are available, see the python file
     frac_traverse('wb97', molecule=h2o)
 
-The other macro is :py:func:`~psi4.frac_nuke`, which strips several electrons out of the
+The other macro is :py:func:`~psi4.driver.frac.frac_nuke`, which strips several electrons out of the
 system to gather information on the MSIE over a range of orbitals. The input is
-identical to the above, except that the :py:func:`~psi4.frac_traverse` call is substituted
+identical to the above, except that the :py:func:`~psi4.driver.frac.frac_traverse` call is substituted
 for something like::
 
     # Argument is the functional.

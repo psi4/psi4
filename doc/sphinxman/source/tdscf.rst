@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -250,6 +250,8 @@ Psithon keywords
 .. include:: autodir_options_c/scf__tdscf_maxiter.rst
 .. include:: autodir_options_c/scf__tdscf_guess.rst
 .. include:: autodir_options_c/scf__tdscf_print.rst
+.. include:: autodir_options_c/scf__tdscf_coeff_cutoff.rst
+.. include:: autodir_options_c/scf__tdscf_tdm_print.rst
 
 
 PsiAPI usage

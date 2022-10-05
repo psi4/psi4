@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,44 +39,51 @@ PRAGMA_WARNING_POP
 #include "onebody.h"
 #include "twobody.h"
 
+
+namespace psi {
+
 /*! \def INT_NCART(am)
     Gives the number of cartesian functions for an angular momentum.
 */
-#if !defined(INT_NCART)
-#define INT_NCART(am) ((am >= 0) ? ((((am) + 2) * ((am) + 1)) >> 1) : 0)
-#endif
+inline int INT_NCART(unsigned int am) {
+    return (am >= 0) ? ((((am) + 2) * ((am) + 1)) >> 1) : 0;
+}
+
 /*! \def INT_PURE(am)
     Gives the number of spherical functions for an angular momentum.
 */
-#if !defined(INT_NPURE)
-#define INT_NPURE(am) (2 * (am) + 1)
-#endif
+inline int INT_NPURE(unsigned int am) {
+    return 2 * (am) + 1;
+}
+
 /*! \def INT_NFUNC(pu,am)
     Gives the number of functions for an angular momentum based on pu.
 */
-#if !defined(INT_NFUNC)
-#define INT_NFUNC(pu, am) ((pu) ? INT_NPURE(am) : INT_NCART(am))
-#endif
+inline int INT_NFUNC(unsigned int pu, unsigned int am) {
+    return (pu) ? INT_NPURE(am) : INT_NCART(am);
+}
+
 /*! \def INT_CARTINDEX(am,i,j)
     Computes offset index for cartesian function.
 */
-#if !defined(INT_CARTINDEX)
-#define INT_CARTINDEX(am, i, j) (((i) == (am)) ? 0 : (((((am) - (i) + 1) * ((am) - (i))) >> 1) + (am) - (i) - (j)))
-#endif
+inline int INT_CARTINDEX(unsigned int am, int i, int j) {
+    return ((i) == (am)) ? 0 : (((((am) - (i) + 1) * ((am) - (i))) >> 1) + (am) - (i) - (j));
+}
+
 /*! \def INT_ICART(a, b, c)
     Given a, b, and c compute a cartesian offset.
 */
-#if !defined(INT_ICART)
-#define INT_ICART(a, b, c) (((((((a) + (b) + (c) + 1) << 1) - (a)) * ((a) + 1)) >> 1) - (b)-1)
-#endif
+inline int INT_ICART(int a, int b, int c) {
+    return ((((((a) + (b) + (c) + 1) << 1) - (a)) * ((a) + 1)) >> 1) - (b)-1;
+}
+
 /*! \def INT_IPURE(l, m)
     Given l and m compute a pure function offset.
 */
-#if !defined(INT_IPURE)
-#define INT_IPURE(l, m) ((l) + (m))
-#endif
+inline int INT_IPURE(int l, int m) {
+    return (l) + (m);
+}
 
-namespace psi {
 
 class BasisSet;
 class GaussianShell;
@@ -123,7 +130,7 @@ class PSI_API SphericalTransformComponent {
 class SphericalTransform {
    protected:
     std::vector<SphericalTransformComponent> components_;
-    int l_;  // The angular momentum this transform is for.
+    int l_;     // The angular momentum this transform is for.
     int subl_;  // The sub angular momentum (default: l_)
 
     SphericalTransform();
@@ -446,10 +453,6 @@ class PSI_API IntegralFactory {
     virtual OneBodyAOInt* ao_rel_potential(int deriv = 0);
     virtual OneBodySOInt* so_rel_potential(int deriv = 0);
 
-    /// Returns the OneBodyInt that computes the pseudospectral grid integrals
-    virtual OneBodyAOInt* ao_pseudospectral(int deriv = 0);
-    virtual OneBodySOInt* so_pseudospectral(int deriv = 0);
-
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual OneBodyAOInt* ao_dipole(int deriv = 0);
     virtual OneBodySOInt* so_dipole(int deriv = 0);
@@ -459,8 +462,8 @@ class PSI_API IntegralFactory {
     virtual OneBodySOInt* so_quadrupole();
 
     /// Returns an OneBodyInt that computes arbitrary-order multipole integrals.
-    virtual OneBodyAOInt* ao_multipoles(int order);
-    virtual OneBodySOInt* so_multipoles(int order);
+    virtual OneBodyAOInt* ao_multipoles(int order, int deriv = 0);
+    virtual OneBodySOInt* so_multipoles(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the traceless quadrupole integral.
     virtual OneBodyAOInt* ao_traceless_quadrupole();
@@ -475,7 +478,7 @@ class PSI_API IntegralFactory {
     virtual OneBodySOInt* so_angular_momentum(int deriv = 0);
 
     /// Returns a OneBodyInt that computes the multipole potential integrals for PE and EFP
-    virtual OneBodyAOInt* ao_multipole_potential(int max_k = 0, int deriv = 0);
+    virtual OneBodyAOInt* ao_multipole_potential(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyAOInt* electric_field(int deriv = 0);
@@ -494,26 +497,30 @@ class PSI_API IntegralFactory {
     virtual TwoBodyAOInt* erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an erf ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
+                                  bool needs_exchange = false);
 
     /// Returns an erf complement ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
+                                             bool needs_exchange = false);
+
+    /// Returns an Yukawa integral object (Slater-type geminal times Coulomb, e^(-z*r)/r)
+    virtual TwoBodyAOInt* yukawa_eri(double zeta, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an F12 integral object
-    virtual TwoBodyAOInt* f12(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
-
-    /// Returns an F12Scaled integral object
-    virtual TwoBodyAOInt* f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
+    virtual TwoBodyAOInt* f12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+                              bool use_shell_pairs = true);
 
     /// Returns an F12 squared integral object
-    virtual TwoBodyAOInt* f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv = 0,
+    virtual TwoBodyAOInt* f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                       bool use_shell_pairs = true);
 
     /// Returns an F12G12 integral object
-    virtual TwoBodyAOInt* f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv = 0, bool use_shell_pairs = true);
+    virtual TwoBodyAOInt* f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+                                 bool use_shell_pairs = true);
 
     /// Returns an F12 double commutator integral object
-    virtual TwoBodyAOInt* f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv = 0,
+    virtual TwoBodyAOInt* f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                                 bool use_shell_pairs = true);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells

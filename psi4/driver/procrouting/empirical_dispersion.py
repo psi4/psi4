@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -42,6 +42,7 @@ _engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das20
                                           ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
                                           ('nl', ['nl']),
                                           ('mp2d', ['dmp2']),
+                                          ("dftd4", ["d4bjeeqatm"]),
                                         ]) # yapf: disable
 
 _capable_engines_for_disp = collections.defaultdict(list)
@@ -50,13 +51,13 @@ for eng, disps in _engine_can_do.items():
         _capable_engines_for_disp[disp].append(eng)
 
 
-class EmpiricalDispersion(object):
+class EmpiricalDispersion():
     """Lightweight unification of empirical dispersion calculation modes.
 
     Attributes
     ----------
     dashlevel : str
-        {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
+        {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2', "d4bjeeqatm"}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `empirical_dispersion_resources.dashcoeff`.
@@ -87,9 +88,9 @@ class EmpiricalDispersion(object):
         `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
         validating :py:attr:`fctldash`.
     engine : str
-        {'libdisp', 'dftd3', 'nl', 'mp2d'}
+        {'libdisp', 'dftd3', 'nl', 'mp2d', "dftd4"}
         Compute engine for dispersion. One of Psi4's internal libdisp
-        library, Grimme's DFTD3 executable, or nl.
+        library, external Grimme or Beran projects, or nl.
     disp : Dispersion
         Only present for :py:attr:`engine` `=libdisp`. Psi4 class instance prepared
         to compute dispersion.
@@ -190,7 +191,7 @@ class EmpiricalDispersion(object):
             Set if :py:attr:`fctldash` nonempty.
 
         """
-        if self.engine in ['dftd3', 'mp2d']:
+        if self.engine in ['dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
                     'driver': 'energy',
@@ -212,7 +213,7 @@ class EmpiricalDispersion(object):
                 resi,
                 self.engine,
                 raise_error=True,
-                local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
+                local_options={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
 
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
             if wfn is not None:
@@ -230,7 +231,7 @@ class EmpiricalDispersion(object):
                     resi,
                     "gcp",
                     raise_error=True,
-                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
+                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = jobrec.return_result
                 dashd_part += gcp_part
 
@@ -261,7 +262,7 @@ class EmpiricalDispersion(object):
             (nat, 3) dispersion gradient [Eh/a0].
 
         """
-        if self.engine in ['dftd3', 'mp2d']:
+        if self.engine in ['dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
                     'driver': 'gradient',
@@ -282,7 +283,7 @@ class EmpiricalDispersion(object):
                 resi,
                 self.engine,
                 raise_error=True,
-                local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
+                local_options={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
 
             dashd_part = core.Matrix.from_array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT'])
             if wfn is not None:
@@ -295,7 +296,7 @@ class EmpiricalDispersion(object):
                     resi,
                     "gcp",
                     raise_error=True,
-                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
+                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = core.Matrix.from_array(jobrec.return_result)
                 dashd_part.add(gcp_part)
 
@@ -325,7 +326,7 @@ class EmpiricalDispersion(object):
         optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)
 
-        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by dftd3 or gcp.\n")
+        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by any engine.\n")
         core.print_out("       Computing the Hessian through finite difference of gradients.\n\n")
 
         # Setup the molecule

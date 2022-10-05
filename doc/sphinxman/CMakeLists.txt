@@ -24,7 +24,7 @@ else()
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 endif()
 if(_exec_python_err)
-    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi sphinx-autodoc-typehints graphviz python-graphviz -c conda-forge -c psi4)")
+    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi sphinx-autodoc-typehints graphviz python-graphviz autodoc-pydantic -c conda-forge -c psi4)")
     set(SPHINX_STUFF_FOUND "OFF")
 
 else()
@@ -32,8 +32,10 @@ else()
 endif()
 
 if(SPHINXMAN_STRICT)
-    #set(SPHINX_EXTRAS "-n;-W;--keep-going")
-    set(SPHINX_EXTRAS "-W;--keep-going")
+    set(SPHINX_EXTRAS "-n;-W;--keep-going")
+    #set(SPHINX_EXTRAS "-W;--keep-going")
+    # return to above after qcel 0.25
+    #set(SPHINX_EXTRAS "")
 else()
     set(SPHINX_EXTRAS "")
 endif()
@@ -46,7 +48,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     # Static-doc reST files
     set(STATICDOC abbr_accents.rst adc.rst adcc.rst appendices.rst basissets.rst
     basissets_byelement.rst bibliography.rst cbs.rst cbs_eqn.rst
-    nbody.rst customizing.rst db.rst detci.rst dfmp2.rst
+    nbody.rst customizing.rst db.rst detci.rst dfmp2.rst dlpnomp2.rst
     diatomic.rst documentation.rst energy.rst external.rst fchk.rst
     freq.rst gdma.rst glossary_psivariables.rst index.rst intercalls.rst
     interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst
@@ -69,7 +71,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     prog_full_integration.rst prog_style_py.rst prog_help.rst
     prog_debug_profile.rst manage_release.rst plugin_psi4fockci.rst
     brianqc.rst tdscf.rst prog_integrals.rst prog_tour.rst mcscf.rst
-    code_style.rst nitpick-exceptions external_apis.rst
+    code_style.rst nitpick-exceptions external_apis.rst ecpint.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman

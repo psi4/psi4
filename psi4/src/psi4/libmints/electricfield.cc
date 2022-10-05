@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -28,10 +28,12 @@
 #include "psi4/libmints/electricfield.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include <stdexcept>
 #include <vector>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/physconst.h"
+
+#include <libint2/engine.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -40,27 +42,77 @@ using namespace psi;
 
 ElectricFieldInt::ElectricFieldInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1,
                                    std::shared_ptr<BasisSet> bs2, int nderiv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv),
-      efield_recur_(bs1->max_am() + 2, bs2->max_am() + 2),
-      natom_(bs1->molecule()->natom()) {
-    int maxam1 = bs1_->max_am();
-    int maxam2 = bs2_->max_am();
-
-    int maxnao1 = INT_NCART(maxam1);
-    int maxnao2 = INT_NCART(maxam2);
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv) {
+    int max_am = std::max(basis1()->max_am(), basis2()->max_am());
+    int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
 
     if (nderiv == 0) {
-        buffer_ = new double[3 * maxnao1 * maxnao2];
-        set_chunks(3);
-    } else if (nderiv == 1) {
-        throw PSIEXCEPTION("Field derivative ints not coded yet!");
-        buffer_ = new double[6 * maxnao1 * maxnao2];
-        set_chunks(6);
-    } else
-        throw FeatureNotImplemented("LibMints", "ElectricFieldInts called with deriv > 1", __FILE__, __LINE__);
+        engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 1);
+        set_chunks(9);
+    } else {
+        throw FeatureNotImplemented("LibMints", "ElectricFieldInts called with deriv > 0", __FILE__, __LINE__);
+    }
+
+    buffer_ = nullptr;
+    buffers_.resize(nchunk_);
 }
 
-ElectricFieldInt::~ElectricFieldInt() { delete[] buffer_; }
+ElectricFieldInt::~ElectricFieldInt() { }
+
+void ElectricFieldInt::set_origin(const Vector3 &origin) {
+    set_chunks(9);
+    engine0_->set_params(std::vector<std::pair<double, std::array<double,3>>>{{-1.0, {origin[0], origin[1], origin[2]}}});
+}
+
+void ElectricFieldInt::compute(std::vector<SharedMatrix> &result) {
+    // Do not worry about zeroing out result
+    int ns1 = bs1_->nshell();
+    int ns2 = bs2_->nshell();
+    const auto bs1_equiv_bs2 = (bs1_ == bs2_);
+
+    if (9 != (size_t)nchunk_) {
+        outfile->Printf("there should be 9 chunks in ElectricFieldInt::compute().  You should call set_origin first.");
+        throw SanityCheckError("OneBodyInt::compute(result): result incorrect length.", __FILE__, __LINE__);
+    }
+
+    // Check the individual matrices, we can only handle nirrep() == 1
+    for (int chunk = 0; chunk < result.size(); ++chunk) {
+        const auto a = result[chunk];
+        if (a->nirrep() != 1) {
+            throw SanityCheckError("OneBodyInt::compute(result): one or more of the matrices given has symmetry.",
+                                   __FILE__, __LINE__);
+        }
+    }
+
+    for (const auto &pair : shellpairs_) {
+        int p1 = pair.first;
+        int p2 = pair.second;
+
+        const auto &s1 = bs1_->l2_shell(p1);
+        const auto &s2 = bs2_->l2_shell(p2);
+        int ni = bs1_->shell(p1).nfunction();
+        int nj = bs2_->shell(p2).nfunction();
+        int i_offset = bs1_->shell_to_basis_function(p1);
+        int j_offset = bs2_->shell_to_basis_function(p2);
+
+        // Compute the shell
+        compute_pair(s1, s2);
+
+        // For each integral that we got put in its contribution
+        for (int r = 6; r < nchunk_; ++r) {
+            const double *location = buffers_[r];
+            for (int p = 0; p < ni; ++p) {
+                for (int q = 0; q < nj; ++q) {
+                    result[r-6]->add(0, i_offset + p, j_offset + q, *location);
+                    if (bs1_equiv_bs2 && p1 != p2) {
+                        result[r-6]->add(0, j_offset + q, i_offset + p, *location);
+                    }
+                    location++;
+                }
+            }
+        }
+    }
+}
 
 Vector3 ElectricFieldInt::nuclear_contribution(const Vector3& origin, std::shared_ptr<Molecule> mol) {
     int natom = mol->natom();
@@ -87,126 +139,55 @@ Vector3 ElectricFieldInt::nuclear_contribution(const Vector3& origin, std::share
     return result;
 }
 
-SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3& /*origin*/,
-                                                                std::shared_ptr<Molecule> /*mol*/) {
-    //    int natom = mol->natom();
-    //    auto result = std::make_shared<Matrix>("Nuclear contribution to electric field gradient", 1, 6);
 
-    //    for (int i=0; i<natom; ++i) {
-    //        double x = mol->x(i) - origin[0];
-    //        double y = mol->y(i) - origin[1];
-    //        double z = mol->z(i) - origin[2];
-    //        double r2 = x*x + y*y + z*z;
-    //        double r = sqrt(r2);
+template <typename ContractionFunctor>
+void ElectricFieldInt::compute_with_functor(ContractionFunctor functor, SharedMatrix coords) {
+    set_chunks(3 * (coords->rowdim() + 2));
+    std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
+    for (int site = 0; site < coords->rowdim(); ++site) {
+        Zxyz.push_back({-1.0, {coords->get(0, site, 0), coords->get(0, site, 1), coords->get(0, site, 2)}});
+    }
+    bool bs1_is_bs2 = bs1_ == bs2_;
+    engine0_->set_params(Zxyz);
+    size_t npairs = shellpairs_.size();
+    for (int shellpair = 0; shellpair < npairs; ++shellpair) {
+        int idx1 = shellpairs_[shellpair].first;
+        int idx2 = shellpairs_[shellpair].second;
 
-    //        result->add(0, 0, -mol->Z(i) * (3*x*x-r2) / (r*r2*r2));
-    //        result->add(0, 1, -mol->Z(i) * 3*x*y / (r*r2*r2));
-    //        result->add(0, 2, -mol->Z(i) * 3*x*z / (r*r2*r2));
-    //        result->add(0, 3, -mol->Z(i) * (3*y*y-r2) / (r*r2*r2));
-    //        result->add(0, 4, -mol->Z(i) * 3*y*z / (r*r2*r2));
-    //        result->add(0, 5, -mol->Z(i) * (3*z*z-r2) / (r*r2*r2));
-    //    }
-    //    return result;
-    throw NOT_IMPLEMENTED_EXCEPTION();
-}
-
-void ElectricFieldInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2) {
-    int ao12;
-    int am1 = s1.am();
-    int am2 = s2.am();
-    int nprim1 = s1.nprimitive();
-    int nprim2 = s2.nprimitive();
-    double A[3], B[3];
-    A[0] = s1.center()[0];
-    A[1] = s1.center()[1];
-    A[2] = s1.center()[2];
-    B[0] = s2.center()[0];
-    B[1] = s2.center()[1];
-    B[2] = s2.center()[2];
-
-    int izm = 1;
-    int iym = am1 + 1;
-    int ixm = iym * iym;
-    int jzm = 1;
-    int jym = am2 + 1;
-    int jxm = jym * jym;
-
-    // Not sure if these are needed.
-    int size = INT_NCART(am1) * INT_NCART(am2);
-    int ydisp = size;
-    int zdisp = ydisp + size;
-
-    // compute intermediates
-    double AB2 = 0.0;
-    AB2 += (A[0] - B[0]) * (A[0] - B[0]);
-    AB2 += (A[1] - B[1]) * (A[1] - B[1]);
-    AB2 += (A[2] - B[2]) * (A[2] - B[2]);
-
-    memset(buffer_, 0, 3 * size * sizeof(double));
-
-    double*** ex = efield_recur_.x();
-    double*** ey = efield_recur_.y();
-    double*** ez = efield_recur_.z();
-
-    for (int p1 = 0; p1 < nprim1; ++p1) {
-        double a1 = s1.exp(p1);
-        double c1 = s1.coef(p1);
-        for (int p2 = 0; p2 < nprim2; ++p2) {
-            double a2 = s2.exp(p2);
-            double c2 = s2.coef(p2);
-            double gamma = a1 + a2;
-            double oog = 1.0 / gamma;
-
-            double PA[3], PB[3];
-            double P[3];
-
-            P[0] = (a1 * A[0] + a2 * B[0]) * oog;
-            P[1] = (a1 * A[1] + a2 * B[1]) * oog;
-            P[2] = (a1 * A[2] + a2 * B[2]) * oog;
-            PA[0] = P[0] - A[0];
-            PA[1] = P[1] - A[1];
-            PA[2] = P[2] - A[2];
-            PB[0] = P[0] - B[0];
-            PB[1] = P[1] - B[1];
-            PB[2] = P[2] - B[2];
-
-            double over_pf = exp(-a1 * a2 * AB2 * oog) * sqrt(M_PI * oog) * M_PI * oog * c1 * c2;
-
-            int atomoffset = 0;
-
-            double PC[3];
-            Vector3 C = origin_;
-
-            PC[0] = P[0] - C[0];
-            PC[1] = P[1] - C[1];
-            PC[2] = P[2] - C[2];
-
-            // Get recursive
-            efield_recur_.compute(PA, PB, PC, gamma, am1, am2);
-            // Gather contributions.
-            ao12 = 0;
-            for (int ii = 0; ii <= am1; ++ii) {
-                int l1 = am1 - ii;
-                for (int jj = 0; jj <= ii; ++jj) {
-                    int m1 = ii - jj;
-                    int n1 = jj;
-
-                    for (int kk = 0; kk <= am2; ++kk) {
-                        int l2 = am2 - kk;
-                        for (int ll = 0; ll <= kk; ++ll) {
-                            int m2 = kk - ll;
-                            int n2 = ll;
-
-                            // Compute location in the recursion
-                            int iind = l1 * ixm + m1 * iym + n1 * izm;
-                            int jind = l2 * jxm + m2 * jym + n2 * jzm;
-
-                            buffer_[atomoffset + ao12] += ex[iind][jind][0] * over_pf;
-                            buffer_[atomoffset + ao12 + ydisp] += ey[iind][jind][0] * over_pf;
-                            buffer_[atomoffset + ao12 + zdisp] += ez[iind][jind][0] * over_pf;
-
-                            ao12++;
-                        }
+        const auto &s1 = bs1_->l2_shell(idx1);
+        const auto &s2 = bs2_->l2_shell(idx2);
+        engine0_->compute(s1, s2);
+        const auto &shell1 = bs1_->shell(idx1);
+        const auto &shell2 = bs2_->shell(idx2);
+        auto nbf1 = shell1.nfunction();
+        auto nbf2 = shell2.nfunction();
+        auto offset_1 = shell1.function_index();
+        auto offset_2 = shell2.function_index();
+        for (int site = 0; site < coords->rowdim(); ++site) {
+            // The +2 here is because we're using an L2 derivative engine, which gives us the
+            // bra atom derivatives, then the ket atom derivatives, then the derivatives w.r.t.
+            // atomic charge positions, which are what we want.
+            const double *bufferx = engine0_->results()[3 * (2+site) + 0];
+            const double *buffery = engine0_->results()[3 * (2+site) + 1];
+            const double *bufferz = engine0_->results()[3 * (2+site) + 2];
+            for (int bf1 = 0; bf1 < nbf1; ++bf1) {
+                for (int bf2 = 0; bf2 < nbf2; ++bf2) {
+                    functor(bf1 + offset_1, bf2 + offset_2, site, *bufferx, *buffery, *bufferz);
+                    ++bufferx;
+                    ++buffery;
+                    ++bufferz;
+                }
+            }
+            if (s1 != s2 && bs1_is_bs2) {
+                bufferx = engine0_->results()[3 * (2+site) + 0];
+                buffery = engine0_->results()[3 * (2+site) + 1];
+                bufferz = engine0_->results()[3 * (2+site) + 2];
+                for (int bf1 = 0; bf1 < nbf1; ++bf1) {
+                    for (int bf2 = 0; bf2 < nbf2; ++bf2) {
+                        functor(bf2 + offset_2, bf1 + offset_1, site, *bufferx, *buffery, *bufferz);
+                        ++bufferx;
+                        ++buffery;
+                        ++bufferz;
                     }
                 }
             }
@@ -214,250 +195,6 @@ void ElectricFieldInt::compute_pair(const GaussianShell& s1, const GaussianShell
     }
 }
 
-template <typename ContractionFunctor>
-void ElectricFieldInt::compute_with_functor(ContractionFunctor functor, SharedMatrix coords) {
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-    int bf1_offset = 0;
-    for (int i = 0; i < ns1; ++i) {
-        const GaussianShell& s1 = bs1_->shell(i);
-        int ni = s1.ncartesian();
-        int bf2_offset = 0;
-        for (int j = 0; j < ns2; ++j) {
-            const GaussianShell& s2 = bs2_->shell(j);
-            int nj = s2.ncartesian();
-            int ao12;
-            int am1 = s1.am();
-            int am2 = s2.am();
-            int nprim1 = s1.nprimitive();
-            int nprim2 = s2.nprimitive();
-            double A[3], B[3];
-            A[0] = s1.center()[0];
-            A[1] = s1.center()[1];
-            A[2] = s1.center()[2];
-            B[0] = s2.center()[0];
-            B[1] = s2.center()[1];
-            B[2] = s2.center()[2];
-
-            int izm = 1;
-            int iym = am1 + 1;
-            int ixm = iym * iym;
-            int jzm = 1;
-            int jym = am2 + 1;
-            int jxm = jym * jym;
-
-            // Not sure if these are needed.
-            int size = INT_NCART(am1) * INT_NCART(am2);
-            int ydisp = size;
-            int zdisp = ydisp + size;
-
-            // compute intermediates
-            double AB2 = 0.0;
-            AB2 += (A[0] - B[0]) * (A[0] - B[0]);
-            AB2 += (A[1] - B[1]) * (A[1] - B[1]);
-            AB2 += (A[2] - B[2]) * (A[2] - B[2]);
-
-            double*** ex = efield_recur_.x();
-            double*** ey = efield_recur_.y();
-            double*** ez = efield_recur_.z();
-
-            double** xyz = coords->pointer();
-            int nsites = coords->rowspi()[0];
-
-            for (int site = 0; site < nsites; ++site) {
-                std::fill_n(buffer_, 3 * size, 0.0);
-                double PC[3];
-                double C[3];
-                C[0] = xyz[site][0];
-                C[1] = xyz[site][1];
-                C[2] = xyz[site][2];
-
-                for (int p1 = 0; p1 < nprim1; ++p1) {
-                    double a1 = s1.exp(p1);
-                    double c1 = s1.coef(p1);
-                    for (int p2 = 0; p2 < nprim2; ++p2) {
-                        double a2 = s2.exp(p2);
-                        double c2 = s2.coef(p2);
-                        double gamma = a1 + a2;
-                        double oog = 1.0 / gamma;
-
-                        double PA[3], PB[3];
-                        double P[3];
-
-                        P[0] = (a1 * A[0] + a2 * B[0]) * oog;
-                        P[1] = (a1 * A[1] + a2 * B[1]) * oog;
-                        P[2] = (a1 * A[2] + a2 * B[2]) * oog;
-                        PA[0] = P[0] - A[0];
-                        PA[1] = P[1] - A[1];
-                        PA[2] = P[2] - A[2];
-                        PB[0] = P[0] - B[0];
-                        PB[1] = P[1] - B[1];
-                        PB[2] = P[2] - B[2];
-
-                        double over_pf = exp(-a1 * a2 * AB2 * oog) * sqrt(M_PI * oog) * M_PI * oog * c1 * c2;
-
-                        PC[0] = P[0] - C[0];
-                        PC[1] = P[1] - C[1];
-                        PC[2] = P[2] - C[2];
-
-                        // Get recursive
-                        efield_recur_.compute(PA, PB, PC, gamma, am1, am2);
-                        // Gather contributions.
-                        ao12 = 0;
-                        int ao1 = 0;
-                        for (int ii = 0; ii <= am1; ++ii) {
-                            int l1 = am1 - ii;
-                            for (int jj = 0; jj <= ii; ++jj) {
-                                int m1 = ii - jj;
-                                int n1 = jj;
-
-                                int ao2 = 0;
-                                for (int kk = 0; kk <= am2; ++kk) {
-                                    int l2 = am2 - kk;
-                                    for (int ll = 0; ll <= kk; ++ll) {
-                                        int m2 = kk - ll;
-                                        int n2 = ll;
-
-                                        // Compute location in the recursion
-                                        int iind = l1 * ixm + m1 * iym + n1 * izm;
-                                        int jind = l2 * jxm + m2 * jym + n2 * jzm;
-
-                                        buffer_[ao12] += ex[iind][jind][0] * over_pf;
-                                        buffer_[ao12 + ydisp] += ey[iind][jind][0] * over_pf;
-                                        buffer_[ao12 + zdisp] += ez[iind][jind][0] * over_pf;
-                                        functor(ao1 + bf1_offset, ao2 + bf2_offset, site, ex[iind][jind][0] * over_pf,
-                                                ey[iind][jind][0] * over_pf, ez[iind][jind][0] * over_pf);
-                                        ao2++;
-                                        ao12++;
-                                    }
-                                }
-                                ao1++;
-                            }
-                        }
-                    }  // loop over primitives of shell 2
-                }      // loop over primitives of shell 1
-            }          // loop over points
-            bf2_offset += nj;
-        }  // loop over shell 2
-        bf1_offset += ni;
-    }  // loop over shell 1
-}
-
 template void ElectricFieldInt::compute_with_functor(ContractOverDipolesFunctor, SharedMatrix);
 template void ElectricFieldInt::compute_with_functor(ContractOverDensityFieldFunctor, SharedMatrix);
 
-void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& /*s1*/, const GaussianShell& /*s2*/) {
-    throw NOT_IMPLEMENTED_EXCEPTION();
-    // NOT IMPLEMENTED!!!!!!
-    //    int ao12;
-    //    int am1 = s1.am();
-    //    int am2 = s2.am();
-    //    int nprim1 = s1.nprimitive();
-    //    int nprim2 = s2.nprimitive();
-    //    double A[3], B[3];
-    //    A[0] = s1.center()[0];
-    //    A[1] = s1.center()[1];
-    //    A[2] = s1.center()[2];
-    //    B[0] = s2.center()[0];
-    //    B[1] = s2.center()[1];
-    //    B[2] = s2.center()[2];
-
-    //    int izm = 1;
-    //    int iym = am1 + 1;
-    //    int ixm = iym * iym;
-    //    int jzm = 1;
-    //    int jym = am2 + 1;
-    //    int jxm = jym * jym;
-
-    //    // Not sure if these are needed.
-    //    int size =  INT_NCART(am1) * INT_NCART(am2);
-    //    int xydisp = size;
-    //    int xzdisp = xydisp + size;
-    //    int yydisp = xzdisp + size;
-    //    int yzdisp = yydisp + size;
-    //    int zzdisp = yzdisp + size;
-
-    //    // compute intermediates
-    //    double AB2 = 0.0;
-    //    AB2 += (A[0] - B[0]) * (A[0] - B[0]);
-    //    AB2 += (A[1] - B[1]) * (A[1] - B[1]);
-    //    AB2 += (A[2] - B[2]) * (A[2] - B[2]);
-
-    //    memset(buffer_, 0, 6 * size * sizeof(double));
-
-    //    double ***exx = efield_recur_.vxx();
-    //    double ***exy = efield_recur_.vxy();
-    //    double ***exz = efield_recur_.vxz();
-    //    double ***eyy = efield_recur_.vyy();
-    //    double ***eyz = efield_recur_.vyz();
-    //    double ***ezz = efield_recur_.vzz();
-
-    //    for (int p1=0; p1<nprim1; ++p1) {
-    //        double a1 = s1.exp(p1);
-    //        double c1 = s1.coef(p1);
-    //        for (int p2=0; p2<nprim2; ++p2) {
-    //            double a2 = s2.exp(p2);
-    //            double c2 = s2.coef(p2);
-    //            double gamma = a1 + a2;
-    //            double oog = 1.0 / gamma;
-
-    //            double PA[3], PB[3];
-    //            double P[3];
-
-    //            P[0] = (a1*A[0] + a2*B[0])*oog;
-    //            P[1] = (a1*A[1] + a2*B[1])*oog;
-    //            P[2] = (a1*A[2] + a2*B[2])*oog;
-    //            PA[0] = P[0] - A[0];
-    //            PA[1] = P[1] - A[1];
-    //            PA[2] = P[2] - A[2];
-    //            PB[0] = P[0] - B[0];
-    //            PB[1] = P[1] - B[1];
-    //            PB[2] = P[2] - B[2];
-
-    //            double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
-
-    //            int atomoffset = 0;
-
-    //            double PC[3];
-    //            Vector3 C = origin_;
-
-    //            PC[0] = P[0] - C[0];
-    //            PC[1] = P[1] - C[1];
-    //            PC[2] = P[2] - C[2];
-
-    //            // Get recursive
-    //            efield_recur_.compute(PA, PB, PC, gamma, am1+2, am2+2);
-
-    //            // Gather contributions.
-    //            ao12 = 0;
-    //            for (int ii = 0; ii <= am1; ++ii) {
-    //                int l1 = am1 - ii;
-    //                for (int jj = 0; jj <= ii; ++jj) {
-    //                    int m1 = ii - jj;
-    //                    int n1 = jj;
-
-    //                    for (int kk = 0; kk <= am2; ++kk) {
-    //                        int l2 = am2 - kk;
-    //                        for (int ll = 0; ll <= kk; ++ll) {
-    //                            int m2 = kk - ll;
-    //                            int n2 = ll;
-
-    //                            // Compute location in the recursion
-    //                            int iind = l1 * ixm + m1 * iym + n1 * izm;
-    //                            int jind = l2 * jxm + m2 * jym + n2 * jzm;
-
-    //                            buffer_[atomoffset+ao12]        += exx[iind][jind][0] * over_pf;
-    //                            buffer_[atomoffset+ao12+xydisp] += exy[iind][jind][0] * over_pf;
-    //                            buffer_[atomoffset+ao12+xzdisp] += exz[iind][jind][0] * over_pf;
-    //                            buffer_[atomoffset+ao12+yydisp] += eyy[iind][jind][0] * over_pf;
-    //                            buffer_[atomoffset+ao12+yzdisp] += eyz[iind][jind][0] * over_pf;
-    //                            buffer_[atomoffset+ao12+zzdisp] += ezz[iind][jind][0] * over_pf;
-
-    //                            ao12++;
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-}

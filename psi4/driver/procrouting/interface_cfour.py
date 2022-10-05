@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -40,10 +40,12 @@ import shutil
 import inspect
 import subprocess
 
+import qcelemental as qcel
+
 from psi4.driver import qcdb
 from psi4.driver import p4util
-from psi4.driver.molutil import *
 from psi4.driver.p4util.exceptions import *
+from psi4 import core
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}
@@ -55,7 +57,7 @@ def run_cfour(name, **kwargs):
     Also processes results back into Psi4 format.
 
     This function is not called directly but is instead called by
-    :py:func:`~psi4.energy` or :py:func:`~psi4.optimize` when a Cfour
+    :py:func:`~psi4.driver.energy` or :py:func:`~psi4.driver.optimize` when a Cfour
     method is requested (through *name* argument). In order to function
     correctly, the Cfour executable ``xcfour`` must be present in
     :envvar:`PATH` or :envvar:`PSIPATH`.
@@ -139,8 +141,8 @@ def run_cfour(name, **kwargs):
 
     # Find environment by merging PSIPATH and PATH environment variables
     lenv = {
-        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
-                ':' + os.environ.get('PATH') + \
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) +
+                ':' + os.environ.get('PATH') +
                 ':' + core.get_datadir() + '/basis',
         'GENBAS_PATH': core.get_datadir() + '/basis',
         'CFOUR_NUM_CORES': os.environ.get('CFOUR_NUM_CORES'),
@@ -205,7 +207,7 @@ def run_cfour(name, **kwargs):
     #   OMP_NUM_THREADS from env is in lenv from above
     #   threads from psi4 -n (core.get_num_threads()) is ignored
     #   CFOUR_OMP_NUM_THREADS psi4 option takes precedence, handled below
-    if core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
+    if core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS'):
         lenv['OMP_NUM_THREADS'] = str(core.get_option('CFOUR', 'CFOUR_OMP_NUM_THREADS'))
 
     #print("""\n\n<<<<<  RUNNING CFOUR ...  >>>>>\n\n""")
@@ -256,7 +258,17 @@ def run_cfour(name, **kwargs):
         core.set_variable(key.upper(), float(psivar[key]))
 
     if qcdbmolecule is None and c4mol is not None:
-        molecule = geometry(c4mol.create_psi4_string_from_molecule(), name='blank_molecule_psi4_yo')
+
+        molrec = qcel.molparse.from_string(
+            c4mol.create_psi4_string_from_molecule(),
+            enable_qm=True,
+            missing_enabled_return_qm='minimal',
+            enable_efp=False,
+            missing_enabled_return_efp='none',
+        )
+        molecule = core.Molecule.from_dict(molrec['qm'])
+        molecule.set_name('blank_molecule_psi4_yo')
+        core.set_active_molecule(molecule)
         molecule.update_geometry()
         # This case arises when no Molecule going into calc (cfour {} block) but want
         #   to know the orientation at which grad, properties, etc. are returned (c4mol).
@@ -382,11 +394,16 @@ def run_cfour(name, **kwargs):
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
     #   Feb 2017 hack. Could get proper basis in skel wfn even if not through p4 basis kw
-    gobas = core.get_global_option('BASIS') if core.get_global_option('BASIS') else 'sto-3g'
+    if core.get_global_option('BASIS') in ["", "(AUTO)"]:
+        gobas = "sto-3g"
+    else:
+        gobas = core.get_global_option('BASIS')
     basis = core.BasisSet.build(molecule, "ORBITAL", gobas)
     if basis.has_ECP():
         raise ValidationError("""ECPs not hooked up for Cfour""")
     wfn = core.Wavefunction(molecule, basis)
+    for k, v in psivar.items():
+        wfn.set_variable(k.upper(), float(v))
 
     optstash.restore()
 
@@ -419,6 +436,11 @@ def cfour_gradient_list():
     return qcdb.cfour.cfour_gradient_list()
 
 
+def cfour_hessian_list():
+    """Form list of Cfour analytic :py:func:`~driver.gradient` arguments."""
+    return qcdb.cfour.cfour_hessian_list()
+
+
 def cfour_psivar_list():
     """Form dictionary of :ref:`PSI Variables <apdx:cfour_psivar>` set by Cfour methods."""
     return qcdb.cfour.cfour_psivar_list()
@@ -448,7 +470,7 @@ def write_zmat(name, dertype, molecule):
         qcdbmolecule.tagline = molecule.name()
         molcmd, molkw = qcdbmolecule.format_molecule_for_cfour()
 
-        if core.get_global_option('BASIS') == '':
+        if core.get_global_option('BASIS') in ["", "(AUTO)"]:
             bascmd, baskw = '', {}
         else:
             user_pg = molecule.schoenflies_symbol()

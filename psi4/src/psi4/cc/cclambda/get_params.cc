@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -55,7 +55,8 @@ namespace cclambda {
 
 void CCLambdaWavefunction::get_params(Options &options) {
     int errcod, iconv, i, j, k, l, prop_sym, prop_root, excited_method = 0;
-    int *states_per_irrep, prop_all, lambda_and_Ls = 0;
+    int prop_all, lambda_and_Ls = 0;
+    std::vector<int> states_per_irrep;
     char lbl[32];
     std::string junk;
 
@@ -199,7 +200,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
 
     /* setup property variables for excited states */
     if (cc_excited(params.wfn)) {
-        states_per_irrep = options.get_int_array("ROOTS_PER_IRREP");
+        states_per_irrep = options.get_int_vector("ROOTS_PER_IRREP");
 
         prop_all = 1;
         prop_all = options.get_bool("PROP_ALL");

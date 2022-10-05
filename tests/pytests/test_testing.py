@@ -7,7 +7,7 @@ import numpy as np
 import psi4
 from psi4.driver import qcdb
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 _arrs = {
     'a1234_14': np.arange(4),
@@ -31,6 +31,7 @@ _mats = {
     'dimvecnear': psi4.core.Vector.from_array([np.arange(4), np.array([0.0001, 1.0001, 2.0001]), np.arange(5)]),
     'dimvecdim': psi4.core.Vector.from_array([np.arange(4), np.arange(3)]),
     'dimmat': psi4.core.Matrix.from_array([np.arange(4).reshape(2, 2), np.zeros((0, 3)), np.arange(16).reshape(4, 4)]),
+    'dimmatnamed': psi4.core.Matrix.from_array([np.arange(4).reshape(2, 2), np.zeros((0, 3)), np.arange(16).reshape(4, 4)], "Name"),
     'dimmatshape': psi4.core.Matrix.from_array([np.arange(4).reshape(2, 2), np.ones((0, 3)), np.arange(16).reshape(2, 8)]),
     'dimmatdim': psi4.core.Matrix.from_array([np.arange(4).reshape(2, 2), np.ones((0, 3))]),
     'dimmatnear': psi4.core.Matrix.from_array([np.array([[0.0001, 1.0001], [2.0001, 3.0001]]), np.zeros((0, 3)), np.arange(16).reshape(4, 4)]),
@@ -38,7 +39,7 @@ _mats = {
 
 
 @pytest.mark.parametrize(
-    "fn,args,kwargs",
+    "fn, args, kwargs",
     [
         # scalar int
         (psi4.compare_integers, [1, 1, 'labeled'], {}),
@@ -76,6 +77,7 @@ _mats = {
         (psi4.compare_matrices, [_mats['dimmat'], _mats['dimmat'], 'labeled'], {}),
         (psi4.compare_matrices, [_mats['dimmat'], _mats['dimmatnear'], 2], {}),
         (psi4.compare_matrices, [_mats['dimmat'], _mats['dimmatnear']], {'atol': 0.001}),
+        (psi4.compare_matrices, [_mats['dimmat'], _mats['dimmatnamed']], {'check_name': False}),
 
         # dicts
         (psi4.compare_recursive, [_dcts['ell'], _dcts['ell'], 'labeled'], {}),
@@ -87,7 +89,7 @@ def test_psi4_compare_true(fn, args, kwargs):
 
 
 @pytest.mark.parametrize(
-    "fn,args,kwargs",
+    "fn, args, kwargs",
     [
         # scalar int
         (qcdb.compare_integers, [1, 1, 'labeled'], {}),
@@ -128,7 +130,7 @@ def test_qcdb_compare_true(fn, args, kwargs):
 
 
 @pytest.mark.parametrize(
-    "fn,args,kwargs",
+    "fn, args, kwargs",
     [
         # scalar int
         (psi4.compare_integers, [1, 2, 'labeled'], {}),
@@ -169,6 +171,7 @@ def test_qcdb_compare_true(fn, args, kwargs):
         (psi4.compare_matrices, [_mats['dimmat'], _mats['dimmatdim']], {}),
         (psi4.compare_matrices, [_mats['dimmat'], _mats['dimmatnear'], 6], {}),
         (psi4.compare_matrices, [_mats['dimmat'], _mats['dimmatnear']], {}),
+        (psi4.compare_matrices, [_mats['dimmat'], _mats['dimmatnamed']], {'check_name': True}),
 
         # dicts
         (psi4.compare_recursive, [_dcts['elll'], _dcts['ell']], {}),
@@ -180,7 +183,7 @@ def test_psi4_compare_raise(fn, args, kwargs):
 
 
 @pytest.mark.parametrize(
-    "fn,args,kwargs",
+    "fn, args, kwargs",
     [
         # scalar int
         (qcdb.compare_integers, [1, 2, 'labeled'], {}),

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -206,7 +206,7 @@ PCM::PCM(const PCM *other) {
     ntessirr_ = other->ntessirr_;
     tesspi_ = other->tesspi_;
     tess_Zxyz_ = other->tess_Zxyz_->clone();
-    MEP_n_ = SharedVector(other->MEP_n_->clone());
+    MEP_n_ = std::make_shared<Vector>(std::move(other->MEP_n_->clone()));
     basisset_ = other->basisset_;
     my_aotoso_ = other->my_aotoso_->clone();
     potential_int_ = other->potential_int_;
@@ -215,20 +215,15 @@ PCM::PCM(const PCM *other) {
 }
 
 SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
-    double **ptess_Zxyz = tess_Zxyz_->pointer();
-    for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
-    potential_int_->set_charge_field(tess_Zxyz_);
-
-    SharedMatrix D_carts;
-    if (basisset_->has_puream()) {
-        D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
-        D_carts->back_transform(D, my_aotoso_);
-    } else {
-        D_carts = D;
+    double **pZxyz = tess_Zxyz_->pointer();
+    std::vector<std::pair<double, std::array<double, 3>>> field;
+    for (int tess = 0; tess < ntess_; ++tess) {
+        field.push_back({1.0, {pZxyz[tess][1], pZxyz[tess][2], pZxyz[tess][3]}});
     }
+    potential_int_->set_charge_field(field);
 
     auto MEP = std::make_shared<Vector>(tesspi_);
-    ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
+    ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D);
     // Add in the electronic contribution to the potential at each tessera
     potential_int_->compute(contract_density_functor);
 
@@ -280,7 +275,7 @@ SharedMatrix PCM::compute_V(const SharedMatrix &D) {
 
 double PCM::compute_E_total(const SharedVector &MEP_e) const {
     // Combine the nuclear and electronic potentials at each tessera
-    MEP_e->add(MEP_n_);
+    MEP_e->add(*MEP_n_);
     std::string MEP_label("TotMEP");
     std::string ASC_label("TotASC");
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
@@ -330,7 +325,7 @@ double PCM::compute_E_separate(const SharedVector &MEP_e) const {
                             ASC_n->get(0, tess), MEP_e->get(0, tess), ASC_e->get(0, tess));
     }
 
-    MEP_e->add(MEP_n_);
+    MEP_e->add(*MEP_n_);
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
     pcmsolver_compute_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
 
@@ -374,18 +369,10 @@ double PCM::compute_E_electronic(const SharedVector &MEP_e) const {
 }
 
 SharedMatrix PCM::compute_Vpcm(const SharedVector &ASC) const {
-    auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
-    ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
+    auto V_pcm = std::make_shared<Matrix>("PCM potential cart", basisset_->nbf(), basisset_->nbf());
+    ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm);
     potential_int_->compute(contract_charges_functor);
-    // The potential might need to be transformed to the spherical harmonic basis
-    SharedMatrix V_pcm_pure;
-    if (basisset_->has_puream()) {
-        V_pcm_pure = std::make_shared<Matrix>("PCM potential pure", basisset_->nbf(), basisset_->nbf());
-        V_pcm_pure->transform(V_pcm_cart, my_aotoso_);
-        return V_pcm_pure;
-    } else {
-        return V_pcm_cart;
-    }
+    return V_pcm;
 }
 }  // namespace psi
 

@@ -1,0 +1,18 @@
+#! Computation of VMFC-corrected HF dimer Hessian 
+
+molecule dimer {
+F    0.00000000  0.00000000  0.00000000
+H    0.51473774 -0.75619513  0.00000000
+--
+F    2.58876456 -0.18386718  0.00000000
+H    2.07536419  0.57320417  0.00000000
+no_com
+no_reorient
+}
+
+for bsse_type in ["nocp", "cp", "vmfc"]:
+    h, wfn = psi4.hessian('SCF/STO-3G', molecule=dimer, bsse_type=bsse_type, max_nbody=2, return_total_data=True, return_wfn=True)
+
+    h_fd_g, wfn_fd = psi4.hessian('SCF/STO-3G', molecule=dimer, bsse_type=bsse_type, max_nbody=2, return_total_data=True,
+                                            dertype=1, return_wfn=True)
+

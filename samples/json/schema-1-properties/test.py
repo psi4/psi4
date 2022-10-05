@@ -1,4 +1,4 @@
-#! test QC_JSON Schema for properties
+#! test QCSchema for properties
 
 import numpy as np
 import psi4
@@ -145,7 +145,7 @@ expected_return_result["quadrupole"] = np.array(expected_return_result["quadrupo
 expected_return_result["wiberg_lowdin_indices"] = np.array(expected_return_result["wiberg_lowdin_indices"]).reshape((3, 3))
 expected_return_result["mayer_indices"] = np.array(expected_return_result["mayer_indices"]).reshape((3, 3))
 
-json_ret = psi4.json_wrapper.run_qcschema(json_data).dict()
+json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
 
 # can't write msgpack arrays to json
 

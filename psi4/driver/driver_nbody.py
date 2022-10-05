@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -25,115 +25,157 @@
 #
 # @END LICENSE
 #
+"""Plan, run, and assemble QC tasks to obtain many-body expansion and basis-set superposition error treatments.
 
+=============
+ManyBody Flow
+=============
+Bullet points are major actions
+Lines of dashes denote function calls
+e/d/dd=dg/g/h := energy, dipole, dipole derivative = dipole gradient, gradient, Hessian
+`mc_(frag, bas)` := a modelchem index, mc; indices of real fragments, frag; set(bas - frag) are indices of ghost fragments. see "intermediates_energy" in big table below for example.
+note that there's a lot of natural 1-indexing (1, 2, 3) rather than 0-indexing (0, 1, 2) in manybody. e.g., 2-body energy, Molecule.extract_subsets(1, (1, 2))
+note that a "level" can be n-body level (how many real molecular fragments) or a modelchem level (`mc_`; e.g., CC on 1-bodies, MP2 on 2-bodies; "multilevel")
+
+---------------------------
+ManyBodyComputer.__init__()
+---------------------------
+* not an explicit function but pydantic handles some defaults and validation
+* fields molecule, nfragments, bsse_type, return_total_data, and initial max_nbody set
+* BaseComputer.__init__()
+
+task_planner.py::task_planner()
+-------------------------------
+* computer gets modified from task_planner outside this file!
+* modelchem (method and basis) treatment levels for each n-body level determined from user levels kwarg. fields nbodies_per_mc_level set and max_nbody reset
+* for each modelchem treatment level, call build_tasks() below via one of four routes, depending on simple MB or layered MB(FD), MB(CBS), or MB(FD(CBS))
+
+    ------------------------------
+    ManyBodyComputer.build_tasks()
+    ------------------------------
+    * if supersystem requested as a modelchem level, request (frag, bas) indices for full nbody range of nocp treatment from build_nbody_compute_list()
+    * otherwise, request (frag, bas) indices for specified nbody range covering specified bsse treatments from build_nbody_compute_list()
+
+        build_nbody_compute_list()
+        --------------------------
+        * initializes dicts for each of nocp, cp, vmfc (2 for this one) with keys requested n-body levels and values empty sets
+        * use combinatorics formulas to fill each key with (frag, bas) indices (what fragments are active and what fragments have basis functions)
+          needed to compute the requested bsse treatments at the requested n-body levels.
+        * merge by n-body level the sets of indices for each bsse treatment into an "all" dict. return this and all the per-bsse dicts.
+
+    * merge (from different bsse_types) all the requested indices, prepend a modelchem treatment index to form `mc_(frag, bas)`
+    * construct a molecule appropriately real/ghosted from active-fragment info in (frag, bas)
+    * if embedding_charges active, prepare external_potentials array for atoms not in bas fragments
+    * for any new `mc_(frag, bas)` index, append a new computer to self.task_list
+
+--------------------------
+ManyBodyComputer.compute()
+--------------------------
+* compute() for each job in self.task_list
+
+----------------------------------
+ManyBodyComputer.get_psi_results()
+----------------------------------
+
+    Computer.get_results()
+    ----------------------
+
+        Computer._prepare_results()
+        ---------------------------
+        * if multiple modelchems (multilevel):
+
+            multilevel.prepare_results()
+            ----------------------------
+            * from the pool of calcs, partition them by modelchem treatment and call _prepare_results on each subpool
+            * sums modelchem levels and returns small dict back to get_results()
+
+        * call get_results() for each job in task list
+        * assemble all the computed energies, all the computed gradients, and all the computed hessians
+        * for each available derivative, call:
+
+            assemble_nbody_components()
+            ---------------------------
+            * re-call build_nbody_compute_list to get the cp/nocp/vmfc lists again
+
+                build_nbody_compute_list()
+                --------------------------
+
+            * slice up the supersystem mol into fragment atom ranges to help g/h arrays build piecemeal
+            * prepare empty {bsse_type}_by_level and {bsse_type}_body_dict structs. the former have different contents for vmfc
+            * for cp and nocp, resort the build_nbody_compute_list returns into per-body lists suitable for summing
+            * note that nb loops often run over more than active nbodies_per_mc_level item due to 1-body for subtraction and multilevel complications
+            * for each possibly active n-body level and each active bsse_type, call _sum_cluster_ptype_data to build by_level structs
+
+                _sum_cluster_ptype_data()
+                -------------------------
+                * sum up ene, grad, or Hess in per-fragment pieces based on list of (frag, bas) subjobs active for that bsse treatment
+
+            * compute special case of monomers in monomer basis
+            * for each of cp/nocp/vmfc, apply appropriate formula to build each n-body level of cumulative total energy into body_dict
+            * for driver=energy, set several qcvars and call:
+
+                _print_nbody_energy()
+                ---------------------
+                * prints and logs formatted energy output. called separately for cp, nocp, vmfc
+
+            * collect qcvars and summed levels into a return dictionary with some extra aliases for target bsse_type and target driver
+
+        * merge all the assemble_nbody_components return dictionaries
+        * in struct["intermediates"], store dict of `"N-BODY (?)@(?) TOTAL ENERGY" = return_energy` for all in task_list or results kwarg
+        * in struct["intermediates_{ptype}"], store dict of `task_list key = return_{ptype}` for all in task_list or results kwarg. ptype=e/g/h
+          always for ptype=energy, as available for higher derivatives when driver=g/h
+
+    * form nbody qcvars and properties, inc'l number, current e/g/h as available
+    * pull results (incl dicts!) into qcvars
+    * form model, including copy of class with mols converted to qcsk at atomicresult.extras["component_results"]
+
+* collect ManyBody-flavored AtomicResult from self.get_results()
+* build wfn from nbody mol and basis (always def2-svp)
+* push qcvars to P::e and wfn. push various internal dicts to qcvars, too
+* convert result to psi4.core.Matrix (non-energy) and set g/h on wfn
+* return e/g/h and wfn
+
+"""
+
+__all__ = [
+    "BsseEnum",
+    "ManyBodyComputer",
+    "nbody",
+]
+
+import copy
 import itertools
 import math
-from typing import Callable, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union, TYPE_CHECKING
+from ast import literal_eval
+from enum import Enum
+
+from pydantic import Field, validator
+
+import pprint
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+import logging
 
 import numpy as np
+from qcelemental.models import DriverEnum, AtomicResult
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import constants
+from psi4.driver import constants, driver_nbody_multilevel, p4util
 from psi4.driver.p4util.exceptions import *
-from psi4.driver import driver_nbody_helper
+from psi4.driver.task_base import BaseComputer, AtomicComputer, EnergyGradientHessianWfnReturn
+from psi4.driver.driver_cbs import CompositeComputer
+from psi4.driver.driver_findif import FiniteDifferenceComputer
 
-### Math helper functions
+if TYPE_CHECKING:
+    import qcportal
 
+logger = logging.getLogger(__name__)
 
-def nCr(n, r):
-    f = math.factorial
-    return f(n) // f(r) // f(n - r)
+FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
+SubTaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
 
-### Begin CBS gufunc data
-
-
-def _sum_cluster_ptype_data(ptype,
-                            ptype_dict,
-                            compute_list,
-                            fragment_slice_dict,
-                            fragment_size_dict,
-                            ret,
-                            vmfc=False,
-                            n=0):
-    """
-    Sums gradient and hessian data from compute_list.
-
-    compute_list comes in as a tuple(frag, basis)
-    """
-
-    if len(compute_list) == 0:
-        return
-
-    sign = 1
-
-    # Do ptype
-    if ptype == 'gradient':
-        for fragn, basisn in compute_list:
-            start = 0
-            grad = np.asarray(ptype_dict[(fragn, basisn)])
-
-            if vmfc:
-                sign = ((-1)**(n - len(fragn)))
-
-            for bas in basisn:
-                end = start + fragment_size_dict[bas]
-                ret[fragment_slice_dict[bas]] += sign * grad[start:end]
-                start += fragment_size_dict[bas]
-
-    elif ptype == 'hessian':
-        for fragn, basisn in compute_list:
-            hess = np.asarray(ptype_dict[(fragn, basisn)])
-
-            if vmfc:
-                sign = ((-1)**(n - len(fragn)))
-
-            # Build up start and end slices
-            abs_start, rel_start = 0, 0
-            abs_slices, rel_slices = [], []
-            for bas in basisn:
-                rel_end = rel_start + 3 * fragment_size_dict[bas]
-                rel_slices.append(slice(rel_start, rel_end))
-                rel_start += 3 * fragment_size_dict[bas]
-
-                tmp_slice = fragment_slice_dict[bas]
-                abs_slices.append(slice(tmp_slice.start * 3, tmp_slice.stop * 3))
-
-            for abs_sl1, rel_sl1 in zip(abs_slices, rel_slices):
-                for abs_sl2, rel_sl2 in zip(abs_slices, rel_slices):
-                    ret[abs_sl1, abs_sl2] += hess[rel_sl1, rel_sl2]
-
-    else:
-        raise KeyError("ptype can only be gradient or hessian How did you end up here?")
-
-
-def _print_nbody_energy(energy_body_dict, header, embedding=False):
-    core.print_out("""\n   ==> N-Body: %s energies <==\n\n""" % header)
-    core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
-    previous_e = energy_body_dict[1]
-    if previous_e == 0.0:
-        tot_e = False
-    else:
-        tot_e = True
-    nbody_range = list(energy_body_dict)
-    nbody_range.sort()
-    for n in nbody_range:
-        delta_e = (energy_body_dict[n] - previous_e)
-        delta_e_kcal = delta_e * constants.hartree2kcalmol
-        int_e_kcal = (
-            energy_body_dict[n] - energy_body_dict[1]) * constants.hartree2kcalmol if not embedding else np.nan
-        if tot_e:
-            core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" % (n, energy_body_dict[n], int_e_kcal,
-                                                                       delta_e_kcal))
-        else:
-            core.print_out("""     %4s  %20s  %20.12f  %20.12f\n""" % (n, "N/A", int_e_kcal,
-                                                                       delta_e_kcal))
-        previous_e = energy_body_dict[n]
-    core.print_out("\n")
-
-
-def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
+def nbody():
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
     This is a generalized universal function for computing interaction and total quantities.
@@ -141,18 +183,6 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :returns: *return type of func* |w--w| The data.
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
-
-    :type func: Callable
-    :param func: ``energy`` || etc.
-
-        Python function that accepts method_string and a molecule. Returns a
-        energy, gradient, or Hessian as requested.
-
-    :type method_string: str
-    :param method_string: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
-
-        First argument, lowercase and usually unlabeled. Indicates the computational
-        method to be passed to func.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -172,17 +202,12 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
         for plain supramolecular interaction energy, or VMFC for Valiron-Mayer
         Function Counterpoise correction. If a list is provided, the first string in
         the list determines which interaction or total energies/gradients/Hessians are
-        returned by this function. By default, this function is not called.
+        returned by this function. By default, many-body treatments are inactive.
 
     :type max_nbody: int
     :param max_nbody: ``3`` || etc.
 
         Maximum n-body to compute, cannot exceed the number of fragments in the molecule.
-
-    :type ptype: str
-    :param ptype: ``'energy'`` || ``'gradient'`` || ``'hessian'``
-
-        Type of the procedure passed in.
 
     :type return_total_data: :ref:`boolean <op_py_boolean>`
     :param return_total_data: ``'on'`` || |dl| ``'off'`` |dr|
@@ -193,6 +218,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
         counterpoise corrected energies implies the calculation of the energies of
         monomers in the monomer basis, hence specifying ``return_total_data = True``
         may carry out more computations than ``return_total_data = False``.
+        For gradients and Hessians, ``return_total_data = False`` is rarely useful.
 
     :type levels: dict
     :param levels: ``{1: 'ccsd(t)', 2: 'mp2', 'supersystem': 'scf'}`` || ``{1: 2, 2: 'ccsd(t)', 3: 'mp2'}`` || etc
@@ -205,617 +231,1271 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :param embedding_charges: ``{1: [-0.834, 0.417, 0.417], ..}``
 
         Dictionary of atom-centered point charges. keys: 1-based index of fragment, values: list of charges for each fragment.
+        Add atom-centered point charges for fragments whose basis sets are not included in the computation.
 
-    :type charge_method: str
-    :param charge_method: ``scf/6-31g`` || ``b3lyp/6-31g*`` || etc
-
-        Method to compute point charges for monomers. Overridden by ``embedding_charges``
-        if both are provided.
-
-    :type charge_type: str
-    :param charge_type: ``MULLIKEN_CHARGES`` || ``LOWDIN_CHARGES``
-
-        Default is ``MULLIKEN_CHARGES``
     """
-
-    # Initialize dictionaries for easy data passing
-    metadata, component_results, nbody_results = {}, {}, {}
-
-    # Parse some kwargs
-    kwargs = p4util.kwargs_lower(kwargs)
-    if kwargs.get('levels', False):
-        return driver_nbody_helper.multi_level(func, **kwargs)
-    metadata['ptype'] = kwargs.pop('ptype', None)
-    metadata['return_wfn'] = kwargs.pop('return_wfn', False)
-    metadata['return_total_data'] = kwargs.pop('return_total_data', None)
-    metadata['molecule'] = kwargs.pop('molecule', core.get_active_molecule())
-    metadata['molecule'].update_geometry()
-    metadata['molecule'].fix_com(True)
-    metadata['molecule'].fix_orientation(True)
-    metadata['embedding_charges'] = kwargs.get('embedding_charges', False)
-    metadata['kwargs'] = kwargs
-    core.clean_variables()
-
-    if metadata['ptype'] not in ['energy', 'gradient', 'hessian']:
-        raise ValidationError("""N-Body driver: The ptype '%s' is not regonized.""" % metadata['ptype'])
-
-    if metadata['return_total_data'] is None:
-        if metadata['ptype'] in ['gradient', 'hessian']:
-            metadata['return_total_data'] = True
-        else:
-            metadata['return_total_data'] = False
-
-    # Parse bsse_type, raise exception if not provided or unrecognized
-    metadata['bsse_type_list'] = kwargs.pop('bsse_type')
-    if metadata['bsse_type_list'] is None:
-        raise ValidationError("N-Body GUFunc: Must pass a bsse_type")
-    if not isinstance(metadata['bsse_type_list'], list):
-        metadata['bsse_type_list'] = [metadata['bsse_type_list']]
-
-    for num, btype in enumerate(metadata['bsse_type_list']):
-        metadata['bsse_type_list'][num] = btype.lower()
-        if btype.lower() not in ['cp', 'nocp', 'vmfc']:
-            raise ValidationError("N-Body GUFunc: bsse_type '%s' is not recognized" % btype.lower())
-
-    metadata['max_nbody'] = kwargs.get('max_nbody', -1)
-    if metadata['molecule'].nfragments() == 1:
-        raise ValidationError("N-Body requires active molecule to have more than 1 fragment.")
-    metadata['max_frag'] = metadata['molecule'].nfragments()
-    if metadata['max_nbody'] == -1:
-        metadata['max_nbody'] = metadata['molecule'].nfragments()
-    else:
-        metadata['max_nbody'] = min(metadata['max_nbody'], metadata['max_frag'])
-
-    # Flip this off for now, needs more testing
-    # If we are doing CP lets save them integrals
-    #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-    #    # Set to save RI integrals for repeated full-basis computations
-    #    ri_ints_io = core.get_global_option('DF_INTS_IO')
-
-    #    # inquire if above at all applies to dfmp2 or just scf
-    #    core.set_global_option('DF_INTS_IO', 'SAVE')
-    #    psioh = core.IOManager.shared_object()
-    #    psioh.set_specific_retention(97, True)
-
-    bsse_str = metadata['bsse_type_list'][0]
-    if len(metadata['bsse_type_list']) > 1:
-        bsse_str = str(metadata['bsse_type_list'])
-    core.print_out("\n\n")
-    core.print_out("   ===> N-Body Interaction Abacus <===\n")
-    core.print_out("        BSSE Treatment:                     %s\n" % bsse_str)
-
-    # Get compute list
-    metadata = build_nbody_compute_list(metadata)
-
-    # Compute N-Body components
-    component_results = compute_nbody_components(func, method_string, metadata)
-
-    # Assemble N-Body quantities
-    nbody_results = assemble_nbody_components(metadata, component_results)
-
-    # Build wfn and bind variables
-    wfn = core.Wavefunction.build(metadata['molecule'], 'def2-svp')
-    dicts = [
-        'energies', 'ptype', 'intermediates', 'energy_body_dict', 'gradient_body_dict', 'hessian_body_dict', 'nbody',
-        'cp_energy_body_dict', 'nocp_energy_body_dict', 'vmfc_energy_body_dict'
-    ]
-    if metadata['ptype'] == 'gradient':
-        wfn.set_gradient(nbody_results['ret_ptype'])
-        nbody_results['gradient_body_dict'] = nbody_results['ptype_body_dict']
-    elif metadata['ptype'] == 'hessian':
-        nbody_results['hessian_body_dict'] = nbody_results['ptype_body_dict']
-        wfn.set_hessian(nbody_results['ret_ptype'])
-        component_results_gradient = component_results.copy()
-        component_results_gradient['ptype'] = component_results_gradient['gradients']
-        metadata['ptype'] = 'gradient'
-        nbody_results_gradient = assemble_nbody_components(metadata, component_results_gradient)
-        wfn.set_gradient(nbody_results_gradient['ret_ptype'])
-        nbody_results['gradient_body_dict'] = nbody_results_gradient['ptype_body_dict']
-
-    for r in [component_results, nbody_results]:
-        for d in r:
-            if d in dicts:
-                for var, value in r[d].items():
-                    try:
-                        wfn.set_scalar_variable(str(var), value)
-                        core.set_scalar_variable(str(var), value)
-                    except:
-                        wfn.set_array_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
-
-    core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
-    wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
-    if metadata['ptype'] == 'gradient':
-        core.set_variable("CURRENT GRADIENT", nbody_results['ret_ptype'])
-    elif metadata['ptype'] == 'hessian':
-        core.set_variable("CURRENT HESSIAN", nbody_results['ret_ptype'])
-
-    if metadata['return_wfn']:
-        return (nbody_results['ret_ptype'], wfn)
-    else:
-        return nbody_results['ret_ptype']
+    pass
 
 
-def build_nbody_compute_list(metadata):
-    """Generates the list of N-Body computations to be performed for a given BSSE type.
+class BsseEnum(str, Enum):
+    """Available basis-set superposition error (BSSE) treatments."""
+
+    nocp = "nocp"  # plain supramolecular interaction energy
+    cp = "cp"      # counterpoise correction
+    vmfc = "vmfc"  # Valiron-Mayer function counterpoise
+
+
+def _sum_cluster_ptype_data(
+    ptype: DriverEnum,
+    ptype_dict: Dict,
+    compute_list: Set[FragBasIndex],
+    fragment_slice_dict: Dict[int, Sequence],
+    fragment_size_dict: Dict[int, int],
+    mc_level_lbl: int,
+    vmfc: bool = False,
+    nb: int = 0,
+) -> Union[float, np.ndarray]:
+    """
+    Sum arrays from n-body computations to obtain the BSSE corrected or uncorrected scalar or array.
 
     Parameters
     ----------
-    metadata : dict of str
-        Dictionary containing N-body metadata.
-
-        Required ``'key': value`` pairs:
-        ``'bsse_type_list'``: list of str
-            List of requested BSSE treatments.  Possible values include lowercase ``'cp'``, ``'nocp'``,
-            and ``'vmfc'``.
-        ``'max_nbody'``: int
-            Maximum number of bodies to include in the N-Body treatment.
-            Possible: `max_nbody` <= `max_frag`
-            Default: `max_nbody` = `max_frag`
-        ``'max_frag'``: int
-            Number of distinct fragments comprising full molecular supersystem.
+    ptype
+        Hint to shape of array data to sum.
+    ptype_dict
+        Dictionary containing computed energy, gradient, or Hessian obtained from each subsystem computation
+    compute_list
+        A list of (frag, bas) tuples notating all the required computations.
+    fragment_slice_dict
+        Dictionary containing slices that index the gradient or Hessian matrix for each of the 1-indexed fragments.
+        For He--HOOH--Me cluster, `{1: slice(0, 1, None), 2: slice(1, 5, None), 3: slice(5, 10, None)}`.
+    fragment_size_dict
+        Dictionary containing the number of atoms of each 1-indexed fragment.
+        For He--HOOH--Me cluster, `{1: 1, 2: 4, 3: 5}`.
+    vmfc
+        Is it a VMFC calculation?
+    nb
+        n-body level; required for VMFC calculations.
+    mc_level_lbl
+        User label for what modelchem level results should be pulled out of *ptype_dict*.
+        This is the 1-indexed counterpart to 0-indexed mc_level_idx.
 
     Returns
     -------
-    metadata : dict of str
-        Dictionary containing N-body metadata.
+    ret
+        Scalar or array containing the summed energy, gradient, or Hessian result.
+        Formerly, passed in and modified in place and only called for g/h.
 
-        New ``'key': value`` pair:
-        ``'compute_dict'`` : dict of str: dict
-            Dictionary containing subdicts enumerating compute lists for each possible BSSE treatment.
+    """
+    sign = 1
+    nat = sum(fragment_size_dict.values())
 
-            Contents:
-            ``'all'``: dict of int: set
-                Set containing full list of computations required
-            ``'cp'``: dict of int: set
-                Set containing list of computations required for CP procedure
-            ``'nocp'``: dict of int: set
-                Set containing list of computations required for non-CP procedure
-            ``'vmfc_compute'``: dict of int: set
-                Set containing list of computations required for VMFC procedure
-            ``'vmfc_levels'``: dict of int: set
-                Set containing list of levels required for VMFC procedure
+    def labeler(frag: Tuple, bas:Tuple) -> str:
+        return str(mc_level_lbl) + "_" + str((frag, bas))
+
+    if ptype == "energy":
+        ret = 0.0
+
+        for frag, bas in compute_list:
+            ene = ptype_dict[labeler(frag, bas)]
+
+            if vmfc:
+                sign = ((-1)**(nb - len(frag)))
+
+            ret += sign * ene
+
+        return ret
+
+    elif ptype == 'gradient':
+        ret = np.zeros((nat, 3))
+
+        for frag, bas in compute_list:
+            grad = np.asarray(ptype_dict[labeler(frag, bas)])
+
+            if vmfc:
+                sign = ((-1)**(nb - len(frag)))
+
+            start = 0
+            for ifr in bas:
+                end = start + fragment_size_dict[ifr]
+                ret[fragment_slice_dict[ifr]] += sign * grad[start:end]
+                start += fragment_size_dict[ifr]
+
+        return ret
+
+    elif ptype == 'hessian':
+        ret = np.zeros((nat * 3, nat * 3))
+
+        for frag, bas in compute_list:
+            hess = np.asarray(ptype_dict[labeler(frag, bas)])
+
+            if vmfc:
+                sign = ((-1)**(nb - len(frag)))
+
+            # Build up start and end slices
+            abs_start, rel_start = 0, 0
+            abs_slices, rel_slices = [], []
+            for ifr in bas:
+                rel_end = rel_start + 3 * fragment_size_dict[ifr]
+                rel_slices.append(slice(rel_start, rel_end))
+                rel_start += 3 * fragment_size_dict[ifr]
+
+                tmp_slice = fragment_slice_dict[ifr]
+                abs_slices.append(slice(tmp_slice.start * 3, tmp_slice.stop * 3))
+
+            for abs_sl1, rel_sl1 in zip(abs_slices, rel_slices):
+                for abs_sl2, rel_sl2 in zip(abs_slices, rel_slices):
+                    ret[abs_sl1, abs_sl2] += sign * hess[rel_sl1, rel_sl2]
+
+        return ret
+
+    else:
+        raise KeyError("ptype can only be energy, gradient, or hessian. How did you end up here?")
+
+
+def _print_nbody_energy(energy_body_dict: Dict[int, float], header: str, nfragments: int, embedding: bool = False):
+    """Format output string for user for a single bsse_type. Prints to output and logger.
+    Called repeatedly by assemble_nbody_component."""
+
+    info = f"""\n   ==> N-Body: {header} energies <==\n\n"""
+    info += f"""  {"n-Body":>12}     Total Energy            Interaction Energy                          N-body Contribution to Interaction Energy\n"""
+    info += f"""                   [Eh]                    [Eh]                  [kcal/mol]            [Eh]                  [kcal/mol]\n"""
+    previous_e = energy_body_dict[1]
+    tot_e = (previous_e != 0.0)
+    nbody_range = list(energy_body_dict)
+    nbody_range.sort()
+    for nb in range(1, nfragments + 1):
+        lbl = []
+        if nb == nfragments:
+            lbl.append("FULL")
+        if nb == max(nbody_range):
+            lbl.append("RTN")
+        lbl = "/".join(lbl)
+
+        if nb in nbody_range:
+            delta_e = (energy_body_dict[nb] - previous_e)
+            delta_e_kcal = delta_e * constants.hartree2kcalmol
+            if embedding:
+                int_e = np.nan
+                int_e_kcal = np.nan
+            else:
+                int_e = energy_body_dict[nb] - energy_body_dict[1]
+                int_e_kcal = int_e * constants.hartree2kcalmol
+            if tot_e:
+                info += f"""  {lbl:>8} {nb:3}  {energy_body_dict[nb]:20.12f}  {int_e:20.12f}  {int_e_kcal:20.12f}  {delta_e:20.12f}  {delta_e_kcal:20.12f}\n"""
+            else:
+                info += f"""  {lbl:>8} {nb:3}  {"N/A":20}  {int_e:20.12f}  {int_e_kcal:20.12f}  {delta_e:20.12f}  {delta_e_kcal:20.12f}\n"""
+            previous_e = energy_body_dict[nb]
+        else:
+            info += f"""  {lbl:>8} {nb:3}        {"N/A":20}  {"N/A":20}  {"N/A":20}  {"N/A":20}  {"N/A":20}\n"""
+
+    info += "\n"
+    core.print_out(info)
+    logger.info(info)
+
+
+def build_nbody_compute_list(
+    bsse_type: List[BsseEnum],
+    nbodies: List[Union[int, Literal["supersystem"]]],
+    nfragments: int,
+    return_total_data: bool,
+    verbose: int = 1,
+) -> Dict[str, Dict[int, Set[FragBasIndex]]]:
+    """Generates lists of N-Body computations needed for requested BSSE treatments.
+
+    Parameters
+    ----------
+    bsse_type
+        Requested BSSE treatments.
+    nbodies
+        List of n-body levels (e.g., `[2]` or `[1, 2]` or `["supersystem"]`) for which to generate tasks.
+        Often this value is an element of self.nbodies_per_mc_level.
+        Note the natural 1-indexing, so `[1]` covers one-body contributions.
+        Formerly nbody
+    nfragments
+        Number of distinct fragments comprising the full molecular supersystem. Usually self.nfragments.
+        Formerly max_frag
+    return_total_data
+        Whether the total data (True; energy/gradient/Hessian) of the molecular system has been requested, as opposed to interaction data (False).
+    verbose
+        Control volume of printing.
+
+    Returns
+    -------
+    compute_dict
+        Dictionary containing subdicts enumerating compute lists for each possible BSSE treatment.
+        Subdict keys are n-body levels and values are sets of all the `mc_(frag, bas)` indices
+        needed to compute that n-body level. A given index can appear multiple times within a
+        subdict and among subdicts.
+        Formerly, the subdict values were sets of indices needed for given BSSE treatment _of_ given
+        n-body level. See current (left) and former (right) definitions below for CP dimer.
+
+            compute_dict["cp"] = {                  compute_dict["cp"] = {
+                1: set(),                               1: {((1,), (1, 2)),
+                2: {((1,), (1, 2)),                         ((2,), (1, 2))},
+                    ((2,), (1, 2)),                     2: {((1, 2), (1, 2))}
+                    ((1, 2), (1, 2))}               }
+            }
+
+        Subdicts below are always returned. Any may be empty if not requested through *bsse_type*.
+
+        * ``'all'`` |w---w| full list of computations required
+        * ``'cp'`` |w---w| list of computations required for CP procedure
+        * ``'nocp'`` |w---w| list of computations required for non-CP procedure
+        * ``'vmfc_compute'`` |w---w| list of computations required for VMFC procedure
+        * ``'vmfc_levels'`` |w---w| list of levels required for VMFC procedure
+
     """
     # What levels do we need?
-    nbody_range = range(1, metadata['max_nbody'] + 1)
-    fragment_range = range(1, metadata['max_frag'] + 1)
+    fragment_range = range(1, nfragments + 1)
 
-    cp_compute_list = {x: set() for x in nbody_range}
-    nocp_compute_list = {x: set() for x in nbody_range}
-    vmfc_compute_list = {x: set() for x in nbody_range}
-    vmfc_level_list = {x: set() for x in nbody_range}  # Need to sum something slightly different
+    # Need nbodies and all lower-body in full basis
+    cp_compute_list = {x: set() for x in nbodies}
+    nocp_compute_list = {x: set() for x in nbodies}
+    vmfc_compute_list = {x: set() for x in nbodies}
+    vmfc_level_list = {x: set() for x in nbodies}  # Need to sum something slightly different
 
-    # Verify proper passing of bsse_type_list
-    bsse_type_remainder = set(metadata['bsse_type_list']) - {'cp', 'nocp', 'vmfc'}
+    # Verify proper passing of bsse_type. already validated in Computer
+    bsse_type_remainder = set(bsse_type) - {e.value for e in BsseEnum}
     if bsse_type_remainder:
-        raise ValidationError("""Unrecognized BSSE type(s): %s
-Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bsse_type_remainder))
+        raise ValidationError("""Unrecognized BSSE type(s): {bsse_type_remainder}""")
 
     # Build up compute sets
-    if 'cp' in metadata['bsse_type_list']:
-        # Everything is in dimer basis
+    if 'cp' in bsse_type:
+        # Everything is in full n-mer basis
         basis_tuple = tuple(fragment_range)
-        for nbody in nbody_range:
-            for x in itertools.combinations(fragment_range, nbody):
-                if metadata['max_nbody'] == 1: break
-                cp_compute_list[nbody].add((x, basis_tuple))
 
-    if 'nocp' in metadata['bsse_type_list'] or metadata['return_total_data']:
+        for nb in nbodies:
+            if nb > 1:
+                for sublevel in range(1, nb + 1):
+                    for x in itertools.combinations(fragment_range, sublevel):
+                        # below was `nbodies`, which would never hit. present is closest to pre-DDD. purpose unclear to me.
+                        # if self.max_nbody == 1: break
+                        cp_compute_list[nb].add((x, basis_tuple))
+
+    if 'nocp' in bsse_type or return_total_data:
         # Everything in monomer basis
-        for nbody in nbody_range:
-            for x in itertools.combinations(fragment_range, nbody):
-                nocp_compute_list[nbody].add((x, x))
+        for nb in nbodies:
+            for sublevel in range(1, nb + 1):
+                for x in itertools.combinations(fragment_range, sublevel):
+                    nocp_compute_list[nb].add((x, x))
 
-    if 'vmfc' in metadata['bsse_type_list']:
+    if 'vmfc' in bsse_type:
         # Like a CP for all combinations of pairs or greater
-        for nbody in nbody_range:
-            for cp_combos in itertools.combinations(fragment_range, nbody):
+        for nb in nbodies:
+            for cp_combos in itertools.combinations(fragment_range, nb):
                 basis_tuple = tuple(cp_combos)
-                for interior_nbody in nbody_range:
+                for interior_nbody in range(1, nb + 1):
                     for x in itertools.combinations(cp_combos, interior_nbody):
                         combo_tuple = (x, basis_tuple)
-                        vmfc_compute_list[interior_nbody].add(combo_tuple)
+                        vmfc_compute_list[nb].add(combo_tuple)
                         vmfc_level_list[len(basis_tuple)].add(combo_tuple)
 
-    # Build a comprehensive compute_range
-    compute_list = {x: set() for x in nbody_range}
-    for n in nbody_range:
-        compute_list[n] |= cp_compute_list[n]
-        compute_list[n] |= nocp_compute_list[n]
-        compute_list[n] |= vmfc_compute_list[n]
-        core.print_out("        Number of %d-body computations:     %d\n" % (n, len(compute_list[n])))
+    # Build a comprehensive compute range
+    # * do not use list length to count number of {nb}-body computations
+    compute_list = {x: set() for x in nbodies}
+    for nb in nbodies:
+        compute_list[nb] |= cp_compute_list[nb]
+        compute_list[nb] |= nocp_compute_list[nb]
+        compute_list[nb] |= vmfc_compute_list[nb]
 
-    metadata['compute_dict'] = {
+    # Rearrange compute_list from key nb having values to compute all of that nb
+    #   to key nb including values of that nb. Use for counting.
+    compute_list_count = {x: set() for x in nbodies}
+    for nb in nbodies:
+        for nbset in compute_list.values():
+            for item in nbset:
+                if len(item[0]) == nb:
+                    compute_list_count[nb].add(item)
+    if verbose >= 1:
+        info = "\n".join([f"        Number of {nb}-body computations:     {len(compute_list_count[nb])}" for nb in nbodies])
+        core.print_out(info + "\n")
+        logger.info(info)
+
+    compute_dict = {
         'all': compute_list,
         'cp': cp_compute_list,
         'nocp': nocp_compute_list,
         'vmfc_compute': vmfc_compute_list,
         'vmfc_levels': vmfc_level_list
     }
+    return compute_dict
 
-    return metadata
 
-
-def compute_nbody_components(func, method_string, metadata):
-    """Computes requested N-body components.
-
-    Performs requested computations for psi4::Molecule object `molecule` according to
-    `compute_list` with function `func` at `method_string` level of theory.
+def assemble_nbody_components(
+    ptype: DriverEnum,
+    component_results: Dict[str, Union[float, np.ndarray]],
+    metadata: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Assembles N-body components for a single derivative level and a single model chemistry level into interaction quantities according to requested BSSE treatment(s).
 
     Parameters
     ----------
-    func : str
-        {'energy', 'gradient', 'hessian'}
-        Function object to be called within N-Body procedure.
-    method_string : str
-        Indicates level of theory to be passed to function `func`.
-    metadata : dict of str
-        Dictionary of N-body metadata.
-
-        Required ``'key': value`` pairs:
-        ``'compute_list'``: dict of int: set
-            List of computations to perform.  Keys indicate body-levels, e.g,. `compute_list[2]` is the
-            list of all 2-body computations required.
-        ``'kwargs'``: dict
-            Arbitrary keyword arguments to be passed to function `func`.
+    ptype
+        Derivative level of component results to assemble. Matters mostly for scalar vs. array and array dimensions.
+    component_results
+        Dictionary with keys "mc_(frag, bas)" and values e/g/H computed component results according to *ptype*.
+    metadata
+        Dictionary of N-body metadata. Items described below.
+        Later, assemble_nbody_components should become a class function and the below are simply class member data.
+    quiet : bool
+        See class field. Whether to print/log energy summaries. Default True. False used by multilevel to suppress per-mc-level printing.
+    nfragments : int
+        See class field. Number of distinct fragments comprising the full molecular supersystem.
+        Formerly max_frag
+    return_total_data : bool
+        See class field. Whether the total data (e/g/H) of the molecular system has been requested, as opposed to interaction data.
+    max_nbody : int
+        See class field. Maximum number of bodies to include in the many-body treatment."
+    embedding_charges : bool
+        Whether embedding charges are present. Used to NaN the output printing rather than print bad numbers.
+    molecule : psi4.core.Molecule
+        See class field. Used to count atoms in fragments.
+    nbodies_per_mc_level: List[List[Union[int, Literal["supersystem"]]]]
+        See class field. Distribution of active n-body levels among model chemistry levels.
+        Formerly nbody_list
+    bsse_type : List[BsseEnum]
+        See class field. Requested BSSE treatments. First in list determines which interaction or total energy/gradient/Hessian returned.
+        Note that this is the only arg that gets RESET. Happens for supersystem "nbody".
 
     Returns
     -------
-    dict of str: dict
-        Dictionary containing computed N-body components.
+    results
+        Dictionary of all N-body results. See contents at ManyBodyComputer.prepare_results docstring.
 
-        Contents:
-        ``'energies'``: dict of set: float64
-               Dictionary containing all energy components required for given N-body procedure.
-        ``'ptype'``: dict of set: float64 or dict of set: psi4.Matrix
-               Dictionary of returned quantities from calls of function `func` during N-body computations
-        ``'intermediates'``: dict of str: float64
-               Dictionary of psivars for intermediate N-body computations to be set at the end of the
-               N-body procedure.
     """
-    # Get required metadata
-    kwargs = metadata['kwargs']
-    molecule = metadata['molecule']
-    #molecule = core.get_active_molecule()
-    compute_list = metadata['compute_dict']['all']
+    # which level are we assembling?
+    mc_level_labels = {int(i.split("_")[0]) for i in component_results.keys()}
 
-    # Now compute the energies
-    energies_dict = {}
-    gradients_dict = {}
-    ptype_dict = {}
-    intermediates_dict = {}
-    if kwargs.get('charge_method', False) and not metadata['embedding_charges']:
-        metadata['embedding_charges'] = driver_nbody_helper.compute_charges(kwargs['charge_method'],
-                                            kwargs.get('charge_type', 'MULLIKEN_CHARGES').upper(), molecule)
-    for count, n in enumerate(compute_list.keys()):
-        core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
-        total = len(compute_list[n])
-        for num, pair in enumerate(compute_list[n]):
-            core.print_out(
-                "\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n\n" %
-                (num + 1, total, str(pair[0]), str(pair[1])))
-            ghost = list(set(pair[1]) - set(pair[0]))
+    if len(mc_level_labels) != 1:
+        raise ValidationError(f"Something's wrong - this fn handles single-level (e.g., 1- & 2-body w/mp2) not multi-level (e.g., 1-body w/hf & 2-body w/mp2) assembly: len({mc_level_labels}) != 1")
 
-            current_mol = molecule.extract_subsets(list(pair[0]), ghost)
-            current_mol.set_name("%s_%i_%i" % (current_mol.name(), count, num))
-            if metadata['embedding_charges']: driver_nbody_helper.electrostatic_embedding(metadata, pair=pair)
-            # Save energies info
-            ptype_dict[pair], wfn = func(method_string, molecule=current_mol, return_wfn=True, **kwargs)
-            core.set_global_option_python('EXTERN', None)
-            energies_dict[pair] = core.variable("CURRENT ENERGY")
-            gradients_dict[pair] = wfn.gradient()
-            var_key = "N-BODY (%s)@(%s) TOTAL ENERGY" % (', '.join([str(i) for i in pair[0]]), ', '.join(
-                [str(i) for i in pair[1]]))
-            intermediates_dict[var_key] = core.variable("CURRENT ENERGY")
-            core.print_out("\n       N-Body: Complex Energy (fragments = %s, basis = %s: %20.14f)\n" % (str(
-                pair[0]), str(pair[1]), energies_dict[pair]))
-            # Flip this off for now, needs more testing
-            #if 'cp' in bsse_type_list and (len(bsse_type_list) == 1):
-            #    core.set_global_option('DF_INTS_IO', 'LOAD')
+    # get the range of nbodies for this level
+    # * modelchem level label (mc_level_lbl) used in qcvars and dict keys is 1-indexed counterpart to 0-indexed modelchem level position (mc_level_idx) used to navigate self.nbodies_per_mc_level
+    mc_level_lbl = list(mc_level_labels)[0]
+    nbodies = metadata['nbodies_per_mc_level'][mc_level_lbl - 1]
+    if nbodies[0] == 'supersystem':
+        # range for supersystem sub-components
+        nbodies = metadata['nbodies_per_mc_level'][mc_level_lbl]
+        metadata['bsse_type'] = ['nocp']
 
-            core.clean()
-
-    return {
-        'energies': energies_dict,
-        'gradients': gradients_dict,
-        'ptype': ptype_dict,
-        'intermediates': intermediates_dict
-    }
-
-
-def assemble_nbody_components(metadata, component_results):
-    """Assembles N-body components into interaction quantities according to requested BSSE procedure(s).
-
-    Parameters
-    -----------
-    metadata : dict of str
-        Dictionary of N-body metadata.
-
-        Required ``'key': value`` pairs:
-            ``'ptype'``: {'energy', 'gradient', 'hessian'}
-                   Procedure which has generated the N-body components to be combined.
-            ``'bsse_type_list'``: list of str
-                   List of requested BSSE treatments.  Possible values include lowercase ``'cp'``, ``'nocp'``,
-                   and ``'vmfc'``.
-            ``'max_nbody'``: int
-                   Maximum number of bodies to include in the N-Body treatment.
-                   Possible: `max_nbody` <= `max_frag`
-                   Default: `max_nbody` = `max_frag`
-            ``'max_frag'``: int
-                   Number of distinct fragments comprising full molecular supersystem.
-            ``'energies_dict'``: dict of set: float64
-                   Dictionary containing all energy components required for given N-body procedure.
-            ``'ptype_dict'``: dict of set: float64 or dict of set: psi4.Matrix
-                   Dictionary of returned quantities from calls of function `func` during N-body computations
-            ``'compute_dict'``: dict of str: dict
-                   Dictionary containing {int: set} subdicts enumerating compute lists for each possible
-                   BSSE treatment.
-            ``'kwargs'``: dict
-                   Arbitrary keyword arguments.
-    component_results : dict of str: dict
-        Dictionary containing computed N-body components.
-
-        Required ``'key': value`` pairs:
-        ``'energies'``: dict of set: float64
-               Dictionary containing all energy components required for given N-body procedure.
-        ``'ptype'``: dict of set: float64 or dict of set: psi4.Matrix
-               Dictionary of returned quantities from calls of function `func` during N-body computations
-        ``'intermediates'``: dict of str: float64
-               Dictionary of psivars for intermediate N-body computations to be set at the end of the
-               N-body procedure.
-    Returns
-    -------
-    results : dict of str
-        Dictionary of all N-body results.
-
-        Contents:
-        ``'ret_energy'``: float64
-            Interaction data requested.  If multiple BSSE types requested in `bsse_type_list`, the interaction data associated with the *first* BSSE
-            type in the list is returned.
-        ``'nbody_dict'``: dict of str: float64
-            Dictionary of relevant N-body psivars to be set
-        ``'energy_body_dict'``: dict of int: float64
-            Dictionary of total energies at each N-body level, i.e., ``results['energy_body_dict'][2]`` is the sum of all 2-body total energies
-            for the supersystem. May be empty if ``return_total_data`` is ``False``.
-        ``'ptype_body_dict'``: dict or dict of int: array_like
-            Empty dictionary if `ptype is ``'energy'``, or dictionary of total ptype
-            arrays at each N-body level; i.e., ``results['ptype_body_dict'][2]``
-            for `ptype` ``'gradient'``is the total 2-body gradient.
-    """
-    # Unpack metadata
-    kwargs = metadata['kwargs']
-
-    nbody_range = range(1, metadata['max_nbody'] + 1)
-
-    # Unpack compute list metadata
-    compute_list = metadata['compute_dict']['all']
-    cp_compute_list = metadata['compute_dict']['cp']
-    nocp_compute_list = metadata['compute_dict']['nocp']
-    vmfc_compute_list = metadata['compute_dict']['vmfc_compute']
-    vmfc_level_list = metadata['compute_dict']['vmfc_levels']
-
+    # regenerate per-bsse required calcs list
+    compute_dict = build_nbody_compute_list(
+        metadata['bsse_type'], nbodies, metadata['nfragments'], metadata["return_total_data"], verbose=0
+    )
 
     # Build size and slices dictionaries
-    fragment_size_dict = {
-        frag: metadata['molecule'].extract_subsets(frag).natom()
-        for frag in range(1, metadata['max_frag'] + 1)
-    }
-    start = 0
+    fragment_size_dict = {}
     fragment_slice_dict = {}
-    for k, v in fragment_size_dict.items():
-        fragment_slice_dict[k] = slice(start, start + v)
-        start += v
+    iat = 0
+    for ifr in range(1, metadata["nfragments"] + 1):
+        nat = metadata["molecule"].extract_subsets(ifr).natom()
+        fragment_size_dict[ifr] = nat
+        fragment_slice_dict[ifr] = slice(iat, iat + nat)
+        iat += nat
 
-    molecule_total_atoms = sum(fragment_size_dict.values())
+    def shaped_zero(der: DriverEnum):
+        if der == "energy":
+            return 0.0
+        elif der == "gradient":
+            arr_shape = (nat, 3)
+            return np.zeros(arr_shape)
+        elif der == 'hessian':
+            arr_shape = (nat * 3, nat * 3)
+            return np.zeros(arr_shape)
 
     # Final dictionaries
-    cp_energy_by_level = {n: 0.0 for n in nbody_range}
-    nocp_energy_by_level = {n: 0.0 for n in nbody_range}
+    if ptype == "energy":
+        cp_by_level = {n: 0.0 for n in range(1, nbodies[-1] + 1)}
+        nocp_by_level = {n: 0.0 for n in range(1, nbodies[-1] + 1)}
+        vmfc_by_level = {n: 0.0 for n in range(1, nbodies[-1] + 1)}
 
-    cp_energy_body_dict = {n: 0.0 for n in nbody_range}
-    nocp_energy_body_dict = {n: 0.0 for n in nbody_range}
-    vmfc_energy_body_dict = {n: 0.0 for n in nbody_range}
+        cp_body_dict = {n: 0.0 for n in range(1, nbodies[-1] + 1)}
+        nocp_body_dict = {n: 0.0 for n in range(1, nbodies[-1] + 1)}
+        vmfc_body_dict = {n: 0.0 for n in range(1, nbodies[-1] + 1)}
 
-    # Build out ptype dictionaries if needed
-    if metadata['ptype'] != 'energy':
-        if metadata['ptype'] == 'gradient':
-            arr_shape = (molecule_total_atoms, 3)
-        elif metadata['ptype'] == 'hessian':
-            arr_shape = (molecule_total_atoms * 3, molecule_total_atoms * 3)
-        else:
-            raise KeyError("N-Body: ptype '%s' not recognized" % ptype)
-
-        cp_ptype_by_level = {n: np.zeros(arr_shape) for n in nbody_range}
-        nocp_ptype_by_level = {n: np.zeros(arr_shape) for n in nbody_range}
-        vmfc_ptype_by_level = {n: np.zeros(arr_shape) for n in nbody_range}
-
-        cp_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
-        nocp_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
-        vmfc_ptype_body_dict = {n: np.zeros(arr_shape) for n in nbody_range}
     else:
-        cp_ptype_by_level, cp_ptype_body_dict = {}, {}
-        nocp_ptype_by_level, nocp_ptype_body_dict = {}, {}
-        vmfc_ptype_body_dict = {}
+        nat = sum(fragment_size_dict.values())
+        if ptype == 'gradient':
+            arr_shape = (nat, 3)
+        elif ptype == 'hessian':
+            arr_shape = (nat * 3, nat * 3)
+
+        cp_by_level = {n: np.zeros(arr_shape) for n in range(1, nbodies[-1] + 1)}
+        nocp_by_level = {n: np.zeros(arr_shape) for n in range(1, nbodies[-1] + 1)}
+        vmfc_by_level = {n: np.zeros(arr_shape) for n in range(1, nbodies[-1] + 1)}
+
+        cp_body_dict = {n: np.zeros(arr_shape) for n in range(1, nbodies[-1] + 1)}
+        nocp_body_dict = {n: np.zeros(arr_shape) for n in range(1, nbodies[-1] + 1)}
+        vmfc_body_dict = {n: np.zeros(arr_shape) for n in range(1, nbodies[-1] + 1)}
 
     # Sum up all of the levels
-    nbody_dict = {}
-    for n in nbody_range:
+    # * compute_dict[bt][nb] holds all the computations needed to compute nb
+    #   *not* all the nb-level computations, so build the latter
+    cp_compute_list = {nb: set() for nb in range(1, nbodies[-1] + 1)}
+    nocp_compute_list = {nb: set() for nb in range(1, nbodies[-1] + 1)}
 
-        # Energy
-        # Extract energies for monomers in monomer basis for CP total data
-        if n == 1:
-            monomers_in_monomer_basis = [v for v in nocp_compute_list[1] if len(v[1]) == 1]
-            monomer_energies = 0.0
-            monomer_energy_list = []
-            for i in monomers_in_monomer_basis:
-                monomer_energy_list.append(component_results['energies'][i])
-                monomer_energies += component_results['energies'][i]
+    for nb in nbodies:
+        for v in compute_dict["cp"][nb]:
+            if len(v[1]) != 1:
+                cp_compute_list[len(v[0])].add(v)
+        for w in compute_dict["nocp"][nb]:
+            nocp_compute_list[len(w[0])].add(w)
 
-
-        cp_energy_by_level[n] = sum(component_results['energies'][v] for v in cp_compute_list[n])
-        nocp_energy_by_level[n] = sum(component_results['energies'][v] for v in nocp_compute_list[n])
-
-        # Special vmfc case
-        if n > 1:
-            vmfc_energy_body_dict[n] = vmfc_energy_body_dict[n - 1]
-        for tup in vmfc_level_list[n]:
-            vmfc_energy_body_dict[n] += ((-1)**(n - len(tup[0]))) * component_results['energies'][tup]
-
-        # Do ptype
-        if metadata['ptype'] != 'energy':
-            _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'], cp_compute_list[n],
-                                    fragment_slice_dict, fragment_size_dict, cp_ptype_by_level[n])
-            _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'], nocp_compute_list[n],
-                                    fragment_slice_dict, fragment_size_dict, nocp_ptype_by_level[n])
-            _sum_cluster_ptype_data(
-                metadata['ptype'],
-                component_results['ptype'],
-                vmfc_level_list[n],
+    for nb in range(1, nbodies[-1] + 1):
+        cp_by_level[nb] = _sum_cluster_ptype_data(
+            ptype,
+            component_results,
+            cp_compute_list[nb],
+            fragment_slice_dict,
+            fragment_size_dict,
+            mc_level_lbl=mc_level_lbl,
+        )
+        nocp_by_level[nb] = _sum_cluster_ptype_data(
+            ptype,
+            component_results,
+            nocp_compute_list[nb],
+            fragment_slice_dict,
+            fragment_size_dict,
+            mc_level_lbl=mc_level_lbl,
+        )
+        if nb in compute_dict["vmfc_levels"]:
+            vmfc_by_level[nb] = _sum_cluster_ptype_data(
+                ptype,
+                component_results,
+                compute_dict["vmfc_levels"][nb],
                 fragment_slice_dict,
                 fragment_size_dict,
-                vmfc_ptype_by_level[n],
                 vmfc=True,
-                n=n)
+                nb=nb,
+                mc_level_lbl=mc_level_lbl,
+            )
 
-    if metadata['ptype'] != 'energy':
-        # Extract ptype data for monomers in monomer basis for CP total data
-        monomer_ptype = np.zeros(arr_shape)
-        _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'], monomers_in_monomer_basis,
-                                fragment_slice_dict, fragment_size_dict, monomer_ptype)
+    def labeler(item) -> str:
+        return str(mc_level_lbl) + "_" + str(item)
 
-    # Compute cp energy and ptype
-    if 'cp' in metadata['bsse_type_list']:
-        for n in nbody_range:
-            if n == metadata['max_frag']:
-                cp_energy_body_dict[n] = cp_energy_by_level[n] - bsse
-                if metadata['ptype'] != 'energy':
-                    cp_ptype_body_dict[n][:] = cp_ptype_by_level[n] - bsse_ptype
+    # Extract data for monomers in monomer basis for CP total data
+    if 1 in nbodies:
+        monomers_in_monomer_basis = [v for v in compute_dict["nocp"][1] if len(v[1]) == 1]
+
+        if ptype == "energy":
+            monomer_energy_list = [component_results[labeler(m)] for m in monomers_in_monomer_basis]
+            monomer_sum = sum(monomer_energy_list)
+        else:
+            monomer_sum = _sum_cluster_ptype_data(
+                ptype,
+                component_results,
+                monomers_in_monomer_basis,
+                fragment_slice_dict,
+                fragment_size_dict,
+                mc_level_lbl=mc_level_lbl,
+            )
+    else:
+        monomer_sum = shaped_zero(ptype)
+
+    nbody_dict = {}
+
+    # Compute cp
+    if 'cp' in metadata['bsse_type']:
+        for nb in range(1, nbodies[-1] + 1):
+            if nb == metadata['nfragments']:
+                if ptype == "energy":
+                    cp_body_dict[nb] = cp_by_level[nb] - bsse
+                else:
+                    cp_body_dict[nb][:] = cp_by_level[nb] - bsse
                 continue
 
-            for k in range(1, n + 1):
-                take_nk = nCr(metadata['max_frag'] - k - 1, n - k)
-                sign = ((-1)**(n - k))
-                value = cp_energy_by_level[k]
-                cp_energy_body_dict[n] += take_nk * sign * value
+            for k in range(1, nb + 1):
+                take_nk = math.comb(metadata['nfragments'] - k - 1, nb - k)
+                sign = ((-1)**(nb - k))
+                cp_body_dict[nb] += take_nk * sign * cp_by_level[k]
 
-                if metadata['ptype'] != 'energy':
-                    value = cp_ptype_by_level[k]
-                    cp_ptype_body_dict[n] += take_nk * sign * value
+            if nb == 1:
+                bsse = cp_body_dict[nb] - monomer_sum
+                if ptype == "energy":
+                    cp_body_dict[nb] = monomer_sum
+                else:
+                    cp_body_dict[nb] = monomer_sum.copy()
+            else:
+                cp_body_dict[nb] -= bsse
 
-            if n == 1:
-                bsse = cp_energy_body_dict[n] - monomer_energies
-                cp_energy_body_dict[n] = monomer_energies
-                if metadata['ptype'] != 'energy':
-                    bsse_ptype = cp_ptype_body_dict[n] - monomer_ptype
-                    cp_ptype_body_dict[n] = monomer_ptype.copy()
+        if ptype == "energy":
+            if not metadata["quiet"]:
+                _print_nbody_energy(cp_body_dict, "Counterpoise Corrected (CP)", metadata["nfragments"], metadata['embedding_charges'])
+
+            if monomer_sum != 0.0:
+                nbody_dict["CP-CORRECTED TOTAL ENERGY"] = cp_body_dict[metadata['max_nbody']]
+            nbody_dict["CP-CORRECTED INTERACTION ENERGY"] = cp_body_dict[metadata['max_nbody']] - cp_body_dict[1]
+
+            for nb in nbodies[1:]:
+                nbody_dict[f"CP-CORRECTED INTERACTION ENERGY THROUGH {nb}-BODY"] = cp_body_dict[nb] - cp_body_dict[1]
+                nbody_dict[f"CP-CORRECTED {nb}-BODY CONTRIBUTION TO ENERGY"] = cp_body_dict[nb] - cp_body_dict[nb-1]
+            for nb in nbodies:
+                nbody_dict[f"CP-CORRECTED TOTAL ENERGY THROUGH {nb}-BODY"] = cp_body_dict[nb]
+
+    # Compute nocp
+    if 'nocp' in metadata['bsse_type']:
+        for nb in range(1, nbodies[-1] + 1):
+            if nb == metadata['nfragments']:
+                if ptype == "energy":
+                    nocp_body_dict[nb] = nocp_by_level[nb]
+                else:
+                    nocp_body_dict[nb][:] = nocp_by_level[nb]
+                continue
+
+            for k in range(1, nb + 1):
+                take_nk = math.comb(metadata['nfragments'] - k - 1, nb - k)
+                sign = ((-1)**(nb - k))
+                nocp_body_dict[nb] += take_nk * sign * nocp_by_level[k]
+
+        if ptype == "energy":
+            if not metadata["quiet"]:
+                _print_nbody_energy(nocp_body_dict, "Non-Counterpoise Corrected (NoCP)", metadata["nfragments"], metadata['embedding_charges'])
+
+            nbody_dict['NOCP-CORRECTED TOTAL ENERGY'] = nocp_body_dict[metadata['max_nbody']]
+            nbody_dict['NOCP-CORRECTED INTERACTION ENERGY'] = nocp_body_dict[metadata['max_nbody']] - nocp_body_dict[1]
+
+            for nb in nbodies[1:]:
+                nbody_dict[f"NOCP-CORRECTED INTERACTION ENERGY THROUGH {nb}-BODY"] = nocp_body_dict[nb] - nocp_body_dict[1]
+                nbody_dict[f"NOCP-CORRECTED {nb}-BODY CONTRIBUTION TO ENERGY"] = nocp_body_dict[nb] - nocp_body_dict[nb-1]
+            for nb in nbodies:
+                nbody_dict[f"NOCP-CORRECTED TOTAL ENERGY THROUGH {nb}-BODY"] = nocp_body_dict[nb]
+
+    # Compute vmfc
+    if 'vmfc' in metadata['bsse_type']:
+        for nb in nbodies:
+            if ptype == "energy":
+                for k in range(1, nb + 1):
+                    vmfc_body_dict[nb] += vmfc_by_level[k]
 
             else:
-                cp_energy_body_dict[n] -= bsse
-                if metadata['ptype'] != 'energy':
-                    cp_ptype_body_dict[n] -= bsse_ptype
+                if nb > 1:
+                    vmfc_body_dict[nb] = vmfc_by_level[nb - 1]
+                vmfc_body_dict[nb] += vmfc_by_level[nb]
 
-        cp_interaction_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1]
-        nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
+        if ptype == "energy":
+            if not metadata["quiet"]:
+                _print_nbody_energy(vmfc_body_dict, "Valiron-Mayer Function Counterpoise (VMFC)", metadata["nfragments"], metadata['embedding_charges'])
 
-        for n in nbody_range[1:]:
-            var_key = 'CP-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            nbody_dict[var_key] = cp_energy_body_dict[n] - cp_energy_body_dict[1]
+            vmfc_interaction_energy = vmfc_body_dict[metadata['max_nbody']] - vmfc_body_dict[1]
+            nbody_dict['VMFC-CORRECTED TOTAL ENERGY'] = vmfc_body_dict[metadata['max_nbody']]
+            nbody_dict['VMFC-CORRECTED INTERACTION ENERGY'] = vmfc_interaction_energy
 
-        _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)", metadata['embedding_charges'])
-        cp_interaction_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1]
-        if monomer_energies != 0.0:
-            nbody_dict['Counterpoise Corrected Total Energy'] = cp_energy_body_dict[metadata['max_nbody']]
-        nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
+            for nb in nbodies[1:]:
+                nbody_dict[f"VMFC-CORRECTED INTERACTION ENERGY THROUGH {nb}-BODY"] = vmfc_body_dict[nb] - vmfc_body_dict[1]
+                nbody_dict[f"VMFC-CORRECTED {nb}-BODY CONTRIBUTION TO ENERGY"] = vmfc_body_dict[nb] - vmfc_body_dict[nb-1]
+            for nb in nbodies:
+                nbody_dict[f"VMFC-CORRECTED TOTAL ENERGY THROUGH {nb}-BODY"] = vmfc_body_dict[nb]
 
-    # Compute nocp energy and ptype
-    if 'nocp' in metadata['bsse_type_list']:
-        for n in nbody_range:
-            if n == metadata['max_frag']:
-                nocp_energy_body_dict[n] = nocp_energy_by_level[n]
-                if metadata['ptype'] != 'energy':
-                    nocp_ptype_body_dict[n][:] = nocp_ptype_by_level[n]
-                continue
+    # Collect specific and generalized returns
+    results = {
+        f"cp_{ptype}_body_dict" : {f"{nb}cp": j for nb, j in cp_body_dict.items()},
+        f"nocp_{ptype}_body_dict": {f"{nb}nocp": j for nb, j in nocp_body_dict.items()},
+        f"vmfc_{ptype}_body_dict": {f"{nb}vmfc": j for nb, j in vmfc_body_dict.items()},
+    }
 
-            for k in range(1, n + 1):
-                take_nk = nCr(metadata['max_frag'] - k - 1, n - k)
-                sign = ((-1)**(n - k))
-                value = nocp_energy_by_level[k]
-                nocp_energy_body_dict[n] += take_nk * sign * value
+    if ptype == "energy":
+        results['nbody'] = nbody_dict
 
-                if metadata['ptype'] != 'energy':
-                    value = nocp_ptype_by_level[k]
-                    nocp_ptype_body_dict[n] += take_nk * sign * value
+    return_bsse_type = metadata["bsse_type"][0]
 
-        _print_nbody_energy(nocp_energy_body_dict, "Non-Counterpoise Corrected (NoCP)", metadata['embedding_charges'])
-        nocp_interaction_energy = nocp_energy_body_dict[metadata['max_nbody']] - nocp_energy_body_dict[1]
-        nbody_dict['Non-Counterpoise Corrected Total Energy'] = nocp_energy_body_dict[metadata['max_nbody']]
-        nbody_dict['Non-Counterpoise Corrected Interaction Energy'] = nocp_interaction_energy
-
-        for n in nbody_range[1:]:
-            var_key = 'NOCP-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            nbody_dict[var_key] = nocp_energy_body_dict[n] - nocp_energy_body_dict[1]
-
-    # Compute vmfc ptype
-    if 'vmfc' in metadata['bsse_type_list']:
-        if metadata['ptype'] != 'energy':
-            for n in nbody_range:
-                if n > 1:
-                    vmfc_ptype_body_dict[n] = vmfc_ptype_by_level[n - 1]
-                vmfc_ptype_body_dict[n] += vmfc_ptype_by_level[n]
-
-        _print_nbody_energy(vmfc_energy_body_dict, "Valiron-Mayer Function Couterpoise (VMFC)",
-                            metadata['embedding_charges'])
-        vmfc_interaction_energy = vmfc_energy_body_dict[metadata['max_nbody']] - vmfc_energy_body_dict[1]
-        nbody_dict['Valiron-Mayer Function Couterpoise Total Energy'] = vmfc_energy_body_dict[metadata['max_nbody']]
-        nbody_dict['Valiron-Mayer Function Couterpoise Interaction Energy'] = vmfc_interaction_energy
-
-        for n in nbody_range[1:]:
-            var_key = 'VMFC-CORRECTED %d-BODY INTERACTION ENERGY' % n
-            nbody_dict[var_key] = vmfc_energy_body_dict[n] - vmfc_energy_body_dict[1]
-
-    # Returns
-    results = {}
-    results['nbody'] = nbody_dict
-    for b in ['cp', 'nocp', 'vmfc']:
-        if monomer_energies != 0.0:
-            results['%s_energy_body_dict' % b] = eval('%s_energy_body_dict' % b)
-            results['%s_energy_body_dict' % b] = {str(i) + b: j for i, j in results['%s_energy_body_dict' % b].items()}
-        else:
-            results['%s_energy_body_dict' % b] = {}
-
-    # Figure out and build return types
-    return_method = metadata['bsse_type_list'][0]
-
-    if return_method == 'cp':
-        results['ptype_body_dict'] = cp_ptype_body_dict
-        results['energy_body_dict'] = cp_energy_body_dict
-    elif return_method == 'nocp':
-        results['ptype_body_dict'] = nocp_ptype_body_dict
-        results['energy_body_dict'] = nocp_energy_body_dict
-    elif return_method == 'vmfc':
-        results['ptype_body_dict'] = vmfc_ptype_body_dict
-        results['energy_body_dict'] = vmfc_energy_body_dict
+    if return_bsse_type == "cp":
+        results[f"{ptype}_body_dict"] = cp_body_dict
+    elif return_bsse_type == "nocp":
+        results[f"{ptype}_body_dict"] = nocp_body_dict
+    elif return_bsse_type == "vmfc":
+        results[f"{ptype}_body_dict"] = vmfc_body_dict
     else:
         raise ValidationError(
             "N-Body Wrapper: Invalid return type. Should never be here, please post this error on github.")
 
+    if ptype == "energy":
+        piece = results[f"{ptype}_body_dict"][metadata['max_nbody']]
+    else:
+        piece = results[f"{ptype}_body_dict"][metadata['max_nbody']].copy()
+
     if metadata['return_total_data']:
-        results['ret_energy'] = results['energy_body_dict'][metadata['max_nbody']]
+        results[f"ret_{ptype}"] = piece
     else:
-        results['ret_energy'] = results['energy_body_dict'][metadata['max_nbody']]
-        results['ret_energy'] -= results['energy_body_dict'][1]
+        results[f"ret_{ptype}"] = piece
+        results[f"ret_{ptype}"] -= results[f"{ptype}_body_dict"][1]
 
-    if metadata['ptype'] != 'energy':
-        if metadata['return_total_data']:
-            np_final_ptype = results['ptype_body_dict'][metadata['max_nbody']].copy()
-        else:
-            np_final_ptype = results['ptype_body_dict'][metadata['max_nbody']].copy()
-            np_final_ptype -= results['ptype_body_dict'][1]
-
-        results['ret_ptype'] = core.Matrix.from_array(np_final_ptype)
-    else:
-        results['ret_ptype'] = results['ret_energy']
-
-    if monomer_energies == 0.0:
-        del results['energy_body_dict']
+    results['ret_ptype'] = results[f"ret_{ptype}"]
 
     return results
+
+
+class ManyBodyComputer(BaseComputer):
+    # user kwargs (all but levels become fields)
+    # ------------------------------------------
+    # * bsse_type
+    # * levels
+    # * max_nbody
+    # * molecule  -- general
+    # * return_total_data
+    # * return_wfn -- general
+
+    # fields set in construction
+    # --------------------------
+    # * nfragments (<- max_frag) -- from molecule
+
+    # fields set in task_planner
+    # --------------------------
+    # * max_nbody -- from levels
+    # * nbodies_per_mc_level -- from levels
+
+    # TODO perhaps rework levels kwarg so that it's processed in class init into nbodies_per_mc_level. Right now, levels resets max_nbody.
+    # TODO also, perhaps change nbodies_per_mc_level into dict of lists so that pos'n/label indexing coincides
+
+    molecule: Any = Field(..., description="The target molecule, if not the last molecule defined.")
+    basis: str = "(auto)"
+    method: str = "(auto)"
+    driver: DriverEnum = Field(..., description="The computation driver; i.e., energy, gradient, hessian.")
+    keywords: Dict[str, Any] = Field({}, description="The computation keywords/options.")
+
+    bsse_type: List[BsseEnum] = Field([BsseEnum.cp], description="Requested BSSE treatments. First in list determines which interaction or total energy/gradient/Hessian returned.")
+    nfragments: int = Field(-1, description="Number of distinct fragments comprising full molecular supersystem.")  # formerly max_frag
+    max_nbody: int = Field(-1, description="Maximum number of bodies to include in the many-body treatment. Possible: max_nbody <= nfragments. Default: max_nbody = nfragments.")
+
+    nbodies_per_mc_level: List[List[Union[int, Literal["supersystem"]]]] = Field([], description="Distribution of active n-body levels among model chemistry levels. All bodies in range [1, self.max_nbody] must be present exactly once. Number of items in outer list is how many different modelchems. Each inner list specifies what n-bodies to be run at the corresponding modelchem (e.g., `[[1, 2]]` has max_nbody=2 and 1-body and 2-body contributions computed at the same level of theory; `[[1], [2]]` has max_nbody=2 and 1-body and 2-body contributions computed at different levels of theory. An entry 'supersystem' means all higher order n-body effects up to the number of fragments. The n-body levels are effectively sorted in the outer list, and any 'supersystem' element is at the end.")  # formerly nbody_list
+
+    embedding_charges: Dict[int, List[float]] = Field({}, description="Atom-centered point charges to be used on molecule fragments whose basis sets are not included in the computation. Keys: 1-based index of fragment. Values: list of atom charges for that fragment.")
+
+    return_total_data: Optional[bool] = Field(None, description="When True, returns the total data (energy/gradient/Hessian) of the system, otherwise returns interaction data. Default is False for energies, True for gradients and Hessians. Note that the calculation of total counterpoise corrected energies implies the calculation of the energies of monomers in the monomer basis, hence specifying ``return_total_data = True`` may carry out more computations than ``return_total_data = False``.")
+    quiet: bool = Field(False, description="Whether to print/log formatted n-body energy analysis. Presently used by multi to suppress output. Candidate for removal from class once in-class/out-of-class functions sorted.")
+
+    task_list: Dict[str, SubTaskComputers] = {}
+
+    # Note that validation of user fields happens through typing and validator functions, so no class __init__ needed.
+
+    @validator("bsse_type", pre=True)
+    def set_bsse_type(cls, v):
+        if not isinstance(v, list):
+            v = [v]
+        # emulate ordered set
+        return list(dict.fromkeys([bt.lower() for bt in v]))
+
+    @validator('molecule')
+    def set_molecule(cls, mol):
+        mol.update_geometry()
+        mol.fix_com(True)
+        mol.fix_orientation(True)
+        return mol
+
+    @validator("nfragments", always=True)
+    def set_nfragments(cls, v, values):
+        return values["molecule"].nfragments()
+
+    @validator("max_nbody", always=True)
+    def set_max_nbody(cls, v, values):
+        if v == -1:
+            return values["nfragments"]
+        else:
+            return min(v, values["nfragments"])
+
+    @validator("embedding_charges")
+    def set_embedding_charges(cls, v, values):
+        if len(v) != values["nfragments"]:
+            raise ValueError("embedding_charges dict should have entries for each 1-indexed fragment.")
+
+        return v
+
+    @validator("return_total_data", always=True)
+    def set_return_total_data(cls, v, values):
+        if v is not None:
+            rtd = v
+        elif values["driver"] in ["gradient", "hessian"]:
+            rtd = True
+        else:
+            rtd = False
+
+        if values.get("embedding_charges", False) and rtd is False:
+            raise ValueError("Cannot return interaction data when using embedding scheme.")
+
+        return rtd
+
+    def build_tasks(
+        self,
+        mb_computer: SubTaskComputers,
+        mc_level_idx: int,
+        **kwargs: Dict[str, Any],
+    ) -> int:
+        """Adds to the task_list as many new unique tasks as necessary to treat a single model chemistry level at one or several n-body levels.
+        New tasks are of type *mb_computer* with model chemistry level specified in *kwargs* and n-body levels accessed through *mc_level_idx*.
+
+        Parameters
+        ----------
+        mb_computer
+            Class of task computers to instantiate and add to self.task_list. Usually :class:`~psi4.driver.AtomicComputer` but may be other when wrappers are layered.
+        mc_level_idx
+            Position in field self.nbodies_per_mc_level used to obtain ``nbodies``, the list of n-body
+            levels (e.g., `[1]` or `[1, 2]` or `["supersystem"]`) to which the modelchem specified in **kwargs** applies.
+            That is, `nbodies = self.nbodies_per_mc_level[mc_level_idx]`.
+            Note the natural 1-indexing of ``nbodies`` _contents_, so `[1]` covers one-body contributions.
+            The corresponding user label is the 1-indexed counterpart, `mc_level_lbl = mc_level_idx + 1`
+            Formerly nlevel as in `nbody = self.nbody_list[nbody_level=nlevel]`.
+        kwargs
+            Other arguments for initializing **mb_computer**. In particular, specifies model chemistry.
+
+        Returns
+        -------
+        count : int
+            Number of new tasks planned by this call.
+            Formerly, didn't include supersystem in count.
+
+        """
+        # Get the n-body orders for this level
+        nbodies = self.nbodies_per_mc_level[mc_level_idx]
+
+        info = "\n" + p4util.banner(f" ManyBody Setup: N-Body Levels {nbodies}", strNotOutfile=True) + "\n"
+        core.print_out(info)
+        logger.info(info)
+
+        for kwg in ['dft_functional']:
+            if kwg in kwargs:
+                kwargs['keywords']['function_kwargs'][kwg] = kwargs.pop(kwg)
+
+        count = 0
+        template = copy.deepcopy(kwargs)
+
+        # Get compute list
+        if nbodies == ["supersystem"]:
+            # Add supersystem computation if requested -- always nocp
+            data = template
+            data["molecule"] = self.molecule
+            key = f"supersystem_{self.nfragments}"
+            self.task_list[key] = mb_computer(**data)
+            count += 1
+
+            compute_dict = build_nbody_compute_list(
+                ["nocp"], list(range(1, self.max_nbody + 1)), self.nfragments, self.return_total_data
+            )
+        else:
+            compute_dict = build_nbody_compute_list(self.bsse_type, nbodies, self.nfragments, self.return_total_data)
+
+        def labeler(item) -> str:
+            mc_level_lbl = mc_level_idx + 1
+            return str(mc_level_lbl) + "_" + str(item)
+
+        # Add current compute list to the master task list
+        # * `pair` looks like `((1,), (1, 3))` where first is real (not ghost) fragment indices
+        #    and second is basis set fragment indices, all 1-indexed
+        for nb in compute_dict["all"]:
+            for pair in compute_dict["all"][nb]:
+                lbl = labeler(pair)
+                if lbl in self.task_list:
+                    continue
+
+                data = template
+                ghost = list(set(pair[1]) - set(pair[0]))
+                data["molecule"] = self.molecule.extract_subsets(list(pair[0]), ghost)
+                if self.embedding_charges:
+                    embedding_frags = list(set(range(1, self.nfragments + 1)) - set(pair[1]))
+                    charges = []
+                    for frag in embedding_frags:
+                        positions = self.molecule.extract_subsets(frag).geometry().np.tolist()
+                        charges.extend([[chg, i] for i, chg in zip(positions, self.embedding_charges[frag])])
+                    data['keywords']['function_kwargs'].update({'external_potentials': charges})
+
+                self.task_list[lbl] = mb_computer(**data)
+                count += 1
+
+        return count
+
+    def plan(self):
+        # uncalled function
+        return [t.plan() for t in self.task_list.values()]
+
+    def compute(self, client: Optional["qcportal.FractalClient"] = None):
+        """Run quantum chemistry."""
+
+        info = "\n" + p4util.banner(f" ManyBody Computations ", strNotOutfile=True) + "\n"
+        #core.print_out(info)
+        logger.info(info)
+
+        with p4util.hold_options_state():
+            for t in self.task_list.values():
+                t.compute(client=client)
+
+    def prepare_results(
+        self,
+        results: Optional[Dict[str, SubTaskComputers]] = None,
+        client: Optional["qcportal.FractalClient"] = None,
+    ) -> Dict[str, Any]:
+        """Process the results from all n-body component molecular systems and model chemistry levels into final quantities.
+
+        Parameters
+        ----------
+        results
+            A set of tasks to process instead of self.task_list. Used in multilevel processing to pass a subset of
+            self.task_list filtered to only one modelchem level.
+        client
+            QCFractal client if using QCArchive for distributed compute.
+
+        Returns
+        -------
+        nbody_results
+            When the ManyBodyComputer specifies a single model chemistry level (see self.nbodies_per_mc_level), the
+            return is a dictionary, nbody_results, described in the table below. Many of the items are actually filled
+            by successive calls to assemble_nbody_components(). When multiple model chemistry levels are specified, this
+            function diverts its return to driver_nbody_multilevel.prepare_results() wherein each mc level calls this
+            function again and collects separate nbody_results dictionaries and processes them into a final return that
+            is a small subset of the table below.
+
+
+                                       ptype_size = (1,)/(nat, 3)/(3 * nat, 3 * nat)
+                                        e/g/h := energy or gradient or Hessian
+                                        rtd := return_total_data
+
+        .. |em| unicode:: U+02003 .. em space
+
+        .. _`table:nbody_return`:
+
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | item                                                          | size                 | present / zeroed                                                   | contents / interpretation                                                                                          |
+        +===============================================================+======================+====================================================================+====================================================================================================================+
+        | ret_ptype                                                     | ptype_size           | always                                                             | interaction data requested: IE or total (depending on return_total_data) e/g/h (depending on driver)               |
+        |                                                               |                      |                                                                    |   with cp/nocp/vmfc treatment (depending on 1st of bsse_type)                                                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | ret_energy                                                    | 1                    | always                                                             | interaction energy: IE or total (depending on return_total_data) w/ cp/nocp/vmfc treat. (dep. on 1st of bsse_type) |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | ret_gradient                                                  | (nat, 3)             | when driver is g/h                                                 | interaction gradient: IE or total (depending on return_total_data) w/ cp/nocp/vmfc treat. (dep. on 1st of bsse_type|
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | ret_hessian                                                   | (nat * 3, nat * 3)   | when driver is h                                                   | interaction Hessian: IE or total (depending on return_total_data) w/ cp/nocp/vmfc treat. (dep. on 1st of bsse_type)|
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | nbody                                                         | >=1                  | always                                                             | energy n-body QCVariables to be set                                                                                |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED TOTAL ENERGY THROUGH 1-BODY               |  |em| 1              | when cp in bsse_type                                               | MBE sum of subsystems of 1-body. summed are total energies with cp treatment                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED TOTAL ENERGY THROUGH 2-BODY               |  |em| 1              | when cp in bsse_type & max_nbody>=2                                | MBE sum of subsystems of 2-body or fewer (cumulative); summed are total energies with cp treatment                 |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED TOTAL ENERGY THROUGH {nb}-BODY            |  |em| 1              | when cp in bsse_type                                               | MBE sum of subsystems of {max_nbody}-body or fewer (cumulative); summed are total energies w/ cp treatment         |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED TOTAL ENERGY                              |  |em| 1              | when cp in bsse_type & rtd=T                                       | best available total energy with cp treatment: CP-CORRECTED TOTAL ENERGY THROUGH {max_nbody}-BODY                  |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY         |  |em| 1              | when cp in bsse_type & max_nbody>=2                                | 2-body total data less 1-body total data for cumulative IE; inputs are total energies with cp treatment            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED INTERACTION ENERGY THROUGH {nb}-BODY      |  |em| 1              | when cp in bsse_type                                               | {max_nbody}-body total data less 1-body total data for cumulative IE; inputs are total energies with cp treatment  |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED INTERACTION ENERGY                        |  |em| 1              | when cp in bsse_type                                               | best available interaction energy with cp treatment: CP-CORRECTED INTERACTION ENERGY THROUGH {max_nbody}-BODY      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED 2-BODY CONTRIBUTION TO ENERGY             |  |em| 1              | when cp in bsse_type & max_nbody>=2                                | 2-body total data less (2-1)-body total data for partial IE; inputs are total energies w/ cp treatment             |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| CP-CORRECTED {nb}-BODY CONTRIBUTION TO ENERGY          |  |em| 1              | when cp in bsse_type                                               | {max_nbody}-body total data less ({max_nbody}-1)-body data for partial IE; inputs are total energies w/ cp treat.  |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED TOTAL ENERGY THROUGH 1-BODY             |  |em| 1              | when nocp in bsse_type                                             | MBE sum of subsystems of 1-body. summed are total energies without cp treatment                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED TOTAL ENERGY THROUGH 2-BODY             |  |em| 1              | when nocp in bsse_type & max_nbody>=2                              | MBE sum of subsystems of 2-body or fewer (cumulative); summed are total energies without cp treatment              |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED TOTAL ENERGY THROUGH {nb}-BODY          |  |em| 1              | when nocp in bsse_type                                             | MBE sum of subsystems of {max_nbody}-body or fewer (cumulative); summed are total energies w/o cp treatment        |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED TOTAL ENERGY                            |  |em| 1              | when nocp in bsse_type                                             | best available total energy without cp treatment: NOCP-CORRECTED TOTAL ENERGY THROUGH {max_nbody}-BODY             |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED INTERACTION ENERGY THROUGH 2-BODY       |  |em| 1              | when nocp in bsse_type & max_nbody>=2                              | 2-body total data less 1-body total data for cumulative IE; inputs are total energies w/o cp treatment             |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED INTERACTION ENERGY THROUGH {nb}-BODY    |  |em| 1              | when nocp in bsse_type                                             | {max_nbody}-body total data less 1-body total data for cumulative IE; inputs are total energies w/o cp treatment   |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED INTERACTION ENERGY                      |  |em| 1              | when nocp in bsse_type                                             | best available interaction energy without cp treatment: NOCP-CORRECTED INTERACTION ENERGY THROUGH {max_nbody}-BODY |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED 2-BODY CONTRIBUTION TO ENERGY           |  |em| 1              | when nocp in bsse_type & max_nbody>=2                              | 2-body total data less (2-1)-body total data for partial IE; inputs are total energies w/o cp treatment            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| NOCP-CORRECTED {nb}-BODY CONTRIBUTION TO ENERGY        |  |em| 1              | when nocp in bsse_type                                             | {max_nbody}-body total data less ({max_nbody}-1)-body data for partial IE; inputs are total energies w/o cp treat. |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED TOTAL ENERGY THROUGH 1-BODY             |  |em| 1              | when vmfc in bsse_type                                             | MBE sum of subsystems of 1-body. summed are total energies with vmfc treatment                                     |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED TOTAL ENERGY THROUGH 2-BODY             |  |em| 1              | when vmfc in bsse_type & max_nbody>=2                              | MBE sum of subsystems of 2-body or fewer (cumulative); summed are total energies with vmfc treatment               |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED TOTAL ENERGY THROUGH {nb}-BODY          |  |em| 1              | when vmfc in bsse_type                                             | MBE sum of subsystems of {max_nbody}-body or fewer (cumulative); summed are total energies w/ vmfc treatment       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED TOTAL ENERGY                            |  |em| 1              | when vmfc in bsse_type                                             | best available total energy with vmfc treatment: VMFC-CORRECTED TOTAL ENERGY THROUGH {max_nbody}-BODY              |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED INTERACTION ENERGY THROUGH 2-BODY       |  |em| 1              | when vmfc in bsse_type & max_nbody>=2                              | 2-body total data less 1-body total data for cumulative IE; inputs are total energies w/ vmfc treatment            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED INTERACTION ENERGY THROUGH {nb}-BODY    |  |em| 1              | when vmfc in bsse_type                                             | {max_nbody}-body total data less 1-body total data for cumulative IE; inputs are total energies w/ vmfc treatment  |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED INTERACTION ENERGY                      |  |em| 1              | when vmfc in bsse_type                                             | best available interaction energy with vmfc treatment: VMFC-CORRECTED INTERACTION ENERGY THROUGH {max_nbody}-BODY  |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED 2-BODY CONTRIBUTION TO ENERGY           |  |em| 1              | when vmfc in bsse_type & max_nbody>=2                              | 2-body total data less (2-1)-body total data for partial IE; inputs are total energies w/ vmfc treatment           |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| VMFC-CORRECTED {nb}-BODY CONTRIBUTION TO ENERGY        |  |em| 1              | when vmfc in bsse_type                                             | {max_nbody}-body total data less ({max_nbody}-1)-body data for partial IE; inputs are total energies w/ vmfc treat.|
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | energy_body_dict                                              | max_nbody            | always                                                             | total energies at each n-body level                                                                                |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| 1                                                       |  |em| 1              | always; zeroed if cp & rtd=F                                       | cumulative through 1-body total energies w/ cp/nocp/vmfc treatment (dep. on 1st of bsse_type)                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| 2                                                       |  |em| 1              | max_nbody>=2                                                       | cumulative through 2-body total energies w/ cp/nocp/vmfc treatment (dep. on 1st of bsse_type)                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| {max_nbody}                                             |  |em| 1              | always                                                             | cumulative through {max_nbody}-body total energies w/ cp/nocp/vmfc treatment (dep. on 1st of bsse_type)            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | gradient_body_dict                                            | max_nbody            | when driver is g/h                                                 |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| 1                                                       |  |em| (nat, 3)       | when driver is g/h                                                 | cumulative through 1-body total gradients with cp/nocp/vmfc treatment (dep. on 1st of bsse_type)                   |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| 2                                                       |  |em| (nat, 3)       | when driver is g/h & max_nbody>=2                                  | cumulative through 2-body total gradients with cp/nocp/vmfc treatment (dep. on 1st of bsse_type)                   |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| {max_nbody}                                             |  |em| (nat, 3)       | when driver is g/h                                                 | cumulative through {max_nbody}-body total gradients w/ cp/nocp/vmfc treatment (dep. on 1st of bsse_type)           |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | hessian_body_dict                                             | max_nbody            | when driver is h                                                   |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| 1                                                       |  |em| (nat*3, nat*3) | when driver is h                                                   | cumulative through 1-body total Hessians w/ cp/nocp/vmfc treatment (dep. on 1st of bsse_type)                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| 2                                                       |  |em| (nat*3, nat*3) | when driver is h & max_nbody>=2                                    | cumulative through 2-body total Hessians w/ cp/nocp/vmfc treatment (dep. on 1st of bsse_type)                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |  |em| {max_nbody}                                             |  |em| (nat*3, nat*3) | when driver is h                                                   | cumulative through {max_nbody}-body total Hessians w/ cp/nocp/vmfc treatment (dep. on 1st of bsse_type)            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | cp_energy_body_dict                                           | max_nbody            | always; zeroed if cp not in bsse_type                              | total energies at each n-body level with cp treatment                                                              |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1cp                                                    |  |em| 1              | always; zeroed if cp not in bsse_type or rtd=F                     | cumulative through 1-body total energies with cp treatment                                                         |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2cp                                                    |  |em| 1              | when max_nbody>=2; zeroed if cp not in bsse_type                   | cumulative through 2-body total energies with cp treatment                                                         |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}cp                                          |  |em| 1              | always; zeroed if cp not in bsse_type                              | cumulative through {max_nbody}-body total energies with cp treatment                                               |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | cp_gradient_body_dict                                         | max_nbody            | when driver is g/h; zeroed if cp not in bsse_type                  | total gradients at each n-body level with cp treatment                                                             |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1cp                                                    |  |em| (nat, 3)       | when driver is g/h; zeroed if cp not in bsse_type or rtd=F         | cumulative through 1-body total gradients with cp treatment                                                        |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2cp                                                    |  |em| (nat, 3)       | when driver is g/h & max_nbody>=2; zeroed if cp not in bsse_type   | cumulative through 2-body total gradients with cp treatment                                                        |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}cp                                          |  |em| (nat, 3)       | when driver is g/h; zeroed if cp not in bsse_type                  | cumulative through {max_nbody}-body total gradients with cp treatment                                              |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | cp_hessian_body_dict                                          | max_nbody            | when driver is h; zeroed if cp not in bsse_type                    | total Hessians at each n-body level with cp treatment                                                              |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1cp                                                    |  |em| (nat*3, nat*3) | when driver is h; zeroed if cp not in bsse_type or rtd=F           | cumulative through 1-body total Hessians with cp treatment                                                         |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2cp                                                    |  |em| (nat*3, nat*3) | when driver is h & max_nbody>=2; zeroed if cp not in bsse_type     | cumulative through 2-body total Hessians with cp treatment                                                         |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}cp                                          |  |em| (nat*3, nat*3) | when driver is h; zeroed if cp not in bsse_type                    | cumulative through {max_nbody}-body total Hessians with cp treatment                                               |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | nocp_energy_body_dict                                         | max_nbody            | always; zeroed if nocp not in bsse_type                            | total energies at each n-body level with nocp treatment                                                            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1nocp                                                  |  |em| 1              | always; zeroed if nocp not in bsse_type                            | cumulative through 1-body total energies with nocp treatment                                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2nocp                                                  |  |em| 1              | when max_nbody>=2; zeroed if nocp not in bsse_type                 | cumulative through 2-body total energies with nocp treatment                                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}nocp                                        |  |em| 1              | always; zeroed if nocp not in bsse_type                            | cumulative through {max_nbody}-body total energies with nocp treatment                                             |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | nocp_gradient_body_dict                                       | max_nbody            | when driver is g/h; zeroed if nocp not in bsse_type                | total gradients at each n-body level with nocp treatment                                                           |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1nocp                                                  |  |em| (nat, 3)       | when driver is g/h; zeroed if nocp not in bsse_type                | cumulative through 1-body total gradients with nocp treatment                                                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2nocp                                                  |  |em| (nat, 3)       | when driver is g/h & max_nbody>=2; zeroed if nocp not in bsse_type | cumulative through 2-body total gradients with nocp treatment                                                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}nocp                                        |  |em| (nat, 3)       | when driver is g/h; zeroed if nocp not in bsse_type                | cumulative through {max_nbody}-body total gradients with nocp treatment                                            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | nocp_hessian_body_dict                                        | max_nbody            | when driver is h; zeroed if nocp not in bsse_type                  | total Hessians at each n-body level with nocp treatment                                                            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1nocp                                                  |  |em| (nat*3, nat*3) | when driver is h; zeroed if nocp not in bsse_type                  | cumulative through 1-body total Hessians with nocp treatment                                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2nocp                                                  |  |em| (nat*3, nat*3) | when driver is h & max_nbody>=2; zeroed if nocp not in bsse_type   | cumulative through 2-body total Hessians with nocp treatment                                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}nocp                                        |  |em| (nat*3, nat*3) | when driver is h; zeroed if nocp not in bsse_type                  | cumulative through {max_nbody}-body total Hessians with nocp treatment                                             |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | vmfc_energy_body_dict                                         | max_nbody            | always; zeroed if vmfc not in bsse_type                            | total energies at each n-body level with vmfc treatment                                                            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1vmfc                                                  |  |em| 1              | always; zeroed if vmfc not in bsse_type                            | cumulative through 1-body total energies with vmfc treatment                                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2vmfc                                                  |  |em| 1              | when max_nbody>=2; zeroed if vmfc not in bsse_type                 | cumulative through 2-body total energies with vmfc treatment                                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}vmfc                                        |  |em| 1              | always; zeroed if vmfc not in bsse_type                            | cumulative through {max_nbody}-body total energies with vmfc treatment                                             |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | vmfc_gradient_body_dict                                       | max_nbody            | when driver is g/h; zeroed if vmfc not in bsse_type                | total gradients at each n-body level with vmfc treatment                                                           |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1vmfc                                                  |  |em| (nat, 3)       | when driver is g/h; zeroed if vmfc not in bsse_type                | cumulative through 1-body total gradients with vmfc treatment                                                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2vmfc                                                  |  |em| (nat, 3)       | when driver is g/h & max_nbody>=2; zeroed if vmfc not in bsse_type | cumulative through 2-body total gradients with vmfc treatment                                                      |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}vmfc                                        |  |em| (nat, 3)       | when driver is g/h; zeroed if vmfc not in bsse_type                | cumulative through {max_nbody}-body total gradients with vmfc treatment                                            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | vmfc_hessian_body_dict                                        | max_nbody            | when driver is h; zeroed if vmfc not in bsse_type                  | total Hessians at each n-body level with vmfc treatment                                                            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1vmfc                                                  |  |em| (nat*3, nat*3) | when driver is h; zeroed if vmfc not in bsse_type                  | cumulative through 1-body total Hessians with vmfc treatment                                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2vmfc                                                  |  |em| (nat*3, nat*3) | when driver is h & max_nbody>=2; zeroed if vmfc not in bsse_type   | cumulative through 2-body total Hessians with vmfc treatment                                                       |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| {max_nbody}vmfc                                        |  |em| (nat*3, nat*3) | when driver is h; zeroed if vmfc not in bsse_type                  | cumulative through {max_nbody}-body total Hessians with vmfc treatment                                             |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | intermediates                                                 | ntasks               | always                                                             | all individual energies with nice labels                                                                           |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| N-BODY (1, 2)@(1, 2) TOTAL ENERGY                      |  |em| 1              | always                                                             | total energy for 1st modelchem, 1st & 2nd fragments in basis of 1st & 2nd fragments                                |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| N-BODY (3)@(2, 3) TOTAL ENERGY                         |  |em| 1              | always                                                             | total energy for 2nd modelchem, 3rd fragment in basis of 2nd and 3rd fragments                                     |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| ...                                                    |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | intermediates_energy                                          | ntasks               | always                                                             | all individual energies                                                                                            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1_((1, 2), (1, 2))                                     |  |em| 1              | always                                                             | total energy for 1st modelchem, 1st & 2nd fragments in basis of 1st & 2nd fragments                                |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2_((3,), (2, 3))                                       |  |em| 1              | always                                                             | total energy for 2nd modelchem, 3rd fragment in basis of 2nd and 3rd fragments                                     |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| ...                                                    |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | intermediates_gradient                                        | ntasks               | when driver is g/h                                                 | all individual gradients                                                                                           |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1_((1, 2), (1, 2))                                     |  |em| (nat, 3)       | when driver is g/h                                                 | total gradient for 1st modelchem, 1st & 2nd fragments in basis of 1st & 2nd fragments                              |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2_((3,), (2, 3))                                       |  |em| (nat, 3)       | when driver is g/h                                                 | total gradient for 2nd modelchem, 3rd fragment in basis of 2nd and 3rd fragments                                   |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| ...                                                    |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |                                                               |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        | intermediates_hessian                                         | ntasks               | when driver is h                                                   | all individual Hessians                                                                                            |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 1_((1, 2), (1, 2))                                     |  |em| (nat*3, nat*3) | when driver is h                                                   | total Hessian for 1st modelchem, 1st & 2nd fragments in basis of 1st & 2nd fragments                               |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| 2_((3,), (2, 3))                                       |  |em| (nat*3, nat*3) | when driver is h                                                   | total Hessian for 2nd modelchem, 3rd fragment in basis of 2nd and 3rd fragments                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+        |   |em| ...                                                    |                      |                                                                    |                                                                                                                    |
+        +---------------------------------------------------------------+----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+
+        """
+        if results is None:
+            results = {}
+
+        # formerly nlevels
+        mc_level_labels = {i.split("_")[0] for i in self.task_list}
+        if len(mc_level_labels) > 1 and not results:
+            return driver_nbody_multilevel.prepare_results(self, client)
+
+        results_list = {k: v.get_results(client=client) for k, v in (results.items() or self.task_list.items())}
+        trove = {  # AtomicResult.properties return None if missing
+            "energy": {k: v.properties.return_energy for k, v in results_list.items()},
+            "gradient": {k: v.properties.return_gradient for k, v in results_list.items()},
+            "hessian": {k: v.properties.return_hessian for k, v in results_list.items()},
+        }
+
+        # TODO: make assemble_nbody_components and driver_nbody_multilevel.prepare_results into class functions.
+        #   note that the former uses metadata as read-only (except for one solveable case) while the latter overwrites self (!).
+        metadata = {
+            "quiet": self.quiet,
+            "nbodies_per_mc_level": self.nbodies_per_mc_level,
+            "bsse_type": self.bsse_type,
+            "nfragments": self.nfragments,
+            "return_total_data": self.return_total_data,
+            "molecule": self.molecule,
+            "embedding_charges": bool(self.embedding_charges),
+            "max_nbody": self.max_nbody,
+        }
+        if self.driver.name == "energy":
+            nbody_results = assemble_nbody_components("energy", trove["energy"], metadata.copy())
+
+        elif self.driver.name == "gradient":
+            nbody_results = assemble_nbody_components("energy", trove["energy"], metadata.copy())
+            nbody_results.update(assemble_nbody_components("gradient", trove["gradient"], metadata.copy()))
+
+        elif self.driver.name == "hessian":
+            nbody_results = assemble_nbody_components("energy", trove["energy"], metadata.copy())
+            nbody_results.update(assemble_nbody_components("gradient", trove["gradient"], metadata.copy()))
+            nbody_results.update(assemble_nbody_components("hessian", trove["hessian"], metadata.copy()))
+
+        def delabeler(item: str, return_obj: bool = False) -> Union[Tuple[str, str, str], Tuple[int, Tuple[int], Tuple[int]]]:
+            """Transform labels like string "1_((2,), (1, 2))" into string tuple ("1", "2", "1, 2") or object tuple (1, (2,), (1, 2))."""
+
+            mc, _, fragbas = item.partition("_")
+            frag, bas = literal_eval(fragbas)
+
+            if return_obj:
+                return int(mc), frag, bas
+            else:
+                return mc, ", ".join(map(str, frag)), ", ".join(map(str, bas))
+
+        # save some mc_(frag, bas) component results
+        # * formerly, intermediates_energy was intermediates2
+        # * formerly, intermediates_gradient was intermediates_ptype
+        # * formerly, intermediates_hessian was intermediates_ptype
+
+        nbody_results["intermediates"] = {}
+        for idx, task in results_list.items():
+            mc, frag, bas = delabeler(idx)
+            nbody_results["intermediates"][f"N-BODY ({frag})@({bas}) TOTAL ENERGY"] = task.properties.return_energy
+
+        nbody_results["intermediates_energy"] = trove["energy"]
+
+        if not all(x is None for x in trove["gradient"].values()):
+            nbody_results["intermediates_gradient"] = trove["gradient"]
+
+        if not all(x is None for x in trove["hessian"].values()):
+            nbody_results["intermediates_hessian"] = trove["hessian"]
+
+        debug = False
+        if debug:
+            for k, v in nbody_results.items():
+                if isinstance(v, np.ndarray):
+                    print(f"CLS-prepared results >>> {k} {v.size}")
+                elif isinstance(v, dict):
+                    print(f"CLS-prepared results >>> {k} {len(v)}")
+                    for k2, v2 in v.items():
+                        if isinstance(v2, np.ndarray):
+                            print(f"CLS-prepared results      >>> {k2} {v2.size}")
+                        else:
+                            print(f"CLS-prepared results      >>> {k2} {v2}")
+                else:
+                    print(f"CLS-prepared results >>> {k} {v}")
+
+        return nbody_results
+
+    def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
+        """Return results as ManyBody-flavored QCSchema."""
+
+        info = "\n" + p4util.banner(f" ManyBody Results ", strNotOutfile=True) + "\n"
+        core.print_out(info)
+        logger.info(info)
+
+        results = self.prepare_results(client=client)
+        ret_energy = results.pop("ret_energy")
+        ret_ptype = results.pop("ret_ptype")
+        ret_gradient = results.pop("ret_gradient", None)
+
+        # load QCVariables
+        qcvars = {
+            'NUCLEAR REPULSION ENERGY': self.molecule.nuclear_repulsion_energy(),
+            'NBODY NUMBER': len(self.task_list),
+        }
+
+        properties = {
+            "calcinfo_natom": self.molecule.natom(),
+            "nuclear_repulsion_energy": self.molecule.nuclear_repulsion_energy(),
+            "return_energy": ret_energy,
+        }
+
+        for k, val in results.items():
+            qcvars[k] = val
+
+        qcvars['CURRENT ENERGY'] = ret_energy
+        if self.driver == 'gradient':
+            qcvars['CURRENT GRADIENT'] = ret_ptype
+            properties["return_gradient"] = ret_ptype
+        elif self.driver == 'hessian':
+            qcvars['CURRENT GRADIENT'] = ret_gradient
+            qcvars['CURRENT HESSIAN'] = ret_ptype
+            properties["return_gradient"] = ret_gradient
+            properties["return_hessian"] = ret_ptype
+
+        component_results = self.dict()['task_list']
+        for k, val in component_results.items():
+            val['molecule'] = val['molecule'].to_schema(dtype=2)
+
+        nbody_model = AtomicResult(
+            **{
+                'driver': self.driver,
+                'model': {
+                    'method': self.method,
+                    'basis': self.basis,
+                },
+                'molecule': self.molecule.to_schema(dtype=2),
+                'properties': properties,
+                'provenance': p4util.provenance_stamp(__name__),
+                'extras': {
+                    'qcvars': qcvars,
+                    'component_results': component_results,
+                },
+                'return_result': ret_ptype,
+                'success': True,
+            })
+
+        return nbody_model
+
+    def get_psi_results(self, return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+        """Called by driver to assemble results into ManyBody-flavored QCSchema,
+        then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
+
+        Parameters
+        ----------
+        return_wfn
+            Whether to additionally return the dummy :py:class:`~psi4.core.Wavefunction`
+            calculation result as the second element of a tuple. Contents are:
+
+            - supersystem molecule
+            - dummy basis, def2-svp
+            - e/g/h member data
+            - QCVariables
+
+        Returns
+        -------
+        ret
+            Energy, gradient, or Hessian according to self.driver.
+        wfn
+            Wavefunction described above when *return_wfn* specified.
+
+        """
+        nbody_model = self.get_results()
+        ret = nbody_model.return_result
+
+        wfn = core.Wavefunction.build(self.molecule, "def2-svp", quiet=True)
+
+        # TODO all besides nbody may be better candidates for extras than qcvars. energy/gradient/hessian_body_dict in particular are too simple for qcvars (e.g., "2")
+        dicts = [
+            #"energies",  # retired
+            #"ptype",     # retired
+            "intermediates",
+            "intermediates_energy",  #"intermediates2",
+            "intermediates_gradient",  #"intermediates_ptype",
+            "intermediates_hessian",  #"intermediates_ptype",
+            "energy_body_dict",
+            "gradient_body_dict",  # ptype_body_dict
+            "hessian_body_dict",  # ptype_body_dict
+            "nbody",
+            "cp_energy_body_dict",
+            "nocp_energy_body_dict",
+            "vmfc_energy_body_dict",
+            "cp_gradient_body_dict",
+            "nocp_gradient_body_dict",
+            "vmfc_gradient_body_dict",
+            "cp_hessian_body_dict",
+            "nocp_hessian_body_dict",
+            "vmfc_hessian_body_dict",
+        ]
+
+        for qcv, val in nbody_model.extras['qcvars'].items():
+            if isinstance(val, dict):
+                if qcv in dicts:
+                    for qcv2, val2 in val.items():
+                        for obj in [core, wfn]:
+                            try:
+                                obj.set_variable(str(qcv2), val2)
+                            except ValidationError:
+                                obj.set_variable(f"{self.driver} {qcv2}", val2)
+            else:
+                for obj in [core, wfn]:
+                    obj.set_variable(qcv, val)
+
+        if self.driver == 'gradient':
+            ret = core.Matrix.from_array(ret)
+            wfn.set_gradient(ret)
+        elif self.driver == 'hessian':
+            ret = core.Matrix.from_array(ret)
+            grad = core.Matrix.from_array(nbody_model.properties.return_gradient)
+            wfn.set_hessian(ret)
+            wfn.set_gradient(grad)
+
+        if return_wfn:
+            return (ret, wfn)
+        else:
+            return ret
+
+
+# TODO questions to check:
+# * can work with supersystem and embedding_charges?
+# * can levels work with same method, different basis?

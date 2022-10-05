@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -104,20 +104,19 @@ void scm_C1(dpdfile2 *CME, dpdfile2 *Cme, double a) {
 }
 
 void c_clean(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf) {
-    int *occpi, *virtpi, *occ_off, *vir_off, *openpi, C_irr;
-    int nirreps, *occ_sym, *vir_sym;
+    int C_irr, nirreps;
     int mn, ef, m, n, e, f, h, M, N, E, F;
     int msym, nsym, esym, fsym;
 
     C_irr = CME->my_irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    occ_off = moinfo.occ_off;
-    vir_off = moinfo.vir_off;
-    occ_sym = moinfo.occ_sym;
-    vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
+    const auto& occ_sym = moinfo.occ_sym;
+    const auto& vir_sym = moinfo.vir_sym;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
     global_dpd_->file2_mat_rd(CME);
@@ -196,21 +195,20 @@ void c_clean(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbu
 }
 
 void c_cleanSS(dpdfile2 *CME, dpdfile2 *Cme) {
-    int *occpi, *virtpi, *occ_off, *vir_off, *openpi;
-    int nirreps, *occ_sym, *vir_sym;
+    int nirreps;
     int mn, ef, m, n, e, f;
     int h, M, N, E, F;
     int msym, nsym, esym, fsym, C_irr;
 
     C_irr = CME->my_irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    occ_off = moinfo.occ_off;
-    vir_off = moinfo.vir_off;
-    occ_sym = moinfo.occ_sym;
-    vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
+    const auto& occ_sym = moinfo.occ_sym;
+    const auto& vir_sym = moinfo.vir_sym;
+    const auto& openpi = moinfo.openpi;
 
     global_dpd_->file2_mat_init(CME);
     global_dpd_->file2_mat_rd(CME);
@@ -232,20 +230,19 @@ void c_cleanSS(dpdfile2 *CME, dpdfile2 *Cme) {
 }
 
 void c_clean_CIJAB(dpdbuf4 *CMNEF) {
-    int *occpi, *virtpi, *occ_off, *vir_off, *openpi, C_irr;
-    int nirreps, *occ_sym, *vir_sym;
+    int C_irr, nirreps;
     int mn, ef, m, n, e, f, h, M, N, E, F;
     int msym, nsym, esym, fsym;
 
     C_irr = CMNEF->file.my_irrep;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    occ_off = moinfo.occ_off;
-    vir_off = moinfo.vir_off;
-    occ_sym = moinfo.occ_sym;
-    vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
+    const auto& occ_sym = moinfo.occ_sym;
+    const auto& vir_sym = moinfo.vir_sym;
+    const auto& openpi = moinfo.openpi;
 
     for (h = 0; h < nirreps; h++) {
         global_dpd_->buf4_mat_irrep_init(CMNEF, h);

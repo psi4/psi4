@@ -1,16 +1,16 @@
 #! DCT calculation for the triplet O2 using ODC-06 and ODC-12 functionals. 
 #! Only simultaneous algorithm is tested.
 
-refscf      = -149.65367728294785   #TEST
-refmp2      = -150.17316961260252   #TEST
+refscf      = -149.604242662532215   #TEST
+refmp2      = -149.921660679563871   #TEST
 
 # ODC-06
-refdctscf  = -149.074169972872937  #TEST
-refdct     = -150.194310452116127  #TEST
+refdctscf  = -149.239040008931511  #TEST
+refdct     = -149.938462434958325  #TEST
 
 # ODC-12                             #TEST
-refdctxscf = -149.090539944500989  #TEST
-refdctx    = -150.189699136183066  #TEST
+refdctxscf = -149.252176970263150  #TEST
+refdctx    = -149.934767334068425  #TEST
 
 molecule OO {
 0 3
@@ -26,7 +26,7 @@ set {
     d_convergence 12
     ao_basis    disk
     algorithm   simultaneous
-    basis       cc-pcvtz
+    basis       cc-pvdz
     reference   uhf
 }
 

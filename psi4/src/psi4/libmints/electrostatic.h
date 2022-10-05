@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,7 +36,6 @@ namespace psi {
 
 class BasisSet;
 class Molecule;
-class GaussianShell;
 class SphericalTransform;
 class Vector3;
 
@@ -46,7 +45,6 @@ class Vector3;
  * Use an IntegralFactory to create this object.
  */
 class ElectrostaticInt : public PotentialInt {
-    void compute_pair(const GaussianShell&, const GaussianShell&) override {}
 
    public:
     /// Constructor
@@ -54,22 +52,16 @@ class ElectrostaticInt : public PotentialInt {
                      int deriv = 0);
     ~ElectrostaticInt() override;
 
+    void set_origin(const Vector3& _origin) override;
+
 // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
 // The following line is to shut it up.
 #pragma warning disable 1125
-    /// Computes integrals between two shells.
-    void compute_shell(int, int, const Vector3&);
-    /// Computes integrals between two shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&, const Vector3&);
-
     PRAGMA_WARNING_PUSH
     PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
     /// Computes integrals and stores in result.
     void compute(SharedMatrix& result, const Vector3&);
     PRAGMA_WARNING_POP
-
-    /// Does the method provide first derivatives?
-    bool has_deriv1() override { return false; }
 
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol);
 };

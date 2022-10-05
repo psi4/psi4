@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,7 +35,6 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 
@@ -44,18 +43,11 @@ class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
- *  \class DipoleInt
- *  \brief Computes dipole integrals.
+ *  \class NablaInt
+ *  \brief Computes nabla integrals.
  *
  * Use an IntegralFactory to create this object. */
 class NablaInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
-
-    //! Computes the dipole between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    //! Computes the dipole derivative between two gaussian shells.
-    //    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
@@ -63,8 +55,7 @@ class NablaInt : public OneBodyAOInt {
     //! Virtual destructor
     ~NablaInt() override;
 
-    //! Does the method provide first derivatives?
-    bool has_deriv1() override { return true; }
+    bool is_antisymmetric() const override { return true; }
 };
 
 }  // namespace psi

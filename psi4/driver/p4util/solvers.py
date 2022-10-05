@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -25,9 +25,18 @@
 #
 # @END LICENSE
 #
+
+__all__ = [
+    "cg_solver",
+    "davidson_solver",
+    "DIIS",
+    "hamiltonian_solver",
+    "SolverEngine",
+]
+
 import time
 from abc import ABC, abstractmethod
-from typing import Callable, List
+from typing import Any, Callable, Dict, List, Optional, Type
 
 import numpy as np
 
@@ -41,9 +50,17 @@ Generalized iterative solvers for Psi4.
 """
 
 
-def cg_solver(rhs_vec: List[core.Matrix], hx_function: Callable, preconditioner: Callable, guess: List[core.Matrix] = None, printer: Callable = None, printlvl: int = 1, maxiter: int = 20, rcond: float = 1.e-6) -> List[core.Matrix]:
+def cg_solver(
+    rhs_vec: List[core.Matrix],
+    hx_function: Callable,
+    preconditioner: Callable,
+    guess: Optional[List[core.Matrix]] = None,
+    printer: Optional[Callable] = None,
+    printlvl: int = 1,
+    maxiter: int = 20,
+    rcond: float = 1.e-6) -> List[core.Matrix]:
     """
-    Solves the Ax = b linear equations via Conjugate Gradient. The `A` matrix must be a hermitian, positive definite matrix.
+    Solves the :math:`Ax = b` linear equations via Conjugate Gradient. The `A` matrix must be a hermitian, positive definite matrix.
 
     Parameters
     ----------
@@ -54,7 +71,7 @@ def cg_solver(rhs_vec: List[core.Matrix], hx_function: Callable, preconditioner:
     preconditioner
         Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the preconditioned value.
     guess
-        Starting vectors, if None use a preconditioner(rhs) guess
+        Starting vectors. If None, use a preconditioner (rhs) guess
     printer
         Takes in a list of current x and residual vectors and provides a print function. This function can also
         return a value that represents the current residual.
@@ -68,17 +85,12 @@ def cg_solver(rhs_vec: List[core.Matrix], hx_function: Callable, preconditioner:
     Returns
     -------
     ret : List[Matrix]
-        Returns the solved `x` vectors and `r` vectors.
+        Solved `x` vectors and `r` vectors.
 
     Notes
     -----
     This is a generalized cg solver that can also take advantage of solving multiple RHS's simultaneously when
     it is advantageous to do so.
-
-    Examples
-    --------
-
-
 
     """
 
@@ -191,22 +203,19 @@ def cg_solver(rhs_vec: List[core.Matrix], hx_function: Callable, preconditioner:
 class DIIS:
     """
     An object to assist in the DIIS extrpolation procedure.
+
+    Parameters
+    ----------
+    max_vec
+        The maximum number of error and state vectors to hold. These are pruned based off the removal policy.
+    removal_policy
+        {"OLDEST", "LARGEST"}
+        How the state and error vectors are removed once at the maximum. OLDEST will remove the oldest vector while
+        largest will remove the residual with the largest RMS value.
+
     """
 
     def __init__(self, max_vec: int = 6, removal_policy: str = "OLDEST"):
-        """
-        An object to assist in the DIIS extrpolation procedure.
-
-        Parameters
-        ----------
-        max_vec
-            The maximum number of error and state vectors to hold. These are pruned based off the removal policy.
-        removal_policy
-            {"OLDEST", "LARGEST"}
-            How the state and error vectors are removed once at the maximum. OLDEST will remove the oldest vector while
-            largest will remove the residual with the largest RMS value.
-
-        """
         self.error = []
         self.state = []
         self.max_vec = max_vec
@@ -215,20 +224,22 @@ class DIIS:
         if self.removal_policy not in ["LARGEST", "OLDEST"]:
             raise ValidationError("DIIS: removal_policy must either be oldest or largest.")
 
-    def add(self, state, error):
+    def add(self, state: core.Matrix, error: core.Matrix):
         """
         Adds a DIIS state and error vector to the DIIS object.
 
-        state : :py:class:`~psi4.core.Matrix`
+        Parameters
+        ----------
+        state
             The current state vector.
-        error : :py:class:`~psi4.core.Matrix`
+        error
             The current error vector.
 
         """
         self.error.append(error.clone())
         self.state.append(state.clone())
 
-    def extrapolate(self, out: core.Matrix = None) -> core.Matrix:
+    def extrapolate(self, out: Optional[core.Matrix] = None) -> core.Matrix:
         """
         Extrapolates next state vector from the current set of state and error vectors.
 
@@ -398,7 +409,7 @@ def _print_array(name, arr, verbose):
         core.print_out(f"\n\n{name}:\n{str(arr)}\n")
 
 
-def _gs_orth(engine, U, V, thresh=1.0e-8):
+def _gs_orth(engine, U, V, thresh: float = 1.0e-8):
     """Perform Gram-Schmidt orthonormalization of a set V against a previously orthonormalized set U
 
     Parameters
@@ -409,7 +420,7 @@ def _gs_orth(engine, U, V, thresh=1.0e-8):
         A set of orthonormal vectors, len(U) = l; satisfies ||I^{lxl}-U^tU|| < thresh
     V : list of `vectors`
         The vectors used to augment U
-    thresh : float
+    thresh
        If the orthogonalized vector has a norm smaller than this value it is considered LD to the set
 
     Returns
@@ -472,27 +483,29 @@ class SolverEngine(ABC):
     that the required methods are defined.
 
 
-     ..note:: The `vector` referred to here is intentionally vague, the solver
-              does not care what it is and only holds individual or sets of
-              them. In fact an individual `vector` could be split across two
-              elements in a list, such as for different spin.
-              Whatever data type is used and individual vector should be a
-              single element in a list such that len(list) returns the number
-              of vector-like objects.
+    .. note:: The `vector` referred to here is intentionally vague, the solver
+       does not care what it is and only holds individual or sets of
+       them. In fact an individual `vector` could be split across two
+       elements in a list, such as for different spin.
+       Whatever data type is used and individual vector should be a
+       single element in a list such that len(list) returns the number
+       of vector-like objects.
     """
 
     @abstractmethod
     def compute_products(self, X):
         r"""Compute a Matrix * trial vector products
+
         Parameters
         ----------
-        X : list of `vectors`
+        X : List[`vector`]
+            Trial vectors.
 
         Returns
         -------
         Expected by :func:`davidson_solver`
 
-        AX : list of `vectors`
+        AX : List[`vector`]
            The product :math:`A x X_{i}` for each `X_{i}` in `X`, in that
            order. Where `A` is the hermitian matrix to be diagonalized.
            `len(AX) == len(X)`
@@ -502,14 +515,14 @@ class SolverEngine(ABC):
 
         Expected by :func:`hamiltonian_solver`
 
-        H1X : list of `vectors`
+        H1X : List[`vector`]
            The product :math:`H1 x X_{i}` for each `X_{i}` in `X`, in that
            order. Where H1 is described in :func:`hamiltonian_solver`.
-           `len(H1X) == len(X)`
-        H2X : list of `vectors`
+           ``len(H1X) == len(X)``
+        H2X : List[`vector`]
            The product :math:`H2 x X_{i}` for each `X_{i}` in `X`, in that
            order. Where H2 is described in :func:`hamiltonian_solver`.
-           `len(H2X) == len(X)`
+           ``len(H2X) == len(X)``
         """
         pass
 
@@ -555,7 +568,7 @@ class SolverEngine(ABC):
         """
         pass
 
-    def vector_dot(X, Y):
+    def vector_dot(X, Y) -> float:
         """Compute a dot product between two `vectors`
 
         Parameters
@@ -574,12 +587,12 @@ class SolverEngine(ABC):
     vector_dot = staticmethod(abstractmethod(vector_dot))
 
     @abstractmethod
-    def vector_axpy(a, X, Y):
+    def vector_axpy(a: float, X, Y):
         """Compute scaled `vector` addition operation `a*X + Y`
 
         Parameters
         ----------
-        a : float
+        a
           The scale factor applied to `X`
         X : singlet `vector`
           The `vector` which will be scaled and added to `Y`
@@ -595,12 +608,12 @@ class SolverEngine(ABC):
         pass
 
     @abstractmethod
-    def vector_scale(a, X):
+    def vector_scale(a: float, X):
         """Scale a vector by some factor
 
         Parameters
         ----------
-        a : float
+        a
            The scale facor
         X : single `vector`
            The vector that will be scaled
@@ -651,9 +664,16 @@ class SolverEngine(ABC):
         pass
 
 
-def davidson_solver(engine, guess: List, *, nroot: int, r_convergence: float = 1.0E-4, max_ss_size: int = 100, maxiter: int = 60, verbose: int = 1):
+def davidson_solver(
+    engine: Type[SolverEngine],
+    guess: List,
+    *,
+    nroot: int,
+    r_convergence: float = 1.0E-4,
+    max_ss_size: int = 100,
+    maxiter: int = 60,
+    verbose: int = 1) -> Dict[str, Any]:
     """Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
-
 
     If the large matrix `A` has dimension `{NxN}` and N is very large, and only
     a small number of roots, `k` are desired this algorithm is preferable to
@@ -666,8 +686,8 @@ def davidson_solver(engine, guess: List, *, nroot: int, r_convergence: float = 1
     used.
 
     Parameters
-    -----------
-    engine : object (subclass of :class:`SolverEngine`)
+    ----------
+    engine
        The engine drive all operations involving data structures that have at
        least one "large" dimension. See :class:`SolverEngine` for requirements
     guess
@@ -677,7 +697,7 @@ def davidson_solver(engine, guess: List, *, nroot: int, r_convergence: float = 1
         Number of roots desired
     r_convergence
         Convergence tolerance for residual vectors
-    max_ss_size:
+    max_ss_size
        The maximum number of trial vectors in the iterative subspace that will
        be stored before a collapse is done.
     maxiter
@@ -687,27 +707,27 @@ def davidson_solver(engine, guess: List, *, nroot: int, r_convergence: float = 1
 
     Returns
     -------
-    best_values : numpy.ndarray (nroots, )
-       The best approximation of the eigenvalues of A, computed on the last iteration of the solver
-    best_vectors: list of `vector` (nroots)
-       The best approximation of the eigenvectors of A, computed on the last iteration of the solver
+    best_values : numpy.ndarray
+       (nroots, ) The best approximation of the eigenvalues of A, computed on the last iteration of the solver
+    best_vectors: List[`vector`]
+       (nroots) The best approximation of the eigenvectors of A, computed on the last iteration of the solver
     stats : List[Dict]
        Statistics collected on each iteration
 
-       count : int, iteration number
-       res_norm : np.ndarray (nroots, ), the norm of residual vector for each roots
-       val : np.ndarray (nroots, ), the eigenvalue corresponding to each root
-       delta_val : np.ndarray (nroots, ), the change in eigenvalue from the last iteration to this ones
-       collapse : bool, if a subspace collapse was performed
-       product_count : int, the running total of product evaluations that was performed
-       done : bool, if all roots were converged
+       - count : int, iteration number
+       - res_norm : np.ndarray (nroots, ), the norm of residual vector for each roots
+       - val : np.ndarray (nroots, ), the eigenvalue corresponding to each root
+       - delta_val : np.ndarray (nroots, ), the change in eigenvalue from the last iteration to this ones
+       - collapse : bool, if a subspace collapse was performed
+       - product_count : int, the running total of product evaluations that was performed
+       - done : bool, if all roots were converged
 
     Notes
     -----
     The solution vector is normalized to 1/2
 
-    The solver will return even when ``maxiter`` iterations are performed without convergence.
-    The caller **must check** `stats[-1]['done']` for failure and handle each case accordingly.
+    The solver will return even when `maxiter` iterations are performed without convergence.
+    The caller **must check** ``stats[-1]['done']`` for failure and handle each case accordingly.
     """
     nk = nroot
 
@@ -830,40 +850,48 @@ def davidson_solver(engine, guess: List, *, nroot: int, r_convergence: float = 1
     return {"eigvals": best_eigvals, "eigvecs": list(zip(best_eigvecs, best_eigvecs)), "stats": stats}
 
 
-def hamiltonian_solver(engine, guess: List, *, nroot: int, r_convergence: float = 1.0E-4, max_ss_size: int = 100, maxiter: int = 60, verbose: int = 1):
+def hamiltonian_solver(
+    engine: Type[SolverEngine],
+    guess: List,
+    *,
+    nroot: int,
+    r_convergence: float = 1.0E-4,
+    max_ss_size: int = 100,
+    maxiter: int = 60,
+    verbose: int = 1):
     """Finds the smallest eigenvalues and associated right and left hand
     eigenvectors of a large real Hamiltonian eigenvalue problem emulated
     through an engine.
 
-    A Hamiltonian eigenvalue problem (EVP) has the following structure:
+    A Hamiltonian eigenvalue problem (EVP) has the following structure::
 
-    [A  B][X]  = [1   0](w)[X]
-    [B  A][Y]    [0  -1](w)[Y]
+        [A  B][X]  = [1   0](w)[X]
+        [B  A][Y]    [0  -1](w)[Y]
 
     with A, B of some large dimension N, the problem is of dimension 2Nx2N.
 
     The real, Hamiltonian EVP can be rewritten as the NxN, non-hermitian EVP:
-    (A+B)(A-B)(X+Y) = w^2(X+Y)
+    :math:`(A+B)(A-B)(X+Y) = w^2(X+Y)`
 
     With left-hand eigenvectors:
-    (X-Y)(A-B)(A+B) = w^2(X-Y)
+    :math:`(X-Y)(A-B)(A+B) = w^2(X-Y)`
 
-    if (A-B) is positive definite, we can transform the problem to arrive at the hermitian NxN EVP:
-    (A-B)^1/2(A+B)(A-B)^1/2 = w^2 T
+    if :math:`(A-B)` is positive definite, we can transform the problem to arrive at the hermitian NxN EVP:
+    :math:`(A-B)^{1/2}(A+B)(A-B)^{1/2} = w^2 T`
 
-    Where T = (A-B)^-1/2(X+Y).
+    Where :math:`T = (A-B)^{-1/2}(X+Y)`.
 
-    We use a Davidson like iteration where we transform (A+B) (H1) and (A-B)
+    We use a Davidson like iteration where we transform :math:`(A+B)` (H1) and :math:`(A-B)`
     (H2) in to the subspace defined by the trial vectors.
-    The subspace analog of the NxN hermitian EVP is diagonalized and left (X-Y)
-    and right (X+Y) eigenvectors of the NxN non-hermitian EVP are approximated.
+    The subspace analog of the NxN hermitian EVP is diagonalized and left :math:`(X-Y)`
+    and right :math:`(X+Y)` eigenvectors of the NxN non-hermitian EVP are approximated.
     Residual vectors are formed for both and the guess space is augmented with
     two correction vectors per iteration. The advantages and properties of this
     algorithm are described in the literature [stratmann:1998]_ .
 
     Parameters
-    -----------
-    engine : object (subclass of :class:`SolverEngine`)
+    ----------
+    engine
        The engine drive all operations involving data structures that have at
        least one "large" dimension. See :class:`SolverEngine` for requirements
     guess
@@ -873,7 +901,7 @@ def hamiltonian_solver(engine, guess: List, *, nroot: int, r_convergence: float 
         Number of roots desired
     r_convergence
         Convergence tolerance for residual vectors
-    max_ss_size:
+    max_ss_size
        The maximum number of trial vectors in the iterative subspace that will
        be stored before a collapse is done.
     maxiter
@@ -883,33 +911,32 @@ def hamiltonian_solver(engine, guess: List, *, nroot: int, r_convergence: float 
 
     Returns
     -------
-    best_values : numpy.ndarray (nroots, )
-       The best approximation of the eigenvalues of `w`, computed on the last iteration of the solver
-    best_R: list of `vector` (nroots)
-       The best approximation of the  right hand eigenvectors, `X+Y`, computed on the last iteration of the solver.
-    best_L: list of `vector` (nroots)
-       The best approximation of the left hand eigenvectors, `X-Y`, computed on the last iteration of the solver.
-    stats : list of `dict`
+    best_values : numpy.ndarray
+        (nroots, ) The best approximation of the eigenvalues of `w`, computed on the last iteration of the solver
+    best_R: List[`vector`]
+        (nroots) The best approximation of the  right hand eigenvectors, :math:`X+Y`, computed on the last iteration of the solver.
+    best_L: List[`vector`]
+        (nroots) The best approximation of the left hand eigenvectors, :math:`X-Y`, computed on the last iteration of the solver.
+    stats : List[Dict]
        Statistics collected on each iteration
 
-       count : int, iteration number
-       res_norm : np.ndarray (nroots, ), the norm of residual vector for each roots
-       val : np.ndarray (nroots, ), the eigenvalue corresponding to each root
-       delta_val : np.ndarray (nroots, ), the change in eigenvalue from the last iteration to this ones
-       collapse : bool, if a subspace collapse was performed
-       product_count : int, the running total of product evaluations that was performed
-       done : bool, if all roots were converged
+       - count : int, iteration number
+       - res_norm : np.ndarray (nroots, ), the norm of residual vector for each roots
+       - val : np.ndarray (nroots, ), the eigenvalue corresponding to each root
+       - delta_val : np.ndarray (nroots, ), the change in eigenvalue from the last iteration to this ones
+       - collapse : bool, if a subspace collapse was performed
+       - product_count : int, the running total of product evaluations that was performed
+       - done : bool, if all roots were converged
 
     Notes
     -----
     The solution vector is normalized to 1/2
 
-    The solver will return even when ``maxiter`` iterations are performed without convergence.
-    The caller **must check** `stats[-1]['done']` for failure and handle each case accordingly.
+    The solver will return even when `maxiter` iterations are performed without convergence.
+    The caller **must check** ``stats[-1]['done']`` for failure and handle each case accordingly.
 
     References
     ----------
-
     R. Eric Stratmann, G. E. Scuseria, and M. J. Frisch, "An efficient
     implementation of time-dependent density-functional theory for the
     calculation of excitation energies of large molecules." J. Chem. Phys.,

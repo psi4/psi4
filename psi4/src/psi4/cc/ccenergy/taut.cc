@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -34,7 +34,6 @@
 #include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
-#include "MOInfo.h"
 #include "psi4/cc/ccwave.h"
 
 namespace psi {
@@ -46,8 +45,6 @@ void CCEnergyWavefunction::taut_build() {
     dpdbuf4 tauIJAB, tauijab, tauIjAb;
     dpdbuf4 tIJAB, tijab, tIjAb;
     dpdfile2 tIA, tia;
-
-    auto nirreps = moinfo_.nirreps;
 
     if (params_.ref == 0) { /*** RHF ***/
 
@@ -61,7 +58,7 @@ void CCEnergyWavefunction::taut_build() {
 
         global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tautIjAb");
 
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIjAb, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
 
@@ -117,7 +114,7 @@ void CCEnergyWavefunction::taut_build() {
 
         global_dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tautIJAB");
 
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIJAB, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIJAB, h);
 
@@ -151,7 +148,7 @@ void CCEnergyWavefunction::taut_build() {
 
         global_dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tautijab");
 
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauijab, h);
             global_dpd_->buf4_mat_irrep_rd(&tauijab, h);
 
@@ -185,7 +182,7 @@ void CCEnergyWavefunction::taut_build() {
 
         global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tautIjAb");
 
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIjAb, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
 
@@ -242,7 +239,7 @@ void CCEnergyWavefunction::taut_build() {
         global_dpd_->file2_mat_rd(&tia);
 
         global_dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tautIJAB");
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIJAB, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIJAB, h);
             for (int ij = 0; ij < tauIJAB.params->rowtot[h]; ij++) {
@@ -271,7 +268,7 @@ void CCEnergyWavefunction::taut_build() {
         global_dpd_->buf4_close(&tauIJAB);
 
         global_dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tautijab");
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauijab, h);
             global_dpd_->buf4_mat_irrep_rd(&tauijab, h);
             for (int ij = 0; ij < tauijab.params->rowtot[h]; ij++) {
@@ -300,7 +297,7 @@ void CCEnergyWavefunction::taut_build() {
         global_dpd_->buf4_close(&tauijab);
 
         global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tautIjAb");
-        for (int h = 0; h < nirreps; h++) {
+        for (int h = 0; h < nirrep_; h++) {
             global_dpd_->buf4_mat_irrep_init(&tauIjAb, h);
             global_dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
             for (int ij = 0; ij < tauIjAb.params->rowtot[h]; ij++) {

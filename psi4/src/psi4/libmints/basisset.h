@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -78,9 +78,9 @@ class PSI_API BasisSet {
     std::string target_;
 
     //! Array of gaussian shells
-    GaussianShell *shells_;
+    std::vector<GaussianShell> shells_;
     //! Array of ECP shells
-    GaussianShell *ecp_shells_;
+    std::vector<GaussianShell> ecp_shells_;
     //! Array of Libint2 shells
     std::vector<libint2::Shell> l2_shells_;
 
@@ -125,46 +125,46 @@ class PSI_API BasisSet {
      * Arrays
      */
     /// The number of primitives (and exponents) in each shell
-    int *n_prim_per_shell_;
+    std::vector<int> n_prim_per_shell_;
     /// The first (Cartesian) atomic orbital in each shell
-    int *shell_first_ao_;
+    std::vector<int> shell_first_ao_;
     /// The first (Cartesian / spherical) basis function in each shell
-    int *shell_first_basis_function_;
+    std::vector<int> shell_first_basis_function_;
     /// Shell number to atomic center.
-    int *shell_center_;
+    std::vector<int> shell_center_;
     /// ECP Shell number to atomic center.
-    int *ecp_shell_center_;
+    std::vector<int> ecp_shell_center_;
     /// Which shell does a given (Cartesian / spherical) function belong to?
-    int *function_to_shell_;
+    std::vector<int> function_to_shell_;
     /// Which shell does a given Cartesian function belong to?
-    int *ao_to_shell_;
+    std::vector<int> ao_to_shell_;
     /// Which center is a given function on?
-    int *function_center_;
+    std::vector<int> function_center_;
     /// How many shells are there on each center?
-    int *center_to_nshell_;
+    std::vector<int> center_to_nshell_;
     /// What's the first shell on each center?
-    int *center_to_shell_;
+    std::vector<int> center_to_shell_;
     /// How many ECP shells are there on each center?
-    int *center_to_ecp_nshell_;
+    std::vector<int> center_to_ecp_nshell_;
     /// What's the first ECP shell on each center?
-    int *center_to_ecp_shell_;
+    std::vector<int> center_to_ecp_shell_;
 
     /// The flattened lists of unique exponents
-    double *uexponents_;
+    std::vector<double> uexponents_;
     /// The flattened lists of unique contraction coefficients (normalized)
-    double *ucoefficients_;
+    std::vector<double> ucoefficients_;
     /// The flattened lists of unique contraction coefficients (as provided by the user)
-    double *uoriginal_coefficients_;
+    std::vector<double> uoriginal_coefficients_;
     /// The flattened lists of unique ECP exponents
-    double *uecpexponents_;
+    std::vector<double> uecpexponents_;
     /// The flattened lists of unique ECP contraction coefficients (normalized)
-    double *uecpcoefficients_;
-    /// The flattened list of r exponenets for ECP calculations
-    int *uecpns_;
+    std::vector<double> uecpcoefficients_;
+    /// The flattened list of r exponents for ECP calculations
+    std::vector<int> uecpns_;
     /// The flattened lists of ERD normalized contraction coefficients
-    double *uerd_coefficients_;
+    std::vector<double> uerd_coefficients_;
     /// The flattened list of Cartesian coordinates for each atom
-    double *xyz_;
+    std::vector<double> xyz_;
 
    public:
     BasisSet();

@@ -1,4 +1,4 @@
-#! test QC_JSON Schema for energy
+#! test QCSchema for energy
 
 import numpy as np
 import psi4
@@ -8,8 +8,9 @@ import json
 json_data = {
   "schema_name": "qcschema_input",
   "schema_version": 1,
-  "return_output": True,
   "molecule": {
+    "schema_name": "qcschema_molecule",
+    "schema_version": 2,
     "geometry": [
       0.0,
       0.0,
@@ -80,7 +81,7 @@ expected_properties = {
   "ccsd_prt_pr_total_energy": expected_return_result,
 }
 
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
 
 
@@ -114,13 +115,14 @@ json_data["model"] = {
   }
 json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
-json_data["return_output"] = True
 json_data["extras"] = {"current_qcvars_only": True}
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
+
+#print(json.dumps(json_ret.json(), indent=2))
+#import pprint
+#pprint.pprint(json_ret.dict(), width=200)
 
 
-# print(json.dumps(json_ret, indent=2))
 
-
-assert "Ugur Bozkaya" in json_ret["raw_output"]
+assert "Ugur Bozkaya" in json_ret.stdout
 

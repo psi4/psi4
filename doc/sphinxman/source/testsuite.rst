@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -44,12 +44,12 @@ Sample inputs accessible through :ref:`interfaced executables
 
 .. toctree::
 
-   autodoc_testsuite_adcc.rst
    autodoc_testsuite_brianqc.rst
    autodoc_testsuite_cfour
    autodoc_testsuite_chemps2
    autodoc_testsuite_cookbook
    autodoc_testsuite_dftd3
+   autodoc_testsuite_dftd4
    autodoc_testsuite_dkh
    autodoc_testsuite_libefp
    autodoc_testsuite_erd

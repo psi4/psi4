@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -382,12 +382,8 @@ void SAPT2::print_results() {
 
 void SAPT2::df_integrals() {
     // Get fitting metric
-    auto metric = std::make_shared<FittingMetric>(ribasis_);
-    metric->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
-    double **J_temp = metric->get_metric()->pointer();
-    double **J_mhalf = block_matrix(ndf_, ndf_);
-    C_DCOPY(ndf_ * ndf_, J_temp[0], 1, J_mhalf[0], 1);
-    metric.reset();
+    auto metric = get_metric(ribasis_);
+    auto J_mhalf = metric->pointer();
 
     auto rifactory_J = std::make_shared<IntegralFactory>(ribasis_, zero_, ribasis_, zero_);
     std::shared_ptr<TwoBodyAOInt> Jint = std::shared_ptr<TwoBodyAOInt>(rifactory_J->eri());
@@ -809,8 +805,6 @@ void SAPT2::df_integrals() {
     }
 
     free(halftrans);
-
-    free_block(J_mhalf);
 
     psio_->close(PSIF_SAPT_TEMP, 0);
 

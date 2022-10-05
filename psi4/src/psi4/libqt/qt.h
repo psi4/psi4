@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -59,10 +59,10 @@ void normalize(double** A, int rows, int cols);
 double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
 PSI_API
-void reorder_qt(int* docc_in, int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order, int* orbs_per_irrep,
+void reorder_qt(const int* docc_in, const int* socc_in, int* frozen_docc_in, int* frozen_uocc_in, int* order, int* orbs_per_irrep,
                 int nirreps);
 PSI_API
-void reorder_qt_uhf(int* docc, int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
+void reorder_qt_uhf(const int* docc, const int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
                     int* orbspi, int nirreps);
 // int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
 //      int *docc, int *socc, int *frdocc, int *fruocc,
@@ -109,8 +109,8 @@ void C_DROT(size_t ntot, double* x, int incx, double* y, int incy, double costhe
 void C_DSWAP(size_t length, double* x, int incx, double* y, int inc_y);
 void C_DSCAL(size_t len, double alpha, double* vec, int inc);
 void C_DCOPY(size_t length, double* x, int inc_x, double* y, int inc_y);
-void C_DAXPY(size_t length, double a, double* x, int inc_x, double* y, int inc_y);
-double C_DDOT(size_t n, double* X, int inc_x, double* Y, int inc_y);
+void C_DAXPY(size_t length, double a, const double* x, int inc_x, double* y, int inc_y);
+double C_DDOT(size_t n, const double* const X, int inc_x, const double* const Y, int inc_y);
 double C_DNRM2(size_t n, double* X, int inc_x);
 double C_DASUM(size_t n, double* X, int inc_x);
 size_t C_IDAMAX(size_t n, double* X, int inc_x);
@@ -196,6 +196,7 @@ int C_DGEGV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ld
             double* beta, double* vl, int ldvl, double* vr, int ldvr, double* work, int lwork);
 int C_DGEHRD(int n, int ilo, int ihi, double* a, int lda, double* tau, double* work, int lwork);
 int C_DGELQF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
+PSI_API
 int C_DGELS(char trans, int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* work, int lwork);
 int C_DGELSD(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* s, double rcond, int* rank,
              double* work, int lwork, int* iwork);
@@ -215,6 +216,7 @@ int C_DGEQRF(int m, int n, double* a, int lda, double* tau, double* work, int lw
 int C_DGERFS(char trans, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, double* b, int ldb,
              double* x, int ldx, double* ferr, double* berr, double* work, int* iwork);
 int C_DGERQF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
+PSI_API
 int C_DGESDD(char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt,
              double* work, int lwork, int* iwork);
 PSI_API

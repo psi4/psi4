@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,9 +56,6 @@ namespace ccdensity {
 void sortI_ROHF() {
     int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
     int row, col, i, j, I, J, a, b, A, B, p, q;
-    int *occpi, *virtpi, *occ_off, *vir_off;
-    int *occ_sym, *vir_sym, *openpi;
-    int *qt_occ, *qt_vir;
     double **O, chksum, value;
     dpdfile2 D;
 
@@ -68,15 +65,15 @@ void sortI_ROHF() {
     nclsd = moinfo.nclsd;
     nopen = moinfo.nopen;
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    occ_off = moinfo.occ_off;
-    vir_off = moinfo.vir_off;
-    occ_sym = moinfo.occ_sym;
-    vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
-    qt_occ = moinfo.qt_occ;
-    qt_vir = moinfo.qt_vir;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
+    const auto& occ_sym = moinfo.occ_sym;
+    const auto& vir_sym = moinfo.vir_sym;
+    const auto& openpi = moinfo.openpi;
+    const auto& qt_occ = moinfo.qt_occ;
+    const auto& qt_vir = moinfo.qt_vir;
 
     O = block_matrix(nmo, nmo);
 

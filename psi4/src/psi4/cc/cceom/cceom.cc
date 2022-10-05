@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,6 +39,7 @@
 #include "Local.h"
 #include "globals.h"
 
+#include "psi4/cc/ccwave.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
@@ -57,7 +58,7 @@ void init_io();
 void get_moinfo(std::shared_ptr<Wavefunction>);
 void cleanup();
 void exit_io();
-void diag();
+void diag(ccenergy::CCEnergyWavefunction&);
 void get_params(Options &);
 void get_eom_params(std::shared_ptr<Wavefunction>, Options &);
 void form_dpd_dp();
@@ -76,7 +77,7 @@ void local_done();
 namespace psi {
 namespace cceom {
 
-PsiReturnType cceom(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
+PsiReturnType cceom(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn, Options &options) {
     int i, h, done = 0, *cachefiles, **cachelist;
     init_io();
     outfile->Printf("\n\t**********************************************************\n");
@@ -120,7 +121,7 @@ PsiReturnType cceom(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
 
     if (params.local) local_init();
 
-    diag();
+    diag(*ref_wfn);
 
     dpd_close(0);
     if (params.local) local_done();

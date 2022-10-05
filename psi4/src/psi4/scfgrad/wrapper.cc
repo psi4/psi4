@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,7 +38,7 @@
 namespace psi{
 namespace scfgrad {
 
-SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
+SharedMatrix scfgrad(std::shared_ptr<scf::HF> ref_wfn, Options &options)
 {
     tstart();
 
@@ -49,7 +49,7 @@ SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
     return G;
 }
 
-SharedMatrix scfhess(SharedWavefunction ref_wfn, Options &options)
+SharedMatrix scfhess(std::shared_ptr<scf::HF> ref_wfn, Options &options)
 {
     tstart();
 

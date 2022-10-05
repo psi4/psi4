@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -73,16 +73,13 @@ void DCTSolver::run_simult_dct_oo_RHF() {
                            "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(), DIISEntry::Matrix,
-                                      orbital_gradient_b_.get(), DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
-                                      DIISEntry::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::Matrix, Xtotal_a_.get(), DIISEntry::Matrix, Xtotal_b_.get(),
-                                DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Laa, &Lab, &Lbb);
+    diisManager.set_vector_size(Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
 
-    while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
+    while ((!orbitalsDone_ || !cumulantDone_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
         compute_SO_tau_R();
 
@@ -158,13 +155,14 @@ void DCTSolver::run_simult_dct_oo_RHF() {
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "Amplitude <oo|vv>");
 
-            if (diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
+            if (diisManager.add_entry(orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
                                       Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
+
             if (diisManager.subspace_size() > mindiisvecs_) {
                 diisString += "/E";
-                diisManager.extrapolate(5, Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
+                diisManager.extrapolate(Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);
@@ -185,8 +183,8 @@ void DCTSolver::run_simult_dct_oo_RHF() {
         }
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals_RHF();
-        // Update SCF density (Kappa) and check its RMS
-        densityConverged_ = update_scf_density_RHF() < orbitals_threshold_;
+        // Update SCF density (Kappa)
+        update_scf_density_RHF();
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
         outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", cycle, orbitals_convergence_,
@@ -308,8 +306,8 @@ void DCTSolver::compute_orbital_gradient_OV_RHF(bool separate_gbargamma) {
         // and not the full gamma for the other 2RDM terms.
         // All we need is (gbargamma)^i_p gamma^p_a.
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), Slice(zero, nmopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(soccpi_ + doccpi_, nmopi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, nalphapi_), Slice(zero, nmopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(nalphapi_, nmopi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
 
         global_dpd_->file2_init(&H, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X JK <O|V>");
@@ -494,8 +492,8 @@ void DCTSolver::compute_orbital_gradient_VO_RHF(bool separate_gbargamma) {
         // and not the full gamma for the other 2RDM terms.
         // All we need is (gbargamma)^a_p gamma^p_i.
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nmopi_), Slice(zero, nmopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(zero, soccpi_ + doccpi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(nalphapi_, nmopi_), Slice(zero, nmopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(zero, nalphapi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
 
         global_dpd_->file2_init(&H, PSIF_DCT_DPD, 0, ID('V'), ID('O'), "X JK <V|O>");

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -36,6 +36,7 @@
 
 #include <string>
 #include <vector>
+#include "psi4/libmints/dimension.h"
 
 namespace psi {
 namespace ccenergy {
@@ -48,8 +49,8 @@ struct MOInfo {
     int *sopi;                       /* no. of SOs per irrep (only used in AO-based algorithm) */
     int *sosym;                      /* SO symmetry (Pitzer) */
     int *orbspi;                     /* no. of MOs per irrep */
-    int *clsdpi;                     /* no. of closed-shells per irrep excl. frdocc */
-    int *openpi;                     /* no. of open-shells per irrep */
+    Dimension clsdpi;                /* no. of closed-shells per irrep excl. frdocc */
+    Dimension openpi;                /* no. of open-shells per irrep */
     int *uoccpi;                     /* no. of unoccupied orbitals per irr. ex. fruocc */
     int *frdocc;                     /* no. of frozen core orbitals per irrep */
     int *fruocc;                     /* no. of frozen unoccupied orbitals per irrep */
@@ -74,26 +75,6 @@ struct MOInfo {
     int *vir_off;  /* virtual orbital offsets within each irrep */
     int *avir_off; /* alpha virtual orbital offsets within each irrep */
     int *bvir_off; /* beta virtual orbital offsets within each irrep */
-    int *cc_occ;   /* QT->CC active occupied reordering array */
-    int *cc_aocc;  /* QT->CC alpha active occupied reordering array */
-    int *cc_bocc;  /* QT->CC beta active occupied reordering array */
-    int *cc_vir;   /* QT->CC active virtiual reordering array */
-    int *cc_avir;  /* QT->CC alpha active virtiual reordering array */
-    int *cc_bvir;  /* QT->CC beta active virtiual reordering array */
-    int *qt_occ;   /* CC->QT active occupied reordering array */
-    int *qt_aocc;  /* CC->QT alpha active occupied reordering array */
-    int *qt_bocc;  /* CC->QT beta active occupied reordering array */
-    int *qt_vir;   /* CC->QT active virtiual reordering array */
-    int *qt_avir;  /* CC->QT alpha active virtiual reordering array */
-    int *qt_bvir;  /* CC->QT beta active virtiual reordering array */
-
-    int *pitzer2qt; /* Pitzer -> QT translation array */
-    int *qt2pitzer; /* QT -> Pitzer translation array */
-
-    int *pitzer2qt_a; /* Pitzer -> QT translation array for alpha orbitals */
-    int *qt2pitzer_a; /* QT -> Pitzer translation array for alpha orbitals */
-    int *pitzer2qt_b; /* Pitzer -> QT translation array for beta orbitals */
-    int *qt2pitzer_b; /* QT -> Pitzer translation array for beta orbitals */
 
     int iter;          /* Current CCSD iteration */
     double conv;       /* Current convergence level */

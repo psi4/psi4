@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -42,7 +42,7 @@ Basis Set Superposition Corrections
 
 .. codeauthor:: Daniel G. A. Smith
 
-.. autofunction:: psi4.driver.driver_nbody.nbody_gufunc(func, method_string [, molecule, bsse_type, max_nbody, ptype, return_total_data])
+.. autofunction:: psi4.driver.driver_nbody.nbody(func, method_string [, molecule, bsse_type, max_nbody, ptype, return_total_data])
 
 
 The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Valiron-Mayer Function Counterpoise (VMFC) interaction energies for complexes composed of arbitrary numbers of monomers.
@@ -78,4 +78,13 @@ The nbody function computes counterpoise-corrected (CP), non-CP (noCP), and Vali
 
     # Returns the nocp energy as its first in the list
     energy('CCSD(T)', bsse_type=['nocp', 'cp', 'vmfc'], max_nbody=3)
+
+API
+---
+
+.. autoclass:: psi4.driver.driver_nbody.BsseEnum
+   :members:
+   :undoc-members:
+
+.. autopydantic_model:: psi4.driver.driver_nbody.ManyBodyComputer
 

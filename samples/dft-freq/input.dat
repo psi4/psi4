@@ -10,4 +10,3 @@ set basis 6-31G*
 scf_e, scf_wfn = frequencies('b3lyp', return_wfn=True)
 
 
-

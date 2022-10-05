@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -67,8 +67,7 @@ void sort_amps(int L_irr);
 void Lsave(int L_irr);
 void Lnorm(const struct L_Params& L_params);
 void Lmag();
-void overlap(int L_irr);
-void overlap_LAMPS(const struct L_Params& L_params);
+double overlap(int L_irr);
 void Lsave_index(const struct L_Params& L_params);
 void Lamp_write(const struct L_Params& L_params);
 void check_ortho(struct L_Params *pL_params);
@@ -296,7 +295,31 @@ double CCLambdaWavefunction::compute_energy() {
             exit_io();
             throw PsiException("cclambda: error", __FILE__, __LINE__);
         }
-        if (pL_params[i].ground) overlap(pL_params[i].irrep);
+        if (pL_params[i].ground) {
+            auto LR_overlap = overlap(pL_params[i].irrep);
+            std::string gs_name; // Which theory's lambda equations did we just solve?
+            if (params.wfn == "CC3" || params.wfn == "EOM_CC3") {
+                gs_name = "CC3";
+            } else if (params.wfn == "CC2" || params.wfn == "EOM_CC2") {
+                gs_name = "CC2";
+            } else if (params.wfn == "CCSD" || params.wfn == "EOM_CCSD" || params.wfn == "CCSD_AT") {
+                // In the CCSD_AT case, we solve the CCSD lambda equations so we can use them for a triples
+                // correction. For CCSD_AT analytic gradient theory, you would need to solve response equations
+                // including that triples correction, and only then would gs_name be CCSD_AT.
+                gs_name = "CCSD";
+            } else if (params.wfn == "CCSD_T") {
+                gs_name = "CCSD(T)";
+            } else {
+                throw PsiException("cclambda: unknown wfn", __FILE__, __LINE__);
+            }
+            // Inform Perl psivar scraper about these new variables
+            /*- Process::environment.globals["LEFT-RIGHT CC3 EIGENVECTOR OVERLAP"] -*/
+            /*- Process::environment.globals["LEFT-RIGHT CC2 EIGENVECTOR OVERLAP"] -*/
+            /*- Process::environment.globals["LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"] -*/
+            /*- Process::environment.globals["LEFT-RIGHT CCSD(T) EIGENVECTOR OVERLAP"] -*/
+            auto lambda_varname = "LEFT-RIGHT " + gs_name + " EIGENVECTOR OVERLAP";
+            reference_wavefunction_->set_scalar_variable(lambda_varname, LR_overlap);
+        }
     }
 
     if (params.zeta) {

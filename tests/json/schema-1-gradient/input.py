@@ -1,4 +1,4 @@
-#! test QC_JSON Schema for gradient
+#! test QCSchema for gradient
 
 import numpy as np
 import psi4
@@ -59,13 +59,13 @@ expected_properties = {
   "return_energy": -76.02139738600329
 }
 
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
 with open("output.json", "w") as ofile:
-    json.dump(json_ret, ofile, indent=2)
+    json.dump(json_ret.json(), ofile, indent=2)
 
-psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
-psi4.compare_arrays(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
+psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST
+psi4.compare_arrays(expected_return_result, json_ret.return_result.ravel(), 5, "Return Value")  #TEST
 
 for k in expected_properties.keys():                                                       #TEST
-    psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
+    psi4.compare_values(expected_properties[k], getattr(json_ret.properties, k), 5, k.upper())   #TEST

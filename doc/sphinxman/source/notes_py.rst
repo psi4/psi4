@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -53,12 +53,12 @@ Notes on Options
 
 .. _`op_py_dertype`:
 
-.. note:: The derivative level type for :py:func:`~psi4.optimize` and :py:func:`~psi4.frequency` functions can be specified by ``energy``, ``none``, or ``0`` for 0th derivative, ``gradient``, ``first``, or ``1`` for 1st derivative, and ``hessian``, ``second``, or ``2`` for 2nd derivative. For finite difference, as opposed to analytic, derivatives, the :term:`POINTS <POINTS (FINDIF)>` option can be increased to ``5`` for greater accuracy at increased cost.
+.. note:: The derivative level type for :py:func:`~psi4.driver.optimize` and :py:func:`~psi4.driver.frequency` functions can be specified by ``energy``, ``none``, or ``0`` for 0th derivative, ``gradient``, ``first``, or ``1`` for 1st derivative, and ``hessian``, ``second``, or ``2`` for 2nd derivative. For finite difference, as opposed to analytic, derivatives, the :term:`POINTS <POINTS (FINDIF)>` option can be increased to ``5`` for greater accuracy at increased cost.
 
 .. _`op_py_function`:
 
 .. note:: Function option for the Psithon function called by the current function;
-   the default is usually :py:func:`~psi4.energy`. See Sec. :ref:`sec:intercalls`
+   the default is usually :py:func:`~psi4.driver.energy`. See Sec. :ref:`sec:intercalls`
    for a fuller description. Note that the value of the keyword is a Python object
    and so is not wrapped in quotes like a string.
 

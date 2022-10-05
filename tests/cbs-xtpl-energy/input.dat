@@ -1,4 +1,4 @@
-#! Extrapolated water energies
+#! Extrapolated water energies - density-fitted version
 import numpy as np
 
 nucenergy_ref =   8.8014655646      #TEST
@@ -34,6 +34,7 @@ compare_values(nucenergy_ref, h2o.nuclear_repulsion_energy(), 9, "Nuclear repuls
 
 scf_dz = energy('SCF/cc-pVDZ')
 compare_values(scf_dz_ref, scf_dz, 6, "[1] SCF/DZ Energy Check")  #TEST
+clean()
 
 scf_tzvp = energy('SCF/def2-TZVP')
 compare_values(scf_tzvp_ref, scf_tzvp, 6, "[2] SCF/TZVP Energy Check")  #TEST
@@ -53,6 +54,7 @@ compare_values(scf_zapa_ref, scf_zapa, 6, "[4] SCF/[DT]ZaPa-NR Energy Check")  #
 
 mp2_addz = energy('MP2/aug-cc-pV(D+d)Z')
 compare_values(mp2_addz_ref, mp2_addz, 6, "[6] MP2/a(D+d)Z Energy Check")  #TEST
+clean()
 
 mp2_atz = energy('MP2/aug-cc-pVTZ')
 compare_values(mp2_atz_ref, mp2_atz, 6, "[7] MP2/aTZ Energy Check")  #TEST

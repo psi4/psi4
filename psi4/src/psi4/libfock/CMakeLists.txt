@@ -1,5 +1,6 @@
 list(APPEND sources
   CDJK.cc
+  DFJCOSK.cc
   DirectJK.cc
   DiskDFJK.cc
   DiskJK.cc
@@ -31,6 +32,7 @@ target_compile_definitions(fock
 target_link_libraries(fock
   PRIVATE
     gau2grid::gg
+    pybind11::headers
   )
 
 if(TARGET BrianQC::static_wrapper)

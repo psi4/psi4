@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(tu6-cp-ne2 "psi;tutorial")
+add_regression_test(tu6-cp-ne2 "psi;tutorial;nbody")

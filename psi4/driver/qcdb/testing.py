@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -78,8 +78,8 @@ def _merge_psi4_qcel_apis(args, kwargs):
         raise ValueError("""Not following either Psi4 or QCElemental API pattern for comparison.""")
 
 
-def _psi4_compare_integers(expected, computed, label: str = None, *, verbose: int = 1,
-                           return_handler: Callable = None):
+def _psi4_compare_integers(expected, computed, label = None, *, verbose = 1,
+                           return_handler = None):
     """Shim between Psi4-style and QCA-style testing interfaces for scalar ints, strings."""
 
     # uncomment to ferret out old function name
@@ -112,7 +112,7 @@ def _mergedapis_compare_recursive(expected, computed, *args, **kwargs):
             ' Use the new `qcel.testing.compare_recursive` API, being sure to convert positional arg `digits` decimal places to keyword arg `atol` literal absolute tolerance.'
         )
 
-    return qcel.testing.compare_molrecs(expected, computed, *args, **kwargs)
+    return qcel.testing.compare_recursive(expected, computed, *args, **kwargs)
 
 
 def _mergedapis_compare_molrecs(expected, computed, *args, **kwargs):

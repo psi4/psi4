@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -40,7 +40,7 @@ funcs.append({
         "GGA_C_LYP": {}
     },
     "citation":
-    '    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n' + \
+    '    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n' +
     '    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n',
     "description":
     '    BLYP GGA Exchange-Correlation Functional\n',
@@ -163,7 +163,7 @@ funcs.append({
         "GGA_C_P86": {}
     },
     "citation":
-    '    A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n' + \
+    '    A. D. Becke, Phys. Rev. A, 38, 3098-3100, 1988\n' +
     '    J. P. Perdew, Phys. Rev. B, 33, 8822, 1986\n',
     "description":
     '    BP86 GGA Exchange-Correlation Functional\n',
@@ -190,7 +190,7 @@ funcs.append({
         "GGA_C_PBE": {}
     },
     "citation":
-    '    Y. Zhao, and D. G. Truhlar, J. Chem. Phys. 128, 184109, 2008\n' + \
+    '    Y. Zhao, and D. G. Truhlar, J. Chem. Phys. 128, 184109, 2008\n' +
     '    J. Perdew, K. Burke, M. Ernzerhof, Phys. Rev. Lett. 77, 3865-3868, 1996\n',
     "description":
     '   SOGGA Exchange + PBE Correlation Functional\n',
@@ -320,7 +320,7 @@ funcs.append({
         "GGA_C_OP_PBE": {}
     },
     "citation":
-    '    T. Tsuneda, T. Suzumura, K. Hirao, J. Chem. Phys. 110, 10664, 1999\n' + \
+    '    T. Tsuneda, T. Suzumura, K. Hirao, J. Chem. Phys. 110, 10664, 1999\n' +
     '    T. Tsuneda, T. Suzumura, K. Hirao, J. Chem. Phys. 111, 5656, 1999\n',
     "description":
     '    BP86 GGA Exchange-Correlation Functional\n',

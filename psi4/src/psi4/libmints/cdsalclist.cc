@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -62,7 +62,7 @@ namespace psi {
 void CdSalc::print() const {
     outfile->Printf("\tirrep = %d, ncomponent = %ld\n", irrep_, ncomponent());
     for (size_t i = 0; i < ncomponent(); ++i) {
-        outfile->Printf("\t\t%d: atom %d, direction %c, coef %lf\n", i, components_[i].atom,
+        outfile->Printf("\t\t%d: atom %d, direction %c, coef % lf\n", i, components_[i].atom,
                         direction(components_[i].xyz), components_[i].coef);
     }
 }
@@ -171,7 +171,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
 
     // constraints_ortho.print();
 
-    auto *salc = new double[ncd_];
+    auto salc = std::vector<double>(ncd_);
 
     // Obtain handy reference to point group.
     const PointGroup &pg = *molecule_->point_group().get();
@@ -184,7 +184,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
     for (int i = 0; i < nirrep_; ++i) dim[i] = ncd_;
 
     Matrix salcs("Requested SALCs", dim, dim);
-    auto *salcirrep = new int[ncd_];
+    auto salcirrep = std::vector<int>(ncd_);
 
     // We know how many atom_salcs_ we have.
     for (int i = 0; i < natom; ++i) atom_salcs_.push_back(CdSalcWRTAtom());
@@ -202,7 +202,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
             // on each irrep
             for (int irrep = 0; irrep < nirrep_; ++irrep) {
                 IrreducibleRepresentation gamma = char_table.gamma(irrep);
-                memset(salc, 0, sizeof(double) * ncd_);
+                memset(salc.data(), 0, sizeof(double) * ncd_);
 
                 // This is the order of the atom stabilizer
                 // ...how many times the symmetry operation keeps the atom the same
@@ -242,7 +242,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
                 // AND the irrep that we're on is what the user wants.
                 if (nonzero && (1 << irrep) & needed_irreps) {
                     // Store the salc so we can project out constraints below
-                    salcs.copy_to_row(irrep, cdsalcpi_[irrep], salc);
+                    salcs.copy_to_row(irrep, cdsalcpi_[irrep], salc.data());
                     salcirrep[nsalc] = irrep;
                     ++cdsalcpi_[irrep];
                     nsalc++;
@@ -283,8 +283,6 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
     memcpy(cdsalcpi_, new_cdsalcpi, sizeof(int) * 8);
 
     // Free memory.
-    delete[] salcirrep;
-    delete[] salc;
     delete_atom_map(atom_map, molecule_);
 }
 

@@ -6,7 +6,7 @@
     "codeRepository": "https://github.com/psi4/psi4",
     "issueTracker": "https://github.com/psi4/psi4/issues",
     "license": "https://opensource.org/licenses/lgpl-3.0.html",
-    "version": "1.3",
+    "version": "1.6",
     "author": [
         {
             "@type": "Person",
@@ -68,9 +68,9 @@
             "givenName": "Edward",
             "additionalName": "G.",
             "familyName": "Hohenstein",
-            "affiliation": "Department of Chemistry and Biochemistry, The City College of New York",
-            "latitude": 40.820,
-            "longitude": -73.950,
+            "affiliation": "PULSE Institute for Ultrafast Energy Sciences, SLAC National Accelerator Laboratory",
+            "latitude": 37.420,
+            "longitude": -122.203,
             "@id": "https://orcid.org/0000-0002-2119-2959",
             "identifier": "https://github.com/ehohenstein2"
         },
@@ -367,9 +367,9 @@
             "@type": "Person",
             "givenName": "Asem",
             "familyName": "Alenaizan",
-            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
-            "latitude": 33.780,
-            "longitude": -84.3965,
+            "affiliation": "Chemistry Department, King Fahd University of Petroleum and Minerals",
+            "latitude": 26.307,
+            "longitude": 50.144,
             "@id": "https://orcid.org/0000-0002-0871-664X",
             "identifier": "https://github.com/alenaizan"
         },
@@ -409,9 +409,9 @@
             "givenName": "Jonathon",
             "additionalName": "P.",
             "familyName": "Misiewicz",
-            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
-            "latitude": 33.94797,
-            "longitude": -83.37482,
+            "affiliation": "Department of Chemistry, Emory University",
+            "latitude": 33.7915,
+            "longitude": -84.3264,
             "@id": "https://orcid.org/0000-0002-6425-9551",
             "identifier": "https://github.com/JonathonMisiewicz"
         },
@@ -478,6 +478,16 @@
             "longitude": -85.4852,
             "@id": "https://orcid.org/0000-0003-0442-193X",
             "identifier": "https://github.com/jwaldrop107"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Andy",
+            "familyName": "Jiang",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0002-6946-209X",
+            "identifier": "https://github.com/andyj10224"
         }
     ],
     "developmentStatus": "active",

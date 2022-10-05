@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -29,6 +29,11 @@
 Runs a JSON input psi file.
 """
 
+__all__ = [
+    "run_json",
+    "run_qcschema",
+]
+
 import atexit
 import copy
 import datetime
@@ -40,6 +45,8 @@ import traceback
 import uuid
 import warnings
 from collections import defaultdict
+from pathlib import Path
+from typing import Any, Dict, Union
 
 import numpy as np
 import qcelemental as qcel
@@ -55,7 +62,6 @@ pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 
 
-__all__ = ["run_qcschema", "run_json"]
 
 ## Methods and properties blocks
 
@@ -66,7 +72,7 @@ methods_dict_ = {
     'hessian': driver.hessian,
     'frequency': driver.frequency,
 }
-can_do_properties_ = {
+default_properties_ = {
     "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
 }
 
@@ -77,6 +83,8 @@ _qcschema_translation = {
     # Generics
     "generics": {
         "return_energy": {"variables": "CURRENT ENERGY"},
+        "return_gradient": {"variables": "CURRENT GRADIENT"},
+        "return_hessian": {"variables": "CURRENT HESSIAN"},
         # "nuclear_repulsion_energy": {"variables": "NUCLEAR REPULSION ENERGY"},  # use mol instead
     },
 
@@ -98,6 +106,8 @@ _qcschema_translation = {
         "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
         "scf_xc_energy": {"variables": "DFT XC ENERGY", "skip_zero": True},
         "scf_dispersion_correction_energy": {"variables": "DISPERSION CORRECTION ENERGY", "skip_zero": True},
+        "scf_total_gradient": {"variables": "SCF TOTAL GRADIENT"},
+        "scf_total_hessian": {"variables": "SCF TOTAL HESSIAN"},
 
         # SCF Properties (experimental)
         # "scf_quadrupole_moment": {"variables": ["SCF QUADRUPOLE " + x for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]], "skip_null": True},
@@ -357,11 +367,29 @@ def _convert_wavefunction(wfn, context=None):
 ## Execution functions
 
 
-def _clean_psi_environ(do_clean):
+def _clean_psi_environ(do_clean: bool):
+    """Reset work environment to new Psi4 instance state.
+    This includes global variables (P::e.globals, P::e.arrays, P::e.options) and any
+    non-explicitly-retained PSIO-managed scratch files.
+
+    """
     if do_clean:
         core.clean_variables()
         core.clean_options()
         core.clean()
+
+
+def _clean_psi_output(do_clean: bool, outfile: str):
+    """Reset primary output file depending on run mode.
+    When ``True``, remove the output file; when ``False``, close the output file.
+    The latter is appropriate when calling :py:func:`psi4.run_qcschema` *from a Psi4 Python session*
+    as otherwise, the parent session's own files could get cleaned away.
+
+    """
+    if do_clean:
+        atexit.register(_quiet_remove, outfile)
+    else:
+        core.close_outfile()
 
 
 def _read_output(outfile):
@@ -384,8 +412,32 @@ def _quiet_remove(filename):
         pass
 
 
-def run_qcschema(input_data, clean=True):
+def run_qcschema(
+    input_data: Union[Dict[str, Any], qcel.models.AtomicInput],
+    clean: bool = True,
+    postclean: bool = True,
+) -> Union[qcel.models.AtomicResult, qcel.models.FailedOperation]:
+    """Run a quantum chemistry job specified by :py:class:`qcelemental.models.AtomicInput` **input_data** in |PSIfour|.
 
+    Parameters
+    ----------
+    input_data
+        Quantum chemistry job in either AtomicInput class or dictionary form.
+    clean
+        Reset global QCVariables, options, and scratch files to default state.
+    postclean
+        When ``False``, *remove* the output file since absorbed into AtomicResult.
+        When ``True``, simply *close* the output file. True is useful when calling
+        from a Psi4 session to avoid removing the parent Psi4's output file.
+
+    Returns
+    -------
+    qcelemental.models.AtomicResult
+        Full record of quantum chemistry calculation, including output text. Returned upon job success.
+    qcelemental.models.FailedOperation
+        Record to diagnose calculation failure, including output text and input specification. Returned upon job failure.
+
+    """
     outfile = os.path.join(core.IOManager.shared_object().get_default_path(), str(uuid.uuid4()) + ".qcschema_tmpout")
     core.set_output_file(outfile, False)
     print_header()
@@ -410,6 +462,7 @@ def run_qcschema(input_data, clean=True):
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema"
         })
+        ret_data["native_files"]["input"] = json.dumps(json.loads(input_model.json()), indent=1)
 
         exit_printing(start_time=start_time, success=True)
 
@@ -426,18 +479,18 @@ def run_qcschema(input_data, clean=True):
                                           success=False,
                                           error={
                                               'error_type': type(exc).__name__,
-                                              'error_message': ''.join(traceback.format_exception(*sys.exc_info())),
+                                              'error_message': input_data["stdout"] + ''.join(traceback.format_exception(*sys.exc_info())),
                                           })
 
-    atexit.register(_quiet_remove, outfile)
+    _clean_psi_output(postclean, outfile)
 
     return ret
 
 
-def run_json(json_data, clean=True):
+def run_json(json_data: Dict[str, Any], clean: bool = True) -> Dict[str, Any]:
 
     warnings.warn(
-        "Using `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and in 1.5 it will stop working\n",
+        "Using `psi4.schema_wrapper.run_json` or `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and as soon as 1.5 it will stop working\n",
         category=FutureWarning)
 
     # Set scratch
@@ -525,12 +578,29 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         molschemus = json_data["molecule"]  # dtype >=2
     else:
         molschemus = json_data  # dtype =1
-    mol = core.Molecule.from_schema(molschemus)
+    mol = core.Molecule.from_schema(molschemus, nonphysical=True)
 
     # Update molecule geometry as we orient and fix_com
     json_data["molecule"]["geometry"] = mol.geometry().np.ravel().tolist()
 
     # Set options
+    ## The Forte plugin needs special treatment.
+    try:
+        import forte # Needed for Forte options to run.
+    except ImportError:
+        pass
+    else:
+        # Initialization tasks with Psi options.
+        psi_options = core.get_options()
+        current_module = psi_options.get_current_module()
+        # Get the current Forte options from Forte
+        forte_options = forte.ForteOptions()
+        forte.register_forte_options(forte_options)
+        psi_options.set_current_module('FORTE')
+        forte_options.push_options_to_psi4(psi_options)
+        # Restore current module
+        psi_options.set_current_module(current_module)
+
     kwargs = json_data["keywords"].pop("function_kwargs", {})
     p4util.set_options(json_data["keywords"])
 
@@ -541,14 +611,8 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     # Handle special properties case
     if json_data["driver"] == "properties":
-        if "properties" in json_data["model"]:
-            kwargs["properties"] = [x.lower() for x in json_data["model"]["properties"]]
-
-            extra = set(kwargs["properties"]) - can_do_properties_
-            if len(extra):
-                raise KeyError("Did not understand property key %s." % kwargs["properties"])
-        else:
-            kwargs["properties"] = list(can_do_properties_)
+        if "properties" not in kwargs:
+            kwargs["properties"] = list(default_properties_)
 
     # Actual driver run
     val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
@@ -586,6 +650,18 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
             )):
                 json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
 
+    # Add in handling of matrix arguments which need to be obtained by a
+    # a function call.
+
+    if json_data["model"]["method"].lower() in ["ccsd"] :
+        if json_data["extras"].get("psi4:save_tamps", False):
+            if type(wfn.reference_wavefunction()) is core.RHF :
+                json_data["extras"]["psi4:tamps"] = {}
+                json_data["extras"]["psi4:tamps"]["tIjAb"] = wfn.get_amplitudes()["tIjAb"].to_array().tolist()
+                json_data["extras"]["psi4:tamps"]["tIA"] = wfn.get_amplitudes()["tIA"].to_array().tolist()
+                json_data["extras"]["psi4:tamps"]["Da"] = wfn.Da().to_array().tolist()
+
+        
     # Handle the return result
     if json_data["driver"] == "energy":
         json_data["return_result"] = val
@@ -630,10 +706,19 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     json_data["properties"] = props
     json_data["success"] = True
+
     json_data["provenance"]["module"] = wfn.module()
 
     if keep_wfn:
         json_data["wavefunction"] = _convert_wavefunction(wfn)
+
+    files = {
+        "psi4.grad": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"),
+        "psi4.hess": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"),
+        # binary "psi4.180.npy": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".180.npy"),
+        "timer.dat": Path("timer.dat"),  # ok for `psi4 --qcschema` but no file collected for `qcengine.run_program(..., "psi4")`
+    }
+    json_data["native_files"] = {fl: flpath.read_text() for fl, flpath in files.items() if flpath.exists()}
 
     # Reset state
     _clean_psi_environ(clean)

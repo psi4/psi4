@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -136,8 +136,8 @@ void DFOCC::ccsd_diagonal_opdm() {
     // if (reference_ == "RESTRICTED") {
 
     // G1_ij = -(G_ij + G_ji)
-    T = SharedTensor2d(new Tensor2d("T Intermediate <I|J>", naoccA, naoccA));
-    U = SharedTensor2d(new Tensor2d("U Intermediate <I|J>", naoccA, naoccA));
+    T = std::make_shared<Tensor2d>("T Intermediate <I|J>", naoccA, naoccA);
+    U = std::make_shared<Tensor2d>("U Intermediate <I|J>", naoccA, naoccA);
     U->copy(GtijA);
     T->symmetrize(U);
     U.reset();
@@ -147,8 +147,8 @@ void DFOCC::ccsd_diagonal_opdm() {
     T.reset();
 
     //  G1_ab = -(G_ab + G_ba)
-    T = SharedTensor2d(new Tensor2d("T Intermediate <A|B>", navirA, navirA));
-    U = SharedTensor2d(new Tensor2d("U Intermediate <A|B>", navirA, navirA));
+    T = std::make_shared<Tensor2d>("T Intermediate <A|B>", navirA, navirA);
+    U = std::make_shared<Tensor2d>("U Intermediate <A|B>", navirA, navirA);
     U->copy(GtabA);
     T->symmetrize(U);
     U.reset();

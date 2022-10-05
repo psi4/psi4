@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -261,21 +261,11 @@ void Prop::set_Db_mo(SharedMatrix D) {
         C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp_ptr, nsor, 0.0, Dsop[0], nsor);
     }
 }
-TaskListComputer::TaskListComputer() {
-    title_ = "";
-    print_ = 1;
-    debug_ = 0;
-    tasks_.clear();
-}
-void TaskListComputer::add(const std::string& prop) { tasks_.insert(prop); }
-void TaskListComputer::add(std::vector<std::string> props) {
-    for (int i = 0; i < (int)props.size(); i++) {
-        tasks_.insert(props[i]);
-    }
-}
-void TaskListComputer::clear() { tasks_.clear(); }
-SharedVector Prop::epsilon_a() { return SharedVector(epsilon_a_->clone()); }
-SharedVector Prop::epsilon_b() { return SharedVector(epsilon_b_->clone()); }
+void OEProp::add(const std::string& prop) { tasks_.insert(prop); }
+void OEProp::add(std::vector<std::string> props) { tasks_.insert(props.begin(), props.end()); }
+void OEProp::clear() { tasks_.clear(); }
+SharedVector Prop::epsilon_a() { return std::make_shared<Vector>(std::move(epsilon_a_->clone())); }
+SharedVector Prop::epsilon_b() { return std::make_shared<Vector>(std::move(epsilon_b_->clone())); }
 SharedMatrix Prop::Da_ao() {
     std::vector<double> temp(AO2USO_->max_ncol() * AO2USO_->max_nrow());
     double* temp_ptr = temp.data();
@@ -665,6 +655,7 @@ SharedMatrix Prop::overlap_so() {
 }
 
 std::string Prop::Da_name() const { return Da_so_->name(); }
+std::string Prop::Db_name() const { return Db_so_->name(); }
 
 Vector3 OEProp::compute_center(const double* property) const {
     std::shared_ptr<Molecule> mol = wfn_->molecule();
@@ -712,7 +703,7 @@ MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 
     /*
      * Check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
      */
-    CharacterTable ct = mol->point_group()->char_table();
+    auto ct = mol->point_group()->char_table();
     int nirrep = ct.nirrep();
 
     origin_preserves_symmetry_ = true;
@@ -820,14 +811,15 @@ void OEProp::compute() {
     }
     // print_header();  // Not by default, happens too often -CDS
     if (tasks_.count("ESP_AT_NUCLEI")) compute_esp_at_nuclei();
-    if (tasks_.count("DIPOLE")) compute_dipole(false);
-    if (tasks_.count("QUADRUPOLE")) compute_quadrupole(false);
-    if (tasks_.count("TRANSITION_DIPOLE")) compute_dipole(true);
-    if (tasks_.count("TRANSITION_QUADRUPOLE")) compute_quadrupole(true);
+    if (tasks_.count("QUADRUPOLE")) compute_multipoles(2, false);
+    else if (tasks_.count("DIPOLE")) compute_multipoles(1, false);
+    if (tasks_.count("TRANSITION_QUADRUPOLE")) compute_multipoles(2, true);
+    else if (tasks_.count("TRANSITION_DIPOLE")) compute_multipoles(1, true);
     if (tasks_.count("MO_EXTENTS")) compute_mo_extents();
     if (tasks_.count("MULLIKEN_CHARGES")) compute_mulliken_charges();
     if (tasks_.count("LOWDIN_CHARGES")) compute_lowdin_charges();
-    if (tasks_.count("MBIS_CHARGES")) compute_mbis_multipoles();
+    if (tasks_.count("MBIS_VOLUME_RATIOS")) compute_mbis_multipoles(true);
+    else if (tasks_.count("MBIS_CHARGES")) compute_mbis_multipoles(false);
     if (tasks_.count("MAYER_INDICES")) compute_mayer_indices();
     if (tasks_.count("WIBERG_LOWDIN_INDICES")) compute_wiberg_lowdin_indices();
     if (tasks_.count("NO_OCCUPATIONS")) compute_no_occupations();
@@ -836,29 +828,27 @@ void OEProp::compute() {
 }
 
 void OEProp::compute_multipoles(int order, bool transition) {
-    MultipolePropCalc::MultipoleOutputType mpoles = mpc_.compute_multipoles(order, transition, true, print_ > 4);
+    auto mpoles = mpc_.compute_multipoles(order, transition, true, print_ > 4);
 
     for (int l = 1; l <= order; ++l) {
         int component = 0;
         int ncomponents = (l + 1) * (l + 2) / 2;
         auto multipole_array = std::make_shared<Matrix>(1, ncomponents);
 
-        std::stringstream sstream;
-        sstream << title_;
-        if (title_ != "") sstream << " ";
+
+        std::string mtdname;
         if (l == 1) {
-            sstream << "DIPOLE";
+            mtdname = "DIPOLE";
         } else if (l == 2) {
-            sstream << "QUADRUPOLE";
+            mtdname = "QUADRUPOLE";
         } else if (l == 3) {
-            sstream << "OCTUPOLE";
+            mtdname = "OCTUPOLE";
         } else if (l == 4) {
-            sstream << "HEXADECAPOLE";
+            mtdname = "HEXADECAPOLE";
         } else {
             int n = (1 << l);
-            sstream << n << "-POLE";
+            mtdname = std::to_string(n) + "-POLE";
         }
-        std::string mname = sstream.str();
 
         for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
             std::string name;
@@ -866,16 +856,6 @@ void OEProp::compute_multipoles(int order, bool transition) {
             int order_mpole;
             // unpack the multipole, which is: name, nuc, elec, total, order, ignore nuc and elec:
             std::tie(name, std::ignore, std::ignore, total_mpole, order_mpole) = *it;
-            /*- Process::environment.globals["mtd DIPOLE X"] -*/
-            /*- Process::environment.globals["mtd DIPOLE Y"] -*/
-            /*- Process::environment.globals["mtd DIPOLE Z"] -*/
-            /*- Process::environment.globals["mtd QUADRUPOLE XX"] -*/
-            /*- Process::environment.globals["mtd OCTUPOLE XXX"] -*/
-            /*- Process::environment.globals["mtd HEXADECAPOLE XXXX"] -*/
-            /*- Process::environment.globals["mtd 32-POLE XXXXX"] -*/
-            /*- Process::environment.globals["mtd 32-POLE XXXXY"] -*/
-            /*- Process::environment.globals["mtd 64-POLE XXXXXX"] -*/
-            /*- Process::environment.globals["mtd 128-POLE XXXXXXX"] -*/
             /*- Process::environment.globals["mtd DIPOLE"] -*/
             /*- Process::environment.globals["mtd QUADRUPOLE"] -*/
             /*- Process::environment.globals["mtd OCTUPOLE"] -*/
@@ -885,21 +865,31 @@ void OEProp::compute_multipoles(int order, bool transition) {
             /*- Process::environment.globals["mtd 128-POLE"] -*/
 
             if (order_mpole == l) {
-                Process::environment.globals[name] = total_mpole;
-                wfn_->set_scalar_variable(name, total_mpole);
                 multipole_array->set(0, component, total_mpole);
                 ++component;
             }
         }
-        Process::environment.arrays[sstream.str()] = multipole_array;
-        wfn_->set_array_variable(sstream.str(), multipole_array);
+
+        std::unordered_set<std::string> names;
+        if (names_.empty()) {
+            names = {"{}"};
+        } else {
+            names = names_;
+        }
+
+        for (auto name: names) {
+            // TODO: Use fmt strings when Psi uses C++20.
+            name.replace(name.find("{}"), sizeof("{}") - 1, mtdname);
+            Process::environment.arrays[name] = multipole_array;
+            wfn_->set_array_variable(name, multipole_array);
+        }
     }
 }
 
 MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int order, bool transition,
                                                                              bool print_output, bool verbose) {
-    MultipolePropCalc::MultipoleOutputType mot = std::make_shared<MultipolePropCalc::MultipoleOutputTypeBase>();
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    auto mot = std::make_shared<MultipolePropCalc::MultipoleOutputTypeBase>();
+    auto mol = basisset_->molecule();
 
     SharedMatrix Da;
     SharedMatrix Db;
@@ -942,45 +932,65 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
         for (iter = mp_ints.begin(); iter != mp_ints.end(); ++iter) iter->get()->print();
     }
 
-    SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
+    auto nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
 
+    // => Print and populate the output tuple <=
     if (print_output) {
         outfile->Printf("\n%s Multipole Moments:\n", transition ? "Transition" : "");
         outfile->Printf("\n ------------------------------------------------------------------------------------\n");
-        outfile->Printf("     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
+        outfile->Printf("     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)\n");
         outfile->Printf(" ------------------------------------------------------------------------------------\n\n");
     }
     double convfac = pc_dipmom_au2debye;
-    int address = 0;
+    int address = 0; // The index of the desired component in the mp_ints object, which covers _all_ orders.
     for (int l = 1; l <= order; ++l) {
         int ncomponents = (l + 1) * (l + 2) / 2;
-        std::stringstream ss;
-        if (l > 1) ss << ".ang";
+        std::stringstream ss, tt;
+        if (l > 1) tt << "^" << l;
+        if (l > 1) ss << " ang";
         if (l > 2) ss << "^" << l - 1;
         std::string exp = ss.str();
         if (print_output) {
-            outfile->Printf(" L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+            outfile->Printf(" L = %d.  Multiply by %.10f to convert [e a0%s] to [Debye%s]\n", l, convfac, tt.str().c_str(), exp.c_str());
         }
         for (int component = 0; component < ncomponents; ++component) {
-            SharedMatrix mpmat = mp_ints[address];
-            std::string name = mpmat->name();
+            auto mpmat = mp_ints[address];
+            auto name = mpmat->name();
             double nuc = transition ? 0.0 : nuclear_contributions->get(address);
             double elec = Da->vector_dot(mpmat) + Db->vector_dot(mpmat);
             double tot = nuc + elec;
             if (print_output) {
                 outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", name.c_str(), elec, nuc, tot);
             }
-            std::string upper_name = to_upper_copy(name);
-            mot->push_back(std::make_tuple(upper_name, nuc, elec, tot, l));
+            auto upper_name = to_upper_copy(name);
+            mot->emplace_back(upper_name, nuc, elec, tot, l);
             ++address;
         }
         if (print_output) {
+            // For historical reasons, we print dipole magnitudes now.
+            // Printing magnitudes of higher-order multipole tensors would be nice, but we don't have the C-side machinery
+            // to convert our vector of unique multipole components into a container of all components.
+            if (l == 1) {
+                double tot = sqrt(pow(std::get<3>((*mot)[0]), 2) + pow(std::get<3>((*mot)[1]), 2) + pow(std::get<3>((*mot)[2]), 2));
+                outfile->Printf(" %-20s: %18s   %18s   %18.7f\n", "Magnitude", "", "", tot);
+            }
+            // For historical reasons, we print traceless quadrupole magnitudes now.
+            // This can be generalized to any l < 1, but that's hard.
+            // Computing integrals is also hard, which is why we don't recompute traceless integrals.
+            if (l == 2) {
+                double tr_n = (std::get<1>((*mot)[3]) + std::get<1>((*mot)[6]) + std::get<1>((*mot)[8])) / 3.0;
+                double tr_e = (std::get<2>((*mot)[3]) + std::get<2>((*mot)[6]) + std::get<2>((*mot)[8])) / 3.0;
+                double tr_t = (std::get<3>((*mot)[3]) + std::get<3>((*mot)[6]) + std::get<3>((*mot)[8])) / 3.0;
+                outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", "Traceless XX", std::get<2>((*mot)[3]) - tr_e, std::get<1>((*mot)[3]) - tr_n, std::get<3>((*mot)[3]) - tr_t);
+                outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", "Traceless YY", std::get<2>((*mot)[6]) - tr_e, std::get<1>((*mot)[6]) - tr_n, std::get<3>((*mot)[6]) - tr_t);
+                outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", "Traceless ZZ", std::get<2>((*mot)[8]) - tr_e, std::get<1>((*mot)[8]) - tr_n, std::get<3>((*mot)[8]) - tr_t);
+            }
             outfile->Printf("\n");
         }
         convfac *= pc_bohr2angstroms;
     }
     if (print_output) {
-        outfile->Printf(" --------------------------------------------------------------------------------\n");
+        outfile->Printf(" ------------------------------------------------------------------------------------\n");
     }
 
     return mot;
@@ -1030,7 +1040,7 @@ ESPPropCalc::~ESPPropCalc() {}
 void OEProp::compute_esp_over_grid() { epc_.compute_esp_over_grid(true); }
 
 void ESPPropCalc::compute_esp_over_grid(bool print_output) {
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    auto mol = basisset_->molecule();
 
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
@@ -1179,11 +1189,11 @@ SharedMatrix ESPPropCalc::compute_field_over_grid_in_memory(SharedMatrix input_g
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "CartAO", "D");
+    SharedMatrix Dtot = wfn_->Da_subset("AO");
     if (same_dens_) {
         Dtot->scale(2.0);
     } else {
-        Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "CartAO", "D beta"));
+        Dtot->add(wfn_->Db_subset("AO"));
     }
 
     std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
@@ -1230,7 +1240,7 @@ void OEProp::compute_esp_at_nuclei() {
 std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool print_output, bool verbose) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    std::shared_ptr<std::vector<double>> nesps(new std::vector<double>(mol->natom()));
+    auto nesps = std::make_shared<std::vector<double>>(mol->natom());
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
     int nbf = basisset_->nbf();
@@ -1273,284 +1283,6 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
         outfile->Printf(" ---------------------------------------------\n");
     }
     return nesps;
-}
-
-void OEProp::compute_dipole(bool transition) {
-    SharedVector dipole = mpc_.compute_dipole(transition, true, print_ > 4);
-    // Dipole components in Debye
-    std::stringstream s;
-    s << title_ << " DIPOLE X";
-    Process::environment.globals[s.str()] = dipole->get(0);
-    wfn_->set_scalar_variable(s.str(), dipole->get(0));
-
-    s.str(std::string());
-    s << title_ << " DIPOLE Y";
-    Process::environment.globals[s.str()] = dipole->get(1);
-    wfn_->set_scalar_variable(s.str(), dipole->get(1));
-
-    s.str(std::string());
-    s << title_ << " DIPOLE Z";
-    Process::environment.globals[s.str()] = dipole->get(2);
-    wfn_->set_scalar_variable(s.str(), dipole->get(2));
-
-    // Dipole array in au
-    auto dipole_array = std::make_shared<Matrix>(1, 3);
-    dipole_array->set(0, 0, dipole->get(0) / pc_dipmom_au2debye);
-    dipole_array->set(0, 1, dipole->get(1) / pc_dipmom_au2debye);
-    dipole_array->set(0, 2, dipole->get(2) / pc_dipmom_au2debye);
-
-    s.str(std::string());
-    s << title_;
-    if (title_ != "") s << " ";
-    s << "DIPOLE";
-    Process::environment.arrays[s.str()] = dipole_array;
-    wfn_->set_array_variable(s.str(), dipole_array);
-}
-
-SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_output, bool verbose) {
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
-
-    Vector3 de;
-    SharedMatrix Da;
-    SharedMatrix Db;
-    std::vector<SharedMatrix> dipole_ints;
-    if (origin_preserves_symmetry_) {
-        // Use symmetry
-        OperatorSymmetry dipsymm(1, mol, integral_, factory_);
-        dipole_ints = dipsymm.create_matrices("SO Dipole");
-        std::shared_ptr<OneBodySOInt> sodOBI(integral_->so_dipole());
-        sodOBI->ob()->set_origin(origin_);
-        sodOBI->compute(dipole_ints);
-        if (same_dens_) {
-            Da = Da_so_;
-            Db = Da;
-        } else {
-            Da = Da_so_;
-            Db = Db_so_;
-        }
-    } else {
-        // Don't use symmetry
-        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole X", basisset_->nbf(), basisset_->nbf())));
-        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Y", basisset_->nbf(), basisset_->nbf())));
-        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Z", basisset_->nbf(), basisset_->nbf())));
-        std::shared_ptr<OneBodyAOInt> aodOBI(integral_->ao_dipole());
-        aodOBI->set_origin(origin_);
-        aodOBI->compute(dipole_ints);
-        if (same_dens_) {
-            Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
-            Db = Da;
-        } else {
-            Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D alpha");
-            Db = wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta");
-        }
-    }
-
-    if (verbose) {
-        for (int n = 0; n < 3; ++n) dipole_ints[n]->print();
-    }
-
-    de[0] = Da->vector_dot(dipole_ints[0]) + Db->vector_dot(dipole_ints[0]);
-    de[1] = Da->vector_dot(dipole_ints[1]) + Db->vector_dot(dipole_ints[1]);
-    de[2] = Da->vector_dot(dipole_ints[2]) + Db->vector_dot(dipole_ints[2]);
-
-    SharedVector ndip = DipoleInt::nuclear_contribution(mol, origin_);
-
-    if (!transition) {
-        if (print_output) {
-            outfile->Printf("  Nuclear Dipole Moment: [e a0]\n");
-            outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n", ndip->get(0), ndip->get(1),
-                            ndip->get(2));
-            outfile->Printf("\n");
-            outfile->Printf("  Electronic Dipole Moment: [e a0]\n");
-            outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n", de[0], de[1], de[2]);
-            outfile->Printf("\n");
-        }
-
-        de[0] += ndip->get(0, 0);
-        de[1] += ndip->get(0, 1);
-        de[2] += ndip->get(0, 2);
-    }
-
-    if (print_output) {
-        outfile->Printf("  %sDipole Moment: [e a0]\n", (transition ? "Transition " : ""));
-        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", de[0], de[1], de[2],
-                        de.norm());
-        outfile->Printf("\n");
-    }
-
-    double dfac = pc_dipmom_au2debye;
-    if (print_output) {
-        outfile->Printf("  %sDipole Moment: [D]\n", (transition ? "Transition " : ""));
-        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", de[0] * dfac,
-                        de[1] * dfac, de[2] * dfac, de.norm() * dfac);
-        outfile->Printf("\n");
-    }
-
-    // Dipole components in Debye
-    double dipole_x = de[0] * dfac;
-    double dipole_y = de[1] * dfac;
-    double dipole_z = de[2] * dfac;
-
-    auto output = std::make_shared<Vector>(3);
-    output->set(0, dipole_x);
-    output->set(1, dipole_y);
-    output->set(2, dipole_z);
-
-    return output;
-}
-
-void OEProp::compute_quadrupole(bool transition) {
-    SharedMatrix quadrupole = mpc_.compute_quadrupole(transition, true, print_ > 4);
-    std::stringstream s;
-    s << title_ << " QUADRUPOLE XX";
-    Process::environment.globals[s.str()] = quadrupole->get(0, 0);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 0));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE YY";
-    Process::environment.globals[s.str()] = quadrupole->get(1, 1);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(1, 1));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE ZZ";
-    Process::environment.globals[s.str()] = quadrupole->get(2, 2);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(2, 2));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE XY";
-    Process::environment.globals[s.str()] = quadrupole->get(0, 1);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 1));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE XZ";
-    Process::environment.globals[s.str()] = quadrupole->get(0, 2);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 2));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE YZ";
-    Process::environment.globals[s.str()] = quadrupole->get(1, 2);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(1, 2));
-
-    // Quadrupole array in au
-    auto quadrupole_array = std::make_shared<Matrix>(1, 6);
-    quadrupole_array->set(0, 0, quadrupole->get(0, 0) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(0, 1, quadrupole->get(0, 1) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(0, 2, quadrupole->get(0, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(0, 3, quadrupole->get(1, 1) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(0, 4, quadrupole->get(1, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-    quadrupole_array->set(0, 5, quadrupole->get(2, 2) / (pc_dipmom_au2debye * pc_bohr2angstroms));
-
-    s.str(std::string());
-    s << title_;
-    if (title_ != "") s << " ";
-    s << "QUADRUPOLE";
-    Process::environment.arrays[s.str()] = quadrupole_array;
-    wfn_->set_array_variable(s.str(), quadrupole_array);
-}
-
-SharedMatrix MultipolePropCalc::compute_quadrupole(bool transition, bool print_output, bool verbose) {
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
-    SharedMatrix Da;
-    SharedMatrix Db;
-
-    std::vector<SharedMatrix> qpole_ints;
-    if (origin_preserves_symmetry_) {
-        OperatorSymmetry quadsymm(2, mol, integral_, factory_);
-        qpole_ints = quadsymm.create_matrices("SO Quadrupole");
-        std::shared_ptr<OneBodySOInt> soqOBI(integral_->so_quadrupole());
-        soqOBI->ob()->set_origin(origin_);
-        soqOBI->compute(qpole_ints);
-        if (same_dens_) {
-            Da = Da_so_;
-            Db = Da;
-        } else {
-            Da = Da_so_;
-            Db = Db_so_;
-        }
-    } else {
-        qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole XX", basisset_->nbf(), basisset_->nbf()));
-        qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole XY", basisset_->nbf(), basisset_->nbf()));
-        qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole XZ", basisset_->nbf(), basisset_->nbf()));
-        qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole YY", basisset_->nbf(), basisset_->nbf()));
-        qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole YZ", basisset_->nbf(), basisset_->nbf()));
-        qpole_ints.push_back(std::make_shared<Matrix>("AO Quadrupole ZZ", basisset_->nbf(), basisset_->nbf()));
-        std::shared_ptr<OneBodyAOInt> aoqOBI(integral_->ao_quadrupole());
-        aoqOBI->set_origin(origin_);
-        aoqOBI->compute(qpole_ints);
-        if (same_dens_) {
-            Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
-            Db = Da;
-        } else {
-            Da = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D alpha");
-            Db = wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta");
-        }
-    }
-
-    if (verbose)
-        for (int n = 0; n < 6; ++n) qpole_ints[n]->print();
-
-    // Each multipole integral needs to be dotted with the SO Density
-    Vector qe(6);
-    qe[0] = Da->vector_dot(qpole_ints[0]) + Db->vector_dot(qpole_ints[0]);
-    qe[1] = Da->vector_dot(qpole_ints[1]) + Db->vector_dot(qpole_ints[1]);
-    qe[2] = Da->vector_dot(qpole_ints[2]) + Db->vector_dot(qpole_ints[2]);
-    qe[3] = Da->vector_dot(qpole_ints[3]) + Db->vector_dot(qpole_ints[3]);
-    qe[4] = Da->vector_dot(qpole_ints[4]) + Db->vector_dot(qpole_ints[4]);
-    qe[5] = Da->vector_dot(qpole_ints[5]) + Db->vector_dot(qpole_ints[5]);
-
-    // Add in nuclear contribution
-    if (!transition) {
-        SharedVector nquad = QuadrupoleInt::nuclear_contribution(mol, origin_);
-        qe[0] += nquad->get(0, 0);
-        qe[1] += nquad->get(0, 1);
-        qe[2] += nquad->get(0, 2);
-        qe[3] += nquad->get(0, 3);
-        qe[4] += nquad->get(0, 4);
-        qe[5] += nquad->get(0, 5);
-    }
-
-    // Print multipole components
-    double dfac = pc_dipmom_au2debye * pc_bohr2angstroms;
-    if (print_output) {
-        outfile->Printf("  %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
-        outfile->Printf("    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", qe[0] * dfac, qe[3] * dfac, qe[5] * dfac);
-        outfile->Printf("    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", qe[1] * dfac, qe[2] * dfac, qe[4] * dfac);
-        outfile->Printf("\n");
-    }
-
-    double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
-    if (print_output) {
-        outfile->Printf("  Traceless %sQuadrupole Moment: [D A]\n", (transition ? "Transition " : ""));
-        outfile->Printf("    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", (qe[0] - dtrace) * dfac,
-                        (qe[3] - dtrace) * dfac, (qe[5] - dtrace) * dfac);
-        outfile->Printf("    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", qe[1] * dfac, qe[2] * dfac, qe[4] * dfac);
-        outfile->Printf("\n");
-    }
-
-    // Quadrupole components in Debye Ang
-    double xx = qe[0] * dfac;
-    double yy = qe[3] * dfac;
-    double zz = qe[5] * dfac;
-    double xy = qe[1] * dfac;
-    double xz = qe[2] * dfac;
-    double yz = qe[4] * dfac;
-
-    auto output = std::make_shared<Matrix>(3, 3);
-
-    output->set(0, 0, xx);
-    output->set(1, 1, yy);
-    output->set(2, 2, zz);
-
-    output->set(0, 1, xy);
-    output->set(1, 0, xy);
-
-    output->set(1, 2, yz);
-    output->set(2, 1, yz);
-
-    output->set(0, 2, xz);
-    output->set(2, 0, xz);
-
-    return output;
 }
 
 void OEProp::compute_mo_extents() {
@@ -1848,9 +1580,9 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
 }
 
 // See PopulationAnalysisCalc::compute_mbis_multipoles
-void OEProp::compute_mbis_multipoles() {
+void OEProp::compute_mbis_multipoles(bool free_atom_volumes) {
     SharedMatrix mpole, dpole, qpole, opole;
-    std::tie(mpole, dpole, qpole, opole) = pac_.compute_mbis_multipoles(true);
+    std::tie(mpole, dpole, qpole, opole) = pac_.compute_mbis_multipoles(free_atom_volumes, true);
 
     wfn_->set_array_variable("MBIS CHARGES", mpole);
     wfn_->set_array_variable("MBIS DIPOLES", dpole);
@@ -1990,7 +1722,7 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
 
 // Minimal Basis Iterative Stockholder (JCTC, 2016, p. 3894-3912, Verstraelen et al.)
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_mbis_multipoles(
-    bool print_output) {
+    bool free_atom_volumes, bool print_output) {
     if (print_output) outfile->Printf("  ==> Computing MBIS Charges <==\n\n");
     timer_on("MBIS");
 
@@ -2052,13 +1784,13 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
         rho_block = point_func->point_values()["RHO_A"];
 
         if (!same_dens_) {
-            rho_block->add(point_func->point_values()["RHO_B"]);
+            rho_block->add(*point_func->point_values()["RHO_B"]);
         }
 
-        double* x = block->x();
-        double* y = block->y();
-        double* z = block->z();
-        double* w = block->w();
+        auto x = block->x();
+        auto y = block->y();
+        auto z = block->z();
+        auto w = block->w();
 
         for (size_t p = 0; p < num_points; p++) {
             x_points[running_points + p] = x[p];
@@ -2395,14 +2127,16 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     // Compute the volume widths, only for molecules
     bool free_atom = (num_atoms == 1);
     auto volume_ratios = valence_widths->clone();
-    volume_ratios->zero();
-    if (free_atom == false) {
-        for (int a = 0; a < num_atoms; ++a) {
-            double free_atom = wfn_->scalar_variable("MBIS FREE ATOM " + mol->label(a) + " VOLUME");
-            double vr = rmoms[1]->get(a, 0) / free_atom;
-            volume_ratios->set(a, 0, vr);
+    if (free_atom_volumes) {
+        volume_ratios->zero();
+        if (free_atom == false) {
+            for (int a = 0; a < num_atoms; ++a) {
+                double free_atom = wfn_->scalar_variable("MBIS FREE ATOM " + mol->label(a) + " VOLUME");
+                double vr = rmoms[1]->get(a, 0) / free_atom;
+                volume_ratios->set(a, 0, vr);
+            }
+            wfn_->set_array_variable("MBIS VOLUME RATIOS", volume_ratios);
         }
-        wfn_->set_array_variable("MBIS VOLUME RATIOS", volume_ratios);
     }
 
     if (print_output) {
@@ -2425,13 +2159,14 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
             outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(), static_cast<int>(mol->Z(a)),
                             valence_widths->get(a, 0));
         }
-
-        if (free_atom == false) {
-            outfile->Printf("\n\n  MBIS Volume Ratios: \n");
-            outfile->Printf("   Center  Symbol  Z     \n");
-            for (int a = 0; a < num_atoms; a++) {
-                outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(),
-                                static_cast<int>(mol->Z(a)), volume_ratios->get(a, 0));
+        if (free_atom_volumes) {
+            if (free_atom == false) {
+                outfile->Printf("\n\n  MBIS Volume Ratios: \n");
+                outfile->Printf("   Center  Symbol  Z     \n");
+                for (int a = 0; a < num_atoms; a++) {
+                    outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(),
+                                    static_cast<int>(mol->Z(a)), volume_ratios->get(a, 0));
+                }
             }
         }
     }
@@ -2888,457 +2623,5 @@ void OEProp::set_Db_mo(SharedMatrix Db) {
     pac_.set_Db_mo(Db);
     epc_.set_Db_mo(Db);
 }
-
-// GridProp::GridProp(std::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)
-//{
-//    common_init();
-//}
-// GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.legacy_wavefunction())
-//{
-//    common_init();
-//}
-// GridProp::~GridProp()
-//{
-//    reset();
-//    free_block(temp_tens_);
-//}
-// void GridProp::common_init()
-//{
-//    initialized_ = false;
-//    format_ = "DF3";
-//
-//    n_[0] = 40;
-//    n_[1] = 40;
-//    n_[2] = 40;
-//
-//    l_[0] = 5.0;
-//    l_[1] = 5.0;
-//    l_[2] = 5.0;
-//
-//    o_[0] = 0.0;
-//    o_[1] = 0.0;
-//    o_[2] = 0.0;
-//
-//    block_size_= 5000;
-//
-//    irrep_offsets_[0] = 0;
-//    for (int h = 0; h < Ca_so_->nirrep() - 1; h++)
-//        irrep_offsets_[h + 1] = irrep_offsets_[h] + Ca_so_->colspi()[h];
-//
-//    temp_tens_ = block_matrix(block_size_, basisset_->nbf());
-//}
-// void GridProp::add_alpha_mo(int irrep, int index)
-//{
-//    alpha_mos_.push_back(make_pair(irrep,index));
-//}
-// void GridProp::add_beta_mo(int irrep, int index)
-//{
-//    beta_mos_.push_back(make_pair(irrep,index));
-//}
-// void GridProp::add_basis_fun(int irrep, int index)
-//{
-//    basis_funs_.push_back(make_pair(irrep,index));
-//}
-// void GridProp::print_header()
-//{
-//    outfile->Printf( "\n GRIDPROP: One-electron grid properties.\n");
-//    outfile->Printf( "  by Rob Parrish and Justin Turney.\n");
-//    outfile->Printf( "  built on LIBMINTS.\n\n");
-//}
-// double*** GridProp::block_grid(int nx, int ny, int nz)
-//{
-//    double*** grid = new double**[nx];
-//
-//    double** pointers = new double*[nx*(size_t)ny];
-//
-//    double* memory = new double[nx*(size_t)ny*nz];
-//    memset(static_cast<void*>(memory), '\0', sizeof(double)*nx*ny*nz);
-//
-//    for (int i = 0; i < nx; i++)
-//        for (int j = 0; j < ny; j++)
-//            pointers[i*(size_t)ny + j] = &memory[i*(size_t)ny*nz + j*(size_t)nz];
-//
-//    for (int i = 0; i < nx; i++)
-//        grid[i] = &pointers[i*(size_t)ny];
-//
-//    return grid;
-//}
-// void GridProp::free_grid(double*** grid)
-//{
-//    delete[] grid[0][0];
-//    delete[] grid[0];
-//    delete[] grid;
-//}
-// void GridProp::build_grid_overages(double over)
-//{
-//    std::shared_ptr<Molecule> mol = basisset_->molecule();
-//
-//    double min_x = mol->x(0);
-//    double min_y = mol->y(0);
-//    double min_z = mol->z(0);
-//    double max_x = mol->x(0);
-//    double max_y = mol->y(0);
-//    double max_z = mol->z(0);
-//
-//    for (int A = 0; A < mol->natom(); A++) {
-//        if (mol->x(A) <= min_x)
-//            min_x = mol->x(A);
-//        if (mol->x(A) >= max_x)
-//            max_x = mol->x(A);
-//        if (mol->y(A) <= min_y)
-//            min_y = mol->y(A);
-//        if (mol->y(A) >= max_y)
-//            max_y = mol->y(A);
-//        if (mol->z(A) <= min_z)
-//            min_z = mol->z(A);
-//        if (mol->z(A) >= max_z)
-//            max_z = mol->z(A);
-//    }
-//
-//    min_x -= over;
-//    min_y -= over;
-//    min_z -= over;
-//    max_x += over;
-//    max_y += over;
-//    max_z += over;
-//
-//    o_[0] = 0.5*(min_x + max_x);
-//    o_[1] = 0.5*(min_y + max_y);
-//    o_[2] = 0.5*(min_z + max_z);
-//    l_[0] = (-min_x + max_x);
-//    l_[1] = (-min_y + max_y);
-//    l_[2] = (-min_z + max_z);
-//
-//    caxis_[0] = 0.0;
-//    caxis_[1] = 1.0;
-//
-//    build_grid();
-//}
-// void GridProp::build_grid()
-//{
-//    int nx = n_[0] + 1;
-//    int ny = n_[1] + 1;
-//    int nz = n_[2] + 1;
-//
-//    grid_["x"] = block_grid(nx,ny,nz);
-//    grid_["y"] = block_grid(nx,ny,nz);
-//    grid_["z"] = block_grid(nx,ny,nz);
-//
-//    double* x = new double[nx];
-//    double* y = new double[nx];
-//    double* z = new double[nx];
-//
-//    double*** xg = grid_["x"];
-//    double*** yg = grid_["y"];
-//    double*** zg = grid_["z"];
-//
-//    if (nx == 0)
-//        x[0] = 0.0;
-//    else
-//        for (int i = 0; i < nx; i++)
-//            x[i] = ((double) i) / (double (nx - 1));
-//    if (ny == 0)
-//        y[0] = 0.0;
-//    else
-//        for (int i = 0; i < ny; i++)
-//           y[i] = ((double) i) / (double (ny - 1));
-//    if (nz == 0)
-//        z[0] = 0.0;
-//    else
-//        for (int i = 0; i < nz; i++)
-//           z[i] = ((double) i) / (double (nz - 1));
-//
-//    for (int i = 0; i < nx; i++) {
-//        x[i] = l_[0] * (x[i] - 0.5) + o_[0];
-//    }
-//    for (int i = 0; i < ny; i++) {
-//        y[i] = l_[1] * (y[i] - 0.5) + o_[1];
-//    }
-//    for (int i = 0; i < nz; i++) {
-//        z[i] = l_[2] * (z[i] - 0.5) + o_[2];
-//    }
-//
-//    for (int i = 0; i < nx; i++)
-//        for (int j = 0; j < ny; j++)
-//            for (int k = 0; k < nz; k++) {
-//                xg[i][j][k] = x[i];
-//                yg[i][j][k] = y[j];
-//                zg[i][j][k] = z[k];
-//            }
-//
-//    delete[] x;
-//    delete[] y;
-//    delete[] z;
-//}
-// void GridProp::allocate_arrays()
-//{
-//    int nx = n_[0] + 1;
-//    int ny = n_[1] + 1;
-//    int nz = n_[2] + 1;
-//
-//    for (std::set<std::string>::iterator it = tasks_.begin(); it != tasks_.end(); it++) {
-//        if ((*it) == "MOS") {
-//            // TODO
-//        } else if ((*it) == "BASIS_FUNS") {
-//            // Also TODO
-//        } else {
-//            grid_[(*it)] = block_grid(nx,ny,nz);
-//        }
-//    }
-//}
-// void GridProp::compute()
-//{
-//#if 0
-//    reset();
-//
-//    initialized_ = true;
-//
-//    Da_ao_ = Da_ao();
-//    Ca_ao_ = Ca_ao();
-//    if (restricted_) {
-//        Db_ao_ = Da_ao_;
-//        Cb_ao_ = Ca_ao_;
-//    } else {
-//        Db_ao_ = Db_ao();
-//        Cb_ao_ = Cb_ao();
-//    }
-//
-//    print_header();
-//    build_grid();
-//    allocate_arrays();
-//
-//    int nx = n_[0] + 1;
-//    int ny = n_[1] + 1;
-//    int nz = n_[2] + 1;
-//    size_t ngrid = nx*(size_t)ny*nz;
-//    int nblock = ngrid / block_size_;
-//    if (ngrid % block_size_ != 0)
-//        nblock++;
-//
-//    double*** xp = grid_["x"];
-//    double*** yp = grid_["y"];
-//    double*** zp = grid_["z"];
-//
-//    // Basis points object (heavy lifting)
-//    points_ = std::make_shared<BasisPoints>(basisset_, block_size_);
-//    if (tasks_.count("GAMMA_AA") || tasks_.count("GAMMA_BB") || tasks_.count("GAMMA_AB") \
-//        || tasks_.count("TAU_A") || tasks_.count("TAU_B"))
-//        points_->setToComputeGradients(true);
-//
-//    // Grid block traversal object
-//    auto gridblock = std::make_shared<GridBlock>();
-//    gridblock->setMaxPoints(block_size_);
-//
-//    for (int block = 0; block < nblock; block++) {
-//        // Indexing
-//        int size = block_size_;
-//        if (block*(size_t)block_size_ >= ngrid)
-//            size = ngrid - block*(size_t)block_size_;
-//
-//        size_t offset = block*(size_t)block_size_;
-//
-//        // Line up gridblock pointers
-//        // Last xp is a dirty hack b/c w is not needed for points
-//        gridblock->setGrid(&xp[0][0][offset],&yp[0][0][offset],&zp[0][0][offset],&xp[0][0][offset]);
-//        gridblock->setTruePoints(size);
-//
-//        // Compute basis functions/gradients
-//        points_->computePoints(gridblock);
-//
-//        // Call compute routines
-//        if (tasks_.count("MOS"))
-//            compute_mos(gridblock, offset);
-//        if (tasks_.count("BASIS_FUNS"))
-//            compute_basis_funs(gridblock, offset);
-//        if (tasks_.count("RHO"))
-//            compute_rho(gridblock, &grid_["RHO"][0][0][offset]);
-//        if (tasks_.count("RHO_S"))
-//            compute_rho_s(gridblock, &grid_["RHO_S"][0][0][offset]);
-//        if (tasks_.count("RHO_A"))
-//            compute_rho_a(gridblock, &grid_["RHO_A"][0][0][offset]);
-//        if (tasks_.count("RHO_B"))
-//            compute_rho_b(gridblock, &grid_["RHO_B"][0][0][offset]);
-//        if (tasks_.count("GAMMA_AA"))
-//            compute_gamma_aa(gridblock, &grid_["GAMMA_AA"][0][0][offset]);
-//        if (tasks_.count("GAMMA_AB"))
-//            compute_gamma_ab(gridblock, &grid_["GAMMA_AB"][0][0][offset]);
-//        if (tasks_.count("GAMMA_BB"))
-//            compute_gamma_bb(gridblock, &grid_["GAMMA_BB"][0][0][offset]);
-//        if (tasks_.count("TAU_A"))
-//            compute_rho_b(gridblock, &grid_["TAU_A"][0][0][offset]);
-//        if (tasks_.count("TAU_B"))
-//            compute_rho_b(gridblock, &grid_["TAU_B"][0][0][offset]);
-//    }
-//
-//    // ESP is special we think
-//    if (tasks_.count("ESP"))
-//        compute_ESP();
-//
-//    if (format_ == "DF3")
-//        write_df3_grid();
-//    else
-//        write_data_grid();
-//
-//#endif
-//}
-// void GridProp::write_data_grid()
-//{
-//    int nx = n_[0] + 1;
-//    int ny = n_[1] + 1;
-//    int nz = n_[2] + 1;
-//
-//    for (std::map<std::string, double***>::iterator it = grid_.begin(); it != grid_.end(); it++) {
-//        std::string key = (*it).first;
-//        double*** data = (*it).second;
-//
-//        /* Write it to a file */
-//        int i,j,k;
-//        std::string file = filename_ + "." + key + ".dat";
-//        FILE* fptr = fopen(file.c_str(),"w");
-//        outfile->Printf(fptr,"%d %d %d\n\n", nx,ny,nz);
-//        for (k=0;k<nz;k++) {
-//           for (j=0;j<ny;j++) {
-//              for (i=0;i<nx;i++) {
-//                    outfile->Printf(fptr,"%24.16f ", data[i][j][k]);
-//                }
-//            outfile->Printf(fptr,"\n");
-//           }
-//           outfile->Printf(fptr,"\n");
-//        }
-//        fclose(fptr);
-//    }
-//}
-// void GridProp::write_df3_grid()
-//{
-//    int nx = n_[0] + 1;
-//    int ny = n_[1] + 1;
-//    int nz = n_[2] + 1;
-//
-//    for (std::map<std::string, double***>::iterator it = grid_.begin(); it != grid_.end(); it++) {
-//        std::string key = (*it).first;
-//        double*** data = (*it).second;
-//
-//        double v;
-//        double themin = data[0][0][0];
-//        double themax = data[0][0][0];
-//
-//        /* Write it to a file */
-//        std::string file = filename_ + "." + key + ".df3";
-//        FILE* fptr = fopen(file.c_str(),"w");
-//        fputc(nx >> 8,fptr);
-//        fputc(nx & 0xff,fptr);
-//        fputc(ny >> 8,fptr);
-//        fputc(ny & 0xff,fptr);
-//        fputc(nz >> 8,fptr);
-//        fputc(nz & 0xff,fptr);
-//        int i,j,k;
-//        for (k=0;k<nz;k++) {
-//           for (j=0;j<ny;j++) {
-//              for (i=0;i<nx;i++) {
-//                 if (data[i][j][k] > caxis_[1] )
-//                    v = 255;
-//                 else if (data[i][j][k] < caxis_[0])
-//                    v = 0;
-//                 else
-//                    v = 255 * (data[i][j][k]-caxis_[0])/(caxis_[1] - caxis_[0]);
-//                 fputc((int)v,fptr);
-//              }
-//           }
-//        }
-//        fclose(fptr);
-//    }
-//}
-// void GridProp::reset()
-//{
-//    if (!initialized_)
-//        return;
-//
-//    // Free the points object
-//    //points_.reset();
-//
-//    // Free the grids
-//    for (std::map<std::string, double***>::iterator it = grid_.begin(); it != grid_.end(); ++it) {
-//        free_grid((*it).second);
-//    }
-//}
-//#if 0
-// void GridProp::compute_mos(std::shared_ptr<GridBlock> g, size_t offset)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_basis_funs(std::shared_ptr<GridBlock> g, size_t offset)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_rho(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    int npoints = g->getTruePoints();
-//    int nbf = basisset_->nbf();
-//    double** points = points_->getPoints();
-//    double** Da = Da_ao_->pointer();
-//    double** Db = Db_ao_->pointer();
-//
-//    // rho_a_
-//    // rho_a^Q = phi_m^Q * Da_mn * phi_n^Q
-//    C_DGEMM('N', 'N', npoints, nbf, nbf, 1.0, &points[0][0], nbf, &Da[0][0], nbf, \
-//        0.0, &temp_tens_[0][0], nbf);
-//
-//    for (int Q = 0; Q < npoints; Q++) {
-//        results[Q] = C_DDOT(nbf, &temp_tens_[Q][0], 1, &points[Q][0], 1);
-//        //printf(" Q = %d, rho = %14.10E\n", Q, rho_a_[Q]);
-//    }
-//
-//    if (!restricted_) {
-//
-//        // rho_b^Q = phi_m^Q * Db_mn * phi_n^Q
-//        C_DGEMM('N', 'N', npoints, nbf, nbf, 1.0, &points[0][0], nbf, &Db[0][0], nbf, \
-//            0.0, &temp_tens_[0][0], nbf);
-//
-//        for (int Q = 0; Q < npoints; Q++) {
-//            results[Q] += C_DDOT(nbf, &temp_tens_[Q][0], 1, &points[Q][0], 1);
-//            //printf(" Q = %d, rho = %14.10E\n", Q, rho_b_[Q]);
-//        }
-//
-//    } else {
-//        C_DSCAL(npoints,2.0,results,1);
-//    }
-//}
-// void GridProp::compute_rho_s(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_rho_a(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_rho_b(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_gamma_aa(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_gamma_ab(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_gamma_bb(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_tau_a(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-// void GridProp::compute_tau_b(std::shared_ptr<GridBlock> g, double* results)
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
-//#endif
-// void GridProp::compute_ESP()
-//{
-//    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
-//}
 
 }  // namespace psi

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -251,23 +251,34 @@ Matrix::Matrix(dpdfile2 *inFile)
     global_dpd_->file2_mat_close(inFile);
 }
 
-Matrix::Matrix(dpdbuf4 *inBuf) : name_(inBuf->file.label), rowspi_(1), colspi_(1) {
-    if (inBuf->params->nirreps != 1) {
-        throw PSIEXCEPTION("dpdbuf4 <-> matrix is only allowed for C1");
+Matrix::Matrix(dpdbuf4 *inBuf)
+    : rowspi_(inBuf->params->nirreps), colspi_(inBuf->params->nirreps), name_(inBuf->file.label) {
+    if (inBuf->file.my_irrep != 0) {
+        // In theory, this check isn't necessary, but not totally symmetric cases aren't currently tested.
+        throw PSIEXCEPTION("dpdbuf4 <-> matrix is only allowed for totally symmetric buffers");
     }
     matrix_ = NULL;
-    symmetry_ = 0;
-    nirrep_ = 1;
-    rowspi_[0] = inBuf->params->rowtot[0];
-    colspi_[0] = inBuf->params->coltot[0];
+    symmetry_ = inBuf->file.my_irrep;
+    nirrep_ = inBuf->params->nirreps;
+    for (int h = 0; h < nirrep_; ++h) {
+        rowspi_[h] = inBuf->params->rowtot[h];
+        colspi_[h] = inBuf->params->coltot[h];
+    }
     alloc();
-    global_dpd_->buf4_mat_irrep_init(inBuf, 0);
-    global_dpd_->buf4_mat_irrep_rd(inBuf, 0);
+    for (int h = 0; h < inBuf->params->nirreps; ++h) {
+        global_dpd_->buf4_mat_irrep_init(inBuf, h);
+        global_dpd_->buf4_mat_irrep_rd(inBuf, h);
+    }
     copy_from(inBuf->matrix);
-    global_dpd_->buf4_mat_irrep_close(inBuf, 0);
-    std::vector<int> npshape = {inBuf->params->ppi[0], inBuf->params->qpi[0], inBuf->params->rpi[0],
-                                inBuf->params->spi[0]};
-    set_numpy_shape(npshape);
+    for (int h = 0; h < inBuf->params->nirreps; ++h) {
+        global_dpd_->buf4_mat_irrep_close(inBuf, h);
+    }
+
+    if (nirrep_ == 1) {
+        std::vector<int> npshape = {inBuf->params->ppi[0], inBuf->params->qpi[0], inBuf->params->rpi[0],
+                                    inBuf->params->spi[0]};
+        set_numpy_shape(npshape);
+    }
 }
 
 Matrix::~Matrix() { release(); }
@@ -598,7 +609,7 @@ void Matrix::set_column(int h, int m, SharedVector vec) {
     }
 }
 
-SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) {
+SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) const {
     // check if slices are within bounds
     for (int h = 0; h < nirrep_; h++) {
         if (rows.end()[h] > rowspi_[h]) {
@@ -630,7 +641,7 @@ SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) {
     return block;
 }
 
-SharedMatrix Matrix::get_block(const Slice &slice) {
+SharedMatrix Matrix::get_block(const Slice &slice) const {
     return get_block(slice, slice);
 }
 
@@ -1201,6 +1212,16 @@ void Matrix::scale_column(int h, int n, double a) {
     C_DSCAL(rowspi_[h], a, &(matrix_[h][0][n]), colspi_[h ^ symmetry_]);
 }
 
+void Matrix::sqrt_this() {
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < rowspi_[h]; ++i) {
+            for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
+                matrix_[h][i][j] = std::sqrt(matrix_[h][i][j]);
+            }
+        }
+    }
+}
+
 double Matrix::sum_of_squares() {
     double sum = (double)0.0;
     for (int h = 0; h < nirrep_; ++h) {
@@ -1430,35 +1451,42 @@ void Matrix::axpy(double a, SharedMatrix X) {
     }
 }
 
-SharedMatrix Matrix::collapse(int dim) {
-    if (dim < 0 || dim > 1) throw PSIEXCEPTION("Matrix::collapse: dim must be 0 (row sum) or 1 (col sum)");
+SharedVector Matrix::gemv(bool transa, double alpha, const Vector& A) {
+    auto return_vec = std::make_shared<Vector>(transa ? colspi_ : rowspi_);
+    return_vec->gemv(transa, alpha, *this, A, 0);
+    return return_vec;
+}
+
+SharedVector Matrix::collapse(Dimension dim, int target) const {
+    if (target < 0 || target > 1) throw PSIEXCEPTION("Matrix::collapse: dim must be 0 (row sum) or 1 (col sum)");
 
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::collapse is not supported for this non-totally-symmetric thing.");
     }
 
-    Dimension ones(nirrep_);
-    for (int h = 0; h < nirrep_; h++) {
-        ones[h] = 1;
-    }
-
-    auto T = std::make_shared<Matrix>("T", ((dim == 0) ? colspi_ : rowspi_), ones);
+    auto T = std::make_shared<Vector>("T", ((target == 0) ? colspi_ : rowspi_));
 
     for (int h = 0; h < nirrep_; h++) {
         int nrow = rowspi_[h];
         int ncol = colspi_[h];
-        double **Mp = matrix_[h];
-        double **Tp = T->pointer(h);
-        if (dim == 0) {
+        auto Mp = matrix_[h];
+        auto Tp = T->pointer(h);
+        if (target == 0) {
+            if (dim.get(h) > nrow) {
+                throw PSIEXCEPTION("Matrix::collapse cannot collapse more rows than the matrix has..");
+            }
             for (int j = 0; j < ncol; j++) {
-                for (int i = 0; i < nrow; i++) {
-                    Tp[j][0] += Mp[i][j];
+                for (int i = 0; i < dim.get(h); i++) {
+                    Tp[j] += Mp[i][j];
                 }
             }
         } else {
+            if (dim.get(h) > ncol) {
+                throw PSIEXCEPTION("Matrix::collapse cannot collapse more rows than the matrix has..");
+            }
             for (int i = 0; i < nrow; i++) {
-                for (int j = 0; j < ncol; j++) {
-                    Tp[i][0] += Mp[i][j];
+                for (int j = 0; j < dim.get(h); j++) {
+                    Tp[i] += Mp[i][j];
                 }
             }
         }
@@ -1965,6 +1993,21 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigv
     return X;
 }
 
+void Matrix::sort_cols(const IntVector& idxs) {
+    auto orig = clone();
+    if (colspi_ != idxs.dimpi()) {
+        throw PSIEXCEPTION("Matrix::sort Indexing vector and columns to sort must have the same dimension.");
+    }
+    // WARNING! Function also requires each irrep to be a permutation of 0, 1, 2...
+    for (int h = 0; h < nirrep_; h++) {
+        auto rows = rowspi_[h];
+        auto cols = colspi_[h];
+        auto idxh = idxs.pointer(h);
+        for (int a = 0; a < cols; a++) {
+            C_DCOPY(rows, &orig->pointer(h)[0][idxh[a]], cols, &(matrix_[h][0][a]), cols);
+        }
+    }
+}
 void Matrix::swap_rows(int h, int i, int j) {
     C_DSWAP(colspi_[h ^ symmetry_], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1);
 }
@@ -2773,9 +2816,11 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
         throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
     }
 
-    if (outFile->my_irrep != 0) {
-        throw FeatureNotImplemented("libmints Matrix class", "Matrices whose irrep is not the symmetric one", __FILE__,
-                                    __LINE__);
+    if (outFile->my_irrep != symmetry_) {
+        std::stringstream msg;
+        msg << "Symmetry mismatch. Matrix has symmetry " << outFile->my_irrep << " whereas dpdfile has "
+            << symmetry_ << " symmetry.";
+        throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
     }
 
     for (int h = 0; h < nirrep_; ++h) {
@@ -2792,7 +2837,6 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
             throw SanityCheckError(msg.str().c_str(), __FILE__, __LINE__);
         }
 
-        // TODO: optimize this with memcopys
         size_t size = rowspi_[h] * (size_t)colspi_[h ^ symmetry_] * sizeof(double);
         if (size) memcpy(&(outFile->matrix[h][0][0]), &(matrix_[h][0][0]), size);
     }
@@ -3544,4 +3588,34 @@ void free(double **Block) {
 }
 }  // namespace detail
 }  // namespace linalg
+
+bool test_matrix_dpd_interface() {
+    _default_psio_lib_->open(PSIF_OEI, PSIO_OPEN_OLD);
+    // Matrix values are insignificant.
+    // For those who like trivia, X dipole from STO-6G water (specified via ZMAT)
+    Dimension dimpi({4, 0, 1, 2});
+    Matrix mat(dimpi, dimpi, 2);
+    mat.set(0, 0, 0, -0.05373657897553);
+    mat.set(0, 1, 0, -0.64149916027709);
+    mat.set(0, 3, 0, -0.40632695574458);
+    mat.set(2, 0, 0, +0.05373657897553);
+    mat.set(2, 0, 1, +0.64149916027709);
+    mat.set(2, 0, 3, +0.40632695574458);
+
+    dpdfile2 io;
+    std::vector<int> cachefiles(PSIO_MAXUNIT);
+    auto cachelist = init_int_matrix(5, 5);
+
+    std::vector<int *> spaces;
+    spaces.push_back(dimpi);
+    std::vector<int> sym_vec {0, 0, 3, 0, 2, 0, 3};
+    spaces.push_back(sym_vec.data());
+    dpd_init(0, 4, 500e6, 0, cachefiles.data(), cachelist, nullptr, 1, spaces);
+    dpd_list[0]->file2_init(&io, PSIF_OEI, 2, 0, 0, "Test Matrix");
+    mat.write_to_dpdfile2(&io);
+    Matrix mat2(&io);
+    free_int_matrix(cachelist);
+    _default_psio_lib_->close(PSIF_OEI, 1);
+    return mat.equal(mat2);
+}
 }  // namespace psi

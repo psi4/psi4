@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -87,7 +87,6 @@ void CCEnergyWavefunction::init() {
 double CCEnergyWavefunction::compute_energy() {
     int done = 0;
     int **cachelist;
-    double *emp2_aa, *emp2_ab, *ecc_aa, *ecc_ab;
 
     moinfo_.iter = 0;
 
@@ -197,7 +196,11 @@ double CCEnergyWavefunction::compute_energy() {
     outfile->Printf("  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag\n");
     outfile->Printf("  ----     ---------------------    ---------   ----------  ----------  ----------   --------\n");
     moinfo_.ecc = energy();
-    pair_energies(&emp2_aa, &emp2_ab);
+
+    auto nocc_act = moinfo_.clsdpi.sum();
+    std::vector<double> emp2_aa(nocc_act * (nocc_act - 1) /2);
+    std::vector<double> emp2_ab(nocc_act * nocc_act);
+    pair_energies(emp2_aa, emp2_ab);
     double last_energy = 0;
 
     moinfo_.t1diag = diagnostic();
@@ -443,8 +446,10 @@ double CCEnergyWavefunction::compute_energy() {
     if (params_.ref == 0) spinad_amps();
 
     /* Compute pair energies */
+    std::vector<double> ecc_aa(nocc_act * (nocc_act - 1) /2);
+    std::vector<double> ecc_ab(nocc_act * nocc_act);
     if (params_.print_pair_energies) {
-        pair_energies(&ecc_aa, &ecc_ab);
+        pair_energies(ecc_aa, ecc_ab);
         print_pair_energies(emp2_aa, emp2_ab, ecc_aa, ecc_ab);
     }
 

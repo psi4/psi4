@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -60,7 +60,7 @@
 extern "C" {
 
 extern void F_DSWAP(int *length, double *x, int *incx, double *y, int *inc_y);
-extern void F_DAXPY(int *length, double *a, double *x, int *inc_x, double *y, int *inc_y);
+extern void F_DAXPY(int *length, double *a, const double *x, int *inc_x, double *y, int *inc_y);
 extern void F_DCOPY(int *length, double *x, int *inc_x, double *y, int *inc_y);
 extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *A, int *lda, double *B,
                     int *ldb, double *beta, double *C, int *ldc);
@@ -74,7 +74,7 @@ extern void F_DSYMV(char *uplo, int *n, double *alpha, double *A, int *lda, doub
                     double *Y, int *inc_y);
 extern void F_DSPMV(char *uplo, int *n, double *alpha, double *A, double *X, int *inc_x, double *beta, double *Y,
                     int *inc_y);
-extern double F_DDOT(int *n, double *x, int *incx, double *y, int *incy);
+extern double F_DDOT(int *n, const double *x, int *incx, const double *y, int *incy);
 extern double F_DNRM2(int *n, double *x, int *incx);
 extern double F_DASUM(int *n, double *x, int *incx);
 extern int F_IDAMAX(int *n, double *x, int *incx);
@@ -118,11 +118,11 @@ void PSI_API C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y) 
  *
  * \ingroup QT
  */
-void PSI_API C_DAXPY(size_t length, double a, double *x, int inc_x, double *y, int inc_y) {
+void PSI_API C_DAXPY(size_t length, double a, const double *x, int inc_x, double *y, int inc_y) {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        const double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
@@ -211,7 +211,7 @@ void PSI_API C_DROT(size_t length, double *x, int inc_x, double *y, int inc_y, d
  * \ingroup QT
  */
 
-double PSI_API C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y) {
+double PSI_API C_DDOT(size_t length, const double* const x, int inc_x, const double* const y, int inc_y) {
     if (length == 0) return 0.0;
 
     double reg = 0.0;
@@ -219,8 +219,8 @@ double PSI_API C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y)
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
-        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
+        const double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        const double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg += ::F_DDOT(&length_s, x_s, &inc_x, y_s, &inc_y);
     }

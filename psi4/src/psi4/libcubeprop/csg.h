@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -29,6 +29,7 @@
 #ifndef _psi_src_lib_libcubeprop_csg_h_
 #define _psi_src_lib_libcubeprop_csg_h_
 
+#include <array>
 #include <map>
 #include <memory>
 #include <string>
@@ -62,11 +63,11 @@ class CubicScalarGrid {
     // => Physical Grid <= //
 
     /// Voxel quanta in x, y, z [(N_x+1) x (N_y + 1) x (N_z + 1) points]
-    int* N_;
+    std::array<int, 3> N_;
     /// Voxel spacing in x, y, z
-    double* D_;
+    std::array<double, 3> D_;
     /// Voxel origin in x, y, z
-    double* O_;
+    std::array<double, 3> O_;
 
     /// number of points of grid
     size_t npoints_;
@@ -124,11 +125,11 @@ class CubicScalarGrid {
     // => High-Level Accessor Routines <= //
 
     /// Number of voxels in [x,y,z]. Number of points along each dimensions in N_i + 1.
-    int* N() const { return N_; }
+    const std::array<int, 3>& N() const { return N_; }
     /// Voxel width in [x,y,z], in bohr
-    double* D() const { return D_; }
+    const std::array<double, 3>& D() const { return D_; }
     /// Lower-left corner of th grid, in bohr
-    double* O() const { return O_; }
+    const std::array<double, 3>& O() const { return O_; }
     /// Filepath where grid output will be stored
     std::string filepath() const { return filepath_; }
 

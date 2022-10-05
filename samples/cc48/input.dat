@@ -99,4 +99,25 @@ D 2 1.00
 ****
 }
 
-properties('eom-ccsd', properties=['dipole'])
+wfn = properties('eom-ccsd', properties=['dipole'], return_wfn=True)[1]
+
+
+### ccdensity checks
+
+
+
+### Excitation energy checks
+
+
+
+### Dipole check
+
+
+
+### Ground-state transition checks
+#   (Other transitions available, but historically not tested here)
+
+}
+
+
+

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -145,8 +145,6 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     frequencies_ = vectors["frequencies"];
 
     // set dimensions
-    doccpi_ = dimensions["doccpi"];
-    soccpi_ = dimensions["soccpi"];
     frzcpi_ = dimensions["frzcpi"];
     frzvpi_ = dimensions["frzvpi"];
     nalphapi_ = dimensions["nalphapi"];
@@ -213,8 +211,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     energy_ = other->energy_;
     efzc_ = other->efzc_;
 
-    doccpi_ = other->doccpi_;
-    soccpi_ = other->soccpi_;
     frzcpi_ = other->frzcpi_;
     frzvpi_ = other->frzvpi_;
     nalphapi_ = other->nalphapi_;
@@ -302,8 +298,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     efzc_ = other->efzc_;
     variables_ = other->variables_;
 
-    doccpi_ = other->doccpi_;
-    soccpi_ = other->soccpi_;
     frzcpi_ = other->frzcpi_;
     frzvpi_ = other->frzvpi_;
     nalphapi_ = other->nalphapi_;
@@ -326,8 +320,8 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     if (other->Db_) Db_ = other->Db_->clone();
     if (other->Fa_) Fa_ = other->Fa_->clone();
     if (other->Fb_) Fb_ = other->Fb_->clone();
-    if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
-    if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
+    if (other->epsilon_a_) epsilon_a_ = std::make_shared<Vector>(std::move(other->epsilon_a_->clone()));
+    if (other->epsilon_b_) epsilon_b_ = std::make_shared<Vector>(std::move(other->epsilon_b_->clone()));
 
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
@@ -390,10 +384,6 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->efzc_ = efzc_;
 
     // collapse all the Dimension objects down to one element
-    wfn->doccpi_.init(1, doccpi_.name());
-    wfn->doccpi_[0] = doccpi_.sum();
-    wfn->soccpi_.init(1, soccpi_.name());
-    wfn->soccpi_[0] = soccpi_.sum();
     wfn->frzcpi_.init(1, frzcpi_.name());
     wfn->frzcpi_[0] = frzcpi_.sum();
     wfn->frzvpi_.init(1, frzvpi_.name());
@@ -501,8 +491,6 @@ void Wavefunction::common_init() {
     nmopi_ = Dimension(nirrep_, "MOs per irrep");
     nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
     nbetapi_ = Dimension(nirrep_, "Beta electrons per irrep");
-    doccpi_ = Dimension(nirrep_, "Doubly occupied orbitals per irrep");
-    soccpi_ = Dimension(nirrep_, "Singly occupied orbitals per irrep");
     frzcpi_ = Dimension(nirrep_, "Frozen core orbitals per irrep");
     frzvpi_ = Dimension(nirrep_, "Frozen virtual orbitals per irrep");
 
@@ -513,8 +501,6 @@ void Wavefunction::common_init() {
     nmo_ = basisset_->nbf();
     for (int k = 0; k < nirrep_; k++) {
         nmopi_[k] = 0;
-        doccpi_[k] = 0;
-        soccpi_[k] = 0;
         nalphapi_[k] = 0;
         nbetapi_[k] = 0;
     }
@@ -753,6 +739,28 @@ void Wavefunction::initialize_singletons() {
     done = true;
 }
 
+const Dimension Wavefunction::doccpi(bool warn_on_beta_socc) const {
+    std::vector<int> docc_vec;
+    for (int h = 0; h < nalphapi_.n(); h++) {
+        docc_vec.push_back(std::min(nalphapi_[h], nbetapi_[h]));
+        if (warn_on_beta_socc && nbetapi_[h] > nalphapi_[h]) {
+            outfile->Printf("Warning! Irrep has more beta than alpha electrons in symmetry %d orbitals.\n", h);
+        }
+    }
+    return docc_vec;
+}
+/// Returns the SOCC per irrep array. Not recommended for unrestricted code.
+const Dimension Wavefunction::soccpi(bool warn_on_beta_socc) const {
+    std::vector<int> socc_vec;
+    for (int h = 0; h < nalphapi_.n(); h++) {
+        socc_vec.push_back(std::abs(nalphapi_[h] - nbetapi_[h]));
+        if (warn_on_beta_socc && nbetapi_[h] > nalphapi_[h]) {
+            outfile->Printf("Warning! Irrep has more beta than alpha electrons in symmetry %d orbitals.\n", h);
+        }
+    }
+    return socc_vec;
+}
+
 std::shared_ptr<Molecule> Wavefunction::molecule() const { return molecule_; }
 
 std::shared_ptr<PSIO> Wavefunction::psio() const { return psio_; }
@@ -783,37 +791,11 @@ void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction
     reference_wavefunction_ = wfn;
 }
 
-void Wavefunction::force_doccpi(const Dimension &doccpi) {
-    for (int h = 0; h < nirrep_; h++) {
-        if ((soccpi_[h] + doccpi[h]) > nmopi_[h]) {
-            throw PSIEXCEPTION(
-                "Wavefunction::force_doccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
-                "the total number of molecular orbitals.");
-        }
-        doccpi_[h] = doccpi[h];
-        nalphapi_[h] = doccpi_[h] + soccpi_[h];
-        nbetapi_[h] = doccpi_[h];
-    }
-    nalpha_ = doccpi_.sum() + soccpi_.sum();
-    nbeta_ = doccpi_.sum();
-}
-
-void Wavefunction::force_soccpi(const Dimension &soccpi) {
-    if (same_a_b_dens_) {
-        throw PSIEXCEPTION(
-            "Wavefunction::force_soccpi: Cannot set soccpi since alpha and beta densities must be the same for this "
-            "Wavefunction.");
-    }
-    for (int h = 0; h < nirrep_; h++) {
-        if ((soccpi[h] + doccpi_[h]) > nmopi_[h]) {
-            throw PSIEXCEPTION(
-                "Wavefunction::force_soccpi: Number of doubly and singly occupied orbitals in an irrep cannot exceed "
-                "the total number of molecular orbitals.");
-        }
-        soccpi_[h] = soccpi[h];
-        nalphapi_[h] = doccpi_[h] + soccpi_[h];
-    }
-    nalpha_ = doccpi_.sum() + soccpi_.sum();
+void Wavefunction::force_occpi(const Dimension &input_doccpi, const Dimension &input_soccpi) {
+    nalphapi_ = input_doccpi + input_soccpi;
+    nbetapi_ = input_doccpi;
+    nalpha_ = nalphapi_.sum();
+    nbeta_ = nbetapi_.sum();
 }
 
 void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
@@ -928,7 +910,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &nocc
 
 SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi,
                                                  const std::string &basis, const std::string &subset) const {
-    std::vector<std::vector<int>> positions = subset_occupation(noccpi, subset);
+    auto positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
     for (int h = 0; h < (int)positions.size(); h++) {
@@ -971,9 +953,9 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
 SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, const std::string &basis,
                                                 const std::string matrix_basename) const {
     if (basis == "AO") {
-        double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
+        auto temp = std::vector<double>(AO2SO_->max_ncol() * AO2SO_->max_nrow());
         std::string m2_name = matrix_basename + " (AO basis)";
-        SharedMatrix M2 = SharedMatrix(new Matrix(m2_name, basisset_->nbf(), basisset_->nbf()));
+        auto M2 = std::make_shared<Matrix>(m2_name, basisset_->nbf(), basisset_->nbf());
         int symm = M->symmetry();
         for (int h = 0; h < AO2SO_->nirrep(); ++h) {
             int nao = AO2SO_->rowspi()[0];
@@ -984,10 +966,9 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, 
             double **Urp = AO2SO_->pointer(h ^ symm);
             double **MSOp = M->pointer(h);
             double **MAOp = M2->pointer();
-            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, MSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
-            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, MAOp[0], nao);
+            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, MSOp[0], nsor, Urp[0], nsor, 0.0, temp.data(), nao);
+            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp.data(), nao, 1.0, MAOp[0], nao);
         }
-        delete[] temp;
         return M2;
     } else if (basis == "CartAO") {
         /*
@@ -999,9 +980,9 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, 
 
         PetiteList petite(basisset_, integral_, true);
         SharedMatrix my_aotoso = petite.aotoso();
-        double *temp = new double[my_aotoso->max_ncol() * my_aotoso->max_nrow()];
+        auto temp = std::vector<double>(my_aotoso->max_ncol() * my_aotoso->max_nrow());
         std::string m2_name = matrix_basename + " (CartAO basis)";
-        SharedMatrix M2 = SharedMatrix(new Matrix(m2_name, basisset_->nao(), basisset_->nao()));
+        auto M2 = std::make_shared<Matrix>(m2_name, basisset_->nao(), basisset_->nao());
         int symm = M->symmetry();
         for (int h = 0; h < my_aotoso->nirrep(); ++h) {
             int nao = my_aotoso->rowspi()[0];
@@ -1012,10 +993,9 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, 
             double **Urp = my_aotoso->pointer(h ^ symm);
             double **MSOp = M->pointer(h);
             double **MAOp = M2->pointer();
-            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, MSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
-            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, MAOp[0], nao);
+            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, MSOp[0], nsor, Urp[0], nsor, 0.0, temp.data(), nao);
+            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp.data(), nao, 1.0, MAOp[0], nao);
         }
-        delete[] temp;
         return M2;
     } else if (basis == "SO") {
         SharedMatrix M2 = M->clone();
@@ -1024,13 +1004,13 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, 
         return M2;
     } else if (basis == "MO") {
         std::string m2_name = matrix_basename + " (MO basis)";
-        SharedMatrix M2(new Matrix(m2_name, C->colspi(), C->colspi()));
+        auto M2 = std::make_shared<Matrix>(m2_name, C->colspi(), C->colspi());
 
         int symm = M->symmetry();
         int nirrep = M->nirrep();
 
-        double *SC = new double[C->max_ncol() * C->max_nrow()];
-        double *temp = new double[C->max_ncol() * C->max_nrow()];
+        auto SC = std::vector<double>(C->max_ncol() * C->max_nrow());
+        auto temp = std::vector<double>(C->max_ncol() * C->max_nrow());
         for (int h = 0; h < nirrep; h++) {
             int nmol = C->colspi()[h];
             int nmor = C->colspi()[h ^ symm];
@@ -1044,13 +1024,11 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, 
             double **Mmop = M2->pointer(h);
             double **Msop = M->pointer(h);
 
-            C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC, nmor);
-            C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Msop[0], nsor, SC, nmor, 0.0, temp, nmor);
-            C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC, nmol);
-            C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC, nmol, temp, nmor, 0.0, Mmop[0], nmor);
+            C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC.data(), nmor);
+            C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Msop[0], nsor, SC.data(), nmor, 0.0, temp.data(), nmor);
+            C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC.data(), nmol);
+            C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC.data(), nmol, temp.data(), nmor, 0.0, Mmop[0], nmor);
         }
-        delete[] temp;
-        delete[] SC;
         return M2;
     } else {
         throw PSIEXCEPTION("Invalid basis requested, use AO, CartAO, SO, or MO");
@@ -1241,7 +1219,7 @@ SharedVector Wavefunction::epsilon_b() const { return epsilon_b_; }
 
 const SharedMatrix Wavefunction::Da() const { return Da_; }
 
-SharedMatrix Wavefunction::Db() const { return Db_; }
+const SharedMatrix Wavefunction::Db() const { return Db_; }
 
 SharedMatrix Wavefunction::lagrangian() const { return Lagrangian_; }
 
@@ -1269,7 +1247,7 @@ std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {
     std::shared_ptr<std::vector<double>> v = esp_at_nuclei();
 
     int n = molecule_->natom();
-    std::shared_ptr<Vector> v_vector(new Vector(n));
+    auto v_vector = std::make_shared<Vector>(n);
     for (int i = 0; i < n; ++i) v_vector->set(i, (*v)[i]);
     return v_vector;
 }
@@ -1279,10 +1257,10 @@ std::vector<SharedVector> Wavefunction::get_mo_extents() const {
 
     int n = nmo_;
     std::vector<SharedVector> mo_vectors;
-    mo_vectors.push_back(SharedVector(new Vector("<x^2>", basisset_->nbf())));
-    mo_vectors.push_back(SharedVector(new Vector("<y^2>", basisset_->nbf())));
-    mo_vectors.push_back(SharedVector(new Vector("<z^2>", basisset_->nbf())));
-    mo_vectors.push_back(SharedVector(new Vector("<r^2>", basisset_->nbf())));
+    mo_vectors.push_back(std::make_shared<Vector>("<x^2>", basisset_->nbf()));
+    mo_vectors.push_back(std::make_shared<Vector>("<y^2>", basisset_->nbf()));
+    mo_vectors.push_back(std::make_shared<Vector>("<z^2>", basisset_->nbf()));
+    mo_vectors.push_back(std::make_shared<Vector>("<r^2>", basisset_->nbf()));
     for (int i = 0; i < n; i++) {
         mo_vectors[0]->set(0, i, m[0]->get(0, i));
         mo_vectors[1]->set(0, i, m[1]->get(0, i));

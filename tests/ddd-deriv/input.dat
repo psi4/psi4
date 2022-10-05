@@ -1,0 +1,31 @@
+#! Sample HF/cc-pVDZ H2O computation all derivatives
+
+memory 600 mb
+
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+set basis cc-pVDZ
+ans = -76.0266327341067125
+
+energy('scf')
+compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+
+gradient('scf')
+compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient')  #TEST
+
+gradient('scf', dertype=0)
+compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient by energy')  #TEST
+
+hessian('scf')
+compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF hessian')  #TEST
+
+hessian('scf', dertype=1)
+compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF hessian by gradient')  #TEST
+
+#hessian('scf', dertype=0)
+#compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF hessian by energy')  #TEST
+

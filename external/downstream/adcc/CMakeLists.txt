@@ -1,7 +1,7 @@
 if(${ENABLE_adcc})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_adcc}))
         include(FindPythonModule)
-        find_python_module(adcc ATLEAST 0.15.0 QUIET)
+        find_python_module(adcc ATLEAST 0.15.9 QUIET)
     endif()
 
     if(${adcc_FOUND})

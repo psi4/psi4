@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -120,9 +120,9 @@ void DFOCC::ccsdl_iterations() {
         std::shared_ptr<Matrix> L1(new Matrix("L1", naoccA, navirA));
         if (reference_ == "RESTRICTED") {
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::LargestError, DIISManager::OnDisk));
-            ccsdlDiisManager->set_error_vector_size(2, DIISEntry::Matrix, L2.get(), DIISEntry::Matrix, L1.get());
-            ccsdlDiisManager->set_vector_size(2, DIISEntry::Matrix, L2.get(), DIISEntry::Matrix, L1.get());
+                new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdlDiisManager->set_error_vector_size(L2.get(), L1.get());
+            ccsdlDiisManager->set_vector_size(L2.get(), L1.get());
         }
         L2.reset();
         L1.reset();

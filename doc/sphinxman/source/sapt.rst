@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -68,6 +68,29 @@ SAPT: Symmetry-Adapted Perturbation Theory
    frozen in dimer computations is equal to the sum of frozen orbitals of each monomer. Prior to
    this, a discrepency between these values was possible when one of the monomers was (exclusively) 
    a charged alkali metal. 
+
+
+.. _`sec:saptfitA`:
+
+
+.. caution:: May 2022 c. v1.6, the default for |sapt__df_basis_elst|
+   changed from the value of |sapt__df_basis_sapt| (which itself
+   defaults to the RI of the orbital basis) to the JKFIT of the orbital
+   basis. This affects SAPT0 and sSAPT0 computed with the :ref:`SAPT
+   module<sec:sapt>` (the default code for ``energy("sapt0")`` that
+   can also compute higher-order SAPT). Electostatics, exchange,
+   and induction terms for SAPT0 and sSAPT0 accessed through
+   ``energy("sapt0")`` or ``energy("ssapt0")`` change; the dispersion
+   term does not change. The SAPT0 and sSAPT0 terms accessed as
+   subsidiary calculations of higher-order SAPT do not change; that is,
+   the :ref:`SAPT module<sec:sapt>` breaks the consistency of its SAPT0
+   results. The reasoning and reward behind this change is that the JKFIT
+   basis better describes the physics (see :ref:`fitting changes <sec:saptfitB>` ) and the
+   default SAPT0 results from the :ref:`SAPT module<sec:sapt>` are now
+   consistent with those from the :ref:`FISAPT module<sec:fisapt>` and
+   the sapt(dft) module. See :srcsample:`sapt-compare` for an example.
+   To reproduce former behavior, set |sapt__df_basis_elst| to the
+   orbital basis set's RI auxiliary basis.
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
@@ -882,22 +905,25 @@ The scaling factor is reported at the top (here ``1.0072``) together with the
 label. Note that if Exch10 is less than :math:`10^{-5}`, the scaling factor is
 set to :math:`1.0`.
 
+
+.. _`sec:saptfitB`:
+
+
 .. caution:: To density fit the dispersion terms in SAPT, the RI auxiliary
    basis set (*e.g.*, aug-cc-pVDZ-RI) controlled through
    |sapt__df_basis_sapt| performs well. For Fock-type terms (*i.e.*,
    electrostatics, exchange, induction, and core Fock matrix elements in
-   exchange-dispersion), the density-fitting auxiliary basis in the
-   :ref:`SAPT module<sec:sapt>` (both SAPT0 and higher-order) is RI (more
-   efficient for the small basis sets at which SAPT0 performs best) while
-   the :ref:`FISAPT module<sec:fisapt>` uses the more appropriate JKFIT
-   (*e.g.*, aug-cc-pVDZ-JKFIT). For heavier elements (*i.e.*, second-row
-   and beyond), the RI auxiliary basis is unsound for this role
-   (insufficiently flexible). For SAPT0 in the :ref:`SAPT
-   module<sec:sapt>`, a workaround is to set |sapt__df_basis_elst| (which
-   controls Elst10 and Exch10 terms) to a JKFIT basis. For higher-order
-   methods in :ref:`SAPT module<sec:sapt>`, there is no workaround;
-   on-the-fly construction of an auxiliary basis through Cholesky
-   decomposition (not implemented) is the long-term solution.
+   exchange-dispersion), the JKFIT density-fitting auxiliary basis
+   (*e.g.*, aug-cc-pVDZ-JKFIT) is more appropriate. The :ref:`FISAPT
+   module<sec:fisapt>` has always used JKFIT in this role. The
+   :ref:`SAPT module<sec:sapt>` newly (see :ref:`fitting notes <sec:saptfitA>` ) uses
+   JKFIT for computations targeting SAPT0 and sSAPT0 methods. But the
+   :ref:`SAPT module<sec:sapt>` still uses the RI basis for higher-order
+   SAPT. For heavier elements (*i.e.*, second-row and beyond), the RI
+   auxiliary basis is unsound for this role (insufficiently flexible).
+   For higher-order methods in :ref:`SAPT module<sec:sapt>`, there is
+   no workaround; on-the-fly construction of an auxiliary basis through
+   Cholesky decomposition (not implemented) is the long-term solution.
 
 Spin-Flip SAPT
 ^^^^^^^^^^^^^^
@@ -917,12 +943,13 @@ following publications: [Patkowski:2018:164110]_
 
 .. _`sec:saptinf`:
 
-Second-Order Exchange Terms without Single-Exchange Approximation
+Higher-Order Exchange Terms without Single-Exchange Approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Recently, the SAPT second-order exchange terms have been derived without
-the :math:`S^{2}` approximation in the works [Schaffer:2012:1235]_ and
-[Schaffer:2013:2570]_. These new terms can be computed with the following
+Recently, several SAPT higher-order exchange terms have been derived without
+the :math:`S^{2}` approximation: :math:`E_{exch-ind}^{(20)}` [Schaffer:2012:1235]_, 
+:math:`E_{exch-disp}^{(20)}` [Schaffer:2013:2570]_, and :math:`E_{exch-ind}^{(30)}` 
+[Waldrop:2021:024103]_. The second-order terms can be computed with the following
 settings::
 
     set SAPT_DFT_FUNCTIONAL HF
@@ -930,15 +957,26 @@ settings::
     set SAPT_DFT_MP2_DISP_ALG fisapt 
     set DO_DISP_EXCH_SINF true       # calculate Exch-Disp20 (S^inf)
     energy('sapt(dft)')
-                                            
+                       
+and the third-order exchange-induction term is computed as follows::
+
+    set DO_IND30_EXCH_SINF true        # calculate Exch-Ind30 (S^inf) 
+    energy('sapt2+3')
+                       
 These calculations are performed with the atomic orbital and 
-density-fitting scheme of [J. M. Waldrop et al., to be published].
+density-fitting scheme described in the Supplementary Material to
+[Smith:2020:184108]_ for the second-order terms and in [Waldrop:2021:024103]_
+for the third-order exchange induction. The coupled (response) version of the
+exchange-induction corrections are also calculated, exactly for 
+:math:`E_{exch-ind,resp}^{(20)}` and by scaling the uncoupled term for
+:math:`E_{exch-ind,resp}^{(30)}`.
 
 S^inf Keywords
 ~~~~~~~~~~~~~~
 
 .. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
 .. include:: autodir_options_c/sapt__do_disp_exch_sinf.rst
+.. include:: autodir_options_c/sapt__do_ind30_exch_sinf.rst
 
 .. _`sec:saptd`:
 

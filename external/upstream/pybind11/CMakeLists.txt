@@ -11,7 +11,7 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable pybind11 could not be located, ${Magenta}Building pybind11${ColourReset} instead.")
     ExternalProject_Add(pybind11_external
-        URL https://github.com/pybind/pybind11/archive/v2.7.0.tar.gz
+        URL https://github.com/pybind/pybind11/archive/v2.9.1.tar.gz
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -19,6 +19,8 @@ else()
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
                    -DPYBIND11_TEST=OFF
+                   -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                   -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
         CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 
     set(pybind11_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/pybind11 CACHE PATH "path to internally built pybind11Config.cmake" FORCE)

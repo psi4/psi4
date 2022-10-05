@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,6 +26,15 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "Gaussian",
+    "Lineshape",
+    "Lorentzian",
+    "prefactor_ecd",
+    "prefactor_opa",
+    "spectrum",
+]
+
 from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Union
@@ -40,9 +49,9 @@ class Lineshape:
 
     Attributes
     ----------
-    domain : Union[numpy.ndarray, List[float]]
+    domain
         Domain of the spectral band.
-    gamma : Callable[[float], float]
+    gamma
         A function returning the broadening factor.
 
     Notes
@@ -67,9 +76,9 @@ class Gaussian(Lineshape):
 
     Parameters
     ----------
-    domain : Union[List[float], numpy.ndarray]
+    domain
         The domain of the Gaussian profile.
-    gamma : float
+    gamma
         Broadening parameter.
         This is related to the full width at half maximum as :math:`\mathrm{FWHM} = \gamma \sqrt{2\ln 2}`
 
@@ -79,17 +88,18 @@ class Gaussian(Lineshape):
     """
 
     def lineshape(self, x_0: float) -> np.ndarray:
-        """Gaussian function on `self.domain`, centered at `x_0` with broadening `self.gamma`.
+        """Gaussian function on :py:attr:`Lineshape.domain`, centered at `x_0` with broadening :py:attr:`Lineshape.gamma`.
 
         Parameters
         ----------
-        x_0 : float
+        x_0
             Center of the Gaussian, i.e. its maximum.
 
         Returns
         -------
-        gauss : numpy.ndarray
+        numpy.ndarray
             The Gaussian profile.
+
         """
         prefactor = 2.0 / (self.gamma(x_0) * np.sqrt(2.0 * np.pi))
         exponent = -2.0 * ((self.domain - x_0) / self.gamma(x_0))**2
@@ -97,6 +107,14 @@ class Gaussian(Lineshape):
         return prefactor * np.exp(exponent)
 
     def maximum(self, x_0: float) -> float:
+        """Maximum value of Gaussian profile centered at `x_0`.
+
+        Parameters
+        ----------
+        x_0
+            Center of the Lorentzian, i.e. its maximum.
+
+        """
         return 2.0 / (self.gamma(x_0) * np.sqrt(2.0 * np.pi))
 
 
@@ -105,9 +123,9 @@ class Lorentzian(Lineshape):
 
     Parameters
     ----------
-    domain : Union[List[float], numpy.ndarray]
+    domain
         The domain of the Lorentzian profile.
-    gamma : float
+    gamma
         Broadening parameter.
         This is the full width at half maximum (FWHM).
 
@@ -126,7 +144,7 @@ class Lorentzian(Lineshape):
 
         Returns
         -------
-        lorentz : numpy.ndarray
+        numpy.ndarray
             The Lorentzian profile.
         """
         prefactor = 1.0 / np.pi
@@ -136,16 +154,20 @@ class Lorentzian(Lineshape):
         return prefactor * (numerator / denominator)
 
     def maximum(self, x_0: float) -> float:
+        """Maximum value of Lorentzian profile centered at `x_0`.
+
+        Parameters
+        ----------
+        x_0
+            Center of the Lorentzian, i.e. its maximum.
+
+        """
         return 2.0 / (np.pi * self.gamma(x_0))
 
 
 def prefactor_opa() -> float:
     r"""Prefactor for converting microscopic observable to decadic molar
     extinction coefficient in one-photon absorption.
-
-    Returns
-    -------
-    prefactor : float
 
     Notes
     -----
@@ -178,10 +200,6 @@ def prefactor_opa() -> float:
 def prefactor_ecd() -> float:
     r"""Prefactor for converting microscopic observable to decadic molar
     extinction coefficient in electronic circular dichroism.
-
-    Returns
-    -------
-    prefactor : float
 
     Notes
     -----
@@ -281,7 +299,7 @@ def spectrum(*,
 
     Returns
     -------
-    spectrum : Dict
+    spectrum : Dict[str, numpy.ndarray]
         The fitted electronic absorption spectrum, with units for the x axis specified by the `out_units` parameter.
         This is a dictionary containing the convoluted (key: `convolution`) and the infinitely narrow spectra (key: `sticks`).
 
@@ -304,6 +322,7 @@ def spectrum(*,
     References
     ----------
     A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy.
+    https://doi.org/10.1002/9781118008720.ch2
     """
 
     # Transmute inputs to np.ndarray

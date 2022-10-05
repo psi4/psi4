@@ -90,7 +90,7 @@ for atom in range(natoms):
         map_key = string + cart[p]
         deriv1[map_key] = np.asarray(deriv1_mat[string][p])
 
-Hes = {};
+Hes = {}
 deriv2_mat = {}
 deriv2 = {}
 
@@ -221,7 +221,7 @@ for atom in range(natoms):
         B[key] +=  2.0 * np.einsum("amin,mn->ai", MO[occ:,:occ,:occ,:occ], deriv1["S" + key][:occ,:occ])
         B[key] += -1.0 * np.einsum("amni,mn->ai", MO[occ:,:occ,:occ,:occ], deriv1["S" + key][:occ,:occ])
 
-		# Compute U^x now: U_ai^x = G^(-1)_aibj * B_bj^x  
+        # Compute U^x now: U_ai^x = G^(-1)_aibj * B_bj^x  
 
         U[key] = np.einsum("iajb,bj->ai", Ginv, B[key])
         psi4.core.print_out("\n")

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -353,7 +353,6 @@ void VBase::initialize() {
             {"XC_HYB_GGA_XC_B1WC", BRIAN_FUNCTIONAL_HGGA_B1WC_XC},
             {"XC_HYB_GGA_XC_B3LYP5", BRIAN_FUNCTIONAL_HGGA_B3LYP5_XC},
             {"XC_HYB_GGA_XC_B3LYPS", BRIAN_FUNCTIONAL_HGGA_B3LYPS_XC},
-            {"XC_HYB_GGA_XC_B3LYP", BRIAN_FUNCTIONAL_HGGA_B3LYP_LXC_XC},
             {"XC_HYB_GGA_XC_B3LYP", BRIAN_FUNCTIONAL_HGGA_B3LYP_XC},
             {"XC_HYB_GGA_XC_B3P86", BRIAN_FUNCTIONAL_HGGA_B3P86_XC},
             {"XC_HYB_GGA_XC_B3PW91", BRIAN_FUNCTIONAL_HGGA_B3PW91_XC},
@@ -479,7 +478,6 @@ void VBase::initialize() {
             {"XC_LDA_C_RC04", BRIAN_FUNCTIONAL_LDA_RC04_C},
             {"XC_LDA_X_REL", BRIAN_FUNCTIONAL_LDA_REL_X},
             {"XC_LDA_C_RPA", BRIAN_FUNCTIONAL_LDA_RPA_C},
-            {"XC_LDA_X", BRIAN_FUNCTIONAL_LDA_SLATER_LXC_X},
             {"XC_LDA_X", BRIAN_FUNCTIONAL_LDA_SLATER_X},
             {"XC_LDA_XC_TETER93", BRIAN_FUNCTIONAL_LDA_TETER93_XC},
             {"XC_LDA_C_VBH", BRIAN_FUNCTIONAL_LDA_VBH_C},
@@ -551,8 +549,6 @@ void VBase::initialize() {
             {"XC_MGGA_C_TPSSLOC", BRIAN_FUNCTIONAL_MGGA_TPSSLOC_C},
             {"XC_MGGA_XC_TPSSLYP1W", BRIAN_FUNCTIONAL_MGGA_TPSSLYP1W_XC},
             {"XC_MGGA_C_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_C},
-            {"XC_MGGA_C_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_LXC_C},
-            {"XC_MGGA_X_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_LXC_X},
             {"XC_MGGA_X_TPSS", BRIAN_FUNCTIONAL_MGGA_TPSS_X},
             {"XC_MGGA_C_VSXC", BRIAN_FUNCTIONAL_MGGA_VSXC_C},
             {"XC_MGGA_X_VT84", BRIAN_FUNCTIONAL_MGGA_VT84_X},
@@ -1317,7 +1313,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     }
 
     auto V_AO = std::make_shared<Matrix>("V AO Temp", nbf_, nbf_);
-    double** Vp = V_AO->pointer();
+    auto Vp = V_AO->pointer();
 
     std::vector<double> functionalq(num_threads_);
     std::vector<double> rhoaq(num_threads_);
@@ -1336,9 +1332,9 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 #endif
 
         // Get per-rank workers
-        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
-        std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
-        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+        auto block = grid_->blocks()[Q];
+        auto fworker = functional_workers_[rank];
+        auto pworker = point_workers_[rank];
 
         // Compute Rho, Phi, etc
         parallel_timer_on("Properties", rank);
@@ -1358,7 +1354,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_on("V_xc", rank);
 
         // => Compute quadrature <= //
-        std::vector<double> qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
+        auto qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
         functionalq[rank] += qvals[0];
         rhoaq[rank] += qvals[1];
         rhoaxq[rank] += qvals[2];
@@ -1369,8 +1365,8 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         dft_integrators::rks_integrator(block, fworker, pworker, V_local[rank]);
 
         // => Unpacking <= //
-        double** V2p = V_local[rank]->pointer();
-        const std::vector<int>& function_map = block->functions_local_to_global();
+        auto V2p = V_local[rank]->pointer();
+        const auto& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
         for (int ml = 0; ml < nlocal; ml++) {
@@ -1411,6 +1407,10 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values_["RHO_BX"] = quad_values_["RHO_AX"];
     quad_values_["RHO_BY"] = quad_values_["RHO_AY"];
     quad_values_["RHO_BZ"] = quad_values_["RHO_AZ"];
+
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
+        throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
+    }
 
     if (debug_) {
         outfile->Printf("   => Numerical Integrals <=\n\n");
@@ -1982,22 +1982,22 @@ SharedMatrix RV::compute_gradient() {
 #endif
 
         // Get per-rank workers
-        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
-        std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
-        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+        auto block = grid_->blocks()[Q];
+        auto fworker = functional_workers_[rank];
+        auto pworker = point_workers_[rank];
 
         parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
         parallel_timer_off("Properties", rank);
 
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values());
+        auto& vals = fworker->compute_functional(pworker->point_values());
         parallel_timer_off("Functional", rank);
 
         parallel_timer_on("V_xc gradient", rank);
 
         // => Compute quadrature <= //
-        std::vector<double> qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
+        auto qvals = dft_integrators::rks_quadrature_integrate(block, fworker, pworker);
         functionalq[rank] += qvals[0];
         rhoaq[rank] += qvals[1];
         rhoaxq[rank] += qvals[2];
@@ -2025,6 +2025,10 @@ SharedMatrix RV::compute_gradient() {
     quad_values_["RHO_BX"] = quad_values_["RHO_AX"];
     quad_values_["RHO_BY"] = quad_values_["RHO_AY"];
     quad_values_["RHO_BZ"] = quad_values_["RHO_AZ"];
+
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
+        throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
+    }
 
     if (debug_) {
         outfile->Printf("   => XC Gradient: Numerical Integrals <=\n\n");
@@ -2356,7 +2360,9 @@ SharedMatrix RV::compute_hessian() {
         }
     }
 
-
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
+        throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
+    }
 
     if (debug_) {
         outfile->Printf("   => XC Hessian: Numerical Integrals <=\n\n");
@@ -2695,6 +2701,10 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values_["RHO_BX"] = std::accumulate(rhobxq.begin(), rhobxq.end(), 0.0);
     quad_values_["RHO_BY"] = std::accumulate(rhobyq.begin(), rhobyq.end(), 0.0);
     quad_values_["RHO_BZ"] = std::accumulate(rhobzq.begin(), rhobzq.end(), 0.0);
+
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
+        throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
+    }
 
     if (debug_) {
         outfile->Printf("   => Numerical Integrals <=\n\n");
@@ -3500,6 +3510,10 @@ SharedMatrix UV::compute_gradient() {
     quad_values_["RHO_BX"] = std::accumulate(rhobxq.begin(), rhobxq.end(), 0.0);
     quad_values_["RHO_BY"] = std::accumulate(rhobyq.begin(), rhobyq.end(), 0.0);
     quad_values_["RHO_BZ"] = std::accumulate(rhobzq.begin(), rhobzq.end(), 0.0);
+
+    if (std::isnan(quad_values_["FUNCTIONAL"])) {
+        throw PSIEXCEPTION("V: Integrated DFT functional to get NaN. The functional is not numerically stable. Pick a different one.");
+    }
 
     if (debug_) {
         outfile->Printf("   => XC Gradient: Numerical Integrals <=\n\n");

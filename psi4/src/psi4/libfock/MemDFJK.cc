@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -94,6 +94,10 @@ void MemDFJK::preiterations() {
     dfh_->initialize();
 }
 void MemDFJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
     dfh_->build_JK(C_left_ao_, C_right_ao_, D_ao_, J_ao_, K_ao_, wK_ao_, max_nocc(), do_J_, do_K_, do_wK_,
                    lr_symmetric_);
     if (lr_symmetric_) {

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -28,14 +28,13 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here
+    \brief Compute eq. 8 of Stanton et al., J. Chem. Phys. 94, 4334-4345 (1991)
 */
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "Params.h"
-#include "MOInfo.h"
 #include "psi4/cc/ccwave.h"
 
 namespace psi {
@@ -151,7 +150,7 @@ void CCEnergyWavefunction::Wmbej_build() {
         global_dpd_->file2_mat_init(&tIA);
         global_dpd_->file2_mat_rd(&tIA);
 
-        for (int Gmb = 0; Gmb < moinfo_.nirreps; Gmb++) {
+        for (int Gmb = 0; Gmb < nirrep_; Gmb++) {
             global_dpd_->buf4_mat_irrep_row_init(&W, Gmb);
             global_dpd_->buf4_mat_irrep_row_init(&F, Gmb);
 
@@ -159,13 +158,13 @@ void CCEnergyWavefunction::Wmbej_build() {
                 global_dpd_->buf4_mat_irrep_row_rd(&W, Gmb, mb);
                 global_dpd_->buf4_mat_irrep_row_rd(&F, Gmb, mb);
 
-                for (int Gj = 0; Gj < moinfo_.nirreps; Gj++) {
+                for (int Gj = 0; Gj < nirrep_; Gj++) {
                     Gf = Gj;       /* T1 is totally symmetric */
                     Ge = Gmb ^ Gf; /* <mb|fe> is totally symmetric */
 
-                    nrows = moinfo_.occpi[Gj];
-                    ncols = moinfo_.virtpi[Ge];
-                    nlinks = moinfo_.virtpi[Gf];
+                    nrows = act_occpi_[Gj];
+                    ncols = act_virpi_[Ge];
+                    nlinks = act_virpi_[Gf];
                     if (nrows && ncols && nlinks)
                         C_DGEMM('n', 'n', nrows, ncols, nlinks, -1.0, tIA.matrix[Gj][0], nlinks,
                                 &F.matrix[Gmb][0][F.col_offset[Gmb][Gf]], ncols, 1.0,

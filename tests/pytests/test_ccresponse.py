@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import psi4
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 def test_cc_polaroptrot():
     # cc29 + polarizabilities + tensors
     mol = psi4.geometry("""
@@ -116,21 +118,24 @@ def test_cc_roa():
     rottmvg_589 = np.array([[ 1.19212077e-02, -1.14910412e-02, -2.42625886e-15],
      [-2.30884623e-02,  6.08303937e-04,  1.81468070e-15],
      [ 4.39309571e-15,  7.20075789e-16, -9.70384612e-03]])
-    quad0 = np.array([[-2.52229282e-14, -4.33846468e-13,  3.90176525e+00],
+    quad0 = np.array(
+    [
+    [[-2.52229282e-14, -4.33846468e-13,  3.90176525e+00],
      [-4.33846468e-13, -6.81906994e-15, -5.83659009e+00],
-     [ 3.90176525e+00, -5.83659009e+00,  3.18177152e-14]])
-    quad1 = np.array([[ 1.20834634e-13,  6.99638702e-14, -2.37995874e+00],
+     [ 3.90176525e+00, -5.83659009e+00,  3.18177152e-14]]
+    ,
+    [[ 1.20834634e-13,  6.99638702e-14, -2.37995874e+00],
      [ 6.99638702e-14, -1.17603861e-13,  6.85651590e+00],
-     [-2.37995874e+00,  6.85651590e+00, -3.99609068e-15]])
-    quad2 = np.array([[-4.55024365e+00, -5.30335671e+00,  1.65990108e-13],
+     [-2.37995874e+00,  6.85651590e+00, -3.99609068e-15]]
+    ,
+    [[-4.55024365e+00, -5.30335671e+00,  1.65990108e-13],
      [-5.30335671e+00, -1.35415335e+00, -8.75522529e-13],
-     [ 1.65990108e-13, -8.75522529e-13,  5.90439700e+00]])
+     [ 1.65990108e-13, -8.75522529e-13,  5.90439700e+00]]
+    ])
 
     assert psi4.compare_values(polt_589, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ 589NM"),  3, "CCSD polarizability tensor @ 589nm") #TEST
     assert psi4.compare_arrays(rottvel_0, wfn.variable("CCSD OPTICAL ROTATION TENSOR (VEL) @ 0NM"), 3, "CCSD optrot tensor @ 0NM in velocity guage") #TEST
     assert psi4.compare_arrays(rottlen_589, wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 589NM"), 3, "CCSD optrot tensor @ 589NM in length guage") #TEST 
     assert psi4.compare_arrays(rottvel_589, wfn.variable("CCSD OPTICAL ROTATION TENSOR (VEL) @ 589NM"), 3, "CCSD optrot tensor @ 589NM in velocity guage") #TEST
     assert psi4.compare_arrays(rottmvg_589, wfn.variable("CCSD OPTICAL ROTATION TENSOR (MVG) @ 589NM"), 3, "CCSD optrot tensor @ 589NM in modified velocity guage") #TEST 
-    assert psi4.compare_values(quad0, wfn.variable("CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ 589NM"),  3, "CCSD quadrupole tensor 0 @ 589nm") #TEST
-    assert psi4.compare_values(quad1, wfn.variable("CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ 589NM"),  3, "CCSD quadrupole tensor 1 @ 589nm") #TEST
-    assert psi4.compare_values(quad1, wfn.variable("CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ 589NM"),  3, "CCSD quadrupole tensor 1 @ 589nm") #TEST
+    assert psi4.compare_values(quad0, wfn.variable("CCSD QUADRUPOLE POLARIZABILITY TENSOR @ 589NM"),  3, "CCSD quadrupole tensor @ 589nm") #TEST

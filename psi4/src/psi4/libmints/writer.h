@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -77,12 +77,12 @@ class PSI_API MoldenWriter {
    public:
     PSI_DEPRECATED(
         "Constructing an MoldenWriter and then calling write instead of using `wfn.write_molden(name)` "
-        "is both buggy and deprecated, and in 1.5 it will stop working")
+        "is both buggy and deprecated, and as soon as 1.5 it will stop working")
     MoldenWriter(std::shared_ptr<Wavefunction> wavefunction);
 
     PSI_DEPRECATED(
         "Constructing an MoldenWriter and then calling write instead of using `wfn.write_molden(name)` "
-        "is both buggy and deprecated, and in 1.5 it will stop working")
+        "is both buggy and deprecated, and as soon as 1.5 it will stop working")
     void write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb,
                std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA,
                std::shared_ptr<Vector> OccB, bool dovirtual);
@@ -109,12 +109,12 @@ class PSI_API NBOWriter {
    public:
     PSI_DEPRECATED(
         "Constructing an NBOWriter and then calling write instead of using `wfn.nbo_write(name)` "
-        "is both buggy and deprecated, and in 1.5 it will stop working")
+        "is both buggy and deprecated, and as soon as 1.5 it will stop working")
     NBOWriter(std::shared_ptr<Wavefunction> wavefunction);
 
     PSI_DEPRECATED(
         "Constructing an NBOWriter and then calling write instead of using `wfn.nbo_write(name)` "
-        "is both buggy and deprecated, and in 1.5 it will stop working")
+        "is both buggy and deprecated, and as soon as 1.5 it will stop working")
     void write(const std::string &filename);
 };
 }  // namespace psi

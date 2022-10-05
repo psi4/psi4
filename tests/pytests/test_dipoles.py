@@ -3,7 +3,9 @@ import pytest
 import qcelemental as qcel
 import psi4
 
-from .utils import compare_values
+from utils import compare_values
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 perturbation_strength = 0.001
 
@@ -19,7 +21,8 @@ perturbation_strength = 0.001
     pytest.param({'name': 'olccd', 'options': {'cc_type': 'df', 'max_mograd_convergence': 6}, 'varname': 'DF-OLCCD'}, id='df-olccd ae'),
     pytest.param({'name': 'olccd', 'options': {'cc_type': 'df', 'freeze_core': 'true', 'max_mograd_convergence': 6}, 'varname': 'DF-OLCCD'}, id='df-olccd fc'),
     pytest.param({'name': 'dct', 'options': {'dct_type': 'df'}, 'varname': 'DCT'}, id='df-rdct'),
-    pytest.param({'name': 'dct', 'options': {'dct_type': 'df', 'reference': 'uhf'}, 'varname': 'DCT'}, id='df-udct')
+    pytest.param({'name': 'dct', 'options': {'dct_type': 'df', 'reference': 'uhf'}, 'varname': 'DCT'}, id='df-udct'),
+    pytest.param({'name': 'ccsd', 'options': {'opdm_relax': 'true'}, 'varname': 'CCSD'}, id='ccsd'),
     ]
 )
 def test_dipole(inp):
@@ -41,4 +44,4 @@ def test_dipole(inp):
     wfn = psi4.properties(inp['name'], properties=['dipole'], return_wfn=True)[1]
     analytic_dipole = wfn.variable(inp['varname'] + " DIPOLE")
 
-    assert compare_values(findif_dipole, analytic_dipole, 5, "analytic vs. findif dipole")
+    assert compare_values(findif_dipole, analytic_dipole, 5, "findif vs. analytic dipole")

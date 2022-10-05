@@ -34,6 +34,7 @@ foreach(dir_name
   dfep2
   dfmp2
   dfocc
+  dlpno
   dmrg
   fisapt
   fnocc

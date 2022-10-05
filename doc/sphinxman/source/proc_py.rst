@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -54,7 +54,7 @@ The function must always take as arguments ``(name, **kwargs)``. ::
 If the function needs to test the identity of ``name`` several times, it
 can be convenient to predefine the lowercase version of the variable. The
 case of all other py-side options (in kwargs) has already been handled by
-:py:func:`~psi4.energy()`, etc. in driver.py and need not be repeated here. ::
+:py:func:`~psi4.driver.energy()`, etc. in driver.py and need not be repeated here. ::
 
     # include if convenient
     lowername = name.lower()
@@ -129,7 +129,7 @@ need to be returned to the original user state with the following. ::
     optstash.restore()
 
 No function should return anything. ``CURRENT ENERGY`` will be set by
-:py:func:`~psi4.energy`, etc. ::
+:py:func:`~psi4.driver.energy`, etc. ::
 
     # never include
     return returnvalue

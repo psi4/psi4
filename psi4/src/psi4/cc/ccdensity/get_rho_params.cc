@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -48,7 +48,7 @@ namespace ccdensity {
 void get_rho_params(Options &options) {
     int i, j, k, l, prop_sym, prop_root, lambda_and_Ls = 0, errcod, prop_all, cnt;
     char lbl[32];
-    int *states_per_irrep;
+    std::vector<int> states_per_irrep;
 
     /* check WFN keyword in input */
     params.wfn = options.get_str("WFN");
@@ -59,7 +59,7 @@ void get_rho_params(Options &options) {
 
     /* setup propery variables for excited states */
     if (!params.ground) {
-        states_per_irrep = options.get_int_array("ROOTS_PER_IRREP");
+        states_per_irrep = options.get_int_vector("ROOTS_PER_IRREP");
 
         prop_all = 1;
         prop_all = options.get_bool("PROP_ALL");

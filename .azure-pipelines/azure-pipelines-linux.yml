@@ -5,27 +5,27 @@ jobs:
   timeoutInMinutes: 120
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
-    MKL_CBWR: AVX
+    MKL_CBWR: AUTO
   strategy:
     maxParallel: 8
     matrix:
-      gcc_6:
-        CXX_COMPILER: 'g++-6'
+      gcc_7:
+        CXX_COMPILER: 'g++-7'
         PYTHON_VER: '3.8'
-        C_COMPILER: 'gcc-6'
+        C_COMPILER: 'gcc-7'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran gcc-6 g++-6'
+        APT_INSTALL: 'gfortran gcc-7 g++-7'
         vmImage: 'ubuntu-18.04'
 
       gcc_latest:
         CXX_COMPILER: 'g++'
-        PYTHON_VER: '3.7'
+        PYTHON_VER: '3.9'
         C_COMPILER: 'gcc'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
-        vmImage: 'ubuntu-18.04'
+        vmImage: 'ubuntu-20.04'
 
       clang_latest:
         CXX_COMPILER: 'clang++'
@@ -34,7 +34,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-6.0'
-        vmImage: 'ubuntu-16.04'
+        vmImage: 'ubuntu-20.04'
 
   pool:
     vmImage: $(vmImage)
@@ -86,44 +86,24 @@ jobs:
         -n p4env \
         python=$PYTHON_VER \
         psi4/label/dev::gau2grid \
-        psi4/label/dev::libint2 \
+        psi4/label/dev::libint2=*=h2fe1556_15 \
         psi4/label/dev::libxc=5 \
-        psi4/label/dev::ambit \
-        psi4/label/dev::chemps2 \
-        psi4/label/dev::dkh \
-        psi4/label/dev::gdma \
-        psi4/label/dev::pcmsolver \
-        psi4/label/dev::simint \
         psi4/label/dev::dftd3 \
         psi4/label/dev::gcp \
-        psi4/label/dev::resp \
-        psi4/label/dev::pycppe \
-        psi4/label/dev::pylibefp \
-        psi4/label/dev::snsmp2 \
-        psi4/label/dev::fockci \
-        psi4/label/dev::mp2d \
         psi4/label/dev::pybind11-headers \
         blas=*=mkl \
         mkl-include \
         networkx \
-        pytest \
+        pytest>=7.0.1 \
         eigen \
-        mpfr \
         pytest-xdist \
         msgpack-python \
         conda-forge::qcelemental \
         conda-forge::qcengine \
-        conda-forge::pymdi \
-        pandas!=1.3.0 \
-        adcc::adcc
+        scipy
       source activate p4env
       which python
-      pip install git+https://github.com/i-pi/i-pi.git@master-py3
       conda list
-      python -c "import adcc;print(adcc.__file__, adcc.__version__)"
-      # ADCC causing build failures, beleived to be related to use of pandas 1.3.0.
-      # Temporarily printing debug information until problem resolved without needing
-      # to blacklist 1.3.0.
     displayName: 'Build Environment'
 
   - bash: |
@@ -142,24 +122,13 @@ jobs:
         -DCMAKE_C_COMPILER=${C_COMPILER} \
         -DCMAKE_Fortran_COMPILER=${F_COMPILER} \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-        -DMAX_AM_ERI=4 \
+        -DMAX_AM_ERI=5 \
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
         -DPython_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
         -DMPFR_ROOT=${CONDA}/envs/p4env \
         -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
         -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
         -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-        -DENABLE_adcc=ON \
-        -DENABLE_CheMPS2=OFF \
-        -DENABLE_dkh=ON \
-        -DENABLE_libefp=ON \
-        -DENABLE_erd=OFF \
-        -DENABLE_gdma=ON \
-        -DENABLE_PCMSolver=OFF \
-        -DENABLE_simint=ON \
-        -DENABLE_Libint1t=OFF \
-        -DENABLE_snsmp2=OFF \
-        -DENABLE_v2rdm_casscf=OFF \
         -DENABLE_PLUGIN_TESTING=ON \
         -DBUILD_Libint2_GENERATOR=OFF \
         -DCMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install

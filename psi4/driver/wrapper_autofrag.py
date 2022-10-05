@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,12 +26,17 @@
 # @END LICENSE
 #
 
-from typing import List
+__all__ = ["auto_fragments"]
+
+from typing import List, Optional
 
 from psi4 import core
 
 
-def auto_fragments(molecule: core.Molecule = None, seed_atoms: List = None) -> core.Molecule:
+def auto_fragments(
+    molecule: Optional[core.Molecule] = None,
+    seed_atoms: Optional[List[List[int]]] = None,
+) -> core.Molecule:
     r"""Detects fragments in unfragmented molecule using BFS algorithm.
     Currently only used for the WebMO implementation of SAPT.
 

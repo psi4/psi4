@@ -65,7 +65,7 @@ endif()
 if(DEFINED ENV{LGTM_SRC})
     find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
 else()
-    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+    find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
 find_package(pybind11 2.6.2 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
@@ -74,8 +74,9 @@ message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MIN
 find_package(DL)
 
 if(${ENABLE_ambit})
-    find_package(ambit CONFIG REQUIRED)
+    find_package(ambit 0.6 CONFIG REQUIRED)
     get_property(_loc TARGET ambit::ambit PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using ambit${ColourReset}: ${_loc} (version ${ambit_VERSION})")
 else()
     message(STATUS "Disabled ambit")
@@ -97,6 +98,15 @@ if(${ENABLE_dkh})
     message(STATUS "${Cyan}Using dkh${ColourReset}: ${_loc} (version ${dkh_VERSION})")
 else()
     message(STATUS "Disabled dkh")
+endif()
+
+if(${ENABLE_ecpint})
+    find_package(ecpint 1.0.7 CONFIG REQUIRED)
+    get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using ecpint${ColourReset}: ${_loc} (version ${ecpint_VERSION})")
+else()
+    message(STATUS "Disabled ecpint")
 endif()
 
 if(${ENABLE_libefp})
@@ -152,11 +162,11 @@ endif()
 
 # CHOOSE! this one for pure cmake libint2 library
 if(DEFINED ENV{LGTM_SRC})
-    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}")
+    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "eri_c4_d0_l${MAX_AM_ERI}")
 else()
-    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}" g2 h2 eri3_e4 eri3_g3 eri3_h3 eri2_e4 eri2_g3 eri2_h3)
+    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
 endif()
-get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
+get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
 
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
@@ -177,15 +187,6 @@ if(${ENABLE_PCMSolver})
     message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
 else()
     message(STATUS "Disabled PCMSolver")
-endif ()
-
-if(${ENABLE_cppe})
-    find_package(cppe 0.3.1 CONFIG REQUIRED)
-    get_property(_loc TARGET cppe::cppe PROPERTY LOCATION)
-    list(APPEND _addons ${_loc})
-    message(STATUS "${Cyan}Using cppe${ColourReset}: ${_loc} (version ${cppe_VERSION})")
-else()
-    message(STATUS "Disabled CPPE")
 endif ()
 
 if(${ENABLE_simint})
@@ -222,9 +223,15 @@ endif()
 
 if(MSVC)
     # MSVC does not include <cmath> constants, unless _USE_MATH_DEFINES is defined.
-    add_definitions("/D_USE_MATH_DEFINES")
+    # _CRT_* to squash some getenv, strdup, strncpy, ctime, fopen warnings
+    add_compile_definitions(
+      _USE_MATH_DEFINES
+      _CRT_NONSTDC_NO_DEPRECATE
+      _CRT_NONSTDC_NO_WARNINGS
+      _CRT_SECURE_NO_WARNINGS
+      )
     # Set the exception handling model
-    add_definitions("/EHsc")
+    add_compile_options("/EHsc")
 endif()
 
 include_directories(include)
@@ -267,7 +274,10 @@ endif()
 if(NOT ENABLE_CYTHONIZE)
     install(DIRECTORY driver
             DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
-            FILES_MATCHING PATTERN "*.py")
+            FILES_MATCHING
+              PATTERN "*.py"
+              PATTERN pytest EXCLUDE
+      )
 endif()
 
 install(FILES header.py
@@ -279,19 +289,65 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
               ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
-install(DIRECTORY ../tests/pytests/
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
-        FILES_MATCHING
-        PATTERN "test_*.py"
-        PATTERN "__init__.py"
-        PATTERN "addons.py"
-        PATTERN "conftest.py"
-        PATTERN "standard_suite_runner.py"
-        PATTERN "tdscf_reference_data.json"
-        PATTERN "utils.py")
-install(DIRECTORY ../tests/pytests/test_fchk_writer
-                  ../tests/pytests/test_molden_writer
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
+
+install(
+  FILES ../pytest.ini
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
+  )
+install(
+  DIRECTORY
+    ../tests/pytests/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+  FILES_MATCHING
+    PATTERN "test_*.py"
+    PATTERN "__init__.py"
+    PATTERN "addons.py"
+    PATTERN "conftest.py"
+    PATTERN "standard_suite_runner.py"
+    PATTERN "standard_suite_ref_local.py"
+    PATTERN "adcc_reference_data.json"
+    PATTERN "oei_reference_data.json"
+    PATTERN "f12_libint1.json"
+    PATTERN "tdscf_reference_data.json"
+    PATTERN "utils.py"
+  )
+install(
+  DIRECTORY
+    ../tests/pytests/test_fchk_writer
+    ../tests/pytests/test_molden_writer
+    ../tests/pytests/test_psi4_qcschema
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+  )
+
+install(
+  DIRECTORY
+    ../tests/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+  FILES_MATCHING
+    PATTERN ../tests/pytests EXCLUDE
+    PATTERN ../tests/cfour EXCLUDE
+    PATTERN "test_input.py"
+    PATTERN "input.dat"
+    PATTERN "input.py"
+    PATTERN "__pycache__" EXCLUDE
+    PATTERN "*pyc" EXCLUDE
+    # below place extra files the ctests-run-as-pytests need
+    PATTERN "adcc/formaldehyde-pe-adc1/fa_6w.pot"
+    PATTERN "adcc/formaldehyde-pe-adc2/fa_6w.pot"
+    PATTERN "ci-property/grid.dat"
+    PATTERN "scf-property/grid.dat"
+    PATTERN "mp2-property/grid.dat"
+    PATTERN "cubeprop*/*cube.ref"
+    PATTERN "fcidump/*INTDUMP.ref"
+    PATTERN "psithon2/psiaux1/*"
+    PATTERN "psithon2/psiaux1/myplugin1/*"
+    PATTERN "psithon2/psiaux2/*"
+    PATTERN "dftd3/psithon2/psiaux1/*"
+    PATTERN "dftd3/psithon2/psiaux1/myplugin1/*"
+    PATTERN "dftd3/psithon2/psiaux2/*"
+    PATTERN "mints3/L*dat"
+    PATTERN "mints3/P*dat"
+  )
 
     # <<<  install psi4 share/ & include/  >>>
 
@@ -340,6 +396,7 @@ install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
               ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
               ${PSI4_ROOT}/cmake/custom_static_library.cmake
               ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
+              ${PSI4_ROOT}/cmake/xhost.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
     # <<<  Export Config for Plugins  >>>

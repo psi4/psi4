@@ -1,0 +1,113 @@
+name: Docs
+
+on:
+  pull_request:
+
+jobs:
+
+  docs:
+    runs-on: ubuntu-latest
+    name: Propose Docs
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+
+    # fetch-depth: 0 gets git history so Psi4 version computable
+    - name: Checkout
+      if: ${{ github.repository == 'psi4/psi4' }}
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        path: code
+
+    - name: Checkout psi4/psi4docs Repo
+      if: ${{ github.repository == 'psi4/psi4' }}
+      uses: actions/checkout@v2
+      with:
+        repository: psi4/psi4docs
+        path: docs
+        ref: master
+
+    - name: Create Conda Environment
+      if: ${{ github.repository == 'psi4/psi4' }}
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        mamba-version: "*"
+        activate-environment: test
+        add-pip-as-python-dependency: true
+        auto-activate-base: false
+        channels: conda-forge
+        environment-file: code/devtools/conda-envs/docs-cf.yaml
+        show-channel-urls: true
+
+    - name: Environment Information
+      if: ${{ github.repository == 'psi4/psi4' }}
+      run: |
+        conda info
+        conda list
+        which conda python cmake $CXX
+
+    - name: Patch Sphinx for Pybind11
+      if: ${{ github.repository == 'psi4/psi4' }}
+      run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx_automodapi/autodoc_enhancements.py
+
+    # docs are not Ninja ready
+    # TODO-dfocc2: reset CMAKE_INSIST_FIND_PACKAGE_qcengine=ON after qcng v0.24.1
+    - name: Configure with CMake (Conda Gnu + MKL)
+      if: ${{ github.repository == 'psi4/psi4' }}
+      working-directory: ./code
+      run: |
+        cmake \
+          -S. \
+          -Bobjdir \
+          -G"Unix Makefiles" \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_C_COMPILER=${CC} \
+          -DCMAKE_CXX_COMPILER=${CXX} \
+          -DCMAKE_CXX_FLAGS="-O0" \
+          -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -DENABLE_ecpint=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=OFF \
+          -DSPHINXMAN_STRICT=ON \
+          -DSPHINX_ROOT=${CONDA_PREFIX}
+
+    - name: Compile Psi4
+      if: ${{ github.repository == 'psi4/psi4' }}
+      working-directory: ./code
+      run: cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
+
+    - name: Compile & Pack Docs
+      if: ${{ github.repository == 'psi4/psi4' }}
+      working-directory: ./code
+      run: |
+        cmake --build objdir --target sphinxman -j`getconf _NPROCESSORS_ONLN`
+        cd objdir/doc/sphinxman
+        tar -zcf sphinxman.tar.gz html/
+
+    - name: Archive Docs Tarball
+      if: (success() || failure()) && ${{ github.repository == 'psi4/psi4' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: sphinxman-html
+        path: |
+          code/objdir/doc/sphinxman/sphinxman.tar.gz
+        retention-days: 7
+
+    - name: Compare Docs (PR generated vs psi4/psi4docs)
+      if: ${{ github.repository == 'psi4/psi4' }}
+      working-directory: ./docs
+      id: compare-psi4docs
+      run: |
+        cp -pR ../code/objdir/doc/sphinxman/html .
+        echo "::group::Selective Git Diff"
+        git diff --color-words -I"Last updated on" -I"psi4/tree"
+        echo "::endgroup::"
+

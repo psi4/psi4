@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -25,9 +25,24 @@
 #
 # @END LICENSE
 #
+"""
+Array function, including NumPy interface and Python extensions to core array
+classes:
+
+ - Matrix (constructor, view, access, serialization)
+ - Vector (constructor, view, access, serialization)
+ - Dimension (constructor)
+ - CIVector (view)
+"""
+
+__all__ = [
+    "array_to_matrix",
+    "block_diagonal_array",
+]
+
 
 import sys
-from typing import List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -67,28 +82,40 @@ def _find_dim(arr, ndim):
         raise ValidationError("Input array does not have a valid shape.")
 
 
-def array_to_matrix(self, arr: Union[np.ndarray, List[np.ndarray]], name: str = "New Matrix", dim1: Union[List, Tuple, core.Dimension] = None, dim2: core.Dimension = None) -> Union[core.Matrix, core.Vector]:
+def array_to_matrix(
+    self: Union[core.Matrix, core.Vector],
+    arr: Union[np.ndarray, List[np.ndarray]],
+    name: str = "New Matrix",
+    dim1: Optional[Union[List, Tuple, core.Dimension]] = None,
+    dim2: Optional[core.Dimension] = None,
+) -> Union[core.Matrix, core.Vector]:
     """
-    Converts a numpy array or list of numpy arrays into a Psi4 Matrix (irreped if list).
+    Converts a `NumPy array
+    <https://numpy.org/doc/stable/reference/arrays.ndarray.html>`_ or list of
+    NumPy arrays into a |PSIfour| :class:`~psi4.core.Matrix` or
+    :class:`~psi4.core.Vector` (irrepped if list).
 
     Parameters
     ----------
+    self
+        Matrix or Vector class.
     arr
-        Numpy array or list of arrays to use as the data for a new core.Matrix
+        NumPy array or list of arrays to use as the data for a new
+        :class:`~psi4.core.Matrix` or :class:`~psi4.core.Vector`.
     name
-        Name to give the new core.Matrix
+        Name to give the new :class:`~psi4.core.Matrix`.
     dim1
-        If a single dense numpy array is given, a dimension can be supplied to
+        If a single dense NumPy array is given, a dimension can be supplied to
         apply irreps to this array. Note that this discards all extra information
         given in the matrix besides the diagonal blocks determined by the passed
         dimension.
     dim2
-        Same as dim1 only if using a psi4.core.Dimension object.
+        Same as `dim1` only if using a :class:`~psi4.core.Dimension` object.
 
     Returns
     -------
     Matrix or Vector
-       Returns the given Psi4 object
+       Returns the given (`self`) Psi4 object.
 
     Notes
     -----
@@ -109,7 +136,7 @@ def array_to_matrix(self, arr: Union[np.ndarray, List[np.ndarray]], name: str = 
     # What type is it? MRO can help.
     arr_type = self.__mro__[0]
 
-    # Irreped case
+    # Irrepped case
     if isinstance(arr, (list, tuple)):
         if (dim1 is not None) or (dim2 is not None):
             raise ValidationError("Array_to_Matrix: If passed input is list of arrays dimension cannot be specified.")
@@ -147,7 +174,7 @@ def array_to_matrix(self, arr: Union[np.ndarray, List[np.ndarray]], name: str = 
     else:
         if arr_type == core.Matrix:
 
-            # Build an irreped array back out
+            # Build an irrepped array back out
             if dim1 is not None:
                 if dim2 is None:
                     raise ValidationError("Array_to_Matrix: If dim1 is supplied must supply dim2 also")
@@ -182,7 +209,7 @@ def array_to_matrix(self, arr: Union[np.ndarray, List[np.ndarray]], name: str = 
                 return ret
 
         elif arr_type == core.Vector:
-            # Build an irreped array back out
+            # Build an irrepped array back out
             if dim1 is not None:
                 if dim2 is not None:
                     raise ValidationError("Array_to_Matrix: If dim2 should not be supplied for 1D vectors.")
@@ -212,10 +239,14 @@ def array_to_matrix(self, arr: Union[np.ndarray, List[np.ndarray]], name: str = 
             raise ValidationError("Array_to_Matrix: type '%s' is not recognized." % str(arr_type))
 
 
-def _to_array(matrix: Union[core.Matrix, core.Vector], copy: bool = True, dense: bool = False) -> Union[np.ndarray, List[np.ndarray]]:
+def _to_array(
+    matrix: Union[core.Matrix, core.Vector],
+    copy: bool = True,
+    dense: bool = False,
+) -> Union[np.ndarray, List[np.ndarray]]:
     """
-    Converts a Psi4 Matrix or Vector to a NumPy array. Either copies the data or simply
-    constructs a view.
+    Converts a |PSIfour| Matrix or Vector to a NumPy array. Either copies the
+    data or simply constructs a view.
 
     Parameters
     ----------
@@ -224,12 +255,13 @@ def _to_array(matrix: Union[core.Matrix, core.Vector], copy: bool = True, dense:
     copy
         Copy the data if `True`, return a view otherwise
     dense
-        Converts irreped Psi4 objects to diagonally blocked dense arrays if `True`. Returns a list of arrays otherwise.
+        Converts irrepped Psi4 objects to diagonally blocked dense arrays if
+        `True`. Returns a list of arrays otherwise.
 
     Returns
     -------
-    numpy.ndarray
-       Returns either a list of np.array's or the base array depending on options.
+    ~numpy.ndarray or ~typing.List[~numpy.ndarray]
+        Returns a single or list of NumPy arrays depending on options.
 
     Notes
     -----
@@ -344,13 +376,33 @@ def _array_conversion(self):
         return self.np.__array_interface__
 
 
-def _np_write(self, filename=None, prefix=""):
+def _np_write(
+    self: Union[core.Matrix, core.Vector],
+    filename: Optional[str] = None,
+    prefix: str = "",
+) -> Optional[Dict[str, Any]]:
     """
-    Writes the irreped matrix to a NumPy zipped file.
+    Writes the irrepped matrix to a NumPy uncompressed file using :func:`numpy.savez`.
 
     Can return the packed data for saving many matrices into the same file.
-    """
 
+    Parameters
+    ----------
+    self
+        Instance to be serialized.
+    filename
+        File name where the data will be saved.
+    prefix
+        Name of instance prepared for NumPy.
+
+    Returns
+    -------
+    None or ~typing.Dict[str, ~typing.Any]
+        When `filename` given, it and dict serialization passed to
+        :func:`numpy.savez`, so ``.npz`` file saved and None returned.
+        When `filename` None, dict serialization returned.
+
+    """
     ret = {}
     ret[prefix + "Irreps"] = self.nirrep()
     ret[prefix + "Name"] = self.name
@@ -373,9 +425,22 @@ def _np_write(self, filename=None, prefix=""):
     np.savez(filename, **ret)
 
 
-def _np_read(self, filename, prefix=""):
-    """
-    Reads the data from a NumPy compress file.
+def _np_read(
+    self: Union[core.Matrix, core.Vector],
+    filename: str,
+    prefix: str = "",
+) -> Union[core.Matrix, core.Vector]:
+    """Reads the data from a NumPy compressed or uncompressed file using
+    :func:`numpy.load`.
+
+    Parameters
+    ----------
+    self
+        Pointer to which class to be constructed.
+    filename
+        File name to read.
+    prefix
+        Name under which array was saved for NumPy.
     """
 
     if isinstance(filename, np.lib.npyio.NpzFile):
@@ -411,16 +476,30 @@ def _np_read(self, filename, prefix=""):
     return ret
 
 
-def _to_serial(data):
+def _to_serial(self: Union[core.Matrix, core.Vector]) -> Dict[str, Any]:
     """
-    Converts an object with a .nph accessor to a serialized dictionary
-    """
+    Converts an object with a ``.nph`` accessor to a serialized dictionary
 
+    Parameters
+    ----------
+    self
+        Matrix or Vector instance.
+
+    Returns
+    -------
+    ~typing.Dict[str, ~typing.Any]
+        Serialized dictionary with keys:
+
+        - shape
+        - data : List[str]
+        - type : {'matrix', 'vector'}
+
+    """
     json_data = {}
     json_data["shape"] = []
     json_data["data"] = []
 
-    for view in data.nph:
+    for view in self.nph:
         json_data["shape"].append(view.shape)
         json_data["data"].append(view.tostring())
 
@@ -434,9 +513,17 @@ def _to_serial(data):
     return json_data
 
 
-def _from_serial(self, json_data):
+def _from_serial(self, json_data: Dict[str, Any]) -> Union[core.Matrix, core.Vector]:
     """
     Converts serialized data to the correct Psi4 data type
+
+    Parameters
+    ----------
+    self
+        Pointer to which class to be constructed.
+    json_data
+        Serialization of class. See :meth:`to_serial` for data layout.
+
     """
 
     if json_data["type"] == "vector":
@@ -455,13 +542,20 @@ def _from_serial(self, json_data):
     return ret
 
 
-def _chain_dot(*args, **kwargs):
-    """
-    Chains dot products together from a series of Psi4 Matrix classes.
+def _chain_dot(*args, **kwargs) -> core.Matrix:
+    """Chains dot products together from a series of Psi4 Matrix classes.
+    Uses :func:`~psi4.core.doublet`.
 
-    By default there is no transposes, an optional vector of booleans can be passed in.
-    """
+    Parameters
+    ----------
+    args
+        Arbitrary number of :class:`~psi4.core.Matrix` arguments to be
+        multiplied.
+    trans
+        Optional iterable of booleans of length number of `args` to designate
+        transposes, if any.
 
+    """
     trans = kwargs.pop("trans", None)
     if trans is None:
         trans = [False for x in range(len(args))]
@@ -484,7 +578,7 @@ def _chain_dot(*args, **kwargs):
 
 def _irrep_access(self, *args, **kwargs):
     """
-    Warns user when iterating/accessing an irreped object.
+    Warns user when iterating/accessing an irrepped object.
     """
     raise ValidationError("Attempted to access by index/iteration a Psi4 data object that supports multiple"
                           " irreps. Please use .np or .nph explicitly.")
@@ -538,12 +632,23 @@ core.CIVector.np = _civec_view
 
 
 @classmethod
-def _dimension_from_list(self, dims, name="New Dimension"):
+def _dimension_from_list(
+    self,
+    dims: Union[Tuple[int], List[int], np.ndarray, core.Dimension],
+    name="New Dimension",
+) -> core.Dimension:
     """
-    Builds a core.Dimension object from a python list or tuple. If a dimension
-    object is passed a copy will be returned.
-    """
+    Builds a Dimension object from a Python list or tuple. If a
+    :class:`~psi4.core.Dimension` object is passed, a copy will be returned.
 
+    Parameters
+    ----------
+    dims
+        Iterable of integers defining irrep dimensions.
+    name
+        Name for new instance.
+
+    """
     if isinstance(dims, (tuple, list, np.ndarray)):
         irreps = len(dims)
     elif isinstance(dims, core.Dimension):
@@ -557,30 +662,29 @@ def _dimension_from_list(self, dims, name="New Dimension"):
     return ret
 
 
-def _dimension_to_tuple(dim):
-    """
-    Converts a core.Dimension object to a tuple.
-    """
+def _dimension_to_tuple(self: core.Dimension) -> Tuple[int]:
+    """Serializes :class:`~psi4.core.Dimension` to a tuple."""
 
-    if isinstance(dim, (tuple, list)):
-        return tuple(dim)
+    if isinstance(self, (tuple, list)):
+        return tuple(self)
 
-    irreps = dim.n()
+    irreps = self.n()
     ret = []
     for i in range(irreps):
-        ret.append(dim[i])
+        ret.append(self[i])
     return tuple(ret)
 
 
-def _dimension_iter(dim):
+def _dimension_iter(dim) -> Iterator[int]:
     """
     Provides an iterator class for the Dimension object.
 
-    Allows:
-        dim = psi4.core.Dimension(...)
-        list(dim)
-    """
+    Example
+    -------
+    >>> dim = psi4.core.Dimension(...)
+    >>> list(dim)
 
+    """
     for i in range(dim.n()):
         yield dim[i]
 
@@ -592,10 +696,15 @@ core.Dimension.__iter__ = _dimension_iter
 
 
 # General functions for NumPy array manipulation
-def block_diagonal_array(*args):
+def block_diagonal_array(*args: List[np.ndarray]) -> np.ndarray:
     """
     Convert square NumPy array to a single block diagonal array.
-    Mimic of SciPy's block_diag.
+    Mimic of SciPy's :func:`scipy.linalg.block_diag`.
+
+    Parameters
+    ----------
+    args
+        Arbitrary number of square arrays.
     """
 
     # Validate the input matrices.

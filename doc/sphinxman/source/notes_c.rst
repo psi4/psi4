@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -38,7 +38,7 @@ Notes on Options
 
 .. note:: All |PSIfour| keyword names and values are insensitive to case, both
    those that are placed in ``set`` blocks and as Python function arguments.
-   The few exceptions are documented for the :py:func:`~psi4.database` function,
+   The few exceptions are documented for the :py:func:`~psi4.driver.wrapper_database.database` function,
    where case structure must match the database file.
 
 .. _`op_c_bool`:
@@ -54,6 +54,29 @@ Notes on Options
    as energy converged to :math:`10^{-6} E_h`, the user may set the ``e_convergence``
    keyword to ``0.000001``, ``1.0e-6``, or ``6``.
 
+.. _`sec:psivarnotes`:
+
+Notes on Psivars
+================
+
+.. note:: Starting in 1.6, there are three standard ways to access an excited state
+   property. We give examples below, but the method name and property name may change.
+   * ``method ROOT 0 -> ROOT m property`` to get root m.
+
+   * ``method ROOT 0 -> ROOT m property - h TRANSITION`` to get root m and
+      independently specify that the total transition symmetry is h, e.g., A2.
+
+   * ``method ROOT 0 (h) -> ROOT m (i) property`` to get the transition
+     between two roots, specifying the symmetry of both states and the index of the target
+     roots among states of their own symmetry.
+
+   For example, to target the second excited-state, which is also the lowest energy state
+   of its irrep, the first two calls will take m = 2, while the last takes m = 0.
+   Methods that use this interface are: TD-fctl.
+   Note that numberings are associated with the calculation much more strongly than 
+   with the molecular system. Changing the number of roots sought, the symmetry 
+   subspace or the symmetry apportionment of roots under which the computation is run, 
+   or the excited state method are all likely to scramble root numberings.
 
 Alternate Implementations
 =========================
@@ -91,7 +114,7 @@ conventional integrals. Therefore, for a closed-shell molecule:
 .. table:: Overlapping capabilities of |PSIfour|. "Y" is available; "D" is default.
 
     +----------------------+----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
-    | name                 | |globals__qc_module| | :py:func:`~psi4.energy()`                                                | :py:func:`~psi4.gradient()`                                  |
+    | name                 | |globals__qc_module| | :py:func:`~psi4.driver.energy()`                                         | :py:func:`~psi4.driver.gradient()`                           |
     +                      +                      +------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
     | _                    | |scf__reference|     | RHF                    | UHF                    | ROHF                   | RHF                | UHF                | ROHF               |
     +                      +                      +------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
@@ -179,7 +202,7 @@ conventional integrals. Therefore, for a closed-shell molecule:
     +----------------------+----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
     | .. _tlccsdat:        | CCENERGY             | D    |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +                      +----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
-    | ccsd(at)             | DETCI                |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
+    | a-ccsd(t) [#f4]_     | DETCI                |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +                      +----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
     | |globals__cc_type|   | DFMP2                |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +                      +----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
@@ -209,4 +232,5 @@ conventional integrals. Therefore, for a closed-shell molecule:
 .. [#f1] Algorithm type selection keyword below. Values to the right: conventional ``CONV`` (here abbreviated CV), density-fitted ``DF``, and Cholesky-decomposed ``CD``.
 .. [#f2] Also available for KS reference.
 .. [#f3] Conditions have *no* default module (computationally inefficient) and can only be accessed by specifying |globals__qc_module|.
+.. [#f4] Also known as CCSD(AT), Lambda-CCSD(T), CCSD(T)_L
 

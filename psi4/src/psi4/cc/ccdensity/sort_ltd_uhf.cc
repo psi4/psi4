@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,12 +44,6 @@ namespace ccdensity {
 void sort_ltd_uhf(const struct TD_Params& S) {
     int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
     int row, col, i, j, I, J, a, b, A, B, p, q;
-    int *aoccpi, *avirtpi, *aocc_off, *avir_off;
-    int *boccpi, *bvirtpi, *bocc_off, *bvir_off;
-    int *aocc_sym, *avir_sym;
-    int *bocc_sym, *bvir_sym;
-    int *qt_aocc, *qt_avir;
-    int *qt_bocc, *qt_bvir;
     double chksum, value;
     dpdfile2 D;
 
@@ -59,20 +53,20 @@ void sort_ltd_uhf(const struct TD_Params& S) {
     nclsd = moinfo.nclsd;
     nopen = moinfo.nopen;
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
-    aocc_off = moinfo.aocc_off;
-    avir_off = moinfo.avir_off;
-    bocc_off = moinfo.bocc_off;
-    bvir_off = moinfo.bvir_off;
-    aocc_sym = moinfo.aocc_sym;
-    avir_sym = moinfo.avir_sym;
-    qt_aocc = moinfo.qt_aocc;
-    qt_avir = moinfo.qt_avir;
-    qt_bocc = moinfo.qt_bocc;
-    qt_bvir = moinfo.qt_bvir;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
+    const auto& aocc_off = moinfo.aocc_off;
+    const auto& avir_off = moinfo.avir_off;
+    const auto& bocc_off = moinfo.bocc_off;
+    const auto& bvir_off = moinfo.bvir_off;
+    const auto& aocc_sym = moinfo.aocc_sym;
+    const auto& avir_sym = moinfo.avir_sym;
+    const auto& qt_aocc = moinfo.qt_aocc;
+    const auto& qt_avir = moinfo.qt_avir;
+    const auto& qt_bocc = moinfo.qt_bocc;
+    const auto& qt_bvir = moinfo.qt_bvir;
 
     moinfo.ltd_a = block_matrix(nmo, nmo);
     moinfo.ltd_b = block_matrix(nmo, nmo);

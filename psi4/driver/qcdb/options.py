@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -116,7 +116,7 @@ def prepare_options_for_orca(options):
             if val['has_changed']:
                 if not text:
                     text += """! """
-                text +="""%s """ % (val['value'])
+                text += """%s """ % (val['value'])
                 #text += """%s=%s\n""" % (format_option_for_cfour(opt, val['value']))
     if text:
         #text = text[:-1] + ')\n\n'

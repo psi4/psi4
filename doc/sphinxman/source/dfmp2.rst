@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -81,7 +81,7 @@ An example utilization of the code is::
    
    energy('mp2')
 
-The ``energy('mp2')`` call to :py:func:`~psi4.energy` executes
+The ``energy('mp2')`` call to :py:func:`~psi4.driver.energy` executes
 the predefined DF-MP2 procedure, first calling
 the SCF module with a default RHF reference and DF algorithm for the
 two-electron integrals. When the orbitals are converged, the DF-MP2 module is

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -106,7 +106,7 @@ int MatrixFactory::ncol(int h) const { return colspi_[h]; }
 int MatrixFactory::norb() const { return nso_; }
 
 /// Returns a new Matrix object with default dimensions
-Matrix* MatrixFactory::create_matrix(int symmetry) { return new Matrix(nirrep_, rowspi_, colspi_, symmetry); }
+std::unique_ptr<Matrix> MatrixFactory::create_matrix(int symmetry) { return std::make_unique<Matrix>(nirrep_, rowspi_, colspi_, symmetry); }
 
 /// Returns a new Matrix object with default dimensions
 SharedMatrix MatrixFactory::create_shared_matrix() const { return std::make_shared<Matrix>(nirrep_, rowspi_, colspi_); }
@@ -114,8 +114,8 @@ SharedMatrix MatrixFactory::create_shared_matrix() const { return std::make_shar
 void MatrixFactory::create_matrix(Matrix& mat, int symmetry) { mat.init(nirrep_, rowspi_, colspi_, "", symmetry); }
 
 /// Returns a new Matrix object named name with default dimensions
-Matrix* MatrixFactory::create_matrix(std::string name, int symmetry) {
-    return new Matrix(name, nirrep_, rowspi_, colspi_, symmetry);
+std::unique_ptr<Matrix> MatrixFactory::create_matrix(std::string name, int symmetry) {
+    return std::make_unique<Matrix>(name, nirrep_, rowspi_, colspi_, symmetry);
 }
 
 SharedMatrix MatrixFactory::create_shared_matrix(const std::string& name) const {
@@ -135,7 +135,7 @@ void MatrixFactory::create_matrix(Matrix& mat, std::string name, int symmetry) {
 }
 
 /// Returns a new Vector object with default dimensions
-Vector* MatrixFactory::create_vector() { return new Vector(rowspi_); }
+std::unique_ptr<Vector> MatrixFactory::create_vector() { return std::make_unique<Vector>(rowspi_); }
 
 void MatrixFactory::create_vector(Vector& vec) { vec.init(rowspi_); }
 

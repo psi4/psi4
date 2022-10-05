@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -58,7 +58,6 @@ namespace detci {
 /*** DEFINES ***/
 
 #define CI_BLK_MAX 5000
-#define IOFF_MAX 50604
 
 #define PARM_GUESS_VEC_UNIT 0
 #define PARM_GUESS_VEC_H0_BLOCK 1
@@ -411,6 +410,7 @@ struct params {
                                             is an open-shell singlet */
     std::string mcscf_type;              /*Type of MCSCF computation DF or CONV */
     int multp;                           /* multiplicity (2S+1) */
+    int print_;                          /* Amount of information to print */
     int ex_lvl;                          /* excitation level */
     int val_ex_lvl;                      /* valence excitation level, used for RAS's */
     int cc_val_ex_lvl;                   /* NOT analogous to val_ex_lvl ... this controls how

@@ -39,6 +39,7 @@ set guess read
 # [He] electrons on Ne frozen,  only ECP electrons on Xe frozen
 EfHe = energy('mp2')
 compare_values(reffHe, EfHe, 8, "MP2 energy with frozen [He] and ECP")                   #TEST
+compare_integers(1, int(variable('SCF ITERATIONS')), 'niter')                            #TEST
 
 molecule ghne {
     0 1
@@ -64,7 +65,7 @@ Eghne = energy('mp2', molecule=ghne)
 Eghxe = energy('mp2', molecule=ghxe)
 compare_values(refEin, Efzc - Eghne - Eghxe, 8, "MP2 CP interaction energy frozen [He] and [Kr] by hand")  #TEST
 
-molecule bih3 {
+molecule sbh3 {
 0 1
    Sb         0.00000000      0.76521375      0.00000000
    H          1.43645600     -0.25507125      0.00000000
@@ -73,13 +74,26 @@ molecule bih3 {
 }
 
 set freeze_core 0
-E, wfn = energy("mp2/def2-svp", return_wfn=True)
+E, wfn = energy("mp2/def2-svp", return_wfn=True, molecule=sbh3)
 
 compare_values(wfn.nfrzc(), 0, 1, "Number of frozen e- with freeze_core = 0")
 compare_values(sum(wfn.doccpi()), 13, 1, "Number of occupied orbitals with freeze_core = 0")
 
 set freeze_core 1
-E, wfn = energy("mp2/def2-svp", return_wfn=True)
+E, wfn = energy("mp2/def2-svp", return_wfn=True, molecule=sbh3)
 compare_values(wfn.nfrzc(), 4, 1, "Number of frozen orbitals with freeze_core = 1")
 compare_values(sum(wfn.doccpi()), 13, 1, "Number of occupied orbitals with freeze_core = 1")
+
+molecule hi {
+  0 1
+  H 0 0 0
+  I 0 0 3
+}
+
+set freeze_core -2
+try:
+    energy("mp2/def2-svp", molecule=hi)
+    compare_values(0, 1, "Exception raised when ECP larger than requested freeze_core?")
+except RuntimeError as e:
+    compare_values(1, 1, "Exception raised when ECP larger than requested freeze_core?")
 

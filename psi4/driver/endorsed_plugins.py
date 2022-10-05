@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -27,6 +27,9 @@
 #
 
 """Import plugins eligible to be accessible in input files if detected."""
+
+__all__ = []
+
 import sys
 
 try:

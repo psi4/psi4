@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4a2.dev670 
+                               Psi4 1.7a1.dev7 
 
-                         Git: Rev {document-tddft} ba91f9e dirty
+                         Git: Rev {tdscf_excitations_symmetry} 7a26583 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -19,7 +19,7 @@
                             Additional Code Authors
     E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
     J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
-    P. Verma, and M. H. Lechner
+    P. Verma, M. H. Lechner, and A. Jiang
 
              Previous Authors, Complete List of Code Contributors,
                        and Citations for Specific Modules
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 11 June 2020 03:33PM
+    Psi4 started on: Tuesday, 14 June 2022 07:42PM
 
-    Process ID: 18996
-    Host:       minazo
-    PSIDATADIR: /home/roberto/Workspace/robertodr/psi4/build_document-tddft/stage/share/psi4
+    Process ID: 2899
+    Host:       sat.lazhome.net
+    PSIDATADIR: /home/laz/src/psi4laz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -75,24 +75,22 @@ e, wfn = energy('hf/cc-pvdz', return_wfn=True)
 tdscf(wfn)
 
 for n, ref in enumerate(UHF_TDA_cc_pvdz):
-    ex_en = wfn.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
-    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+    ex_en = wfn.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
 --------------------------------------------------------------------------
 
 Scratch directory: /tmp/
 
-Scratch directory: /tmp/
-
-*** tstart() called on minazo
-*** at Thu Jun 11 15:33:50 2020
+*** tstart() called on sat.lazhome.net
+*** at Tue Jun 14 19:42:08 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry C          line   138 file /home/roberto/Workspace/robertodr/psi4/build_document-tddft/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /home/roberto/Workspace/robertodr/psi4/build_document-tddft/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry C          line   138 file /home/laz/src/psi4laz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /home/laz/src/psi4laz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -137,14 +135,14 @@ Scratch directory: /tmp/
   Guess Type is SAD.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 12
-    Number of basis function: 24
+    Number of basis functions: 24
     Number of Cartesian functions: 25
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -197,24 +195,24 @@ Scratch directory: /tmp/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter SAD:   -38.17324753824925   -3.81732e+01   0.00000e+00 
-   @UHF iter   1:   -38.90234371202389   -7.29096e-01   5.27401e-03 DIIS
-   @UHF iter   2:   -38.91513876275200   -1.27951e-02   1.70345e-03 DIIS
-   @UHF iter   3:   -38.91704711158790   -1.90835e-03   5.19120e-04 DIIS
-   @UHF iter   4:   -38.91728869118322   -2.41580e-04   2.55109e-04 DIIS
-   @UHF iter   5:   -38.91736733351760   -7.86423e-05   8.96531e-05 DIIS
-   @UHF iter   6:   -38.91737802879636   -1.06953e-05   2.28836e-05 DIIS
-   @UHF iter   7:   -38.91737868822741   -6.59431e-07   5.16337e-06 DIIS
-   @UHF iter   8:   -38.91737871259063   -2.43632e-08   9.98195e-07 DIIS
-   @UHF iter   9:   -38.91737871345225   -8.61618e-10   2.36900e-07 DIIS
-   @UHF iter  10:   -38.91737871350318   -5.09246e-11   3.58717e-08 DIIS
-   @UHF iter  11:   -38.91737871350435   -1.17240e-12   7.95232e-09 DIIS
+   @UHF iter SAD:   -38.17324753824930   -3.81732e+01   0.00000e+00 
+   @UHF iter   1:   -38.90234371202387   -7.29096e-01   5.27401e-03 DIIS/ADIIS
+   @UHF iter   2:   -38.91513876275199   -1.27951e-02   1.70345e-03 DIIS/ADIIS
+   @UHF iter   3:   -38.91704423443395   -1.90547e-03   5.21791e-04 DIIS/ADIIS
+   @UHF iter   4:   -38.91728818663926   -2.43952e-04   2.55762e-04 DIIS/ADIIS
+   @UHF iter   5:   -38.91736725680569   -7.90702e-05   8.98879e-05 DIIS
+   @UHF iter   6:   -38.91737802868979   -1.07719e-05   2.28855e-05 DIIS
+   @UHF iter   7:   -38.91737868822885   -6.59539e-07   5.16332e-06 DIIS
+   @UHF iter   8:   -38.91737871259078   -2.43619e-08   9.98120e-07 DIIS
+   @UHF iter   9:   -38.91737871345227   -8.61490e-10   2.36812e-07 DIIS
+   @UHF iter  10:   -38.91737871350315   -5.08891e-11   3.58512e-08 DIIS
+   @UHF iter  11:   -38.91737871350432   -1.16529e-12   7.94455e-09 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   1.210199220E-02
+   @Spin Contamination Metric:   1.210199221E-02
    @S^2 Expected:                2.000000000E+00
    @S^2 Observed:                2.012101992E+00
    @S   Expected:                1.000000000E+00
@@ -257,14 +255,14 @@ Scratch directory: /tmp/
     DOCC [     3 ]
     SOCC [     2 ]
 
-  @UHF Final Energy:   -38.91737871350435
+  @UHF Final Energy:   -38.91737871350432
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              6.0682991182693025
-    One-Electron Energy =                 -63.7147379959455549
-    Two-Electron Energy =                  18.7290601641719050
-    Total Energy =                        -38.9173787135043483
+    One-Electron Energy =                 -63.7147379959333620
+    Two-Electron Energy =                  18.7290601641597405
+    Total Energy =                        -38.9173787135043199
 
   UHF NO Occupations:
   HONO-2 :    3  A 1.9967234
@@ -283,28 +281,39 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -1.0254
 
-  Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:     0.7742
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:    -0.2512     Total:     0.2512
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:    -0.0000      Y:     0.0000      Z:    -0.6386     Total:     0.6386
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :          0.7741865           -1.0254198           -0.2512332
+ Magnitude           :                                                    0.2512332
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on minazo at Thu Jun 11 15:33:50 2020
+*** tstop() called on sat.lazhome.net at Tue Jun 14 19:42:08 2022
 Module time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
 
 
          ---------------------------------------------------------
@@ -312,27 +321,29 @@ Total time:
                  by Andrew M. James and Daniel G. A. Smith        
          ---------------------------------------------------------
 
+  ==> Options <==
+
+     Residual threshold  : 1.0000e-06
+     Initial guess       : denominators
+     Reference           : UHF
+     Solver type         : TDA (Davidson)
+
+
   ==> Requested Excitations <==
 
       9 singlet states with A symmetry
 
-  ==> Options <==
 
-     r_convergence:              1e-06
-     guess_type:              DENOMINATORS
-     restricted:              False
-     ptype     :              tda
-
-
+  ==> Seeking the lowest 9 singlet states with A symmetry
 
                          Generalized Davidson Solver                         
                                By Ruhee Dcunha                               
 
   ==> Options <==
 
-    Maxiter                         = 60   
-    Eigenvector tolerance           = 1.00000e-06
-    Max number of expansion vectors = 1350 
+    Max number of iterations        = 60   
+    Eigenvector tolerance           = 1.0000e-06
+    Max number of expansion vectors = 2700 
 
   => Iterations <=
                            Max[D[value]]     Max[|R|]   # vectors
@@ -342,8 +353,8 @@ Total time:
   DavidsonSolver iter   4:   1.46308e-05  9.09692e-04     63      
   DavidsonSolver iter   5:   1.74360e-07  9.62295e-05     72      
   DavidsonSolver iter   6:   2.12837e-09  9.99771e-06     81      
-  DavidsonSolver iter   7:   2.74170e-11  1.31154e-06     84      
-  DavidsonSolver iter   8:   3.79585e-13  7.60128e-07     86      Converged
+  DavidsonSolver iter   7:   2.74174e-11  1.31154e-06     84      
+  DavidsonSolver iter   8:   3.78142e-13  7.60128e-07     86      Converged
 
 ******************************************************************************************
 **********                               WARNING                                **********
@@ -353,27 +364,129 @@ Total time:
                                     Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
      #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
     ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
-     1        A->A (1 A)       0.24879         6.76994        -38.66859        0.0006          0.0040         -0.0000         -0.0000        
+     1        A->A (1 A)       0.24879         6.76994        -38.66859        0.0006          0.0040          0.0000          0.0000        
      2        A->A (1 A)       0.28968         7.88267        -38.62770        0.0000          0.0000         -0.0000         -0.0000        
      3        A->A (1 A)       0.32054         8.72234        -38.59684        0.0150          0.0291          0.0000          0.0000        
-     4        A->A (1 A)       0.35741         9.72562        -38.55997        0.0000          0.0000         -0.0000         -0.0000        
-     5        A->A (1 A)       0.39501         10.74870       -38.52237        0.0356          0.0332          0.0000          0.0000        
-     6        A->A (1 A)       0.41142         11.19542       -38.50595        0.0061          0.0021          0.0000          0.0000        
+     4        A->A (1 A)       0.35741         9.72562        -38.55997        0.0000          0.0000          0.0000          0.0000        
+     5        A->A (1 A)       0.39501         10.74870       -38.52237        0.0356          0.0332         -0.0000         -0.0000        
+     6        A->A (1 A)       0.41142         11.19542       -38.50595        0.0061          0.0021         -0.0000         -0.0000        
      7        A->A (1 A)       0.44454         12.09643       -38.47284        0.1042          0.0870          0.0000          0.0000        
-     8        A->A (1 A)       0.45358         12.34258       -38.46380        0.1997          0.1607         -0.0000         -0.0000        
-     9        A->A (1 A)       0.48481         13.19234       -38.43257        0.4129          0.3788          0.0000          0.0000        
+     8        A->A (1 A)       0.45358         12.34258       -38.46380        0.1997          0.1607          0.0000          0.0000        
+     9        A->A (1 A)       0.48481         13.19234       -38.43257        0.4129          0.3788         -0.0000         -0.0000        
 
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 1 EXCITATION ENERGY - A SYMMETRY........................PASSED
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 2 EXCITATION ENERGY - A SYMMETRY........................PASSED
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 3 EXCITATION ENERGY - A SYMMETRY........................PASSED
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 4 EXCITATION ENERGY - A SYMMETRY........................PASSED
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 5 EXCITATION ENERGY - A SYMMETRY........................PASSED
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 6 EXCITATION ENERGY - A SYMMETRY........................PASSED
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 7 EXCITATION ENERGY - A SYMMETRY........................PASSED
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 8 EXCITATION ENERGY - A SYMMETRY........................PASSED
-    TD-UHF/cc-pvdz ROOT 0 -> ROOT 9 EXCITATION ENERGY - A SYMMETRY........................PASSED
 
-    Psi4 stopped on: Thursday, 11 June 2020 03:33PM
-    Psi4 wall time for execution: 0:00:01.55
+
+Contributing excitations
+Only contributions with abs(coeff) > 1.00e-01 will be printed:
+
+Excited State    1 (1 A):   0.24879 au   183.14 nm f = 0.0006
+Alpha orbitals:
+  Sums of squares: Xssq =  7.426208e-03
+Beta orbitals:
+  Sums of squares: Xssq =  9.925738e-01
+      3a (b) ->   4a (b)   -0.982608 (96.552%)
+
+Excited State    2 (1 A):   0.28968 au   157.29 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  2.026403e-02
+      5a (a) ->   7a (a)    0.132771 ( 1.763%)
+Beta orbitals:
+  Sums of squares: Xssq =  9.797360e-01
+      3a (b) ->   5a (b)   -0.977538 (95.558%)
+      3a (b) ->  10a (b)   -0.147970 ( 2.190%)
+
+Excited State    3 (1 A):   0.32054 au   142.15 nm f = 0.0150
+Alpha orbitals:
+  Sums of squares: Xssq =  9.877030e-01
+      5a (a) ->   6a (a)   -0.981275 (96.290%)
+      5a (a) ->  11a (a)   -0.103828 ( 1.078%)
+      5a (a) ->  13a (a)    0.111456 ( 1.242%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.229700e-02
+      2a (b) ->   5a (b)    0.102339 ( 1.047%)
+
+Excited State    4 (1 A):   0.35741 au   127.48 nm f = 0.0000
+Alpha orbitals:
+  Sums of squares: Xssq =  9.806620e-01
+      5a (a) ->   7a (a)    0.967800 (93.664%)
+      5a (a) ->  12a (a)    0.197509 ( 3.901%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.933797e-02
+      3a (b) ->   5a (b)    0.138606 ( 1.921%)
+
+Excited State    5 (1 A):   0.39501 au   115.35 nm f = 0.0356
+Alpha orbitals:
+  Sums of squares: Xssq =  8.852916e-01
+      3a (a) ->   7a (a)   -0.229917 ( 5.286%)
+      4a (a) ->   6a (a)   -0.895219 (80.142%)
+      4a (a) ->  13a (a)    0.100344 ( 1.007%)
+Beta orbitals:
+  Sums of squares: Xssq =  1.147084e-01
+      2a (b) ->   4a (b)    0.142221 ( 2.023%)
+      2a (b) ->   6a (b)    0.110517 ( 1.221%)
+      3a (b) ->   7a (b)    0.268023 ( 7.184%)
+
+Excited State    6 (1 A):   0.41142 au   110.75 nm f = 0.0061
+Alpha orbitals:
+  Sums of squares: Xssq =  5.242575e-01
+      3a (a) ->   6a (a)   -0.501572 (25.157%)
+      4a (a) ->   7a (a)   -0.491952 (24.202%)
+Beta orbitals:
+  Sums of squares: Xssq =  4.757425e-01
+      2a (b) ->   7a (b)    0.117682 ( 1.385%)
+      3a (b) ->   6a (b)    0.660893 (43.678%)
+      3a (b) ->  11a (b)    0.116402 ( 1.355%)
+
+Excited State    7 (1 A):   0.44454 au   102.50 nm f = 0.1042
+Alpha orbitals:
+  Sums of squares: Xssq =  4.323560e-01
+      3a (a) ->   7a (a)    0.480286 (23.067%)
+      3a (a) ->  12a (a)    0.143547 ( 2.061%)
+      4a (a) ->   6a (a)   -0.391102 (15.296%)
+Beta orbitals:
+  Sums of squares: Xssq =  5.676440e-01
+      2a (b) ->   4a (b)   -0.547450 (29.970%)
+      3a (b) ->   7a (b)   -0.483990 (23.425%)
+      3a (b) ->  12a (b)   -0.130742 ( 1.709%)
+
+Excited State    8 (1 A):   0.45358 au   100.45 nm f = 0.1997
+Alpha orbitals:
+  Sums of squares: Xssq =  7.838693e-01
+      3a (a) ->   6a (a)   -0.212919 ( 4.533%)
+      4a (a) ->   7a (a)    0.840382 (70.624%)
+      4a (a) ->  12a (a)    0.156598 ( 2.452%)
+Beta orbitals:
+  Sums of squares: Xssq =  2.161307e-01
+      3a (b) ->   6a (b)    0.452833 (20.506%)
+
+Excited State    9 (1 A):   0.48481 au   93.98 nm f = 0.4129
+Alpha orbitals:
+  Sums of squares: Xssq =  6.824258e-01
+      3a (a) ->   6a (a)   -0.810667 (65.718%)
+Beta orbitals:
+  Sums of squares: Xssq =  3.175742e-01
+      3a (b) ->   6a (b)   -0.553505 (30.637%)
+
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 1 EXCITATION ENERGY - A TRANSITION......................PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 2 EXCITATION ENERGY - A TRANSITION......................PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 3 EXCITATION ENERGY - A TRANSITION......................PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 4 EXCITATION ENERGY - A TRANSITION......................PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 5 EXCITATION ENERGY - A TRANSITION......................PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 6 EXCITATION ENERGY - A TRANSITION......................PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 7 EXCITATION ENERGY - A TRANSITION......................PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 8 EXCITATION ENERGY - A TRANSITION......................PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 9 EXCITATION ENERGY - A TRANSITION......................PASSED
+
+    Psi4 stopped on: Tuesday, 14 June 2022 07:42PM
+    Psi4 wall time for execution: 0:00:01.80
 
 *** Psi4 exiting successfully. Buy a developer a beer!

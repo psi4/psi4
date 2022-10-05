@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -116,10 +116,6 @@ void DCTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha) {
 }
 
 DCTSolver::~DCTSolver() {
-    delete[] aocc_off_;
-    delete[] avir_off_;
-    delete[] bocc_off_;
-    delete[] bvir_off_;
 }
 
 }  // namespace dct

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -50,11 +50,12 @@
 #include "psi4/psi4-dec.h"
 namespace psi {
 
-size_t PSIO::toclen(size_t unit) {
+/// @brief Compute the length of the TOC for a given unit using the in-core TOC list
+/// @param unit : file unit number
+/// @return length of the TOC for a given unit
+size_t PSIO::toclen(const size_t unit) {
     size_t len = 0;
-    psio_tocentry *this_entry;
-
-    this_entry = psio_unit[unit].toc;
+    psio_tocentry *this_entry = psio_unit[unit].toc;
 
     while (this_entry != nullptr) {
         ++len;
@@ -64,53 +65,64 @@ size_t PSIO::toclen(size_t unit) {
     return (len);
 }
 
-size_t PSIO::rd_toclen(size_t unit) {
-    int errcod, stream;
-    psio_ud *this_unit;
+/// @brief Seek the stream of the vol[0] of a unit to its beginning
+/// @param unit : file unit number to rewind
+void PSIO::rewind_toclen(const size_t unit) {
+    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
+    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
+    const auto sys_errno = errno;
+    if (errcod == -1) {
+        std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(sys_errno);
+        errmsg += "\nCannot seek vol[0] to its beginning, unit ";
+        errmsg += std::to_string(unit) + ".\n";
+        psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
+    }
+}
+
+/// @brief Read the length of the TOC for a given unit directly from the file. Note that we do not exit if the read
+/// request of the toclen from the file fails to read the expected number of bytes. This is because the request may be
+/// to an new file for which the toclen has not yet been written. (We allow the user open files with status
+/// PSIO_OPEN_OLD even if they don't exist, because sometimes you can't know this in advance.)
+/// @param unit : file unit number to read TOC length from
+/// @return length of the TOC for a given unit
+size_t PSIO::rd_toclen(const size_t unit) {
+    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
+    // Seek to the beginning
+    rewind_toclen(unit);
+    // Read the value
     size_t len;
-
-    this_unit = &(psio_unit[unit]);
-
-    /* Seek vol[0] to its beginning */
-    stream = this_unit->vol[0].stream;
-
-    errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
-
-    if (errcod == -1) psio_error(unit, PSIO_ERROR_LSEEK);
-
-    /* Read the value */
-
-    errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
-
-    if (errcod != sizeof(size_t)) return (0); /* assume that all is well (see comments above) */
-
+    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
+    const auto sys_errno = errno;
+    if (errcod != sizeof(size_t)) {
+        if (errcod == -1) {
+            std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(sys_errno);
+            errmsg += "\nError in PSIO::rd_toclen()! Cannot read TOC length, unit ";
+            errmsg += std::to_string(unit) + ".\n";
+            psio_error(unit, PSIO_ERROR_READ, errmsg);
+        }
+        return (0);  // assume that all is well (see comments above)
+    }
     return (len);
 }
 
-void PSIO::wt_toclen(size_t unit, size_t len) {
-    int errcod, stream;
-    psio_ud *this_unit;
-
-    this_unit = &(psio_unit[unit]);
-
-    /* Seek vol[0] to its beginning */
-    stream = this_unit->vol[0].stream;
-
-    errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
-
-    if (errcod == -1) {
-        ::fprintf(stderr, "Error in PSIO_WT_TOCLEN()!\n");
-        exit(_error_exit_code_);
-    }
-
-    /* Write the value */
-
-    errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
-
+/// @brief Write the length of the TOC for a given unit directly to the file.
+/// @param unit : file unit number to write TOC length to
+/// @param len  : length value to write
+void PSIO::wt_toclen(const size_t unit, const size_t len) {
+    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
+    // Seek to the beginning
+    rewind_toclen(unit);
+    // Write the value
+    const auto stream = psio_unit[unit].vol[0].stream;
+    const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
+    const auto sys_errno = errno;
     if (errcod != sizeof(size_t)) {
-        ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %zu.\n", unit);
-        fflush(stderr);
-        throw PSIEXCEPTION("PSIO Error");
+        std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
+        errmsg += "\nError in PSIO::wt_toclen()! Cannot write TOC length, unit ";
+        errmsg += std::to_string(unit) + ".\n";
+        psio_error(unit, PSIO_ERROR_WRITE, errmsg);
     }
 }
 

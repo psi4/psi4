@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -35,8 +35,8 @@
 
 .. _`sec:molden`:
 
-Interface to Molden |w---w| :py:func:`~psi4.molden`
-===================================================
+Interface to Molden |w---w| :py:func:`~psi4.driver.molden`
+==========================================================
 
 .. codeauthor:: Justin M. Turney
 .. sectionauthor:: C. David Sherrill

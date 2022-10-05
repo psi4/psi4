@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -28,8 +28,10 @@
 
 import atexit
 import datetime
+import itertools
 import os
 from typing import List, Union
+from pathlib import Path
 
 from qcelemental.util import which, which_import
 
@@ -47,7 +49,10 @@ def register_numpy_file(filename):
 
 def clean_numpy_files():
     for nfile in numpy_files:
-        os.unlink(nfile)
+        try:
+            os.unlink(nfile)
+        except OSError:
+            pass
 
 
 atexit.register(clean_numpy_files)
@@ -129,9 +134,11 @@ def psi4_which(command, *, return_bool: bool = False, raise_error: bool = False,
 
 
 _addons_ = {
+    "adcc": which_import("adcc", return_bool=True),
     "ambit": _CMake_to_Py_boolean("@ENABLE_ambit@"),
     "chemps2": _CMake_to_Py_boolean("@ENABLE_CheMPS2@"),
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
+    "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@"),
     "libefp": which_import("pylibefp", return_bool=True),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
@@ -152,17 +159,27 @@ _addons_ = {
     "adcc": which_import("adcc", return_bool=True),
     "mdi": which_import("mdi", return_bool=True),
     "cct3": which_import("cct3", return_bool=True),
+    "dftd4": which_import("dftd4", return_bool=True),
+    "mp2d": psi4_which("mp2d", return_bool=True),
+    "openfermionpsi4": which_import("openfermionpsi4", return_bool=True),
+    "geometric": which_import("geometric", return_bool=True),
+    #"optking": which_import("optking", return_bool=True),
+    "psixas": which_import("psixas", return_bool=True),
+    #"mctc-gcp": psi4_which("mctc-gcp", return_bool=True),
 }
 
 
 def addons(request: str = None) -> Union[bool, List[str]]:
     """Returns boolean of whether Add-On *request* is available to Psi4,
     either compiled in or searchable in $PSIPATH:$PATH, as relevant. If
-    *request* not passed, returns list of available Add-Ons.
+    *request* not passed, returns list of available Add-Ons: `['adcc', 'ambit', 'c̶c̶t̶3̶', ...` .
 
     """
+    def strike(text):
+        return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
+
     if request is None:
-        return sorted([k for k, v in _addons_.items() if v])
+        return [(k if v else strike(k)) for k, v in sorted(_addons_.items())]
     return _addons_[request.lower()]
 
 
@@ -211,3 +228,53 @@ def test(extent: str = "full", extras: List = None) -> int:
     retcode = pytest.main(command)
     return retcode
 
+
+def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, execute: bool = True) -> Path:
+    """Set the name for output and logging files.
+
+    Parameters
+    ----------
+    ofile
+        Name of ASCII output file including extension. The logging file is set from this string with a ``.log`` extension.
+    append
+        Do append to the output and logging files rather than (the default) truncating them?
+    loglevel
+        The criticality level at which to log. 30 for WARN (Python default), 20 for INFO, 10 for DEBUG
+    execute
+        Do set ``ofile`` via :py:func:`psi4.core.set_output_file` and add the logger, rather than just returning ``ofile`` path.
+
+    Returns
+    -------
+    ~pathlib.Path
+        ``Path(ofile)``
+
+    Notes
+    -----
+    This :py:func:`psi4.set_output_file` command calls :py:func:`psi4.core.set_output_file` and should be used in
+    preference to it as this additionally sets up logging.
+
+    """
+    out = Path(ofile)
+    log = out.with_suffix(".log")
+
+    # Get the custom logger
+    import logging
+    from psi4 import logger
+    logger.setLevel(loglevel)
+
+    # Create formatters
+    # * detailed:  example: 2019-11-20:01:13:46,811 DEBUG    [psi4.driver.task_base:156]
+    f_format_detailed = logging.Formatter("%(asctime)s,%(msecs)d %(levelname)-8s [%(name)s:%(lineno)d] %(message)s", datefmt="%Y-%m-%d:%H:%M:%S")
+    # * light:     example: 2019-11-20:10:45:21 FINDIFREC CLASS INIT DATA
+    f_format_light = logging.Formatter("%(asctime)s %(message)s", datefmt="%Y-%m-%d:%H:%M:%S")
+
+    # Create handlers, add formatters to handlers, and add handlers to logger (StreamHandler() also available)
+    filemode = "a" if append else "w"
+    f_handler = logging.FileHandler(log, filemode)
+    f_handler.setLevel(logging.DEBUG)
+    f_handler.setFormatter(f_format_detailed)
+
+    if execute:
+        core.set_output_file(str(out), append)
+        logger.addHandler(f_handler)
+    return out

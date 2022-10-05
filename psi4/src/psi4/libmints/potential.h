@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -29,11 +29,11 @@
 #ifndef _psi_src_lib_libmints_potential_h_
 #define _psi_src_lib_libmints_potential_h_
 
+#include <array>
 #include <vector>
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 class BasisSet;
@@ -48,42 +48,18 @@ class CdSalcList;
  * Use an IntegralFactory to create this object.
  */
 class PotentialInt : public OneBodyAOInt {
-    /// Computes integrals between two shell objects.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    /// Computes integrals between two shell objects.
-    void compute_pair_deriv1_no_charge_term(const GaussianShell&, const GaussianShell&);
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;
 
    protected:
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion* potential_recur_;
-
-    /// Matrix of coordinates/charges of partial charges
-    SharedMatrix Zxyz_;
+    /// The charges and locations that define the external potential
+    std::vector<std::pair<double, std::array<double, 3>>> Zxyz_;
 
    public:
     /// Constructor. Assumes nuclear centers/charges as the potential
     PotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     ~PotentialInt() override;
 
-    /// Computes the first derivatives and stores them in result
-    void compute_deriv1(std::vector<SharedMatrix>& result) override;
-
-    /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1_no_charge_term(std::vector<SharedMatrix>& result);
-    /// Computes the first derivatives, but neglects the derivatives on the third center.
-    /// This code is used for gradients in the presence of an external potential.
-    void compute_shell_deriv1_no_charge_term(int, int);
-
-    /// Computes the second derivatives and store them in result
-    void compute_deriv2(std::vector<SharedMatrix>& result) override;
-
     /// Set the field of charges
-    void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
-
-    /// Get the field of charges
-    SharedMatrix charge_field() const { return Zxyz_; }
+    void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz);
 
     /// Does the method provide first derivatives?
     bool has_deriv1() override { return true; }

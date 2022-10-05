@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -78,14 +78,4 @@ PSIO::~PSIO() {
     state_ = 0;
     files_keywords_.clear();
 }
-
-int psio_done() {
-    if (_default_psio_lib_) {
-        // The old pointer implementation of this used to set the pointer to zero for
-        // the test used in psio_init.  This is not necessary with smart pointers
-        _default_psio_lib_.reset();
-    }
-    return true;
-}
-
 }  // namespace psi

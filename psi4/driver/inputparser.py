@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -30,6 +30,8 @@ Psithon into standard Python. Particularly, forms psi4
 module calls that access the C++ side of Psi4.
 
 """
+
+__all__ = ["process_input"]
 
 import os
 import re
@@ -566,15 +568,22 @@ def process_multiline_arrays(inputfile):
     return newinput
 
 
-def process_input(raw_input, print_level=1):
+def process_input(raw_input: str, print_level: int = 1) -> str:
     """Function to preprocess *raw input*, the text of the input file, then
     parse it, validate it for format, and convert it into legitimate Python.
-    *raw_input* is printed to the output file unless *print_level* =0. Does
-    a series of regular expression filters, where the matching portion of the
+
+    Does a series of regular expression filters, where the matching portion of the
     input is replaced by the output of the corresponding function (in this
     module) call. Returns a string concatenating module import lines, a copy
     of the user's .psi4rc files, a setting of the scratch directory, a dummy
     molecule, and the processed *raw_input*.
+
+    Parameters
+    ----------
+    raw_input
+        Input in a mixture of Python and PSIthon syntax.
+    print_level
+        *raw_input* is printed to the output file unless *print_level* =0.
 
     """
     # Check if the infile is actually an outfile (yeah we did)

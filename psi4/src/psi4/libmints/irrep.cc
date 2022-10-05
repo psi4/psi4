@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -85,15 +85,15 @@ using namespace psi;
 /////////////////////////////////////////////////////////////////////////
 
 IrreducibleRepresentation::IrreducibleRepresentation()
-    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr), rep(nullptr) {}
+    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr) {}
 
 IrreducibleRepresentation::IrreducibleRepresentation(int order, int d, const char *lab, const char *clab)
-    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr), rep(nullptr) {
+    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr) {
     init(order, d, lab, clab);
 }
 
 IrreducibleRepresentation::IrreducibleRepresentation(const IrreducibleRepresentation &ir)
-    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr), rep(nullptr) {
+    : g(0), degen(0), nrot_(0), ntrans_(0), complex_(0), symb(nullptr), csymb(nullptr) {
     *this = ir;
 }
 
@@ -128,13 +128,12 @@ void IrreducibleRepresentation::init(int order, int d, const char *lab, const ch
     else
         csymb = nullptr;
 
-    if (rep) {
-        delete[] rep;
-        rep = nullptr;
+    if (rep.size()) {
+        rep.clear();
     }
 
     if (g) {
-        rep = new SymRep[g];
+        rep = std::vector<SymRep>(g);
         for (int i = 0; i < g; i++) rep[i].set_dim(d);
     }
 }

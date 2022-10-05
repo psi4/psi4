@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -90,7 +90,7 @@ class PSI_API MatrixFactory {
     int norb() const;
 
     /// Returns a new Matrix object with default dimensions
-    Matrix* create_matrix(int symmetry = 0);
+    std::unique_ptr<Matrix> create_matrix(int symmetry = 0);
 
     /// Returns a new Matrix object with default dimensions
     SharedMatrix create_shared_matrix() const;
@@ -98,7 +98,7 @@ class PSI_API MatrixFactory {
     void create_matrix(Matrix& mat, int symmetry = 0);
 
     /// Returns a new Matrix object named name with default dimensions
-    Matrix* create_matrix(std::string name, int symmetry = 0);
+    std::unique_ptr<Matrix> create_matrix(std::string name, int symmetry = 0);
 
     SharedMatrix create_shared_matrix(const std::string& name) const;
 
@@ -109,7 +109,7 @@ class PSI_API MatrixFactory {
     void create_matrix(Matrix& mat, std::string name, int symmetry = 0);
 
     /// Returns a new Vector object with default dimensions
-    Vector* create_vector();
+    std::unique_ptr<Vector> create_vector();
 
     void create_vector(Vector& vec);
 

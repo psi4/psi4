@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -66,8 +66,8 @@ void OCCWave::omp3_ip_poles() {
     //===========================================================================================
     if (reference_ == "RESTRICTED") {
         // Memory allocation
-        auto eOccOrbA = std::make_shared<Vector>("eOccOrbA", nirrep_, occpiA);
-        eOccOrbA->zero();
+        Vector eOccOrbA("eOccOrbA", occpiA);
+        eOccOrbA.zero();
 
         dpdbuf4 K, T, D;
 
@@ -75,8 +75,8 @@ void OCCWave::omp3_ip_poles() {
         psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
         // Build denominators D_jk^ia = E_j + E_k - E_i - E_a
-        auto *aOccEvals = new double[nacooA];
-        auto *aVirEvals = new double[nacvoA];
+        std::vector<double> aOccEvals(nacooA);
+        std::vector<double> aVirEvals(nacvoA);
 
         // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
         // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
@@ -109,9 +109,6 @@ void OCCWave::omp3_ip_poles() {
         }
         global_dpd_->buf4_close(&D);
 
-        delete[] aOccEvals;
-        delete[] aVirEvals;
-
         // NOTE:! The followings are MP2 amplitudes, they should be MP3 amplitudes.
         // Build T_IA^JK
         // T_IA^JK = <IA||JK> / D_IA^JK
@@ -131,7 +128,7 @@ void OCCWave::omp3_ip_poles() {
         // e_I = F_II : reference contribution
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < occpiA[h]; ++i) {
-                eOccOrbA->set(h, i, FockA->get(h, i, i));
+                eOccOrbA.set(h, i, FockA->get(h, i, i));
             }
         }
 
@@ -153,7 +150,7 @@ void OCCWave::omp3_ip_poles() {
                 int ii = i - occ_offA[hi];
                 for (int ab = 0; ab < K.params->coltot[h]; ++ab) {
                     double value = ((2.0 * T.matrix[h][ij][ab]) - T.matrix[h][ji][ab]) * K.matrix[h][ij][ab];
-                    eOccOrbA->add(hi, ii, value);
+                    eOccOrbA.add(hi, ii, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -181,7 +178,7 @@ void OCCWave::omp3_ip_poles() {
                     int hi = K.params->rsym[i];
                     int ii = i - occ_offA[hi];
                     double value = ((2.0 * T.matrix[h][ia][jk]) - T.matrix[h][ia][kj]) * K.matrix[h][jk][ia];
-                    eOccOrbA->add(hi, ii, value);
+                    eOccOrbA.add(hi, ii, value);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -194,17 +191,17 @@ void OCCWave::omp3_ip_poles() {
         psio_->close(PSIF_OCC_DPD, 1);
 
         // Sort orbitals
-        Array1d *evals_A = new Array1d("Alpha OCC ORB C1", nooA);
-        Array1i *irrep_A = new Array1i("IrrepA", nooA);
-        evals_A->zero();
-        irrep_A->zero();
+        Array1d evals_A("Alpha OCC ORB C1", nooA);
+        Array1i irrep_A("IrrepA", nooA);
+        evals_A.zero();
+        irrep_A.zero();
 
         // Sort Alpha spin-case
         int count = 0;
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < occpiA[h]; ++i) {
-                evals_A->set(count, eOccOrbA->get(h, i));
-                irrep_A->set(count, h);
+                evals_A.set(count, eOccOrbA.get(h, i));
+                irrep_A.set(count, h);
                 count++;
             }
         }
@@ -213,13 +210,13 @@ void OCCWave::omp3_ip_poles() {
 
         for (int i = 0; i < nooA; ++i) {
             for (int j = nooA - 1; j > i; --j) {
-                if (evals_A->get(j - 1) > evals_A->get(j)) {
-                    double dum = evals_A->get(j - 1);
-                    evals_A->set(j - 1, evals_A->get(j));
-                    evals_A->set(j, dum);
-                    int dum2 = irrep_A->get(j - 1);
-                    irrep_A->set(j - 1, irrep_A->get(j));
-                    irrep_A->set(j, dum2);
+                if (evals_A.get(j - 1) > evals_A.get(j)) {
+                    double dum = evals_A.get(j - 1);
+                    evals_A.set(j - 1, evals_A.get(j));
+                    evals_A.set(j, dum);
+                    int dum2 = irrep_A.get(j - 1);
+                    irrep_A.set(j - 1, irrep_A.get(j));
+                    irrep_A.set(j, dum2);
                 }
             }
         }
@@ -239,16 +236,11 @@ void OCCWave::omp3_ip_poles() {
         outfile->Printf("\tAlpha occupied orbitals\n");
         count = 1;
         for (int i = 0; i < nooA; ++i) {
-            int h = irrep_A->get(i);
-            outfile->Printf("\t%3d (%-3s) %20.10f \n", count, ct.gamma(h).symbol(), evals_A->get(i));
+            int h = irrep_A.get(i);
+            outfile->Printf("\t%3d (%-3s) %20.10f \n", count, ct.gamma(h).symbol(), evals_A.get(i));
 
             count++;
         }
-
-        eOccOrbA.reset();
-        delete evals_A;
-        delete irrep_A;
-
     }  // end if (reference_ == "RESTRICTED")
 
     //===========================================================================================
@@ -256,10 +248,10 @@ void OCCWave::omp3_ip_poles() {
     //===========================================================================================
     else if (reference_ == "UNRESTRICTED") {
         // Memory allocation
-        auto eOccOrbA = std::make_shared<Vector>("eOccOrbA", nirrep_, occpiA);
-        auto eOccOrbB = std::make_shared<Vector>("eOccOrbB", nirrep_, occpiB);
-        eOccOrbA->zero();
-        eOccOrbB->zero();
+        Vector eOccOrbA("eOccOrbA", occpiA);
+        Vector eOccOrbB("eOccOrbB", occpiB);
+        eOccOrbA.zero();
+        eOccOrbB.zero();
 
         dpdbuf4 K, T, D;
 
@@ -267,10 +259,10 @@ void OCCWave::omp3_ip_poles() {
         psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
         // Build denominators D_jk^ia = E_j + E_k - E_i - E_a
-        auto *aOccEvals = new double[nacooA];
-        auto *bOccEvals = new double[nacooB];
-        auto *aVirEvals = new double[nacvoA];
-        auto *bVirEvals = new double[nacvoB];
+        std::vector<double> aOccEvals(nacooA);
+        std::vector<double> bOccEvals(nacooB);
+        std::vector<double> aVirEvals(nacvoA);
+        std::vector<double> bVirEvals(nacvoB);
 
         // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
         // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
@@ -362,11 +354,6 @@ void OCCWave::omp3_ip_poles() {
         }
         global_dpd_->buf4_close(&D);
 
-        delete[] aOccEvals;
-        delete[] bOccEvals;
-        delete[] aVirEvals;
-        delete[] bVirEvals;
-
         // Build T_IA^JK
         // T_IA^JK = <IA||JK> / D_IA^JK
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), 0,
@@ -424,7 +411,7 @@ void OCCWave::omp3_ip_poles() {
         // e_I = F_II : reference contribution
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < occpiA[h]; ++i) {
-                eOccOrbA->set(h, i, FockA->get(h, i, i));
+                eOccOrbA.set(h, i, FockA->get(h, i, i));
             }
         }
 
@@ -443,7 +430,7 @@ void OCCWave::omp3_ip_poles() {
                 int hi = K.params->psym[i];
                 int ii = i - occ_offA[hi];
                 for (int ab = 0; ab < K.params->coltot[h]; ++ab) {
-                    eOccOrbA->add(hi, ii, 0.5 * K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
+                    eOccOrbA.add(hi, ii, 0.5 * K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -467,7 +454,7 @@ void OCCWave::omp3_ip_poles() {
                 int hi = K.params->psym[i];
                 int ii = i - occ_offA[hi];
                 for (int ab = 0; ab < K.params->coltot[h]; ++ab) {
-                    eOccOrbA->add(hi, ii, K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
+                    eOccOrbA.add(hi, ii, K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -491,7 +478,7 @@ void OCCWave::omp3_ip_poles() {
                     int i = K.params->colorb[h][ia][0];
                     int hi = K.params->rsym[i];
                     int ii = i - occ_offA[hi];
-                    eOccOrbA->add(hi, ii, 0.5 * K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
+                    eOccOrbA.add(hi, ii, 0.5 * K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -515,7 +502,7 @@ void OCCWave::omp3_ip_poles() {
                     int i = K.params->colorb[h][ia][0];
                     int hi = K.params->rsym[i];
                     int ii = i - occ_offA[hi];
-                    eOccOrbA->add(hi, ii, K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
+                    eOccOrbA.add(hi, ii, K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -528,7 +515,7 @@ void OCCWave::omp3_ip_poles() {
         // e_i = F_ii : reference contribution
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < occpiB[h]; ++i) {
-                eOccOrbB->set(h, i, FockB->get(h, i, i));
+                eOccOrbB.set(h, i, FockB->get(h, i, i));
             }
         }
 
@@ -547,7 +534,7 @@ void OCCWave::omp3_ip_poles() {
                 int hi = K.params->psym[i];
                 int ii = i - occ_offB[hi];
                 for (int ab = 0; ab < K.params->coltot[h]; ++ab) {
-                    eOccOrbB->add(hi, ii, 0.5 * K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
+                    eOccOrbB.add(hi, ii, 0.5 * K.matrix[h][ij][ab] * T.matrix[h][ij][ab]);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -571,7 +558,7 @@ void OCCWave::omp3_ip_poles() {
                 int hi = K.params->qsym[i];
                 int ii = i - occ_offB[hi];
                 for (int ab = 0; ab < K.params->coltot[h]; ++ab) {
-                    eOccOrbB->add(hi, ii, K.matrix[h][ji][ab] * T.matrix[h][ji][ab]);
+                    eOccOrbB.add(hi, ii, K.matrix[h][ji][ab] * T.matrix[h][ji][ab]);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -595,7 +582,7 @@ void OCCWave::omp3_ip_poles() {
                     int i = K.params->colorb[h][ia][0];
                     int hi = K.params->rsym[i];
                     int ii = i - occ_offB[hi];
-                    eOccOrbB->add(hi, ii, 0.5 * K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
+                    eOccOrbB.add(hi, ii, 0.5 * K.matrix[h][jk][ia] * T.matrix[h][ia][jk]);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -619,7 +606,7 @@ void OCCWave::omp3_ip_poles() {
                     int i = K.params->colorb[h][ai][1];
                     int hi = K.params->ssym[i];
                     int ii = i - occ_offB[hi];
-                    eOccOrbB->add(hi, ii, K.matrix[h][jk][ai] * T.matrix[h][ai][jk]);
+                    eOccOrbB.add(hi, ii, K.matrix[h][jk][ai] * T.matrix[h][ai][jk]);
                 }
             }
             global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -632,21 +619,21 @@ void OCCWave::omp3_ip_poles() {
         psio_->close(PSIF_OCC_DPD, 1);
 
         // Sort orbitals
-        Array1d *evals_A = new Array1d("Alpha OCC ORB C1", nooA);
-        Array1d *evals_B = new Array1d("Beta OCC ORB C1", nooB);
-        Array1i *irrep_A = new Array1i("IrrepA", nooA);
-        Array1i *irrep_B = new Array1i("IrrepA", nooB);
-        evals_A->zero();
-        evals_B->zero();
-        irrep_A->zero();
-        irrep_B->zero();
+        Array1d evals_A("Alpha OCC ORB C1", nooA);
+        Array1d evals_B("Beta OCC ORB C1", nooB);
+        Array1i irrep_A("IrrepA", nooA);
+        Array1i irrep_B("IrrepA", nooB);
+        evals_A.zero();
+        evals_B.zero();
+        irrep_A.zero();
+        irrep_B.zero();
 
         // Sort Alpha spin-case
         int count = 0;
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < occpiA[h]; ++i) {
-                evals_A->set(count, eOccOrbA->get(h, i));
-                irrep_A->set(count, h);
+                evals_A.set(count, eOccOrbA.get(h, i));
+                irrep_A.set(count, h);
                 count++;
             }
         }
@@ -655,13 +642,13 @@ void OCCWave::omp3_ip_poles() {
 
         for (int i = 0; i < nooA; ++i) {
             for (int j = nooA - 1; j > i; --j) {
-                if (evals_A->get(j - 1) > evals_A->get(j)) {
-                    double dum = evals_A->get(j - 1);
-                    evals_A->set(j - 1, evals_A->get(j));
-                    evals_A->set(j, dum);
-                    int dum2 = irrep_A->get(j - 1);
-                    irrep_A->set(j - 1, irrep_A->get(j));
-                    irrep_A->set(j, dum2);
+                if (evals_A.get(j - 1) > evals_A.get(j)) {
+                    double dum = evals_A.get(j - 1);
+                    evals_A.set(j - 1, evals_A.get(j));
+                    evals_A.set(j, dum);
+                    int dum2 = irrep_A.get(j - 1);
+                    irrep_A.set(j - 1, irrep_A.get(j));
+                    irrep_A.set(j, dum2);
                 }
             }
         }
@@ -670,20 +657,20 @@ void OCCWave::omp3_ip_poles() {
         count = 0;
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < occpiB[h]; ++i) {
-                evals_B->set(count, eOccOrbB->get(h, i));
-                irrep_B->set(count, h);
+                evals_B.set(count, eOccOrbB.get(h, i));
+                irrep_B.set(count, h);
                 count++;
             }
         }
         for (int i = 0; i < nooB; ++i) {
             for (int j = nooB - 1; j > i; --j) {
-                if (evals_B->get(j - 1) > evals_B->get(j)) {
-                    double dum = evals_B->get(j - 1);
-                    evals_B->set(j - 1, evals_B->get(j));
-                    evals_B->set(j, dum);
-                    int dum2 = irrep_B->get(j - 1);
-                    irrep_B->set(j - 1, irrep_B->get(j));
-                    irrep_B->set(j, dum2);
+                if (evals_B.get(j - 1) > evals_B.get(j)) {
+                    double dum = evals_B.get(j - 1);
+                    evals_B.set(j - 1, evals_B.get(j));
+                    evals_B.set(j, dum);
+                    int dum2 = irrep_B.get(j - 1);
+                    irrep_B.set(j - 1, irrep_B.get(j));
+                    irrep_B.set(j, dum2);
                 }
             }
         }
@@ -703,8 +690,8 @@ void OCCWave::omp3_ip_poles() {
         outfile->Printf("\tAlpha occupied orbitals\n");
         count = 1;
         for (int i = 0; i < nooA; ++i) {
-            int h = irrep_A->get(i);
-            outfile->Printf("\t%3d (%-3s) %20.10f \n", count, ct.gamma(h).symbol(), evals_A->get(i));
+            int h = irrep_A.get(i);
+            outfile->Printf("\t%3d (%-3s) %20.10f \n", count, ct.gamma(h).symbol(), evals_A.get(i));
 
             count++;
         }
@@ -713,19 +700,11 @@ void OCCWave::omp3_ip_poles() {
         outfile->Printf("\n\tBeta occupied orbitals\n");
         count = 1;
         for (int i = 0; i < nooB; ++i) {
-            int h = irrep_B->get(i);
-            outfile->Printf("\t%3d (%-3s) %20.10f \n", count, ct.gamma(h).symbol(), evals_B->get(i));
+            int h = irrep_B.get(i);
+            outfile->Printf("\t%3d (%-3s) %20.10f \n", count, ct.gamma(h).symbol(), evals_B.get(i));
 
             count++;
         }
-
-        eOccOrbA.reset();
-        eOccOrbB.reset();
-        delete evals_A;
-        delete evals_B;
-        delete irrep_A;
-        delete irrep_B;
-
     }  // end if (reference_ == "UNRESTRICTED")
     // outfile->Printf("\n omp3_ip_poles is done. \n");
 }  // end omp3_ip_poles

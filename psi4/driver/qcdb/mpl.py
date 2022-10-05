@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -769,7 +769,7 @@ def ternary(sapt, title='', labeled=True, view=True,
         yvals.append(ydot)
         cvals.append(cdot)
 
-    sc = ax.scatter(xvals, yvals, c=cvals, s=15, marker="o", \
+    sc = ax.scatter(xvals, yvals, c=cvals, s=15, marker="o",
         cmap=mpl.cm.jet, edgecolor='none', vmin=0, vmax=1, zorder=10)
 
     # remove figure outline
@@ -891,7 +891,7 @@ def composition_tile(db, aa1, aa2):
     """
     import re
     import numpy as np
-    bfdbpattern = re.compile("\d\d\d([A-Z][A-Z][A-Z])-\d\d\d([A-Z][A-Z][A-Z])-\d")
+    bfdbpattern = re.compile(r"\d\d\d([A-Z][A-Z][A-Z])-\d\d\d([A-Z][A-Z][A-Z])-\d")
 
     tiles = []
     for key, val in db.items():

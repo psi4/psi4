@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -47,6 +47,10 @@ size_t GTFockJK::estimate_memory() {
     return 0; // Effectively
 }
 void GTFockJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
     NMats_ = C_left_.size();
     Impl_->create_pfock(NMats_, lr_symmetric_);
     Impl_->SetP(D_ao_);

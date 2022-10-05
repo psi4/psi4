@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -31,7 +31,6 @@
 
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
@@ -39,6 +38,7 @@
 
 namespace psi {
 
+class DIISManager;
 class IntegralTransform;
 
 namespace occwave {
@@ -108,15 +108,15 @@ class OCCWave : public Wavefunction {
     void second_order_opdm();
     void set_t2_amplitudes_mp2();
     void mp2_energy(bool include_singles = false);
-    void oo_diis();
+    void oo_diis(DIISManager&);
 
     // Processing functions - print output, save variables
-    void mp2_printing(bool scf = false, bool include_singles = false);
-    void mp2p5_printing(bool scf = false);
-    void mp3_printing(bool scf = false);
-    void mp2_postprocessing(bool include_singles = false);
-    void mp2p5_postprocessing();
-    void mp3_postprocessing();
+    void mp2_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp2p5_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp3_printing(bool scf = false, bool include_singles = false, bool incomplete_singles = false);
+    void mp2_postprocessing(bool include_singles = false, bool incomplete_singles = false);
+    void mp2p5_postprocessing(bool include_singles = false, bool incomplete_singles = false);
+    void mp3_postprocessing(bool include_singles = false, bool incomplete_singles = false);
 
     // OMP2
     void omp2_manager();
@@ -151,7 +151,7 @@ class OCCWave : public Wavefunction {
     void ocepa_manager();
     void cepa_manager();
     void cepa_iterations();
-    void cepa_diis();
+    void cepa_diis(DIISManager&);
     void cepa_chemist();
     void ocepa_tpdm_vvvv();
     void ocepa_response_pdms();
@@ -159,6 +159,12 @@ class OCCWave : public Wavefunction {
     void w_int();
     void v_int();
     void cepa_energy();
+
+    // REMP
+    void t2_amps_remp();
+    void remp_manager();
+    void oremp_manager();
+    void remp_iterations();
 
     // MP2
     void denominators_rmp2();
@@ -169,10 +175,6 @@ class OCCWave : public Wavefunction {
     void t1_1st_gen();
 
     class IntegralTransform *ints;
-    // Having two separate DIIS managers is silly and will soon be remedied.
-    DIISManager *t2DiisManager;
-    DIISManager *orbitalDiis;
-    // class DIISManager t2DiisManager;
 
     int nmo;      // Number of MOs
     int nao;      // Number of AOs
@@ -314,6 +316,7 @@ class OCCWave : public Wavefunction {
     double s2_proj;
     double s2_lag;
     double s2_ref;
+    double remp_A;
 
     // OMP3
     double e3_scale;
@@ -374,22 +377,14 @@ class OCCWave : public Wavefunction {
     std::string comput_s2_;
 
     // Several of these int*'s seem like they should be Dimension objects.
-    int *mopi; /* number of all MOs per irrep */
-    int *sopi; /* number of all SOs per irrep */
-    int *occpi;
-    int *doccpi;           /* number of doubly occupied MOs per irrep */
-    int *occpiA;           /* number of alpha occupied MOs per irrep */
-    int *occpiB;           /* number of beta occupied MOs per irrep */
-    int *soccpi;           /* number of all singly occupied MOs per irrep */
-    int *virtpiA;          /* number of alpha virtual MOs per irrep */
-    int *virtpiB;          /* number of beta virtual MOs per irrep */
-    int *frzcpi;           /* number of frozen occupied MOs per irrep */
-    int *frzvpi;           /* number of frozen virtual MOs per irrep */
-    int *adoccpi;          /* number of active doubly occupied MOs per irrep */
-    int *aoccpiA;          /* number of active alpha occupied MOs per irrep */
-    int *aoccpiB;          /* number of active beta occupied MOs per irrep */
-    int *avirtpiA;         /* number of active alpha virtual MOs per irrep */
-    int *avirtpiB;         /* number of active beta virtual MOs per irrep */
+    Dimension occpiA;           /* number of alpha occupied MOs per irrep */
+    Dimension occpiB;           /* number of beta occupied MOs per irrep */
+    Dimension virtpiA;     /* number of alpha virtual MOs per irrep */
+    Dimension virtpiB;     /* number of beta virtual MOs per irrep */
+    Dimension aoccpiA;     /* number of active alpha occupied MOs per irrep */
+    Dimension aoccpiB;     /* number of active beta occupied MOs per irrep */
+    Dimension avirtpiA;         /* number of active alpha virtual MOs per irrep */
+    Dimension avirtpiB;         /* number of active beta virtual MOs per irrep */
     int *mosym;            /* symmetry of all MOs in pitzer order */
     int *sosym;            /* symmetry of all SOs in pitzer order */
     int *mosym_c1;         /* symmetry of all MOs in energy order */

@@ -1,3 +1,5 @@
+#! FSAPT with external charge on dimer
+
 memory 1 GB
 
 # water prism: https://science.sciencemag.org/content/sci/suppl/2012/05/16/336.6083.897.DC1/Perez_SM.pdf
@@ -18,20 +20,20 @@ no_reorient
 no_com
 }
 
-Chrgfield_B = QMMM()
-Chrgfield_B.extern.addCharge(0.417, -2.5628, -0.8269, -1.6696)
-Chrgfield_B.extern.addCharge(-0.834, -1.7899, -0.4027, -1.2768)
-Chrgfield_B.extern.addCharge(0.417, -1.8988, -0.4993, -0.3072)
+Chrgfield_B = np.array([
+ 0.417, -2.5628, -0.8269, -1.6696,
+-0.834, -1.7899, -0.4027, -1.2768,
+ 0.417, -1.8988, -0.4993, -0.3072]).reshape((-1, 4))
+Chrgfield_B[:,[1,2,3]] /= psi_bohr2angstroms
 
-Chrgfield_C = QMMM()
-Chrgfield_C.extern.addCharge(0.417, 1.1270, 1.5527, -0.1658)
-Chrgfield_C.extern.addCharge(-0.834, 1.9896, 1.0738, -0.1673)
-Chrgfield_C.extern.addCharge(0.417, 2.6619, 1.7546, -0.2910)
-Chrgfield_C.extern.addCharge(0.417, -1.0231, 1.6243, -0.8743)
-Chrgfield_C.extern.addCharge(-0.834, -0.5806, 2.0297, -0.1111)
-Chrgfield_C.extern.addCharge(0.417, -0.9480, 1.5096, 0.6281)
-
-
+Chrgfield_C = np.array([
+ 0.417,  1.1270, 1.5527, -0.1658,
+-0.834,  1.9896, 1.0738, -0.1673,
+ 0.417,  2.6619, 1.7546, -0.2910,
+ 0.417, -1.0231, 1.6243, -0.8743,
+-0.834, -0.5806, 2.0297, -0.1111,
+ 0.417, -0.9480, 1.5096,  0.6281]).reshape((-1, 4))
+Chrgfield_C[:,[1,2,3]] /= psi_bohr2angstroms
 
 external_potentials = {
                        'B': Chrgfield_B,

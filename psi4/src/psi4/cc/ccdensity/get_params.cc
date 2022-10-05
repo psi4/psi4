@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -51,24 +51,25 @@ namespace psi {
 namespace ccdensity {
 
 void get_params(Options& options) {
-    int errcod, tol;
-    std::string junk;
-
     params.wfn = options.get_str("WFN");
-
-    // junk = options.get_str("REFERENCE");
-    // if(junk == "RHF") params.ref = 0;
-    // else if(junk == "ROHF") params.ref = 1;
-    // else if(junk == "UHF") params.ref = 2;
-    // else {
-    //  printf("Invalid value of input keyword REFERENCE: %s\n", junk.c_str());
-    //  throw PsiException("ccdensity: error", __FILE__, __LINE__);
-    //}
 
     psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char*)&(params.ref), sizeof(int));
 
-    params.onepdm = options.get_bool("ONEPDM");
-    params.onepdm_grid_dump = options.get_bool("ONEPDM_GRID_DUMP");
+    params.onepdm = options.get_bool("OPDM_ONLY");
+    if (options["ONEPDM"].has_changed()) {
+        outfile->Printf("\tWarning! ONEPDM is deprecated and will be removed in 1.7. Use OPDM_ONLY instead.");
+        if (not options["OPDM_ONLY"].has_changed()) {
+            params.onepdm = options.get_bool("ONEPDM");
+        }
+    }
+
+    params.onepdm_grid_dump = options.get_bool("OPDM_GRID_DUMP");
+    if (options["ONEPDM_GRID_DUMP"].has_changed()) {
+        outfile->Printf("\tWarning! ONEPDM_GRID_DUMP is deprecated and will be removed in 1.7. Use OPDM_GRID_DUMP instead.");
+        if (not options["OPDM_GRID_DUMP"].has_changed()) {
+            params.onepdm_grid_dump = options.get_bool("ONEPDM_GRID_DUMP");
+        }
+    }
 
     params.calc_xi = options.get_bool("XI");
     if (params.calc_xi) {
@@ -97,9 +98,6 @@ void get_params(Options& options) {
     // params.aobasis = 0;
     params.aobasis = options.get_bool("AO_BASIS");
 
-    params.ael = 0;
-    params.ael = options.get_bool("AEL");
-
     params.gauge = options.get_str("GAUGE");
     if (params.gauge != "LENGTH" && params.gauge != "VELOCITY") {
         printf("Invalid choice of gauge: %s\n", params.gauge.c_str());
@@ -108,7 +106,7 @@ void get_params(Options& options) {
 
     /*** determine DERTYPE from input */
     params.dertype = 0;
-    junk = options.get_str("DERTYPE");
+    std::string junk = options.get_str("DERTYPE");
     if (junk == "NONE")
         params.dertype = 0;
     else if (junk == "FIRST")

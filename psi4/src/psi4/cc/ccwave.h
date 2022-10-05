@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -55,6 +55,8 @@ class CCEnergyWavefunction : public Wavefunction {
     double compute_energy() override;
 
     std::map<std::string, SharedMatrix> get_amplitudes();
+    // (index within irrep, irrep) -> global index
+    std::map<std::tuple<int, int>, int> total_indices;
 
    private:
     /* setup, info and teardown */
@@ -118,7 +120,7 @@ class CCEnergyWavefunction : public Wavefunction {
     void cachedone_uhf(int **cachelist);
 
     /* Brueckner */
-    int rotate();
+    bool rotate();
     double **fock_build(double **D);
 
     /* CC2 / CC3 */
@@ -150,9 +152,12 @@ class CCEnergyWavefunction : public Wavefunction {
     double rhf_mp2_energy();
     void one_step();
     void denom();
-    void pair_energies(double **epair_aa, double **epair_ab);
-    void print_pair_energies(double *emp2_aa, double *emp2_ab, double *ecc_aa, double *ecc_ab);
-
+    // Grab pair energies from the OOVV block of C2 (not T2), storing in the input vectors.
+    // For HF orbitals, the correlation energy is the sum of pair energies.
+    void pair_energies(std::vector<double>& epair_aa, std::vector<double>& epair_ab) const;
+    // Use input AA and AB pair energies to save pair energies to the wavefunction and print them.
+    void print_pair_energies(const std::vector<double>& emp2_aa, const std::vector<double>& emp2_ab, const std::vector<double>& ecc_aa, const std::vector<double>& ecc_ab);
+    // Form density-fitted integrals and connect them to DPD. Only implemented for RHF.
     void form_df_ints(Options &options, int **cachelist, int *cachefiles);
 
     /* diagnostics */
@@ -194,6 +199,8 @@ class CCEnergyWavefunction : public Wavefunction {
     void diis_invert_B(double **B, double *C, int dimension, double tolerance);
 
     /* member variables */
+    Dimension act_occpi_;
+    Dimension act_virpi_;
     MOInfo moinfo_;
     Params params_;
     Local local_;

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -2642,7 +2642,7 @@ reinitialize
                             for col in columnplan:
                                 if col == field_to_put_labels[0]:
                                     summlines[0].append(
-                                        r"""\textbf{Summary Statistics: %s%s}%s""" % \
+                                        r"""\textbf{Summary Statistics: %s%s}%s""" %
                                         ('' if sset == 'default' else sset + r""" $\subset$ """,
                                          block,
                                          '' if isComplete else r""", \textit{partial}"""))
@@ -2677,7 +2677,7 @@ reinitialize
             # form table index
             thisindextitle = indextitle.format(dbse=self.dbse, mc=fancymodelchem.strip(),
                                                sset='All' if sset == 'default' else sset.upper())
-            indexlines.append(r"""\scriptsize \ref{%s} & \scriptsize %s \\ """ % \
+            indexlines.append(r"""\scriptsize \ref{%s} & \scriptsize %s \\ """ %
                               (ref, thisindextitle))
 
         if standalone:

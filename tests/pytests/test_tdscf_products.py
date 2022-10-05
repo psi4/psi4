@@ -4,8 +4,9 @@ import pytest
 import psi4
 from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine,
                                                            TDUSCFEngine)
-from .utils import compare_arrays, compare_values
+from utils import compare_arrays, compare_values
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 def build_RHF_AB_C1_singlet(wfn):
     mints = psi4.core.MintsHelper(wfn.basisset())

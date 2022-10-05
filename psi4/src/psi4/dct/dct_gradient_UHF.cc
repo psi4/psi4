@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -107,10 +107,8 @@ void DCTSolver::dc06_response() {
         global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
         global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
         DIISManager diisManager(maxdiis_, "DCT DIIS orbital response vectors");
-        diisManager.set_error_vector_size(5, DIISEntry::DPDFile2, &zaa, DIISEntry::DPDFile2, &zbb, DIISEntry::DPDBuf4,
-                                          &Zaa, DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
-        diisManager.set_vector_size(5, DIISEntry::DPDFile2, &zaa, DIISEntry::DPDFile2, &zbb, DIISEntry::DPDBuf4, &Zaa,
-                                    DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
+        diisManager.set_error_vector_size(&zaa, &zbb, &Zaa, &Zab, &Zbb);
+        diisManager.set_vector_size(&zaa, &zbb, &Zaa, &Zab, &Zbb);
         global_dpd_->buf4_close(&Zaa);
         global_dpd_->buf4_close(&Zab);
         global_dpd_->buf4_close(&Zbb);
@@ -158,12 +156,12 @@ void DCTSolver::dc06_response() {
                     global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
                     global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
 
-                    if (diisManager.add_entry(10, &raa, &rbb, &Raa, &Rab, &Rbb, &zaa, &zbb, &Zaa, &Zab, &Zbb)) {
+                    if (diisManager.add_entry(&raa, &rbb, &Raa, &Rab, &Rbb, &zaa, &zbb, &Zaa, &Zab, &Zbb)) {
                         diisString += "S";
                     }
                     if (diisManager.subspace_size() > mindiisvecs_) {
                         diisString += "/E";
-                        diisManager.extrapolate(5, &zaa, &zbb, &Zaa, &Zab, &Zbb);
+                        diisManager.extrapolate(&zaa, &zbb, &Zaa, &Zab, &Zbb);
                     }
                     global_dpd_->file2_close(&zaa);
                     global_dpd_->file2_close(&zbb);
@@ -1117,9 +1115,9 @@ void DCTSolver::iterate_orbital_response() {
     dpdfile2 zaa, zbb, raa, rbb;
     global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
     global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-    DIISManager ZiaDiisManager(maxdiis_, "DCT DIIS Orbital Z", DIISManager::LargestError, DIISManager::InCore);
-    ZiaDiisManager.set_error_vector_size(2, DIISEntry::DPDFile2, &zaa, DIISEntry::DPDFile2, &zbb);
-    ZiaDiisManager.set_vector_size(2, DIISEntry::DPDFile2, &zaa, DIISEntry::DPDFile2, &zbb);
+    DIISManager ZiaDiisManager(maxdiis_, "DCT DIIS Orbital Z", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    ZiaDiisManager.set_error_vector_size(&zaa, &zbb);
+    ZiaDiisManager.set_vector_size(&zaa, &zbb);
     global_dpd_->file2_close(&zaa);
     global_dpd_->file2_close(&zbb);
 
@@ -1143,13 +1141,13 @@ void DCTSolver::iterate_orbital_response() {
             global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
             global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
 
-            if (ZiaDiisManager.add_entry(4, &raa, &rbb, &zaa, &zbb)) {
+            if (ZiaDiisManager.add_entry(&raa, &rbb, &zaa, &zbb)) {
                 diisString += "S";
             }
             // Extrapolate orbital response
             if (ZiaDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0) {
                 diisString += "/E";
-                ZiaDiisManager.extrapolate(2, &zaa, &zbb);
+                ZiaDiisManager.extrapolate(&zaa, &zbb);
             }
             global_dpd_->file2_close(&zaa);
             global_dpd_->file2_close(&zbb);
@@ -1912,9 +1910,9 @@ void DCTSolver::iterate_cumulant_response() {
     global_dpd_->buf4_init(&Zab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
     global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Z <oo|vv>");
-    DIISManager ZDiisManager(maxdiis_, "DCT DIIS Z", DIISManager::LargestError, DIISManager::InCore);
-    ZDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Zaa, DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
-    ZDiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Zaa, DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
+    DIISManager ZDiisManager(maxdiis_, "DCT DIIS Z", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    ZDiisManager.set_error_vector_size(&Zaa, &Zab, &Zbb);
+    ZDiisManager.set_vector_size(&Zaa, &Zab, &Zbb);
     global_dpd_->buf4_close(&Zaa);
     global_dpd_->buf4_close(&Zab);
     global_dpd_->buf4_close(&Zbb);
@@ -1955,13 +1953,13 @@ void DCTSolver::iterate_cumulant_response() {
             global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "Z <oo|vv>");
 
-            if (ZDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Zaa, &Zab, &Zbb)) {
+            if (ZDiisManager.add_entry(&Raa, &Rab, &Rbb, &Zaa, &Zab, &Zbb)) {
                 diisString += "S";
             }
             // Extrapolate cumulant response
             if (ZDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0) {
                 diisString += "/E";
-                ZDiisManager.extrapolate(3, &Zaa, &Zab, &Zbb);
+                ZDiisManager.extrapolate(&Zaa, &Zab, &Zbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);
@@ -3095,10 +3093,10 @@ void DCTSolver::compute_lagrangian_OO(bool separate_gbargamma) {
     // If we have gbar_gamma separate, just like when computing the OO gradient, we compute these terms special.
     if (separate_gbargamma) {
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), Slice(zero, nsopi_));
-        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(zero, doccpi_), Slice(zero, nsopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(zero, soccpi_ + doccpi_));
-        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(zero, doccpi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, nalphapi_), Slice(zero, nsopi_));
+        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(zero, nbetapi_), Slice(zero, nsopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(zero, nalphapi_));
+        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(zero, nbetapi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
         auto beta_jk = linalg::doublet(gbar_beta_block, gamma_beta_block, false, false);
 
@@ -3340,10 +3338,10 @@ void DCTSolver::compute_lagrangian_VV(bool separate_gbargamma) {
     // If we have gbar_gamma separate, just like when computing the OO gradient, we compute these terms special.
     if (separate_gbargamma) {
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nsopi_), Slice(zero, nsopi_));
-        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(doccpi_, nsopi_), Slice(zero, nsopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(soccpi_ + doccpi_, nsopi_));
-        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(doccpi_, nsopi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(nalphapi_, nsopi_), Slice(zero, nsopi_));
+        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(nbetapi_, nsopi_), Slice(zero, nsopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(nalphapi_, nsopi_));
+        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(nbetapi_, nsopi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
         auto beta_jk = linalg::doublet(gbar_beta_block, gamma_beta_block, false, false);
 

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -35,8 +35,8 @@
 
 .. _`sec:cubeprop`:
 
-Generation of Cube Files |w---w| :py:func:`~psi4.cubeprop`
-==========================================================
+Generation of Cube Files |w---w| :py:func:`~psi4.driver.cubeprop`
+=================================================================
 
 .. codeauthor:: Robert M. Parrish, Francesco A. Evangelista and Peter Kraus
 .. sectionauthor:: Francesco A. Evangelista and Peter Kraus
@@ -72,7 +72,7 @@ An example utilization of the code is::
    E, wfn = energy('scf', return_wfn=True)
    cubeprop(wfn)
 
-In this example, the :py:func:`~psi4.cubeprop`
+In this example, the :py:func:`~psi4.driver.cubeprop`
 call after the ``energy('scf')`` command
 executes the cubeprop code.  The array |globals__cubeprop_tasks| specifies which
 tasks should be executed.  In this case the task ``'orbitals'`` generates cube

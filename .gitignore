@@ -25,6 +25,10 @@ CMakeLists.txt.user
 # Hidden files (swap)
 .*
 
+# Don't ignore hidden directories
+!/.github
+!/.azure-pipelines
+
 # Compiled Python files. Regenerated automatically
 *.pyc
 *.pyo
@@ -50,6 +54,7 @@ input.py.dat
 *.molden
 *.cube
 dfh.*
+input.log
 
 *.json
 

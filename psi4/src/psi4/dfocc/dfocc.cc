@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -68,6 +68,7 @@ void DFOCC::common_init() {
     ss_scale = options_.get_double("MP2_SS_SCALE");
     sos_scale = options_.get_double("MP2_SOS_SCALE");
     sos_scale2 = options_.get_double("MP2_SOS_SCALE2");
+    remp_a = options_.get_double("REMP_A");
     // cepa_os_scale_=options_.get_double("CEPA_OS_SCALE");
     // cepa_ss_scale_=options_.get_double("CEPA_SS_SCALE");
     // cepa_sos_scale_=options_.get_double("CEPA_SOS_SCALE");
@@ -107,14 +108,16 @@ void DFOCC::common_init() {
     triples_iabc_type_ = options_.get_str("TRIPLES_IABC_TYPE");
     do_cd = options_.get_str("CHOLESKY");
 
+    if ((dertype == "FIRST" || orb_opt_ == "TRUE" || wfn_type_ == "DF-CCSD(AT)") && cc_lambda_ == "FALSE") {
+        cc_lambda_ = "TRUE";
+        outfile->Printf("\tWarning: cc_lambda option is changed to TRUE\n");
+    }
+
     if (!psio_) {
         throw PSIEXCEPTION("The wavefunction passed in lacks a PSIO object, crashing DFOCC. See GitHub issue #1851.");
     }
 
-    // title
-    title();
-
-    //   Given default conjugate gradient convergence, set the criteria by what shoud
+    //   Given default conjugate gradient convergence, set the criteria by what should
     //   be necessary to achive the target energy convergence.
     //   This is based solely on standard suite testing to achieve 1e-6 E & G with default convcrit.
     if (options_["PCG_CONVERGENCE"].has_changed()) {
@@ -136,11 +139,10 @@ void DFOCC::common_init() {
         } else {
             double temp;
             temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
-            if (temp < 4.0) {
-                temp = 4.0;
+            if (temp < 6.5) {
+                temp = 6.5;
             }
             tol_grad = pow(10.0, -temp);
-            // tol_grad = 100.0*tol_Eod;
             outfile->Printf("\tFor this energy convergence, default RMS orbital gradient is: %12.2e\n", tol_grad);
         }
 
@@ -154,16 +156,35 @@ void DFOCC::common_init() {
                 temp2 = 3.0;
             }
             mograd_max = pow(10.0, -temp2 - 1);
-            // mograd_max = 10.0*tol_grad;
             outfile->Printf("\tFor this energy convergence, default MAX orbital gradient is: %12.2e\n", mograd_max);
         }
-    }  // end if (orb_opt_ == "TRUE")
+    } else if (orb_opt_ == "FALSE") {
+        if (options_["R_CONVERGENCE"].has_changed()) {
+            tol_t2 = options_.get_double("R_CONVERGENCE");
+        } else {
+            double temp;
+            temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
+            if (temp < 6.5) {
+                temp = 6.5;
+            }
+            tol_t2 = pow(10.0, -temp);
+            outfile->Printf("\tFor this energy convergence, default residual convergence is: %12.2e\n", tol_t2);
+        }
+    }  // end orb_opt_
 
     // Figure out REF
     if (reference == "RHF" || reference == "RKS")
         reference_ = "RESTRICTED";
     else if (reference == "UHF" || reference == "UKS" || reference == "ROHF")
         reference_ = "UNRESTRICTED";
+
+    // title
+    if (wfn_type_ == "DF-OREMP") {
+        remp_title();
+    } else if (!((wfn_type_ == "DF-CCSD" || wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") && reference_ == "UNRESTRICTED")) {
+        title();
+    }
+
 
     // Only ROHF-CC energy is available, not the gradients
     if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype == "FIRST") {
@@ -177,18 +198,22 @@ void DFOCC::common_init() {
         do_diis_ = 0;
 
     // Figure out HESSIAN TYPE
-    if (options_["HESS_TYPE"].has_changed()) {
-        hess_type = options_.get_str("HESS_TYPE");
-    } else {
-        if (reference_ == "RESTRICTED" && freeze_core_ == "FALSE") {
-            hess_type = "HF";
-        } else if (reference_ == "RESTRICTED" && freeze_core_ == "TRUE") {
-            hess_type = "APPROX_DIAG";
-        } else if (reference_ == "UNRESTRICTED") {
-            hess_type = "APPROX_DIAG";
-            outfile->Printf("\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+    if (orb_opt_ == "TRUE") {
+        if (options_["HESS_TYPE"].has_changed()) {
+            hess_type = options_.get_str("HESS_TYPE");
+        } else {
+            if (reference_ == "RESTRICTED" && freeze_core_ == "FALSE") {
+                hess_type = "HF";
+                outfile->Printf("\tMO Hessian type is changed to 'HF'\n");
+            } else if (reference_ == "RESTRICTED" && freeze_core_ == "TRUE") {
+                hess_type = "APPROX_DIAG";
+                outfile->Printf("\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+            } else if (reference_ == "UNRESTRICTED") {
+                hess_type = "APPROX_DIAG";
+                outfile->Printf("\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+            }
         }
-    }
+    }  // end if (orb_opt_ == "TRUE")
 
     // Regularization
     if (regularization == "TRUE") {
@@ -525,6 +550,10 @@ double DFOCC::compute_energy() {
         olccd_manager();
     else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "FALSE")
         lccd_manager();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        oremp_manager();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "FALSE")
+        remp_manager();
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE" && do_cd == "TRUE")
         cd_omp2_manager();
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE" && do_cd == "TRUE")
@@ -549,6 +578,10 @@ double DFOCC::compute_energy() {
         olccd_manager_cd();
     else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE")
         lccd_manager_cd();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        oremp_manager_cd();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "TRUE")
+        remp_manager_cd();
     else if (wfn_type_ == "QCHF")
         qchf_manager();
     else {
@@ -572,12 +605,36 @@ double DFOCC::compute_energy() {
         Etotal = Emp3L;
     else if (wfn_type_ == "DF-OLCCD")
         Etotal = ElccdL;
+    else if (wfn_type_ == "DF-OREMP")
+        Etotal = ElccdL;        //CSB this might need adjustment // FIXME (behnle#1#14.06.2021): maybe replace by an own variable
     else if (wfn_type_ == "QCHF")
         Etotal = Eref;
 
     return Etotal;
 
 }  // end of compute_energy
+
+void DFOCC::remp_title() {
+    outfile->Printf("\n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf("\n");
+    if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        outfile->Printf("                     DF-OREMP   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "FALSE")
+        outfile->Printf("                       DF-REMP   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        outfile->Printf("                    CD-OREMP   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "TRUE")
+        outfile->Printf("                    CD-REMP   \n");
+    outfile->Printf("              Program Written by Stefan Behnle\n");
+    outfile->Printf("\n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf("\n");
+}
 
 }  // namespace dfoccwave
 }  // namespace psi

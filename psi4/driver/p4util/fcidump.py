@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -27,6 +27,15 @@
 #
 """Module with utility function for dumping the Hamiltonian to file in FCIDUMP format."""
 
+__all__ = [
+    "compare_fcidumps",
+    "energies_from_fcidump",
+    "fcidump",
+    "fcidump_from_file",
+]
+
+from typing import Any, Dict, List, Optional
+
 import numpy as np
 
 from psi4.driver import psifiles as psif
@@ -37,22 +46,29 @@ from psi4 import core
 from .exceptions import ValidationError, TestComparisonError
 
 
-def fcidump(wfn, fname='INTDUMP', oe_ints=None):
-    """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989)
+def fcidump(wfn: core.Wavefunction, fname: str = 'INTDUMP', oe_ints: Optional[List] = None):
+    """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989),
+    https://doi.org/10.1016/0010-4655(89)90033-7 .
     Additional one-electron integrals, including orbital energies, can also be saved.
     This latter format can be used with the HANDE QMC code but is not standard.
 
-    :returns: None
+    Parameters
+    ----------
+    wfn
+        Set of molecule, basis, orbitals from which to generate FCIDUMP file.
+    fname
+        Name of the integrals file, defaults to INTDUMP.
+    oe_ints
+        List of additional one-electron integrals to save to file. So far only
+        EIGENVALUES is a valid option.
 
-    :raises: ValidationError when SCF wavefunction is not RHF
+    Raises
+    ------
+    ValidationError
+        When SCF wavefunction is not RHF.
 
-    :type wfn: :py:class:`~psi4.core.Wavefunction`
-
-    :param wfn: set of molecule, basis, orbitals from which to generate cube files
-    :param fname: name of the integrals file, defaults to INTDUMP
-    :param oe_ints: list of additional one-electron integrals to save to file. So far only EIGENVALUES is a valid option.
-
-    :examples:
+    Examples
+    --------
 
     >>> # [1] Save one- and two-electron integrals to standard FCIDUMP format
     >>> E, wfn = energy('scf', return_wfn=True)
@@ -138,7 +154,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
             PSIF_MO_FZC = 'MO-basis Frozen-Core Operator'
             moH = core.Matrix(PSIF_MO_FZC, wfn.nmopi(), wfn.nmopi())
             moH.load(core.IO.shared_object(), psif.PSIF_OEI)
-            mo_slice = core.Slice(frzcpi, active_mopi)
+            mo_slice = core.Slice(frzcpi, frzcpi+active_mopi)
             MO_FZC = moH.get_block(mo_slice, mo_slice)
             offset = 0
             for h, block in enumerate(MO_FZC.nph):
@@ -147,7 +163,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                     row = mo_idx(il[0][index] + offset)
                     col = mo_idx(il[1][index] + offset)
                     if (abs(x) > ints_tolerance):
-                        intdump.write('{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
+                        intdump.write('{:28.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             # Additional one-electron integrals as requested in oe_ints
             # Orbital energies
@@ -168,7 +184,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                     row = alpha_mo_idx(il[0][index] + offset)
                     col = alpha_mo_idx(il[1][index] + offset)
                     if (abs(x) > ints_tolerance):
-                        intdump.write('{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
+                        intdump.write('{:28.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             PSIF_MO_B_FZC = 'MO-basis Beta Frozen-Core Oper'
             moH_B = core.Matrix(PSIF_MO_B_FZC, wfn.nmopi(), wfn.nmopi())
@@ -182,7 +198,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                     row = beta_mo_idx(il[0][index] + offset)
                     col = beta_mo_idx(il[1][index] + offset)
                     if (abs(x) > ints_tolerance):
-                        intdump.write('{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
+                        intdump.write('{:28.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             # Additional one-electron integrals as requested in oe_ints
             # Orbital energies
@@ -199,7 +215,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
         core.print_out('Writing frozen core + nuclear repulsion energy in FCIDUMP format to ' + fname + '\n')
         e_fzc = ints.get_frozen_core_energy()
         e_nuc = molecule.nuclear_repulsion_energy(wfn.get_dipole_field_strength())
-        intdump.write('{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(e_fzc + e_nuc, 0, 0, 0, 0))
+        intdump.write('{:28.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(e_fzc + e_nuc, 0, 0, 0, 0))
     core.print_out('Done generating {} with integrals in FCIDUMP format.\n'.format(fname))
 
 
@@ -210,7 +226,7 @@ def write_eigenvalues(eigs, mo_idx):
     iorb = 0
     for h, block in enumerate(eigs):
         for idx, x in np.ndenumerate(block):
-            eigs_dump += '{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, mo_idx(iorb), 0, 0, 0)
+            eigs_dump += '{:28.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, mo_idx(iorb), 0, 0, 0)
             iorb += 1
     return eigs_dump
 
@@ -233,10 +249,11 @@ def _irrep_map(wfn):
     return np.array(irrep_map, dtype='int')
 
 
-def fcidump_from_file(fname):
+def fcidump_from_file(fname: str) -> Dict[str, Any]:
     """Function to read in a FCIDUMP file.
 
     :returns: a dictionary with FCIDUMP header and integrals
+
       - 'norb' : number of basis functions
       - 'nelec' : number of electrons
       - 'ms2' : spin polarization of the system
@@ -249,10 +266,12 @@ def fcidump_from_file(fname):
       - 'eri' : electron-repulsion integrals
 
     :param fname: FCIDUMP file name
+
     """
     intdump = {}
     with open(fname, 'r') as handle:
-        assert '&FCI' == handle.readline().strip()
+        firstline = handle.readline().strip()
+        assert '&FCI' == firstline, firstline
 
         skiplines = 1
         read = True
@@ -321,21 +340,24 @@ def fcidump_from_file(fname):
     return intdump
 
 
-def compare_fcidumps(expected, computed, label):
-    """Function to compare two FCIDUMP files. Prints success
-    when value *computed* matches value *expected*.
-    Performs a system exit on failure. Used in input files in the test suite.
+def compare_fcidumps(expected: str, computed: str, label: str):
+    """Comparison function for FCIDUMP files.
+    Compares the first six below, then computes energies from MO integrals and compares the last four.
 
-    :returns: a dictionary of energies computed from the MO integrals.
-      - 'NUCLEAR REPULSION ENERGY' : nuclear repulsion plus frozen core energy
+      - 'norb' : number of basis functions
+      - 'nelec' : number of electrons
+      - 'ms2' : spin polarization of the system
+      - 'isym' : symmetry of state (if present in FCIDUMP)
+      - 'orbsym' : list of symmetry labels of each orbital
+      - 'uhf' : whether restricted or unrestricted
       - 'ONE-ELECTRON ENERGY' : SCF one-electron energy
       - 'TWO-ELECTRON ENERGY' : SCF two-electron energy
       - 'SCF TOTAL ENERGY' : SCF total energy
       - 'MP2 CORRELATION ENERGY' : MP2 correlation energy
 
-    :param expected: reference FCIDUMP file
-    :param computed: computed FCIDUMP file
-    :param label: string labelling the test
+    :param expected: Reference FCIDUMP file against which `computed` is compared.
+    :param computed: Input FCIDUMP file to compare against `expected`.
+    :param label: string labeling the test
     """
 
     # Grab expected header and integrals
@@ -364,7 +386,19 @@ def compare_fcidumps(expected, computed, label):
     compare_integers(True, (pass_1el and pass_2el and pass_scf and pass_mp2), label)
 
 
-def energies_from_fcidump(intdump):
+def energies_from_fcidump(intdump) -> Dict[str, float]:
+    """From integrals dictionary generated from :py:func:`fcidump_from_file`,
+    compute energies.
+
+    :returns: a dictionary with energies
+
+      - 'NUCLEAR REPULSION ENERGY'
+      - 'ONE-ELECTRON ENERGY'
+      - 'TWO-ELECTRON ENERGY'
+      - 'SCF TOTAL ENERGY'
+      - 'MP2 CORRELATION ENERGY'
+
+    """
     energies = {}
     energies['NUCLEAR REPULSION ENERGY'] = intdump['enuc']
     epsilon = intdump['epsilon']

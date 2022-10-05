@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -80,7 +80,6 @@ void OneBodySOInt::compute(SharedMatrix result) {
     // Do not worry about zeroing out result
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
 
     // Loop over the unique AO shells.
     for (int ish = 0; ish < ns1; ++ish) {
@@ -96,7 +95,9 @@ void OneBodySOInt::compute(SharedMatrix result) {
                 const SOTransformShell &s1 = t1.aoshell[i];
                 for (int j = 0; j < t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
+
                     ob_->compute_shell(s1.aoshell, s2.aoshell);
+                    const double *aobuf = ob_->buffers()[0];
 
                     for (int itr = 0; itr < s1.nfunc; ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
@@ -129,7 +130,6 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
     int nchunk = ob_->nchunk();
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
 
     // Loop over the unique AO shells.
     for (int ish = 0; ish < ns1; ++ish) {
@@ -149,6 +149,7 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
                     const SOTransformShell &s2 = t2.aoshell[j];
 
                     ob_->compute_shell(s1.aoshell, s2.aoshell);
+                    const auto &aobuf = ob_->buffers();
 
                     for (int itr = 0; itr < s1.nfunc; ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
@@ -166,7 +167,7 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
 
                             // Handle chunks
                             for (int i = 0; i < nchunk; ++i) {
-                                double temp = jcoef * aobuf[jaooff + (i * nao)];
+                                double temp = jcoef * aobuf[i][jaooff];
 
                                 int ijirrep = ifunc.irrep ^ jfunc.irrep;
                                 if (ijirrep == results[i]->symmetry()) {
@@ -197,7 +198,6 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
 
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
 
     // Loop over unique SO shells.
     for (int ish = 0; ish < ns1; ++ish) {
@@ -226,6 +226,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                     if (center_i == center_j) continue;
 
                     ob_->compute_shell_deriv1(s1.aoshell, s2.aoshell);
+                    const auto &aobuf = ob_->buffers();
 
                     // handle SO transform
                     for (int itr = 0; itr < s1.nfunc; ++itr) {
@@ -253,7 +254,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
 
                             // Need to loop over the cdsalcs
 
-                            double jcoef_aobuf = jcoef * aobuf[jaooff + 0 * nao12];
+                            double jcoef_aobuf = jcoef * aobuf[0][jaooff];
                             for (int nx = 0; nx < cdsalc1.nx(); ++nx) {
                                 const CdSalcWRTAtom::Component element = cdsalc1.x(nx);
                                 double temp = jcoef_aobuf * element.coef;
@@ -262,7 +263,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 1 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[1][jaooff];
                             for (int ny = 0; ny < cdsalc1.ny(); ++ny) {
                                 const CdSalcWRTAtom::Component element = cdsalc1.y(ny);
                                 double temp = jcoef_aobuf * element.coef;
@@ -271,7 +272,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 2 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[2][jaooff];
                             for (int nz = 0; nz < cdsalc1.nz(); ++nz) {
                                 const CdSalcWRTAtom::Component element = cdsalc1.z(nz);
                                 double temp = jcoef_aobuf * element.coef;
@@ -280,7 +281,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 3 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[3][jaooff];
                             for (int nx = 0; nx < cdsalc2.nx(); ++nx) {
                                 const CdSalcWRTAtom::Component element = cdsalc2.x(nx);
                                 double temp = jcoef_aobuf * element.coef;
@@ -289,7 +290,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 4 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[4][jaooff];
                             for (int ny = 0; ny < cdsalc2.ny(); ++ny) {
                                 const CdSalcWRTAtom::Component element = cdsalc2.y(ny);
                                 double temp = jcoef_aobuf * element.coef;
@@ -298,7 +299,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 5 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[5][jaooff];
                             for (int nz = 0; nz < cdsalc2.nz(); ++nz) {
                                 const CdSalcWRTAtom::Component element = cdsalc2.z(nz);
                                 double temp = jcoef_aobuf * element.coef;

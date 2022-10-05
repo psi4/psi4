@@ -49,30 +49,33 @@ opt_clean()
 
 try:
     optimize('c4-mp2', molecule=c4watdim)
-except psi4.OptimizationConvergenceError as oce:
+#except psi4.OptimizationConvergenceError as oce:
+except psi4.driver.qcdb.ValidationError:
     #c4grad = wfn.gradient()
     pass
 
-compare_matrices(grad_p4_mA, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
+# ghost gradients no longer supported. Use QCEngine or QCDB instead.
 
-clean()
-opt_clean()
-
-activate(methdim)
-try:
-    optimize('mp2', return_wfn=True)
-except psi4.OptimizationConvergenceError as oce:
-    grad_p4_mB = oce.wfn.gradient()
-
-clean()
-opt_clean()
-
-activate(c4methdim)
-try:
-    optimize('c4-mp2')
-except psi4.ConvergenceError:
-    pass
-compare_matrices(grad_p4_mB, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
-
-opt_clean()
+#compare_matrices(grad_p4_mA, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
+#
+#clean()
+#opt_clean()
+#
+#activate(methdim)
+#try:
+#    optimize('mp2', return_wfn=True)
+#except psi4.OptimizationConvergenceError as oce:
+#    grad_p4_mB = oce.wfn.gradient()
+#
+#clean()
+#opt_clean()
+#
+#activate(c4methdim)
+#try:
+#    optimize('c4-mp2')
+#except psi4.ConvergenceError:
+#    pass
+#compare_matrices(grad_p4_mB, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
+#
+#opt_clean()
 

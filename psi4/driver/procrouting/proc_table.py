@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -56,6 +56,8 @@ procedures = {
         'scs-omp2'      : proc.run_occ,
         'sos-omp2'       : proc.run_occ,
         'custom-scs-omp2' : proc.run_occ,
+        'dlpno-mp2'     : proc.run_dlpnomp2,
+        'scs-dlpno-mp2' : proc.run_dlpnomp2,
         'mp2.5'         : proc.select_mp2p5,
         'custom-scs-mp2.5' : proc.run_occ,
         'omp2.5'        : proc.select_omp2p5,
@@ -71,7 +73,9 @@ procedures = {
         'custom-scs-lccd' : proc.run_occ,
         'olccd'         : proc.select_olccd,
         'custom-scs-olccd' : proc.run_occ,
-        'dfocc'         : proc.run_dfocc,  # full control over dfocc
+        'remp2'         : proc.select_remp2,
+        'oremp2'        : proc.select_olccd,
+        # 'dfocc'         : proc.run_dfocc,  # full control over dfocc  # canceled Jul 2022 as Error raising and not useful
         'qchf'          : proc.run_qchf,
         'ccd'           : proc.run_dfocc,
         'sf-sapt'       : sapt.run_sf_sapt,
@@ -171,8 +175,8 @@ procedures = {
         #    encompass the new alias.
     },
     'gradient' : {
-        'hf'            : proc.run_scf_gradient,
-        'scf'           : proc.run_scf_gradient,
+        'hf'            : proc.select_scf_gradient,
+        'scf'           : proc.select_scf_gradient,
         'cc2'           : proc.run_ccenergy_gradient,
         'ccsd'          : proc.select_ccsd_gradient,
         'ccsd(t)'       : proc.select_ccsd_t__gradient,
@@ -188,11 +192,14 @@ procedures = {
         'mp2d'          : proc.run_dfmp2d_gradient,  # alias to match dft aliasing
         'lccd'          : proc.select_lccd_gradient,
         'olccd'         : proc.select_olccd_gradient,
+        'oremp2'        : proc.select_olccd_gradient,
         'ccd'           : proc.run_dfocc_gradient,
         # Upon adding a method to this list, add it to the docstring in driver.optimize below
     },
     'hessian' : {
-        # Upon adding a method to this list, add it to the docstring in driver.frequency
+        # Upon adding a method to this list:
+        # * add it to the docstring in driver.frequency
+        # * program up and set DIPOLE GRADIENT, too, otherwise IR intensities logic will fail
         'hf'            : proc.run_scf_hessian,
         'scf'           : proc.run_scf_hessian,
     },
@@ -217,6 +224,7 @@ procedures = {
         'omp2.5'       : proc.select_omp2p5_property,
         'omp3'         : proc.select_omp3_property,
         'olccd'        : proc.select_olccd_property,
+        # TODO 'oremp2'       : proc.select_olccd_property,
         'adc(1)'       : proc.run_adcc_property,
         'adc(2)'       : proc.run_adcc_property,
         'adc(2)-x'     : proc.run_adcc_property,
@@ -243,11 +251,22 @@ for key in functionals:
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2']
 
+# Integrate arbitrary order with driver routines
+for lvl in range(2, 99):
+    procedures['energy'][f'ci{lvl}'] = proc.run_detci
+    procedures['energy'][f'zapt{lvl}'] = proc.run_detci
+    if lvl >= 5:
+        procedures['energy'][f'mp{lvl}'] = proc.run_detci
+
 # Integrate DFT with driver routines
 for key in functionals:
     ssuper = build_superfunctional_from_dictionary(functionals[key], 1, 1, True)[0]
 
+    # Energy
     procedures['energy'][key] = proc.run_scf
+
+    if not (ssuper.is_c_hybrid() or ssuper.is_c_lrc() or ssuper.needs_vv10()):
+        procedures['energy']['td-' + key] = proc.run_tdscf_energy
 
     # Properties
     if not ssuper.is_c_hybrid():
@@ -255,8 +274,7 @@ for key in functionals:
 
     # Gradients
     if not (ssuper.is_c_hybrid() or ssuper.is_c_lrc() or ssuper.needs_vv10()):
-        procedures['gradient'][key] = proc.run_scf_gradient
-        procedures['energy']['td-' + key] = proc.run_tdscf_energy
+        procedures['gradient'][key] = proc.select_scf_gradient
 
     # Hessians
     if not ssuper.is_gga(): # N.B. this eliminates both GGA and m-GGA, as the latter contains GGA terms
@@ -268,6 +286,9 @@ for ssuper in interface_cfour.cfour_list():
 
 for ssuper in interface_cfour.cfour_gradient_list():
     procedures['gradient'][ssuper.lower()] = interface_cfour.run_cfour
+
+for ssuper in interface_cfour.cfour_hessian_list():
+    procedures['hessian'][ssuper.lower()] = interface_cfour.run_cfour
 
 # dictionary to register pre- and post-compute hooks for driver routines
 hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])

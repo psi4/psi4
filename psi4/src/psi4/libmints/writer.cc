@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,7 +49,7 @@ using namespace psi;
 
 MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
     outfile->Printf("\tConstructing a MoldenWriter and then calling write instead of using `wfn.write_molden(name)`\n");
-    outfile->Printf("\tis both buggy and deprecated, and in 1.5 it will stop working.\n\n");
+    outfile->Printf("\tis both buggy and deprecated, and as soon as 1.5 it will stop working.\n\n");
 }
 
 void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb,
@@ -638,7 +638,7 @@ void FCHKWriter::write(const std::string &filename) {
 
 NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
     outfile->Printf("\tConstructing an NBOWriter and then calling write instead of using `wfn.nbo_write(name)`\n");
-    outfile->Printf("\tis both buggy and deprecated, and in 1.5 it will stop working.\n\n");
+    outfile->Printf("\tis both buggy and deprecated, and as soon as 1.5 it will stop working.\n\n");
 }
 
 void NBOWriter::write(const std::string &filename) {

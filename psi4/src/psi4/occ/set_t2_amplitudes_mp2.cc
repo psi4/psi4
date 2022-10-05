@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,9 +49,9 @@ void OCCWave::set_t2_amplitudes_mp2() {
         psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
         // Each method has its own names for the variables, so set the correct ones.
-        std::string temp = (wfn_type_ == "OCEPA") ? "2" : (wfn_type_ == "OMP2" ? "" : "2_1");
+        std::string temp = (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") ? "2" : (wfn_type_ == "OMP2" ? "" : "2_1");
         std::string t = "T" + temp;
-        temp = (wfn_type_ == "OCEPA") ? "" : (wfn_type_ == "OMP2" ? "" : "_1");
+        temp = (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") ? "" : (wfn_type_ == "OMP2" ? "" : "_1");
         std::string tau = "Tau" + temp;
         std::string t_name = t + " <OO|VV>";
         std::string tau_name = tau + " <OO|VV>";
@@ -128,7 +128,7 @@ void OCCWave::set_t2_amplitudes_mp2() {
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
-        std::string suffix = (wfn_type_ == "OCEPA") ? "" : "_1";
+        std::string suffix = (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") ? "" : "_1";
         std::string taa_name = "T2" + suffix + " <OO|VV>";
         std::string tab_name = "T2" + suffix + " <Oo|Vv>";
         std::string tbb_name = "T2" + suffix + " <oo|vv>";

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,13 +35,11 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 #include <vector>
-#include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/onebody.h"
 
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
@@ -51,14 +49,6 @@ class SphericalTransform;
  * Use an IntegralFactory to create this object.
  */
 class KineticInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
-
-    //! Computes the kinetic integral between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    //! Computes the kinetic derivatve between two gaussian shells.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;
 
    public:
     //! Constructor. Do not call directly, use an IntegralFactory.
@@ -71,6 +61,7 @@ class KineticInt : public OneBodyAOInt {
 
     /// Does the method provide first derivatives?
     bool has_deriv2() override { return true; }
+
 };
 
 }  // namespace psi

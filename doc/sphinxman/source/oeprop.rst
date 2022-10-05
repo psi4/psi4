@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -35,8 +35,8 @@
 
 .. _`sec:oeprop`:
 
-Evaluation of One-Electron Properties |w---w| :py:func:`~psi4.oeprop`
-=====================================================================
+Evaluation of One-Electron Properties |w---w| :py:func:`~psi4.driver.oeprop`
+============================================================================
 
 .. codeauthor:: Robert M. Parrish and Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
@@ -58,7 +58,7 @@ summarized in the table below.
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Electric quadrupole moment         | QUADRUPOLE            | Raw (traced) moments and traceless multipoles                                     |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-   | All moments up order N             | MULTIPOLE(N)          | Only raw (traced) moments. Sets global variables e.g. "DIPOLE X", "32-POLE XYYZZ" |
+   | All moments up order N             | MULTIPOLE(N)          | Only raw (traced) moments. Sets global variables e.g. "DIPOLE", "32-POLE"         |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Electrostatic potential, at nuclei | ESP_AT_NUCLEI         | Sets global variables "ESP AT CENTER n", n = 1 to natoms                          |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
@@ -79,6 +79,8 @@ summarized in the table below.
    | Natural orbital occupations        | NO_OCCUPATIONS        |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Stockholder Atomic Multipoles      | MBIS_CHARGES          | Generates atomic charges, dipoles, etc. See :ref:`sec:oeprop_mbis`                |
+   +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+   | Free-atom volumes                  | MBIS_VOLUME_RATIOS    |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
 
 There are two ways the computation of one-electron properties can be requested. 
@@ -104,8 +106,8 @@ computed using the built-in properties() function, e.g.::
 
   properties('ccsd', properties=['dipole'])
 
-The :py:func:`~psi4.properties` function provides limited functionality, but is a lot easier to
-use for correlated methods. For capabilities of :py:func:`~psi4.properties` see the
+The :py:func:`~psi4.driver.properties` function provides limited functionality, but is a lot easier to
+use for correlated methods. For capabilities of :py:func:`~psi4.driver.properties` see the
 corresponding section of the manual.
 
 

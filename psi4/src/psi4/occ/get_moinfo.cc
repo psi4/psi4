@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -59,44 +59,23 @@ void OCCWave::get_moinfo() {
         nmo_ = reference_wavefunction_->nmo();
         nmopi_ = reference_wavefunction_->nmopi();
         nsopi_ = reference_wavefunction_->nsopi();
-        doccpi_ = reference_wavefunction_->doccpi();
-        soccpi_ = reference_wavefunction_->soccpi();
         frzcpi_ = reference_wavefunction_->frzcpi();
         frzvpi_ = reference_wavefunction_->frzvpi();
         nalphapi_ = reference_wavefunction_->nalphapi();
         nbetapi_ = reference_wavefunction_->nbetapi();
 
         // get nfrzc and nfrzv
-        nfrzc = 0;
-        nfrzv = 0;
-        for (int h = 0; h < nirrep_; h++) {
-            nfrzc += frzcpi_[h];
-            nfrzv += frzvpi_[h];
-        }
+        nfrzc = frzcpi_.sum();
+        nfrzv = frzvpi_.sum();
 
         // form occpi and virtpi
-        occpiA = init_int_array(nirrep_);
-        virtpiA = init_int_array(nirrep_);
-        memset(occpiA, 0, sizeof(int) * nirrep_);
-        memset(virtpiA, 0, sizeof(int) * nirrep_);
-        for (int h = 0; h < nirrep_; h++) {
-            virtpiA[h] = nmopi_[h] - doccpi_[h];
-            occpiA[h] = doccpi_[h];
-        }
+        occpiA = nalphapi_;
+        virtpiA = nmopi_ - nalphapi_;
         occpi_ = {{SpinType::Alpha, occpiA}};
 
         // active occ and virt
-        adoccpi = init_int_array(nirrep_);
-        aoccpiA = init_int_array(nirrep_);
-        avirtpiA = init_int_array(nirrep_);
-        memset(adoccpi, 0, sizeof(int) * nirrep_);
-        memset(aoccpiA, 0, sizeof(int) * nirrep_);
-        memset(avirtpiA, 0, sizeof(int) * nirrep_);
-        for (int h = 0; h < nirrep_; h++) {
-            adoccpi[h] = doccpi_[h] - frzcpi_[h];
-            avirtpiA[h] = virtpiA[h] - frzvpi_[h];
-            aoccpiA[h] = doccpi_[h] - frzcpi_[h];
-        }
+        aoccpiA = occpiA - frzcpi_;
+        avirtpiA = virtpiA - frzvpi_;
 
         // Read in nuclear repulsion energy
         Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy(
@@ -130,12 +109,7 @@ void OCCWave::get_moinfo() {
         }
 
         // find nooA
-        nooA = 0;
-        for (int h = 0; h < nirrep_; h++) {
-            for (int p = 0; p < doccpi_[h]; p++) {
-                nooA++;
-            }
-        }
+        nooA = nalphapi_.sum();
 
         // PitzerOffset
         PitzerOffset = new int[nirrep_];
@@ -217,7 +191,7 @@ void OCCWave::get_moinfo() {
         memset(qt2pitzerA, 0, sizeof(int) * nmo_);
         memset(pitzer2qtA, 0, sizeof(int) * nmo_);
 
-        reorder_qt(doccpi_, soccpi_, frzcpi_, frzvpi_, pitzer2qtA, nmopi_, nirrep_);
+        reorder_qt(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, nmopi_, nirrep_);
         for (int p = 0; p < nmo_; p++) {
             int pa = pitzer2qtA[p];
             qt2pitzerA[pa] = p;
@@ -398,56 +372,27 @@ void OCCWave::get_moinfo() {
         nmo_ = reference_wavefunction_->nmo();
         nmopi_ = reference_wavefunction_->nmopi();
         nsopi_ = reference_wavefunction_->nsopi();
-        doccpi_ = reference_wavefunction_->doccpi();
-        soccpi_ = reference_wavefunction_->soccpi();
         frzcpi_ = reference_wavefunction_->frzcpi();
         frzvpi_ = reference_wavefunction_->frzvpi();
         nalphapi_ = reference_wavefunction_->nalphapi();
         nbetapi_ = reference_wavefunction_->nbetapi();
 
         // get nfrzc and nfrzv
-        nfrzc = 0;
-        nfrzv = 0;
-        for (int h = 0; h < nirrep_; h++) {
-            nfrzc += frzcpi_[h];
-            nfrzv += frzvpi_[h];
-        }
+        nfrzc = frzcpi_.sum();
+        nfrzv = frzvpi_.sum();
 
         // form occpi and virtpi
-        occpiA = init_int_array(nirrep_);
-        occpiB = init_int_array(nirrep_);
-        virtpiA = init_int_array(nirrep_);
-        virtpiB = init_int_array(nirrep_);
-        memset(occpiA, 0, sizeof(int) * nirrep_);
-        memset(occpiB, 0, sizeof(int) * nirrep_);
-        memset(virtpiA, 0, sizeof(int) * nirrep_);
-        memset(virtpiB, 0, sizeof(int) * nirrep_);
-        for (int h = 0; h < nirrep_; h++) {
-            virtpiA[h] = nmopi_[h] - soccpi_[h] - doccpi_[h];
-            virtpiB[h] = nmopi_[h] - doccpi_[h];
-            occpiB[h] = doccpi_[h];
-            occpiA[h] = doccpi_[h] + soccpi_[h];
-        }
+        occpiA = nalphapi_;
+        occpiB = nbetapi_;
+        virtpiA = nmopi_ - nalphapi_;
+        virtpiB = nmopi_ - nbetapi_;
         occpi_ = {{SpinType::Alpha, occpiA}, {SpinType::Beta, occpiB}};
 
         // active occ and virt
-        adoccpi = init_int_array(nirrep_);
-        aoccpiA = init_int_array(nirrep_);
-        aoccpiB = init_int_array(nirrep_);
-        avirtpiA = init_int_array(nirrep_);
-        avirtpiB = init_int_array(nirrep_);
-        memset(adoccpi, 0, sizeof(int) * nirrep_);
-        memset(aoccpiA, 0, sizeof(int) * nirrep_);
-        memset(aoccpiB, 0, sizeof(int) * nirrep_);
-        memset(avirtpiA, 0, sizeof(int) * nirrep_);
-        memset(avirtpiB, 0, sizeof(int) * nirrep_);
-        for (int h = 0; h < nirrep_; h++) {
-            adoccpi[h] = doccpi_[h] - frzcpi_[h];
-            avirtpiA[h] = virtpiA[h] - frzvpi_[h];
-            avirtpiB[h] = virtpiB[h] - frzvpi_[h];
-            aoccpiB[h] = doccpi_[h] - frzcpi_[h];
-            aoccpiA[h] = doccpi_[h] + soccpi_[h] - frzcpi_[h];
-        }
+        aoccpiA = occpiA - frzcpi_;
+        aoccpiB = occpiB - frzcpi_;
+        avirtpiA = virtpiA - frzvpi_;
+        avirtpiB = virtpiB - frzvpi_;
 
         // Read in nuclear repulsion energy
         Enuc = reference_wavefunction_->molecule()->nuclear_repulsion_energy(
@@ -481,20 +426,8 @@ void OCCWave::get_moinfo() {
         }
 
         // find nooB
-        nooB = 0;
-        for (int h = 0; h < nirrep_; h++) {
-            for (int p = 0; p < doccpi_[h]; p++) {
-                nooB++;
-            }
-        }
-
-        // find nooA
-        nooA = nooB;
-        for (int h = 0; h < nirrep_; h++) {
-            for (int p = 0; p < soccpi_[h]; p++) {
-                nooA++;
-            }
-        }
+        nooA = nalphapi_.sum();
+        nooB = nbetapi_.sum();
 
         // PitzerOffset
         PitzerOffset = new int[nirrep_];
@@ -608,7 +541,7 @@ void OCCWave::get_moinfo() {
         memset(pitzer2qtA, 0, sizeof(int) * nmo_);
         memset(qt2pitzerB, 0, sizeof(int) * nmo_);
         memset(pitzer2qtB, 0, sizeof(int) * nmo_);
-        reorder_qt_uhf(doccpi_, soccpi_, frzcpi_, frzvpi_, pitzer2qtA, pitzer2qtB, nmopi_, nirrep_);
+        reorder_qt_uhf(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, pitzer2qtB, nmopi_, nirrep_);
         for (int p = 0; p < nmo_; p++) {
             int pa = pitzer2qtA[p];
             int pb = pitzer2qtB[p];

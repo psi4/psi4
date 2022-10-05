@@ -1,5 +1,6 @@
 #! Single point energies of multiple excited states with EOM-CCSD
 
+eomccsd_ref.sort()
 
 molecule h2o {
   O

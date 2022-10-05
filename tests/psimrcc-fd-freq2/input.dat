@@ -20,6 +20,7 @@ set {
   e_convergence 13
   d_convergence 10
   r_convergence 9
+  fd_project 1
 }
 
 set mcscf {

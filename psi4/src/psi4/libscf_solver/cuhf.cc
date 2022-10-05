@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,8 +39,6 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -116,12 +114,11 @@ void CUHF::finalize() {
         for (int m = 0; m < Lagrangian_->rowdim(h); ++m) {
             for (int n = 0; n < Lagrangian_->coldim(h); ++n) {
                 double sum = 0.0;
-                for (int i = 0; i < doccpi_[h]; ++i) {
-                    sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i) +
-                           epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
-                }
-                for (int i = doccpi_[h]; i < doccpi_[h] + soccpi_[h]; ++i)
+                for (int i = 0; i < nalphapi_[h]; ++i) {
                     sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
+                }
+                for (int i = 0; i < nbetapi_[h]; ++i)
+                    sum += epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
 
                 Lagrangian_->set(h, m, n, sum);
             }
@@ -275,8 +272,8 @@ void CUHF::form_F() {
     //            [   0   Fm_vo Fm_vv ]
     //
     for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < doccpi_[h]; ++i) {
-            for (int j = doccpi_[h] + soccpi_[h]; j < nmopi_[h]; ++j) {
+        for (int i = 0; i < nbetapi_[h]; ++i) {
+            for (int j = nalphapi_[h]; j < nmopi_[h]; ++j) {
                 Fm_->set(h, i, j, 0.0);
                 Fm_->set(h, j, i, 0.0);
             }
@@ -390,30 +387,6 @@ double CUHF::compute_E() {
     return Etotal;
 }
 
-double CUHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
-    SharedMatrix grad_a = form_FDSmSDF(Fa_, Da_);
-    SharedMatrix grad_b = form_FDSmSDF(Fb_, Db_);
-
-    if (save_diis) {
-        if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
-                                                          DIISManager::OnDisk);
-            diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, grad_a.get(), DIISEntry::Matrix, grad_b.get());
-            diis_manager_->set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());
-            initialized_diis_manager_ = true;
-        }
-
-        diis_manager_->add_entry(4, grad_a.get(), grad_b.get(), Fa_.get(), Fb_.get());
-    }
-
-    if (options_.get_bool("DIIS_RMS_ERROR"))
-        return std::sqrt(0.5 * (std::pow(grad_a->rms(), 2) + std::pow(grad_b->rms(), 2)));
-    else
-        return std::max(grad_a->absmax(), grad_b->absmax());
-}
-
-bool CUHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }
-
 bool CUHF::stability_analysis() {
     throw PSIEXCEPTION("CUHF stability analysis has not been implemented yet.  Sorry :(");
     return false;
@@ -431,8 +404,8 @@ std::shared_ptr<CUHF> CUHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (Db_) hf_wfn->Db_ = Db_subset("AO");
     if (Fa_) hf_wfn->Fa_ = Fa_subset("AO");
     if (Fb_) hf_wfn->Fb_ = Fb_subset("AO");
-    if (epsilon_a_) hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
-    if (epsilon_b_) hf_wfn->epsilon_b_ = epsilon_subset_helper(epsilon_b_, nsopi_, "AO", "ALL");
+    if (epsilon_a_) hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nalphapi_, "AO", "ALL");
+    if (epsilon_b_) hf_wfn->epsilon_b_ = epsilon_subset_helper(epsilon_b_, nbetapi_, "AO", "ALL");
     // H_ ans X_ reset in the HF constructor, copy them over here
     SharedMatrix SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);

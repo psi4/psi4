@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -91,16 +91,16 @@ void CoupledPair::OPDM() {
     }
     // active doubly occupied
     for (int h = 0; h < nirrep_; h++) {
-        int norbs = doccpi_[h] - frzcpi_[h];
+        int norbs = nalphapi_[h] - frzcpi_[h];
         for (int i = 0; i < norbs; i++) {
             reorder[irrepoffset[h] + i + frzcpi_[h]] = count++;
         }
     }
     // active virtual
     for (int h = 0; h < nirrep_; h++) {
-        int norbs = nmopi_[h] - frzvpi_[h] - doccpi_[h];
+        int norbs = nmopi_[h] - frzvpi_[h] - nalphapi_[h];
         for (int i = 0; i < norbs; i++) {
-            reorder[irrepoffset[h] + i + doccpi_[h]] = count++;
+            reorder[irrepoffset[h] + i + nalphapi_[h]] = count++;
         }
     }
     // frozen virtual
@@ -125,26 +125,8 @@ void CoupledPair::OPDM() {
     free(reorder);
     free(irrepoffset);
 
-    // set Da_ for properties with oeprop ... note Da needs to be in so basis
-    int symm = opdm_a->symmetry();
-    int nirrep = opdm_a->nirrep();
     Da_->set_name("CEPA unrelaxed density");
-
-    auto* temp = new double[Ca->max_ncol() * Ca->max_nrow()];
-    for (int h = 0; h < nirrep; h++) {
-        int nmol = Ca->colspi()[h];
-        int nmor = Ca->colspi()[h ^ symm];
-        int nsol = Ca->rowspi()[h];
-        int nsor = Ca->rowspi()[h ^ symm];
-        if (!nmol || !nmor || !nsol || !nsor) continue;
-        double** Clp = Ca->pointer(h);
-        double** Crp = Ca->pointer(h ^ symm);
-        double** Dmop = opdm_a->pointer(h ^ symm);
-        double** Dsop = Da_->pointer(h ^ symm);
-        C_DGEMM('N', 'T', nmol, nsor, nmor, 1.0, Dmop[0], nmor, Crp[0], nmor, 0.0, temp, nsor);
-        C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp, nsor, 0.0, Dsop[0], nsor);
-    }
-    delete[] temp;
+    Da_->back_transform(opdm_a, Ca);
 
     free(D1);
 }

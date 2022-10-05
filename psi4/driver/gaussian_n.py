@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -25,6 +25,8 @@
 #
 # @END LICENSE
 #
+
+__all__ = []
 
 from psi4.driver import driver
 from psi4.driver import p4util
@@ -100,7 +102,7 @@ def run_gaussian_2(name, **kwargs):
     nalpha = ref.nalpha() - nfzc
     nbeta  = ref.nbeta() - nfzc
     # hlc of gaussian-2
-    hlc = -0.00481 * nalpha -0.00019 * nbeta
+    hlc = -0.00481 * nalpha - 0.00019 * nbeta
     # hlc of gaussian-1
     hlc1 = -0.00614 * nalpha
 
@@ -161,7 +163,7 @@ def run_gaussian_2(name, **kwargs):
 
     core.print_out('\n')
     T = core.get_global_option('T')
-    core.print_out('  ==>  %3.0lf Kelvin Results  <==\n'% T)
+    core.print_out('  ==>  %3.0lf Kelvin Results  <==\n' % T)
     core.print_out('\n')
 
     internal_energy = eg2_mp2_0k + du - zpe / 0.8929

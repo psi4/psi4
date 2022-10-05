@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -28,10 +28,12 @@
 
 """Attempts to catch Python based import errors and provides possible solutions."""
 
+__all__ = []
+
 # NumPy import
 try:
     import numpy as np
-except:
+except ImportError:
     msg = """
     NumPy is a runtime requirement for Psi4. Please install NumPy to proceed.
 

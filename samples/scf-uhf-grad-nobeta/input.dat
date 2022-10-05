@@ -1,0 +1,18 @@
+#! UHF gradient for a one-electron system (no beta electrons).
+
+                ]) 
+
+molecule h2 {
+    1 2
+    h
+    h 1 0.75
+}
+
+set globals = {
+   basis      6-31G**
+   reference uhf
+   gradient_write on
+}
+
+grad = gradient('scf')
+compare_matrices(ref_grad, grad, 6, "UHF analytic gradient") 

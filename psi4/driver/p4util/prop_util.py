@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -33,11 +33,11 @@ from . import optproc
 __all__ = ['free_atom_volumes']
 
 
-def free_atom_volumes(wfn, **kwargs):
+def free_atom_volumes(wfn: psi4.core.Wavefunction, **kwargs):
     """ 
     Computes free-atom volumes using MBIS density partitioning.
     The free-atom volumes are computed for all unique (inc. basis set)
-    atoms in a molecule and stored as wavefunction variables.
+    atoms in a molecule and stored as wavefunction variables, :psivar:`MBIS FREE ATOM n VOLUME`.
     Free-atom densities are computed at the same level of theory as the molecule, 
     and we use unrestricted references as needed in computing the ground-state. 
 
@@ -45,10 +45,18 @@ def free_atom_volumes(wfn, **kwargs):
 
     Parameters
     ----------
-    wfn : psi4.core.Wavefunction
+    wfn
         The wave function associated with the molecule, method, and basis for 
         atomic computations
     """
+
+    # If we're already a free atom, break to avoid recursion
+    # We don't ever need volume ratios for free atoms since they
+    # are by definition 1.0
+    natom = wfn.molecule().natom()
+    if natom == 1:
+        return 0 
+    
 
     # the level of theory
     current_en = wfn.scalar_variable('CURRENT ENERGY')

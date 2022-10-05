@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,7 +41,7 @@ void OCCWave::coord_grad() {
         outfile->Printf("\tComputing G_abcd...\n");
 
         omp3_tpdm_vvvv();
-    } else if (wfn_type_ == "OCEPA") {
+    } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
         outfile->Printf("\tComputing G_abcd...\n");
 
         ocepa_tpdm_vvvv();
@@ -1804,7 +1804,7 @@ void OCCWave::oeprop() {
     oe->add("QUADRUPOLE");
     oe->add("MULLIKEN_CHARGES");
     oe->add("NO_OCCUPATIONS");
-    oe->set_title("DF-OMP2");
+    oe->set_title(wfn_type_);
     oe->compute();
 
 }  // end oeprop

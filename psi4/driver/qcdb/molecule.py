@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -29,7 +29,7 @@
 import os
 import hashlib
 import collections
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -332,7 +332,7 @@ class Molecule(LibmintsMolecule):
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
             if save_ghosts or self.Z(i):
-                text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"), \
+                text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"),
                     x * factor, y * factor, z * factor)
         return text
 
@@ -470,7 +470,7 @@ class Molecule(LibmintsMolecule):
 
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
-            text += '%-2s %17.12f %17.12f %17.12f\n' % (self.symbol(i), \
+            text += '%-2s %17.12f %17.12f %17.12f\n' % (self.symbol(i),
                 x * factor, y * factor, z * factor)
             if not self.Z(i):
                 dummy.append(str(i + 1))  # Molpro atom number is 1-indexed
@@ -495,7 +495,7 @@ class Molecule(LibmintsMolecule):
         # append atoms and coordentries
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
-            text += '%-2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "GH"), \
+            text += '%-2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "GH"),
                 x * factor, y * factor, z * factor)
 
         #for fr in range(self.nfragments()):
@@ -580,10 +580,10 @@ class Molecule(LibmintsMolecule):
                     x, y, z = self.atoms[at].compute()
                     atom = self.symbol(at)
                     if n_frags > 1:
-                        text += '    {:2s}({:d}) {:> 17.12f} {:> 17.12f} {:> 17.12f}\n'.format(\
+                        text += '    {:2s}({:d}) {:> 17.12f} {:> 17.12f} {:> 17.12f}\n'.format(
                                 atom, fr + 1, x * factor, y * factor, z * factor)
                     else:
-                        text += '    {:2s} {:> 17.12f} {:> 17.12f} {:> 17.12f}\n'.format(\
+                        text += '    {:2s} {:> 17.12f} {:> 17.12f} {:> 17.12f}\n'.format(
                                 atom, x * factor, y * factor, z * factor)
         text += '*'
 
@@ -736,7 +736,7 @@ class Molecule(LibmintsMolecule):
 
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
-            text += '%4s %17.12f %17.12f %17.12f\n' % (("" if self.Z(i) else 'Bq') + self.symbol(i), \
+            text += '%4s %17.12f %17.12f %17.12f\n' % (("" if self.Z(i) else 'Bq') + self.symbol(i),
                 x * factor, y * factor, z * factor)
         return text
         pass
@@ -837,8 +837,8 @@ class Molecule(LibmintsMolecule):
                 cent = add(cent, self.xyz(at))
             cent = scale(cent, 1.0 / len(entity))
             text += '  Centroid:      %14.8f %14.8f %14.8f                  [Angstrom]\n' % \
-                (cent[0] * qcel.constants.bohr2angstroms, \
-                 cent[1] * qcel.constants.bohr2angstroms, \
+                (cent[0] * qcel.constants.bohr2angstroms,
+                 cent[1] * qcel.constants.bohr2angstroms,
                  cent[2] * qcel.constants.bohr2angstroms)
             text += '  Centroid:      %14.8f %14.8f %14.8f                  [Bohr]\n' % \
                 (cent[0], cent[1], cent[2])
@@ -855,7 +855,7 @@ class Molecule(LibmintsMolecule):
                 (evecs[0][midx], evecs[1][midx], evecs[2][midx])
             text += '  Normal Vector: %14.8f %14.8f %14.8f                  [unit]\n' % \
                 (evecs[0][midx] + cent[0], evecs[1][midx] + cent[1], evecs[2][midx] + cent[2])
-            xplane = [evecs[0][midx], evecs[1][midx], evecs[2][midx], \
+            xplane = [evecs[0][midx], evecs[1][midx], evecs[2][midx],
                 -1.0 * (evecs[0][midx] * cent[0] + evecs[1][midx] * cent[1] + evecs[2][midx] * cent[2])]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0]\n' % \
                 (xplane[0], xplane[1], xplane[2], xplane[3])
@@ -1253,7 +1253,7 @@ class Molecule(LibmintsMolecule):
             prec=prec)
         return smol
 
-    def run_dftd3(self, func: str = None, dashlvl: str = None, dashparam: Dict = None, dertype: Union[int, str] = None, verbose: int = 1):
+    def run_dftd3(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
         """Compute dispersion correction via Grimme's DFTD3 program.
 
         Parameters
@@ -1267,7 +1267,7 @@ class Molecule(LibmintsMolecule):
         dashlvl
             Name of dispersion correction to be applied (e.g., d, D2,
             d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
-            "formal" to one.
+            "formal" to run.
         dashparam
             Values for the same keys as `dashcoeff[dashlvl]['default']`
             used to override any or all values initialized by `func`.
@@ -1283,9 +1283,9 @@ class Molecule(LibmintsMolecule):
         -------
         energy : float
             When `dertype=0`, energy [Eh].
-        gradient : ndarray
+        gradient : ~numpy.ndarray
             When `dertype=1`, (nat, 3) gradient [Eh/a0].
-        (energy, gradient) : tuple of float and ndarray
+        (energy, gradient) : tuple of float and ~numpy.ndarray
             When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
 
         """
@@ -1336,7 +1336,97 @@ class Molecule(LibmintsMolecule):
         elif derint == 1:
             return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
 
-    def run_gcp(self, func: str = None, dertype: Union[int, str] = None, verbose: int = 1):
+    def run_dftd4(self, func: Optional[str] = None, dashlvl: Optional[str] = None, dashparam: Optional[Dict] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
+        """Compute dispersion correction via Grimme's DFTD4 program.
+
+        Parameters
+        ----------
+        func
+            Name of functional (func only, func & disp, or disp only) for
+            which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
+            blyp-d3(bj), hf+d). Unlike run_dftd3, ``func`` overwrites any
+            parameter initialized via `dashparam`.
+        dashlvl
+            Name of dispersion correction to be applied (e.g., d, D2,
+            d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
+            "formal" to run.
+        dashparam
+            Values for the same keys as `dashcoeff[dashlvl]['default']`
+            used to provide custom values. Unlike run_dftd3, will not have
+            effect if `func` given. Must provide all parameters.
+            Extra parameters will error.
+        dertype
+            Maximum derivative level at which to run DFTD3. For large
+            molecules, energy-only calculations can be significantly more
+            efficient. Influences return values, see below.
+        verbose
+            Amount of printing.
+
+        Returns
+        -------
+        energy : float
+            When `dertype=0`, energy [Eh].
+        gradient : ndarray
+            When `dertype=1`, (nat, 3) gradient [Eh/a0].
+        (energy, gradient) : tuple of float and ndarray
+            When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
+
+        Notes
+        -----
+        This function wraps the QCEngine dftd4 harness which wraps the internal DFTD4 Python API.
+        As such, the upstream convention of `func` trumping `dashparam` holds, rather than the
+        :py:func:`run_dftd3` behavior of `dashparam` extending or overriding `func`.
+
+        """
+        import qcengine as qcng
+
+        if dertype is None:
+            derint, derdriver = -1, 'gradient'
+        else:
+            derint, derdriver = parse_dertype(dertype, max_derivative=1)
+
+        resinp = {
+            'molecule': self.to_schema(dtype=2),
+            'driver': derdriver,
+            'model': {
+                'method': func,
+                'basis': '(auto)',
+            },
+            'keywords': {
+                'verbose': verbose,
+            },
+        }
+        if dashlvl:
+            resinp['keywords']['level_hint'] = dashlvl
+        if dashparam:
+            resinp['keywords']['params_tweaks'] = dashparam
+
+        jobrec = qcng.compute(resinp, 'dftd4', raise_error=True)
+        jobrec = jobrec.dict()
+
+        # hack as not checking type GRAD
+        for k, qca in jobrec['extras']['qcvars'].items():
+            if isinstance(qca, (list, np.ndarray)):
+                jobrec['extras']['qcvars'][k] = np.array(qca).reshape(-1, 3)
+
+        if isinstance(self, Molecule):
+            pass
+        else:
+            from psi4 import core
+
+            for k, qca in jobrec['extras']['qcvars'].items():
+                if not isinstance(qca, (list, np.ndarray)):
+                    core.set_variable(k, float(qca))
+
+        if derint == -1:
+            return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
+                    jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'])
+        elif derint == 0:
+            return float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
+        elif derint == 1:
+            return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
+
+    def run_gcp(self, func: Optional[str] = None, dertype: Union[int, str, None] = None, verbose: int = 1):
         """Compute geometrical BSSE correction via Grimme's GCP program.
 
         Function to call Grimme's GCP program
@@ -1353,14 +1443,14 @@ class Molecule(LibmintsMolecule):
 
         Parameters
         ----------
-        func : str, optional
+        func
             Name of method/basis combination or composite method for which to compute the correction
            (e.g., HF/cc-pVDZ, DFT/def2-SVP, HF3c, PBEh3c).
-        dertype : int or str, optional
+        dertype
             Maximum derivative level at which to run GCP. For large
             molecules, energy-only calculations can be significantly more
             efficient. Influences return values, see below.
-        verbose : int, optional
+        verbose
             Amount of printing. Unused at present.
 
         Returns

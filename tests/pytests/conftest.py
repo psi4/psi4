@@ -1,39 +1,13 @@
+import os
 import pytest
 
 
-def pytest_configure(config):
-    # Register marks to avoid warnings in psi4.test()
-    # sync with setup.cfg
-    config.addinivalue_line("markers", "check_triplet")
-    config.addinivalue_line("markers", "dft")
-    config.addinivalue_line("markers", "gga")
-    config.addinivalue_line("markers", "hf")
-    config.addinivalue_line("markers", "hyb_gga")
-    config.addinivalue_line("markers", "hyb_gga_lrc")
-    config.addinivalue_line("markers", "lda")
-    config.addinivalue_line("markers", "long")
-    config.addinivalue_line("markers", "mdi")
-    config.addinivalue_line("markers", "mp2")
-    config.addinivalue_line("markers", "restricted_singlet")
-    config.addinivalue_line("markers", "restricted_triplet")
-    config.addinivalue_line("markers", "RPA")
-    config.addinivalue_line("markers", "scf")
-    config.addinivalue_line("markers", """slow: marks tests as slow (deselect with '-m "not slow"')""")
-    config.addinivalue_line("markers", "smoke")
-    config.addinivalue_line("markers", "solver")
-    config.addinivalue_line("markers", "stress")
-    config.addinivalue_line("markers", "TDA")
-    config.addinivalue_line("markers", "tdscf")
-    config.addinivalue_line("markers", "quick")
-    config.addinivalue_line("markers", "unittest")
-    config.addinivalue_line("markers", "unrestricted")
-
-
 @pytest.fixture(scope="session", autouse=True)
-def set_up_overall(request):
+def set_up_overall(request, tmp_path_factory):
     import psi4
 
     psi4.set_output_file("pytest_output.dat", False)
+    os.chdir(tmp_path_factory.getbasetemp())
     request.addfinalizer(tear_down)
 
 

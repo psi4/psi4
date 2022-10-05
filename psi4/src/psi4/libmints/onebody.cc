@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -31,6 +31,10 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
+#include <libint2/engine.h>
+#include <libint2/shell.h>
 
 #include <stdexcept>
 
@@ -80,6 +84,73 @@ static void transform1e_2(int am, SphericalTransformIter &sti, double *s, double
 }
 }  // namespace
 
+std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr<BasisSet> bs1,
+                                                                 std::shared_ptr<BasisSet> bs2, double threshold) {
+    const auto nsh1 = bs1->nshell();
+    const auto nsh2 = bs2->nshell();
+    const auto bs1_equiv_bs2 = (bs1 == bs2);
+    auto nthreads = Process::environment.get_n_threads();
+
+    // construct the 2-electron repulsion integrals engine
+    using libint2::Engine;
+    std::vector<Engine> engines;
+    engines.reserve(nthreads);
+    engines.emplace_back(libint2::Operator::overlap, std::max(bs1->max_nprimitive(), bs2->max_nprimitive()),
+                         std::max(bs1->max_am(), bs2->max_am()), 0);
+    for (size_t i = 1; i != nthreads; ++i) {
+        engines.push_back(engines[0]);
+    }
+    std::vector<std::vector<std::pair<int, int>>> threads_sp_list(nthreads);
+
+    threshold *= threshold;
+    //TODO: Eventually we need to make sure we set the threshold appropriately.  When set to zero, all pairs
+    // are considered, as they were previously.  Turning this to some function of the integral screening
+    // threshold will start to screen out some integrals, breaking some of the more sensitive test cases in
+    // the process.  Therefore this should be done separately from the integral rewrite.
+    threshold = 0.0;
+
+#pragma omp parallel num_threads(nthreads)
+    {
+        int thread_id = 0;
+#ifdef _OPENMP
+        thread_id = omp_get_thread_num();
+#endif
+        auto &engine = engines[thread_id];
+        const auto &buf = engine.results();
+
+        // loop over permutationally-unique set of shells
+        for (auto s1 = 0l, s12 = 0l; s1 != nsh1; ++s1) {
+            auto n1 = bs1->shell(s1).nfunction();
+
+            auto s2_max = bs1_equiv_bs2 ? s1 : nsh2 - 1;
+            for (auto s2 = 0; s2 <= s2_max; ++s2, ++s12) {
+                if (s12 % nthreads != thread_id) continue;
+
+                auto on_same_center = (bs1->shell(s1).center() == bs2->shell(s2).center());
+                bool significant = on_same_center;
+                if (!on_same_center) {
+                    auto n2 = bs2->shell(s2).nfunction();
+                    engines[thread_id].compute(bs1->l2_shell(s1), bs2->l2_shell(s2));
+                    double normsq = std::inner_product(buf[0], buf[0] + n1 * n2, buf[0], 0.0);
+                    significant = (normsq >= threshold);
+                }
+
+                if (significant) {
+                    threads_sp_list[thread_id].push_back(std::make_pair(s1, s2));
+                }
+            }
+        }
+    }  // end of compute
+
+    for (int thread = 1; thread < nthreads; ++thread) {
+        for (const auto &pair : threads_sp_list[thread]) {
+            threads_sp_list[0].push_back(pair);
+        }
+    }
+
+    return threads_sp_list[0];
+};
+
 OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int deriv)
     : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1) {
@@ -90,6 +161,10 @@ OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms
 
     tformbuf_ = new double[buffsize];
     target_ = new double[buffsize];
+
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    libint2::initialize();
+    shellpairs_ = build_shell_pair_list_no_spdata(bs1, bs2, threshold);
 }
 
 OneBodyAOInt::~OneBodyAOInt() {
@@ -103,56 +178,23 @@ std::shared_ptr<BasisSet> OneBodyAOInt::basis1() { return bs1_; }
 
 std::shared_ptr<BasisSet> OneBodyAOInt::basis2() { return bs2_; }
 
-const double *OneBodyAOInt::buffer() const { return buffer_; }
-
 bool OneBodyAOInt::cloneable() const { return false; }
 
 OneBodyAOInt *OneBodyAOInt::clone() const {
     throw FeatureNotImplemented("libmints", "OneBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void OneBodyAOInt::normalize_am(const GaussianShell & /*s1*/, const GaussianShell & /*s2*/, int /*nchunk*/) {
-    // ACS removed this; the normalize function just returns 1.0
-    //    // Integrals are done. Normalize for angular momentum
-    //    int am1 = s1.am();
-    //    int am2 = s2.am();
-    //    int length = INT_NCART(am1) * INT_NCART(am2);
-
-    //    int ao12 = 0;
-    //    for(int ii = 0; ii <= am1; ii++) {
-    //        int l1 = am1 - ii;
-    //        for(int jj = 0; jj <= ii; jj++) {
-    //            int m1 = ii - jj;
-    //            int n1 = jj;
-    //            /*--- create all am components of sj ---*/
-    //            for(int kk = 0; kk <= am2; kk++) {
-    //                int l2 = am2 - kk;
-    //                for(int ll = 0; ll <= kk; ll++) {
-    //                    int m2 = kk - ll;
-    //                    int n2 = ll;
-
-    //                    for (int chunk=0; chunk<nchunk; ++chunk) {
-    //                        buffer_[ao12+(chunk*length)] *= GaussianShell::normalize(l1, m1, n1) *
-    //                        GaussianShell::normalize(l2, m2, n2);
-    //                    }
-    //                    ao12++;
-    //                }
-    //            }
-    //        }
-    //    }
-}
-
-void OneBodyAOInt::pure_transform(const GaussianShell &s1, const GaussianShell &s2, int chunks) {
+void OneBodyAOInt::pure_transform(const libint2::Shell &s1, const libint2::Shell &s2, int chunks) {
     for (int chunk = 0; chunk < chunks; ++chunk) {
-        const int am1 = s1.am();
-        const int is_pure1 = s1.is_pure() && am1 > 0;
-        const int ncart1 = s1.ncartesian();
-        const int nbf1 = s1.nfunction();
+        const int am1 = s1.contr[0].l;
+        const int is_pure1 = s1.contr[0].pure && am1 > 0;
+        const int ncart1 = s1.cartesian_size();
+        const int nbf1 = s1.size();
 
-        const int am2 = s2.am();
-        const int is_pure2 = s2.is_pure() && am2 > 0;
-        const int ncart2 = s2.ncartesian();
-        const int nbf2 = s2.nfunction();
+        const int am2 = s2.contr[0].l;
+        const int is_pure2 = s2.contr[0].pure && am2 > 0;
+        const int ncart2 = s2.cartesian_size();
+        const int nbf2 = s2.size();
 
         int ncart12 = ncart1 * ncart2;
         int nbf12 = nbf1 * nbf2;
@@ -199,72 +241,57 @@ void OneBodyAOInt::pure_transform(const GaussianShell &s1, const GaussianShell &
     }
 }
 
-void OneBodyAOInt::compute_shell(int sh1, int sh2) {
-    const GaussianShell &s1 = bs1_->shell(sh1);
-    const GaussianShell &s2 = bs2_->shell(sh2);
-
-    // Call the child's compute_pair method, results better be in buffer_.
-    compute_pair(s1, s2);
-
-    // Normalize for angular momentum
-    normalize_am(s1, s2, nchunk_);
-    // Pure angular momentum (6d->5d, ...) transformation
-    pure_transform(s1, s2, nchunk_);
-    buffer_size_ = nchunk_ * s1.nfunction() * s2.nfunction();
+void OneBodyAOInt::compute_pair(const libint2::Shell &s1, const libint2::Shell &s2) {
+    engine0_->compute(s1, s2);
+    for (int chunk = 0; chunk < nchunk(); chunk++) {
+        buffers_[chunk] = engine0_->results()[chunk];
+    }
+    buffer_ = const_cast<double *>(buffers_[0]);
 }
 
-void OneBodyAOInt::compute_pair_deriv1(const GaussianShell &, const GaussianShell &) {
-    throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
+void OneBodyAOInt::compute_pair_deriv1(const libint2::Shell &s1, const libint2::Shell &s2) {
+    engine1_->compute(s1, s2);
+    set_chunks(engine1_->results().size());
+    buffers_.resize(nchunk_);
+    for (int chunk = 0; chunk < nchunk_; chunk++) {
+        buffers_[chunk] = engine1_->results()[chunk];
+    }
 }
 
-void OneBodyAOInt::compute_pair_deriv2(const GaussianShell &, const GaussianShell &) {
-    throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
-}
-
-void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2) {
-    const GaussianShell &s1 = bs1_->shell(sh1);
-    const GaussianShell &s2 = bs2_->shell(sh2);
-
-    // Call the child's compute_pair method, results better be in buffer_.
-    compute_pair_deriv1(s1, s2);
-
-    // Normalize for angular momentum
-    normalize_am(s1, s2, nchunk_);
-
-    // Pure angular momentum (6d->5d, ...) transformation
-    pure_transform(s1, s2, nchunk_);
+void OneBodyAOInt::compute_pair_deriv2(const libint2::Shell &s1, const libint2::Shell &s2) {
+    engine2_->compute(s1, s2);
+    set_chunks(engine2_->results().size());
+    buffers_.resize(nchunk_);
+    for (int chunk = 0; chunk < nchunk_; chunk++) {
+        buffers_[chunk] = engine2_->results()[chunk];
+    }
 }
 
 void OneBodyAOInt::compute(SharedMatrix &result) {
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
+    const auto bs1_equiv_bs2 = (bs1_ == bs2_);
 
-    int i_offset = 0;
-    double *location;
+    double sign = is_antisymmetric() ? -1 : 1;
+    for (auto pair : shellpairs_) {
+        int p1 = pair.first;
+        int p2 = pair.second;
 
-    // Leave as this full double for loop. We could be computing nonsymmetric integrals
-    for (int i = 0; i < ns1; ++i) {
-        int ni = bs1_->shell(i).nfunction();
-        int j_offset = 0;
-        for (int j = 0; j < ns2; ++j) {
-            int nj = bs2_->shell(j).nfunction();
+        int ni = bs1_->shell(p1).nfunction();
+        int nj = bs2_->shell(p2).nfunction();
+        int i_offset = bs1_->shell_to_basis_function(p1);
+        int j_offset = bs2_->shell_to_basis_function(p2);
 
-            // Compute the shell (automatically transforms to pure am in needed)
-            compute_shell(i, j);
+        compute_shell(p1, p2);
 
-            // For each integral that we got put in its contribution
-            location = buffer_;
-            for (int p = 0; p < ni; ++p) {
-                for (int q = 0; q < nj; ++q) {
-                    result->add(0, i_offset + p, j_offset + q, *location);
-                    location++;
+        const double *location = buffers_[0];
+        for (int p = 0; p < ni; ++p) {
+            for (int q = 0; q < nj; ++q) {
+                result->add(0, i_offset + p, j_offset + q, *location);
+                if (bs1_equiv_bs2 && p1 != p2) {
+                    result->add(0, j_offset + q, i_offset + p, (*location) * sign);
                 }
+                location++;
             }
-
-            j_offset += nj;
         }
-        i_offset += ni;
     }
 }
 
@@ -272,8 +299,7 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
-    int i_offset = 0;
-    double *location = 0;
+    const auto bs1_equiv_bs2 = (bs1_ == bs2_);
 
     // Check the length of result, must be chunk
     // There not an easy way of checking the size now.
@@ -283,162 +309,61 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
     }
 
     // Check the individual matrices, we can only handle nirrep() == 1
-    for (SharedMatrix a : result) {
+    for (int chunk = 0; chunk < result.size(); ++chunk) {
+        const auto a = result[chunk];
         if (a->nirrep() != 1) {
             throw SanityCheckError("OneBodyInt::compute(result): one or more of the matrices given has symmetry.",
                                    __FILE__, __LINE__);
         }
     }
 
-    for (int i = 0; i < ns1; ++i) {
-        int ni = bs1_->shell(i).nfunction();
-        int j_offset = 0;
-        for (int j = 0; j < ns2; ++j) {
-            int nj = bs2_->shell(j).nfunction();
+    double sign = is_antisymmetric() ? -1 : 1;
+    for (const auto &pair : shellpairs_) {
+        int p1 = pair.first;
+        int p2 = pair.second;
 
-            // Compute the shell
-            compute_shell(i, j);
+        const auto &s1 = bs1_->l2_shell(p1);
+        const auto &s2 = bs2_->l2_shell(p2);
+        int ni = bs1_->shell(p1).nfunction();
+        int nj = bs2_->shell(p2).nfunction();
+        int i_offset = bs1_->shell_to_basis_function(p1);
+        int j_offset = bs2_->shell_to_basis_function(p2);
 
-            // For each integral that we got put in its contribution
-            location = buffer_;
-            for (int r = 0; r < nchunk_; ++r) {
-                for (int p = 0; p < ni; ++p) {
-                    for (int q = 0; q < nj; ++q) {
-                        result[r]->add(0, i_offset + p, j_offset + q, *location);
-                        location++;
+        // Compute the shell
+        compute_pair(s1, s2);
+
+        // For each integral that we got put in its contribution
+        for (int r = 0; r < nchunk_; ++r) {
+            const double *location = buffers_[r];
+            for (int p = 0; p < ni; ++p) {
+                for (int q = 0; q < nj; ++q) {
+                    result[r]->add(0, i_offset + p, j_offset + q, *location);
+                    if (bs1_equiv_bs2 && p1 != p2) {
+                        result[r]->add(0, j_offset + q, i_offset + p, *location * sign);
                     }
+                    location++;
                 }
             }
-            j_offset += nj;
         }
-        i_offset += ni;
     }
 }
 
-void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix> &result) {
-    if (deriv_ < 1)
-        throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.",
-                               __FILE__, __LINE__);
-
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-    int i_offset = 0;
-    double *location = 0;
-
-    // Check the length of result, must be 3*natom_
-    if (result.size() != (size_t)3 * natom_)
-        throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__,
-                               __LINE__);
-
-    if (result[0]->nirrep() != 1)
-        throw SanityCheckError("OneBodyInt::compute_deriv1(result): results must be C1 symmetry.", __FILE__, __LINE__);
-
-    for (int i = 0; i < ns1; ++i) {
-        int ni = bs1_->shell(i).nfunction();
-        int center_i3 = 3 * bs1_->shell(i).ncenter();
-        int j_offset = 0;
-        for (int j = 0; j < ns2; ++j) {
-            int nj = bs2_->shell(j).nfunction();
-            int center_j3 = 3 * bs2_->shell(j).ncenter();
-
-            if (center_i3 != center_j3) {
-                // Compute the shell
-                compute_shell_deriv1(i, j);
-
-                // Center i
-                location = buffer_;
-                for (int r = 0; r < 3; ++r) {
-                    for (int p = 0; p < ni; ++p) {
-                        for (int q = 0; q < nj; ++q) {
-                            result[center_i3 + r]->add(0, i_offset + p, j_offset + q, *location);
-                            location++;
-                        }
-                    }
-                }
-
-                // Center j -- only if center i != center j
-                for (int r = 0; r < 3; ++r) {
-                    for (int p = 0; p < ni; ++p) {
-                        for (int q = 0; q < nj; ++q) {
-                            result[center_j3 + r]->add(0, i_offset + p, j_offset + q, *location);
-                            location++;
-                        }
-                    }
-                }
-            }
-
-            j_offset += nj;
-        }
-        i_offset += ni;
-    }
+void OneBodyAOInt::compute_shell(int sh1, int sh2) {
+    const auto &s1 = bs1_->l2_shell(sh1);
+    const auto &s2 = bs2_->l2_shell(sh2);
+    compute_pair(s1, s2);
 }
 
-void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix> &result) {
-    if (deriv_ < 2)
-        throw SanityCheckError("OneBodyInt::compute_deriv2(result): integral object not created to handle derivatives.",
-                               __FILE__, __LINE__);
-
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-    int i_offset = 0;
-
-    // Check the length of result, must be 3*natom_
-    if (result.size() != (size_t)9 * natom_ * natom_)
-        throw SanityCheckError("OneBodyInt::compute_deriv2(result): result must be 9 * natom^2 in length.", __FILE__,
-                               __LINE__);
-
-    if (result[0]->nirrep() != 1)
-        throw SanityCheckError("OneBodyInt::compute_deriv2(result): results must be C1 symmetry.", __FILE__, __LINE__);
-
-    for (int i = 0; i < ns1; ++i) {
-        int ni = bs1_->shell(i).nfunction();
-        int center_i3 = 3 * bs1_->shell(i).ncenter();
-        int j_offset = 0;
-        for (int j = 0; j < ns2; ++j) {
-            int nj = bs2_->shell(j).nfunction();
-            int center_j3 = 3 * bs2_->shell(j).ncenter();
-
-            if (center_i3 != center_j3) {
-                // Compute the shell
-                compute_shell_deriv2(i, j);
-
-                //                // Center i
-                //                location = buffer_;
-                //                for (int r=0; r<3; ++r) {
-                //                    for (int p=0; p<ni; ++p) {
-                //                        for (int q=0; q<nj; ++q) {
-                //                            result[center_i3+r]->add(0, i_offset+p, j_offset+q, *location);
-                //                            location++;
-                //                        }
-                //                    }
-                //                }
-
-                //                // Center j -- only if center i != center j
-                //                for (int r=0; r<3; ++r) {
-                //                    for (int p=0; p<ni; ++p) {
-                //                        for (int q=0; q<nj; ++q) {
-                //                            result[center_j3+r]->add(0, i_offset+p, j_offset+q, *location);
-                //                            location++;
-                //                        }
-                //                    }
-                //                }
-            }
-
-            j_offset += nj;
-        }
-        i_offset += ni;
-    }
+void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2) {
+    const auto &s1 = bs1_->l2_shell(sh1);
+    const auto &s2 = bs2_->l2_shell(sh2);
+    compute_pair_deriv1(s1, s2);
 }
 
-void OneBodyAOInt::compute_shell_deriv2(int i, int j) {
-    compute_pair_deriv2(bs1_->shell(i), bs2_->shell(j));
-    // Normalize for angular momentum
-    normalize_am(bs1_->shell(i), bs2_->shell(j), nchunk_);
-
-    // Pure angular momentum (6d->5d, ...) transformation
-    pure_transform(bs1_->shell(i), bs2_->shell(j), nchunk_);
+void OneBodyAOInt::compute_shell_deriv2(int sh1, int sh2) {
+    const auto &s1 = bs1_->l2_shell(sh1);
+    const auto &s2 = bs2_->l2_shell(sh2);
+    compute_pair_deriv2(s1, s2);
 }
 
 }  // namespace psi

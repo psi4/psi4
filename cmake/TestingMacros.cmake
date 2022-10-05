@@ -39,33 +39,10 @@ macro(add_regression_test _name _labels)
     set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
     set(OUTFILE ${TEST_RUN_DIR}/output.dat)
 
-    # Turn on psitest.pl if eligible
-    # true/false have to be _lowercase_, CTest will otherwise spit out a BAD COMMAND error
-    set(AUTOTEST false)
-    if(labels)
-        list(FIND labels "autotest" _index) 
-        # If not found _index == -1; convert to FALSE
-        if(PERL_FOUND AND (${_index} GREATER -1))
-            set(AUTOTEST true)
-        endif()
-    endif()
-
-    # AJ:
-    # Sow/Reap tests need helpers to test the full routine
-    # they should have the sowreap tag added 
-    # this should extend to other Sow/Reap routines, I think 
-    set(SOWREAP false)
-    if(labels)
-        list(FIND labels "sowreap" _index)
-        if (${_index} GREATER -1)
-            set(SOWREAP true)
-        endif()
-    endif()
-
     # Serial build
     add_test(NAME "${_name}"
       WORKING_DIRECTORY "${TEST_RUN_DIR}"
-      COMMAND "${Python_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${psi4_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}" "${PSIDATADIR}" "${PSILIB}"
+      COMMAND "${Python_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${psi4_SOURCE_DIR}" "${OUTFILE}" "${PSIEXE}" "${PSIDATADIR}" "${PSILIB}"
     )
     set_tests_properties("${_name}"
       PROPERTIES

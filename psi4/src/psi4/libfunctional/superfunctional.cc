@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -288,7 +288,7 @@ void SuperFunctional::print(std::string out, int level) const {
         }
     }
 
-    print_density_threshold("outfile",1);
+    print_density_threshold("outfile", 1);
 
     if (needs_grac_) {
         printer->Printf("   => Asymptotic Correction <=\n\n");
@@ -394,26 +394,26 @@ void SuperFunctional::add_c_functional(std::shared_ptr<Functional> fun) {
 }
 void SuperFunctional::set_density_tolerance(double cut) {
     density_tolerance_ = cut;
-        for (int Q = 0; Q < c_functionals_.size(); Q++) {
-            c_functionals_[Q]->set_density_cutoff(density_tolerance_);
-        };
-        for (int Q = 0; Q < x_functionals_.size(); Q++) {
-            x_functionals_[Q]->set_density_cutoff(density_tolerance_);
-        };
+    for (int Q = 0; Q < c_functionals_.size(); Q++) {
+        c_functionals_[Q]->set_density_cutoff(density_tolerance_);
+    };
+    for (int Q = 0; Q < x_functionals_.size(); Q++) {
+        x_functionals_[Q]->set_density_cutoff(density_tolerance_);
+    };
 }
 void SuperFunctional::print_density_threshold(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => LibXC Density Thresholds  <==\n\n");
     double val = 0.0;
-        for (int Q = 0; Q < c_functionals_.size(); Q++) {
-            val = c_functionals_[Q]->query_density_cutoff();
-            printer->Printf("    %s:  %6.2E \n", c_functionals_[Q]->name().c_str(), val);
-        };
-        for (int Q = 0; Q < x_functionals_.size(); Q++) {
-            val = x_functionals_[Q]->query_density_cutoff();
-            printer->Printf("    %s:  %6.2E \n", x_functionals_[Q]->name().c_str(), val);
-        };
+    for (int Q = 0; Q < c_functionals_.size(); Q++) {
+        val = c_functionals_[Q]->query_density_cutoff();
+        printer->Printf("    %s:  %6.2E \n", c_functionals_[Q]->name().c_str(), val);
+    };
+    for (int Q = 0; Q < x_functionals_.size(); Q++) {
+        val = x_functionals_[Q]->query_density_cutoff();
+        printer->Printf("    %s:  %6.2E \n", x_functionals_[Q]->name().c_str(), val);
+    };
     printer->Printf("\n");
 }
 std::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& name) {
@@ -751,8 +751,8 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
     double* rhop = vals.find("RHO_A")->second->pointer();
     double* gammap = vals.find("GAMMA_AA")->second->pointer();
 
-// Eh, worth a shot
-// clang 10 on Mac objects at runtime: #pragma omp simd
+    // Eh, worth a shot
+    // clang 10 on Mac objects at runtime: #pragma omp simd
     for (size_t i = 0; i < npoints; i++) {
         if (rhop[i] < rho_thresh) continue;
 
@@ -972,4 +972,4 @@ int SuperFunctional::ansatz() const {
     if (is_gga()) return 1;
     return 0;
 }
-}
+}  // namespace psi

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -114,8 +114,8 @@ void FittingMetric::form_fitting_metric() {
 
     // == (A|B) Block == //
     IntegralFactory rifactory_J(aux_, zero, aux_, zero);
-    const auto** Jbuffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* Jint = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::vector<const double*> Jbuffer(nthread);  
+    std::vector<std::shared_ptr<TwoBodyAOInt>> Jint(nthread);
     for (int Q = 0; Q < nthread; Q++) {
         if (omega_ > 0.0) {
             Jint[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory_J.erf_eri(omega_));
@@ -152,17 +152,15 @@ void FittingMetric::form_fitting_metric() {
             }
         }
     }
-    delete[] Jbuffer;
-    delete[] Jint;
 
     if (is_poisson_) {
         // == (AB) Block == //
         IntegralFactory rifactory_RP(pois_, aux_, zero, zero);
-        const auto** Obuffer = new const double*[nthread];
-        std::shared_ptr<OneBodyAOInt>* Oint = new std::shared_ptr<OneBodyAOInt>[ nthread ];
+        std::vector<const double*> Obuffer(nthread);
+        std::vector<std::shared_ptr<OneBodyAOInt>> Oint(nthread);
         for (int Q = 0; Q < nthread; Q++) {
             Oint[Q] = std::shared_ptr<OneBodyAOInt>(rifactory_RP.ao_overlap());
-            Obuffer[Q] = Oint[Q]->buffer();
+            Obuffer[Q] = Oint[Q]->buffers()[0];
         }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
@@ -195,11 +193,11 @@ void FittingMetric::form_fitting_metric() {
 
         // == (A|T|B) Block == //
         IntegralFactory rifactory_P(pois_, pois_, zero, zero);
-        const auto** Tbuffer = new const double*[nthread];
-        std::shared_ptr<OneBodyAOInt>* Tint = new std::shared_ptr<OneBodyAOInt>[ nthread ];
+        std::vector<const double*> Tbuffer(nthread);
+        std::vector<std::shared_ptr<OneBodyAOInt>> Tint(nthread);
         for (int Q = 0; Q < nthread; Q++) {
             Tint[Q] = std::shared_ptr<OneBodyAOInt>(rifactory_P.ao_kinetic());
-            Tbuffer[Q] = Tint[Q]->buffer();
+            Tbuffer[Q] = Tint[Q]->buffers()[0];
         }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
@@ -231,10 +229,6 @@ void FittingMetric::form_fitting_metric() {
                 }
             }
         }
-        delete[] Tbuffer;
-        delete[] Tint;
-        delete[] Obuffer;
-        delete[] Oint;
     }
 
     // If C1, form indexing and exit immediately (multiplying by 1 is not so gratifying)
@@ -313,8 +307,8 @@ void FittingMetric::form_fitting_metric() {
     }
 
     // Form indexing
-    pivots_ = std::make_shared<IntVector>(nauxpi.n(), nauxpi);
-    rev_pivots_ = std::make_shared<IntVector>(nauxpi.n(), nauxpi);
+    pivots_ = std::make_shared<IntVector>(nauxpi);
+    rev_pivots_ = std::make_shared<IntVector>(nauxpi);
     for (int h = 0; h < auxpet->nirrep(); h++) {
         int* piv = pivots_->pointer(h);
         int* rpiv = pivots_->pointer(h);
@@ -363,17 +357,17 @@ void FittingMetric::form_QR_inverse(double tol) {
         C_DCOPY(n * (size_t)n, J[0], 1, Rp[0], 1);
 
         // QR Decomposition
-        double* tau = new double[n];
+        std::vector<double> tau(n);
 
         // First, find out how much workspace to provide
+        // Optimal size of work vector is written to work_size
         double work_size;
-        C_DGEQRF(n, n, Rp[0], n, tau, &work_size, -1);
+        C_DGEQRF(n, n, Rp[0], n, tau.data(), &work_size, -1);
 
         // Now, do the QR decomposition
         int lwork = (int)work_size;
-        double* work = new double[lwork];
-        C_DGEQRF(n, n, Rp[0], n, tau, work, lwork);
-        delete[] work;
+        std::vector<double> work(lwork);
+        C_DGEQRF(n, n, Rp[0], n, tau.data(), work.data(), lwork);
 
         // Copy Jcopy to Q (actually Q')
         auto Q = std::make_shared<Matrix>("Q", n, n);
@@ -387,13 +381,13 @@ void FittingMetric::form_QR_inverse(double tol) {
             }
 
         // First, find out how much workspace to provide
-        C_DORGQR(n, n, n, Qp[0], n, tau, &work_size, -1);
+        // Optimal size of work vector is written to work_size
+        C_DORGQR(n, n, n, Qp[0], n, tau.data(), &work_size, -1);
 
         // Now, form Q
         lwork = (int)work_size;
-        work = new double[lwork];
-        C_DORGQR(n, n, n, Qp[0], n, tau, work, lwork);
-        delete[] work;
+        work.resize(lwork);
+        C_DORGQR(n, n, n, Qp[0], n, tau.data(), work.data(), lwork);
 
         // Q->print();
         // R->print();
@@ -423,7 +417,6 @@ void FittingMetric::form_QR_inverse(double tol) {
         // Copy the top bit in
         C_DCOPY(n * (size_t)nsig, Qp[0], 1, J[0], 1);
 
-        delete[] tau;
     }
     metric_->set_name("SO Basis Fitting Inverse (QR)");
 }
@@ -487,7 +480,7 @@ void FittingMetric::pivot() {
         double** J = metric_->pointer(h);
         int* P = pivots_->pointer(h);
         int norbs = metric_->colspi()[h];
-        double* Temp = new double[norbs];
+        std::vector<double> Temp(norbs);
 
         // Pivot
         double max;
@@ -503,20 +496,19 @@ void FittingMetric::pivot() {
                 }
 
             // Rows
-            C_DCOPY(norbs, &J[pivot][0], 1, Temp, 1);
+            C_DCOPY(norbs, &J[pivot][0], 1, Temp.data(), 1);
             C_DCOPY(norbs, &J[i][0], 1, &J[pivot][0], 1);
-            C_DCOPY(norbs, Temp, 1, &J[i][0], 1);
+            C_DCOPY(norbs, Temp.data(), 1, &J[i][0], 1);
 
             // Columns
-            C_DCOPY(norbs, &J[0][pivot], norbs, Temp, 1);
+            C_DCOPY(norbs, &J[0][pivot], norbs, Temp.data(), 1);
             C_DCOPY(norbs, &J[0][i], norbs, &J[0][pivot], norbs);
-            C_DCOPY(norbs, Temp, 1, &J[0][i], norbs);
+            C_DCOPY(norbs, Temp.data(), 1, &J[0][i], norbs);
 
             Temp_p = P[i];
             P[i] = P[pivot];
             P[pivot] = Temp_p;
         }
-        delete[] Temp;
 
         int* R = rev_pivots_->pointer(h);
         for (int i = 0; i < norbs; i++) R[P[i]] = i;

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -232,7 +232,8 @@ def dynamic_variable_bind(cls):
     cls.from_schema = _molecule_from_schema
     cls.to_schema = qcdb.Molecule.to_schema
     cls.run_dftd3 = qcdb.Molecule.run_dftd3
-    cls.run_gcp= qcdb.Molecule.run_gcp
+    cls.run_dftd4 = qcdb.Molecule.run_dftd4
+    cls.run_gcp = qcdb.Molecule.run_gcp
     cls.format_molecule_for_mol = qcdb.Molecule.format_molecule_for_mol
 
 
@@ -248,7 +249,7 @@ dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
 #   H  0.0 1.0 0.0
 #   H  0.0 0.0 0.0
 #
-def geometry(geom, name="default"):
+def geometry(geom: str, name: str = "default") -> core.Molecule:
     """Function to create a molecule object of name *name* from the
     geometry in string *geom*. Permitted for user use but deprecated
     in driver in favor of explicit molecule-passing. Comments within
@@ -279,7 +280,7 @@ def geometry(geom, name="default"):
     # Attempt to go ahead and construct the molecule
     try:
         molecule.update_geometry()
-    except:
+    except Exception:
         core.print_out("Molecule: geometry: Molecule is not complete, please use 'update_geometry'\n"
                        "                    once all variables are set.\n")
 
@@ -288,7 +289,7 @@ def geometry(geom, name="default"):
     return molecule
 
 
-def activate(mol):
+def activate(mol: core.Molecule):
     """Function to set molecule object *mol* as the current active molecule.
     Permitted for user use but deprecated in driver in favor of explicit
     molecule-passing.

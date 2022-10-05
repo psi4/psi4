@@ -13,16 +13,17 @@ requirements:
     - mkl={{ MKL_VERSION }}
     - networkx
     - numpy
-    - pytest
+    - pytest>=7.0.1
     - python={{ PY_VER }}
-    - qcelemental
-    - qcengine
+    - qcelemental=0.25.0
+    - qcengine=0.24.1
     - msgpack-python
     - gau2grid
-    - libint2
+    - libint2 2.6.0 h2e52968_4
     - libxc
     - dftd3
     - gcp
+    - scipy
 
 build:
   string: py{{ environ['PY_VER'].replace('.', '') }}_{{ 'debug' if environ['CMAKE_BUILD_TYPE'] == 'Debug' else '0' }}
@@ -34,6 +35,9 @@ build:
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\basis       {{ PREFIX }}\Lib\share\psi4\basis
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\plugin      {{ PREFIX }}\Lib\share\psi4\plugin
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\quadratures {{ PREFIX }}\Lib\share\psi4\quadratures
+    - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\databases   {{ PREFIX }}\Lib\share\psi4\databases
+    - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\fsapt       {{ PREFIX }}\Lib\share\psi4\fsapt
+    - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\grids       {{ PREFIX }}\Lib\share\psi4\grids
     {% if environ['CMAKE_BUILD_TYPE'] == 'Debug' %}
     - copy /y {{ SYSTEMROOT }}\System32\msvcp140d.dll     {{ PREFIX }}
     - copy /y {{ SYSTEMROOT }}\System32\vcomp140d.dll     {{ PREFIX }}

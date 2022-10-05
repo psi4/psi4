@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -112,7 +112,7 @@ Update copyright year
   - ``README.md``
   - ``tests/psitest.pl``
 
-* Also, in content of https://github.com/psi4/psi4/blob/master/doc/sphinxman/source/conf.py.in#L118
+* Also, in content of :source:`doc/sphinxman/source/conf.py.in#L130`
 
 
 Update samples
@@ -136,7 +136,7 @@ Collect new authors
 Anticipate next release
 -----------------------
 
-* Bump version in ``codemeta.json``, https://github.com/psi4/psi4/blob/master/codemeta.json#L9
+* Bump version in ``codemeta.json``, :source:`codemeta.json#L9`
 * Add to branch list in ``azure-pipelines.yml``, :source:`azure-pipelines.yml`
 
 
@@ -221,8 +221,18 @@ Tag (pre)release
     bc8d7f5 v1.3rc2
     >>> git tag -a v1.3rc2 bc8d7f5 -m "v1.3rc2"
 
-    # pause here and push to upstream and let Azure complete if want an
-    #       on-tag Windows conda package, not just tag+1.dev1
+    # goto GH:psi4/psi4 > Settings > Branches > master > Edit
+    #      https://github.com/psi4/psi4/settings/branch_protection_rules/424295
+    # uncheck "Include administrators" and Save changes
+    
+    >>> git push --atomic upstream master v1.3rc2
+
+    # pause here and push to upstream and let Azure complete for an
+    #       on-tag Windows conda package and docs, not tag+1.dev1 .
+    #       the atomic flag below pushes commit and tag together so only one CI
+    #       which is necessary for Windows conda package to compute the right version.
+    #       After push, can temporarily re-engage "Include administrators" protections.
+    #       also, grab the docs build from GHA artifacts
 
     >>> vi psi4/metadata.py
     >>> git diff
@@ -240,7 +250,6 @@ Tag (pre)release
     # uncheck "Include administrators" and Save changes
 
     >>> git push upstream master
-    >>> git push upstream v1.3rc2
 
     # re-engage "Include administrators" protections
 
@@ -277,14 +286,10 @@ Tag postrelease
     # skipping the hash recording and "upcoming" step b/c only tags matter on maintenance branch
 
     # free pushing to maintenance branches at present so GitHub interface steps not needed
-    # goto GH:psi4/psi4 > Settings > Branches > 1.3.x > Edit
-    #      https://github.com/psi4/psi4/settings/branch_protection_rules/4385008  # !Varies!
-    # uncheck "Include administrators" and Save changes
+    
+    # see note at "Tag postrelease" for why atomic commit needed. Collect docs from GHA artifacts.
 
-    >>> git push upstream 1.3.x
-    >>> git push upstream v1.3.1
-
-    # re-engage "Include administrators" protections
+    >>> git push --atomic upstream 1.3.x v1.3.1
 
 
 Initialize release branch
@@ -428,7 +433,7 @@ Collect documentation snapshot
 ------------------------------
 
 * Documentation is built automatically by GHA from the latest psi4 master commit. It gets pushed to the psi4/psi4docs repository and thence served by netlify to a site independent of psicode.org. The netlify psicode.org site has a redirect so that psicode.org/psi4manual/master presents the psi4docs netlify content.
-* GHA controller is https://github.com/psi4/psi4/blob/master/.github/workflows/docs.yml
+* GHA controller is :source:`.github/workflows/docs.yml`
 * This setup works great for "latest" docs, but it won't build a nice copy on the tag because the tag commit is pushed before the tag itself, so the version shows up "undefined".
 * So, anytime after "Tag (pre)release" is over, navigate on psi4 GH to the tag commit (not the record commit) and retrigger the docs GHA. Download the artifact (zipped docs dir) at the end to a local computer.
 * In your hugo site clone, create a new directory under ``static/psi4manual``. Copy the zipped docs there, unpack, rearrange so that ``static/psi4manual/<new-tag>/index.html`` is present. Check in.

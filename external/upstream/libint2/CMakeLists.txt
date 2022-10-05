@@ -6,6 +6,7 @@
 #   This is not the default, though it may become runtime selectable in future https://github.com/evaleev/libint/issues/190#issuecomment-691485225 .
 # * In order for any DF to work, need ENABLE_ERI3 and ENABLE_ERI2 >=0
 # * In order for gradient and Hessian tests to not segfault, need ENABLE_ERI and ENABLE_ERI3 and ENABLE_ERI2 =2
+# * (new c. Jan 2022) In order for Psi4 to at all work with a libint2 build for one-electron ints, need ENABLE_ONEBODY =2
 # * The `find_package(Libint2 ... COMPONENTS ...)` commands will check the above requirements met, provided the libint2
 #   was built with cmake+cmake, not libtool+cmake.
 # * Provided you know what you're doing wrt the above options and know what subset of Psi4 calculations you're targeting
@@ -24,17 +25,16 @@
 # * If ever use a libint2 with AM>7, edit the `init_spherical_harmonics` line in libmints/integral.cc
 # * In selecting AM values, before `grep`ing lots of basis set files, consult the guide at end of this file.
 
-
 # CHOOSE! `make export`
 #find_package(Libint2 CONFIG)
 # CHOOSE! pure cmake
-find_package(Libint2 CONFIG COMPONENTS gss "e${MAX_AM_ERI}" g2 h2 eri3_e4 eri3_g3 eri3_h3 eri2_e4 eri2_g3 eri2_h3)
+find_package(Libint2 CONFIG COMPONENTS gss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
 
 if(${Libint2_FOUND})
     # CHOOSE! `make export`
     #get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
     # CHOOSE! pure cmake
-    get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
+    get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
     message(STATUS "${Cyan}Found Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint2_VERSION})")
     add_library(libint2_external INTERFACE)  # dummy
 else()
@@ -43,14 +43,6 @@ else()
     endif()
 
     include(ExternalProject)
-
-    if(${BUILD_SHARED_LIBS})
-        set(_a_only  OFF)
-        set(_so_only ON)
-    else()
-        set(_a_only  ON)
-        set(_so_only OFF)
-    endif()
 
     if(NOT ${BUILD_Libint2_GENERATOR})
         if (${MAX_AM_ERI} GREATER 5)
@@ -67,39 +59,57 @@ else()
             set(_url_am_src "1-0-0-0-0-0")  #    99  # LGTM_SRC bulids
         endif()
 
-        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-${_url_am_src}_1.tgz")
+        #TODO set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-${_url_am_src}_1.tgz")
+        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-5-4-3-6-5-4_mm4f12ob2.tgz")
 
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2 ${_url_am_src}${ColourReset} instead.")
+
+        if (MSVC)
+            # Windows shared (dll) can't work
+            set(_build_shared_libs "OFF")
+        else()
+            # stopgap to avert a report that static lib not working on Linux
+            set(_build_shared_libs "ON")
+        endif()
 
         ExternalProject_Add(libint2_external
             URL ${_url_l2_tarball}
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
-                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                       #-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                       -DCMAKE_BUILD_TYPE=Release
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                       -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DBOOST_ROOT=${BOOST_ROOT}
                        -DEigen3_DIR=${Eigen3_DIR}
-                       -DMPFR_ROOT=${MPFR_ROOT}
                        -DLIBINT2_SHGAUSS_ORDERING=gaussian
-                       -DBUILD_SHARED=${_so_only}
-                       -DBUILD_STATIC=${_a_only}
-                       -DENABLE_CXX11API=ON
+                       #-DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                       -DBUILD_SHARED_LIBS=${_build_shared_libs}
+                       -DREQUIRE_CXX_API=ON
+                       -DREQUIRE_CXX_API_COMPILED=OFF
                        -DENABLE_FORTRAN=OFF
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DBUILD_FPIC=${BUILD_FPIC}
+                       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
+                       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
 
     else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
         message(WARNING "${Yellow}Libint2 generator source build requires Ninja (not Makefile) builder and Boost, Eigen, and MPFR dependencies. The build will be very long for non-trivial AM, and parallelism won't help for parts. Edit external/upstream/libint2/CMakeLists.txt for AM settings.${ColourReset}")
+
+        if (MSVC)
+            message(FATAL_ERROR "${Red}Libint2 generator source build faulty on Windows.${ColourReset}")
+        endif()
+
         # NOTE: active AM settings below will pass few tests, as they're set for 1st row triple-zeta ene and double-zeta ene/grad/hess for both conv/df. Please edit for desired use.
 
         ExternalProject_Add(libint2_external
-            URL https://github.com/loriab/libint/archive/l2cmake.zip
+            URL https://github.com/loriab/libint/archive/new-cmake-harness-lab-rb1.zip
             CMAKE_ARGS -GNinja
                        -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -107,21 +117,22 @@ else()
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+                       -DENABLE_ONEBODY=2
                        -DENABLE_ERI=2
                        -DENABLE_ERI3=2
                        -DENABLE_ERI2=2
                        -DBOOST_ROOT=${BOOST_ROOT}
                        -DEigen3_DIR=${Eigen3_DIR}
                        -DEigen3_ROOT=${Eigen3_ROOT}
-                       -DMPFR_ROOT=${MPFR_ROOT}
+                       -DMultiprecision_ROOT=${Multiprecision_ROOT}
                        -DERI3_PURE_SH=OFF
                        -DERI2_PURE_SH=OFF
                        -DLIBINT2_SHGAUSS_ORDERING=gaussian
                        -DLIBINT2_CARTGAUSS_ORDERING=standard
                        -DLIBINT2_SHELL_SET=standard
-                       -DBUILD_SHARED=${_so_only}
-                       -DBUILD_STATIC=${_a_only}
-                       -DENABLE_CXX11API=ON
+                       -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
+                       -DREQUIRE_CXX_API=ON
+                       -DREQUIRE_CXX_API_COMPILED=OFF
                        -DENABLE_FORTRAN=OFF
                        -DBUILD_TESTING=${BUILD_TESTING}
                        -DENABLE_XHOST=${ENABLE_XHOST}
@@ -138,7 +149,7 @@ else()
     # CHOOSE! `make export`
     #set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/libint2 CACHE PATH "path to internally built libint2-config.cmake" FORCE)
     # CHOOSE! pure cmake
-    set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint2 CACHE PATH "path to internally built Libint2Config.cmake" FORCE)
+    set(Libint2_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/libint2 CACHE PATH "path to internally built libint2-config.cmake" FORCE)
 
 endif()
 

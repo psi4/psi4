@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -47,6 +47,9 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
+#ifdef USING_ecpint
+#include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/molecule.h"
@@ -55,7 +58,6 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/lib3index/dfhelper.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -423,7 +425,9 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::unique_ptr<OneBodyAOInt> S_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_overlap());
     std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
     std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
-    std::unique_ptr<OneBodyAOInt> ECP_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_ecp());
+#ifdef USING_ecpint
+    auto ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp()));
+#endif
 
     // Compute overlap S and orthogonalizer X;
     SharedMatrix S(mat.create_matrix("Overlap Matrix"));
@@ -443,17 +447,23 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     T_ints->compute(T);
     SharedMatrix V(mat.create_matrix("V"));
     V_ints->compute(V);
+#ifdef USING_ecpint
     SharedMatrix ECP(mat.create_matrix("ECP"));
     ECP_ints->compute(ECP);
+#endif
     SharedMatrix H(mat.create_matrix("Core Hamiltonian Matrix H"));
     H->zero();
     H->add(T);
     H->add(V);
+#ifdef USING_ecpint
     H->add(ECP);
+#endif
 
     T.reset();
     V.reset();
+#ifdef USING_ecpint
     ECP.reset();
+#endif
 
     if (print_ > 6) {
         H->print();
@@ -509,9 +519,9 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     int iteration = 0;
 
     // Setup DIIS
-    DIISManager diis_manager(6, "SAD DIIS", DIISManager::LargestError, DIISManager::InCore);
-    diis_manager.set_error_vector_size(2, DIISEntry::Matrix, gradient_a.get(), DIISEntry::Matrix, gradient_b.get());
-    diis_manager.set_vector_size(2, DIISEntry::Matrix, Fa.get(), DIISEntry::Matrix, Fb.get());
+    DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    diis_manager.set_error_vector_size(gradient_a.get(), gradient_b.get());
+    diis_manager.set_vector_size(Fa.get(), Fb.get());
 
     // Setup JK
     std::unique_ptr<JK> jk;
@@ -523,7 +533,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         dfjk->dfh()->set_print_lvl(0);
         jk = std::unique_ptr<JK>(dfjk);
     } else {
-        DirectJK* directjk(new DirectJK(bas));
+        DirectJK* directjk(new DirectJK(bas, options_));
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             directjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         jk = std::unique_ptr<JK>(directjk);
@@ -592,8 +602,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
                                 : std::max(gradient_a->absmax(), gradient_b->absmax());
 
         // Add and extrapolate DIIS
-        diis_manager.add_entry(4, gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
-        diis_manager.extrapolate(2, Fa.get(), Fb.get());
+        diis_manager.add_entry(gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
+        diis_manager.extrapolate(Fa.get(), Fb.get());
 
         // Diagonalize Fa and Fb to from Ca and Cb and Da and Db
         form_C_and_D(X, Fa, Ca, Ea, Ca_occ, occ_a, Da);
@@ -823,10 +833,10 @@ void HF::compute_SAD_guess(bool natorb) {
 
             if (!nso || !nmo) continue;
 
-            double** Cap = Ca_->pointer(h);
-            double** Cbp = Cb_->pointer(h);
-            double** Ca2p = Ca_sad->pointer(h);
-            double** Cb2p = Cb_sad->pointer(h);
+            auto Cap = Ca_->pointer(h);
+            auto Cbp = Cb_->pointer(h);
+            auto Ca2p = Ca_sad->pointer(h);
+            auto Cb2p = Cb_sad->pointer(h);
             for (int i = 0; i < nso; i++) {
                 C_DCOPY(nmo, Ca2p[i], 1, Cap[i], 1);
                 C_DCOPY(nmo, Cb2p[i], 1, Cbp[i], 1);
@@ -837,8 +847,6 @@ void HF::compute_SAD_guess(bool natorb) {
         nbetapi_ = sad_dim;
         nalpha_ = sad_dim.sum();
         nbeta_ = sad_dim.sum();
-        doccpi_ = sad_dim;
-        soccpi_ = Dimension(Da_->nirrep(), "SAD SOCC dim (0's)");
         energies_["Total Energy"] = 0.0;  // This is the -1th iteration
     }
 }

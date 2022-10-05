@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -67,11 +67,9 @@ std::shared_ptr<Localizer> Localizer::build(const std::string& type, std::shared
     std::shared_ptr<Localizer> local;
 
     if (type == "BOYS") {
-        BoysLocalizer* l = new BoysLocalizer(primary, C);
-        local = std::shared_ptr<Localizer>(l);
+        local = std::make_shared<BoysLocalizer>(primary, C);
     } else if (type == "PIPEK_MEZEY") {
-        PMLocalizer* l = new PMLocalizer(primary, C);
-        local = std::shared_ptr<Localizer>(l);
+        local = std::make_shared<PMLocalizer>(primary, C);
     } else {
         throw PSIEXCEPTION("Localizer: Unrecognized localization algorithm");
     }

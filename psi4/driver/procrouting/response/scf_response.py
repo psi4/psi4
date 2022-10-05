@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+from collections import Counter
 from typing import Union, List
 try:
     from dataclasses import dataclass
@@ -39,6 +40,9 @@ from psi4.driver import constants
 from psi4.driver.p4util import solvers
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine, TDUSCFEngine)
+
+# TODO: Split this file into a CPSCF file (frequency-independent case) and TD-SCF file (frequency-dependent case).
+# Neither "half" of the file uses any function from the other "half". The danger is what could happen to import paths...
 
 dipole = {
     'name': 'Dipole polarizabilities',
@@ -82,7 +86,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
         The reference wavefunction.
     args : list
         The list of arguments. For each argument, such as ``dipole polarizability``, will return the corresponding
-        response. The user may also choose to pass a list or tuple of custom vectors.
+        response.
     kwargs : dict
         Options that control how the response is computed. The following options are supported (with default values):
           - ``conv_tol``: 1e-5
@@ -92,132 +96,92 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     Returns
     -------
     responses : list
-        The list of responses.
+        The list of response tensors.
     """
     mints = core.MintsHelper(wfn.basisset())
 
-    # list of dictionaries to control response calculations, count how many user-supplied vectors we have
+    # list of dictionaries to control response calculations
     complete_dict = []
-    n_user = 0
 
     for arg in args:
-
         # for each string keyword, append the appropriate dictionary (vide supra) to our list
-        if isinstance(arg, str):
-            ret = property_dicts.get(arg)
-            if ret:
-                complete_dict.append(ret)
-            else:
-                raise ValidationError('Do not understand {}. Abort.'.format(arg))
-
-        # the user passed a list of vectors. absorb them into a dictionary
-        elif isinstance(arg, tuple) or isinstance(arg, list):
-            complete_dict.append({
-                'name': 'User Vectors',
-                'length': len(arg),
-                'vectors': arg,
-                'vector names': ['User Vector {}_{}'.format(n_user, i) for i in range(len(arg))]
-            })
-            n_user += len(arg)
-
-        # single vector passed. stored in a dictionary as a list of length 1 (can be handled as the case above that way)
-        # note: the length is set to '0' to designate that it was not really passed as a list
+        if not isinstance(arg, str):
+            # TODO: better to raise TypeError?
+            raise ValidationError("Property name must be of type string.")
+        ret = property_dicts.get(arg)
+        if ret:
+            complete_dict.append(ret)
         else:
-            complete_dict.append({
-                'name': 'User Vector',
-                'length': 0,
-                'vectors': [arg],
-                'vector names': ['User Vector {}'.format(n_user)]
-            })
-            n_user += 1
+            raise ValidationError(f"Do not understand '{arg}'.")
 
     # vectors will be passed to the cphf solver, vector_names stores the corresponding names
     vectors = []
     vector_names = []
+    restricted = wfn.same_a_b_orbs()
 
     # construct the list of vectors. for the keywords, fetch the appropriate tensors from MintsHelper
     for prop in complete_dict:
-        if 'User' in prop['name']:
-            for name, vec in zip(prop['vector names'], prop['vectors']):
-                vectors.append(vec)
-                vector_names.append(name)
-
-        else:
-            tmp_vectors = prop['mints_function'](mints)
-            for tmp in tmp_vectors:
-                tmp.scale(-2.0)  # RHF only
-                vectors.append(tmp)
-                vector_names.append(tmp.name)
+        tmp_vectors = prop['mints_function'](mints)
+        for tmp in tmp_vectors:
+            tmp.scale(-1.0)
+            vectors.append(tmp)
+            vector_names.append(tmp.name)
 
     # do we have any vectors to work with?
     if len(vectors) == 0:
-        raise ValidationError('I have no vectors to work with. Aborting.')
+        raise ValidationError('No vectors to work with. Aborting.')
 
     # print information on module, vectors that will be used
-    _print_header(complete_dict, n_user)
+    _print_header(complete_dict)
 
-    # fetch wavefunction information
-    nmo = wfn.nmo()
-    ndocc = wfn.nalpha()
-    nvirt = nmo - ndocc
-
-    c_occ = wfn.Ca_subset("AO", "OCC")
-    c_vir = wfn.Ca_subset("AO", "VIR")
-    nbf = c_occ.shape[0]
-
-    # the vectors need to be in the MO basis. if they have the shape nbf x nbf, transform.
-    for i in range(len(vectors)):
-        shape = vectors[i].shape
-
-        if shape == (nbf, nbf):
-            vectors[i] = core.triplet(c_occ, vectors[i], c_vir, True, False, False)
-
-        # verify that this vector already has the correct shape
-        elif shape != (ndocc, nvirt):
-            raise ValidationError('ERROR: "{}" has an unrecognized shape ({}, {}). Must be either ({}, {}) or ({}, {})'.format(
-                vector_names[i], shape[0], shape[1], nbf, nbf, ndocc, nvirt))
+    nbf = wfn.basisset().nbf()
+    Co = [wfn.Ca_subset("AO", "OCC"), wfn.Cb_subset("AO", "OCC")]
+    Cv = [wfn.Ca_subset("AO", "VIR"), wfn.Cb_subset("AO", "VIR")]
+    vectors_transformed = []
+    for vector in vectors:
+        if vector.shape != (nbf, nbf):
+            raise ValidationError(f"Vector must be of shape ({nbf}, {nbf}) for transformation"
+                                  " to the SO basis.")
+        v_a = core.triplet(Co[0], vector, Cv[0], True, False, False)
+        vectors_transformed.append(v_a)
+        if not restricted:
+            v_b = core.triplet(Co[1], vector, Cv[1], True, False, False)
+            vectors_transformed.append(v_b)
 
     # compute response vectors for each input vector
     params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
 
-    responses = wfn.cphf_solve(vectors, *params)
+    responses_list = wfn.cphf_solve(vectors_transformed, *params)
 
     # zip vectors, responses for easy access
-    vectors = {k: v for k, v in zip(vector_names, vectors)}
-    responses = {k: v for k, v in zip(vector_names, responses)}
-
+    if restricted:
+        vectors = {f"{k}_a": v for k, v in zip(vector_names, vectors_transformed)}
+        responses = {f"{k}_a": v for k, v in zip(vector_names, responses_list)}
+    else:
+        vectors = {f"{k}_a": v for k, v in zip(vector_names, vectors_transformed[::2])}
+        vectors.update({f"{k}_b": v for k, v in zip(vector_names, vectors_transformed[1::2])})
+        responses = {f"{k}_a": v for k, v in zip(vector_names, responses_list[::2])}
+        responses.update({f"{k}_b": v for k, v in zip(vector_names, responses_list[1::2])})
     # compute response values, format output
     output = []
+    pref = -4.0 if restricted else -2.0
     for prop in complete_dict:
-
-        # try to replicate the data structure of the input
-        if 'User' in prop['name']:
-            if prop['length'] == 0:
-                output.append(responses[prop['vector names'][0]])
-            else:
-                buf = []
-                for name in prop['vector names']:
-                    buf.append(responses[name])
-                output.append(buf)
-
-        else:
-            names = prop['vector names']
-            dim = len(names)
-
-            buf = np.zeros((dim, dim))
-
-            for i, i_name in enumerate(names):
-                for j, j_name in enumerate(names):
-                    buf[i, j] = -1.0 * vectors[i_name].vector_dot(responses[j_name])
-
-            output.append(buf)
+        names = prop['vector names']
+        dim = len(names)
+        buf = np.zeros((dim, dim))
+        for i, i_name in enumerate(names):
+            for j, j_name in enumerate(names):
+                buf[i, j] = pref * vectors[f"{i_name}_a"].vector_dot(responses[f"{j_name}_a"])
+                if not restricted:
+                    buf[i, j] += pref * vectors[f"{i_name}_b"].vector_dot(responses[f"{j_name}_b"])
+        output.append(buf)
 
     _print_output(complete_dict, output)
 
     return output
 
 
-def _print_header(complete_dict, n_user):
+def _print_header(complete_dict):
     core.print_out('\n\n         ---------------------------------------------------------\n'
                    '         {:^57}\n'.format('CPSCF Linear Response Solver') +
                    '         {:^57}\n'.format('by Marvin Lechner and Daniel G. A. Smith') +
@@ -228,9 +192,6 @@ def _print_header(complete_dict, n_user):
     for prop in complete_dict:
         if 'User' not in prop['name']:
             core.print_out('    {}\n'.format(prop['name']))
-
-    if n_user != 0:
-        core.print_out('    {} user-supplied vector(s)\n'.format(n_user))
 
 
 def _print_matrix(descriptors, content, title):
@@ -255,14 +216,26 @@ def _print_output(complete_dict, output):
     core.print_out('\n   ==> Response Properties <==\n')
 
     for i, prop in enumerate(complete_dict):
-        if not 'User' in prop['name']:
+        if 'User' not in prop['name']:
             core.print_out('\n    => {} <=\n\n'.format(prop['name']))
             directions = prop['printout_labels']
             var_name = prop['name'].upper().replace("IES", "Y")
             _print_matrix(directions, output[i], var_name)
 
 
+def _print_tdscf_warning():
+    core.print_out("\n{}\n".format("*"*90) +
+                   "{}{:^70}{}\n".format("*"*10, "WARNING", "*"*10) +
+                   "{}{:^70}{}\n".format("*"*10, "The names of excited state variables changed between 1.5", "*"*10) +
+                   "{}{:^70}{}\n".format("*"*10, "and 1.6. For a quick solution, remove the symmetry specifier", "*"*10) +
+                   "{}{:^70}{}\n".format("*"*10, "from the variable name. For full details, see 'Notes on Psivars'", "*"*10) +
+                   "{}{:^70}{}\n".format("*"*10, "in the documentation.", "*"*10) +
+                   "{}\n\n".format("*"*90)) #yapf: disable
+
+
+
 def _print_tdscf_header(*, r_convergence: float, guess_type: str, restricted: bool, ptype: str):
+    _print_tdscf_warning()
     core.print_out("\n\n         ---------------------------------------------------------\n"
                    f"         {'TDSCF excitation energies':^57}\n" +
                    f"         {'by Andrew M. James and Daniel G. A. Smith':^57}\n" +
@@ -285,6 +258,7 @@ class _TDSCFResults:
     irrep_GS: str
     irrep_ES: str
     irrep_trans: str
+    irrep_trans_index: int
     edtm_length: np.ndarray
     f_length: float
     edtm_velocity: np.ndarray
@@ -305,6 +279,9 @@ def _solve_loop(wfn,
                 restricted: bool = True,
                 spin_mult: str = "singlet") -> List[_TDSCFResults]:
     """
+    For each irrep, solve for the desired number of states and compute the states'
+    properties. These function is responsible for driving the other functions that
+    are responsible for computation.
 
     References
     ----------
@@ -345,6 +322,11 @@ def _solve_loop(wfn,
 
         # ret = {"eigvals": ee, "eigvecs": (rvecs, rvecs), "stats": stats} (TDA)
         # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (RPA)
+        # N.B.: Eigvecs and eigvals are of the reduced, non-Hermitian eigenvalue problem, not the
+        # original Hermitian pseudo-eigenvalue problem. To convert to quantities of original problem:
+        # ee = omega^2
+        # rvecs = X + Y
+        # lvecs = X - Y
         ret = solve_function(engine, nstates, guess_, maxiter)
 
         # check whether all roots converged
@@ -355,7 +337,8 @@ def _solve_loop(wfn,
         # flatten dictionary: helps with sorting by energy
         # also append state symmetry to return value
         for e, (R, L) in zip(ret["eigvals"], ret["eigvecs"]):
-            irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ state_sym]
+            irrep_trans_index = engine.G_gs ^ state_sym
+            irrep_trans = wfn.molecule().irrep_labels()[irrep_trans_index]
 
             # length-gauge electric dipole transition moment
             edtm_length = engine.residue(R, mints.so_dipole())
@@ -369,14 +352,15 @@ def _solve_loop(wfn,
             # 1/2 is the Bohr magneton in atomic units
             mdtm = 0.5 * engine.residue(L, mints.so_angular_momentum())
             # NOTE The signs for rotatory strengths are opposite WRT the cited paper.
-            # This is becasue Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
+            # This is because Psi4 defines length-gauge dipole integral to include the electron charge (-1.0)
             # length gauge rotatory strength
             R_length = np.einsum("i,i", edtm_length, mdtm)
             # velocity gauge rotatory strength
             R_velocity = -np.einsum("i,i", edtm_velocity, mdtm) / e
 
             results.append(
-                _TDSCFResults(e, irrep_GS, irrep_ES, irrep_trans, edtm_length, f_length, edtm_velocity, f_velocity,
+                _TDSCFResults(e, irrep_GS, irrep_ES, irrep_trans, irrep_trans_index,
+                              edtm_length, f_length, edtm_velocity, f_velocity,
                               mdtm, R_length, R_velocity, spin_mult, R, L))
 
     return results
@@ -457,33 +441,94 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
 
     # Print contributing transitions...
     core.print_out(f"\n\nContributing excitations{'' if tda else ' and de-excitations'}")
-    #...only currently for C1 symmetry
-    if wfn.molecule().point_group().symbol() != 'c1':
-        core.print_out("...only curently available with C1 symmetry\n")
-    else:
+    core.print_out(
+        f"\nOnly contributions with abs(coeff) >{coeff_cutoff: .2e} will be printed:\n"
+    )
+    for i, x in enumerate(tdscf_results):
+        E_ex_nm = 1e9 / (constants.conversion_factor('hartree', 'm^-1') *
+                            x.E_ex_au)
         core.print_out(
-            f"\nOnly contributions with coefficients >{coeff_cutoff: .2e} will be printed:\n"
+            f"\nExcited State {i+1:4d} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):"
         )
-        for i, x in enumerate(tdscf_results):
-            E_ex_nm = 1e9 / (constants.conversion_factor('hartree', 'm^-1') *
-                             x.E_ex_au)
+        core.print_out(
+            f"{x.E_ex_au:> 10.5f} au   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n"
+        )
+
+        if not restricted:
+            core.print_out("Alpha orbitals:\n")
+        # Extract contributing transitions from left and right eigenvectors from solver
+        if tda:
+            X = x.L_eigvec if restricted else x.L_eigvec[0]
+            Xssq = X.sum_of_squares()
+            core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
+        else:
+            L = x.L_eigvec if restricted else x.L_eigvec[0]
+            R = x.R_eigvec if restricted else x.R_eigvec[0]
+            X = L.clone()
+            X.add(R)
+            X.scale(0.5)
+            Y = R.clone()
+            Y.subtract(L)
+            Y.scale(0.5)
+            Xssq = X.sum_of_squares()
+            Yssq = Y.sum_of_squares()
+
             core.print_out(
-                f"\nExcited State {i+1:4d} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):"
-            )
-            core.print_out(
-                f"{x.E_ex_au:> 10.5f} au   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n"
+                f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
             )
 
-            if not restricted:
-                core.print_out("Alpha orbitals:\n")
-            # Extract contributing transitions from left and right eigenvectors from solver
+        nocc = wfn.epsilon_a_subset("SO", "OCC").shape
+        nvir = wfn.epsilon_a_subset("SO", "VIR").shape
+        # Ignore any scaling for now
+        div = 1
+        # Excitations
+        nirrep = X.nirrep()
+        # Convert to list of lists for C1 case
+        if nirrep == 1:
+            nocc = (nocc, )
+            nvir = (nvir, )
+        for h in range(nirrep):
+            h_vir = x.irrep_trans_index ^ h
+            occ_irrep = wfn.molecule().irrep_labels()[h].lower()
+            vir_irrep = wfn.molecule().irrep_labels()[h_vir].lower()
+            for row in range(nocc[h][0]):
+                for col in range(nvir[h_vir][0]):
+                    if nirrep == 1:
+                        coef = X.np[row][col] / div
+                    else:
+                        coef = X.nph[h][row][col] / div
+                    if abs(coef) > coeff_cutoff:
+                        perc = 100 * coef**2
+                        core.print_out(
+                            f"   {row+1: 4}{occ_irrep} {'' if restricted else '(a)'} ->{col+1+nocc[h_vir][0]: 4}{vir_irrep} {'' if restricted else '(a)'}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                        )
+        # De-excitations if not using TDA
+        if not tda:
+            for h in range(nirrep):
+                h_vir = x.irrep_trans_index ^ h
+                occ_irrep = wfn.molecule().irrep_labels()[h].lower()
+                vir_irrep = wfn.molecule().irrep_labels()[h_vir].lower()
+                for row in range(nocc[h][0]):
+                    for col in range(nvir[h_vir][0]):
+                        if nirrep == 1:
+                            coef = Y.np[row][col] / div
+                        else:
+                            coef = Y.nph[h][row][col] / div
+                        if abs(coef) > coeff_cutoff:
+                            perc = 100 * coef**2
+                            core.print_out(
+                                f"   {row+1: 4}{occ_irrep} {'' if restricted else '(a)'} <-{col+1+nocc[h_vir][0]: 4}{vir_irrep} {'' if restricted else '(a)'}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                            )
+        # Now treat beta orbitals if needed
+        if not restricted:
+            core.print_out("Beta orbitals:\n")
             if tda:
-                X = x.L_eigvec if restricted else x.L_eigvec[0]
+                X = x.L_eigvec if restricted else x.L_eigvec[1]
                 Xssq = X.sum_of_squares()
                 core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
             else:
-                L = x.L_eigvec if restricted else x.L_eigvec[0]
-                R = x.R_eigvec if restricted else x.R_eigvec[0]
+                L = x.L_eigvec if restricted else x.L_eigvec[1]
+                R = x.R_eigvec if restricted else x.R_eigvec[1]
                 X = L.clone()
                 X.add(R)
                 X.scale(0.5)
@@ -497,72 +542,44 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                     f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
                 )
 
-            nocc = X.rows()
-            nvirt = X.cols()
-            # Ignore any scaling for now
-            div = 1
-            # Excitations
-            for row in range(nocc):
-                for col in range(nvirt):
-                    coef = X.get(row, col) / div
-                    if abs(coef) > coeff_cutoff:
-                        perc = 100 * coef**2
-                        core.print_out(
-                            f"   {row+1: 3} ->{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n"
-                        )
-            # De-excitations if not using TDA
-            if not tda:
-                for row in range(nocc):
-                    for col in range(nvirt):
-                        coef = Y.get(row, col) / div
+            nocc = wfn.epsilon_b_subset("SO", "OCC").shape
+            nvir = wfn.epsilon_b_subset("SO", "VIR").shape
+            # Convert to list of lists for C1 case
+            if nirrep == 1:
+                nocc = (nocc, )
+                nvir = (nvir, )
+            # Excitations (beta orbitals)
+            for h in range(nirrep):
+                h_vir = x.irrep_trans_index ^ h
+                occ_irrep = wfn.molecule().irrep_labels()[h].lower()
+                vir_irrep = wfn.molecule().irrep_labels()[h_vir].lower()
+                for row in range(nocc[h][0]):
+                    for col in range(nvir[h_vir][0]):
+                        if nirrep == 1:
+                            coef = X.np[row][col] / div
+                        else:
+                            coef = X.nph[h][row][col] / div
                         if abs(coef) > coeff_cutoff:
                             perc = 100 * coef**2
                             core.print_out(
-                                f"   {row+1: 3} <-{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n"
-                            )
-            # Now treat beta orbitals if needed
-            if not restricted:
-                core.print_out("Beta orbitals:\n")
-                if tda:
-                    X = x.L_eigvec if restricted else x.L_eigvec[1]
-                    Xssq = X.sum_of_squares()
-                    core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
-                else:
-                    L = x.L_eigvec if restricted else x.L_eigvec[1]
-                    R = x.R_eigvec if restricted else x.R_eigvec[1]
-                    X = L.clone()
-                    X.add(R)
-                    X.scale(0.5)
-                    Y = R.clone()
-                    Y.subtract(L)
-                    Y.scale(0.5)
-                    Xssq = X.sum_of_squares()
-                    Yssq = Y.sum_of_squares()
-
-                    core.print_out(
-                        f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
-                    )
-
-                nocc = X.rows()
-                nvirt = X.cols()
-                # Excitations (beta orbitals)
-                for row in range(nocc):
-                    for col in range(nvirt):
-                        coef = X.get(row, col) / div
-                        if abs(coef) > coeff_cutoff:
-                            perc = 100 * coef**2
-                            core.print_out(
-                                f"   {row+1: 3}B->{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                f"   {row+1: 4}{occ_irrep} (b) ->{col+1+nocc[h_vir][0]: 4}{vir_irrep} (b)  {coef: 10.6f} ({perc: >6.3f}%)\n"
                             )
                 # De-excitations if not using TDA (beta orbitals):
-                if not tda:
-                    for row in range(nocc):
-                        for col in range(nvirt):
-                            coef = Y.get(row, col) / div
+            if not tda:
+                for h in range(nirrep):
+                    h_vir = x.irrep_trans_index ^ h
+                    occ_irrep = wfn.molecule().irrep_labels()[h].lower()
+                    vir_irrep = wfn.molecule().irrep_labels()[h_vir].lower()
+                    for row in range(nocc[h][0]):
+                        for col in range(nvir[h_vir][0]):
+                            if nirrep == 1:
+                                coef = Y.np[row][col] / div
+                            else:
+                                coef = Y.nph[h][row][col] / div
                             if abs(coef) > coeff_cutoff:
                                 perc = 100 * coef**2
                                 core.print_out(
-                                    f"   {row+1: 3}B<-{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                    f"   {row+1: 4}{occ_irrep} (b) <-{col+1+nocc[h_vir][0]: 4}{vir_irrep} (b)  {coef: 10.6f} ({perc: >6.3f}%)\n"
                                 )
     core.print_out("\n")
 
@@ -578,7 +595,7 @@ def tdscf_excitations(wfn,
                       verbose: int = 1,
                       coeff_cutoff: float = 0.1,
                       tdm_print: List[str] = []):
-    """Compute excitations from a SCF(HF/KS) wavefunction
+    r"""Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
     -----------
@@ -654,7 +671,7 @@ def tdscf_excitations(wfn,
     This function can be used for:
       - restricted singlets: RPA or TDA, any functional
       - restricted triplets: RPA or TDA, Hartree-Fock only
-      - unresctricted: RPA or TDA, Hartre-Fock and LDA only
+      - unresctricted: RPA or TDA, Hartree-Fock and LDA only
 
     Tighter convergence thresholds will require a larger iterative subspace.
     The maximum size of the iterative subspace is calculated based on `r_convergence`:
@@ -766,6 +783,8 @@ def tdscf_excitations(wfn,
 
     # collect results
     solver_results = []
+    root_count = Counter()
+    root_count[_results[0].irrep_GS] += 1
     for i, x in enumerate(_results):
         sym_descr = f"{x.irrep_GS}->{x.irrep_ES} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_trans})"
 
@@ -791,49 +810,103 @@ def tdscf_excitations(wfn,
             "LEFT EIGENVECTOR BETA": x.L_eigvec if restricted else x.L_eigvec[1],
         })
 
-        # stash in psivars/wfnvars
+        # All TDSCF variables sare saved to the wavefunction here. The driver pushes them to globals.
         ssuper_name = wfn.functional().name()
-        # wfn.set_variable("TD-fctl ROOT n TOTAL ENERGY - h SYMMETRY")  # P::e SCF
-        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY")  # P::e SCF
-        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h SYMMETRY")  # P::e SCF
-        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h SYMMETRY")  # P::e SCF
-        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h SYMMETRY")  # P::e SCF
-        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h SYMMETRY")  # P::e SCF
-        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {x.irrep_ES} SYMMETRY", E_tot_au)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {x.irrep_ES} SYMMETRY", x.E_ex_au)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - {x.irrep_ES} SYMMETRY",
-                         x.f_length)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (VEL) - {x.irrep_ES} SYMMETRY",
-                         x.f_velocity)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (LEN) - {x.irrep_ES} SYMMETRY",
-                         x.R_length)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (VEL) - {x.irrep_ES} SYMMETRY",
-                         x.R_velocity)
-        wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - {x.irrep_ES} SYMMETRY",
-            core.Matrix.from_array(x.edtm_length.reshape((1, 3))))
-        wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - {x.irrep_ES} SYMMETRY",
-            core.Matrix.from_array(x.edtm_velocity.reshape((1, 3))))
-        wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
-            core.Matrix.from_array(x.mdtm.reshape((1, 3))))
-        wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
-            x.R_eigvec if restricted else x.R_eigvec[0])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
-                               x.L_eigvec if restricted else x.L_eigvec[0])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
-                               x.R_eigvec if restricted else x.R_eigvec[1])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
-                               x.L_eigvec if restricted else x.L_eigvec[1])
+        target_h_count = root_count[x.irrep_ES]
+
+        names = {ssuper_name}
+        if ssuper_name != "HF":
+            names.add("DFT")
+
+        for name in names:
+
+            def root_setter(prop_name, val):
+                wfn.set_variable(f"TD-{name} ROOT {i+1} {prop_name}", val)
+                wfn.set_variable(f"TD-{name} ROOT {target_h_count} (IN {x.irrep_ES}) {prop_name}", val)
+                wfn.set_variable(f"TD-{name} ROOT {i+1} ({x.irrep_ES}) {prop_name}", val)
+                wfn.set_variable(f"TD-{name} ROOT {i+1} {prop_name} - {x.irrep_trans} TRANSITION", val)
+
+            def transition_setter(prop_name, val):
+                wfn.set_variable(f"TD-{name} ROOT 0 -> ROOT {i+1} {prop_name}", val)
+                wfn.set_variable(f"TD-{name} ROOT 0 (IN {x.irrep_GS}) -> ROOT {target_h_count} (IN {x.irrep_ES}) {prop_name}", val)
+                wfn.set_variable(f"TD-{name} ROOT 0 ({x.irrep_GS}) -> ROOT {i+1} ({x.irrep_ES}) {prop_name}", val)
+                wfn.set_variable(f"TD-{name} ROOT 0 -> ROOT {i+1} {prop_name} - {x.irrep_trans} TRANSITION", val)
+
+            # wfn.set_variable("TD-fctl ROOT n TOTAL ENERGY")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT n (IN h) TOTAL ENERGY")           # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT n (h) TOTAL ENERGY")           # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT n TOTAL ENERGY - h TRANSITION")  # P::e SCF
+            root_setter("TOTAL ENERGY", E_tot_au)
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION")  # P::e SCF
+            transition_setter("EXCITATION ENERGY", x.E_ex_au)
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN)")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION")  # P::e SCF
+            transition_setter("OSCILLATOR STRENGTH (LEN)", x.f_length)
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL)")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (VEL)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) OSCILLATOR STRENGTH (VEL)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n OSCILLATOR STRENGTH (VEL) - h TRANSITION")  # P::e SCF
+            transition_setter("OSCILLATOR STRENGTH (VEL)", x.f_velocity)
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (LEN)")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (LEN)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (LEN)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (LEN) - h TRANSITION")  # P::e SCF
+            transition_setter("ROTATORY STRENGTH (LEN)", x.R_length)
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL)")               # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ROTATORY STRENGTH (VEL)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) ROTATORY STRENGTH (VEL)")       # P::e SCF
+            # wfn.set_variable("TD-fctl ROOT 0 -> ROOT n ROTATORY STRENGTH (VEL) - h TRANSITION")  # P::e SCF
+            transition_setter("ROTATORY STRENGTH (VEL)", x.R_velocity)
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN")                # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION")  # P::e SCF
+            transition_setter("ELECTRIC TRANSITION DIPOLE MOMENT (LEN)", core.Matrix.from_array(x.edtm_length.reshape((1, 3))))
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h TRANSITION")  # P::e SCF
+            transition_setter("ELECTRIC TRANSITION DIPOLE MOMENT (VEL)", core.Matrix.from_array(x.edtm_velocity.reshape((1, 3))))
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n MAGNETIC TRANSITION DIPOLE MOMENT")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) MAGNETIC TRANSITION DIPOLE MOMENT")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) MAGNETIC TRANSITION DIPOLE MOMENT")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n MAGNETIC TRANSITION DIPOLE MOMENT - h TRANSITION")  # P::e SCF
+            transition_setter("MAGNETIC TRANSITION DIPOLE MOMENT (VEL)", core.Matrix.from_array(x.mdtm.reshape((1, 3))))
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR ALPHA")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) RIGHT EIGENVECTOR ALPHA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) RIGHT EIGENVECTOR ALPHA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR ALPHA - h TRANSITION")  # P::e SCF
+            transition_setter("RIGHT EIGENVECTOR ALPHA", x.R_eigvec if restricted else x.R_eigvec[0])
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR ALPHA")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) LEFT EIGENVECTOR ALPHA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) LEFT EIGENVECTOR ALPHA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR ALPHA - h TRANSITION")  # P::e SCF
+            transition_setter("LEFT EIGENVECTOR ALPHA", x.L_eigvec if restricted else x.L_eigvec[0])
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR BETA")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) RIGHT EIGENVECTOR BETA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) RIGHT EIGENVECTOR BETA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n RIGHT EIGENVECTOR BETA - h TRANSITION")  # P::e SCF
+            transition_setter("RIGHT EIGENVECTOR BETA", x.R_eigvec if restricted else x.R_eigvec[1])
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR BETA")               # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) LEFT EIGENVECTOR BETA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT n (i) LEFT EIGENVECTOR BETA")       # P::e SCF
+            # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT n LEFT EIGENVECTOR BETA - h TRANSITION")  # P::e SCF
+            transition_setter("LEFT EIGENVECTOR BETA", x.L_eigvec if restricted else x.L_eigvec[1])
 
         core.print_out(
             f"    {i+1:^4} {sym_descr:^20} {x.E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {x.f_length:< 15.4f} {x.f_velocity:< 15.4f} {x.R_length:< 15.4f} {x.R_velocity:< 15.4f}\n"
         )
+        root_count[x.irrep_ES] += 1
 
     core.print_out("\n")
     
     _analyze_tdscf_excitations(_results, wfn, tda, coeff_cutoff, tdm_print)
+
+    _print_tdscf_warning()
 
     return solver_results

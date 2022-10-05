@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4a2.dev1064 
+                               Psi4 undefined 
 
-                         Git: Rev {propvars} 54c5210 dirty
+                         Git: Rev {cctest} 427a1c3 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -19,7 +19,7 @@
                             Additional Code Authors
     E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
     J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
-    P. Verma, and M. H. Lechner
+    P. Verma, M. H. Lechner, and A. Jiang
 
              Previous Authors, Complete List of Code Contributors,
                        and Citations for Specific Modules
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 27 October 2020 03:19PM
+    Psi4 started on: Saturday, 09 April 2022 11:55AM
 
-    Process ID: 60663
-    Host:       Mash.local
-    PSIDATADIR: /Users/mash/installed/psi4/share/psi4
+    Process ID: 33127
+    Host:       Jonathons-MacBook-Pro.local
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -71,20 +71,21 @@ cc_energy, wfn = properties('eom-cc2', properties=['dipole','quadrupole'],return
 
 
 gs_refs = {
-        "EOM-CC2 DIPOLE X":                 0.0000,
-        "EOM-CC2 DIPOLE Y":                 0.0000,
-        "EOM-CC2 DIPOLE Z":                 2.8972,
-        "EOM-CC2 QUADRUPOLE XX":          -11.6671,
-        "EOM-CC2 QUADRUPOLE XY":           -1.4071,
-        "EOM-CC2 QUADRUPOLE XZ":            0.0000,
-        "EOM-CC2 QUADRUPOLE YY":          -11.0457,
-        "EOM-CC2 QUADRUPOLE YZ":            0.0000,
-        "EOM-CC2 QUADRUPOLE ZZ":           -9.3692
+        "CC2 DIPOLE X":                 0.0000,
+        "CC2 DIPOLE Y":                 0.0000,
+        "CC2 DIPOLE Z":                 2.8972,
+        "CC2 QUADRUPOLE XX":          -11.6671,
+        "CC2 QUADRUPOLE XY":           -1.4071,
+        "CC2 QUADRUPOLE XZ":            0.0000,
+        "CC2 QUADRUPOLE YY":          -11.0457,
+        "CC2 QUADRUPOLE YZ":            0.0000,
+        "CC2 QUADRUPOLE ZZ":           -9.3692
         }
-pole = [gs_refs["EOM-CC2 DIPOLE " + cart] for cart in "XYZ"]  #TEST
-gs_refs["EOM-CC2 DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
-pole = [gs_refs["EOM-CC2 QUADRUPOLE " + cart] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
-gs_refs["EOM-CC2 QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
+gs_refs_arr = {}
+pole = [gs_refs["CC2 DIPOLE " + cart] for cart in "XYZ"]  #TEST
+gs_refs_arr["CC2 DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
+pole = [gs_refs["CC2 QUADRUPOLE " + cart] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
+gs_refs_arr["CC2 QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 
 root_refs = {
         "CC ROOT 1 DIPOLE X":          0.0000,
@@ -98,68 +99,72 @@ root_refs = {
         "CC ROOT 1 QUADRUPOLE ZZ":   -16.4603,
         "CC ROOT 2 DIPOLE X":          0.0000,
         "CC ROOT 2 DIPOLE Y":          0.0000,
-        "CC ROOT 2 DIPOLE Z":          1.7559,
-        "CC ROOT 2 QUADRUPOLE XX":   -12.1976,
-        "CC ROOT 2 QUADRUPOLE XY":    -0.9808,
+        "CC ROOT 2 DIPOLE Z":          1.9830,
+        "CC ROOT 2 QUADRUPOLE XX":   -11.5842,
+        "CC ROOT 2 QUADRUPOLE XY":    -0.4562,
         "CC ROOT 2 QUADRUPOLE XZ":     0.0000,
-        "CC ROOT 2 QUADRUPOLE YY":   -13.9980,
+        "CC ROOT 2 QUADRUPOLE YY":   -13.9751,
         "CC ROOT 2 QUADRUPOLE YZ":     0.0000,
-        "CC ROOT 2 QUADRUPOLE ZZ":    -9.7604,
+        "CC ROOT 2 QUADRUPOLE ZZ":   -10.6229,
         "CC ROOT 3 DIPOLE X":          0.0000,
         "CC ROOT 3 DIPOLE Y":          0.0000,
-        "CC ROOT 3 DIPOLE Z":          1.9830,
-        "CC ROOT 3 QUADRUPOLE XX":   -11.5842,
-        "CC ROOT 3 QUADRUPOLE XY":    -0.4562,
+        "CC ROOT 3 DIPOLE Z":         -1.3387,
+        "CC ROOT 3 QUADRUPOLE XX":   -14.2850,
+        "CC ROOT 3 QUADRUPOLE XY":    -0.0453,
         "CC ROOT 3 QUADRUPOLE XZ":     0.0000,
-        "CC ROOT 3 QUADRUPOLE YY":   -13.9751,
+        "CC ROOT 3 QUADRUPOLE YY":   -13.5795,
         "CC ROOT 3 QUADRUPOLE YZ":     0.0000,
-        "CC ROOT 3 QUADRUPOLE ZZ":   -10.6229,
+        "CC ROOT 3 QUADRUPOLE ZZ":   -15.3582,
         "CC ROOT 4 DIPOLE X":          0.0000,
         "CC ROOT 4 DIPOLE Y":          0.0000,
-        "CC ROOT 4 DIPOLE Z":         -1.3387,
-        "CC ROOT 4 QUADRUPOLE XX":   -14.2850,
-        "CC ROOT 4 QUADRUPOLE XY":    -0.0453,
+        "CC ROOT 4 DIPOLE Z":          1.7559,
+        "CC ROOT 4 QUADRUPOLE XX":   -12.1976,
+        "CC ROOT 4 QUADRUPOLE XY":    -0.9808,
         "CC ROOT 4 QUADRUPOLE XZ":     0.0000,
-        "CC ROOT 4 QUADRUPOLE YY":   -13.5795,
+        "CC ROOT 4 QUADRUPOLE YY":   -13.9980,
         "CC ROOT 4 QUADRUPOLE YZ":     0.0000,
-        "CC ROOT 4 QUADRUPOLE ZZ":   -15.3582
+        "CC ROOT 4 QUADRUPOLE ZZ":    -9.7604,
 }
+root_refs_arr = {}
 for root in range(1, 5):
     pole = [root_refs[f"CC ROOT {root} DIPOLE {cart}"] for cart in "XYZ"]  #TEST
-    root_refs[f"CC ROOT {root} DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
+    root_refs_arr[f"CC ROOT {root} DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
     pole = [root_refs[f"CC ROOT {root} QUADRUPOLE {cart}"] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
-    root_refs[f"CC ROOT {root} QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
+    root_refs_arr[f"CC ROOT {root} QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 
+
+compare_values(psi4.variable("CC ROOT 0 DIPOLE"), psi4.variable("CC DIPOLE"), 6, "CC ROOT 0 vs CC Dipole")
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
 
     # check ground state
-    for tag,refval in gs_refs.items():  #TEST
-        compare_values(psi4.variable(tag),refval,4, tag)                          #TEST
+    for tag,refval in gs_refs_arr.items():  #TEST
+        compare_values(refval, psi4.variable(tag), 4, tag)                          #TEST
 
     # check eom roots
-    for tag,refval in root_refs.items():  #TEST
-        compare_values(psi4.variable(tag),refval,4, tag)                          #TEST
+    for tag,refval in root_refs_arr.items():  #TEST
+        compare_values(refval, psi4.variable(tag), 4, tag)                          #TEST
 
 
     # Checking that the wfn.Da/Db have been set by ccdensity
-    oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST EOM-CC2")
-    for tag,refval in gs_refs.items():
+    oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST CC2")
+    for tag,refval in gs_refs_arr.items():
         oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
-        compare_values(oeprop_val,refval,4,"CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
+        compare_values(refval, oeprop_val, 4, "CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
+
 --------------------------------------------------------------------------
 
-*** tstart() called on Mash.local
-*** at Tue Oct 27 15:19:57 2020
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Sat Apr  9 11:55:50 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   198 file /Users/mash/installed/psi4/share/psi4/basis/cc-pvdz.gbs 
-    atoms 3-4 entry H          line    22 file /Users/mash/installed/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1-2 entry O          line   198 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3-4 entry H          line    22 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -205,14 +210,14 @@ with warnings.catch_warnings():
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 18
-    Number of basis function: 38
+    Number of basis functions: 38
     Number of Cartesian functions: 40
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -266,21 +271,21 @@ with warnings.catch_warnings():
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter SAD:  -150.13109142562018   -1.50131e+02   0.00000e+00 
-   @RHF iter   1:  -150.72994418505706   -5.98853e-01   1.20798e-02 DIIS
-   @RHF iter   2:  -150.77474437542571   -4.48002e-02   3.93712e-03 DIIS
-   @RHF iter   3:  -150.77873318371888   -3.98881e-03   9.84955e-04 DIIS
-   @RHF iter   4:  -150.77914057631511   -4.07393e-04   2.78194e-04 DIIS
-   @RHF iter   5:  -150.77918121284821   -4.06365e-05   4.89104e-05 DIIS
-   @RHF iter   6:  -150.77918362636723   -2.41352e-06   1.25533e-05 DIIS
-   @RHF iter   7:  -150.77918384928179   -2.22915e-07   3.89267e-06 DIIS
-   @RHF iter   8:  -150.77918387131746   -2.20357e-08   8.15950e-07 DIIS
-   @RHF iter   9:  -150.77918387210676   -7.89299e-10   1.49862e-07 DIIS
-   @RHF iter  10:  -150.77918387212907   -2.23110e-11   3.10700e-08 DIIS
-   @RHF iter  11:  -150.77918387213026   -1.19371e-12   6.60374e-09 DIIS
-   @RHF iter  12:  -150.77918387213015    1.13687e-13   1.38275e-09 DIIS
-   @RHF iter  13:  -150.77918387213032   -1.70530e-13   3.05355e-10 DIIS
-   @RHF iter  14:  -150.77918387213020    1.13687e-13   6.33760e-11 DIIS
+   @RHF iter SAD:  -150.13109142562013   -1.50131e+02   0.00000e+00 
+   @RHF iter   1:  -150.72994418505670   -5.98853e-01   1.20798e-02 DIIS/ADIIS
+   @RHF iter   2:  -150.77474437542543   -4.48002e-02   3.93712e-03 DIIS/ADIIS
+   @RHF iter   3:  -150.77872862263519   -3.98425e-03   9.99210e-04 DIIS/ADIIS
+   @RHF iter   4:  -150.77914039140370   -4.11769e-04   2.79341e-04 DIIS/ADIIS
+   @RHF iter   5:  -150.77918120037543   -4.08090e-05   4.90416e-05 DIIS
+   @RHF iter   6:  -150.77918362626571   -2.42589e-06   1.25561e-05 DIIS
+   @RHF iter   7:  -150.77918384927833   -2.23013e-07   3.89306e-06 DIIS
+   @RHF iter   8:  -150.77918387131695   -2.20386e-08   8.16021e-07 DIIS
+   @RHF iter   9:  -150.77918387210659   -7.89640e-10   1.49862e-07 DIIS
+   @RHF iter  10:  -150.77918387212858   -2.19984e-11   3.10838e-08 DIIS
+   @RHF iter  11:  -150.77918387212992   -1.33582e-12   6.61314e-09 DIIS
+   @RHF iter  12:  -150.77918387212981    1.13687e-13   1.38427e-09 DIIS
+   @RHF iter  13:  -150.77918387212972    8.52651e-14   3.04978e-10 DIIS
+   @RHF iter  14:  -150.77918387212989   -1.70530e-13   6.31113e-11 DIIS
   Energy and wave function converged.
 
 
@@ -312,14 +317,14 @@ with warnings.catch_warnings():
               A     B 
     DOCC [     5,    4 ]
 
-  @RHF Final Energy:  -150.77918387213020
+  @RHF Final Energy:  -150.77918387212989
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             38.2539685310425384
-    One-Electron Energy =                -284.0698924306335584
-    Two-Electron Energy =                  95.0367400274608087
-    Total Energy =                       -150.7791838721302042
+    One-Electron Energy =                -284.0698924306771005
+    Two-Electron Energy =                  95.0367400275046776
+    Total Energy =                       -150.7791838721298632
 
 Computation Completed
 
@@ -328,27 +333,29 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.4677
 
-  Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.2602
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.2074     Total:     1.2074
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     3.0690     Total:     3.0690
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.2602411            1.4676695            1.2074284
+ Magnitude           :                                                    1.2074284
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on Mash.local at Tue Oct 27 15:19:58 2020
+*** tstop() called on Jonathons-MacBook-Pro.local at Sat Apr  9 11:55:51 2022
 Module time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -363,19 +370,19 @@ Total time:
       Number of basis functions:        38
 
       Number of irreps:                  2
-      Integral cutoff                 0.00e+00
+      Integral cutoff                 1.00e-12
       Number of functions per irrep: [  19   19 ]
 
  OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 117357 non-zero two-electron integrals.
+      Computed 107467 non-zero two-electron integrals.
         Stored in file 33.
 
 
-*** tstart() called on Mash.local
-*** at Tue Oct 27 15:19:58 2020
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Sat Apr  9 11:55:52 2022
 
 
 	Wfn Parameters:
@@ -434,7 +441,7 @@ Total time:
 	(VV|VV)...
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
-	Frozen core energy     =   -132.27484829822765
+	Frozen core energy     =   -132.27484829822714
 
 	Size of irrep 0 of <ab|cd> integrals:      0.177 (MW) /      1.418 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.176 (MW) /      1.411 (MB)
@@ -449,20 +456,20 @@ Total time:
 	Total:                                     0.021 (MW) /      0.165 (MB)
 
 	Nuclear Rep. energy          =     38.25396853104254
-	SCF energy                   =   -150.77918387213020
-	One-electron energy          =   -101.99691974244963
-	Two-electron energy          =     45.23861563750454
-	Reference energy             =   -150.77918387213020
+	SCF energy                   =   -150.77918387212989
+	One-electron energy          =   -101.99691974243702
+	Two-electron energy          =     45.23861563749188
+	Reference energy             =   -150.77918387212975
 
-*** tstop() called on Mash.local at Tue Oct 27 15:19:58 2020
+*** tstop() called on Jonathons-MacBook-Pro.local at Sat Apr  9 11:55:52 2022
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.00 seconds =       0.02 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -470,8 +477,8 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =   38.253968531042538
-    SCF energy          (wfn)     = -150.779183872130204
-    Reference energy    (file100) = -150.779183872130204
+    SCF energy          (wfn)     = -150.779183872129892
+    Reference energy    (file100) = -150.779183872129749
 
     Input parameters:
     -----------------
@@ -499,25 +506,25 @@ Total time:
     SCSN-MP2        =     False
     SCS-CCSD        =     False
 
-MP2 correlation energy -0.3802563047353464
+MP2 correlation energy -0.3802563047354557
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.380256304735346    0.000e+00    0.000000    0.000000    0.000000    0.143419
-     1        -0.380254802043474    2.350e-02    0.006281    0.014957    0.014957    0.143419
-     2        -0.382926538506984    6.976e-03    0.007604    0.017580    0.017580    0.146255
-     3        -0.383312066377083    2.742e-03    0.008393    0.018848    0.018848    0.146676
-     4        -0.383283494671415    9.595e-04    0.008568    0.018859    0.018859    0.146729
-     5        -0.383286624463541    3.462e-04    0.008637    0.018841    0.018841    0.146745
-     6        -0.383290104872595    9.323e-05    0.008642    0.018836    0.018836    0.146748
-     7        -0.383289931534046    3.248e-05    0.008643    0.018835    0.018835    0.146748
-     8        -0.383289792746475    1.255e-05    0.008643    0.018835    0.018835    0.146748
-     9        -0.383289822631932    3.458e-06    0.008643    0.018835    0.018835    0.146748
-    10        -0.383289825608433    1.544e-06    0.008643    0.018835    0.018835    0.146748
-    11        -0.383289835659024    4.659e-07    0.008643    0.018835    0.018835    0.146748
-    12        -0.383289839695005    1.935e-07    0.008643    0.018835    0.018835    0.146748
-    13        -0.383289840168230    7.060e-08    0.008643    0.018835    0.018835    0.146748
+     0        -0.380256304735456    0.000e+00    0.000000    0.000000    0.000000    0.143419
+     1        -0.380254802043585    2.350e-02    0.006281    0.014957    0.014957    0.143419
+     2        -0.382926538507101    6.976e-03    0.007604    0.017580    0.017580    0.146255
+     3        -0.383312066377206    2.742e-03    0.008393    0.018848    0.018848    0.146676
+     4        -0.383283494671535    9.595e-04    0.008568    0.018859    0.018859    0.146729
+     5        -0.383286624463661    3.462e-04    0.008637    0.018841    0.018841    0.146745
+     6        -0.383290104872713    9.323e-05    0.008642    0.018836    0.018836    0.146748
+     7        -0.383289931534166    3.248e-05    0.008643    0.018835    0.018835    0.146748
+     8        -0.383289792746593    1.255e-05    0.008643    0.018835    0.018835    0.146748
+     9        -0.383289822632052    3.458e-06    0.008643    0.018835    0.018835    0.146748
+    10        -0.383289825608554    1.544e-06    0.008643    0.018835    0.018835    0.146748
+    11        -0.383289835659143    4.659e-07    0.008643    0.018835    0.018835    0.146748
+    12        -0.383289839695126    1.935e-07    0.008643    0.018835    0.018835    0.146748
+    13        -0.383289840168352    7.060e-08    0.008643    0.018835    0.018835    0.146748
 
     Iterations converged.
 
@@ -546,16 +553,16 @@ MP2 correlation energy -0.3802563047353464
       3   2  17  15         0.0214876843
       2   6  15   2         0.0208245681
 
-    SCF energy       (wfn)                    = -150.779183872130204
-    Reference energy (file100)                = -150.779183872130204
+    SCF energy       (wfn)                    = -150.779183872129892
+    Reference energy (file100)                = -150.779183872129749
 
-    Opposite-spin MP2 correlation energy      =   -0.282698986958634
-    Same-spin MP2 correlation energy          =   -0.097557317776712
+    Opposite-spin MP2 correlation energy      =   -0.282698986958717
+    Same-spin MP2 correlation energy          =   -0.097557317776739
     Singles MP2 correlation energy            =   -0.000000000000000
-    MP2 correlation energy                    =   -0.380256304735346
-      * MP2 total energy                      = -151.159440176865559
-    CC2 correlation energy                    =   -0.383289840168230
-      * CC2 total energy                      = -151.162473712298436
+    MP2 correlation energy                    =   -0.380256304735456
+      * MP2 total energy                      = -151.159440176865218
+    CC2 correlation energy                    =   -0.383289840168352
+      * CC2 total energy                      = -151.162473712298095
 
 
 			**************************
@@ -570,9 +577,9 @@ MP2 correlation energy -0.3802563047353464
 	**********************************************************
 
 	Nuclear Rep. energy (wfn)     =   38.253968531042538
-	SCF energy          (wfn)     = -150.779183872130204
-	Reference energy    (file100) = -150.779183872130204
-	CC2 energy          (file100) =   -0.383289840168230
+	SCF energy          (wfn)     = -150.779183872129892
+	Reference energy    (file100) = -150.779183872129749
+	CC2 energy          (file100) =   -0.383289840168352
 
 	Input parameters:
 	-----------------
@@ -606,8 +613,8 @@ MP2 correlation energy -0.3802563047353464
 
 
 
-Fae   dot Fae   total  161.9378511804
-Fmi   dot Fmi   total    6.2584666936
+Fae   dot Fae   total  161.9378511805
+Fmi   dot Fmi   total    6.2584666935
 Fme   dot Fme   total    0.0000109623
 WMBIJ dot WMBIJ total    0.0000000000
 Wmbij dot Wmbij total    0.0000000000
@@ -653,12 +660,12 @@ Collapsing to only 2 vector(s).
 
 Procedure converged for 2 root(s).
 EOM CC2 R0 for root 0 =   0.00222257638
-EOM CC2 R0 for root 1 =  -0.01570026544
+EOM CC2 R0 for root 1 =   0.01570026544
 
 Final Energetic Summary for Converged Roots of Irrep A
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
-EOM State 1      6.783    54711.7   0.2492849839  -150.913188728388
+EOM State 1      6.783    54711.7   0.2492849839  -150.913188728389
 
 Largest components of excited wave function #1:
  RIA (libdpd indices) : (cscf notation)
@@ -677,17 +684,17 @@ EOM State 2      9.145    73759.1   0.3360710600  -150.826402652286
 
 Largest components of excited wave function #2:
  RIA (libdpd indices) : (cscf notation)
-         2 >   0      :        4b >     5b :   -0.5493306327
-         2 >   1      :        4b >     6b :    0.3949868924
-         1 >   0      :        3b >     5b :    0.0790971351
-         1 >   1      :        3b >     6b :   -0.0624887066
-         2 >   2      :        4b >     7b :    0.0486861435
+         2 >   0      :        4b >     5b :    0.5493306327
+         2 >   1      :        4b >     6b :   -0.3949868924
+         1 >   0      :        3b >     5b :   -0.0790971351
+         1 >   1      :        3b >     6b :    0.0624887066
+         2 >   2      :        4b >     7b :   -0.0486861435
  RIjAb (libdpd indices)     : (cscf notation)
-        2   2 >   0   1     :     4a     4a >     5b     6b :    0.0333764586
-        2   2 >   1   0     :     4a     4a >     6b     5b :    0.0333764586
-        2   2 >   1   1     :     4a     4a >     6b     6b :   -0.0322443346
-        2   2 >   0   0     :     4a     4a >     5b     5b :   -0.0274807089
-        2   3 >   1   0     :     4a     5a >     6b     5b :    0.0270848053
+        2   2 >   0   1     :     4a     4a >     5b     6b :   -0.0333764586
+        2   2 >   1   0     :     4a     4a >     6b     5b :   -0.0333764586
+        2   2 >   1   1     :     4a     4a >     6b     6b :    0.0322443345
+        2   2 >   0   0     :     4a     4a >     5b     5b :    0.0274807089
+        2   3 >   1   0     :     4a     5a >     6b     5b :   -0.0270848053
 
 Symmetry of excited state: B
 Symmetry of right eigenvector: B
@@ -748,32 +755,32 @@ EOM State 3      6.897    55628.0   0.2534596246  -150.909014087719
 
 Largest components of excited wave function #3:
  RIA (libdpd indices) : (cscf notation)
-         3 >   0      :        5a >     5b :    0.5559553950
-         3 >   1      :        5a >     6b :   -0.3960782640
-         3 >   2      :        5a >     7b :   -0.0499449095
-         2 >   0      :        4a >     5b :    0.0429227395
-         2 >   1      :        4a >     6b :   -0.0384589495
+         3 >   0      :        5a >     5b :   -0.5559553950
+         3 >   1      :        5a >     6b :    0.3960782640
+         3 >   2      :        5a >     7b :    0.0499449095
+         2 >   0      :        4a >     5b :   -0.0429227395
+         2 >   1      :        4a >     6b :    0.0384589495
  RIjAb (libdpd indices)     : (cscf notation)
-        2   1 >   1   0     :     4a     3b >     6b     5b :    0.0371373083
-        1   2 >   0   1     :     3b     4a >     5b     6b :    0.0371373083
-        2   1 >   1   1     :     4a     3b >     6b     6b :   -0.0245531255
-        1   2 >   1   1     :     3b     4a >     6b     6b :   -0.0245531255
-        1   1 >   1   0     :     3a     3b >     6b     5b :   -0.0232122368
-EOM State 4      8.980    72427.1   0.3300021913  -150.832471521039
+        2   1 >   1   0     :     4a     3b >     6b     5b :   -0.0371373083
+        1   2 >   0   1     :     3b     4a >     5b     6b :   -0.0371373083
+        2   1 >   1   1     :     4a     3b >     6b     6b :    0.0245531255
+        1   2 >   1   1     :     3b     4a >     6b     6b :    0.0245531255
+        1   1 >   1   0     :     3a     3b >     6b     5b :    0.0232122368
+EOM State 4      8.980    72427.1   0.3300021913  -150.832471521040
 
 Largest components of excited wave function #4:
  RIA (libdpd indices) : (cscf notation)
-         2 >   0      :        4b >     6a :   -0.6052371029
-         3 >   1      :        5a >     6b :   -0.2475062952
-         3 >   0      :        5a >     5b :   -0.1457632798
-         1 >   0      :        3b >     6a :    0.1181548788
-         2 >   1      :        4b >     7a :    0.0541862646
+         2 >   0      :        4b >     6a :    0.6052371029
+         3 >   1      :        5a >     6b :    0.2475062952
+         3 >   0      :        5a >     5b :    0.1457632798
+         1 >   0      :        3b >     6a :   -0.1181548788
+         2 >   1      :        4b >     7a :   -0.0541862646
  RIjAb (libdpd indices)     : (cscf notation)
-        1   2 >   0   0     :     3a     4b >     6a     6a :   -0.0336279068
-        2   1 >   0   0     :     4b     3a >     6a     6a :   -0.0336279068
-        2   3 >   1   0     :     4a     5a >     6b     6a :    0.0261191894
-        3   2 >   0   1     :     5a     4a >     6a     6b :    0.0261191894
-        2   2 >   0   1     :     4a     4a >     6a     6b :    0.0256988256
+        1   2 >   0   0     :     3a     4b >     6a     6a :    0.0336279068
+        2   1 >   0   0     :     4b     3a >     6a     6a :    0.0336279068
+        2   3 >   1   0     :     4a     5a >     6b     6a :   -0.0261191894
+        3   2 >   0   1     :     5a     4a >     6a     6b :   -0.0261191894
+        2   2 >   0   1     :     4a     4a >     6a     6b :   -0.0256988256
 
 	Putting into environment energy for root of R irrep 2 and root 2.
 	Putting into environment CURRENT ENERGY:             -150.8324715210
@@ -787,10 +794,10 @@ Largest components of excited wave function #4:
 
 	Nuclear Rep. energy (wfn)     =   38.253968531042538
 	Reference           (wfn)     =                    0
-	SCF energy          (wfn)     = -150.779183872130204
-	Reference energy    (CC_INFO) = -150.779183872130204
-	CC2 energy          (CC_INFO) =   -0.383289840168230
-	Total CC2 energy    (CC_INFO) = -151.162473712298436
+	SCF energy          (wfn)     = -150.779183872129892
+	Reference energy    (CC_INFO) = -150.779183872129749
+	CC2 energy          (CC_INFO) =   -0.383289840168352
+	Total CC2 energy    (CC_INFO) = -151.162473712298095
 
 	Input parameters:
 	-----------------
@@ -807,7 +814,7 @@ Largest components of excited wave function #4:
 	    Irr   Root  Ground-State?    EOM energy        R0
 	  1   0     0        Yes       0.0000000000   1.0000000000
 	  2   0     1         No       0.2492849839   0.0022225764
-	  3   0     2         No       0.3360710600  -0.0157002654
+	  3   0     2         No       0.3360710600   0.0157002654
 	  4   1     1         No       0.2534596246   0.0000000000
 	  5   1     2         No       0.3300021913   0.0000000000
 	Labels for eigenvector 1:
@@ -828,11 +835,11 @@ Largest components of excited wave function #4:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.383295396774477    0.000e+00
-	   1        -0.383117230271462    1.890e-03
-	   2        -0.383117282703843    3.947e-04
-	   3        -0.383115578573767    1.797e-04
-	   4        -0.383115421415290    4.040e-05
+	   0        -0.383295396774595    0.000e+00
+	   1        -0.383117230271581    1.890e-03
+	   2        -0.383117282703962    3.947e-04
+	   3        -0.383115578573885    1.797e-04
+	   4        -0.383115421415410    4.040e-05
 
 	Largest LIA Amplitudes:
 	          5  14        -0.0106463734
@@ -870,12 +877,12 @@ Largest components of excited wave function #4:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.000184859687987    4.040e-05
-	   1         0.000394334660440    5.434e-03
-	   2         0.000419946597533    1.122e-03
-	   3         0.000424832541554    6.025e-04
-	   4         0.000424384995692    2.685e-04
-	   5         0.000423228307893    6.867e-05
+	   0        -0.000184859688018    4.040e-05
+	   1         0.000394334660477    5.434e-03
+	   2         0.000419946597574    1.122e-03
+	   3         0.000424832541595    6.025e-04
+	   4         0.000424384995734    2.685e-04
+	   5         0.000423228307934    6.867e-05
 
 	Initial  <L|R>  =        1.0013709669
 	Normalizing L...
@@ -883,7 +890,7 @@ Largest components of excited wave function #4:
 	L1 * R1 =        0.9356992873
 	L2 * R2 =        0.0643007127
 	 <L|R>  =        1.0000000000
-	Pseudoenergy or Norm of normalized L =    0.000422648870295
+	Pseudoenergy or Norm of normalized L =    0.000422648870336
 
 	Largest LIA Amplitudes:
 	          3   0        -0.6775309240
@@ -920,47 +927,47 @@ Largest components of excited wave function #4:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0         0.000356035560160    6.867e-05
-	   1        -0.003886346916677    8.449e-03
-	   2        -0.004060365843960    1.814e-03
-	   3        -0.004094767531292    1.468e-03
-	   4        -0.004106813334108    9.549e-04
-	   5        -0.004105090806505    6.755e-04
-	   6        -0.004108844599483    3.875e-04
-	   7        -0.004111502368927    1.022e-04
-	   8        -0.004111731839161    3.783e-05
+	   0        -0.000356035560179    6.867e-05
+	   1         0.003886346916761    8.449e-03
+	   2         0.004060365844049    1.814e-03
+	   3         0.004094767531381    1.468e-03
+	   4         0.004106813334198    9.549e-04
+	   5         0.004105090806595    6.755e-04
+	   6         0.004108844599574    3.875e-04
+	   7         0.004111502369017    1.022e-04
+	   8         0.004111731839252    3.783e-05
 
 	Initial  <L|R>  =        1.0029562034
 	Normalizing L...
-	L0 * R0 =       -0.0000000000
+	L0 * R0 =        0.0000000000
 	L1 * R1 =        0.9495230237
 	L2 * R2 =        0.0504769763
 	 <L|R>  =        1.0000000000
-	Pseudoenergy or Norm of normalized L =   -0.004099612550595
+	Pseudoenergy or Norm of normalized L =    0.004099612550685
 
 	Largest LIA Amplitudes:
-	          6  14        -0.5539433003
-	          6  15         0.3898889487
-	          5  14         0.0808013608
-	          5  15        -0.0623775249
-	          6  16         0.0464459961
-	          6  17         0.0319155392
-	          6  19        -0.0262756652
-	          2   0        -0.0174108698
-	          1   0        -0.0158338982
-	          6  22         0.0148816436
+	          6  14         0.5539433003
+	          6  15        -0.3898889487
+	          5  14        -0.0808013608
+	          5  15         0.0623775249
+	          6  16        -0.0464459961
+	          6  17        -0.0319155392
+	          6  19         0.0262756652
+	          2   0         0.0174108698
+	          1   0         0.0158338982
+	          6  22        -0.0148816436
 
 	Largest LIjAb Amplitudes:
-	  2   2  14  15         0.0322037149
-	  2   2  15  14         0.0322037149
-	  2   2  15  15        -0.0307939087
-	  2   3  15  14         0.0269247557
-	  3   2  14  15         0.0269247557
-	  2   2  14  14        -0.0263700009
-	  1   1  15  15         0.0224733905
-	  1   2  14  15         0.0224341962
-	  2   1  15  14         0.0224341962
-	  1   3  15  14        -0.0218648868
+	  2   2  14  15        -0.0322037149
+	  2   2  15  14        -0.0322037149
+	  2   2  15  15         0.0307939087
+	  2   3  15  14        -0.0269247557
+	  3   2  14  15        -0.0269247557
+	  2   2  14  14         0.0263700009
+	  1   1  15  15        -0.0224733905
+	  1   2  14  15        -0.0224341962
+	  2   1  15  14        -0.0224341962
+	  1   3  15  14         0.0218648868
 
 	Iterations converged.
 
@@ -974,14 +981,14 @@ Largest components of excited wave function #4:
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
 	   0         1.000000000000000    3.783e-05
-	   1         1.001633291199736    9.597e-03
-	   2         1.001662894018486    1.700e-03
-	   3         1.001924277330674    1.339e-03
-	   4         1.002158902947036    8.362e-04
-	   5         1.002345075476355    6.067e-04
-	   6         1.002525032276909    3.279e-04
-	   7         1.002568515932536    1.053e-04
-	   8         1.002569484879428    2.792e-05
+	   1         1.001633291199752    9.597e-03
+	   2         1.001662894018503    1.700e-03
+	   3         1.001924277330696    1.339e-03
+	   4         1.002158902947069    8.362e-04
+	   5         1.002345075476399    6.067e-04
+	   6         1.002525032276971    3.279e-04
+	   7         1.002568515932607    1.053e-04
+	   8         1.002569484879501    2.792e-05
 
 	Initial  <L|R>  =        1.0024637063
 	Normalizing L...
@@ -992,28 +999,28 @@ Largest components of excited wave function #4:
 	Pseudoenergy or Norm of normalized L =    1.000105518631739
 
 	Largest LIA Amplitudes:
-	          3  14         0.5608054701
-	          3  15        -0.3903094585
-	          3  16        -0.0481938508
-	          2  14         0.0436659445
-	          2  15        -0.0382769319
-	          3  17        -0.0295148486
-	          3  19         0.0277646522
-	          6   0         0.0215586294
-	          3  18        -0.0206189725
-	          3  22        -0.0170276896
+	          3  14        -0.5608054701
+	          3  15         0.3903094585
+	          3  16         0.0481938508
+	          2  14        -0.0436659445
+	          2  15         0.0382769319
+	          3  17         0.0295148486
+	          3  19        -0.0277646522
+	          6   0        -0.0215586294
+	          3  18         0.0206189725
+	          3  22         0.0170276896
 
 	Largest LIjAb Amplitudes:
-	  2   5  15  14         0.0367732835
-	  5   2  14  15         0.0367732835
-	  2   5  15  15        -0.0238142358
-	  5   2  15  15        -0.0238142358
-	  1   5  15  14        -0.0234557721
-	  5   1  14  15        -0.0234557721
-	  2   6  15  14        -0.0216091721
-	  6   2  14  15        -0.0216091721
-	  2   5  14  14        -0.0200651339
-	  5   2  14  14        -0.0200651339
+	  2   5  15  14        -0.0367732835
+	  5   2  14  15        -0.0367732835
+	  2   5  15  15         0.0238142358
+	  5   2  15  15         0.0238142358
+	  1   5  15  14         0.0234557721
+	  5   1  14  15         0.0234557721
+	  2   6  15  14         0.0216091721
+	  6   2  14  15         0.0216091721
+	  2   5  14  14         0.0200651339
+	  5   2  14  14         0.0200651339
 
 	Iterations converged.
 
@@ -1026,12 +1033,12 @@ Largest components of excited wave function #4:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0         1.000000000000000    2.792e-05
-	   1         1.001485569955021    8.504e-03
-	   2         1.001228669323444    1.292e-03
-	   3         1.001359002549709    6.220e-04
-	   4         1.001389500881277    2.924e-04
-	   5         1.001387144011818    8.506e-05
+	   0         0.999999999999999    2.792e-05
+	   1         1.001485569955059    8.504e-03
+	   2         1.001228669323472    1.292e-03
+	   3         1.001359002549739    6.220e-04
+	   4         1.001389500881308    2.924e-04
+	   5         1.001387144011849    8.506e-05
 
 	Initial  <L|R>  =        1.0013413077
 	Normalizing L...
@@ -1039,31 +1046,31 @@ Largest components of excited wave function #4:
 	L1 * R1 =        0.9442287215
 	L2 * R2 =        0.0557712785
 	 <L|R>  =        1.0000000000
-	Pseudoenergy or Norm of normalized L =    1.000045774895705
+	Pseudoenergy or Norm of normalized L =    1.000045774895704
 
 	Largest LIA Amplitudes:
-	          6   0        -0.6060566956
-	          3  15        -0.2449993625
-	          3  14        -0.1490687727
-	          5   0         0.1189052937
-	          6   1         0.0523094947
-	          2  15        -0.0434270101
-	          3  19         0.0268395974
-	          3  16         0.0264173955
-	          1  14        -0.0255012930
-	          5   1        -0.0186605940
+	          6   0         0.6060566956
+	          3  15         0.2449993625
+	          3  14         0.1490687727
+	          5   0        -0.1189052937
+	          6   1        -0.0523094947
+	          2  15         0.0434270101
+	          3  19        -0.0268395974
+	          3  16        -0.0264173955
+	          1  14         0.0255012930
+	          5   1         0.0186605940
 
 	Largest LIjAb Amplitudes:
-	  1   6   0   0        -0.0331078074
-	  6   1   0   0        -0.0331078074
-	  2   3  15   0         0.0256112172
-	  3   2   0  15         0.0256112172
-	  2   2   0  15         0.0248985133
-	  2   2  15   0         0.0248985133
-	  1   2   0  15         0.0238802053
-	  2   1  15   0         0.0238802053
-	  6   6   0  18         0.0205741938
-	  6   6  18   0         0.0205741938
+	  1   6   0   0         0.0331078074
+	  6   1   0   0         0.0331078074
+	  2   3  15   0        -0.0256112172
+	  3   2   0  15        -0.0256112172
+	  2   2   0  15        -0.0248985133
+	  2   2  15   0        -0.0248985133
+	  1   2   0  15        -0.0238802053
+	  2   1  15   0        -0.0238802053
+	  6   6   0  18        -0.0205741938
+	  6   6  18   0        -0.0205741938
 
 	Iterations converged.
 
@@ -1071,9 +1078,9 @@ Largest components of excited wave function #4:
 
                  1            2            3            4            5
 
-    1    1.0000000   -0.0000000   -0.0000000  -99.0000000  -99.0000000
-    2    0.0000000    1.0000000    0.0000000  -99.0000000  -99.0000000
-    3    0.0000000    0.0000001    1.0000000  -99.0000000  -99.0000000
+    1    1.0000000   -0.0000000    0.0000000  -99.0000000  -99.0000000
+    2    0.0000000    1.0000000   -0.0000000  -99.0000000  -99.0000000
+    3    0.0000000   -0.0000001    1.0000000  -99.0000000  -99.0000000
     4  -99.0000000  -99.0000000  -99.0000000    1.0000000    0.0000000
     5  -99.0000000  -99.0000000  -99.0000000   -0.0000000    1.0000000
 
@@ -1086,7 +1093,7 @@ Largest components of excited wave function #4:
     2    0.0000000    1.0000000   -0.0000000  -99.0000000  -99.0000000
     3    0.0000000   -0.0000000    1.0000000  -99.0000000  -99.0000000
     4  -99.0000000  -99.0000000  -99.0000000    1.0000000   -0.0000000
-    5  -99.0000000  -99.0000000  -99.0000000   -0.0000000    1.0000000
+    5  -99.0000000  -99.0000000  -99.0000000    0.0000000    1.0000000
 
 
 
@@ -1104,15 +1111,15 @@ Largest components of excited wave function #4:
 	Sum of above             =    1.0000000065
 	Approx. excitation level =    1.0504288198
 
-	Projections for excited state, irrep A, root 0:
-	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
+	Projections for excited state, irrep B, root 0:
+	<0|Le^(-T)|0><0|Re^T|0>  =    0.0000000000
 	<0|Le^(-T)|S><S|Re^T|0>  =    0.9520831061
 	<0|Le^(-T)|D><D|Re^T|0>  =    0.0479168942
 	Sum of above             =    1.0000000002
 	Approx. excitation level =    1.0479168944
 
-	Projections for excited state, irrep A, root 1:
-	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
+	Projections for excited state, irrep B, root 1:
+	<0|Le^(-T)|0><0|Re^T|0>  =    0.0000000000
 	<0|Le^(-T)|S><S|Re^T|0>  =    0.9449312355
 	<0|Le^(-T)|D><D|Re^T|0>  =    0.0550687638
 	Sum of above             =    0.9999999992
@@ -1141,16 +1148,16 @@ Largest components of excited wave function #4:
 	Compute NO       = No
 
 	Nuclear Rep. energy (wfn)     =   38.253968531042538
-	SCF energy          (wfn)     = -150.779183872130204
-	Reference energy    (file100) = -150.779183872130204
-	CC2 energy          (CC_INFO) =   -0.383289840168230
-	Total CC2 energy    (CC_INFO) = -151.162473712298436
+	SCF energy          (wfn)     = -150.779183872129892
+	Reference energy    (file100) = -150.779183872129749
+	CC2 energy          (CC_INFO) =   -0.383289840168352
+	Total CC2 energy    (CC_INFO) = -151.162473712298095
 	Number of States = 5
 
 	Ground?  State     EOM Energy       R0
 	  Yes     0  A    0.0000000000   1.00000000
 	   No     1  A    0.2492849839   0.00222258
-	   No     2  A    0.3360710600  -0.01570027
+	   No     2  A    0.3360710600   0.01570027
 	   No     1  B    0.2534596246   0.00000000
 	   No     2  B    0.3300021913   0.00000000
 Doing transition
@@ -1162,7 +1169,7 @@ Doing transition
 	Dipole Strength          0.00002840 
 	Oscillator Strength      0.00000472 
 	Einstein A Coefficient   9.42243487e+03 
-	Einstein B Coefficient   3.45482395e+15 
+	Einstein B Coefficient   3.45482394e+15 
 Doing transition
 
 	Length-Gauge Rotational Strength for 1  A
@@ -1189,30 +1196,30 @@ Doing transition
 
 	Oscillator Strength for 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.21035901
-	<n|mu_e|0>               0.00000000 	  0.00000000 	 -0.21838459
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.21035901
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.21838459
 	Dipole Strength          0.04593917 
 	Oscillator Strength      0.01029255 
 	Einstein A Coefficient   3.73504707e+07 
-	Einstein B Coefficient   5.58925424e+18 
+	Einstein B Coefficient   5.58925425e+18 
 Doing transition
 
 	Length-Gauge Rotational Strength for 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.21035901
-	<n|mu_m|0>               0.00000000 	  0.00000000 	 -0.19595003
-	<0|mu_m|n>*              0.00000000 	  0.00000000 	 -0.18974388
-	<n|mu_e|0>*              0.00000000 	  0.00000000 	 -0.21838459
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.21035901
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.19595003
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.18974388
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.21838459
 
 	Rotational Strength (au)                  0.04132850
-	Rotational Strength (10^-40 esu^2 cm^2)  19.48405259
+	Rotational Strength (10^-40 esu^2 cm^2)  19.48405260
 
 	Velocity-Gauge Rotational Strength for 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.10727747
-	<n|mu_m|0>               0.00000000 	  0.00000000 	 -0.19595003
-	<0|mu_m|n>*              0.00000000 	  0.00000000 	 -0.18974388
-	<n|mu_e|0>*              0.00000000 	  0.00000000 	 -0.11156369
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.10727747
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.19595003
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.18974388
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.11156369
 
 	Rotational Strength (au)                  0.06276879
 	Rotational Strength (10^-40 esu^2 cm^2)  29.59194194
@@ -1221,8 +1228,8 @@ Doing transition
 
 	Oscillator Strength for 1  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.09710180 	 -0.06544053 	  0.00000000
-	<n|mu_e|0>              -0.09990700 	 -0.06592845 	  0.00000000
+	<0|mu_e|n>               0.09710180 	  0.06544053 	  0.00000000
+	<n|mu_e|0>               0.09990700 	  0.06592845 	  0.00000000
 	Dipole Strength          0.01401554 
 	Oscillator Strength      0.00236825 
 	Einstein A Coefficient   4.88827803e+06 
@@ -1231,20 +1238,20 @@ Doing transition
 
 	Length-Gauge Rotational Strength for 1  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.09710180 	 -0.06544053 	  0.00000000
-	<n|mu_m|0>               0.08654109 	 -0.04057903 	  0.00000000
-	<0|mu_m|n>*              0.08445379 	 -0.03869748 	  0.00000000
-	<n|mu_e|0>*             -0.09990700 	 -0.06592845 	  0.00000000
+	<0|mu_e|n>               0.09710180 	  0.06544053 	  0.00000000
+	<n|mu_m|0>              -0.08654109 	  0.04057903 	  0.00000000
+	<0|mu_m|n>*             -0.08445379 	  0.03869748 	  0.00000000
+	<n|mu_e|0>*              0.09990700 	  0.06592845 	  0.00000000
 
 	Rotational Strength (au)                 -0.00581702
 	Rotational Strength (10^-40 esu^2 cm^2)  -2.74239708
 
 	Velocity-Gauge Rotational Strength for 1  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.08741322 	 -0.01015863 	  0.00000000
-	<n|mu_m|0>               0.08654109 	 -0.04057903 	  0.00000000
-	<0|mu_m|n>*              0.08445379 	 -0.03869748 	  0.00000000
-	<n|mu_e|0>*             -0.09147011 	 -0.00985726 	  0.00000000
+	<0|mu_e|n>               0.08741322 	  0.01015863 	  0.00000000
+	<n|mu_m|0>              -0.08654109 	  0.04057903 	  0.00000000
+	<0|mu_m|n>*             -0.08445379 	  0.03869748 	  0.00000000
+	<n|mu_e|0>*              0.09147011 	  0.00985726 	  0.00000000
 
 	Rotational Strength (au)                 -0.02859658
 	Rotational Strength (10^-40 esu^2 cm^2)  -13.48167076
@@ -1253,8 +1260,8 @@ Doing transition
 
 	Oscillator Strength for 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.15192758 	  0.14719604 	  0.00000000
-	<n|mu_e|0>               0.15458929 	  0.15339002 	  0.00000000
+	<0|mu_e|n>              -0.15192758 	 -0.14719604 	  0.00000000
+	<n|mu_e|0>              -0.15458929 	 -0.15339002 	  0.00000000
 	Dipole Strength          0.04606478 
 	Oscillator Strength      0.01013432 
 	Einstein A Coefficient   3.54600297e+07 
@@ -1263,20 +1270,20 @@ Doing transition
 
 	Length-Gauge Rotational Strength for 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.15192758 	  0.14719604 	  0.00000000
-	<n|mu_m|0>               0.36663205 	  0.13685806 	  0.00000000
-	<0|mu_m|n>*              0.35828527 	  0.13325273 	  0.00000000
-	<n|mu_e|0>*              0.15458929 	  0.15339002 	  0.00000000
+	<0|mu_e|n>              -0.15192758 	 -0.14719604 	  0.00000000
+	<n|mu_m|0>              -0.36663205 	 -0.13685806 	  0.00000000
+	<0|mu_m|n>*             -0.35828527 	 -0.13325273 	  0.00000000
+	<n|mu_e|0>*             -0.15458929 	 -0.15339002 	  0.00000000
 
 	Rotational Strength (au)                  0.07583659
 	Rotational Strength (10^-40 esu^2 cm^2)  35.75267230
 
 	Velocity-Gauge Rotational Strength for 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.12039902 	  0.04647697 	  0.00000000
-	<n|mu_m|0>               0.36663205 	  0.13685806 	  0.00000000
-	<0|mu_m|n>*              0.35828527 	  0.13325273 	  0.00000000
-	<n|mu_e|0>*              0.12317046 	  0.04847774 	  0.00000000
+	<0|mu_e|n>              -0.12039902 	 -0.04647697 	  0.00000000
+	<n|mu_m|0>              -0.36663205 	 -0.13685806 	  0.00000000
+	<0|mu_m|n>*             -0.35828527 	 -0.13325273 	  0.00000000
+	<n|mu_e|0>*             -0.12317046 	 -0.04847774 	  0.00000000
 
 	Rotational Strength (au)                  0.15316995
 	Rotational Strength (10^-40 esu^2 cm^2)  72.21098486
@@ -1319,8 +1326,8 @@ Doing transition
 
 	Oscillator Strength for 1  A to 2  A
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.00000000 	  0.00000000 	 -0.02891191
-	<n|mu_e|0>               0.00000000 	  0.00000000 	 -0.02865102
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.02891191
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.02865102
 	Dipole Strength          0.00082836 
 	Oscillator Strength      0.00004793 
 	Einstein A Coefficient   1.15980926e+04 
@@ -1328,20 +1335,20 @@ Doing transition
 
 	Length-Gauge Rotational Strength for 1  A to 2  A Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.00000000 	  0.00000000 	 -0.02891191
-	<q|mu_m|p>               0.00000000 	  0.00000000 	  0.01209332
-	<p|mu_m|q>*              0.00000000 	  0.00000000 	  0.01138697
-	<q|mu_e|p>*              0.00000000 	  0.00000000 	 -0.02865102
+	<p|mu_e|q>               0.00000000 	  0.00000000 	  0.02891191
+	<q|mu_m|p>               0.00000000 	  0.00000000 	 -0.01209332
+	<p|mu_m|q>*              0.00000000 	  0.00000000 	 -0.01138697
+	<q|mu_e|p>*              0.00000000 	  0.00000000 	  0.02865102
 
 	Rotational Strength (au)                 -0.00033794
 	Rotational Strength (10^-40 esu^2 cm^2)  -0.15932180
 
 	Velocity-Gauge Rotational Strength for 1  A
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.00000000 	  0.00000000 	 -0.00756873
-	<q|mu_m|p>               0.00000000 	  0.00000000 	  0.01209332
-	<p|mu_m|q>*              0.00000000 	  0.00000000 	  0.01138697
-	<q|mu_e|p>*              0.00000000 	  0.00000000 	 -0.00600580
+	<p|mu_e|q>               0.00000000 	  0.00000000 	  0.00756873
+	<q|mu_m|p>               0.00000000 	  0.00000000 	 -0.01209332
+	<p|mu_m|q>*              0.00000000 	  0.00000000 	 -0.01138697
+	<q|mu_e|p>*              0.00000000 	  0.00000000 	  0.00600580
 
 	Rotational Strength (au)                 -0.00092134
 	Rotational Strength (10^-40 esu^2 cm^2)  -0.43435975
@@ -1362,32 +1369,32 @@ Doing transition
 
 	Oscillator Strength for 1  A to 1  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>               0.41794241 	 -0.82952629 	  0.00000000
-	<n|mu_e|0>               0.42243293 	 -0.84107574 	  0.00000000
+	<0|mu_e|n>              -0.41794241 	  0.82952629 	  0.00000000
+	<n|mu_e|0>              -0.42243293 	  0.84107574 	  0.00000000
 	Dipole Strength          0.87424708 
 	Oscillator Strength      0.00243311 
-	Einstein A Coefficient   1.36242032e+03 
+	Einstein A Coefficient   1.36242033e+03 
 	Einstein B Coefficient   1.06366519e+20 
 
 	Length-Gauge Rotational Strength for 1  A to 1  B Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.41794241 	 -0.82952629 	  0.00000000
-	<q|mu_m|p>               0.06012807 	  0.03792748 	  0.00000000
-	<p|mu_m|q>*              0.06049596 	  0.03759064 	  0.00000000
-	<q|mu_e|p>*              0.42243293 	 -0.84107574 	  0.00000000
+	<p|mu_e|q>              -0.41794241 	  0.82952629 	  0.00000000
+	<q|mu_m|p>              -0.06012807 	 -0.03792748 	  0.00000000
+	<p|mu_m|q>*             -0.06049596 	 -0.03759064 	  0.00000000
+	<q|mu_e|p>*             -0.42243293 	  0.84107574 	  0.00000000
 
 	Rotational Strength (au)                 -0.00619643
 	Rotational Strength (10^-40 esu^2 cm^2)  -2.92126772
 
 	Velocity-Gauge Rotational Strength for 1  A
 	                              X    	       Y    	       Z
-	<p|mu_e|q>               0.01060144 	  0.04430474 	  0.00000000
-	<q|mu_m|p>               0.06012807 	  0.03792748 	  0.00000000
-	<p|mu_m|q>*              0.06049596 	  0.03759064 	  0.00000000
-	<q|mu_e|p>*              0.01124558 	  0.04351728 	  0.00000000
+	<p|mu_e|q>              -0.01060144 	 -0.04430474 	  0.00000000
+	<q|mu_m|p>              -0.06012807 	 -0.03792748 	  0.00000000
+	<p|mu_m|q>*             -0.06049596 	 -0.03759064 	  0.00000000
+	<q|mu_e|p>*             -0.01124558 	 -0.04351728 	  0.00000000
 
 	Rotational Strength (au)                  0.55501372
-	Rotational Strength (10^-40 esu^2 cm^2)  261.65763313
+	Rotational Strength (10^-40 esu^2 cm^2)  261.65763305
 
 	*** Computing <1 B|X{pq}}|2 A> (LEFT) Transition Density ***
 
@@ -1448,8 +1455,8 @@ Doing transition
 
 	Oscillator Strength for 1  A to 2  B
 	                              X    	       Y    	       Z
-	<0|mu_e|n>              -0.30118906 	  0.19608440 	  0.00000000
-	<n|mu_e|0>              -0.30196656 	  0.20101178 	  0.00000000
+	<0|mu_e|n>               0.30118906 	 -0.19608440 	  0.00000000
+	<n|mu_e|0>               0.30196656 	 -0.20101178 	  0.00000000
 	Dipole Strength          0.13036430 
 	Oscillator Strength      0.00701509 
 	Einstein A Coefficient   1.46850925e+06 
@@ -1457,20 +1464,20 @@ Doing transition
 
 	Length-Gauge Rotational Strength for 1  A to 2  B Transition
 	                              X    	       Y    	       Z
-	<p|mu_e|q>              -0.30118906 	  0.19608440 	  0.00000000
-	<q|mu_m|p>              -0.00288867 	 -0.34276532 	  0.00000000
-	<p|mu_m|q>*             -0.00255011 	 -0.34434395 	  0.00000000
-	<q|mu_e|p>*             -0.30196656 	  0.20101178 	  0.00000000
+	<p|mu_e|q>               0.30118906 	 -0.19608440 	  0.00000000
+	<q|mu_m|p>               0.00288867 	  0.34276532 	  0.00000000
+	<p|mu_m|q>*              0.00255011 	  0.34434395 	  0.00000000
+	<q|mu_e|p>*              0.30196656 	 -0.20101178 	  0.00000000
 
 	Rotational Strength (au)                 -0.06739402
-	Rotational Strength (10^-40 esu^2 cm^2)  -31.77247605
+	Rotational Strength (10^-40 esu^2 cm^2)  -31.77247604
 
 	Velocity-Gauge Rotational Strength for 1  A
 	                              X    	       Y    	       Z
-	<p|mu_e|q>              -0.00222421 	  0.01226942 	  0.00000000
-	<q|mu_m|p>              -0.00288867 	 -0.34276532 	  0.00000000
-	<p|mu_m|q>*             -0.00255011 	 -0.34434395 	  0.00000000
-	<q|mu_e|p>*             -0.00133679 	  0.02764035 	  0.00000000
+	<p|mu_e|q>               0.00222421 	 -0.01226942 	  0.00000000
+	<q|mu_m|p>               0.00288867 	  0.34276532 	  0.00000000
+	<p|mu_m|q>*              0.00255011 	  0.34434395 	  0.00000000
+	<q|mu_e|p>*              0.00133679 	 -0.02764035 	  0.00000000
 
 	Rotational Strength (au)                 -0.08494772
 	Rotational Strength (10^-40 esu^2 cm^2)  -40.04805602
@@ -1516,7 +1523,7 @@ Doing transition
 	<q|mu_e|p>*             -0.00863196 	 -0.03123938 	  0.00000000
 
 	Rotational Strength (au)                  0.21161417
-	Rotational Strength (10^-40 esu^2 cm^2)  99.76413194
+	Rotational Strength (10^-40 esu^2 cm^2)  99.76413192
 
 	*** Computing <1 B|X{pq}}|2 B> (LEFT) Transition Density ***
 
@@ -1586,28 +1593,33 @@ Doing transition
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
-Properties computed using the EOM-CC2 density matrix
+Properties computed using the CC2 density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.4677
 
-  Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.3278
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.1398     Total:     1.1398
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     2.8972     Total:     2.8972
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.3278399            1.4676695            1.1398296
+ Magnitude           :                                                    1.1398296
 
-  Quadrupole Moment: [D A]
-    XX:   -11.6671     YY:   -11.0457     ZZ:    -9.3692
-    XY:    -1.4071     XZ:     0.0000     YZ:     0.0000
+ L = 2.  Multiply by 1.3450342976 to convert [e a0^2] to [Debye ang]
+ Quadrupole XX       :         -9.7501873            1.0759934           -8.6741939
+ Quadrupole XY       :          1.4356623           -2.4817744           -1.0461121
+ Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole YY       :        -41.5350220           33.3228200           -8.2122020
+ Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole ZZ       :        -11.4840206            4.5182444           -6.9657761
+ Traceless XX        :         11.1728893          -11.8963592           -0.7234699
+ Traceless YY        :        -20.6119454           20.3504674           -0.2614780
+ Traceless ZZ        :          9.4390561           -8.4541082            0.9849479
 
-  Traceless Quadrupole Moment: [D A]
-    XX:    -0.9731     YY:    -0.3517     ZZ:     1.3248
-    XY:    -1.4071     XZ:     0.0000     YZ:     0.0000
-
+ ------------------------------------------------------------------------------------
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     O     4.07569  4.07569  0.00000 -0.15138
@@ -1615,7 +1627,7 @@ Properties computed using the EOM-CC2 density matrix
        3     H     0.42431  0.42431  0.00000  0.15138
        4     H     0.42431  0.42431  0.00000  0.15138
 
-   Total alpha =  9.00000, Total beta =  9.00000, Total charge = -0.00000
+   Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
   Natural Orbital Occupations:
 
@@ -1629,28 +1641,33 @@ Properties computed using the EOM-CC2 density matrix
   LUNO+3 :    7  B    0.019
 
 
-Properties computed using the CC ROOT 1 density matrix
+Properties computed using the CC2 ROOT 1 (A) density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.4677
 
-  Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -2.0235
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.5558     Total:     0.5558
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:    -1.4128     Total:     1.4128
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -2.0234983            1.4676695           -0.5558289
+ Magnitude           :                                                    0.5558289
 
-  Quadrupole Moment: [D A]
-    XX:   -13.9067     YY:   -13.2865     ZZ:   -16.4603
-    XY:     0.2628     XZ:     0.0000     YZ:     0.0000
+ L = 2.  Multiply by 1.3450342976 to convert [e a0^2] to [Debye ang]
+ Quadrupole XX       :        -11.4153102            1.0759934          -10.3393168
+ Quadrupole XY       :          2.6771361           -2.4817744            0.1953617
+ Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole YY       :        -43.2010239           33.3228200           -9.8782039
+ Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole ZZ       :        -16.7560710            4.5182444          -12.2378265
+ Traceless XX        :         12.3754915          -11.8963592            0.4791323
+ Traceless YY        :        -19.4102222           20.3504674            0.9402452
+ Traceless ZZ        :          7.0347307           -8.4541082           -1.4193775
 
-  Traceless Quadrupole Moment: [D A]
-    XX:     0.6444     YY:     1.2647     ZZ:    -1.9091
-    XY:     0.2628     XZ:     0.0000     YZ:     0.0000
-
+ ------------------------------------------------------------------------------------
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     O     3.86040  3.86040  0.00000  0.27919
@@ -1658,7 +1675,7 @@ Properties computed using the CC ROOT 1 density matrix
        3     H     0.63960  0.63960  0.00000 -0.27919
        4     H     0.63960  0.63960  0.00000 -0.27919
 
-   Total alpha =  9.00000, Total beta =  9.00000, Total charge = -0.00000
+   Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
   Natural Orbital Occupations:
 
@@ -1672,28 +1689,33 @@ Properties computed using the CC ROOT 1 density matrix
   LUNO+3 :    7  A    0.006
 
 
-Properties computed using the CC ROOT 2 density matrix
+Properties computed using the CC2 ROOT 2 (A) density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.4677
 
-  Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.7768
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     0.6908     Total:     0.6908
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     1.7559     Total:     1.7559
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.7768446            1.4676695            0.6908249
+ Magnitude           :                                                    0.6908249
 
-  Quadrupole Moment: [D A]
-    XX:   -12.1976     YY:   -13.9980     ZZ:    -9.7604
-    XY:    -0.9808     XZ:     0.0000     YZ:     0.0000
+ L = 2.  Multiply by 1.3450342976 to convert [e a0^2] to [Debye ang]
+ Quadrupole XX       :        -10.1445807            1.0759934           -9.0685873
+ Quadrupole XY       :          1.7526002           -2.4817744           -0.7291741
+ Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole YY       :        -43.7299537           33.3228200          -10.4071337
+ Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole ZZ       :        -11.7748821            4.5182444           -7.2566377
+ Traceless XX        :         11.7385581          -11.8963592           -0.1578011
+ Traceless YY        :        -21.8468148           20.3504674           -1.4963475
+ Traceless ZZ        :         10.1082567           -8.4541082            1.6541485
 
-  Traceless Quadrupole Moment: [D A]
-    XX:    -0.2122     YY:    -2.0126     ZZ:     2.2249
-    XY:    -0.9808     XZ:     0.0000     YZ:     0.0000
-
+ ------------------------------------------------------------------------------------
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     O     4.03239  4.03239  0.00000 -0.06477
@@ -1701,7 +1723,7 @@ Properties computed using the CC ROOT 2 density matrix
        3     H     0.46761  0.46761  0.00000  0.06477
        4     H     0.46761  0.46761  0.00000  0.06477
 
-   Total alpha =  9.00000, Total beta =  9.00000, Total charge = -0.00000
+   Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
   Natural Orbital Occupations:
 
@@ -1715,28 +1737,33 @@ Properties computed using the CC ROOT 2 density matrix
   LUNO+3 :    7  B    0.005
 
 
-Properties computed using the CC ROOT 3 density matrix
+Properties computed using the CC2 ROOT 0 (B) density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.4677
 
-  Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.6875
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     0.7802     Total:     0.7802
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     1.9830     Total:     1.9830
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.6875073            1.4676695            0.7801622
+ Magnitude           :                                                    0.7801622
 
-  Quadrupole Moment: [D A]
-    XX:   -11.5842     YY:   -13.9751     ZZ:   -10.6229
-    XY:    -0.4562     XZ:     0.0000     YZ:     0.0000
+ L = 2.  Multiply by 1.3450342976 to convert [e a0^2] to [Debye ang]
+ Quadrupole XX       :         -9.6885567            1.0759934           -8.6125633
+ Quadrupole XY       :          2.1425650           -2.4817744           -0.3392094
+ Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole YY       :        -43.7129592           33.3228200          -10.3901392
+ Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole ZZ       :        -12.4161207            4.5182444           -7.8978762
+ Traceless XX        :         12.2506555          -11.8963592            0.3542963
+ Traceless YY        :        -21.7737470           20.3504674           -1.4232796
+ Traceless ZZ        :          9.5230915           -8.4541082            1.0689833
 
-  Traceless Quadrupole Moment: [D A]
-    XX:     0.4765     YY:    -1.9144     ZZ:     1.4378
-    XY:    -0.4562     XZ:     0.0000     YZ:     0.0000
-
+ ------------------------------------------------------------------------------------
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     O     4.01840  4.01840  0.00000 -0.03680
@@ -1744,7 +1771,7 @@ Properties computed using the CC ROOT 3 density matrix
        3     H     0.48160  0.48160  0.00000  0.03680
        4     H     0.48160  0.48160  0.00000  0.03680
 
-   Total alpha =  9.00000, Total beta =  9.00000, Total charge = -0.00000
+   Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
   Natural Orbital Occupations:
 
@@ -1758,28 +1785,33 @@ Properties computed using the CC ROOT 3 density matrix
   LUNO+3 :    7  B    0.005
 
 
-Properties computed using the CC ROOT 4 density matrix
+Properties computed using the CC2 ROOT 1 (B) density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.4677
 
-  Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -1.9944
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.5267     Total:     0.5267
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:    -1.3387     Total:     1.3387
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -1.9943664            1.4676695           -0.5266969
+ Magnitude           :                                                    0.5266969
 
-  Quadrupole Moment: [D A]
-    XX:   -14.2850     YY:   -13.5795     ZZ:   -15.3582
-    XY:    -0.0453     XZ:     0.0000     YZ:     0.0000
+ L = 2.  Multiply by 1.3450342976 to convert [e a0^2] to [Debye ang]
+ Quadrupole XX       :        -11.6965312            1.0759934          -10.6205378
+ Quadrupole XY       :          2.4480954           -2.4817744           -0.0336790
+ Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole YY       :        -43.4188256           33.3228200          -10.0960056
+ Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole ZZ       :        -15.9367145            4.5182444          -11.4184700
+ Traceless XX        :         11.9874925          -11.8963592            0.0911333
+ Traceless YY        :        -19.7348018           20.3504674            0.6156656
+ Traceless ZZ        :          7.7473093           -8.4541082           -0.7067989
 
-  Traceless Quadrupole Moment: [D A]
-    XX:     0.1226     YY:     0.8281     ZZ:    -0.9507
-    XY:    -0.0453     XZ:     0.0000     YZ:     0.0000
-
+ ------------------------------------------------------------------------------------
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     O     3.88224  3.88224  0.00000  0.23552
@@ -1787,7 +1819,7 @@ Properties computed using the CC ROOT 4 density matrix
        3     H     0.61776  0.61776  0.00000 -0.23552
        4     H     0.61776  0.61776  0.00000 -0.23552
 
-   Total alpha =  9.00000, Total beta =  9.00000, Total charge = -0.00000
+   Total alpha =  9.00000, Total beta =  9.00000, Total charge =  0.00000
 
   Natural Orbital Occupations:
 
@@ -1800,53 +1832,9 @@ Properties computed using the CC ROOT 4 density matrix
   LUNO+2 :    6  B    0.017
   LUNO+3 :    7  A    0.006
 
-    EOM-CC2 DIPOLE X......................................................................PASSED
-    EOM-CC2 DIPOLE Y......................................................................PASSED
-    EOM-CC2 DIPOLE Z......................................................................PASSED
-    EOM-CC2 QUADRUPOLE XX.................................................................PASSED
-    EOM-CC2 QUADRUPOLE XY.................................................................PASSED
-    EOM-CC2 QUADRUPOLE XZ.................................................................PASSED
-    EOM-CC2 QUADRUPOLE YY.................................................................PASSED
-    EOM-CC2 QUADRUPOLE YZ.................................................................PASSED
-    EOM-CC2 QUADRUPOLE ZZ.................................................................PASSED
-    EOM-CC2 DIPOLE........................................................................PASSED
-    EOM-CC2 QUADRUPOLE....................................................................PASSED
-    CC ROOT 1 DIPOLE X....................................................................PASSED
-    CC ROOT 1 DIPOLE Y....................................................................PASSED
-    CC ROOT 1 DIPOLE Z....................................................................PASSED
-    CC ROOT 1 QUADRUPOLE XX...............................................................PASSED
-    CC ROOT 1 QUADRUPOLE XY...............................................................PASSED
-    CC ROOT 1 QUADRUPOLE XZ...............................................................PASSED
-    CC ROOT 1 QUADRUPOLE YY...............................................................PASSED
-    CC ROOT 1 QUADRUPOLE YZ...............................................................PASSED
-    CC ROOT 1 QUADRUPOLE ZZ...............................................................PASSED
-    CC ROOT 2 DIPOLE X....................................................................PASSED
-    CC ROOT 2 DIPOLE Y....................................................................PASSED
-    CC ROOT 2 DIPOLE Z....................................................................PASSED
-    CC ROOT 2 QUADRUPOLE XX...............................................................PASSED
-    CC ROOT 2 QUADRUPOLE XY...............................................................PASSED
-    CC ROOT 2 QUADRUPOLE XZ...............................................................PASSED
-    CC ROOT 2 QUADRUPOLE YY...............................................................PASSED
-    CC ROOT 2 QUADRUPOLE YZ...............................................................PASSED
-    CC ROOT 2 QUADRUPOLE ZZ...............................................................PASSED
-    CC ROOT 3 DIPOLE X....................................................................PASSED
-    CC ROOT 3 DIPOLE Y....................................................................PASSED
-    CC ROOT 3 DIPOLE Z....................................................................PASSED
-    CC ROOT 3 QUADRUPOLE XX...............................................................PASSED
-    CC ROOT 3 QUADRUPOLE XY...............................................................PASSED
-    CC ROOT 3 QUADRUPOLE XZ...............................................................PASSED
-    CC ROOT 3 QUADRUPOLE YY...............................................................PASSED
-    CC ROOT 3 QUADRUPOLE YZ...............................................................PASSED
-    CC ROOT 3 QUADRUPOLE ZZ...............................................................PASSED
-    CC ROOT 4 DIPOLE X....................................................................PASSED
-    CC ROOT 4 DIPOLE Y....................................................................PASSED
-    CC ROOT 4 DIPOLE Z....................................................................PASSED
-    CC ROOT 4 QUADRUPOLE XX...............................................................PASSED
-    CC ROOT 4 QUADRUPOLE XY...............................................................PASSED
-    CC ROOT 4 QUADRUPOLE XZ...............................................................PASSED
-    CC ROOT 4 QUADRUPOLE YY...............................................................PASSED
-    CC ROOT 4 QUADRUPOLE YZ...............................................................PASSED
-    CC ROOT 4 QUADRUPOLE ZZ...............................................................PASSED
+    CC ROOT 0 vs CC Dipole................................................................PASSED
+    CC2 DIPOLE............................................................................PASSED
+    CC2 QUADRUPOLE........................................................................PASSED
     CC ROOT 1 DIPOLE......................................................................PASSED
     CC ROOT 1 QUADRUPOLE..................................................................PASSED
     CC ROOT 2 DIPOLE......................................................................PASSED
@@ -1859,41 +1847,37 @@ Properties computed using the CC ROOT 4 density matrix
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
-Properties computed using the CCDENSITY-SET-WFN-TEST EOM-CC2 density matrix
+Properties computed using the CCDENSITY-SET-WFN-TEST CC2 density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.4677
 
-  Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.3278
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     1.1398     Total:     1.1398
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     2.8972     Total:     2.8972
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.3278399            1.4676695            1.1398296
+ Magnitude           :                                                    1.1398296
 
-  Quadrupole Moment: [D A]
-    XX:   -11.6671     YY:   -11.0457     ZZ:    -9.3692
-    XY:    -1.4071     XZ:     0.0000     YZ:     0.0000
+ L = 2.  Multiply by 1.3450342976 to convert [e a0^2] to [Debye ang]
+ Quadrupole XX       :         -9.7501873            1.0759934           -8.6741939
+ Quadrupole XY       :          1.4356623           -2.4817744           -1.0461121
+ Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole YY       :        -41.5350220           33.3228200           -8.2122020
+ Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole ZZ       :        -11.4840206            4.5182444           -6.9657761
+ Traceless XX        :         11.1728893          -11.8963592           -0.7234699
+ Traceless YY        :        -20.6119454           20.3504674           -0.2614780
+ Traceless ZZ        :          9.4390561           -8.4541082            0.9849479
 
-  Traceless Quadrupole Moment: [D A]
-    XX:    -0.9731     YY:    -0.3517     ZZ:     1.3248
-    XY:    -1.4071     XZ:     0.0000     YZ:     0.0000
+ ------------------------------------------------------------------------------------
+    CCDENSITY-SET-WFN-TEST CC2 DIPOLE.....................................................PASSED
+    CCDENSITY-SET-WFN-TEST CC2 QUADRUPOLE.................................................PASSED
 
-    CCDENSITY-SET-WFN-TEST EOM-CC2 DIPOLE X...............................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 DIPOLE Y...............................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 DIPOLE Z...............................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 QUADRUPOLE XX..........................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 QUADRUPOLE XY..........................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 QUADRUPOLE XZ..........................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 QUADRUPOLE YY..........................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 QUADRUPOLE YZ..........................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 QUADRUPOLE ZZ..........................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 DIPOLE.................................................PASSED
-    CCDENSITY-SET-WFN-TEST EOM-CC2 QUADRUPOLE.............................................PASSED
-
-    Psi4 stopped on: Tuesday, 27 October 2020 03:20PM
-    Psi4 wall time for execution: 0:00:03.00
+    Psi4 stopped on: Saturday, 09 April 2022 11:55AM
+    Psi4 wall time for execution: 0:00:05.23
 
 *** Psi4 exiting successfully. Buy a developer a beer!

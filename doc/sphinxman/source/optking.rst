@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -461,9 +461,9 @@ Psi4's native Optking optimizer. GeomeTRIC uses a translation-rotation-internal 
 system that works well for optimizing geometries of systems containing noncovalent interactions.
 
 Use of the GeomeTRIC optimizer is specified with the ``engine`` argument to
-:py:func:`~psi4.optimize`. The optimization will respect the keywords |optking__g_convergence|
+:py:func:`~psi4.driver.optimize`. The optimization will respect the keywords |optking__g_convergence|
 and |optking__geom_maxiter|. Any other GeomeTRIC-specific options (including constraints)
-may be specified with the ``optimizer_keywords`` argument to :py:func:`~psi4.optimize`. 
+may be specified with the ``optimizer_keywords`` argument to :py:func:`~psi4.driver.optimize`.
 Constraints may be placed on cartesian coordinates, bonds, angles, and dihedrals, and they can be
 used to either freeze a coordinate or set it to a specific value. See the `GeomeTRIC github
 <https://github.com/leeping/geomeTRIC>`_ 
@@ -574,5 +574,5 @@ is active and fulfilled (``*``), active and unfulfilled ( ),  or inactive (``o``
 The full list of keywords for optking is provided in Appendix :ref:`apdx:optking`.
 
 Information on the Psithon function that drives geometry optimizations is provided
-at :py:func:`~psi4.optimize`.
+at :py:func:`~psi4.driver.optimize`.
 

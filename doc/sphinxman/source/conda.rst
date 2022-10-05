@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -67,7 +67,7 @@ distribution with same package manager `conda
 The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
 For commands to get a default installation, go to :ref:`sec:psi4conda`
-or the `psicode downloads page <https://psicode.org/installs/latest/>`_.
+or the :psicode:`psicode downloads page <installs/latest/>` .
 Users proficient with conda may prefer to consult :ref:`sec:condadetails`.
 For more flexibility and a detailed explanation, go to
 :ref:`sec:slowconda` and :ref:`sec:slowpsi4`.
@@ -79,7 +79,7 @@ How to install a Psi4 binary with the Psi4conda installer, download site
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `Download one of the nine installers
-<http://psicode.org/downloads.html>`_ (Linux/Mac/Windows; Py36/37/38/39).
+<http://psicode.org/downloads.html>`_ (Linux/Mac/Windows; Py38/39/310).
 ``bash`` it. Follow the prompts and *do* make the adjustments to
 :envvar:`PATH` and :envvar:`PSI_SCRATCH` that it suggests at the end. Test
 with ``psi4 --test`` (green and yellow good; red bad). Done. Explicit commands at :ref:`sec:psi4conda`.
@@ -99,7 +99,7 @@ the |PSIfour| executable into the main conda environment at
 .. code-block:: bash
 
     # Linux or WSL (Windows Subsystem for Linux)
-    # py36|py37|py38|py39 for alternate python versions
+    # py38|py39|py310 for alternate python versions
     >>> curl "http://vergil.chemistry.gatech.edu/psicode-download/Psi4conda-1.4rc1-py38-Linux-x86_64.sh" -o Psi4conda-latest-py38-Linux-x86_64.sh --keepalive-time 2
     >>> bash Psi4conda-latest-py38-Linux-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms
     >>> (bash) echo $'. $HOME/psi4conda/etc/profile.d/conda.sh\nconda activate' >> ~/.bashrc
@@ -110,7 +110,7 @@ the |PSIfour| executable into the main conda environment at
 .. code-block:: bash
 
     # Mac
-    # py36|py37|py38|py39 for alternate python versions
+    # py38|py39|py310 for alternate python versions
     >>> curl -O "http://vergil.chemistry.gatech.edu/download/Psi4conda-latest-py35-MacOSX-x86_64.sh" --keepalive-time 2
     >>> curl "http://vergil.chemistry.gatech.edu/psicode-download/Psi4conda-1.4rc1-py38-MacOSX-x86_64.sh" -o Psi4conda-latest-py38-MacOSX-x86_64.sh --keepalive-time 2
     >>> bash Psi4conda-latest-py38-MacOSX-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms

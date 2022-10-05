@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -36,8 +36,8 @@
 
 .. _`sec:opt()`:
 
-Geometry Optimization |w---w| :py:func:`~psi4.optimize` and :py:func:`~psi4.gradient`
-=====================================================================================
+Geometry Optimization |w---w| :py:func:`~psi4.driver.optimize` and :py:func:`~psi4.driver.gradient`
+===================================================================================================
 
 * :ref:`Psi4 Native Gradient Methods <table:grad_gen>`
 * :ref:`Psi4 Native DFT Gradient Methods (excepting double-hybrids) <table:grad_gen>`
@@ -46,10 +46,10 @@ Geometry Optimization |w---w| :py:func:`~psi4.optimize` and :py:func:`~psi4.grad
 For further discussion of geometry optimization, see
 Sec. :ref:`sec:optking`.
 
-:py:func:`~psi4.optimize` is the only command most users will ever
+:py:func:`~psi4.driver.optimize` is the only command most users will ever
 need to access directly to perform geometry optimizations. Behind
-the scenes, :py:func:`~psi4.optimize` is a wrapper that repeatedly
-calls :py:func:`~psi4.gradient` that computes the gradient then adds a
+the scenes, :py:func:`~psi4.driver.optimize` is a wrapper that repeatedly
+calls :py:func:`~psi4.driver.gradient` that computes the gradient then adds a
 call to the :ref:`geometry optimization module <sec:optking>`.
 
 .. autofunction:: psi4.optimize(name [, molecule, return_wfn, func, mode, dertype, hessian_with])

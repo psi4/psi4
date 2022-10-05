@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2019 The Psi4 Developers.
+# Copyright (c) 2019-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,8 +26,14 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "ipi_broker",
+    "IPIBroker",
+]
+
 import sys
 import time
+from typing import Dict, Optional, Union
 
 import numpy as np
 
@@ -44,6 +50,8 @@ except ImportError:
 
 
 class IPIBroker(Client):
+    """Interface implementation between i-PI (https://ipi-code.org/) and |PSIfour|."""
+
     def __init__(self, LOT, options=None, serverdata=False, molecule=None):
         self.serverdata = serverdata
         if not ipi_available:
@@ -62,7 +70,7 @@ class IPIBroker(Client):
         if molecule is None:
             molecule = psi4.core.get_active_molecule()
         self.initial_molecule = molecule
-        assert self.initial_molecule.orientation_fixed() == True, "Orientation must be fixed!"
+        assert self.initial_molecule.orientation_fixed(), "Orientation must be fixed!"
         assert self.initial_molecule.point_group().symbol() == "c1", "Symmetry must be 'c1'!"
 
         names = [self.initial_molecule.symbol(i) for i in range(self.initial_molecule.natom())]
@@ -126,13 +134,25 @@ class IPIBroker(Client):
         self.timing[LOT] = self.timing.get(LOT, []) + [time_needed]
 
 
-def ipi_broker(LOT, molecule=None, serverdata=False, options=None):
-    """ Run IPIBroker to connect to i-pi
+def ipi_broker(
+    LOT: str,
+    molecule: Optional[psi4.core.Molecule] = None,
+    serverdata: Union[str, bool] = False,
+    options: Optional[Dict] = None
+) -> IPIBroker:
+    """Runs :class:`~psi4.driver.ipi_broker.IPIBroker` to connect to i-PI (https://ipi-code.org/).
 
-    Arguments:
-        molecule: Initial molecule
-        serverdata: Configuration where to connect to ipi
-        options: any additional Psi4 options
+    Parameters
+    ----------
+    LOT
+        level of theory
+    molecule
+        Initial molecule
+    serverdata
+        Configuration where to connect to ipi
+    options
+        any additional Psi4 options
+
     """
     b = IPIBroker(LOT, molecule=molecule, serverdata=serverdata, options=options)
 

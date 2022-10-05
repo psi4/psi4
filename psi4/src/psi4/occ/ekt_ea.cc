@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -135,13 +135,13 @@ void OCCWave::ekt_ea() {
     auto PSA = std::make_shared<Matrix>("Alpha pole strength matrix", nirrep_, nmopi_, nmopi_);
     auto gc_transA = std::make_shared<Matrix>("Alpha C'*g", nirrep_, nmopi_, nmopi_);
     auto tempA = std::make_shared<Matrix>("Alpha temp", nirrep_, nmopi_, nmopi_);
-    auto Diag_g1A = std::make_shared<Vector>("Diag OO-block OPDM", nirrep_, nmopi_);
-    auto ps_vecA = std::make_shared<Vector>("alpha pole strength vector", nirrep_, nmopi_);
-    auto eorbA = std::make_shared<Vector>("eorbA", nirrep_, nmopi_);
+    Vector Diag_g1A("Diag OO-block OPDM", nmopi_);
+    Vector ps_vecA("alpha pole strength vector", nmopi_);
+    Vector eorbA("eorbA", nmopi_);
 
     // Diagonalize OPDM
     UvecA->zero();
-    Diag_g1A->zero();
+    Diag_g1A.zero();
     if (reference_ == "RESTRICTED")
         G1tilde->diagonalize(UvecA, Diag_g1A);
     else if (reference_ == "UNRESTRICTED")
@@ -150,21 +150,21 @@ void OCCWave::ekt_ea() {
     // Make sure all eigenvalues are positive
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nmopi_[h]; ++i) {
-            if (Diag_g1A->get(h, i) < 0.0) Diag_g1A->set(h, i, -1.0 * Diag_g1A->get(h, i));
+            if (Diag_g1A.get(h, i) < 0.0) Diag_g1A.set(h, i, -1.0 * Diag_g1A.get(h, i));
         }
     }
 
     // Form g^(-1/2)
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nmopi_[h]; ++i) {
-            Diag_g1A->set(h, i, 1 / sqrt(Diag_g1A->get(h, i)));
+            Diag_g1A.set(h, i, 1 / sqrt(Diag_g1A.get(h, i)));
         }
     }
 
     g1HalfA->zero();
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nmopi_[h]; ++i) {
-            g1HalfA->set(h, i, i, Diag_g1A->get(h, i));
+            g1HalfA->set(h, i, i, Diag_g1A.get(h, i));
         }
     }
 
@@ -181,7 +181,7 @@ void OCCWave::ekt_ea() {
     GFock_primeA->gemm(false, false, 1.0, tempA, g1HalfA, 0.0);
 
     // Diagonalize GFock to get orbital energies
-    eorbA->zero();
+    eorbA.zero();
     Uvec_primeA->zero();
     GFock_primeA->diagonalize(Uvec_primeA, eorbA);
     UvecA->gemm(false, false, 1.0, g1HalfA, Uvec_primeA, 0.0);
@@ -195,29 +195,29 @@ void OCCWave::ekt_ea() {
         tempA->gemm(false, false, 1.0, G1tildeA, UvecA, 0.0);
     gc_transA = tempA->transpose();
     PSA->gemm(false, false, 1.0, gc_transA, tempA, 0.0);
-    ps_vecA->zero();
+    ps_vecA.zero();
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nmopi_[h]; ++i) {
-            ps_vecA->set(h, i, PSA->get(h, i, i));
+            ps_vecA.set(h, i, PSA->get(h, i, i));
         }
     }
-    if (reference_ == "RESTRICTED") ps_vecA->scale(0.5);
+    if (reference_ == "RESTRICTED") ps_vecA.scale(0.5);
 
     // Sort pole strength
-    Array1d *evals_A = new Array1d("Alpha ORB C1", nmo_);
-    Array1d *ps_vec2A = new Array1d("Sorted Pole strength", nmo_);
-    Array1i *irrep_A = new Array1i("IrrepA", nmo_);
-    evals_A->zero();
-    ps_vec2A->zero();
-    irrep_A->zero();
+    Array1d evals_A("Alpha ORB C1", nmo_);
+    Array1d ps_vec2A("Sorted Pole strength", nmo_);
+    Array1i irrep_A("IrrepA", nmo_);
+    evals_A.zero();
+    ps_vec2A.zero();
+    irrep_A.zero();
 
     // Copy ps vec
     int count = 0;
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nmopi_[h]; ++i) {
-            evals_A->set(count, eorbA->get(h, i));
-            ps_vec2A->set(count, ps_vecA->get(h, i));
-            irrep_A->set(count, h);
+            evals_A.set(count, eorbA.get(h, i));
+            ps_vec2A.set(count, ps_vecA.get(h, i));
+            irrep_A.set(count, h);
             count++;
         }
     }
@@ -225,52 +225,52 @@ void OCCWave::ekt_ea() {
     // Sort to descending order
     for (int i = 0; i < nmo_; ++i) {
         for (int j = nmo_ - 1; j > i; --j) {
-            if (ps_vec2A->get(j - 1) < ps_vec2A->get(j)) {
-                double dum = evals_A->get(j - 1);
-                evals_A->set(j - 1, evals_A->get(j));
-                evals_A->set(j, dum);
+            if (ps_vec2A.get(j - 1) < ps_vec2A.get(j)) {
+                double dum = evals_A.get(j - 1);
+                evals_A.set(j - 1, evals_A.get(j));
+                evals_A.set(j, dum);
 
-                int dum2 = irrep_A->get(j - 1);
-                irrep_A->set(j - 1, irrep_A->get(j));
-                irrep_A->set(j, dum2);
+                int dum2 = irrep_A.get(j - 1);
+                irrep_A.set(j - 1, irrep_A.get(j));
+                irrep_A.set(j, dum2);
 
-                double dum3 = ps_vec2A->get(j - 1);
-                ps_vec2A->set(j - 1, ps_vec2A->get(j));
-                ps_vec2A->set(j, dum3);
+                double dum3 = ps_vec2A.get(j - 1);
+                ps_vec2A.set(j - 1, ps_vec2A.get(j));
+                ps_vec2A.set(j, dum3);
             }
         }
     }
 
     // Re-Sort virtual orbitals to energy order
-    Array1d *evirA = new Array1d("Alpha virtual orb", nvoA);
-    Array1d *ps_virA = new Array1d("occupied Pole strength", nvoA);
-    Array1i *irrep_virA = new Array1i("virtual IrrepA", nvoA);
-    evirA->zero();
-    ps_virA->zero();
-    irrep_virA->zero();
+    Array1d evirA("Alpha virtual orb", nvoA);
+    Array1d ps_virA("occupied Pole strength", nvoA);
+    Array1i irrep_virA("virtual IrrepA", nvoA);
+    evirA.zero();
+    ps_virA.zero();
+    irrep_virA.zero();
 
     // Copy
     for (int i = 0; i < nvoA; ++i) {
-        evirA->set(i, evals_A->get(i + nooA));
-        ps_virA->set(i, ps_vec2A->get(i + nooA));
-        irrep_virA->set(i, irrep_A->get(i + nooA));
+        evirA.set(i, evals_A.get(i + nooA));
+        ps_virA.set(i, ps_vec2A.get(i + nooA));
+        irrep_virA.set(i, irrep_A.get(i + nooA));
     }
 
     // Sort to ascending order
     for (int i = 0; i < nvoA; ++i) {
         for (int j = nvoA - 1; j > i; --j) {
-            if (evirA->get(j - 1) > evirA->get(j)) {
-                double dum = evirA->get(j - 1);
-                evirA->set(j - 1, evirA->get(j));
-                evirA->set(j, dum);
+            if (evirA.get(j - 1) > evirA.get(j)) {
+                double dum = evirA.get(j - 1);
+                evirA.set(j - 1, evirA.get(j));
+                evirA.set(j, dum);
 
-                int dum2 = irrep_virA->get(j - 1);
-                irrep_virA->set(j - 1, irrep_virA->get(j));
-                irrep_virA->set(j, dum2);
+                int dum2 = irrep_virA.get(j - 1);
+                irrep_virA.set(j - 1, irrep_virA.get(j));
+                irrep_virA.set(j, dum2);
 
-                double dum3 = ps_virA->get(j - 1);
-                ps_virA->set(j - 1, ps_virA->get(j));
-                ps_virA->set(j, dum3);
+                double dum3 = ps_virA.get(j - 1);
+                ps_virA.set(j - 1, ps_virA.get(j));
+                ps_virA.set(j, dum3);
             }
         }
     }
@@ -289,9 +289,9 @@ void OCCWave::ekt_ea() {
         outfile->Printf("\t------------------------------------------------------------------- \n");
 
         for (int i = 0; i < nvoA; ++i) {
-            int h = irrep_virA->get(i);
-            outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evirA->get(i),
-                            -evirA->get(i) * pc_hartree2ev, ps_virA->get(i));
+            int h = irrep_virA.get(i);
+            outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evirA.get(i),
+                            -evirA.get(i) * pc_hartree2ev, ps_virA.get(i));
         }
         outfile->Printf("\t------------------------------------------------------------------- \n");
 
@@ -302,9 +302,9 @@ void OCCWave::ekt_ea() {
         outfile->Printf("\t------------------------------------------------------------------- \n");
 
         for (int i = 0; i < nmo_; ++i) {
-            int h = irrep_A->get(i);
-            outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evals_A->get(i),
-                            -evals_A->get(i) * pc_hartree2ev, ps_vec2A->get(i));
+            int h = irrep_A.get(i);
+            outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evals_A.get(i),
+                            -evals_A.get(i) * pc_hartree2ev, ps_vec2A.get(i));
         }
         outfile->Printf("\t------------------------------------------------------------------- \n");
 
@@ -322,33 +322,33 @@ void OCCWave::ekt_ea() {
         auto PSB = std::make_shared<Matrix>("Beta pole strength matrix", nirrep_, nmopi_, nmopi_);
         auto gc_transB = std::make_shared<Matrix>("Beta C'*g", nirrep_, nmopi_, nmopi_);
         auto tempB = std::make_shared<Matrix>("Beta temp", nirrep_, nmopi_, nmopi_);
-        auto Diag_g1B = std::make_shared<Vector>("DiagA OO-block OPDM", nirrep_, nmopi_);
-        auto ps_vecB = std::make_shared<Vector>("Beta pole strength vector", nirrep_, nmopi_);
-        auto eorbB = std::make_shared<Vector>("eorbB", nirrep_, nmopi_);
+        Vector Diag_g1B("DiagA OO-block OPDM", nmopi_);
+        Vector ps_vecB("Beta pole strength vector", nmopi_);
+        auto eorbB = std::make_shared<Vector>("eorbB", nmopi_);
 
         // Diagonalize OPDM
         UvecB->zero();
-        Diag_g1B->zero();
+        Diag_g1B.zero();
         G1tildeB->diagonalize(UvecB, Diag_g1B);
 
         // Make sure all eigenvalues are positive
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < nmopi_[h]; ++i) {
-                if (Diag_g1B->get(h, i) < 0.0) Diag_g1B->set(h, i, -1.0 * Diag_g1B->get(h, i));
+                if (Diag_g1B.get(h, i) < 0.0) Diag_g1B.set(h, i, -1.0 * Diag_g1B.get(h, i));
             }
         }
 
         // Form g^(-1/2)
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < nmopi_[h]; ++i) {
-                Diag_g1B->set(h, i, 1 / sqrt(Diag_g1B->get(h, i)));
+                Diag_g1B.set(h, i, 1 / sqrt(Diag_g1B.get(h, i)));
             }
         }
 
         g1HalfB->zero();
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < nmopi_[h]; ++i) {
-                g1HalfB->set(h, i, i, Diag_g1B->get(h, i));
+                g1HalfB->set(h, i, i, Diag_g1B.get(h, i));
             }
         }
 
@@ -373,28 +373,28 @@ void OCCWave::ekt_ea() {
         tempB->gemm(false, false, 1.0, G1tildeB, UvecB, 0.0);
         gc_transB = tempB->transpose();
         PSB->gemm(false, false, 1.0, gc_transB, tempB, 0.0);
-        ps_vecB->zero();
+        ps_vecB.zero();
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < nmopi_[h]; ++i) {
-                ps_vecB->set(h, i, PSB->get(h, i, i));
+                ps_vecB.set(h, i, PSB->get(h, i, i));
             }
         }
 
         // Sort pole strength
-        Array1d *evals_B = new Array1d("Alpha ORB C1", nmo_);
-        Array1d *ps_vec2B = new Array1d("Sorted Pole strength", nmo_);
-        Array1i *irrep_B = new Array1i("IrrepB", nmo_);
-        evals_B->zero();
-        ps_vec2B->zero();
-        irrep_B->zero();
+        Array1d evals_B("Alpha ORB C1", nmo_);
+        Array1d ps_vec2B("Sorted Pole strength", nmo_);
+        Array1i irrep_B("IrrepB", nmo_);
+        evals_B.zero();
+        ps_vec2B.zero();
+        irrep_B.zero();
 
         // Copy ps vec
         int count = 0;
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < nmopi_[h]; ++i) {
-                evals_B->set(count, eorbB->get(h, i));
-                ps_vec2B->set(count, ps_vecB->get(h, i));
-                irrep_B->set(count, h);
+                evals_B.set(count, eorbB->get(h, i));
+                ps_vec2B.set(count, ps_vecB.get(h, i));
+                irrep_B.set(count, h);
                 count++;
             }
         }
@@ -402,52 +402,52 @@ void OCCWave::ekt_ea() {
         // Sort to descending order
         for (int i = 0; i < nmo_; ++i) {
             for (int j = nmo_ - 1; j > i; --j) {
-                if (ps_vec2B->get(j - 1) < ps_vec2B->get(j)) {
-                    double dum = evals_B->get(j - 1);
-                    evals_B->set(j - 1, evals_B->get(j));
-                    evals_B->set(j, dum);
+                if (ps_vec2B.get(j - 1) < ps_vec2B.get(j)) {
+                    double dum = evals_B.get(j - 1);
+                    evals_B.set(j - 1, evals_B.get(j));
+                    evals_B.set(j, dum);
 
-                    int dum2 = irrep_B->get(j - 1);
-                    irrep_B->set(j - 1, irrep_B->get(j));
-                    irrep_B->set(j, dum2);
+                    int dum2 = irrep_B.get(j - 1);
+                    irrep_B.set(j - 1, irrep_B.get(j));
+                    irrep_B.set(j, dum2);
 
-                    double dum3 = ps_vec2B->get(j - 1);
-                    ps_vec2B->set(j - 1, ps_vec2B->get(j));
-                    ps_vec2B->set(j, dum3);
+                    double dum3 = ps_vec2B.get(j - 1);
+                    ps_vec2B.set(j - 1, ps_vec2B.get(j));
+                    ps_vec2B.set(j, dum3);
                 }
             }
         }
 
         // Re-Sort virtual orbitals to energy order
-        Array1d *evirB = new Array1d("Alpha virtual orb", nvoB);
-        Array1d *ps_virB = new Array1d("occupied Pole strength", nvoB);
-        Array1i *irrep_virB = new Array1i("virtual IrrepA", nvoB);
-        evirB->zero();
-        ps_virB->zero();
-        irrep_virB->zero();
+        Array1d evirB("Alpha virtual orb", nvoB);
+        Array1d ps_virB("occupied Pole strength", nvoB);
+        Array1i irrep_virB("virtual IrrepA", nvoB);
+        evirB.zero();
+        ps_virB.zero();
+        irrep_virB.zero();
 
         // Copy
         for (int i = 0; i < nvoB; ++i) {
-            evirB->set(i, evals_B->get(i + nooB));
-            ps_virB->set(i, ps_vec2B->get(i + nooB));
-            irrep_virB->set(i, irrep_B->get(i + nooB));
+            evirB.set(i, evals_B.get(i + nooB));
+            ps_virB.set(i, ps_vec2B.get(i + nooB));
+            irrep_virB.set(i, irrep_B.get(i + nooB));
         }
 
         // Sort to ascending order
         for (int i = 0; i < nvoB; ++i) {
             for (int j = nvoB - 1; j > i; --j) {
-                if (evirB->get(j - 1) > evirB->get(j)) {
-                    double dum = evirB->get(j - 1);
-                    evirB->set(j - 1, evirB->get(j));
-                    evirB->set(j, dum);
+                if (evirB.get(j - 1) > evirB.get(j)) {
+                    double dum = evirB.get(j - 1);
+                    evirB.set(j - 1, evirB.get(j));
+                    evirB.set(j, dum);
 
-                    int dum2 = irrep_virB->get(j - 1);
-                    irrep_virB->set(j - 1, irrep_virB->get(j));
-                    irrep_virB->set(j, dum2);
+                    int dum2 = irrep_virB.get(j - 1);
+                    irrep_virB.set(j - 1, irrep_virB.get(j));
+                    irrep_virB.set(j, dum2);
 
-                    double dum3 = ps_virB->get(j - 1);
-                    ps_virB->set(j - 1, ps_virB->get(j));
-                    ps_virB->set(j, dum3);
+                    double dum3 = ps_virB.get(j - 1);
+                    ps_virB.set(j - 1, ps_virB.get(j));
+                    ps_virB.set(j, dum3);
                 }
             }
         }
@@ -462,9 +462,9 @@ void OCCWave::ekt_ea() {
             outfile->Printf("\t------------------------------------------------------------------- \n");
 
             for (int i = 0; i < nvoB; ++i) {
-                int h = irrep_virB->get(i);
-                outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evirB->get(i),
-                                -evirB->get(i) * pc_hartree2ev, ps_virB->get(i));
+                int h = irrep_virB.get(i);
+                outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evirB.get(i),
+                                -evirB.get(i) * pc_hartree2ev, ps_virB.get(i));
             }
             outfile->Printf("\t------------------------------------------------------------------- \n");
 
@@ -475,9 +475,9 @@ void OCCWave::ekt_ea() {
             outfile->Printf("\t------------------------------------------------------------------- \n");
 
             for (int i = 0; i < nmo_; ++i) {
-                int h = irrep_B->get(i);
-                outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evals_B->get(i),
-                                -evals_B->get(i) * pc_hartree2ev, ps_vec2B->get(i));
+                int h = irrep_B.get(i);
+                outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evals_B.get(i),
+                                -evals_B.get(i) * pc_hartree2ev, ps_vec2B.get(i));
             }
             outfile->Printf("\t------------------------------------------------------------------- \n");
 
@@ -490,16 +490,7 @@ void OCCWave::ekt_ea() {
         PSB.reset();
         gc_transB.reset();
         tempB.reset();
-        Diag_g1B.reset();
-        ps_vecB.reset();
         eorbB.reset();
-
-        delete irrep_B;
-        delete ps_vec2B;
-        delete evals_B;
-        delete irrep_virB;
-        delete ps_virB;
-        delete evirB;
 
     }  // if (reference_ == "UNRESTRICTED")
 
@@ -519,18 +510,6 @@ void OCCWave::ekt_ea() {
     PSA.reset();
     gc_transA.reset();
     tempA.reset();
-    Diag_g1A.reset();
-    ps_vecA.reset();
-    eorbA.reset();
-
-    delete irrep_A;
-    delete ps_vec2A;
-    delete evals_A;
-    delete irrep_virA;
-    delete ps_virA;
-    delete evirA;
-
-    // outfile->Printf("\n ekt_ea is done. \n");
 
 }  // end ekt_ip
 }

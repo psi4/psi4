@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -154,7 +154,6 @@ void CIvect::common_init() {
     cur_unit_ = 0;
     cur_size_ = 0;
     first_unit_ = 0;
-    print_lvl_ = 0;
     fopen_ = false;
 }
 
@@ -411,7 +410,7 @@ void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc, int 
     }
 
     // MLL 5/7/98: Want to know the subblock length of a vector //
-    //  if (print_lvl_) {
+    //  if (CI_Params_->print_) {
     //     outfile->Printf("\n CI vector/subblock length = %ld\n", buffer_size);
     //
     //     }
@@ -2393,7 +2392,7 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C, struct stringw
     }
     C.buf_unlock();
 
-    if (print_lvl_ > 3) {
+    if (CI_Params_->print_ > 3) {
         outfile->Printf("\nwfn_overlap = \n");
         print_mat(wfn_overlap, k + 1, k + 1, "outfile");
         outfile->Printf("\t\t\t\t");
@@ -3089,7 +3088,7 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2, struct stringwr **alpl
     buf_lock(buffer1);
     read(vec_num, 0);
 
-    if (print_lvl_ > 4) {
+    if (CI_Params_->print_ > 4) {
         for (i = 0; i < num_blocks_; i++) {
             ket_nas = Ia_size_[i];
             ket_nbs = Ib_size_[i];
@@ -3124,7 +3123,7 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2, struct stringwr **alpl
             tval2 = ssq(alplist[ket_ac], betlist[ket_bc], blocks_[bra_block], blocks_[ket_block], ket_nas, ket_nbs,
                         bra_ac, bra_bc);
             tval += tval2;
-            if (print_lvl_ > 4) {
+            if (CI_Params_->print_ > 4) {
                 outfile->Printf("\nbra_block = %d\n", bra_block);
                 outfile->Printf("ket_block = %d\n", ket_block);
                 outfile->Printf("Contribution to <S_S+> = %lf\n", tval2);
@@ -3134,14 +3133,14 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2, struct stringwr **alpl
     } /* end loop over ket_block */
 
     Ms = 0.5 * (CI_CalcInfo_->num_alp_expl - CI_CalcInfo_->num_bet_expl);
-    if (print_lvl_ > 1) {
-        outfile->Printf("\n\n<S_z> = %lf\n", Ms);
-        outfile->Printf("<S_z>^2 = %lf\n", Ms * Ms);
-        outfile->Printf("<S_S+> = %lf\n", tval);
+    if (CI_Params_->print_ > 1) {
+        outfile->Printf("\n\n    <S_z> = %lf\n", Ms);
+        outfile->Printf("    <S_z>^2 = %lf\n", Ms * Ms);
+        outfile->Printf("    <S_S+> = %lf\n", tval);
     }
     S2 = CI_CalcInfo_->num_bet_expl + tval + Ms + Ms * Ms;
 
-    if (print_lvl_) outfile->Printf("Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
+    if (CI_Params_->print_) outfile->Printf("    Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
 
     buf_unlock();
     return (S2);
@@ -3672,7 +3671,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
             value -= 0.5 * Kave * k_total;
             /* outfile->Printf("Kave = %lf\n",Kave); */
 
-            if (print_lvl_ > 5) {
+            if (CI_Params_->print_ > 5) {
                 outfile->Printf("acnt = %d\t bcnt = %d\n", acnt, bcnt);
                 outfile->Printf("tval = %lf\n", tval);
                 for (a1 = 0; a1 < na; a1++) outfile->Printf(" %d", alplist_local->occs[a1]);
@@ -4084,7 +4083,7 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local, struct stringwr
             value += 0.5 * Kave * k_total * pert_param;
             /* outfile->Printf("Kave = %lf\n",Kave); */
 
-            if (print_lvl_ > 5) {
+            if (CI_Params_->print_ > 5) {
                 outfile->Printf("acnt = %d\t bcnt = %d\n", acnt, bcnt);
                 outfile->Printf("tval = %lf\n", tval);
                 for (a1 = 0; a1 < na; a1++) outfile->Printf(" %d", alplist_local->occs[a1]);
@@ -4120,7 +4119,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist, double **
     /* First determine the expection value of <S_S+> */
 
     /* loop over Ia */
-    if (print_lvl_ > 2) {
+    if (CI_Params_->print_ > 2) {
         outfile->Printf("number of alpha strings = %d\n", nas);
     }
     for (Ia = alplist, Ia_idx = 0; Ia_idx < nas; Ia_idx++, Ia++) {
@@ -4137,7 +4136,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist, double **
             j1 = ji % CI_CalcInfo_->num_ci_orbs;
 
             /* loop over Ib */
-            if (print_lvl_ > 2) {
+            if (CI_Params_->print_ > 2) {
                 outfile->Printf("number of beta strings = %d\n", nbs);
             }
             for (Ib = betlist, Ib_idx = 0; Ib_idx < nbs; Ib_idx++, Ib++) {
@@ -4156,7 +4155,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist, double **
                     j2 = ij % CI_CalcInfo_->num_ci_orbs;
                     if (i1 != j2 || i2 != j1) continue;
                     tval += CR[Ia_idx][Ib_idx] * CL[Ja_idx][Jb_idx] * (double)Ja_sgn * (double)Jb_sgn;
-                    if (print_lvl_ > 3) {
+                    if (CI_Params_->print_ > 3) {
                         outfile->Printf("\n\nIa_idx = %d\n", Ia_idx);
                         outfile->Printf("Ib_idx = %d\n", Ib_idx);
                         outfile->Printf("Ja_idx = %d\n", Ja_idx);

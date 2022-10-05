@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -37,18 +37,18 @@
 
 .. _`sec:freq()`:
 
-Harmonic Vibrational Analysis and Visualization of Normal Modes |w---w| :py:func:`~psi4.frequency` and :py:func:`~psi4.hessian`
-===============================================================================================================================
+Harmonic Vibrational Analysis and Visualization of Normal Modes |w---w| :py:func:`~psi4.driver.frequency` and :py:func:`~psi4.driver.hessian`
+=============================================================================================================================================
 
 * :ref:`Psi4 Native Hessian Methods <table:freq_gen>`
 
 For further discussion of vibrational and thermochemical analysis,
 see Sec. :ref:`sec:thermo`.
 
-:py:func:`~psi4.frequency` is the only command most users will ever
+:py:func:`~psi4.driver.frequency` is the only command most users will ever
 need to access directly to perform frequency calculations. Behind
-the scenes, :py:func:`~psi4.frequency` is a light wrapper over
-:py:func:`~psi4.hessian` that computes the Hessian then adds a
+the scenes, :py:func:`~psi4.driver.frequency` is a light wrapper over
+:py:func:`~psi4.driver.hessian` that computes the Hessian then adds a
 thermochemical analysis.
 
 .. autofunction:: psi4.frequency(name [, molecule, return_wfn, func, mode, dertype, irrep])
@@ -107,7 +107,7 @@ Visualization of Normal Modes
 -----------------------------
 
 |PSIfour| has the ability to export a Molden file that stores information about
-the harmonic frequencies and normal modes computed via :py:func:`~psi4.frequency`.
+the harmonic frequencies and normal modes computed via :py:func:`~psi4.driver.frequency`.
 This feature can be enabled by setting the option |findif__normal_modes_write| to true.
 The filename of the Molden file ends in ``.molden_normal_modes``, and the prefix is
 determined by |globals__writer_file_label| (if set), or else by the name of the
@@ -125,4 +125,10 @@ Molden Interface Keywords
 
 .. automodapi:: psi4.driver.qcdb.vib
    :headings: -~
+
+
+API
+---
+
+.. autopydantic_model:: psi4.driver.driver_findif.FiniteDifferenceComputer
 

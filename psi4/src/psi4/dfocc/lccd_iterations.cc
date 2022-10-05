@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -59,9 +59,9 @@ void DFOCC::lccd_iterations() {
         if (reference_ == "RESTRICTED") {
             std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
             ccsdDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
-            ccsdDiisManager->set_error_vector_size(1, DIISEntry::Matrix, T2.get());
-            ccsdDiisManager->set_vector_size(1, DIISEntry::Matrix, T2.get());
+                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdDiisManager->set_error_vector_size(T2.get());
+            ccsdDiisManager->set_vector_size(T2.get());
             T2.reset();
         }
 
@@ -71,11 +71,9 @@ void DFOCC::lccd_iterations() {
             std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", ntri_anti_ijBB, ntri_anti_abBB));
             std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
             ccsdDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
-            ccsdDiisManager->set_error_vector_size(3, DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(),
-                                                   DIISEntry::Matrix, T2AB.get());
-            ccsdDiisManager->set_vector_size(3, DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(),
-                                             DIISEntry::Matrix, T2AB.get());
+                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdDiisManager->set_error_vector_size(T2AA.get(), T2BB.get(), T2AB.get());
+            ccsdDiisManager->set_vector_size(T2AA.get(), T2BB.get(), T2AB.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -102,6 +102,14 @@ class SAPT : public Wavefunction {
     double **vAAB_;
     double **vBAB_;
 
+    std::shared_ptr<Matrix> Smat_;
+    std::shared_ptr<Matrix> VAmat_;
+    std::shared_ptr<Matrix> VBmat_;
+    std::shared_ptr<Matrix> CoccA_;
+    std::shared_ptr<Matrix> CoccB_;
+    std::shared_ptr<Matrix> CvirA_;
+    std::shared_ptr<Matrix> CvirB_;
+
     std::shared_ptr<SAPTDenominator> denom_;
 
     size_t nvec_;
@@ -110,6 +118,7 @@ class SAPT : public Wavefunction {
     double **dBS_;
 
     void zero_disk(int, const char *, int, int);
+    SharedMatrix get_metric(std::shared_ptr<BasisSet> basis) const;
 
    public:
     SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB, Options &options,
@@ -117,26 +126,6 @@ class SAPT : public Wavefunction {
     ~SAPT() override;
 
     double compute_energy() override = 0;
-};
-
-class CPHFDIIS {
-   private:
-    int max_diis_vecs_;
-    size_t vec_length_;
-
-    int curr_vec_;
-    int num_vecs_;
-
-    double **t_vecs_;
-    double **err_vecs_;
-
-   protected:
-   public:
-    CPHFDIIS(int, int);
-    ~CPHFDIIS();
-
-    void store_vectors(double *, double *);
-    void get_new_vector(double *);
 };
 }  // namespace sapt
 }  // namespace psi

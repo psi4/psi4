@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -43,6 +43,8 @@ SAPT2p3::SAPT2p3(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWa
       e_exch_ind30_(0.0),
       e_ind30r_(0.0),
       e_exch_ind30r_(0.0),
+      e_exch_ind30_sinf_(0.0),
+      e_exch_ind30r_sinf_(0.0),
       e_ind_disp30_(0.0),
       e_exch_ind_disp30_(0.0),
       e_disp30_(0.0),
@@ -52,6 +54,7 @@ SAPT2p3::SAPT2p3(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWa
       e_sapt2pp3_ccd_(0.0),
       e_sapt2p3_ccd_(0.0) {
     third_order_ = options_.get_bool("DO_THIRD_ORDER");
+    third_order_sinf_ = options_.get_bool("DO_IND30_EXCH_SINF");
 }
 
 SAPT2p3::~SAPT2p3() {}
@@ -149,6 +152,11 @@ double SAPT2p3::compute_energy() {
         exch_ind_disp30();
         timer_off("ExchIndDisp30      ");
     }
+    if (third_order_sinf_) {
+        timer_on("Exch-Ind30 (Sinf)  ");
+        sinf_e30ind();
+        timer_off("Exch-Ind30 (Sinf)  ");
+    }
 
     print_results();
 
@@ -240,6 +248,10 @@ void SAPT2p3::print_results() {
         e_exch_ind30r_ = e_ind30r_ * (e_exch_ind30_ / e_ind30_);
     else
         e_exch_ind30r_ = 0.0;
+    if ((e_ind30r_ != 0.0) && (e_exch_ind30_sinf_ != 0.0))
+        e_exch_ind30r_sinf_ = e_ind30r_ * (e_exch_ind30_sinf_ / e_ind30_);
+    else
+        e_exch_ind30r_sinf_ = 0.0;
 
     // The main loop, computes everything with all scaling factors in
     // the Xscal vector. Only exports variables once, for the scaling factor
@@ -247,8 +259,9 @@ void SAPT2p3::print_results() {
     std::vector<double>::iterator scal_it;
     for (scal_it = Xscal.begin(); scal_it != Xscal.end(); ++scal_it) {
         double dHF2 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_);
-        double dHF3 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_ + e_ind30r_ +
-                              *scal_it * e_exch_ind30r_);
+        double dHF3 = 0.0;
+        dHF3 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_ + e_ind30r_ +
+                       *scal_it * e_exch_ind30r_);
 
         double dMP2_2 = 0.0;
         double dMP2_3 = 0.0;
@@ -326,6 +339,7 @@ void SAPT2p3::print_results() {
         e_sapt2p3_ = e_elst10_ + e_elst12_ + e_elst13_ + e_exch10_ + *scal_it * (e_exch11_ + e_exch12_) + dHF3 +
                      e_ind20_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_) + e_ind22_ + e_ind30r_ +
                      e_disp_mp4 + e_disp30_ + *scal_it * (e_exch_disp30_ + e_exch_ind_disp30_) + e_ind_disp30_;
+
         double e_sapt2p3_ccd_dmp2 = 0.0;
         if (ccd_disp_) {
             e_sapt2p3_ccd_ = e_elst10_ + e_elst12_ + e_elst13_ + e_exch10_ + *scal_it * (e_exch11_ + e_exch12_) + dHF3 +
@@ -343,15 +357,17 @@ void SAPT2p3::print_results() {
 
         double tot_elst = e_elst10_ + e_elst12_ + e_elst13_;
         double tot_exch = e_exch10_ + *scal_it * (e_exch11_ + e_exch12_);
-        double tot_ind =
-            e_ind20_ + dHF3 + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_);
+        double tot_ind = 0.0;
+        tot_ind =
+                e_ind20_ + dHF3 + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_);
         if (e_MP2 != 0.0) {
             if (third_order_)
                 tot_ind += dMP2_3;
             else
                 tot_ind += dMP2_2;
         }
-        double tot_ct = e_ind20_ + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_);
+        double tot_ct = 0.0;
+        tot_ct = e_ind20_ + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_);
         double tot_disp = 0.0;
         if (nat_orbs_t3_)
             tot_disp = e_disp20_ + e_disp21_ + e_disp22sdq_ + e_est_disp22t_ + e_disp30_ + e_ind_disp30_ +
@@ -415,10 +431,17 @@ void SAPT2p3::print_results() {
                         scaled.c_str(), *scal_it * e_exch_ind20_ * 1000.0,
                         *scal_it * e_exch_ind20_ * pc_hartree2kcalmol, *scal_it * e_exch_ind20_ * pc_hartree2kJmol);
         if (third_order_)
-            outfile->Printf("      Exch-Ind30,r %3s        %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+            {
+                outfile->Printf("      Exch-Ind30,r %3s (S^2)  %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                             scaled.c_str(), *scal_it * e_exch_ind30r_ * 1000.0,
                             *scal_it * e_exch_ind30r_ * pc_hartree2kcalmol,
                             *scal_it * e_exch_ind30r_ * pc_hartree2kJmol);
+                if (e_exch_ind30r_sinf_ != 0.0)
+                    outfile->Printf("      Exch-Ind30,r %3s(S^inf) %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+                            scaled.c_str(), *scal_it * e_exch_ind30r_sinf_ * 1000.0,
+                            *scal_it * e_exch_ind30r_sinf_ * pc_hartree2kcalmol,
+                            *scal_it * e_exch_ind30r_sinf_ * pc_hartree2kJmol);
+            }
         outfile->Printf("      Exch-Ind22 %3s          %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                         scaled.c_str(), *scal_it * e_exch_ind22_ * 1000.0,
                         *scal_it * e_exch_ind22_ * pc_hartree2kcalmol, *scal_it * e_exch_ind22_ * pc_hartree2kJmol);
@@ -577,6 +600,8 @@ void SAPT2p3::print_results() {
                 Process::environment.globals["SAPT IND30,R ENERGY"] = e_ind30r_;
                 Process::environment.globals["SAPT IND-DISP30 ENERGY"] = e_ind_disp30_;
                 Process::environment.globals["SAPT EXCH-IND30,R ENERGY"] = e_exch_ind30r_;
+                if (e_exch_ind30r_sinf_ != 0.0)
+                    Process::environment.globals["SAPT EXCH-IND30,R(S^INF) ENERGY"] = e_exch_ind30r_sinf_;
                 Process::environment.globals["SAPT EXCH-IND-DISP30 ENERGY"] = e_exch_ind_disp30_;
                 Process::environment.globals["SAPT EXCH-DISP30 ENERGY"] = e_exch_disp30_;
             }

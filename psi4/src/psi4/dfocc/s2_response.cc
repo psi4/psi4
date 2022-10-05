@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -47,9 +47,9 @@ void DFOCC::s2_response() {
     //=========================
     // Read AO basis SO
     //=========================
-    SharedTensor2d SmoAB = SharedTensor2d(new Tensor2d("MO-basis Alpha-Beta Overlap Ints", nmo_, nmo_));
-    SharedTensor2d SmoBA = SharedTensor2d(new Tensor2d("MO-basis Beta-Alpha Overlap Ints", nmo_, nmo_));
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("Temp", nso_, nmo_));
+    SharedTensor2d SmoAB = std::make_shared<Tensor2d>("MO-basis Alpha-Beta Overlap Ints", nmo_, nmo_);
+    SharedTensor2d SmoBA = std::make_shared<Tensor2d>("MO-basis Beta-Alpha Overlap Ints", nmo_, nmo_);
+    SharedTensor2d temp = std::make_shared<Tensor2d>("Temp", nso_, nmo_);
 
     // AB
     temp->gemm(false, false, Sso, CmoB, 1.0, 0.0);
@@ -63,15 +63,15 @@ void DFOCC::s2_response() {
 
     // Form overlap blocks
     // S_Ij
-    SharedTensor2d SooAB = SharedTensor2d(new Tensor2d("S <O|o>", noccA, noccB));
+    SharedTensor2d SooAB = std::make_shared<Tensor2d>("S <O|o>", noccA, noccB);
     SooAB->form_ooAB(SmoAB);
 
     // S_Ia
-    SharedTensor2d SiaAB = SharedTensor2d(new Tensor2d("S <I|a>", naoccA, navirB));
+    SharedTensor2d SiaAB = std::make_shared<Tensor2d>("S <I|a>", naoccA, navirB);
     SiaAB->form_act_ov(nfrzc, noccB, SmoAB);
 
     // S_iA
-    SharedTensor2d SiaBA = SharedTensor2d(new Tensor2d("S <i|A>", naoccB, navirA));
+    SharedTensor2d SiaBA = std::make_shared<Tensor2d>("S <i|A>", naoccB, navirA);
     SiaBA->form_act_ov(nfrzc, noccA, SmoBA);
 
     //=========================
@@ -94,8 +94,8 @@ void DFOCC::s2_response() {
     s2_proj += s2_ref;
 
     // Compute amplitude contribution
-    T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    T2 = SharedTensor2d(new Tensor2d("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA));
+    T = std::make_shared<Tensor2d>("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+    T2 = std::make_shared<Tensor2d>("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA);
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
         t2AB_ump2_direct(T);
     else
@@ -104,7 +104,7 @@ void DFOCC::s2_response() {
     T.reset();
 
     // X_Ib = -1/2 \sum_{jA} T2(Ib,jA) S_jA. NoTe: For projected value there is no 1/2 factor
-    SharedTensor2d X = SharedTensor2d(new Tensor2d("X <O|v>", noccA, nvirB));
+    SharedTensor2d X = std::make_shared<Tensor2d>("X <O|v>", noccA, nvirB);
     X->gemv(false, T2, SiaBA, -1.0, 0.0);
     T2.reset();
     SiaBA.reset();
@@ -155,9 +155,9 @@ void DFOCC::s2_lagrangian() {
     //=========================
     // Read AO basis SO
     //=========================
-    SharedTensor2d SmoAB = SharedTensor2d(new Tensor2d("MO-basis Alpha-Beta Overlap Ints", nmo_, nmo_));
-    SharedTensor2d SmoBA = SharedTensor2d(new Tensor2d("MO-basis Beta-Alpha Overlap Ints", nmo_, nmo_));
-    SharedTensor2d temp = SharedTensor2d(new Tensor2d("Temp", nso_, nmo_));
+    SharedTensor2d SmoAB = std::make_shared<Tensor2d>("MO-basis Alpha-Beta Overlap Ints", nmo_, nmo_);
+    SharedTensor2d SmoBA = std::make_shared<Tensor2d>("MO-basis Beta-Alpha Overlap Ints", nmo_, nmo_);
+    SharedTensor2d temp = std::make_shared<Tensor2d>("Temp", nso_, nmo_);
 
     // AB
     temp->gemm(false, false, Sso, CmoB, 1.0, 0.0);
@@ -171,27 +171,27 @@ void DFOCC::s2_lagrangian() {
 
     // Form overlap blocks
     // S_Ij
-    SharedTensor2d SooAB = SharedTensor2d(new Tensor2d("S <O|o>", noccA, noccB));
+    SharedTensor2d SooAB = std::make_shared<Tensor2d>("S <O|o>", noccA, noccB);
     SooAB->form_ooAB(SmoAB);
 
     // S_iJ
-    SharedTensor2d SooBA = SharedTensor2d(new Tensor2d("S <o|O>", noccB, noccA));
+    SharedTensor2d SooBA = std::make_shared<Tensor2d>("S <o|O>", noccB, noccA);
     SooBA->form_ooAB(SmoBA);
 
     // S_Ia
-    SharedTensor2d SiaAB = SharedTensor2d(new Tensor2d("S <I|a>", naoccA, navirB));
-    SharedTensor2d SovAB = SharedTensor2d(new Tensor2d("S <O|v>", noccA, nvirB));
+    SharedTensor2d SiaAB = std::make_shared<Tensor2d>("S <I|a>", naoccA, navirB);
+    SharedTensor2d SovAB = std::make_shared<Tensor2d>("S <O|v>", noccA, nvirB);
     SiaAB->form_act_ov(nfrzc, noccB, SmoAB);
     SovAB->form_ov(noccB, SmoAB);
 
     // S_iA
-    SharedTensor2d SiaBA = SharedTensor2d(new Tensor2d("S <i|A>", naoccB, navirA));
-    SharedTensor2d SovBA = SharedTensor2d(new Tensor2d("S <o|V>", noccB, nvirA));
+    SharedTensor2d SiaBA = std::make_shared<Tensor2d>("S <i|A>", naoccB, navirA);
+    SharedTensor2d SovBA = std::make_shared<Tensor2d>("S <o|V>", noccB, nvirA);
     SiaBA->form_act_ov(nfrzc, noccA, SmoBA);
     SovBA->form_ov(noccA, SmoBA);
 
     // S_Vo
-    SharedTensor2d SvoAB = SharedTensor2d(new Tensor2d("S <V|o>", nvirA, noccB));
+    SharedTensor2d SvoAB = std::make_shared<Tensor2d>("S <V|o>", nvirA, noccB);
     for (int a = 0; a < nvirA; a++) {
         for (int i = 0; i < noccB; i++) {
             SvoAB->set(a, i, SmoAB->get(a + noccA, i));
@@ -199,7 +199,7 @@ void DFOCC::s2_lagrangian() {
     }
 
     // S_vO
-    SharedTensor2d SvoBA = SharedTensor2d(new Tensor2d("S <v|O>", nvirB, noccA));
+    SharedTensor2d SvoBA = std::make_shared<Tensor2d>("S <v|O>", nvirB, noccA);
     for (int a = 0; a < nvirB; a++) {
         for (int i = 0; i < noccA; i++) {
             SvoBA->set(a, i, SmoBA->get(a + noccB, i));
@@ -226,8 +226,8 @@ void DFOCC::s2_lagrangian() {
     s2_lag += s2_ref;
 
     // Compute amplitude contribution
-    T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    T2 = SharedTensor2d(new Tensor2d("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA));
+    T = std::make_shared<Tensor2d>("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+    T2 = std::make_shared<Tensor2d>("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA);
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
         t2AB_ump2_direct(T);
     else
@@ -239,7 +239,7 @@ void DFOCC::s2_lagrangian() {
     // X_Ib = -1/2 \sum_{jA} T2(Ib,jA) S_jA. For response
     // X_Ib = -\sum_{jA} T2(Ib,jA) S_jA. For projected
     // X_Ib = -2\sum_{jA} T2(Ib,jA) S_jA. For lagrangian
-    SharedTensor2d X = SharedTensor2d(new Tensor2d("X <O|v>", noccA, nvirB));
+    SharedTensor2d X = std::make_shared<Tensor2d>("X <O|v>", noccA, nvirB);
     X->gemv(false, T2, SiaBA, -1.0, 0.0);
     T2.reset();
     SiaBA.reset();
@@ -259,7 +259,7 @@ void DFOCC::s2_lagrangian() {
     //=========================
     // <S**2> -= \sum_{I,m,n} S_In Gc_nm S_mI
     SharedTensor2d SGS;
-    SGS = SharedTensor2d(new Tensor2d("SGS <O|O>", noccA, noccA));
+    SGS = std::make_shared<Tensor2d>("SGS <O|O>", noccA, noccA);
     SGS->triple_gemm(SooAB, G1c_ooB, SooBA);
     // s2_lag -= SGS->trace();
     s2_lag -= 0.5 * SGS->trace();
@@ -272,7 +272,7 @@ void DFOCC::s2_lagrangian() {
     SGS.reset();
 
     // <S**2> -= \sum_{i,M,N} S_iN Gc_NM S_Mi
-    SGS = SharedTensor2d(new Tensor2d("SGS <o|o>", noccB, noccB));
+    SGS = std::make_shared<Tensor2d>("SGS <o|o>", noccB, noccB);
     SGS->triple_gemm(SooBA, G1c_ooA, SooAB);
     // s2_lag -= SGS->trace();
     s2_lag -= 0.5 * SGS->trace();

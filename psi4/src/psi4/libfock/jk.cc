@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -70,6 +70,11 @@ JK::JK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
 JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
+
+    if (options.get_str("SCREENING") == "DENSITY" && !(jk_type == "DIRECT" || options.get_bool("DF_SCF_GUESS"))) {
+        throw PSIEXCEPTION("Density screening has not been implemented for non-Direct SCF algorithms.");
+    }
+
     // Throw small DF warning
     if (jk_type == "DF") {
         outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
@@ -102,7 +107,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     } else if (jk_type == "MEM_DF") {
         MemDFJK* jk = new MemDFJK(primary, auxiliary);
-        jk->set_wcombine(true);
+        // TODO: re-enable after fixing all bugs
+        jk->set_wcombine(false);
         _set_dfjk_options<MemDFJK>(jk, options);
         if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
 
@@ -129,7 +135,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "DIRECT") {
-        DirectJK* jk = new DirectJK(primary);
+        DirectJK* jk = new DirectJK(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -140,6 +146,17 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
         return std::shared_ptr<JK>(jk);
+
+    } else if (jk_type == "COSX") {
+        auto jk = std::make_shared<DFJCOSK>(primary, auxiliary, options);
+
+        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
+        if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+
+        return jk;
 
     } else {
         std::stringstream message;
@@ -184,6 +201,11 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
 }
+
+const std::vector<size_t>& JK::computed_shells_per_iter() {
+    return computed_shells_per_iter_;
+}
+
 void JK::common_init() {
     print_ = 1;
     debug_ = 0;
@@ -206,6 +228,10 @@ void JK::common_init() {
     omega_ = 0.0;
     omega_alpha_ = 1.0;
     omega_beta_ = 0.0;
+    early_screening_ = false;
+
+    num_computed_shells_ = 0L;
+    computed_shells_per_iter_ = {};
 
     std::shared_ptr<IntegralFactory> integral =
         std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
@@ -322,13 +348,6 @@ void JK::allocate_JK() {
             wK_.push_back(std::make_shared<Matrix>(s.str(), D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(),
                                                    D_[N]->symmetry()));
         }
-    }
-
-    // Zero out J/K for compute_JK()
-    for (size_t N = 0; N < D_.size(); ++N) {
-        if (do_J_) J_[N]->zero();
-        if (do_K_) K_[N]->zero();
-        if (do_wK_) wK_[N]->zero();
     }
 }
 void JK::USO2AO() {
@@ -475,11 +494,6 @@ void JK::USO2AO() {
         }
     }
 
-    for (size_t N = 0; N < D_.size(); ++N) {
-        if (do_J_) J_ao_[N]->zero();
-        if (do_K_) K_ao_[N]->zero();
-        if (do_wK_) wK_ao_[N]->zero();
-    }
 }
 void JK::AO2USO() {
     // If already C1, J/K are J_ao/K_ao, pointers are already aliased
@@ -540,6 +554,7 @@ void JK::AO2USO() {
     delete[] temp;
 }
 void JK::initialize() { preiterations(); }
+
 void JK::compute() {
     // Is this density symmetric?
     if (C_left_.size() && !C_right_.size()) {
@@ -627,11 +642,35 @@ void JK::compute() {
         C_right_.clear();
     }
 }
+
 void JK::set_wcombine(bool wcombine) {
     wcombine_ = wcombine;
     if (wcombine) {
         throw PSIEXCEPTION("To combine exchange terms, use MemDFJK\n");
     }
 }
+
+void JK::zero() {
+    if (do_J_) {
+        for(auto J : J_) J->zero();
+        for(auto J : J_ao_) J->zero();
+    }
+    if (do_K_) {
+        for(auto K : K_) K->zero();
+        for(auto K : K_ao_) K->zero();
+    }
+    if (do_wK_) {
+        for(auto wK : wK_) wK->zero();
+        for(auto wK : wK_ao_) wK->zero();
+    }
+}
+
+size_t JK::num_computed_shells() {
+    outfile->Printf("WARNING: JK::num_computed_shells() was called, but benchmarking is disabled for the chosen JK algorithm.");
+    outfile->Printf(" Returning 0 as computed shells count.\n");
+
+    return 0;
+}
+
 void JK::finalize() { postiterations(); }
 }  // namespace psi

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,14 +41,14 @@ void DFOCC::omp3_opdm() {
     timer_on("opdm");
     if (reference_ == "RESTRICTED") {
         // G1_ij = -(G_ij + G_ji)
-        T = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
+        T = std::make_shared<Tensor2d>("G Intermediate <I|J>", naoccA, naoccA);
         T->symmetrize(GijA);
         T->scale(-2.0);
         G1c_oo->set_act_oo(nfrzc, naoccA, T);
         T.reset();
 
         //  G1_ab = -(G_ab + G_ba)
-        T = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
+        T = std::make_shared<Tensor2d>("G Intermediate <A|B>", navirA, navirA);
         T->symmetrize(GabA);
         T->scale(-2.0);
         G1c_vv->set_act_vv(T);
@@ -69,7 +69,7 @@ void DFOCC::omp3_opdm() {
 
         // Build G1
         G1->copy(G1c);
-        for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
+        for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0); //CSB the reference contribution
 
         if (print_ > 2) {
             G1->print();

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,19 +56,17 @@ namespace ccdensity {
 void build_A_ROHF() {
     int h, nirreps, e, m, a, i, em, ai, E, M, A, I;
     int Esym, Msym, Asym, Isym;
-    int *virtpi, *openpi, *occpi, *occ_off, *vir_off;
-    int *qt_occ, *qt_vir; /* Spatial orbital translators */
     dpdfile2 fIJ, fij, fAB, fab, fIA, fia;
     dpdbuf4 Amat, Amat2, D, C;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    openpi = moinfo.openpi;
-    virtpi = moinfo.virtpi;
-    occ_off = moinfo.occ_off;
-    vir_off = moinfo.vir_off;
-    qt_occ = moinfo.qt_occ;
-    qt_vir = moinfo.qt_vir;
+    const auto& occpi = moinfo.occpi;
+    const auto& openpi = moinfo.openpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
+    const auto& qt_occ = moinfo.qt_occ;
+    const auto& qt_vir = moinfo.qt_vir;
 
     /* Two-electron integral contributions */
     global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");

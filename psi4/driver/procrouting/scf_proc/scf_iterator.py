@@ -1,9 +1,9 @@
-#
+
 # @BEGIN LICENSE
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -62,7 +62,8 @@ def scf_compute_energy(self):
     """
     if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
         # speed up DIRECT algorithm (recomputes full (non-DF) integrals
-        #   each iter) by solving DF-SCF to get a guess. DF-SCF is faster than direct.
+        #   each iter) by first converging via fast DF iterations, then
+        #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
         core.print_out("  Starting with a DF guess...\n\n")
         with p4util.OptionsStateCM(['SCF_TYPE']):
             core.set_global_option('SCF_TYPE', 'DF')
@@ -76,7 +77,7 @@ def scf_compute_energy(self):
 
         # reset the DIIS & JK objects in prep for DIRECT
         if self.initialized_diis_manager_:
-            self.diis_manager().reset_subspace()
+            self.diis_manager_.reset_subspace()
         self.initialize_jk(self.memory_jk_)
     else:
         self.initialize()
@@ -253,13 +254,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     reference = core.get_option('SCF', "REFERENCE")
 
     # self.member_data_ signals are non-local, used internally by c-side fns
-    self.diis_enabled_ = _validate_diis()
+    self.diis_enabled_ = self.validate_diis()
     self.MOM_excited_ = _validate_MOM()
     self.diis_start_ = core.get_option('SCF', 'DIIS_START')
     damping_enabled = _validate_damping()
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
+
+    # does the JK algorithm use severe screening approximations for early SCF iterations?
+    early_screening = self.jk().get_early_screening()
+
+    # has early_screening changed from True to False?
+    early_screening_disabled = False
 
     # SCF iterations!
     SCFE_old = 0.0
@@ -286,9 +293,14 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         SCFE = 0.0
         self.clear_external_potentials()
 
+        # Two-electron contribution to Fock matrix from self.jk()
         core.timer_on("HF: Form G")
         self.form_G()
         core.timer_off("HF: Form G")
+
+        # Check if special J/K construction algorithms were used
+        incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
+        linK_performed = hasattr(self.jk(), "do_linK") and self.jk().do_linK()
 
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):
@@ -396,11 +408,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 Dnorm = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-                if (add_to_diis_subspace and core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
-                    diis_performed = self.diis()
-
-                if diis_performed:
-                    status.append("DIIS")
+                if add_to_diis_subspace:
+                    for engine_used in self.diis(Dnorm):
+                        status.append(engine_used)
 
                 core.timer_off("HF: DIIS")
 
@@ -425,6 +435,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 if self.frac_performed_:
                     status.append("FRAC")
 
+                if incfock_performed:
+                    status.append("INCFOCK")
+                
+                if linK_performed:
+                    status.append("LINK")
+
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:
                     self.reset_occupation()
@@ -436,6 +452,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_off("HF: Form D")
 
         self.set_variable("SCF ITERATION ENERGY", SCFE)
+        core.set_variable("SCF D NORM", Dnorm)
 
         # After we've built the new D, damp the update
         if (damping_enabled and self.iteration_ > 1 and Dnorm > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
@@ -468,9 +485,32 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if frac_enabled and not self.frac_performed_:
             continue
 
+        # this is the first iteration after early screening was turned off
+        if early_screening_disabled:
+            break
+
         # Call any postiteration callbacks
         if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
-            break
+
+            if early_screening:
+
+                # we've reached convergence with early screning enabled; disable it on the JK object
+                early_screening = False
+                self.jk().set_early_screening(early_screening)
+
+                # make note of the change to early screening; next SCF iteration will be the last
+                early_screening_disabled = True
+
+                # clear any cached matrices associated with incremental fock construction
+                # the change in the screening spoils the linearity in the density matrix
+                if hasattr(self.jk(), 'clear_D_prev'):
+                    self.jk().clear_D_prev()
+
+                core.print_out("  Energy and wave function converged with early screening.\n")
+                core.print_out("  Performing final iteration with tighter screening.\n\n")
+            else:
+                break
+
         if self.iteration_ >= core.get_option('SCF', 'MAXITER'):
             raise SCFConvergenceError("""SCF iterations""", self.iteration_, self, Ediff, Dnorm)
 
@@ -534,7 +574,7 @@ def scf_finalize_energy(self):
             core.print_out("    Running SCF again with the rotated orbitals.\n")
 
             if self.initialized_diis_manager_:
-                self.diis_manager().reset_subspace()
+                self.diis_manager_.reset_subspace()
             # reading the rotated orbitals in before starting iterations
             self.form_D()
             self.set_energies("Total Energy", self.compute_initial_E())
@@ -641,18 +681,6 @@ def scf_finalize_energy(self):
         # Set callback function for CPSCF
         self.set_external_cpscf_perturbation("PE", lambda pert_dm : self.pe_state.get_pe_contribution(pert_dm, elec_only=True)[1])
 
-    # Properties
-    #  Comments so that autodoc utility will find these PSI variables
-    #  Process::environment.globals["SCF DIPOLE X"] =
-    #  Process::environment.globals["SCF DIPOLE Y"] =
-    #  Process::environment.globals["SCF DIPOLE Z"] =
-    #  Process::environment.globals["SCF QUADRUPOLE XX"] =
-    #  Process::environment.globals["SCF QUADRUPOLE XY"] =
-    #  Process::environment.globals["SCF QUADRUPOLE XZ"] =
-    #  Process::environment.globals["SCF QUADRUPOLE YY"] =
-    #  Process::environment.globals["SCF QUADRUPOLE YZ"] =
-    #  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
-
     # Orbitals are always saved, in case an MO guess is requested later
     # save_orbitals()
 
@@ -666,6 +694,7 @@ def scf_finalize_energy(self):
         self.V_potential().clear_collocation_cache()
 
     core.print_out("\nComputation Completed\n")
+    core.del_variable("SCF D NORM")
 
     return energy
 
@@ -815,35 +844,39 @@ def _validate_damping():
     return enabled
 
 
-def _validate_diis():
+def _validate_diis(self):
     """Sanity-checks DIIS control options
 
     Raises
     ------
-    ValidationError
-        If any of |scf__diis|, |scf__diis_start|,
-        |scf__diis_min_vecs|, |scf__diis_max_vecs| don't play well together.
+    psi4.driver.p4util.exceptions.ValidationError
+        If any of DIIS options don't play well together.
 
     Returns
     -------
     bool
-        Whether DIIS is enabled during scf.
+        Whether some form of DIIS is enabled during SCF.
 
     """
-    enabled = bool(core.get_option('SCF', 'DIIS'))
+
+    restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
+    aediis_active = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR') != "NONE" and not restricted_open
+
+    if aediis_active:
+        start = core.get_option('SCF', 'SCF_INITIAL_START_DIIS_TRANSITION')
+        stop = core.get_option('SCF', 'SCF_INITIAL_FINISH_DIIS_TRANSITION')
+        if start < stop:
+            raise ValidationError('SCF_INITIAL_START_DIIS_TRANSITION error magnitude cannot be less than SCF_INITIAL_FINISH_DIIS_TRANSITION.')
+        elif start < 0:
+            raise ValidationError('SCF_INITIAL_START_DIIS_TRANSITION cannot be negative.')
+        elif stop < 0:
+            raise ValidationError('SCF_INITIAL_FINISH_DIIS_TRANSITION cannot be negative.')
+
+    enabled = bool(core.get_option('SCF', 'DIIS')) or aediis_active
     if enabled:
         start = core.get_option('SCF', 'DIIS_START')
         if start < 1:
             raise ValidationError('SCF DIIS_START ({}) must be at least 1'.format(start))
-
-        minvecs = core.get_option('SCF', 'DIIS_MIN_VECS')
-        if minvecs < 1:
-            raise ValidationError('SCF DIIS_MIN_VECS ({}) must be at least 1'.format(minvecs))
-
-        maxvecs = core.get_option('SCF', 'DIIS_MAX_VECS')
-        if maxvecs < minvecs:
-            raise ValidationError('SCF DIIS_MAX_VECS ({}) must be at least DIIS_MIN_VECS ({})'.format(
-                maxvecs, minvecs))
 
     return enabled
 
@@ -929,6 +962,7 @@ def _validate_soscf():
 
     return enabled
 
+core.HF.validate_diis = _validate_diis
 
 def efp_field_fn(xyz):
     """Callback function for PylibEFP to compute electric field from electrons

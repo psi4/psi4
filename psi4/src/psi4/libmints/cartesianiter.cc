@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,12 +56,10 @@ CartesianIter::operator int() { return (a_ >= 0); }
 
 ////////////////////////////////////////////////////////////////////////
 
-RedundantCartesianIter::RedundantCartesianIter(int l) : done_(0), l_(l), axis_(nullptr) {
-    l_ = l;
-    axis_ = new int[l_];
+RedundantCartesianIter::RedundantCartesianIter(int l) : done_(0), l_(l), axis_(std::vector<int>(l_)) {
 }
 
-RedundantCartesianIter::~RedundantCartesianIter() { delete[] axis_; }
+RedundantCartesianIter::~RedundantCartesianIter() {}
 
 int RedundantCartesianIter::bfn() {
     int i = a();
@@ -80,16 +78,12 @@ int RedundantCartesianIter::bfn() {
 
 RedundantCartesianSubIter::RedundantCartesianSubIter(int l) {
     l_ = l;
-    axis_ = new int[l_];
-    zloc_ = new int[l_];
-    yloc_ = new int[l_];
+    axis_ = std::vector<int>(l_);
+    zloc_ = std::vector<int>(l_);
+    yloc_ = std::vector<int>(l_);
 }
 
-RedundantCartesianSubIter::~RedundantCartesianSubIter() {
-    delete[] axis_;
-    delete[] zloc_;
-    delete[] yloc_;
-}
+RedundantCartesianSubIter::~RedundantCartesianSubIter() {}
 
 void RedundantCartesianSubIter::start(int a, int b, int c) {
     if (l_ != a + b + c) {
@@ -119,7 +113,7 @@ void RedundantCartesianSubIter::start(int a, int b, int c) {
     for (int i = 0; i < a; i++, ii++) axis_[ii] = 0;
 }
 
-static bool advance(int l, int *loc, int n) {
+static bool advance(int l, std::vector<int>& loc, int n) {
     int maxloc = l - 1;
     for (int i = 0; i < n; i++) {
         if (loc[i] < maxloc) {

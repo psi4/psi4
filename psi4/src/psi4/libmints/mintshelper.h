@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -91,14 +91,14 @@ class PSI_API MintsHelper {
 
     /**
      * @brief Compute a one-body operator matrix.
-     * 
+     *
      * This function takes in a vector of OneBodyAOInt objects and outputs a matrix
      * representation of the one-body operator.
-     * 
+     *
      * @param[in] ints Vector of OneBodyAOInt integrals
      * @param[out] out Matrix containing the one-body operator
      * @param[in] symm Use symmetry flag
-    */
+     */
     void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
     void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
     /// Helper function to convert ao integrals to so and cache them
@@ -161,7 +161,7 @@ class PSI_API MintsHelper {
     std::shared_ptr<IntegralFactory> integral() const;
 
     /// Getters and setters for other basis sets
-    std::map<std::string, std::shared_ptr<BasisSet>> basissets() const {return basissets_; };
+    std::map<std::string, std::shared_ptr<BasisSet>> basissets() const { return basissets_; };
     std::shared_ptr<BasisSet> get_basisset(std::string label);
     void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
     bool basisset_exists(std::string label);
@@ -197,7 +197,7 @@ class PSI_API MintsHelper {
     std::vector<SharedMatrix> mo_oei_deriv1(const std::string& oei_type, int atom, SharedMatrix C1, SharedMatrix C2);
     std::vector<SharedMatrix> mo_oei_deriv2(const std::string& oei_type, int atom1, int atom2, SharedMatrix C1,
                                             SharedMatrix C2);
-    std::vector<SharedMatrix> mo_overlap_half_deriv1(const std::string& half_der_side, int atom, SharedMatrix C1, 
+    std::vector<SharedMatrix> mo_overlap_half_deriv1(const std::string& half_der_side, int atom, SharedMatrix C1,
                                                      SharedMatrix C2);
 
     // Derivatives of electric dipole moment integrals in AO and MO basis
@@ -217,26 +217,29 @@ class PSI_API MintsHelper {
 
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega, std::shared_ptr<IntegralFactory> = nullptr);
-    /// MO ERFC Omega Integrals
+    /// AO ERFC Omega Integrals
     SharedMatrix ao_erfc_eri(double omega);
-    /// MO F12 Integrals
-    SharedMatrix ao_f12(std::shared_ptr<CorrelationFactor> corr);
-    SharedMatrix ao_f12(std::shared_ptr<CorrelationFactor> corr, std::shared_ptr<BasisSet> bs1,
+    /// AO F12 Integrals
+    SharedMatrix ao_f12(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
                         std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
-    /// MO F12 Integrals
-    SharedMatrix ao_f12_scaled(std::shared_ptr<CorrelationFactor> corr);
-    SharedMatrix ao_f12_scaled(std::shared_ptr<CorrelationFactor> corr, std::shared_ptr<BasisSet> bs1,
+    /// AO F12 Integrals
+    SharedMatrix ao_f12_scaled(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12_scaled(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
                                std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
                                std::shared_ptr<BasisSet> bs4);
-    /// MO F12 squared Integrals
-    SharedMatrix ao_f12_squared(std::shared_ptr<CorrelationFactor> corr);
-    SharedMatrix ao_f12_squared(std::shared_ptr<CorrelationFactor> corr, std::shared_ptr<BasisSet> bs1,
+    /// AO F12 squared Integrals
+    SharedMatrix ao_f12_squared(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12_squared(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
                                 std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3,
                                 std::shared_ptr<BasisSet> bs4);
-    /// MO F12G12 Integrals
-    SharedMatrix ao_f12g12(std::shared_ptr<CorrelationFactor> corr);
-    /// MO F12 double commutator Integrals
-    SharedMatrix ao_f12_double_commutator(std::shared_ptr<CorrelationFactor> corr);
+    /// AO F12G12 Integrals
+    SharedMatrix ao_f12g12(std::vector<std::pair<double, double>> exp_coeff);
+    /// AO F12 double commutator Integrals
+    SharedMatrix ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff);
+    /// F12 Fitted Slater Correlation Factor
+    std::vector<std::pair<double, double>> f12_cgtg(double exponent = 1.0);
+
     /// 3Center overlap integrals
     SharedMatrix ao_3coverlap();
     SharedMatrix ao_3coverlap(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
@@ -252,17 +255,17 @@ class PSI_API MintsHelper {
     /// MO ERFC Omega Integrals
     SharedMatrix mo_erfc_eri(double omega, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
     /// MO F12 Integrals
-    SharedMatrix mo_f12(std::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3,
-                        SharedMatrix C4);
+    SharedMatrix mo_f12(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1, SharedMatrix C2,
+                        SharedMatrix C3, SharedMatrix C4);
     /// MO F12 squared Integrals
-    SharedMatrix mo_f12_squared(std::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2,
+    SharedMatrix mo_f12_squared(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1, SharedMatrix C2,
                                 SharedMatrix C3, SharedMatrix C4);
     /// MO F12G12 Integrals
-    SharedMatrix mo_f12g12(std::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3,
-                           SharedMatrix C4);
+    SharedMatrix mo_f12g12(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1, SharedMatrix C2,
+                           SharedMatrix C3, SharedMatrix C4);
     /// MO F12 double commutator Integrals
-    SharedMatrix mo_f12_double_commutator(std::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2,
-                                          SharedMatrix C3, SharedMatrix C4);
+    SharedMatrix mo_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, SharedMatrix C1,
+                                          SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
 
     /// Symmetric MO ERI Omega Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
@@ -283,8 +286,10 @@ class PSI_API MintsHelper {
     SharedMatrix ao_potential();
     SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO ECP Integrals
+#ifdef USING_ecpint
     SharedMatrix ao_ecp();
     SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+#endif
     /// AO pVp Integrals
     SharedMatrix ao_pvp();
     /// AO DKH Integrals
@@ -297,14 +302,15 @@ class PSI_API MintsHelper {
     std::vector<SharedMatrix> ao_quadrupole();
     /// Vector AO Traceless Quadrupole Integrals
     std::vector<SharedMatrix> ao_traceless_quadrupole();
+    /// Vector AO Multipole Integrals up to given order (in CCA lexicographic order)
+    std::vector<SharedMatrix> ao_multipoles(int order, const std::vector<double>& origin);
     /// AO EFP Multipole Potential Integrals
-    std::vector<SharedMatrix> ao_efp_multipole_potential(const std::vector<double>& origin = {0., 0., 0.},
+    std::vector<SharedMatrix> ao_efp_multipole_potential(const std::vector<double>& origin,
                                                          int deriv = 0);
-    // AO EFP Multipole Potential Integrals
-    std::vector<SharedMatrix> ao_multipole_potential(const std::vector<double>& origin = {0., 0., 0.}, int max_k = 0,
-                                                     int deriv = 0);
+    // AO Multipole Potential Integrals up to given order (in CCA lexicographic order)
+    std::vector<SharedMatrix> ao_multipole_potential(int order, const std::vector<double>& origin, int deriv = 0);
     /// Electric Field Integrals
-    std::vector<SharedMatrix> electric_field(const std::vector<double>& origin = {0., 0., 0.}, int deriv = 0);
+    std::vector<SharedMatrix> electric_field(const std::vector<double>& origin, int deriv = 0);
     /// Induction Operator for dipole moments at given sites
     SharedMatrix induction_operator(SharedMatrix coords, SharedMatrix moment);
     /// Electric Field Value at given sites
@@ -318,15 +324,17 @@ class PSI_API MintsHelper {
     /// SO Kinetic Integrals
     SharedMatrix so_kinetic(bool include_perturbations = true);
     /// SO ECP Integrals
+#ifdef USING_ecpint
     SharedMatrix so_ecp();
+#endif
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
     /// Vector SO Dipole Integrals
-    std::vector<SharedMatrix> so_dipole();
+    std::vector<SharedMatrix> so_dipole() const;
     /// Vector SO Nabla Integrals
-    std::vector<SharedMatrix> so_nabla();
+    std::vector<SharedMatrix> so_nabla() const;
     /// Vector SO Angular Momentum Integrals
-    std::vector<SharedMatrix> so_angular_momentum();
+    std::vector<SharedMatrix> so_angular_momentum() const;
     /// Vector SO Quadrupole Integrals
     std::vector<SharedMatrix> so_quadrupole();
     /// Vector SO Traceless Quadrupole Integrals
@@ -346,13 +354,24 @@ class PSI_API MintsHelper {
     SharedMatrix core_hamiltonian_grad(SharedMatrix D);
     // Computes the metric derivative gradient terms for DF methods
     // Uses a vector of "densities" for methods that decompose the "densities"
-    std::map<std::string, SharedMatrix> metric_grad(std::map<std::string, SharedMatrix>& D, const std::string& aux_name);
-    SharedMatrix three_idx_grad(const std::string& aux_name, const std::string& intermed_name, const std::string& gradient_name);
+    std::map<std::string, SharedMatrix> metric_grad(std::map<std::string, SharedMatrix>& D,
+                                                    const std::string& aux_name);
+    SharedMatrix three_idx_grad(const std::string& aux_name, const std::string& intermed_name,
+                                const std::string& gradient_name);
 
+    // Computes the gradient due to the kinetic energy term of the core Hamiltonian
     SharedMatrix kinetic_grad(SharedMatrix D);
+    // Computes the gradient due to the potential energy term of the core Hamiltonian
     SharedMatrix potential_grad(SharedMatrix D);
+    // Computes the electric dipole derivatives
     SharedMatrix dipole_grad(SharedMatrix D);
+    SharedMatrix multipole_grad(SharedMatrix D, int order, const std::vector<double>& origin = {0.0, 0.0, 0.0});
+    // Computes the gradient due to external dipole perturbation
     SharedMatrix perturb_grad(SharedMatrix D);
+    // Computes the gradient due to ECPs in the basis set
+#ifdef USING_ecpint
+    SharedMatrix effective_core_potential_grad(SharedMatrix D);
+#endif
 
     /// Play function
     void play();

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -702,10 +702,10 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     double* x = block->x();
     double* y = block->y();
     double* z = block->z();
-    double* xyz = new double[npoints * 3];
-    ::memcpy(xyz, x, sizeof(double) * npoints);
-    ::memcpy(xyz + npoints, y, sizeof(double) * npoints);
-    ::memcpy(xyz + 2 * npoints, z, sizeof(double) * npoints);
+    std::vector<double> xyz(npoints * 3);
+    ::memcpy(xyz.data(), x, sizeof(double) * npoints);
+    ::memcpy(xyz.data() + npoints, y, sizeof(double) * npoints);
+    ::memcpy(xyz.data() + 2 * npoints, z, sizeof(double) * npoints);
 
     const std::vector<int>& shells = block->shells_local_to_global();
 
@@ -768,12 +768,12 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
 
         // Copmute collocation
         if (deriv_ == 0) {
-            gg_collocation(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), order, phi_start);
+            gg_collocation(L, npoints, xyz.data(), 1, nprim, norm, alpha, center.data(), order, phi_start);
         } else if (deriv_ == 1) {
             double* phi_x_start = tmp_xp + row_shift;
             double* phi_y_start = tmp_yp + row_shift;
             double* phi_z_start = tmp_zp + row_shift;
-            gg_collocation_deriv1(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), order, phi_start,
+            gg_collocation_deriv1(L, npoints, xyz.data(), 1, nprim, norm, alpha, center.data(), order, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start);
 
         } else if (deriv_ == 2) {
@@ -786,7 +786,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
             double* phi_yy_start = tmp_yyp + row_shift;
             double* phi_yz_start = tmp_yzp + row_shift;
             double* phi_zz_start = tmp_zzp + row_shift;
-            gg_collocation_deriv2(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), order, phi_start,
+            gg_collocation_deriv2(L, npoints, xyz.data(), 1, nprim, norm, alpha, center.data(), order, phi_start,
                                   phi_x_start, phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start,
                                   phi_yy_start, phi_yz_start, phi_zz_start);
         }

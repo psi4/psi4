@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -29,10 +29,11 @@
 #ifndef _psi_src_lib_oeprop_h
 #define _psi_src_lib_oeprop_h
 
-#include <set>
-#include <vector>
 #include <map>
+#include <set>
 #include <string>
+#include <unordered_set>
+#include <vector>
 
 #include "typedefs.h"
 #include "psi4/libmints/vector3.h"
@@ -46,8 +47,6 @@ class BasisSet;
 
 /**
  * The Prop object, base class of OEProp and GridProp objects
- *
- * Word on the street:
  *
  *  Wavefunction is not finalized, so we have no idea what bases
  *  general density matrices/orbital coefficients will be in.
@@ -185,67 +184,11 @@ class PSI_API Prop {
 
     /// Density Matrix title, used for fallback naming of OEProp compute jobs
     std::string Da_name() const;
+    /// Density Matrix title, used for fallback naming of OEProp compute jobs
+    std::string Db_name() const;
 
     // => Some integral helpers <= //
     SharedMatrix overlap_so();
-};
-
-/**
- * The TaskListComputer, a utility base class to add, remove tasks to a tasklist.
- *
- * Historically this class was part of Prop. As Prop provides lots of meaningful
- * functionality without the need to actually compute everything asap in a task loop,
- * it was split off here.
- *
- * Recommendations:
- *   - This class should be removed in the future. A clear API with directly exposed
- *     functions (using SharedPointer return values) without writing into global
- *     environments is the way to go.
- *
- *   - Before using this as a base in a new class, it should be investigated, whether a direct
- *     API would be a better approach with a "PropFactory" for use in the interactive
- *     interpreter.
- */
-
-class PSI_API TaskListComputer {
-   protected:
-    /// Print flag
-    int print_;
-    /// Debug flag
-    int debug_;
-
-    /// The title of this Prop object, for use in saving info
-    std::string title_;
-
-    /// The set of tasks to complete
-    std::set<std::string> tasks_;
-
-   public:
-    /// Print header
-    virtual void print_header() = 0;
-    // => Queue/Compute Routines <= //
-
-    /// Add a single task to the queue
-    void add(const std::string& task);
-    /// Add a set of tasks to the queue
-    void add(std::vector<std::string> tasks);
-    /// Clear task queue
-    void clear();
-
-    /// Set title for use in saving information
-    void set_title(const std::string& title) { title_ = title; }
-
-    /// Compute properties
-    virtual void compute() = 0;
-
-    // => Utility Routines <= //
-    void set_print(int print) { print_ = print; }
-    void set_debug(int debug) { debug_ = debug; }
-
-    // Constructor, sets defaults for print and debug
-    TaskListComputer();
-    // Destructor
-    virtual ~TaskListComputer() {}
 };
 
 /**
@@ -283,10 +226,6 @@ class MultipolePropCalc : public Prop {
     /// Compute arbitrary-order multipoles up to (and including) l=order. returns name, elec, nuc and tot as vector_ptr
     MultipoleOutputType compute_multipoles(int order, bool transition = false, bool print_output = false,
                                            bool verbose = false);
-    /// Compute dipole
-    SharedVector compute_dipole(bool transition = false, bool print_output = false, bool verbose = false);
-    /// Compute quadrupole
-    SharedMatrix compute_quadrupole(bool transition = false, bool print_output = false, bool verbose = false);
     /// Compute mo extents
     std::vector<SharedVector> compute_mo_extents(bool print_output = false);
 };
@@ -319,7 +258,7 @@ class PopulationAnalysisCalc : public Prop {
     /// Compute Lowdin Charges
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
     /// Compute MBIS Multipoles (doi:10.1021/acs.jctc.6b00456)
-    std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles(bool print_output = false);
+    std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles(bool free_atom_volumes = false, bool print_output = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_mayer_indices(bool print_output = false);
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
@@ -388,7 +327,7 @@ class ESPPropCalc : public Prop {
  * The OEProp object, computes arbitrary expectation values (scalars)
  * analyses (typically vectors)
  **/
-class PSI_API OEProp : public TaskListComputer {
+class PSI_API OEProp {
    private:
     /// Constructor, uses globals and Process::environment::reference wavefunction, Implementation does not exist.
     OEProp();
@@ -396,16 +335,28 @@ class PSI_API OEProp : public TaskListComputer {
    protected:
     /// The wavefunction object this Prop is built around
     std::shared_ptr<Wavefunction> wfn_;
+    /// Print flag
+    int print_;
+    /// OEProp name, for printout purposes.
+    /// TODO: Standardize density matrix names across Psi so we can remove `title_`.
+    ///   `title_` is redundant. Ideally, we'd print the density matrix names and not bother naming the
+    ///   OEProp object itself. But if a user sets an MO density matrix and gives it a name asserting
+    ///   it is an MO density matrix, OEProp would need to recognize that and rename the SO basis matrix
+    ///   it creates. Without a standard naming scheme for densities, OEProp can't do that. Therefore,
+    ///   until density names are standardized, we need to awkwardly keep `title_` around.
+    std::string title_;
+    /// Variable names, for variable saving purposes. Each should have a single '{}' substring to indicate
+    /// where the variable name goes. The full generality of format strings are needed for excited
+    /// state purposes.
+    std::unordered_set<std::string> names_;
+    /// The set of tasks to complete
+    std::set<std::string> tasks_;
     /// Common initialization
     void common_init();
     /// Print header and information
-    void print_header() override;
+    void print_header();
 
     // Compute routines
-    /// Compute dipole
-    void compute_dipole(bool transition = false);
-    /// Compute quadrupole
-    void compute_quadrupole(bool transition = false);
     /// Compute arbitrary-order multipoles up to (and including) l=order
     void compute_multipoles(int order, bool transition = false);
     /// Compute mo extents
@@ -415,7 +366,7 @@ class PSI_API OEProp : public TaskListComputer {
     /// Compute Lowdin Charges
     void compute_lowdin_charges();
     /// Compute MBIS Multipoles (doi:10.1021/acs.jctc.6b00456)
-    void compute_mbis_multipoles();
+    void compute_mbis_multipoles(bool free_atom_volumes = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     void compute_mayer_indices();
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
@@ -447,15 +398,21 @@ class PSI_API OEProp : public TaskListComputer {
     /// Constructor, uses globals
     OEProp(std::shared_ptr<Wavefunction> wfn);
     /// Destructor
-    ~OEProp() override;
+    ~OEProp();
 
-    /// Python issue
-    void oepy_add(const std::string& task) { add(task); }
-    void oepy_compute() { compute(); }
-    void oepy_set_title(const std::string& title) { set_title(title); }
-
+    /// Add a single task to the queue
+    void add(const std::string& task);
+    /// Add a set of tasks to the queue
+    void add(std::vector<std::string> tasks);
+    /// Clear task queue
+    void clear();
+    /// Set title for use in printout. Set the same title to be the name for printout.
+    /// We do both because in older OEProp, the same member variable was used for both tasks.
+    void set_title(const std::string& title) { names_ = {title + (title.empty() ? "" : " ") + "{}"}; title_ = title; }
+    /// Set titles for use in saving information
+    void set_names(const std::unordered_set<std::string> names) { names_ = names; }
     /// Compute and print/save the properties
-    void compute() override;
+    void compute();
 
     std::vector<double> const& Vvals() const { return epc_.Vvals(); }
     std::vector<double> const& Exvals() const { return epc_.Exvals(); }

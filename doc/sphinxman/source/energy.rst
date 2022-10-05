@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -33,8 +33,8 @@
 
 .. _`sec:energy()`:
 
-Single-Point Energy |w---w| :py:func:`~psi4.energy`
-===================================================
+Single-Point Energy |w---w| :py:func:`~psi4.driver.energy`
+==========================================================
 
 * :ref:`Psi4 Native Energy Methods <table:energy_gen>`
 * :ref:`Psi4 Native DFT Energy Methods <table:energy_dft>`

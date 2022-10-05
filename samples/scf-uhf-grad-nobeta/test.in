@@ -1,0 +1,21 @@
+#! UHF gradient for a one-electron system (no beta electrons).
+
+ref_grad = psi4.Matrix.from_list([                                            #TEST
+                [ 0.000000000000,     0.000000000000,     0.130131369705],    #TEST
+                [ 0.000000000000,     0.000000000000,    -0.130131369705]     #TEST
+                ]) 
+
+molecule h2 {
+    1 2
+    h
+    h 1 0.75
+}
+
+set globals = {
+   basis      6-31G**
+   reference uhf
+   gradient_write on
+}
+
+grad = gradient('scf')
+compare_matrices(ref_grad, grad, 6, "UHF analytic gradient") 

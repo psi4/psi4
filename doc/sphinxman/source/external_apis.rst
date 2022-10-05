@@ -4,12 +4,27 @@ External API Objects
 
 .. autoclass:: psi4.driver.qcdb.Molecule
 
-.. autoclass:: qcelemental.datum.Datum
+.. autoclass:: psi4.driver.ipi_broker.IPIBroker
 
-.. autoclass:: qcelemental.models.types.Array
+.. autofunction:: psi4.driver.wrapper_autofrag.auto_fragments
 
-.. autofunction:: qcelemental.molutil.B787
+.. autofunction:: psi4.driver.inputparser.process_input
 
-.. autofunction:: qcelemental.molparse.from_arrays
+.. autofunction:: psi4.driver.frac.ip_fitting
 
-.. autoclass:: qcelemental.ValidationError
+.. autofunction:: psi4.driver.frac.frac_traverse
+
+.. autofunction:: psi4.driver.frac.frac_nuke
+
+.. autofunction:: psi4.set_output_file
+
+.. autopydantic_model:: psi4.driver.task_base.BaseComputer
+
+.. autoclass:: psi4.driver.task_planner.TaskComputers
+
+.. autoclass:: psi4.driver.driver_nbody.SubTaskComputers
+
+.. autofunction:: psi4.driver.task_planner.expand_cbs_methods
+
+.. autofunction:: psi4.driver.task_planner.task_planner
+

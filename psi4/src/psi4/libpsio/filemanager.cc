@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -63,8 +63,22 @@ PSIOManager::~PSIOManager() {}
 
 std::shared_ptr<PSIOManager> PSIOManager::shared_object() { return _default_psio_manager_; }
 
-void PSIOManager::set_default_path(const std::string& path) { default_path_ = path + "/"; }
-void PSIOManager::set_specific_path(int fileno, const std::string& path) { specific_paths_[fileno] = path + "/"; }
+void PSIOManager::set_default_path(const std::string& path) {
+    if (!path.empty() && (path.back() == '/')) {
+        default_path_ = path;
+    } else {
+        default_path_ = path + "/";
+    }
+}
+
+void PSIOManager::set_specific_path(int fileno, const std::string& path) {
+    if (!path.empty() && (path.back() == '/')) {
+        specific_paths_[fileno] = path;
+    } else {
+        specific_paths_[fileno] = path + "/";
+    }
+}
+
 std::string PSIOManager::get_file_path(int fileno) {
     if (specific_paths_.count(fileno) != 0)
         return specific_paths_[fileno];

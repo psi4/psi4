@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,6 +44,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
+#include "ccdensity.h"
 #define EXTERN
 #include "globals.h"
 
@@ -51,10 +52,10 @@ namespace psi {
 namespace ccdensity {
 #include "psi4/physconst.h"
 
-void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct TD_Params *U,
+void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U,
                             struct XTD_Params *xtd_data) {
-    int nmo, nso, i, I, h, j, nirreps;
-    int *order, *order_A, *order_B, *doccpi, *clsdpi, *openpi, *orbspi;
+    int nmo, nso, i, I, h, j;
+    int *order, *order_A, *order_B, *doccpi;
     double **scf_pitzer, **scf_pitzer_A, **scf_pitzer_B;
     double **scf_qt, **scf_qt_A, **scf_qt_B, **X;
     double *mu_x_ints, *mu_y_ints, *mu_z_ints;
@@ -67,18 +68,16 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
     double ds_x, ds_y, ds_z;
     double f_x, f_y, f_z;
     double f;
-    double delta_ee;
-    double einstein_a, einstein_b;
 
     if ((params.ref == 0) || (params.ref == 1))
-        scf_pitzer = wfn->Ca()->to_block_matrix();
+        scf_pitzer = wfn.Ca()->to_block_matrix();
     else if (params.ref == 2) {
-        scf_pitzer_A = wfn->Ca()->to_block_matrix();
-        scf_pitzer_B = wfn->Cb()->to_block_matrix();
+        scf_pitzer_A = wfn.Ca()->to_block_matrix();
+        scf_pitzer_B = wfn.Cb()->to_block_matrix();
     }
 
-    nso = wfn->nso();
-    nmo = wfn->nmo();
+    nso = wfn.nso();
+    nmo = wfn.nmo();
 
     lt_x = lt_y = lt_z = 0.0;
     rt_x = rt_y = rt_z = 0.0;
@@ -130,7 +129,7 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
 
     /*** Transform the SO dipole integrals to the MO basis ***/
 
-    MintsHelper mints(wfn->basisset(), Process::environment.options, 0);
+    MintsHelper mints(wfn.basisset(), Process::environment.options, 0);
     std::vector<SharedMatrix> dipole = mints.so_dipole();
     MUX_SO = dipole[0]->to_block_matrix();
     MUY_SO = dipole[1]->to_block_matrix();
@@ -246,11 +245,11 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
     // so we want to substract the lower state's energy from the
     // higher state's.
     // U should be the higher-energy excited state.
-    delta_ee = U->cceom_energy - S->cceom_energy;
+    double delta_e = U->cceom_energy - S->cceom_energy;
 
-    f_x = (2 * delta_ee * ds_x) / 3;
-    f_y = (2 * delta_ee * ds_y) / 3;
-    f_z = (2 * delta_ee * ds_z) / 3;
+    f_x = (2 * delta_e * ds_x) / 3;
+    f_y = (2 * delta_e * ds_y) / 3;
+    f_z = (2 * delta_e * ds_z) / 3;
 
     f = f_x + f_y + f_z;
 
@@ -259,7 +258,7 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
     xtd_data->root2 = U->root;
     xtd_data->irrep1 = S->irrep;
     xtd_data->irrep2 = U->irrep;
-    xtd_data->cceom_energy = delta_ee;
+    xtd_data->cceom_energy = delta_e;
     xtd_data->OS = f;
 
     /* Compute Einstein A,B Coefficients */
@@ -268,10 +267,10 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
     /* SI Dipole Strength */
     double ds_si = (ds_x + ds_y + ds_z) * pc_dipmom_au2si * pc_dipmom_au2si;
     /* SI Transition Energy */
-    double nu_si = delta_ee * hartree2Hz;
+    double nu_si = delta_e * hartree2Hz;
     /* Einstein Coefficients */
-    einstein_b = (2.0 / 3.0) * (pc_pi / pow(hbar, 2)) * (1.0 / (4.0 * pc_pi * pc_e0)) * ds_si;
-    einstein_a = 8.0 * pc_pi * pc_h * pow((nu_si / pc_c), 3) * einstein_b;
+    double einstein_b = (2.0 / 3.0) * (pc_pi / pow(hbar, 2.0)) * (1.0 / (4.0 * pc_pi * pc_e0)) * ds_si;
+    double einstein_a = 8.0 * pc_pi * pc_h * pow((nu_si / pc_c), 3.0) * einstein_b;
     if (einstein_a < 1e-7) einstein_a = 0.0000000;
     xtd_data->einstein_a = einstein_a;
     xtd_data->einstein_b = einstein_b;
@@ -282,6 +281,23 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
     outfile->Printf("\tOscillator Strength     %11.8lf \n", f_x + f_y + f_z);
     outfile->Printf("\tEinstein A Coefficient   %11.8e \n", einstein_a);
     outfile->Printf("\tEinstein B Coefficient   %11.8e \n", einstein_b);
+
+    // Save variables to wfn.
+    // Process::environment.globals["CCname ROOT m -> ROOT n OSCILLATOR STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n OSCILLATOR STRENGTH (LEN) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) OSCILLATOR STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) OSCILLATOR STRENGTH (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n EINSTEIN A (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n EINSTEIN A (LEN) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) EINSTEIN A (LEN)"]
+    // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) EINSTEIN A (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n EINSTEIN B (LEN)"]
+    // Process::environment.globals["CCname ROOT m -> ROOT n EINSTEIN B (LEN) - h TRANSITION"]
+    // Process::environment.globals["CCname ROOT m (h) -> ROOT n (i) EINSTEIN B (LEN)"]
+    // Process::environment.globals["CCname ROOT m (IN h) -> ROOT n (IN i) EINSTEIN B (LEN)"]
+    scalar_saver_excited(wfn, S, U, "OSCILLATOR STRENGTH (LEN)", f_x + f_y + f_z);
+    scalar_saver_excited(wfn, S, U, "EINSTEIN A (LEN)", einstein_a);
+    scalar_saver_excited(wfn, S, U, "EINSTEIN B (LEN)", einstein_b);
 
     if ((params.ref == 0) || (params.ref == 1)) {
         free_block(MUX_MO);

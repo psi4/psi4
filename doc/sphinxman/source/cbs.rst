@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -46,18 +46,34 @@ Complete Basis Set
 .. codeauthor:: Lori A. Burns, Daniel G. A. Smith and Peter Kraus
 .. sectionauthor:: Lori A. Burns and Peter Kraus
 
-The :py:func:`psi4.cbs` function described below is
+The :py:func:`psi4.driver.cbs` function described below is
 powerful but complicated, requiring many options. For most common
 calculations, a shorthand can be accessed directly though
-:py:func:`psi4.energy`, :py:func:`psi4.gradient`, *etc.* For example,
+:py:func:`psi4.driver.energy`, :py:func:`psi4.driver.gradient`, *etc.* For example,
 a MP2 single-point DT extrapolation can be accessed through the first item
 below more conveniently than the equivalent second or third items.
 
 * ``energy('mp2/cc-pv[dt]z')``
 
-* ``energy(cbs, corl_wfn='mp2', corl_basis='cc-pv[dt]z')``
+* ``energy("cbs", corl_wfn='mp2', corl_basis='cc-pv[dt]z')``
 
-* ``energy(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvtz"}, {"wfn": "mp2", "basis": "cc-pv[dt]z"}])``
+* ``energy("cbs", cbs_metadata=[{"wfn": "hf", "basis": "cc-pvtz"}, {"wfn": "mp2", "basis": "cc-pv[dt]z", "scheme": "corl_xtpl_helgaker_2"}])``
+
+.. caution:: In |PSIfour| previous to Spring 2022 and v1.6, calling certain
+   cbs-related functions like the above looked like ::
+
+    energy(cbs, corl_wfn='mp2', corl_basis='cc-pv[dt]z')
+
+    energy(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvtz"}, {"wfn": "mp2", "basis": "cc-pv[dt]z", "scheme": corl_xtpl_helgaker_2}])
+
+   The difference is that the main function
+   :py:func:`psi4.driver.cbs` and extrapolation schemes like
+   :py:func:`psi4.driver.driver_cbs_helper.xtpl_highest_1` and
+   :py:func:`psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2` and composite
+   aliases like :py:func:`psi4.driver.aliases.sherrill_gold_standard`
+   and :py:func:`psi4.driver.aliases.allen_focal_point` in the old way
+   passed the Python function directly, whereas the new way uses the
+   string of the function name.
 
 A CCSD(T) DT coupled-cluster correction atop a TQ MP2 extrapolation
 geometry optimization can also be accessed through the first item below more
@@ -65,9 +81,9 @@ conveniently than the equivalent second and third items.
 
 * ``optimize('mp2/cc-pv[tq]z + D:ccsd(t)/cc-pvdz')``
 
-* ``optimize(cbs, corl_wfn='mp2', corl_basis='cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='cc-pvdz')``
+* ``optimize("cbs", corl_wfn='mp2', corl_basis='cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='cc-pvdz')``
 
-* ``optimize(cbs, cbs_metadata=[{"wfn": "hf", "basis": "cc-pvqz"}, {"wfn": "mp2", "basis": "cc-pv[tq]z"}, {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])``
+* ``optimize("cbs", cbs_metadata=[{"wfn": "hf", "basis": "cc-pvqz"}, {"wfn": "mp2", "basis": "cc-pv[tq]z"}, {"wfn": "ccsd(t)", "basis": "cc-pvdz"}])``
 
 Many examples can be found at :srcsample:`cbs-xtpl-energy`,
 :srcsample:`cbs-xtpl-gradient`, :srcsample:`cbs-xtpl-opt`,
@@ -164,19 +180,30 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 Extrapolation Schemes
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: psi4.driver.driver_cbs.xtpl_highest_1
+Basis set extrapolations are encoded into individual functions like the built-in ones below:
 
-.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_2
+.. autofunction:: psi4.driver.driver_cbs_helper.xtpl_highest_1
 
-.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_truhlar_2
+.. autofunction:: psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_2
 
-.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_karton_2
+.. autofunction:: psi4.driver.driver_cbs_helper.scf_xtpl_truhlar_2
 
-.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_3
+.. autofunction:: psi4.driver.driver_cbs_helper.scf_xtpl_karton_2
 
-.. autofunction:: psi4.driver.driver_cbs.corl_xtpl_helgaker_2
+.. autofunction:: psi4.driver.driver_cbs_helper.scf_xtpl_helgaker_3
+
+.. autofunction:: psi4.driver.driver_cbs_helper.corl_xtpl_helgaker_2
 
 .. autofunction:: psi4.driver.driver_cbs._get_default_xtpl
+
+Additional extrapolation schemes are easy to define by the
+user. Follow models in :source:`psi4/driver/driver_cbs_helper.py`
+and :srcsample:`pywrap-cbs1` and use the
+:py:func:`psi4.driver.driver_cbs_helper.register_xtpl_function` to make
+user-defined functions known to |PSIfour|.
+
+.. autofunction:: psi4.driver.driver_cbs_helper.register_xtpl_function
+
 
 Aliases
 ^^^^^^^
@@ -184,14 +211,23 @@ Aliases
 When a particular composite method or its functional form is going to be
 reused often, it is convenient to define an alias to it. A convenient
 place for such Python code to reside is in :source:`psi4/driver/aliases.py`
-(source location) or ``psi4/lib/psi4/driver/aliases.py`` (installed
-location). No recompilation is necessary after defining an alias. Some
-existing examples are below.
+Some existing examples are below.
 
 .. autofunction:: psi4.driver.aliases.sherrill_gold_standard
 
 .. autofunction:: psi4.driver.aliases.allen_focal_point
 
+Additional composite aliases are easy to define by the
+user. Follow models in :source:`psi4/driver/aliases.py`
+and :srcsample:`cbs-xtpl-nbody` and use the
+:py:func:`psi4.driver.driver_cbs_helper.register_composite_function`
+to make user-defined functions known to |PSIfour|.
+
+.. autofunction:: psi4.driver.driver_cbs_helper.register_composite_function
 
 
+API
+^^^
+
+.. autopydantic_model:: psi4.driver.driver_cbs.CompositeComputer
 

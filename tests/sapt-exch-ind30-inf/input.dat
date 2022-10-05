@@ -1,0 +1,76 @@
+#! SAPT2+3 with S^inf exch-ind30
+#! Geometries taken from the S66x10 database, the shortest-range point (R = 0.7 R_e)
+
+molecule ethyne_dimer {
+0 1
+C   -0.60172996   -0.02857012    0.38493492
+H   -1.66373543   -0.02852657    0.37901431
+C    0.61010917   -0.02866364    0.38816379
+H    1.67213544   -0.02879308    0.38796752
+--
+0 1
+C   -0.00482812    0.07077573    3.30675654
+H   -0.00143374    0.03704067    2.24345965
+C   -0.00876454    0.10906575    4.51822192
+H   -0.01203078    0.14244163    5.57913334
+
+    units angstrom
+    no_reorient
+    symmetry c1
+}
+
+molecule meoh_dimer {
+0 1
+O   -0.63613493   -0.02328241    0.28059932
+H    0.30809737   -0.04707875    0.07646369
+C   -1.15206541   -1.31128778    0.01525955
+H   -2.20994502   -1.29626539    0.26395586
+H   -1.05661024   -1.59267086   -1.03619061
+H   -0.67483575   -2.08627276    0.62051145
+--
+0 1
+O    1.66159946   -0.10047186    0.01344870
+H    2.13038877    0.51391266   -0.55621725
+C    2.17043339    0.05654708    1.33516602
+H    1.61686431   -0.63164935    1.96529690
+H    3.22942949   -0.19389182    1.39188917
+H    2.01799375    1.06724113    1.71305857
+
+    units angstrom
+    no_reorient
+    symmetry c1
+}
+
+molecule h2o_dimer {
+0 1
+O   -0.70219605   -0.05606026    0.00994226
+H   -1.02219322    0.84677578   -0.01148871
+H    0.25752106    0.04212150    0.00521900
+--
+0 1
+O    1.66555518    0.03107387    0.00192113
+H    2.04217679   -0.40730619    0.76804551
+H    2.03781949   -0.44513910   -0.74348137
+
+    units angstrom
+    no_reorient
+    symmetry c1
+}
+
+set reference RHF
+set basis aug-cc-pvdz
+set df_basis_scf aug-cc-pvtz-jkfit
+set df_basis_mp2 aug-cc-pvtz-ri
+set e_convergence 1e-8
+set d_convergence 1e-8
+set scf_type mem_df
+set DO_IND30_EXCH_SINF true
+
+energy('sapt2+3', molecule=ethyne_dimer)
+compare_values(0.01803032, variable('SAPT EXCH-IND30,R(S^INF) ENERGY'), 7, "SAPT EXCH-IND30,R(S^INF) ENERGY")
+
+energy('sapt2+3', molecule=meoh_dimer)
+compare_values(0.06746830, variable('SAPT EXCH-IND30,R(S^INF) ENERGY'), 7, "SAPT EXCH-IND30,R(S^INF) ENERGY")
+
+energy('sapt2+3', molecule=h2o_dimer)
+compare_values(0.04578761, variable('SAPT EXCH-IND30,R(S^INF) ENERGY'), 7, "SAPT EXCH-IND30,R(S^INF) ENERGY")

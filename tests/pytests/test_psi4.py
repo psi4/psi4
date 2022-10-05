@@ -3,7 +3,7 @@ import pytest
 
 import psi4
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 @pytest.mark.smoke
@@ -82,6 +82,7 @@ def test_psi4_cas():
     assert psi4.compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')
 
 
+@pytest.mark.nbody
 @pytest.mark.smoke
 def test_psi4_dfmp2():
     """dfmp2-1"""
@@ -159,6 +160,7 @@ def test_psi4_sapt():
 
     psi4.set_options({
         "basis": "cc-pvdz",
+        "df_basis_elst": "cc-pvdz-ri",
         "guess": "sad",
         "scf_type": "df",
         "sad_print": 2,

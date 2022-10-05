@@ -3,8 +3,9 @@ import pytest
 
 import psi4
 from psi4.driver.p4util.solvers import davidson_solver, hamiltonian_solver
-from .utils import compare_arrays
+from utils import compare_arrays
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 def _diag_dom_sym_mat(size, sep, scale, sym=1.0):
     M = np.zeros((size, size))

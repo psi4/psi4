@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,8 +41,8 @@ void DFOCC::omp2_opdm() {
     timer_on("opdm");
     if (reference_ == "RESTRICTED") {
         // Tensors
-        T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
-        U = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
+        T = std::make_shared<Tensor2d>("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
+        U = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
         if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
             u2_rmp2_direct(T, U);
         } else {
@@ -52,15 +52,17 @@ void DFOCC::omp2_opdm() {
 
         // G_ij = \sum_{m,e,f} T'(ie,mf) U'(je,mf)
         GijA->contract442(1, 1, T, U, 1.0, 0.0);
+        // this is only the G intermediate G_IJ = \sum{M,E,F} t_IM^EF(1) * (2t_JM^EF - t_MJ^EF)
 
         // G_ab = \sum_{m,n,e} U'(ma,ne) T'(mb,ne)
+        // -> G_AB = -\sum{M,N,E} t_MN^BE(1) * (2t_MN^AE - t_MN^EA)
         GabA->contract442(2, 2, U, T, -1.0, 0.0);
         T.reset();
         U.reset();
 
         // Build G1c_oo and G1c_vv
         G1c_oo->set_act_oo(nfrzc, naoccA, GijA);
-        G1c_oo->scale(-2.0);
+        G1c_oo->scale(-2.0); // build the actual density from the intermediate (needs scaling)
         G1c_vv->set_act_vv(GabA);
         G1c_vv->scale(-2.0);
 
@@ -70,7 +72,7 @@ void DFOCC::omp2_opdm() {
 
         // Build G1
         G1->copy(G1c);
-        for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
+        for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0); // the reference contribution
 
         if (print_ > 2) {
             G1->print();
@@ -181,7 +183,7 @@ void DFOCC::omp2_opdm() {
         // Build G1
         G1A->copy(G1cA);
         G1B->copy(G1cB);
-        for (int i = 0; i < noccA; i++) G1A->add(i, i, 1.0);
+        for (int i = 0; i < noccA; i++) G1A->add(i, i, 1.0); // Reference contribution
         for (int i = 0; i < noccB; i++) G1B->add(i, i, 1.0);
 
         // print

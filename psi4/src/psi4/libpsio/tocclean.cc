@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -42,6 +42,12 @@ PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.hpp"
 namespace psi {
 
+/*!
+ ** PSIO_TOCCLEAN(): Delete all TOC entries after the given key.
+ ** If a blank key is given, the entire TOC will be wiped.
+ **
+ ** \ingroup PSIO
+ */
 void PSIO::tocclean(size_t unit, const char *key) {
     psio_tocentry *this_entry, *last_entry, *prev_entry;
     psio_ud *this_unit;
@@ -74,17 +80,4 @@ void PSIO::tocclean(size_t unit, const char *key) {
     wt_toclen(unit, this_unit->toclen);
     tocwrite(unit);
 }
-
-/*!
- ** PSIO_TOCCLEAN(): Delete all TOC entries after the given key.
- ** If a blank key is given, the entire TOC will be wiped.
- **
- ** \ingroup PSIO
- */
-
-int psio_tocclean(size_t unit, const char *key) {
-    _default_psio_lib_->tocclean(unit, key);
-    return 0;
-}
-
 }  // namespace psi

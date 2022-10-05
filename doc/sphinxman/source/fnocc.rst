@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -153,7 +153,7 @@ QCI and CC methods are closely related to perturbation theory, and the
 MP2, MP3, and MP4(SDQ) correlation energies can be obtained as a free
 by-product of a CCSD or QCISD computation.  The following is an 
 example of the results for a computation run with the call
-``energy('fno-qcisd')`` to :py:func:`~psi4.energy`:
+``energy('fno-qcisd')`` to :py:func:`~psi4.driver.energy`:
 
 .. code-block:: none
 
@@ -361,7 +361,7 @@ Gn theory
 The FNOCC module contains all the components that comprise the Gn family
 of composite methods.  Currently, only the G2 method is supported
 [Curtiss:1991:7221]_\.  The G2 procedure may be called through the
-:py:func:`~psi4.energy` wrapper: ::
+:py:func:`~psi4.driver.energy` wrapper: ::
 
     energy('gaussian-2')
 

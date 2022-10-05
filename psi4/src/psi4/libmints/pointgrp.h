@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -369,7 +369,7 @@ class PSI_API IrreducibleRepresentation {
     char* symb;    // mulliken symbol for this irrep
     char* csymb;   // mulliken symbol for this irrep w/o special characters
 
-    SymRep* rep;  // representation matrices for the symops
+    std::vector<SymRep> rep;  // representation matrices for the symops
 
    public:
     IrreducibleRepresentation();

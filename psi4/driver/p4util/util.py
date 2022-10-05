@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -27,25 +27,38 @@
 #
 """Module with utility functions for use in input files."""
 
+__all__ = [
+    "copy_file_to_scratch",
+    "copy_file_from_scratch",
+    "cubeprop",
+    "get_memory",
+    "oeprop",
+    "set_memory",
+]
+
 import os
 import re
 import sys
 import warnings
-from typing import Union
+from typing import List, Union
 
 from psi4 import core
 from psi4.driver.procrouting import *
 from .exceptions import ValidationError
 from .prop_util import *
 
-def oeprop(wfn: core.Wavefunction, *args, **kwargs):
+
+def oeprop(wfn: core.Wavefunction, *args: List[str], **kwargs):
     """Evaluate one-electron properties.
 
     :returns: None
 
     :param wfn: set of molecule, basis, orbitals from which to compute properties
 
-    How to specify args, which are actually the most important
+    :param args:
+
+        Arbitrary-number of properties to be computed from *wfn*.
+        See :ref:`Available One-Electron Properties <table:oe_features>`.
 
     :type title: str
     :param title: label prepended to all psivars computed
@@ -67,14 +80,14 @@ def oeprop(wfn: core.Wavefunction, *args, **kwargs):
         # in order to compute volume ratios,
         # but only if we're calling oeprop as the whole molecule
         free_atom = kwargs.get('free_atom',False)
-        if "MBIS" in prop.upper() and not free_atom:
+        if "MBIS_VOLUME_RATIOS" in prop.upper() and not free_atom:
             core.print_out("  Computing free-atom volumes\n")
             free_atom_volumes(wfn)    
 
     oe.compute()
 
 
-def cubeprop(wfn, **kwargs):
+def cubeprop(wfn: core.Wavefunction, **kwargs):
     """Evaluate properties on a grid and generate cube files.
 
     .. versionadded:: 0.5
@@ -82,7 +95,6 @@ def cubeprop(wfn, **kwargs):
 
     :returns: None
 
-    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
 
     :examples:
@@ -111,17 +123,31 @@ def cubeprop(wfn, **kwargs):
 
 
 def set_memory(inputval: Union[str, int, float], execute: bool = True, quiet: bool = False) -> int:
-    """Function to reset the total memory allocation. Takes memory value
-    *inputval* as type int, float, or str; int and float are taken literally
-    as bytes to be set, string taken as a unit-containing value (e.g., 30 mb)
-    which is case-insensitive. Set *execute* to False to interpret *inputval*
-    without setting in Psi4 core.
+    """Reset the total memory allocation.
 
-    :returns: *memory_amount* Number of bytes of memory set
+    Parameters
+    ----------
+    inputval
+        Memory value. An Integer or float is taken literally as bytes to be set.
+        A string is taken as a unit-containing value (e.g., 30 mb), which is
+        case-insensitive.
+    execute
+        When False, interpret *inputval* without setting in Psi4 core.
+    quiet
+        When True, do not print to the output file.
 
-    :raises: :py:class:`psi4.ValidationError` when <500MiB or disallowed type or misformatted
+    Returns
+    -------
+    int
+        Number of bytes of memory set.
 
-    :examples:
+    Raises
+    ------
+    ValidationError
+        When <500MiB or disallowed type or misformatted.
+
+    Examples
+    --------
 
     >>> # [1] Passing absolute number of bytes
     >>> psi4.set_memory(600000000)
@@ -198,38 +224,41 @@ def set_memory(inputval: Union[str, int, float], execute: bool = True, quiet: bo
     return memory_amount
 
 
-def get_memory():
-    """Function to return the total memory allocation."""
+def get_memory() -> int:
+    """Return the total memory allocation in bytes."""
     return core.get_memory()
 
 
-def copy_file_to_scratch(filename, prefix, namespace, unit, move=False):
-    """Function to move file into scratch with correct naming
-    convention.
+def copy_file_to_scratch(filename: str, prefix: str, namespace: str, unit: int, move: bool = False):
+    """Move a file into scratch following the naming convention.
 
-    Arguments:
+    Parameters
+    ----------
+    filename
+        Full path to file.
+    prefix
+        Computation prefix, usually 'psi'.
+    namespace
+        Context namespace, usually molecule name.
+    unit
+        Unit number, e.g. 32.
+    move
+        Whether to copy (default) or move?
 
-    @arg filename  full path to file
-    @arg prefix    computation prefix, usually 'psi'
-    @arg namespace context namespace, usually molecule name
-    @arg unit      unit number, e.g. 32
-    @arg move      copy or move? (default copy)
+    Examples
+    --------
 
-    Example:
-
-    Assume PID is 12345 and SCRATCH is /scratch/parrish/
-
-    copy_file_to_scratch('temp', 'psi', 'h2o', 32):
-        -cp ./temp /scratch/parrish/psi.12345.h2o.32
-    copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
-        -cp /tmp/temp /scratch/parrish/psi.12345.h2o.32
-    copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
-        -cp /tmp/temp /scratch/parrish/psi.12345.32
-    copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
-        -mv /tmp/temp /scratch/parrish/psi.12345.32
+    >>> # Assume PID is 12345 and SCRATCH is /scratch/parrish/
+    >>> copy_file_to_scratch('temp', 'psi', 'h2o', 32):
+    Out[1]:  -cp ./temp /scratch/parrish/psi.12345.h2o.32
+    >>> copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
+    Out[2]:  -cp /tmp/temp /scratch/parrish/psi.12345.h2o.32
+    >>> copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
+    Out[3]:  -cp /tmp/temp /scratch/parrish/psi.12345.32
+    >>> copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
+    Out[4]:  -mv /tmp/temp /scratch/parrish/psi.12345.32
 
     """
-
     pid = str(os.getpid())
     scratch = core.IOManager.shared_object().get_file_path(int(unit))
 
@@ -252,33 +281,37 @@ def copy_file_to_scratch(filename, prefix, namespace, unit, move=False):
     command = ('%s %s %s/%s' % (cp, filename, scratch, target))
 
     os.system(command)
-    #print command
 
 
-def copy_file_from_scratch(filename, prefix, namespace, unit, move=False):
-    """Function to move file out of scratch with correct naming
-    convention.
+def copy_file_from_scratch(filename: str, prefix: str, namespace: str, unit: int, move: bool = False):
+    """Move a file out of scratch following the naming convention.
 
-    Arguments:
+    Parameters
+    ----------
 
-    @arg filename  full path to target file
-    @arg prefix    computation prefix, usually 'psi'
-    @arg namespace context namespace, usually molecule name
-    @arg unit      unit number, e.g. 32
-    @arg move      copy or move? (default copy)
+    filename
+        Full path to target file.
+    prefix
+        Computation prefix, usually 'psi'.
+    namespace
+        Context namespace, usually molecule name.
+    unit
+        Unit number, e.g. 32
+    move
+        Whether to copy (default) or move?
 
-    Example:
+    Examples
+    --------
 
-    Assume PID is 12345 and SCRATCH is /scratch/parrish/
-
-    copy_file_to_scratch('temp', 'psi', 'h2o', 32):
-        -cp /scratch/parrish/psi.12345.h2o.32 .temp
-    copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
-        -cp /scratch/parrish/psi.12345.h2o.32 /tmp/temp
-    copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
-        -cp /scratch/parrish/psi.12345.32 /tmp/temp
-    copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
-        -mv /scratch/parrish/psi.12345.32 /tmp/temp
+    >>> # Assume PID is 12345 and SCRATCH is /scratch/parrish/
+    >>> copy_file_to_scratch('temp', 'psi', 'h2o', 32):
+    Out[1]:  -cp /scratch/parrish/psi.12345.h2o.32 .temp
+    >>> copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
+    Out[2]:  -cp /scratch/parrish/psi.12345.h2o.32 /tmp/temp
+    >>> copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
+    Out[3]:  -cp /scratch/parrish/psi.12345.32 /tmp/temp
+    >>> copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
+    Out[4]:  -mv /scratch/parrish/psi.12345.32 /tmp/temp
 
     """
 

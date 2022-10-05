@@ -100,4 +100,12 @@ D 2 1.00
 ****
 }
 
+scf_ref = -38.277306979617 # TEST
+cc3_ref = -38.387976380737 # TEST
+eom_ref = -38.221966233155 # TEST
+
 energy('eom-cc3')
+compare_values(scf_ref, variable("SCF TOTAL ENERGY"), 6, "SCF energy")              #TEST
+compare_values(cc3_ref, variable("CC3 TOTAL ENERGY"), 6, "CC3 energy")              #TEST
+compare_values(eom_ref, variable("CC3 ROOT 1 TOTAL ENERGY"), 6, "EOM-CC3 energy")   #TEST
+

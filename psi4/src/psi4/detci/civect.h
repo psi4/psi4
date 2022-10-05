@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -121,7 +121,6 @@ class CIvect {
     int cur_size_;                 /* current size of buffer */
     int first_unit_;               /* first file unit number (if > 1) */
     int subgr_per_irrep_;          /* possible number of Olsen subgraphs per irrep */
-    int print_lvl_;                /* print level*/
     bool fopen_;                   /* Are CIVec files open? */
 
     double ssq(struct stringwr *alplist, struct stringwr *betlist, double **CL, double **CR, int nas, int nbs,

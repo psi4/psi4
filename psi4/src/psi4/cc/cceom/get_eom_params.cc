@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -107,8 +107,6 @@ void get_eom_params(SharedWavefunction ref_wfn, Options &options) {
         eom_params.cs_per_irrep[state_irrep ^ moinfo.sym] = eom_params.states_per_irrep[state_irrep];
         eom_params.number_of_states += eom_params.states_per_irrep[state_irrep];
     }
-    eom_params.state_energies = new double[eom_params.number_of_states];
-
     eom_params.max_iter = 80 * moinfo.nirreps;
     eom_params.max_iter = options.get_int("MAXITER");
 

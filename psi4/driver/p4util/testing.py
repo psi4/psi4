@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -25,7 +25,21 @@
 #
 # @END LICENSE
 #
-"""Module with comparison functions with output configures for Psi4."""
+"""Module with comparison functions with output configured for Psi4."""
+
+__all__ = [
+    "compare",
+    "compare_arrays",
+    "compare_cubes",
+    "compare_integers",
+    "compare_matrices",
+    "compare_molrecs",
+    "compare_recursive",
+    "compare_strings",
+    "compare_values",
+    "compare_vectors",
+    "compare_wavefunctions",
+]
 
 import sys
 from functools import partial
@@ -36,11 +50,6 @@ import qcelemental as qcel
 from psi4 import core
 from psi4.driver import qcdb
 from .exceptions import TestComparisonError
-
-__all__ = [
-    'compare', 'compare_integers', 'compare_strings', 'compare_values', 'compare_arrays', 'compare_recursive',
-    'compare_molrecs', 'compare_cubes', 'compare_vectors', 'compare_matrices', 'compare_wavefunctions'
-]
 
 # TODO in multistage compare_* fns, we're potentially stopping the fn prematurely and not in the manner of the handling fn.
 
@@ -58,9 +67,12 @@ def _mergedapis_compare_cubes(expected, computed, *args, **kwargs):
 
 
 def _mergedapis_compare_vectors(expected, computed, *args, **kwargs):
-    """Shim allowing Psi4-style or QCA-style testing interfaces for :py:func:`psi4.core.Vector`."""
+    """Shim allowing Psi4-style or QCA-style testing interfaces for :py:class:`psi4.core.Vector`."""
 
     qcdb.testing._merge_psi4_qcel_apis(args, kwargs)
+
+    if kwargs.pop("check_name", False):
+        compare(expected.name, computed.name, f'{expected.name} vs. {computed.name} name', quiet=True)
 
     compare(expected.nirrep(), computed.nirrep(), f'{expected.name} vs. {computed.name} irreps', quiet=True)
     for irrep in range(expected.nirrep()):
@@ -77,9 +89,12 @@ def _mergedapis_compare_vectors(expected, computed, *args, **kwargs):
 
 
 def _mergedapis_compare_matrices(expected, computed, *args, **kwargs):
-    """Shim allowing Psi4-style or QCA-style testing interfaces for :py:func:`psi4.core.Matrix`."""
+    """Shim allowing Psi4-style or QCA-style testing interfaces for :py:class:`psi4.core.Matrix`."""
 
     qcdb.testing._merge_psi4_qcel_apis(args, kwargs)
+
+    if kwargs.pop("check_name", False):
+        compare(expected.name, computed.name, f'{expected.name} vs. {computed.name} name', quiet=True)
 
     compare(expected.nirrep(), computed.nirrep(), f'{expected.name} vs. {computed.name} irreps', quiet=True)
     compare(expected.symmetry(), computed.symmetry(), f'{expected.name} vs. {computed.name} symmetry', quiet=True)
@@ -102,7 +117,7 @@ def _mergedapis_compare_matrices(expected, computed, *args, **kwargs):
 
 
 def _mergedapis_compare_wavefunctions(expected, computed, *args, **kwargs):
-    """Shim allowing Psi4-style or QCA-style testing interfaces for :py:func:`psi4.core.Wavefunction`."""
+    """Shim allowing Psi4-style or QCA-style testing interfaces for :py:class:`psi4.core.Wavefunction`."""
 
     qcdb.testing._merge_psi4_qcel_apis(args, kwargs)
 
@@ -208,78 +223,78 @@ compare_wavefunctions = partial(_mergedapis_compare_wavefunctions, return_handle
 compare_recursive = partial(qcdb.testing._mergedapis_compare_recursive, return_handler=_psi4_true_raise_handler)
 compare_molrecs = partial(qcdb.testing._mergedapis_compare_molrecs, return_handler=_psi4_true_raise_handler)
 
-# docstring notes
-#    """Shim between Psi4-style and QCA-style testing interfaces for scalar floats.
-#
-#    Parameters
-#    ----------
-#    atol : int or float, optional
-#        Absolute tolerance (see formula below).
-#        Values less than one are taken literally; one or greater taken as decimal digits for comparison.
-#        So `1` means `atol=0.1` and `2` means `atol=0.01` but `0.04` means `atol=0.04`
-#        Note that the largest expressable processed atol will be `~0.99`.
-#
-#    Notes
-#    -----
-#
-#    .. code-block:: python
-#
-#        absolute(computed - expected) <= (atol + rtol * absolute(expected))
-#
-#    """
+## docstrings
 
-#    """Outer shim to allow both Psi4-style and QCA-style testing interfaces through the same function."""
-#    """Shim between Psi4-style and QCA-style testing interfaces for scalar and array floats."""
+_psi4_style_doc = """
+    Handles both Psi4-style signatures (``(expected, computed, atol_exponent, label)``; see **atol_exponent** parameter below) and QCA-style signatures (``(expected, computed, label)``).
 
-#    """Shim between Psi4-style and QCA-style testing interfaces for (castable to) np.ndarray of any dimension.
+    Parameters
+    ----------
+    atol_exponent : int or float
+        Absolute tolerance (see formula in :py:func:`qcelemental.testing.compare_values` notes).
+        Values less than one are taken literally; one or greater taken as decimal digits for comparison.
+        So `1` means `atol=0.1` and `2` means `atol=0.01` but `0.04` means `atol=0.04`
+        Note that the largest expressable processed atol will be `~0.99`.
 
-#    """Shim between Psi4-style and QCA-style testing interfaces for Molecule schema dtype=psi4."""
+"""
 
-#    Raises
-#    ------
-#    TestComparisonError
-#        If `computed` differs from `expected` by more than `digits`.
-#
-#    """
-#
-#    """Returns True if two floats or float arrays are element-wise equal within a tolerance.
-#
-#    Parameters
-#    ----------
-#    expected : float
-#        Reference value against which `computed` is compared.
-#    computed : float
-#        Input value to compare against `expected`.
-#    atol : int or float, optional
-#        Absolute tolerance (see formula below).
-#    rtol : float, optional
-#        Relative tolerance (see formula below). By default set to zero so `atol` dominates.
-#    label : str, optional
-#        Label for passed and error messages. Defaults to calling function name.
-#    passnone : bool, optional
-#        Return True when both expected and computed are None.
-#    quiet : bool, optional
-#        Whether to print success.
-#
-#    Returns
-#    -------
-#    bool
-#        Returns True upon success.
-#
-#    Raises
-#    ------
-#    TestComparisonError
-#        If `computed` differs from `expected` by more than `digits`.
-#
-#    Notes
-#    -----
-#
-#    """
-#
-#    """Returns True if two floats or float arrays are element-wise equal within a tolerance.
-#
-#    Parameters
-#    ----------
-#    expected : float or float array-like
-#        Reference value against which `computed` is compared.
-#    computed : float or float array-like
+compare_values.__doc__ = """Comparison function for float or float array-like data structures.
+    See :py:func:`qcelemental.testing.compare_values` for details.
+
+    ``psi4.compare_arrays`` is an old comparison function for float NumPy arrays that is now an alias to this.
+
+""" + _psi4_style_doc
+
+compare_strings.__doc__ = """Comparison function for integers, strings, booleans, or integer array-like data structures.
+    See :py:func:`qcelemental.testing.compare` for details.
+
+    ``psi4.compare_strings`` is an alias to this.
+
+"""
+compare_integers.__doc__ = compare_strings.__doc__
+
+compare_cubes.__doc__ = """Comparison function for volumetric data in cube file format.
+    Compares only the volumetric data, not the voxel data or molecular geometry or other header contents.
+    The volumetric data is passed to :py:func:`qcelemental.testing.compare_values`.
+
+    Note only QCA-style signature (``(expected, computed, label)``) available.
+
+    Parameters
+    ----------
+    expected
+        Reference cube file against which `computed` is compared.
+        Read by :func:`numpy.genfromtxt` so `expected` can be any of file, str,
+        pathlib.Path, list of str, generator.
+    computed
+        Input cube file to compare against `expected`.
+        Read by :func:`numpy.genfromtxt` so `computed` can be any of file, str,
+        pathlib.Path, list of str, generator.
+
+"""
+
+compare_vectors.__doc__ = """Comparison function for :py:class:`psi4.core.Vector` objects.
+    Compares Vector properties of ``name`` (optional through **check_name**), ``nirrep``, and dimension of each irrep.
+    For comparing actual numerical contents, the vectors are serialized to NumPy array format and passed to :py:func:`qcelemental.testing.compare_recursive`.
+""" + _psi4_style_doc
+
+compare_matrices.__doc__ = """Comparison function for :py:class:`psi4.core.Matrix` objects.
+    Compares Matrix properties of ``name`` (optional through **check_name**), ``nirrep``, ``symmetry``, and number of rows and columns for each irrep.
+    For comparing actual numerical contents, the matrices are serialized to NumPy array format and passed to :py:func:`qcelemental.testing.compare_recursive`.
+""" + _psi4_style_doc
+
+compare_wavefunctions.__doc__ = """Comparison function for :py:class:`psi4.core.Wavefunction` objects.
+    Compares over 30 Wavefunction properties, including ``nirrep``, ``nso``, molecule geometry, basis set ``nbf``, density matrices, gradient results, etc.
+
+""" + _psi4_style_doc
+
+compare_recursive.__doc__ = """Comparison function for recursively comparing mixed-type and nested structures such as dictionaries and lists.
+    See :py:func:`qcelemental.testing.compare_recursive` for details.
+
+"""
+
+compare_molrecs.__doc__ = """Comparison function for :py:func:`psi4.core.Molecule.to_dict` objects.
+    See :py:func:`qcelemental.testing.compare_molrecs` for details.
+
+    Note only QCA-style signature (``(expected, computed, label)``) available.
+
+"""

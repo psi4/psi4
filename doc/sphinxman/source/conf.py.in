@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -40,6 +40,7 @@
 # serve to show the default.
 
 import sys, os
+import datetime
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -83,6 +84,7 @@ extensions = [
     'sphinx_automodapi.smart_resolver',
     #
     "sphinx_autodoc_typehints",
+    "sphinxcontrib.autodoc_pydantic",
 ]
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     extensions.extend([
@@ -92,23 +94,15 @@ if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     ])
 
 autosummary_generate = True
-autodoc_default_flags = ['members',
-                         'undoc-members',
-                         'inherited-members',  # disabled because there's a bug in sphinx
-                         'show-inheritance',
-                        ]
-
-autodoc_default_options = {
-#    "members": True,
-#    "undoc-members": True,
-#    "inherited-members": False, #True,
-#    "show-inheritance": True,
-}
 automodapi_toctreedirnm = 'api'
-automodsumm_inherited_members = True
+#automodsumm_inherited_members = True
 autodoc_typehints = "description"
+autodoc_typehints_format = "short"
 napoleon_use_param = True
 napoleon_use_rtype = True
+autodoc_pydantic_model_hide_paramlist = True
+autodoc_pydantic_model_show_config_summary = False
+autodoc_pydantic_field_swap_name_and_alias = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -127,7 +121,7 @@ suppress_warnings = ['image.nonlocal_uri']
 
 # General information about the project.
 project = u'Psi4'  # u'P\uA731\u026A4'
-copyright = u'2021, The {0} Project'.format(project)
+copyright = f'2007-{datetime.datetime.today().year}, The {project} Project'
 
 def get_version_info():
     import psi4
@@ -413,21 +407,24 @@ rst_epilog = """
 #   :width: 100 %
 #   :alt: Psi4 Project Logo
 
-extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'),
-            'srcsample': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.dat', ''),
-            'srcsamplepy': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.py', ''),
-            'srcbasis':  ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/%s.gbs', ''),
-            'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
-            'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', ''),
-            'psicode':   ("https://psicode.org/%s", "psicode.org/"),
-            'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '') }
+extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/%s'),
+            'srcsample': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.dat', '%s'),
+            'srcsamplepy': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.py', '%s'),
+            'srcbasis':  ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/%s.gbs', '%s'),
+            'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', '%s'),
+            'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', '%s'),
+            'psicode':   ("https://psicode.org/%s", "psicode.org/%s"),
+            'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '%s') }
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/3.9', None),
+intersphinx_mapping = {'python': ('https://docs.python.org/3.10', None),
                        "numpy": ("https://numpy.org/doc/stable/", None),
-                       'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-                       'matplotlib': ('https://matplotlib.org/', None),
-                       #'psi4.core': ('http://psicode.org/psi4manual/master/', None),
+                       'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+                       'matplotlib': ('https://matplotlib.org/stable/', None),
+                       "qcelemental": ("http://docs.qcarchive.molssi.org/projects/QCElemental/en/latest/", None),
+                       "qcengine": ("http://docs.qcarchive.molssi.org/projects/QCEngine/en/latest/", None),
+                       "qcfractal": ("http://docs.qcarchive.molssi.org/projects/QCFractal/en/latest/", None),
+                       "qcportal": ("http://docs.qcarchive.molssi.org/projects/QCPortal/en/latest/", None),
                       }
 
 

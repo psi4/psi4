@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -66,12 +66,12 @@ void OperatorSymmetry::common_init() {
         SymmetryOperation so;
         int nirrep = ct.nirrep();
 
-        auto *t = new double[ncart];
+        auto t = std::vector<double>(ncart);
 
         for (int irrep = 0; irrep < nirrep; ++irrep) {
             IrreducibleRepresentation gamma = ct.gamma(irrep);
 
-            ::memset(t, 0, sizeof(double) * ncart);
+            ::memset(t.data(), 0, sizeof(double) * ncart);
 
             // Apply the projection
             for (int G = 0; G < nirrep; ++G) {
@@ -94,7 +94,6 @@ void OperatorSymmetry::common_init() {
             }
         }
 
-        delete[] t;
     } else if (order_ == L) {
         // Angular momentum operator is a rotation operator
         // so symmetry of Lz is Lx ^ Ly which can
@@ -199,12 +198,12 @@ void MultipoleSymmetry::common_init() {
         CharacterTable ct = molecule_->point_group()->char_table();
         int nirrep = ct.nirrep();
 
-        auto *t = new double[ncart];
+        auto t = std::vector<double>(ncart);
 
         for (int irrep = 0; irrep < nirrep; ++irrep) {
             IrreducibleRepresentation gamma = ct.gamma(irrep);
 
-            ::memset(t, 0, sizeof(double) * ncart);
+            ::memset(t.data(), 0, sizeof(double) * ncart);
 
             // Apply the projection
             for (int G = 0; G < nirrep; ++G) {
@@ -233,8 +232,6 @@ void MultipoleSymmetry::common_init() {
                 addresses_[lx][ly][lz] = count++;
             }
         }
-
-        delete[] t;
     }
 }
 

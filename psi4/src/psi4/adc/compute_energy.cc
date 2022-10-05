@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,7 +54,7 @@ double ADCWfn::compute_energy() {
     double *omega, omega_o, omega_diff, theta;
     dpdfile2 B, V;
 
-    omega_guess_ = std::make_shared<Vector>(nirrep_, rpi_);
+    omega_guess_ = std::make_shared<Vector>(rpi_);
 
     if (options_.get_str("REFERENCE") == "RHF") {
         corr_energy = rhf_init_tensors();
@@ -255,16 +255,16 @@ double ADCWfn::compute_energy() {
                                                 free(tracepi);
                         */
 
-                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY"] -*/
-                        oss << state_top << "0 -> ROOT " << root + 1 << " EXCITATION ENERGY - " << irrep_[irrep] << " SYMMETRY";
+                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION"] -*/
+                        oss << state_top << "0 -> ROOT " << root + 1 << " EXCITATION ENERGY - " << irrep_[irrep] << " TRANSITION";
                         Process::environment.globals[oss.str()] = omega[root];
-                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h SYMMETRY"] -*/
+                        /*- Process::environment.globals["ADC ROOT 0 -> ROOT n CORRELATION ENERGY - h TRANSITION"] -*/
                         oss.str(std::string());
-                        oss << state_top << "0 -> ROOT " << root + 1 << " CORRELATION ENERGY - " << irrep_[irrep] << " SYMMETRY";
+                        oss << state_top << "0 -> ROOT " << root + 1 << " CORRELATION ENERGY - " << irrep_[irrep] << " TRANSITION";
                         Process::environment.globals[oss.str()] = omega[root] + corr_energy;
-                        /*- Process::environment.globals["ADC ROOT n TOTAL ENERGY - h SYMMETRY"] -*/
+                        /*- Process::environment.globals["ADC ROOT n TOTAL ENERGY - h TRANSITION"] -*/
                         oss.str(std::string());
-                        oss << state_top << root + 1 << " TOTAL ENERGY - " << irrep_[irrep] << " SYMMETRY";
+                        oss << state_top << root + 1 << " TOTAL ENERGY - " << irrep_[irrep] << " TRANSITION";
                         Process::environment.globals[oss.str()] = omega[root] + energy_ + corr_energy;
 
                         global_dpd_->file2_close(&V);

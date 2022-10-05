@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,7 +39,6 @@
 #include "psi4/libmints/nabla.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/electrostatic.h"
-#include "psi4/libmints/pseudospectral.h"
 #include "psi4/libmints/kinetic.h"
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/overlap.h"
@@ -47,7 +46,9 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/potentialint.h"
+#ifdef USING_ecpint
 #include "psi4/libmints/ecpint.h"
+#endif
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/erd_eri.h"
 
@@ -94,9 +95,7 @@ OneBodySOInt* IntegralFactory::so_overlap(int deriv) {
     return new OneBodySOInt(ao_int, this);
 }
 
-ThreeCenterOverlapInt* IntegralFactory::overlap_3c() {
-    return new ThreeCenterOverlapInt(spherical_transforms_, bs1_, bs2_, bs3_);
-}
+ThreeCenterOverlapInt* IntegralFactory::overlap_3c() { return new ThreeCenterOverlapInt(bs1_, bs2_, bs3_); }
 
 OneBodyAOInt* IntegralFactory::ao_kinetic(int deriv) {
     return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
@@ -116,11 +115,21 @@ OneBodySOInt* IntegralFactory::so_potential(int deriv) {
     return new PotentialSOInt(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_ecp(int deriv) { return new ECPInt(spherical_transforms_, bs1_, bs2_, deriv); }
+OneBodyAOInt* IntegralFactory::ao_ecp(int deriv) {
+#ifdef USING_ecpint
+    return new ECPInt(spherical_transforms_, bs1_, bs2_, deriv);
+#else
+    throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
+#endif
+}
 
 OneBodySOInt* IntegralFactory::so_ecp(int deriv) {
+#ifdef USING_ecpint
     std::shared_ptr<OneBodyAOInt> ao_int(ao_ecp(deriv));
     return new ECPSOInt(ao_int, this);
+#else
+    throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
+#endif
 }
 
 OneBodyAOInt* IntegralFactory::ao_rel_potential(int deriv) {
@@ -130,15 +139,6 @@ OneBodyAOInt* IntegralFactory::ao_rel_potential(int deriv) {
 OneBodySOInt* IntegralFactory::so_rel_potential(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_rel_potential(deriv));
     return new RelPotentialSOInt(ao_int, this);
-}
-
-OneBodyAOInt* IntegralFactory::ao_pseudospectral(int deriv) {
-    return new PseudospectralInt(spherical_transforms_, bs1_, bs2_, deriv);
-}
-
-OneBodySOInt* IntegralFactory::so_pseudospectral(int deriv) {
-    std::shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(deriv));
-    return new OneBodySOInt(ao_int, this);
 }
 
 OneBodyAOInt* IntegralFactory::electrostatic() { return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0); }
@@ -175,16 +175,16 @@ OneBodySOInt* IntegralFactory::so_quadrupole() {
     return new OneBodySOInt(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_multipoles(int order) {
-    return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order);
+OneBodyAOInt* IntegralFactory::ao_multipoles(int order, int deriv) {
+    return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order, deriv);
 }
 
-OneBodyAOInt* IntegralFactory::ao_multipole_potential(int max_k, int deriv) {
-    return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, max_k, deriv);
+OneBodyAOInt* IntegralFactory::ao_multipole_potential(int order, int deriv) {
+    return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, order, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_multipoles(int order) {
-    std::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order));
+OneBodySOInt* IntegralFactory::so_multipoles(int order, int deriv) {
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order, deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -219,6 +219,7 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool nee
 #ifdef ENABLE_Libint1t
     return new ERI(this, deriv, use_shell_pairs);
 #endif
+    throw PSIEXCEPTION("No ERI object to return.");
 }
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
@@ -239,55 +240,53 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_e
 #ifdef ENABLE_Libint1t
     return new ERI(this, deriv, use_shell_pairs);
 #endif
+    throw PSIEXCEPTION("No ERI object to return.");
 }
 
 TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2") return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+    if (integral_package == "LIBINT2")
+        return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef ENABLE_Libint1t
     return new ErfERI(omega, this, deriv, use_shell_pairs);
 #endif
+    throw PSIEXCEPTION("No ERI object to return.");
 }
 
 TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2") return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+    if (integral_package == "LIBINT2")
+        return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef ENABLE_Libint1t
     return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
 #endif
+    throw PSIEXCEPTION("No ERI object to return.");
 }
 
-TwoBodyAOInt* IntegralFactory::f12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12(cf, this, deriv, use_shell_pairs);
-#endif
+TwoBodyAOInt* IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    return new Libint2YukawaERI(zeta, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12Scaled(cf, this, deriv, use_shell_pairs);
-#endif
+TwoBodyAOInt* IntegralFactory::f12(std::vector<std::pair<double, double>> exp_coeff, int deriv, bool use_shell_pairs) {
+    return new Libint2F12(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12Squared(cf, this, deriv, use_shell_pairs);
-#endif
+TwoBodyAOInt* IntegralFactory::f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv,
+                                           bool use_shell_pairs) {
+    return new Libint2F12Squared(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12G12(cf, this, deriv, use_shell_pairs);
-#endif
+TwoBodyAOInt* IntegralFactory::f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv,
+                                      bool use_shell_pairs) {
+    return new Libint2F12G12(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv,
+TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv,
                                                      bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12DoubleCommutator(cf, this, deriv, use_shell_pairs);
-#endif
+    return new Libint2F12DoubleCommutator(exp_coeff, this, deriv, use_shell_pairs);
 }
 
 void IntegralFactory::init_spherical_harmonics(int max_am) {

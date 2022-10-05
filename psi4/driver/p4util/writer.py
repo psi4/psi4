@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -25,13 +25,28 @@
 #
 # @END LICENSE
 #
-"""Module for writing input files to external codes."""
+"""Module for writing input files to external codes (e.g., Molden, NBO).
+Only contains extensions to the :py:class:`psi4.core.Wavefunction` class.
+
+"""
+
+__all__ = []
+
+from typing import Optional
 
 from psi4.driver import constants
 
 from psi4 import core
 
-def _write_nbo(self, name):
+def _write_nbo(self, name: str):
+    """Write wavefunction information in *wfn* to *name* in NBO format.
+
+    Parameters
+    ----------
+    name
+        Destination file name for NBO file.
+
+    """
     basisset = self.basisset()
     mints = core.MintsHelper(basisset)
     mol = self.molecule()
@@ -199,12 +214,16 @@ def _write_nbo(self, name):
 
 core.Wavefunction.write_nbo = _write_nbo
 
-def _write_molden(self, filename=None, do_virtual=None, use_natural=False):
-
-    """Function to write wavefunction information in *wfn* to *filename* in
+def _write_molden(
+    self: core.Wavefunction,
+    filename: Optional[str] = None,
+    do_virtual: Optional[bool] = None,
+    use_natural: bool = False,
+):
+    """Writes wavefunction information in *wfn* to *filename* in
     molden format. Will write natural orbitals from *density* (MO basis) if supplied.
-    Warning! Most post-SCF Wavefunctions do not build the density as this is often
-    much more costly than the energy. In addition, the Wavefunction density attributes
+    Warning! most post-SCF wavefunctions do not build the density as this is often
+    much more costly than the energy. In addition, the wavefunction density attributes
     (Da and Db) return the SO density and must be transformed to the MO basis
     to use with this function.
 
@@ -213,14 +232,23 @@ def _write_molden(self, filename=None, do_virtual=None, use_natural=False):
 
     :returns: None
 
-    :type filename: string
-    :param filename: destination file name for MOLDEN file (optional)
+    :type filename:
+    :param filename:
 
-    :type do_virtual: bool
-    :param do_virtual: do write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs, not valid for NO's (false) (optional)
+        Destination file name for MOLDEN file. If unspecified (None), a file
+        name will be generated from the molecule name.
 
-    :type use_natural: bool
-    :param use_natural: write natural orbitals determined from density on wavefunction
+    :type do_virtual:
+    :param do_virtual:
+
+        Do write all the MOs to the MOLDEN file (True) or discard the unoccupied
+        MOs (False). Not valid for NO's. If unspecified (None), value taken from
+        :term:`MOLDEN_WITH_VIRTUAL <MOLDEN_WITH_VIRTUAL (GLOBALS)>`.
+
+    :type use_natural:
+    :param use_natural:
+
+        Write natural orbitals determined from density on wavefunction.
 
     :examples:
 
@@ -237,8 +265,9 @@ def _write_molden(self, filename=None, do_virtual=None, use_natural=False):
 
     3. To supply a custom density matrix, manually set the Da and Db of the wavefunction.
        This is used, for example, to write natural orbitals coming from a root computed
-       by a ``CIWavefunction`` computation, e.g., ``detci``, ``fci``, ``casscf``.`
-       The first two arguments of ``get_opdm`` can be set to ``n, n`` where n => 0 selects the root to
+       by a ``CIWavefunction`` computation, e.g., ``detci``, ``fci``, ``casscf``.
+       The first two arguments of :py:meth:`~psi4.core.CIWavefunction.get_opdm`
+       can be set to ``n, n`` where n => 0 selects the root to
        write out, provided these roots were computed, see :term:`NUM_ROOTS <NUM_ROOTS (DETCI)>`. The
        third argument controls the spin (``"A"``, ``"B"`` or ``"SUM"``) and the final
        boolean option determines whether inactive orbitals are included.
@@ -352,7 +381,8 @@ def _write_molden(self, filename=None, do_virtual=None, use_natural=False):
         
     # Dump MO information
     if basisset.has_puream():
-        mol_string += '[5D]\n[7F]\n[9G]\n\n'
+        # For historical reasons, D and F can go on the same line, but setting D without F implicitly sets F. G must be on its own.
+        mol_string += '[5D7F]\n[9G]\n\n'
     ct = mol.point_group().char_table()
     mol_string += '[MO]\n'
     mo_dim = self.nmopi() if do_virtual else (self.doccpi() + self.soccpi())

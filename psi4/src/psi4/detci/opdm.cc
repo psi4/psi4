@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -646,25 +646,9 @@ void CIWavefunction::ci_nat_orbs() {
 /*- Process::environment.globals["CIn CORRELATION ENERGY"] -*/
 /*- Process::environment.globals["CI ROOT n TOTAL ENERGY"] -*/
 /*- Process::environment.globals["CI ROOT n CORRELATION ENERGY"] -*/
-/*- Process::environment.globals["CI ROOT n DIPOLE X"] -*/
-/*- Process::environment.globals["CI ROOT n DIPOLE Y"] -*/
-/*- Process::environment.globals["CI ROOT n DIPOLE Z"] -*/
 /*- Process::environment.globals["CI ROOT n DIPOLE"] -*/
 /*- Process::environment.globals["CI ROOT n QUADRUPOLE"] -*/
-/*- Process::environment.globals["CI ROOT n QUADRUPOLE XX"] -*/
-/*- Process::environment.globals["CI ROOT n QUADRUPOLE XY"] -*/
-/*- Process::environment.globals["CI ROOT n QUADRUPOLE XZ"] -*/
-/*- Process::environment.globals["CI ROOT n QUADRUPOLE YY"] -*/
-/*- Process::environment.globals["CI ROOT n QUADRUPOLE YZ"] -*/
-/*- Process::environment.globals["CI ROOT n QUADRUPOLE ZZ"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE X"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Y"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Z"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XX"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XY"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XZ"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YY"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YZ"] -*/
-/*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE ZZ"] -*/
+/*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE"] -*/
+/*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE"] -*/
 }
 }  // namespace psi

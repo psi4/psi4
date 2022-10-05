@@ -1,0 +1,16 @@
+#! SCF level shift on an ROHF computation
+
+molecule {
+units bohr
+0 2
+B
+O 1 2.277
+}
+
+set basis pcseg-1
+set reference rohf
+set diis false
+set level_shift 0.7
+set level_shift_cutoff 1e-4
+set guess core
+energy('scf')

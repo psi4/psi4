@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -279,7 +279,7 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     ret["Disp20,u"] = scalars["Disp20"]
 
     if core.get_option("SAPT", "DO_DISP_EXCH_SINF"):
-        fisapt.sinf_disp(matrix_cache, vector_cache, False)
+        fisapt.sinf_disp(matrix_cache, vector_cache, True)
         scalars = fisapt.scalars()
 
     return ret

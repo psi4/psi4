@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -220,7 +220,7 @@ the basis set is set to cc-pVDZ throughout, the SCF code will have a print
 level of 1 and the ccenergy code, which performs coupled cluster computations,
 will use a print level of 3. In this example a full CCSD computation is
 performed by running the SCF code first, then the coupled cluster modules;
-the :py:func:`~psi4.energy` Python helper function ensures that this is performed correctly.
+the :py:func:`~psi4.driver.energy` Python helper function ensures that this is performed correctly.
 Note that the Python interpreter executes commands in the order they appear in
 the input file, so if the last four commands in the above example were to read ::
 
@@ -232,7 +232,7 @@ the input file, so if the last four commands in the above example were to read :
 the commands that set the print level would be ineffective, as they would be
 processed after the CCSD computation completes.
 
-In PsiAPI mode, one can use the command :py:func:`~psi4.set_options`
+In PsiAPI mode, one can use the command :py:func:`~psi4.driver.set_options`
 like below for general and module-specific options. Note that these values
 should be of correct type, strings for strings, floats for floats like
 convergences. The function `~psi4.core.clean_options` that reinitializes
@@ -284,7 +284,7 @@ H\ :sub:`2` and H atom::
     D_e = psi_hartree2kcalmol * (2*h_energy - h2_energy)
     print "De=%f" % D_e
 
-The :py:func:`~psi4.energy` function returns the final result of the
+The :py:func:`~psi4.driver.energy` function returns the final result of the
 computation, the requested total energy in Hartrees, which we assign to a
 Python variable. The two energies are then converted to a dissociation
 energy and printed to the output file using standard Python notation.
@@ -302,7 +302,7 @@ scaled energy and the unscaled MP2 energy are made available::
 Each module and the Python driver set PSI variables over the course of a
 calculation.  The values for all can be printed in the output file with
 the input file command :py:func:`~psi4.core.print_variables`. Note that PSI variables
-are cleared at the start of each :py:func:`~psi4.energy`, etc. in an input
+are cleared at the start of each :py:func:`~psi4.driver.energy`, etc. in an input
 file by :py:func:`~psi4.core.clean_variables()`.
 So if you run in a single input file a STO-3G FCI followed by a
 aug-cc-pVQZ SCF followed by a :py:func:`~psi4.core.print_variables` command, the
@@ -317,8 +317,8 @@ Return Values
 =============
 
 Most of the usual user computation functions (*i.e.*,
-:py:func:`~psi4.energy`, :py:func:`~psi4.optimize`, and
-:py:func:`~psi4.frequency`) return simply the current total energy.
+:py:func:`~psi4.driver.energy`, :py:func:`~psi4.driver.optimize`, and
+:py:func:`~psi4.driver.frequency`) return simply the current total energy.
 Consult the descriptions of other functions in :ref:`sec:psithonFunc` for
 what quantities they return and for what data structures they make
 available for post-processing. Many users need only deal with the simple return
@@ -415,8 +415,10 @@ and Cartiesian scans.
 Tables of Results
 =================
 
-The results of computations can be compactly tabulated with the :py:func:`~psi4.driver.p4util.Table` Psithon
-function. For example, in the following potential energy surface scan for water ::
+The Psithon function ``psi4.driver.p4util.Table`` has been removed,
+as the Python ecosystem provides many more flexible alternatives. An
+example tabulating a potential energy surface scan for water with Pandas
+is shown below::
 
     molecule h2o {
       O
@@ -425,9 +427,10 @@ function. For example, in the following potential energy surface scan for water 
     }
     
     Rvals=[0.9,1.0,1.1]
-    Avals=range(100,102,2)
+    Avals=range(100,103,2)
     
-    table=Table(rows=["R","A"], cols=["E(SCF)","E(SCS)","E(DFMP2)"])
+    rows = []
+    table = []
     
     set basis cc-pvdz
     
@@ -436,24 +439,24 @@ function. For example, in the following potential energy surface scan for water 
         for A in Avals:
             h2o.A = A
             energy('mp2')
-            escf = get_variable('SCF TOTAL ENERGY')
-            edfmp2 = get_variable('MP2 TOTAL ENERGY')
-            escsmp2 = get_variable('SCS-MP2 TOTAL ENERGY')
-            table[R][A] = [escf, escsmp2, edfmp2]
+            escf = variable('SCF TOTAL ENERGY')
+            edfmp2 = variable('MP2 TOTAL ENERGY')
+            escsmp2 = variable('SCS-MP2 TOTAL ENERGY')
+            rows.append((R, A))
+            table.append([escf, escsmp2, edfmp2])
     
-    print table
-    relative=table.copy()
-    relative.absolute_to_relative()
-    print relative
+    import pandas as pd
+    df = pd.DataFrame(table, columns = ["E(SCF)", "E(SCS)", "E(DFMP2)"], index=rows)
+    print(df)
 
-we first define a table (on line 10) with two row indices and three column
-indices. As the potential energy scan is performed, the results are stored
-(line 22) and the final table is printed to the output file (line 24). The
-table is converted from absolute energies to relative energies (in |kcalpermol|)
-on line 26, before being printed again. The relative energies are reported with
-respect to the lowest value in each column. More examples of how to control the
-formatting of the tables can be found in the sample input files provided; see
-Appendix :ref:`apdx:testSuite` for a complete listing.
+    #                E(SCF)     E(SCS)   E(DFMP2)
+    # (0.9, 100) -76.020680 -76.217006 -76.221189
+    # (0.9, 102) -76.021305 -76.217439 -76.221605
+    # (1.0, 100) -76.021264 -76.224987 -76.228727
+    # (1.0, 102) -76.021460 -76.224946 -76.228668
+    # (1.1, 100) -75.990195 -76.201891 -76.205087
+    # (1.1, 102) -75.990085 -76.201498 -76.204676
+
 
 .. _`sec:wrappers`:
 
@@ -465,7 +468,7 @@ many commonly performed post-processing procedures to be integrated into
 the |PSIfour| suite.  
 
 As seen in the neon dimer example from the :ref:`tutorial <sec:tutorial>` section,
-the :py:func:`~psi4.driver.driver_nbody.nbody_gufunc` wrapper provides automatic computation of 
+the :py:func:`~psi4.driver.driver_nbody.nbody` wrapper provides automatic computation of
 counterpoise-corrected interaction energies between two molecules.  For
 example, ::
 
@@ -474,23 +477,24 @@ example, ::
 will compute the counterpoise-corrected density-fitted MP2 interaction energy
 between two molecules.
 
-|PSIfour| also provides the :py:func:`~psi4.cbs` wrapper,
+|PSIfour| also provides the :py:func:`~psi4.driver.cbs` wrapper,
 which automatically computes a complete-basis-set extrapolation (and
 automatically sets up the computations with different basis sets required to
 do the extrapolation).  For example,::
 
   # all equivalent
 
-  cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+  energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
 
   energy('mp2/cc-pv[dt]z')
 
 will compute a 2-point Helgaker extrapolation of the correlation energy
 using the cc-pVDZ and cc-pVTZ basis sets (with method MP2) and add this
 extrapolated correlation energy to the Hartree--Fock energy in the
-largest basis (cc-pVTZ). :py:func:`~psi4.cbs` can
-either be called directly, as in the first example, or the convenience
-syntax of the equivalent second example can be used.
+largest basis (cc-pVTZ). :py:func:`~psi4.driver.cbs` can
+be configured behind-the-scenes with explicit arguments, as in the
+first example, or the convenience syntax of the equivalent second
+example can be used.
 
 Another very useful and powerful feature of |PSIfour| is the ability
 to compute results on entire databases of molecules at a time,

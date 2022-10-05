@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -141,16 +141,20 @@ def fisapt_fdrop(self, external_potentials=None):
         fh.write(xyz)
 
     # write external potential geometries
-    if external_potentials is not None:
+    if external_potentials is not None and isinstance(external_potentials, dict):
         for frag in "ABC":
             potential = external_potentials.get(frag, None)
             if potential is not None:
-                charges = potential.extern.getCharges()
-                xyz = str(len(charges)) + "\n\n"
-                for charge in charges:
-                    xyz += "Ch %f %f %f\n" %(charge[1], charge[2], charge[3])
+                xyz = str(len(potential)) + "\n\n"
+                for qxyz in potential:
+                    if len(qxyz) == 2:
+                        xyz += "Ch %f %f %f\n" % (qxyz[1][0], qxyz[1][1], qxyz[1][2])
+                    elif len(qxyz) == 4:
+                        xyz += "Ch %f %f %f\n" % (qxyz[1], qxyz[2], qxyz[3])
+                    else:
+                        raise ValidationError(f"Point charge '{qxyz}' not mapping into 'chg, [x, y, z]' or 'chg, x, y, z'")
 
-                with open(filepath + os.sep + "Extern_%s.xyz" %frag, "w") as fh:
+                with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
                     fh.write(xyz)
 
     vectors = self.vectors()

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -43,10 +43,11 @@
 #undef _XOPEN_SOURCE
 #endif
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libmints/matrix.h"
 
 namespace psi {
 
-enum class ScreeningType { None, Schwarz, CSAM, QQR };
+enum class ScreeningType { None, Schwarz, CSAM, QQR, Density };
 
 enum PermutedOrder { ABCD = 0, BACD = 1, ABDC = 2, BADC = 3, CDAB = 4, CDBA = 5, DCAB = 6, DCBA = 7 };
 
@@ -129,9 +130,11 @@ class PSI_API TwoBodyAOInt {
     std::vector<double> shell_pair_exchange_values_;
     /// sqrt|(mm|mm)| values (nshell)
     std::vector<double> function_sqrt_;
-    /// Significant unique function pairs, in reduced triangular indexing
+    /// Max density per matrix (Outer loop over density matrices, inner loop over shell pairs)
+    std::vector<std::vector<double>> max_dens_shell_pair_;
+    /// Significant unique function pairs, in row-major, lower triangular indexing
     PairList function_pairs_;
-    /// Significant unique shell pairs, in reduced triangular indexing
+    /// Significant unique shell pairs, in row-major, lower triangular indexing
     PairList shell_pairs_, shell_pairs_bra_, shell_pairs_ket_;
     /// The largest value of any integral as predicted by the sieving method
     double max_integral_;
@@ -152,6 +155,8 @@ class PSI_API TwoBodyAOInt {
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
     bool shell_significant_schwarz(int M, int N, int R, int S);
+    /// Asks whether this shell quartet contributes by the density test (Haser 1989)
+    bool shell_significant_density(int M, int N, int R, int S);
     /// Implements the null screening of a shell quartet - always true
     bool shell_significant_none(int M, int N, int R, int S);
 
@@ -198,6 +203,8 @@ class PSI_API TwoBodyAOInt {
     /*
      * Sieve information
      */
+    /// Update max_dens_shell_pair_ given an updated density matrix (Haser 1989)
+    void update_density(const std::vector<SharedMatrix>& D);
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
     /// Are any of the quartets within a given shellpair list significant
@@ -208,10 +215,16 @@ class PSI_API TwoBodyAOInt {
      inline double shell_ceiling2(int M, int N, int R, int S) {
         return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
     }
+    /// Return max(PQ|PQ)
+    double max_integral() const { return max_integral_; }
     /// Square of ceiling of integral (mn|rs)
      inline double function_ceiling2(int m, int n, int r, int s) {
         return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
     }
+    // the value of the bound for pair m and n
+    double shell_pair_value(int m, int n) { return shell_pair_values_[m * nshell_ + n]; };
+    /// Return the maximum density matrix element per shell pair. Maximum is over density matrices, if multiple set
+    double shell_pair_max_density(int M, int N) const;
 
     /// For a given PQ shellpair index, what's the first RS pair that should be processed such
     /// that loops may be processed generating only permutationally unique PQ<=RS.  For engines

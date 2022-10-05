@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -347,7 +347,8 @@ void projections(struct L_Params *pL_params) {
         projection_tot = projection_0 + projection_S + projection_D;
         ael = projection_S + 2.0 * projection_D;
 
-        outfile->Printf("\n\tProjections for excited state, irrep %s, root %d:\n", moinfo.labels[0].c_str(), root);
+        auto target_sym = IRR ^ moinfo.sym;
+        outfile->Printf("\n\tProjections for excited state, irrep %s, root %d:\n", moinfo.labels[target_sym].c_str(), root);
         outfile->Printf("\t<0|Le^(-T)|0><0|Re^T|0>  = %15.10lf\n", projection_0);
         outfile->Printf("\t<0|Le^(-T)|S><S|Re^T|0>  = %15.10lf\n", projection_S);
         outfile->Printf("\t<0|Le^(-T)|D><D|Re^T|0>  = %15.10lf\n", projection_D);

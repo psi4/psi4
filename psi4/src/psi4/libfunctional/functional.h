@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -117,10 +117,10 @@ class Functional {
         omega_ = omega;
         lrc_ = (omega_ != 0.0);
     }
-    void set_name(const std::string &name) { name_ = name; }
-    void set_description(const std::string &description) { description_ = description; }
-    void set_citation(const std::string &citation) { citation_ = citation; }
-    void set_xclib_description(const std::string &description) { xclib_description_ = description; }
+    void set_name(const std::string& name) { name_ = name; }
+    void set_description(const std::string& description) { description_ = description; }
+    void set_citation(const std::string& citation) { citation_ = citation; }
+    void set_xclib_description(const std::string& description) { xclib_description_ = description; }
 
     void set_lsda_cutoff(double cut) { lsda_cutoff_ = cut; }
     void set_meta_cutoff(double cut) { meta_cutoff_ = cut; }
@@ -151,6 +151,6 @@ class Functional {
     void py_print() const { print("outfile", 1); }
     void py_print_detail(int level) const { print("outfile", level); }
 };
-}
+}  // namespace psi
 
 #endif

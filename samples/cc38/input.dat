@@ -11,5 +11,6 @@ set {
   basis "cc-pVDZ"
 }
 
-properties('cc2',properties=['polarizability'])
-ref_static_polar = 5.240960398531
+wfn = properties('cc2',properties=['polarizability'], return_wfn=True)[1]
+
+

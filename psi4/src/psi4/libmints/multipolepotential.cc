@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -30,196 +30,143 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 
-;
+#include <libint2/shell.h>
+#include <libint2/boys.h>
+
 using namespace psi;
+using namespace mdintegrals;
 
-#define have_moment(k, max_k) (k <= max_k);
-
-namespace {
-int number_of_chunks(int max_k) {
-    int nc = 0;
-    for (size_t i = 0; i <= max_k; i++) {
-        nc += (i + 1) * (i + 2) / 2;
-    }
-    return nc;
-}
-}  // namespace
-
-MultipolePotentialInt::MultipolePotentialInt(std::vector<SphericalTransform> &spherical_transforms,
-                                             std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int max_k,
+MultipolePotentialInt::MultipolePotentialInt(std::vector<SphericalTransform>& spherical_transforms,
+                                             std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int order,
                                              int deriv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, deriv),
-      mvi_recur_(bs1->max_am(), bs2->max_am(), max_k),
-      max_k_(max_k) {
-    int maxam1 = bs1_->max_am();
-    int maxam2 = bs2_->max_am();
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, deriv), MDHelper(bs1->max_am(), bs2->max_am()), order_(order) {
+    int maxnao1 = INT_NCART(maxam1_);
+    int maxnao2 = INT_NCART(maxam2_);
 
-    int maxnao1 = INT_NCART(maxam1);
-    int maxnao2 = INT_NCART(maxam2);
-
-    if (deriv > 3) {
+    if (deriv > 0) {
         throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with deriv > 0", __FILE__, __LINE__);
     }
 
-    if (max_k > 3) {
-        throw FeatureNotImplemented("LibMints", "MultipolePotentialInts called with max_k > 3", __FILE__, __LINE__);
-    }
+    // pre-allocate R matrix
+    int am = maxam1_ + maxam2_;
+    int rdim1 = am + order_ + 1;
+    int rdim2 = rdim1 * rdim1 * rdim1;
+    R = std::vector<double>(rdim1 * rdim2);
 
-    int nchunks = number_of_chunks(max_k_);
+    // set up Boys function evaluator
+    fm_eval_ = libint2::FmEval_Chebyshev7<double>::instance(am + order_);
+
+    comps_der_ = std::vector<std::vector<std::array<int, 3>>>(order_ + 1);
+    for (int d = 0; d < order_ + 1; ++d) {
+        comps_der_[d] = generate_am_components_cca(d);
+    }
+    int nchunks = cumulative_cart_dim(order_);
     buffer_ = new double[nchunks * maxnao1 * maxnao2];
     set_chunks(nchunks);
+    buffers_.resize(nchunk_);
 }
 
 MultipolePotentialInt::~MultipolePotentialInt() { delete[] buffer_; }
 
-void MultipolePotentialInt::compute_pair(const GaussianShell &s1, const GaussianShell &s2) {
-    int ao12;
-    int am1 = s1.am();
-    int am2 = s2.am();
-    int nprim1 = s1.nprimitive();
-    int nprim2 = s2.nprimitive();
-    double A[3], B[3];
-    A[0] = s1.center()[0];
-    A[1] = s1.center()[1];
-    A[2] = s1.center()[2];
-    B[0] = s2.center()[0];
-    B[1] = s2.center()[1];
-    B[2] = s2.center()[2];
-
-    int izm = 1;
-    int iym = am1 + 1;
-    int ixm = iym * iym;
-    int jzm = 1;
-    int jym = am2 + 1;
-    int jxm = jym * jym;
-
-    // Not sure if these are needed.
-    int size = INT_NCART(am1) * INT_NCART(am2);
-
-    // compute intermediates
-    double AB2 = 0.0;
-    AB2 += (A[0] - B[0]) * (A[0] - B[0]);
-    AB2 += (A[1] - B[1]) * (A[1] - B[1]);
-    AB2 += (A[2] - B[2]) * (A[2] - B[2]);
-
-    size_t n_elements = static_cast<size_t>(number_of_chunks(max_k_) * size);
-    memset(buffer_, 0, n_elements * sizeof(double));
-
-    bool have_dipole = have_moment(1, max_k_);
-    bool have_quadrupole = have_moment(2, max_k_);
-    bool have_octupole = have_moment(3, max_k_);
-
-    // Charge
-    double ***q = mvi_recur_.q();
-    // Dipole
-    double ***x = mvi_recur_.x();
-    double ***y = mvi_recur_.y();
-    double ***z = mvi_recur_.z();
-    // Quadrupole
-    double ***xx = mvi_recur_.xx();
-    double ***yy = mvi_recur_.yy();
-    double ***zz = mvi_recur_.zz();
-    double ***xy = mvi_recur_.xy();
-    double ***xz = mvi_recur_.xz();
-    double ***yz = mvi_recur_.yz();
-
-    // Octupole
-    double ***xxx = mvi_recur_.xxx();
-    double ***yyy = mvi_recur_.yyy();
-    double ***zzz = mvi_recur_.zzz();
-    double ***xxy = mvi_recur_.xxy();
-    double ***xxz = mvi_recur_.xxz();
-    double ***xyy = mvi_recur_.xyy();
-    double ***yyz = mvi_recur_.yyz();
-    double ***xzz = mvi_recur_.xzz();
-    double ***yzz = mvi_recur_.yzz();
-    double ***xyz = mvi_recur_.xyz();
-
+void MultipolePotentialInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& s2) {
     double Cx = origin_[0];
     double Cy = origin_[1];
     double Cz = origin_[2];
+    Point C{Cx, Cy, Cz};
 
+    int am1 = s1.contr[0].l;
+    int am2 = s2.contr[0].l;
+    int am = am1 + am2;
+
+    const auto& comps_am1 = am_comps_[am1];
+    const auto& comps_am2 = am_comps_[am2];
+
+    auto A = s1.O;
+    auto B = s2.O;
+    int nprim1 = s1.nprim();
+    int nprim2 = s2.nprim();
+
+    // output buffer dimensions
+    int dim1 = INT_NCART(am1);
+    int dim2 = INT_NCART(am2);
+    int size = dim1 * dim2;
+    memset(buffer_, 0, nchunk_ * size * sizeof(double));
+
+    // R matrix dimensions
+    int r_am = am + order_;
+    int rdim1 = r_am + 1;
+
+    // E matrix dimensions
+    int edim2 = am2 + 1;
+    int edim3 = am1 + am2 + 2;
+
+    int ao12 = 0;
     for (int p1 = 0; p1 < nprim1; ++p1) {
-        double a1 = s1.exp(p1);
-        double c1 = s1.coef(p1);
+        double a = s1.alpha[p1];
+        double ca = s1.contr[0].coeff[p1];
         for (int p2 = 0; p2 < nprim2; ++p2) {
-            double a2 = s2.exp(p2);
-            double c2 = s2.coef(p2);
-            double gamma = a1 + a2;
-            double oog = 1.0 / gamma;
+            double b = s2.alpha[p2];
+            double cb = s2.contr[0].coeff[p2];
 
-            double PA[3], PB[3];
-            double P[3];
+            double p = a + b;
+            Point P{(a * A[0] + b * B[0]) / p, (a * A[1] + b * B[1]) / p, (a * A[2] + b * B[2]) / p};
+            double prefac = 2.0 * M_PI * ca * cb / p;
 
-            P[0] = (a1 * A[0] + a2 * B[0]) * oog;
-            P[1] = (a1 * A[1] + a2 * B[1]) * oog;
-            P[2] = (a1 * A[2] + a2 * B[2]) * oog;
-            PA[0] = P[0] - A[0];
-            PA[1] = P[1] - A[1];
-            PA[2] = P[2] - A[2];
-            PB[0] = P[0] - B[0];
-            PB[1] = P[1] - B[1];
-            PB[2] = P[2] - B[2];
+            fill_E_matrix(am1, am2, P, A, B, a, b, Ex, Ey, Ez);
+            fill_R_matrix(r_am, p, P, C, R, fm_eval_);
 
-            double over_pf = exp(-a1 * a2 * AB2 * oog) * sqrt(M_PI * oog) * M_PI * oog * c1 * c2;
-            double PC[3];
-
-            PC[0] = P[0] - Cx;
-            PC[1] = P[1] - Cy;
-            PC[2] = P[2] - Cz;
-
-            // Get recursive
-            mvi_recur_.compute(PA, PB, PC, gamma, am1, am2);
-
-            // Gather contributions.
-            ao12 = 0;
-            for (int ii = 0; ii <= am1; ++ii) {
-                int l1 = am1 - ii;
-                for (int jj = 0; jj <= ii; ++jj) {
-                    int m1 = ii - jj;
-                    int n1 = jj;
-
-                    for (int kk = 0; kk <= am2; ++kk) {
-                        int l2 = am2 - kk;
-                        for (int ll = 0; ll <= kk; ++ll) {
-                            int m2 = kk - ll;
-                            int n2 = ll;
-
-                            // Compute location in the recursion
-                            int iind = l1 * ixm + m1 * iym + n1 * izm;
-                            int jind = l2 * jxm + m2 * jym + n2 * jzm;
-
-                            buffer_[ao12 + 0 * size] += q[iind][jind][0] * over_pf;
-                            if (have_dipole) {
-                                buffer_[ao12 + 1 * size] += x[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 2 * size] += y[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 3 * size] += z[iind][jind][0] * over_pf;
+            int der_count = 0;
+            double sign_prefac = prefac;
+            // loop over 1/R derivatives
+            for (int der = 0; der < order_ + 1; ++der) {
+                const auto& comps = comps_der_[der];
+                // loop over Cartesian components of the derivative
+                // TODO: use structured bindings again once C++17 issues
+                // with l2 are sorted out
+                for (const auto& comp_der : comps) {
+                    const auto ex = comp_der[0];
+                    const auto ey = comp_der[1];
+                    const auto ez = comp_der[2];
+                    ao12 = 0;
+                    for (const auto& comp_am1 : comps_am1) {
+                        const auto l1 = comp_am1[0];
+                        const auto m1 = comp_am1[1];
+                        const auto n1 = comp_am1[2];
+                        for (const auto& comp_am2 : comps_am2) {
+                            const auto l2 = comp_am2[0];
+                            const auto m2 = comp_am2[1];
+                            const auto n2 = comp_am2[2];
+                            double val = 0.0;
+                            int maxt = l1 + l2;
+                            int maxu = m1 + m2;
+                            int maxv = n1 + n2;
+                            // first two indices are already known, so avoid
+                            // re-computing the entire address_3d
+                            const double* Ex_p = &Ex.data()[edim3 * (l2 + edim2 * l1)];
+                            const double* Ey_p = &Ey.data()[edim3 * (m2 + edim2 * m1)];
+                            const double* Ez_p = &Ez.data()[edim3 * (n2 + edim2 * n1)];
+                            for (int t = 0; t <= maxt; ++t) {
+                                for (int u = 0; u <= maxu; ++u) {
+                                    for (int v = 0; v <= maxv; ++v) {
+                                        // eq 9.9.32 (using eq 9.9.27)
+                                        val += Ex_p[t] * Ey_p[u] * Ez_p[v] *
+                                               R[address_3d(t + ex, u + ey, v + ez, rdim1, rdim1)];
+                                    }
+                                }
                             }
-                            if (have_quadrupole) {
-                                buffer_[ao12 + 4 * size] += xx[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 5 * size] += xy[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 6 * size] += xz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 7 * size] += yy[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 8 * size] += yz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 9 * size] += zz[iind][jind][0] * over_pf;
-                            }
-                            if (have_octupole) {
-                                buffer_[ao12 + 10 * size] += xxx[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 11 * size] += xxy[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 12 * size] += xxz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 13 * size] += xyy[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 14 * size] += xyz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 15 * size] += xzz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 16 * size] += yyy[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 17 * size] += yyz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 18 * size] += yzz[iind][jind][0] * over_pf;
-                                buffer_[ao12 + 19 * size] += zzz[iind][jind][0] * over_pf;
-                            }
-                            ao12++;
+                            buffer_[ao12 + size * der_count] += sign_prefac * val;
+                            ++ao12;
                         }
                     }
+                    der_count++;
                 }
+                // sign = (-1)^der
+                sign_prefac *= -1.0;
             }
         }
+    }
+    pure_transform(s1, s2, cumulative_cart_dim(order_));
+    for (int chunk = 0; chunk < cumulative_cart_dim(order_); ++chunk) {
+        buffers_[chunk] = buffer_ + chunk * s1.size() * s2.size();
     }
 }

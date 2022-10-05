@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -115,8 +115,8 @@ bool DCTSolver::correct_mo_phase_spincase(Matrix& temp, Matrix& overlap, const M
 void DCTSolver::initialize_orbitals_from_reference_U() {
     dct_timer_on("DCTSolver::scf_guess");
 
-    epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
-    epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
+    epsilon_a_->copy(*reference_wavefunction_->epsilon_a());
+    epsilon_b_->copy(*reference_wavefunction_->epsilon_b());
     Ca_->copy(reference_wavefunction_->Ca());
     Cb_->copy(reference_wavefunction_->Cb());
     moFa_->copy(reference_wavefunction_->Fa());

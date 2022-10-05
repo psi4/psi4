@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,17 +26,25 @@
 # @END LICENSE
 #
 
-"""Module with functions that call the four main :py:mod:`driver`
-functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
-:py:mod:`driver.response`, and :py:mod:`driver.frequency`.
+"""
+Module with database functionality.
 
 """
+
+__all__ = [
+    "database",
+    "db",
+    "DB_RGT",
+    "DB_RXN",
+]
+
 import collections
 import math
 import os
 import re
 import sys
 
+from psi4 import core
 from psi4.driver import constants
 from psi4.driver import p4util
 from psi4.driver.driver import *
@@ -86,7 +94,7 @@ def database(name, db_name, **kwargs):
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
-        :py:func:`psi4.energy`.
+        :py:func:`psi4.driver.energy`.
 
     :type db_name: str
     :param db_name: ``'BASIC'`` || ``'S22'`` || ``'HTBH'`` || etc.

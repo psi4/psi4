@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -41,8 +41,6 @@
 #include "psi4/physconst.h"
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libdiis/diisentry.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
@@ -104,7 +102,6 @@ void RHF::common_init() {
     Da_ = SharedMatrix(factory_->create_matrix("SCF density"));
     Db_ = Da_;
     Lagrangian_ = SharedMatrix(factory_->create_matrix("X"));
-    D_ = Da_;
     Dold_ = SharedMatrix(factory_->create_matrix("D old"));
     Va_ = SharedMatrix(factory_->create_matrix("V"));
     Vb_ = Va_;
@@ -123,7 +120,7 @@ void RHF::finalize() {
         for (int m = 0; m < Lagrangian_->rowdim(h); ++m) {
             for (int n = 0; n < Lagrangian_->coldim(h); ++n) {
                 double sum = 0.0;
-                for (int i = 0; i < doccpi_[h]; ++i) {
+                for (int i = 0; i < nalphapi_[h]; ++i) {
                     sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
                 }
                 Lagrangian_->set(h, m, n, sum);
@@ -140,10 +137,8 @@ void RHF::finalize() {
     HF::finalize();
 }
 
-SharedMatrix RHF::Da() const { return D_; }
-
 void RHF::save_density_and_energy() {
-    Dold_->copy(D_);  // Save previous density
+    Dold_->copy(Da_);  // Save previous density
 }
 
 void forPermutation(int depth, std::vector<int>& array, std::vector<int>& indices, int curDepth,
@@ -176,7 +171,7 @@ void RHF::form_V() {
     // // Pull the V matrices off
     // const std::vector<SharedMatrix> & V = potential_->V();
     // Va_ = V[0];
-    potential_->set_D({D_});
+    potential_->set_D({Da_});
     potential_->compute_V({Va_});
     Vb_ = Va_;
 }
@@ -238,35 +233,6 @@ void RHF::form_G() {
     }
 }
 
-double RHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
-    // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
-    SharedMatrix gradient = form_FDSmSDF(Fa_, Da_);
-
-    if (save_fock) {
-        if (initialized_diis_manager_ == false) {
-            if (scf_type_ == "DIRECT") {
-                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
-                                                              DIISManager::LargestError, DIISManager::InCore);
-            } else {
-                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
-                                                              DIISManager::LargestError, DIISManager::OnDisk);
-            }
-            diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
-            diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
-            initialized_diis_manager_ = true;
-        }
-        diis_manager_->add_entry(2, gradient.get(), Fa_.get());
-    }
-
-    if (options_.get_bool("DIIS_RMS_ERROR")) {
-        return gradient->rms();
-    } else {
-        return gradient->absmax();
-    }
-}
-
-bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }
-
 void RHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(G_);
@@ -302,40 +268,40 @@ void RHF::form_C(double shift) {
 }
 
 void RHF::form_D() {
-    D_->zero();
+    Da_->zero();
 
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
-        int na = doccpi_[h];
+        int na = nalphapi_[h];
 
         if (nso == 0 || nmo == 0) continue;
 
-        double** Ca = Ca_->pointer(h);
-        double** D = D_->pointer(h);
+        auto Ca = Ca_->pointer(h);
+        auto D = Da_->pointer(h);
 
         C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, D[0], nso);
     }
 
     if (debug_) {
         outfile->Printf("in RHF::form_D:\n");
-        D_->print();
+        Da_->print();
     }
 }
 
 void RHF::damping_update(double damping_percentage) {
-    D_->scale(1.0 - damping_percentage);
-    D_->axpy(damping_percentage, Dold_);
+    Da_->scale(1.0 - damping_percentage);
+    Da_->axpy(damping_percentage, Dold_);
 }
 
 double RHF::compute_initial_E() {
-    double Etotal = nuclearrep_ + D_->vector_dot(H_);
+    double Etotal = nuclearrep_ + Da_->vector_dot(H_);
     return Etotal;
 }
 
 double RHF::compute_E() {
-    double one_electron_E = 2.0 * D_->vector_dot(H_);
-    double coulomb_E = 2.0 * D_->vector_dot(J_);
+    double one_electron_E = 2.0 * Da_->vector_dot(H_);
+    double coulomb_E = 2.0 * Da_->vector_dot(J_);
 
     double XC_E = 0.0;
     double VV10_E = 0.0;
@@ -370,7 +336,7 @@ double RHF::compute_E() {
         }
     }
 
-    double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;
+    double two_electron_E = Da_->vector_dot(Fa_) - 0.5 * one_electron_E;
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
@@ -439,10 +405,10 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
             Cv = Cvir_so;
         }
 
-        SharedMatrix tmp1 = linalg::triplet(Co, F, Co, true, false, false);
-        SharedMatrix result = linalg::doublet(tmp1, x_vec[i], false, false);
+        auto tmp1 = linalg::triplet(Co, F, Co, true, false, false);
+        auto result = linalg::doublet(tmp1, x_vec[i], false, false);
 
-        SharedMatrix tmp2 = linalg::triplet(x_vec[i], Cv, F, false, true, false);
+        auto tmp2 = linalg::triplet(x_vec[i], Cv, F, false, true, false);
         result->gemm(false, false, -1.0, tmp2, Cv, 1.0);
 
         ret.push_back(result);
@@ -659,13 +625,13 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
-        SharedMatrix Cocc_ao = Ca_subset("AO", "ALL");
-        SharedMatrix F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
-        SharedMatrix IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
+        auto Cocc_ao = Ca_subset("AO", "ALL");
+        auto F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        auto IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
         Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
 
-        double* denomp = Precon_ao->pointer()[0];
-        double** fp = IFock_ao->pointer();
+        auto denomp = Precon_ao->pointer()[0];
+        auto fp = IFock_ao->pointer();
 
         for (size_t i = 0, target = 0; i < nalpha_; i++) {
             for (size_t a = nalpha_; a < nmo_; a++) {
@@ -676,17 +642,17 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
     if (needs_so) {
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
-        Dimension virpi = nmopi_ - nalphapi_;
-        SharedMatrix IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
-        Precon_so = std::make_shared<Matrix>("Precon", nirrep_, doccpi_, virpi);
+        auto virpi = nmopi_ - nalphapi_;
+        auto IFock_so = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+        Precon_so = std::make_shared<Matrix>("Precon", nirrep_, nalphapi_, virpi);
 
         for (size_t h = 0; h < nirrep_; h++) {
-            if (!doccpi_[h] || !virpi[h]) continue;
-            double* denomp = Precon_so->pointer(h)[0];
-            double** fp = IFock_so->pointer(h);
+            if (!nalphapi_[h] || !virpi[h]) continue;
+            auto denomp = Precon_so->pointer(h)[0];
+            auto fp = IFock_so->pointer(h);
 
-            for (size_t i = 0, target = 0; i < doccpi_[h]; i++) {
-                for (size_t a = doccpi_[h]; a < nmopi_[h]; a++) {
+            for (size_t i = 0, target = 0; i < nalphapi_[h]; i++) {
+                for (size_t a = nalphapi_[h]; a < nmopi_[h]; a++) {
                     denomp[target++] = -fp[i][i] + fp[a][a];
                 }
             }
@@ -954,14 +920,14 @@ bool RHF::stability_analysis() {
                 int isym = Atrip.params->psym[iabs];
                 int asym = Atrip.params->qsym[aabs];
                 int irel = iabs - Atrip.params->poff[isym];
-                int arel = aabs - Atrip.params->qoff[asym] + doccpi_[asym];
+                int arel = aabs - Atrip.params->qoff[asym] + nalphapi_[asym];
                 for (int jb = 0; jb < Atrip.params->coltot[h]; ++jb) {
                     int jabs = Atrip.params->colorb[h][jb][0];
                     int babs = Atrip.params->colorb[h][jb][1];
                     int jsym = Atrip.params->rsym[jabs];
                     int bsym = Atrip.params->ssym[babs];
                     int jrel = jabs - Atrip.params->roff[jsym];
-                    int brel = babs - Atrip.params->soff[bsym] + doccpi_[bsym];
+                    int brel = babs - Atrip.params->soff[bsym] + nalphapi_[bsym];
                     // Triplet A_ia_jb += delta_ij F_ab - delta_ab F_ij
                     if ((iabs == jabs) && (asym == bsym)) Atrip.matrix[h][ia][jb] += moF->get(asym, arel, brel);
                     if ((aabs == babs) && (isym == jsym)) Atrip.matrix[h][ia][jb] -= moF->get(isym, irel, jrel);
@@ -1014,9 +980,9 @@ bool RHF::stability_analysis() {
             free(evals);
         }
 
-        outfile->Printf("    Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        outfile->Printf("    Lowest singlet (RHF->RHF) stability eigenvalues:\n");
         print_stability_analysis(singlet_eval_sym);
-        outfile->Printf("    Lowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        outfile->Printf("    Lowest triplet (RHF->UHF) stability eigenvalues:\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
@@ -1026,7 +992,7 @@ bool RHF::stability_analysis() {
 }
 
 std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
-    std::shared_ptr<Wavefunction> wfn = Wavefunction::c1_deep_copy(basis);
+    auto wfn = Wavefunction::c1_deep_copy(basis);
     auto hf_wfn = std::make_shared<RHF>(wfn, functional_, wfn->options(), wfn->psio());
     // now just have to copy the matrices that RHF initializes
     // include only those that are not temporary (some deleted in finalize())
@@ -1037,18 +1003,17 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (Da_) {
         hf_wfn->Da_ = Da_subset("AO");
         hf_wfn->Db_ = hf_wfn->Da_;
-        hf_wfn->D_ = hf_wfn->Da_;
     }
     if (Fa_) {
         hf_wfn->Fa_ = Fa_subset("AO");
         hf_wfn->Fb_ = hf_wfn->Fa_;
     }
     if (epsilon_a_) {
-        hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nsopi_, "AO", "ALL");
+        hf_wfn->epsilon_a_ = epsilon_subset_helper(epsilon_a_, nalphapi_, "AO", "ALL");
         hf_wfn->epsilon_b_ = hf_wfn->epsilon_a_;
     }
     // H_ ans X_ reset in the HF constructor, copy them over here
-    SharedMatrix SO2AO = aotoso()->transpose();
+    auto SO2AO = aotoso()->transpose();
     if (H_) hf_wfn->H_->remove_symmetry(H_, SO2AO);
     if (X_) hf_wfn->X_->remove_symmetry(X_, SO2AO);
 

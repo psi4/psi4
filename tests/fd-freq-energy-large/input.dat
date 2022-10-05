@@ -50,6 +50,7 @@ set {
   d_convergence 11
   points 3
   scf_type pk
+  fd_project true
 }
 
 set findif {print 3}

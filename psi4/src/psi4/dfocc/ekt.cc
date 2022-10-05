@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,24 +49,24 @@ Ektip::Ektip(std::string name, int nocc, int norb, const SharedTensor2d& GFock, 
     cutoff_ = 1.0E-10;
 
     // malloc
-    GF_ = SharedTensor2d(new Tensor2d("MO-basis GFM", norb_, norb_));
+    GF_ = std::make_shared<Tensor2d>("MO-basis GFM", norb_, norb_);
     GF_->copy(GFock);
-    G1_ = SharedTensor2d(new Tensor2d("MO-basis OPDM", norb_, norb_));
+    G1_ = std::make_shared<Tensor2d>("MO-basis OPDM", norb_, norb_);
     G1_->copy(Gamma);
-    Uvec_ = SharedTensor2d(new Tensor2d("Uvec", norb_, norb_));
-    Uvecp_ = SharedTensor2d(new Tensor2d("Uvec Prime", norb_, norb_));
-    G1half_ = SharedTensor2d(new Tensor2d("G1^1/2", norb_, norb_));
-    temp_ = SharedTensor2d(new Tensor2d("Temp", norb_, norb_));
-    GFp_ = SharedTensor2d(new Tensor2d("GFM Prime", norb_, norb_));
-    PS_ = SharedTensor2d(new Tensor2d("Pole Strength", norb_, norb_));
-    GCt_ = SharedTensor2d(new Tensor2d("Alpha C'*gamma ", norb_, norb_));
+    Uvec_ = std::make_shared<Tensor2d>("Uvec", norb_, norb_);
+    Uvecp_ = std::make_shared<Tensor2d>("Uvec Prime", norb_, norb_);
+    G1half_ = std::make_shared<Tensor2d>("G1^1/2", norb_, norb_);
+    temp_ = std::make_shared<Tensor2d>("Temp", norb_, norb_);
+    GFp_ = std::make_shared<Tensor2d>("GFM Prime", norb_, norb_);
+    PS_ = std::make_shared<Tensor2d>("Pole Strength", norb_, norb_);
+    GCt_ = std::make_shared<Tensor2d>("Alpha C'*gamma ", norb_, norb_);
 
     // 1D
-    eocc_ = SharedTensor1d(new Tensor1d("epsilon <I|J>", nocc_));
-    eorb_ = SharedTensor1d(new Tensor1d("epsilon <P|Q>", norb_));
-    diagG1_ = SharedTensor1d(new Tensor1d("Diag G1", norb_));
-    ps_vec_ = SharedTensor1d(new Tensor1d("pole strength vector", norb_));
-    ps_occ_ = SharedTensor1d(new Tensor1d("occupied pole strength vector", nocc_));
+    eocc_ = std::make_shared<Tensor1d>("epsilon <I|J>", nocc_);
+    eorb_ = std::make_shared<Tensor1d>("epsilon <P|Q>", norb_);
+    diagG1_ = std::make_shared<Tensor1d>("Diag G1", norb_);
+    ps_vec_ = std::make_shared<Tensor1d>("pole strength vector", norb_);
+    ps_occ_ = std::make_shared<Tensor1d>("occupied pole strength vector", nocc_);
 
     // compute ekt
     compute_ektip();
@@ -96,9 +96,9 @@ void Ektip::compute_ektip() {
     GF_->scale(scale_);
 
     // Make sure GFM is symmetric
-    GF_copy_ = SharedTensor2d(new Tensor2d("MO-basis GFM", norb_, norb_));
+    GF_copy_ = std::make_shared<Tensor2d>("MO-basis GFM", norb_, norb_);
     GF_copy_->copy(GF_);
-    GFt_ = SharedTensor2d(new Tensor2d("MO-basis GFM", norb_, norb_));
+    GFt_ = std::make_shared<Tensor2d>("MO-basis GFM", norb_, norb_);
     GFt_->trans(GF_);
     GF_copy_->add(GFt_);
     GF_copy_->scale(0.5);
@@ -107,9 +107,9 @@ void Ektip::compute_ektip() {
     GF_copy_.reset();
 
     // Symm OPDM
-    G1_copy_ = SharedTensor2d(new Tensor2d("MO-basis OPDM", norb_, norb_));
+    G1_copy_ = std::make_shared<Tensor2d>("MO-basis OPDM", norb_, norb_);
     G1_copy_->copy(G1_);
-    G1t_ = SharedTensor2d(new Tensor2d("MO-basis OPDM", norb_, norb_));
+    G1t_ = std::make_shared<Tensor2d>("MO-basis OPDM", norb_, norb_);
     G1t_->trans(G1_);
     G1_copy_->add(G1t_);
     G1_copy_->scale(0.5);

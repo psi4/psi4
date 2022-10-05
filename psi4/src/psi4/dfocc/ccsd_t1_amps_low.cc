@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,40 +46,40 @@ void DFOCC::ccsd_t1_amps_low() {
     t1newA->gemm(true, false, FijA, t1A, -1.0, 1.0);
 
     // t_i^a <= \sum_{m,e} u_im^ae Fme
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
     t1newA->gemv(false, U, FiaA, 1.0, 1.0);
     U.reset();
 
     // t_i^a <= \sum_{Q} t_Q b_ia^Q
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     K->read(psio_, PSIF_DFOCC_INTS);
     t1newA->gemv(true, K, T1c, 1.0, 1.0);
     K.reset();
 
     // t_i^a <= -\sum_{Q,m} (T_ma^Q + t_ma^Q) b_mi^Q -= \sum_{Q,m} B(Qm,i) X(Qm,a)
-    T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     T->read(psio_, PSIF_DFOCC_AMPS);
-    T1 = SharedTensor2d(new Tensor2d("T1 (Q|IA)", nQ, naoccA, navirA));
+    T1 = std::make_shared<Tensor2d>("T1 (Q|IA)", nQ, naoccA, navirA);
     T1->read(psio_, PSIF_DFOCC_AMPS);
-    U = SharedTensor2d(new Tensor2d("T1+T2 (Q|IA)", nQ, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("T1+T2 (Q|IA)", nQ, naoccA, navirA);
     U->copy(T);
     T.reset();
     U->add(T1);
     T1.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     K->read(psio_, PSIF_DFOCC_INTS);
     t1newA->contract(true, false, naoccA, navirA, nQ * naoccA, K, U, -1.0, 1.0);
     U.reset();
     K.reset();
 
     // t_i^a <= \sum_{Q,e} T_ie^Q b_ea^Q = \sum_{Qe} T^Q(i,e) B^Q(e,a)
-    T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
     T->read(psio_, PSIF_DFOCC_AMPS);
-    Tau = SharedTensor2d(new Tensor2d("Temp (Q|AI)", nQ, navirA, naoccA));
+    Tau = std::make_shared<Tensor2d>("Temp (Q|AI)", nQ, navirA, naoccA);
     Tau->swap_3index_col(T);
     T.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
     K->read(psio_, PSIF_DFOCC_INTS, true, true);
     t1newA->contract(true, false, naoccA, navirA, nQ * navirA, Tau, K, 1.0, 1.0);
     K.reset();

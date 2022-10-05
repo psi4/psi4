@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -495,6 +495,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    :envvar:`PSIDATADIR` and specifies the path to the Psi data
    library (ends in ``share/psi4``). Expert mode.
 
+.. option:: --loglevel <int>
+
+   Sets logging level: WARN=30, INFO=20, DEBUG=10.
+
 .. option:: -m, --messy
 
    Leave temporary files after the run is completed.
@@ -502,6 +506,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 .. option:: --memory <memory>
 
    The amount of memory to use. Can be specified with units (e.g., '10MB') otherwise bytes is assumed.
+
+.. option:: --module
+
+   The location of the associated |PSIfour| Python module.
 
  .. option:: -n <threads>, --nthread <threads>
 
@@ -520,7 +528,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Generates a bash command to source correct Python interpreter and path for ``python -c "import psi4"``
 
-.. option:: --qcschema
+.. option:: --qcschema, --schema
 
    Runs input files as QCSchema. Can either be JSON or MessagePack input.
 

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -232,7 +232,7 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   By encoding the sequence of |PSIfour| module
   calls needed to run the plugin in the ``run_myplugin()`` function in this
   file, the plugin is hooked into the main |PSIfour| driver function
-  :py:func:`~psi4.energy` and so can be accessed through
+  :py:func:`~psi4.driver.energy` and so can be accessed through
   ``energy('myplugin')`` in an input file. Any other Python functions can
   also be placed in this file.
 

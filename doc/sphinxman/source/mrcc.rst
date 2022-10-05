@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -68,10 +68,10 @@ MRCC simply provide the following::
    }
    energy('mrccsdt')
 
-``'mrccsdt'`` in the call to :py:func:`~psi4.energy` instructs |PSIfour| to first
+``'mrccsdt'`` in the call to :py:func:`~psi4.driver.energy` instructs |PSIfour| to first
 perform an RHF calculation and then call MRCC to compute the CCSDT energy.
 For a CCSDT(Q) energy, simply use ``'mrccsdt(q)'`` in the call to
-:py:func:`~psi4.energy`. MRCC can be used to perform geometry optimization and
+:py:func:`~psi4.driver.energy`. MRCC can be used to perform geometry optimization and
 frequency calculations for electronic ground states only.
 
 At this time, |PSIfour| is only able to automatically generate the proper

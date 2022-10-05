@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -56,8 +56,7 @@ int cc_excited(const char *wfn) {
     if (!strcmp(wfn, "CCSD") || !strcmp(wfn, "CCSD_T") || !strcmp(wfn, "BCCD") || !strcmp(wfn, "BCCD_T") ||
         !strcmp(wfn, "CC2") || !strcmp(wfn, "CC3") || !strcmp(wfn, "CCSD_MVD") || !strcmp(wfn, "CCSD_AT")) {
         return 0;
-    } else if (!strcmp(wfn, "EOM_CCSD") || !strcmp(wfn, "LEOM_CCSD") || !strcmp(wfn, "EOM_CC2") ||
-               !strcmp(wfn, "EOM_CC3")) {
+    } else if (!strcmp(wfn, "EOM_CCSD") || !strcmp(wfn, "EOM_CC2") || !strcmp(wfn, "EOM_CC3")) {
         return 1;
     } else {
         std::string str = "Invalid value of input keyword WFN: ";

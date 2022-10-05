@@ -2,15 +2,17 @@ jobs:
 
   # Configure, build, install, and test job
   - job: 'windows_build'
-    displayName: 'Windows VS2017'
+    displayName: 'Windows VS2022'
     pool:
-      vmImage: 'vs2017-win2016'
+      vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '11.0.0'
+      llvm.version: '13.0.0'
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
       conda.build: false
+      ctest.type: 'smoke'
+      pytest.type: 'quick'
       MKL_CBWR: AVX
       PYTHON_VERSION: '3.8'
     steps:
@@ -20,11 +22,11 @@ jobs:
           setlocal EnableDelayedExpansion
           echo python.version: %PYTHON_VERSION%
           set VALID=false
-          if "%PYTHON_VERSION%"=="3.7" set VALID=true
           if "%PYTHON_VERSION%"=="3.8" set VALID=true
           if "%PYTHON_VERSION%"=="3.9" set VALID=true
+          if "%PYTHON_VERSION%"=="3.10" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.7" through "3.9".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.8" through "3.10".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -47,10 +49,11 @@ jobs:
           setlocal EnableDelayedExpansion
           echo ctest.type: %CTEST_TYPE%
           set VALID=false
+          if "%CTEST_TYPE%"=="smoke" set VALID=true
           if "%CTEST_TYPE%"=="quick" set VALID=true
           if "%CTEST_TYPE%"=="full" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "ctest.type" value: "%CTEST_TYPE%". Valid values: "quick" and "full".
+            echo ERROR: Invalid "ctest.type" value: "%CTEST_TYPE%". Valid values: "smoke" and "quick" and "full".
             exit 1
           )
         displayName: "Check ctest configuration"
@@ -60,10 +63,11 @@ jobs:
           setlocal EnableDelayedExpansion
           echo pytest.type: %PYTEST_TYPE%
           set VALID=false
+          if "%PYTEST_TYPE%"=="smoke" set VALID=true
           if "%PYTEST_TYPE%"=="quick" set VALID=true
           if "%PYTEST_TYPE%"=="full" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "pytest.type" value: "%PYTEST_TYPE%". Valid values: "quick" and "full".
+            echo ERROR: Invalid "pytest.type" value: "%PYTEST_TYPE%". Valid values: "smoke" and "quick" and "full".
             exit 1
           )
         displayName: "Check pytest configuration"
@@ -92,7 +96,7 @@ jobs:
       # Install Miniconda
       - script: |
           choco install miniconda3 --yes
-          set PATH=C:\tools\miniconda3\Scripts;C:\tools\miniconda3;C:\tools\miniconda3\Library\bin;%PATH%
+          set PATH=C:\tools\miniconda3\Scripts;C:\tools\miniconda3;C:\tools\miniconda3\Library\bin;C:\tools\miniconda3\Library\mingw-w64\bin;%PATH%
           echo '##vso[task.setvariable variable=PATH]%PATH%'
           set LIB=C:\tools\miniconda3\Library\lib;%LIB%
           echo '##vso[task.setvariable variable=LIB]%LIB%'
@@ -117,28 +121,26 @@ jobs:
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
+                        mpmath ^
+                        msgpack-python ^
                         networkx ^
                         ninja ^
                         numpy ^
                         pint ^
-                        pybind11 ^
-                        pymdi ^
-                        pytest ^
+                        pybind11=2.7.0 ^
+                        pytest>=7.0.1 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
                         psi4/label/dev::dftd3 ^
                         psi4/label/dev::gcp ^
                         conda-forge::gau2grid ^
-                        psi4/label/dev::libint2 ^
                         conda-forge::libxc ^
-                        conda-forge::mpfr ^
-                        conda-forge::mpmath ^
-                        conda-forge::msgpack-python ^
-                        conda-forge::qcelemental ^
-                        conda-forge::qcengine
-          pip install git+https://github.com/i-pi/i-pi.git@master-py3
+                        psi4/label/dev::libint2=*=h2e52968_4 ^
+                        conda-forge::qcelemental=0.25.0 ^
+                        conda-forge::qcengine=0.23.0 ^
+                        scipy
           conda install --only-deps anaconda-client
-          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
+          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
           which anaconda
           conda list
         displayName: "Install conda packages"
@@ -146,7 +148,7 @@ jobs:
       # Install LLVM
       # Note: LLVM distributed by conda is too old
       - script: |
-          choco install llvm --version %LLVM_VERSION% --yes
+          choco install llvm --version %LLVM_VERSION% --allow-downgrade --yes
           set PATH=C:\Program Files\LLVM\bin;%PATH%
           echo '##vso[task.setvariable variable=PATH]%PATH%'
           clang-cl --version
@@ -163,9 +165,10 @@ jobs:
         displayName: "Install Intel OpenMP import library"
 
       # Configure
+      # call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
       - script: |
           setlocal EnableDelayedExpansion
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
@@ -174,15 +177,19 @@ jobs:
           if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
           if not defined ENABLE_XHOST exit 1
           cmake -G Ninja ^
+                -DCMAKE_VERBOSE_MAKEFILE=OFF ^
                 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
                 -DCMAKE_INSTALL_PREFIX=../install ^
                 -DCMAKE_C_COMPILER=clang-cl ^
                 -DCMAKE_CXX_COMPILER=clang-cl ^
-                -DENABLE_XHOST=!ENABLE_XHOST! ^
+                -DENABLE_XHOST=OFF ^
+                -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
-                -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
-                -DEigen_ROOT="C:/tools/miniconda3/Library" ^
+                -DPython_NumPy_INCLUDE_DIR="C:/tools/miniconda3/lib/site-packages/numpy/core/include" ^
+                -DEigen3_ROOT="C:/tools/miniconda3/Library" ^
+                -DBOOST_ROOT="C:/tools/miniconda3/Library" ^
+                -DMultiprecision_ROOT="C:/tools/miniconda3/Library" ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
@@ -194,7 +201,7 @@ jobs:
 
       # Build
       - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
           cmake --build . ^
                 --config %CMAKE_BUILD_TYPE% ^
                 -- -j %NUMBER_OF_PROCESSORS%
@@ -203,7 +210,7 @@ jobs:
 
       # Install
       - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
           cmake --build . ^
                 --config %CMAKE_BUILD_TYPE% ^
                 --target install ^
@@ -220,11 +227,14 @@ jobs:
 
       # Spot Test
       - script: |
-          setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
-          psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat
+          psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat -o stdout
         displayName: 'Run, Run, Spot, Run Test'
         workingDirectory: $(Build.BinariesDirectory)/build
+
+      - script: |
+          objdump.exe -p D:/a/1/b/install/lib/psi4/core.*.pyd | grep dll
+        displayName: "Library dependencies"
 
       # Test (ctest)
       - script: |
@@ -254,19 +264,20 @@ jobs:
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
-        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Build Psi4 package"
 
       # Publish package
       - task: PublishBuildArtifacts@1
         inputs:
           artifactName: conda
-        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Publish Psi4 package"
 
       # Upload package
       # * use same ANACONDA_TOKEN generated on anaconda.org for GHA and save it in Azure DevOps
       #   at /psi4/psi4/Pipelines/psi4.psi4 -> Edit button -> Variables button -> new secret var `conda.anaconda_org_token`.
+      #   when it expires, revoke it at anaconda.org, regenerate there and paste new one at Azure
       # * error handling may need tweaking as I don't know if failure to upload for lack of space (`echo $?`=1) will fail the workflow.
       - bash: |
           set -e
@@ -282,6 +293,6 @@ jobs:
           echo $?
         env:
           ANACONDA_API_TOKEN: $(conda.anaconda_org_token)
-        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Upload Psi4 package to anaconda.org"
 

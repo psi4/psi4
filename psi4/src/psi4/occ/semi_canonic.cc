@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -44,8 +44,8 @@ void OCCWave::semi_canonic() {
     auto UvvA = std::make_shared<Matrix>(nirrep_, virtpiA, virtpiA);
     auto FockooA = std::make_shared<Matrix>(nirrep_, occpiA, occpiA);
     auto FockvvA = std::make_shared<Matrix>(nirrep_, virtpiA, virtpiA);
-    auto eigooA = std::make_shared<Vector>(nirrep_, occpiA);
-    auto eigvvA = std::make_shared<Vector>(nirrep_, virtpiA);
+    Vector eigooA(occpiA);
+    Vector eigvvA(virtpiA);
 
     UooA->zero();
     UvvA->zero();
@@ -55,14 +55,14 @@ void OCCWave::semi_canonic() {
     // OCC-OCC
     for (int h = 0; h < nirrep_; h++) {
         for (int i = 0; i < occpiA[h]; i++) {
-            eigooA->set(h, i, 0.0);
+            eigooA.set(h, i, 0.0);
         }
     }
 
     // VIR-VIR
     for (int h = 0; h < nirrep_; h++) {
         for (int i = 0; i < virtpiA[h]; i++) {
-            eigvvA->set(h, i, 0.0);
+            eigvvA.set(h, i, 0.0);
         }
     }
 
@@ -106,7 +106,7 @@ void OCCWave::semi_canonic() {
         for (int h = 0; h < nirrep_; h++) {
             int count = 1;
             for (int i = 0; i < occpiA[h]; i++) {
-                outfile->Printf("\t %2d%-3s %20.10f \n", count, ct.gamma(h).symbol(), eigooA->get(h, i));
+                outfile->Printf("\t %2d%-3s %20.10f \n", count, ct.gamma(h).symbol(), eigooA.get(h, i));
 
                 count++;
             }  // end loop over occpi
@@ -117,7 +117,7 @@ void OCCWave::semi_canonic() {
         for (int h = 0; h < nirrep_; h++) {
             int count = 1;
             for (int i = 0; i < virtpiA[h]; i++) {
-                outfile->Printf("\t %2d%-3s %20.10f \n", count, ct.gamma(h).symbol(), eigvvA->get(h, i));
+                outfile->Printf("\t %2d%-3s %20.10f \n", count, ct.gamma(h).symbol(), eigvvA.get(h, i));
 
                 count++;
             }  // end loop over occpi
@@ -170,8 +170,6 @@ void OCCWave::semi_canonic() {
     UvvA.reset();
     FockooA.reset();
     FockvvA.reset();
-    eigooA.reset();
-    eigvvA.reset();
 
     // UHF REFERENCE
     if (reference_ == "UNRESTRICTED") {
@@ -179,8 +177,8 @@ void OCCWave::semi_canonic() {
         auto UvvB = std::make_shared<Matrix>(nirrep_, virtpiB, virtpiB);
         auto FockooB = std::make_shared<Matrix>(nirrep_, occpiB, occpiB);
         auto FockvvB = std::make_shared<Matrix>(nirrep_, virtpiB, virtpiB);
-        auto eigooB = std::make_shared<Vector>(nirrep_, occpiB);
-        auto eigvvB = std::make_shared<Vector>(nirrep_, virtpiB);
+        Vector eigooB(occpiB);
+        Vector eigvvB(virtpiB);
 
         UooB->zero();
         UvvB->zero();
@@ -190,14 +188,14 @@ void OCCWave::semi_canonic() {
         // occ-occ
         for (int h = 0; h < nirrep_; h++) {
             for (int i = 0; i < occpiB[h]; i++) {
-                eigooB->set(h, i, 0.0);
+                eigooB.set(h, i, 0.0);
             }
         }
 
         // vir-vir
         for (int h = 0; h < nirrep_; h++) {
             for (int i = 0; i < virtpiB[h]; i++) {
-                eigvvB->set(h, i, 0.0);
+                eigvvB.set(h, i, 0.0);
             }
         }
 
@@ -241,7 +239,7 @@ void OCCWave::semi_canonic() {
             for (int h = 0; h < nirrep_; h++) {
                 int count = 1;
                 for (int i = 0; i < occpiB[h]; i++) {
-                    outfile->Printf("\t %2d%-3s %20.10f \n", count, ct.gamma(h).symbol(), eigooB->get(h, i));
+                    outfile->Printf("\t %2d%-3s %20.10f \n", count, ct.gamma(h).symbol(), eigooB.get(h, i));
 
                     count++;
                 }  // end loop over occpi
@@ -252,7 +250,7 @@ void OCCWave::semi_canonic() {
             for (int h = 0; h < nirrep_; h++) {
                 int count = 1;
                 for (int i = 0; i < virtpiB[h]; i++) {
-                    outfile->Printf("\t %2d%-3s %20.10f \n", count, ct.gamma(h).symbol(), eigvvB->get(h, i));
+                    outfile->Printf("\t %2d%-3s %20.10f \n", count, ct.gamma(h).symbol(), eigvvB.get(h, i));
 
                     count++;
                 }  // end loop over occpi
@@ -303,8 +301,6 @@ void OCCWave::semi_canonic() {
         UvvB.reset();
         FockooB.reset();
         FockvvB.reset();
-        eigooB.reset();
-        eigvvB.reset();
     }  // end uhf
 }
 }

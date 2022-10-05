@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,9 +40,10 @@
 #include "psi4/psifiles.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
+#include "ccdensity.h"
+#include "Frozen.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
 #define EXTERN
 #include "globals.h"
 
@@ -50,7 +51,8 @@ namespace psi {
 namespace ccdensity {
 #include "psi4/physconst.h"
 
-void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S) {
+// TODO: Do TD_Params
+void oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S) {
     int nmo, nso, i, I, h, j;
     int *order, *order_A, *order_B, *doccpi;
     double **scf_pitzer, **scf_pitzer_A, **scf_pitzer_B;
@@ -67,14 +69,14 @@ void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S) {
     double f;
 
     if ((params.ref == 0) || (params.ref == 1))
-        scf_pitzer = wfn->Ca()->to_block_matrix();
+        scf_pitzer = wfn.Ca()->to_block_matrix();
     else if (params.ref == 2) {
-        scf_pitzer_A = wfn->Ca()->to_block_matrix();
-        scf_pitzer_B = wfn->Cb()->to_block_matrix();
+        scf_pitzer_A = wfn.Ca()->to_block_matrix();
+        scf_pitzer_B = wfn.Cb()->to_block_matrix();
     }
 
-    nso = wfn->nso();
-    nmo = wfn->nmo();
+    nso = wfn.nso();
+    nmo = wfn.nmo();
 
     lt_x = lt_y = lt_z = 0.0;
     rt_x = rt_y = rt_z = 0.0;
@@ -126,7 +128,7 @@ void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S) {
 
     /*** Transform the SO dipole integrals to the MO basis ***/
 
-    MintsHelper mints(wfn->basisset(), Process::environment.options, 0);
+    MintsHelper mints(wfn.basisset(), Process::environment.options, 0);
     std::vector<SharedMatrix> dipole = mints.so_dipole();
     MUX_SO = dipole[0]->to_block_matrix();
     MUY_SO = dipole[1]->to_block_matrix();
@@ -235,9 +237,11 @@ void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S) {
     ds_y = lt_y * rt_y;
     ds_z = lt_z * rt_z;
 
-    f_x = (2 * S->cceom_energy * ds_x) / 3;
-    f_y = (2 * S->cceom_energy * ds_y) / 3;
-    f_z = (2 * S->cceom_energy * ds_z) / 3;
+    auto delta_e = S->cceom_energy;
+
+    f_x = (2 * delta_e * ds_x) / 3;
+    f_y = (2 * delta_e * ds_y) / 3;
+    f_z = (2 * delta_e * ds_z) / 3;
 
     f = f_x + f_y + f_z;
     S->OS = f;
@@ -248,7 +252,7 @@ void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S) {
     /* SI Dipole Strength */
     double ds_si = (ds_x + ds_y + ds_z) * pc_dipmom_au2si * pc_dipmom_au2si;
     /* SI Transition Energy */
-    double nu_si = S->cceom_energy * hartree2Hz;
+    double nu_si = delta_e * hartree2Hz;
     /* Einstein Coefficients */
     double einstein_b = (2.0 / 3.0) * (pc_pi / pow(hbar, 2.0)) * (1.0 / (4.0 * pc_pi * pc_e0)) * ds_si;
     double einstein_a = 8.0 * pc_pi * pc_h * pow((nu_si / pc_c), 3.0) * einstein_b;
@@ -262,6 +266,11 @@ void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S) {
     outfile->Printf("\tOscillator Strength     %11.8lf \n", f_x + f_y + f_z);
     outfile->Printf("\tEinstein A Coefficient   %11.8e \n", einstein_a);
     outfile->Printf("\tEinstein B Coefficient   %11.8e \n", einstein_b);
+
+    // Save variables to wfn.
+    scalar_saver_ground(wfn, S, "OSCILLATOR STRENGTH (LEN)", f_x + f_y + f_z);
+    scalar_saver_ground(wfn, S, "EINSTEIN A (LEN)", einstein_a);
+    scalar_saver_ground(wfn, S, "EINSTEIN B (LEN)", einstein_b);
 
     if ((params.ref == 0) || (params.ref == 1)) {
         free_block(MUX_MO);

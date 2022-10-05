@@ -3,8 +3,9 @@ import itertools
 import numpy as np
 import pytest
 from psi4.core import Dimension, Matrix, doublet
-from .utils import compare_arrays
+from utils import compare_arrays
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 def check_dense_mat(m, exp_r, exp_c, exp_name=None):
     assert m.rows() == exp_r

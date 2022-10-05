@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -33,6 +33,7 @@ import qcelemental as qcel
 from .pdict import PreservingDict
 from .molecule import Molecule
 
+# Not maintained: see https://github.com/psi4/psi4/issues/2478
 
 def harvest(p4Mol, orca_out, **largs):
     """Harvest variables, gradient, and the molecule from the output and other

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -29,6 +29,13 @@
 For details regarding MDI, see https://molssi.github.io/MDI_Library/html/index.html.
 
 """
+
+__all__ = [
+    "mdi_init",
+    "mdi_run",
+    "MDIEngine",
+]
+
 import numpy as np
 import qcelemental as qcel
 
@@ -51,11 +58,19 @@ except ImportError:
 
 
 class MDIEngine():
-    def __init__(self, scf_method, **kwargs):
+    def __init__(self, scf_method: str, **kwargs):
         """ Initialize an MDIEngine object for communication with MDI
 
-        Arguments:
-           scf_method: Method used when calculating energies or gradients
+        Parameters
+        ----------
+        scf_method
+            Method (SCF or post-SCF) used when calculating energies or gradients.
+        molecule
+            The target molecule, if not the last molecule defined.
+        kwargs
+            Any additional arguments to pass to :func:`psi4.driver.energy` or
+            :func:`psi4.driver.gradient` computation.
+
         """
 
         # Method used when the SCF command is received
@@ -76,7 +91,7 @@ class MDIEngine():
         self.nlattice = 0  # number of lattice point charges
         self.clattice = []  # list of lattice coordinates
         self.lattice = []  # list of lattice charges
-        self.lattice_field = psi4.QMMM()  # Psi4 chargefield
+        self.lattice_field = psi4.QMMMbohr()  # Psi4 chargefield
 
         # MPI variables
         self.mpi_world = None
@@ -281,14 +296,13 @@ class MDIEngine():
     def set_lattice_field(self):
         """ Set a field of lattice point charges using information received through MDI
         """
-        self.lattice_field = psi4.QMMM()
-        unit_conv = self.length_conversion()
+        arr = []
         for ilat in range(self.nlattice):
-            latx = self.clattice[3 * ilat + 0] * unit_conv
-            laty = self.clattice[3 * ilat + 1] * unit_conv
-            latz = self.clattice[3 * ilat + 2] * unit_conv
-            self.lattice_field.extern.addCharge(self.lattice[ilat], latx, laty, latz)
-        psi4.core.set_global_option_python('EXTERN', self.lattice_field.extern)
+            arr.append(self.lattice[ilat])
+            arr.append(self.clattice[3 * ilat + 0])
+            arr.append(self.clattice[3 * ilat + 1])
+            arr.append(self.clattice[3 * ilat + 2])
+        self.kwargs["external_potentials"] = np.array(arr).reshape((-1, 4))
         self.set_lattice = True
 
     # Respond to the >NLATTICE command
@@ -398,7 +412,7 @@ class MDIEngine():
 
         # If a lattice of point charges was set, unset it now
         if self.set_lattice:
-            psi4.core.set_global_option_python('EXTERN', None)
+            self.kwargs.pop("external_potentials", None)
             
 
     # Enter server mode, listening for commands from the driver
@@ -430,17 +444,28 @@ class MDIEngine():
 def mdi_init(mdi_arguments):
     """ Initialize the MDI Library
 
-    Arguments:
-        mdi_arguments: MDI configuration options
+    Parameters
+    ----------
+    mdi_arguments
+        MDI configuration options
+
     """
     MDI_Init(mdi_arguments)
 
 
-def mdi_run(scf_method, **kwargs):
+def mdi_run(scf_method: str, **kwargs):
     """ Begin functioning as an MDI engine
 
-    Arguments:
-        scf_method: Method used when calculating energies or gradients
+    Parameters
+    ----------
+    scf_method
+        Method (SCF or post-SCF) used when calculating energies or gradients.
+    molecule
+        The target molecule, if not the last molecule defined.
+    kwargs
+        Any additional arguments to pass to :func:`psi4.driver.energy` or
+        :func:`psi4.driver.gradient` computation.
+
     """
     engine = MDIEngine(scf_method, **kwargs)
     engine.listen_for_commands()

@@ -12,6 +12,7 @@ set {
     basis 6-31G**
     guess core
     roots_per_irrep [20]
+    qc_module builtin
 }
 
 ref_energy = -76.22243196371332 

@@ -1,4 +1,4 @@
-#! test QC_JSON Schema with ghost atoms
+#! test QCSchema with ghost atoms
 
 import numpy as np
 import psi4
@@ -28,9 +28,9 @@ json_data = {
     "keywords": {
         "scf_type": "df"
     },
-    "memory": 1024 * 1024 * 1024,
-    "nthreads": 1,
 }
+psi4.set_num_threads(1)
+psi4.set_memory(1024 * 1024 * 1024)
 
 # Write expected output
 expected_return_result = -2.85518836280515
@@ -47,7 +47,7 @@ expected_properties = {
     'return_energy': -2.85518836280515
 }
 
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
 
 

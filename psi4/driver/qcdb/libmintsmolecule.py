@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -77,7 +77,7 @@ class LibmintsMolecule():
 
     >>> H2O = qcdb.Molecule.init_with_xyz('h2o.xyz')
     """
-    FullPointGroupList = ["ATOM", "C_inf_v", "D_inf_h", "C1", "Cs", "Ci", \
+    FullPointGroupList = ["ATOM", "C_inf_v", "D_inf_h", "C1", "Cs", "Ci",
         "Cn", "Cnv", "Cnh", "Sn", "Dn", "Dnd", "Dnh", "Td", "Oh", "Ih"]
 
     def __init__(self):
@@ -1651,7 +1651,7 @@ class LibmintsMolecule():
         """Assigns basis *name* to atom number *number* (0-indexed, excludes dummies)."""
         # change from libmints to 0-indexing and to real/ghost numbering, dummies not included (libmints >= error)
         if number >= self.natom():
-            raise ValidationError("Molecule::set_basis_by_number: Basis specified for atom %d, but there are only %d atoms in this molecule." % \
+            raise ValidationError("Molecule::set_basis_by_number: Basis specified for atom %d, but there are only %d atoms in this molecule." %
                 (number, self.natom()))
         self.atoms[number].set_basisset(name, role)
 
@@ -1665,7 +1665,7 @@ class LibmintsMolecule():
         """Assigns BasisSet *bshash* to atom number *number* (0-indexed, excludes dummies)."""
         self.lock_frame = False
         if number >= self.natom():
-            raise ValidationError("Molecule::set_shell_by_number: Basis specified for atom %d, but there are only %d atoms in this molecule." % \
+            raise ValidationError("Molecule::set_shell_by_number: Basis specified for atom %d, but there are only %d atoms in this molecule." %
                 (number, self.natom()))
         self.atoms[number].set_shell(bshash, role)
 
@@ -1676,10 +1676,10 @@ class LibmintsMolecule():
         2
 
         """
-        if depth == False or depth.upper() == 'FALSE':
+        if not depth or depth.upper() == 'FALSE':
             return 0
 
-        elif depth == True or depth.upper() == 'TRUE':
+        elif depth or depth.upper() == 'TRUE':
             # Freeze the number of core electrons corresponding to the
             # nearest previous noble gas atom.  This means that the 4p block
             # will still have 3d electrons active.  Alkali earth atoms will

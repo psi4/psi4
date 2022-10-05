@@ -395,7 +395,7 @@ def call_montage(options,cube_files):
             if options["LABEL_MOS"][0] == 'True':
                 for f in sorted_mos[0]:
                     f_split = f.split('_')
-                    label = '%s\ \(%s\)' % (f_split[3][:-4],f_split[2])
+                    label = r'%s\ \(%s\)' % (f_split[3][:-4],f_split[2])
                     subprocess.call(("montage -pointsize %s -label %s %s -geometry '%sx%s+0+0>' %s" %
                         (options["FONTSIZE"][0],label,f,options["IMAGEW"][0],options["IMAGEH"][0],f)), shell=True)
 

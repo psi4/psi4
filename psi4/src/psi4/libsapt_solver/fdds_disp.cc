@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -350,21 +350,17 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     std::vector<SharedVector> aux_dens_inv;
     for (size_t i = 0; i < densities.size(); i++) {
         aux_dens_inv.push_back(std::make_shared<Vector>(naux));
-        aux_dens_inv[i]->gemv(false, 1.0, metric_inv_.get(), aux_dens[i].get(), 0.0);
+        aux_dens_inv[i]->gemv(false, 1.0, *metric_inv_, *aux_dens[i], 0.0);
     }
 
     // ==> Contract (PQS) S -> PQ <== //
-    std::vector<SphericalTransform> trans;
-    for (size_t i = 0; i <= auxiliary_->max_am(); i++) {
-        trans.push_back(SphericalTransform(i));
-    }
     std::vector<std::shared_ptr<ThreeCenterOverlapInt>> aux_ints(nthread);
     std::vector<const double*> aux_buff(nthread);
 
     for (size_t i = 0; i < nthread; i++) {
         aux_ints[i] = std::shared_ptr<ThreeCenterOverlapInt>(
-            new ThreeCenterOverlapInt(trans, auxiliary_, auxiliary_, auxiliary_));
-        aux_buff[i] = aux_ints[i]->buffer();
+            new ThreeCenterOverlapInt(auxiliary_, auxiliary_, auxiliary_));
+        aux_buff[i] = aux_ints[i]->buffers()[0];
     }
 
     // Pack the Aux pairs
@@ -410,7 +406,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
             size_t index_r = auxiliary_->shell(Rshell).function_index();
 
             aux_ints[thread]->compute_shell(Pshell, Qshell, Rshell);
-            aux_buff[thread] = aux_ints[thread]->buffer();
+            aux_buff[thread] = aux_ints[thread]->buffers()[0];
 
             size_t index = 0;
             for (size_t p = 0; p < num_p; p++) {

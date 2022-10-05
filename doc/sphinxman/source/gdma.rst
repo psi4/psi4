@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -35,8 +35,8 @@
 
 .. _`sec:gdma`:
 
-Interface to GDMA Distributed Multipole Analysis by A. J. Stone |w---w| :py:func:`~psi4.gdma`
-=============================================================================================
+Interface to GDMA Distributed Multipole Analysis by A. J. Stone |w---w| :py:func:`~psi4.driver.gdma`
+====================================================================================================
 
 .. codeauthor:: Anthony J. Stone, Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
@@ -105,7 +105,7 @@ If more advanced usage is desired, which is not is permitted by the options
 listed below, the user may provide their own data file containing keywords to
 control the GDMA code.  Simply place the data file in the directory |PSIfour|
 is called from, and provide the file name as the datafile argument to the
-:py:func:`~psi4.gdma` routine.  For example, if GDMA data file is called
+:py:func:`~psi4.driver.gdma` routine.  For example, if GDMA data file is called
 *control.dma*, the GDMA code is called as follows::
 
     grad, wfn = gradient('mp2', return_wfn=True)

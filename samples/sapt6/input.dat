@@ -347,7 +347,8 @@ codes = [
 set EXCH_SCALE_ALPHA 1.0
 alpha = 'qa1'
 
-for codelist in [codes[0], codes[2], codes[6], codes[14]]:
+# May 2022: codes[0] removed from codelist iter
+for codelist in [codes[2], codes[6], codes[14]]:
     method = codelist[0]
     energy(method)
     print('        <<< %s >>>' % method)
@@ -364,7 +365,8 @@ for codelist in [codes[0], codes[2], codes[6], codes[14]]:
 set EXCH_SCALE_ALPHA 0.0
 alpha = 'a0'
 
-for codelist in [codes[1], codes[3], codes[9]]:
+# May 2022: codes[1] removed from codelist iter
+for codelist in [codes[3], codes[9]]:
     method = codelist[0]
     energy(method)
     print('        <<< %s >>>' % method)
@@ -379,3 +381,6 @@ for codelist in [codes[1], codes[3], codes[9]]:
     clean()
     clean_variables()
 
+# May 2022: energy("SAPT0") and energy("sSAPT0") removed from tests
+#   since their default aux basis changed to no longer coincide with higher-order sapt.
+#   file w/o removals can also pass with `set df_basis_elst aug-cc-pvdz-ri`.

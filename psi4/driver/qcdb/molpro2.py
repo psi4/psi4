@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -159,9 +159,9 @@ def harvest_output(outtext):
     # <<< Process CC >>>
 
     mobj = re.search(
-        r'^\s*' + r'CCSD triplet pair energy\s+' + NUMBER + '\s*' +
-        r'^\s*' + r'CCSD correlation energy\s+' + NUMBER + '\s*' +
-        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + '\s*$',
+        r'^\s*' + r'CCSD triplet pair energy\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'CCSD correlation energy\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + r'\s*$',
         outtext, re.MULTILINE)
     if mobj:
         #print('matched ccsd(t)')
@@ -178,9 +178,9 @@ def harvest_output(outtext):
     # <<< Process CC-F12 >>>
 
     mobj = re.search(
-        r'^\s*' + r'CCSD-F12a triplet pair energy\s+' + NUMBER + '\s*' +
-        r'^\s*' + r'CCSD-F12a correlation energy\s+' + NUMBER + '\s*' +
-        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + '\s*$',
+        r'^\s*' + r'CCSD-F12a triplet pair energy\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'CCSD-F12a correlation energy\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + r'\s*$',
         outtext, re.MULTILINE)
     if mobj:
         #print('matched ccsd(t)-f12a')
@@ -199,9 +199,9 @@ def harvest_output(outtext):
         psivar['CCSD(T*)-F12A TOTAL ENERGY'] = psivar['CCSD(T*)-F12A CORRELATION ENERGY'] + psivar['HF-CABS TOTAL ENERGY']
 
     mobj = re.search(
-        r'^\s*' + r'CCSD-F12b triplet pair energy\s+' + NUMBER + '\s*' +
-        r'^\s*' + r'CCSD-F12b correlation energy\s+' + NUMBER + '\s*' +
-        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + '\s*$',
+        r'^\s*' + r'CCSD-F12b triplet pair energy\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'CCSD-F12b correlation energy\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + r'\s*$',
         outtext, re.MULTILINE)
     if mobj:
         #print('matched ccsd(t)-f12b')
@@ -220,9 +220,9 @@ def harvest_output(outtext):
         psivar['CCSD(T*)-F12B TOTAL ENERGY'] = psivar['CCSD(T*)-F12B CORRELATION ENERGY'] + psivar['HF-CABS TOTAL ENERGY']
 
     mobj = re.search(
-        r'^\s*' + r'CCSD-F12c triplet pair energy\s+' + NUMBER + '\s*' +
-        r'^\s*' + r'CCSD-F12c correlation energy\s+' + NUMBER + '\s*' +
-        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + '\s*$',
+        r'^\s*' + r'CCSD-F12c triplet pair energy\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'CCSD-F12c correlation energy\s+' + NUMBER + r'\s*' +
+        r'^\s*' + r'Triples \(T\) contribution\s+' + NUMBER + r'\s*$',
         outtext, re.MULTILINE)
     if mobj:
         #print('matched ccsd(t)-f12c')

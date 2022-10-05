@@ -18,26 +18,31 @@ set {
     reference     rhf
 }
 
-def unaug_focal(func, label, **kwargs):
-    kwargs['scf_basis'] = kwargs.get('scf_basis', 'cc-pVTZ')
-    kwargs['scf_scheme'] = kwargs.get('scf_scheme', driver_cbs.xtpl_highest_1)
+def unaug_focal(**kwargs):
 
-    kwargs['corl_wfn'] = kwargs.get('corl_wfn', 'mp2')
-    kwargs['corl_basis'] = kwargs.get('corl_basis', 'cc-pV[DT]Z')
-    kwargs['corl_scheme'] = kwargs.get('corl_scheme', driver_cbs.corl_xtpl_helgaker_2)
+    scf = {
+        'wfn': 'hf',
+        'basis': kwargs.pop('scf_basis', 'cc-pVTZ'),
+        'scheme': kwargs.pop('scf_scheme', 'xtpl_highest_1')
+    }
+    corl = {
+        'wfn': kwargs.pop('corl_wfn', 'mp2'),
+        'basis': kwargs.pop('corl_basis', 'cc-pV[DT]Z'),
+        'scheme': kwargs.pop('corl_scheme', 'corl_xtpl_helgaker_2')
+    }
+    delta = {
+        'wfn': kwargs.pop('delta_wfn', 'ccsd(t)'),
+        'wfn_lesser': kwargs.pop('delta_wfn_lesser', 'mp2'),
+        'basis': kwargs.pop('delta_basis', 'cc-pVDZ'),
+        'scheme': kwargs.pop('delta_scheme', 'xtpl_highest_1')
+    }
+    return [scf, corl, delta]
 
-    kwargs['delta_wfn'] = kwargs.get('delta_wfn', 'ccsd(t)')
-    kwargs['delta_wfn_lesser'] = kwargs.get('delta_wfn_lesser', 'mp2')
-    kwargs['delta_basis'] = kwargs.get('delta_basis', 'cc-pVDZ')
-    kwargs['delta_scheme'] = kwargs.get('delta_scheme', driver_cbs.xtpl_highest_1)
-
-    if label == 'custom_function':
-        label = 'Unaug Focal'
-    return driver_cbs.cbs(func, label, **kwargs)
+register_composite_function(unaug_focal)
 
 
-E_func         = energy(unaug_focal, bsse_type="nocp")
+E_func         = energy('unaug_focal', bsse_type="nocp")
 E_method_basis = energy("MP2/cc-pv[dt]z + D:CCSD(T)/cc-pvdz", bsse_type="nocp")
-E_cbs          = energy(cbs, bsse_type="nocp", corl_wfn="mp2", corl_basis="cc-pv[dt]z",
+E_cbs          = energy("cbs", bsse_type="nocp", corl_wfn="mp2", corl_basis="cc-pv[dt]z",
                                                delta_wfn="ccsd(t)", delta_basis="cc-pvdz")
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -114,6 +114,10 @@ void PKJK::preiterations() {
 }
 
 void PKJK::compute_JK() {
+
+    // zero out J, K, and wK matrices
+    zero();
+
     timer_on("PK computes JK");
     // We form the vector containing the density matrix triangular elements
     PKmanager_->prepare_JK(D_ao_, C_left_ao_, C_right_ao_);

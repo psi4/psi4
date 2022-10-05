@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -408,12 +408,8 @@ void SAPT0::df_integrals() {
     psio_->open(PSIF_SAPT_TEMP, PSIO_OPEN_NEW);
 
     // Get fitting metric
-    auto metric = std::make_shared<FittingMetric>(ribasis_);
-    metric->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
-    double **J_temp = metric->get_metric()->pointer();
-    double **J_mhalf = block_matrix(ndf_, ndf_);
-    C_DCOPY(ndf_ * ndf_, J_temp[0], 1, J_mhalf[0], 1);
-    metric.reset();
+    auto metric = get_metric(ribasis_);
+    auto J_mhalf = metric->pointer();
 
     // Get Schwartz screening arrays
     double maxSchwartz = 0.0;
@@ -671,7 +667,6 @@ void SAPT0::df_integrals() {
                      sizeof(double) * block_length[curr_block], next_DF_AO, &next_DF_AO);
     }
 
-    free_block(J_mhalf);
     free_block(AO_RI);
     free_block(J_AO_RI);
 
@@ -871,12 +866,8 @@ void SAPT0::df_integrals_aio() {
     psio_->open(PSIF_SAPT_TEMP, PSIO_OPEN_NEW);
 
     // Get fitting metric
-    auto metric = std::make_shared<FittingMetric>(ribasis_);
-    metric->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
-    double **J_temp = metric->get_metric()->pointer();
-    double **J_mhalf = block_matrix(ndf_, ndf_);
-    C_DCOPY(ndf_ * ndf_, J_temp[0], 1, J_mhalf[0], 1);
-    metric.reset();
+    auto metric = get_metric(ribasis_);
+    auto J_mhalf = metric->pointer();
 
     // Get Schwartz screening arrays
     double maxSchwartz = 0.0;
@@ -1141,7 +1132,6 @@ void SAPT0::df_integrals_aio() {
         next_DF_AO = psio_get_address(next_DF_AO, sizeof(double) * (nsotri_screened - block_length[curr_block]));
     }
 
-    free_block(J_mhalf);
     free_block(AO_RI[0]);
     free_block(J_AO_RI[0]);
     free_block(AO_RI[1]);
@@ -1615,12 +1605,8 @@ void SAPT0::oo_df_integrals() {
     free_block(B_p_BB);
 
     // Get fitting metric
-    auto metric = std::make_shared<FittingMetric>(elstbasis_);
-    metric->form_eig_inverse(options_.get_double("DF_FITTING_CONDITION"));
-    double **J_temp = metric->get_metric()->pointer();
-    double **J_mhalf = block_matrix(ndf_, ndf_);
-    C_DCOPY(ndf_ * ndf_, J_temp[0], 1, J_mhalf[0], 1);
-    metric.reset();
+    auto metric = get_metric(elstbasis_);
+    auto J_mhalf = metric->pointer();
 
     avail_mem = mem_ - (long int)ndf_ * ndf_;
 
@@ -1737,7 +1723,6 @@ void SAPT0::oo_df_integrals() {
     free_block(B_p_BB);
     free_block(B_q_BB);
 
-    free_block(J_mhalf);
     free(MUNUtoMU);
     free(MUNUtoNU);
 

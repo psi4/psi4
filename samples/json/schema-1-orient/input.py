@@ -1,4 +1,4 @@
-#! test QC_JSON Schema mol orientation
+#! test QCSchema mol orientation
 
 import numpy as np
 import psi4
@@ -10,6 +10,8 @@ json_data = {
     "schema_name": "qc_schema_input",
     "schema_version": 1,
     "molecule": {
+        "schema_name": "qcschema_molecule",
+        "schema_version": 2,
         "geometry": [
             0.0,
             0.0,
@@ -38,13 +40,13 @@ noorient_data["molecule"]["fix_com"] = True
 expected_return_result = -100.0194177509218
 linear_dipole = 0.7667930938
 
-json_ret = psi4.json_wrapper.run_json(json_data)
+json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
 # Orients to Z axis
 
 
 
-json_ret = psi4.json_wrapper.run_json(noorient_data)
+json_ret = psi4.schema_wrapper.run_qcschema(noorient_data)
 
 # Orients to Z axis
 

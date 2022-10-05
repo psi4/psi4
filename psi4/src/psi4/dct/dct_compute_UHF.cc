@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -48,7 +48,6 @@ namespace dct {
 double DCTSolver::compute_energy_UHF() {
     orbitalsDone_ = false;
     cumulantDone_ = false;
-    densityConverged_ = false;
     energyConverged_ = false;
     initialize_orbitals_from_reference_U();
 
@@ -95,7 +94,7 @@ double DCTSolver::compute_energy_UHF() {
     }
 
     // If not converged -> Break
-    if (!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
+    if (!orbitalsDone_ || !cumulantDone_)
         throw ConvergenceError<int>("DCT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 
     std::string prefix = options_.get_str("DCT_TYPE") == "DF" ? "DF-" : " ";
@@ -176,12 +175,10 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    DIISManager lambdaDiisManager(maxdiis_, "DCT DIIS Amplitudes", DIISManager::LargestError, DIISManager::InCore);
+    DIISManager lambdaDiisManager(maxdiis_, "DCT DIIS Amplitudes", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
     if ((nalpha_ + nbeta_) > 1) {
-        lambdaDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
-                                                DIISEntry::DPDBuf4, &Lbb);
-        lambdaDiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4,
-                                          &Lbb);
+        lambdaDiisManager.set_error_vector_size(&Laa, &Lab, &Lbb);
+        lambdaDiisManager.set_vector_size(&Laa, &Lab, &Lbb);
     }
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
@@ -230,12 +227,12 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "Amplitude <oo|vv>");
 
-            if (lambdaDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)) {
+            if (lambdaDiisManager.add_entry(&Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
             if (lambdaDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0) {
                 diisString += "/E";
-                lambdaDiisManager.extrapolate(3, &Laa, &Lab, &Lbb);
+                lambdaDiisManager.extrapolate(&Laa, &Lab, &Lbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);
@@ -267,19 +264,17 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
     auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
 
     // Set up DIIS
-    DIISManager scfDiisManager(maxdiis_, "DCT DIIS Orbitals", DIISManager::LargestError, DIISManager::InCore);
+    DIISManager scfDiisManager(maxdiis_, "DCT DIIS Orbitals", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
     if ((nalpha_ + nbeta_) > 1) {
-        scfDiisManager.set_error_vector_size(2, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix,
-                                             scf_error_b_.get());
-        scfDiisManager.set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());
+        scfDiisManager.set_error_vector_size(scf_error_a_.get(), scf_error_b_.get());
+        scfDiisManager.set_vector_size(Fa_.get(), Fb_.get());
     }
     // Update the orbitals
     int nSCFCycles = 0;
     // Reset the booleans that control the convergence
-    densityConverged_ = false;
     energyConverged_ = false;
     outfile->Printf("\tOrbital Updates\n");
-    while ((!densityConverged_ || !orbitalsDone_ || !energyConverged_) && (nSCFCycles++ < maxiter_)) {
+    while ((!orbitalsDone_ || !energyConverged_) && (nSCFCycles++ < maxiter_)) {
         std::string diisString;
         // Copy core hamiltonian into the Fock matrix array: F = H
         Fa_->copy(so_h_);
@@ -297,11 +292,11 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
         orbitals_convergence_ = compute_scf_error_vector();
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
         if (orbitals_convergence_ < diis_start_thresh_ && (nalpha_ + nbeta_) > 1) {
-            if (scfDiisManager.add_entry(4, scf_error_a_.get(), scf_error_b_.get(), Fa_.get(), Fb_.get()))
+            if (scfDiisManager.add_entry(scf_error_a_.get(), scf_error_b_.get(), Fa_.get(), Fb_.get()))
                 diisString += "S";
             if (scfDiisManager.subspace_size() > mindiisvecs_ && (nalpha_ + nbeta_) > 1) {
                 diisString += "/E";
-                scfDiisManager.extrapolate(2, Fa_.get(), Fb_.get());
+                scfDiisManager.extrapolate(Fa_.get(), Fb_.get());
             }
         }
         // Transform the Fock matrix to the symmetrically orhogonalized basis set and digonalize it
@@ -317,7 +312,7 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
         // Make sure that the orbital phase is retained
         correct_mo_phases(false);
         // Update SCF density (Kappa) and check its RMS
-        densityConverged_ = update_scf_density() < orbitals_threshold_;
+        update_scf_density();
         // Compute the DCT energy
         new_total_energy_ = scf_energy_ + lambda_energy_;
         // Check convergence of the total DCT energy
@@ -354,14 +349,12 @@ void DCTSolver::run_simult_dct() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix, scf_error_b_.get(),
-                                      DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get(), DIISEntry::DPDBuf4, &Laa,
-                                DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(scf_error_a_.get(), scf_error_b_.get(), &Laa, &Lab, &Lbb);
+    diisManager.set_vector_size(Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
-    while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
+    while ((!orbitalsDone_ || !cumulantDone_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
         // Save the old energy
         old_total_energy_ = new_total_energy_;
@@ -448,13 +441,13 @@ void DCTSolver::run_simult_dct() {
                                    "Amplitude <Oo|Vv>");
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "Amplitude <oo|vv>");
-            if (diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
+            if (diisManager.add_entry(scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
                                       Fb_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
             if (diisManager.subspace_size() > mindiisvecs_) {
                 diisString += "/E";
-                diisManager.extrapolate(5, Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
+                diisManager.extrapolate(Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);
@@ -483,7 +476,7 @@ void DCTSolver::run_simult_dct() {
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
         // Update SCF density (Kappa) and check its RMS
-        densityConverged_ = update_scf_density() < orbitals_threshold_;
+        update_scf_density();
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
         outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", cycle, orbitals_convergence_,

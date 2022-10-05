@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -41,6 +41,9 @@ ADC: Ab Initio Polarization Propagator
 .. sectionauthor:: Michael F. Herbst
 
 *Module:* :ref:`Keywords <apdx:adc>`, :ref:`PSI Variables <apdx:adc_psivar>`, :source:`ADC <psi4/src/psi4/adc>`
+
+.. caution:: As of Spring 2022, v1.6, the built-in backend is deprecated and will only be active
+   when adcc addon backend is unavailable. In v1.7, built-in ADC will be removed.
 
 Algebraic-diagrammatic construction methods for the polarization propagator (ADC)
 determine correlated excitation energies by investigating the pole structure
@@ -142,11 +145,11 @@ in section :ref:`sec:interfaceadcc` and :ref:`sec:adcbuiltin`.
 
 The leftmost column of table :ref:`table:adcsummary` provides the supported ADC methods.
 If only excitation energies are desired, one can simply pass one
-of the listed method strings to the function :py:func:`~psi4.energy`.
+of the listed method strings to the function :py:func:`~psi4.driver.energy`.
 For example, ``energy('adc(2)-x')`` will compute
 excitation energies at ADC(2)-x level.
 Properties such as oscillator strengths, transition or state dipole moments
-are available by calling the function :py:func:`~psi4.properties`
+are available by calling the function :py:func:`~psi4.driver.properties`
 with appropriate arguments.
 Most commonly users will want to compute at least oscillator strengths
 along with the excitation energies,
@@ -157,7 +160,7 @@ Running ADC calculations
 .. sectionauthor:: Michael F. Herbst
 
 Running an ADC calculation with |PSIfour| requires
-the call to :py:func:`~psi4.properties` as discussed above
+the call to :py:func:`~psi4.driver.properties` as discussed above
 as well as one or more mandatory keyword arguments.
 
 The most important keyword argument is |adc__roots_per_irrep|,
@@ -267,19 +270,15 @@ After running the ADC calculation in adcc, the interface code sets
 a number of variables in the returned :py:class:`~psi4.core.Wavefunction`
 in case they are computed.
 In the following the ``<method>`` prefix refers to the ADC method (such as ``adc(1)``,
-``adc(3)``, ``cvs-adc(2)-x``). For example excitation energies for ADC(2) are thus
-available via the variable ``ADC(2) excitation energies``.
+``adc(3)``, ``cvs-adc(2)-x``).
 
 
 * Ground state energy terms like ``MP2 correlation energy``, ``MP3 correlation energy``,
   ``MP2 total energy``, ``MP3 total energy``, ``current correlation energy`` and ``current energy``.
+* ``MP2 dipole X`` and the other components: Ground state dipole moments at MP(2) level.
 * ``number of iterations``: The number of iterations the iterative solver required to converge.
 * ``number of excited states``: The number of excited states, which were computed.
-* ``<method> excitation energies``: The obtained excitation energies as a :py:class:`~psi4.core.Matrix`.
-* ``MP2 dipole X`` and the other components: Ground state dipole moments at MP(2) level.
-* ``<method> transition dipoles``, ``<method> oscillator strengths``,
-  ``<method> rotational strengths`` and ``<method> dipoles``:
-  The respective properties as :py:class:`~psi4.core.Matrix`
+* More variables are summarized in :ref:`apdx:psivariables_alpha`.
 
 The following attribute is set on returned wavefunctions:
 
@@ -309,6 +308,13 @@ Built-in ADC(2) code
 --------------------
 .. codeauthor:: Masaaki Saitow
 .. sectionauthor:: Masaaki Saitow
+
+.. warning:: The built-in ADC(2) method may give incorrect results if
+             multiple roots are requested, due to an error in the Davidson solver,
+             and is no longer maintained. It is slated for removal in Psi4 1.7.
+             Use of the Psi interface to `adcc` instead is strongly recommended.
+             To use this code regardless, either do not have `adcc` installed, or
+             set `qc_module builtin`.
 
 The ADC code built into |PSIfour| is capable of ADC(2) computations
 of singlet excited states only.

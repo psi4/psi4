@@ -1,0 +1,48 @@
+#! Extrapolated water energies - conventional integrals version
+import numpy as np
+
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+# Use DF to save some time
+set {
+    scf_type pk
+    mp2_type conv
+    e_convergence 9
+    d_convergence 8
+    reference     rhf
+}
+
+h2o.update_geometry()
+
+# SCF TESTS
+
+scf_dz = energy('SCF/cc-pVDZ')
+clean()
+
+scf_tzvp = energy('SCF/def2-TZVP')
+
+scf_adtz = energy('SCF/aug-cc-pV[23]Z')
+
+scf_zapa = energy('SCF/[23]ZaPa-NR')
+
+# Three point extrapolation
+#scf_adtqz = energy('SCF/aug-cc-pV[D3Q]Z')
+
+
+# MP2 TESTS
+
+mp2_addz = energy('MP2/aug-cc-pV(D+d)Z')
+clean()
+
+mp2_atz = energy('MP2/aug-cc-pVTZ')
+
+mp2_adtz = energy('MP2/aug-cc-pV[2T]Z')
+
+#mp2_atqz = energy('MP2/aug-cc-pV[T,Q]Z')
+
+
