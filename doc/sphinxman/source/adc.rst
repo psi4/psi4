@@ -40,10 +40,7 @@ ADC: Ab Initio Polarization Propagator
 ======================================
 .. sectionauthor:: Michael F. Herbst
 
-*Module:* :ref:`Keywords <apdx:adc>`, :ref:`PSI Variables <apdx:adc_psivar>`, :source:`ADC <psi4/src/psi4/adc>`
-
-.. caution:: As of Spring 2022, v1.6, the built-in backend is deprecated and will only be active
-   when adcc addon backend is unavailable. In v1.7, built-in ADC will be removed.
+*Module:* :ref:`Keywords <apdx:adc>`, :ref:`PSI Variables <apdx:adc_psivar>`
 
 Algebraic-diagrammatic construction methods for the polarization propagator (ADC)
 determine correlated excitation energies by investigating the pole structure
@@ -109,39 +106,33 @@ Available ADC methods
 
 Several ADC methods are available in |PSIfour| for the computation of excited states,
 see :ref:`table:adcsummary`.
-The methods are implemented in two distinct codes,
-one is part of |PSIfour| itself and will be referred to as the *built-in* implementation,
-the other is available via an interface to the `adcc <https://adc-connect.org>`_ python module.
-The two backends follow different approaches to compute ADC excited states
-and as a result details and supported keywords differ.
-After a more general introduction, specific aspects of the two implementations will be highlighted
-in section :ref:`sec:interfaceadcc` and :ref:`sec:adcbuiltin`.
+The methods are available via an interface to the `adcc <https://adc-connect.org>`_ python module.
+After a more general introduction, specific aspects of the implementation will be highlighted
+in section :ref:`sec:interfaceadcc`.
 
 .. _`table:adcsummary`:
 
 .. table:: ADC capabilities of Psi4
 
-   +---------------+-----------+------------+---------------+-------+------------------------------------+
-   | Method        | Backend   | References | Exc. Energies | Props | Supported values for kind keyword  |
-   +===============+===========+============+===============+=======+====================================+
-   | ADC(1)        | adcc      | RHF, UHF   | yes           | yes   |  any, singlet, triplet, spin_flip  |
-   +---------------+-----------+------------+---------------+-------+------------------------------------+
-   | ADC(2)        | adcc      | RHF, UHF   | yes           | yes   |  any, singlet, triplet, spin_flip  |
-   +               +-----------+------------+---------------+-------+------------------------------------+
-   |               | built-in  | RHF        | yes           | ---   |  singlet                           |
-   +---------------+-----------+------------+---------------+-------+------------------------------------+
-   | ADC(2)-x      | adcc      | RHF, UHF   | yes           | yes   |  any, singlet, triplet, spin_flip  |
-   +---------------+-----------+------------+---------------+-------+------------------------------------+
-   | ADC(3)        | adcc      | RHF, UHF   | yes           | yes   |  any, singlet, triplet, spin_flip  |
-   +---------------+-----------+------------+---------------+--------------------------------------------+
-   | CVS-ADC(1)    | adcc      | RHF, UHF   | yes           | yes   |  any, singlet, triplet             |
-   +---------------+-----------+------------+---------------+-------+------------------------------------+
-   | CVS-ADC(2)    | adcc      | RHF, UHF   | yes           | yes   |  any, singlet, triplet             |
-   +---------------+-----------+------------+---------------+-------+------------------------------------+
-   | CVS-ADC(2)-x  | adcc      | RHF, UHF   | yes           | yes   |  any, singlet, triplet             |
-   +---------------+-----------+------------+---------------+-------+------------------------------------+
-   | CVS-ADC(3)    | adcc      | RHF, UHF   | yes           | yes   |  any, singlet, triplet             |
-   +---------------+-----------+------------+---------------+-------+------------------------------------+
+   +---------------+------------+---------------+-------+------------------------------------+
+   | Method        | References | Exc. Energies | Props | Supported values for kind keyword  |
+   +===============+============+===============+=======+====================================+
+   | ADC(1)        | RHF, UHF   | yes           | yes   |  any, singlet, triplet, spin_flip  |
+   +---------------+------------+---------------+-------+------------------------------------+
+   | ADC(2)        | RHF, UHF   | yes           | yes   |  any, singlet, triplet, spin_flip  |
+   +---------------+------------+---------------+-------+------------------------------------+
+   | ADC(2)-x      | RHF, UHF   | yes           | yes   |  any, singlet, triplet, spin_flip  |
+   +---------------+------------+---------------+-------+------------------------------------+
+   | ADC(3)        | RHF, UHF   | yes           | yes   |  any, singlet, triplet, spin_flip  |
+   +---------------+------------+---------------+--------------------------------------------+
+   | CVS-ADC(1)    | RHF, UHF   | yes           | yes   |  any, singlet, triplet             |
+   +---------------+------------+---------------+-------+------------------------------------+
+   | CVS-ADC(2)    | RHF, UHF   | yes           | yes   |  any, singlet, triplet             |
+   +---------------+------------+---------------+-------+------------------------------------+
+   | CVS-ADC(2)-x  | RHF, UHF   | yes           | yes   |  any, singlet, triplet             |
+   +---------------+------------+---------------+-------+------------------------------------+
+   | CVS-ADC(3)    | RHF, UHF   | yes           | yes   |  any, singlet, triplet             |
+   +---------------+------------+---------------+-------+------------------------------------+
 
 The leftmost column of table :ref:`table:adcsummary` provides the supported ADC methods.
 If only excitation energies are desired, one can simply pass one
@@ -225,11 +216,6 @@ and many more sample input files can be found in the adc and adcc
 subfolders of :source:`samples`.
 Note, that not all keywords are supported by all backends.
 
-**Switching between ADC backends.**
-Psi4 currently defaults to the built-in implementation for all ADC(2) energy calculations.
-You can explicitly set the |globals__qc_module| option to ``'adcc'``
-enforce using adcc also for this case.
-
 .. _`sec:interfaceadcc`:
 
 Interface to adcc
@@ -301,136 +287,3 @@ are worth tweaking:
   states to be computed. Sometimes increasing this value by a few vectors can be helpful.
   If you encounter a convergence to zero eigenvalues, than decreasing this parameter might
   solve the problems.
-
-.. _`sec:adcbuiltin`:
-
-Built-in ADC(2) code
---------------------
-.. codeauthor:: Masaaki Saitow
-.. sectionauthor:: Masaaki Saitow
-
-.. warning:: The built-in ADC(2) method may give incorrect results if
-             multiple roots are requested, due to an error in the Davidson solver,
-             and is no longer maintained. It is slated for removal in Psi4 1.7.
-             Use of the Psi interface to `adcc` instead is strongly recommended.
-             To use this code regardless, either do not have `adcc` installed, or
-             set `qc_module builtin`.
-
-The ADC code built into |PSIfour| is capable of ADC(2) computations
-of singlet excited states only.
-It makes use of the libtrans library for efficient and flexible
-integral-transformation and also the libdpd library to
-utilize molecular symmetry in the tensorial manipulations in framework
-of the direct-product decomposition algorithm. By this feature, the Ritz
-space and intermediate tensors are blocked according to the irreducible
-representations of the point group, and the excited states that belong
-to different symmetry are sought separately.
-
-In the output of ADC, the ADC(2) results may look as follows::
-
-    ->  1 B1 state   :  0.2565095 (a.u.),  6.9799824 (eV)
-    Non-iterative:  0.2565636 (a.u.),  6.9814532 (eV)
-             Occ Vir        Coefficient
-    ---------------------------------------------
-              3   0        -0.9017047264
-              3   2         0.3038332241
-              3   1         0.2907567119
-              3   5        -0.0790167706
-              3   4        -0.0425829926
-              
-    Converged in   4 iteration.
-    Squared norm of the S component:  0.9315336
-    The S vector is rotated up to  8.102 (deg.)
-
-in which the ADC(2) excitation energy is indicated with arrow symbol
-and the pseudo-perturbative value, which is calculated in very similar
-fashion to the CIS(D) energy, is also presented on the following line. In
-this implementation, the ADC(2) secular matrix is treated effectively
-by renormalization of the double excitation manifold into the single
-excitation manifold. So, the effective secular equation is solved for
-several times for the specific state due to the eigenvalue dependence of
-the effective response matrix. Only the S component of the transition
-amplitude is obtained explicitly and the squared norm of the S block
-and the rotation angle from the corresponding CIS vector are given
-below the element of the amplitude. The difference between the ADC(2)
-value and its non-iterative counterpart is mostly negligible if the
-mixture among the CIS excited states is small and the quasi-degeneracy
-in the excited state is tolerably weak. But if there is a significant
-discrepancy in these energies, or the rotation angle is visibly large,
-special care may have to be taken for the strong effects caused by the
-higher excited states.
-
-
-**Partial Renormalization Scheme**
-
-The built-in ADC code is capable of performing the partially-renormalized
-ADC(2) computation, termed PR-ADC(2). In the perturbative treatment of
-the singly-excited state, the doubly and triply excited configurations
-are accounted for as in the case of CIS(D). In the language of 
-CIS(D), the former is regarded to introduce the orbital relaxation (OR)
-effect while the latter is argued to give rise to the differential
-correlation (DC) correction to the excited state. In the PR-ADC(2)
-scheme, the DC term is corrected according to the ground state
-PR-MP2 correlation, in which the correlation between the electron pairs
-is accounted for in size-consistent and unitary-invariant fashion by
-modulating the MP1 amplitude. By utilizing the |adc__pr| scheme, substantial
-resistance against quasi-degeneracy is readily granted as discussed
-in Ref. [Saitow:2012]_.
-
-**Theory of the built-in ADC(2) implementation**
-
-For the built-in ADC(2) implementation
-some very essential points shall be emphasized. In ADC(2) specifically
-one may write the response equation as
-
-.. math:: \begin{pmatrix}
-   \mathbf{A_{SS}^{(2)}} & \mathbf{A_{SD}^{(1)}}\\
-   \mathbf{A_{DS}^{(1)}} & \mathbf{A_{DD}^{(0)}}
-   \end{pmatrix}
-   \begin{pmatrix}
-   \mathbf{X_S}\\
-   \mathbf{X_D}
-   \end{pmatrix}
-   =\omega
-   \begin{pmatrix}
-   \mathbf{X_S}\\
-   \mathbf{X_D}
-   \end{pmatrix}
-
-where the superscript on each matrix block indicates the order of
-the fluctuation. Instead of solving the above equation explicitly,
-the large D manifold is treated effectively as
-
-.. math:: [\mathbf{A_{SS}^{(2)}}+
-   \mathbf{A_{SD}^{(1)}}^{\dagger}(\omega-
-   \mathbf{A_{DD}^{(0)}})^{-1}\mathbf{A_{DS}^{(1)}}]\mathbf{X_{S}}=
-   \omega\mathbf{X_{S}}.
-
-This form of the ADC(2) equation requires 7--10 iterations for
-convergence on only one root. But thanks to Newton-Raphson
-acceleration,
-
-.. math:: \omega^{n+1}=\omega^{n}-
-   \frac{\omega^n-\mathbf{X_{S}}(\omega^n)^{\dagger}
-   [\mathbf{A_{SS}^{(2)}}+
-   \mathbf{A_{SD}^{(1)}}^{\dagger}(\omega^n-\mathbf{A_{DD}^{(0)}})^{-1}
-   \mathbf{A_{DS}^{(1)}}]\mathbf{X_{S}}(\omega^n)}{1+\mathbf{X_{S}}
-   (\omega^n)^{\dagger}[\mathbf{A_{SD}^{(1)}}^{\dagger}
-   (\omega^n-\mathbf{A_{DD}^{(0)}})^{-2}\mathbf{A_{DS}^{(1)}}]\mathbf{X_{S}}
-   (\omega^n)}
-
-the computational time reduces to shorter than half of the simple iterative
-procedure. Construction of the denominator of the second term in the above
-equation is less computationally expensive than construction of one :math:`\sigma`\ -vector
-with respect to the effective response matrix. The non-iterative excitation energy stated
-above is calculated as a diagonal element of the Davidson mini-Hamiltonian matrix in the SEM as,
-
-.. math:: \omega^{Non-Iterative}=
-   \mathbf{X_{CIS}}^{\dagger}[\mathbf{A_{SS}^{(2)}}+
-   \mathbf{A_{SD}^{(1)}}^{\dagger}(\omega^{CIS}-\mathbf{A_{DD}^{(0)}})^{-1}
-   \mathbf{A_{DS}^{(1)}}]\mathbf{X_{CIS}}
-
-where :math:`\omega^{CIS}` and :math:`\mathbf{X_{CIS}}` denote the CIS 
-excitation energy and wave function, respectively. The explicit form of the 
-|sigma|-vector is provided in a note accompanying the source code,
-in the file :source:`psi4/src/psi4/adc/sigma.pdf`.

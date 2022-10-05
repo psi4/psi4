@@ -208,9 +208,6 @@
 #define PSIF_DFMP2_AIA           181  /*- Unfitted three-index MO ints for DFMP2 -*/
 #define PSIF_DFMP2_QIA           182  /*- Fitted-three index MO ints for DFMP2 -*/
 
-#define PSIF_ADC                 183  /*- ADC -*/
-#define PSIF_ADC_SEM             184  /*- ADC -*/
-
 #define PSIF_SAPT_DIMER          190  /*- SAPT Two-Body Dimer -*/
 #define PSIF_SAPT_MONOMERA       191  /*- SAPT Two-Body Mon A -*/
 #define PSIF_SAPT_MONOMERB       192  /*- SAPT Two-Body Mon B -*/

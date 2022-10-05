@@ -188,7 +188,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC ADCC CCT3 BUILTIN");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC CCT3 BUILTIN");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
@@ -1956,25 +1956,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
            states. -*/
         /*- Reference wavefunction type -*/
         options.add_str("REFERENCE", "RHF", "RHF UHF");
-        /*- How to cache quantities within the DPD library. This option is only available for the built-in ADC backend. -*/
-        options.add_int("CACHELEVEL", 2);
-        /*- The amount of memory available (in Mb) This option is only available for the built-in ADC backend. -*/
-        options.add_int("MEMORY", 1000);
-        /*- The convergence criterion for pole searching step. This option is only available for the built-in ADC backend. -*/
-        options.add_double("NEWTON_CONVERGENCE", 1e-7);
-        /*- Maximum iteration number in pole searching. This option is only available for the built-in ADC backend. -*/
-        options.add_int("POLE_MAXITER", 20);
-        /*- Maximum iteration number in simultaneous expansion method. This option is only available for the built-in ADC backend. -*/
-        options.add_int("SEM_MAXITER", 30);
-        /*- The cutoff norm of residual vector in SEM step. This option is only available for the built-in ADC backend. -*/
-        options.add_double("NORM_TOLERANCE", 1e-6);
         /*- The number of poles / excited states to obtain per irrep vector -*/
         options.add("ROOTS_PER_IRREP", new ArrayType());
-        /*- Do use the partial renormalization scheme for the ground state wavefunction?
-         *   This option is only available for the built-in ADC backend. -*/
-        options.add_bool("PR", false);
-        /*- Number of components of transition amplitudes printed. This option is only available for the built-in ADC backend. -*/
-        options.add_int("NUM_AMPS_PRINT", 5);
         /*- Tolerance for extracted or printed amplitudes. This option is only available for the adcc backend. -*/
         options.add_double("CUTOFF_AMPS_PRINT", 0.01);
         /*- Convergence threshold for ADC matrix diagonalisation. Negative values keep the

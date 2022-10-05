@@ -170,9 +170,6 @@ std::string restart_id;
 std::shared_ptr<PsiOutStream> outfile;
 
 // Wavefunction returns
-namespace adc {
-SharedWavefunction adc(SharedWavefunction, Options&);
-}
 namespace dct {
 SharedWavefunction dct(SharedWavefunction, Options&);
 }
@@ -520,12 +517,6 @@ double py_psi_cceom(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn) {
 SharedWavefunction py_psi_psimrcc(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("PSIMRCC");
     return psimrcc::psimrcc(ref_wfn, Process::environment.options);
-}
-
-SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn) {
-    py_psi_prepare_options_for_module("ADC");
-    SharedWavefunction adc_wfn = adc::adc(ref_wfn, Process::environment.options);
-    return adc_wfn;
 }
 
 void py_psi_clean() { PSIOManager::shared_object()->psiclean(); }
@@ -1370,7 +1361,6 @@ PYBIND11_MODULE(core, core) {
     core.def("cceom", py_psi_cceom, "ref_wfn"_a, "Runs the equation of motion coupled cluster code for excited states.");
     core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
-    core.def("adc", py_psi_adc, "ref_wfn"_a, "Runs the ADC propagator code, for excited states.");
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {

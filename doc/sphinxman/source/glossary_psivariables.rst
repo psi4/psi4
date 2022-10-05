@@ -222,16 +222,6 @@ PSI Variables by Alpha
    and the transition is of irrep *h*.
    DFT functional labeled if canonical.
 
-.. psivar:: ADC ROOT n TOTAL ENERGY - h TRANSITION
-
-   The total ADC energy of root *n* within irrep *h*. This variable is only defined for Psi's
-   built-in ADC and will be removed for 1.7.
-
-.. psivar:: ADC ROOT 0 -> ROOT n CORRELATION ENERGY - h TRANSITION
-
-   The correlation energy contribution to the excitation energy from the ground state to
-   root *n* within irrep *h*. This variable is only defined for Psi's built-in ADC and will be removed for 1.7.
-
 .. psivar:: AQCC DIPOLE
 
    Dipole array [e a0] for the averaged quadratic coupled-cluster level of theory, (3,).

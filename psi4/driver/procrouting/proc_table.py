@@ -159,7 +159,6 @@ procedures = {
         'dmrg-scf'      : proc.run_dmrgscf,
         'dmrg-caspt2'   : proc.run_dmrgscf,
         'dmrg-ci'       : proc.run_dmrgci,
-        'adc'           : proc.run_adc_deprecated,
         'adc(1)'        : proc.run_adcc,
         'adc(2)'        : proc.select_adc2,
         'adc(2)-x'      : proc.run_adcc,
