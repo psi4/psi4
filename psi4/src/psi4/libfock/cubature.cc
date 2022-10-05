@@ -5063,6 +5063,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
 
 /// Grid npoints to order map
 std::map<int, int> SphericalGrid::lebedev_mapping_;
+std::once_flag SphericalGrid::lebedev_mapping_initd_;
 
 SphericalGrid::SphericalGrid() : npoints_(0) {}
 SphericalGrid::~SphericalGrid() {
@@ -5101,6 +5102,7 @@ void SphericalGrid::build_angles() {
     }
 }
 std::shared_ptr<SphericalGrid> SphericalGrid::build(const std::string &scheme, int npoints, const MassPoint *points) {
+    std::call_once(lebedev_mapping_initd_, initialize_lebedev);
     auto *s = new SphericalGrid();
     s->scheme_ = scheme;
     s->order_ = lebedev_mapping_[npoints];

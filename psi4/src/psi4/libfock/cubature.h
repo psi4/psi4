@@ -37,6 +37,7 @@
 #include "psi4/libpsi4util/exception.h"
 
 #include <map>
+#include <mutex>
 #include <vector>
 
 namespace psi {
@@ -316,6 +317,8 @@ class SphericalGrid {
 
     /// Grid npoints to order map
     static std::map<int, int> lebedev_mapping_;
+    /// Checks that the mapping has been init'd
+    static std::once_flag lebedev_mapping_initd_;
     /// Initialize the above arrays with the unique Lebedev grids
     static void initialize_lebedev();
     /// Print valid Lebedev grids and error out (throws)
