@@ -60,6 +60,7 @@ class DFOCC : public Wavefunction {
     void pt_title();
     void pat_title();
     void pdm_title();
+    void common_malloc();
     void remp_title();
     void ref_energy();
     void mp2_energy();
@@ -340,7 +341,7 @@ class DFOCC : public Wavefunction {
     void trans_mp2();
     void formJ(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero);
     void formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero);
-    void b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero);
+    void b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet> zero, bool do_mp2);
     void b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> auxiliary_,
                   std::shared_ptr<BasisSet> zero);
     void b_oo();
@@ -497,6 +498,11 @@ class DFOCC : public Wavefunction {
     void ccsd_t1_amps_low();
     void ccsd_t2_amps_low();
 
+    // UHF CCSD
+    void ccsd_Wabef2T2AA();
+    void ccsd_Wabef2T2BB();
+    void ccsd_Wabef2T2AB();
+
     // CCSDL
     void ccsdl_l1_amps();
     void ccsdl_l2_amps();
@@ -516,6 +522,10 @@ class DFOCC : public Wavefunction {
     void ccsdl_tau_amps(SharedTensor2d &U, SharedTensor2d &T);
     void ccsdl_LijmeL2_high_mem();
 
+    void ccsdl_WabefL2AA();
+    void ccsdl_WabefL2BB();
+    void ccsdl_WabefL2AB();
+
     // CCSD Density
     void ccsd_pdm_3index_intr();
     void ccsd_pdm_yQia();
@@ -531,6 +541,11 @@ class DFOCC : public Wavefunction {
     void ccsd_t_manager_cd();
     void ccsd_canonic_triples_grad();
     void ccsd_canonic_triples_grad2();
+
+    // UHF-CCSD(T)
+    void uccsd_triples_hm();
+    void uccsdl_triples_hm();
+    void uccsd_triples_grad_hm();
 
     // Lambda-CCSD(T)
     void ccsdl_canonic_triples_disk();
@@ -559,6 +574,9 @@ class DFOCC : public Wavefunction {
     void ccd_WabefT2_low();
     void ccd_t2_amps_low();
 
+    void malloc_mo_df_ints();
+    void reset_mo_df_ints();
+
     // CCDL
     void ccdl_l2_amps();
     void ccdl_iterations();
@@ -576,6 +594,8 @@ class DFOCC : public Wavefunction {
     void ccd_pdm_yQia();
     void ccd_opdm();
     void ccd_tpdm();
+    void ccd_tpdm_pplA(SharedTensor2d& G, std::string amps);
+    void ccd_tpdm_pplB(SharedTensor2d& G, std::string amps);
 
     // QCHF
     void qchf_manager();
@@ -984,6 +1004,10 @@ class DFOCC : public Wavefunction {
     SharedTensor2d G1c_ijB;
     SharedTensor2d G1c_abA;
     SharedTensor2d G1c_abB;
+    SharedTensor1d G1c_iiA;
+    SharedTensor1d G1c_aaA;
+    SharedTensor1d G1c_iiB;
+    SharedTensor1d G1c_aaB;
     SharedTensor2d G1c_ooA;
     SharedTensor2d G1c_ooB;
     SharedTensor2d G1c_ovA;
@@ -1337,6 +1361,79 @@ class DFOCC : public Wavefunction {
 
     SharedMatrix bQnn;  // b(Q|mu nu)
     SharedVector e_orbA;
+
+    void title_dfuccsd();
+
+    void uccsd_tau_amps(int occ1, int occ2, int vir1, int vir2, SharedTensor2d &Tau, SharedTensor2d &T2, SharedTensor2d &T1a, SharedTensor2d &T1b);
+    void uccsd_tau_amps_OS(int occ1, int occ2, int vir1, int vir2, SharedTensor2d &Tau, SharedTensor2d &T2, SharedTensor2d &T1a, SharedTensor2d &T1b);
+    void uccsd_tau_tilde_amps(int occ1, int occ2, int vir1, int vir2, SharedTensor2d &Tautilde, SharedTensor2d &T2, SharedTensor2d &T1a, SharedTensor2d &T1b);
+    void uccsd_tau_tilde_amps_OS(int occ1, int occ2, int vir1, int vir2, SharedTensor2d &Tautilde, SharedTensor2d &T2, SharedTensor2d &T1a, SharedTensor2d &T1b);
+
+    void uccsd_W_MNIJT2AA();
+    void uccsd_W_mnijT2BB();
+    void uccsd_W_MnIjT2AB();
+    void uccsd_W_MBEJAAAA();
+    void uccsd_W_mbejBBBB();
+    void uccsd_W_MbEjABAB();
+    void uccsd_W_mBeJBABA();
+    void uccsd_W_MbeJABBA();
+    void uccsd_W_mBEjBAAB();
+    void uccsd_W_AbEfT2AB();
+
+    void uccsd_t2AA_amps();
+    void uccsd_t2BB_amps();
+    void uccsd_t2AB_amps();
+
+    void uccsd_energy();
+
+    // CCSDL
+    void uccsdl_ZMBEJ_AAAA();
+    void uccsdl_Zmbej_BBBB();
+    void uccsdl_ZMbEj_ABAB();
+    void uccsdl_ZmBeJ_BABA();
+    void uccsdl_ZMbeJ_ABBA();
+    void uccsdl_ZmBEj_BAAB();
+    void uccsdl_WMBEJ_AAAA();
+    void uccsdl_Wmbej_BBBB();
+    void uccsdl_WMbEj_ABAB();
+    void uccsdl_WmBeJ_BABA();
+    void uccsdl_WMbeJ_ABBA();
+    void uccsdl_WmBEj_BAAB();
+    void uccsdl_WMNIE_AAAA();
+    void uccsdl_Wmnie_BBBB();
+    void uccsdl_WMnIe_ABAB();
+    void uccsdl_WmNiE_BABA();
+    void uccsdl_WMNIJ_AAAA();
+    void uccsdl_Wmnij_BBBB();
+    void uccsdl_WMnIj_ABAB();
+    void uccsdl_WMBIJ_AAAA();
+    void uccsdl_Wmbij_BBBB();
+    void uccsdl_WMbIj_ABAB();
+    void uccsdl_WmBiJ_BABA();
+
+    void uccsdl_l2AA_amps();
+    void uccsdl_l2BB_amps();
+    void uccsdl_l2AB_amps();
+    void uccsdl_energy();
+    void uccsd_tpdm();
+    void uccsd_pdm_3index_intr();
+    void uccsd_pdm_yQia();
+
+    double Eaa;
+    double Ebb;
+    double Eab;
+    double EaaL;
+    double EbbL;
+    double EabL;
+
+    SharedTensor2d FaooA;
+    SharedTensor2d FaovA;
+    SharedTensor2d FavvA;
+    SharedTensor2d FavoA;
+    SharedTensor2d FaooB;
+    SharedTensor2d FaovB;
+    SharedTensor2d FavvB;
+    SharedTensor2d FavoB;
 };
 
 }  // namespace dfoccwave

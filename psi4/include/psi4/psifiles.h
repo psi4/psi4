@@ -266,6 +266,17 @@
 #define PSIF_DFOCC_ABIC          280  /*- DFOCC <AB|IC> -*/
 #define PSIF_DFOCC_MIABC         281  /*- DFOCC M_iabc -*/
 #define PSIF_DFOCC_TEMP          282  /*- DFOCC temporary storage -*/
+#define PSIF_DFOCC_IABC_AAAA     283  /*- DFOCC <IA||BC> -*/
+#define PSIF_DFOCC_IJAB_AAAA     284  /*- DFOCC <IJ||AB> -*/
+#define PSIF_DFOCC_IABC_BBBB     285  /*- DFOCC <ia||bc> -*/
+#define PSIF_DFOCC_IJAB_BBBB     286  /*- DFOCC <ij||ab> -*/
+#define PSIF_DFOCC_IABC_BABA     287  /*- DFOCC <iA|bC> -*/
+#define PSIF_DFOCC_IABC_ABAB     288  /*- DFOCC <Ia|Bc> -*/
+#define PSIF_DFOCC_IJAB_ABAB     289  /*- DFOCC <Ij|Ab> -*/
+#define PSIF_DFOCC_MIABC_AAAA    290  /*- DFOCC M_IABC -*/
+#define PSIF_DFOCC_MIABC_BBBB    291  /*- DFOCC M_iabc -*/
+#define PSIF_DFOCC_MIABC_AABB    292  /*- DFOCC M_IAbc -*/
+#define PSIF_DFOCC_MIABC_BBAA    293  /*- DFOCC M_iaBC -*/
 
 #define PSIF_SAD                 300  /*- A SAD file (File for SAD related quantities -*/
 

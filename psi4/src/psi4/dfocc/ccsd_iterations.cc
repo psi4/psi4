@@ -39,7 +39,7 @@ namespace dfoccwave {
 
 void DFOCC::ccsd_iterations() {
     // CD-PPL
-    if (Wabef_type_ == "CD") cd_abcd_cints();
+    if (Wabef_type_ == "CD" && reference_ == "RESTRICTED") cd_abcd_cints();
 
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
@@ -58,16 +58,35 @@ void DFOCC::ccsd_iterations() {
 
     // DIIS
     if (do_diis_ == 1) {
-        std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
-        std::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
         if (reference_ == "RESTRICTED") {
+            std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
+            std::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
             ccsdDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
             ccsdDiisManager->set_error_vector_size(T2.get(), T1.get());
             ccsdDiisManager->set_vector_size(T2.get(), T1.get());
+            T2.reset();
+            T1.reset();
         }
-        T2.reset();
-        T1.reset();
+        else if (reference_ == "UNRESTRICTED") {
+            //=== BEGIN DFUCCSD ===
+            std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", ntri_anti_ijAA, ntri_anti_abAA));
+            std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", ntri_anti_ijBB, ntri_anti_abBB));
+            std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
+            std::shared_ptr<Matrix> T1A(new Matrix("T1A", naoccA, navirA));
+            std::shared_ptr<Matrix> T1B(new Matrix("T1B", naoccB, navirB));
+
+            ccsdDiisManager = std::shared_ptr<DIISManager>(
+                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdDiisManager->set_error_vector_size(T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
+            ccsdDiisManager->set_vector_size(T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
+            T2AA.reset();
+            T2BB.reset();
+            T2AB.reset();
+            T1A.reset();
+            T1B.reset();
+            //=== END DFUCCSD ===
+        }
     }  // if diis true
 
     // head of loop
@@ -90,6 +109,17 @@ void DFOCC::ccsd_iterations() {
         ccsd_t1_amps();
         timer_off("T1 AMPS");
 
+        if (reference_ == "UNRESTRICTED") {
+            timer_on("CCSD W intr");
+            uccsd_W_MBEJAAAA();
+            uccsd_W_mbejBBBB();
+            uccsd_W_mBeJBABA();
+            uccsd_W_MbEjABAB();
+            uccsd_W_mBEjBAAB();
+            uccsd_W_MbeJABBA();
+            timer_off("CCSD W intr");
+        }
+
         // T2 amplitudes
         timer_on("T2 AMPS");
         ccsd_t2_amps();
@@ -99,11 +129,11 @@ void DFOCC::ccsd_iterations() {
         Eccsd_old = Eccsd;
 
         // RMS
-        if (reference_ == "UNRESTRICTED") {
-            rms_t2 = MAX0(rms_t2AA, rms_t2BB);
-            rms_t2 = MAX0(rms_t2, rms_t2AB);
-            rms_t1 = MAX0(rms_t1A, rms_t1B);
-        }
+        //if (reference_ == "UNRESTRICTED") {
+        //    rms_t2 = MAX0(rms_t2AA, rms_t2BB);
+        //    rms_t2 = MAX0(rms_t2, rms_t2AB);
+        //    rms_t1 = MAX0(rms_t1A, rms_t1B);
+        //}
 
         // print
         outfile->Printf(" %3d      %13.10f         %13.10f     %12.2e  %12.2e \n", itr_occ, Ecorr, DE, rms_t2, rms_t1);
@@ -123,16 +153,12 @@ void DFOCC::ccsd_iterations() {
     if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
 
     // Mem alloc for DF ints
-    if (df_ints_incore) {
-        if (cc_lambda_ == "FALSE") {
-            bQijA.reset();
-            bQiaA.reset();
-            bQabA.reset();
-        }
+    if (df_ints_incore && cc_lambda_ == "FALSE") {
+        reset_mo_df_ints();
     }
 
     // free t2 amps
-    if (t2_incore) {
+    if (t2_incore && reference_ == "RESTRICTED") {
         /*
         if (cc_lambda_ == "TRUE") {
            t2->write_symm(psio_, PSIF_DFOCC_AMPS);
@@ -156,6 +182,21 @@ void DFOCC::ccsd_iterations() {
         t1diag = t1norm / std::sqrt(2.0 * naoccA);
         outfile->Printf("\n\tT1 diagnostic reference value: %20.14f\n", t1_ref);
         outfile->Printf("\tT1 diagnostic                : %20.14f\n", t1diag);
+
+        // write to disk
+        t1A->write(psio_, PSIF_DFOCC_AMPS);
+        FijA->write(psio_, PSIF_DFOCC_AMPS);
+        FabA->write(psio_, PSIF_DFOCC_AMPS);
+        FtijA->write(psio_, PSIF_DFOCC_AMPS);
+        FtabA->write(psio_, PSIF_DFOCC_AMPS);
+        if (reference_ == "UNRESTRICTED") {
+            t1B->write(psio_, PSIF_DFOCC_AMPS);
+            FijB->write(psio_, PSIF_DFOCC_AMPS);
+            FabB->write(psio_, PSIF_DFOCC_AMPS);
+            FtijB->write(psio_, PSIF_DFOCC_AMPS);
+            FtabB->write(psio_, PSIF_DFOCC_AMPS);
+        }
+
     }
 
     else if (conver == 0) {

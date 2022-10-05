@@ -41,60 +41,137 @@ void DFOCC::ccsdl_iterations() {
     //==========================================================================================
     //========================= Before iterations ==============================================
     //==========================================================================================
-    // 3-index intermediates
-    timer_on("CCSD 3-index intr");
-    ccsd_3index_intr();
-    timer_off("CCSD 3-index intr");
 
-    // F intermediates
-    timer_on("CCSD F intr");
-    ccsd_F_intr();
-    timer_off("CCSD F intr");
-
-    // W intermediates
-    ccsdl_Wmnij();
-    ccsdl_Wmbej();
-    ccsdl_Wmbje();
-    ccsdl_Wmbij();
-    // ccsdl_Wmnie();
-
-    // Write
-    // Form U_ij^ab
     SharedTensor2d U, T;
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(U, t2);
-    U->write_symm(psio_, PSIF_DFOCC_AMPS);
-    U.reset();
-    // Form Tau_ij^ab
-    U = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_tau_amps(U, t2);
-    U->write_symm(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("2*Tau(ia,jb) - Tau(ib,ja)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(T, U);
-    U.reset();
-    T->write_symm(psio_, PSIF_DFOCC_AMPS);
-    T.reset();
-    // Form T'(ib,ja) = t_ij^ab
-    U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_t2_prime_amps(U, t2);
-    U->write_symm(psio_, PSIF_DFOCC_AMPS);
-    U.reset();
-    // Form T(ij,ab)
-    // T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    // T->sort(1324, t2, 1.0, 0.0);
-    // T->write(psio_, PSIF_DFOCC_AMPS);
-    // T.reset();
-    // t1A->print();
+    if (reference_ == "RESTRICTED") {
+        // 3-index intermediates
+        //timer_on("CCSD 3-index intr");
+        //ccsd_3index_intr();
+        //timer_off("CCSD 3-index intr");
 
-    // Malloc and Free
-    gQ = SharedTensor1d(new Tensor1d("CCSDL G_Q", nQ));
-    gQp = SharedTensor1d(new Tensor1d("CCSDL G_Qp", nQ));
-    l1A = SharedTensor2d(new Tensor2d("L1 <I|A>", naoccA, navirA));
-    l1newA = SharedTensor2d(new Tensor2d("New L1 <I|A>", naoccA, navirA));
-    l2 = SharedTensor2d(new Tensor2d("L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    l2->copy(t2);
-    t2.reset();
-    l1A->copy(t1A);
+        // F intermediates
+        //timer_on("CCSD F intr");
+        //ccsd_F_intr();
+        //timer_off("CCSD F intr");
+
+        // W intermediates
+        ccsdl_Wmnij();
+        ccsdl_Wmbej();
+        ccsdl_Wmbje();
+        ccsdl_Wmbij();
+        // ccsdl_Wmnie();
+
+        // Write
+        // Form U_ij^ab
+        U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        ccsd_u2_amps(U, t2);
+        U->write_symm(psio_, PSIF_DFOCC_AMPS);
+        U.reset();
+        // Form Tau_ij^ab
+        U = std::make_shared<Tensor2d>("Tau (IA|JB)", naoccA, navirA, naoccA, navirA);
+        ccsd_tau_amps(U, t2);
+        U->write_symm(psio_, PSIF_DFOCC_AMPS);
+        T = std::make_shared<Tensor2d>("2*Tau(ia,jb) - Tau(ib,ja)", naoccA, navirA, naoccA, navirA);
+        ccsd_u2_amps(T, U);
+        U.reset();
+        T->write_symm(psio_, PSIF_DFOCC_AMPS);
+        T.reset();
+        // Form T'(ib,ja) = t_ij^ab
+        U = std::make_shared<Tensor2d>("T2p (IA|JB)", naoccA, navirA, naoccA, navirA);
+        ccsd_t2_prime_amps(U, t2);
+        U->write_symm(psio_, PSIF_DFOCC_AMPS);
+        U.reset();
+        // Form T(ij,ab)
+        // T = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        // T->sort(1324, t2, 1.0, 0.0);
+        // T->write(psio_, PSIF_DFOCC_AMPS);
+        // T.reset();
+        // t1A->print();
+
+        // Malloc and Free
+        gQ = std::make_shared<Tensor1d>("CCSDL G_Q", nQ);
+        gQp = std::make_shared<Tensor1d>("CCSDL G_Qp", nQ);
+        l1A = std::make_shared<Tensor2d>("L1 <I|A>", naoccA, navirA);
+        l1newA = std::make_shared<Tensor2d>("New L1 <I|A>", naoccA, navirA);
+        l2 = std::make_shared<Tensor2d>("L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        l2->copy(t2);
+        t2.reset();
+        l1A->copy(t1A);
+
+    } // if restricted
+    else if (reference_ == "UNRESTRICTED") {
+        // W intermediates
+        timer_on("CCSDL W intr");
+        uccsdl_ZMBEJ_AAAA();
+        uccsdl_Zmbej_BBBB();
+        uccsdl_ZMbEj_ABAB();
+        uccsdl_ZmBeJ_BABA();
+        uccsdl_ZMbeJ_ABBA();
+        uccsdl_ZmBEj_BAAB();
+
+        uccsdl_WMBEJ_AAAA();
+        uccsdl_Wmbej_BBBB();
+        uccsdl_WMbEj_ABAB();
+        uccsdl_WmBeJ_BABA();
+        uccsdl_WMbeJ_ABBA();
+        uccsdl_WmBEj_BAAB();
+
+        uccsdl_WMNIE_AAAA();
+        uccsdl_Wmnie_BBBB();
+        uccsdl_WMnIe_ABAB();
+        uccsdl_WmNiE_BABA();
+
+        uccsdl_WMNIJ_AAAA();
+        uccsdl_Wmnij_BBBB();
+        uccsdl_WMnIj_ABAB();
+
+        uccsdl_WMBIJ_AAAA();
+        uccsdl_Wmbij_BBBB();
+        uccsdl_WMbIj_ABAB();
+        uccsdl_WmBiJ_BABA();
+        timer_off("CCSDL W intr");
+
+        // Global Tensors
+        GijA = std::make_shared<Tensor2d>("G Intermediate <I|J>", naoccA, naoccA);
+        GijB = std::make_shared<Tensor2d>("G Intermediate <i|j>", naoccB, naoccB);
+        GabA = std::make_shared<Tensor2d>("G Intermediate <A|B>", navirA, navirA);
+        GabB = std::make_shared<Tensor2d>("G Intermediate <a|b>", navirB, navirB);
+
+        gQ = std::make_shared<Tensor1d>("CCSDL G_Q", nQ);
+        gQp = std::make_shared<Tensor1d>("CCSDL G_Qp", nQ);
+        l1A = std::make_shared<Tensor2d>("L1 <I|A>", naoccA, navirA);
+        l1B = std::make_shared<Tensor2d>("L1 <i|a>", naoccB, navirB);
+        l1newA = std::make_shared<Tensor2d>("New L1 <I|A>", naoccA, navirA);
+        l1newB = std::make_shared<Tensor2d>("New L1 <i|a>", naoccB, navirB);
+        l1A->copy(t1A);
+        l1B->copy(t1B);
+
+        SharedTensor2d T2, L2;
+        T2 = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        T2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        L2 = std::make_shared<Tensor2d>("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        L2->copy(T2);
+        T2.reset();
+        L2->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        L2.reset();
+
+        T2 = std::make_shared<Tensor2d>("T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
+        T2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        L2 = std::make_shared<Tensor2d>("L2 <ij|ab>", naoccB, naoccB, navirB, navirB);
+        L2->copy(T2);
+        T2.reset();
+        L2->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        L2.reset();
+
+        T2 = std::make_shared<Tensor2d>("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+        T2->read(psio_, PSIF_DFOCC_AMPS);
+        L2 = std::make_shared<Tensor2d>("L2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+        L2->copy(T2);
+        T2.reset();
+        L2->write(psio_, PSIF_DFOCC_AMPS);
+        L2.reset();
+        //=== END DFUCCSD ===
+    } // else if unrestricted
 
     //==========================================================================================
     //========================= Title ==========================================================
@@ -116,16 +193,35 @@ void DFOCC::ccsdl_iterations() {
 
     // DIIS
     if (do_diis_ == 1) {
-        std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA * navirA, naoccA * navirA));
-        std::shared_ptr<Matrix> L1(new Matrix("L1", naoccA, navirA));
         if (reference_ == "RESTRICTED") {
+            std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA * navirA, naoccA * navirA));
+            std::shared_ptr<Matrix> L1(new Matrix("L1", naoccA, navirA));
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
             ccsdlDiisManager->set_error_vector_size(L2.get(), L1.get());
             ccsdlDiisManager->set_vector_size(L2.get(), L1.get());
+            L2.reset();
+            L1.reset();
         }
-        L2.reset();
-        L1.reset();
+        else if (reference_ == "UNRESTRICTED") {
+            //=== BEGIN DFUCCSD ===
+            std::shared_ptr<Matrix> L2AA(new Matrix("L2AA", ntri_anti_ijAA, ntri_anti_abAA));
+            std::shared_ptr<Matrix> L2BB(new Matrix("L2BB", ntri_anti_ijBB, ntri_anti_abBB));
+            std::shared_ptr<Matrix> L2AB(new Matrix("L2AB", naoccA * naoccB, navirA * navirB));
+            std::shared_ptr<Matrix> L1A(new Matrix("L1A", naoccA, navirA));
+            std::shared_ptr<Matrix> L1B(new Matrix("L1B", naoccB, navirB));
+
+            ccsdlDiisManager = std::shared_ptr<DIISManager>(
+                    new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdlDiisManager->set_error_vector_size(L2AA.get(), L2BB.get(), L2AB.get(), L1A.get(), L1B.get());
+            ccsdlDiisManager->set_vector_size(L2AA.get(), L2BB.get(), L2AB.get(), L1A.get(), L1B.get());
+            L2AA.reset();
+            L2BB.reset();
+            L2AB.reset();
+            L1A.reset();
+            L1B.reset();
+            //=== END DFUCCSD ===
+        }
     }  // if diis true
 
     // head of loop
@@ -150,13 +246,6 @@ void DFOCC::ccsdl_iterations() {
 
         DE = EccsdL - EccsdL_old;
         EccsdL_old = EccsdL;
-
-        // RMS
-        if (reference_ == "UNRESTRICTED") {
-            rms_t2 = MAX0(rms_t2AA, rms_t2BB);
-            rms_t2 = MAX0(rms_t2, rms_t2AB);
-            rms_t1 = MAX0(rms_t1A, rms_t1B);
-        }
 
         // print
         outfile->Printf(" %3d      %13.10f         %13.10f     %12.2e  %12.2e \n", itr_occ, EcorrL, DE, rms_t2, rms_t1);
@@ -189,34 +278,50 @@ void DFOCC::ccsdl_iterations() {
     if (do_diis_ == 1) ccsdlDiisManager->delete_diis_file();
 
     // For GRAD
-    if (dertype == "FIRST") {
-        outfile->Printf("\n\tComputing 3-index intermediates...\n");
-        timer_on("CCSD PDM 3-index intr");
-        ccsd_pdm_3index_intr();
-        timer_off("CCSD PDM 3-index intr");
-    }
+    if (reference_ == "RESTRICTED") {
+        // free l2 amps
+        U = std::make_shared<Tensor2d>("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        ccsd_u2_amps(U, l2);
+        U->write_symm(psio_, PSIF_DFOCC_AMPS);
+        U.reset();
+        l2->write_symm(psio_, PSIF_DFOCC_AMPS);
 
-    // free l2 amps
-    U = SharedTensor2d(new Tensor2d("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(U, l2);
-    U->write_symm(psio_, PSIF_DFOCC_AMPS);
-    U.reset();
-    l2->write_symm(psio_, PSIF_DFOCC_AMPS);
-    l2.reset();
+        // For GRAD
+        if (dertype == "FIRST" && wfn_type_ != "DF-CCSD(AT)") {
+            outfile->Printf("\n\tComputing 3-index intermediates...\n");
+            timer_on("CCSD PDM 3-index intr");
+            ccsd_pdm_3index_intr();
+            timer_off("CCSD PDM 3-index intr");
 
-    // For GRAD
-    if (dertype == "FIRST") {
-        timer_on("CCSD PDM yQia");
-        ccsd_pdm_yQia();
-        timer_off("CCSD PDM yQia");
-    }
+            timer_on("CCSD PDM yQia");
+            ccsd_pdm_yQia();
+            timer_off("CCSD PDM yQia");
+        }
+        l2.reset();
 
-    // Mem free for DF ints
-    // if (df_ints_incore) {
-    bQijA.reset();
-    bQiaA.reset();
-    bQabA.reset();
-    //}
+        // Mem free for DF ints
+        // if (df_ints_incore) {
+        bQijA.reset();
+        bQiaA.reset();
+        bQabA.reset();
+    } // if restricted
+    else if (reference_ == "UNRESTRICTED") {
+
+        // Global Tensors
+        GtijA = std::make_shared<Tensor2d>("Gtilde Intermediate <I|J>", naoccA, naoccA);
+        GtijB = std::make_shared<Tensor2d>("Gtilde Intermediate <i|j>", naoccB, naoccB);
+        GtabA = std::make_shared<Tensor2d>("Gtilde Intermediate <A|B>", navirA, navirA);
+        GtabB = std::make_shared<Tensor2d>("Gtilde Intermediate <a|b>", navirB, navirB);
+
+        L1c = std::make_shared<Tensor1d>("DF_BASIS_CC L1_Q", nQ);
+
+        // For GRAD
+        if (dertype == "FIRST" && wfn_type_ != "DF-CCSD(AT)") {
+            uccsd_pdm_3index_intr();
+            uccsd_pdm_yQia();
+
+        }
+    } // else if unrestricted
 
 }  // end ccsdl_iterations
 }  // namespace dfoccwave

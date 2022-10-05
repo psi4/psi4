@@ -364,7 +364,8 @@ void DFOCC::mp2_manager() {
     timer_on("DF CC Integrals");
     df_corr();
     if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE") {
-        trans_mp2();
+        //trans_mp2();
+        // do-nothing in here, I will take care in b_so()
     } else {
         trans_corr();
         df_ref();
@@ -729,6 +730,9 @@ void DFOCC::ccsd_manager() {
         FtijB = std::make_shared<Tensor2d>("Ftilde <i|j>", naoccB, naoccB);
         FtabB = std::make_shared<Tensor2d>("Ftilde <a|b>", navirB, navirB);
 
+        t1newA = std::make_shared<Tensor2d>("New T1 <I|A>", naoccA, navirA);
+        t1newB = std::make_shared<Tensor2d>("New T1 <i|a>", naoccB, navirB);
+
         // memory requirements
         cost_ampAA = 0.0;
         cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
@@ -820,13 +824,23 @@ void DFOCC::ccsd_manager() {
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
     variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
+    if (reference_ == "UNRESTRICTED") {
+        // Read DF integrals
+        malloc_mo_df_ints() ;
+    }
+
     // Perform CCSD iterations
     timer_on("CCSD");
-    if (t2_incore)
+    if (t2_incore || reference_ == "UNRESTRICTED")
         ccsd_iterations();
     else
         ccsd_iterations_low();
     timer_off("CCSD");
+
+    if (reference_ == "UNRESTRICTED" && cc_lambda_ == "FALSE") {
+        // Free ints
+        reset_mo_df_ints() ;
+    }
 
     outfile->Printf("\n");
     outfile->Printf("\t======================================================================= \n");
@@ -870,7 +884,7 @@ void DFOCC::ccsd_manager() {
         }
 
         timer_on("CCSDL");
-        if (t2_incore) {
+        if (t2_incore || reference_ == "UNRESTRICTED") {
             tstop();
             tstart();
             lambda_title();
@@ -879,6 +893,16 @@ void DFOCC::ccsd_manager() {
         } else
             throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
         timer_off("CCSDL");
+    }
+
+    if (reference_ == "UNRESTRICTED" && dertype == "NONE") {
+        // Free ints
+        bQijA.reset();
+        bQijB.reset();
+        bQiaA.reset();
+        bQiaB.reset();
+        bQabA.reset();
+        bQabB.reset();
     }
 
     // Compute Analytic Gradients
@@ -896,11 +920,39 @@ void DFOCC::ccsd_manager() {
             ccsd_opdm();
             ccsd_tpdm();
         }
+        else if (reference_ == "UNRESTRICTED") {
+            G1c_ooA = std::make_shared<Tensor2d>("Correlation OPDM <O|O>", noccA, noccA);
+            G1c_ooB = std::make_shared<Tensor2d>("Correlation OPDM <o|o>", noccB, noccB);
+            G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+            G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+            G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
+            G1c_vvA = std::make_shared<Tensor2d>("Correlation OPDM <V|V>", nvirA, nvirA);
+            G1c_vvB = std::make_shared<Tensor2d>("Correlation OPDM <v|v>", nvirB, nvirB);
+
+            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
+            G1cB = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
+            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", nmo_, nmo_);
+            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", nmo_, nmo_);
+
+            ccsd_opdm();
+            uccsd_tpdm();
+        }
 
         // ccl_energy();
         prepare4grad();
         response_helper();
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+
+    if (reference_ == "UNRESTRICTED") {
+        // Free ints
+        bQijA.reset();
+        bQijB.reset();
+        bQiaA.reset();
+        bQiaB.reset();
+        bQabA.reset();
+        bQabB.reset();
+    }
 
 }  // end ccsd_manager
 
@@ -1103,6 +1155,9 @@ void DFOCC::ccsd_t_manager() {
         FtijB = std::make_shared<Tensor2d>("Ftilde <i|j>", naoccB, naoccB);
         FtabB = std::make_shared<Tensor2d>("Ftilde <a|b>", navirB, navirB);
 
+        t1newA = std::make_shared<Tensor2d>("New T1 <I|A>", naoccA, navirA);
+        t1newB = std::make_shared<Tensor2d>("New T1 <i|a>", naoccB, navirB);
+
         // memory requirements
         cost_ampAA = 0.0;
         cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
@@ -1194,9 +1249,14 @@ void DFOCC::ccsd_t_manager() {
     Process::environment.globals["MP2 SINGLES ENERGY"] = Emp2_t1;
     variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
+    if (reference_ == "UNRESTRICTED") {
+        // Read DF integrals
+        malloc_mo_df_ints() ;
+    }
+
     // Perform CCSD iterations
     timer_on("CCSD");
-    if (t2_incore)
+    if (t2_incore || reference_ == "UNRESTRICTED")
         ccsd_iterations();
     else
         ccsd_iterations_low();
@@ -1224,29 +1284,45 @@ void DFOCC::ccsd_t_manager() {
         variables_["CCSD SINGLES ENERGY"] = 0.0;
     }
 
+    if (reference_ == "UNRESTRICTED") {
+        malloc_mo_df_ints();
+    }
+
     // CCSD(T)
     tstop();
     tstart();
     pt_title();
     outfile->Printf("\tComputing (T) correction...\n");
     timer_on("(T)");
-    if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
-        // ccsd_canonic_triples_grad();
-        ccsd_canonic_triples_grad2();
-    } else {
-        if (triples_iabc_type_ == "DISK")
-            ccsd_canonic_triples_disk();
-        else if (triples_iabc_type_ == "AUTO") {
-            if (do_triples_hm)
+
+    if (dertype == "FIRST" || ekt_ip_ == "TRUE" || cc_lambda_ == "TRUE") {
+        if (reference_ == "RESTRICTED") {
+            // ccsd_canonic_triples_grad();
+            ccsd_canonic_triples_grad2();
+        }
+        else if (reference_ == "UNRESTRICTED") {
+            uccsd_triples_grad_hm();
+        }
+    }
+    else {
+        if (reference_ == "RESTRICTED") {
+            if (triples_iabc_type_ == "DISK")
+                ccsd_canonic_triples_disk();
+            else if (triples_iabc_type_ == "AUTO") {
+                if (do_triples_hm)
+                    ccsd_canonic_triples_hm();
+                else
+                    ccsd_canonic_triples();
+            } else if (triples_iabc_type_ == "INCORE")
                 ccsd_canonic_triples_hm();
-            else
+            else if (triples_iabc_type_ == "DIRECT")
                 ccsd_canonic_triples();
-        } else if (triples_iabc_type_ == "INCORE")
-            ccsd_canonic_triples_hm();
-        else if (triples_iabc_type_ == "DIRECT")
-            ccsd_canonic_triples();
-        else if (triples_iabc_type_ == "DISK")
-            ccsd_canonic_triples_disk();
+            else if (triples_iabc_type_ == "DISK")
+                ccsd_canonic_triples_disk();
+        } // if restricted
+        if (reference_ == "UNRESTRICTED") {
+            uccsd_triples_hm();
+        } // if unrestricted
     }
     timer_off("(T)");
     outfile->Printf("\t(T) Correction (a.u.)              : %20.14f\n", E_t);
@@ -1284,17 +1360,31 @@ void DFOCC::ccsd_t_manager() {
         }
 
         timer_on("CCSDL");
-        if (t2_incore)
+        if (t2_incore || reference_ == "UNRESTRICTED") {
+            tstop();
+            tstart();
+            lambda_title();
+            outfile->Printf("\tSolving Lambda amplitude equations...\n");
             ccsdl_iterations();
-        else
+        } else
             throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
         timer_off("CCSDL");
-        tstop();
-        tstart();
+    }
+
+    if (reference_ == "UNRESTRICTED" && dertype == "NONE") {
+        // Free ints
+        bQijA.reset();
+        bQijB.reset();
+        bQiaA.reset();
+        bQiaB.reset();
+        bQabA.reset();
+        bQabB.reset();
     }
 
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+        tstop();
+        tstart();
         pdm_title();
 
         // memalloc
@@ -1306,11 +1396,39 @@ void DFOCC::ccsd_t_manager() {
             ccsd_diagonal_opdm();
             ccsd_tpdm();
         }
+        else if (reference_ == "UNRESTRICTED") {
+            G1c_ooA = std::make_shared<Tensor2d>("Correlation OPDM <O|O>", noccA, noccA);
+            G1c_ooB = std::make_shared<Tensor2d>("Correlation OPDM <o|o>", noccB, noccB);
+            G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+            G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+            G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
+            G1c_vvA = std::make_shared<Tensor2d>("Correlation OPDM <V|V>", nvirA, nvirA);
+            G1c_vvB = std::make_shared<Tensor2d>("Correlation OPDM <v|v>", nvirB, nvirB);
+
+            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
+            G1cB = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
+            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", nmo_, nmo_);
+            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", nmo_, nmo_);
+
+            ccsd_opdm();
+            uccsd_tpdm();
+        }
 
         // ccl_energy();
         prepare4grad();
         response_helper();
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+
+    if (reference_ == "UNRESTRICTED") {
+        // free ints
+        bQijA.reset();
+        bQijB.reset();
+        bQiaA.reset();
+        bQiaB.reset();
+        bQabA.reset();
+        bQabB.reset();
+    }
 
 }  // end ccsd_t_manager
 
@@ -1530,6 +1648,9 @@ void DFOCC::ccsdl_t_manager() {
         FtijB = std::make_shared<Tensor2d>("Ftilde <i|j>", naoccB, naoccB);
         FtabB = std::make_shared<Tensor2d>("Ftilde <a|b>", navirB, navirB);
 
+        t1newA = std::make_shared<Tensor2d>("New T1 <I|A>", naoccA, navirA);
+        t1newB = std::make_shared<Tensor2d>("New T1 <i|a>", naoccB, navirB);
+
         // memory requirements
         cost_ampAA = 0.0;
         cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
@@ -1614,9 +1735,14 @@ void DFOCC::ccsdl_t_manager() {
     }
     variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
+    if (reference_ == "UNRESTRICTED") {
+        // Read DF integrals
+        malloc_mo_df_ints() ;
+    }
+
     // Perform CCSD iterations
     timer_on("CCSD");
-    if (t2_incore)
+    if (t2_incore || reference_ == "UNRESTRICTED")
         ccsd_iterations();
     else
         ccsd_iterations_low();
@@ -1640,9 +1766,13 @@ void DFOCC::ccsdl_t_manager() {
         variables_["CCSD SINGLES ENERGY"] = 0.0;
     }
 
+    if (reference_ == "UNRESTRICTED") {
+        malloc_mo_df_ints();
+    }
+
     // CCSDL
     timer_on("CCSDL");
-    if (t2_incore) {
+    if (t2_incore || reference_ == "UNRESTRICTED") {
         tstop();
         tstart();
         lambda_title();
@@ -1661,6 +1791,9 @@ void DFOCC::ccsdl_t_manager() {
     if (reference_ == "RESTRICTED") {
         ccsdl_canonic_triples_disk();
     }
+    else if (reference_ == "UNRESTRICTED") {
+        uccsdl_triples_hm();
+    }
     timer_off("(AT)");
     outfile->Printf("\t(AT) Correction (a.u.)             : %20.14f\n", E_at);
     outfile->Printf("\tDF-CCSD(AT) Total Energy (a.u.)    : %20.14f\n", Eccsd_at);
@@ -1671,6 +1804,16 @@ void DFOCC::ccsdl_t_manager() {
     variables_["A-CCSD(T) TOTAL ENERGY"] = Eccsd_at;
     variables_["A-CCSD(T) CORRELATION ENERGY"] = Eccsd_at - Escf;
     variables_["A-(T) CORRECTION ENERGY"] = E_at;
+
+    if (reference_ == "UNRESTRICTED" && dertype == "NONE") {
+        // Free ints
+        bQijA.reset();
+        bQijB.reset();
+        bQiaA.reset();
+        bQiaB.reset();
+        bQabA.reset();
+        bQabB.reset();
+    }
 
     /* updates the wavefunction for checkpointing */
     energy_ = Eccsd_at;

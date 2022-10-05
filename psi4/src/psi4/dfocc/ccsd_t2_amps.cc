@@ -36,140 +36,153 @@ namespace psi {
 namespace dfoccwave {
 
 void DFOCC::ccsd_t2_amps() {
-    // defs
-    SharedTensor2d K, I, T, Tnew, U, Tau, W, X, Y;
 
-    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
-    // X(ia,jb) = \sum_{e} t_ij^ae Ft_be = \sum_{e} T(ia,je) Ft_be
-    X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
-    X->contract(false, true, naoccA * navirA * naoccA, navirA, navirA, t2, FtabA, 1.0, 0.0);
+    // RHF
+    if (reference_ == "RESTRICTED") {
+        // defs
+        SharedTensor2d K, I, T, Tnew, U, Tau, W, X, Y;
 
-    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
-    // X(ia,jb) = -\sum_{m} t_mj^ab Ft_mi = -\sum_{m} Ft(m,i) T(ma,jb)
-    X->contract(true, false, naoccA, naoccA * navirA * navirA, naoccA, FtijA, t2, -1.0, 1.0);
+        // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+        // X(ia,jb) = \sum_{e} t_ij^ae Ft_be = \sum_{e} T(ia,je) Ft_be
+        X = std::make_shared<Tensor2d>("X (IA|JB)", naoccA, navirA, naoccA, navirA);
+        X->contract(false, true, naoccA * navirA * naoccA, navirA, navirA, t2, FtabA, 1.0, 0.0);
 
-    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
-    // X(ia,jb) = \sum_{Q} t'_ia^Q b_jb^Q
-    T = SharedTensor2d(new Tensor2d("T1p (Q|IA)", nQ, naoccA, navirA));
-    T->read(psio_, PSIF_DFOCC_AMPS);
-    X->gemm(true, false, T, bQiaA, 1.0, 1.0);
-    T.reset();
+        // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+        // X(ia,jb) = -\sum_{m} t_mj^ab Ft_mi = -\sum_{m} Ft(m,i) T(ma,jb)
+        X->contract(true, false, naoccA, naoccA * navirA * navirA, naoccA, FtijA, t2, -1.0, 1.0);
 
-    // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
-    // X(ia,jb) = -\sum_{Q} t_ai^Q t_jb^Q
-    U = SharedTensor2d(new Tensor2d("T1 (Q|AI)", nQ, navirA, naoccA));
-    U->read(psio_, PSIF_DFOCC_AMPS);
-    K = SharedTensor2d(new Tensor2d("Temp (Q|IA)", nQ, naoccA, navirA));
-    K->swap_3index_col(U);
-    U.reset();
-    T = SharedTensor2d(new Tensor2d("T1 (Q|IA)", nQ, naoccA, navirA));
-    T->read(psio_, PSIF_DFOCC_AMPS);
-    X->gemm(true, false, K, T, -1.0, 1.0);
-    T.reset();
-    X->symmetrize();
+        // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+        // X(ia,jb) = \sum_{Q} t'_ia^Q b_jb^Q
+        T = std::make_shared<Tensor2d>("T1p (Q|IA)", nQ, naoccA, navirA);
+        T->read(psio_, PSIF_DFOCC_AMPS);
+        X->gemm(true, false, T, bQiaA, 1.0, 1.0);
+        T.reset();
 
-    // t_ij^ab <= <ij|ab>
-    Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    Tnew->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
+        // t_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
+        // X(ia,jb) = -\sum_{Q} t_ai^Q t_jb^Q
+        U = std::make_shared<Tensor2d>("T1 (Q|AI)", nQ, navirA, naoccA);
+        U->read(psio_, PSIF_DFOCC_AMPS);
+        K = std::make_shared<Tensor2d>("Temp (Q|IA)", nQ, naoccA, navirA);
+        K->swap_3index_col(U);
+        U.reset();
+        T = std::make_shared<Tensor2d>("T1 (Q|IA)", nQ, naoccA, navirA);
+        T->read(psio_, PSIF_DFOCC_AMPS);
+        X->gemm(true, false, K, T, -1.0, 1.0);
+        T.reset();
+        X->symmetrize();
 
-    // Contributions of X
-    Tnew->axpy(X, 2.0);
-    X.reset();
+        // t_ij^ab <= <ij|ab>
+        Tnew = std::make_shared<Tensor2d>("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        Tnew->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
 
-    // Write and close
-    Tnew->write_symm(psio_, PSIF_DFOCC_AMPS);
-    Tnew.reset();
+        // Contributions of X
+        Tnew->axpy(X, 2.0);
+        X.reset();
 
-    // WmnijT2
-    ccsd_WmnijT2();
+        // Write and close
+        Tnew->write_symm(psio_, PSIF_DFOCC_AMPS);
+        Tnew.reset();
 
-    // WmbejT2
-    ccsd_WmbejT2();
+        // WmnijT2
+        ccsd_WmnijT2();
 
-    // WijamT2
-    // if (itr_occ > 1) ccsd_WijamT2();
+        // WmbejT2
+        ccsd_WmbejT2();
 
-    // WabefT2
-    if (Wabef_type_ == "AUTO") {
-        if (!do_ppl_hm)
+        // WijamT2
+        // if (itr_occ > 1) ccsd_WijamT2();
+
+        // WabefT2
+        if (Wabef_type_ == "AUTO") {
+            if (!do_ppl_hm)
+                ccsd_Wabef2T2();
+            else {
+                ccsd_WijamT2_high_mem();
+                ccsd_WabefT2_high_mem();
+            }
+        } else if (Wabef_type_ == "LOW_MEM")
             ccsd_Wabef2T2();
-        else {
+        else if (Wabef_type_ == "HIGH_MEM") {
             ccsd_WijamT2_high_mem();
             ccsd_WabefT2_high_mem();
+        } else if (Wabef_type_ == "CD") {
+            ccsd_WijamT2();
+            ccsd_WabefT2_cd();
         }
-    } else if (Wabef_type_ == "LOW_MEM")
-        ccsd_Wabef2T2();
-    else if (Wabef_type_ == "HIGH_MEM") {
-        ccsd_WijamT2_high_mem();
-        ccsd_WabefT2_high_mem();
-    } else if (Wabef_type_ == "CD") {
-        ccsd_WijamT2();
-        ccsd_WabefT2_cd();
-    }
 
-    // Denom
-    Tnew = SharedTensor2d(new Tensor2d("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    Tnew->read_symm(psio_, PSIF_DFOCC_AMPS);
-    Tnew->apply_denom_chem(nfrzc, noccA, FockA);
+        // Denom
+        Tnew = std::make_shared<Tensor2d>("New T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        Tnew->read_symm(psio_, PSIF_DFOCC_AMPS);
+        Tnew->apply_denom_chem(nfrzc, noccA, FockA);
 
-    // Reset T1
-    rms_t1 = t1newA->rms(t1A);
-    SharedTensor2d Rt1A = SharedTensor2d(new Tensor2d("RT1 <I|A>", naoccA, navirA));
-    Rt1A->copy(t1newA);
-    Rt1A->subtract(t1A);
-    t1A->copy(t1newA);
+        // Reset T1
+        rms_t1 = t1newA->rms(t1A);
+        SharedTensor2d Rt1A = std::make_shared<Tensor2d>("RT1 <I|A>", naoccA, navirA);
+        Rt1A->copy(t1newA);
+        Rt1A->subtract(t1A);
+        t1A->copy(t1newA);
 
-    // Reset T2
-    rms_t2 = Tnew->rms(t2);
-    // Error vector
-    Tau = SharedTensor2d(new Tensor2d("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    Tau->copy(Tnew);
-    Tau->subtract(t2);
-    t2->copy(Tnew);
-    Tnew.reset();
+        // Reset T2
+        rms_t2 = Tnew->rms(t2);
+        // Error vector
+        Tau = std::make_shared<Tensor2d>("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        Tau->copy(Tnew);
+        Tau->subtract(t2);
+        t2->copy(Tnew);
+        Tnew.reset();
 
-    // DIIS
-    std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA * navirA, naoccA * navirA));
-    Tau->to_matrix(RT2);
-    Tau.reset();
-    std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
-    t2->to_matrix(T2);
-    std::shared_ptr<Matrix> RT1(new Matrix("RT1", naoccA, navirA));
-    Rt1A->to_matrix(RT1);
-    Rt1A.reset();
-    std::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
-    t1A->to_matrix(T1);
+        // DIIS
+        std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA * navirA, naoccA * navirA));
+        Tau->to_matrix(RT2);
+        Tau.reset();
+        std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
+        t2->to_matrix(T2);
+        std::shared_ptr<Matrix> RT1(new Matrix("RT1", naoccA, navirA));
+        Rt1A->to_matrix(RT1);
+        Rt1A.reset();
+        std::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
+        t1A->to_matrix(T1);
 
-    // add entry
-    if (do_diis_ == 1) ccsdDiisManager->add_entry(RT2.get(), RT1.get(), T2.get(), T1.get());
-    RT2.reset();
-    RT1.reset();
+        // add entry
+        if (do_diis_ == 1) ccsdDiisManager->add_entry(RT2.get(), RT1.get(), T2.get(), T1.get());
+        RT2.reset();
+        RT1.reset();
 
-    // extrapolate
-    if (do_diis_ == 1) {
-        if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(T2.get(), T1.get());
-        t2->set2(T2);
-        t1A->set2(T1);
-    }
-    T1.reset();
-    T2.reset();
+        // extrapolate
+        if (do_diis_ == 1) {
+            if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(T2.get(), T1.get());
+            t2->set2(T2);
+            t1A->set2(T1);
+        }
+        T1.reset();
+        T2.reset();
 
-    // Form Tau(ia,jb) = T(ia,jb) + t(ia) * t(jb)
-    Tau = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_tau_amps(Tau, t2);
+        // Form Tau(ia,jb) = T(ia,jb) + t(ia) * t(jb)
+        Tau = std::make_shared<Tensor2d>("Tau (IA|JB)", naoccA, navirA, naoccA, navirA);
+        ccsd_tau_amps(Tau, t2);
 
-    // Energy
-    U = SharedTensor2d(new Tensor2d("2*Tau(ia,jb) - Tau(ib,ja)", naoccA, navirA, naoccA, navirA));
-    U->sort(1432, Tau, 1.0, 0.0);
-    U->scale(-1.0);
-    U->axpy(Tau, 2.0);
-    Tau.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
-    K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
-    Ecorr = U->vector_dot(K);
-    U.reset();
-    K.reset();
-    Eccsd = Escf + Ecorr;
+        // Energy
+        U = std::make_shared<Tensor2d>("2*Tau(ia,jb) - Tau(ib,ja)", naoccA, navirA, naoccA, navirA);
+        U->sort(1432, Tau, 1.0, 0.0);
+        U->scale(-1.0);
+        U->axpy(Tau, 2.0);
+        Tau.reset();
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
+        K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
+        Ecorr = U->vector_dot(K);
+        U.reset();
+        K.reset();
+        Eccsd = Escf + Ecorr;
+
+    }  // if (reference_ == "RESTRICTED")
+
+    // UHF
+    else if (reference_ == "UNRESTRICTED") {
+        uccsd_t2AA_amps();
+        uccsd_t2BB_amps();
+        uccsd_t2AB_amps();
+        uccsd_energy();
+    }  // else if (reference_ == "UNRESTRICTED")
 
 }  // end ccsd_t2_amps
 

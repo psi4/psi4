@@ -142,5 +142,37 @@ void DFOCC::ccd_iterations() {
     }
 
 }  // end ccd_iterations
+
+void DFOCC::malloc_mo_df_ints() {
+    // Read DF integrals
+    bQijA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
+    bQiaA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
+    bQabA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
+    bQijA->read(psio_, PSIF_DFOCC_INTS);
+    bQiaA->read(psio_, PSIF_DFOCC_INTS);
+    bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
+
+    if (reference_ == "UNRESTRICTED") {
+        bQijB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ij)", nQ, naoccB, naoccB);
+        bQiaB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ia)", nQ, naoccB, navirB);
+        bQabB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB);
+        bQijB->read(psio_, PSIF_DFOCC_INTS);
+        bQiaB->read(psio_, PSIF_DFOCC_INTS);
+        bQabB->read(psio_, PSIF_DFOCC_INTS, true, true);
+    }
+}//
+
+void DFOCC::reset_mo_df_ints() {
+    bQijA.reset();
+    bQiaA.reset();
+    bQabA.reset();
+
+    if (reference_ == "UNRESTRICTED") {
+        bQijB.reset();
+        bQiaB.reset();
+        bQabB.reset();
+    }
+}//
+
 }  // namespace dfoccwave
 }  // namespace psi

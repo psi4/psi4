@@ -1181,6 +1181,445 @@ void DFOCC::ccsd_WabefT2_ldl() {
 }  // end ccsd_WabefT2_ldl
 
 //======================================================================
+//    Wabef2T2AA: 2nd version, consistent with Scuseria & Schaefer
+//======================================================================
+void DFOCC::ccsd_Wabef2T2AA() {
+    // defs
+    SharedTensor2d K, M, L, I, T, T2, Tnew, U, Tau, W, X, Y, S, A;
+    SharedTensor2d V, Vs, Ts, Va, Ta, J, T1;
+
+    timer_on("WabefT2");
+
+    // t_ij^ab <= \sum_{ef} Tau_ij^ef W_abef
+    T2 = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+    T2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    Tau = std::make_shared<Tensor2d>("Tau <IJ|AB>", naoccA, naoccA, navirA, navirA);
+    uccsd_tau_amps(naoccA, naoccA, navirA, navirA, Tau, T2, t1A, t1A);
+    T2.reset();
+
+    // (-)Tau(ij, ab) = 1/2 (Tau_ij^ab - Tau_ji^ab) * (2 - \delta_{ab})
+    T = std::make_shared<Tensor2d>("(-)Tau [I>=J|A>=B]", ntri_ijAA, ntri_abAA);
+#pragma omp parallel for
+    for (int i = 0; i < naoccA; ++i) {
+        for (int j = 0; j <= i; ++j) {
+            int ij2 = index2(i, j);
+            int ij = ij_idxAA->get(i, j);
+            int ji = ij_idxAA->get(j, i);
+            for (int a = 0; a < navirA; ++a) {
+                //int ia = ia_idxAA->get(i, a);
+                //int ja = ia_idxAA->get(j, a);
+                for (int b = 0; b <= a; ++b) {
+                    double perm = (a == b ? 1.0 : 2.0);
+                    int ab2 = index2(a, b);
+                    int ab = ab_idxAA->get(a, b);
+                    double value2 = 0.5 * perm * (Tau->get(ij, ab) - Tau->get(ji, ab));
+                    T->set(ij2, ab2, value2);
+                }
+            }
+        }
+    }
+    Tau.reset();
+
+    // Read B(Q,ab) and B(Q,ia)
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (AB|Q)", navirA * navirA, nQ);
+    K = bQabA->transpose();
+    // bQabA.reset();
+    // T1Q
+    X = std::make_shared<Tensor2d>("T1 (Q|AB)", nQ, navirA, navirA);
+    X->read(psio_, PSIF_DFOCC_AMPS);
+    Y = std::make_shared<Tensor2d>("T1 (AB|Q)", navirA * navirA, nQ);
+    Y = X->transpose();
+    X.reset();
+    X = std::make_shared<Tensor2d>("B-T1 (AB|Q)", navirA * navirA, nQ);
+    X->copy(K);
+    X->subtract(Y);
+    Y.reset();
+    // B(iaQ)
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
+    M->read(psio_, PSIF_DFOCC_INTS);
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ);
+    L = M->transpose();
+    M.reset();
+    // T(a,i)
+    T1 = std::make_shared<Tensor2d>("T1 (A|I)", navirA, naoccA);
+    T1 = t1A->transpose();
+
+    // malloc
+    I = std::make_shared<Tensor2d>("I[A] <BF|E>", navirA * navirA, navirA);
+    J = std::make_shared<Tensor2d>("J[A] <MF|E>", naoccA * navirA, navirA);
+    Va = std::make_shared<Tensor2d>("(-)V[A] (B, E>=F)", navirA, ntri_abAA);
+    Ta = std::make_shared<Tensor2d>("(-)T[B] (B, I>=J)", navirA, ntri_ijAA);
+
+    // Symmetric & Anti-symmetric contributions
+    A = std::make_shared<Tensor2d>("A (A>=B, I>=J)", ntri_abAA, ntri_ijAA);
+    // Main loop
+    for (int a = 0; a < navirA; ++a) {
+        int nb = a + 1;
+
+        // Form J[a](bf,e) = \sum_{Q} B(bfQ)*[B(aeQ)-T(aeQ)] cost = V^4N/2
+        I->contract(false, true, navirA * nb, navirA, nQ, K, X, 0, a * navirA * nQ, 1.0, 0.0);
+
+        // Form J[a](mf,e) = \sum_{Q} B(mfQ)*B(aeQ) cost = OV^3N
+        J->contract(false, true, navirA * naoccA, navirA, nQ, L, K, 0, a * navirA * nQ, 1.0, 0.0);
+
+        // J[a](b,fe) -= \sum_{m} t(b,m) * J[a](m,fe)
+        I->contract(false, false, nb, navirA * navirA, naoccA, T1, J, -1.0, 1.0);
+
+// Form (+)V[a](b, e>=f)
+#pragma omp parallel for
+        for (int b = 0; b <= a; ++b) {
+            for (int e = 0; e < navirA; ++e) {
+                int be = e + (b * navirA);
+                for (int f = 0; f <= e; ++f) {
+                    int ef = index2(e, f);
+                    int bf = f + (b * navirA);
+                    double value2 = 0.5 * (I->get(bf, e) - I->get(be, f));
+                    Va->set(b, ef, value2);
+                }
+            }
+        }
+
+        // Form T[a](b, i>=j) = \sum_{e>=f} Tau(i>=j,e>=f) V[a](b, e>=f)
+        Ta->contract(false, true, nb, ntri_ijAA, ntri_abAA, Va, T, 1.0, 0.0);
+
+// Form S(ij,ab) & A(ij,ab)
+#pragma omp parallel for
+        for (int b = 0; b <= a; ++b) {
+            int ab = index2(a, b);
+            for (int i = 0; i < naoccA; ++i) {
+                for (int j = 0; j <= i; ++j) {
+                    int ij = index2(i, j);
+                    A->add(ab, ij, Ta->get(b, ij));
+                }
+            }
+        }
+    }
+    K.reset();
+    I.reset();
+    X.reset();
+    Va.reset();
+    Ta.reset();
+    U.reset();
+    T.reset();
+    J.reset();
+    L.reset();
+    T1.reset();
+
+    // T(ia,jb) <-- S(a>=b,i>=j) + A(a>=b,i>=j)
+    Tnew = std::make_shared<Tensor2d>("New T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+    Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+#pragma omp parallel for
+    for (int a = 0; a < navirA; ++a) {
+        for (int b = 0; b < navirA; ++b) {
+            int ab2 = index2(a, b);
+            int ab = ab_idxAA->get(a, b);
+            for (int i = 0; i < naoccA; ++i) {
+                for (int j = 0; j < naoccA; ++j) {
+                    int ij2 = index2(i, j);
+                    int ij = ij_idxAA->get(i, j);
+                    int perm1 = (i > j) ? 1 : -1;
+                    int perm2 = (a > b) ? 1 : -1;
+                    double value = perm1 * perm2 * A->get(ab2, ij2);
+                    Tnew->add(ij, ab, value);
+                }
+            }
+        }
+    }
+    A.reset();
+    Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    Tnew.reset();
+
+    timer_off("WabefT2");
+
+}  // end ccsd_Wabef2T2AA
+
+//======================================================================
+//    Wabef2T2BB: 2nd version, consistent with Scuseria & Schaefer
+//======================================================================
+void DFOCC::ccsd_Wabef2T2BB() {
+    // defs
+    SharedTensor2d K, M, L, I, T, T2, Tnew, U, Tau, W, X, Y, S, A;
+    SharedTensor2d V, Vs, Ts, Va, Ta, J, T1;
+
+    timer_on("WabefT2");
+
+    // t_ij^ab <= \sum_{ef} Tau_ij^ef W_abef
+    T2 = std::make_shared<Tensor2d>("T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
+    T2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    Tau = std::make_shared<Tensor2d>("Tau <ij|ab>", naoccB, naoccB, navirB, navirB);
+    uccsd_tau_amps(naoccB, naoccB, navirB, navirB, Tau, T2, t1B, t1B);
+    T2.reset();
+
+    // (-)Tau(ij, ab) = 1/2 (Tau_ij^ab - Tau_ji^ab) * (2 - \delta_{ab})
+    T = std::make_shared<Tensor2d>("(-)Tau [I>=J|A>=B]", ntri_ijBB, ntri_abBB);
+#pragma omp parallel for
+    for (int i = 0; i < naoccB; ++i) {
+        for (int j = 0; j <= i; ++j) {
+            int ij2 = index2(i, j);
+            int ij = ij_idxBB->get(i, j);
+            int ji = ij_idxBB->get(j, i);
+            for (int a = 0; a < navirB; ++a) {
+                int ia = ia_idxBB->get(i, a);
+                int ja = ia_idxBB->get(j, a);
+                for (int b = 0; b <= a; ++b) {
+                    double perm = (a == b ? 1.0 : 2.0);
+                    int ab2 = index2(a, b);
+                    int ab = ab_idxBB->get(a, b);
+                    double value2 = 0.5 * perm * (Tau->get(ij, ab) - Tau->get(ji, ab));
+                    T->set(ij2, ab2, value2);
+                }
+            }
+        }
+    }
+    Tau.reset();
+
+    // Read B(Q,ab) and B(Q,ia)
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (ab|Q)", navirB * navirB, nQ);
+    K = bQabB->transpose();
+
+    // T1Q
+    X = std::make_shared<Tensor2d>("T1 (Q|ab)", nQ, navirB, navirB);
+    X->read(psio_, PSIF_DFOCC_AMPS);
+    Y = std::make_shared<Tensor2d>("T1 (ab|Q)", navirB * navirB, nQ);
+    Y = X->transpose();
+    X.reset();
+    X = std::make_shared<Tensor2d>("B-T1 (ab|Q)", navirB * navirB, nQ);
+    X->copy(K);
+    X->subtract(Y);
+    Y.reset();
+
+    // B(iaQ)
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ia)", nQ, naoccB, navirB);
+    M->read(psio_, PSIF_DFOCC_INTS);
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC B (ia|Q)", naoccB * navirB, nQ);
+    L = M->transpose();
+    M.reset();
+
+    // T(a,i)
+    T1 = std::make_shared<Tensor2d>("T1 (a|i)", navirB, naoccB);
+    T1 = t1B->transpose();
+
+    // malloc
+    I = std::make_shared<Tensor2d>("I[A] <BF|E>", navirB * navirB, navirB);
+    J = std::make_shared<Tensor2d>("J[A] <MF|E>", naoccB * navirB, navirB);
+    Va = std::make_shared<Tensor2d>("(-)V[A] (B, E>=F)", navirB, ntri_abBB);
+    Ta = std::make_shared<Tensor2d>("(-)T[B] (B, I>=J)", navirB, ntri_ijBB);
+
+    // Symmetric & Anti-symmetric contributions
+    A = std::make_shared<Tensor2d>("A (A>=B, I>=J)", ntri_abBB, ntri_ijBB);
+    // Main loop
+    for (int a = 0; a < navirB; ++a) {
+        int nb = a + 1;
+
+        // Form J[a](bf,e) = \sum_{Q} B(bfQ)*[B(aeQ)-T(aeQ)] cost = V^4N/2
+        I->contract(false, true, navirB * nb, navirB, nQ, K, X, 0, a * navirB * nQ, 1.0, 0.0);
+
+        // Form J[a](mf,e) = \sum_{Q} B(mfQ)*B(aeQ) cost = OV^3N
+        J->contract(false, true, navirB * naoccB, navirB, nQ, L, K, 0, a * navirB * nQ, 1.0, 0.0);
+
+        // J[a](b,fe) -= \sum_{m} t(b,m) * J[a](m,fe)
+        I->contract(false, false, nb, navirB * navirB, naoccB, T1, J, -1.0, 1.0);
+
+// Form (+)V[a](b, e>=f)
+#pragma omp parallel for
+        for (int b = 0; b <= a; ++b) {
+            for (int e = 0; e < navirB; ++e) {
+                int be = e + (b * navirB);
+                for (int f = 0; f <= e; ++f) {
+                    int ef = index2(e, f);
+                    int bf = f + (b * navirB);
+                    double value2 = 0.5 * (I->get(bf, e) - I->get(be, f));
+                    Va->set(b, ef, value2);
+                }
+            }
+        }
+
+        // Form T[a](b, i>=j) = \sum_{e>=f} Tau(i>=j,e>=f) V[a](b, e>=f)
+        Ta->contract(false, true, nb, ntri_ijBB, ntri_abBB, Va, T, 1.0, 0.0);
+
+// Form S(ij,ab) & A(ij,ab)
+#pragma omp parallel for
+        for (int b = 0; b <= a; ++b) {
+            int ab = index2(a, b);
+            for (int i = 0; i < naoccB; ++i) {
+                for (int j = 0; j <= i; ++j) {
+                    int ij = index2(i, j);
+                    A->add(ab, ij, Ta->get(b, ij));
+                }
+            }
+        }
+    }
+    K.reset();
+    I.reset();
+    X.reset();
+    Va.reset();
+    Ta.reset();
+    U.reset();
+    T.reset();
+    J.reset();
+    L.reset();
+    T1.reset();
+
+    // T(ia,jb) <-- S(a>=b,i>=j) + A(a>=b,i>=j)
+    Tnew = std::make_shared<Tensor2d>("New T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
+    Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+#pragma omp parallel for
+    for (int a = 0; a < navirB; ++a) {
+        for (int b = 0; b < navirB; ++b) {
+            int ab2 = index2(a, b);
+            int ab = ab_idxBB->get(a, b);
+            for (int i = 0; i < naoccB; ++i) {
+                for (int j = 0; j < naoccB; ++j) {
+                    int ij2 = index2(i, j);
+                    int ij = ij_idxBB->get(i, j);
+                    int perm1 = (i > j) ? 1 : -1;
+                    int perm2 = (a > b) ? 1 : -1;
+                    double value = perm1 * perm2 * A->get(ab2, ij2);
+                    Tnew->add(ij, ab, value);
+                }
+            }
+        }
+    }
+    A.reset();
+    Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    Tnew.reset();
+
+    timer_off("WabefT2");
+
+}  // end ccsd_Wabef2T2BB
+
+//======================================================================
+//    WabefT2AB: 2nd version, consistent with Scuseria & Schaefer
+//======================================================================
+void DFOCC::ccsd_Wabef2T2AB() {
+    // defs
+    SharedTensor2d K, M, L, I, T, T2, Tnew, U, Tau, W, X, Y, S, A;
+    SharedTensor2d V, Vs, Ts, Va, Ta, J, T1, J1, J2, J3;
+
+    timer_on("WabefT2");
+
+    bQabB.reset();
+    bQabB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ab)", nQ, ntri_abBB);
+    bQabB->read(psio_, PSIF_DFOCC_INTS);
+
+    // t_ij^ab <= \sum_{ef} Tau_ij^ef W_abef
+    T2 = std::make_shared<Tensor2d>("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+    T2->read(psio_, PSIF_DFOCC_AMPS);
+    Tau = std::make_shared<Tensor2d>("Tau <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+    uccsd_tau_amps_OS(naoccA, naoccB, navirA, navirB, Tau, T2, t1A, t1B);
+    T2.reset();
+
+    // B-T1 (Q|AB)
+    X = std::make_shared<Tensor2d>("T1 (Q|AB)", nQ, navirA, navirA);
+    X->read(psio_, PSIF_DFOCC_AMPS);
+    X->scale(-1.0);
+    X->axpy(bQabA, 1.0);
+
+    // malloc
+    T = std::make_shared<Tensor2d>("T[A] <b|Ij>", navirB, naoccA * naoccB);
+    K = std::make_shared<Tensor2d>("B[A] <E|Q>", navirA, nQ);
+    //J = std::make_shared<Tensor2d>("J[A] <E|bf>", navirA, navirB * navirB);
+    J = std::make_shared<Tensor2d>("J[A] <E|b>=f>", navirA, ntri_abBB);
+    I = std::make_shared<Tensor2d>("I[A] <b|Ef>", navirB, navirA * navirB);
+    J2 = std::make_shared<Tensor2d>("J[A] <E|mf>", navirA, naoccB * navirB);
+    J3 = std::make_shared<Tensor2d>("J[A] <m|Ef>", naoccB, navirA * navirB);
+
+    // Symmetric & Anti-symmetric contributions
+    Tnew = std::make_shared<Tensor2d>("New T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+    Tnew->read(psio_, PSIF_DFOCC_AMPS);
+
+    // Main loop
+    for (int a = 0; a < navirA; ++a) {
+
+        // Form B-T [A](E,Q)
+        #pragma omp parallel for
+        for (int Q = 0; Q < nQ; ++Q) {
+            for (int e = 0; e < navirA; ++e) {
+                int ae = ab_idxAA->get(a, e);
+                K->set(e, Q, X->get(Q, ae));
+            }
+        }
+
+        // Form J[A](E,bf) = \sum_{Q} (B-T)[A](E,Q) * B(Q,bf)
+        // new: Form J[A](E,b>=f) = \sum_{Q} (B-T)[A](E,Q) * B(Q,b>=f)
+        J->gemm(false, false, K, bQabB, 1.0, 0.0);
+
+        // Form I[A](b,Ef)
+        #pragma omp parallel for
+        for (int b = 0; b < navirB; ++b) {
+            for (int e = 0; e < navirA; ++e) {
+                for (int f = 0; f < navirB; ++f) {
+                    //int bf = f + (b * navirB);
+                    int bf = index2(b,f);
+                    int ef = ab_idxAB->get(e, f);
+                    I->set(b, ef, J->get(e, bf));
+                }
+            }
+        }
+
+        // Form B [A](E,Q)
+        #pragma omp parallel for
+        for (int Q = 0; Q < nQ; ++Q) {
+            for (int e = 0; e < navirA; ++e) {
+                int ae = ab_idxAA->get(a, e);
+                K->set(e, Q, bQabA->get(Q, ae));
+            }
+        }
+
+        // Form J[A](E,mf) = \sum_{Q} B(mf,Q)*B[A](E,Q) cost = OV^3N
+        J2->gemm(false, false, K, bQiaB, 1.0, 0.0);
+
+        // Form J[A](m,Ef)
+        #pragma omp parallel for
+        for (int m = 0; m < naoccB; ++m) {
+            for (int e = 0; e < navirA; ++e) {
+                for (int f = 0; f < navirB; ++f) {
+                    int mf = (m * navirB) + f;
+                    int ef = ab_idxAB->get(e, f);
+                    J3->set(m, ef, J2->get(e, mf));
+                }
+            }
+        }
+
+        // I[A](b,Ef) -= \sum_{m} t(b,m) * J[A](m,Ef)
+        I->gemm(true, false, t1B, J3, -1.0, 1.0);
+
+        // Form T[A](b,Ij) = \sum_{Ef} I[A](b, Ef) T(Ij,Ef)
+        T->gemm(false, true, I, Tau, 1.0, 0.0);
+
+        #pragma omp parallel for
+        for (int b = 0; b < navirB; ++b) {
+            int ab = ab_idxAB->get(a, b);
+            for (int i = 0; i < naoccA; ++i) {
+                for (int j = 0; j < naoccB; ++j) {
+                    int ij = ij_idxAB->get(i, j);
+                    Tnew->add(ij, ab, T->get(b, ij));
+                }
+            }
+        }
+
+    }//a
+    Tau.reset();
+    K.reset();
+    I.reset();
+    X.reset();
+    T.reset();
+    J.reset();
+    J2.reset();
+    J3.reset();
+
+    Tnew->write(psio_, PSIF_DFOCC_AMPS);
+    Tnew.reset();
+
+    bQabB.reset();
+    bQabB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB);
+    bQabB->read(psio_, PSIF_DFOCC_INTS, true, true);
+
+    timer_off("WabefT2");
+
+}  // end ccsd_Wabef2T2AB
+
+//======================================================================
 //    WabefT2: AO Basis: EXPERIMENTAL & NOT FINISHED
 //======================================================================
 /*

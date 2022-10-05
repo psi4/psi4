@@ -601,15 +601,21 @@ void DFOCC::sep_tpdm_cc() {
         // Gt_Q = \sum_{e,f} b_ef^Q G1c_ef
         g1Qt->gemv(false, nQ_ref, nvirB * nvirB, bQvvB, G1c_vvB, 1.0, 1.0);
 
+        // G'_Q = \sum_{ME} b_ME^Q G1c_ME
+        g1Qp->gemv(false, nQ_ref, noccA * nvirA, bQovA, G1c_ovA, 1.0, 0.0);
+
+        // G'_Q = \sum_{m,e} b_me^Q G1c_me
+        g1Qp->gemv(false, nQ_ref, noccB * nvirB, bQovB, G1c_ovB, 1.0, 1.0);
+
         //=========================
         // Separable Part
         //=========================
 
-        // G_IJ^Q = \delta(IJ) * (G_Q + Gt_Q)
+        // G_IJ^Q = \delta(IJ) ( G^Q + 2G'^Q + Gt^Q )
         G2c_ooA = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA);
 #pragma omp parallel for
         for (int Q = 0; Q < nQ_ref; Q++) {
-            double value = g1Qc->get(Q) + g1Qt->get(Q);
+            double value = g1Qc->get(Q) + (2.0 * g1Qp->get(Q)) + g1Qt->get(Q);
             for (int i = 0; i < noccA; i++) {
                 int ii = oo_idxAA->get(i, i);
                 G2c_ooA->set(Q, ii, value);
@@ -632,11 +638,11 @@ void DFOCC::sep_tpdm_cc() {
         if (print_ > 3) G2c_ooA->print();
         G2c_ooA.reset();
 
-        // G_ij^Q = \delta(ij) * (G_Q + Gt_Q)
+        // G_ij^Q = \delta(ij) ( G^Q + 2G'^Q + Gt^Q )
         G2c_ooB = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB, noccB);
 #pragma omp parallel for
         for (int Q = 0; Q < nQ_ref; Q++) {
-            double value = g1Qc->get(Q) + g1Qt->get(Q);
+            double value = g1Qc->get(Q) + (2.0 * g1Qp->get(Q)) + g1Qt->get(Q);
             for (int i = 0; i < noccB; i++) {
                 int ii = oo_idxBB->get(i, i);
                 G2c_ooB->set(Q, ii, value);

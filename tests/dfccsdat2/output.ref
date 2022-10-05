@@ -1,0 +1,646 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4rc2.dev106 
+
+                         Git: Rev {master} ce3f8ae 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 15 June 2021 05:25PM
+
+    Process ID: 29119
+    Host:       fedora
+    PSIDATADIR: /opt/psi4-master/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DF-OCCD(T) cc-pVDZ energy for the NH molecule.
+
+refnuc      =  3.50194996133039  #TEST
+refscf      = -54.96603000632251 #TEST
+refcc       = -55.09158436663345 #TEST
+
+molecule nh {
+  0 3
+  N    -0.873042000000      0.576431000000      0.000000000000
+  H     0.153816000000      0.322601000000      0.000000000000
+  nocom
+  noreorient
+  symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  guess gwh
+  reference uhf
+  scf_type df
+  cc_type df
+  qc_module occ
+  freeze_core true
+}
+
+energy('ccsd(at)')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                      #TEST
+compare_values(refcc, variable("CCSD(AT) Total Energy"), 6, "CCSD(AT) Total Energy (a.u.)");         #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+    For method 'CCSD(AT)', SCF Algorithm Type (re)set to DISK_DF.
+
+*** tstart() called on fedora
+*** at Tue Jun 15 17:25:13 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry N          line   168 file /opt/psi4-master/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry H          line    22 file /opt/psi4-master/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         N           -0.873042000000     0.576431000000     0.000000000000    14.003074004430
+         H            0.153816000000     0.322601000000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =    133.52421  B =      1.09976  C =      1.09077 [cm^-1]
+  Rotational constants: A = 4002955.04980  B =  32969.90693  C =  32700.57220 [MHz]
+  Nuclear repulsion =    3.501949961330393
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DISK_DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 9
+    Number of basis functions: 19
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry N          line   171 file /opt/psi4-master/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2 entry H          line    51 file /opt/psi4-master/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              375
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 33
+    Number of basis functions: 93
+    Number of Cartesian functions: 106
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 4.9007364707E-02.
+  Reciprocal condition number of the overlap matrix is 1.6468521670E-02.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         19      19       5       3       3       2
+   -------------------------------------------------------
+    Total      19      19       5       3       3       2
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:   -54.29995963675689   -5.43000e+01   6.61914e-02 DIIS
+   @DF-UHF iter   2:   -54.91590396696024   -6.15944e-01   1.69390e-02 DIIS
+   @DF-UHF iter   3:   -54.96423337501048   -4.83294e-02   2.05871e-03 DIIS
+   @DF-UHF iter   4:   -54.96560451871031   -1.37114e-03   7.05183e-04 DIIS
+   @DF-UHF iter   5:   -54.96588346569645   -2.78947e-04   3.13366e-04 DIIS
+   @DF-UHF iter   6:   -54.96598885100658   -1.05385e-04   1.50356e-04 DIIS
+   @DF-UHF iter   7:   -54.96602289489320   -3.40439e-05   6.35110e-05 DIIS
+   @DF-UHF iter   8:   -54.96602922667422   -6.33178e-06   2.27795e-05 DIIS
+   @DF-UHF iter   9:   -54.96602988496876   -6.58295e-07   9.48291e-06 DIIS
+   @DF-UHF iter  10:   -54.96602999600164   -1.11033e-07   2.87130e-06 DIIS
+   @DF-UHF iter  11:   -54.96603000554495   -9.54331e-09   9.61207e-07 DIIS
+   @DF-UHF iter  12:   -54.96603000629446   -7.49509e-10   1.99347e-07 DIIS
+   @DF-UHF iter  13:   -54.96603000632151   -2.70504e-11   4.34479e-08 DIIS
+   @DF-UHF iter  14:   -54.96603000632251   -1.00187e-12   5.21501e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   1.464461504E-02
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.014644615E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -15.636227     2A     -1.160865     3A     -0.572777  
+       4A     -0.536772     5A     -0.536772  
+
+    Alpha Virtual:                                                        
+
+       6A      0.188204     7A      0.745067     8A      0.897285  
+       9A      0.897285    10A      0.955299    11A      1.220996  
+      12A      1.432017    13A      1.432017    14A      1.964992  
+      15A      1.964992    16A      2.159491    17A      2.422015  
+      18A      2.422015    19A      3.111330  
+
+    Beta Occupied:                                                        
+
+       1A    -15.573676     2A     -0.907061     3A     -0.496553  
+
+    Beta Virtual:                                                         
+
+       4A      0.160745     5A      0.160745     6A      0.212045  
+       7A      0.768555     8A      0.996793     9A      1.094262  
+      10A      1.094262    11A      1.299959    12A      1.475050  
+      13A      1.475050    14A      2.169536    15A      2.169536  
+      16A      2.209388    17A      2.501742    18A      2.501742  
+      19A      3.149421  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     3 ]
+    SOCC [     2 ]
+
+  @DF-UHF Final Energy:   -54.96603000632251
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              3.5019499613303928
+    One-Electron Energy =                 -81.5152581200667754
+    Two-Electron Energy =                  23.0472781524138668
+    Total Energy =                        -54.9660300063225122
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9939134
+  HONO-1 :    4  A 1.0000000
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0060866
+  LUNO+1 :    7  A 0.0012542
+  LUNO+2 :    8  A 0.0000009
+  LUNO+3 :    9  A 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:   -11.2580      Y:     8.2347      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:    11.8837      Y:    -8.3894      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.6257      Y:    -0.1547      Z:     0.0000     Total:     0.6446
+
+  Dipole Moment: [D]
+     X:     1.5905      Y:    -0.3932      Z:     0.0000     Total:     1.6384
+
+
+*** tstop() called on fedora at Tue Jun 15 17:25:13 2021
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+  Constructing Basis Sets for DFOCC...
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry N          line   171 file /opt/psi4-master/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2 entry H          line    51 file /opt/psi4-master/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: RIFIT
+    Keyword: DF_BASIS_CC
+    atoms 1 entry N          line   197 file /opt/psi4-master/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2 entry H          line    19 file /opt/psi4-master/share/psi4/basis/cc-pvdz-ri.gbs 
+
+
+*** tstart() called on fedora
+*** at Tue Jun 15 17:25:13 2021
+
+
+
+  Module DFOCC Options:
+  ----------------------------------------------------------------------------
+  ACTIVE                        => (empty)          
+  BASIS_RELATIVISTIC            => (empty)          
+  BENCH                         => (empty)          
+  CC_DIIS_MAX_VECS              => (empty)          
+  CC_DIIS_MIN_VECS              => (empty)          
+  CC_LAMBDA                     => TRUE            !
+  CC_MAXITER                    => (empty)          
+  CC_TYPE                       => DF              !
+  CHOLESKY                      => FALSE           !
+  CHOLESKY_TOLERANCE            => (empty)          
+  CIS_ALGORITHM                 => (empty)          
+  CI_TYPE                       => (empty)          
+  COMPUT_S2                     => (empty)          
+  CUBEPROP_BASIS_FUNCTIONS      => (empty)          
+  CUBEPROP_FILEPATH             => (empty)          
+  CUBEPROP_ISOCONTOUR_THRESHOLD => (empty)          
+  CUBEPROP_ORBITALS             => (empty)          
+  CUBEPROP_TASKS                => (empty)          
+  CUBIC_BASIS_TOLERANCE         => (empty)          
+  CUBIC_BLOCK_MAX_POINTS        => (empty)          
+  CUBIC_GRID_OVERAGE            => (empty)          
+  CUBIC_GRID_SPACING            => (empty)          
+  CUTOFF                        => (empty)          
+  DAVIDSON_TOLERANCE            => (empty)          
+  DEBUG                         => (empty)          
+  DERTYPE                       => (empty)          
+  DF_BASIS_CC                   => CC-PVDZ-RI      !
+  DIAG_METHOD                   => (empty)          
+  DIE_IF_NOT_CONVERGED          => (empty)          
+  DKH_ORDER                     => (empty)          
+  DOCC                          => (empty)          
+  DO_DIIS                       => (empty)          
+  DO_LEVEL_SHIFT                => (empty)          
+  DO_SCS                        => FALSE           !
+  DO_SOS                        => FALSE           !
+  E3_SCALE                      => (empty)          
+  EKT_IP                        => (empty)          
+  EXTERNAL_POTENTIAL_SYMMETRY   => (empty)          
+  E_CONVERGENCE                 => 1e-06           !
+  FREEZE_CORE                   => TRUE            !
+  FROZEN_DOCC                   => (empty)          
+  FROZEN_UOCC                   => (empty)          
+  HESS_TYPE                     => (empty)          
+  INTEGRAL_CUTOFF               => (empty)          
+  INTEGRAL_PACKAGE              => (empty)          
+  JK_MEMORY                     => (empty)          
+  JK_TYPE                       => (empty)          
+  LEVEL_SHIFT                   => (empty)          
+  LINEQ_SOLVER                  => (empty)          
+  LITERAL_CFOUR                 => (empty)          
+  MAT_NUM_COLUMN_PRINT          => (empty)          
+  MAX_MOGRAD_CONVERGENCE        => (empty)          
+  MAX_RADIAL_MOMENT             => (empty)          
+  MBIS_D_CONVERGENCE            => (empty)          
+  MBIS_MAXITER                  => (empty)          
+  MBIS_PRUNING_SCHEME           => (empty)          
+  MBIS_RADIAL_POINTS            => (empty)          
+  MBIS_SPHERICAL_POINTS         => (empty)          
+  MOLDEN_WITH_VIRTUAL           => (empty)          
+  MOLDEN_WRITE                  => (empty)          
+  MO_DIIS_NUM_VECS              => (empty)          
+  MO_MAXITER                    => (empty)          
+  MO_READ                       => (empty)          
+  MO_STEP_MAX                   => (empty)          
+  MO_WRITE                      => (empty)          
+  MP2_AMP_TYPE                  => (empty)          
+  MP2_OS_SCALE                  => (empty)          
+  MP2_SOS_SCALE                 => (empty)          
+  MP2_SOS_SCALE2                => (empty)          
+  MP2_SS_SCALE                  => (empty)          
+  MP2_TYPE                      => (empty)          
+  MP_TYPE                       => (empty)          
+  NAT_ORBS                      => (empty)          
+  NBO                           => (empty)          
+  NUM_FROZEN_DOCC               => (empty)          
+  NUM_FROZEN_UOCC               => (empty)          
+  NUM_GPUS                      => (empty)          
+  OCC_ORBS_PRINT                => (empty)          
+  OEPROP                        => (empty)          
+  OO_SCALE                      => (empty)          
+  OPT_METHOD                    => (empty)          
+  ORB_OPT                       => FALSE           !
+  ORB_RESP_SOLVER               => (empty)          
+  ORTH_TYPE                     => (empty)          
+  PARENT_SYMMETRY               => (empty)          
+  PCG_BETA_TYPE                 => (empty)          
+  PCG_CONVERGENCE               => (empty)          
+  PCG_MAXITER                   => (empty)          
+  PCM                           => (empty)          
+  PE                            => (empty)          
+  PPL_TYPE                      => (empty)          
+  PRINT                         => (empty)          
+  PRINT_CI_VECS                 => (empty)          
+  PRINT_NOONS                   => (empty)          
+  PROPERTIES                    => (empty)          
+  PROPERTIES_ORIGIN             => (empty)          
+  PUREAM                        => (empty)          
+  QCHF                          => (empty)          
+  QC_MODULE                     => OCC             !
+  RAS1                          => (empty)          
+  RAS2                          => (empty)          
+  RAS3                          => (empty)          
+  RAS4                          => (empty)          
+  READ_SCF_3INDEX               => (empty)          
+  REGULARIZATION                => (empty)          
+  REG_PARAM                     => (empty)          
+  RELATIVISTIC                  => (empty)          
+  RESTRICTED_DOCC               => (empty)          
+  RESTRICTED_UOCC               => (empty)          
+  RMS_MOGRAD_CONVERGENCE        => (empty)          
+  R_CONVERGENCE                 => (empty)          
+  SCF_TYPE                      => DISK_DF         !
+  SCS_TYPE                      => (empty)          
+  SOCC                          => (empty)          
+  SOS_TYPE                      => (empty)          
+  TRIPLES_IABC_TYPE             => (empty)          
+  WFN                           => (empty)          
+  WFN_TYPE                      => DF-CCSD(AT)     !
+  WRITER_FILE_LABEL             => (empty)          
+
+	For this residual convergence, default PCG convergence is:     1.00e-07
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                       DF-CCSD   
+              Program Written by Ugur Bozkaya
+              Latest Revision December 8, 2020
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	MO spaces... 
+
+	 FC   AOCC   BOCC  AVIR   BVIR   FV 
+	------------------------------------------
+	  1     4     2    14     16     0
+
+	Number of basis functions in the DF-CC basis:  70
+
+	Available memory                      :    500.00 MB 
+	Minimum required memory for amplitudes:      0.07 MB 
+
+	Computing DF-MP2 energy ... 
+	======================================================================= 
+	Nuclear Repulsion Energy (a.u.)    :     3.50194996133039
+	DF-HF Energy (a.u.)                :   -54.96603000632251
+	REF Energy (a.u.)                  :   -54.96603000632251
+	Alpha-Alpha Contribution (a.u.)    :    -0.02234240917058
+	Alpha-Beta Contribution (a.u.)     :    -0.07918939647753
+	Beta-Beta Contribution (a.u.)      :    -0.00264542050305
+	Scaled_SS Correlation Energy (a.u.):    -0.00832927655788
+	Scaled_OS Correlation Energy (a.u.):    -0.09502727577304
+	DF-SCS-MP2 Total Energy (a.u.)     :   -55.06938655865343
+	DF-SOS-MP2 Total Energy (a.u.)     :   -55.06897622174331
+	DF-SCS(N)-MP2 Total Energy (a.u.)  :   -55.01000858654810
+	DF-MP2 Correlation Energy (a.u.)   :    -0.10417722615116
+	DF-MP2 Total Energy (a.u.)         :   -55.07020723247368
+	======================================================================= 
+
+ ============================================================================== 
+ ================ Performing DF-CCSD iterations... ============================ 
+ ============================================================================== 
+
+  Iter       E_corr                  DE                 T2 RMS        T1 RMS     
+  ----   ----------------      ----------------       ----------    ----------   
+   1      -0.1189826993         -0.0148054732         7.22e-04      2.23e-03 
+   2      -0.1236567370         -0.0046740377         3.77e-04      2.69e-04 
+   3      -0.1239859756         -0.0003292386         1.41e-04      3.16e-04 
+   4      -0.1240246670         -0.0000386914         7.95e-05      1.08e-04 
+   5      -0.1240301574         -0.0000054904         3.63e-05      3.73e-05 
+   6      -0.1240372359         -0.0000070785         1.40e-05      1.23e-05 
+   7      -0.1240342315          0.0000030044         4.62e-06      9.46e-06 
+   8      -0.1240311987          0.0000030328         4.29e-06      7.02e-06 
+   9      -0.1240315057         -0.0000003070         1.46e-06      4.43e-06 
+
+ ============================================================================== 
+ ===================== DF-CCSD ITERATIONS ARE CONVERGED ======================= 
+ ============================================================================== 
+
+	T1 diagnostic reference value:     0.02000000000000
+	T1 diagnostic                :     0.00597139868907
+
+	======================================================================= 
+	================ CCSD FINAL RESULTS =================================== 
+	======================================================================= 
+	Nuclear Repulsion Energy (a.u.)    :     3.50194996133039
+	SCF Energy (a.u.)                  :   -54.96603000632251
+	REF Energy (a.u.)                  :   -54.96603000632251
+	DF-CCSD Correlation Energy (a.u.)  :    -0.12403150566202
+	DF-CCSD Total Energy (a.u.)        :   -55.09006151198453
+	======================================================================= 
+
+
+*** tstop() called on fedora at Tue Jun 15 17:25:13 2021
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on fedora
+*** at Tue Jun 15 17:25:13 2021
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	Solving Lambda amplitude equations...
+
+ ============================================================================== 
+ ================ Performing DF-CCSDL iterations... =========================== 
+ ============================================================================== 
+
+  Iter       E_corr                  DE                 L2 RMS        L1 RMS     
+  ----   ----------------      ----------------       ----------    ----------   
+   1      -0.1215565000          0.0024750056         9.17e-05      1.98e-04 
+   2      -0.1211616697          0.0003948303         2.25e-05      6.58e-05 
+   3      -0.1211005046          0.0000611651         9.57e-06      1.17e-05 
+   4      -0.1210977847          0.0000027198         4.28e-06      5.50e-06 
+   5      -0.1210986316         -0.0000008469         2.12e-06      1.51e-06 
+
+ ============================================================================== 
+ ===================== DF-CCSDL ITERATIONS ARE CONVERGED ====================== 
+ ============================================================================== 
+
+*** tstop() called on fedora at Tue Jun 15 17:25:13 2021
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on fedora
+*** at Tue Jun 15 17:25:13 2021
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                       DF-CCSD(AT)    
+              Program Written by Ugur Bozkaya
+              Latest Revision September 9, 2015
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	Computing asymmetric triples (AT) correction...
+	Using high-memory disk algorithm...
+
+	Number of ijk combinations for AAA: 4 
+               25.0         0 s
+               50.0         0 s
+               75.0         0 s
+              100.0         0 s
+	AAA (AT) energy                    :    -0.00004267726069
+
+	Number of ijk combinations for BBB: 0 
+	BBB (AT) energy                    :     0.00000000000000
+
+	Number of ijk combinations for AAB: 12 
+               16.7         0 s
+               25.0         0 s
+               33.3         0 s
+               41.7         0 s
+               50.0         0 s
+               66.7         0 s
+               75.0         0 s
+               83.3         0 s
+               91.7         0 s
+              100.0         0 s
+	AAB (AT) energy                    :    -0.00113003193590
+
+	Number of ijk combinations for ABB: 4 
+               25.0         0 s
+               50.0         0 s
+               75.0         0 s
+              100.0         0 s
+	ABB (AT) energy                    :    -0.00035014545233
+
+	(AT) Correction (a.u.)             :    -0.00152285464892
+	DF-CCSD(AT) Total Energy (a.u.)    :   -55.09158436663345
+
+*** tstop() called on fedora at Tue Jun 15 17:25:13 2021
+Module time:
+	user time   =       0.00 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    Nuclear Repulsion Energy (a.u.).......................................................PASSED
+    DF-HF Energy (a.u.)...................................................................PASSED
+    CCSD(AT) Total Energy (a.u.)..........................................................PASSED
+
+    Psi4 stopped on: Tuesday, 15 June 2021 05:25PM
+    Psi4 wall time for execution: 0:00:00.50
+
+*** Psi4 exiting successfully. Buy a developer a beer!

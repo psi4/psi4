@@ -106,7 +106,7 @@ void DFOCC::df_ref() {
         nQ_ref = auxiliary->nbf();
 
         // ntri comes from sieve above
-        std::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals", nQ_ref, ntri_cd));
+        auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_ref, ntri_cd);
         double** Qmnp = Qmn->pointer();
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
@@ -142,7 +142,7 @@ void DFOCC::df_ref() {
         // ntri comes from sieve above
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         psio_->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ_ref, sizeof(long int));
-        std::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals", nQ_ref, ntri_cd));
+        auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ_ref, ntri_cd);
         double** Qmnp = Qmn->pointer();
         psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
         psio_->close(PSIF_DFSCF_BJ, 1);
@@ -266,14 +266,20 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
 
     // First, diagonalize J
     // the C_DSYEV call replaces the original matrix J with its eigenvectors
-    int lwork = nQ_ref * 3;
-    double* eigval = init_array(nQ_ref);
-    double* work = init_array(lwork);
-    int status = C_DSYEV('v', 'u', nQ_ref, J[0], nQ_ref, eigval, work, lwork);
+    int lwork = 1 + (6*nQ_ref) + (2*nQ_ref*nQ_ref);
+    int liwork = 3 + (5*nQ_ref);
+    double *eigval = new double[nQ_ref];
+    memset(eigval, 0.0, sizeof(double)*nQ_ref);
+    double *work = new double[lwork];
+    memset(work, 0.0, sizeof(double)*lwork);
+    int *iwork = new int[liwork];
+    memset(iwork, 0.0, sizeof(int)*liwork);
+    int status = C_DSYEVD('v', 'u', nQ_ref, J[0], nQ_ref, eigval, work, lwork, iwork, liwork);
     if (status) {
         throw PsiException("Diagonalization of J failed", __FILE__, __LINE__);
     }
-    free(work);
+    delete [] work;
+    delete [] iwork;
 
     // Now J contains the eigenvectors of the original J
     // Copy J to J_copy
@@ -288,7 +294,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
         // scale one set of eigenvectors by the diagonal elements j^{-1/2}
         C_DSCAL(nQ_ref, eigval[i], J[i], 1);
     }
-    free(eigval);
+    delete [] eigval;
 
     // J_mhalf = J_copy(T) * J
     C_DGEMM('t', 'n', nQ_ref, nQ_ref, nQ_ref, 1.0, J_copy[0], nQ_ref, J[0], nQ_ref, 0.0, J_mhalf[0], nQ_ref);

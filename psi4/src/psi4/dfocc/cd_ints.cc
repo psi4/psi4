@@ -138,7 +138,7 @@ void DFOCC::cd_ints() {
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         // Read the NAUX from the file
         psio_->read_entry(PSIF_DFSCF_BJ, "length", (char*)&nQ, sizeof(long int));
-        std::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals", nQ, ntri_cd));
+        auto Qmn = std::make_shared<Matrix>("Qmn Integrals", nQ, ntri_cd);
         double** Qmnp = Qmn->pointer();
         psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri_cd * nQ);
         psio_->close(PSIF_DFSCF_BJ, 1);
