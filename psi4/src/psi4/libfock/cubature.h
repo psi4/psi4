@@ -47,8 +47,6 @@ class Matrix;
 class Vector;
 class BasisExtents;
 class BlockOPoints;
-class RadialGrid;
-class SphericalGrid;
 class Options;
 
 // This is an auxiliary structure used internally by the grid-builder class.
@@ -92,10 +90,6 @@ class MolecularGrid {
 
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation_;
-    /// Radial grids, per atom
-    std::vector<std::shared_ptr<RadialGrid>> radial_grids_;
-    /// Spherical grids, per atom and radial point
-    std::vector<std::vector<std::shared_ptr<SphericalGrid>>> spherical_grids_;
     /// Grid points, per atom. Available for any grid blocking scheme unlike atomic_blocks_.
     std::vector<std::vector<MassPoint>> atomic_grids_;
 
@@ -155,14 +149,9 @@ class MolecularGrid {
 
     /// Print information about the grid
     void print(std::string out_fname = "outfile", int print = 2) const;
-    void print_details(std::string out_fname = "outfile", int print = 2) const;
 
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation() const { return orientation_; }
-    /// Radial grids, per atom
-    const std::vector<std::shared_ptr<RadialGrid>>& radial_grids() const { return radial_grids_; }
-    /// Spherical grids, per atom and radial point
-    const std::vector<std::vector<std::shared_ptr<SphericalGrid>>>& spherical_grids() const { return spherical_grids_; }
 
     /// Number of grid points
     int npoints() const { return npoints_; }
@@ -236,135 +225,6 @@ class DFTGrid : public MolecularGrid {
             std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, 
             std::map<std::string, double> float_opts_map, Options& options);
     ~DFTGrid() override;
-};
-
-class RadialGrid {
-   protected:
-    /// Scheme
-    std::string scheme_;
-    /// Number of points in radial grid
-    int npoints_;
-    /// Alpha scale (for user reference)
-    double alpha_;
-    /// Nodes (including alpha)
-    double* r_;
-    /// Weights (including alpha and r^2)
-    double* w_;
-
-    // ==> Standard Radial Grids <== //
-
-    /// Build the Becke 1988 radial grid
-    static std::shared_ptr<RadialGrid> build_becke(int npoints, double alpha, int Z);
-    /// Build the Treutler-Ahlrichs 1995 radial grid (scale power = 0.6)
-    static std::shared_ptr<RadialGrid> build_treutler(int npoints, double alpha, int Z);
-    // TODO: Add more grids
-
-    /// Protected constructor
-    RadialGrid();
-
-   public:
-    // ==> Initializers <== //
-
-    /// Destructor
-    virtual ~RadialGrid();
-
-    /// Master build routine
-    static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double alpha, int Z);
-    /// Hack build routine (TODO: Remove ASAP)
-    static std::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double* r, double* wr,
-                                             double alpha, int Z);
-
-    // ==> Accessors <== //
-
-    /// Scheme of this radial grid
-    std::string scheme() const { return scheme_; }
-    /// Number of points in radial grid
-    int npoints() const { return npoints_; }
-    /// Alpha scale (for user reference)
-    double alpha() const { return alpha_; }
-    /// Radial nodes (including alpha scale). You do not own this.
-    double* r() const { return r_; }
-    /// Radial weights (including alpha scale and r^2). You do not own this.
-    double* w() const { return w_; }
-
-    /// Reflection
-    void print(std::string out_fname = "outfile", int level = 1) const;
-};
-
-class SphericalGrid {
-   protected:
-    /// Scheme
-    std::string scheme_;
-    /// Number of points in radial grid
-    int npoints_;
-    /// Order of spherical harmonics in spherical grid (integrates products up to L_tot = 2 * order_ + 1)
-    int order_;
-    /// Spherical nodes, on the unit sphere
-    double* x_;
-    /// Spherical nodes, on the unit sphere
-    double* y_;
-    /// Spherical nodes, on the unit sphere
-    double* z_;
-    /// Spherical weights, normalized to 4pi
-    double* w_;
-
-    /// Spherical nodes, in spherical coordinates (azimuth)
-    double* phi_;
-    /// Spherical nodes, in spherical coordinates (inclination)
-    double* theta_;
-
-    // ==> Unique Lebedev Grids (statically stored) <== //
-
-    /// Grid npoints to order map
-    static std::map<int, int> lebedev_mapping_;
-    /// Checks that the mapping has been init'd
-    static std::once_flag lebedev_mapping_initd_;
-    /// Initialize the above arrays with the unique Lebedev grids
-    static void initialize_lebedev();
-    /// Print valid Lebedev grids and error out (throws)
-    static void lebedev_error();
-
-    // ==> Utility Routines <== //
-
-    /// Build the spherical angles from <x,y,z>, for reference
-    void build_angles();
-
-    /// Protected constructor
-    SphericalGrid();
-
-   public:
-    // ==> Initializers <== //
-
-    /// Destructor
-    virtual ~SphericalGrid();
-
-    /// Master build routines
-    static std::shared_ptr<SphericalGrid> build(const std::string& scheme, int npoints, const MassPoint* points);
-
-    // ==> Accessors <== //
-
-    /// Scheme of this radial grid
-    std::string scheme() const { return scheme_; }
-    /// Number of points in radial grid
-    int npoints() const { return npoints_; }
-    /// Order of spherical harmonics in spherical grid (integrates products up to L_tot = 2 * order_ + 1)
-    int order() const { return order_; }
-    /// Spherical nodes, on the unit sphere
-    double* x() const { return x_; }
-    /// Spherical nodes, on the unit sphere
-    double* y() const { return y_; }
-    /// Spherical nodes, on the unit sphere
-    double* z() const { return z_; }
-    /// Spherical weights, normalized to 4pi
-    double* w() const { return w_; }
-
-    /// Spherical nodes, in spherical coordinates (azimuth)
-    double* phi() const { return phi_; }
-    /// Spherical nodes, in spherical coordinates (inclination)
-    double* theta() const { return theta_; }
-
-    /// Reflection
-    void print(std::string out_fname = "outfile", int level = 1) const;
 };
 
 class BlockOPoints {

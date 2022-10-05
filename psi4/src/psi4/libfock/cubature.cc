@@ -3730,13 +3730,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
-    radial_grids_.clear();
-    spherical_grids_.clear();
-
-    if (opt.namedGrid == -1) {
-        radial_grids_.resize(molecule_->natom());
-        spherical_grids_.resize(molecule_->natom());
-    }
 
 #ifdef USING_BrianQC
     std::vector<std::vector<double>> atomRotations(molecule_->natom());
@@ -3772,11 +3765,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r.data(),
                                           wr.data(), alpha);
 
-            // RMP: Want this stuff too
-            radial_grids_[A] = RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha, Z);
-            std::vector<std::shared_ptr<SphericalGrid>> spheres;
-            spherical_grids_[A] = spheres;
-
             int currentBlockIndex = -1;
             for (int i = 0; i < opt.nradpts; i++) {
                 int numAngPts = 0;
@@ -3809,8 +3797,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 }
 #endif
 
-                // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
-                spherical_grids_[A].push_back(SphericalGrid::build("Unknown", numAngPts, anggrid));
                 for (int j = 0; j < numAngPts; j++) {
                     MassPoint mp = {r[i] * anggrid[j].x, r[i] * anggrid[j].y, r[i] * anggrid[j].z,
                                     wr[i] * anggrid[j].w};
@@ -3943,11 +3929,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
-    radial_grids_.clear();
-    spherical_grids_.clear();
-
-    radial_grids_.resize(molecule_->natom());
-    spherical_grids_.resize(molecule_->natom());
 
 // Iterate over atoms
 #pragma omp parallel for schedule(static)
@@ -3964,17 +3945,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
             wr[i] = ws[A][i];
         }
 
-        // RMP: Want this stuff too
-        radial_grids_[A] = RadialGrid::build("Unknown", rs[A].size(), r.data(), wr.data(), alpha, Z);
-        std::vector<std::shared_ptr<SphericalGrid>> spheres;
-        spherical_grids_[A] = spheres;
-
         for (size_t i = 0; i < rs[A].size(); i++) {
             int numAngPts = LebedevGridMgr::findNPointsByOrder(Ls[A][i]);
             const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
-
-            // RMP: And this stuff! This whole thing is completely and utterly FUBAR.
-            spherical_grids_[A].push_back(SphericalGrid::build("Unknown", numAngPts, anggrid));
 
             for (int j = 0; j < numAngPts; j++) {
                 MassPoint mp = {r[i] * anggrid[j].x, r[i] * anggrid[j].y, r[i] * anggrid[j].z, wr[i] * anggrid[j].w};
@@ -4560,23 +4533,6 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     Process::environment.globals["XC GRID SPHERICAL POINTS"] = options_.nangpts;
     Process::environment.globals["XC GRID RADIAL POINTS"] = options_.nradpts;
 }
-void MolecularGrid::print_details(std::string out, int /*print*/) const {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    printer->Printf("   > Grid Details <\n\n");
-    for (size_t A = 0; A < radial_grids_.size(); A++) {
-        printer->Printf("    Atom: %4zu, Nrad = %6d, Alpha = %11.3E:\n", A, radial_grids_[A]->npoints(),
-                        radial_grids_[A]->alpha());
-        for (size_t R = 0; R < spherical_grids_[A].size(); R++) {
-            double Rval = radial_grids_[A]->r()[R];
-            double Wval = radial_grids_[A]->w()[R];
-            int Nsphere = spherical_grids_[A][R]->npoints();
-            int Lsphere = spherical_grids_[A][R]->order();
-            printer->Printf("    Node: %4zu, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n", R, Rval, Wval,
-                            Nsphere, Lsphere);
-        }
-    }
-    printer->Printf("\n");
-}
 
 GridBlocker::GridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref, double const *z_ref,
                          double const *w_ref, const int max_points, const int min_points, const double max_radius,
@@ -4952,252 +4908,4 @@ void OctreeGridBlocker::block() {
     }
 }
 
-RadialGrid::RadialGrid() : npoints_(0) {}
-RadialGrid::~RadialGrid() {
-    if (npoints_) {
-        delete[] r_;
-        delete[] w_;
-    }
-}
-void RadialGrid::print(std::string out, int level) const {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    if (level > 0) {
-        printer->Printf("   => RadialGrid: %s Scheme <=\n\n", scheme_.c_str());
-        printer->Printf("      Points: %d\n", npoints_);
-        printer->Printf("      Alpha:  %24.16E\n\n", alpha_);
-        printer->Printf("   %4s %24s %24s\n", "N", "R", "W");
-        if (level > 1) {
-            for (int i = 0; i < npoints_; i++) {
-                printer->Printf("   %4d %24.16E %24.16E\n", i + 1, r_[i], w_[i]);
-            }
-        }
-        printer->Printf("\n");
-    }
-}
-std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npoints, double alpha, int Z) {
-    if (scheme == "BECKE") {
-        return RadialGrid::build_becke(npoints, alpha, Z);
-    } else if (scheme == "TREUTLER") {
-        return RadialGrid::build_treutler(npoints, alpha, Z);
-    } else {
-        throw PSIEXCEPTION("RadialGrid::build: Unrecognized radial grid.");
-    }
-}
-std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npoints, double *r, double *wr,
-                                              double alpha, int Z) {
-    RadialGrid *grid = new RadialGrid();
-
-    grid->scheme_ = scheme;
-    grid->npoints_ = npoints;
-    grid->alpha_ = alpha;
-    grid->r_ = new double[npoints];
-    grid->w_ = new double[npoints];
-
-    ::memcpy(grid->r_, r, sizeof(double) * npoints);
-    ::memcpy(grid->w_, wr, sizeof(double) * npoints);
-
-    return std::shared_ptr<RadialGrid>(grid);
-}
-std::shared_ptr<RadialGrid> RadialGrid::build_becke(int npoints, double alpha, int Z) {
-    RadialGrid *grid = new RadialGrid();
-
-    grid->scheme_ = "BECKE";
-    grid->npoints_ = npoints;
-    grid->alpha_ = alpha;
-    grid->r_ = new double[npoints];
-    grid->w_ = new double[npoints];
-
-    for (int tau = 1; tau <= npoints; tau++) {
-        double x = cos(tau / (npoints + 1.0) * M_PI);
-        double r = alpha * (1.0 - x) / (1.0 + x);
-        double temp = sin(tau / (npoints + 1.0) * M_PI);
-        double w =
-            M_PI / (npoints + 1.0) * temp * temp * alpha * 2.0 / ((1.0 + x) * (1.0 + x) * sqrt(1.0 - x * x)) * r * r;
-        grid->r_[tau - 1] = r;
-        grid->w_[tau - 1] = w;
-    }
-
-    return std::shared_ptr<RadialGrid>(grid);
-}
-std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha, int Z) {
-    RadialGrid *grid = new RadialGrid();
-
-    // Treutler/Ahlrichs 1995 mapping parameters
-    // clang-format off
-    static const std::vector<double> TreutlerEta =  { 1.0,
-      0.800, 0.900,
-      1.800, 1.400,                                                                       1.300, 1.100, 0.900, 0.900, 0.900, 0.900,
-      1.400, 1.300,                                                                       1.300, 1.200, 1.100, 1.000, 1.000, 1.000,
-      1.500, 1.400, 1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100, 1.100, 1.000, 0.900, 0.900, 0.900, 0.900,
-      2.000, 1.700, 1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,
-      2.500, 2.200,
-             2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
-             1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500,
-      2.500, 2.100,
-             3.685,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
-    };
-
-    // clang-format on
-    grid->scheme_ = "TREUTLER";
-    grid->npoints_ = npoints;
-    grid->alpha_ = alpha;
-    grid->r_ = new double[npoints];
-    grid->w_ = new double[npoints];
-
-    double INVLN2 = TreutlerEta.data()[Z] / log(2.0);
-
-    for (int tau = 1; tau <= npoints; tau++) {
-        double x = cos(tau / (npoints + 1.0) * M_PI);
-        double r = alpha * INVLN2 * pow(1.0 + x, 0.6) * log(2.0 / (1.0 - x));
-        double temp = sin(tau / (npoints + 1.0) * M_PI);
-        double w = M_PI / (npoints + 1.0) * temp * temp;
-        w *= alpha * INVLN2 * (0.6 * pow(1.0 + x, 0.6 - 1.0) * log(2.0 / (1.0 - x)) + pow(1.0 + x, 0.6) / (1.0 - x));
-        w *= 1.0 / sqrt(1.0 - x * x);
-        w *= r * r;
-        grid->r_[tau - 1] = r;
-        grid->w_[tau - 1] = w;
-    }
-
-    return std::shared_ptr<RadialGrid>(grid);
-}
-
-/// Grid npoints to order map
-std::map<int, int> SphericalGrid::lebedev_mapping_;
-std::once_flag SphericalGrid::lebedev_mapping_initd_;
-
-SphericalGrid::SphericalGrid() : npoints_(0) {}
-SphericalGrid::~SphericalGrid() {
-    if (npoints_) {
-        delete[] x_;
-        delete[] y_;
-        delete[] z_;
-        delete[] w_;
-        delete[] phi_;
-        delete[] theta_;
-    }
-}
-void SphericalGrid::print(std::string out, int level) const {
-    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    if (level > 0) {
-        printer->Printf("   => SphericalGrid: %s Scheme <=\n\n", scheme_.c_str());
-        printer->Printf("      Points: %d\n", npoints_);
-        printer->Printf("   %4s %24s %24s %24s %24s\n", "N", "X", "Y", "Z", "W");
-        if (level > 1) {
-            for (int i = 0; i < npoints_; i++) {
-                printer->Printf("   %4d %24.16E %24.16E %24.16E %24.16E\n", i + 1, x_[i], y_[i], z_[i], w_[i]);
-            }
-        }
-        printer->Printf("\n");
-    }
-}
-void SphericalGrid::build_angles() {
-    phi_ = new double[npoints_];
-    theta_ = new double[npoints_];
-    for (int i = 0; i < npoints_; i++) {
-        double xv = x_[i];
-        double yv = y_[i];
-        double zv = z_[i];
-        phi_[i] = atan2(yv, xv);
-        theta_[i] = acos(zv / sqrt(xv * xv + yv * yv + zv * zv));
-    }
-}
-std::shared_ptr<SphericalGrid> SphericalGrid::build(const std::string &scheme, int npoints, const MassPoint *points) {
-    std::call_once(lebedev_mapping_initd_, initialize_lebedev);
-    auto *s = new SphericalGrid();
-    s->scheme_ = scheme;
-    s->order_ = lebedev_mapping_[npoints];
-    s->npoints_ = npoints;
-
-    s->x_ = new double[npoints];
-    s->y_ = new double[npoints];
-    s->z_ = new double[npoints];
-    s->w_ = new double[npoints];
-
-    for (int i = 0; i < npoints; i++) {
-        s->x_[i] = points[i].x;
-        s->y_[i] = points[i].y;
-        s->z_[i] = points[i].z;
-        s->w_[i] = points[i].w;
-    }
-
-    s->build_angles();
-    return std::shared_ptr<SphericalGrid>(s);
-}
-
-void SphericalGrid::initialize_lebedev() {
-    lebedev_mapping_.clear();
-
-    lebedev_mapping_[6] = 1;
-    lebedev_mapping_[14] = 2;
-    lebedev_mapping_[26] = 3;
-    lebedev_mapping_[38] = 4;
-    lebedev_mapping_[50] = 5;
-    lebedev_mapping_[74] = 6;
-    lebedev_mapping_[86] = 7;
-    lebedev_mapping_[110] = 8;
-    lebedev_mapping_[146] = 9;
-    lebedev_mapping_[170] = 10;
-    lebedev_mapping_[194] = 11;
-    lebedev_mapping_[230] = 12;
-    lebedev_mapping_[266] = 13;
-    lebedev_mapping_[302] = 14;
-    lebedev_mapping_[350] = 15;
-    lebedev_mapping_[434] = 17;
-    lebedev_mapping_[590] = 20;
-    lebedev_mapping_[770] = 23;
-    lebedev_mapping_[974] = 26;
-    lebedev_mapping_[1202] = 29;
-    lebedev_mapping_[1454] = 32;
-    lebedev_mapping_[1730] = 35;
-    lebedev_mapping_[2030] = 38;
-    lebedev_mapping_[2354] = 41;
-    lebedev_mapping_[2702] = 44;
-    lebedev_mapping_[3074] = 47;
-    lebedev_mapping_[3470] = 50;
-    lebedev_mapping_[3890] = 53;
-    lebedev_mapping_[4334] = 56;
-    lebedev_mapping_[4802] = 59;
-    lebedev_mapping_[5294] = 62;
-    lebedev_mapping_[5810] = 65;
-}
-
-void SphericalGrid::lebedev_error() {
-    outfile->Printf("  ==> Valid Lebedev Grids <==\n\n");
-    outfile->Printf("    L     2L+1   N   \n");
-    outfile->Printf("    1     3      6   \n");
-    outfile->Printf("    2     5      14  \n");
-    outfile->Printf("    3     7      26  \n");
-    outfile->Printf("    4     9      38  \n");
-    outfile->Printf("    5     11     50  \n");
-    outfile->Printf("    6     13     74  \n");
-    outfile->Printf("    7     15     86  \n");
-    outfile->Printf("    8     17     110 \n");
-    outfile->Printf("    9     19     146 \n");
-    outfile->Printf("    10    21     170 \n");
-    outfile->Printf("    11    23     194 \n");
-    outfile->Printf("    12    25     230 \n");
-    outfile->Printf("    13    27     266 \n");
-    outfile->Printf("    14    29     302 \n");
-    outfile->Printf("    15    31     350 \n");
-    outfile->Printf("    17    35     434 \n");
-    outfile->Printf("    20    41     590 \n");
-    outfile->Printf("    23    47     770 \n");
-    outfile->Printf("    26    53     974 \n");
-    outfile->Printf("    29    59     1202\n");
-    outfile->Printf("    32    65     1454\n");
-    outfile->Printf("    35    71     1730\n");
-    outfile->Printf("    38    77     2030\n");
-    outfile->Printf("    41    83     2354\n");
-    outfile->Printf("    44    89     2702\n");
-    outfile->Printf("    47    95     3074\n");
-    outfile->Printf("    50    101    3470\n");
-    outfile->Printf("    53    107    3890\n");
-    outfile->Printf("    56    113    4334\n");
-    outfile->Printf("    59    119    4802\n");
-    outfile->Printf("    62    125    5294\n");
-    outfile->Printf("    65    131    5810\n");
-    outfile->Printf("\n");
-    outfile->Printf("    In Soviet Russia, grid build you!\n\n");
-    throw PSIEXCEPTION("SphericalGrid: Bad Lebedev number requested, see outfile for details.");
-}
 }  // namespace psi
