@@ -110,7 +110,9 @@ class MolecularGrid {
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation_;
     /// Radial grids, per atom
-    std::vector<RadialGrid> spherical_grids_;
+    /// Spherical grids, per atom and radial point are hidden inside of
+    ///radial_grids_[A].spheres
+    std::vector<RadialGrid> radial_grids_;
     /// Grid points, per atom. Available for any grid blocking scheme unlike atomic_blocks_.
     std::vector<std::vector<MassPoint>> atomic_grids_;
 
