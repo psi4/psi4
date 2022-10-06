@@ -2,10 +2,11 @@ import itertools
 
 import numpy as np
 import pytest
-from psi4.core import Dimension, Matrix, doublet
+from psi4.core import Dimension, Matrix, Slice, doublet
+import psi4
 from utils import compare_arrays
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 def check_dense_mat(m, exp_r, exp_c, exp_name=None):
     assert m.rows() == exp_r
@@ -225,3 +226,23 @@ def test_doublets(adl, adr, Ga, bdl, bdr, Gb, at, bt):
     block_checks = []
     for blk_idx in range(res.nirrep()):
         assert compare_arrays(expected[blk_idx], res_blocks[blk_idx], 8, f"Block[{blk_idx}]")
+
+def test_set_matrix():
+    # Use set_matrix to zero a block of a non-totally symmetric matrix.
+    dim = Dimension([3, 2])
+    mat = Matrix("Name", dim, dim, 1)
+    control_mat = Matrix("Name", dim, dim, 1)
+    i = 0
+    for j in range(3):
+        for k in range(2):
+            mat.set(0, j, k, i)
+            mat.set(1, k, j, 10 + i)
+            if i not in {0, 2}:
+                control_mat.set(0, j, k, i)
+                control_mat.set(1, k, j, 10 + i)
+            i += 1
+    new_dim = Dimension([2, 1])
+    new_slice = Slice(Dimension([0, 0]), new_dim)
+    new_mat = Matrix("Name", new_dim, new_dim, 1)
+    mat.set_block(new_slice, new_slice, new_mat)
+    assert psi4.compare_matrices(mat, control_mat)
