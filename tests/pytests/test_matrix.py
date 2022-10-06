@@ -246,3 +246,28 @@ def test_set_matrix():
     new_mat = Matrix("Name", new_dim, new_dim, 1)
     mat.set_block(new_slice, new_slice, new_mat)
     assert psi4.compare_matrices(mat, control_mat)
+
+def test_transpose_this():
+    dim1 = Dimension([3, 2])
+    dim2 = Dimension([5, 7])
+    mat = Matrix("Name", dim1, dim2, 1)
+    with pytest.raises(RuntimeError):
+        mat.transpose_this()
+
+def test_transpose():
+    dim1 = Dimension([2, 3])
+    dim2 = Dimension([4, 1])
+    mat = Matrix("Matrix", dim1, dim2, 1)
+    transposed_mat = Matrix("Transposed Matrix", dim2, dim1, 1)
+    i = 0
+    for j in range(2):
+        for k in range(1):
+            mat.set(0, j, k, i)
+            transposed_mat.set(1, k, j, i)
+            i += 1
+    for j in range(3):
+        for k in range(4):
+            mat.set(1, j, k, i)
+            transposed_mat.set(0, k, j, i)
+            i += 1
+    assert psi4.compare_matrices(mat.transpose(), transposed_mat)

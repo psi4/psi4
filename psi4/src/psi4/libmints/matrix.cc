@@ -1060,21 +1060,18 @@ SharedMatrix Matrix::transpose() const {
     if (symmetry_) {
         for (int rowsym = 0; rowsym < nirrep_; ++rowsym) {
             int colsym = rowsym ^ symmetry_;
-            if (rowsym < colsym) continue;
             int rows = rowspi_[rowsym];
             int cols = colspi_[colsym];
             for (int row = 0; row < rows; row++) {
                 for (int col = 0; col < cols; col++) {
                     temp->matrix_[colsym][col][row] = matrix_[rowsym][row][col];
-                    temp->matrix_[rowsym][row][col] = matrix_[colsym][col][row];
                 }
             }
         }
     } else {
-        int h, i, j;
-        for (h = 0; h < nirrep_; ++h) {
-            for (i = 0; i < rowspi_[h]; ++i) {
-                for (j = 0; j < colspi_[h]; ++j) {
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int i = 0; i < rowspi_[h]; ++i) {
+                for (int j = 0; j < colspi_[h]; ++j) {
                     temp->matrix_[h][j][i] = matrix_[h][i][j];
                 }
             }
@@ -1091,6 +1088,9 @@ void Matrix::transpose_this() {
             if (rowsym < colsym) continue;
             int rows = rowspi_[rowsym];
             int cols = colspi_[colsym];
+            if (rows != cols) {
+                throw NOT_IMPLEMENTED_EXCEPTION();
+            }
             for (int row = 0; row < rows; row++) {
                 for (int col = 0; col < cols; col++) {
                     std::swap(matrix_[colsym][col][row], matrix_[rowsym][row][col]);
@@ -1098,17 +1098,15 @@ void Matrix::transpose_this() {
             }
         }
     } else {
-        int h, i, j;
-        if (rowspi_ == colspi_) {
-            for (h = 0; h < nirrep_; ++h) {
-                for (i = 0; i < rowspi_[h]; ++i) {
-                    for (j = 0; j < i; ++j) {
-                        std::swap(matrix_[h][i][j], matrix_[h][j][i]);
-                    }
+        if (rowspi_ != colspi_) {
+            throw NOT_IMPLEMENTED_EXCEPTION();
+        }
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int i = 0; i < rowspi_[h]; ++i) {
+                for (int j = 0; j < i; ++j) {
+                    std::swap(matrix_[h][i][j], matrix_[h][j][i]);
                 }
             }
-        } else {
-            throw NOT_IMPLEMENTED_EXCEPTION();
         }
     }
 }
