@@ -170,7 +170,7 @@ class MolecularGrid {
 
     /// Print information about the grid
     void print(std::string out_fname = "outfile", int print = 2) const;
-    // void print_details(std::string out_fname = "outfile", int print = 2) const;
+    void print_details(std::string out_fname = "outfile", int print = 2) const;
 
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation() const { return orientation_; }
