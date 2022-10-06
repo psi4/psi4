@@ -3731,11 +3731,9 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
     radial_grids_.clear();
-    spherical_grids_.clear();
 
     if (opt.namedGrid == -1) {
         radial_grids_.resize(molecule_->natom());
-        spherical_grids_.resize(molecule_->natom());
     }
 
 #ifdef USING_BrianQC
@@ -3944,10 +3942,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
     radial_grids_.clear();
-    spherical_grids_.clear();
 
     radial_grids_.resize(molecule_->natom());
-    spherical_grids_.resize(molecule_->natom());
 
 // Iterate over atoms
 #pragma omp parallel for schedule(static)
