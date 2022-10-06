@@ -76,7 +76,7 @@ struct RadialGrid {
     /// Weights (including alpha and r^2)
     double* w_;
     /// Spherical points
-    std::vector<SphericalGrid> spherical_grids_;
+    std::vector<SphericalGrid> spheres_;
 };
 
 class MolecularGrid {

@@ -3808,7 +3808,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 #endif
 
                 // This is JUST so we can do some printing later...
-                radial_grids_[A].spheres.push_back({numAngPts, LebedevGridMgr::findOrderByNPoints(numAngPts)});
+                radial_grids_[A].spheres_.push_back({numAngPts, LebedevGridMgr::findOrderByNPoints(numAngPts)});
                 for (int j = 0; j < numAngPts; j++) {
                     MassPoint mp = {r[i] * anggrid[j].x, r[i] * anggrid[j].y, r[i] * anggrid[j].z,
                                     wr[i] * anggrid[j].w};
@@ -3969,7 +3969,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
             const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
 
             // This is JUST so we can do some printing later...
-            radial_grids_[A].spheres.push_back({numAngPts, Ls[A][i]});
+            radial_grids_[A].spheres_.push_back({numAngPts, Ls[A][i]});
 
             for (int j = 0; j < numAngPts; j++) {
                 MassPoint mp = {r[i] * anggrid[j].x, r[i] * anggrid[j].y, r[i] * anggrid[j].z, wr[i] * anggrid[j].w};
@@ -4561,15 +4561,15 @@ void MolecularGrid::print_details(std::string out, int /*print*/) const {
     for (size_t A = 0; A < radial_grids_.size(); A++) {
         printer->Printf("    Atom: %4zu, Nrad = %6d, Alpha = %11.3E:\n", A,
                         radial_grids_[A].npoints_, radial_grids_[A].alpha_);
-        for (size_t R = 0; R < radial_grids_[A].spheres.size(); R++) {
+        for (size_t R = 0; R < radial_grids_[A].spheres_.size(); R++) {
             double Rval = radial_grids_[A].r[R];
             double Wval = radial_grids_[A].w[R];
-            int Nsphere = radial_grids_[A].spheres[R].npoints_;
-            int Lsphere = radial_grids_[A].spheres[R].order_;
+            int Nsphere = radial_grids_[A].spheres_[R].npoints_;
+            int Lsphere = radial_grids_[A].spheres_[R].order_;
             printer->Printf("    Node: %4zu, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n",
                             R, radial_grids_[A].r[R], radial_grids_[A].w[R],
-                            radial_grids_[A].spheres[R].npoints_,
-                            radial_grids_[A].spheres[R].order_);
+                            radial_grids_[A].spheres_[R].npoints_,
+                            radial_grids_[A].spheres_[R].order_);
         }
     }
     printer->Printf("\n");
