@@ -3533,14 +3533,6 @@ def run_adcc(name, **kwargs):
         raise ValidationError("Spin-flip for CVS-ADC variants is not available.")
 
     #
-    # Check for unsupported options
-    #
-    for option in ["PR", "NORM_TOLERANCE", "POLE_MAXITER", "SEM_MAXITER",
-                   "NEWTON_CONVERGENCE", "MEMORY", "CACHELEVEL", "NUM_AMPS_PRINT"]:
-        if core.has_option_changed("ADC", option):
-            raise ValidationError(f"ADC backend adcc does not support option '{option}'")
-
-    #
     # Launch the rocket
     #
     # Copy thread setup from psi4
