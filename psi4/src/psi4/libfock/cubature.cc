@@ -4562,12 +4562,12 @@ void MolecularGrid::print_details(std::string out, int /*print*/) const {
         printer->Printf("    Atom: %4zu, Nrad = %6d, Alpha = %11.3E:\n", A,
                         radial_grids_[A].npoints_, radial_grids_[A].alpha_);
         for (size_t R = 0; R < radial_grids_[A].spheres_.size(); R++) {
-            double Rval = radial_grids_[A].r[R];
-            double Wval = radial_grids_[A].w[R];
+            double Rval = radial_grids_[A].r_[R];
+            double Wval = radial_grids_[A].w_[R];
             int Nsphere = radial_grids_[A].spheres_[R].npoints_;
             int Lsphere = radial_grids_[A].spheres_[R].order_;
             printer->Printf("    Node: %4zu, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n",
-                            R, radial_grids_[A].r[R], radial_grids_[A].w[R],
+                            R, radial_grids_[A].r_[R], radial_grids_[A].w_[R],
                             radial_grids_[A].spheres_[R].npoints_,
                             radial_grids_[A].spheres_[R].order_);
         }
