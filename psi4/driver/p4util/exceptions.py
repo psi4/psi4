@@ -497,8 +497,11 @@ def sanitize_method(name: str) -> str:
 
 
 def docs_table_link(name: str, mode: str) -> str:
-    """Compose a link to *mode* documentation table at row for method *name*. Does not check method row exists."""
+    """Compose a link to *mode* documentation table.
+    For modes {"summary", "details"}, link will be anchored at the table row for method *name*. (Method row not guaranteed to exist.)
+    For other modes, link will be to table in general.
 
+    """
     DOCS_BASE = "https://psicode.org/psi4manual/master/"
 
     if mode == "summary":

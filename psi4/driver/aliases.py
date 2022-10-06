@@ -151,11 +151,14 @@ def allen_focal_point(**kwargs) -> CBSMetadata:
 
     # Note: HF and MP2 steps (which don't need MRCC and indeed can't be
     #  run directly in MRCC through the Psi4 interface) nevertheless have
-    #  qc_module=mrcc set here so that options sets are the same and the
-    #  cbs() driver knows it's safe to use "free" values resulting from
+    #  qc_module=mrcc set here so that options sets (below, `"options"`
+    #  and `"options_lo"`) are the same and the cbs() driver knows it's
+    #  safe (that is, consistent) to use the "free" values (e.g.,
+    #  HF from CCSD) resulting from
     #  MRCC CCSD calcs. This logic can be made smarter if needed.
 
-    # TODO: Setting QC_MODULE isn't the right fix to allow mrcc methods.
+    # TODO: Setting QC_MODULE (immediately below) isn't the right fix to allow
+    #  mrcc methods (otherwise gets caught up in ManagedMethod probes).
     #  Right fix would be passing managed keywords into the deriv negotiation.
     #  That's too involved, so deferring.
     psi4.core.set_global_option("QC_MODULE", "MRCC")

@@ -223,7 +223,29 @@ def negotiate_derivative_type(
         return sort_derivative_type(target_dertype, highest_analytic_dertype, user_dertype, proc_messages, verbose)
 
 
-def _alternative_methods_message(method_name, dertype, *, messages, proc):
+def _alternative_methods_message(method_name: str, dertype: str, *, messages: Dict[int, Any], proc: Dict) -> str:
+    """Format error message when *method_name* not available, whether at all in *proc* or simply not under current conditions.
+
+    Parameters
+    ----------
+    method_name
+        See caller.
+    dertype
+        Always "any"
+    messages
+        Dictionary of returned error statistics from ManagedMethodError.
+        Entry for energy (key `0`) used if present. Alternate message composed if empty dict.
+    proc
+        See caller.
+
+    Returns
+    -------
+    str
+        Message saying not available and suggesting some alternatives in case of typo. If the
+        method was probed under conditions and rejected (*messages* non-empty), the message
+        includes the conditions and a link to docs table.
+
+    """
     alt_method_name = p4util.text.find_approximate_string_matches(method_name, proc["energy"].keys(), 2)
     if method_name in alt_method_name:
         alt_method_name.remove(method_name)

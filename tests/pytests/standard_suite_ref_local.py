@@ -17,7 +17,7 @@ _std_suite_psi4_extension = [
             "sdsc": "sd",
         },
         "data": {
-            "CISD CORRELATION ENERGY": -0.08142433,  # detci != vcc ???  # locally, replacing the rohf cisd vcc=tce value by the detci=guga value. correct sdsc label unclear.
+            "CISD CORRELATION ENERGY": -0.08142433,  # detci != cfour's vcc ???  # locally, replacing the rohf cisd vcc=tce value (stored in qcng) by the detci=guga value. correct sdsc label unclear.
             "FCI CORRELATION ENERGY": -0.084637876308811,  # detci
         },
     },

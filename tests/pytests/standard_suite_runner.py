@@ -426,6 +426,9 @@ def _asserter(asserter_args: List, contractual_args: List[str], contractual_fn: 
 
 
 def _recorder(engine, module, driver, method, reference, fcae, sdsc, scf_type, corl_type, status, note):
+    """Accumulates record of stdsuite tests circumstances and status.
+    See ../../psi4/share/psi4/scripts/merge_stdsuite.py for discussion on viewing results."""
+
     with open("stdsuite_psi4.txt", "a") as fp:
         stuff = {
             "module": module,

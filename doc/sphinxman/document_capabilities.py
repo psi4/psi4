@@ -8,7 +8,7 @@ from pathlib import Path
 from psi4.driver.procrouting.proc_data import method_governing_type_keywords
 from psi4.driver.p4util.exceptions import sanitize_method
 
-# TODO how to handle this?
+# stdsuite DFT methods set explicitly to "scf_type" since the DFTs aren't individually entered in proc_data.py
 method_governing_type_keywords["svwn"] = "scf_type"
 method_governing_type_keywords["pbe"] = "scf_type"
 method_governing_type_keywords["b3lyp"] = "scf_type"
@@ -52,6 +52,8 @@ def unique(sequence):
 
 
 def fcell(module, winnowed, contrast=False):
+    """Format a table body cell from possibly multiple calculation entries in *winnowed*."""
+
     global notes
 
     if winnowed:
@@ -89,6 +91,8 @@ def fcell(module, winnowed, contrast=False):
 
 
 def fheader(head, width, contrast=False):
+    """Format a table header cell."""
+
     trans = {
         # eghs
         "energy": ["|energy_fn|", "Energy", "E"],
@@ -129,6 +133,8 @@ def compute_width(head, width):
 
 
 def fline_data(outer, mid, inner, guts, *, span=1, contrast=1):
+    """Builds a table row for contents."""
+
     vertex = "|"
     eff_width = cwidth * span + span - 1
 
@@ -152,6 +158,8 @@ def fline_data(outer, mid, inner, guts, *, span=1, contrast=1):
 
 
 def fline_fill(outer, mid, inner, guts, span=1):
+    """Builds a table row for skeleton."""
+
     vertex = "+"
     eff_width = cwidth * span + span - 1
 
