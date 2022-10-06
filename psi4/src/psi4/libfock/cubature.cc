@@ -3730,6 +3730,13 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
+    radial_grids_.clear();
+    spherical_grids_.clear();
+
+    if (opt.namedGrid == -1) {
+        radial_grids_.resize(molecule_->natom());
+        spherical_grids_.resize(molecule_->natom());
+    }
 
 #ifdef USING_BrianQC
     std::vector<std::vector<double>> atomRotations(molecule_->natom());
@@ -3765,6 +3772,11 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r.data(),
                                           wr.data(), alpha);
 
+            // RMP: Want this stuff too
+            // This is JUST so we can do some printing later...
+            std::vector<SphericalGrid> spheres;
+            radial_grids_[A] = {opt.nradpts, alpha, r.data(), wr.data(), spheres};
+
             int currentBlockIndex = -1;
             for (int i = 0; i < opt.nradpts; i++) {
                 int numAngPts = 0;
@@ -3797,6 +3809,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 }
 #endif
 
+                // This is JUST so we can do some printing later...
+                radial_grids_[A].spheres.push_back({numAngPts, LebedevGridMgr::findOrderByNPoints(numAngPts)});
                 for (int j = 0; j < numAngPts; j++) {
                     MassPoint mp = {r[i] * anggrid[j].x, r[i] * anggrid[j].y, r[i] * anggrid[j].z,
                                     wr[i] * anggrid[j].w};
@@ -3929,6 +3943,11 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
 
     // RMP: Like, I want to keep this info, yo?
     orientation_ = std_orientation.orientation();
+    radial_grids_.clear();
+    spherical_grids_.clear();
+
+    radial_grids_.resize(molecule_->natom());
+    spherical_grids_.resize(molecule_->natom());
 
 // Iterate over atoms
 #pragma omp parallel for schedule(static)
@@ -3945,9 +3964,16 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
             wr[i] = ws[A][i];
         }
 
+        // RMP: Want this stuff too
+        // This is JUST so we can do some printing later...
+        std::vector<SphericalGrid> spheres;
+        radial_grids_[A] = {rs[A].size(), alpha, r.data(), wr.data(), spheres};
         for (size_t i = 0; i < rs[A].size(); i++) {
             int numAngPts = LebedevGridMgr::findNPointsByOrder(Ls[A][i]);
             const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
+
+            // This is JUST so we can do some printing later...
+            radial_grids_[A].spheres.push_back({numAngPts, Ls[A][i]});
 
             for (int j = 0; j < numAngPts; j++) {
                 MassPoint mp = {r[i] * anggrid[j].x, r[i] * anggrid[j].y, r[i] * anggrid[j].z, wr[i] * anggrid[j].w};
@@ -4532,6 +4558,25 @@ void MolecularGrid::print(std::string out, int /*print*/) const {
     Process::environment.globals["XC GRID TOTAL POINTS"] = npoints_;
     Process::environment.globals["XC GRID SPHERICAL POINTS"] = options_.nangpts;
     Process::environment.globals["XC GRID RADIAL POINTS"] = options_.nradpts;
+}
+void MolecularGrid::print_details(std::string out, int /*print*/) const {
+    std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("   > Grid Details <\n\n");
+    for (size_t A = 0; A < radial_grids_.size(); A++) {
+        printer->Printf("    Atom: %4zu, Nrad = %6d, Alpha = %11.3E:\n", A,
+                        radial_grids_[A].npoints_, radial_grids_[A].alpha_);
+        for (size_t R = 0; R < radial_grids_[A].spheres.size(); R++) {
+            double Rval = radial_grids_[A].r[R];
+            double Wval = radial_grids_[A].w[R];
+            int Nsphere = radial_grids_[A].spheres[R].npoints_;
+            int Lsphere = radial_grids_[A].spheres[R].order_;
+            printer->Printf("    Node: %4zu, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n",
+                            R, radial_grids_[A].r[R], radial_grids_[A].w[R],
+                            radial_grids_[A].spheres[R].npoints_,
+                            radial_grids_[A].spheres[R].order_);
+        }
+    }
+    printer->Printf("\n");
 }
 
 GridBlocker::GridBlocker(const int npoints_ref, double const *x_ref, double const *y_ref, double const *z_ref,

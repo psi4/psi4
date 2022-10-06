@@ -37,7 +37,6 @@
 #include "psi4/libpsi4util/exception.h"
 
 #include <map>
-#include <mutex>
 #include <vector>
 
 namespace psi {
@@ -55,9 +54,29 @@ class Options;
 //
 // RMP: You got that right. Calling nuclear weights one point at a time is another
 // great way to get a 1000x slowdown. What an incredible smell you've discovered!
-//
+
+
 struct MassPoint {
     double x, y, z, w;
+};
+
+struct SphericalGrid {
+    /// Number of points in radial grid
+    int npoints_;
+    /// Order of spherical harmonics in spherical grid (integrates products up to L_tot = 2 * order_ + 1)
+    int order_;
+};
+
+struct RadialGrid {
+    int npoints_;
+    /// Alpha scale (for user reference)
+    double alpha_;
+    /// Nodes (including alpha)
+    double* r_;
+    /// Weights (including alpha and r^2)
+    double* w_;
+    /// Spherical points
+    std::vector<SphericalGrid> spherical_grids_;
 };
 
 class MolecularGrid {
@@ -90,6 +109,8 @@ class MolecularGrid {
 
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation_;
+    /// Radial grids, per atom
+    std::vector<RadialGrid> spherical_grids_;
     /// Grid points, per atom. Available for any grid blocking scheme unlike atomic_blocks_.
     std::vector<std::vector<MassPoint>> atomic_grids_;
 
@@ -149,6 +170,7 @@ class MolecularGrid {
 
     /// Print information about the grid
     void print(std::string out_fname = "outfile", int print = 2) const;
+    // void print_details(std::string out_fname = "outfile", int print = 2) const;
 
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation() const { return orientation_; }
