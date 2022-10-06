@@ -70,7 +70,6 @@ class PSI_API Process {
         std::shared_ptr<PSIOManager> _psio_manager_keepalive;
 
         std::shared_ptr<Molecule> molecule_;
-        SharedMatrix gradient_;
 
        public:
         void initialize();

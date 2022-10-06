@@ -36,12 +36,12 @@
 Geometry Optimization
 =====================
 
-.. codeauthor:: Rollin A. King
-.. sectionauthor:: Rollin A. King and Lori A. Burns
+.. codeauthor:: Rollin A. King and Alexander G. Heide
+.. sectionauthor:: Rollin A. King, Alexander G. Heide, and Lori A. Burns
 
-*Module:* :ref:`Keywords <apdx:optking>`, :ref:`PSI Variables <apdx:optking_psivar>`, :source:`OPTKING <psi4/src/psi4/optking>`
+*Module:* :ref:`Keywords <apdx:optking>`, `OPTKING <https://github.com/psi-rking/optking>`_
 
-|PSIfour| carries out molecular optimizations using a module called
+|PSIfour| carries out molecular optimizations using a python module called
 optking.  The optking program takes as input nuclear gradients and,
 optionally, nuclear second derivatives |w---w| both in Cartesian coordinates.
 The default minimization algorithm employs an empirical model Hessian,
@@ -52,35 +52,29 @@ internal coordinates by Peng et al. [Peng:1996:49]_.
 The general approach employed in this code
 is similar to the "model Hessian plus RF method" described and tested by Bakken and
 Helgaker [Bakken:2002:9160]_. (However, for separated
-fragments, we have chosen not to employ by default their "extra-redundant"
-coordinates defined by their "auxiliary interfragment" bonds.  These can be
-included via the option |optking__add_auxiliary_bonds|).
+fragments, we have chosen not to employ their "extra-redundant" coordinates.
 
 The internal coordinates are generated automatically based on an assumed bond
 connectivity.  The connectivity is determined by testing if the interatomic
 distance is less than the sum of atomic radii times the value of
 |optking__covalent_connect|. If the user finds that some
 connectivity is lacking by default, then this value may be increased.
-Otherwise, the internal coordinate definitions may be modified directly.  If one
-desires to see or modify the internal coordinates being used, then one can set
-|optking__intcos_generate_exit| to true.  The internal coordinate
-definitions are provided in the file with extension ".intco".  See the :ref:`sec:optkingExamples`
-section for more detail.
+Otherwise, the coordinate system can be created explicitly using optking's api.
+See the :ref:`sec:optkingExamples`
 
 .. warning:: The selection of a Z-matrix input, and in particular the inclusion
    of dummy atoms, has no effect on the behavior of the optimizer, which begins
    from a Cartesian representation of the system.
 
-The ongoing development of optking is providing for unique treatment of
-coordinates which connect distinct molecular fragments.  Thus, several keywords
-relate to "interfragment modes", though many of these capabilities are
-still under development.  Presently by default, separate fragments are bonded by
+Presently by default, separate fragments are bonded by
 nearest atoms, and the whole system is treated as if it were part of one
 molecule.  However, with the option |optking__frag_mode|, fragments
 may instead be related by a unique set of interfragment coordinates defined by
 reference points within each fragment.  The reference points can be atomic
-positions (current default), linear combinations of
-atomic positions, or located on the principal axes (not yet working).
+positions (current default) or linear combinations of atomic positions
+which is controlled through |optking__interfrag_mode|.
+These `dimer coordinates` can be directly specified through |optking__interfrag_coords|)
+See `here <DimerSection_>` for two examples of their use.
 
 Basic Keywords
 ^^^^^^^^^^^^^^
@@ -169,8 +163,8 @@ The Hessian may be computed during an optimization using the
    pair: geometry optimization; IRC
    single: geometry optimization; constrained
 
-Transition States, Reaction Paths, and Constrained Optimizations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Transition States and Reaction Paths
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * Calculate a starting Hessian and optimize the "transition state" of
   linear water (note that without a reasonable starting geometry and
@@ -210,6 +204,8 @@ Transition States, Reaction Paths, and Constrained Optimizations
    frequencies('scf')
    optimize('scf')
 
+Constrained Optimizations
+^^^^^^^^^^^^^^^^^^^^^^^^^
 * Optimize a geometry (HOOH) at a frozen dihedral angle of 90 degrees. ::
 
    molecule {
@@ -262,14 +258,15 @@ For bends, the corresponding keyword is "frozen_bend".
 .. code-block:: none
 
    set optking {
-     fixed_distance = ("
-       1  3 0.95
-       2  4 0.95
+     ranged_distance = ("
+       1  3 0.949 0.95
+       2  4 0.949 0.95
      ")
    }
 
-Note that the effect of the frozen and fixed keywords is independent of
+Note that the effect of the frozen and ranged keywords is independent of
 how the geometry of the molecule was input (whether Z-matrix or cartesian, etc.)..
+RANGED_DIHEDRAL
 
 * To scan the potential energy surface by optimizing at several fixed values
   of the dihedral angle of HOOH.
@@ -277,30 +274,203 @@ how the geometry of the molecule was input (whether Z-matrix or cartesian, etc.)
 .. code-block:: none
 
    molecule hooh {
-    0 1
-    H  0.850718   0.772960    0.563468
-    O  0.120432   0.684669   -0.035503
-    O -0.120432  -0.684669   -0.035503
-    H -0.850718  -0.772960    0.563468
+     0 1
+     H  0.850718   0.772960    0.563468
+     O  0.120432   0.684669   -0.035503
+     O -0.120432  -0.684669   -0.035503
+     H -0.850718  -0.772960    0.563468
    }
    
    set {
      basis cc-pvdz
      intrafrag_step_limit 0.1
    }
-   
-   dihedrals = [100,110,120,130,140,150]
+
+   lower_bound = [99.99, 109.99, 119.99, 129.99, 149.99]
+   upper_bound = [100, 110, 120, 130, 140, 150]
    PES = []
-   
+
+   for lower, upper in zip(lower_bound, upper_bound):
+   my_string = f"1 2 3 4 {lower} {upper}"
+   set optking ranged_dihedral = $my_string
+   E = optimize('scf')
+   PES.append((upper, E))
+
+   print("\n\tcc-pVDZ SCF energy as a function of phi\n")
+   for point in PES:
+     print("\t%5.1f%20.10f" % (point[0], point[1]))
+
+* To scan the potential energy surface without the |optking__ranged_dihedral| keyword a zmatrix
+  can be used. **Warning!** rotating dihedrals in large increments without allowing the molecule to relax
+  in between increments can lead to unphysical geometries with overlapping functional groups in larger molecules.
+
+.. code-block:: none
+
+   molecule hooh {
+     0 1 
+     H   
+     O 1 0.95
+     O 2 1.39 1 103 
+     H 3 0.95 2 103 1 D 
+
+     D = 99
+
+     units ang 
+   }
+
+   set {
+     basis cc-pvdz
+     intrafrag_step_limit 0.1 
+     frozen_dihedral (" 1 2 3 4 ")
+   }
+
+   dihedrals = [100, 110, 120, 130, 140, 150]
+   PES = []
+
    for phi in dihedrals:
-     my_string = "1 2 3 4 " + str(phi)
-     set optking fixed_dihedral = $my_string
+     hooh.D = phi 
      E = optimize('scf')
      PES.append((phi, E))
-   
-   print "\n\tcc-pVDZ SCF energy as a function of phi\n"
+
+   print("\n\tcc-pVDZ SCF energy as a function of phi\n")
    for point in PES:
-     print "\t%5.1f%20.10f" % (point[0], point[1])
+     print("\t%5.1f%20.10f" % (point[0], point[1]))
+
+Multi-Fragment Optimizations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _DimerSection:
+
+Control over the intermolecular coordinates are controlled through |optking__interfrag_mode|,
+|optking__frag_ref_atoms|, and |optking__interfrag_coords|.
+
+* To specify the reference points to use for coordinates |optking__frag_ref_atoms| is
+  specified. Each list corresponds to a fragment. A list of indices denotes a linear combination
+  of the atoms. In this case the first reference point for the second dimer is the center of the
+  benzene ring.
+
+.. code-block:: none
+
+   memory 4GB 
+   molecule mol {
+       0 1 
+       O   -0.5026452583       -0.9681078610       -0.4772692868
+       H   -2.3292990446       -1.1611084524       -0.4772692868
+       H   -0.8887241813        0.8340933116       -0.4772692868
+       --  
+       0 1 
+       C    0.8853463281       -5.2235996493        0.5504918473
+       C    1.8139169342       -2.1992967152        3.8040686146
+       C    2.8624456357       -4.1143863257        0.5409035710
+       C   -0.6240195463       -4.8153482424        2.1904642137
+       C   -0.1646305764       -3.3031992532        3.8141619690
+       C    3.3271056135       -2.6064153737        2.1669340785
+       H    0.5244823836       -6.4459192939       -0.7478283184
+       H    4.0823309159       -4.4449979205       -0.7680411190
+       H   -2.2074914566       -5.7109913627        2.2110247636
+       H   -1.3768100495       -2.9846751653        5.1327625515
+       H    4.9209603634       -1.7288723155        2.1638694922
+       H    2.1923374156       -0.9964630692        5.1155773223
+       nocom
+       units au
+   }
+   
+   set {
+       basis 6-31+G 
+       frag_mode MULTI
+       frag_ref_atoms [
+           [[3], [1], [2]], [[1, 2, 3, 4, 5, 6], [2], [6]]
+       ]   
+   }
+   
+   optimize("mp2")
+
+For even greater control a dictionary can be passed to |optking__interfrag_coords|
+
+The coordinates that are created between two dimers depend upon the number of atoms present
+The fragments `A` and `B` have up to 3 reference atoms each as shown in the
+The interfragment coordinates are named and can be frozen according to their names as show in 
+:ref:`Dimer coordinate table <table:DimerFrag>`.
+
+.. _`table:DimerFrag`:
+
+.. table:: Dimer coordinates
+
+    +---------+----------+-------------+---------------------------------+
+    | name    | type     | atom-labels | present, if                     |
+    +=========+==========+=============+=================================+
+    | RAB     | distance | A0-B0       | always                          | 
+    +---------+----------+-------------+---------------------------------+
+    | theta_A | angle    | A1-A0-B0    | A has > 1 atom                  |
+    +---------+----------+-------------+---------------------------------+
+    | theta_B | angle    | A0-B0-B1    | B has > 1 atom                  |
+    +---------+----------+-------------+---------------------------------+
+    | tau     | dihedral | A1-A0-B0-B1 | A and B have > 1 atom           |
+    +---------+----------+-------------+---------------------------------+
+    | phi_A   | dihedral | A2-A1-A0-B0 | A has > 2 atoms. Is not linear  |
+    +---------+----------+-------------+---------------------------------+
+    | phi_B   | dihedral | A0-B0-B1-B2 | B has > 2 atoms. Is not linear  |
+    +---------+----------+-------------+---------------------------------+
+
+* A constrained optimization is performed where the orientation of the two fragments is fixed but
+  the distance between the fragments and all intrafragment coordinates are allowed to relax.
+
+.. code-block:: none
+
+   memory 4GB 
+   molecule mol {
+     C       -1.258686      0.546935      0.436840
+     H       -0.683650      1.200389      1.102833
+     C       -0.699036     -0.349093     -0.396608
+     C       -2.693370      0.550414      0.355311
+     H       -3.336987      1.206824      0.952052
+     C       -3.159324     -0.343127     -0.536418
+     H       -4.199699     -0.558111     -0.805894
+     S       -1.883829     -1.212288     -1.301525
+     C        0.786082     -0.656530     -0.606057
+     H        1.387673     -0.016033      0.048976
+     H        1.054892     -0.465272     -1.651226
+     H        0.978834     -1.708370     -0.365860
+     --
+     C       -6.955593     -0.119764     -1.395442
+     C       -6.977905     -0.135060      1.376787
+     C       -7.111625      1.067403     -0.697024
+     C       -6.810717     -1.314577     -0.707746
+     C       -6.821873     -1.322226      0.678369
+     C       -7.122781      1.059754      0.689090
+     H       -7.226173      2.012097     -1.240759
+     H       -6.687348     -2.253224     -1.259958
+     H       -6.707325     -2.266920      1.222105
+     H       -7.246150      1.998400      1.241304
+     O       -6.944245     -0.111984     -2.805375
+     H       -7.058224      0.807436     -3.049180
+     C       -6.990227     -0.143507      2.907714
+     H       -8.018305     -0.274985      3.264065
+     H       -6.592753      0.807024      3.281508
+     H       -6.368443     -0.968607      3.273516
+     nocom
+     unit angstrom
+   }
+   
+   # Create a python dictionary and convert to string for pass through to optking
+   MTdimer = """{
+      "Natoms per frag": [12, 16],
+      "A Frag": 1,
+      "A Ref Atoms": [[1, 3, 4, 6, 8], [8], [11]],
+      "A Label": "methylthiophene",
+      "B Frag": 2,
+      "B Ref Atoms": [[13, 14, 15, 16, 17, 18], [13], [15]],
+      "B Label": "tyrosine",
+      "Frozen": ["theta_A", "theta_B", "tau", "phi_A", "phi_B"],
+   }"""
+   
+   set {
+       basis 6-31+G 
+       frag_mode MULTI
+       interfrag_coords $MTdimer   
+   }
+
+   optimize("mp2")
 
 
 Dealing with problematic optimizations
@@ -328,57 +498,19 @@ For difficult cases, the following suggestions are made.
   works well for systems with long 'arms' or floppy portions of a molecule poorly
   described by local internals.
 
-Direct manipulation of the optmization coordinates
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* Generate the internal coordinates and then stop::
+* Optking does support the specification of ghost atoms. Certain internal coordinates such 
+  as torsions become poorly defined when they contain near-linear bends. 
+  An internal error `AlgError` may be raised in such cases. Optking will avoid such
+  coordinates when choosing an initial coordinate system. In such cases, try
+  restarting from the most recent geometry. Alternatively, setting |optking__opt_coordinates| 
+  to cartesian will avoid any internal coordiante difficulties altogether. 
+  These coordinate changes can be automatically performed by turning |optking__dynamic_level| to 1.
 
-   set intcos_generate_exit true
-   optimize('scf')
-
-  The coordinates may then be found in the "intco" file.  In this case, the file contains::
-  
-     F 1 3
-     R      1     2
-     R      1     3
-     B      2     1     3
-     C      1
-            1    1.000000
-     C      1
-            2    1.000000
-     C      1
-            3    1.000000
-
-  The first line indicates a fragment containing atoms 1-3.  The following lines define
-  two distance coordinates (bonds) and one bend coordinate.  This file can be modified, and if present,
-  is used in subsequent optimizations.  The lines below the simple internal coordinates
-  specify linear combinations of coordinates.  In the simplest default case, the lines
-  above simply define combination coordinates which are identical to the simple internals.
-  If |optking__opt_coordinates| specifies delocalized coordinates, then the combinations
-  will be more complex.
- 
-  Since the multiple-fragment coordinates are still under
-  development, they are not documented here.  However, if desired, one can change the value
-  of |optking__frag_mode|, generate the internal coordinates, and see how multiple
-  fragment systems are defined.
-  
-  Coordinates may be frozen by adding an asterisk after the letter of the coordinate.  The
-  asterisk results in that internal coordinate being frozen at its initial value.  The
-  "intco" file below for water specifies an optimization with both O-H bonds frozen.::
-  
-     F 1 3
-     R*     1     2
-     R*     1     3
-     B      2     1     3
-
-  If one instead wishes to optimize toward ("fix") a value that is not satisfied by the
-  initial structure, then the value is added to the end of the line.  The following
-  corresponds to an optimization that will add additional forces to move the O-H bonds
-  to 1.70 au. ::
-
-     F 1 3
-     R      1     2     1.70
-     R      1     3     1.70
-     B      2     1     3
+.. warning:: In some cases, such as the coordinate issues described above, optking will reset to maintain
+  a consistent history. If an error occurs in Psi4 due to |optking__geom_maxiter| being exceeded but
+  the final step report indicates that optking has not taken |optking__geom_maxiter| steps such a 
+  reset has occured. Inspection will show that the step counter was reset to 1 somewhere in the
+  optimization.
 
 .. index:: 
    pair: geometry optimization; convergence criteria
@@ -576,3 +708,10 @@ The full list of keywords for optking is provided in Appendix :ref:`apdx:optking
 Information on the Psithon function that drives geometry optimizations is provided
 at :py:func:`~psi4.driver.optimize`.
 
+Important User Changes from cpp-optking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* `FIXED_COORD` keywords have been generalized to `RANGED_COORD` e.g. |optking__ranged_distance|
+
+* Detailed optimization is now printed through the python logging system. If more information about
+  the optimization is needed. Please see `\<output_name\>.log`

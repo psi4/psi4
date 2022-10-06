@@ -1034,10 +1034,11 @@ def optimize(name, **kwargs):
         native Optking optimizer or the GeomeTRIC program.
 
     :type optimizer_keywords: dict
-    :param optimizer_keywords: Options passed to the GeomeTRIC optimizer
+    :param optimizer_keywords: Extra options passed to the GeomeTRIC or optking optimizers
 
         Indicates additional options to be passed to the GeomeTRIC optimizer if
-        chosen as the optimization engine.
+        chosen as the optimization engine. Alternatively, can be used to set optking options
+        that are not currently recognized by Psi4.
 
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
@@ -1203,6 +1204,7 @@ def optimize(name, **kwargs):
         # Optking will ignore any keywords it doesn't recognize.
         params = p4util.prepare_options_for_modules()
         optimizer_params = {k: v.get('value') for k, v in params.pop("OPTKING").items() if v.get('has_changed')}
+        optimizer_params.update(kwargs.get("optimizer_keywords", {}))
         opt_object = optking.opt_helper.CustomHelper(molecule, params=optimizer_params)
 
     initial_sym = molecule.schoenflies_symbol()

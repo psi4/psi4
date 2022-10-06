@@ -2624,17 +2624,18 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             analogous to the previous FIXED_DIHEDRAL -*/
         options.add_str("RANGED_DIHEDRAL", "");
         /*- Specify range for the out-of-plane angles between atoms to be constrained to (eq. value specified)
-            analogous to the old FIXED_ keyword-*/
+            analogous to the old FIXED_<COORD> keyword-*/
         options.add_str("RANGED_OOFP", "");
 
+        /*- Specify formula for external forces for the distance between atoms -*/
         options.add_str("EXT_FORCE_DISTANCE", "");
-        /*- Specify forms of external forces for angles between atoms -*/
+        /*- Specify formula for external forces for angles between atoms -*/
         options.add_str("EXT_FORCE_BEND", "");
-        /*- Specify forms of external forces for dihedral angles between atoms -*/
+        /*- Specify formula for external forces for dihedral angles between atoms -*/
         options.add_str("EXT_FORCE_DIHEDRAL", "");
-        /*- Specify forms of external forces for out-of-plane angles between atoms -*/
+        /*- Specify formula for external forces for out-of-plane angles between atoms -*/
         options.add_str("EXT_FORCE_OOFP", "");
-        /*- Symmetry forms of external forces for cartesian coordinates on atoms . -*/
+        /*- Symmetry formula for external forces for cartesian coordinates on atoms . -*/
         options.add_str("EXT_FORCE_CARTESIAN", "");
         /*- Tolerance for symmetrizing cartesian geometry between steps -*/
         options.add_double("CARTESIAN_SYM_TOLERANCE", 1e-7);

@@ -597,8 +597,9 @@ is printed below and passed on to Optking. ::
         1.0000000000        0.0040992802        0.0102383666        0.0000000000
 
 The gradient can also be accessed from the input file as a
-:py:class:`~psi4.core.Matrix` object through
-:py:func:`psi4.core.get_gradient`.
+:py:class:`~psi4.core.Matrix` object through the wfn as
+:py:func:`psi4.core.Wavefunction.gradient`. Previously, cfour communicated through
+`psi4.core.legacy_gradient` which was accessed through `psi4.core.get_gradient()`
 
 .. rubric:: Cfour Files
 
@@ -928,7 +929,7 @@ Naturally, in |PSIfour| multiple jobs can be run in succession from the input fi
 Control optimizations with optking keywords HERE. Cfour ``GRD`` file is
 written to |PSIfour| output file. Gradient transformed back into the frame
 in which it was shipped off to Cfour is also written to the |PSIfour|
-output file and is available from input as :py:func:`~psi4.core.get_gradient`.
+output file and is available from input as :py:func:`~psi4.core.Wavefunction.gradient`.
 
 sandwich mode := molecule and cfour list within
 Naturally, additional jobs can follow in the input file.
