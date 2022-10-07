@@ -38,6 +38,8 @@
 namespace psi {
 /*!
 ** DSYEV_descending(): diagonalize a symmetric square matrix ('array') using LAPACK DSYEV, with results reversed
+** Please note that descending-order results are obtained by running an ascending-order diagonalizer and reordering
+** the results. This may have a small performance penalty for large matrices, especially if eigenvectors are required.
 **
 ** \param n      = number of rows (and columns)
 ** \param array  = matrix to diagonalize (2D row major array)
