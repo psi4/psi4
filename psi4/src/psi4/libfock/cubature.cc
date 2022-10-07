@@ -3963,7 +3963,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt, const 
         // RMP: Want this stuff too
         // This is JUST so we can do some printing later...
         std::vector<SphericalGrid> spheres;
-        radial_grids_[A] = {rs[A].size(), alpha, r.data(), wr.data(), spheres};
+        radial_grids_[A] = {static_cast<int>(rs[A].size()), alpha, r.data(), wr.data(), spheres};
         for (size_t i = 0; i < rs[A].size(); i++) {
             int numAngPts = LebedevGridMgr::findNPointsByOrder(Ls[A][i]);
             const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
