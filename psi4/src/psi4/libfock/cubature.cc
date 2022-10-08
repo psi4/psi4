@@ -2042,6 +2042,26 @@ class RadialGridMgr {
     }
 
 // See O. Treutler and R. Ahlrichs, J. Chem. Phys. 102 (1995) 346
+
+// TODO: The eta  mapping is missing in actual Treutler usage, as the
+// below table only was used in RadialGrid::build_treutler, which was
+// never used and has since been excised. At some point these proper
+// eta mapping values should be brought back into the code.
+//
+// // Treutler/Ahlrichs 1995 mapping parameters
+// static const std::vector<double> TreutlerEta =  { 1.0,
+//   0.800, 0.900,
+//  1.800, 1.400,                                                                       1.300, 1.100, 0.900, 0.900, 0.900, 0.900,
+//  1.400, 1.300,                                                                       1.300, 1.200, 1.100, 1.000, 1.000, 1.000,
+//  1.500, 1.400, 1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100, 1.100, 1.000, 0.900, 0.900, 0.900, 0.900,
+//  2.000, 1.700, 1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,
+//  2.500, 2.200,
+//         2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
+//         1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500,
+//  2.500, 2.100,
+//         3.685,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
+// };
+
 #define INVLN2 1.4426950408889634074  // = 1/log(2)
     static double ahlrichs_r(double x) {
         double alpha = 0.6;
