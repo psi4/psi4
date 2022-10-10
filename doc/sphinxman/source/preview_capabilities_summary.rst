@@ -2,7 +2,7 @@
 
 .. _`table:stdsuite`:
 
-.. table:: Summary capabilities of |PSIfour|. "✓" is runs analytically. "∷" is runs derivative with internal finite difference. Double underline "✓̳" or "∷̳" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.
+.. table:: Summary capabilities of |PSIfour|. "✓" runs analytically. "∷" runs derivative with internal finite difference. Double underline "✓̳" or "∷̳" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.
    :align: left
 
    +--------------------------+----------------------+--------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+

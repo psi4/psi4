@@ -2,7 +2,7 @@
 
 .. _`table:dfmp2_stdsuite`:
 
-.. table:: Detailed capabilities of the DFMP2 module. "✓" is runs analytically. Single underline "✓̲" is default module when |globals__qc_module| unspecified. Double underline "✓̳" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.
+.. table:: Detailed capabilities of the DFMP2 module. "✓" runs analytically. Single underline "✓̲" is default module when |globals__qc_module| unspecified. Double underline "✓̳" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.
    :align: left
 
    +--------------------------+-------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+

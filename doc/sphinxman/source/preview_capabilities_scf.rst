@@ -2,7 +2,7 @@
 
 .. _`table:scf_stdsuite`:
 
-.. table:: Detailed capabilities of the SCF module. "✓" is runs analytically. Single underline "✓̲" is default module when |globals__qc_module| unspecified. Double underline "✓̳" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.
+.. table:: Detailed capabilities of the SCF module. "✓" runs analytically. Single underline "✓̲" is default module when |globals__qc_module| unspecified. Double underline "✓̳" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.
    :align: left
 
    +--------------------------+-------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+

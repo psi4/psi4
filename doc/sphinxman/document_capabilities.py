@@ -421,10 +421,10 @@ def table_builder__ref_driver_type_fcae():
     else:
         pass
 
-    legend_lines.append(f'''"{trans_cell['pass'][args.sphinx]}" is runs analytically.''')
+    legend_lines.append(f'''"{trans_cell['pass'][args.sphinx]}" runs analytically.''')
 
-    if args.mode == "summary":
-        legend_lines.append(f'''"{trans_cell['fd'][args.sphinx]}" is runs derivative with internal finite difference.''')
+    if args.mode in ["details", "summary"]:
+        legend_lines.append(f'''"{trans_cell['fd'][args.sphinx]}" runs derivative with internal finite difference.''')
 
     if args.mode == "details":
         legend_lines.append(f"""Single underline "{trans_cell['(pass)'][args.sphinx]}" or "{trans_cell['(fd)'][args.sphinx]}" is default module when |globals__qc_module| unspecified.""")

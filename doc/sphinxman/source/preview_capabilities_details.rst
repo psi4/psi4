@@ -2,7 +2,7 @@
 
 .. _`table:managedmethods`:
 
-.. table:: Capabilities of |PSIfour|, including details of overlapping modules. "✓" is runs analytically. Single underline "✓̲" or "∷̲" is default module when |globals__qc_module| unspecified. Double underline "✓̳" or "∷̳" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.
+.. table:: Capabilities of |PSIfour|, including details of overlapping modules. "✓" runs analytically. "∷" runs derivative with internal finite difference. Single underline "✓̲" or "∷̲" is default module when |globals__qc_module| unspecified. Double underline "✓̳" or "∷̳" is default algorithm type when type selector (e.g., |globals__cc_type|\ ) unspecified.
    :align: left
 
    +--------------------------+--------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
