@@ -316,8 +316,7 @@ class SphericalGrid {
 
     /// Grid npoints to order map
     static std::map<int, int> lebedev_mapping_;
-    /// Initialize the above arrays with the unique Lebedev grids
-    static void initialize_lebedev();
+
     /// Print valid Lebedev grids and error out (throws)
     static void lebedev_error();
 
