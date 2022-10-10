@@ -28,7 +28,7 @@
 
 import re
 import math
-from typing import Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 from psi4 import core
 from psi4.driver import p4util

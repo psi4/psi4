@@ -75,6 +75,10 @@ MRCC simply provide the following::
 
 ``'ccsdt'`` in the call to :py:func:`~psi4.driver.energy` plus ``qc_module=mrcc`` instructs |PSIfour| to first
 perform an RHF calculation and then call MRCC to compute the CCSDT energy.
+Here the ``qc_module=mrcc`` is optional since |PSIfour| has no builtin module
+that can perform CCSDT. For a method like CCSD, no specification of |globals__qc_module|
+will default to the CCENERGY module, and specification with value ``mrcc`` is
+required to route the computation to the MRCC program.
 For a CCSDT(Q) energy, simply use ``'ccsdt(q)'`` in the call to
 :py:func:`~psi4.driver.energy`. MRCC can be used to perform geometry optimization and
 frequency calculations for electronic ground states only.
@@ -109,7 +113,6 @@ To optimize CH\ :sub:`4` with CCSDT freezing the 1\ *s* on carbon, run::
    set {
        basis cc-pVDZ
        freeze_core true
-       qc_module mrcc
    }
    
    optimize('ccsdt')

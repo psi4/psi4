@@ -1041,11 +1041,11 @@ def select_ccsd_at_(name, **kwargs):
                 func = run_dfocc
     elif reference == "UHF":
         if mtd_type == 'CONV':
-            if module == 'MRCC' and which("dmrcc", return_bool=True):
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
                 func = run_mrcc
     elif reference == "ROHF":
         if mtd_type == 'CONV':
-            if module == 'MRCC' and which("dmrcc", return_bool=True):
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
                 func = run_mrcc
 
     if func is None:
@@ -1332,7 +1332,7 @@ def select_mrcc(name, **kwargs):
 
     This function is unusual among "select" functions in that it services multiple methods and a
     single module. This function could have been skipped and the methods associated directly with
-    run_rmcc; however, routing through this function screens for qc_module=mrcc and conv only while
+    run_rmcc; however, routing through this function screens for conv only while
     providing uniform error messages with other select functions.
 
     """
@@ -1345,15 +1345,15 @@ def select_mrcc(name, **kwargs):
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
-            if module == 'MRCC' and which("dmrcc", return_bool=True):
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
                 func = run_mrcc
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module == 'MRCC' and which("dmrcc", return_bool=True):
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
                 func = run_mrcc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
-            if module == 'MRCC' and which("dmrcc", return_bool=True):
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
                 func = run_mrcc
 
     if func is None:

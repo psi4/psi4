@@ -157,12 +157,6 @@ def allen_focal_point(**kwargs) -> CBSMetadata:
     #  HF from CCSD) resulting from
     #  MRCC CCSD calcs. This logic can be made smarter if needed.
 
-    # TODO: Setting QC_MODULE (immediately below) isn't the right fix to allow
-    #  mrcc methods (otherwise gets caught up in ManagedMethod probes).
-    #  Right fix would be passing managed keywords into the deriv negotiation.
-    #  That's too involved, so deferring.
-    psi4.core.set_global_option("QC_MODULE", "MRCC")
-
     scf = {  # HF
         'wfn': 'hf',
         'basis': kwargs.pop('scf_basis', 'cc-pV[Q56]Z'),
