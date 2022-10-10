@@ -72,9 +72,9 @@ struct RadialGrid {
     /// Alpha scale (for user reference)
     double alpha_;
     /// Nodes (including alpha)
-    double* r_;
+    std::vector<double> r_;
     /// Weights (including alpha and r^2)
-    double* w_;
+    std::vector<double> w_;
     /// Spherical points
     std::vector<SphericalGrid> spheres_;
 };
