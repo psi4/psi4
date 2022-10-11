@@ -5062,7 +5062,13 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
 }
 
 /// Grid npoints to order map
-std::map<int, int> SphericalGrid::lebedev_mapping_;
+std::map<int, int> SphericalGrid::lebedev_mapping_ = {
+    {6,1}, {14,2}, {26,3}, {38,4}, {50,5}, {74,6}, {86,7}, {110,8}, {146,9},
+    {170,10}, {194,11}, {230,12}, {266,13}, {302,14}, {350,15}, {434,17},
+    {590,20}, {770,23}, {974,26}, {1202,29}, {1454,32}, {1730,35}, {2030,38},
+    {2354,41}, {2702,44}, {3074,47}, {3470,50}, {3890,53}, {4334,56},
+    {4802,59}, {5294,62}, {5810,65}
+};
 
 SphericalGrid::SphericalGrid() : npoints_(0) {}
 SphericalGrid::~SphericalGrid() {
@@ -5103,7 +5109,7 @@ void SphericalGrid::build_angles() {
 std::shared_ptr<SphericalGrid> SphericalGrid::build(const std::string &scheme, int npoints, const MassPoint *points) {
     auto *s = new SphericalGrid();
     s->scheme_ = scheme;
-    s->order_ = lebedev_mapping_[npoints];
+    s->order_ = lebedev_mapping_.at(npoints);
     s->npoints_ = npoints;
 
     s->x_ = new double[npoints];
@@ -5120,43 +5126,6 @@ std::shared_ptr<SphericalGrid> SphericalGrid::build(const std::string &scheme, i
 
     s->build_angles();
     return std::shared_ptr<SphericalGrid>(s);
-}
-
-void SphericalGrid::initialize_lebedev() {
-    lebedev_mapping_.clear();
-
-    lebedev_mapping_[6] = 1;
-    lebedev_mapping_[14] = 2;
-    lebedev_mapping_[26] = 3;
-    lebedev_mapping_[38] = 4;
-    lebedev_mapping_[50] = 5;
-    lebedev_mapping_[74] = 6;
-    lebedev_mapping_[86] = 7;
-    lebedev_mapping_[110] = 8;
-    lebedev_mapping_[146] = 9;
-    lebedev_mapping_[170] = 10;
-    lebedev_mapping_[194] = 11;
-    lebedev_mapping_[230] = 12;
-    lebedev_mapping_[266] = 13;
-    lebedev_mapping_[302] = 14;
-    lebedev_mapping_[350] = 15;
-    lebedev_mapping_[434] = 17;
-    lebedev_mapping_[590] = 20;
-    lebedev_mapping_[770] = 23;
-    lebedev_mapping_[974] = 26;
-    lebedev_mapping_[1202] = 29;
-    lebedev_mapping_[1454] = 32;
-    lebedev_mapping_[1730] = 35;
-    lebedev_mapping_[2030] = 38;
-    lebedev_mapping_[2354] = 41;
-    lebedev_mapping_[2702] = 44;
-    lebedev_mapping_[3074] = 47;
-    lebedev_mapping_[3470] = 50;
-    lebedev_mapping_[3890] = 53;
-    lebedev_mapping_[4334] = 56;
-    lebedev_mapping_[4802] = 59;
-    lebedev_mapping_[5294] = 62;
-    lebedev_mapping_[5810] = 65;
 }
 
 void SphericalGrid::lebedev_error() {
