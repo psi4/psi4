@@ -93,7 +93,7 @@ void DFOCC::df_ref() {
     std::shared_ptr<BasisSet> primary = get_basisset("ORBITAL");
     std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_SCF");
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary, zero, primary, primary));
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
     auto eri = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 
     // get ntri from sieve
@@ -194,7 +194,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
     J_mhalf = block_matrix(nQ_ref, nQ_ref);
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, auxiliary_, zero));
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -238,7 +238,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
 
     /*
     // Create integral factories for the RI basis
-    std::shared_ptr<IntegralFactory> rifactory_J(new IntegralFactory(auxiliary_, zero, auxiliary_, zero));
+    auto rifactory_J = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
     std::shared_ptr<TwoBodyAOInt> Jint(rifactory_J->eri());
 
     double **J = block_matrix(nQ_ref, nQ_ref);
@@ -324,7 +324,7 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
 #endif
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {

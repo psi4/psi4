@@ -541,60 +541,58 @@ void DFOCC::uccsd_t2AB_amps()
     RB->copy(t1newB);
     RB->subtract(t1B);
 
-    //std::cout << "T2AB--> I am here\n" << std::endl;
-
-// DIIS
+    // DIIS
     SharedTensor2d RAA, TAA, RBB, TBB, RAB, TAB, TA, TB;
 
         //if (orb_opt_ == "FALSE" || mo_optimized == 1) {
             // RAA
             RAA = std::make_shared<Tensor2d>("RT2 <IJ|AB>", ntri_anti_ijAA, ntri_anti_abAA);
             RAA->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> RT2AA(new Matrix("RT2AA", ntri_anti_ijAA, ntri_anti_abAA));
+            auto RT2AA = std::make_shared<Matrix>("RT2AA", ntri_anti_ijAA, ntri_anti_abAA);
             RAA->to_matrix(RT2AA);
             RAA.reset();
             // TAA
             TAA = std::make_shared<Tensor2d>("New T2 <IJ|AB>", ntri_anti_ijAA, ntri_anti_abAA);
             TAA->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", ntri_anti_ijAA, ntri_anti_abAA));
+            auto T2AA = std::make_shared<Matrix>("T2AA", ntri_anti_ijAA, ntri_anti_abAA);
             TAA->to_matrix(T2AA);
 
             // RBB
             RBB = std::make_shared<Tensor2d>("RT2 <ij|ab>", ntri_anti_ijBB, ntri_anti_abBB);
             RBB->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> RT2BB(new Matrix("RT2BB", ntri_anti_ijBB, ntri_anti_abBB));
+            auto RT2BB = std::make_shared<Matrix>("RT2BB", ntri_anti_ijBB, ntri_anti_abBB);
             RBB->to_matrix(RT2BB);
             RBB.reset();
             // TBB
             TBB = std::make_shared<Tensor2d>("New T2 <ij|ab>", ntri_anti_ijBB, ntri_anti_abBB);
             TBB->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", ntri_anti_ijBB, ntri_anti_abBB));
+            auto T2BB = std::make_shared<Matrix>("T2BB", ntri_anti_ijBB, ntri_anti_abBB);
             TBB->to_matrix(T2BB);
 
             // RAB
             RAB = std::make_shared<Tensor2d>("RT2 <Ij|Ab>", naoccA * naoccB, navirA * navirB);
             RAB->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB));
+            auto RT2AB = std::make_shared<Matrix>("RT2AB", naoccA * naoccB, navirA * navirB);
             RAB->to_matrix(RT2AB);
             RAB.reset();
             // TAB
             TAB = std::make_shared<Tensor2d>("New T2 <Ij|Ab>", naoccA * naoccB, navirA * navirB);
             TAB->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
+            auto T2AB = std::make_shared<Matrix>("T2AB", naoccA * naoccB, navirA * navirB);
             TAB->to_matrix(T2AB);
 
             // T1A
-            std::shared_ptr<Matrix> RT1A(new Matrix("RT1A", naoccA, navirA));
+            auto RT1A = std::make_shared<Matrix>("RT1A", naoccA, navirA);
             RA->to_matrix(RT1A);
             RA.reset();
-            std::shared_ptr<Matrix> T1A(new Matrix("T1A", naoccA, navirA));
+            auto T1A = std::make_shared<Matrix>("T1A", naoccA, navirA);
             t1A->to_matrix(T1A);
 
             // T1B
-            std::shared_ptr<Matrix> RT1B(new Matrix("RT1B", naoccB, navirB));
+            auto RT1B = std::make_shared<Matrix>("RT1B", naoccB, navirB);
             RB->to_matrix(RT1B);
             RB.reset();
-            std::shared_ptr<Matrix> T1B(new Matrix("T1B", naoccB, navirB));
+            auto T1B = std::make_shared<Matrix>("T1B", naoccB, navirB);
             t1B->to_matrix(T1B);
 
 

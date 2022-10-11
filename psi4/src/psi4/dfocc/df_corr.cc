@@ -159,7 +159,7 @@ void DFOCC::formJ(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<BasisSet
     J_mhalf = block_matrix(nQ, nQ);
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, auxiliary_, zero));
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, zero, auxiliary_, zero);
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {
@@ -295,7 +295,7 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
 #endif
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     std::vector<const double*> buffer;
     for (int t = 0; t < nthreads; t++) {

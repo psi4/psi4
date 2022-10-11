@@ -102,10 +102,10 @@ void DFOCC::lccd_t2_amps() {
 
         // DIIS
         if (orb_opt_ == "FALSE" || mo_optimized == 1) {
-            std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA * navirA, naoccA * navirA));
+            auto RT2 = std::make_shared<Matrix>("RT2", naoccA * navirA, naoccA * navirA);
             Tau->to_matrix(RT2);
             Tau.reset();
-            std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
+            auto T2 = std::make_shared<Matrix>("T2", naoccA * navirA, naoccA * navirA);
             t2->to_matrix(T2);
 
             // add entry
@@ -367,37 +367,37 @@ void DFOCC::lccd_t2_amps() {
             RAA = std::make_shared<Tensor2d>("RT2 <IJ|AB>", ntri_anti_ijAA, ntri_anti_abAA);
             RAA->read(psio_, PSIF_DFOCC_AMPS); // Out of curiosity: why does this work at all???? Quantities in the antisymmetric format <ab|cd>
                                                // are usually processed using read_anti_symm/write_anti_symm. Why does a simple "read" suffice here??
-            std::shared_ptr<Matrix> RT2AA(new Matrix("RT2AA", ntri_anti_ijAA, ntri_anti_abAA));
+            auto RT2AA = std::make_shared<Matrix>("RT2AA", ntri_anti_ijAA, ntri_anti_abAA);
             RAA->to_matrix(RT2AA);
             RAA.reset();
             // TAA
             TAA = std::make_shared<Tensor2d>("New T2 <IJ|AB>", ntri_anti_ijAA, ntri_anti_abAA);
             TAA->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", ntri_anti_ijAA, ntri_anti_abAA));
+            auto T2AA = std::make_shared<Matrix>("T2AA", ntri_anti_ijAA, ntri_anti_abAA);
             TAA->to_matrix(T2AA);
 
             // RBB
             RBB = std::make_shared<Tensor2d>("RT2 <ij|ab>", ntri_anti_ijBB, ntri_anti_abBB);
             RBB->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> RT2BB(new Matrix("RT2BB", ntri_anti_ijBB, ntri_anti_abBB));
+            auto RT2BB = std::make_shared<Matrix>("RT2BB", ntri_anti_ijBB, ntri_anti_abBB);
             RBB->to_matrix(RT2BB);
             RBB.reset();
             // TBB
             TBB = std::make_shared<Tensor2d>("New T2 <ij|ab>", ntri_anti_ijBB, ntri_anti_abBB);
             TBB->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", ntri_anti_ijBB, ntri_anti_abBB));
+            auto T2BB = std::make_shared<Matrix>("T2BB", ntri_anti_ijBB, ntri_anti_abBB);
             TBB->to_matrix(T2BB);
 
             // RAB
             RAB = std::make_shared<Tensor2d>("RT2 <Ij|Ab>", naoccA * naoccB, navirA * navirB);
             RAB->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB));
+            auto RT2AB = std::make_shared<Matrix>("RT2AB", naoccA * naoccB, navirA * navirB);
             RAB->to_matrix(RT2AB);
             RAB.reset();
             // TAB
             TAB = std::make_shared<Tensor2d>("New T2 <Ij|Ab>", naoccA * naoccB, navirA * navirB);
             TAB->read(psio_, PSIF_DFOCC_AMPS);
-            std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
+            auto T2AB = std::make_shared<Matrix>("T2AB", naoccA * naoccB, navirA * navirB);
             TAB->to_matrix(T2AB);
 
             // add entry

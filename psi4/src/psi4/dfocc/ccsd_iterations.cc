@@ -59,32 +59,25 @@ void DFOCC::ccsd_iterations() {
     // DIIS
     if (do_diis_ == 1) {
         if (reference_ == "RESTRICTED") {
-            std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
-            std::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
-            ccsdDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
-            ccsdDiisManager->set_error_vector_size(T2.get(), T1.get());
-            ccsdDiisManager->set_vector_size(T2.get(), T1.get());
-            T2.reset();
-            T1.reset();
+            Matrix T2("T2", naoccA * navirA, naoccA * navirA);
+            Matrix T1("T1", naoccA, navirA);
+            ccsdDiisManager = std::make_shared<DIISManager>(
+                cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
+            ccsdDiisManager->set_error_vector_size(T2, T1);
+            ccsdDiisManager->set_vector_size(T2, T1);
         }
         else if (reference_ == "UNRESTRICTED") {
             //=== BEGIN DFUCCSD ===
-            std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", ntri_anti_ijAA, ntri_anti_abAA));
-            std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", ntri_anti_ijBB, ntri_anti_abBB));
-            std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
-            std::shared_ptr<Matrix> T1A(new Matrix("T1A", naoccA, navirA));
-            std::shared_ptr<Matrix> T1B(new Matrix("T1B", naoccB, navirB));
+            Matrix T2AA("T2AA", ntri_anti_ijAA, ntri_anti_abAA);
+            Matrix T2BB("T2BB", ntri_anti_ijBB, ntri_anti_abBB);
+            Matrix T2AB("T2AB", naoccA * naoccB, navirA * navirB);
+            Matrix T1A("T1A", naoccA, navirA);
+            Matrix T1B("T1B", naoccB, navirB);
 
-            ccsdDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
-            ccsdDiisManager->set_error_vector_size(T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
-            ccsdDiisManager->set_vector_size(T2AA.get(), T2BB.get(), T2AB.get(), T1A.get(), T1B.get());
-            T2AA.reset();
-            T2BB.reset();
-            T2AB.reset();
-            T1A.reset();
-            T1B.reset();
+            ccsdDiisManager = std::make_shared<DIISManager>(
+                cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
+            ccsdDiisManager->set_error_vector_size(T2AA, T2BB, T2AB, T1A, T1B);
+            ccsdDiisManager->set_vector_size(T2AA, T2BB, T2AB, T1A, T1B);
             //=== END DFUCCSD ===
         }
     }  // if diis true

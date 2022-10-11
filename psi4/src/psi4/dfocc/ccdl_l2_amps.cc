@@ -41,7 +41,7 @@ void DFOCC::ccdl_l2_amps() {
 
     // l_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = \sum_{e} l_ij^ae F_eb = \sum_{e} L(ia,je) F_eb
-    X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
+    X = std::make_shared<Tensor2d>("X (IA|JB)", naoccA, navirA, naoccA, navirA);
     X->contract(false, false, naoccA * navirA * naoccA, navirA, navirA, l2, FabA, 1.0, 0.0);
 
     // l_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
@@ -50,12 +50,12 @@ void DFOCC::ccdl_l2_amps() {
 
     // l_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = \sum_{Q} (G_ai^Q - G_ia^Q) b_jb^Q
-    U = SharedTensor2d(new Tensor2d("G (Q|AI)", nQ, navirA, naoccA));
+    U = std::make_shared<Tensor2d>("G (Q|AI)", nQ, navirA, naoccA);
     U->read(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("Temp (Q|IA)", nQ, naoccA, navirA));
+    T = std::make_shared<Tensor2d>("Temp (Q|IA)", nQ, naoccA, navirA);
     T->swap_3index_col(U);
     U.reset();
-    U = SharedTensor2d(new Tensor2d("G (Q|IA)", nQ, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("G (Q|IA)", nQ, naoccA, navirA);
     U->read(psio_, PSIF_DFOCC_AMPS);
     T->axpy(U, -1.0);
     U.reset();
@@ -64,7 +64,7 @@ void DFOCC::ccdl_l2_amps() {
     X->symmetrize();
 
     // l_ij^ab <= <ij|ab>
-    Lnew = SharedTensor2d(new Tensor2d("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    Lnew = std::make_shared<Tensor2d>("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     Lnew->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
 
     // Contributions of X
@@ -96,24 +96,24 @@ void DFOCC::ccdl_l2_amps() {
         ccsdl_WabefL2_high_mem();
 
     // Denom
-    Lnew = SharedTensor2d(new Tensor2d("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    Lnew = std::make_shared<Tensor2d>("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     Lnew->read_symm(psio_, PSIF_DFOCC_AMPS);
     Lnew->apply_denom_chem(nfrzc, noccA, FockA);
 
     // Reset T2
     rms_t2 = Lnew->rms(l2);
     // Error vector
-    Tau = SharedTensor2d(new Tensor2d("RL2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    Tau = std::make_shared<Tensor2d>("RL2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     Tau->copy(Lnew);
     Tau->subtract(l2);
     l2->copy(Lnew);
     Lnew.reset();
 
     // DIIS
-    std::shared_ptr<Matrix> RL2(new Matrix("RL2", naoccA * navirA, naoccA * navirA));
+    auto RL2 = std::make_shared<Matrix>("RL2", naoccA * navirA, naoccA * navirA);
     Tau->to_matrix(RL2);
     Tau.reset();
-    std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA * navirA, naoccA * navirA));
+    auto L2 = std::make_shared<Matrix>("L2", naoccA * navirA, naoccA * navirA);
     l2->to_matrix(L2);
 
     // add entry
@@ -128,11 +128,11 @@ void DFOCC::ccdl_l2_amps() {
     L2.reset();
 
     // Energy
-    U = SharedTensor2d(new Tensor2d("2*L(ia,jb) - L(ib,ja)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("2*L(ia,jb) - L(ib,ja)", naoccA, navirA, naoccA, navirA);
     U->sort(1432, l2, 1.0, 0.0);
     U->scale(-1.0);
     U->axpy(l2, 2.0);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
     EcorrL = U->vector_dot(K);
     U.reset();

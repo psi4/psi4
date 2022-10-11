@@ -59,12 +59,12 @@ void DFOCC::ccdl_iterations() {
     // Write
     // Form U_ij^ab
     SharedTensor2d U, T;
-    U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     ccsd_u2_amps(U, t2);
     U->write_symm(psio_, PSIF_DFOCC_AMPS);
     U.reset();
     // Form T'(ib,ja) = t_ij^ab
-    U = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("T2p (IA|JB)", naoccA, navirA, naoccA, navirA);
     ccsd_t2_prime_amps(U, t2);
     U->write_symm(psio_, PSIF_DFOCC_AMPS);
     U.reset();
@@ -75,8 +75,8 @@ void DFOCC::ccdl_iterations() {
     // T.reset();
 
     // Malloc and Free
-    gQ = SharedTensor1d(new Tensor1d("CCDL G_Q", nQ));
-    l2 = SharedTensor2d(new Tensor2d("L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    gQ = std::make_shared<Tensor1d>("CCDL G_Q", nQ);
+    l2 = std::make_shared<Tensor2d>("L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     l2->copy(t2);
     t2.reset();
 
@@ -100,14 +100,13 @@ void DFOCC::ccdl_iterations() {
 
     // DIIS
     if (do_diis_ == 1) {
-        std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA * navirA, naoccA * navirA));
         if (reference_ == "RESTRICTED") {
-            ccsdlDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
-            ccsdlDiisManager->set_error_vector_size(L2.get());
-            ccsdlDiisManager->set_vector_size(L2.get());
+            Matrix L2("L2", naoccA * navirA, naoccA * navirA);
+            ccsdlDiisManager = std::make_shared<DIISManager>(
+                cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
+            ccsdlDiisManager->set_error_vector_size(L2);
+            ccsdlDiisManager->set_vector_size(L2);
         }
-        L2.reset();
     }  // if diis true
 
     // head of loop
@@ -174,7 +173,7 @@ void DFOCC::ccdl_iterations() {
     }
 
     // free l2 amps
-    U = SharedTensor2d(new Tensor2d("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    U = std::make_shared<Tensor2d>("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     ccsd_u2_amps(U, l2);
     U->write_symm(psio_, PSIF_DFOCC_AMPS);
     U.reset();
