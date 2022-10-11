@@ -1296,39 +1296,14 @@ void Matrix::transform(const Matrix &L, const Matrix &F, const Matrix &R) {
 }
 
 void Matrix::back_transform(const Matrix *const a, const Matrix *const transformer) {
-    Matrix temp(transformer->rowspi(), a->colspi());
-
-    temp.gemm(false, false, 1.0, transformer, a, 0.0);
-    gemm(false, true, 1.0, &temp, transformer, 0.0);
+    back_transform(*a, *transformer);
 }
 
 void Matrix::back_transform(const SharedMatrix &a, const SharedMatrix &transformer) {
     back_transform(a.get(), transformer.get());
 }
 
-void Matrix::back_transform(const Matrix *const transformer) {
-    bool square = true;
-    int h = 0;
-
-    while (h < nirrep_ && square) {
-        if (transformer->rowspi()[h] != transformer->colspi()[h]) {
-            square = false;
-        }
-        h++;
-    }
-
-    if (square) {
-        Matrix temp("", rowspi_, colspi_);
-        temp.gemm(false, true, 1.0, this, transformer, 0.0);
-        gemm(false, false, 1.0, transformer, &temp, 0.0);
-    } else {
-        Matrix temp(nirrep_, rowspi_, transformer->rowspi());
-        Matrix result(nirrep_, transformer->rowspi(), transformer->rowspi());
-        temp.gemm(false, true, 1.0, this, transformer, 0.0);
-        result.gemm(false, false, 1.0, transformer, &temp, 0.0);
-        copy(&result);
-    }
-}
+void Matrix::back_transform(const Matrix *const transformer) { back_transform(*transformer); }
 
 void Matrix::back_transform(const SharedMatrix &transformer) { back_transform(transformer.get()); }
 
@@ -2779,17 +2754,17 @@ void Matrix::transform(const Matrix &transformer) {
 }
 
 void Matrix::back_transform(const Matrix &a, const Matrix &transformer) {
-    Matrix temp(a);
-
-    temp.gemm(false, true, 1.0, a, transformer, 0.0);
-    gemm(false, false, 1.0, transformer, temp, 0.0);
+    auto temp = linalg::doublet(a, transformer, false, true);
+    if (transformer.rowspi() == rowspi_ && transformer.rowspi() == colspi_ && a.symmetry() == symmetry_) {
+        gemm(false, false, 1.0, transformer, temp, 0.0);
+    } else {
+        // The dimensions of this matrix need to change, so gemm is out.
+        copy(linalg::doublet(transformer, temp, false, false));
+    }
 }
 
 void Matrix::back_transform(const Matrix &transformer) {
-    Matrix temp(this);
-
-    temp.gemm(false, true, 1.0, *this, transformer, 0.0);
-    gemm(false, false, 1.0, transformer, temp, 0.0);
+    back_transform(*this, transformer);
 }
 
 double Matrix::vector_dot(const Matrix &rhs) { return vector_dot(&rhs); }
