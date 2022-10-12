@@ -35,6 +35,7 @@
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
+#include <unordered_map>
 PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
@@ -1310,6 +1311,8 @@ class PSI_API DFJLinK : public JK {
    protected:
     /// Number of threads
     int nthreads_;
+    /// Number of threads for DF integrals TODO: DF_INTS_NUM_THREADS
+    int df_ints_num_threads_;
     /// Options object
     Options& options_;
 
@@ -1403,6 +1406,11 @@ class PSI_API DFJLinK : public JK {
     ~DFJLinK() override;
 
     // => Knobs <= //
+    /**
+     * What number of threads to compute integrals on
+     * @param val a positive integer
+     */
+    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     /**
     * Print header information regarding JK

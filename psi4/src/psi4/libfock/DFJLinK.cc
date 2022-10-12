@@ -39,6 +39,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 
+#include <unordered_set>
 #include <vector>
 #include <map>
 #include <algorithm>
@@ -86,8 +87,8 @@ void DFJLinK::common_init() {
 
     // pre-construct per-thread TwoBodyAOInt objects for computing 3- and 4-index ERIs
     timer_on("DFJLinK: ERI Computers");
-    eri_computers_["4-Center"].emplace({}) = 
-    eri_computers_["3-Center"].emplace({}) = 
+    eri_computers_["4-Center"].emplace({}); 
+    eri_computers_["3-Center"].emplace({});
     
     eri_computers_["4-Center"].resize(nthreads_);
     eri_computers_["3-Center"].resize(nthreads_);
@@ -99,7 +100,7 @@ void DFJLinK::common_init() {
     eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
-        eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_.front()->clone());
+        eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
     }
     timer_off("DFJLinK: ERI Computers");
 
@@ -111,6 +112,10 @@ void DFJLinK::common_init() {
     } else {
         linK_ints_cutoff_ = options_.get_double("INTS_TOLERANCE");
     }
+}
+size_t DFJLinK::num_computed_shells() { 
+    //no bench data returned - to come in a future update
+    return JK::num_computed_shells(); 
 }
 
 size_t DFJLinK::memory_estimate() {
@@ -512,8 +517,7 @@ void DFJLinK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 }
 
 // To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
-void DFJLinK::build_K(const std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& K) {
+void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K) {
 
     if (!lr_symmetric_) {
         throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
@@ -603,7 +607,7 @@ void DFJLinK::build_K(const std::vector<SharedMatrix>& D,
                                     const std::pair<int, double> &b) { return a.second > b.second; };
 
     std::vector<std::vector<int>> significant_bras(nshell);
-    double max_integral = eri_computers["4-Center"][0]->max_integral();
+    double max_integral = eri_computers_["4-Center"][0]->max_integral();
 
 #pragma omp parallel for
     for (size_t P = 0; P < nshell; P++) {
@@ -712,7 +716,7 @@ void DFJLinK::build_K(const std::vector<SharedMatrix>& D,
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
 
                 if (Q > P) continue;
-                if (!eri_computers["4-Center"][0]->shell_pair_significant(P, Q)) continue;
+                if (!eri_computers_["4-Center"][0]->shell_pair_significant(P, Q)) continue;
 
                 int dP = P - Pstart;
                 int dQ = Q - Qstart;
@@ -728,7 +732,7 @@ void DFJLinK::build_K(const std::vector<SharedMatrix>& D,
                 for (const int R : significant_kets[P]) {
                     bool is_significant = false;
                     for (const int S : significant_bras[R]) {
-                        double screen_val = eri_computers["4-Center"][0]->shell_pair_max_density(P, R) * std::sqrt(eri_computers_["4-Center"][0]->shell_ceiling2(P, Q, R, S));
+                        double screen_val = eri_computers_["4-Center"][0]->shell_pair_max_density(P, R) * std::sqrt(eri_computers_["4-Center"][0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
                             if (!is_significant) is_significant = true;
