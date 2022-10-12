@@ -801,8 +801,8 @@ class PSI_API DirectJK : public JK {
      * @param K The list of AO K matrices to build (Same size as D)
      * 
      */
-    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& K);
+    //void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
+                  //std::vector<SharedMatrix>& K);
 
     /**
      * @brief The standard J and K matrix builds for this integral class
@@ -1324,6 +1324,7 @@ class PSI_API DFJLinK : public JK {
     int incfock_count_;
     bool do_incfock_iter_;
 
+    
     // => Density Fitting Stuff <= //
 
     /// Auxiliary basis set
@@ -1405,6 +1406,7 @@ class PSI_API DFJLinK : public JK {
     /// Destructor
     ~DFJLinK() override;
 
+    bool do_incfock_iter() { return do_incfock_iter_; }
     // => Knobs <= //
     /**
      * What number of threads to compute integrals on

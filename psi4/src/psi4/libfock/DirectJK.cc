@@ -434,23 +434,11 @@ void DirectJK::compute_JK() {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_ && do_K_) {
-            if (linK_) {
-                // NOTE: For the time being, there is no expected performance gain from LinK
-                // due to a lack of a fast J algorithm to complement LinK
-                build_linK(ints, D_ref, K_ref);
-                build_JK_matrices(ints, D_ref, J_ref, temp);
-            } else {
-                build_JK_matrices(ints, D_ref, J_ref, K_ref);
-            }
-            
+            build_JK_matrices(ints, D_ref, J_ref, K_ref);
         } else if (do_J_) {
             build_JK_matrices(ints, D_ref, J_ref, temp);
         } else {
-            if (linK_) {
-                build_linK(ints, D_ref, K_ref);
-            } else {
-                build_JK_matrices(ints, D_ref, temp, K_ref);
-            }
+            build_JK_matrices(ints, D_ref, temp, K_ref);
         }
     }
 
