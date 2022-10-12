@@ -105,7 +105,7 @@ void DFJLinK::common_init() {
 
     // => Linear Exchange Setup <= //
     
-    // sett up LinK integral tolerance
+    // set up LinK integral tolerance
     if (options_["LINK_INTS_TOLERANCE"].has_changed()) {
         linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
     } else {
@@ -262,7 +262,7 @@ void DFJLinK::compute_JK() {
     if (do_K_) {
         timer_on("DFJLinK: K");
         //build_K(D_eff, K_ao_);
-        build_J(D_ref, K_ref);
+        build_K(D_ref, K_ref);
         timer_off("DFJLinK: K");
     }
     
@@ -277,7 +277,7 @@ void DFJLinK::compute_JK() {
 
 void DFJLinK::postiterations() {}
 
-void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
+void DFJLinK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
     
     timer_on("Setup");
 
@@ -289,7 +289,7 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
     int nshell_aux = auxiliary_->nshell();
 
     // benchmarking 
-    size_t nshellpair = eri_computers_[0]->shell_pairs().size();
+    size_t nshellpair = eri_computers_["3-Center"][0]->shell_pairs().size();
     size_t nshelltriplet = nshell_aux * nshellpair;
     size_t computed_triplets1 = 0, computed_triplets2 = 0;
 
@@ -363,10 +363,10 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        auto bra = eri_computers_[rank]->shell_pairs()[MN];
+        auto bra = eri_computers_["3-Center"][rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers_[rank]->shell_pair_value(M,N) < thresh2) {
+        if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers_["3-Center"][rank]->shell_pair_value(M,N) < thresh2) {
             continue;
         }
         computed_triplets1++;
@@ -376,8 +376,8 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
         int mstart = primary_->shell(M).function_index();
         int nn = primary_->shell(N).nfunction();
         int nstart = primary_->shell(N).function_index();
-        eri_computers_[rank]->compute_shell(P, 0, M, N);
-        const auto & buffer = eri_computers_[rank]->buffers()[0];
+        eri_computers_["3-Center"][rank]->compute_shell(P, 0, M, N);
+        const auto & buffer = eri_computers_["3-Center"][rank]->buffers()[0];
 
         for(size_t jki = 0; jki < njk; jki++) {
 
@@ -459,10 +459,10 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        auto bra = eri_computers_[rank]->shell_pairs()[MN];
+        auto bra = eri_computers_["3-Center"][rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers_[rank]->shell_pair_value(M,N) < thresh2) {
+        if(H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers_["3-Center"][rank]->shell_pair_value(M,N) < thresh2) {
             continue;
         }
         computed_triplets2++;
@@ -473,8 +473,8 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
         int nn = primary_->shell(N).nfunction();
         int nstart = primary_->shell(N).function_index();
 
-        eri_computers_[rank]->compute_shell(P, 0, M, N);
-        const auto & buffer = eri_computers_[rank]->buffers()[0];
+        eri_computers_["3-Center"][rank]->compute_shell(P, 0, M, N);
+        const auto & buffer = eri_computers_["3-Center"][rank]->buffers()[0];
 
         for(size_t jki = 0; jki < njk; jki++) {
 
@@ -512,7 +512,7 @@ void DFJCOSK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
 }
 
 // To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
-void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
+void DFJLinK::build_K(const std::vector<SharedMatrix>& D,
                   std::vector<SharedMatrix>& K) {
 
     if (!lr_symmetric_) {
@@ -585,7 +585,7 @@ void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const st
             bool found = false;
             for (int P = shell_endpoints_for_atom[Patom]; P < shell_endpoints_for_atom[Patom + 1]; P++) {
                 for (int Q = shell_endpoints_for_atom[Qatom]; Q < shell_endpoints_for_atom[Qatom + 1]; Q++) {
-                    if (ints[0]->shell_pair_significant(P, Q)) {
+                    if (eri_computers_["4-Center"][0]->shell_pair_significant(P, Q)) {
                         found = true;
                         atom_pairs.emplace_back(Patom, Qatom);
                         break;
@@ -603,13 +603,13 @@ void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const st
                                     const std::pair<int, double> &b) { return a.second > b.second; };
 
     std::vector<std::vector<int>> significant_bras(nshell);
-    double max_integral = ints[0]->max_integral();
+    double max_integral = eri_computers["4-Center"][0]->max_integral();
 
 #pragma omp parallel for
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PQ_shell_values;
         for (size_t Q = 0; Q < nshell; Q++) {
-            double pq_pq = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
+            double pq_pq = std::sqrt(eri_computers_["4-Center"][0]->shell_ceiling2(P, Q, P, Q));
             double schwarz_value = std::sqrt(pq_pq * max_integral);
             if (schwarz_value >= cutoff_) {
                 PQ_shell_values.emplace_back(Q, schwarz_value);
@@ -631,7 +631,7 @@ void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const st
 #pragma omp parallel for
     for (int P = 0; P < nshell; P++) {
         for (int Q = 0; Q <= P; Q++) {
-            double val = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
+            double val = std::sqrt(eri_computers_["4-Center"][0]->shell_ceiling2(P, Q, P, Q));
             shell_ceilings[P] = std::max(shell_ceilings[P], val);
 #pragma omp critical
             shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
@@ -645,7 +645,7 @@ void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const st
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PR_shell_values;
         for (size_t R = 0; R < nshell; R++) {
-            double screen_val = shell_ceilings[P] * shell_ceilings[R] * ints[0]->shell_pair_max_density(P, R);
+            double screen_val = shell_ceilings[P] * shell_ceilings[R] * eri_computers_["4-Center"][0]->shell_pair_max_density(P, R);
             if (screen_val >= linK_ints_cutoff_) {
                 PR_shell_values.emplace_back(R, screen_val);
             }
@@ -712,7 +712,7 @@ void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const st
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
 
                 if (Q > P) continue;
-                if (!ints[0]->shell_pair_significant(P, Q)) continue;
+                if (!eri_computers["4-Center"][0]->shell_pair_significant(P, Q)) continue;
 
                 int dP = P - Pstart;
                 int dQ = Q - Qstart;
@@ -728,7 +728,7 @@ void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const st
                 for (const int R : significant_kets[P]) {
                     bool is_significant = false;
                     for (const int S : significant_bras[R]) {
-                        double screen_val = ints[0]->shell_pair_max_density(P, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
+                        double screen_val = eri_computers["4-Center"][0]->shell_pair_max_density(P, R) * std::sqrt(eri_computers_["4-Center"][0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
                             if (!is_significant) is_significant = true;
@@ -746,7 +746,7 @@ void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const st
                 for (const int R : significant_kets[Q]) {
                     bool is_significant = false;
                     for (const int S : significant_bras[R]) {
-                        double screen_val = ints[0]->shell_pair_max_density(Q, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
+                        double screen_val = eri_computers_["4-Center"][0]->shell_pair_max_density(Q, R) * std::sqrt(eri_computers_["4-Center"][0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
                             if (!is_significant) is_significant = true;
@@ -766,14 +766,14 @@ void DFJLinK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const st
                     int R = RS / nshell;
                     int S = RS % nshell;
 
-                    if (!ints[0]->shell_pair_significant(R, S)) continue;
-                    if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+                    if (!eri_computers_["4-Center"][0]->shell_pair_significant(R, S)) continue;
+                    if (!eri_computers_["4-Center"][0]->shell_significant(P, Q, R, S)) continue;
 
-                    if (ints[thread]->compute_shell(P, Q, R, S) == 0)
+                    if (eri_computers_["4-Center"][thread]->compute_shell(P, Q, R, S) == 0)
                         continue;
                     computed_shells++;
 
-                    const double* buffer = ints[thread]->buffer();
+                    const double* buffer = eri_computers_["4-Center"][thread]->buffer();
 
                     // Number of basis functions in shells P, Q, R, S
                     int shell_P_nfunc = primary_->shell(P).nfunction();
