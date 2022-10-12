@@ -35,21 +35,6 @@
 #include <fcntl.h>
 #include <cstring>
 #include <cstdlib>
-#ifdef _MSC_VER
-#include <io.h>
-#define SYSTEM_OPEN ::_open
-#define SYSTEM_CLOSE ::_close
-#define PSIO_OPEN_OLD_FLAGS _O_BINARY | _O_CREAT | _O_RDWR
-#define PSIO_OPEN_NEW_FLAGS _O_BINARY | _O_CREAT | _O_RDWR | _O_TRUNC
-#define PERMISSION_MODE _S_IWRITE
-#else
-#include <unistd.h>
-#define SYSTEM_OPEN ::open
-#define SYSTEM_CLOSE ::close
-#define PSIO_OPEN_OLD_FLAGS O_CREAT | O_RDWR
-#define PSIO_OPEN_NEW_FLAGS O_CREAT | O_RDWR | O_TRUNC
-#define PERMISSION_MODE S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
-#endif
 #include <string>
 #include <map>
 #include <sstream>
