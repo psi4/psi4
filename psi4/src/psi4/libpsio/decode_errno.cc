@@ -41,5 +41,5 @@ namespace psi {
 /// are a lot of things in C++ that can potentially fail and overwrite the global errno with a new error code.
 /// @param errno_in : the error code from the OS
 /// @return Human-readable error message from the OS. May or may not be in English.
-std::string decode_errno(const errno_t errno_in) { return std::string(std::strerror(errno_in)); }
+std::string decode_errno(const int errno_in) { return std::string(std::strerror(errno_in)); }
 }  // namespace psi

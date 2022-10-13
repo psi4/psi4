@@ -59,11 +59,11 @@
 
 namespace psi {
 
-std::string decode_errno(const errno_t errno_in);
-std::string psio_lseek_err_msg(const std::string& context, const size_t unit, const errno_t errno_in);
-std::string psio_write_err_msg(const std::string& context, const size_t unit, const errno_t errno_in);
+std::string decode_errno(const int errno_in);
+std::string psio_lseek_err_msg(const std::string& context, const size_t unit, const int errno_in);
+std::string psio_write_err_msg(const std::string& context, const size_t unit, const int errno_in);
 std::string psio_write_err_msg(const std::string& context, const size_t unit);
-std::string psio_read_err_msg(const std::string& context, const size_t unit, const errno_t errno_in);
+std::string psio_read_err_msg(const std::string& context, const size_t unit, const int errno_in);
 std::string psio_read_err_msg(const std::string& context, const size_t unit);
 
 int psio_init();

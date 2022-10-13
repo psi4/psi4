@@ -39,7 +39,7 @@ namespace psi {
 /// @param unit
 /// @param errno_in
 /// @return
-std::string psio_read_err_msg(const std::string& context, const size_t unit, const errno_t errno_in) {
+std::string psio_read_err_msg(const std::string& context, const size_t unit, const int errno_in) {
     std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(errno_in);
     errmsg += '\n' + context + ", unit ";
     errmsg += std::to_string(unit) + ".\n";

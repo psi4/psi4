@@ -85,7 +85,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
         errcod_uli = SYSTEM_WRITE(this_unit->vol[first_vol].stream, &(buffer[buf_offset]), this_page_total);
         if (errcod_uli != this_page_total){
             if (errcod_uli == -1){
-                const errno_t sys_errno = errno;
+                const int sys_errno = errno;
                 const std::string errmsg = psio_write_err_msg("Error writing the first partial page", unit, sys_errno);
                 psio_error(unit, PSIO_ERROR_WRITE, errmsg);
             }else{
@@ -97,7 +97,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
         errcod_uli = SYSTEM_READ(this_unit->vol[first_vol].stream, &(buffer[buf_offset]), this_page_total);
         if (errcod_uli != this_page_total){
             if (errcod_uli == -1){
-                const errno_t sys_errno = errno;
+                const int sys_errno = errno;
                 const std::string errmsg = psio_read_err_msg("Error reading the first partial page", unit, sys_errno);
                 psio_error(unit, PSIO_ERROR_READ, errmsg);
             }else{
@@ -120,7 +120,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
             errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), this_page_total);
             if (errcod_uli != this_page_total){
                 if (errcod_uli == -1){
-                    const errno_t sys_errno = errno;
+                    const int sys_errno = errno;
                     const std::string errmsg = psio_write_err_msg("Error writing a full page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }else{
@@ -132,7 +132,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
             errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), this_page_total);
             if (errcod_uli != this_page_total){
                 if (errcod_uli == -1){
-                    const errno_t sys_errno = errno;
+                    const int sys_errno = errno;
                     const std::string errmsg = psio_read_err_msg("Error reading a full page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_READ, errmsg);
                 }else{
@@ -152,7 +152,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
             errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), bytes_left);
             if (errcod_uli != bytes_left){
                 if (errcod_uli == -1){
-                    const errno_t sys_errno = errno;
+                    const int sys_errno = errno;
                     const std::string errmsg = psio_write_err_msg("Error writing the last partial page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }else{
@@ -164,7 +164,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
             errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), bytes_left);
             if (errcod_uli != bytes_left){
                 if (errcod_uli == -1){
-                    const errno_t sys_errno = errno;
+                    const int sys_errno = errno;
                     const std::string errmsg = psio_read_err_msg("Error reading the last partial page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_READ, errmsg);
                 }else{
