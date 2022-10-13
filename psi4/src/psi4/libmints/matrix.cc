@@ -1270,16 +1270,7 @@ double Matrix::absmax() {
 }
 
 void Matrix::transform(const Matrix *const a, const Matrix *const transformer) {
-#ifdef PSIDEBUG
-    // Check dimensions
-    // 'this' should be transformer->colspi by transformer->colspi
-    if (rowspi_ != transformer->colspi() || colspi_ != transformer->colspi())
-        throw PSIEXCEPTION("Matrix::transformer(a, transformer): Target matrix does not have correct dimensions.");
-#endif
-
-    Matrix temp(a->rowspi(), transformer->colspi());
-    temp.gemm(false, false, 1.0, a, transformer, 0.0);
-    gemm(true, false, 1.0, transformer, &temp, 0.0);
+    transform(*a, *transformer);
 }
 
 void Matrix::transform(const SharedMatrix &a, const SharedMatrix &transformer) {
@@ -1287,29 +1278,23 @@ void Matrix::transform(const SharedMatrix &a, const SharedMatrix &transformer) {
 }
 
 void Matrix::transform(const Matrix *const transformer) {
-    Matrix temp(nirrep_, rowspi_, transformer->colspi());
-    temp.gemm(false, false, 1.0, this, transformer, 0.0);
-
-    // Might need to resize the target matrix.
-    if (rowspi() != transformer->rowspi() || colspi() != transformer->colspi())
-        init(transformer->colspi(), transformer->colspi(), name_, symmetry_);
-
-    gemm(true, false, 1.0, transformer, &temp, 0.0);
+    transform(*transformer, *this, *transformer);
 }
 
 void Matrix::transform(const SharedMatrix &transformer) { transform(transformer.get()); }
 
 void Matrix::transform(const SharedMatrix &L, const SharedMatrix &F, const SharedMatrix &R) {
-#ifdef PSIDEBUG
-    // Check dimensions
-    // 'this' should be transformer->colspi by transformer->colspi
-    if (rowspi_ != L->colspi() || colspi_ != R->colspi())
-        throw PSIEXCEPTION("Matrix::transformer(L, F, R): Target matrix does not have correct dimensions.");
-#endif
+    transform(*L, *F, *R);
+}
 
-    Matrix temp(nirrep_, F->rowspi_, R->colspi_, F->symmetry_ ^ R->symmetry_);
-    temp.gemm(false, false, 1.0, F, R, 0.0);
-    gemm(true, false, 1.0, L, temp, 0.0);
+void Matrix::transform(const Matrix &L, const Matrix &F, const Matrix &R) {
+    auto temp = linalg::doublet(F, R, false, false);
+    if (L.colspi() == rowspi_ && R.colspi() == colspi_ && F.symmetry() == symmetry_) {
+        gemm(true, false, 1.0, L, temp, 0.0);
+    } else {
+        // The dimensions of this matrix need to change, so gemm is out.
+        copy(linalg::doublet(L, temp, true, false));
+    }
 }
 
 void Matrix::back_transform(const Matrix *const a, const Matrix *const transformer) {
@@ -2678,10 +2663,7 @@ void Matrix::hermitivitize() {
 // Reference versions of the above functions:
 
 void Matrix::transform(const Matrix &a, const Matrix &transformer) {
-    // Allocate adaquate size temporary matrix.
-    Matrix temp(a.rowspi(), transformer.colspi());
-    temp.gemm(false, false, 1.0, a, transformer, 0.0);
-    gemm(true, false, 1.0, transformer, temp, 0.0);
+    transform(transformer, a, transformer);
 }
 
 void Matrix::apply_symmetry(const SharedMatrix &a, const SharedMatrix &transformer) {
@@ -2795,10 +2777,7 @@ void Matrix::remove_symmetry(const SharedMatrix &a, const SharedMatrix &SO2AO) {
 }
 
 void Matrix::transform(const Matrix &transformer) {
-    Matrix temp(this);
-
-    temp.gemm(false, false, 1.0, *this, transformer, 0.0);
-    gemm(true, false, 1.0, transformer, temp, 0.0);
+    transform(*this, transformer);
 }
 
 void Matrix::back_transform(const Matrix &a, const Matrix &transformer) {

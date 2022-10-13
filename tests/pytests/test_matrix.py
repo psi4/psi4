@@ -227,6 +227,26 @@ def test_doublets(adl, adr, Ga, bdl, bdr, Gb, at, bt):
     for blk_idx in range(res.nirrep()):
         assert compare_arrays(expected[blk_idx], res_blocks[blk_idx], 8, f"Block[{blk_idx}]")
 
+def test_transform():
+    # transformed = transformer.T @ original @ transformer
+    rdim = Dimension([3, 2])
+    cdim = Dimension([4, 5])
+    original = build_random_mat(rdim, rdim, 1)
+
+    # Test case that transformed resize needed.
+    transformer = build_random_mat(rdim, cdim)
+    transformed = original.clone()
+    transformed.transform(transformer)
+    assert compare_arrays((transformer.nph[0]).T @ original.nph[0] @ transformer.nph[1], transformed.nph[0]) 
+    assert compare_arrays((transformer.nph[1]).T @ original.nph[1] @ transformer.nph[0], transformed.nph[1])
+
+    # Test case that transformed resize not needed.
+    transformer = build_random_mat(rdim, rdim)
+    transformed = original.clone()
+    transformed.transform(transformer)
+    assert compare_arrays((transformer.nph[0]).T @ original.nph[0] @ transformer.nph[1], transformed.nph[0]) 
+    assert compare_arrays((transformer.nph[1]).T @ original.nph[1] @ transformer.nph[0], transformed.nph[1])
+
 def test_set_matrix():
     # Use set_matrix to zero a block of a non-totally symmetric matrix.
     dim = Dimension([3, 2])
