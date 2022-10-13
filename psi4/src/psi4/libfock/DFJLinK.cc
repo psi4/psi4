@@ -242,12 +242,15 @@ void DFJLinK::compute_JK() {
         timer_off("DFJLinK: INCFOCK Preprocessing");
     }
     
-    auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-
     std::vector<SharedMatrix>& D_ref = (do_incfock_iter_ ? delta_D_ao_ : D_ao_);
     std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
     std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
     std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? delta_wK_ao_ : wK_ao_);
+
+    if (density_screening_) {
+        eri_computers_["4-Center"][0]->update_density(D_ref);
+	//eri_computers_["3-Center"][0]->update_density(D_ref);
+    }
 
     if (do_wK_) throw PSIEXCEPTION("DFJLinK does not support wK integrals yet!");
 
@@ -535,7 +538,8 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
     // => Sizing <= //
     int nshell = primary_->nshell();
     int nbf = primary_->nbf();
-    int nthread = df_ints_num_threads_;
+    //int nthread = df_ints_num_threads_;
+    int nthread = nthreads_; 
 
     // => Atom Blocking <= //
     std::vector<int> shell_endpoints_for_atom;
