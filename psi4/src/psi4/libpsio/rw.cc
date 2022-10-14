@@ -89,7 +89,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
                 const std::string errmsg = psio_write_err_msg("Error writing the first partial page", unit, sys_errno);
                 psio_error(unit, PSIO_ERROR_WRITE, errmsg);
             }else{
-                const std::string errmsg = psio_write_err_msg("Error writing the first partial page", unit);
+                const std::string errmsg = psio_write_err_msg_some("Error writing the first partial page", unit);
                 psio_error(unit, PSIO_ERROR_WRITE, errmsg);
             }
         }
@@ -101,7 +101,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
                 const std::string errmsg = psio_read_err_msg("Error reading the first partial page", unit, sys_errno);
                 psio_error(unit, PSIO_ERROR_READ, errmsg);
             }else{
-                const std::string errmsg = psio_read_err_msg("Error reading the first partial page", unit);
+                const std::string errmsg = psio_read_err_msg_some("Error reading the first partial page", unit);
                 psio_error(unit, PSIO_ERROR_READ, errmsg);
             }
         }
@@ -124,7 +124,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
                     const std::string errmsg = psio_write_err_msg("Error writing a full page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }else{
-                    const std::string errmsg = psio_write_err_msg("Error writing a full page", unit);
+                    const std::string errmsg = psio_write_err_msg_some("Error writing a full page", unit);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }
             }
@@ -136,7 +136,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
                     const std::string errmsg = psio_read_err_msg("Error reading a full page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_READ, errmsg);
                 }else{
-                    const std::string errmsg = psio_read_err_msg("Error reading a full page", unit);
+                    const std::string errmsg = psio_read_err_msg_some("Error reading a full page", unit);
                     psio_error(unit, PSIO_ERROR_READ, errmsg);
                 }
             }
@@ -156,7 +156,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
                     const std::string errmsg = psio_write_err_msg("Error writing the last partial page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }else{
-                    const std::string errmsg = psio_write_err_msg("Error writing the last partial page", unit);
+                    const std::string errmsg = psio_write_err_msg_some("Error writing the last partial page", unit);
                     psio_error(unit, PSIO_ERROR_WRITE, errmsg);
                 }
             }
@@ -168,7 +168,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
                     const std::string errmsg = psio_read_err_msg("Error reading the last partial page", unit, sys_errno);
                     psio_error(unit, PSIO_ERROR_READ, errmsg);
                 }else{
-                    const std::string errmsg = psio_read_err_msg("Error reading the last partial page", unit);
+                    const std::string errmsg = psio_read_err_msg_some("Error reading the last partial page", unit);
                     psio_error(unit, PSIO_ERROR_READ, errmsg);
                 }
             }

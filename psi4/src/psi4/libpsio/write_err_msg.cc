@@ -49,7 +49,7 @@ std::string psio_write_err_msg(const std::string& context, const size_t unit, co
 /// @param context
 /// @param unit
 /// @return
-std::string psio_write_err_msg(const std::string& context, const size_t unit) {
+std::string psio_write_err_msg_some(const std::string& context, const size_t unit) {
     std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
     errmsg += '\n' + context + ", unit ";
     errmsg += std::to_string(unit) + ".\n";

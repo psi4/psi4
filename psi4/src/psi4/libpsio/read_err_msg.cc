@@ -49,7 +49,7 @@ std::string psio_read_err_msg(const std::string& context, const size_t unit, con
 /// @param context
 /// @param unit
 /// @return
-std::string psio_read_err_msg(const std::string& context, const size_t unit) {
+std::string psio_read_err_msg_some(const std::string& context, const size_t unit) {
     std::string errmsg = "READ failed. Only some of the bytes were read!";
     errmsg += '\n' + context + ", unit ";
     errmsg += std::to_string(unit) + ".\n";
