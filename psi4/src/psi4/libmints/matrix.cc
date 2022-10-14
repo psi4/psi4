@@ -1410,10 +1410,26 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix *const a,
         int m = rowspi_[Hc];
         int n = colspi_[Hc ^ symmetry_];
         int k = nlink[Ha ^ symlink];
+        int mcheck = transa ? a->colspi_[Ha ^ a->symmetry_] : a->rowspi_[Ha];
+        int ncheck = transb ? b->rowspi_[Hb] : b->colspi_[Hb ^ b->symmetry_];
+        int kcheck = transb ? b->colspi_[Hb ^ b->symmetry_] : b->rowspi_[Hb];
         int lda = a->colspi_[Ha ^ a->symmetry_];
         int ldb = b->colspi_[Hb ^ b->symmetry_];
         int ldc = colspi_[Hc ^ symmetry_];
-
+        if (m != mcheck || n != ncheck || k != kcheck) {
+            outfile->Printf("Row and column block dimensions of A\n");
+            a->rowspi_.print();
+            a->colspi_.print();
+            outfile->Printf("Row and column block dimensions of B\n");
+            b->rowspi_.print();
+            b->colspi_.print();
+            outfile->Printf("Row and column block dimensions of C\n");
+            rowspi_.print();
+            colspi_.print();
+            outfile->Printf("Asym: %d, Bsym: %d, Csym: %d\n", a->symmetry(), b->symmetry(), symmetry());
+            outfile->Printf("Mismatch in index Ha = %d\n", Ha);
+            throw PSIEXCEPTION("Matrix::gemm error: Number of rows and columns do not match.");
+        }
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->matrix_[Ha][0][0]), lda, &(b->matrix_[Hb][0][0]), ldb, beta,
                     &(matrix_[Hc][0][0]), ldc);
