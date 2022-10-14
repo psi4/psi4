@@ -34,6 +34,16 @@
 #include "psi4/libpsio/psio.h"
 
 namespace psi {
+/// @brief 
+/// @param context 
+/// @param unit 
+/// @return 
+std::string compose_err_msg_core(const std::string& context, const size_t unit) {
+    std::string errmsg =  context + ", unit ";
+    errmsg += std::to_string(unit) + ".\n";
+    return errmsg;
+}
+
 /// @brief Composes an error message explaining that an lseek system call has failed, with the error message from the OS
 /// (based on errno), some context from the caller of this function and the unit number. Callers should save the
 /// value of errno into a local variable **immediately** after the lseek call that should be checked returns, because
@@ -43,9 +53,9 @@ namespace psi {
 /// @param errno_in : The value of errno after the failed lseek call
 /// @return String explaining the error
 std::string psio_lseek_err_msg(const std::string& context, const size_t unit, const int errno_in) {
-    std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(errno_in);
-    errmsg += '\n' + context + ", unit ";
-    errmsg += std::to_string(unit) + ".\n";
+    std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(errno_in) + '\n';
+    errmsg += compose_err_msg_core(context, unit);
+    return errmsg;
 }
 
 /// @brief
@@ -54,9 +64,9 @@ std::string psio_lseek_err_msg(const std::string& context, const size_t unit, co
 /// @param errno_in
 /// @return
 std::string psio_read_err_msg(const std::string& context, const size_t unit, const int errno_in) {
-    std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(errno_in);
-    errmsg += '\n' + context + ", unit ";
-    errmsg += std::to_string(unit) + ".\n";
+    std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(errno_in) + '\n';
+    errmsg += compose_err_msg_core(context, unit);
+    return errmsg;
 }
 
 /// @brief
@@ -64,9 +74,9 @@ std::string psio_read_err_msg(const std::string& context, const size_t unit, con
 /// @param unit
 /// @return
 std::string psio_read_err_msg_some(const std::string& context, const size_t unit) {
-    std::string errmsg = "READ failed. Only some of the bytes were read!";
-    errmsg += '\n' + context + ", unit ";
-    errmsg += std::to_string(unit) + ".\n";
+    std::string errmsg = "READ failed. Only some of the bytes were read!" + '\n';
+    errmsg += compose_err_msg_core(context, unit);
+    return errmsg;
 }
 
 /// @brief
@@ -75,9 +85,9 @@ std::string psio_read_err_msg_some(const std::string& context, const size_t unit
 /// @param errno_in
 /// @return
 std::string psio_write_err_msg(const std::string& context, const size_t unit, const int errno_in) {
-    std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(errno_in);
-    errmsg += '\n' + context + ", unit ";
-    errmsg += std::to_string(unit) + ".\n";
+    std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(errno_in) + '\n';
+    errmsg += compose_err_msg_core(context, unit);
+    return errmsg;
 }
 
 /// @brief
@@ -85,8 +95,8 @@ std::string psio_write_err_msg(const std::string& context, const size_t unit, co
 /// @param unit
 /// @return
 std::string psio_write_err_msg_some(const std::string& context, const size_t unit) {
-    std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
-    errmsg += '\n' + context + ", unit ";
-    errmsg += std::to_string(unit) + ".\n";
+    std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?" + '\n';
+    errmsg += compose_err_msg_core(context, unit);
+    return errmsg;
 }
 }  // namespace psi
