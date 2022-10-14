@@ -16,7 +16,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-7 g++-7'
-        vmImage: 'ubuntu-18.04'
+        vmImage: 'ubuntu-20.04'
 
       gcc_latest:
         CXX_COMPILER: 'g++'
