@@ -812,7 +812,7 @@ def optimize_geometric(name, **kwargs):
                                  
             super(Psi4NativeEngine, self).__init__(molecule)
     
-        def calc(self, coords, dirname):
+        def calc(self, coords, dirname, read_data=False):
             self.p4_mol.set_geometry(core.Matrix.from_array(coords.reshape(-1,3)))
             self.p4_mol.update_geometry()
             if self.p4_return_wfn:
@@ -868,7 +868,7 @@ def optimize_geometric(name, **kwargs):
     if constraints_string:
         if 'scan' in constraints_dict:
             raise ValueError("Coordinate scans are not yet available through the Psi4-GeomeTRIC interface")
-        Cons, CVals = geometric.optimize.ParseConstraints(M, constraints_string)
+        Cons, CVals = geometric.prepare.parse_constraints(M, constraints_string)
     
     # Set up the internal coordinate system
     coordsys = optimizer_keywords.get('coordsys', 'tric')
