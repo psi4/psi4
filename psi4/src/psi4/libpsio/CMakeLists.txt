@@ -2,6 +2,7 @@ list(APPEND sources
   aio_handler.cc
   change_namespace.cc
   close.cc
+  compose_err_msg.cc
   done.cc
   decode_errno.cc
   error.cc
@@ -14,12 +15,10 @@ list(APPEND sources
   get_volpath.cc
   getpid.cc
   init.cc
-  lseek_err_msg.cc
   open.cc
   open_check.cc
   read.cc
   read_entry.cc
-  read_err_msg.cc
   rename_file.cc
   rw.cc
   tocclean.cc
@@ -32,6 +31,5 @@ list(APPEND sources
   volseek.cc
   write.cc
   write_entry.cc
-  write_err_msg.cc
   )
 psi4_add_module(lib psio sources)

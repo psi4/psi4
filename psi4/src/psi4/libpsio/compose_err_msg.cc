@@ -47,4 +47,46 @@ std::string psio_lseek_err_msg(const std::string& context, const size_t unit, co
     errmsg += '\n' + context + ", unit ";
     errmsg += std::to_string(unit) + ".\n";
 }
+
+/// @brief
+/// @param context
+/// @param unit
+/// @param errno_in
+/// @return
+std::string psio_read_err_msg(const std::string& context, const size_t unit, const int errno_in) {
+    std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(errno_in);
+    errmsg += '\n' + context + ", unit ";
+    errmsg += std::to_string(unit) + ".\n";
+}
+
+/// @brief
+/// @param context
+/// @param unit
+/// @return
+std::string psio_read_err_msg_some(const std::string& context, const size_t unit) {
+    std::string errmsg = "READ failed. Only some of the bytes were read!";
+    errmsg += '\n' + context + ", unit ";
+    errmsg += std::to_string(unit) + ".\n";
+}
+
+/// @brief
+/// @param context
+/// @param unit
+/// @param errno_in
+/// @return
+std::string psio_write_err_msg(const std::string& context, const size_t unit, const int errno_in) {
+    std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(errno_in);
+    errmsg += '\n' + context + ", unit ";
+    errmsg += std::to_string(unit) + ".\n";
+}
+
+/// @brief
+/// @param context
+/// @param unit
+/// @return
+std::string psio_write_err_msg_some(const std::string& context, const size_t unit) {
+    std::string errmsg = "WRITE failed. Only some of the bytes were written! Maybe the disk is full?";
+    errmsg += '\n' + context + ", unit ";
+    errmsg += std::to_string(unit) + ".\n";
+}
 }  // namespace psi
