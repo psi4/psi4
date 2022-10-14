@@ -248,9 +248,19 @@ void DFJLinK::compute_JK() {
     std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? delta_wK_ao_ : wK_ao_);
 
     if (density_screening_) {
-        eri_computers_["4-Center"][0]->update_density(D_ref);
-	//eri_computers_["3-Center"][0]->update_density(D_ref);
+        for (auto eri_computer : eri_computers_["4-Center"]) {
+            eri_computer->update_density(D_ref);
+	}
     }
+
+
+    //if (density_screening_) {
+    //    eri_computers_["4-Center"][0]->update_density(D_ref);
+    //    for (int thread = 1; thread < nthreads_; thread++) {
+//	    eri_computers_["4-Center"][thread] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"][0]->clone());
+	//}
+	//eri_computers_["3-Center"][0]->update_density(D_ref);
+    //}
 
     if (do_wK_) throw PSIEXCEPTION("DFJLinK does not support wK integrals yet!");
 
