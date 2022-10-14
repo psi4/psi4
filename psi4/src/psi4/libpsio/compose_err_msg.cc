@@ -34,12 +34,12 @@
 #include "psi4/libpsio/psio.h"
 
 namespace psi {
-/// @brief 
-/// @param context 
-/// @param unit 
-/// @return 
+/// @brief
+/// @param context
+/// @param unit
+/// @return
 std::string psio_compose_err_msg_core(const std::string& context, const size_t unit) {
-    std::string errmsg =  context + ", unit ";
+    std::string errmsg = context + ", unit ";
     errmsg += std::to_string(unit) + ".\n";
     return errmsg;
 }
@@ -52,7 +52,7 @@ std::string psio_compose_err_msg_core(const std::string& context, const size_t u
 /// @param unit : Unit number that that was attempted to be lseek'd
 /// @param errno_in : The value of errno after the failed lseek call
 /// @return String explaining the error
-std::string psio_lseek_err_msg(const std::string& context, const size_t unit, const int errno_in) {
+std::string psio_compose_lseek_err_msg(const std::string& context, const size_t unit, const int errno_in) {
     std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(errno_in) + '\n';
     errmsg += psio_compose_err_msg_core(context, unit);
     return errmsg;
@@ -63,7 +63,7 @@ std::string psio_lseek_err_msg(const std::string& context, const size_t unit, co
 /// @param unit
 /// @param errno_in
 /// @return
-std::string psio_read_err_msg(const std::string& context, const size_t unit, const int errno_in) {
+std::string psio_compose_read_err_msg(const std::string& context, const size_t unit, const int errno_in) {
     std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(errno_in) + '\n';
     errmsg += psio_compose_err_msg_core(context, unit);
     return errmsg;
