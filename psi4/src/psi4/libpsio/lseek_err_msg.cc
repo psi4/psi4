@@ -34,11 +34,14 @@
 #include "psi4/libpsio/psio.h"
 
 namespace psi {
-/// @brief 
-/// @param context 
-/// @param unit 
-/// @param errno_in 
-/// @return 
+/// @brief Composes an error message explaining that an lseek system call has failed, with the error message from the OS
+/// (based on errno), some context from the caller of this function and the unit number. Callers should save the
+/// value of errno into a local variable **immediately** after the lseek call that should be checked returns, because
+/// there are a lot of things in C++ that can potentially fail and overwrite the global errno with a new error code.
+/// @param context : Some information about the context of the lseek call that has failed
+/// @param unit : Unit number that that was attempted to be lseek'd
+/// @param errno_in : The value of errno after the failed lseek call
+/// @return String explaining the error
 std::string psio_lseek_err_msg(const std::string& context, const size_t unit, const int errno_in) {
     std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(errno_in);
     errmsg += '\n' + context + ", unit ";
