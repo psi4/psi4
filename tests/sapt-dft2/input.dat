@@ -6,11 +6,17 @@ Eref_nh = {"SAPT ELST ENERGY":  -12.86731900, #TEST
            "SAPT DISP ENERGY":   -2.67884677, #TEST
            "CURRENT ENERGY":     -6.31117998} #TEST
 
-Eref_h = {"SAPT ELST ENERGY":  -12.86733667, #TEST
-          "SAPT EXCH ENERGY":   12.77398997, #TEST
-          "SAPT IND ENERGY":    -3.53895908, #TEST 
-          "SAPT DISP ENERGY":   -3.17821838, #TEST
-          "CURRENT ENERGY":     -6.81052415} #TEST
+Eref_h_disp = {"SAPT ELST ENERGY":  -12.86733667, #TEST
+               "SAPT EXCH ENERGY":   12.77398997, #TEST
+               "SAPT IND ENERGY":    -3.53895908, #TEST 
+               "SAPT DISP ENERGY":   -3.17821838, #TEST
+               "CURRENT ENERGY":     -6.81052415} #TEST
+
+Eref_h_fixed = {"SAPT ELST ENERGY":  -12.86733667, #TEST
+                "SAPT EXCH ENERGY":   12.77398997, #TEST
+                "SAPT IND ENERGY":    -3.53895908, #TEST 
+                "SAPT DISP ENERGY":   -3.16871081, #TEST
+                "CURRENT ENERGY":     -6.80101658} #TEST
 
 molecule dimer {
   O -2.930978458   -0.216411437    0.000000000
@@ -33,14 +39,23 @@ set {
     SAPT_DFT_MP2_DISP_ALG FISAPT
 }
 
+# No hybrid kernel & exch-disp scaling
 set SAPT_DFT_DO_HYBRID False
 set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
 energy('sapt(dft)', molecule=dimer)
-for k, v in Eref_nh.items():                                  #TEST
+for k, v in Eref_nh.items():                           #TEST
     compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
 
+# Hybrid kernel & exch-disp scaling (DISP)
 set SAPT_DFT_DO_HYBRID True
 set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp
 energy('sapt(dft)', molecule=dimer)
-for k, v in Eref_h.items():                                  #TEST
+for k, v in Eref_h_disp.items():                       #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
+
+# Hybrid kernel & exch-disp scaling (FIXED)
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME fixed 
+energy('sapt(dft)', molecule=dimer)
+for k, v in Eref_h_fixed.items():                      #TEST
     compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
