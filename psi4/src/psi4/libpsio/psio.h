@@ -61,7 +61,8 @@
 namespace psi {
 
 std::string decode_errno(const int errno_in);
-std::string psio_compose_err_msg(const std::string& beginning, const std::string& context, const size_t unit, const std::optional<int> errno_in = std::nullopt);
+std::string psio_compose_err_msg(const std::string &beginning, const std::string &context, const size_t unit,
+                                 const std::optional<int> errno_in = std::nullopt);
 
 int psio_init();
 void psio_error(size_t unit, size_t errval, std::string prev_msg = "");
