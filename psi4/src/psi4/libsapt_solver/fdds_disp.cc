@@ -212,7 +212,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
         dfh_->add_transformation("bbR", "b", "b", "pqQ");
         dfh_->add_transformation("bsR", "b", "s", "pqQ");
         dfh_->add_transformation("ssR", "s", "s", "pqQ");
-        dfh_->switch_release_AO();
+        dfh_->set_release_AO(true);
         dfh_->transform();
     }
 
