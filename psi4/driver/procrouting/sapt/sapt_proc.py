@@ -81,7 +81,8 @@ def run_sapt_dft(name, **kwargs):
     core.print_out("         ---------------------------------------------------------\n")
     core.print_out("\n")
 
-    core.print_out("  !!!  WARNING:  SAPT(DFT) capability is in beta. Please use with caution. !!!\n\n")
+    # core.print_out("  !!!  WARNING:  SAPT(DFT) capability is in beta. Please use with caution. !!!\n\n")
+    core.print_out("Warning! The default value of SAPT_DFT_EXCH_DISP_SCALE_SCHEME has changed from DISP to FIXED. Please be careful comparing results with earlier versions. \n\n")
 
     core.print_out("  ==> Algorithm <==\n\n")
     core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
