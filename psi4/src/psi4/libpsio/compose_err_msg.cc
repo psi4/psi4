@@ -37,13 +37,13 @@
 namespace psi {
 /// @brief Composes an error message explaining that an IO system call has failed, with the error message from the OS
 /// (based on errno), some context from the caller of this function and the unit number. Callers should save the
-/// value of errno into a local variable **immediately** after the IO call that should be checked returns, because
-/// there are a lot of things in C++ that can potentially fail and overwrite the global errno with a new error code.
+/// value of errno into a local variable **immediately** after the IO call returns, as there are a lot of things in C++
+/// that can potentially fail and overwrite the global errno with a new error code.
 /// @param beginning : Beginning of the error message. Should not end with a newline.
 /// @param context : Some information about the context of the IO call that has failed. Should not end with a newline.
-/// @param unit : Unit number that that was attempted to be IO operated on
+/// @param unit : Unit number that the IO failed on
 /// @param errno_in : The value of errno after the failed IO call
-/// @return String explaining the error
+/// @return String explaining the error. Ends with a newline.
 std::string psio_compose_err_msg(const std::string& beginning, const std::string& context, const size_t unit,
                                  const std::optional<int> errno_in /* = std::nullopt*/) {
     std::string errmsg = beginning;
