@@ -57,12 +57,13 @@ size_t PSIO::toclen(const size_t unit) {
 /// @brief Seek the stream of the vol[0] of a unit to its beginning
 /// @param unit : file unit number to rewind
 void PSIO::rewind_toclen(const size_t unit) {
-    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
+    if (!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
     const auto stream = psio_unit[unit].vol[0].stream;
     const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
     if (errcod == -1) {
         const int sys_errno = errno;
-        const std::string errmsg = psio_compose_lseek_err_msg("Cannot seek vol[0] to its beginning", unit, sys_errno);
+        const std::string errmsg =
+            psio_compose_err_msg("LSEEK failed.", "Cannot seek vol[0] to its beginning", unit, sys_errno);
         psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
     }
 }
@@ -74,7 +75,7 @@ void PSIO::rewind_toclen(const size_t unit) {
 /// @param unit : file unit number to read TOC length from
 /// @return length of the TOC for a given unit
 size_t PSIO::rd_toclen(const size_t unit) {
-    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
+    if (!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
     // Seek to the beginning
     rewind_toclen(unit);
     // Read the value
@@ -84,7 +85,8 @@ size_t PSIO::rd_toclen(const size_t unit) {
     const auto sys_errno = errno;
     if (errcod != sizeof(size_t)) {
         if (errcod == -1) {
-            const std::string errmsg = psio_compose_read_err_msg("Error in PSIO::rd_toclen()! Cannot read TOC length", unit, sys_errno);
+            const std::string errmsg = psio_compose_err_msg(
+                "READ failed.", "Error in PSIO::rd_toclen()! Cannot read TOC length", unit, sys_errno);
             psio_error(unit, PSIO_ERROR_READ, errmsg);
         }
         return (0);  // assume that all is well (see comments above)
@@ -96,7 +98,7 @@ size_t PSIO::rd_toclen(const size_t unit) {
 /// @param unit : file unit number to write TOC length to
 /// @param len  : length value to write
 void PSIO::wt_toclen(const size_t unit, const size_t len) {
-    if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
+    if (!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
     // Seek to the beginning
     rewind_toclen(unit);
     // Write the value
@@ -104,7 +106,8 @@ void PSIO::wt_toclen(const size_t unit, const size_t len) {
     const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
     const auto sys_errno = errno;
     if (errcod != sizeof(size_t)) {
-        const std::string errmsg = psio_write_err_msg("Error in PSIO::wt_toclen()! Cannot write TOC length", unit, sys_errno);
+        const std::string errmsg = psio_compose_err_msg(
+            "WRITE failed.", "Error in PSIO::wt_toclen()! Cannot write TOC length", unit, sys_errno);
         psio_error(unit, PSIO_ERROR_WRITE, errmsg);
     }
 }
