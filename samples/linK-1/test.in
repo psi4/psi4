@@ -13,14 +13,13 @@ molecule mol {
 }
 
 set {
-    scf_type direct
+    scf_type link 
     df_scf_guess false
     basis aug-cc-pVDZ
     e_convergence 1.0e-10
     screening density
     incfock true
     incfock_full_fock_every 4
-    do_linK true
     ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
 }
