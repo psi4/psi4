@@ -224,9 +224,6 @@ void DFJLinK::incfock_postiter() {
 
 void DFJLinK::compute_JK() {
  
-    // zero out J, K, and wK matrices
-    zero();
-
     int njk = D_ao_.size();
 
     if (incfock_) {
@@ -273,13 +270,15 @@ void DFJLinK::compute_JK() {
     if (do_J_) {
         timer_on("DFJLinK: J");
         //build_J(D_eff, J_ao_);
-        build_J(D_ref, J_ref);
+        for (auto& Jmat : J_ref) Jmat->zero();
+	build_J(D_ref, J_ref);
         timer_off("DFJLinK: J");
     }
     
     if (do_K_) {
         timer_on("DFJLinK: K");
         //build_K(D_eff, K_ao_);
+        for (auto& Kmat : K_ref) Kmat->zero();
         build_K(D_ref, K_ref);
         timer_off("DFJLinK: K");
     }
