@@ -775,6 +775,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * \param R right transformation matrix (will not be transposed)
      */
     void transform(const SharedMatrix& L, const SharedMatrix& F, const SharedMatrix& R);
+    void transform(const Matrix& L, const Matrix& F, const Matrix& R);
 
     /// @{
     /// Transform a by transformer save result to this
