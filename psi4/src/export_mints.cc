@@ -1236,11 +1236,14 @@ void export_mints(py::module& m) {
             return py::array(phi_ao->size(), phi_ao->data(), capsule);
         }, "Calculate the value of all basis functions at a given point x, y, and z");
 
+    typedef void (OneBodyAOInt::*vecmatrix_version)(std::vector<SharedMatrix>&);
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
         m, "OneBodyAOInt", "Basis class for all one-electron integrals");
     pyOneBodyAOInt
         .def("compute_shell", &OneBodyAOInt::compute_shell,
              "Compute integrals between basis functions in the given shell pair")
+        .def("compute", vecmatrix_version(&OneBodyAOInt::compute),
+             "Compute all integrals over both basis sets, and store them in the provided matrix")
         .def_property("origin", py::cpp_function(&OneBodyAOInt::origin), py::cpp_function(&OneBodyAOInt::set_origin),
                       "The origin about which the one body ints are being computed.")
         .def_property_readonly("basis", py::cpp_function(&OneBodyAOInt::basis), "The basis set on center one")
@@ -1385,7 +1388,9 @@ void export_mints(py::module& m) {
         .def("ao_multipoles", &IntegralFactory::ao_multipoles,
              "Returns a OneBodyInt that computes arbitrary-order AO multipole integrals", "order"_a, "deriv"_a = 0)
         .def("so_multipoles", &IntegralFactory::so_multipoles,
-             "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a, "deriv"_a = 0)
+          "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a, "deriv"_a = 0)
+        .def("ao_multipole_potential", &IntegralFactory::ao_multipole_potential,
+             "Returns a OneBodyInt that computes arbitrary-order AO multipole potential integrals", "order"_a, "deriv"_a = 0)
         .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole,
              "Returns a OneBodyInt that computes the traceless AO quadrupole integral")
         .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole,
