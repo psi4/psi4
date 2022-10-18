@@ -1390,7 +1390,7 @@ void export_mints(py::module& m) {
         .def("so_multipoles", &IntegralFactory::so_multipoles,
           "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a, "deriv"_a = 0)
         .def("ao_multipole_potential", &IntegralFactory::ao_multipole_potential,
-             "Returns a OneBodyInt that computes the potential and its derivatives up to specified order (maximum of 3)", "order"_a, "deriv"_a = 0)
+             "Returns a OneBodyInt that computes arbitrary-order AO multipole potential integrals", "order"_a, "deriv"_a = 0)
         .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole,
              "Returns a OneBodyInt that computes the traceless AO quadrupole integral")
         .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole,
