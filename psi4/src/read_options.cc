@@ -1474,9 +1474,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The density threshold at which to stop building the Fock matrix incrementally -*/
         options.add_double("INCFOCK_CONVERGENCE", 1.0e-5);
 
-        /*- Perform the linear scaling exchange (LinK) algorithm, as described in [Ochsenfeld:1998:1663]_.
-            Only applies to Direct SCF. -*/
-        //options.add_bool("DO_LINK", false);
         /*- The screening tolerance used for ERI/Density sparsity in the LinK algorithm -*/
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
 

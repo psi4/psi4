@@ -847,7 +847,6 @@ class PSI_API DirectJK : public JK {
 
     // => Accessors <= //
     bool do_incfock_iter() { return do_incfock_iter_; }
-    bool do_linK() { return linK_; }
 
     /**
     * Print header information regarding JK

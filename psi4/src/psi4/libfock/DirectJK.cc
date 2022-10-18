@@ -92,14 +92,7 @@ void DirectJK::common_init() {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
-    linK_ = options_.get_bool("DO_LINK");
 
-    if (options_["LINK_INTS_TOLERANCE"].has_changed()) {
-        linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
-    } else {
-        linK_ints_cutoff_ = options_.get_double("INTS_TOLERANCE");
-    }
-    
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
 size_t DirectJK::num_computed_shells() { 
