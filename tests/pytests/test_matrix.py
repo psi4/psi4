@@ -247,6 +247,26 @@ def test_transform():
     assert compare_arrays((transformer.nph[0]).T @ original.nph[0] @ transformer.nph[1], transformed.nph[0]) 
     assert compare_arrays((transformer.nph[1]).T @ original.nph[1] @ transformer.nph[0], transformed.nph[1])
 
+def test_back_transform():
+    # transformed = transformer @ original @ transformer.T
+    rdim = Dimension([3, 2])
+    cdim = Dimension([4, 5])
+    original = build_random_mat(cdim, cdim, 1)
+
+    # Test case that transformed resize needed.
+    transformer = build_random_mat(rdim, cdim)
+    transformed = original.clone()
+    transformed.back_transform(transformer)
+    assert compare_arrays(transformer.nph[0] @ original.nph[0] @ (transformer.nph[1]).T, transformed.nph[0]) 
+    assert compare_arrays(transformer.nph[1] @ original.nph[1] @ (transformer.nph[0]).T, transformed.nph[1])
+
+    # Test case that transformed resize not needed.
+    transformer = build_random_mat(cdim, cdim)
+    transformed = original.clone()
+    transformed.back_transform(transformer)
+    assert compare_arrays(transformer.nph[0] @ original.nph[0] @ (transformer.nph[1]).T, transformed.nph[0]) 
+    assert compare_arrays(transformer.nph[1] @ original.nph[1] @ (transformer.nph[0]).T, transformed.nph[1])
+
 def test_set_matrix():
     # Use set_matrix to zero a block of a non-totally symmetric matrix.
     dim = Dimension([3, 2])
