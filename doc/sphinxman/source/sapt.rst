@@ -536,9 +536,9 @@ keyword |sapt__sapt_dft_exch_disp_scale_scheme|, with ``FIXED`` being
 the former approach (default scheme prior to Nov 2022; Hesselmann scale value), ``DISP`` being the present approach (since Nove 2022) and ``NONE`` for not
 scaling and using the uncoupled exchange-dispersion energy directly.
 
-.. warning:: The default option of |sapt__sapt_dft_exch_disp_scale_scheme|
-             has been changed from ``DISP`` to ``FIXED``. This might cause
-             an older version of |PSIfour| to obatin a different value of
+.. warning:: Since Nov 2022, the defaults of options |sapt__sapt_dft_exch_disp_scale_scheme| and |sapt__sapt_dft_exch_disp_fixed_scale|
+             have been changed. Before, the former defaulted to ``FIXED`` with Hesselmann value of 0.686 for the latter. Now, the former defaults to ``DISP`` and should you instead select ``FIXED``, the default for the latter is the Xie value of 0.770. This might cause
+             an older version of |PSIfour| to produce a different value of
              exchange-dispersion energy from the latest version.
 
 Basic Keywords for SAPT(DFT) 
