@@ -623,17 +623,17 @@ SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) const {
             throw PSIEXCEPTION(msg);
         }
     }
-    const Dimension &rows_begin = rows.begin();
-    const Dimension &cols_begin = cols.begin();
+    const auto &rows_begin = rows.begin();
+    const auto &cols_begin = cols.begin();
     Dimension block_rows = rows.end() - rows.begin();
     Dimension block_cols = cols.end() - cols.begin();
-    auto block = std::make_shared<Matrix>("Block", block_rows, block_cols);
+    auto block = std::make_shared<Matrix>("Block", block_rows, block_cols, symmetry_);
     for (int h = 0; h < nirrep_; h++) {
         int max_p = block_rows[h];
-        int max_q = block_cols[h];
+        int max_q = block_cols[h ^ symmetry_];
         for (int p = 0; p < max_p; p++) {
             for (int q = 0; q < max_q; q++) {
-                double value = get(h, p + rows_begin[h], q + cols_begin[h]);
+                double value = get(h, p + rows_begin[h], q + cols_begin[h ^ symmetry_]);
                 block->set(h, p, q, value);
             }
         }

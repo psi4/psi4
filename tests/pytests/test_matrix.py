@@ -267,6 +267,28 @@ def test_back_transform():
     assert compare_arrays(transformer.nph[0] @ original.nph[0] @ (transformer.nph[1]).T, transformed.nph[0]) 
     assert compare_arrays(transformer.nph[1] @ original.nph[1] @ (transformer.nph[0]).T, transformed.nph[1])
 
+def test_get_matrix():
+    # Use get_matrix to extrct a block of a non-totally symmetric matrix.
+    dim = Dimension([3, 2])
+    mat = Matrix("Name", dim, dim, 1)
+    new_dim = Dimension([2, 1])
+    control_mat = Matrix("Name", new_dim, new_dim, 1)
+    i = 0
+    for j in range(3):
+        for k in range(2):
+            # Populate both non-zero irreps of the original matrix.
+            mat.set(0, j, k, i)
+            mat.set(1, k, j, 10 + i)
+            # Populate the parts we extract of both non-zero irreps, for the control matrix.
+            if i in {0, 2}:
+                control_mat.set(0, j, k, i)
+                control_mat.set(1, k, j, 10 + i)
+            i += 1
+    new_slice = Slice(Dimension([0, 0]), new_dim)
+    new_mat = Matrix("Name", new_dim, new_dim, 1)
+    block = mat.get_block(new_slice, new_slice)
+    assert psi4.compare_matrices(block, control_mat)
+
 def test_set_matrix():
     # Use set_matrix to zero a block of a non-totally symmetric matrix.
     dim = Dimension([3, 2])
@@ -275,8 +297,10 @@ def test_set_matrix():
     i = 0
     for j in range(3):
         for k in range(2):
+            # Populate both non-zero irreps, for the original matrix.
             mat.set(0, j, k, i)
             mat.set(1, k, j, 10 + i)
+            # Populate the parts we don't zero of both non-zero irreps, for the control matrix.
             if i not in {0, 2}:
                 control_mat.set(0, j, k, i)
                 control_mat.set(1, k, j, 10 + i)
