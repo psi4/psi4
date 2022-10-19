@@ -1,5 +1,7 @@
 #! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
 
+# Note: Delta HF is turned off in this test, because the delta HF calculation is in the run_sapt_dft() call, while the purpose of this test is to verify the results of the sapt_dft() call.
+
 Eref_nh = {"SAPT ELST ENERGY":  -0.10190449, #TEST
            "SAPT EXCH ENERGY":   0.36545706, #TEST
            "SAPT IND ENERGY":    0.00349281, #TEST
@@ -53,8 +55,8 @@ set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
 # Compute SAPT(DFT) from the provided wavefunctions
 data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
 
-for k, v in Eref_nh.items():                           #TEST
-    compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
+for k, v in Eref_nh.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "!hyb, xd=none, !dHF:" + k) #TEST
 
 # Hybrid kernel & exch-disp scaling (DISP)
 set SAPT_DFT_DO_HYBRID True
@@ -63,8 +65,8 @@ set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp
 # Compute SAPT(DFT) from the provided wavefunctions
 data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
 
-for k, v in Eref_h_disp.items():                       #TEST
-    compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
+for k, v in Eref_h_disp.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "hyb, xd=disp, !dHF:" + k) #TEST
 
 # Hybrid kernel & exch-disp scaling (FIXED)
 set SAPT_DFT_DO_HYBRID True
@@ -73,5 +75,5 @@ set SAPT_DFT_EXCH_DISP_SCALE_SCHEME fixed
 # Compute SAPT(DFT) from the provided wavefunctions
 data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
 
-for k, v in Eref_h_fixed.items():                      #TEST
-    compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
+for k, v in Eref_h_fixed.items(): #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, "hyb, xd=fixed, !dHF:" + k) #TEST
