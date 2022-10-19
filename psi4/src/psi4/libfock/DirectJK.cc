@@ -96,12 +96,7 @@ void DirectJK::common_init() {
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
 size_t DirectJK::num_computed_shells() { 
-    if (linK_) {
-	//no bench data returned if LinK is enabled - to come in a future update
-	return JK::num_computed_shells(); 
-    } else {
-	return num_computed_shells_; 
-    }
+    return num_computed_shells_; 
 }
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
