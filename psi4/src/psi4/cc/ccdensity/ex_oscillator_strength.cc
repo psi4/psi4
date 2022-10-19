@@ -41,10 +41,10 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/mintshelper.h"
+#include "ccdensity.h"
+#include "Frozen.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Frozen.h"
-#include "ccdensity.h"
 #define EXTERN
 #include "globals.h"
 
@@ -54,30 +54,11 @@ namespace ccdensity {
 
 void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U,
                             struct XTD_Params *xtd_data) {
-    int nmo, nso, i, I, h, j;
-    int *order, *order_A, *order_B, *doccpi;
-    double **scf_pitzer, **scf_pitzer_A, **scf_pitzer_B;
-    double **scf_qt, **scf_qt_A, **scf_qt_B, **X;
-    double *mu_x_ints, *mu_y_ints, *mu_z_ints;
-    double **MUX_MO, **MUY_MO, **MUZ_MO;
-    double **MUX_SO, **MUY_SO, **MUZ_SO;
-    double **MUX_MO_A, **MUY_MO_A, **MUZ_MO_A;
-    double **MUX_MO_B, **MUY_MO_B, **MUZ_MO_B;
     double lt_x, lt_y, lt_z;
     double rt_x, rt_y, rt_z;
     double ds_x, ds_y, ds_z;
     double f_x, f_y, f_z;
     double f;
-
-    if ((params.ref == 0) || (params.ref == 1))
-        scf_pitzer = wfn.Ca()->to_block_matrix();
-    else if (params.ref == 2) {
-        scf_pitzer_A = wfn.Ca()->to_block_matrix();
-        scf_pitzer_B = wfn.Cb()->to_block_matrix();
-    }
-
-    nso = wfn.nso();
-    nmo = wfn.nmo();
 
     lt_x = lt_y = lt_z = 0.0;
     rt_x = rt_y = rt_z = 0.0;
@@ -85,155 +66,50 @@ void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Param
     f_x = f_y = f_z = 0.0;
     f = 0;
 
-    doccpi = init_int_array(moinfo.nirreps);
-    for (h = 0; h < moinfo.nirreps; h++) doccpi[h] = moinfo.frdocc[h] + moinfo.clsdpi[h];
-
-    if ((params.ref == 0) || (params.ref == 1)) {
-        order = init_int_array(nmo);
-
-        reorder_qt(doccpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, order, moinfo.orbspi, moinfo.nirreps);
-
-        scf_qt = block_matrix(nmo, nmo);
-        for (i = 0; i < nmo; i++) {
-            I = order[i]; /* Pitzer --> QT */
-            for (j = 0; j < nmo; j++) scf_qt[j][I] = scf_pitzer[j][i];
-        }
-
-        free(order);
-        free_block(scf_pitzer);
-    } else if (params.ref == 2) {
-        order_A = init_int_array(nmo);
-        order_B = init_int_array(nmo);
-
-        reorder_qt_uhf(doccpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, order_A, order_B, moinfo.orbspi,
-                       moinfo.nirreps);
-
-        scf_qt_A = block_matrix(nmo, nmo);
-        for (i = 0; i < nmo; i++) {
-            I = order_A[i]; /* Pitzer --> QT */
-            for (j = 0; j < nmo; j++) scf_qt_A[j][I] = scf_pitzer_A[j][i];
-        }
-
-        scf_qt_B = block_matrix(nmo, nmo);
-        for (i = 0; i < nmo; i++) {
-            I = order_B[i]; /* Pitzer --> QT */
-            for (j = 0; j < nmo; j++) scf_qt_B[j][I] = scf_pitzer_B[j][i];
-        }
-
-        free(order_A);
-        free(order_B);
-        free_block(scf_pitzer_A);
-        free_block(scf_pitzer_B);
-    }
-    free(doccpi);
-
     /*** Transform the SO dipole integrals to the MO basis ***/
 
     MintsHelper mints(wfn.basisset(), Process::environment.options, 0);
-    std::vector<SharedMatrix> dipole = mints.so_dipole();
-    MUX_SO = dipole[0]->to_block_matrix();
-    MUY_SO = dipole[1]->to_block_matrix();
-    MUZ_SO = dipole[2]->to_block_matrix();
+    auto dipole = mints.so_dipole();
 
-    X = block_matrix(nmo, nso); /* just a temporary matrix */
-
+    Matrix MUX_MO, MUY_MO, MUZ_MO, MUX_MO_A, MUY_MO_A, MUZ_MO_A, MUX_MO_B, MUY_MO_B, MUZ_MO_B;
     if ((params.ref == 0) || (params.ref == 1)) {
-        MUX_MO = block_matrix(nmo, nmo);
-        MUY_MO = block_matrix(nmo, nmo);
-        MUZ_MO = block_matrix(nmo, nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt[0][0]), nmo, &(MUX_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt[0][0]), nmo, 0, &(MUX_MO[0][0]), nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt[0][0]), nmo, &(MUY_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt[0][0]), nmo, 0, &(MUY_MO[0][0]), nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt[0][0]), nmo, &(MUZ_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt[0][0]), nmo, 0, &(MUZ_MO[0][0]), nmo);
-
-        free_block(scf_qt);
+        MUX_MO = linalg::triplet(*wfn.Ca(), *dipole[0], *wfn.Ca(), true, false, false);
+        MUY_MO = linalg::triplet(*wfn.Ca(), *dipole[1], *wfn.Ca(), true, false, false);
+        MUZ_MO = linalg::triplet(*wfn.Ca(), *dipole[2], *wfn.Ca(), true, false, false);
     } else if (params.ref == 2) {
-        MUX_MO_A = block_matrix(nmo, nmo);
-        MUY_MO_A = block_matrix(nmo, nmo);
-        MUZ_MO_A = block_matrix(nmo, nmo);
-        MUX_MO_B = block_matrix(nmo, nmo);
-        MUY_MO_B = block_matrix(nmo, nmo);
-        MUZ_MO_B = block_matrix(nmo, nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt_A[0][0]), nmo, &(MUX_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt_A[0][0]), nmo, 0, &(MUX_MO_A[0][0]), nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt_B[0][0]), nmo, &(MUX_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt_B[0][0]), nmo, 0, &(MUX_MO_B[0][0]), nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt_A[0][0]), nmo, &(MUY_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt_A[0][0]), nmo, 0, &(MUY_MO_A[0][0]), nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt_B[0][0]), nmo, &(MUY_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt_B[0][0]), nmo, 0, &(MUY_MO_B[0][0]), nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt_A[0][0]), nmo, &(MUZ_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt_A[0][0]), nmo, 0, &(MUZ_MO_A[0][0]), nmo);
-
-        C_DGEMM('t', 'n', nmo, nso, nso, 1, &(scf_qt_B[0][0]), nmo, &(MUZ_SO[0][0]), nso, 0, &(X[0][0]), nso);
-        C_DGEMM('n', 'n', nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_qt_B[0][0]), nmo, 0, &(MUZ_MO_B[0][0]), nmo);
-
-        free_block(scf_qt_A);
-        free_block(scf_qt_B);
+        MUX_MO_A = linalg::triplet(*wfn.Ca(), *dipole[0], *wfn.Ca(), true, false, false);
+        MUY_MO_A = linalg::triplet(*wfn.Ca(), *dipole[1], *wfn.Ca(), true, false, false);
+        MUZ_MO_A = linalg::triplet(*wfn.Ca(), *dipole[2], *wfn.Ca(), true, false, false);
+        MUX_MO_B = linalg::triplet(*wfn.Cb(), *dipole[0], *wfn.Cb(), true, false, false);
+        MUY_MO_B = linalg::triplet(*wfn.Cb(), *dipole[1], *wfn.Cb(), true, false, false);
+        MUZ_MO_B = linalg::triplet(*wfn.Cb(), *dipole[2], *wfn.Cb(), true, false, false);
     }
-
-    free_block(X);
-    free_block(MUX_SO);
-    free_block(MUY_SO);
-    free_block(MUZ_SO);
 
     outfile->Printf("\n\tOscillator Strength for %d%3s to %d%3s\n", S->root + 1, moinfo.labels[S->irrep].c_str(),
                     U->root + 1, moinfo.labels[U->irrep].c_str());
     outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
     if ((params.ref == 0) || (params.ref == 1)) {
-        for (i = 0; i < nmo; i++)
-            for (j = 0; j < nmo; j++) {
-                lt_x += MUX_MO[i][j] * moinfo.ltd[i][j];
-                lt_y += MUY_MO[i][j] * moinfo.ltd[i][j];
-                lt_z += MUZ_MO[i][j] * moinfo.ltd[i][j];
-            }
-
-        for (i = 0; i < nmo; i++)
-            for (j = 0; j < nmo; j++) {
-                rt_x += MUX_MO[i][j] * moinfo.rtd[i][j];
-                rt_y += MUY_MO[i][j] * moinfo.rtd[i][j];
-                rt_z += MUZ_MO[i][j] * moinfo.rtd[i][j];
-            }
+        lt_x = MUX_MO.vector_dot(moinfo.ltd_mat);
+        lt_y = MUY_MO.vector_dot(moinfo.ltd_mat);
+        lt_z = MUZ_MO.vector_dot(moinfo.ltd_mat);
+        rt_x = MUX_MO.vector_dot(moinfo.rtd_mat);
+        rt_y = MUY_MO.vector_dot(moinfo.rtd_mat);
+        rt_z = MUZ_MO.vector_dot(moinfo.rtd_mat);
 
     } else if (params.ref == 2) {
-        for (i = 0; i < nmo; i++)
-            for (j = 0; j < nmo; j++) {
-                lt_x += MUX_MO_A[i][j] * moinfo.ltd_a[i][j];
-                lt_y += MUY_MO_A[i][j] * moinfo.ltd_a[i][j];
-                lt_z += MUZ_MO_A[i][j] * moinfo.ltd_a[i][j];
-            }
-
-        for (i = 0; i < nmo; i++)
-            for (j = 0; j < nmo; j++) {
-                rt_x += MUX_MO_A[i][j] * moinfo.rtd_a[i][j];
-                rt_y += MUY_MO_A[i][j] * moinfo.rtd_a[i][j];
-                rt_z += MUZ_MO_A[i][j] * moinfo.rtd_a[i][j];
-            }
-
-        for (i = 0; i < nmo; i++)
-            for (j = 0; j < nmo; j++) {
-                lt_x += MUX_MO_B[i][j] * moinfo.ltd_b[i][j];
-                lt_y += MUY_MO_B[i][j] * moinfo.ltd_b[i][j];
-                lt_z += MUZ_MO_B[i][j] * moinfo.ltd_b[i][j];
-            }
-
-        for (i = 0; i < nmo; i++)
-            for (j = 0; j < nmo; j++) {
-                rt_x += MUX_MO_B[i][j] * moinfo.rtd_b[i][j];
-                rt_y += MUY_MO_B[i][j] * moinfo.rtd_b[i][j];
-                rt_z += MUZ_MO_B[i][j] * moinfo.rtd_b[i][j];
-            }
+        lt_x = MUX_MO_A.vector_dot(moinfo.ltd_a_mat);
+        lt_y = MUY_MO_A.vector_dot(moinfo.ltd_a_mat);
+        lt_z = MUZ_MO_A.vector_dot(moinfo.ltd_a_mat);
+        rt_x = MUX_MO_A.vector_dot(moinfo.rtd_a_mat);
+        rt_y = MUY_MO_A.vector_dot(moinfo.rtd_a_mat);
+        rt_z = MUZ_MO_A.vector_dot(moinfo.rtd_a_mat);
+        lt_x += MUX_MO_B.vector_dot(moinfo.ltd_b_mat);
+        lt_y += MUY_MO_B.vector_dot(moinfo.ltd_b_mat);
+        lt_z += MUZ_MO_B.vector_dot(moinfo.ltd_b_mat);
+        rt_x += MUX_MO_B.vector_dot(moinfo.rtd_b_mat);
+        rt_y += MUY_MO_B.vector_dot(moinfo.rtd_b_mat);
+        rt_z += MUZ_MO_B.vector_dot(moinfo.rtd_b_mat);
     }
 
     ds_x = lt_x * rt_x;
@@ -298,19 +174,6 @@ void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Param
     scalar_saver_excited(wfn, S, U, "OSCILLATOR STRENGTH (LEN)", f_x + f_y + f_z);
     scalar_saver_excited(wfn, S, U, "EINSTEIN A (LEN)", einstein_a);
     scalar_saver_excited(wfn, S, U, "EINSTEIN B (LEN)", einstein_b);
-
-    if ((params.ref == 0) || (params.ref == 1)) {
-        free_block(MUX_MO);
-        free_block(MUY_MO);
-        free_block(MUZ_MO);
-    } else if (params.ref == 2) {
-        free_block(MUX_MO_A);
-        free_block(MUY_MO_A);
-        free_block(MUZ_MO_A);
-        free_block(MUX_MO_B);
-        free_block(MUY_MO_B);
-        free_block(MUZ_MO_B);
-    }
 
     return;
 }

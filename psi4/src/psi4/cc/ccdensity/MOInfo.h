@@ -41,6 +41,8 @@
 namespace psi {
 namespace ccdensity {
 
+SharedMatrix block_to_matrix(double **);
+
 struct MOInfo {
     int nirreps;                     /* no. of irreducible representations */
     int nmo;                         /* no. of molecular orbitals */
@@ -100,19 +102,18 @@ struct MOInfo {
     double **I;                      /* Lagrangian matrix in the full space */
     double **I_a;                    /* Alpha Lagrangian matrix in the full space */
     double **I_b;                    /* Beta Lagrangian matrix in the full space */
-    double **ltd;                    /* <0|O|n> Left transition density */
-    double **ltd_a;                  /* <0|O|n> Left transition alpha density */
-    double **ltd_b;                  /* <0|O|n> Left transition beta density */
-    double **rtd;                    /* <n|O|0> Right transition density */
-    double **rtd_a;                  /* <n|O|0> Right transition alpha density */
-    double **rtd_b;                  /* <n|O|0> Right transition beta density */
+    Matrix ltd_mat;                  /* <0|O|n> Left transition density */
+    Matrix ltd_a_mat;                /* <0|O|n> Left transition alpha density */
+    Matrix ltd_b_mat;                /* <0|O|n> Left transition beta density */
+    Matrix rtd_mat;                  /* <n|O|0> Right transition density */
+    Matrix rtd_a_mat;                /* <n|O|0> Right transition alpha density */
+    Matrix rtd_b_mat;                /* <n|O|0> Right transition beta density */
     std::vector<int> pitzer2qt;      /* Pitzer to QT re-ordering array */
     std::vector<int> qt2pitzer;      /* QT to Pitzer re-ordering array */
-    double **scf_qt;                 /* SCF orbitals (QT ordering of MOs) */
     SharedMatrix Ca;                 /* SCF orbitals (standard ordering) */
-    double ***L;
-    double ***nabla;
-    double ***dip;
+    std::vector<SharedMatrix> L;
+    std::vector<SharedMatrix> nabla;
+    std::vector<SharedMatrix> dip;
 };
 
 }  // namespace ccdensity

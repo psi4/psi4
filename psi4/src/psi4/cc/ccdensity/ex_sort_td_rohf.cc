@@ -44,166 +44,69 @@ namespace psi {
 namespace ccdensity {
 
 void ex_sort_td_rohf(char hand, int Tirrep) {
-    int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
-    int row, col, i, j, I, J, a, b, A, B, p, q;
-    double chksum, value;
-    psio_address next;
     dpdfile2 D;
 
-    nmo = moinfo.nmo;
-    nfzc = moinfo.nfzc;
-    nfzv = moinfo.nfzv;
-    nclsd = moinfo.nclsd;
-    nopen = moinfo.nopen;
-    nirreps = moinfo.nirreps;
-    const auto& occpi = moinfo.occpi;
-    const auto& virtpi = moinfo.virtpi;
-    const auto& occ_off = moinfo.occ_off;
-    const auto& vir_off = moinfo.vir_off;
-    const auto& occ_sym = moinfo.occ_sym;
-    const auto& vir_sym = moinfo.vir_sym;
-    const auto& openpi = moinfo.openpi;
-    const auto& qt_occ = moinfo.qt_occ;
-    const auto& qt_vir = moinfo.qt_vir;
+    Matrix a_mat(moinfo.orbspi, moinfo.orbspi, Tirrep);
+    Matrix b_mat(moinfo.orbspi, moinfo.orbspi, Tirrep);
 
-    // moinfo.ltd = block_matrix(nmo, nmo);
-    double **gtd = block_matrix(nmo, nmo);
+    Slice aocc_slice(moinfo.frdocc, moinfo.frdocc + moinfo.occpi);
+    Slice avir_slice(moinfo.frdocc + moinfo.occpi, moinfo.orbspi - moinfo.fruocc);
+    Slice bocc_slice(moinfo.frdocc, moinfo.frdocc + moinfo.occpi - moinfo.openpi);
+    Slice bvir_slice(moinfo.frdocc + moinfo.occpi - moinfo.openpi, moinfo.orbspi - moinfo.fruocc);
 
     global_dpd_->file2_init(&D, PSIF_CC_TMP, Tirrep, 0, 0, "LTDIJ");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (j = 0; j < occpi[h ^ Tirrep]; j++) {
-                J = qt_occ[occ_off[h ^ Tirrep] + j];
-                gtd[I][J] += D.matrix[h][i][j];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    Matrix temp_mat(&D);
+    a_mat.set_block(aocc_slice, temp_mat);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_TMP, Tirrep, 1, 1, "LTDAB");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (a = 0; a < (virtpi[h] - openpi[h]); a++) {
-            A = qt_vir[vir_off[h] + a];
-            for (b = 0; b < (virtpi[h ^ Tirrep] - openpi[h ^ Tirrep]); b++) {
-                B = qt_vir[vir_off[h ^ Tirrep] + b];
-                gtd[A][B] += D.matrix[h][a][b];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp_mat = Matrix(&D);
+    a_mat.set_block(avir_slice, temp_mat);
     global_dpd_->file2_close(&D);
 
     /* Note that this component of the density is stored occ-vir */
     global_dpd_->file2_init(&D, PSIF_CC_TMP, Tirrep, 0, 1, "LTDAI");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < (virtpi[h ^ Tirrep] - openpi[h ^ Tirrep]); a++) {
-                A = qt_vir[vir_off[h ^ Tirrep] + a];
-                gtd[A][I] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp_mat = Matrix(&D);
+    temp_mat = *temp_mat.transpose();
+    a_mat.set_block(avir_slice, aocc_slice, temp_mat);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_TMP, Tirrep, 0, 1, "LTDIA");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < (virtpi[h ^ Tirrep] - openpi[h ^ Tirrep]); a++) {
-                A = qt_vir[vir_off[h ^ Tirrep] + a];
-                gtd[I][A] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp_mat = Matrix(&D);
+    a_mat.set_block(aocc_slice, avir_slice, temp_mat);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_TMP, Tirrep, 0, 0, "LTDij");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < (occpi[h] - openpi[h]); i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (j = 0; j < (occpi[h ^ Tirrep] - openpi[h ^ Tirrep]); j++) {
-                J = qt_occ[occ_off[h ^ Tirrep] + j];
-                gtd[I][J] += D.matrix[h][i][j];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp_mat = Matrix(&D);
+    b_mat.set_block(bocc_slice, temp_mat);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_TMP, Tirrep, 1, 1, "LTDab");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (a = 0; a < virtpi[h]; a++) {
-            A = qt_vir[vir_off[h] + a];
-            for (b = 0; b < virtpi[h ^ Tirrep]; b++) {
-                B = qt_vir[vir_off[h ^ Tirrep] + b];
-                gtd[A][B] += D.matrix[h][a][b];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp_mat = Matrix(&D);
+    b_mat.set_block(bvir_slice, temp_mat);
     global_dpd_->file2_close(&D);
 
     /* Note that this component of the density is stored occ-vir */
     global_dpd_->file2_init(&D, PSIF_CC_TMP, Tirrep, 0, 1, "LTDai");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < (occpi[h] - openpi[h]); i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < virtpi[h ^ Tirrep]; a++) {
-                A = qt_vir[vir_off[h ^ Tirrep] + a];
-                gtd[A][I] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp_mat = Matrix(&D);
+    temp_mat = *temp_mat.transpose();
+    b_mat.set_block(bvir_slice, bocc_slice, temp_mat);
+
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_TMP, Tirrep, 0, 1, "LTDia");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < (occpi[h] - openpi[h]); i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < virtpi[h ^ Tirrep]; a++) {
-                A = qt_vir[vir_off[h ^ Tirrep] + a];
-                gtd[I][A] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp_mat = Matrix(&D);
+    b_mat.set_block(bocc_slice, bvir_slice, temp_mat);
     global_dpd_->file2_close(&D);
 
+    a_mat.add(b_mat);
+
     if (hand == 'l') {
-        moinfo.ltd = block_matrix(nmo, nmo);
-        for (i = 0; i < nmo; ++i)
-            for (j = 0; j < nmo; ++j) moinfo.ltd[i][j] = gtd[i][j];
-        // print_mat(moinfo.ltd,nmo,nmo,outfile);
+        moinfo.ltd_mat = std::move(a_mat);
     } else if (hand == 'r') {
-        moinfo.rtd = block_matrix(nmo, nmo);
-        for (i = 0; i < nmo; ++i)
-            for (j = 0; j < nmo; ++j) moinfo.rtd[i][j] = gtd[i][j];
-        // print_mat(moinfo.rtd,nmo,nmo,outfile);
+        moinfo.rtd_mat = std::move(a_mat);
     } else
         throw PsiException("ccdensity: error", __FILE__, __LINE__);
-    free_block(gtd);
 
     return;
 }

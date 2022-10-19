@@ -123,7 +123,6 @@ void tdensity(const struct TD_Params& S);
 void td_print();
 void oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S);
 void rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S);
-void cleanup();
 void td_cleanup();
 void x_oe_intermediates_rhf(const struct RHO_Params& rho_params);
 void x_te_intermediates_rhf();
@@ -137,7 +136,6 @@ void ex_oscillator_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Param
                             struct XTD_Params *xtd_data);
 void ex_rotational_strength(ccenergy::CCEnergyWavefunction& wfn, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_td_print(std::vector<struct XTD_Params>);
-SharedMatrix block_to_matrix(double **);
 
 PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn, Options &options) {
     int i;
@@ -214,7 +212,6 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
             else
                 cachedone_rhf(cachelist);
             free(cachefiles);
-            cleanup();
             psio_close(PSIF_EOM_TMP_XI, 0); /* delete EOM_TMP_XI */
             psio_open(PSIF_EOM_TMP_XI, PSIO_OPEN_NEW);
             exit_io();
@@ -551,7 +548,6 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
         cachedone_rhf(cachelist);
     free(cachefiles);
 
-    cleanup();
     exit_io();
     return Success;
 }

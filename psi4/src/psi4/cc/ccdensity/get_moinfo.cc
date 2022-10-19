@@ -61,7 +61,6 @@ namespace ccdensity {
 void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     int i, j, h, errcod;
     int nactive;
-    double **scf_pitzer;
 
     moinfo.nirreps = wfn->nirrep();
     moinfo.nmo = wfn->nmo();
@@ -78,7 +77,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     moinfo.openpi = wfn->soccpi();
 
     moinfo.Ca = wfn->Ca();
-    scf_pitzer = wfn->Ca()->to_block_matrix();
 
     moinfo.sym = 0;
     for (i = 0; i < moinfo.nirreps; ++i)
@@ -184,15 +182,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         psio_read_entry(PSIF_CC_INFO, "CC->QT Active Virt Order", (char *)moinfo.qt_vir.data(), sizeof(int) * nactive);
         psio_read_entry(PSIF_CC_INFO, "QT->CC Active Occ Order", (char *)moinfo.cc_occ.data(), sizeof(int) * nactive);
         psio_read_entry(PSIF_CC_INFO, "QT->CC Active Virt Order", (char *)moinfo.cc_vir.data(), sizeof(int) * nactive);
-
-        /* Sort SCF MOs to QT order */
-        moinfo.scf_qt = block_matrix(moinfo.nmo, moinfo.nmo);
-        int I;
-        for (i = 0; i < moinfo.nmo; i++) {
-            I = moinfo.pitzer2qt[i]; /* Pitzer --> QT */
-            for (j = 0; j < moinfo.nmo; j++) moinfo.scf_qt[j][I] = scf_pitzer[j][i];
-        }
-        free_block(scf_pitzer);
     } else if (params.ref == 2) { /** UHF **/
 
         /* Get CC->QT and QT->CC active occupied and virtual reordering arrays */
@@ -239,13 +228,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         psio_read_entry(PSIF_CC_INFO, "CC3 Energy", (char *)&(moinfo.ecc), sizeof(double));
         outfile->Printf("\tCC3 energy          (CC_INFO) = %20.15f\n", moinfo.ecc);
         outfile->Printf("\tTotal CC3 energy    (CC_INFO) = %20.15f\n", moinfo.eref + moinfo.ecc);
-    }
-}
-
-/* Frees memory allocated in get_moinfo(). */
-void cleanup() {
-    if (params.ref == 0 || params.ref == 1) { /** RHF or ROHF **/
-        free_block(moinfo.scf_qt);
     }
 }
 
