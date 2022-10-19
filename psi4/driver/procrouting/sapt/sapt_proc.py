@@ -85,7 +85,7 @@ def run_sapt_dft(name, **kwargs):
     core.print_out("Warning! The default value of SAPT_DFT_EXCH_DISP_SCALE_SCHEME has changed from DISP to FIXED. Please be careful comparing results with earlier versions. \n\n")
 
     core.print_out("  ==> Algorithm <==\n\n")
-    core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functeonal))
+    core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
     core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
     core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
     core.print_out("   Delta HF                %12s\n" % ("True" if do_delta_hf else "False"))
@@ -463,12 +463,12 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 
     # Exchange-dispersion scaling
     exch_disp_scheme = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_SCALE_SCHEME")
-    core.print_out("    %-28s % -15s\n" % ("Scaling Scheme", exch_disp_scheme))
+    core.print_out("    %-33s % s\n" % ("Scaling Scheme", exch_disp_scheme))
     if exch_disp_scheme == "NONE":
         data["Exch-Disp20,r"] = data["Exch-Disp20,u"]
     elif exch_disp_scheme == "FIXED":
         exch_disp_scale = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_FIXED_SCALE")
-        core.print_out("    %-28s % 15.3f\n" % ("Scaling Factor", exch_disp_scale))
+        core.print_out("    %-28s % 10.3f\n" % ("Scaling Factor", exch_disp_scale))
         data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
     elif exch_disp_scheme == "DISP":
         exch_disp_scale = data["Disp20"] / data["Disp20,u"]
