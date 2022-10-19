@@ -116,10 +116,8 @@ void DirectJK::print_header() const {
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
         outfile->Printf("    Screening Cutoff:  %11.0E\n", cutoff_);
         outfile->Printf("    Incremental Fock:  %11s\n", incfock_ ? "Yes" : "No");
-        outfile->Printf("    LinK:              %11s\n", linK_ ? "Yes" : "No");
         outfile->Printf("\n");
     }
-    if (linK_) outfile->Printf("    WARNING: LinK is still under development and should not be used!\n\n");
 }
 void DirectJK::preiterations() {
 

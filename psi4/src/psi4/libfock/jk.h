@@ -764,13 +764,6 @@ class PSI_API DirectJK : public JK {
     // Is the JK currently on a guess iteration
     bool initial_iteration_ = true;
 
-    // => LinK variables <= //
-
-    // Perform LinK algorithm for exchange?
-    bool linK_;
-    // Density-based ERI Screening tolerance to use in the LinK algorithm
-    double linK_ints_cutoff_;
-
     std::string name() override { return "DirectJK"; }
     size_t memory_estimate() override;
 
