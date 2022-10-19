@@ -268,7 +268,7 @@ def test_back_transform():
     assert compare_arrays(transformer.nph[1] @ original.nph[1] @ (transformer.nph[0]).T, transformed.nph[1])
 
 def test_get_matrix():
-    # Use get_matrix to extrct a block of a non-totally symmetric matrix.
+    # Use get_matrix to extract a block of a non-totally symmetric matrix.
     dim = Dimension([3, 2])
     mat = Matrix("Name", dim, dim, 1)
     new_dim = Dimension([2, 1])
@@ -287,7 +287,7 @@ def test_get_matrix():
     new_slice = Slice(Dimension([0, 0]), new_dim)
     new_mat = Matrix("Name", new_dim, new_dim, 1)
     block = mat.get_block(new_slice, new_slice)
-    assert psi4.compare_matrices(block, control_mat)
+    assert psi4.compare_matrices(control_mat, block)
 
 def test_set_matrix():
     # Use set_matrix to zero a block of a non-totally symmetric matrix.
