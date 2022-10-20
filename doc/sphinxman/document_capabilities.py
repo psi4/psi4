@@ -511,7 +511,11 @@ def table_builder__ref_driver_type_fcae():
         #  | ◻                   | |freeze_core| [#f2]_ → |
         #  +=====================+========================+
 
-        module_caption = "OCC" if args.mode in ["occ_oo", "occ_nonoo"] else args.mode.upper()
+        if args.mode in ["occ_oo", "occ_nonoo"]:
+            module_caption = "OCC"
+        else:
+            module_caption = args.mode.upper()
+
         spacer = "  " if args.mode in ["dfmp2", "fnocc"] else ""  # avoid aligned delimiters
 
         lines.append(fline_fill(dashh, dashh, dashh, [dashh] * ncol))
@@ -536,7 +540,8 @@ def table_builder__ref_driver_type_fcae():
 
         modules = extract_modules(subset1)
         if args.mode == "details":
-            pass
+            # module "psi4" means error, so removing it suppresses a blank or all-X line
+            modules.remove("psi4")
         elif args.mode == "summary":
             modules = [modules[0]]
         else:

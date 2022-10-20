@@ -151,11 +151,11 @@ def runner_asserter(inp, subject, method, basis, tnm):
         }
     )
     extra_kwargs = inp["keywords"].pop("function_kwargs", {})
-    psi4.set_options(inp["keywords"])
 
     if "error" in inp:
         errtype, errmatch, reason = inp["error"]
         with pytest.raises(errtype) as e:
+            psi4.set_options(inp["keywords"])
             driver_call[driver](inp["call"], molecule=subject, **extra_kwargs)
 
         assert re.search(errmatch, str(e.value)), f"Not found: {errtype} '{errmatch}' in {e.value}"
@@ -165,6 +165,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
 
     psi4.set_output_file("asdf")  # easy name to find output files. TODO: why doesn't .out remain w/o this?
 
+    psi4.set_options(inp["keywords"])
     ret, wfn = driver_call[driver](inp["call"], molecule=subject, return_wfn=True, **extra_kwargs)
     qc_module_out = qcprog + "-" + ("occ" if wfn.module() == "dfocc" else wfn.module())  # returns "psi4-<module>"
 
