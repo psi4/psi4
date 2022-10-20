@@ -144,11 +144,7 @@ for method in Earray:
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
-   if method == "ADC":
-        set_global_option("QC_MODULE", "builtin")
    ans = energy(method)
-   if method == "ADC":
-        revoke_global_option_changed("QC_MODULE")
    print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
    clean()
 
@@ -163,7 +159,6 @@ set_global_option('DF_BASIS_SCF', '')
 revoke_global_option_changed('DF_BASIS_SCF')
 
 Earray = [
-  'ADC',
   'EOM-CC2',
   'EOM-CCSD',
   'EOM-CC3',
@@ -176,11 +171,7 @@ for method in Earray:
    water.update_geometry()
 
    banner('Testing %s' % (method)) 
-   if method == "ADC":
-        set_global_option("QC_MODULE", "builtin")
    ans = energy(method)
-   if method == "ADC":
-        revoke_global_option_changed("QC_MODULE")
    print('%16s\t%s\t%s\t%s' % (method, water.schoenflies_symbol(), variable('CURRENT ENERGY') - ans, ans))
    clean()
 

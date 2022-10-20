@@ -330,7 +330,6 @@ def import_ignorecase(module: str) -> ModuleType:
 
 _modules = [
     # Psi4 Modules
-    "ADC",
     "CCENERGY",
     "CCEOM",
     "CCDENSITY",

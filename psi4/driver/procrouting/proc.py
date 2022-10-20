@@ -1124,47 +1124,6 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
-def select_adc2(name, **kwargs):
-    """Function selecting the algorithm for ADC(2) excited state energy
-    call and directing to specified or best-performance default modules.
-
-    """
-    reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
-    module = core.get_global_option('QC_MODULE')
-    # Considering only adcc/adc
-
-    # TODO Actually one should do selection on a couple of other options here
-    #      as well, e.g. adcc supports frozen-core and frozen-virtual,
-    #      spin-specific states or spin-flip methods.
-    #      But as far as I (mfherbst) know the BUILTIN ADC routine only supports
-    #      singlet states and without freezing some core or some virtual orbitals.
-
-    func = None
-    if reference == 'RHF':
-        if mtd_type == 'CONV':
-            if module in {'ADCC', ''} and extras.addons("adcc"):
-                func = run_adcc
-            elif module in {'BUILTIN', ''}:
-                func = run_adc
-
-    if reference == 'UHF':
-        if mtd_type == 'CONV':
-            if module in ['ADCC', ''] and extras.addons("adcc"):
-                func = run_adcc
-
-    # Note: ROHF is theoretically available in adcc, but are not fully tested
-    #       ... so will be added later.
-
-    if func is None:
-        raise ManagedMethodError(['select_adc2', name, 'MP_TYPE', mtd_type, reference, module])
-
-    if kwargs.pop('probe', False):
-        return
-    else:
-        return func(name, **kwargs)
-
-
 def select_remp2(name, **kwargs):
     """Function selecting the algorithm for a REMP2 energy call
     and directing to specified or best-performance default modules.
@@ -3481,48 +3440,6 @@ def run_eom_cc_gradient(name, **kwargs):
     return ref_wfn
 
 
-def run_adc_deprecated(*args, **kwargs):
-     warnings.warn("The method 'adc' has been deprecated, please use 'adc2' instead."
-                   "The method key 'adc' will be removed Psi4 1.6.", DeprecationWarning)
-     return select_adc2(*args, **kwargs)
-
-
-def run_adc(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    an algebraic diagrammatic construction calculation.
-
-    .. caution:: Get rid of active molecule lines- should be handled in energy.
-
-    """
-    if core.get_option('ADC', 'REFERENCE') != 'RHF':
-        raise ValidationError('ADC requires reference RHF')
-
-    # Bypass the scf call if a reference wavefunction is given
-    ref_wfn = kwargs.get('ref_wfn', None)
-    if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)
-
-    # Ensure IWL files have been written
-    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
-
-    warnings.warn("Using built-in `adc` module instead of add-on `adcc` interface is deprecated due "
-                  "to certain wrong results, and as soon as 1.7, it will stop working.", category=FutureWarning)
-
-    error_msg = ("\n\t\t\t\t!!!!! WARNING !!!!!\n" +
-            "\t\tThe built-in ADC(2) method may give incorrect results if\n"
-        "\t\tmultiple roots are requested, due to an error in the Davidson solver,\n"
-        "\t\tand is no longer maintained. It is slated for removal in Psi4 1.7.\n"
-        "\t\tUse of the Psi interface to `adcc` instead is strongly recommended.\n")
-
-    core.print_out(error_msg)
-
-    wfn = core.adc(ref_wfn)
-
-    core.print_out(error_msg)
-
-    return wfn
-
-
 def run_adcc(name, **kwargs):
     """Prepare and run an ADC calculation in adcc, interpret the result and return
     as a wavefunction.
@@ -3614,14 +3531,6 @@ def run_adcc(name, **kwargs):
                               "unless a CVS ADC method is requested.")
     if "cvs" in name and kwargs["kind"] in ["spin_flip"]:
         raise ValidationError("Spin-flip for CVS-ADC variants is not available.")
-
-    #
-    # Check for unsupported options
-    #
-    for option in ["PR", "NORM_TOLERANCE", "POLE_MAXITER", "SEM_MAXITER",
-                   "NEWTON_CONVERGENCE", "MEMORY", "CACHELEVEL", "NUM_AMPS_PRINT"]:
-        if core.has_option_changed("ADC", option):
-            raise ValidationError(f"ADC backend adcc does not support option '{option}'")
 
     #
     # Launch the rocket

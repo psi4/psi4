@@ -90,10 +90,11 @@ PsiReturnType CoupledCluster::triples() {
 #endif
 
     long int memory = Process::environment.get_memory();
-    if (options_["MEMORY"].has_changed()) {
-        memory = options_.get_int("MEMORY");
-        memory *= (long int)1024 * 1024;
-    }
+    // TODO: MEMORY was owned by build-in ADC
+    // if (options_["MEMORY"].has_changed()) {
+    //     memory = options_.get_int("MEMORY");
+    //     memory *= (long int)1024 * 1024;
+    // }
     // CDS // memory -= 8L*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v);
     long int memory_reqd = 8L * (2L * vvoo + vooo + vo + 3L * nthreads * vvv);
 

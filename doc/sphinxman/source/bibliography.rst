@@ -173,10 +173,6 @@ Bibliography
    C. H\ |a_dots|\ aettig and K. Hald,
    *Phys. Chem. Chem. Phys.* **4**, 2111 (2002).
 
-.. [Saitow:2012]
-   M. Saitow and Y. Mochizuki,
-   *Chem. Phys. Lett.* **X**, XX (2012).
-
 ..
    [Evangelista:2010:4728]
    F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer III,

@@ -25,7 +25,6 @@ foreach(dir_name
 endforeach ()
 
 foreach(dir_name
-  adc
   ambit_interface
   cc
   cctransort

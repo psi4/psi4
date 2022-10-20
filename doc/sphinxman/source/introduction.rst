@@ -541,16 +541,6 @@ the ADC backend used for most ADC methods available in |PSIfour|
   *WIREs Comput. Mol. Sci.*, (2020).
   (DOI: `10.1002/wcms.1462 <https://doi.org/10.1002/wcms.1462>`_, Preprint https://adc-connect.org/q/publications
 
-"Partially-renormalized" CIS(D) and ADC(2) [PR-CIS(D) and PR-ADC(2)]
-and the implementation for ADC(2) excitation energies within |PSIfour|
-
-* "Excited State Calculation for Free-Base and Metalloporphyrins with
-  the Partially Renormalized Polarization Propagator Approach,"
-  M. Saitow and Y. Mochizuki, *Chem. Phys. Lett.* **525**, 144-149
-  (2012).
-  (doi: `10.1016/j.cplett.2011.12.063
-  <https://doi.org/10.1016/j.cplett.2011.12.063>`_).
-
 Density Matrix Renormalization Group (DMRG)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 * "CheMPS2: a free open-source spin-adapted implementation of the density

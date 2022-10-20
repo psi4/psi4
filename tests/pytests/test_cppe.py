@@ -523,7 +523,6 @@ def test_pe_adc1():
         'scf_type': 'pk',
         'pe__potfile': potfile,
         'roots_per_irrep': [5],
-        'qc_module': 'adcc',
         'tdscf_states': 5,
         'tdscf_tda': True,
     })
@@ -551,7 +550,6 @@ def test_pe_adc2():
         'scf_type': 'pk',
         'pe__potfile': potfile,
         'roots_per_irrep': [5],
-        'qc_module': 'adcc',
     })
     _, wfn = psi4.properties('adc(2)', properties=["oscillator_strength", "dipole"],
                              environment=True, return_wfn=True)
