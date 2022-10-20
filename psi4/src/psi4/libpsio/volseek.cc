@@ -50,13 +50,13 @@ int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols) {
         return -1;
 
     // lseek() through large chunks of the file to avoid offset overflows
-    size_t bignum = PSIO_BIGNUM * numvols;
+    const size_t bignum = PSIO_BIGNUM * numvols;
     for (; page > bignum; page -= bignum)
         if (SYSTEM_LSEEK(stream, PSIO_BIGNUM * PSIO_PAGELEN, SEEK_CUR) == -1)
             return -1;
 
     // Now compute the final offset including the page-relative term
-    size_t final_offset = (page / numvols) * PSIO_PAGELEN + offset;
+    const size_t final_offset = (page / numvols) * PSIO_PAGELEN + offset;
     if (SYSTEM_LSEEK(stream, final_offset, SEEK_CUR) == -1)
         return -1;
 
