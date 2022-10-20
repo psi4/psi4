@@ -47,7 +47,7 @@ namespace psi {
 std::string psio_compose_err_msg(const std::string& beginning, const std::string& context, const size_t unit,
                                  const std::optional<int> errno_in /* = std::nullopt*/) {
     std::string errmsg = beginning;
-    if (errno_in.has_value()) errmsg += " Error description from the OS: " + decode_errno(errno_in.value());
+    if (errno_in.has_value()) errmsg += " Error description from the OS: " + decode_errno(*errno_in);
     errmsg += '\n' + context + ", unit " + std::to_string(unit) + ".\n";
     return errmsg;
 }
