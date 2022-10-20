@@ -62,9 +62,8 @@ void PSIO::rewind_toclen(const size_t unit) {
     const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
     const auto saved_errno = errno;
     if (errcod == -1) {
-        std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(saved_errno);
-        errmsg += "\nCannot seek vol[0] to its beginning, unit ";
-        errmsg += std::to_string(unit) + ".\n";
+        const std::string errmsg =
+            psio_compose_err_msg("LSEEK failed.", "Cannot seek vol[0] to its beginning", unit, saved_errno);
         psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
     }
 }
@@ -86,9 +85,8 @@ size_t PSIO::rd_toclen(const size_t unit) {
     const auto saved_errno = errno;
     if (errcod != sizeof(size_t)) {
         if (errcod == -1) {
-            std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(saved_errno);
-            errmsg += "\nError in PSIO::rd_toclen()! Cannot read TOC length, unit ";
-            errmsg += std::to_string(unit) + ".\n";
+            const std::string errmsg = psio_compose_err_msg(
+                "READ failed.", "Error in PSIO::rd_toclen()! Cannot read TOC length", unit, saved_errno);
             psio_error(unit, PSIO_ERROR_READ, errmsg);
         }
         return (0);  // assume that all is well (see comments above)
@@ -108,9 +106,8 @@ void PSIO::wt_toclen(const size_t unit, const size_t len) {
     const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
     const auto saved_errno = errno;
     if (errcod != sizeof(size_t)) {
-        std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(saved_errno);
-        errmsg += "\nError in PSIO::wt_toclen()! Cannot write TOC length, unit ";
-        errmsg += std::to_string(unit) + ".\n";
+        const std::string errmsg = psio_compose_err_msg(
+            "WRITE failed.", "Error in PSIO::wt_toclen()! Cannot write TOC length", unit, saved_errno);
         psio_error(unit, PSIO_ERROR_WRITE, errmsg);
     }
 }
