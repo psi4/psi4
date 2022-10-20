@@ -40,7 +40,7 @@ trans_cell = {
     "[fd]":   ('\u2237\u0333', "|c|"),
     "error":  ('',             ""   ),  # toggle for " " in visual mode
     # "error":  ('\u2717',       ""   ),  # toggle for "X" in visual mode
-    # "wrong":  ('\u25a0')
+    "wrong":  ('\u0021',       "|w|"),
 }
 
 # need indep letter for footnotes `[#f1]_` for each table so multiple can be included on one page, plus "h" for common headers. used are: a, c, d, e, f, m, n, o, r, s
@@ -381,12 +381,14 @@ def table_builder__ref_driver_type_fcae():
         lines.append(".. |e| unicode:: U+2237        .. stencil")
         lines.append(".. |b| unicode:: U+2237 U+0332 .. underlined stencil")
         lines.append(".. |c| unicode:: U+2237 U+0333 .. double underlined stencil")
+        lines.append(".. |w| unicode:: U+0021        .. exclamation")
         lines.append(".. |Y| replace:: :gbg:`✓`")
         lines.append(".. |D| replace:: :gbg:`✓̲`")
         lines.append(".. |G| replace:: :gbg:`✓̳`")
         lines.append(".. |E| replace:: :gbg:`∷`")
         lines.append(".. |B| replace:: :gbg:`∷̲`")
         lines.append(".. |C| replace:: :gbg:`∷̳`")
+        lines.append(".. |W| replace:: :gbg:`!`")
         lines.append("")
 
     legend_lines = []
@@ -541,7 +543,8 @@ def table_builder__ref_driver_type_fcae():
         modules = extract_modules(subset1)
         if args.mode == "details":
             # module "psi4" means error, so removing it suppresses a blank or all-X line
-            modules.remove("psi4")
+            if "psi4" in modules:
+                modules.remove("psi4")
         elif args.mode == "summary":
             modules = [modules[0]]
         else:
