@@ -473,7 +473,8 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
     elif exch_disp_scheme == "DISP":
         exch_disp_scale = data["Disp20"] / data["Disp20,u"]
         data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
-    core.print_out(print_sapt_var("Exch-Disp20,r", data["Exch-Disp20,r"], short=True) + "\n")
+    if exch_disp_scheme != "NONE":
+        core.print_out(print_sapt_var("Est. Exch-Disp20,r", data["Exch-Disp20,r"], short=True) + "\n")
 
     core.timer_off("MP2 disp")
     core.timer_off("SAPT(DFT):disp")
