@@ -81,22 +81,7 @@ struct MOInfo {
     int *vir_off;                    /* virtual orbital offsets within each irrep */
     int *avir_off;                   /* virtual alpha orbital offsets within each irrep */
     int *bvir_off;                   /* virtual beta orbital offsets within each irrep */
-    int *qt_occ;                     /* CC->QT active occupied reordering array */
-    int *qt_aocc;                    /* CC->QT alpha active occupied reordering array */
-    int *qt_bocc;                    /* CC->QT beta active occupied reordering array */
-    int *qt_vir;                     /* CC->QT active virtiual reordering array */
-    int *qt_avir;                    /* CC->QT alpha active virtiual reordering array */
-    int *qt_bvir;                    /* CC->QT beta active virtiual reordering array */
-    int *cc_occ;                     /* QT->CC active occupied reordering array */
-    int *cc_aocc;                    /* QT->CC active occupied reordering array */
-    int *cc_bocc;                    /* QT->CC active occupied reordering array */
-    int *cc_vir;                     /* QT->CC active virtual reordering array */
-    int *cc_avir;                    /* QT->CC active virtual reordering array */
-    int *cc_bvir;                    /* QT->CC active virtual reordering array */
-    double **scf;                    /* SCF eigenvectors (RHF/ROHF) (active only) */
     std::shared_ptr<Matrix> Ca;
-    double **scf_alpha;              /* Alpha SCF eigenvectors (UHF) (active only) */
-    double **scf_beta;               /* Beta SCF eigenvectors (UHF) (active only) */
     int *mu_irreps;                  /* irreps of x,y,z dipole components */
     int *l_irreps;                   /* irreps of x,y,z angular momentum components */
     int natom;                       /* number of atoms */

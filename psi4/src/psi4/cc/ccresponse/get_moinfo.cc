@@ -141,16 +141,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         psio_read_entry(PSIF_CC_INFO, "Active Beta Virt Orb Offsets", (char *)moinfo.bvir_off,
                         sizeof(int) * moinfo.nirreps);
 
-        moinfo.qt_aocc = init_int_array(nactive);
-        moinfo.qt_bocc = init_int_array(nactive);
-        moinfo.qt_avir = init_int_array(nactive);
-        moinfo.qt_bvir = init_int_array(nactive);
-
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Alpha Active Occ Order", (char *)moinfo.qt_aocc, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Beta Active Occ Order", (char *)moinfo.qt_bocc, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Alpha Active Virt Order", (char *)moinfo.qt_avir, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Beta Active Virt Order", (char *)moinfo.qt_bvir, sizeof(int) * nactive);
-
     } else { /** RHF or ROHF **/
 
         moinfo.occpi = init_int_array(nirreps);
@@ -168,17 +158,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         moinfo.vir_off = init_int_array(moinfo.nirreps);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orb Offsets", (char *)moinfo.occ_off, sizeof(int) * moinfo.nirreps);
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orb Offsets", (char *)moinfo.vir_off, sizeof(int) * moinfo.nirreps);
-
-        /* Get CC->QT and QT->CC active occupied and virtual reordering arrays */
-        moinfo.qt_occ = init_int_array(nactive);
-        moinfo.qt_vir = init_int_array(nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Active Occ Order", (char *)moinfo.qt_occ, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "CC->QT Active Virt Order", (char *)moinfo.qt_vir, sizeof(int) * nactive);
-
-        moinfo.cc_occ = init_int_array(nactive);
-        moinfo.cc_vir = init_int_array(nactive);
-        psio_read_entry(PSIF_CC_INFO, "QT->CC Active Occ Order", (char *)moinfo.cc_occ, sizeof(int) * nactive);
-        psio_read_entry(PSIF_CC_INFO, "QT->CC Active Virt Order", (char *)moinfo.cc_vir, sizeof(int) * nactive);
     }
 
     /* Adjust clsdpi array for frozen orbitals */
@@ -196,12 +175,6 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
     for (h = 0; h < nirreps; h++) actpi[h] = moinfo.orbspi[h] - moinfo.frdocc[h] - moinfo.fruocc[h];
     moinfo.actpi = actpi;
     moinfo.act_pi = Dimension(std::vector<int>(moinfo.actpi, moinfo.actpi + nirreps));
-    if (params.ref == 0 || params.ref == 1) /* RHF/ROHF */
-        moinfo.scf = wfn->Ca()->to_block_matrix();
-    else if (params.ref == 2) { /* UHF */
-        moinfo.scf_alpha = wfn->Ca()->to_block_matrix();
-        moinfo.scf_beta = wfn->Cb()->to_block_matrix();
-    }
     moinfo.Ca = wfn->Ca_subset("SO", "ACTIVE");
 
     /* Get the active virtual orbitals */
@@ -241,8 +214,6 @@ void cleanup() {
         free(moinfo.qt_bocc);
         free(moinfo.qt_avir);
         free(moinfo.qt_bvir);
-        free_block(moinfo.scf_alpha);
-        free_block(moinfo.scf_beta);
     } else {
         for (i = 0; i < moinfo.nirreps; i++)
             if (moinfo.sopi[i] && moinfo.virtpi[i]) free_block(moinfo.C[i]);
@@ -255,7 +226,6 @@ void cleanup() {
         free(moinfo.vir_off);
         free(moinfo.qt_occ);
         free(moinfo.qt_vir);
-        free_block(moinfo.scf);
     }
 
     free(moinfo.sopi);
