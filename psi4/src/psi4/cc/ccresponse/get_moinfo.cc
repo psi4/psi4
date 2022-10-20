@@ -210,10 +210,6 @@ void cleanup() {
         free(moinfo.bocc_off);
         free(moinfo.avir_off);
         free(moinfo.bvir_off);
-        free(moinfo.qt_aocc);
-        free(moinfo.qt_bocc);
-        free(moinfo.qt_avir);
-        free(moinfo.qt_bvir);
     } else {
         for (i = 0; i < moinfo.nirreps; i++)
             if (moinfo.sopi[i] && moinfo.virtpi[i]) free_block(moinfo.C[i]);
@@ -224,8 +220,6 @@ void cleanup() {
         free(moinfo.vir_sym);
         free(moinfo.occ_off);
         free(moinfo.vir_off);
-        free(moinfo.qt_occ);
-        free(moinfo.qt_vir);
     }
 
     free(moinfo.sopi);
