@@ -36,6 +36,7 @@
 
 #include <string>
 #include <vector>
+#include "psi4/libmints/matrix.h"
 
 namespace psi {
 namespace ccresponse {
@@ -59,10 +60,10 @@ struct MOInfo {
     int *fruocc;                     /* no. of frozen unoccupied orbitals per irrep */
     int nvirt;                       /* total no. of (active) virtual orbitals */
     int *actpi;                      /* no. of active orbitals per irrep */
+    Dimension act_pi;                /* Dimension form of actpi */
     std::vector<std::string> labels; /* irrep labels */
-    int *pitzer2qt;                  /* Pitzer -> QT reordering array */
-    int *qt2pitzer;                  /* QT -> Pitzer reordering array */
     int *occpi;                      /* no. of occupied orbs. (incl. open) per irrep */
+    Dimension act_occpi;             /* Dimension form of occpi */
     int *aoccpi;                     /* no. of alpha occupied orbs. (incl. open) per irrep */
     int *boccpi;                     /* no. of beta occupied orbs. (incl. open) per irrep */
     int *virtpi;                     /* no. of virtual orbs. (incl. open) per irrep */
@@ -80,29 +81,9 @@ struct MOInfo {
     int *vir_off;                    /* virtual orbital offsets within each irrep */
     int *avir_off;                   /* virtual alpha orbital offsets within each irrep */
     int *bvir_off;                   /* virtual beta orbital offsets within each irrep */
-    int *qt_occ;                     /* CC->QT active occupied reordering array */
-    int *qt_aocc;                    /* CC->QT alpha active occupied reordering array */
-    int *qt_bocc;                    /* CC->QT beta active occupied reordering array */
-    int *qt_vir;                     /* CC->QT active virtiual reordering array */
-    int *qt_avir;                    /* CC->QT alpha active virtiual reordering array */
-    int *qt_bvir;                    /* CC->QT beta active virtiual reordering array */
-    int *cc_occ;                     /* QT->CC active occupied reordering array */
-    int *cc_aocc;                    /* QT->CC active occupied reordering array */
-    int *cc_bocc;                    /* QT->CC active occupied reordering array */
-    int *cc_vir;                     /* QT->CC active virtual reordering array */
-    int *cc_avir;                    /* QT->CC active virtual reordering array */
-    int *cc_bvir;                    /* QT->CC active virtual reordering array */
-    double **scf;                    /* SCF eigenvectors (RHF/ROHF) (active only) */
-    double **scf_alpha;              /* Alpha SCF eigenvectors (UHF) (active only) */
-    double **scf_beta;               /* Beta SCF eigenvectors (UHF) (active only) */
-    double ***MU;                    /* MO-basis dipole integrals (Pitzer order) */
+    std::shared_ptr<Matrix> Ca;
     int *mu_irreps;                  /* irreps of x,y,z dipole components */
-    double ***L;                     /* MO-basis angular momentum ints (Pitzer order) */
-    double ***Lcc;                   /* Complex-conjugate of MO-basis angular momentum ints (Pitzer order) */
     int *l_irreps;                   /* irreps of x,y,z angular momentum components */
-    double ***P;                     /* MO-basis linear momentum ints (Pitzer order) */
-    double ***Pcc;                   /* Complex-conjugate of MO-basis linear momentum ints (Pitzer order) */
-    double ****Q;                    /* MO-basis traceless quadrupole ints (Pitzer order) */
     int natom;                       /* number of atoms */
     double *zvals;                   /* atomic zvals */
     double ***C;                     /* Virtual orbital transformation matrix */
