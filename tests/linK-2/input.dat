@@ -1,6 +1,6 @@
 #! RKS Linear Exchange Algorithm test for benzene
 
-ref_energy = -232.33331405755291 # TEST (CSAM Screening)
+ref_energy = -232.3333877979 #TEST, computed using previous DDFJ+LinK impl 
 
 molecule mol {
     0 1

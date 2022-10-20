@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev179 
+                               Psi4 1.7a1.dev104 
 
-                         Git: Rev {linK-new} ee22594 dirty
+                         Git: Rev {dpoole34/dfjlink} 56a2b37 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,20 +30,20 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 23 March 2022 04:20PM
+    Psi4 started on: Thursday, 20 October 2022 01:18PM
 
-    Process ID: 18615
-    Host:       ds4
-    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4
+    Process ID: 21268
+    Host:       ds6
+    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4
     Memory:     500.0 MiB
-    Threads:    6
+    Threads:    1
     
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! RKS Linear Exchange Algorithm test for benzene
 
-ref_energy = -232.33331405755291 # TEST (CSAM Screening)
+ref_energy = -232.3333877979 #TEST, computed using previous DDFJ+LinK impl 
 
 molecule mol {
     0 1
@@ -65,13 +65,12 @@ molecule mol {
 }
 
 set {
-    scf_type direct
+    scf_type link 
     df_scf_guess false
     basis cc-pVTZ
     e_convergence 1.0e-10
     screening density
     incfock true
-    do_linK true
     ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
 }
@@ -80,18 +79,18 @@ linK_energy = energy('b3lyp')
 psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
 --------------------------------------------------------------------------
 
-Scratch directory: /scratch/jiang/
+Scratch directory: /scratch/dpoole34/
 
-*** tstart() called on ds4
-*** at Wed Mar 23 16:20:56 2022
+*** tstart() called on ds6
+*** at Thu Oct 20 13:18:34 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   186 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/cc-pvtz.gbs 
-    atoms 7-12 entry H          line    23 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-6  entry C          line   186 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 7-12 entry H          line    23 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -99,7 +98,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        6 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -138,7 +137,7 @@ Scratch directory: /scratch/jiang/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECT.
+  SCF Algorithm Type is LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -212,21 +211,26 @@ Scratch directory: /scratch/jiang/
     Max Functions          =            264
     Weights Tolerance      =       1.00E-15
 
+   => Loading Basis Set <=
+
+    Name: (CC-PVTZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-6  entry C          line   125 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
   ==> Integral Setup <==
 
-  ==> DirectJK: Integral-Direct J/K Matrices <==
+  ==> DFJLinK: Density-Fitted J and Linear Exchange K <==
 
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Integrals threads:           6
-    Screening Type:        DENSITY
-    Screening Cutoff:        1E-12
-    Incremental Fock:          Yes
-    LinK:                      Yes
-
-    WARNING: LinK is still under development and should not be used!
-
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    Integrals threads:            1
+    Memory [MiB]:                 0
+    Incremental Fock :          Yes
+    Screening Type:       DENSITY
+    Screening Cutoff:       1E-12
   Cached 20.0% of DFT collocation blocks in 0.306 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 3.7592595820E-05.
@@ -249,137 +253,139 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -231.83025753211231   -2.31830e+02   0.00000e+00 
-   @RKS iter   1:  -231.83545138000028   -5.19385e-03   3.65134e-03 DIIS/ADIIS/LINK
-   @RKS iter   2:  -231.53451997879228    3.00931e-01   4.63456e-03 DIIS/ADIIS/INCFOCK/LINK
-   @RKS iter   3:  -232.32931820366662   -7.94798e-01   3.60049e-04 DIIS/ADIIS/INCFOCK/LINK
-   @RKS iter   4:  -232.33313657041168   -3.81837e-03   7.46588e-05 DIIS/INCFOCK/LINK
-   @RKS iter   5:  -232.33331177419194   -1.75204e-04   7.55716e-06 DIIS/INCFOCK/LINK
-   @RKS iter   6:  -232.33331213969817   -3.65506e-07   6.93604e-06 DIIS/LINK
-   @RKS iter   7:  -232.33331403948145   -1.89978e-06   6.75648e-07 DIIS/INCFOCK/LINK
-   @RKS iter   8:  -232.33331405445517   -1.49737e-08   3.08817e-07 DIIS/LINK
-   @RKS iter   9:  -232.33331405755558   -3.10041e-09   1.70154e-08 DIIS/LINK
-   @RKS iter  10:  -232.33331405756405   -8.46967e-12   6.55549e-09 DIIS/LINK
+   @RKS iter SAD:  -231.83029426915809   -2.31830e+02   0.00000e+00 
+   @RKS iter   1:  -231.83555581126677   -5.26154e-03   3.65101e-03 ADIIS/DIIS
+   @RKS iter   2:  -231.53471074547099    3.00845e-01   4.63419e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -232.32939413751328   -7.94683e-01   3.59964e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -232.33321033193786   -3.81619e-03   7.46497e-05 DIIS/INCFOCK
+   @RKS iter   5:  -232.33338551709235   -1.75185e-04   7.55361e-06 DIIS/INCFOCK
+   @RKS iter   6:  -232.33338587751112   -3.60419e-07   6.94038e-06 DIIS
+   @RKS iter   7:  -232.33338777965537   -1.90214e-06   6.76768e-07 DIIS
+   @RKS iter   8:  -232.33338779468312   -1.50278e-08   3.09013e-07 DIIS
+   @RKS iter   9:  -232.33338779778913   -3.10601e-09   1.70372e-08 DIIS
+   @RKS iter  10:  -232.33338779779751   -8.38440e-12   6.56351e-09 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
    Electrons on quadrature grid:
-      Ntotal   =   42.0000093709 ; deviation = 9.371e-06 
+      Ntotal   =   42.0000093834 ; deviation = 9.383e-06 
 
     Orbital Energies [Eh]
     ---------------------
 
     Doubly Occupied:                                                      
 
-       1A    -10.179336     2A    -10.179069     3A    -10.179026  
-       4A    -10.178480     5A    -10.178470     6A    -10.178177  
-       7A     -0.856473     8A     -0.748537     9A     -0.748355  
-      10A     -0.605600    11A     -0.605522    12A     -0.527215  
-      13A     -0.464476    14A     -0.449847    15A     -0.425094  
-      16A     -0.424859    17A     -0.371376    18A     -0.348012  
-      19A     -0.347777    20A     -0.258029    21A     -0.257914  
+       1A    -10.179329     2A    -10.179061     3A    -10.179019  
+       4A    -10.178473     5A    -10.178462     6A    -10.178170  
+       7A     -0.856472     8A     -0.748540     9A     -0.748358  
+      10A     -0.605604    11A     -0.605526    12A     -0.527215  
+      13A     -0.464484    14A     -0.449859    15A     -0.425105  
+      16A     -0.424869    17A     -0.371377    18A     -0.348027  
+      19A     -0.347793    20A     -0.258027    21A     -0.257912  
 
     Virtual:                                                              
 
-      22A     -0.012718    23A     -0.012697    24A      0.039665  
-      25A      0.070876    26A      0.070934    27A      0.101604  
-      28A      0.101689    29A      0.127421    30A      0.142898  
-      31A      0.231221    32A      0.231230    33A      0.257186  
-      34A      0.261219    35A      0.264707    36A      0.264844  
-      37A      0.278951    38A      0.321940    39A      0.321998  
-      40A      0.354309    41A      0.362816    42A      0.362961  
-      43A      0.387790    44A      0.398016    45A      0.398230  
-      46A      0.404759    47A      0.404825    48A      0.435500  
-      49A      0.435585    50A      0.446932    51A      0.479869  
-      52A      0.482474    53A      0.482612    54A      0.495601  
-      55A      0.497537    56A      0.546544    57A      0.547445  
-      58A      0.547558    59A      0.573793    60A      0.573889  
-      61A      0.649985    62A      0.674175    63A      0.674460  
-      64A      0.707566    65A      0.727883    66A      0.728087  
-      67A      0.745400    68A      0.761139    69A      0.761504  
-      70A      0.797716    71A      0.860926    72A      0.860998  
-      73A      0.897725    74A      0.926248    75A      0.961555  
-      76A      1.001704    77A      1.002118    78A      1.018485  
-      79A      1.018515    80A      1.021122    81A      1.088628  
-      82A      1.088636    83A      1.098050    84A      1.108073  
-      85A      1.108332    86A      1.168862    87A      1.168915  
-      88A      1.250030    89A      1.250389    90A      1.263517  
-      91A      1.265924    92A      1.268110    93A      1.268959  
-      94A      1.284407    95A      1.284517    96A      1.369946  
-      97A      1.370553    98A      1.378743    99A      1.378794  
-     100A      1.386563   101A      1.405672   102A      1.406087  
-     103A      1.468761   104A      1.484861   105A      1.484880  
-     106A      1.524480   107A      1.580466   108A      1.666311  
-     109A      1.856942   110A      1.927162   111A      1.927700  
-     112A      1.963086   113A      1.969155   114A      1.986565  
-     115A      1.987121   116A      2.064607   117A      2.091555  
-     118A      2.091694   119A      2.142684   120A      2.160513  
-     121A      2.161541   122A      2.175115   123A      2.175224  
-     124A      2.289609   125A      2.353421   126A      2.412318  
-     127A      2.412371   128A      2.456258   129A      2.457140  
-     130A      2.472079   131A      2.496168   132A      2.565774  
-     133A      2.566823   134A      2.607496   135A      2.632928  
-     136A      2.633279   137A      2.682083   138A      2.682187  
-     139A      2.684307   140A      2.698265   141A      2.698266  
-     142A      2.749812   143A      2.750283   144A      2.751274  
-     145A      2.785902   146A      2.828060   147A      2.828664  
-     148A      2.901598   149A      2.905118   150A      2.905295  
-     151A      2.965710   152A      2.965956   153A      2.979951  
-     154A      2.980069   155A      3.011809   156A      3.037543  
-     157A      3.049709   158A      3.050640   159A      3.054290  
-     160A      3.054760   161A      3.057684   162A      3.058044  
-     163A      3.084711   164A      3.110789   165A      3.119015  
-     166A      3.119264   167A      3.136306   168A      3.168848  
-     169A      3.283882   170A      3.300185   171A      3.300433  
-     172A      3.313047   173A      3.328494   174A      3.328504  
-     175A      3.362648   176A      3.362789   177A      3.380997  
-     178A      3.381027   179A      3.392716   180A      3.393322  
-     181A      3.413229   182A      3.557590   183A      3.558218  
-     184A      3.574236   185A      3.602040   186A      3.728889  
-     187A      3.751464   188A      3.761037   189A      3.762258  
-     190A      3.768308   191A      3.770075   192A      3.770426  
-     193A      3.775796   194A      3.789114   195A      3.791649  
-     196A      3.791781   197A      3.836624   198A      3.840739  
-     199A      3.841060   200A      3.882803   201A      3.882896  
-     202A      4.001702   203A      4.002220   204A      4.016555  
-     205A      4.080168   206A      4.080229   207A      4.087682  
-     208A      4.091945   209A      4.097187   210A      4.097606  
-     211A      4.170148   212A      4.187742   213A      4.208166  
-     214A      4.209170   215A      4.228777   216A      4.312788  
-     217A      4.312887   218A      4.315935   219A      4.315942  
-     220A      4.317340   221A      4.317952   222A      4.352398  
-     223A      4.352451   224A      4.493427   225A      4.533560  
-     226A      4.534390   227A      4.658320   228A      4.662722  
-     229A      4.663688   230A      4.710570   231A      4.756582  
-     232A      4.756594   233A      4.771138   234A      4.771573  
-     235A      4.806609   236A      4.906240   237A      4.947581  
-     238A      5.016407   239A      5.026875   240A      5.027548  
-     241A      5.032724   242A      5.054001   243A      5.054645  
-     244A      5.156966   245A      5.158059   246A      5.350314  
-     247A      5.350342   248A      5.458722   249A      5.675541  
-     250A      5.677298   251A      5.707016   252A      5.867583  
-     253A      5.867737   254A      5.947513   255A      6.115983  
-     256A      6.117089   257A      6.439566   258A      6.925195  
-     259A      8.904351   260A     12.359149   261A     12.360793  
-     262A     12.863070   263A     12.864273   264A     15.402448  
+      22A     -0.012724    23A     -0.012704    24A      0.039672  
+      25A      0.070866    26A      0.070924    27A      0.101577  
+      28A      0.101662    29A      0.127316    30A      0.142888  
+      31A      0.231233    32A      0.231240    33A      0.257241  
+      34A      0.261220    35A      0.264744    36A      0.264880  
+      37A      0.279016    38A      0.321928    39A      0.321986  
+      40A      0.354309    41A      0.362787    42A      0.362932  
+      43A      0.387727    44A      0.398021    45A      0.398235  
+      46A      0.404718    47A      0.404783    48A      0.435458  
+      49A      0.435543    50A      0.446862    51A      0.479787  
+      52A      0.482419    53A      0.482557    54A      0.495609  
+      55A      0.497560    56A      0.546467    57A      0.547460  
+      58A      0.547574    59A      0.573835    60A      0.573932  
+      61A      0.649931    62A      0.674176    63A      0.674461  
+      64A      0.707600    65A      0.727891    66A      0.728095  
+      67A      0.745393    68A      0.761131    69A      0.761496  
+      70A      0.797823    71A      0.860876    72A      0.860947  
+      73A      0.897760    74A      0.926185    75A      0.961501  
+      76A      1.001640    77A      1.002053    78A      1.018517  
+      79A      1.018546    80A      1.021110    81A      1.088517  
+      82A      1.088525    83A      1.098150    84A      1.108068  
+      85A      1.108327    86A      1.168952    87A      1.169005  
+      88A      1.250029    89A      1.250387    90A      1.263490  
+      91A      1.265855    92A      1.268068    93A      1.268919  
+      94A      1.284441    95A      1.284551    96A      1.369989  
+      97A      1.370596    98A      1.378686    99A      1.378737  
+     100A      1.386569   101A      1.405654   102A      1.406069  
+     103A      1.468831   104A      1.484914   105A      1.484933  
+     106A      1.524515   107A      1.580343   108A      1.666317  
+     109A      1.856876   110A      1.927211   111A      1.927750  
+     112A      1.963117   113A      1.969223   114A      1.986416  
+     115A      1.986973   116A      2.064469   117A      2.091604  
+     118A      2.091743   119A      2.142847   120A      2.160437  
+     121A      2.161467   122A      2.175177   123A      2.175284  
+     124A      2.289803   125A      2.353555   126A      2.412282  
+     127A      2.412334   128A      2.456379   129A      2.457258  
+     130A      2.472275   131A      2.496252   132A      2.565728  
+     133A      2.566776   134A      2.607540   135A      2.633018  
+     136A      2.633370   137A      2.682179   138A      2.682283  
+     139A      2.684270   140A      2.698214   141A      2.698214  
+     142A      2.749800   143A      2.750259   144A      2.751364  
+     145A      2.785951   146A      2.828123   147A      2.828726  
+     148A      2.901608   149A      2.905143   150A      2.905321  
+     151A      2.965628   152A      2.965874   153A      2.979919  
+     154A      2.980036   155A      3.011735   156A      3.037598  
+     157A      3.049723   158A      3.050653   159A      3.054345  
+     160A      3.054815   161A      3.057674   162A      3.058034  
+     163A      3.084612   164A      3.110797   165A      3.119061  
+     166A      3.119310   167A      3.136290   168A      3.168786  
+     169A      3.283956   170A      3.300152   171A      3.300401  
+     172A      3.313014   173A      3.328459   174A      3.328469  
+     175A      3.362600   176A      3.362740   177A      3.380949  
+     178A      3.380979   179A      3.392716   180A      3.393322  
+     181A      3.413051   182A      3.557607   183A      3.558235  
+     184A      3.574192   185A      3.602018   186A      3.728828  
+     187A      3.751467   188A      3.760966   189A      3.762201  
+     190A      3.768273   191A      3.770115   192A      3.770451  
+     193A      3.775674   194A      3.789096   195A      3.791555  
+     196A      3.791697   197A      3.836635   198A      3.840766  
+     199A      3.841087   200A      3.882807   201A      3.882900  
+     202A      4.001724   203A      4.002241   204A      4.016449  
+     205A      4.080145   206A      4.080206   207A      4.087747  
+     208A      4.091967   209A      4.097187   210A      4.097606  
+     211A      4.170124   212A      4.187782   213A      4.208088  
+     214A      4.209092   215A      4.228660   216A      4.312824  
+     217A      4.312936   218A      4.315868   219A      4.315885  
+     220A      4.317365   221A      4.317976   222A      4.352356  
+     223A      4.352409   224A      4.493468   225A      4.533523  
+     226A      4.534353   227A      4.658361   228A      4.662643  
+     229A      4.663625   230A      4.710429   231A      4.756568  
+     232A      4.756580   233A      4.771197   234A      4.771633  
+     235A      4.806623   236A      4.906265   237A      4.947562  
+     238A      5.016478   239A      5.026890   240A      5.027567  
+     241A      5.032690   242A      5.053999   243A      5.054643  
+     244A      5.156973   245A      5.158066   246A      5.350301  
+     247A      5.350329   248A      5.458716   249A      5.675459  
+     250A      5.677217   251A      5.706866   252A      5.867545  
+     253A      5.867699   254A      5.947481   255A      6.116008  
+     256A      6.117115   257A      6.439483   258A      6.925240  
+     259A      8.904397   260A     12.359169   261A     12.360813  
+     262A     12.863093   263A     12.864296   264A     15.402456  
 
     Final Occupation by Irrep:
               A 
     DOCC [    21 ]
+    NA   [    21 ]
+    NB   [    21 ]
 
-  @RKS Final Energy:  -232.33331405756405
+  @RKS Final Energy:  -232.33338779779751
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993059994298619
-    Two-Electron Energy =                 306.9305832444468365
-    DFT Exchange-Correlation Energy =     -28.1755226628599154
+    One-Electron Energy =                -714.7993538263947357
+    Two-Electron Energy =                 306.9305824916667689
+    DFT Exchange-Correlation Energy =     -28.1755478233484524
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333140575640527
+    Total Energy =                       -232.3333877977975135
 
 Computation Completed
 
@@ -388,31 +394,33 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: [e a0]
-     X:  -147.6125      Y:   -22.9025      Z:     0.0000
 
-  Electronic Dipole Moment: [e a0]
-     X:   147.6174      Y:    22.9056      Z:    -0.0000
+ Multipole Moments:
 
-  Dipole Moment: [e a0]
-     X:     0.0049      Y:     0.0032      Z:    -0.0000     Total:     0.0058
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: [D]
-     X:     0.0125      Y:     0.0080      Z:    -0.0000     Total:     0.0149
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :        147.6174494         -147.6125312            0.0049183
+ Dipole Y            :         22.9056466          -22.9024868            0.0031597
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0058458
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on ds4 at Wed Mar 23 16:23:02 2022
+*** tstop() called on ds6 at Thu Oct 20 13:24:48 2022
 Module time:
-	user time   =     745.22 seconds =      12.42 minutes
-	system time =       0.79 seconds =       0.01 minutes
-	total time  =        126 seconds =       2.10 minutes
+	user time   =     370.64 seconds =       6.18 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =        374 seconds =       6.23 minutes
 Total time:
-	user time   =     745.22 seconds =      12.42 minutes
-	system time =       0.79 seconds =       0.01 minutes
-	total time  =        126 seconds =       2.10 minutes
+	user time   =     370.64 seconds =       6.18 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =        374 seconds =       6.23 minutes
     B3LYP Energy (using LinK algo)........................................................PASSED
 
-    Psi4 stopped on: Wednesday, 23 March 2022 04:23PM
-    Psi4 wall time for execution: 0:02:05.35
+    Psi4 stopped on: Thursday, 20 October 2022 01:24PM
+    Psi4 wall time for execution: 0:06:13.91
 
 *** Psi4 exiting successfully. Buy a developer a beer!
