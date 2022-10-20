@@ -43,8 +43,8 @@ namespace psi {
  ** \ingroup PSIO
  */
 int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols) {
+    const int stream = vol->stream;
 
-    int stream = vol->stream;
 
     /* Set file pointer to beginning of file */
     if (SYSTEM_LSEEK(stream, 0, SEEK_SET) == -1)
