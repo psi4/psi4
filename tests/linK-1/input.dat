@@ -1,6 +1,6 @@
 #! RHF Linear Exchange Algorithm test for water
 
-ref_energy = -76.04125669409474 # TEST (Compare to CSAM Screening, without LinK)
+ref_energy = -76.0412801462671837 # TEST, compared to previously-devleoped DDFJ+LinK impl 
 
 molecule mol {
     0 1
