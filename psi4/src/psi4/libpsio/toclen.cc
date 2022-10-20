@@ -60,9 +60,9 @@ void PSIO::rewind_toclen(const size_t unit) {
     if(!open_check(unit)) psio_error(unit, PSIO_ERROR_UNOPENED);
     const auto stream = psio_unit[unit].vol[0].stream;
     const auto errcod = SYSTEM_LSEEK(stream, 0L, SEEK_SET);
-    const auto sys_errno = errno;
+    const auto saved_errno = errno;
     if (errcod == -1) {
-        std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(sys_errno);
+        std::string errmsg = "LSEEK failed. Error description from the OS: " + decode_errno(saved_errno);
         errmsg += "\nCannot seek vol[0] to its beginning, unit ";
         errmsg += std::to_string(unit) + ".\n";
         psio_error(unit, PSIO_ERROR_LSEEK, errmsg);
@@ -83,10 +83,10 @@ size_t PSIO::rd_toclen(const size_t unit) {
     size_t len;
     const auto stream = psio_unit[unit].vol[0].stream;
     const auto errcod = SYSTEM_READ(stream, (char *)&len, sizeof(size_t));
-    const auto sys_errno = errno;
+    const auto saved_errno = errno;
     if (errcod != sizeof(size_t)) {
         if (errcod == -1) {
-            std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(sys_errno);
+            std::string errmsg = "READ failed. Error description from the OS: " + decode_errno(saved_errno);
             errmsg += "\nError in PSIO::rd_toclen()! Cannot read TOC length, unit ";
             errmsg += std::to_string(unit) + ".\n";
             psio_error(unit, PSIO_ERROR_READ, errmsg);
@@ -106,9 +106,9 @@ void PSIO::wt_toclen(const size_t unit, const size_t len) {
     // Write the value
     const auto stream = psio_unit[unit].vol[0].stream;
     const auto errcod = SYSTEM_WRITE(stream, (char *)&len, sizeof(size_t));
-    const auto sys_errno = errno;
+    const auto saved_errno = errno;
     if (errcod != sizeof(size_t)) {
-        std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(sys_errno);
+        std::string errmsg = "WRITE failed. Error description from the OS: " + decode_errno(saved_errno);
         errmsg += "\nError in PSIO::wt_toclen()! Cannot write TOC length, unit ";
         errmsg += std::to_string(unit) + ".\n";
         psio_error(unit, PSIO_ERROR_WRITE, errmsg);
