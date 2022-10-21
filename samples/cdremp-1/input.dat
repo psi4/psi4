@@ -1,0 +1,53 @@
+#! Cholesky decomposed REMP/cc-pVDZ energies for the CO2 molecule.
+
+
+ESCF = -187.71397457500782
+
+molecule co2 {
+0 1
+C     0.1705487    0.3293777    0.0000000 
+O     1.2087051   -0.2081727    0.0000000 
+O    -0.8675996    0.8669312    0.0000000
+}
+
+
+
+set {
+  reference rhf
+  basis def2-TZVPP
+  freeze_core true
+  cc_type cd
+  mp2_type cd
+}  
+
+set{
+  e_convergence 1.0E-9
+  r_convergence 1.0E-8
+}
+
+#Avals=[0.00, 0.10, 0.20, 0.30, 1.00]
+
+
+#for A in Avals:
+#     psi4.print_out("running step %5.2f" % A)
+#     set remp_A=$A
+#     e_remp=energy('remp2')
+
+
+
+set remp_A=0.00
+e_remp=energy('remp2')
+
+
+set remp_A=0.10
+e_remp=energy('remp2')
+
+set remp_A=0.20
+e_remp=energy('remp2')
+
+set remp_A=0.30
+e_remp=energy('remp2')
+
+set remp_A=1.00
+e_remp=energy('remp2')
+

@@ -1,0 +1,3 @@
+#! An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating
+#
+assert psi4.core.test_matrix_dpd_interface()

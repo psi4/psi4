@@ -9,10 +9,11 @@ molecule h2o {
 set {
     basis cc-pvdz
     freeze_core true
+    qc_module mrcc
 }
 
-optimize('mrccsdt')
-E, wfn = frequencies('mrccsdt', return_wfn=True)
+optimize('ccsdt')
+E, wfn = frequencies('ccsdt', return_wfn=True)
 
 
 

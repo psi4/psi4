@@ -21,7 +21,8 @@ set {
   r_convergence 10
 }
 
-set mcscf {
+# for MCSCF or SCF modules
+set {
   reference       rhf
   # The socc and docc needn't be specified; in this case the code will converge correctly without
   docc            [2,0,1,1]      # Doubly occupied MOs
@@ -40,5 +41,13 @@ set psimrcc {
 
 energy('psimrcc')
 compare_values(refnuc, ch2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST
+compare_values(refmkccsd_t, variable("CURRENT ENERGY") , 8, "MkCCSD energy")            #TEST
+
+# repeat with regular, non-mcscf SCF module
+clean()
+
+energy('psimrcc_scf')
+compare_values(refnuc, ch2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST
 compare_values(refscf, variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST
 compare_values(refmkccsd_t, variable("CURRENT ENERGY") , 8, "MkCCSD energy")            #TEST

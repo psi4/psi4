@@ -49,28 +49,31 @@ opt_clean()
 
 try:
     optimize('c4-mp2', molecule=c4watdim)
-except psi4.OptimizationConvergenceError as oce:
+#except psi4.OptimizationConvergenceError as oce:
+except psi4.driver.qcdb.ValidationError:
     #c4grad = wfn.gradient()
     pass
 
+# ghost gradients no longer supported. Use QCEngine or QCDB instead.
 
-clean()
-opt_clean()
-
-activate(methdim)
-try:
-    optimize('mp2', return_wfn=True)
-except psi4.OptimizationConvergenceError as oce:
-    grad_p4_mB = oce.wfn.gradient()
-
-clean()
-opt_clean()
-
-activate(c4methdim)
-try:
-    optimize('c4-mp2')
-except psi4.ConvergenceError:
-    pass
-
-opt_clean()
+#
+#clean()
+#opt_clean()
+#
+#activate(methdim)
+#try:
+#    optimize('mp2', return_wfn=True)
+#except psi4.OptimizationConvergenceError as oce:
+#    grad_p4_mB = oce.wfn.gradient()
+#
+#clean()
+#opt_clean()
+#
+#activate(c4methdim)
+#try:
+#    optimize('c4-mp2')
+#except psi4.ConvergenceError:
+#    pass
+#
+#opt_clean()
 

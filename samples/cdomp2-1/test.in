@@ -24,4 +24,13 @@ compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsi
 compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "CD-HF Energy (a.u.)");                        #TEST
 compare_values(refomp2, variable("OMP2 TOTAL ENERGY"), 6, "CD-OMP2 Total Energy (a.u.)");               #TEST
 
+clean()
+set scf_type df
+ene = energy("qchf")
+compare_values(-76.02674018, ene, 6, "DF-HF Energy (a.u.) from QCHF")  #TEST
+
+clean()
+set scf_type cd
+ene = energy("qchf")
+compare_values(refscf, ene, 6, "CD-HF Energy (a.u.) from QCHF")  #TEST
 

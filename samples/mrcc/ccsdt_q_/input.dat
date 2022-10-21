@@ -12,8 +12,9 @@ set {
     basis cc-pvdz
     freeze_core true
     mrcc_restart 2
+    qc_module mrcc
 }
 
-energy('mrccsdt(q)')
+energy('ccsdt(q)')
 
 

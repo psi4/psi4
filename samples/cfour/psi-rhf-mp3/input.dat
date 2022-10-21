@@ -1,6 +1,7 @@
 #! MP3 energy components. Checks that computed identically
 #! between cfour and psi4
 
+test_psivars = ['nuclear repulsion energy', 'scf total energy', # 'mp2 singles energy',
 
 print('    <<<  RHF  >>>')
 
@@ -37,6 +38,7 @@ A=104.5
 set basis aug-cc-pvdz
 set e_convergence 10
 #set mp2_type conv
+set mp_type conv
 
 energy('mp3')
 

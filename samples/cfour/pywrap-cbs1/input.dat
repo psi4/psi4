@@ -8,10 +8,10 @@ Li
 
 set cfour_reference rohf
 
-e_cbs = energy(cbs,
+e_cbs = energy("cbs",
             scf_wfn='c4-hf',
             scf_basis='aug-cc-pV[DTQ]Z',
-            scf_scheme=scf_xtpl_helgaker_3)
+            scf_scheme="scf_xtpl_helgaker_3")
 
 clean()
 
@@ -26,13 +26,13 @@ R = 1
 
 set cfour_reference rhf
 
-e_cbs = energy(cbs,
+e_cbs = energy("cbs",
             corl_wfn='c4-mp2',
             corl_basis='cc-pV[TQ]Z',
-            corl_scheme=driver_cbs.corl_xtpl_helgaker_2,
+            corl_scheme="corl_xtpl_helgaker_2",
             delta_wfn='c4-ccsd',
             delta_basis='cc-pV[DT]Z',
-            delta_scheme=driver_cbs.corl_xtpl_helgaker_2)
+            delta_scheme="corl_xtpl_helgaker_2")
 clean()
 
 
@@ -41,17 +41,19 @@ molecule {
 He
 }
 
-e_cbs = energy(cbs,
+set scf_type = pk
+
+e_cbs = energy("cbs",
             scf_basis='aug-cc-pV[DTQ]Z',
-            scf_scheme=driver_cbs.scf_xtpl_helgaker_3,
+            scf_scheme="scf_xtpl_helgaker_3",
             corl_wfn='c4-ccsd',
             corl_basis='aug-cc-pV[DT]Z',
-            corl_scheme=driver_cbs.corl_xtpl_helgaker_2)
+            corl_scheme="corl_xtpl_helgaker_2")
 
 clean()
 
 # Example with default extrapolation schemes
-e_cbs = energy(cbs,
+e_cbs = energy("cbs",
             corl_wfn='c4-mp2',
             corl_basis='cc-pv[dt]z',
             delta_wfn='mp5',
@@ -102,5 +104,6 @@ h2.R = 0.747953788665
 #            delta_basis='cc-pV[dt]Z')
 #compare_values(-1.17505568495, e_cbs, 6, "[5a] user-def xtpl cbs()")
 
-e_cbs = energy('c4-MP2/aug-cc-pV[T,Q]Z + D:c4-CCSD(T)/cc-pv[dt]z', delta_scheme=myownmy_2, molecule=h2)
+register_xtpl_function(myownmy_2)
+e_cbs = energy('c4-MP2/aug-cc-pV[T,Q]Z + D:c4-CCSD(T)/cc-pv[dt]z', delta_scheme="myownmy_2", molecule=h2)
 

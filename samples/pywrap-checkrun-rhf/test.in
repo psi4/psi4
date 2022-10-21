@@ -92,7 +92,7 @@ Earray = [
   'CCSD(T)',
   'BCCD(T)',
   'MP3',
-  'ZAPT3',
+  #'ZAPT3',  # rohf only
   'FCI',
   'DCT',
   'MP2.5',

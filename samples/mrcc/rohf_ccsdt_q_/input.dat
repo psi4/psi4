@@ -12,6 +12,7 @@ set {
     freeze_core True
     docc [12, 4]
     socc [1, 0]
+    qc_module mrcc
 }
 
 molecule A_transC2H5O2 {
@@ -27,5 +28,5 @@ H -1.9545447709 -0.7674520567  0.8865786907
 H -2.6301702073  0.6086421759  0.0000000000
 }
 
-energy('mrccsdt(q)')
+energy('ccsdt(q)')
 
