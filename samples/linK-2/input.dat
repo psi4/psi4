@@ -1,6 +1,5 @@
 #! RKS Linear Exchange Algorithm test for benzene
 
-
 molecule mol {
     0 1
     C    -1.0478252   -1.4216736    0.0000000
@@ -32,4 +31,3 @@ set {
 }
 
 linK_energy = energy('b3lyp')
-psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")

@@ -1,8 +1,5 @@
 #! UHF and ROHF Linear Exchange Algorithm test for benzyl cation
 
-uhf_ref = -230.41721644022974 # REF, with UHF (CSAM Screening)
-rohf_ref = -230.40279222744851 # REF, with ROHF (CSAM Screening)
-
 molecule mol {
     1 2
     C    -1.0478252   -1.4216736    0.0000000
@@ -35,8 +32,6 @@ set {
 }
 
 uhf_energy = energy('scf')
-psi4.compare_values(uhf_energy, uhf_ref, 8, "UHF Energy (using LinK algo)")
 
 set reference rohf
 rohf_energy = energy('scf')
-psi4.compare_values(rohf_energy, rohf_ref, 8, "ROHF Energy (using LinK algo)")

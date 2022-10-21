@@ -1,7 +1,7 @@
 #! UHF and ROHF Linear Exchange Algorithm test for benzyl cation
 
-uhf_ref = -230.41721644022974 # REF, with UHF (CSAM Screening)
-rohf_ref = -230.40279222744851 # REF, with ROHF (CSAM Screening)
+uhf_ref = -230.4172967534619261 #TEST, compared to previous DDFJ+LinK impl 
+rohf_ref =-230.4028718427571221 #TEST, compared to previous DDFJ+LinK impl 
 
 molecule mol {
     1 2

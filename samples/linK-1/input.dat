@@ -1,6 +1,5 @@
 #! RHF Linear Exchange Algorithm test for water
 
-
 molecule mol {
     0 1
     O
@@ -24,4 +23,3 @@ set {
 }
 
 linK_energy = energy('scf')
-psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
