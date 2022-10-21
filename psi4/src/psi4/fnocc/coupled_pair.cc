@@ -188,18 +188,24 @@ double CoupledPair::compute_energy() {
         }
     }
     if (cepa_level == 1) {
+        set_scalar_variable("CEPA(1) SINGLES ENERGY", 0.0);  // fnocc RHF only
+        set_scalar_variable("CEPA(1) DOUBLES ENERGY", eccsd_os + eccsd_ss);
         set_scalar_variable("CEPA(1) CORRELATION ENERGY", eccsd);
         set_scalar_variable("CEPA(1) OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
         set_scalar_variable("CEPA(1) SAME-SPIN CORRELATION ENERGY", eccsd_ss);
         set_scalar_variable("CEPA(1) TOTAL ENERGY", eccsd + escf);
     }
     if (cepa_level == 2) {
+        set_scalar_variable("CEPA(2) SINGLES ENERGY", 0.0);  // fnocc RHF only
+        set_scalar_variable("CEPA(2) DOUBLES ENERGY", eccsd_os + eccsd_ss);
         set_scalar_variable("CEPA(2) CORRELATION ENERGY", eccsd);
         set_scalar_variable("CEPA(2) OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
         set_scalar_variable("CEPA(2) SAME-SPIN CORRELATION ENERGY", eccsd_ss);
         set_scalar_variable("CEPA(2) TOTAL ENERGY", eccsd + escf);
     }
     if (cepa_level == 3) {
+        set_scalar_variable("CEPA(3) SINGLES ENERGY", 0.0);  // fnocc RHF only
+        set_scalar_variable("CEPA(3) DOUBLES ENERGY", eccsd_os + eccsd_ss);
         set_scalar_variable("CEPA(3) CORRELATION ENERGY", eccsd);
         set_scalar_variable("CEPA(3) OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
         set_scalar_variable("CEPA(3) SAME-SPIN CORRELATION ENERGY", eccsd_ss);
@@ -212,12 +218,16 @@ double CoupledPair::compute_energy() {
         set_scalar_variable("CISD TOTAL ENERGY", eccsd + escf);
     }
     if (cepa_level == -2) {
+        set_scalar_variable("ACPF SINGLES ENERGY", 0.0);  // fnocc RHF only
+        set_scalar_variable("ACPF DOUBLES ENERGY", eccsd_os + eccsd_ss);
         set_scalar_variable("ACPF CORRELATION ENERGY", eccsd);
         set_scalar_variable("ACPF OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
         set_scalar_variable("ACPF SAME-SPIN CORRELATION ENERGY", eccsd_ss);
         set_scalar_variable("ACPF TOTAL ENERGY", eccsd + escf);
     }
     if (cepa_level == -3) {
+        set_scalar_variable("AQCC SINGLES ENERGY", 0.0);  // fnocc RHF only
+        set_scalar_variable("AQCC DOUBLES ENERGY", eccsd_os + eccsd_ss);
         set_scalar_variable("AQCC CORRELATION ENERGY", eccsd);
         set_scalar_variable("AQCC OPPOSITE-SPIN CORRELATION ENERGY", eccsd_os);
         set_scalar_variable("AQCC SAME-SPIN CORRELATION ENERGY", eccsd_ss);

@@ -326,15 +326,16 @@ double CoupledCluster::compute_energy() {
 
         // ccsd(t) energy
         if (do_cc) {
-            set_scalar_variable("(T) CORRECTION ENERGY", et);
             set_scalar_variable("CURRENT CORRELATION ENERGY", eccsd + et);
             set_scalar_variable("CURRENT ENERGY", eccsd + et + escf);
             if (isccsd) {
                 set_scalar_variable("CCSD(T) CORRELATION ENERGY", eccsd + et);
                 set_scalar_variable("CCSD(T) TOTAL ENERGY", eccsd + et + escf);
+                set_scalar_variable("(T) CORRECTION ENERGY", et);
             } else {
                 set_scalar_variable("QCISD(T) CORRELATION ENERGY", eccsd + et);
                 set_scalar_variable("QCISD(T) TOTAL ENERGY", eccsd + et + escf);
+                set_scalar_variable("QCISD(T) CORRECTION ENERGY", et);
             }
         }
 

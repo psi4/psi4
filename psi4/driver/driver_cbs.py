@@ -489,24 +489,15 @@ def return_energy_components():
     VARH['fci'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'fci': 'FCI TOTAL ENERGY'}
-    VARH['mrccsd'] = {
+    VARH['ccsdt'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
-                         'mrccsd': 'CCSD TOTAL ENERGY'}
-    VARH['mrccsd(t)'] = {
+                          'ccsdt': 'CCSDT TOTAL ENERGY'}
+    VARH['ccsdt(q)'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
-                         'mrccsd': 'CCSD TOTAL ENERGY',
-                      'mrccsd(t)': 'CCSD(T) TOTAL ENERGY'}
-    VARH['mrccsdt'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                        'mrccsdt': 'CCSDT TOTAL ENERGY'}
-    VARH['mrccsdt(q)'] = {
-                             'hf': 'HF TOTAL ENERGY',
-                            'mp2': 'MP2 TOTAL ENERGY',
-                        'mrccsdt': 'CCSDT TOTAL ENERGY',
-                     'mrccsdt(q)': 'CCSDT(Q) TOTAL ENERGY'}
+                          'ccsdt': 'CCSDT TOTAL ENERGY',
+                       'ccsdt(q)': 'CCSDT(Q) TOTAL ENERGY'}
 
     for cilevel in range(2, 99):
         VARH[f'ci{cilevel}'] = {

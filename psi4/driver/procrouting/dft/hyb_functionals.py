@@ -84,6 +84,7 @@ funcs.append({
 
 funcs.append({
     "name": "HF",
+    "description": "Hartree--Fock theory",
     "alias": ["SCF"],
     "x_hf": {
         "alpha": 1.0

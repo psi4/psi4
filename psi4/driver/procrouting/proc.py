@@ -31,6 +31,7 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function. *name* can be assumed lowercase by here.
 
 """
+import re
 import os
 import sys
 import shutil
@@ -40,17 +41,19 @@ from typing import Dict, List, Union
 
 import numpy as np
 from qcelemental import constants
+from qcelemental.util import which
 
 from psi4 import extras
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver import psifiles as psif
-from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, ValidationError
+from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, UpgradeHelper, ValidationError, docs_table_link
 #from psi4.driver.molutil import *
 from psi4.driver.qcdb.basislist import corresponding_basis
 # never import driver, wrappers, or aliases into this file
 
+from .proc_data import method_algorithm_type
 from .roa import run_roa
 from . import proc_util
 from . import empirical_dispersion
@@ -60,8 +63,9 @@ from . import response
 from . import solvent
 
 
-# ATTN NEW ADDITIONS!
-# consult http://psicode.org/psi4manual/master/proc_py.html
+# ADVICE on new additions:
+# * two choices: basic `def run` or managed `def select`
+# * consult http://psicode.org/psi4manual/master/proc_py.html  --or--  <psi4-repo>/doc/sphinxman/source/proc_py.rst
 
 
 def select_scf_gradient(name, **kwargs):
@@ -70,9 +74,8 @@ def select_scf_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('SCF_TYPE')
+    type_var, _, mtd_type = method_algorithm_type("scf")  # `"scf"` instead of `name` avoids adding every functional to governing dict in proc_data.py
     module = core.get_global_option('QC_MODULE')
-    # Considering only scf
 
     if mtd_type == 'CD':
         # manifestation of `"""No analytic derivatives for SCF_TYPE CD."""`.
@@ -82,7 +85,7 @@ def select_scf_gradient(name, **kwargs):
         func = run_scf_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_scf_gradient', name, 'SCF_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -96,12 +99,8 @@ def select_mp2(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP2_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ/dfmp2/detci/fnocc
-
-    # MP2_TYPE exists largely for py-side reasoning, so must manage it
-    #   here rather than passing to c-side unprepared for validation
 
     func = None
     if reference == 'RHF':
@@ -135,7 +134,8 @@ def select_mp2(name, **kwargs):
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
             if module == 'DETCI':
-                func = run_detci
+                raise UpgradeHelper("energy('mp2')", "energy('zapt2')", 1.7,
+                    " Replace method MP with method ZAPT for ROHF reference. DETCI is orders-of-magnitude inefficient for perturbation theory.")
             elif module in ['', 'OCC']:
                 func = run_occ
         elif mtd_type == 'DF':
@@ -153,10 +153,10 @@ def select_mp2(name, **kwargs):
 
     if module == 'DETCI':
         core.print_out("""\nDETCI is ill-advised for method MP2 as it is available inefficiently as a """
-                       """byproduct of a CISD computation.\n  DETCI ROHF MP2 will produce non-standard results.\n""")
+                       """byproduct of a CISD computation.\n""")
 
     if func is None:
-        raise ManagedMethodError(['select_mp2', name, 'MP2_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -170,10 +170,9 @@ def select_mp2_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP2_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
     all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
-    # Considering only [df]occ/dfmp2
 
     func = None
     if reference == 'RHF':
@@ -196,7 +195,7 @@ def select_mp2_gradient(name, **kwargs):
                     func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_mp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module, all_electron])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return
@@ -210,9 +209,8 @@ def select_mp2_property(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP2_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only dfmp2 for now
 
     func = None
     if reference == 'RHF':
@@ -227,7 +225,7 @@ def select_mp2_property(name, **kwargs):
     #            func = run_dfocc_property
 
     if func is None:
-        raise ManagedMethodError(['select_mp2_property', name, 'MP2_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -241,9 +239,8 @@ def select_omp2(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP2_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -258,7 +255,7 @@ def select_omp2(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_omp2', name, 'MP2_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -272,9 +269,8 @@ def select_omp2_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP2_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -286,7 +282,7 @@ def select_omp2_gradient(name, **kwargs):
                 func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_omp2_gradient', name, 'MP2_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -300,9 +296,8 @@ def select_omp2_property(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP2_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -311,7 +306,7 @@ def select_omp2_property(name, **kwargs):
                 func = run_dfocc_property
 
     if func is None:
-        raise ManagedMethodError(['select_omp2_property', name, 'MP2_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -325,9 +320,8 @@ def select_omp2p5_property(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -336,7 +330,7 @@ def select_omp2p5_property(name, **kwargs):
                 func = run_dfocc_property
 
     if func is None:
-        raise ManagedMethodError(['select_omp2p5_property', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -350,9 +344,8 @@ def select_omp3_property(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -361,7 +354,7 @@ def select_omp3_property(name, **kwargs):
                 func = run_dfocc_property
 
     if func is None:
-        raise ManagedMethodError(['select_omp3_property', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -375,9 +368,8 @@ def select_olccd_property(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -386,7 +378,7 @@ def select_olccd_property(name, **kwargs):
                 func = run_dfocc_property
 
     if func is None:
-        raise ManagedMethodError(['select_olccd_property', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -400,9 +392,8 @@ def select_mp3(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ/fnocc/detci
 
     func = None
     if reference == 'RHF':
@@ -431,15 +422,16 @@ def select_mp3(name, **kwargs):
                 func = run_dfocc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
-            if module == 'DETCI':  # no default for this case
-                func = run_detci
-            elif module in ['']:
-                core.print_out("""\nThis method is available inefficiently as a """
-                               """byproduct of a CISD computation.\n  Add "set """
-                               """qc_module detci" to input to access this route.\n""")
+            if module == 'DETCI':
+                raise UpgradeHelper("energy('mp3')", "energy('zapt3')", 1.7,
+                    " Replace method MP with method ZAPT for ROHF reference. DETCI is orders-of-magnitude inefficient for perturbation theory.")
+
+    if module == 'DETCI':
+        core.print_out("""\nDETCI is ill-advised for method MP3 as it is available inefficiently as a """
+                       """byproduct of a CISD computation.\n""")
 
     if func is None:
-        raise ManagedMethodError(['select_mp3', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -453,10 +445,9 @@ def select_mp3_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
     all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
-    # Considering only [df]occ
 
     func = None
     if reference == 'RHF':
@@ -477,7 +468,7 @@ def select_mp3_gradient(name, **kwargs):
                     func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_mp3_gradient', name, 'MP_TYPE', mtd_type, reference, module, all_electron])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return
@@ -491,9 +482,8 @@ def select_omp3(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -508,7 +498,7 @@ def select_omp3(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_omp3', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -522,9 +512,8 @@ def select_omp3_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -536,7 +525,7 @@ def select_omp3_gradient(name, **kwargs):
                 func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_omp3_gradient', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -550,9 +539,8 @@ def select_mp2p5(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF']:
@@ -567,7 +555,7 @@ def select_mp2p5(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_mp2p5', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -581,10 +569,9 @@ def select_mp2p5_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
     all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF']:
@@ -597,7 +584,7 @@ def select_mp2p5_gradient(name, **kwargs):
                     func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_mp2p5_gradient', name, 'MP_TYPE', mtd_type, reference, module, all_electron])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return
@@ -611,9 +598,8 @@ def select_omp2p5(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -628,7 +614,7 @@ def select_omp2p5(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_omp2p5', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -642,9 +628,8 @@ def select_omp2p5_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -656,7 +641,7 @@ def select_omp2p5_gradient(name, **kwargs):
                 func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_omp2p5_gradient', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -670,9 +655,8 @@ def select_lccd(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ/fnocc
 
     func = None
     if reference == 'RHF':
@@ -699,12 +683,13 @@ def select_lccd(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_lccd', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
     else:
         return func(name, **kwargs)
+
 
 def select_lccd_gradient(name, **kwargs):
     """Function selecting the algorithm for a LCCD gradient call
@@ -712,10 +697,9 @@ def select_lccd_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
     all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF']:
@@ -728,7 +712,7 @@ def select_lccd_gradient(name, **kwargs):
                     func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_lccd_gradient', name, 'CC_TYPE', mtd_type, reference, module, all_electron])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return
@@ -742,9 +726,8 @@ def select_olccd(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -759,7 +742,7 @@ def select_olccd(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_olccd', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -773,9 +756,8 @@ def select_olccd_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
@@ -787,7 +769,7 @@ def select_olccd_gradient(name, **kwargs):
                 func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_olccd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -801,9 +783,8 @@ def select_fnoccsd(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only fnocc
 
     func = None
     if reference == 'RHF':
@@ -818,7 +799,7 @@ def select_fnoccsd(name, **kwargs):
                 func = run_fnodfcc
 
     if func is None:
-        raise ManagedMethodError(['select_fnoccsd', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -832,15 +813,18 @@ def select_ccsd(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ/ccenergy/detci/fnocc
+
+    # [Aug 2022] DF CCSD through CCENERGY for (RHF|ROHF) not enabled here since not advertised. It does run, though, see #2710
 
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
             if module == 'FNOCC':
                 func = run_fnocc
+            elif module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
             elif module == 'CCT3' and extras.addons("cct3"):
                 import cct3
                 func = cct3.run_cct3
@@ -858,18 +842,22 @@ def select_ccsd(name, **kwargs):
                 func = run_fnodfcc
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
             if module == 'CCT3' and extras.addons("cct3"):
                 import cct3
                 func = cct3.run_cct3
+            elif module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
 
     if func is None:
-        raise ManagedMethodError(['select_ccsd', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -883,9 +871,8 @@ def select_ccsd_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ/ccenergy
 
     func = None
     if reference == 'RHF':
@@ -905,7 +892,7 @@ def select_ccsd_gradient(name, **kwargs):
                 func = run_ccenergy_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_ccsd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -919,9 +906,8 @@ def select_fnoccsd_t_(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only fnocc
 
     func = None
     if reference == 'RHF':
@@ -936,7 +922,7 @@ def select_fnoccsd_t_(name, **kwargs):
                 func = run_fnodfcc
 
     if func is None:
-        raise ManagedMethodError(['select_fnoccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -950,15 +936,16 @@ def select_ccsd_t_(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ/ccenergy/fnocc
 
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
             if module == 'FNOCC':
                 func = run_fnocc
+            elif module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
         elif mtd_type == 'DF':
@@ -973,15 +960,19 @@ def select_ccsd_t_(name, **kwargs):
                 func = run_fnodfcc
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
 
     if func is None:
-        raise ManagedMethodError(['select_ccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -995,9 +986,8 @@ def select_ccsd_t__gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only ccenergy
 
     func = None
     if reference in ['RHF']:
@@ -1013,7 +1003,7 @@ def select_ccsd_t__gradient(name, **kwargs):
                 func = run_ccenergy_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_ccsd_t__gradient', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1026,15 +1016,22 @@ def select_ccsd_at_(name, **kwargs):
     and directing to specified or best-performance default modules.
 
     """
+    if name.lower() == "a-ccsd(t)":
+        pass
+    elif name.lower() in ["ccsd(at)", "lambda-ccsd(t)", "ccsd(t)_l"]:
+        core.print_out(f"""\nMethod "{name.lower()}" has been regularized to "a-ccsd(t)" for QCVariables.""")
+        name = "a-ccsd(t)"
+
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ/ccenergy
 
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
         elif mtd_type == 'DF':
             if module in ['', 'OCC']:
@@ -1042,15 +1039,17 @@ def select_ccsd_at_(name, **kwargs):
         elif mtd_type == 'CD':
             if module in ['', 'OCC']:
                 func = run_dfocc
+    elif reference == "UHF":
+        if mtd_type == 'CONV':
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
+                func = run_mrcc
+    elif reference == "ROHF":
+        if mtd_type == 'CONV':
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
+                func = run_mrcc
 
     if func is None:
-        raise ManagedMethodError(['select_ccsd_at_', name, 'CC_TYPE', mtd_type, reference, module])
-
-    if name.lower() == "a-ccsd(t)":
-        pass
-    elif name.lower() in ["ccsd(at)", "lambda-ccsd(t)"]:
-        core.print_out(f"""\nMethod "{name.lower()}" has been regularized to "a-ccsd(t)" for QCVariables.""")
-        name = "a-ccsd(t)"
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1064,9 +1063,8 @@ def select_cisd(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CI_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only detci/fnocc
 
     func = None
     if reference == 'RHF':
@@ -1081,7 +1079,7 @@ def select_cisd(name, **kwargs):
                 func = run_detci
 
     if func is None:
-        raise ManagedMethodError(['select_cisd', name, 'CI_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1095,9 +1093,8 @@ def select_mp4(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only detci/fnocc
 
     func = None
     if reference == 'RHF':
@@ -1108,15 +1105,16 @@ def select_mp4(name, **kwargs):
                 func = run_fnocc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
-            if module == 'DETCI':  # no default for this case
-                func = run_detci
-            elif module in ['']:
-                core.print_out("""\nThis method is available inefficiently as a """
-                               """byproduct of a CISDT computation.\n  Add "set """
-                               """qc_module detci" to input to access this route.\n""")
+            if module == 'DETCI':
+                raise UpgradeHelper("energy('mp4')", "energy('zapt4')", 1.7,
+                    " Replace method MP with method ZAPT for ROHF reference. DETCI is orders-of-magnitude inefficient for perturbation theory.")
+
+    if module == 'DETCI':
+        core.print_out("""\nDETCI is ill-advised for method MP4 as it is available inefficiently as a """
+                       """byproduct of a CISDT computation.\n""")
 
     if func is None:
-        raise ManagedMethodError(['select_mp4', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1130,9 +1128,8 @@ def select_remp2(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
+    type_var, _, mtd_type = method_algorithm_type(name)
     module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
 
     func = None
     if reference in ["RHF", "UHF"]:
@@ -1147,7 +1144,220 @@ def select_remp2(name, **kwargs):
                 func = run_dfocc
 
     if func is None:
-        raise ManagedMethodError(['select_remp2', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_ccd(name, **kwargs):
+    """Function selecting the algorithm for a CCD energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option("SCF", "REFERENCE")
+    type_var, _, mtd_type = method_algorithm_type(name)
+    module = core.get_global_option("QC_MODULE")
+
+    func = None
+    if reference in ["RHF"]:  # , "UHF"]
+        if mtd_type == "CONV":
+            if module in [""]:
+                core.print_out("""\nThis method is not available with conventional integrals. Add "set """
+                               """cc_type df" or "set cc_type cd" to input to access this method.\n""")
+        elif mtd_type == "DF":
+            if module in ["", "OCC"]:
+                func = run_dfocc
+        elif mtd_type == "CD":
+            if module in ["", "OCC"]:
+                func = run_dfocc
+
+    if func is None:
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_ccd_gradient(name, **kwargs):
+    """Function selecting the algorithm for a CCD gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option("SCF", "REFERENCE")
+    type_var, _, mtd_type = method_algorithm_type(name)
+    module = core.get_global_option("QC_MODULE")
+
+    func = None
+    if reference in ["RHF"]:  # , "UHF"]
+        if mtd_type == "CONV":
+            if module in [""]:
+                core.print_out("""\nThis method is not available with conventional integrals. Add "set """
+                               """cc_type df" or "set cc_type cd" to input to access this method.\n""")
+        elif mtd_type == "DF":
+            if module in ["", "OCC"]:
+                func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
+
+    if kwargs.pop("probe", False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_cc2(name, **kwargs):
+    """Function selecting the algorithm for a CC2 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    type_var, _, mtd_type = method_algorithm_type(name)
+    module = core.get_global_option('QC_MODULE')
+
+    # [LAB Aug 2022] I'm leaving MRCC CC2 in as a route, but my c.2014 MRCC consistently yields:
+    #   "Approximate CC methods are not implemented for excitation level 2!"
+    # [LAB Aug 2022] DF CC2 enabled for test_gradient but only by deliberate `set qc_module ccenergy`
+    #   since not advertised. See #2710.
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
+                func = run_ccenergy
+        elif mtd_type == 'DF':
+            if module in ['CCENERGY']:
+                func = run_ccenergy
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
+                func = run_ccenergy
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
+                func = run_ccenergy
+
+    if func is None:
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_cc2_gradient(name, **kwargs):
+    """Function selecting the algorithm for a CC2 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    type_var, _, mtd_type = method_algorithm_type(name)
+    module = core.get_global_option('QC_MODULE')
+
+    # [LAB Aug 2022] Both UHF and ROHF gradients run in ccenergy but ROHF is slightly off (1.e-5)
+    #   and UHF is more off (1.e-4). Moreover, manual only claims RHF are working, so restricting here.
+    # [LAB Aug 2022] DF CC2 enabled for test_gradient but only by deliberate `set qc_module ccenergy`
+    #   since not advertised. See #2710.
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy_gradient
+        elif mtd_type == 'DF':
+            if module in ['CCENERGY']:
+                func = run_ccenergy_gradient
+
+    if func is None:
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_cc3(name, **kwargs):
+    """Function selecting the algorithm for a CC3 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    type_var, _, mtd_type = method_algorithm_type(name)
+    module = core.get_global_option('QC_MODULE')
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
+                func = run_ccenergy
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module == 'MRCC' and which("dmrcc", return_bool=True):
+                func = run_mrcc
+            elif module in ['', 'CCENERGY']:
+                func = run_ccenergy
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            # ROHF MRCC CC3  CCn methods are not implemented for ROHF reference!
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy
+
+    if func is None:
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_mrcc(name, **kwargs):
+    """Function selecting the algorithm for a CC* energy call
+    and directing to specified MRCC module.
+
+    This function is unusual among "select" functions in that it services multiple methods and a
+    single module. This function could have been skipped and the methods associated directly with
+    run_rmcc; however, routing through this function screens for conv only while
+    providing uniform error messages with other select functions.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    type_var, _, mtd_type = method_algorithm_type(name)
+    module = core.get_global_option('QC_MODULE')
+
+    # todo fix table link anchor
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
+                func = run_mrcc
+    elif reference == 'UHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
+                func = run_mrcc
+    elif reference == 'ROHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
+                func = run_mrcc
+
+    if func is None:
+        raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1324,7 +1534,9 @@ def scf_helper(name, post_scf=True, **kwargs):
     """Function serving as helper to SCF, choosing whether to cast
     up or just run SCF with a standard guess. This preserves
     previous SCF options set by other procedures (e.g., SAPT
-    output file types for SCF).
+    output file types for SCF). Most run_* functions should call
+    this function, common exceptions being when multireference
+    SCF is needed or when restarting from converged SCF.
 
     """
 
@@ -1849,6 +2061,8 @@ def run_dfocc(name, **kwargs):
     (non-)orbital-optimized MPN or CC computation.
 
     """
+    dtl = docs_table_link("dummy", "occ_nonoo")
+
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
         ['DFOCC', 'WFN_TYPE'],
@@ -1874,44 +2088,44 @@ def run_dfocc(name, **kwargs):
             if core.get_global_option('SCF_TYPE') != 'CD':
                 core.set_local_option('DFOCC', 'READ_SCF_3INDEX', 'FALSE')
         else:
-            raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")
+            raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC. See Capabilities Table at {dtl}""")
 
     if name in ["mp2.5", "mp3"] and not core.has_global_option_changed("MP_TYPE"):
         core.print_out(f"    Information: {name.upper()} default algorithm changed to DF in August 2020. Use `set mp_type conv` for previous behavior.\n")
 
     director = {
-           "mp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP2_TYPE")},
-          "omp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP2_TYPE")},
+           "mp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+          "omp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-           "mp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
-          "omp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
+           "mp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+          "omp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-           "mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
-          "omp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
+           "mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+          "omp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-         "remp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
-        "oremp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+         "remp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+        "oremp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-          "lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
-         "olccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+          "lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+         "olccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-           "ccd":     {"wfn_type": "DF-CCD",      "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},  # changes to DF-OCCD
+           "ccd":     {"wfn_type": "DF-CCD",      "orb_opt": "FALSE", "nat_orbs": "FALSE",},  # changes to DF-OCCD
 
-           "ccsd":    {"wfn_type": "DF-CCSD",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+           "ccsd":    {"wfn_type": "DF-CCSD",     "orb_opt": "FALSE", "nat_orbs": "FALSE",},
 
-           "ccsd(t)": {"wfn_type": "DF-CCSD(T)",  "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+           "ccsd(t)": {"wfn_type": "DF-CCSD(T)",  "orb_opt": "FALSE", "nat_orbs": "FALSE",},
 
-         "a-ccsd(t)": {"wfn_type": "DF-CCSD(AT)", "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+         "a-ccsd(t)": {"wfn_type": "DF-CCSD(AT)", "orb_opt": "FALSE", "nat_orbs": "FALSE",},
     }
 
     if name not in director:
         raise ValidationError(f"Invalid method {name} for DFOCC energy")
 
+    # throw exception for CONV (approximately). run reference defaulting logic
+    set_cholesky_from(method_algorithm_type(name).now)
+
     for k, v in director[name].items():
-        if k == "corl_type":
-            set_cholesky_from(v)
-        else:
-            core.set_local_option("DFOCC", k.upper(), v)
+        core.set_local_option("DFOCC", k.upper(), v)
 
     core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
     core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
@@ -1958,6 +2172,8 @@ def run_dfocc_gradient(name, **kwargs):
     a density-fitted (non-)orbital-optimized MPN or CC computation.
 
     """
+    dtl = docs_table_link("dummy", "occ_nonoo")
+
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
         ['REFERENCE'],
@@ -1966,56 +2182,54 @@ def run_dfocc_gradient(name, **kwargs):
         ['DFOCC', 'CC_LAMBDA'],
         ['GLOBALS', 'DERTYPE'])
 
-
-    proc_util.check_disk_df(name.upper(), optstash)
-
-    if core.get_global_option('SCF_TYPE') != 'DISK_DF':
-        raise ValidationError('DFOCC gradients need DF-SCF reference.')
+    if name in ["mp2.5", "mp3"] and not core.has_global_option_changed("MP_TYPE"):
+        core.print_out(f"    Information: {name.upper()} default algorithm changed to DF in August 2020. Use `set mp_type conv` for previous behavior.\n")
 
     # CC_LAMBDA keyword was being set TRUE sporadically, but that's covered c-side
 
     director = {
-           "mp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP2_TYPE")},
-          "omp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP2_TYPE")},
+           "mp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+          "omp2":     {"wfn_type": "DF-OMP2",     "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-           "mp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
-          "omp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
+           "mp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+          "omp2.5":   {"wfn_type": "DF-OMP2.5",   "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-           "mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE") if core.has_global_option_changed("MP_TYPE") else "DF"},
-          "omp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("MP_TYPE")},
+           "mp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+          "omp3":     {"wfn_type": "DF-OMP3",     "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-         "remp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
-        "oremp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+         "remp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+        "oremp2":     {"wfn_type": "DF-OREMP",    "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-          "lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
-         "olccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "TRUE",  "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+          "lccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "FALSE", "nat_orbs": "FALSE",},
+         "olccd":     {"wfn_type": "DF-OLCCD",    "orb_opt": "TRUE",  "nat_orbs": "FALSE",},
 
-           "ccd":     {"wfn_type": "DF-CCD",      "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},  # changes to DF-OCCD
+           "ccd":     {"wfn_type": "DF-CCD",      "orb_opt": "FALSE", "nat_orbs": "FALSE",},  # changes to DF-OCCD
 
-           "ccsd":    {"wfn_type": "DF-CCSD",     "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+           "ccsd":    {"wfn_type": "DF-CCSD",     "orb_opt": "FALSE", "nat_orbs": "FALSE",},
 
-           "ccsd(t)": {"wfn_type": "DF-CCSD(T)",  "orb_opt": "FALSE", "nat_orbs": "FALSE", "corl_type": core.get_global_option("CC_TYPE")},
+           "ccsd(t)": {"wfn_type": "DF-CCSD(T)",  "orb_opt": "FALSE", "nat_orbs": "FALSE",},
     }
 
     if name not in director:
         raise ValidationError(f"Invalid method {name} for DFOCC gradient")
 
-    if director[name]["corl_type"] not in ["DF", "CD"]:
-        raise ValidationError(f"Invalid type '{corl_type}' for DFOCC")
+    # throw exception for CONV (approximately)
+    if (corl_type := method_algorithm_type(name).now) not in ["DF", "CD"]:
+        raise ValidationError(f"Invalid type {corl_type} for DFOCC gradient. See Capabilities Table at {dtl}")
+
+    proc_util.check_disk_df(name.upper(), optstash)
+
+    # throw exception for SCF_TYPE
+    if core.get_global_option('SCF_TYPE') != 'DISK_DF':
+        raise ValidationError('DFOCC gradients need DF-SCF reference.')
 
     for k, v in director[name].items():
-        if k == "corl_type":
-            pass
-        else:
-            core.set_local_option("DFOCC", k.upper(), v)
+        core.set_local_option("DFOCC", k.upper(), v)
 
     core.set_global_option('DERTYPE', 'FIRST')
     core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
     core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
     core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-
-    if name in ["mp2.5", "mp3"] and not core.has_global_option_changed("MP_TYPE"):
-        core.print_out(f"    Information: {name.upper()} default algorithm changed to DF in August 2020. Use `set mp_type conv` for previous behavior.\n")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2126,18 +2340,24 @@ def run_dfocc_property(name, **kwargs):
 
 def run_qchf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    an density-fitted orbital-optimized MP2 computation
+    an quadratically-convergent SCF computation.
 
     """
+    dtl = docs_table_link("dummy", "occ_nonoo")
+
     optstash = p4util.OptionsState(
         ['SCF', 'DF_INTS_IO'],
         ['DF_BASIS_SCF'],
-        ['DIE_IF_NOT_CONVERGED'],
+        ['SCF', 'FAIL_ON_MAXITER'],
         ['MAXITER'],
         ['DFOCC', 'ORB_OPT'],
         ['DFOCC', 'WFN_TYPE'],
         ['DFOCC', 'QCHF'],
         ['DFOCC', 'E_CONVERGENCE'])
+
+    # throw exception for CONV
+    if (corl_type := method_algorithm_type(name).now) not in ["DISK_DF", "DF", "CD"]:
+        raise ValidationError(f"Invalid type {corl_type} for QCHF energy through `run_qchf`. See Capabilities Table at {dtl}")
 
     core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
     core.set_local_option('DFOCC', 'WFN_TYPE', 'QCHF')
@@ -2145,7 +2365,7 @@ def run_qchf(name, **kwargs):
     core.set_local_option('DFOCC', 'E_CONVERGENCE', 8)
 
     core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
-    core.set_local_option('SCF', 'DIE_IF_NOT_CONVERGED', 'FALSE')
+    core.set_local_option('SCF', 'FAIL_ON_MAXITER', False)
     core.set_local_option('SCF', 'MAXITER', 1)
 
     # Bypass the scf call if a reference wavefunction is given
@@ -2161,6 +2381,11 @@ def run_qchf(name, **kwargs):
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
 
+    # Shove variables into global space
+    for k, v in dfocc_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
     return dfocc_wfn
 
 
@@ -2352,6 +2577,11 @@ def run_scf(name, **kwargs):
     ssuper = scf_wfn.functional()
 
     if ssuper.is_c_hybrid():
+
+        # throw exception for CONV/CD MP2
+        if (mp2_type := core.get_global_option("MP2_TYPE")) != "DF":
+            raise ValidationError(f"Invalid MP2 type {mp2_type} for DF-DFT energy. See capabilities Table.")
+
         core.tstart()
         aux_basis = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
                                         core.get_option("DFMP2", "DF_BASIS_MP2"),
@@ -2483,7 +2713,7 @@ def run_scf_hessian(name, **kwargs):
     badref = core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF', 'UKS']
     badint = core.get_global_option('SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
     if badref or badint:
-        raise ValidationError("Only RHF/UHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
+        raise ValidationError("Only RHF/UHF/RKS Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
 
     if hasattr(ref_wfn, "_disp_functor"):
         disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule(), ref_wfn)
@@ -2662,9 +2892,9 @@ def run_ccenergy(name, **kwargs):
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
     # Obtain semicanonical orbitals
-    if (core.get_option('SCF', 'REFERENCE') == 'ROHF') and \
-            ((name in ['ccsd(t)', 'a-ccsd(t)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or
-              core.get_option('CCTRANSORT', 'SEMICANONICAL')):
+    if ((core.get_option('SCF', 'REFERENCE') == 'ROHF')
+        and ((name in ['ccsd(t)', 'a-ccsd(t)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3'])
+            or core.get_option('CCTRANSORT', 'SEMICANONICAL'))):
         ref_wfn.semicanonicalize()
 
     if core.get_global_option('RUN_CCTRANSORT'):
@@ -2741,6 +2971,8 @@ def run_bccd(name, **kwargs):
     a Brueckner CCD calculation.
 
     """
+    dtl = docs_table_link("dummy", "ccenergy")
+
     optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['CCSORT', 'WFN'],
@@ -2760,6 +2992,9 @@ def run_bccd(name, **kwargs):
         core.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
     else:
         raise ValidationError("proc.py:run_bccd name %s not recognized" % name)
+
+    if (corl_type := method_algorithm_type(name).now) != "CONV":
+        raise ValidationError(f"Invalid type {corl_type} for CCENERGY energy through `run_bccd`. See Capabilities Table at {dtl}")
 
     # Bypass routine scf if user did something special to get it to converge
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -3368,18 +3603,18 @@ def run_eom_cc(name, **kwargs):
         core.set_local_option('CCHBAR', 'WFN', 'EOM_CCSD')
         core.set_local_option('CCEOM', 'WFN', 'EOM_CCSD')
         ref_wfn = run_ccenergy('ccsd', **kwargs)
-    elif name == 'eom-cc2':
 
+    elif name == 'eom-cc2':
         user_ref = core.get_option('CCENERGY', 'REFERENCE')
         if (user_ref != 'RHF') and (user_ref != 'UHF'):
             raise ValidationError('Reference %s for EOM-CC2 is not available.' % user_ref)
-
         core.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
         core.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
         core.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
         core.set_local_option('CCHBAR', 'WFN', 'EOM_CC2')
         core.set_local_option('CCEOM', 'WFN', 'EOM_CC2')
         ref_wfn = run_ccenergy('cc2', **kwargs)
+
     elif name == 'eom-cc3':
         core.set_local_option('TRANSQT2', 'WFN', 'EOM_CC3')
         core.set_local_option('CCSORT', 'WFN', 'EOM_CC3')
@@ -3804,6 +4039,8 @@ def run_detci(name, **kwargs):
     CIn, MPn, and ZAPTn.
 
     """
+    # dtl = docs_table_link("dummy", "detci")
+
     optstash = p4util.OptionsState(
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
@@ -3812,30 +4049,36 @@ def run_detci(name, **kwargs):
         ['DETCI', 'FCI'],
         ['DETCI', 'EX_LEVEL'])
 
+    # throw exception for UHF
     if core.get_option('DETCI', 'REFERENCE') not in ['RHF', 'ROHF']:
         raise ValidationError('Reference %s for DETCI is not available.' %
             core.get_option('DETCI', 'REFERENCE'))
 
-    if name == 'zapt':
+    # throw exception for DF/CD. many of these pre-trapped by select_* functions but some escape, incl. zapt
+    if (corl_type := method_algorithm_type(name).now) != "CONV":
+        raise ValidationError(f"Invalid type {corl_type} for DETCI energy through `run_detci`.")  # See Capabilities Table")
+
+    mtdlvl_mobj = re.match(r"""\A(?P<method>[a-z]+)(?P<level>\d+)\Z""", name.lower())
+
+    if mtdlvl_mobj and mtdlvl_mobj.group("method") == "zapt":
+        level = int(mtdlvl_mobj.group("level"))
+
+        # throw exception for non-ROHF
+        if (ref := core.get_option("SCF", "REFERENCE")) != "ROHF":
+            raise UpgradeHelper(f"energy('zapt{level}')", f"energy('mp{level}')", 1.7,
+                    " Replace method ZAPT with method MP for RHF reference. DETCI is orders-of-magnitude inefficient for perturbation theory.")
+
         core.set_local_option('DETCI', 'WFN', 'ZAPTN')
-        level = kwargs['level']
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
         core.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if (level + 1) % 2:
             core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
             core.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
-    elif name in ['mp', 'mp2', 'mp3', 'mp4']:
+    elif mtdlvl_mobj and mtdlvl_mobj.group("method") == "mp":
         core.set_local_option('DETCI', 'WFN', 'DETCI')
         core.set_local_option('DETCI', 'MPN', 'TRUE')
-        if name == 'mp2':
-            level = 2
-        elif name == 'mp3':
-            level = 3
-        elif name == 'mp4':
-            level = 4
-        else:
-            level = kwargs['level']
+        level = int(mtdlvl_mobj.group("level"))
         maxnvect = int((level + 1) / 2) + (level + 1) % 2
         core.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if (level + 1) % 2:
@@ -3859,9 +4102,9 @@ def run_detci(name, **kwargs):
     elif name == 'cisdtq':
         core.set_local_option('DETCI', 'WFN', 'DETCI')
         core.set_local_option('DETCI', 'EX_LEVEL', 4)
-    elif name == 'ci':
+    elif mtdlvl_mobj and mtdlvl_mobj.group("method") == "ci":
         core.set_local_option('DETCI', 'WFN', 'DETCI')
-        level = kwargs['level']
+        level = int(mtdlvl_mobj.group("level"))
         core.set_local_option('DETCI', 'EX_LEVEL', level)
     elif name == 'detci':
         pass
@@ -3904,6 +4147,11 @@ def run_detci(name, **kwargs):
     ciwfn.cleanup_ci()
     ciwfn.cleanup_dpd()
     _clean_detci()
+
+    for lvl in range(4, 11):
+        if ciwfn.has_variable(f"MP{lvl} CORRELATION ENERGY") and ciwfn.has_variable(f"MP{lvl-1} CORRELATION ENERGY"):
+            ciwfn.set_variable(f"MP{lvl} CORRECTION ENERGY", ciwfn.variable(f"MP{lvl} CORRELATION ENERGY") - ciwfn.variable(f"MP{lvl-1} CORRELATION ENERGY"))
+            core.set_variable(f"MP{lvl} CORRECTION ENERGY", ciwfn.variable(f"MP{lvl} CORRELATION ENERGY") - ciwfn.variable(f"MP{lvl-1} CORRELATION ENERGY"))
 
     optstash.restore()
     return ciwfn
@@ -4217,6 +4465,9 @@ def run_psimrcc_scf(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
+
     psimrcc_wfn = core.psimrcc(ref_wfn)
 
     # Shove variables into global space
@@ -4267,8 +4518,6 @@ def run_sapt(name, **kwargs):
         core.set_local_option('SAPT', 'SAPT0_E20IND', True)
         core.set_local_option('SAPT', 'SAPT0_E20Disp', False)
 
-    # raise Exception("")
-
     ri = core.get_global_option('SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
     # inquire if above at all applies to dfmp2
@@ -4290,7 +4539,7 @@ def run_sapt(name, **kwargs):
     core.timer_off("SAPT: Dimer SCF")
 
     if do_delta_mp2:
-        select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
+        select_mp2("mp2", ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = core.variable('MP2 CORRELATION ENERGY')
 
     optstash2.restore()
@@ -4311,7 +4560,7 @@ def run_sapt(name, **kwargs):
     core.timer_off("SAPT: Monomer A SCF")
 
     if do_delta_mp2:
-        select_mp2(name, ref_wfn=monomerA_wfn, **kwargs)
+        select_mp2("mp2", ref_wfn=monomerA_wfn, **kwargs)
         mp2_corl_interaction_e -= core.variable('MP2 CORRELATION ENERGY')
 
     # Compute Monomer B wavefunction
@@ -4328,7 +4577,7 @@ def run_sapt(name, **kwargs):
 
     # Delta MP2
     if do_delta_mp2:
-        select_mp2(name, ref_wfn=monomerB_wfn, **kwargs)
+        select_mp2("mp2", ref_wfn=monomerB_wfn, **kwargs)
         mp2_corl_interaction_e -= core.variable('MP2 CORRELATION ENERGY')
         core.set_variable("SAPT MP2 CORRELATION ENERGY", mp2_corl_interaction_e)  # P::e SAPT
     core.set_global_option('DF_INTS_IO', df_ints_io)
@@ -4646,20 +4895,22 @@ def run_mrcc(name, **kwargs):
     for a calculation calling Kallay's MRCC code.
 
     """
+    from .proc_data import mrcc_methods
+
+    # level is a dictionary of settings to be passed to core.mrcc
+    try:
+        level = mrcc_methods[name.lower()]
+    except KeyError:
+        if name.lower() == "a-ccsd(t)":
+            level = mrcc_methods["ccsd(t)_l"]
+        else:
+            raise ValidationError(f"""MRCC method '{name}' invalid.""")
 
     # Check to see if we really need to run the SCF code.
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
     vscf = ref_wfn.variable('SCF TOTAL ENERGY')
-
-    # The parse_arbitrary_order method provides us the following information
-    # We require that level be provided. level is a dictionary
-    # of settings to be passed to core.mrcc
-    if not('level' in kwargs):
-        raise ValidationError('level parameter was not provided.')
-
-    level = kwargs['level']
 
     # Fullname is the string we need to search for in iface
     fullname = level['fullname']
@@ -4700,6 +4951,7 @@ def run_mrcc(name, **kwargs):
 
     # Generate integrals and input file (dumps files to the current directory)
     core.mrcc_generate_input(ref_wfn, level)
+    ref_wfn.set_module("mrcc")
 
     # Load the fort.56 file
     # and dump a copy into the outfile
@@ -4745,14 +4997,29 @@ def run_mrcc(name, **kwargs):
             ene = float(fields[5])
             if m == "MP(2)":
                 m = "MP2"
-            core.set_variable(m + ' TOTAL ENERGY', ene)
-            core.set_variable(m + ' CORRELATION ENERGY', ene - vscf)
+            elif m == "CCSD[T]":
+                m = "CCSD+T(CCSD)"
+            elif m == "CCSD(T)_L":
+                m = "A-CCSD(T)"
+            ref_wfn.set_variable(m + ' TOTAL ENERGY', ene)
+            ref_wfn.set_variable(m + ' CORRELATION ENERGY', ene - vscf)
         except ValueError:
             continue
 
     # The last 'ene' in iface is the one the user requested.
-    core.set_variable('CURRENT ENERGY', ene)
-    core.set_variable('CURRENT CORRELATION ENERGY', ene - vscf)
+    ref_wfn.set_variable('CURRENT ENERGY', ene)
+    ref_wfn.set_variable('CURRENT CORRELATION ENERGY', ene - vscf)
+
+    for subm in ["MP2", "CCSD"]:
+        if ref_wfn.has_variable(f"{subm} TOTAL ENERGY") and core.get_option("SCF", "REFERENCE") in ["RHF", "UHF"]:
+            ref_wfn.set_variable(f"{subm} SINGLES ENERGY", 0.0)
+            ref_wfn.set_variable(f"{subm} DOUBLES ENERGY", ref_wfn.variable(f"{subm} CORRELATION ENERGY"))
+
+    if ref_wfn.has_variable("CCSD(T) CORRELATION ENERGY") and ref_wfn.has_variable("CCSD CORRELATION ENERGY"):
+        ref_wfn.set_variable("(T) CORRECTION ENERGY", ref_wfn.variable("CCSD(T) CORRELATION ENERGY") - ref_wfn.variable("CCSD CORRELATION ENERGY"))
+
+    if ref_wfn.has_variable("A-CCSD(T) CORRELATION ENERGY") and ref_wfn.has_variable("CCSD CORRELATION ENERGY"):
+        ref_wfn.set_variable("A-(T) CORRECTION ENERGY", ref_wfn.variable("A-CCSD(T) CORRELATION ENERGY") - ref_wfn.variable("CCSD CORRELATION ENERGY"))
 
     # Load the iface file
     iface = open('iface', 'r')
@@ -4782,18 +5049,24 @@ def run_mrcc(name, **kwargs):
     core.print_out('\n')
     core.print_out(iface_contents)
 
+    # Shove variables into global space
+    for k, v in ref_wfn.variables().items():
+        core.set_variable(k, v)
+
+    core.print_variables()
     return ref_wfn
 
 
 def run_fnodfcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a DF-CCSD(T) computation.
+    a [FNO-](DF|CD)-CCSD[(T)] computation.
 
     >>> set cc_type df
     >>> energy('fno-ccsd(t)')
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+    dtl = docs_table_link("dummy", "fnocc")
 
     # stash user options
     optstash = p4util.OptionsState(
@@ -4805,15 +5078,7 @@ def run_fnodfcc(name, **kwargs):
         ['SCF', 'DF_BASIS_SCF'],
         ['SCF', 'DF_INTS_IO'])
 
-    core.set_local_option('FNOCC', 'DFCC', True)
-    core.set_local_option('FNOCC', 'RUN_CEPA', False)
-
-    # throw an exception for open-shells
-    if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError(f"""Error: {name} requires 'reference rhf'.""")
-
-    def set_cholesky_from(mtd_type):
-        type_val = core.get_global_option(mtd_type)
+    def set_cholesky_from(type_val):
         if type_val == 'CD':
             core.set_local_option('FNOCC', 'DF_BASIS_CC', 'CHOLESKY')
             # Alter default algorithm
@@ -4828,26 +5093,31 @@ def run_fnodfcc(name, **kwargs):
 
             proc_util.check_disk_df(name.upper(), optstash)
         else:
-            raise ValidationError("""Invalid type '%s' for DFCC""" % type_val)
+            raise ValidationError(f"Invalid type {type_val} for FNOCC energy through `run_fnodfcc`. See Capabilities Table at {dtl}")
 
-    # triples?
-    if name == 'ccsd':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        set_cholesky_from('CC_TYPE')
-    elif name == 'ccsd(t)':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        set_cholesky_from('CC_TYPE')
-    elif name == 'fno-ccsd':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-        set_cholesky_from('CC_TYPE')
-    elif name == 'fno-ccsd(t)':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-        set_cholesky_from('CC_TYPE')
+    director = {
+                 # Note "nat_orbs" not set defensively False for non-"fno" calls
+           "ccsd":     {                   "dfcc": True,  "run_cepa": False, "compute_triples": False,},
+       "fno-ccsd":     {"nat_orbs": True,  "dfcc": True,  "run_cepa": False, "compute_triples": False,},
 
-    if core.get_global_option('SCF_TYPE') not in ['CD', 'DISK_DF']:
-        raise ValidationError("""Invalid scf_type for DFCC.""")
+           "ccsd(t)":  {                   "dfcc": True,  "run_cepa": False, "compute_triples": True, },
+       "fno-ccsd(t)":  {"nat_orbs": True,  "dfcc": True,  "run_cepa": False, "compute_triples": True, },
+    }
+
+    if name not in director:
+        raise ValidationError(f"Invalid method {name} for FNOCC energy")
+
+    # throw exception for open-shells
+    if (ref := core.get_option("SCF", "REFERENCE")) != "RHF":
+        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table at {dtl}.")
+
+    # throw exception for CONV (approximately). after defaulting logic, throw exception for SCF_TYPE CONV (approximately)
+    set_cholesky_from(method_algorithm_type(name).now)
+    if (scf_type := core.get_global_option("SCF_TYPE")) not in ["CD", "DISK_DF"]:
+        raise ValidationError(f"Invalid {scf_type=} for FNOCC energy through `run_fnodfcc`. See Capabilities Table at {dtl}")
+
+    for k, v in director[name].items():
+        core.set_local_option("FNOCC", k.upper(), v)
 
     # save DF or CD ints generated by SCF for use in CC
     core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
@@ -4897,7 +5167,7 @@ def run_fnocc(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
-    level = kwargs.get('level', 0)
+    dtl = docs_table_link("dummy", "fnocc")
 
     # stash user options:
     optstash = p4util.OptionsState(
@@ -4913,68 +5183,51 @@ def run_fnocc(name, **kwargs):
         ['FNOCC', 'USE_DF_INTS'],
         ['FNOCC', 'NAT_ORBS'])
 
-    core.set_local_option('FNOCC', 'DFCC', False)
-    core.set_local_option('FNOCC', 'RUN_CEPA', False)
+    # AED reinforces default
     core.set_local_option('FNOCC', 'USE_DF_INTS', False)
 
-    # which method?
-    if name == 'ccsd':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        core.set_local_option('FNOCC', 'RUN_CCSD', True)
-    elif name == 'ccsd(t)':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        core.set_local_option('FNOCC', 'RUN_CCSD', True)
-    elif name == 'fno-ccsd':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        core.set_local_option('FNOCC', 'RUN_CCSD', True)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-    elif name == 'fno-ccsd(t)':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        core.set_local_option('FNOCC', 'RUN_CCSD', True)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-    elif name == 'qcisd':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        core.set_local_option('FNOCC', 'RUN_CCSD', False)
-    elif name == 'qcisd(t)':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        core.set_local_option('FNOCC', 'RUN_CCSD', False)
-    elif name == 'fno-qcisd':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        core.set_local_option('FNOCC', 'RUN_CCSD', False)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-    elif name == 'fno-qcisd(t)':
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-        core.set_local_option('FNOCC', 'RUN_CCSD', False)
-    elif name == 'mp2':
-        core.set_local_option('FNOCC', 'RUN_MP2', True)
-    elif name == 'fno-mp3':
-        core.set_local_option('FNOCC', 'RUN_MP3', True)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-    elif name == 'fno-mp4':
-        core.set_local_option('FNOCC', 'RUN_MP4', True)
-        core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', True)
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-    elif name == 'mp4(sdq)':
-        core.set_local_option('FNOCC', 'RUN_MP4', True)
-        core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', False)
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-    elif name == 'fno-mp4(sdq)':
-        core.set_local_option('FNOCC', 'RUN_MP4', True)
-        core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', False)
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
-    elif name == 'mp3':
-        core.set_local_option('FNOCC', 'RUN_MP3', True)
-    elif name == 'mp4':
-        core.set_local_option('FNOCC', 'RUN_MP4', True)
-        core.set_local_option('FNOCC', 'COMPUTE_MP4_TRIPLES', True)
-        core.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+    if name in ["mp3", "fno-mp3"] and not core.has_global_option_changed("MP_TYPE"):
+        core.print_out(f"    Information: {name.upper()} default algorithm changed to DF in August 2020. Use `set mp_type conv` for previous behavior.\n")
 
-    # throw an exception for open-shells
-    if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError(f"""Error: {name} requires 'reference rhf'.""")
+    director = {
+                 # Note "nat_orbs" not set defensively False for non-"fno" calls
+           "mp2":      {                  "dfcc": False, "run_cepa": False,                                              "run_mp2": True,                                                                   },
+
+           "mp3":      {                  "dfcc": False, "run_cepa": False,                                                                "run_mp3": True,                                                 },
+       "fno-mp3":      {"nat_orbs": True, "dfcc": False, "run_cepa": False,                                                                "run_mp3": True,                                                 },
+
+           "mp4(sdq)": {                  "dfcc": False, "run_cepa": False,                    "compute_triples": False,                                     "run_mp4": True,  "compute_mp4_triples": False,},
+       "fno-mp4(sdq)": {"nat_orbs": True, "dfcc": False, "run_cepa": False,                    "compute_triples": False,                                     "run_mp4": True,  "compute_mp4_triples": False,},
+
+           "mp4":      {                  "dfcc": False, "run_cepa": False,                    "compute_triples": True,                                      "run_mp4": True,  "compute_mp4_triples": True, },
+       "fno-mp4":      {"nat_orbs": True, "dfcc": False, "run_cepa": False,                    "compute_triples": True,                                      "run_mp4": True,  "compute_mp4_triples": True, },
+
+          "qcisd":     {                  "dfcc": False, "run_cepa": False, "run_ccsd": False, "compute_triples": False,                                                                                    },
+      "fno-qcisd":     {"nat_orbs": True, "dfcc": False, "run_cepa": False, "run_ccsd": False, "compute_triples": False,                                                                                    },
+
+          "qcisd(t)":  {                  "dfcc": False, "run_cepa": False, "run_ccsd": False, "compute_triples": True,                                                                                     },
+      "fno-qcisd(t)":  {"nat_orbs": True, "dfcc": False, "run_cepa": False, "run_ccsd": False, "compute_triples": True,                                                                                     },
+
+           "ccsd":     {                  "dfcc": False, "run_cepa": False, "run_ccsd": True,  "compute_triples": False,                                                                                    },
+       "fno-ccsd":     {"nat_orbs": True, "dfcc": False, "run_cepa": False, "run_ccsd": True,  "compute_triples": False,                                                                                    },
+
+           "ccsd(t)":  {                  "dfcc": False, "run_cepa": False, "run_ccsd": True,  "compute_triples": True,                                                                                     },
+       "fno-ccsd(t)":  {"nat_orbs": True, "dfcc": False, "run_cepa": False, "run_ccsd": True,  "compute_triples": True,                                                                                     },
+    }
+
+    if name not in director:
+        raise ValidationError(f"Invalid method {name} for FNOCC energy")
+
+    # throw exception for open-shells
+    if (ref := core.get_option("SCF", "REFERENCE")) != "RHF":
+        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table at {dtl}")
+
+    # throw exception for DF/CD. most of these pre-trapped by select_* functions but some escape, incl. mp4(sdq) and qcisd variants
+    if (corl_type := method_algorithm_type(name).now) != "CONV":
+        raise ValidationError(f"Invalid type {corl_type} for FNOCC energy through `run_fnocc`. See Capabilities Table at {dtl}")
+
+    for k, v in director[name].items():
+        core.set_local_option("FNOCC", k.upper(), v)
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -5001,16 +5254,12 @@ def run_fnocc(name, **kwargs):
 
     fnocc_wfn = core.fnocc(ref_wfn)
 
-    # set current correlation energy and total energy.  only need to treat mpn here.
-    if name in ["mp3", "fno-mp3"]:
-        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP3 TOTAL ENERGY"))
-        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP3 CORRELATION ENERGY"))
-    elif name in ["mp4(sdq)", "fno-mp4(sdq)"]:
-        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP4(SDQ) TOTAL ENERGY"))
-        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP4(SDQ) CORRELATION ENERGY"))
-    elif name in ["mp4", "fno-mp4"]:
-        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable("MP4 TOTAL ENERGY"))
-        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable("MP4 CORRELATION ENERGY"))
+    # set current correlation energy and total energy. only need to treat mpn here.
+    if (lbl := name.replace("fno-", "")) in ["mp3", "mp4(sdq)", "mp4"]:
+        fnocc_wfn.set_variable("CURRENT ENERGY", fnocc_wfn.variable(f"{lbl.upper()} TOTAL ENERGY"))
+        fnocc_wfn.set_variable("CURRENT CORRELATION ENERGY", fnocc_wfn.variable(f"{lbl.upper()} CORRELATION ENERGY"))
+        if lbl == "mp4":
+            fnocc_wfn.set_variable("MP4 CORRECTION ENERGY", fnocc_wfn.variable("MP4 CORRELATION ENERGY") - fnocc_wfn.variable("MP3 CORRELATION ENERGY"))
 
     # Shove variables into global space
     for k, v in fnocc_wfn.variables().items():
@@ -5028,51 +5277,60 @@ def run_cepa(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+    dtl = docs_table_link("dummy", "fnocc")
 
     # save user options
     optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['FNOCC', 'NAT_ORBS'],
+        ['FNOCC', 'DFCC'],
         ['FNOCC', 'RUN_CEPA'],
         ['FNOCC', 'USE_DF_INTS'],
+        ['FNOCC', 'CEPA_LEVEL'],
         ['FNOCC', 'CEPA_NO_SINGLES'])
 
-    core.set_local_option('FNOCC', 'RUN_CEPA', True)
+    # AED reinforces default
     core.set_local_option('FNOCC', 'USE_DF_INTS', False)
 
-    # what type of cepa?
-    if name in ['lccd', 'fno-lccd']:
-        cepa_level = 'cepa(0)'
-        core.set_local_option('FNOCC', 'CEPA_NO_SINGLES', True)
-    elif name in ['cepa(0)', 'fno-cepa(0)', 'lccsd', 'fno-lccsd']:
-        cepa_level = 'cepa(0)'
-        core.set_local_option('FNOCC', 'CEPA_NO_SINGLES', False)
-    elif name in ['cepa(1)', 'fno-cepa(1)']:
-        cepa_level = 'cepa(1)'
-    elif name in ['cepa(3)', 'fno-cepa(3)']:
-        cepa_level = 'cepa(3)'
-    elif name in ['acpf', 'fno-acpf']:
-        cepa_level = 'acpf'
-    elif name in ['aqcc', 'fno-aqcc']:
-        cepa_level = 'aqcc'
-    elif name in ['cisd', 'fno-cisd']:
-        cepa_level = 'cisd'
-    else:
-        raise ValidationError("""Error: %s not implemented\n""" % name)
+    director = {
+                 # Note "nat_orbs" not set defensively False for non-"fno" calls
+           "lccd":     {                   "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(0)", "cepa_no_singles": True, },
+       "fno-lccd":     {"nat_orbs": True,  "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(0)", "cepa_no_singles": True, },
 
-    core.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level.upper())
+           "lccsd":    {                   "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(0)", "cepa_no_singles": False,},
+       "fno-lccsd":    {"nat_orbs": True,  "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(0)", "cepa_no_singles": False,},
+            "cepa(0)": {                   "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(0)", "cepa_no_singles": False,},
+        "fno-cepa(0)": {"nat_orbs": True,  "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(0)", "cepa_no_singles": False,},
 
-    if name in ['fno-lccd', 'fno-lccsd', 'fno-cepa(0)', 'fno-cepa(1)', 'fno-cepa(3)',
-                'fno-acpf', 'fno-aqcc', 'fno-cisd']:
-        core.set_local_option('FNOCC', 'NAT_ORBS', True)
+            "cepa(1)": {                   "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(1)", "cepa_no_singles": False,},
+        "fno-cepa(1)": {"nat_orbs": True,  "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(1)", "cepa_no_singles": False,},
 
-    # throw an exception for open-shells
-    if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
+            "cepa(3)": {                   "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(3)", "cepa_no_singles": False,},
+        "fno-cepa(3)": {"nat_orbs": True,  "dfcc": False, "run_cepa": True,  "cepa_level": "cepa(3)", "cepa_no_singles": False,},
 
-    reference = core.get_option('SCF', 'REFERENCE')
-    if core.get_global_option('CC_TYPE') != "CONV":
-        raise ValidationError("""CEPA methods from FNOCC module require 'cc_type conv'.""")
+            "acpf":    {                   "dfcc": False, "run_cepa": True,  "cepa_level": "acpf",    "cepa_no_singles": False,},
+        "fno-acpf":    {"nat_orbs": True,  "dfcc": False, "run_cepa": True,  "cepa_level": "acpf",    "cepa_no_singles": False,},
+
+          "aqcc":      {                   "dfcc": False, "run_cepa": True,  "cepa_level": "aqcc",    "cepa_no_singles": False,},
+      "fno-aqcc":      {"nat_orbs": True,  "dfcc": False, "run_cepa": True,  "cepa_level": "aqcc",    "cepa_no_singles": False,},
+
+          "cisd":      {                   "dfcc": False, "run_cepa": True,  "cepa_level": "cisd",    "cepa_no_singles": False,},
+      "fno-cisd":      {"nat_orbs": True,  "dfcc": False, "run_cepa": True,  "cepa_level": "cisd",    "cepa_no_singles": False,},
+    }
+
+    if name not in director:
+        raise ValidationError(f"Invalid method {name} for FNOCC energy")
+
+    # throw exception for open-shells
+    if (ref := core.get_option("SCF", "REFERENCE")) != "RHF":
+        raise ValidationError(f"Invalid reference type {ref} != RHF for FNOCC energy. See Capabilities Table at {dtl}")
+
+    # throw exception for DF/CD. some of these pre-trapped by select_* functions but others escape, incl. cepa variants
+    if (corl_type := method_algorithm_type(name).now) != "CONV":
+        raise ValidationError(f"Invalid type {corl_type} for FNOCC energy through `run_cepa`. See Capabilities Table at {dtl}")
+
+    for k, v in director[name].items():
+        core.set_local_option("FNOCC", k.upper(), v)
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
@@ -5089,10 +5347,10 @@ def run_cepa(name, **kwargs):
                                             puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
-
     fnocc_wfn = core.fnocc(ref_wfn)
 
     # one-electron properties
+    cepa_level = director[name]["cepa_level"]
     if core.get_option('FNOCC', 'DIPMOM'):
         if cepa_level in ['cepa(1)', 'cepa(3)']:
             core.print_out("""\n    Error: one-electron properties not implemented for %s\n\n""" % name)

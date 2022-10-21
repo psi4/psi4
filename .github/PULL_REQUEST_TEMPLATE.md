@@ -4,7 +4,7 @@
 
 ## User API & Changelog headlines
 <!-- A bullet-point format description of how this PR affects the user.
-     This is detined for the release notes. May be empty. -->
+     This is destined for the release notes. May be empty. -->
 - [ ] RN 1
 - [ ] RN 2
 

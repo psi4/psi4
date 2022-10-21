@@ -17,5 +17,5 @@ escf = -76.021997876298414 #TEST
 ebccd = -76.228456597086762 #TEST
 ebccd_t = -76.231452929871523 #TEST
 compare_values(escf, variable("SCF TOTAL ENERGY"), 6, "SCF energy") #TEST
-compare_values(ebccd, variable("CCSD TOTAL ENERGY"), 6, "B-CCD energy") #TEST
-compare_values(ebccd_t, variable("CCSD(T) TOTAL ENERGY"), 6, "B-CCD(T) energy") #TEST
+compare_values(ebccd, variable("BCCD TOTAL ENERGY"), 6, "B-CCD energy") #TEST
+compare_values(ebccd_t, variable("BCCD(T) TOTAL ENERGY"), 6, "B-CCD(T) energy") #TEST

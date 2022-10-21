@@ -149,7 +149,6 @@ version, release = get_version_info()
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-#exclude_patterns = []
 exclude_patterns = ['template_index.rst',          'template_appendices.rst',
                     'autodoc_index_html.rst',      'autodoc_appendices_html.rst', 
                     'autodoc_index_htmluser.rst',  'autodoc_appendices_htmluser.rst', 
@@ -160,6 +159,7 @@ exclude_patterns = ['template_index.rst',          'template_appendices.rst',
                     'autodoc_abbr_options_c.rst',
                     'autodoc_abbr_options_plugins.rst',
                     "contents.rst",
+                    "autodoc_capabilities_*rst",
                    ]
 
 

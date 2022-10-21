@@ -110,7 +110,6 @@ Update copyright year
 
   - ``tests/runtest.py``
   - ``README.md``
-  - ``tests/psitest.pl``
 
 * Also, in content of :source:`doc/sphinxman/source/conf.py.in#L130`
 

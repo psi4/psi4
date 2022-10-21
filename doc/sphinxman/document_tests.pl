@@ -84,6 +84,7 @@ opendir(SAMPLES, $SamplesFolder) or die "I can't read $SamplesFolder\n";
 foreach my $File(readdir SAMPLES){
     next unless $File =~ /\w+/; # Make sure we don't nuke .. or . !
     next if $File =~ /example_psi4rc_file/; # Keep the example psi4rc file
+    next if $File =~ /stdsuite_psi4.txt/;  # Keep the generated standard_suite record
     next if $File =~ /^dftd3$/;  # Keep the interface subdirectories
     next if $File =~ /^mrcc$/;
     next if $File =~ /^cfour$/;

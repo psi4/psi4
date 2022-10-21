@@ -42,6 +42,7 @@ A complete list of standard keywords is provided in Appendix
 .. toctree::
    :maxdepth: 2
 
+   capabilities
    notes_c
    scf
    dft

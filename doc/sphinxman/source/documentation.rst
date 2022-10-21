@@ -144,7 +144,6 @@ few resources on Sphinx formatting.
 * `links example <https://github.com/sphinx-doc/sphinx/issues/5208#issuecomment-736259355>`_
 * `rendered test document <http://docutils.sourceforge.net/test/functional/expected/standalone_rst_html4css1.html>`_
   *vs.* `source test document <http://svn.python.org/projects/external/docutils-0.5/docs/user/rst/demo.txt>`_
-* `A third reStructuredText and Sphinx <http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html>`_
 * `Sphinx Docs <https://www.sphinx-doc.org/en/master/contents.html>`_
 
 .. * `Another reStructuredText <http://people.ee.ethz.ch/~creller/web/tricks/reST.html>`_

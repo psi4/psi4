@@ -10,7 +10,7 @@ def ordinary():
 
 
 def select_fail(mtd, **kwargs):
-    raise psi4.ManagedMethodError('abcdef')
+    raise psi4.ManagedMethodError(['select_fail', "abcdef", 'MP2_TYPE', "CD", "RHF", "labocc"])
 
 
 def select_pass(mtd, **kwargs):
@@ -26,6 +26,7 @@ mock_proc = {
         'Egh_man2': select_pass,
         'Eg_man': select_pass,
         'E_man': select_fail,
+        'eg_man2': select_fail,
     },
     'gradient': {
         'hf': ordinary,
@@ -33,6 +34,7 @@ mock_proc = {
         'EGh_man': select_pass,
         'Egh_man2': select_fail,
         'Eg_man': select_fail,
+        'eg_man2': select_fail,
     },
     'hessian': {
         'hf': ordinary,
@@ -106,6 +108,7 @@ def test_negotiate(inp, out):
     (('hessian', 'Eg_man', 2)),
     (('hessian', 'Eg_man', 1)),
     (('gradient', 'Eg_man', 1)),
+    (('gradient', 'eg_man2', None)),
     (('energy', 'unavail', None)),
     (('energy', 'unavail', 0)),
     (('energy', 'E_man', None)),
@@ -114,6 +117,7 @@ def test_negotiate(inp, out):
     (('gradient', 'Egh_man2', 1)),
     (("properties", "unavail", None)),
     (("properties", "unavail", 0)),
+    (("properties", "ccop", 0)),
 ])
 def test_negotiate_missing_error(inp):
     with pytest.raises(psi4.MissingMethodError) as e:

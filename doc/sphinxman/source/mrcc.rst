@@ -54,7 +54,11 @@ error will be reported.
 
 Running MRCC
 ~~~~~~~~~~~~
+
 MRCC can be invoked in similar fashion as other theories provided in |PSIfour|.
+To indicate MRCC as the target software, set |globals__qc_module|\ ``=MRCC``.
+This is a change as of October 2022; previously, one prefixed the method by "mr"
+to indicate MRCC (e.g., ``energy('mrccsdt')``).
 For example, if you want to obtain the CCSDT energy for water with cc-pVDZ using
 MRCC simply provide the following::
 
@@ -65,19 +69,24 @@ MRCC simply provide the following::
    }
    set {
         basis cc-pVDZ
+        qc_module mrcc
    }
-   energy('mrccsdt')
+   energy('ccsdt')
 
-``'mrccsdt'`` in the call to :py:func:`~psi4.driver.energy` instructs |PSIfour| to first
+``'ccsdt'`` in the call to :py:func:`~psi4.driver.energy` plus ``qc_module=mrcc`` instructs |PSIfour| to first
 perform an RHF calculation and then call MRCC to compute the CCSDT energy.
-For a CCSDT(Q) energy, simply use ``'mrccsdt(q)'`` in the call to
+Here the ``qc_module=mrcc`` is optional since |PSIfour| has no builtin module
+that can perform CCSDT. For a method like CCSD, no specification of |globals__qc_module|
+will default to the CCENERGY module, and specification with value ``mrcc`` is
+required to route the computation to the MRCC program.
+For a CCSDT(Q) energy, simply use ``'ccsdt(q)'`` in the call to
 :py:func:`~psi4.driver.energy`. MRCC can be used to perform geometry optimization and
 frequency calculations for electronic ground states only.
 
 At this time, |PSIfour| is only able to automatically generate the proper
 input file for MRCC for the methods listed in table below.
-To utilize any method described in the table, you must prefix
-the method name with ``MR``. For other methods, you will be required to
+To utilize any method described in the table, you can call it directly
+For other methods, you will be required to
 use the MRCC keywords described in Appendix :ref:`apdx:mrcc`.
 Perturbative methods (``ccsd(t)``, ``ccsdtqp(h)_l``, etc.)
 are available with |scf__reference| ROHF in versions of MRCC published
@@ -106,7 +115,7 @@ To optimize CH\ :sub:`4` with CCSDT freezing the 1\ *s* on carbon, run::
        freeze_core true
    }
    
-   optimize('mrccsdt')
+   optimize('ccsdt')
 
 Interface Details
 ~~~~~~~~~~~~~~~~~

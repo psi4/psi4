@@ -63,8 +63,16 @@ encountered. In particular, we have found excellent efficiency and tractability
 gains when using DF-MP2 in concert with a DF-SCF reference.  An efficient,
 threaded, disk-based DF-MP2 code is available in |PSIfour| for all single
 reference types available in the SCF module.
-MP2 defaults in |PSIfour| to the density-fitted code. See
-|globals__mp2_type| for performing a MP2 with conventional integrals.
+MP2 defaults in |PSIfour| to the density-fitted code.
+
+The support for MP2 by the DFMP2 module in |Psifour| is detailed in
+Table :ref:`DFMP2 Capabilities <table:dfmp2_stdsuite>`. Even without
+``set qc_module dfmp2``, methods will default to this module, but
+alternate implementations and use of |globals__mp2_type| for performing
+a MP2 with conventional integrals can be seen at :ref:`other modules
+<table:managedmethods>`.
+
+.. include:: autodoc_capabilities_dfmp2.rst
 
 An example utilization of the code is::
 

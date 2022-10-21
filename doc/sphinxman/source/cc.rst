@@ -113,6 +113,23 @@ Solvent effects on energies can be taken into account using the polarizable
 continuum model (PCM) in the PTE approximation [Cammi:2009:164104]_, see
 :ref:`PCM <sec:pcmsolver>`
 
+
+The following wavefunctions are currently recognized by |PSIfour| as arguments
+to functions like :py:func:`~psi4.driver.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'a-ccsd(t)'``, ``'cc2'``,
+``'cc3'``, ``'bccd'`` (CCD with Brueckner orbitals), ``'bccd(t)'`` (CCD(T) with
+Brueckner orbitals), ``'eom-ccsd'``, ``'eom-cc2'`` (CC2 for excited states),
+``'eom-cc3'`` (CC3 for excited states).  Response properties can be obtained
+by calling the function :py:func:`~psi4.driver.properties` (instead of, for example, :py:func:`~psi4.driver.energy`,
+*e.g.*, ``properties('ccsd')``.  There are many sample
+coupled cluster inputs provided in :source:`samples`.
+
+The various methods supported by the CCENERGY modules in |Psifour| are
+summarized in Table :ref:`CC Methods <table:ccsummary>` and detailed
+(except excited state methods) in Table :ref:`CCENERGY Capabilities
+<table:ccenergy_stdsuite>`. Even without ``set qc_module ccenergy``,
+methods will default to this module, but alternate implementations can
+be seen at :ref:`other modules <table:managedmethods>`.
+
 .. _`table:ccsummary`:
 
 .. table:: Current coupled cluster capabilities of |PSIfour|
@@ -122,9 +139,9 @@ continuum model (PCM) in the PTE approximation [Cammi:2009:164104]_, see
    +==================+============+===========+===========+===============+===========+
    | CC2              | RHF        | Y         | Y         | Y             | Y         |
    +                  +------------+-----------+-----------+---------------+-----------+
-   |                  | UHF        | Y         | ---       | N             | ---       |
+   |                  | UHF        | Y         | ---       | ---           | ---       |
    +                  +------------+-----------+-----------+---------------+-----------+
-   |                  | ROHF       | Y         | ---       | N             | ---       |
+   |                  | ROHF       | Y         | ---       | ---           | ---       |
    +------------------+------------+-----------+-----------+---------------+-----------+
    | CCSD             | RHF        | Y         | Y         | Y             | Y         |
    +                  +------------+-----------+-----------+---------------+-----------+
@@ -138,7 +155,7 @@ continuum model (PCM) in the PTE approximation [Cammi:2009:164104]_, see
    +                  +------------+-----------+-----------+---------------+-----------+
    |                  | ROHF       | Y         | ---       | n/a           | n/a       |
    +------------------+------------+-----------+-----------+---------------+-----------+
-   | A-CCSD(T) [#f1]_ | RHF        | Y         | ---       | n/a           | n/a       |
+   | A-CCSD(T) [#e10]_| RHF        | Y         | ---       | n/a           | n/a       |
    +------------------+------------+-----------+-----------+---------------+-----------+
    | CC3              | RHF        | Y         | ---       | Y             | ---       |
    +                  +------------+-----------+-----------+---------------+-----------+
@@ -146,23 +163,13 @@ continuum model (PCM) in the PTE approximation [Cammi:2009:164104]_, see
    +                  +------------+-----------+-----------+---------------+-----------+
    |                  | ROHF       | Y         | ---       | Y             | ---       |
    +------------------+------------+-----------+-----------+---------------+-----------+
-   | CCD              | Brueckner  | Y         | N         | N             | N         |
+   | CCD              | Brueckner  | Y         | ---       | ---           | ---       |
    +------------------+------------+-----------+-----------+---------------+-----------+
-   | CCD(T)           | Brueckner  | Y         | N         | n/a           | n/a       |
+   | CCD(T)           | Brueckner  | Y         | ---       | n/a           | n/a       |
    +------------------+------------+-----------+-----------+---------------+-----------+
 
-.. rubric:: Footnotes
+.. include:: autodoc_capabilities_ccenergy.rst
 
-.. [#f1] Also known as CCSD(AT), Lambda-CCSD(T), CCSD(T)_L
-
-The following wavefunctions are currently recognized by |PSIfour| as arguments
-to functions like :py:func:`~psi4.driver.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'a-ccsd(t)'``, ``'cc2'``,
-``'cc3'``, ``'bccd'`` (CCD with Brueckner orbitals), ``'bccd(t)'`` (CCD(T) with
-Brueckner orbitals), ``'eom-ccsd'``, ``'eom-cc2'`` (CC2 for excited states),
-``'eom-cc3'`` (CC3 for excited states).  Response properties can be obtained
-by calling the function :py:func:`~psi4.driver.properties` (instead of, for example, :py:func:`~psi4.driver.energy`,
-*e.g.*, ``properties('ccsd')``.  There are many sample
-coupled cluster inputs provided in :source:`samples`.
 
 Basic Keywords
 ^^^^^^^^^^^^^^

@@ -29,13 +29,25 @@
 chemical methods.
 """
 
+from qcelemental.util import which
+
 from . import sapt
 from . import proc
 from . import interface_cfour
+from . import proc_data
 
 from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
 
 # never import wrappers or aliases into this file
+
+
+# ADVICE upon adding to the `procedures` dict:
+# * (1) add entry to `procedures` below. See ADVICE in psi4/driver/procrouting/proc.py on run_ vs. select_
+# * (2) add entry to `method_governing_type_keywords` in psi4/driver/procrouting/proc_data.py
+# * (3) add entry to table in docstring of `def energy`, etc. in psi4/driver/driver.py
+# * (4) add entry to capabilities table in doc/sphinxman/source/introduction.rst
+# * aliases discouraged but allowed. See `lccsd` and `a-ccsd(t)` for examples
+# * for `hessian` entries, program up and set DIPOLE GRADIENT, too, otherwise IR intensities logic will fail
 
 # Procedure lookup tables
 procedures = {
@@ -77,7 +89,7 @@ procedures = {
         'oremp2'        : proc.select_olccd,
         # 'dfocc'         : proc.run_dfocc,  # full control over dfocc  # canceled Jul 2022 as Error raising and not useful
         'qchf'          : proc.run_qchf,
-        'ccd'           : proc.run_dfocc,
+        'ccd'           : proc.select_ccd,
         'sf-sapt'       : sapt.run_sf_sapt,
         'sapt(dft)'     : sapt.run_sapt_dft,
         'sapt0'         : proc.run_sapt,
@@ -110,21 +122,22 @@ procedures = {
         'ccsd(at)'      : proc.select_ccsd_at_,  # alias
         'a-ccsd(t)'     : proc.select_ccsd_at_,
         'lambda-ccsd(t)': proc.select_ccsd_at_,  # alias
-        'cc2'           : proc.run_ccenergy,
-        'cc3'           : proc.run_ccenergy,
-        'mrcc'          : proc.run_mrcc,  # interface to Kallay's MRCC program
+        'ccsd(t)_l'     : proc.select_ccsd_at_,  # alias
+        'cc2'           : proc.select_cc2,
+        'cc3'           : proc.select_cc3,
+        'mrcc'          : proc.run_mrcc,  # interface to Kallay's MRCC program  # Aug 2022 deprecated
         'bccd'          : proc.run_bccd,
         'bccd(t)'       : proc.run_bccd,
         'eom-ccsd'      : proc.run_eom_cc,
         'eom-cc2'       : proc.run_eom_cc,
         'eom-cc3'       : proc.run_eom_cc,
         'detci'         : proc.run_detci,  # full control over detci
-        'mp'            : proc.run_detci,  # arbitrary order mp(n)
-        'zapt'          : proc.run_detci,  # arbitrary order zapt(n)
+        # 'mp'          : proc.run_detci,  # arbitrary order mp(n)  # Aug 2022 reworked below to add levels directly
+        # 'zapt'        : proc.run_detci,  # arbitrary order zapt(n)  # Aug 2022 reworked below to add levels directly
         'cisd'          : proc.select_cisd,
         'cisdt'         : proc.run_detci,
         'cisdtq'        : proc.run_detci,
-        'ci'            : proc.run_detci,  # arbitrary order ci(n)
+        # 'ci'          : proc.run_detci,  # arbitrary order ci(n)  # Aug 2022 reworked below to add levels directly
         'fci'           : proc.run_detci,
         'casscf'        : proc.run_detcas,
         'rasscf'        : proc.run_detcas,
@@ -150,7 +163,7 @@ procedures = {
         'fno-aqcc'      : proc.run_cepa,
         'fno-cisd'      : proc.run_cepa,
         'lccsd'         : proc.run_cepa,
-        'cepa(0)'       : proc.run_cepa,
+        'cepa(0)'       : proc.run_cepa,  # alias
         'cepa(1)'       : proc.run_cepa,
         'cepa(3)'       : proc.run_cepa,
         'acpf'          : proc.run_cepa,
@@ -167,16 +180,11 @@ procedures = {
         'cvs-adc(2)'    : proc.run_adcc,
         'cvs-adc(2)-x'  : proc.run_adcc,
         'cvs-adc(3)'    : proc.run_adcc,
-        # Upon adding a method to this list, add it to the docstring in energy() below
-        # Aliases are discouraged. If you must add an alias to this list (e.g.,
-        #    lccsd/cepa(0)), please search the whole driver to find uses of
-        #    name in return values and psi variables and extend the logic to
-        #    encompass the new alias.
     },
     'gradient' : {
         'hf'            : proc.select_scf_gradient,
         'scf'           : proc.select_scf_gradient,
-        'cc2'           : proc.run_ccenergy_gradient,
+        'cc2'           : proc.select_cc2_gradient,
         'ccsd'          : proc.select_ccsd_gradient,
         'ccsd(t)'       : proc.select_ccsd_t__gradient,
         'mp2'           : proc.select_mp2_gradient,
@@ -192,13 +200,9 @@ procedures = {
         'lccd'          : proc.select_lccd_gradient,
         'olccd'         : proc.select_olccd_gradient,
         'oremp2'        : proc.select_olccd_gradient,
-        'ccd'           : proc.run_dfocc_gradient,
-        # Upon adding a method to this list, add it to the docstring in driver.optimize below
+        'ccd'           : proc.select_ccd_gradient,
     },
     'hessian' : {
-        # Upon adding a method to this list:
-        # * add it to the docstring in driver.frequency
-        # * program up and set DIPOLE GRADIENT, too, otherwise IR intensities logic will fail
         'hf'            : proc.run_scf_hessian,
         'scf'           : proc.run_scf_hessian,
     },
@@ -215,7 +219,7 @@ procedures = {
         'cisd'         : proc.run_detci_property,
         'cisdt'        : proc.run_detci_property,
         'cisdtq'       : proc.run_detci_property,
-        'ci'           : proc.run_detci_property,  # arbitrary order ci(n)
+        # 'ci'         : proc.run_detci_property,  # arbitrary order ci(n)  # Aug 2022 reworked below to add levels directly
         'fci'          : proc.run_detci_property,
         'rasscf'       : proc.run_detci_property,
         'casscf'       : proc.run_detci_property,
@@ -232,7 +236,6 @@ procedures = {
         'cvs-adc(2)'   : proc.run_adcc_property,
         'cvs-adc(2)-x' : proc.run_adcc_property,
         'cvs-adc(3)'   : proc.run_adcc_property,
-        # Upon adding a method to this list, add it to the docstring in property() below
     }} # yapf: disable
 
 # Will only allow energy to be run for the following methods
@@ -256,6 +259,13 @@ for lvl in range(2, 99):
     procedures['energy'][f'zapt{lvl}'] = proc.run_detci
     if lvl >= 5:
         procedures['energy'][f'mp{lvl}'] = proc.run_detci
+    procedures['properties'][f'ci{lvl}'] = proc.run_detci_property
+
+# Integrate MRCC with driver routines
+if which("dmrcc", return_bool=True):
+    for key in proc_data.mrcc_methods:
+        if key not in ["cc2", "ccsd", "ccsd(t)", "cc3", "ccsd(t)_l"]:  # covered by select_ routines above
+            procedures["energy"][key] = proc.select_mrcc
 
 # Integrate DFT with driver routines
 for key in functionals:

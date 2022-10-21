@@ -502,6 +502,7 @@ Specific open-shell SAPT0 keywords
 
 .. index:: SAPT; SAPT(DFT)
 
+.. _`sec:saptdft`:
 
 SAPT(DFT)
 ^^^^^^^^^
@@ -925,6 +926,8 @@ set to :math:`1.0`.
    no workaround; on-the-fly construction of an auxiliary basis through
    Cholesky decomposition (not implemented) is the long-term solution.
 
+.. _`sec:sfsapt`:
+
 Spin-Flip SAPT
 ^^^^^^^^^^^^^^
 
@@ -1021,5 +1024,5 @@ A simple water dimer computation using SAPT0-D may look like::
 
 Given the naturally pairwise-atomic nature of these empirical dispersion corrections,
 integration with existing FSAPT functionality is also available simply by calling
-`energy("fsapt0-d3mbj")`. See `FSAPT <fisapt>` documentation for more details on using FSAPT
+``energy("fsapt0-d3mbj")``. See :ref:`FSAPT <sec:fisapt>` documentation for more details on using FSAPT
 for functional group analyses.

@@ -145,43 +145,62 @@ def allen_focal_point(**kwargs) -> CBSMetadata:
     >>> energy('allen_focal_point', scf_basis='cc-pV[TQ5]Z')
 
     """
-
+    import psi4
     if not psi4.addons("mrcc"):
         raise ImportError("Install MRCC (executable 'dmrcc') to use the allen_focal_point function.")
+
+    # Note: HF and MP2 steps (which don't need MRCC and indeed can't be
+    #  run directly in MRCC through the Psi4 interface) nevertheless have
+    #  qc_module=mrcc set here so that options sets (below, `"options"`
+    #  and `"options_lo"`) are the same and the cbs() driver knows it's
+    #  safe (that is, consistent) to use the "free" values (e.g.,
+    #  HF from CCSD) resulting from
+    #  MRCC CCSD calcs. This logic can be made smarter if needed.
 
     scf = {  # HF
         'wfn': 'hf',
         'basis': kwargs.pop('scf_basis', 'cc-pV[Q56]Z'),
         'scheme': kwargs.pop('scf_scheme', 'scf_xtpl_helgaker_3'),
+        'options': {"qc_module": "mrcc"},
     }
     corl = {  # MP2 - HF
         'wfn': kwargs.pop('corl_wfn', 'mp2'),
         'basis': kwargs.pop('corl_basis', 'cc-pV[56]Z'),
         'scheme': kwargs.pop('corl_scheme', 'corl_xtpl_helgaker_2'),
+        'options': {"qc_module": "mrcc"},
+        'options_lo': {"qc_module": "mrcc"},
     }
     delta = {  # CCSD - MP2
-        'wfn': kwargs.pop('delta_wfn', 'mrccsd'),
+        'wfn': kwargs.pop('delta_wfn', 'ccsd'),
         'wfn_lesser': kwargs.pop('delta_wfn_lesser', 'mp2'),
         'basis': kwargs.pop('delta_basis', 'cc-pV[56]Z'),
         'scheme': kwargs.pop('delta_scheme', 'corl_xtpl_helgaker_2'),
+        'options': {"qc_module": "mrcc"},
+        'options_lo': {"qc_module": "mrcc"},
     }
     delta2 = {  # CCSD(T) - CCSD
-        'wfn': kwargs.pop('delta2_wfn', 'mrccsd(t)'),
-        'wfn_lesser': kwargs.pop('delta2_wfn_lesser', 'mrccsd'),
+        'wfn': kwargs.pop('delta2_wfn', 'ccsd(t)'),
+        'wfn_lesser': kwargs.pop('delta2_wfn_lesser', 'ccsd'),
         'basis': kwargs.pop('delta2_basis', 'cc-pV[56]Z'),
         'scheme': kwargs.pop('delta2_scheme', 'corl_xtpl_helgaker_2'),
+        'options': {"qc_module": "mrcc"},
+        'options_lo': {"qc_module": "mrcc"},
     }
     delta3 = {  # CCSDT - CCSD(T)
-        'wfn': kwargs.pop('delta3_wfn', 'mrccsdt'),
-        'wfn_lesser': kwargs.pop('delta3_wfn_lesser', 'mrccsd(t)'),
+        'wfn': kwargs.pop('delta3_wfn', 'ccsdt'),
+        'wfn_lesser': kwargs.pop('delta3_wfn_lesser', 'ccsd(t)'),
         'basis': kwargs.pop('delta3_basis', 'cc-pVTZ'),
         'scheme': kwargs.pop('delta3_scheme', 'xtpl_highest_1'),
+        'options': {"qc_module": "mrcc"},
+        'options_lo': {"qc_module": "mrcc"},
     }
     delta4 = {  # CCSDT(Q) - CCSDT
-        'wfn': kwargs.pop('delta4_wfn', 'mrccsdt(q)'),
-        'wfn_lesser': kwargs.pop('delta4_wfn_lesser', 'mrccsdt'),
+        'wfn': kwargs.pop('delta4_wfn', 'ccsdt(q)'),
+        'wfn_lesser': kwargs.pop('delta4_wfn_lesser', 'ccsdt'),
         'basis': kwargs.pop('delta4_basis', 'cc-pVDZ'),
         'scheme': kwargs.pop('delta4_scheme', 'xtpl_highest_1'),
+        'options': {"qc_module": "mrcc"},
+        'options_lo': {"qc_module": "mrcc"},
     }
 
     return [scf, corl, delta, delta2, delta3, delta4]

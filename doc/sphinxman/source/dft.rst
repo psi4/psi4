@@ -614,6 +614,15 @@ errors incurred by the density fitting approximation (in a proper -JKFIT
 auxiliary basis) are orders of magnitude smaller than the accuracy of any known
 functional.
 
+Key representative methods supported by the SCF module in |Psifour| are
+detailed in Table :ref:`SCF Capabilities <table:scf_stdsuite>`. Note
+from :ref:`table:conv_scf` that these SCF-level methods default to
+density-fitted reference; use |globals__scf_type| to select an alternate
+algorithm. SCF-level methods have no alternate implementations.
+
+.. include:: autodoc_capabilities_scf.rst
+
+
 IP Fitting
 ~~~~~~~~~~
 
