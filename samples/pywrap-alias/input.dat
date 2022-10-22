@@ -56,7 +56,13 @@ energy('mp11')
 clean()
 
 banner('zapt4')
+try:
+    energy('zapt4')
+except psi4.UpgradeHelper:
+    pass
+set reference rohf
 energy('zapt4')
+set reference rhf
 clean()
 
 banner('fci')

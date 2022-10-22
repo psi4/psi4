@@ -10,8 +10,9 @@ molecule h2o {
 set {
     basis cc-pvdz
     freeze_core true
+    qc_module mrcc
 }
 
-energy('mrccsdt')
+energy('ccsdt')
 
 

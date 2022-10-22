@@ -72,6 +72,17 @@ E, wfn = energy("mp2/def2-svp", return_wfn=True, molecule=sbh3)
 compare_values(wfn.nfrzc(), 4, 1, "Number of frozen orbitals with freeze_core = 1")
 compare_values(sum(wfn.doccpi()), 13, 1, "Number of occupied orbitals with freeze_core = 1")
 
+set freeze_core policy
+# Our largest element is Z=51, but freeze_core_policy is 0-indexed (H=0, He=1, etc)
+core_policy = [0 for _ in range(51)]
+# So we need to set Z-1 here to set Sb, which is 50
+core_policy[50] = 5
+psi4.set_options({'freeze_core_policy': core_policy})
+E, wfn = energy("mp2/def2-svp", return_wfn=True, molecule=sbh3)
+
+compare_values(wfn.nfrzc(), 5, 1, "Number of frozen orbitals with freeze_core_policy = {H: 0, Sb: 5}")
+compare_values(sum(wfn.doccpi()), 13, 1, "Number of occupied orbitals with freeze_core_policy = {H: 0, Sb: 5}")
+
 molecule hi {
   0 1
   H 0 0 0

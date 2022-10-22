@@ -18,4 +18,11 @@ set {
 energy('omp2')
 
 
+clean()
+set scf_type df
+ene = energy("qchf")
+
+clean()
+set scf_type cd
+ene = energy("qchf")
 

@@ -1,0 +1,86 @@
+#! density fitted OO-REMP/cc-pVDZ engrad single points for the H2O molecule.
+
+
+
+   
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf def2-universal-jkfit
+  df_basis_cc def2-TZVPP-ri
+  guess sad
+  scf_type df
+  freeze_core false
+  wfn_type oremp
+  cc_type df
+  mp_type df
+  e_convergence 1.0E-9
+  r_convergence 1.0E-8
+  qc_module occ
+  orb_opt true
+  max_mograd_convergence 1.0E-7
+  rms_mograd_convergence 1.0E-8
+  TPDM_ABCD_TYPE direct
+}
+
+Avals=[0.00, 0.10, 0.20, 0.30, 1.00]
+
+
+#for A in Avals:
+#     psi4.print_out("running step %5.2f" % A)
+#     set remp_A=$A
+#     e_remp=energy('remp2')
+
+
+set remp_A=0.00
+ref_grad=psi4.Matrix.from_list([
+            [ 0.000000000000,    -0.000000000000,     0.013895310040 ],
+            [ 0.000000000000,     0.003248484259,    -0.006947655020 ],  
+            [ 0.000000000000,    -0.003248484259,    -0.006947655020 ]])
+
+grad_oremp=gradient('oremp2')
+
+
+
+set remp_A=0.10
+ref_grad=psi4.Matrix.from_list([
+            [  0.000000000000,    -0.000000000000,     0.013197989518  ],
+            [  0.000000000000,     0.002783805920,    -0.006598994759  ],
+            [  0.000000000000,    -0.002783805920,    -0.006598994759  ]])
+
+grad_oremp=gradient('oremp2')
+
+
+
+set remp_A=0.20
+ref_grad=psi4.Matrix.from_list([
+            [  0.000000000000,    -0.000000000000,     0.012728281086 ],
+            [  0.000000000000,     0.002453429980,    -0.006364140543 ],
+            [  0.000000000000,    -0.002453429980,    -0.006364140543 ]])
+
+grad_oremp=gradient('oremp2')
+
+
+set remp_A=0.30
+ref_grad=psi4.Matrix.from_list([
+            [  0.000000000000,    -0.000000000000,     0.012438548445  ],
+            [  0.000000000000,     0.002229197714,    -0.006219274222  ],
+            [  0.000000000000,    -0.002229197714,    -0.006219274222  ]])
+
+grad_oremp=gradient('oremp2')
+
+
+set remp_A=1.00
+ref_grad=psi4.Matrix.from_list([
+            [  0.000000000000,     0.000000000000,     0.013476662939  ],
+            [  0.000000000000,     0.002449235008,    -0.006738331469  ],
+            [  0.000000000000,    -0.002449235008,    -0.006738331469  ]])
+
+grad_oremp=gradient('oremp2')

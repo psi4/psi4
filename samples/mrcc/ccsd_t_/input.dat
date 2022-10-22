@@ -9,8 +9,21 @@ molecule h2o {
 set {
     basis cc-pvdz
     freeze_core true
+    qc_module mrcc
 }
 
-optimize('mrccsd(t)')
+try:
+    # cc6 is unmanaged
+    frequency('mrcc6')
+except UpgradeHelper:
+    pass
+
+try:
+    # ccsd(t) is managed
+    optimize('mrccsd(t)')
+except UpgradeHelper:
+    pass
+
+optimize("ccsd(t)")
 
 
