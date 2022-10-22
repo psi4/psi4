@@ -253,31 +253,31 @@ SharedMatrix UStab::analyze() {
 }
 
 void UStab::rotate_orbs(double step_scale) {
+    // The energy is a function of orbital rotation angle, with period 2 pi. At theta = 0, we're at a local maximum.
+    // If we make the naive assumption that the Fourier decomposition is c_0 = 1, i.e., the energy is a single cosine
+    // rather than a sum of cosines, curve, the minimum should be at theta = pi / 2.
+    // ...This is, however, a naive assumption. It'd be great if we had a better one.
     double scale = pc_pi * step_scale / 2.0;
     outfile->Printf("    Rotating orbitals by %f * pi / 2 radians along unstable eigenvector.\n", step_scale);
 
-    int nirrep = unstable_vec.first->nirrep();
+    rotate_orb(scale, *unstable_vec.first, *Ca_);
+    rotate_orb(scale, *unstable_vec.second, *Cb_);
+}
 
-    SharedMatrix unveca = unstable_vec.first;
-    SharedMatrix unvecb = unstable_vec.second;
-    for (int h = 0; h < nirrep; ++h) {
-        int nocca = unveca->rowdim(h);
-        int nvira = unveca->coldim(h);
-        // Rotate the alpha orbitals
-        for (int i = 0; i < nocca; ++i) {
-            for (int a = nocca; a < nvira + nocca; ++a) {
-                Ca_->rotate_columns(h, i, a, scale * unveca->get(h, i, a - nocca));
-            }
-        }
-        int noccb = unvecb->rowdim(h);
-        int nvirb = unvecb->coldim(h);
-        // Rotate the beta orbitals
-        for (int i = 0; i < noccb; ++i) {
-            for (int a = noccb; a < nvirb + noccb; ++a) {
-                Cb_->rotate_columns(h, i, a, scale * unvecb->get(h, i, a - noccb));
-            }
-        }
-    }
+void UStab::rotate_orb(double scale, const Matrix& X, Matrix& C) {
+    auto nirrep = X.nirrep();
+    auto nmopi = X.rowspi() + X.colspi();
+    Matrix U(nmopi, nmopi);
+    auto occ_dim = X.rowspi();
+    //outfile->Printf("    %d %d %d\n", nirrep, occ_dim.n(), nmopi.n());
+    Slice occ_slice(Dimension(nirrep), occ_dim);
+    Slice vir_slice(occ_dim, nmopi);
+    auto K = X.clone();
+    K->scale(scale);
+    U.set_block(occ_slice, vir_slice, K);
+    U.subtract(U.transpose());
+    U.expm(4, true);
+    C.gemm(false, false, 1.0, C, U, 0.0);
 }
 
 void UStab::preiterations() {

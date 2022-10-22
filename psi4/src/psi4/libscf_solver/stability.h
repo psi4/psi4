@@ -116,6 +116,7 @@ class UStab {
     virtual double compute_energy();
     SharedMatrix analyze();
     void rotate_orbs(double scale);
+    void rotate_orb(double scale, const Matrix& X, Matrix& C);
 };
 
 }  // namespace scf
