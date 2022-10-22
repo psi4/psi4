@@ -213,7 +213,7 @@ class EmpiricalDispersion():
                 resi,
                 self.engine,
                 raise_error=True,
-                local_options={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
+                task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
 
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
             if wfn is not None:
@@ -231,7 +231,7 @@ class EmpiricalDispersion():
                     resi,
                     "gcp",
                     raise_error=True,
-                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
+                    task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = jobrec.return_result
                 dashd_part += gcp_part
 
@@ -283,7 +283,7 @@ class EmpiricalDispersion():
                 resi,
                 self.engine,
                 raise_error=True,
-                local_options={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
+                task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
 
             dashd_part = core.Matrix.from_array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT'])
             if wfn is not None:
@@ -296,7 +296,7 @@ class EmpiricalDispersion():
                     resi,
                     "gcp",
                     raise_error=True,
-                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
+                    task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = core.Matrix.from_array(jobrec.return_result)
                 dashd_part.add(gcp_part)
 
