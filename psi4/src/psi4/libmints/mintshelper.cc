@@ -1758,21 +1758,21 @@ SharedVector MintsHelper::electrostatic_potential_value(SharedVector charges, Sh
     }
 
     auto potential_integrals_ = static_cast<PCMPotentialInt *>(integral_->pcm_potentialint());
-    // std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
-    // for (size_t i = 0; i < coords->nrow(); ++i) {
-    //     Zxyz.push_back({charges->pointer()[i], {coords->pointer()[i][0],
-    //                                             coords->pointer()[i][1],
-    //                                             coords->pointer()[i][2]}});
-    // }
-    // potential_integrals_->set_charge_field(Zxyz);
-    SharedMatrix Zxyz =  std::make_shared<Matrix>("Zxyz", coords->nrow(), 4);
+    std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i = 0; i < coords->nrow(); ++i) {
-        Zxyz->pointer()[i][0] = charges->pointer()[i];
-        Zxyz->pointer()[i][1] = coords->pointer()[i][0];
-        Zxyz->pointer()[i][2] = coords->pointer()[i][1];
-        Zxyz->pointer()[i][3] = coords->pointer()[i][2];
+        Zxyz.push_back({charges->pointer()[i], {coords->pointer()[i][0],
+                                                coords->pointer()[i][1],
+                                                coords->pointer()[i][2]}});
     }
     potential_integrals_->set_charge_field(Zxyz);
+    // SharedMatrix Zxyz =  std::make_shared<Matrix>("Zxyz", coords->nrow(), 4);
+    // for (size_t i = 0; i < coords->nrow(); ++i) {
+    //     Zxyz->pointer()[i][0] = charges->pointer()[i];
+    //     Zxyz->pointer()[i][1] = coords->pointer()[i][0];
+    //     Zxyz->pointer()[i][2] = coords->pointer()[i][1];
+    //     Zxyz->pointer()[i][3] = coords->pointer()[i][2];
+    // }
+    // potential_integrals_->set_charge_field(Zxyz);
 
     PetiteList petite(basisset_, integral_, true);
     auto my_aotoso_ = petite.aotoso();
