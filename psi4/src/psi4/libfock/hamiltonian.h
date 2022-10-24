@@ -137,66 +137,7 @@ class RHamiltonian : public Hamiltonian {
     SharedMatrix explicit_hamiltonian();
 };
 
-class UHamiltonian : public Hamiltonian {
-   public:
-    // => Constructors < = //
-
-    UHamiltonian(std::shared_ptr<JK> jk);
-    UHamiltonian(std::shared_ptr<JK> jk, std::shared_ptr<VBase> v);
-    /// Destructor
-    ~UHamiltonian() override;
-
-    // => Required Methods <= //
-
-    /**
-    * Return the approximate diagonal of the Hamiltonian
-    * (typically orbital energy differences). This is used
-    * for vector guess, eigenvector occupation, and preconditioning.
-    * @return diagonal approximation, \alpha and \beta vectors,
-    * blocked by symmetry
-    */
-    virtual std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > diagonal() = 0;
-    /**
-    * Form the product Hx for each x found in the argument, placing in second argument
-    * @param x vector of state functions, \alpha and \beta, blocked by symmetry
-    * @param b vector of product functions, \alpha and \beta, blocked by symmetry (preallocated)
-    */
-    virtual void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
-                         std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b) = 0;
-    /**
-    * Form the explicit hamiltonian for debugging purposes
-    */
-    std::pair<SharedMatrix, SharedMatrix> explicit_hamiltonian();
-};
-
 // => APPLIED CLASSES <= //
-
-class MatrixRHamiltonian : public RHamiltonian {
-   protected:
-    SharedMatrix M_;
-
-   public:
-    MatrixRHamiltonian(SharedMatrix M);
-    ~MatrixRHamiltonian() override;
-
-    void print_header() const override;
-    std::shared_ptr<Vector> diagonal() override;
-    void product(const std::vector<std::shared_ptr<Vector> >& x, std::vector<std::shared_ptr<Vector> >& b) override;
-};
-
-class MatrixUHamiltonian : public UHamiltonian {
-   protected:
-    std::pair<SharedMatrix, SharedMatrix> M_;
-
-   public:
-    MatrixUHamiltonian(std::pair<SharedMatrix, SharedMatrix> M);
-    ~MatrixUHamiltonian() override;
-
-    void print_header() const override;
-    std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > diagonal() override;
-    void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
-                 std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b) override;
-};
 
 class CPHFRHamiltonian : public RHamiltonian {
    protected:
@@ -216,35 +157,6 @@ class CPHFRHamiltonian : public RHamiltonian {
 
     virtual std::map<std::string, SharedVector> pack(const std::map<std::string, std::shared_ptr<Matrix> >& b);
     virtual std::vector<SharedMatrix> unpack(const std::vector<SharedVector>& x);
-};
-
-// "Hamiltonian" for UHF stability analysis.
-class USTABHamiltonian : public UHamiltonian {
-   protected:
-    SharedMatrix Cocca_;
-    SharedMatrix Cvira_;
-    SharedMatrix Coccb_;
-    SharedMatrix Cvirb_;
-    std::shared_ptr<Vector> eps_occa_;
-    std::shared_ptr<Vector> eps_vira_;
-    std::shared_ptr<Vector> eps_occb_;
-    std::shared_ptr<Vector> eps_virb_;
-
-   public:
-    // Should really use a map of matrices here. But meh.
-    USTABHamiltonian(std::shared_ptr<JK> jk, SharedMatrix Cocca, SharedMatrix Cvira, SharedMatrix Coccb,
-                     SharedMatrix Cvirb, std::shared_ptr<Vector> eps_occa, std::shared_ptr<Vector> eps_vira,
-                     std::shared_ptr<Vector> eps_occb, std::shared_ptr<Vector> eps_virb,
-                     std::shared_ptr<VBase> v = std::shared_ptr<VBase>());
-    ~USTABHamiltonian() override;
-
-    void print_header() const override;
-    std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > diagonal() override;
-    void product(const std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& x,
-                 std::vector<std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > >& b) override;
-
-    // Working with a pair is annoying, so we define a new function below
-    virtual std::vector<std::pair<SharedMatrix, SharedMatrix> > unpack_paired(const std::shared_ptr<Vector>& x);
 };
 }
 #endif

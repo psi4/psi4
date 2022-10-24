@@ -39,7 +39,6 @@ namespace psi {
 
 class Vector;
 class RHamiltonian;
-class UHamiltonian;
 
 class Solver {
     // => BASE CLASSES <= //
@@ -157,34 +156,6 @@ class RSolver : public Solver {
     std::shared_ptr<RHamiltonian> H() const { return H_; }
 };
 
-class USolver : public Solver {
-   protected:
-    /// Reference to underlying UHamiltonian
-    std::shared_ptr<UHamiltonian> H_;
-
-   public:
-    // => Constructors < = //
-
-    /// Reference to underlying RHamiltonian
-    USolver(std::shared_ptr<UHamiltonian> H);
-    /// Destructor
-    ~USolver() override;
-
-    // => Accessors <= //
-
-    /**
-    * Knob to swap out a Hamiltonian object
-    * @param H new UHamiltonian object
-    */
-    void set_Hamiltonian(std::shared_ptr<UHamiltonian> H) { H_ = H; }
-
-    /**
-    * Pointer to the Hamiltonian object
-    * @return current UHamiltonian object
-    */
-    std::shared_ptr<UHamiltonian> H() const { return H_; }
-};
-
 // => APPLIED CLASSES <= //
 
 // Conjugate gradients with a spin-restricted Hamiltonian.
@@ -264,130 +235,6 @@ class CGRSolver : public RSolver {
         A_inds_ = inds;
     }
     void set_nguess(int nguess) { nguess_ = nguess; }
-};
-
-// Class for solving UHF stability analysis.
-class DLUSolver : public USolver {
-   protected:
-    // => Control parameters <= //
-
-    /// Number of desired roots
-    int nroot_;
-    /// Required norm for subspace expansion
-    double norm_;
-    /// Maximum allowed subspace size
-    int max_subspace_;
-    /// Minimum allowed subspace size (after collapse)
-    int min_subspace_;
-    /// Number of guess vectors to build
-    int nguess_;
-
-    // => Iteration values <= //
-
-    /// The current subspace size
-    int nsubspace_;
-    /// The number of converged roots
-    int nconverged_;
-
-    // => State values <= //
-
-    /// Current eigenvectors (nroots)
-    std::vector<std::shared_ptr<Vector> > c_;
-    /// Current eigenvalues (nroots)
-    std::vector<std::vector<double> > E_;
-    /// B vectors (nsubspace)
-    std::vector<std::shared_ptr<Vector> > b_;
-    /// Sigma vectors (nsubspace)
-    std::vector<std::shared_ptr<Vector> > s_;
-    /// Delta Subspace Hamiltonian (preconditioner)
-    SharedMatrix A_;
-    /// Delta Subspace indices
-    std::vector<std::vector<int> > A_inds_;
-    /// G_ij Subspace Hamiltonian (nsubspace x nsubspace)
-    SharedMatrix G_;
-    /// Subspace eigenvectors (nsubspace x nsubspace)
-    SharedMatrix a_;
-    /// Subspace eigenvalues (nsubspace)
-    std::shared_ptr<Vector> l_;
-    /// Residual vectors (nroots)
-    std::vector<std::shared_ptr<Vector> > r_;
-    /// Residual vector 2-norms (nroots)
-    std::vector<double> n_;
-    /// Correction vectors (nroots)
-    std::vector<std::shared_ptr<Vector> > d_;
-    /// Diagonal of Hamiltonian
-    std::shared_ptr<Vector> diag_;
-    /// Diagonal components of UHamiltonian
-    std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > diag_components;
-
-    // => Run routines <= //
-
-    // Guess, based on diagonal
-    void guess();
-    // Compute sigma vectors for the given set of b
-    void sigma();
-    // Compute subspace Hamiltonian
-    void subspaceHamiltonian();
-    // Diagonalize subspace Hamiltonian
-    void subspaceDiagonalization();
-    // Find eigenvectors
-    void eigenvecs();
-    // Find eigenvalues
-    void eigenvals();
-    // Find residuals, update convergence
-    void residuals();
-    // Find correctors
-    virtual void correctors();
-    // Orthogonalize/add significant correctors
-    void subspaceExpansion();
-    // Collapse subspace if needed
-    void subspaceCollapse();
-
-   public:
-    // => Constructors <= //
-
-    /// Constructor
-    DLUSolver(std::shared_ptr<UHamiltonian> H);
-    /// Destructor
-    ~DLUSolver() override;
-
-    /// Static constructor, uses Options object
-    static std::shared_ptr<DLUSolver> build_solver(Options& options, std::shared_ptr<UHamiltonian> H);
-
-    // => Required Methods <= //
-
-    void print_header() const override;
-    size_t memory_estimate() override { return 0; };
-    void initialize() override;
-    void solve() override;
-    void finalize() override;
-
-    // => Accessors <= //
-
-    /// Eigenvectors, by state
-    const std::vector<std::shared_ptr<Vector> >& eigenvectors() const { return c_; }
-    /// Eigenvalues, by state/irrep
-    const std::vector<std::vector<double> >& eigenvalues() const { return E_; }
-    /// Convert an alpha/beta pair into a single vector
-    std::shared_ptr<Vector> contract_pair(std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > components);
-    void contract_pair(std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > components,
-                       std::shared_ptr<Vector> result);
-    /// Convert a single vector into an alpha/beta pair
-    std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > expand_pair(std::shared_ptr<Vector> vec);
-    void expand_pair(std::shared_ptr<Vector> vec, std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > result);
-
-    // => Knobs <= //
-
-    /// Set number of roots (defaults to 1)
-    void set_nroot(int nroot) { nroot_ = nroot; }
-    /// Set maximum subspace size (defaults to 6)
-    void set_max_subspace(double max_subspace) { max_subspace_ = max_subspace; }
-    /// Set minimum subspace size, for collapse (defaults to 2)
-    void set_min_subspace(double min_subspace) { min_subspace_ = min_subspace; }
-    /// Set number of guesses (defaults to 1)
-    void set_nguess(int nguess) { nguess_ = nguess; }
-    /// Set norm critera for adding vectors to subspace (defaults to 1.0E-6)
-    void set_norm(double norm) { norm_ = norm; }
 };
 }
 #endif

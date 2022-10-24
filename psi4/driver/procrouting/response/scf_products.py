@@ -440,6 +440,8 @@ class TDUSCFEngine(PairedMatPerVector):
         # Find product type
         if ptype == 'rpa':
             self.product_cache = ProductCache("H1", "H2")
+        elif ptype == 'hess':
+            self.product_cache = ProductCache("H1")
         else:
             self.product_cache = ProductCache("A")
 
@@ -490,6 +492,8 @@ class TDUSCFEngine(PairedMatPerVector):
         if ptype == 'rpa':
                            H1 ,   H2
            returns pair (A+B)X, (A-B)X products
+        if ptype == 'hess':
+           returns (A+B)X products
         if ptype == 'tda':
            returns Ax products.
         """
@@ -520,6 +524,12 @@ class TDUSCFEngine(PairedMatPerVector):
             H1X_all = self.product_cache.add("H1", H1X_new)
             H2X_all = self.product_cache.add("H2", H2X_new)
             return H1X_all, H2X_all, n_prod
+        elif self.ptype == "hess":
+            H1X_new = self._combine_H1(Fx, Jx, Kx)
+            for H1x in H1X_new:
+                self.vector_scale(-1.0, H1x)
+            H1X_all = self.product_cache.add("H1", H1X_new)
+            return H1X_all, n_prod
         else:
             AX_new = self._combine_A(Fx, Jx, Kx)
             for Ax in AX_new:
@@ -575,6 +585,25 @@ class TDUSCFEngine(PairedMatPerVector):
 
     ## Helper Functions
 
+    def _combine_H1(self, Fx, Jx, Kx=None):
+        """Build the combination:
+            H1 X =  [(Ea - Ei) + 2J - K - K^T]X
+        """
+
+        H1X = []
+        if Kx is not None:
+            for Fxi, Jxi, Kxi in zip(Fx, Jx, Kx):
+                H1X_so = self.vector_scale(2.0, Jxi)
+                Kxit = self.vector_transpose(Kxi)
+                H1X_so = self.vector_axpy(-1.0, Kxi, H1X_so)
+                H1X_so = self.vector_axpy(-1.0, Kxit, H1X_so)
+                H1X.append(self.vector_axpy(1.0, Fxi, self._so_to_mo(H1X_so)))
+        else:
+            for Fxi, Jxi in zip(Fx, Jx):
+                H1X_so = self.vector_scale(2.0, Jxi)
+                H1X.append(self.vector_axpy(1.0, Fxi, self._so_to_mo(H1X_so)))
+
+        return H1X
     def _combine_H1_H2(self, Fx, Jx, Kx=None):
         """Build the combinations:
             H1 X =  [(Ea - Ei) + 2J - K - K^T]X

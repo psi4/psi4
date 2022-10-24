@@ -188,8 +188,6 @@ class HF : public Wavefunction {
     /// Fractional occupation UHF/UKS
     void frac();
 
-    void print_stability_analysis(std::vector<std::pair<double, int>>& vec);
-
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
 
@@ -261,6 +259,7 @@ class HF : public Wavefunction {
     void set_attempt_number(int an) { attempt_number_ = an; }
 
     /// Check the stability of the wavefunction, and correct (if requested)
+    /// For UHF, this is defined Python-side. The other methods should be joining it.
     virtual bool stability_analysis();
 
     /** Computes the initial energy. */
@@ -278,6 +277,8 @@ class HF : public Wavefunction {
     void print_header();
 
     /** Compute/print spin contamination information (if unrestricted) **/
+    void print_stability_analysis(std::vector<std::pair<double, int>>& vec) const;
+
     virtual void compute_spin_contamination();
 
     /// The DIIS object
@@ -380,7 +381,7 @@ class HF : public Wavefunction {
     /** Form X'(FDS - SDF)X (for DIIS) **/
     virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
 
-    /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
+    /** Rotates orbitals inplace C' = C exp(U), U = antisymmetric matrix from x */
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
 
     /// Hessian-vector computers and solvers

@@ -409,9 +409,9 @@ def _validate_tdscf(*, wfn, states, triplets, guess) -> None:
     if guess != "DENOMINATORS":
         raise ValidationError(f"TDSCF: Guess type {guess} is not valid")
 
-# Generate additional output from TDSCF caclulations
 def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                                tdm_print):
+    """Print transition dipole moments and significant (de)excitation components."""
 
     restricted = wfn.same_a_b_orbs()
 
@@ -689,14 +689,14 @@ def tdscf_excitations(wfn,
     approximations.
     """
 
-    # validate input parameters
+    # => Validate input parameters <=
     triplets = triplets.upper()
     guess = guess.upper()
     _validate_tdscf(wfn=wfn, states=states, triplets=triplets, guess=guess)
 
     restricted = wfn.same_a_b_orbs()
 
-    # determine how many states per irrep to seek and apportion them between singlets/triplets and irreps.
+    # => Determine how many states per irrep to seek and apportion them between singlets/triplets and irreps. <=
     singlets_per_irrep = []
     triplets_per_irrep = []
     if isinstance(states, list):
@@ -721,10 +721,11 @@ def tdscf_excitations(wfn,
         else:
             singlets_per_irrep = _states_per_irrep(states, wfn.nirrep())
 
-    # tie maximum number of vectors per root to requested residual tolerance
+    # => Tie maximum number of vectors per root to requested residual tolerance <=
     # This gives 200 vectors per root with default tolerance
     max_vecs_per_root = int(-np.log10(r_convergence) * 50)
 
+    # => Select solver function <=
     def rpa_solver(e, n, g, m):
         return solvers.hamiltonian_solver(engine=e,
                                           nroot=n,
@@ -739,7 +740,8 @@ def tdscf_excitations(wfn,
                                        guess=g,
                                        r_convergence=r_convergence,
                                        max_ss_size=max_vecs_per_root * n,
-                                       verbose=verbose)
+                                       verbose=verbose,
+                                       nonneg_only=True)
 
     # determine which solver function to use: Davidson for TDA or Hamiltonian for RPA?
     if tda:
@@ -749,8 +751,10 @@ def tdscf_excitations(wfn,
         ptype = "RPA"
         solve_function = rpa_solver
 
+    # => Print header information <=
     _print_tdscf_header(r_convergence=r_convergence, guess_type=guess, restricted=restricted, ptype=ptype)
 
+    # => Obtain and sort the excited states! <=
     # collect solver results into a list
     _results = []
 
@@ -764,9 +768,10 @@ def tdscf_excitations(wfn,
         res_3 = _solve_loop(wfn, ptype, solve_function, triplets_per_irrep, maxiter, restricted, "triplet")
         _results.extend(res_3)
 
-    # sort by energy
+    # sort excited states by energy <=
     _results = sorted(_results, key=lambda x: x.E_ex_au)
 
+    # => Print out and setting per-root psivars <=
     core.print_out("\n{}\n".format("*"*90) +
                    "{}{:^70}{}\n".format("*"*10, "WARNING", "*"*10) +
                    "{}{:^70}{}\n".format("*"*10, "Length-gauge rotatory strengths are **NOT** gauge-origin invariant", "*"*10) +

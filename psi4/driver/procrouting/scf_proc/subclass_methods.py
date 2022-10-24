@@ -1,7 +1,10 @@
 import math
+import numpy as np
 
 from psi4 import core
 from ..diis import DIIS, StoragePolicy, RemovalPolicy
+from ..response.scf_products import TDUSCFEngine
+from ...p4util import solvers
 
 def diis_engine_helper(self):
     engines = set()
@@ -119,3 +122,106 @@ def _ROHF_diis(self, Dnorm):
 core.RHF.diis = _RHF_diis
 core.UHF.diis = core.CUHF.diis = _UHF_diis
 core.ROHF.diis = _ROHF_diis
+
+def _UHF_stability_analysis(self):
+    # => Validate options <=
+    # TODO: Stability analysis is supported for any functional UKS functional where its one-
+    # and two-body Hamiltonian matrix-vector products are implemented. This is true for LDA
+    # at least, but probably not other functionals. This restriction exists for now because
+    # we've always had it, but we should lift it as much as we can and implement more matrix-
+    # vector products so we can lift it further.
+    # TODO: It should be up to the SolverEngine to validate whether it can do Hx products for the input wfn.
+    if self.functional().is_gga() or self.functional().is_meta():
+        raise ValidationError("Stability analysis not yet supported for non-LDA functionals.")
+
+    # => Prep options for eigenvector solver <=
+    if not self.options().has_changed("SOLVER_ROOTS_PER_IRREP"):
+        roots = [self.options().get_int("SOLVER_N_ROOT")] * self.nirrep()
+    else:
+        roots = self.options().get_int_vector("SOLVER_ROOTS_PER_IRREP")
+        if len(roots) != wfn.nirrep():
+            raise ValidationError(f"SOLVER_ROOTS_PER_IRREP specified {wfn.nirrep()} irreps, but there are {len(roots)} irreps.")
+    r_convergence = self.options().get_double("SOLVER_CONVERGENCE")
+    if not self.options().has_changed("SOLVER_N_GUESS"):
+        # Below formula borrowed from TDSCF code.
+        max_vecs_per_root = int(-np.log10(r_convergence) * 50)
+    else:
+        max_vecs_per_root = self.options().get_int("SOLVER_N_GUESS")
+    engine = TDUSCFEngine(self, ptype="hess")
+
+    # => Compute eigenvectors and do trivial data processing <=
+    eval_sym = core.Matrix("SCF STABILITY EIGENVALUES", core.Dimension(roots), core.Dimension([1] * self.nirrep()))
+    current_eigenvalue = None
+    unstable = False
+    for h, nroot in enumerate(roots):
+        if not nroot: continue
+        # The below line changes the guess the engine generates, which controls the final states.
+        # This selects for eigenvectors of irrep h.
+        engine.reset_for_state_symm(engine.G_gs ^ h)
+        ret = solvers.davidson_solver(engine=engine,
+                                      nroot=nroot,
+                                      guess=engine.generate_guess(nroot * 4),
+                                      r_convergence=r_convergence,
+                                      max_ss_size=max_vecs_per_root * nroot,
+                                      verbose=0)
+        if not ret["stats"][-1]["done"]:
+            raise SCFConvergenceError(maxiter, self, f"hessian eigenvectors in irrep {irrep_ES}", ret["stats"][-1])
+        if h == 0:
+            current_eigenvalue = ret["eigvals"][0]
+            # Distinction between left and right eigenvectors is a formality for TDA-type solvers but forces the extra [0].
+            current_eigenvector = ret["eigvecs"][0][0]
+            unstable = current_eigenvalue < 0
+        for i, eigval in enumerate(ret["eigvals"]):
+            eval_sym.set(h, i, 0, eigval)
+
+    # => Print out whether unstable <=
+    if unstable:
+        core.print_out(f"    Negative totally symmetric eigenvalue detected: {current_eigenvalue:.6f} \n")
+        core.print_out(f"    Wavefunction unstable!\n")
+    else:
+        core.print_out(f"    Wavefunction stable under totally symmetric rotations.\n")
+        core.print_out(f"    Lowest totally symmetric eigenvalue: {current_eigenvalue:.6f} \n")
+
+    # => Print out and save stability eigenvalues <=
+    core.print_out("    Lowest UHF->UHF stability eigenvalues: \n");
+    eval_sym_pairs = []
+    for h in range(eval_sym.nirrep()):
+        for i in range(eval_sym.rows(h)):
+            eval_sym_pairs.append((eval_sym.get(h, i, 0), h))
+    self.print_stability_analysis(eval_sym_pairs)
+    self.set_variable("SCF STABILITY EIGENVALUES", eval_sym)
+
+
+    # => Follow instability or print out that there's nothing left to do <=
+    # Legacy instability took orbital steps based on the following algorithm:
+    # * Normalize the orbital eigenvector X to 1
+    # * Apply exp(t(X-X^)) for t = lambda pi / 2 (defaults to lambda = 0.5)
+    # * If that step returns to the same minimum, increment lambda (defaulting to 0.2) and repeat previous step
+    # Rigorous mathematical analysis on the true minimum is hard to come by: the rotated orbitals need not even be periodic in t.
+    # (See DOI 10.1063/1.467504 eq. 8 for explicit formulas. You can show non-periodicity in general in the simple case that P^1/2 is 2-by-2 diagonal.)
+    # As such, this algorithm is best regarded as a first attempt open to improvements.
+    # Example improvement: if the orbital rotation increases the energy, take a smaller step, not a larger.
+    if unstable and self.options().get_double("STABILITY_ANALYSIS") == "FOLLOW":
+        # ==> Increment step_scale_ if necessary <==
+        if hasattr(self, "last_hess_eigval") and abs(self.last_hess_eigval - current_eigenvalue) < 1e-4:
+            core.print_out("    Negative eigenvalue similar to previous one, wavefunction\n")
+            core.print_out("    likely to be in the same minimum.\n")
+            self.step_scale += self.options().get_double("FOLLOW_STEP_INCREMENT")
+            core.print_out(f"    Modifying FOLLOW_STEP_SCALE to {step_scale}.\n")
+        else:
+            self.step_scale = self.options().get_double("FOLLOW_STEP_SCALE")
+            self.last_hess_eigval = current_eigenvalue
+        # ==> Perform the orbital rotation! <==
+        # The current eigenvector is normalized to 1/2.
+        core.print_out(f"    Rotating orbitals by {self.step_scale} * pi / 2 radians along unstable eigenvector.\n");
+        current_eigenvector[0].scale(self.step_scale * np.pi)
+        self.rotate_orbitals(self.Ca(), current_eigenvector[0])
+        current_eigenvector[1].scale(self.step_scale * np.pi)
+        self.rotate_orbitals(self.Cb(), current_eigenvector[1])
+        return True
+    else:
+        core.print_out("    Stability analysis over.\n")
+        return False
+
+
+core.UHF.stability_analysis = _UHF_stability_analysis

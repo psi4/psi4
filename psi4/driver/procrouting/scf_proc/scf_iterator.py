@@ -533,13 +533,13 @@ def scf_finalize_energy(self):
     # anything on a wavefunction that may not be truly converged.
     if core.get_option('SCF', 'STABILITY_ANALYSIS') != "NONE":
 
-        # Don't bother computing needed integrals if we can't do anything with them.
-        if self.functional().needs_xc():
-            raise ValidationError("Stability analysis not yet supported for XC functionals.")
-
         # We need the integral file, make sure it is written and
         # compute it if needed
         if core.get_option('SCF', 'REFERENCE') != "UHF":
+            # Don't bother computing needed integrals if we can't do anything with them.
+            if self.functional().needs_xc():
+                raise ValidationError("Stability analysis not yet supported for XC functionals.")
+
             #psio = core.IO.shared_object()
             #psio.open(constants.PSIF_SO_TEI, 1)  # PSIO_OPEN_OLD
             #try:
@@ -555,7 +555,6 @@ def scf_finalize_energy(self):
             #   so forcibly recomputing for now until stability revamp
             core.print_out("    SO Integrals not on disk. Computing...")
             mints = core.MintsHelper(self.basisset())
-            #next 2 lines fix a bug that prohibits relativistic stability analysis
 
             mints.integrals()
             core.print_out("done.\n")

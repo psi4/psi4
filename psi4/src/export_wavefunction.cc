@@ -56,6 +56,7 @@
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
+#include "psi4/libscf_solver/stability.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfock/v.h"
 
@@ -399,7 +400,8 @@ void export_wavefunction(py::module& m) {
         .def("stability_analysis", &scf::HF::stability_analysis, "Assess wfn stability and correct if requested")
         .def("frac_renormalize", &scf::HF::frac_renormalize, "docstring")
         .def("compute_spin_contamination", &scf::HF::compute_spin_contamination, "docstring")
-        .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.");
+        .def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.")
+        .def("print_stability_analysis", &scf::HF::print_stability_analysis, "docstring");
 
     /// HF Functions
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")

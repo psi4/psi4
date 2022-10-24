@@ -1430,6 +1430,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add("MOM_OCC", new ArrayType());
         /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
         options.add("MOM_VIR", new ArrayType());
+        /*- Convergence threshold (max 2-norm) for numerical solvers (instability analysis and CPHF/CPKS). -*/
+        options.add_double("SOLVER_CONVERGENCE", 1.0E-6);
+        /*- Maximum iterations for numerical solvers (instability analysis and CPHF/CPKS).  -*/
+        options.add_int("SOLVER_MAXITER", 100);
+        /*- Number of guess vectors per root for instability analysis. -*/
+        options.add_int("SOLVER_N_GUESS", 1);
+        /*- Number of roots to converge for all irreps during instability analysis. (Overridden by SOLVER_ROOTS_PER_IRREP.) -*/
+        options.add_int("SOLVER_N_ROOT", 1);
         /*- Do use second-order SCF convergence methods? -*/
         options.add_bool("SOSCF", false);
         /*- When to start second-order SCF iterations based on gradient RMS. -*/
@@ -1762,44 +1770,17 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Auxiliary basis for SCF
          -*/
         options.add_str("DF_BASIS_SCF", "");
-        /*- Solver maximum iterations
-         -*/
+        /*- Solver maximum iterations  -*/
         options.add_int("SOLVER_MAXITER", 100);
         /*- Solver convergence threshold (max 2-norm). -*/
         options.add_double("SOLVER_CONVERGENCE", 1.0E-6);
-        /*- DL Solver number of roots
-         -*/
-        options.add_int("SOLVER_N_ROOT", 1);
-        /*- DL Solver number of guesses
-         -*/
+        /*- DL Solver number of guesses  -*/
         options.add_int("SOLVER_N_GUESS", 1);
-        /*- DL Solver number of subspace vectors to collapse to
-         -*/
-        options.add_int("SOLVER_MIN_SUBSPACE", 2);
-        /*- DL Solver maximum number of subspace vectors
-         -*/
-        options.add_int("SOLVER_MAX_SUBSPACE", 6);
-        /*- DL Solver minimum corrector norm to add to subspace
-         -*/
-        options.add_double("SOLVER_NORM", 1.0E-6);
+        /*- Number of roots to converge, per irrep, during instability analysis. (Overrides SOLVER_N_ROOT.) -*/
+        options.add("SOLVER_ROOTS_PER_IRREP", new ArrayType());
         /*- Solver precondition type
          -*/
         options.add_str("SOLVER_PRECONDITION", "JACOBI", "SUBSPACE JACOBI NONE");
-        /*- Solver type (for interchangeable solvers)
-         -*/
-        options.add_str("SOLVER_TYPE", "DL", "DL RAYLEIGH");
-        /*- Solver precondition max steps
-        -*/
-        options.add_int("SOLVER_PRECONDITION_MAXITER", 1);
-        /*- Solver precondition step type
-        -*/
-        options.add_str("SOLVER_PRECONDITION_STEPS", "TRIANGULAR", "CONSTANT TRIANGULAR");
-        /*- Solver residue or eigenvector delta
-        -*/
-        options.add_str("SOLVER_QUANTITY", "RESIDUAL", "EIGENVECTOR RESIDUAL");
-        /*- Solver exact diagonal or eigenvalue difference?
-        -*/
-        options.add_bool("SOLVER_EXACT_DIAGONAL", false);
     }
     if (name == "CCTRANSORT" || options.read_globals()) {
         /*- MODULEDESCRIPTION Transforms and sorts integrals for CC codes. Called before (non-density-fitted) MP2 and
