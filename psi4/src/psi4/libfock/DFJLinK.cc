@@ -52,9 +52,9 @@ using namespace psi;
 namespace psi {
 
 DFJLinK::DFJLinK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) { 
-    timer_on("DFJLinK::Setup");
+    timer_on("DFJLinK: Setup");
     common_init(); 
-    timer_off("DFJLinK::Setup");
+    timer_off("DFJLinK: Setup");
 }
 
 DFJLinK::~DFJLinK() {}
@@ -506,8 +506,6 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
         throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
     }
 
-    timer_on("K");
-
     // ==> Prep Auxiliary Quantities <== //
 
     // => Zeroing <= //
@@ -904,7 +902,6 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
         printer.Printf("(LinK) Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
-    timer_off("K");
 }
 
 }  // namespace psi
