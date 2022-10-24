@@ -547,7 +547,6 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
     // => Sizing <= //
     int nshell = primary_->nshell();
     int nbf = primary_->nbf();
-    //int nthread = df_ints_num_threads_;
     int nthread = nthreads_; 
 
     // => Atom Blocking <= //

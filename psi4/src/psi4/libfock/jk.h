@@ -1301,12 +1301,13 @@ class PSI_API DFJCOSK : public JK {
  */
 class PSI_API DFJLinK : public JK {
    protected:
-    /// Number of threads
+    /// The number of threads to be used for integral computation
     int nthreads_;
-    /// Number of threads for DF integrals TODO: DF_INTS_NUM_THREADS
-    int df_ints_num_threads_;
     /// Options object
     Options& options_;
+
+    // Perform Density matrix-based integral screening?
+    bool density_screening_;
 
     // => Incremental Fock build variables <= //
     
@@ -1315,8 +1316,22 @@ class PSI_API DFJLinK : public JK {
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     bool do_incfock_iter_;
+ 
+    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
+    std::vector<SharedMatrix> prev_D_ao_;
+    std::vector<SharedMatrix> prev_J_ao_;
+    std::vector<SharedMatrix> prev_K_ao_;
+    std::vector<SharedMatrix> prev_wK_ao_;
 
-    
+    // Delta D, J, K, wK Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> delta_D_ao_;
+    std::vector<SharedMatrix> delta_J_ao_;
+    std::vector<SharedMatrix> delta_K_ao_;
+    std::vector<SharedMatrix> delta_wK_ao_;
+ 
+    // Is the JK currently on a guess iteration
+    bool initial_iteration_ = true;
+  
     // => Density Fitting Stuff <= //
 
     /// Auxiliary basis set
@@ -1345,28 +1360,10 @@ class PSI_API DFJLinK : public JK {
     /// Delete integrals, files, etc
     void postiterations() override;
 
-    // Perform Density matrix-based integral screening?
-    bool density_screening_;
-
     /// Set up Incfock variables per iteration
     void incfock_setup();
     /// Post-iteration Incfock processing
     void incfock_postiter();
-
-    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
-    std::vector<SharedMatrix> prev_D_ao_;
-    std::vector<SharedMatrix> prev_J_ao_;
-    std::vector<SharedMatrix> prev_K_ao_;
-    std::vector<SharedMatrix> prev_wK_ao_;
-
-    // Delta D, J, K, wK Matrices for Incremental Fock Build
-    std::vector<SharedMatrix> delta_D_ao_;
-    std::vector<SharedMatrix> delta_J_ao_;
-    std::vector<SharedMatrix> delta_K_ao_;
-    std::vector<SharedMatrix> delta_wK_ao_;
-
-    // Is the JK currently on a guess iteration
-    bool initial_iteration_ = true;
 
     /// Build the coulomb (J) matrix
     void build_J(std::vector<std::shared_ptr<Matrix> >& D,
@@ -1400,12 +1397,6 @@ class PSI_API DFJLinK : public JK {
 
     bool do_incfock_iter() { return do_incfock_iter_; }
     // => Knobs <= //
-    /**
-     * What number of threads to compute integrals on
-     * @param val a positive integer
-     */
-    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
-
     /**
     * Print header information regarding JK
     * type on output file
