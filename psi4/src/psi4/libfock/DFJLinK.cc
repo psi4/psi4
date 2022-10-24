@@ -66,6 +66,8 @@ void DFJLinK::common_init() {
     nthreads_ = Process::environment.get_n_threads();
 #endif
 
+    // => Incremental Fock Setup <= // 
+    
     incfock_ = options_.get_bool("INCFOCK");
     incfock_count_ = 0;
     do_incfock_iter_ = false;
@@ -507,11 +509,6 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
     }
 
     // ==> Prep Auxiliary Quantities <== //
-
-    // => Zeroing <= //
-    for (auto& Kmat : K) {
-        Kmat->zero();
-    }
 
     // => Sizing <= //
     int nshell = primary_->nshell();
