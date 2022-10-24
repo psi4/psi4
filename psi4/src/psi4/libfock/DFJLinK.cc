@@ -152,7 +152,8 @@ void DFJLinK::print_header() const {
         outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf("    Incremental Fock :  %11s\n", (incfock_ ? "Yes" : "No"));
         outfile->Printf("    Screening Type:   %11s\n", screen_type.c_str());
-        outfile->Printf("    Screening Cutoff: %11.0E\n", cutoff_);
+        outfile->Printf("    J Screening Cutoff: %11.0E\n", cutoff_);
+        outfile->Printf("    K Screening Cutoff: %11.0E\n", linK_ints_cutoff_);
     }
 }
 
