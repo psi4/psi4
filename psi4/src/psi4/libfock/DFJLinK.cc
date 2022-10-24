@@ -227,12 +227,16 @@ void DFJLinK::incfock_postiter() {
 void DFJLinK::compute_JK() {
   
     // wK not supported in DFJLinK yet
-    if (do_wK_) throw PSIEXCEPTION("LinK does not support wK integrals yet!");
+    if (do_wK_) throw PSIEXCEPTION("LINK does not support wK integrals yet!");
+   
+    // => Set up Incremental Fock and Density Screening if required <= //
     
+    // explicit setup of Incfock for this SCF iteration
     if (incfock_) {
         timer_on("DFJLinK: INCFOCK Preprocessing");
         
 	incfock_setup();
+
         int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         double Dnorm = Process::environment.globals["SCF D NORM"];
@@ -244,16 +248,21 @@ void DFJLinK::compute_JK() {
 	timer_off("DFJLinK: INCFOCK Preprocessing");
     }
     
+    // define matrices to be used for J/K construction
     std::vector<SharedMatrix>& D_ref = (do_incfock_iter_ ? delta_D_ao_ : D_ao_);
     std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
     std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
 
+    // update ERI engine density matrices for density screening
     if (density_screening_) {
         for (auto eri_computer : eri_computers_["4-Center"]) {
             eri_computer->update_density(D_ref);
 	}
     }
 
+    // => Perform matrix calculations <= //
+    
+    // Direct DF-J
     if (do_J_) {
         timer_on("DFJLinK: J");
         
@@ -263,6 +272,7 @@ void DFJLinK::compute_JK() {
 	timer_off("DFJLinK: J");
     }
     
+    // LinK
     if (do_K_) {
         timer_on("DFJLinK: K");
         
@@ -271,6 +281,8 @@ void DFJLinK::compute_JK() {
         
 	timer_off("DFJLinK: K");
     }
+   
+    // => Finalize Incremental Fock if required <= //
     
     if (incfock_) {
         timer_on("DFJLinK: INCFOCK Postprocessing");
