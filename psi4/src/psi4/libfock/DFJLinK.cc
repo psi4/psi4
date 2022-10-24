@@ -223,7 +223,10 @@ void DFJLinK::incfock_postiter() {
 }
 
 void DFJLinK::compute_JK() {
- 
+  
+    // wK remains to be tested
+    if (do_wK_) throw PSIEXCEPTION("DFJLinK does not support wK integrals yet!");
+    
     int njk = D_ao_.size();
 
     if (incfock_) {
@@ -250,37 +253,22 @@ void DFJLinK::compute_JK() {
 	}
     }
 
-
-    //if (density_screening_) {
-    //    eri_computers_["4-Center"][0]->update_density(D_ref);
-    //    for (int thread = 1; thread < nthreads_; thread++) {
-//	    eri_computers_["4-Center"][thread] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"][0]->clone());
-	//}
-	//eri_computers_["3-Center"][0]->update_density(D_ref);
-    //}
-
-    if (do_wK_) throw PSIEXCEPTION("DFJLinK does not support wK integrals yet!");
-
-    // D_eff, the effective pseudo-density matrix is either:
-    //   (1) the regular density: D_eff == D_lr = C_lo x C*ro
-    //   (2) the difference density: D_eff == dD_lr = (C_lo x C_ro)_{iter} - (C_lo x C_ro)_{iter - 1}
-    //
-    std::vector<SharedMatrix> D_eff(njk);
-
     if (do_J_) {
         timer_on("DFJLinK: J");
-        //build_J(D_eff, J_ao_);
-        for (auto& Jmat : J_ref) Jmat->zero();
+        
+	for (auto& Jmat : J_ref) Jmat->zero();
 	build_J(D_ref, J_ref);
-        timer_off("DFJLinK: J");
+        
+	timer_off("DFJLinK: J");
     }
     
     if (do_K_) {
         timer_on("DFJLinK: K");
-        //build_K(D_eff, K_ao_);
-        for (auto& Kmat : K_ref) Kmat->zero();
+        
+	for (auto& Kmat : K_ref) Kmat->zero();
         build_K(D_ref, K_ref);
-        timer_off("DFJLinK: K");
+        
+	timer_off("DFJLinK: K");
     }
     
     if (incfock_) {
@@ -535,7 +523,7 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
         throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
     }
 
-    timer_on("build_linK()");
+    timer_on("K");
 
     // ==> Prep Auxiliary Quantities <== //
 
@@ -933,7 +921,7 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
         printer.Printf("(LinK) Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
-    timer_off("build_linK()");
+    timer_off("K");
 }
 
 }  // namespace psi
