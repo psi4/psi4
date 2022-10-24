@@ -150,11 +150,6 @@ void DFJLinK::incfock_setup() {
         prev_D_ao_.clear();
         delta_D_ao_.clear();
 
-        if (do_wK_) {
-            prev_wK_ao_.clear();
-            delta_wK_ao_.clear();
-        }
-
         if (do_J_) {
             prev_J_ao_.clear();
             delta_J_ao_.clear();
@@ -169,11 +164,6 @@ void DFJLinK::incfock_setup() {
             prev_D_ao_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
             delta_D_ao_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
 
-            if (do_wK_) {
-                prev_wK_ao_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
-                delta_wK_ao_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
-            }
-                
             if (do_J_) {
                 prev_J_ao_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
                 delta_J_ao_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
@@ -195,11 +185,6 @@ void DFJLinK::incfock_postiter() {
     if (do_incfock_iter_) {
         for (size_t N = 0; N < D_ao_.size(); N++) {
 
-            if (do_wK_) {
-                prev_wK_ao_[N]->add(delta_wK_ao_[N]);
-                wK_ao_[N]->copy(prev_wK_ao_[N]);
-            }
-
             if (do_J_) {
                 prev_J_ao_[N]->add(delta_J_ao_[N]);
                 J_ao_[N]->copy(prev_J_ao_[N]);
@@ -214,7 +199,6 @@ void DFJLinK::incfock_postiter() {
         }
     } else {
         for (size_t N = 0; N < D_ao_.size(); N++) {
-            if (do_wK_) prev_wK_ao_[N]->copy(wK_ao_[N]);
             if (do_J_) prev_J_ao_[N]->copy(J_ao_[N]);
             if (do_K_) prev_K_ao_[N]->copy(K_ao_[N]);
             prev_D_ao_[N]->copy(D_ao_[N]);
@@ -224,14 +208,13 @@ void DFJLinK::incfock_postiter() {
 
 void DFJLinK::compute_JK() {
   
-    // wK remains to be tested
-    if (do_wK_) throw PSIEXCEPTION("DFJLinK does not support wK integrals yet!");
+    // wK not supported in DFJLinK yet
+    if (do_wK_) throw PSIEXCEPTION("LinK does not support wK integrals yet!");
     
-    int njk = D_ao_.size();
-
     if (incfock_) {
         timer_on("DFJLinK: INCFOCK Preprocessing");
-        incfock_setup();
+        
+	incfock_setup();
         int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
         double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
         double Dnorm = Process::environment.globals["SCF D NORM"];
@@ -239,13 +222,13 @@ void DFJLinK::compute_JK() {
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
         
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
-        timer_off("DFJLinK: INCFOCK Preprocessing");
+        
+	timer_off("DFJLinK: INCFOCK Preprocessing");
     }
     
     std::vector<SharedMatrix>& D_ref = (do_incfock_iter_ ? delta_D_ao_ : D_ao_);
     std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
     std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
-    std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? delta_wK_ao_ : wK_ao_);
 
     if (density_screening_) {
         for (auto eri_computer : eri_computers_["4-Center"]) {

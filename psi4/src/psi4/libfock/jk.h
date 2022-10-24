@@ -1321,13 +1321,11 @@ class PSI_API DFJLinK : public JK {
     std::vector<SharedMatrix> prev_D_ao_;
     std::vector<SharedMatrix> prev_J_ao_;
     std::vector<SharedMatrix> prev_K_ao_;
-    std::vector<SharedMatrix> prev_wK_ao_;
 
     // Delta D, J, K, wK Matrices for Incremental Fock Build
     std::vector<SharedMatrix> delta_D_ao_;
     std::vector<SharedMatrix> delta_J_ao_;
     std::vector<SharedMatrix> delta_K_ao_;
-    std::vector<SharedMatrix> delta_wK_ao_;
  
     // Is the JK currently on a guess iteration
     bool initial_iteration_ = true;
