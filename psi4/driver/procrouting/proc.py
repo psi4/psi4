@@ -1180,7 +1180,7 @@ def select_ccd(name, **kwargs):
     module = core.get_global_option("QC_MODULE")
 
     func = None
-    if reference in ["RHF"]:  # , "UHF"]
+    if reference in ["RHF", "UHF"]:
         if mtd_type == "CONV":
             if module in [""]:
                 core.print_out("""\nThis method is not available with conventional integrals. Add "set """
@@ -1211,7 +1211,7 @@ def select_ccd_gradient(name, **kwargs):
     module = core.get_global_option("QC_MODULE")
 
     func = None
-    if reference in ["RHF"]:  # , "UHF"]
+    if reference in ["RHF", "UHF"]:
         if mtd_type == "CONV":
             if module in [""]:
                 core.print_out("""\nThis method is not available with conventional integrals. Add "set """
@@ -1940,6 +1940,8 @@ def scf_helper(name, post_scf=True, **kwargs):
         c1_molecule.update_geometry()
         c1_basis = core.BasisSet.build(c1_molecule, "ORBITAL", core.get_global_option('BASIS'), quiet=True)
         tmp = scf_wfn.c1_deep_copy(c1_basis)
+        if not scf_wfn.has_variable("-D ENERGY"):
+            tmp.del_variable("-D ENERGY")
         c1_jkbasis = core.BasisSet.build(c1_molecule, "DF_BASIS_SCF",
                                          core.get_global_option("DF_BASIS_SCF"),
                                          "JKFIT", core.get_global_option('BASIS'), quiet=True)

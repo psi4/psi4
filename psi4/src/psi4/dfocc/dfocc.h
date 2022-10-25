@@ -576,6 +576,20 @@ class DFOCC : public Wavefunction {
 
     void malloc_mo_df_ints();
     void reset_mo_df_ints();
+    void ccd_t2AA_amps();
+    void ccd_t2BB_amps();
+    void ccd_t2AB_amps();
+
+    void ccd_W_MNIJT2AA();
+    void ccd_W_mnijT2BB();
+    void ccd_W_MnIjT2AB();
+
+    void ccd_W_MBEJAAAA();
+    void ccd_W_mbejBBBB();
+    void ccd_W_mBeJBABA();
+    void ccd_W_MbEjABAB();
+    void ccd_W_mBEjBAAB();
+    void ccd_W_MbeJABBA();
 
     // CCDL
     void ccdl_l2_amps();
@@ -588,6 +602,26 @@ class DFOCC : public Wavefunction {
     void ccdl_VmnijL2();
     void ccdl_WijmnL2();
     void ccdl_WabefL2();
+
+    void ccdl_WMBEJ_AAAA();
+    void ccdl_Wmbej_BBBB();
+    void ccdl_WMbEj_ABAB();
+    void ccdl_WmBeJ_BABA();
+    void ccdl_WMbeJ_ABBA();
+    void ccdl_WmBEj_BAAB();
+
+    void ccdl_WmnijAA();
+    void ccdl_WmnijBB();
+    void ccdl_WmnijAB();
+
+    void ccdl_l2AA_amps();
+    void ccdl_l2BB_amps();
+    void ccdl_l2AB_amps();
+
+    void cc_WabefT2AA(std::string amps);
+    void cc_WabefT2BB(std::string amps);
+    void cc_WabefT2AB(std::string amps);
+    void ccd_lambda_energy();
 
     // CCD Density
     void ccd_pdm_3index_intr();

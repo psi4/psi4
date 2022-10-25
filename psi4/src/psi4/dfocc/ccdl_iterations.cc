@@ -41,44 +41,86 @@ void DFOCC::ccdl_iterations() {
     //==========================================================================================
     //========================= Before iterations ==============================================
     //==========================================================================================
-    // 3-index intermediates
-    timer_on("CCD 3-index intr");
-    ccd_3index_intr();
-    timer_off("CCD 3-index intr");
-
-    // F intermediates
-    timer_on("CCD F intr");
-    ccd_F_intr();
-    timer_off("CCD F intr");
-
-    // W intermediates
-    ccdl_Wmnij();
-    ccdl_Wmbej();
-    ccdl_Wmbje();
-
-    // Write
-    // Form U_ij^ab
     SharedTensor2d U, T;
-    U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
-    ccsd_u2_amps(U, t2);
-    U->write_symm(psio_, PSIF_DFOCC_AMPS);
-    U.reset();
-    // Form T'(ib,ja) = t_ij^ab
-    U = std::make_shared<Tensor2d>("T2p (IA|JB)", naoccA, navirA, naoccA, navirA);
-    ccsd_t2_prime_amps(U, t2);
-    U->write_symm(psio_, PSIF_DFOCC_AMPS);
-    U.reset();
-    // Form T(ij,ab)
-    // T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    // T->sort(1324, t2, 1.0, 0.0);
-    // T->write(psio_, PSIF_DFOCC_AMPS);
-    // T.reset();
 
-    // Malloc and Free
-    gQ = std::make_shared<Tensor1d>("CCDL G_Q", nQ);
-    l2 = std::make_shared<Tensor2d>("L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
-    l2->copy(t2);
-    t2.reset();
+    // 3-index intermediates
+    //timer_on("CCD 3-index intr");
+    //ccd_3index_intr();
+    //timer_off("CCD 3-index intr");
+
+    //// F intermediates
+    //timer_on("CCD F intr");
+    //ccd_F_intr();
+    //timer_off("CCD F intr");
+
+    if (reference_ == "RESTRICTED") {
+        // W intermediates
+        ccdl_Wmnij();
+        ccdl_Wmbej();
+        ccdl_Wmbje();
+
+        // Write
+        // Form U_ij^ab
+        U = std::make_shared<Tensor2d>("U2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        ccsd_u2_amps(U, t2);
+        U->write_symm(psio_, PSIF_DFOCC_AMPS);
+        U.reset();
+        // Form T'(ib,ja) = t_ij^ab
+        U = std::make_shared<Tensor2d>("T2p (IA|JB)", naoccA, navirA, naoccA, navirA);
+        ccsd_t2_prime_amps(U, t2);
+        U->write_symm(psio_, PSIF_DFOCC_AMPS);
+        U.reset();
+
+        // Malloc and Free
+        //gQ = std::make_shared<Tensor1d>("CCDL G_Q", nQ);
+        l2 = std::make_shared<Tensor2d>("L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        l2->copy(t2);
+        //if (orbs_already_opt == 1)
+        //    l2->read_symm(psio_, PSIF_DFOCC_AMPS);
+        //else l2->copy(t2);
+        t2.reset();
+    }// if (reference_ == "RESTRICTED")
+
+    else if (reference_ == "UNRESTRICTED") {
+        // W intermediates
+        timer_on("CCSDL W intr");
+        ccdl_WmnijAA();
+        ccdl_WmnijBB();
+        ccdl_WmnijAB();
+
+        ccdl_WMBEJ_AAAA();
+        ccdl_Wmbej_BBBB();
+        ccdl_WMbEj_ABAB();
+        ccdl_WmBeJ_BABA();
+        ccdl_WMbeJ_ABBA();
+        ccdl_WmBEj_BAAB();
+        timer_off("CCSDL W intr");
+
+        SharedTensor2d T2, L2;
+        T2 = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        T2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        L2 = std::make_shared<Tensor2d>("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+        L2->copy(T2);
+        T2.reset();
+        L2->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        L2.reset();
+
+        T2 = std::make_shared<Tensor2d>("T2 <ij|ab>", naoccB, naoccB, navirB, navirB);
+        T2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        L2 = std::make_shared<Tensor2d>("L2 <ij|ab>", naoccB, naoccB, navirB, navirB);
+        L2->copy(T2);
+        T2.reset();
+        L2->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+        L2.reset();
+
+        T2 = std::make_shared<Tensor2d>("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+        T2->read(psio_, PSIF_DFOCC_AMPS);
+        L2 = std::make_shared<Tensor2d>("L2 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+        L2->copy(T2);
+        T2.reset();
+        L2->write(psio_, PSIF_DFOCC_AMPS);
+        L2.reset();
+    }// else if (reference_ == "UNRESTRICTED")
 
     //==========================================================================================
     //========================= Title ==========================================================
@@ -107,7 +149,18 @@ void DFOCC::ccdl_iterations() {
             ccsdlDiisManager->set_error_vector_size(L2);
             ccsdlDiisManager->set_vector_size(L2);
         }
+        else if (reference_ == "UNRESTRICTED") {
+            Matrix L2AA("L2AA", ntri_anti_ijAA, ntri_anti_abAA);
+            Matrix L2BB("L2BB", ntri_anti_ijBB, ntri_anti_abBB);
+            Matrix L2AB("L2AB", naoccA * naoccB, navirA * navirB);
+
+            ccsdlDiisManager = std::make_shared<DIISManager>(
+                    cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
+            ccsdlDiisManager->set_error_vector_size(L2AA, L2BB, L2AB);
+            ccsdlDiisManager->set_vector_size(L2AA, L2BB, L2AB);
+        }
     }  // if diis true
+
 
     // head of loop
     do {
@@ -127,14 +180,8 @@ void DFOCC::ccdl_iterations() {
         DE = EccdL - EccdL_old;
         EccdL_old = EccdL;
 
-        // RMS
-        if (reference_ == "UNRESTRICTED") {
-            rms_t2 = MAX0(rms_t2AA, rms_t2BB);
-            rms_t2 = MAX0(rms_t2, rms_t2AB);
-        }
-
         // print
-        outfile->Printf(" %3d      %13.10f         %13.10f     %12.2e  \n", itr_occ, EcorrL, DE, rms_t2);
+        outfile->Printf(" %3d      %13.10f         %13.10f     %12.2e  \n", itr_occ, EcorrL, DE, rms_l2);
 
         if (itr_occ >= cc_maxiter) {
             conver = 0;  // means iterations were NOT converged
@@ -145,7 +192,7 @@ void DFOCC::ccdl_iterations() {
             throw PSIEXCEPTION("CCD iterations are diverging");
         }
 
-    } while (std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
+    } while (std::fabs(DE) >= tol_Eod || rms_l2 >= tol_t2);  // rms_l2 was rms_t2
 
     if (conver == 1) {
         outfile->Printf("\n");
@@ -169,16 +216,19 @@ void DFOCC::ccdl_iterations() {
         outfile->Printf("\n\tComputing 3-index intermediates...\n");
         timer_on("CCD PDM 3-index intr");
         ccd_pdm_3index_intr();
+        //outfile->Printf("\t3-index intermediates are done.\n");
         timer_off("CCD PDM 3-index intr");
     }
 
-    // free l2 amps
-    U = std::make_shared<Tensor2d>("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA);
-    ccsd_u2_amps(U, l2);
-    U->write_symm(psio_, PSIF_DFOCC_AMPS);
-    U.reset();
-    l2->write_symm(psio_, PSIF_DFOCC_AMPS);
-    l2.reset();
+    if (reference_ == "RESTRICTED") {
+        // free l2 amps
+        U = std::make_shared<Tensor2d>("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA);
+        ccsd_u2_amps(U, l2);
+        U->write_symm(psio_, PSIF_DFOCC_AMPS);
+        U.reset();
+        l2->write_symm(psio_, PSIF_DFOCC_AMPS);
+        l2.reset();
+    }
 
     // For GRAD
     if (dertype == "FIRST") {
@@ -189,11 +239,11 @@ void DFOCC::ccdl_iterations() {
 
     // Mem free for DF ints
     // if (df_ints_incore) {
-    bQijA.reset();
-    bQiaA.reset();
-    bQabA.reset();
+    reset_mo_df_ints();
     //}
+    //std::cout << "I am here \n";
 
 }  // end ccdl_iterations
+
 }  // namespace dfoccwave
 }  // namespace psi

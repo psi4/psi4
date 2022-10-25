@@ -1696,14 +1696,9 @@ void DFOCC::ccd_manager_cd() {
         }
 
         // Mem alloc for DF ints
-        if (df_ints_incore) {
-            bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
-            bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
-            bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
-            bQijA->read(psio_, PSIF_DFOCC_INTS);
-            bQiaA->read(psio_, PSIF_DFOCC_INTS);
-            bQabA->read(psio_, PSIF_DFOCC_INTS, true, true);
-        }
+        //if (df_ints_incore) {
+            malloc_mo_df_ints();
+        //}
 
         //  Malloc
         if (t2_incore) {
@@ -1750,7 +1745,7 @@ void DFOCC::ccd_manager_cd() {
 
     // Compute MP2 energy
     if (reference == "ROHF") t1_1st_sc();
-    if (t2_incore)
+    if (t2_incore || reference_ == "UNRESTRICTED")
         ccd_mp2();
     else
         ccd_mp2_low();
@@ -1797,9 +1792,14 @@ void DFOCC::ccd_manager_cd() {
     }
     variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
 
+    // Mem alloc for DF ints
+    if (reference_ == "UNRESTRICTED") {
+        malloc_mo_df_ints();
+    }
+
     // Perform CCD iterations
     timer_on("CCD");
-    if (t2_incore)
+    if (t2_incore || reference_ == "UNRESTRICTED")
         ccd_iterations();
     else
         ccd_iterations_low();
@@ -1833,12 +1833,12 @@ void DFOCC::ccd_manager_cd() {
     // CCDL
     if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
         // memalloc
-        if (dertype == "FIRST") {
-            gQt = SharedTensor1d(new Tensor1d("CCSD PDM G_Qt", nQ));
-        }
+        gQt = std::make_shared<Tensor1d>("CCSD PDM G_Qt", nQ);
+        gQ = std::make_shared<Tensor1d>("CCSDL G_Q", nQ);
+        gQp = std::make_shared<Tensor1d>("CCSDL G_Qp", nQ);
 
         timer_on("CCDL");
-        if (t2_incore) {
+        if (t2_incore || reference_ == "UNRESTRICTED") {
             tstop();
             tstart();
             lambda_title();

@@ -62,6 +62,16 @@ void DFOCC::ccd_iterations() {
             ccsdDiisManager->set_error_vector_size(T2);
             ccsdDiisManager->set_vector_size(T2);
         }
+        else if (reference_ == "UNRESTRICTED") {
+            Matrix T2AA("T2AA", ntri_anti_ijAA, ntri_anti_abAA);
+            Matrix T2BB("T2BB", ntri_anti_ijBB, ntri_anti_abBB);
+            Matrix T2AB("T2AB", naoccA * naoccB, navirA * navirB);
+
+            ccsdDiisManager = std::make_shared<DIISManager>(
+                cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
+            ccsdDiisManager->set_error_vector_size(T2AA, T2BB, T2AB);
+            ccsdDiisManager->set_vector_size(T2AA, T2BB, T2AB);
+        }
     }  // if diis true
 
     // head of loop
@@ -87,12 +97,6 @@ void DFOCC::ccd_iterations() {
         DE = Eccd - Eccd_old;
         Eccd_old = Eccd;
 
-        // RMS
-        if (reference_ == "UNRESTRICTED") {
-            rms_t2 = MAX0(rms_t2AA, rms_t2BB);
-            rms_t2 = MAX0(rms_t2, rms_t2AB);
-        }
-
         // print
         outfile->Printf(" %3d      %13.10f         %13.10f     %12.2e  \n", itr_occ, Ecorr, DE, rms_t2);
 
@@ -111,16 +115,14 @@ void DFOCC::ccd_iterations() {
     if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
 
     // Mem dealloc for DF ints
-    if (df_ints_incore) {
+    //if (df_ints_incore) {
         if (cc_lambda_ == "FALSE") {
-            bQijA.reset();
-            bQiaA.reset();
-            bQabA.reset();
+            reset_mo_df_ints();
         }
-    }
+    //}
 
     // free t2 amps
-    if (t2_incore) {
+    if (t2_incore && reference_ == "RESTRICTED") {
         if (cc_lambda_ == "TRUE") {
             t2->write_symm(psio_, PSIF_DFOCC_AMPS);
         } else
