@@ -27,6 +27,7 @@
  */
 
 #include "jk.h"
+#include <assert.h>
 
 #include "psi4/lib3index/3index.h"
 #include "psi4/libpsio/psio.hpp"
@@ -71,7 +72,12 @@ JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
 
-    if (options.get_str("SCREENING") == "DENSITY" && !((jk_type == "DIRECT" || jk_type == "COSX" || jk_type == "LINK") || options.get_bool("DF_SCF_GUESS"))) {
+    bool do_density_screen = options.get_str("SCREENING") == "DENSITY";
+    bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
+    
+    bool can_do_density_screen = (jk_type == "DIRECT" || jk_type == "LINK");
+
+    if (do_density_screen && !(can_do_density_screen || do_df_scf_guess)) {
         throw PSIEXCEPTION("Density screening has not been implemented for non-Direct SCF algorithms.");
     }
 
