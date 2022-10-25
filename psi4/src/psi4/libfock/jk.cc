@@ -27,7 +27,6 @@
  */
 
 #include "jk.h"
-#include <assert.h>
 
 #include "psi4/lib3index/3index.h"
 #include "psi4/libpsio/psio.hpp"

@@ -1317,12 +1317,12 @@ class PSI_API DFJLinK : public JK {
     int incfock_count_;
     bool do_incfock_iter_;
  
-    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
+    /// D, J, K Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
     std::vector<SharedMatrix> prev_J_ao_;
     std::vector<SharedMatrix> prev_K_ao_;
 
-    // Delta D, J, K, wK Matrices for Incremental Fock Build
+    // Delta D, J, K Matrices for Incremental Fock Build
     std::vector<SharedMatrix> delta_D_ao_;
     std::vector<SharedMatrix> delta_J_ao_;
     std::vector<SharedMatrix> delta_K_ao_;
@@ -1367,7 +1367,17 @@ class PSI_API DFJLinK : public JK {
     void build_J(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& J);
 
-    /// Build the exchange (K) matrix
+    /**
+     * @author Andy Jiang, Georgia Tech, December 2021
+     * 
+     * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
+     * doi: 10.1063/1.476741
+     * 
+     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
+     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
+     * @param K The list of AO K matrices to build (Same size as D)
+     * 
+     */
     void build_K(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& K);
 

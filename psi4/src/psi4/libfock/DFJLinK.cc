@@ -102,7 +102,7 @@ void DFJLinK::common_init() {
     IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
     eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
     
-    // create each threads' ERI computer 
+    // create each threads' ERI computers 
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
         eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
