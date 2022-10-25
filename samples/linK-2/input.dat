@@ -1,4 +1,4 @@
-#! RKS Linear Exchange Algorithm test for benzene
+#! RKS Linear Exchange Algorithm example for benzene
 
 molecule mol {
     0 1

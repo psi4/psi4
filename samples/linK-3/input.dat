@@ -1,4 +1,4 @@
-#! UHF and ROHF Linear Exchange Algorithm test for benzyl cation
+#! UHF and ROHF Linear Exchange Algorithm example for benzyl cation
 
 molecule mol {
     1 2
