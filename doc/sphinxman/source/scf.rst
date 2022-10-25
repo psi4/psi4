@@ -694,12 +694,13 @@ COSX
 LINK
     An implementation of the linear-scaling "Linear Exchange" (LinK)
     algorithm described in [Ochsenfeld:1998:1663]_. As with the COSX option, 
-    the Coulomb term is computed with an integral- direct density-fitting 
+    the Coulomb term is computed with an integral-direct density-fitting 
     algorithm. The LINK algorithm provides many of the benefits of integral-direct
     SCF algorithms, including no disk I/O, low memory usage, and effective
-    parallelization. Additionally, the use of the LinK method for exchange
-    construction allows the LINK implementation to scale well with system size. 
-    See the COSX section below for more information.
+    parallelization. Additionally, the use of the linear-scaling LinK method 
+    allows the LINK implementation to scale well with system size 
+    while simultaneously providing a formally-exact computation of the 
+    Exchange term. See the Linear Exchange section below for more information.
 
 In some cases the above algorithms have multiple implementations that return
 the same result, but are optimal under different molecules sizes and hardware
@@ -799,13 +800,15 @@ The |scf__cosx_overlap_fitting| keyword (defaults to ``true``) reduces numerical
 integration errors using the method described in [Izsak:2011:144105]_ and is
 always recommended.
 
-LinK Exchange
-~~~~~~~~~~~~~
+Linear Exchange
+~~~~~~~~~~~~~~~
 
 Large SCF calculations can benefit from specialized screening procedures that further reduce the scaling of the ERI contribution to the Fock matrix.
 LinK, the linear-scaling exchange method described in [Ochsenfeld:1998:1663]_, is available in Psi4 in conjunction with integral-direct density fitting for Coulomb construction (|globals__scf_type| set to ``LINK``).
-LinK achieves linear-scaling by exploiting shell pair sparsity in the density matrix and overlap sparsity between shell pairs.
-This method is most competitive when used with non-diffuse orbital basis sets, since orbital and density overlaps decay slower with diffuse functions.
+LinK achieves linear-scaling by exploiting shell pair sparsity in the density matrix and overlap sparsity between shell pairs. Specifically, LinK exploits the fact that the Exchange term
+requires only a linear-scaling number of significant elements through reformulating the
+shell quartet screening process to scale linearly with system size.
+LinK is most competitive when used with non-diffuse orbital basis sets, since orbital and density overlaps decay slower with diffuse functions.
 LinK is especially powerful when combined with density-matrix based ERI screening (set |globals__screening| to ``DENSITY``) and incremental Fock builds (set |scf__incfock| to ``TRUE``), which decrease the number of significant two-electron integrals to calculate.
 
 To control the LinK algorithm, here are the list of options provided.
