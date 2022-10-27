@@ -341,7 +341,7 @@ class PSI_API DFHelper {
     bool symm_compute_;
     bool AO_core_ = true;
     bool MO_core_ = false;
-    bool release_AO_ = false;
+    bool release_core_AO_before_metric_ = false;
     size_t nthreads_ = 1;
     double cutoff_ = 1e-12;
     double condition_ = 1e-12;
