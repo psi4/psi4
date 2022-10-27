@@ -186,7 +186,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     // transform
-    dfh_->set_release_AO(true);
+    dfh_->set_release_core_AO_before_metric(true);
     dfh_->transform();
 
     // transformations specific for hybrid functional
