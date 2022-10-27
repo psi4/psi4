@@ -201,8 +201,8 @@ def run_sapt_dft(name, **kwargs):
         else:
             wfn_A = hf_wfn_A 
             wfn_B = hf_wfn_B
-            data["DFT MONOMERA"] = hf_data["HF MONOMER A"] 
-            data["DFT MONOMERB"] = hf_data["HF MONOMER B"] 
+            data["DFT MONOMER A"] = hf_data["HF MONOMER A"] 
+            data["DFT MONOMER B"] = hf_data["HF MONOMER B"] 
             dhf_value = hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
             data["DHF VALUE"] = dhf_value
 
