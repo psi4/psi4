@@ -1472,6 +1472,7 @@ void PKMgrInCore::allocate_buffers() {
 
     // TODO We probably need more buffer for more tasks for better load balancing
     size_t buffer_size = pk_size() / nthreads();
+    if (buffer_size == 0) buffer_size = 1;
     size_t lastbuf = pk_size() % nthreads();
 
     for (size_t i = 0; i < nthreads(); ++i) {
