@@ -28,17 +28,17 @@
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-occ', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'df', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'a-ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4', 'driver': 'energy', 'method': 'acpf', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd except ccsd/ccsd(t) by fnocc'}
 {'module': 'psi4', 'driver': 'energy', 'method': 'acpf', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd except ccsd/ccsd(t) by fnocc'}
@@ -443,17 +443,25 @@
 {'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
 {'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv for ccd by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'aaaa-', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': 'default'}
+{'module': 'aaaa-', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'aaaa-', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': 'default'}
+{'module': 'aaaa-', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4', 'driver': 'energy', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': ''}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no cd gradients by occ'}
@@ -473,17 +481,29 @@
 {'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
 {'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': ''}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no cd gradients by occ'}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': 'default'}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': ''}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': 'default'}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': ''}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no cd gradients by occ'}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': 'default'}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': ''}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': 'default'}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv ccd by psi4'}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
 {'module': 'psi4-fnocc', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
@@ -527,8 +547,8 @@
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-fnocc', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no conventional scf for df/cd cc in fnocc'}
 {'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'df', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
@@ -536,8 +556,8 @@
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
@@ -545,22 +565,36 @@
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': 'default'}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'pass', 'note': 'default'}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'cd', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'df', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': ''}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no cd gradients by occ'}
 {'module': 'psi4-fnocc', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': 'default'}
@@ -592,8 +626,8 @@
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no fc gradients by ccenergy'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
@@ -603,8 +637,8 @@
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no fc gradients by ccenergy'}
@@ -612,8 +646,14 @@
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no fc gradients by ccenergy'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': ''}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no cd gradients by occ'}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': 'default'}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': ''}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': 'default'}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
@@ -623,8 +663,14 @@
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': ''}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no cd gradients by occ'}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'fd', 'note': 'default'}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': ''}
+{'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': 'default'}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-occ', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no fc gradients by ccenergy'}
@@ -673,32 +719,32 @@
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-fnocc', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no conventional scf for df/cd cc in fnocc'}
 {'module': 'psi4-occ', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'df', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-mrcc', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-ccenergy', 'driver': 'energy', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
@@ -736,22 +782,22 @@
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no fc gradients by ccenergy'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv gradients for ccsd(t) by ccenergy'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no conv gradients for ccsd(t) by ccenergy'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'rohf', 'fcae': 'fc', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
@@ -761,8 +807,8 @@
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4-ccenergy', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
-{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd open-shell ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
+{'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ'}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'defaultdefault'}
 {'module': 'psi4', 'driver': 'gradient', 'method': 'ccsd(t)', 'reference': 'uhf', 'fcae': 'fc', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no fc gradients by ccenergy'}

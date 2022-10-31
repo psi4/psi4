@@ -971,7 +971,7 @@ def select_ccsd_t_(name, **kwargs):
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
         elif mtd_type in ["DF", "CD"]:
-            if module in ["", "OCC"]:
+            if module in ["OCC"]:  # SOON "",
                 func = run_dfocc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
@@ -1011,7 +1011,7 @@ def select_ccsd_t__gradient(name, **kwargs):
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy_gradient
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
+            if module in ['OCC']:  # SOON "",
                 func = run_dfocc_gradient
 
     if func is None:
@@ -1056,10 +1056,10 @@ def select_ccsd_at_(name, **kwargs):
             if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
                 func = run_mrcc
         elif mtd_type == "DF":
-            if module in ["", "OCC"]:
+            if module in ["OCC"]:  # SOON "",
                 func = run_dfocc
         elif mtd_type == "CD":
-            if module in ["", "OCC"]:
+            if module in ["OCC"]:  # SOON "",
                 func = run_dfocc
     elif reference == "ROHF":
         if mtd_type == 'CONV':
