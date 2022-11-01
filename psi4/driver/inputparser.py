@@ -706,7 +706,7 @@ def process_input(raw_input: str, print_level: int = 1) -> str:
 
     # Process "basis name? { ... }"
     basis_block = re.compile(
-        r'^(\s*?)(basis|df_basis_scf|df_basis_mp2|df_basis_cc|df_basis_sapt|df_basis_sad|df_basis_dct)[=\s]*(\w*?)\s*\{(.*?)\}',
+        r'^(\s*?)(basis_relativistic|df_basis_scf|df_basis_mp2|df_basis_cc|df_basis_sapt|df_basis_sad|df_basis_dct|basis)[=\s]*(\w*?)\s*\{(.*?)\}',
         re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block, process_basis_block, temp)
 
