@@ -311,6 +311,34 @@ class PSI_API JK {
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
     std::vector<SharedMatrix> wK_ao_;
 
+    // => Incremental Fock build variables and routines <= //
+
+    /// Perform Incremental Fock Build for J and K Matrices?
+    bool incfock_;
+    /// The number of times INCFOCK has been performed (includes resets)
+    int incfock_count_;
+    /// Is incfock performed this SCF iteration? (if incfock_ is true)
+    bool perform_incfock_;
+    /// Disable incfock for this iteration?
+    bool disable_incfock_;
+
+    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
+    std::vector<SharedMatrix> prev_D_ao_;
+    std::vector<SharedMatrix> prev_J_ao_;
+    std::vector<SharedMatrix> prev_K_ao_;
+    std::vector<SharedMatrix> prev_wK_ao_;
+
+    /// Delta D, J, K, wK Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> delta_D_ao_;
+    std::vector<SharedMatrix> delta_J_ao_;
+    std::vector<SharedMatrix> delta_K_ao_;
+    std::vector<SharedMatrix> delta_wK_ao_;
+
+    /// Set up Incfock variables per iteration
+    void incfock_setup();
+    /// Post-iteration Incfock processing
+    void incfock_postiter();
+
     // => Per-Iteration Setup/Finalize Routines <= //
 
     /// Build the pseudo-density D_, before compute_JK()
@@ -491,6 +519,19 @@ class PSI_API JK {
     */
     void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
     bool get_early_screening() { return early_screening_; }
+
+    /**
+     * Set whether or not to perform incremental Fock build?
+     */
+    void set_incfock(bool incfock) { incfock_ = incfock; }
+    /**
+     * Returns whether or not an incremental Fock build was performed during the last SCF iteration
+     */
+    bool incfock_last_iter() { return perform_incfock_; }
+    /**
+     * @brief Set whether or not to disable incfock for this SCF iteration
+     */
+    void set_disable_incfock(bool disable_incfock) { disable_incfock_ = disable_incfock; }
 
     // => Computers <= //
 
@@ -740,29 +781,6 @@ class PSI_API DirectJK : public JK {
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 
-    // => Incremental Fock build variables <= //
-    
-    /// Perform Incremental Fock Build for J and K Matrices? (default false)
-    bool incfock_;
-    /// The number of times INCFOCK has been performed (includes resets)
-    int incfock_count_;
-    bool do_incfock_iter_;
-
-    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
-    std::vector<SharedMatrix> prev_D_ao_;
-    std::vector<SharedMatrix> prev_J_ao_;
-    std::vector<SharedMatrix> prev_K_ao_;
-    std::vector<SharedMatrix> prev_wK_ao_;
-
-    // Delta D, J, K, wK Matrices for Incremental Fock Build
-    std::vector<SharedMatrix> delta_D_ao_;
-    std::vector<SharedMatrix> delta_J_ao_;
-    std::vector<SharedMatrix> delta_K_ao_;
-    std::vector<SharedMatrix> delta_wK_ao_;
-
-    // Is the JK currently on a guess iteration
-    bool initial_iteration_ = true;
-
     // => LinK variables <= //
 
     // Perform LinK algorithm for exchange?
@@ -783,11 +801,6 @@ class PSI_API DirectJK : public JK {
     void compute_JK() override;
     /// Delete integrals, files, etc
     void postiterations() override;
-
-    /// Set up Incfock variables per iteration
-    void incfock_setup();
-    /// Post-iteration Incfock processing
-    void incfock_postiter();
 
     /**
      * @author Andy Jiang, Georgia Tech, December 2021
@@ -845,7 +858,6 @@ class PSI_API DirectJK : public JK {
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     // => Accessors <= //
-    bool do_incfock_iter() { return do_incfock_iter_; }
     bool do_linK() { return linK_; }
 
     /**
@@ -1223,8 +1235,6 @@ class PSI_API DFJCOSK : public JK {
     int nthreads_;
     /// Options object
     Options& options_;
-    /// Previous iteration pseudo-density matrix
-    std::vector<SharedMatrix> D_prev_;
 
     // => Density Fitting Stuff <= //
 
@@ -1293,10 +1303,6 @@ class PSI_API DFJCOSK : public JK {
     */
     void print_header() const override;
 
-    /**
-     * Clear D_prev_
-     */
-    void clear_D_prev() { D_prev_.clear();}
 };
 
 

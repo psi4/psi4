@@ -95,7 +95,9 @@ void export_fock(py::module &m) {
         .def("wK", &JK::wK, py::return_value_policy::reference_internal)
         .def("D", &JK::D, py::return_value_policy::reference_internal)
         .def("computed_shells_per_iter", &JK::computed_shells_per_iter, "Array containing the number of ERI shell quartets computed (not screened out) during each compute call.")
-        .def("print_header", &JK::print_header, "docstring");
+        .def("print_header", &JK::print_header, "docstring")
+        .def("incfock_last_iter", &JK::incfock_last_iter, "Was the last Fock build incremental?")
+        .def("set_disable_incfock", &JK::set_disable_incfock, "Set whether or not to disable incfock for this SCF iteration", "disable_incfock"_a);
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "Computer class for a Laplace factorization of the four-index energy denominator in MP2 and coupled-cluster")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
@@ -194,11 +196,7 @@ void export_fock(py::module &m) {
         .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
 
     py::class_<DirectJK, std::shared_ptr<DirectJK>, JK>(m, "DirectJK", "docstring")
-        .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Was the last Fock build incremental?")
         .def("do_linK", &DirectJK::do_linK, "Use the linK exchange algorithm?");
-
-    py::class_<DFJCOSK, std::shared_ptr<DFJCOSK>, JK>(m, "DFJCOSK", "docstring")
-        .def("clear_D_prev", &DFJCOSK::clear_D_prev, "Clear previous D matrices.");
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
