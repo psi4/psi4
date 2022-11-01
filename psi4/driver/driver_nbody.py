@@ -1476,7 +1476,7 @@ class ManyBodyComputer(BaseComputer):
                             try:
                                 obj.set_variable(str(qcv2), val2)
                             except ValidationError:
-                                obj.set_variable(f"{self.driver} {qcv2}", val2)
+                                obj.set_variable(f"{self.driver.name} {qcv2}", val2)
             else:
                 for obj in [core, wfn]:
                     obj.set_variable(qcv, val)
