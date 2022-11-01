@@ -5109,7 +5109,11 @@ void SphericalGrid::build_angles() {
 std::shared_ptr<SphericalGrid> SphericalGrid::build(const std::string &scheme, int npoints, const MassPoint *points) {
     auto *s = new SphericalGrid();
     s->scheme_ = scheme;
-    s->order_ = lebedev_mapping_.at(npoints);
+    if (lebedev_mapping_.count(npoints)) {
+        s->order_ = lebedev_mapping_.at(npoints);
+    } else {
+        s->order_ = -1;
+    }
     s->npoints_ = npoints;
 
     s->x_ = new double[npoints];
