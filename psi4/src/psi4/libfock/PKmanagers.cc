@@ -176,6 +176,11 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
     nthreads_ = 1;
 #ifdef _OPENMP
     nthreads_ = Process::environment.get_n_threads();
+    if (nthreads_ > pk_size_) {
+	outfile->Printf("  WARNING! More threads than unique shell quartets to compute!\n");
+	outfile->Printf("  Decreasing thread count to %d.\n", pk_size_);	
+	nthreads_ = pk_size_;
+    }
 #endif
 }
 
@@ -1472,7 +1477,6 @@ void PKMgrInCore::allocate_buffers() {
 
     // TODO We probably need more buffer for more tasks for better load balancing
     size_t buffer_size = pk_size() / nthreads();
-    if (buffer_size == 0) buffer_size = 1;
     size_t lastbuf = pk_size() % nthreads();
 
     for (size_t i = 0; i < nthreads(); ++i) {
