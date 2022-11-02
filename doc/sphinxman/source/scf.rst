@@ -700,7 +700,7 @@ LINK
     parallelization. Additionally, the use of the linear-scaling LinK method 
     allows the LINK implementation to scale well with system size 
     while simultaneously providing a formally-exact computation of the 
-    Exchange term. See the Linear Exchange section below for more information.
+    Exchange term. See :ref:`sec:scflink` for more information.
 
 In some cases the above algorithms have multiple implementations that return
 the same result, but are optimal under different molecules sizes and hardware
