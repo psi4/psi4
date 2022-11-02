@@ -800,6 +800,8 @@ The |scf__cosx_overlap_fitting| keyword (defaults to ``true``) reduces numerical
 integration errors using the method described in [Izsak:2011:144105]_ and is
 always recommended.
 
+.. _`sec:scflink`:
+
 Linear Exchange
 ~~~~~~~~~~~~~~~
 
