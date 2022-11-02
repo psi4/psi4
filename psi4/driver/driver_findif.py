@@ -1359,8 +1359,9 @@ class FiniteDifferenceComputer(BaseComputer):
             self.findifrec["reference"][self.driver.name] = G0
 
         elif self.metameta['mode'] == '2_1':
-            DD0 = assemble_dipder_from_dipoles(self.findifrec, self.metameta['irrep'])
-            self.findifrec["reference"]["dipole derivative"] = DD0
+            if dipole_available:
+                DD0 = assemble_dipder_from_dipoles(self.findifrec, self.metameta['irrep'])
+                self.findifrec["reference"]["dipole derivative"] = DD0
 
             H0 = assemble_hessian_from_gradients(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0

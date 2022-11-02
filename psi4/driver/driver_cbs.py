@@ -1702,24 +1702,24 @@ class CompositeComputer(BaseComputer):
             qcvars[f"CBS {self.cbsrec[dc]['d_stage'].upper()} TOTAL ENERGY"] = self.cbsrec[dc]["d_energy"] - self.cbsrec[dc + 1]["d_energy"]
 
         G0 = assembled_results["gradient"]
-        if np.count_nonzero(G0):
+        if G0 is not None:
             qcvars["CURRENT GRADIENT"] = G0
             qcvars["CBS TOTAL GRADIENT"] = G0
             properties["return_gradient"] = G0
 
         H0 = assembled_results["hessian"]
-        if np.count_nonzero(H0):
+        if H0 is not None:
             qcvars["CURRENT HESSIAN"] = H0
             qcvars["CBS TOTAL HESSIAN"] = H0
             properties["return_hessian"] = H0
 
         D0 = assembled_results["dipole"]
-        if np.count_nonzero(D0):
+        if D0 is not None:
             qcvars["CURRENT DIPOLE"] = D0
             qcvars["CBS DIPOLE"] = D0
 
         DD0 = assembled_results["dipole gradient"]
-        if np.count_nonzero(DD0):
+        if DD0 is not None:
             qcvars["CURRENT DIPOLE GRADIENT"] = DD0
             qcvars["CBS DIPOLE GRADIENT"] = DD0
 
