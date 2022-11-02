@@ -697,8 +697,8 @@ LINK
     the Coulomb term is computed with an integral-direct density-fitting 
     algorithm. The LINK algorithm provides many of the benefits of integral-direct
     SCF algorithms, including no disk I/O, low memory usage, and effective
-    parallelization. Additionally, the use of the linear-scaling LinK method 
-    allows the LINK implementation to scale well with system size 
+    parallelization. Additionally, the
+    LINK implementation scales well with system size 
     while simultaneously providing a formally-exact computation of the 
     Exchange term. See :ref:`sec:scflink` for more information.
 
