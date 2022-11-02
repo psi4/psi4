@@ -19,7 +19,7 @@ else()
 
     ExternalProject_Add(qcelemental_external
         BUILD_ALWAYS 1
-        URL https://github.com/MolSSI/QCElemental/archive/v0.25.0.tar.gz
+        URL https://github.com/MolSSI/QCElemental/archive/v0.25.1.tar.gz
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
