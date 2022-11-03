@@ -176,6 +176,11 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
     nthreads_ = 1;
 #ifdef _OPENMP
     nthreads_ = Process::environment.get_n_threads();
+    if (nthreads_ > pk_size_) {
+	outfile->Printf("  WARNING! More threads than unique shell quartets to compute!\n");
+	outfile->Printf("  Decreasing thread count to %d.\n", pk_size_);	
+	nthreads_ = pk_size_;
+    }
 #endif
 }
 
