@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.7a1.dev104 
+                               Psi4 1.7a1.dev131 
 
-                         Git: Rev {dpoole34/dfjlink} 56a2b37 dirty
+                         Git: Rev {dpoole34/dfjlink} 548ccaa dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 20 October 2022 01:18PM
+    Psi4 started on: Thursday, 03 November 2022 10:09AM
 
-    Process ID: 21268
+    Process ID: 12992
     Host:       ds6
     PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4
     Memory:     500.0 MiB
@@ -43,7 +43,7 @@
 --------------------------------------------------------------------------
 #! RKS Linear Exchange Algorithm test for benzene
 
-ref_energy = -232.3333877979 #TEST, computed using previous DDFJ+LinK impl 
+ref_energy = -232.3333877979346767 #TEST, computed using previous DDFJ+LinK impl 
 
 molecule mol {
     0 1
@@ -82,7 +82,7 @@ psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)"
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Oct 20 13:18:34 2022
+*** at Thu Nov  3 10:09:54 2022
 
    => Loading Basis Set <=
 
@@ -223,14 +223,15 @@ Scratch directory: /scratch/dpoole34/
 
   ==> DFJLinK: Density-Fitted J and Linear Exchange K <==
 
-    J tasked:                   Yes
-    K tasked:                   Yes
-    wK tasked:                   No
-    Integrals threads:            1
-    Memory [MiB]:                 0
-    Incremental Fock :          Yes
-    Screening Type:       DENSITY
-    Screening Cutoff:       1E-12
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Memory [MiB]:                0
+    Incremental Fock:          Yes
+    Screening Type:        DENSITY
+    J Screening Cutoff:      1E-12
+    K Screening Cutoff:      1E-12
   Cached 20.0% of DFT collocation blocks in 0.306 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 3.7592595820E-05.
@@ -254,16 +255,16 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RKS iter SAD:  -231.83029426915809   -2.31830e+02   0.00000e+00 
-   @RKS iter   1:  -231.83555581126677   -5.26154e-03   3.65101e-03 ADIIS/DIIS
-   @RKS iter   2:  -231.53471074547099    3.00845e-01   4.63419e-03 ADIIS/DIIS/INCFOCK
-   @RKS iter   3:  -232.32939413751328   -7.94683e-01   3.59964e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -232.33321033193786   -3.81619e-03   7.46497e-05 DIIS/INCFOCK
-   @RKS iter   5:  -232.33338551709235   -1.75185e-04   7.55361e-06 DIIS/INCFOCK
-   @RKS iter   6:  -232.33338587751112   -3.60419e-07   6.94038e-06 DIIS
-   @RKS iter   7:  -232.33338777965537   -1.90214e-06   6.76768e-07 DIIS
-   @RKS iter   8:  -232.33338779468312   -1.50278e-08   3.09013e-07 DIIS
-   @RKS iter   9:  -232.33338779778913   -3.10601e-09   1.70372e-08 DIIS
-   @RKS iter  10:  -232.33338779779751   -8.38440e-12   6.56351e-09 DIIS
+   @RKS iter   1:  -231.83555581126717   -5.26154e-03   3.65101e-03 ADIIS/DIIS
+   @RKS iter   2:  -231.53471074547173    3.00845e-01   4.63419e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -232.32939413751410   -7.94683e-01   3.59964e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -232.33321033193812   -3.81619e-03   7.46497e-05 DIIS/INCFOCK
+   @RKS iter   5:  -232.33338551709298   -1.75185e-04   7.55361e-06 DIIS/INCFOCK
+   @RKS iter   6:  -232.33338587751217   -3.60419e-07   6.94038e-06 DIIS
+   @RKS iter   7:  -232.33338777965500   -1.90214e-06   6.76768e-07 DIIS
+   @RKS iter   8:  -232.33338779468244   -1.50274e-08   3.09013e-07 DIIS
+   @RKS iter   9:  -232.33338779778856   -3.10612e-09   1.70372e-08 DIIS
+   @RKS iter  10:  -232.33338779779811   -9.54969e-12   6.56351e-09 DIIS
   Energy and wave function converged.
 
 
@@ -375,17 +376,17 @@ Scratch directory: /scratch/dpoole34/
     NA   [    21 ]
     NB   [    21 ]
 
-  @RKS Final Energy:  -232.33338779779751
+  @RKS Final Energy:  -232.33338779779811
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993538263947357
-    Two-Electron Energy =                 306.9305824916667689
-    DFT Exchange-Correlation Energy =     -28.1755478233484524
+    One-Electron Energy =                -714.7993538263935989
+    Two-Electron Energy =                 306.9305824916650067
+    DFT Exchange-Correlation Energy =     -28.1755478233484311
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333877977975135
+    Total Energy =                       -232.3333877977981388
 
 Computation Completed
 
@@ -409,18 +410,18 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Oct 20 13:24:48 2022
+*** tstop() called on ds6 at Thu Nov  3 10:15:51 2022
 Module time:
-	user time   =     370.64 seconds =       6.18 minutes
-	system time =       0.41 seconds =       0.01 minutes
-	total time  =        374 seconds =       6.23 minutes
+	user time   =     356.11 seconds =       5.94 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =        357 seconds =       5.95 minutes
 Total time:
-	user time   =     370.64 seconds =       6.18 minutes
-	system time =       0.41 seconds =       0.01 minutes
-	total time  =        374 seconds =       6.23 minutes
+	user time   =     356.11 seconds =       5.94 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =        357 seconds =       5.95 minutes
     B3LYP Energy (using LinK algo)........................................................PASSED
 
-    Psi4 stopped on: Thursday, 20 October 2022 01:24PM
-    Psi4 wall time for execution: 0:06:13.91
+    Psi4 stopped on: Thursday, 03 November 2022 10:15AM
+    Psi4 wall time for execution: 0:05:57.07
 
 *** Psi4 exiting successfully. Buy a developer a beer!
