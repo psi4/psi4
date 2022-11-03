@@ -300,8 +300,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         # Check if special J/K construction algorithms were used
         incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
-        linK_performed = hasattr(self.jk(), "do_linK") and self.jk().do_linK()
-
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):
             calc_type = core.PCM.CalcType.Total
@@ -438,9 +436,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 if incfock_performed:
                     status.append("INCFOCK")
                 
-                if linK_performed:
-                    status.append("LINK")
-
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:
                     self.reset_occupation()
