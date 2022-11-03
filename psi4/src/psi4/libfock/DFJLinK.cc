@@ -144,16 +144,16 @@ void DFJLinK::print_header() const {
     if (print_) {
         outfile->Printf("  ==> DFJLinK: Density-Fitted J and Linear Exchange K <==\n\n");
 
-        outfile->Printf("    J tasked:           %11s\n", (do_J_ ? "Yes" : "No"));
-        outfile->Printf("    K tasked:           %11s\n", (do_K_ ? "Yes" : "No"));
-        outfile->Printf("    wK tasked:          %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) outfile->Printf("    Omega:              %11.3E\n", omega_);
-        outfile->Printf("    Integrals threads:  %11d\n", nthreads_);
-        outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf("    Incremental Fock :  %11s\n", (incfock_ ? "Yes" : "No"));
-        outfile->Printf("    Screening Type:   %11s\n", screen_type.c_str());
-        outfile->Printf("    J Screening Cutoff: %11.0E\n", cutoff_);
-        outfile->Printf("    K Screening Cutoff: %11.0E\n", linK_ints_cutoff_);
+        outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
+        outfile->Printf("    Integrals threads: %11d\n", nthreads_);
+        outfile->Printf("    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf("    Incremental Fock:  %11s\n", (incfock_ ? "Yes" : "No"));
+        outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
+        outfile->Printf("    J Screening Cutoff:%11.0E\n", cutoff_);
+        outfile->Printf("    K Screening Cutoff:%11.0E\n", linK_ints_cutoff_);
     }
 }
 
