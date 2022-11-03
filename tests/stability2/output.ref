@@ -1,27 +1,40 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 1.7a1.dev90 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {tragedy} 68ccf8f 
 
 
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, and A. Jiang
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:40PM
+    Psi4 started on: Thursday, 03 November 2022 04:01PM
 
-    Process ID:  20412
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID: 15685
+    Host:       jonathons-mbp.wireless.emory.edu
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -49,7 +62,7 @@ for h in range(0,nirrep):  #TEST
     for i in range(0,2):  #TEST
       ref.set(h,i,0,ref_vals_sym[h * 2 + i])  #TEST
 
-nucenergy =   18.91527043470638  #TEST
+nucenergy =   18.9152705091      #TEST
 refenergy =  -92.19555660616885  #TEST
 
 molecule cn {
@@ -72,31 +85,31 @@ set = {
 
 thisenergy = energy('scf')
 
-stab = get_array_variable("SCF STABILITY EIGENVALUES")
+stab = variable("SCF STABILITY EIGENVALUES")
 
 compare_values(nucenergy, cn.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
 compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")                   #TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on psinet
-*** at Mon May 15 15:40:09 2017
+Scratch directory: /tmp/
+
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:01:59 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2 entry N          line   160 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-
-    There are an odd number of electrons - assuming doublet.
-    Specify the multiplicity in the molecule input block.
+    atoms 1 entry C          line   138 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry N          line   168 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                              ROHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -110,14 +123,14 @@ compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")           
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000000000000     0.000000000000    -0.632756417668    12.000000000000
-           N          0.000000000000     0.000000000000     0.542243582332    14.003074004780
+         C            0.000000000000     0.000000000000    -0.632756417661    12.000000000000
+         N            0.000000000000     0.000000000000     0.542243582339    14.003074004430
 
   Running in c2v symmetry.
 
   Rotational constants: A = ************  B =      1.88947  C =      1.88947 [cm^-1]
-  Rotational constants: A = ************  B =  56644.99264  C =  56644.99264 [MHz]
-  Nuclear repulsion =   18.915270434706379
+  Rotational constants: A = ************  B =  56644.99308  C =  56644.99308 [MHz]
+  Nuclear repulsion =   18.915270509055315
 
   Charge       = 0
   Multiplicity = 2
@@ -131,33 +144,20 @@ compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")           
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is GWH.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-12
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 12
-    Number of basis function: 28
+    Number of basis functions: 28
     Number of Cartesian functions: 30
     Spherical Harmonics?: true
     Max angular momentum: 2
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A1        14      14       5       4       4       1
-     A2         2       2       0       0       0       0
-     B1         6       6       1       1       1       0
-     B2         6       6       1       1       1       0
-   -------------------------------------------------------
-    Total      28      28       7       6       6       1
-   -------------------------------------------------------
 
   ==> Integral Setup <==
 
@@ -176,46 +176,64 @@ compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")           
   Using 165242 doubles for integral storage.
   We computed 3081 shell quartets total.
   Whereas there are 3081 unique shell quartets.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 1.0795200227E-02.
-  Using Symmetric Orthogonalization.
 
-  SCF Guess: Generalized Wolfsberg-Helmholtz.
+  Minimum eigenvalue in the overlap matrix is 1.0795200130E-02.
+  Reciprocal condition number of the overlap matrix is 3.4696262257E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A1        14      14 
+     A2         2       2 
+     B1         6       6 
+     B2         6       6 
+   -------------------------
+    Total      28      28
+   -------------------------
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:   -91.19134628324665   -9.11913e+01   8.84349e-02 
-   @ROHF iter   2:   -90.80987933238521    3.81467e-01   7.54104e-02 DIIS
-   @ROHF iter   3:   -91.95054597190756   -1.14067e+00   3.19521e-02 DIIS
-   @ROHF iter   4:   -92.18811657882185   -2.37571e-01   3.78885e-03 DIIS
-   @ROHF iter   5:   -92.19386583531954   -5.74926e-03   1.63690e-03 DIIS
-   @ROHF iter   6:   -92.19514337512314   -1.27754e-03   7.23236e-04 DIIS
-   @ROHF iter   7:   -92.19552253216844   -3.79157e-04   1.73121e-04 DIIS
-   @ROHF iter   8:   -92.19555534209496   -3.28099e-05   6.82737e-05 DIIS
-   @ROHF iter   9:   -92.19555650349741   -1.16140e-06   2.19369e-05 DIIS
-   @ROHF iter  10:   -92.19555660470175   -1.01204e-07   2.61590e-06 DIIS
-   @ROHF iter  11:   -92.19555660611155   -1.40980e-09   4.66804e-07 DIIS
-   @ROHF iter  12:   -92.19555660616825   -5.67013e-11   3.11474e-08 DIIS
-   @ROHF iter  13:   -92.19555660616874   -4.83169e-13   4.75646e-09 DIIS
-   @ROHF iter  14:   -92.19555660616879   -5.68434e-14   9.32254e-10 DIIS
-   @ROHF iter  15:   -92.19555660616879    0.00000e+00   6.20679e-11 DIIS
-   @ROHF iter  16:   -92.19555660616874    5.68434e-14   6.77533e-12 DIIS
-   @ROHF iter  17:   -92.19555660616871    2.84217e-14   1.24634e-12 DIIS
-   @ROHF iter  18:   -92.19555660616874   -2.84217e-14   1.39198e-13 DIIS
-    SO Integrals not on disk, computing...done.
+   @ROHF iter SAD:   -91.22667458514748   -9.12267e+01   0.00000e+00 
+   @ROHF iter   1:   -92.12725706003170   -9.00582e-01   1.67058e-02 DIIS
+   @ROHF iter   2:   -92.05991639893239    6.73407e-02   2.47036e-02 DIIS
+   @ROHF iter   3:   -92.18938312598868   -1.29467e-01   2.08443e-03 DIIS
+   @ROHF iter   4:   -92.19302348793190   -3.64036e-03   1.37578e-03 DIIS
+   @ROHF iter   5:   -92.19482011236590   -1.79662e-03   7.56286e-04 DIIS
+   @ROHF iter   6:   -92.19554466992385   -7.24558e-04   1.86725e-04 DIIS
+   @ROHF iter   7:   -92.19554872206774   -4.05214e-06   7.31086e-05 DIIS
+   @ROHF iter   8:   -92.19555550893752   -6.78687e-06   4.05210e-05 DIIS
+   @ROHF iter   9:   -92.19555659822478   -1.08929e-06   3.31091e-06 DIIS
+   @ROHF iter  10:   -92.19555660631224   -8.08745e-09   8.61421e-07 DIIS
+   @ROHF iter  11:   -92.19555660694812   -6.35879e-10   7.51640e-08 DIIS
+   @ROHF iter  12:   -92.19555660695151   -3.39639e-12   2.39178e-08 DIIS
+   @ROHF iter  13:   -92.19555660695198   -4.68958e-13   4.98021e-09 DIIS
+   @ROHF iter  14:   -92.19555660695193    5.68434e-14   1.62903e-10 DIIS
+   @ROHF iter  15:   -92.19555660695187    5.68434e-14   2.46491e-11 DIIS
+   @ROHF iter  16:   -92.19555660695185    1.42109e-14   1.29557e-12 DIIS
+   @ROHF iter  17:   -92.19555660695184    1.42109e-14   1.60662e-13 DIIS
+  Energy and wave function converged.
+
+    SO Integrals not on disk. Computing...done.
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
-	Transforming the one-electron integrals and constructing Fock matrices
+	Constructing frozen core operators
 	Starting first half-transformation.
 	Sorting half-transformed integrals.
 	First half integral transformation complete.
@@ -227,27 +245,27 @@ compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")           
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
     Lowest ROHF->ROHF stability eigenvalues:
-      B1 0.022220        B2 0.022220        A1 0.094068        B1 0.194516  
-      B2 0.194516        A1 0.213961        A2 0.213961        A1 0.338722  
-      A2 0.359135        A1 0.387962        A1 0.413653        B2 0.434411  
-      B1 0.434411        B2 0.474797        B1 0.474799        A1 0.555036  
-      A1 0.608132        B1 0.618639        B2 0.618639        B2 0.688123  
-      B1 0.688124        A1 0.723341        A1 0.741728        A2 0.741728  
-      A1 0.768285        A2 0.768285        A1 0.776906        B2 0.833088  
-      B1 0.833088        A2 0.833392        B2 0.889066        B1 0.889066  
-      A1 0.933332        B1 0.955617        B2 0.955618        A1 0.969954  
-      B1 1.021805        B2 1.021806        B1 1.046458        B2 1.046461  
-      A1 1.054236        A1 1.112069        A2 1.112069        B1 1.118666  
-      B2 1.118667        A2 1.176381        A2 1.231302        B2 1.240136  
-      B1 1.240136        B2 1.360578        B1 1.360578        B1 1.473786  
-      B2 1.473787        A2 1.564732        A2 1.596708        A2 1.600315  
+      B1 0.022217        B2 0.022217        A1 0.094098        B1 0.194503  
+      B2 0.194503        A1 0.213961        A2 0.213961        A1 0.338736  
+      A2 0.359135        A1 0.387982        A1 0.413681        B2 0.434418  
+      B1 0.434418        B2 0.474884        B1 0.474886        A1 0.555143  
+      A1 0.608175        B1 0.618619        B2 0.618619        B2 0.688139  
+      B1 0.688139        A1 0.723167        A1 0.741728        A2 0.741728  
+      A1 0.768285        A2 0.768285        A1 0.777320        B2 0.833099  
+      B1 0.833099        A2 0.833392        B2 0.889057        B1 0.889057  
+      A1 0.933329        B1 0.955494        B2 0.955496        A1 0.969956  
+      B1 1.021715        B2 1.021716        B1 1.046186        B2 1.046189  
+      A1 1.054058        A1 1.112069        A2 1.112069        B1 1.118919  
+      B2 1.118920        A2 1.176381        A2 1.231302        B2 1.240143  
+      B1 1.240143        B2 1.360578        B1 1.360578        B1 1.473781  
+      B2 1.473782        A2 1.564732        A2 1.596708        A2 1.600315  
       A2 2.144561        A2 2.320092        A2 2.724518        A2 2.747591  
     
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -260,64 +278,66 @@ compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")           
 
     Virtual:                                                              
 
-       2B1     0.177180     2B2     0.177180     6A1     0.384745  
+       2B2     0.177180     2B1     0.177180     6A1     0.384745  
        3B1     0.655939     3B2     0.655939     7A1     0.699522  
        8A1     0.869525     4B1     1.036480     4B2     1.036480  
        9A1     1.044978    10A1     1.314443     1A2     1.314443  
        5B1     1.503400     5B2     1.503400    11A1     1.564388  
-       2A2     2.160944    12A1     2.160944    13A1     2.254479  
+      12A1     2.160944     2A2     2.160944    13A1     2.254479  
        6B1     2.677031     6B2     2.677031    14A1     3.095851  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     4,    0,    1,    1 ]
     SOCC [     1,    0,    0,    0 ]
+    NA   [     5,    0,    1,    1 ]
+    NB   [     4,    0,    1,    1 ]
 
-  Energy converged.
-
-  @ROHF Final Energy:   -92.19555660616874
+  @ROHF Final Energy:   -92.19555660695184
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             18.9152704347063789
-    One-Electron Energy =                -161.7960330251845278
-    Two-Electron Energy =                  50.6852059843094196
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -92.1955566061687364
+    Nuclear Repulsion Energy =             18.9152705090553148
+    One-Electron Energy =                -161.7960331734151680
+    Two-Electron Energy =                  50.6852060574080170
+    Total Energy =                        -92.1955566069518397
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.0016
 
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.8531
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.8546     Total:     0.8546
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -2.1723     Total:     2.1723
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.8530580           -0.0015750           -0.8546330
+ Magnitude           :                                                    0.8546330
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:40:11 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:00 2022
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.34 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-	Nuclear repulsion energy..........................................PASSED
-	Reference energy..................................................PASSED
-	Stability eigenvalues with symmetry...............................PASSED
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    Nuclear repulsion energy..............................................................PASSED
+    Reference energy......................................................................PASSED
+    Stability eigenvalues with symmetry...................................................PASSED
+
+    Psi4 stopped on: Thursday, 03 November 2022 04:02PM
+    Psi4 wall time for execution: 0:00:00.96
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -1,27 +1,40 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 1.7a1.dev90 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {tragedy} 68ccf8f 
 
 
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, and A. Jiang
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:39PM
+    Psi4 started on: Thursday, 03 November 2022 04:02PM
 
-    Process ID:  17237
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID: 15691
+    Host:       jonathons-mbp.wireless.emory.edu
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -63,11 +76,11 @@ stability_analysis follow
 
 energy('sapt0')
 
-Eelst = psi4.get_variable("SAPT ELST ENERGY")
-Eexch = psi4.get_variable("SAPT EXCH ENERGY")
-Eind  = psi4.get_variable("SAPT IND ENERGY")
-Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ET    = psi4.get_variable("SAPT ENERGY")
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
 
 Eref = [ -0.00415587718,  #TEST
           0.00206359843,  #TEST
@@ -91,11 +104,11 @@ stability_analysis follow
 
 energy('sapt0')
 
-Eelst = psi4.get_variable("SAPT ELST ENERGY")
-Eexch = psi4.get_variable("SAPT EXCH ENERGY")
-Eind  = psi4.get_variable("SAPT IND ENERGY")
-Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ET    = psi4.get_variable("SAPT ENERGY")
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
 
 Eref = [ -0.00601846895,  #TEST
           0.00212658317,  #TEST
@@ -112,26 +125,45 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
 
   Memory set to   1.863 GiB by Python driver.
 
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
-  //              Dimer HF             //
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+Scratch directory: /tmp/
+   => Loading Basis Set <=
 
-
-*** tstart() called on psinet
-*** at Mon May 15 15:39:38 2017
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4-5 entry O          line   198 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3, 6 entry H          line    22 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1, 4-5 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3, 6 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1, 4-5 entry O          line   198 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3, 6 entry H          line    22 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //              Dimer HF             //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:02:20 2022
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4-5 entry O          line   198 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3, 6 entry H          line    22 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               UHF Reference
                         1 Threads,   1907 MiB Core
          ---------------------------------------------------------
@@ -145,12 +177,12 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
+         O            0.000000000000     0.000000000000     6.000000000000    15.994914619570
+         H            0.000000000000     1.431500000000     4.890600000000     1.007825032230
+         H            0.000000000000    -1.431500000000     4.890600000000     1.007825032230
+         O            0.000000000000     0.000000000000     0.000000000000    15.994914619570
+         O            0.000000000000     2.503900000000     0.000000000000    15.994914619570
+         H            0.000000000000    -0.424700000000    -1.839500000000     1.007825032230
 
   Running in c1 symmetry.
 
@@ -173,14 +205,14 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
   Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 27
-    Number of basis function: 57
+    Number of basis functions: 57
     Number of Cartesian functions: 60
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -190,292 +222,76 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
     Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1, 4-5 entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3, 6 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         57      57       0       0       0       0
-   -------------------------------------------------------
-    Total      57      57      14      13      13       1
-   -------------------------------------------------------
+    atoms 1, 4-5 entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3, 6 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              1430
+    Memory [MiB]:             1430
     Algorithm:                Core
     Integral Cache:           SAVE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
     Blend: CC-PVDZ-JKFIT
     Number of shells: 99
-    Number of basis function: 279
+    Number of basis functions: 279
     Number of Cartesian functions: 318
     Spherical Harmonics?: true
     Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 2.2425539214E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 5.9952600889E-03.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Generalized Wolfsberg-Helmholtz.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         57      57      14      13      13       1
+   -------------------------------------------------------
+    Total      57      57      14      13      13       1
+   -------------------------------------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:  -224.38237820310439   -2.24382e+02   5.81577e-02 
-   @DF-UHF iter   2:  -224.45263643194650   -7.02582e-02   2.79968e-02 DIIS
-   @DF-UHF iter   3:  -225.39884658200086   -9.46210e-01   2.09306e-02 DIIS
-   @DF-UHF iter   4:  -225.90233849077958   -5.03492e-01   6.45431e-03 DIIS
-   @DF-UHF iter   5:  -225.95705884201479   -5.47204e-02   2.18384e-03 DIIS
-   @DF-UHF iter   6:  -225.96540115926442   -8.34232e-03   5.52858e-04 DIIS
-   @DF-UHF iter   7:  -225.96914771243198   -3.74655e-03   4.67659e-04 DIIS
-   @DF-UHF iter   8:  -225.97402342412536   -4.87571e-03   8.92504e-04 DIIS
-   @DF-UHF iter   9:  -225.96691300807760    7.11042e-03   5.72889e-04 DIIS
-   @DF-UHF iter  10:  -225.96569628321754    1.21672e-03   4.59874e-04 DIIS
-   @DF-UHF iter  11:  -225.96555934715732    1.36936e-04   3.85219e-04 DIIS
-   @DF-UHF iter  12:  -225.96532628367106    2.33063e-04   4.64014e-04 DIIS
-   @DF-UHF iter  13:  -225.96566756708339   -3.41283e-04   2.29152e-04 DIIS
-   @DF-UHF iter  14:  -225.96573408536582   -6.65183e-05   5.28824e-05 DIIS
-   @DF-UHF iter  15:  -225.96573032976227    3.75560e-06   1.41256e-05 DIIS
-   @DF-UHF iter  16:  -225.96572460598767    5.72377e-06   3.18445e-05 DIIS
-   @DF-UHF iter  17:  -225.96572665255283   -2.04657e-06   2.32909e-06 DIIS
-   @DF-UHF iter  18:  -225.96572675511820   -1.02565e-07   3.33752e-06 DIIS
-   @DF-UHF iter  19:  -225.96572665528652    9.98317e-08   9.60926e-07 DIIS
-   @DF-UHF iter  20:  -225.96572665829603   -3.00952e-09   2.68650e-07 DIIS
-   @DF-UHF iter  21:  -225.96572665697164    1.32439e-09   7.68901e-08 DIIS
-   @DF-UHF iter  22:  -225.96572665676203    2.09610e-10   2.36420e-08 DIIS
-   @DF-UHF iter  23:  -225.96572665675714    4.88853e-12   7.67706e-09 DIIS
-
-         ------------------------------------------------------------
-                              UHF Stability code                     
-                                Jérôme Gonthier                     
-               Strong inspiration from R. Parrish's CIS              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-    Full point group: Cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 2:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
-
-  Nuclear repulsion =   69.126539574631352
-  ==> Basis Set <==
-
-  Basis Set: CC-PVDZ
-    Blend: CC-PVDZ
-    Number of shells: 27
-    Number of basis function: 57
-    Number of Cartesian functions: 60
-    Spherical Harmonics?: true
-    Max angular momentum: 2
-
-  ==> DLUSolver (by Jerome Gonthier) <== 
- ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
-
-   Number of roots         =           1
-   Number of guess vectors =           3
-   Maximum subspace size   =          12
-   Minimum subspace size   =           2
-   Subspace expansion norm =       1E-06
-   Convergence cutoff      =       1E-06
-   Maximum iterations      =         100
-   Preconditioning         =      JACOBI
-
-  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
-  ==> Inspired by R.Parrish CISRHamiltonian <== 
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):              1430
-    Algorithm:                Core
-    Integral Cache:           SAVE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: CC-PVDZ-JKFIT
-    Blend: CC-PVDZ-JKFIT
-    Number of shells: 99
-    Number of basis function: 279
-    Number of Cartesian functions: 318
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  => Iterations <=
-
-             Iter  Converged   Subspace    Residual
-  DLU           1          0          1   3.235E-01
-  DLU           2          0          2   1.400E-01
-  DLU           3          0          3   4.045E-02
-  DLU           4          0          4   1.704E-02
-  DLU           5          0          5   6.665E-03
-  DLU           6          0          6   3.596E-03
-  DLU           7          0          7   1.265E-03
-  DLU           8          0          8   5.099E-04
-  DLU           9          0          9   1.468E-04
-  DLU          10          0         10   8.426E-05
-  DLU          11          0         11   2.187E-05
-  DLU          12          0         12   6.255E-06
-  DLU          13          0         13   2.762E-06
-  DLU          14          0          3   1.361E-06
-  DLU          15          1          4   4.366E-07
-
-    DLUSolver converged.
-
-    Negative totally symmetric eigenvalue detected: -0.061451 
-    Wavefunction unstable!
-    Lowest UHF->UHF stability eigenvalues: 
-       A -0.061451     
-
-    Rotating orbitals by 0.500000 * pi / 2 radians along unstable eigenvector.
-    Running SCF again with the rotated orbitals.
-  ==> Iterations <==
-
-                           Total Energy        Delta E     RMS |[F,P]|
-
-   @DF-UHF iter  24:  -225.99347506882316   -7.04157e+01   5.21341e-03 DIIS
-   @DF-UHF iter  25:  -226.07719680623615   -8.37217e-02   2.61388e-03 DIIS
-   @DF-UHF iter  26:  -226.15877397127576   -8.15772e-02   3.58746e-03 DIIS
-   @DF-UHF iter  27:  -226.17104224039909   -1.22683e-02   3.23940e-03 DIIS
-   @DF-UHF iter  28:  -226.20852057808523   -3.74783e-02   1.78133e-03 DIIS
-   @DF-UHF iter  29:  -226.21006107888789   -1.54050e-03   1.81339e-03 DIIS
-   @DF-UHF iter  30:  -226.21608835988980   -6.02728e-03   3.23815e-04 DIIS
-   @DF-UHF iter  31:  -226.21639917488545   -3.10815e-04   6.41534e-05 DIIS
-   @DF-UHF iter  32:  -226.21641419915738   -1.50243e-05   4.85371e-05 DIIS
-   @DF-UHF iter  33:  -226.21642350691928   -9.30776e-06   6.61218e-05 DIIS
-   @DF-UHF iter  34:  -226.21643363229413   -1.01254e-05   1.67844e-05 DIIS
-   @DF-UHF iter  35:  -226.21643505684941   -1.42456e-06   6.29995e-06 DIIS
-   @DF-UHF iter  36:  -226.21643520908512   -1.52236e-07   2.05522e-06 DIIS
-   @DF-UHF iter  37:  -226.21643523362442   -2.45393e-08   1.29744e-06 DIIS
-   @DF-UHF iter  38:  -226.21643524010244   -6.47802e-09   2.09268e-07 DIIS
-   @DF-UHF iter  39:  -226.21643524038021   -2.77765e-10   9.30941e-08 DIIS
-   @DF-UHF iter  40:  -226.21643524042233   -4.21210e-11   2.28080e-08 DIIS
-   @DF-UHF iter  41:  -226.21643524042514   -2.81375e-12   1.09965e-08 DIIS
-   @DF-UHF iter  42:  -226.21643524042605   -9.09495e-13   4.32632e-09 DIIS
-
-         ------------------------------------------------------------
-                              UHF Stability code                     
-                                Jérôme Gonthier                     
-               Strong inspiration from R. Parrish's CIS              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-    Full point group: Cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 2:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
-
-  Nuclear repulsion =   69.126539574631352
-  ==> Basis Set <==
-
-  Basis Set: CC-PVDZ
-    Blend: CC-PVDZ
-    Number of shells: 27
-    Number of basis function: 57
-    Number of Cartesian functions: 60
-    Spherical Harmonics?: true
-    Max angular momentum: 2
-
-  ==> DLUSolver (by Jerome Gonthier) <== 
- ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
-
-   Number of roots         =           1
-   Number of guess vectors =           3
-   Maximum subspace size   =          12
-   Minimum subspace size   =           2
-   Subspace expansion norm =       1E-06
-   Convergence cutoff      =       1E-06
-   Maximum iterations      =         100
-   Preconditioning         =      JACOBI
-
-  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
-  ==> Inspired by R.Parrish CISRHamiltonian <== 
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):              1430
-    Algorithm:                Core
-    Integral Cache:           SAVE
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: CC-PVDZ-JKFIT
-    Blend: CC-PVDZ-JKFIT
-    Number of shells: 99
-    Number of basis function: 279
-    Number of Cartesian functions: 318
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  => Iterations <=
-
-             Iter  Converged   Subspace    Residual
-  DLU           1          0          1   9.403E-01
-  DLU           2          0          2   9.088E-01
-  DLU           3          0          3   6.059E-01
-  DLU           4          0          4   2.550E-01
-  DLU           5          0          5   1.557E-01
-  DLU           6          0          6   6.787E-02
-  DLU           7          0          7   2.256E-02
-  DLU           8          0          8   7.977E-03
-  DLU           9          0          9   2.763E-03
-  DLU          10          0         10   6.243E-04
-  DLU          11          0         11   3.068E-04
-  DLU          12          0         12   7.477E-05
-  DLU          13          0         13   1.831E-05
-  DLU          14          0          3   6.429E-06
-  DLU          15          0          4   1.464E-06
-  DLU          16          1          5   4.278E-07
-
-    DLUSolver converged.
+   @DF-UHF iter   1:  -224.38237820309593   -2.24382e+02   5.81579e-02 ADIIS/DIIS
+   @DF-UHF iter   2:  -224.45263643193286   -7.02582e-02   2.80003e-02 ADIIS/DIIS
+   @DF-UHF iter   3:  -225.51957168171757   -1.06694e+00   1.85631e-02 ADIIS/DIIS
+   @DF-UHF iter   4:  -226.00024900768895   -4.80677e-01   3.68036e-03 ADIIS/DIIS
+   @DF-UHF iter   5:  -226.11451407573981   -1.14265e-01   4.39062e-03 ADIIS/DIIS
+   @DF-UHF iter   6:  -226.17381204497448   -5.92980e-02   3.85507e-03 ADIIS/DIIS
+   @DF-UHF iter   7:  -226.21147523719065   -3.76632e-02   1.21039e-03 ADIIS/DIIS
+   @DF-UHF iter   8:  -226.21490331149428   -3.42807e-03   6.85712e-04 ADIIS/DIIS
+   @DF-UHF iter   9:  -226.21625253737864   -1.34923e-03   1.49858e-04 ADIIS/DIIS
+   @DF-UHF iter  10:  -226.21635009309273   -9.75557e-05   1.39629e-04 ADIIS/DIIS
+   @DF-UHF iter  11:  -226.21641395084490   -6.38578e-05   4.88680e-05 DIIS
+   @DF-UHF iter  12:  -226.21643071508177   -1.67642e-05   1.92513e-05 DIIS
+   @DF-UHF iter  13:  -226.21643427625122   -3.56117e-06   9.81507e-06 DIIS
+   @DF-UHF iter  14:  -226.21643509427986   -8.18029e-07   3.88659e-06 DIIS
+   @DF-UHF iter  15:  -226.21643522816285   -1.33883e-07   1.98068e-06 DIIS
+   @DF-UHF iter  16:  -226.21643523929475   -1.11319e-08   5.56892e-07 DIIS
+   @DF-UHF iter  17:  -226.21643524029375   -9.98995e-10   1.23287e-07 DIIS
+   @DF-UHF iter  18:  -226.21643524037876   -8.50093e-11   7.22154e-08 DIIS
+   @DF-UHF iter  19:  -226.21643524040815   -2.93880e-11   3.43849e-08 DIIS
+   @DF-UHF iter  20:  -226.21643524041690   -8.75389e-12   1.47146e-08 DIIS
+   @DF-UHF iter  21:  -226.21643524041829   -1.39266e-12   6.42012e-09 DIIS
+  Energy and wave function converged.
 
     Wavefunction stable under totally symmetric rotations.
     Lowest totally symmetric eigenvalue: 0.025449 
@@ -486,14 +302,14 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   9.224144902E-03
+   @Spin Contamination Metric:   9.224138811E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.592241449E-01
+   @S^2 Observed:                7.592241388E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Alpha Occupied:                                                       
 
@@ -515,7 +331,7 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
       36A      1.698389    37A      1.926335    38A      1.959154  
       39A      1.996340    40A      2.299053    41A      2.444977  
       42A      2.471167    43A      2.513894    44A      2.690193  
-      45A      2.802204    46A      2.815863    47A      2.905970  
+      45A      2.802204    46A      2.815864    47A      2.905970  
       48A      3.183100    49A      3.303470    50A      3.355697  
       51A      3.462955    52A      3.525177    53A      3.589836  
       54A      3.853015    55A      3.897691    56A      4.172418  
@@ -551,22 +367,17 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
               A 
     DOCC [    13 ]
     SOCC [     1 ]
+    NA   [    14 ]
+    NB   [    13 ]
 
-  Energy converged.
-
-  @DF-UHF Final Energy:  -226.21643524042605
+  @DF-UHF Final Energy:  -226.21643524041829
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             69.1265395746313516
-    One-Electron Energy =                -449.5594061021520247
-    Two-Electron Energy =                 154.2164312870946219
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                       -226.2164352404260512
-
+    One-Electron Energy =                -449.5594072876136238
+    Two-Electron Energy =                 154.2164324725639801
+    Total Energy =                       -226.2164352404182921
 
   UHF NO Occupations:
   HONO-2 :   12  A 1.9982767
@@ -578,54 +389,59 @@ compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
   LUNO+3 :   18  A 0.0002282
 
 
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    19.6065      Z:    55.9417
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:   -19.9331      Z:   -57.5763
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.3266      Z:    -1.6346     Total:     1.6669
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.8300      Z:    -4.1546     Total:     4.2367
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :        -19.9330566           19.6065000           -0.3265566
+ Dipole Z            :        -57.5762520           55.9417000           -1.6345520
+ Magnitude           :                                                    1.6668532
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:39:41 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:21 2022
 Module time:
-	user time   =       2.80 seconds =       0.05 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.39 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.80 seconds =       0.05 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.39 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer A HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:39:41 2017
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:02:21 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1, 4-5 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3, 6 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1, 4-5 entry O          line   198 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3, 6 entry H          line    22 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               UHF Reference
                         1 Threads,   1907 MiB Core
          ---------------------------------------------------------
@@ -639,12 +455,12 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O(Gh)      0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O(Gh)      0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H(Gh)      0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
+         O            0.000000000000     0.000000000000     6.000000000000    15.994914619570
+         H            0.000000000000     1.431500000000     4.890600000000     1.007825032230
+         H            0.000000000000    -1.431500000000     4.890600000000     1.007825032230
+      Gh(O)           0.000000000000     0.000000000000     0.000000000000    15.994914619570
+      Gh(O)           0.000000000000     2.503900000000     0.000000000000    15.994914619570
+      Gh(H)           0.000000000000    -0.424700000000    -1.839500000000     1.007825032230
 
   Running in c1 symmetry.
 
@@ -667,14 +483,14 @@ Total time:
   Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 27
-    Number of basis function: 57
+    Number of basis functions: 57
     Number of Cartesian functions: 60
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -684,156 +500,66 @@ Total time:
     Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1, 4-5 entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3, 6 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         57      57       0       0       0       0
-   -------------------------------------------------------
-    Total      57      57       5       5       5       0
-   -------------------------------------------------------
+    atoms 1, 4-5 entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3, 6 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              1430
+    Memory [MiB]:             1430
     Algorithm:                Core
     Integral Cache:           LOAD
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
     Blend: CC-PVDZ-JKFIT
     Number of shells: 99
-    Number of basis function: 279
+    Number of basis functions: 279
     Number of Cartesian functions: 318
     Spherical Harmonics?: true
     Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 2.2425539214E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 5.9952600889E-03.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Generalized Wolfsberg-Helmholtz.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         57      57       5       5       5       0
+   -------------------------------------------------------
+    Total      57      57       5       5       5       0
+   -------------------------------------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:   -59.22616873599377   -5.92262e+01   1.71292e-01 
-   @DF-UHF iter   2:   -74.56568607880880   -1.53395e+01   3.30738e-02 DIIS
-   @DF-UHF iter   3:   -75.57557628825971   -1.00989e+00   1.92183e-02 DIIS
-   @DF-UHF iter   4:   -76.02508197224634   -4.49506e-01   9.12298e-04 DIIS
-   @DF-UHF iter   5:   -76.02710743659073   -2.02546e-03   2.49539e-04 DIIS
-   @DF-UHF iter   6:   -76.02732237134438   -2.14935e-04   4.37047e-05 DIIS
-   @DF-UHF iter   7:   -76.02733102197435   -8.65063e-06   9.59095e-06 DIIS
-   @DF-UHF iter   8:   -76.02733142127683   -3.99302e-07   1.53992e-06 DIIS
-   @DF-UHF iter   9:   -76.02733143150286   -1.02260e-08   4.66736e-07 DIIS
-   @DF-UHF iter  10:   -76.02733143237404   -8.71182e-10   5.03175e-08 DIIS
-   @DF-UHF iter  11:   -76.02733143238049   -6.45173e-12   3.73034e-09 DIIS
-
-         ------------------------------------------------------------
-                              UHF Stability code                     
-                                Jérôme Gonthier                     
-               Strong inspiration from R. Parrish's CIS              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-    Full point group: Cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O(Gh)      0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O(Gh)      0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H(Gh)      0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
-
-  Nuclear repulsion =    9.183859101865687
-  ==> Basis Set <==
-
-  Basis Set: CC-PVDZ
-    Blend: CC-PVDZ
-    Number of shells: 27
-    Number of basis function: 57
-    Number of Cartesian functions: 60
-    Spherical Harmonics?: true
-    Max angular momentum: 2
-
-  ==> DLUSolver (by Jerome Gonthier) <== 
- ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
-
-   Number of roots         =           1
-   Number of guess vectors =           3
-   Maximum subspace size   =          12
-   Minimum subspace size   =           2
-   Subspace expansion norm =       1E-06
-   Convergence cutoff      =       1E-06
-   Maximum iterations      =         100
-   Preconditioning         =      JACOBI
-
-  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
-  ==> Inspired by R.Parrish CISRHamiltonian <== 
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):              1430
-    Algorithm:                Core
-    Integral Cache:           LOAD
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: CC-PVDZ-JKFIT
-    Blend: CC-PVDZ-JKFIT
-    Number of shells: 99
-    Number of basis function: 279
-    Number of Cartesian functions: 318
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  => Iterations <=
-
-             Iter  Converged   Subspace    Residual
-  DLU           1          0          1   4.357E-01
-  DLU           2          0          2   2.417E-01
-  DLU           3          0          3   2.923E-01
-  DLU           4          0          4   1.567E-01
-  DLU           5          0          5   2.330E-02
-  DLU           6          0          6   4.860E-03
-  DLU           7          0          7   2.666E-03
-  DLU           8          0          8   1.122E-03
-  DLU           9          0          9   4.059E-04
-  DLU          10          0         10   1.545E-04
-  DLU          11          0         11   1.142E-04
-  DLU          12          0         12   2.781E-05
-  DLU          13          0         13   4.412E-06
-  DLU          14          0          3   1.061E-06
-  DLU          15          1          4   1.562E-07
-
-    DLUSolver converged.
+   @DF-UHF iter   1:   -59.22616873599162   -5.92262e+01   1.71292e-01 ADIIS
+   @DF-UHF iter   2:   -74.56568607880814   -1.53395e+01   3.30738e-02 ADIIS/DIIS
+   @DF-UHF iter   3:   -75.53200221811942   -9.66316e-01   2.00025e-02 ADIIS/DIIS
+   @DF-UHF iter   4:   -76.02061817756771   -4.88616e-01   2.23118e-03 ADIIS/DIIS
+   @DF-UHF iter   5:   -76.02711185155314   -6.49367e-03   2.53494e-04 ADIIS/DIIS
+   @DF-UHF iter   6:   -76.02731924490767   -2.07393e-04   5.02216e-05 DIIS
+   @DF-UHF iter   7:   -76.02733094912345   -1.17042e-05   1.03726e-05 DIIS
+   @DF-UHF iter   8:   -76.02733142253608   -4.73413e-07   1.68950e-06 DIIS
+   @DF-UHF iter   9:   -76.02733143166549   -9.12941e-09   4.22041e-07 DIIS
+   @DF-UHF iter  10:   -76.02733143237185   -7.06365e-10   5.46369e-08 DIIS
+   @DF-UHF iter  11:   -76.02733143237991   -8.05755e-12   5.39277e-09 DIIS
+  Energy and wave function converged.
 
     Wavefunction stable under totally symmetric rotations.
     Lowest totally symmetric eigenvalue: 0.274048 
@@ -844,14 +570,14 @@ Total time:
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   0.000000000E+00
+   @Spin Contamination Metric:   5.329070518E-15
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:                0.000000000E+00
+   @S^2 Observed:                5.329070518E-15
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Alpha Occupied:                                                       
 
@@ -909,22 +635,17 @@ Total time:
               A 
     DOCC [     5 ]
     SOCC [     0 ]
+    NA   [     5 ]
+    NB   [     5 ]
 
-  Energy converged.
-
-  @DF-UHF Final Energy:   -76.02733143238049
+  @DF-UHF Final Energy:   -76.02733143237991
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1838591018656874
-    One-Electron Energy =                -123.1255381142433407
-    Two-Electron Energy =                  37.9143475799971483
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0273314323804925
-
+    One-Electron Energy =                -123.1255385083424443
+    Two-Electron Energy =                  37.9143479740968417
+    Total Energy =                        -76.0273314323799099
 
   UHF NO Occupations:
   HONO-2 :    3  A 2.0000000
@@ -936,54 +657,59 @@ Total time:
   LUNO+3 :    9  A 0.0000000
 
 
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    57.7812
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0001      Z:   -58.5829
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0001      Z:    -0.8017     Total:     0.8017
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0002      Z:    -2.0376     Total:     2.0376
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :         -0.0000913            0.0000000           -0.0000913
+ Dipole Z            :        -58.5828612           57.7812000           -0.8016612
+ Magnitude           :                                                    0.8016612
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:39:42 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:22 2022
 Module time:
-	user time   =       0.79 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.75 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.59 seconds =       0.06 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       2.15 seconds =       0.04 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer B HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:39:42 2017
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:02:22 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1, 4-5 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3, 6 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1, 4-5 entry O          line   198 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3, 6 entry H          line    22 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               UHF Reference
                         1 Threads,   1907 MiB Core
          ---------------------------------------------------------
@@ -997,12 +723,12 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O(Gh)      0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H(Gh)      0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H(Gh)      0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
+      Gh(O)           0.000000000000     0.000000000000     6.000000000000    15.994914619570
+      Gh(H)           0.000000000000     1.431500000000     4.890600000000     1.007825032230
+      Gh(H)           0.000000000000    -1.431500000000     4.890600000000     1.007825032230
+         O            0.000000000000     0.000000000000     0.000000000000    15.994914619570
+         O            0.000000000000     2.503900000000     0.000000000000    15.994914619570
+         H            0.000000000000    -0.424700000000    -1.839500000000     1.007825032230
 
   Running in c1 symmetry.
 
@@ -1025,14 +751,14 @@ Total time:
   Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 27
-    Number of basis function: 57
+    Number of basis functions: 57
     Number of Cartesian functions: 60
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -1042,164 +768,73 @@ Total time:
     Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1, 4-5 entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3, 6 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         57      57       0       0       0       0
-   -------------------------------------------------------
-    Total      57      57       9       8       8       1
-   -------------------------------------------------------
+    atoms 1, 4-5 entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3, 6 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              1430
+    Memory [MiB]:             1430
     Algorithm:                Core
     Integral Cache:           LOAD
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
     Blend: CC-PVDZ-JKFIT
     Number of shells: 99
-    Number of basis function: 279
+    Number of basis functions: 279
     Number of Cartesian functions: 318
     Spherical Harmonics?: true
     Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 2.2425539214E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 5.9952600889E-03.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Generalized Wolfsberg-Helmholtz.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         57      57       9       8       8       1
+   -------------------------------------------------------
+    Total      57      57       9       8       8       1
+   -------------------------------------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:  -142.34500939873041   -1.42345e+02   1.33823e-01 
-   @DF-UHF iter   2:  -149.73227030240872   -7.38726e+00   1.82162e-02 DIIS
-   @DF-UHF iter   3:  -149.96489302609055   -2.32623e-01   1.33576e-02 DIIS
-   @DF-UHF iter   4:  -150.16984697592551   -2.04954e-01   1.71616e-03 DIIS
-   @DF-UHF iter   5:  -150.17838392697578   -8.53695e-03   1.08947e-03 DIIS
-   @DF-UHF iter   6:  -150.18282919693689   -4.44527e-03   5.11651e-04 DIIS
-   @DF-UHF iter   7:  -150.18516055468578   -2.33136e-03   3.39917e-04 DIIS
-   @DF-UHF iter   8:  -150.18658090835768   -1.42035e-03   1.00319e-04 DIIS
-   @DF-UHF iter   9:  -150.18665797801918   -7.70697e-05   4.53348e-05 DIIS
-   @DF-UHF iter  10:  -150.18667359542980   -1.56174e-05   2.73542e-05 DIIS
-   @DF-UHF iter  11:  -150.18668207556044   -8.48013e-06   9.37576e-06 DIIS
-   @DF-UHF iter  12:  -150.18668288222722   -8.06667e-07   4.33723e-06 DIIS
-   @DF-UHF iter  13:  -150.18668295617107   -7.39439e-08   1.44262e-06 DIIS
-   @DF-UHF iter  14:  -150.18668296890658   -1.27355e-08   5.15554e-07 DIIS
-   @DF-UHF iter  15:  -150.18668297103255   -2.12597e-09   2.23663e-07 DIIS
-   @DF-UHF iter  16:  -150.18668297147309   -4.40536e-10   4.64770e-08 DIIS
-   @DF-UHF iter  17:  -150.18668297148773   -1.46372e-11   1.60751e-08 DIIS
-   @DF-UHF iter  18:  -150.18668297148915   -1.42109e-12   6.38898e-09 DIIS
-
-         ------------------------------------------------------------
-                              UHF Stability code                     
-                                Jérôme Gonthier                     
-               Strong inspiration from R. Parrish's CIS              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-    Full point group: Cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 2:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O(Gh)      0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H(Gh)      0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H(Gh)      0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
-
-  Nuclear repulsion =   32.110875642074888
-  ==> Basis Set <==
-
-  Basis Set: CC-PVDZ
-    Blend: CC-PVDZ
-    Number of shells: 27
-    Number of basis function: 57
-    Number of Cartesian functions: 60
-    Spherical Harmonics?: true
-    Max angular momentum: 2
-
-  ==> DLUSolver (by Jerome Gonthier) <== 
- ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
-
-   Number of roots         =           1
-   Number of guess vectors =           3
-   Maximum subspace size   =          12
-   Minimum subspace size   =           2
-   Subspace expansion norm =       1E-06
-   Convergence cutoff      =       1E-06
-   Maximum iterations      =         100
-   Preconditioning         =      JACOBI
-
-  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
-  ==> Inspired by R.Parrish CISRHamiltonian <== 
-
-  ==> DFJK: Density-Fitted J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):              1430
-    Algorithm:                Core
-    Integral Cache:           LOAD
-    Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: CC-PVDZ-JKFIT
-    Blend: CC-PVDZ-JKFIT
-    Number of shells: 99
-    Number of basis function: 279
-    Number of Cartesian functions: 318
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-  => Iterations <=
-
-             Iter  Converged   Subspace    Residual
-  DLU           1          0          1   9.425E-01
-  DLU           2          0          2   9.197E-01
-  DLU           3          0          3   6.372E-01
-  DLU           4          0          4   2.766E-01
-  DLU           5          0          5   1.692E-01
-  DLU           6          0          6   7.227E-02
-  DLU           7          0          7   2.402E-02
-  DLU           8          0          8   8.522E-03
-  DLU           9          0          9   2.896E-03
-  DLU          10          0         10   6.484E-04
-  DLU          11          0         11   3.120E-04
-  DLU          12          0         12   8.613E-05
-  DLU          13          0         13   2.618E-05
-  DLU          14          0          3   8.488E-06
-  DLU          15          0          4   1.678E-06
-  DLU          16          1          5   3.728E-07
-
-    DLUSolver converged.
+   @DF-UHF iter   1:  -142.34500939872646   -1.42345e+02   1.33823e-01 ADIIS
+   @DF-UHF iter   2:  -149.73227030240369   -7.38726e+00   1.82164e-02 ADIIS/DIIS
+   @DF-UHF iter   3:  -149.96199694478594   -2.29727e-01   1.34545e-02 ADIIS/DIIS
+   @DF-UHF iter   4:  -150.16899590260101   -2.06999e-01   1.88807e-03 ADIIS/DIIS
+   @DF-UHF iter   5:  -150.17832846287084   -9.33256e-03   1.09965e-03 ADIIS/DIIS
+   @DF-UHF iter   6:  -150.18279597017937   -4.46751e-03   5.18518e-04 ADIIS/DIIS
+   @DF-UHF iter   7:  -150.18514414522085   -2.34818e-03   3.42280e-04 ADIIS/DIIS
+   @DF-UHF iter   8:  -150.18657800061450   -1.43386e-03   1.02378e-04 ADIIS/DIIS
+   @DF-UHF iter   9:  -150.18665774239395   -7.97418e-05   4.56648e-05 DIIS
+   @DF-UHF iter  10:  -150.18667351577920   -1.57734e-05   2.77436e-05 DIIS
+   @DF-UHF iter  11:  -150.18668203758520   -8.52181e-06   9.73894e-06 DIIS
+   @DF-UHF iter  12:  -150.18668287349658   -8.35911e-07   4.57533e-06 DIIS
+   @DF-UHF iter  13:  -150.18668295552732   -8.20307e-08   1.48224e-06 DIIS
+   @DF-UHF iter  14:  -150.18668296904178   -1.35145e-08   4.99885e-07 DIIS
+   @DF-UHF iter  15:  -150.18668297103079   -1.98901e-09   2.23152e-07 DIIS
+   @DF-UHF iter  16:  -150.18668297146843   -4.37637e-10   4.75691e-08 DIIS
+   @DF-UHF iter  17:  -150.18668297148264   -1.42109e-11   1.67004e-08 DIIS
+   @DF-UHF iter  18:  -150.18668297148417   -1.53477e-12   6.55306e-09 DIIS
+  Energy and wave function converged.
 
     Wavefunction stable under totally symmetric rotations.
     Lowest totally symmetric eigenvalue: 0.023663 
@@ -1210,14 +845,14 @@ Total time:
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   9.242010478E-03
+   @Spin Contamination Metric:   9.242010512E-03
    @S^2 Expected:                7.500000000E-01
    @S^2 Observed:                7.592420105E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Alpha Occupied:                                                       
 
@@ -1274,22 +909,17 @@ Total time:
               A 
     DOCC [     8 ]
     SOCC [     1 ]
+    NA   [     9 ]
+    NB   [     8 ]
 
-  Energy converged.
-
-  @DF-UHF Final Energy:  -150.18668297148915
+  @DF-UHF Final Energy:  -150.18668297148417
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             32.1108756420748875
-    One-Electron Energy =                -270.9093353856557087
-    Two-Electron Energy =                  88.6117767720916731
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.1866829714891480
-
+    One-Electron Energy =                -270.9093354313890245
+    Two-Electron Energy =                  88.6117768178299769
+    Total Energy =                       -150.1866829714841742
 
   UHF NO Occupations:
   HONO-2 :    7  A 1.9982734
@@ -1301,40 +931,54 @@ Total time:
   LUNO+3 :   13  A 0.0002260
 
 
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    19.6065      Z:    -1.8395
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:   -19.9436      Z:     1.0747
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.3371      Z:    -0.7648     Total:     0.8358
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.8568      Z:    -1.9438     Total:     2.1243
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :        -19.9435818           19.6065000           -0.3370818
+ Dipole Z            :          1.0747321           -1.8395000           -0.7647679
+ Magnitude           :                                                    0.8357596
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:39:43 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:23 2022
 Module time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       1.12 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.53 seconds =       0.08 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       3.27 seconds =       0.05 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+  Constructing Basis Sets for SAPT...
+
    => Loading Basis Set <=
 
     Name: CC-PVDZ-RI
     Role: RIFIT
     Keyword: DF_BASIS_SAPT
-    atoms 1, 4-5 entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3, 6 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1, 4-5 entry O          line   235 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3, 6 entry H          line    19 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_ELST
+    atoms 1, 4-5 entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3, 6 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -1342,8 +986,8 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:39:43 2017
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:02:24 2022
 
 	 --------------------------------------------------------
 	                         SAPT                      
@@ -1355,7 +999,7 @@ Total time:
 
    => Resources <=
 
-    Memory (MB):              1716
+    Memory [MiB]:             1716
 
    => Orbital Ranges <=
 
@@ -1391,48 +1035,48 @@ Total time:
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 27
-    Number of basis function: 57
+    Number of basis functions: 57
     Number of Cartesian functions: 60
     Spherical Harmonics?: true
     Max angular momentum: 2
 
   SCF TERMS:
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              1715
+    Memory [MiB]:             1715
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
     Blend: CC-PVDZ-JKFIT
     Number of shells: 99
-    Number of basis function: 279
+    Number of basis functions: 279
     Number of Cartesian functions: 318
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-    Elst10,r            =    -0.004155877038 H
-    Exch10              =     0.002063598538 H
-    Exch10(S^2)         =     0.002061821096 H
+    Elst10,r            =    -0.004155876896 H
+    Exch10              =     0.002063598678 H
+    Exch10(S^2)         =     0.002061821236 H
 
-    Exch10(S^2) DM      =     0.002061821096 H
+    Exch10(S^2) DM      =     0.002061821236 H
 
-    Ind20,u (A<-B)      =    -0.000347304659 H
-    Ind20,u (B<-A)      =    -0.000227410107 H
-    Ind20,u             =    -0.000574714766 H
-    Exch-Ind20,u (A<-B) =     0.000298731204 H
-    Exch-Ind20,u (B<-A) =     0.000089398279 H
-    Exch-Ind20,u        =     0.000388129484 H
+    Ind20,u (A<-B)      =    -0.000347304705 H
+    Ind20,u (B<-A)      =    -0.000227410093 H
+    Ind20,u             =    -0.000574714798 H
+    Exch-Ind20,u (A<-B) =     0.000298731250 H
+    Exch-Ind20,u (B<-A) =     0.000089398276 H
+    Exch-Ind20,u        =     0.000388129526 H
 
   ==> CPKS Iterations <==
 
@@ -1453,102 +1097,107 @@ Total time:
     9      4.884E-07    8.831E-05           0
     10     6.061E-08    4.049E-05           0
     11     5.416E-09    1.546E-05           0
-    12     8.587E-10*   3.335E-06           0
-    13     8.587E-10*   1.224E-06           0
-    14     8.587E-10*   4.141E-07           0
-    15     8.587E-10*   1.345E-07           0
-    16     8.587E-10*   5.872E-08           0
-    17     8.587E-10*   2.011E-08           0
-    18     8.587E-10*   4.287E-09           0
-    19     8.587E-10*   7.548E-10*          0
+    12     8.587E-10*   3.335E-06           1
+    13     8.587E-10*   1.224E-06           1
+    14     8.587E-10*   4.141E-07           1
+    15     8.587E-10*   1.345E-07           1
+    16     8.587E-10*   5.872E-08           1
+    17     8.587E-10*   2.011E-08           1
+    18     8.587E-10*   4.287E-09           1
+    19     8.587E-10*   7.548E-10*          1
     -----------------------------------------
 
-    Ind20,r (A<-B)      =    -0.000402618613 H
-    Ind20,r (B<-A)      =    -0.000269990268 H
-    Ind20,r             =    -0.000672608881 H
-    Exch-Ind20,r (A<-B) =     0.000350796085 H
-    Exch-Ind20,r (B<-A) =     0.000111795239 H
-    Exch-Ind20,r        =     0.000462591323 H
+    Ind20,r (A<-B)      =    -0.000402618665 H
+    Ind20,r (B<-A)      =    -0.000269990252 H
+    Ind20,r             =    -0.000672608917 H
+    Exch-Ind20,r (A<-B) =     0.000350796137 H
+    Exch-Ind20,r (B<-A) =     0.000111795235 H
+    Exch-Ind20,r        =     0.000462591371 H
 
   PT2 TERMS:
 
-  ==> DFERI: Density Fitted 3-Index Tensors <==
+  DFHelper Memory: AOs need 0.006 GiB; user supplied 1.676 GiB. Using in-core AOs.
 
-    Schwarz cutoff =   1.000E-12
-    J cutoff       =   1.000E-12
-    Mem (GB)       =           1
-
-   => Auxiliary Basis <=
-
-  Basis Set: CC-PVDZ-RI
-    Blend: CC-PVDZ-RI
-    Number of shells: 72
-    Number of basis function: 210
-    Number of Cartesian functions: 243
-    Spherical Harmonics?: true
-    Max angular momentum: 3
-
-    Disp20              =    -0.000942519092 H
-    Exch-Disp20         =     0.000108141699 H
+    Disp20              =    -0.000942519118 H
+    Exch-Disp20         =     0.000108141709 H
 
 
     SAPT Results 
   --------------------------------------------------------------------------------------------------------
-    Electrostatics                 -4.15587704 [mEh]      -2.60785232 [kcal/mol]     -10.91125516 [kJ/mol]
-      Elst10,r                     -4.15587704 [mEh]      -2.60785232 [kcal/mol]     -10.91125516 [kJ/mol]
+    Electrostatics                 -4.15587690 [mEh]      -2.60785212 [kcal/mol]     -10.91125329 [kJ/mol]
+      Elst10,r                     -4.15587690 [mEh]      -2.60785212 [kcal/mol]     -10.91125329 [kJ/mol]
 
-    Exchange                        2.06359854 [mEh]       1.29492769 [kcal/mol]       5.41797796 [kJ/mol]
-      Exch10                        2.06359854 [mEh]       1.29492769 [kcal/mol]       5.41797796 [kJ/mol]
-      Exch10(S^2)                   2.06182110 [mEh]       1.29381233 [kcal/mol]       5.41331129 [kJ/mol]
+    Exchange                        2.06359868 [mEh]       1.29492772 [kcal/mol]       5.41797758 [kJ/mol]
+      Exch10                        2.06359868 [mEh]       1.29492772 [kcal/mol]       5.41797758 [kJ/mol]
+      Exch10(S^2)                   2.06182124 [mEh]       1.29381236 [kcal/mol]       5.41331091 [kJ/mol]
 
-    Induction                      -0.32855806 [mEh]      -0.20617330 [kcal/mol]      -0.86262918 [kJ/mol]
-      Ind20,r                      -0.67260888 [mEh]      -0.42206846 [kcal/mol]      -1.76593462 [kJ/mol]
-      Exch-Ind20,r                  0.46259132 [mEh]       0.29028045 [kcal/mol]       1.21453352 [kJ/mol]
-      delta HF,r (2)               -0.11854050 [mEh]      -0.07438529 [kcal/mol]      -0.31122808 [kJ/mol]
+    Induction                      -0.32855834 [mEh]      -0.20617347 [kcal/mol]      -0.86262979 [kJ/mol]
+      Ind20,r                      -0.67260892 [mEh]      -0.42206847 [kcal/mol]      -1.76593447 [kJ/mol]
+      Exch-Ind20,r                  0.46259137 [mEh]       0.29028047 [kcal/mol]       1.21453348 [kJ/mol]
+      delta HF,r (2)               -0.11854079 [mEh]      -0.07438547 [kcal/mol]      -0.31122880 [kJ/mol]
 
-    Dispersion                     -0.83437739 [mEh]      -0.52357974 [kcal/mol]      -2.19065785 [kJ/mol]
-      Disp20                       -0.94251909 [mEh]      -0.59143968 [kcal/mol]      -2.47458388 [kJ/mol]
-      Exch-Disp20                   0.10814170 [mEh]       0.06785994 [kcal/mol]       0.28392603 [kJ/mol]
+    Dispersion                     -0.83437741 [mEh]      -0.52357973 [kcal/mol]      -2.19065758 [kJ/mol]
+      Disp20                       -0.94251912 [mEh]      -0.59143968 [kcal/mol]      -2.47458360 [kJ/mol]
+      Exch-Disp20                   0.10814171 [mEh]       0.06785995 [kcal/mol]       0.28392602 [kJ/mol]
 
-  Total HF                         -2.42083656 [mEh]      -1.51909794 [kcal/mol]      -6.35590638 [kJ/mol]
-  Total SAPT0                      -3.25521395 [mEh]      -2.04267768 [kcal/mol]      -8.54656422 [kJ/mol]
+  Total HF                         -2.42083655 [mEh]      -1.51909787 [kcal/mol]      -6.35590550 [kJ/mol]
+  Total SAPT0                      -3.25521396 [mEh]      -2.04267760 [kcal/mol]      -8.54656308 [kJ/mol]
   --------------------------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:39:44 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:25 2022
 Module time:
-	user time   =       1.36 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       5.97 seconds =       0.10 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
-	SAPT0 Eelst.......................................................PASSED
-	SAPT0 Eexch.......................................................PASSED
-	SAPT0 Eind........................................................PASSED
-	SAPT0 Edisp.......................................................PASSED
-	SAPT0 Etotal......................................................PASSED
+	user time   =       4.68 seconds =       0.08 minutes
+	system time =       0.34 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
+    SAPT0 Eelst...........................................................................PASSED
+    SAPT0 Eexch...........................................................................PASSED
+    SAPT0 Eind............................................................................PASSED
+    SAPT0 Edisp...........................................................................PASSED
+    SAPT0 Etotal..........................................................................PASSED
 
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
-  //              Dimer HF             //
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+Scratch directory: /tmp/
+   => Loading Basis Set <=
 
-
-*** tstart() called on psinet
-*** at Mon May 15 15:39:44 2017
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4-5 entry O          line   117 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3, 6 entry H          line    26 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1, 4-5 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
-    atoms 2-3, 6 entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 1, 4-5 entry O          line   117 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3, 6 entry H          line    26 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //              Dimer HF             //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:02:25 2022
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4-5 entry O          line   117 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3, 6 entry H          line    26 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               UHF Reference
                         1 Threads,   1907 MiB Core
          ---------------------------------------------------------
@@ -1562,12 +1211,12 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
+         O            0.000000000000     0.000000000000     6.000000000000    15.994914619570
+         H            0.000000000000     1.431500000000     4.890600000000     1.007825032230
+         H            0.000000000000    -1.431500000000     4.890600000000     1.007825032230
+         O            0.000000000000     0.000000000000     0.000000000000    15.994914619570
+         O            0.000000000000     2.503900000000     0.000000000000    15.994914619570
+         H            0.000000000000    -0.424700000000    -1.839500000000     1.007825032230
 
   Running in c1 symmetry.
 
@@ -1590,14 +1239,14 @@ Total time:
   Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: 6-31G
     Blend: 6-31G
     Number of shells: 21
-    Number of basis function: 33
+    Number of basis functions: 33
     Number of Cartesian functions: 33
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -1607,282 +1256,100 @@ Total time:
     Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1, 4-5 entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3, 6 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         33      33       0       0       0       0
-   -------------------------------------------------------
-    Total      33      33      14      13      13       1
-   -------------------------------------------------------
+    atoms 1, 4-5 entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3, 6 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              1430
+    Memory [MiB]:             1430
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
     Blend: CC-PVDZ-JKFIT
     Number of shells: 99
-    Number of basis function: 318
+    Number of basis functions: 318
     Number of Cartesian functions: 318
     Spherical Harmonics?: false
     Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 3.0848735527E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 8.8768854587E-03.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Generalized Wolfsberg-Helmholtz.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         33      33      14      13      13       1
+   -------------------------------------------------------
+    Total      33      33      14      13      13       1
+   -------------------------------------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:  -224.87890386967612   -2.24879e+02   5.78957e-02 
-   @DF-UHF iter   2:  -224.55473731468214    3.24167e-01   4.39116e-02 DIIS
-   @DF-UHF iter   3:  -225.54285922078665   -9.88122e-01   2.62350e-02 DIIS
-   @DF-UHF iter   4:  -225.81247002118909   -2.69611e-01   9.46833e-03 DIIS
-   @DF-UHF iter   5:  -225.85161908555762   -3.91491e-02   3.97728e-03 DIIS
-   @DF-UHF iter   6:  -225.86061447796200   -8.99539e-03   1.11747e-03 DIIS
-   @DF-UHF iter   7:  -225.86255478754262   -1.94031e-03   3.98114e-04 DIIS
-   @DF-UHF iter   8:  -225.86486807330840   -2.31329e-03   6.96719e-04 DIIS
-   @DF-UHF iter   9:  -225.86240851873930    2.45955e-03   3.83053e-04 DIIS
-   @DF-UHF iter  10:  -225.86163742134516    7.71097e-04   3.49162e-04 DIIS
-   @DF-UHF iter  11:  -225.86154035626478    9.70651e-05   2.73560e-04 DIIS
-   @DF-UHF iter  12:  -225.86159287042375   -5.25142e-05   4.26809e-05 DIIS
-   @DF-UHF iter  13:  -225.86158859439564    4.27603e-06   4.93086e-05 DIIS
-   @DF-UHF iter  14:  -225.86158851590940    7.84862e-08   1.71401e-05 DIIS
-   @DF-UHF iter  15:  -225.86158851256354    3.34586e-09   4.99925e-06 DIIS
-   @DF-UHF iter  16:  -225.86158852396642   -1.14029e-08   3.03537e-06 DIIS
-   @DF-UHF iter  17:  -225.86158852915429   -5.18787e-09   1.49755e-06 DIIS
-   @DF-UHF iter  18:  -225.86158853062801   -1.47372e-09   5.54112e-07 DIIS
-   @DF-UHF iter  19:  -225.86158853084103   -2.13021e-10   4.63785e-08 DIIS
-   @DF-UHF iter  20:  -225.86158853083975    1.27898e-12   3.36663e-08 DIIS
-   @DF-UHF iter  21:  -225.86158853084015   -3.97904e-13   6.29773e-09 DIIS
+   @DF-UHF iter   1:  -224.87890386980206   -2.24879e+02   5.78959e-02 ADIIS/DIIS
+   @DF-UHF iter   2:  -224.55473731483340    3.24167e-01   4.39129e-02 ADIIS/DIIS
+   @DF-UHF iter   3:  -225.65394050053163   -1.09920e+00   2.09174e-02 ADIIS/DIIS
+   @DF-UHF iter   4:  -225.98568113702331   -3.31741e-01   1.45863e-02 ADIIS/DIIS
+   @DF-UHF iter   5:  -226.07317411842635   -8.74930e-02   5.73329e-03 ADIIS/DIIS
+   @DF-UHF iter   6:  -226.08749428993210   -1.43202e-02   3.79870e-03 ADIIS/DIIS
+   @DF-UHF iter   7:  -226.09697786463721   -9.48357e-03   1.06285e-03 ADIIS/DIIS
+   @DF-UHF iter   8:  -226.09789848925126   -9.20625e-04   4.32444e-04 ADIIS/DIIS
+   @DF-UHF iter   9:  -226.09816990027363   -2.71411e-04   1.66345e-04 ADIIS/DIIS
+   @DF-UHF iter  10:  -226.09824017926806   -7.02790e-05   9.18474e-05 DIIS
+   @DF-UHF iter  11:  -226.09826892813103   -2.87489e-05   3.91563e-05 DIIS
+   @DF-UHF iter  12:  -226.09827468583126   -5.75770e-06   2.12436e-05 DIIS
+   @DF-UHF iter  13:  -226.09827580091741   -1.11509e-06   5.92681e-06 DIIS
+   @DF-UHF iter  14:  -226.09827590394775   -1.03030e-07   1.08738e-06 DIIS
+   @DF-UHF iter  15:  -226.09827590650727   -2.55952e-09   3.60270e-07 DIIS
+   @DF-UHF iter  16:  -226.09827590680635   -2.99082e-10   1.59692e-07 DIIS
+   @DF-UHF iter  17:  -226.09827590687485   -6.84963e-11   6.73994e-08 DIIS
+   @DF-UHF iter  18:  -226.09827590688730   -1.24487e-11   2.98514e-08 DIIS
+   @DF-UHF iter  19:  -226.09827590688963   -2.33058e-12   8.09238e-09 DIIS
 
   DF guess converged.
 
-  ==> Integral Setup <==
-
   ==> DirectJK: Integral-Direct J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     Integrals threads:           1
-    Schwarz Cutoff:          1E-12
+    Screening Type:           CSAM
+    Screening Cutoff:        1E-12
+    Incremental Fock:           No
+    LinK:                       No
 
-   @UHF iter  22:  -225.86179301493073   -2.04484e-04   3.89233e-06 DIIS
-   @UHF iter  23:  -225.86179302558230   -1.06516e-08   1.19944e-06 DIIS
-   @UHF iter  24:  -225.86179302674014   -1.15784e-09   6.34327e-07 DIIS
-   @UHF iter  25:  -225.86179302703664   -2.96495e-10   1.88326e-07 DIIS
-   @UHF iter  26:  -225.86179302720467   -1.68029e-10   9.95416e-08 DIIS
-   @UHF iter  27:  -225.86179302735542   -1.50749e-10   9.97942e-08 DIIS
-   @UHF iter  28:  -225.86179302726458    9.08358e-11   8.56320e-08 DIIS
-   @UHF iter  29:  -225.86179302709289    1.71696e-10   1.36687e-08 DIIS
-   @UHF iter  30:  -225.86179302709294   -5.68434e-14   5.48884e-09 DIIS
-
-         ------------------------------------------------------------
-                              UHF Stability code                     
-                                Jérôme Gonthier                     
-               Strong inspiration from R. Parrish's CIS              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-    Full point group: Cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 2:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
-
-  Nuclear repulsion =   69.126539574631352
-  ==> Basis Set <==
-
-  Basis Set: 6-31G
-    Blend: 6-31G
-    Number of shells: 21
-    Number of basis function: 33
-    Number of Cartesian functions: 33
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-  ==> DLUSolver (by Jerome Gonthier) <== 
- ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
-
-   Number of roots         =           1
-   Number of guess vectors =           3
-   Maximum subspace size   =          12
-   Minimum subspace size   =           2
-   Subspace expansion norm =       1E-06
-   Convergence cutoff      =       1E-06
-   Maximum iterations      =         100
-   Preconditioning         =      JACOBI
-
-  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
-  ==> Inspired by R.Parrish CISRHamiltonian <== 
-
-  ==> DirectJK: Integral-Direct J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Integrals threads:           1
-    Schwarz Cutoff:          1E-12
-
-  => Iterations <=
-
-             Iter  Converged   Subspace    Residual
-  DLU           1          0          1   2.896E-01
-  DLU           2          0          2   1.354E-01
-  DLU           3          0          3   3.881E-02
-  DLU           4          0          4   1.457E-02
-  DLU           5          0          5   7.661E-03
-  DLU           6          0          6   3.426E-03
-  DLU           7          0          7   1.422E-03
-  DLU           8          0          8   4.666E-04
-  DLU           9          0          9   2.367E-04
-  DLU          10          0         10   5.704E-05
-  DLU          11          0         11   1.468E-05
-  DLU          12          0         12   6.639E-06
-  DLU          13          0         13   1.782E-06
-  DLU          14          1          3   6.552E-07
-
-    DLUSolver converged.
-
-    Negative totally symmetric eigenvalue detected: -0.054851 
-    Wavefunction unstable!
-    Lowest UHF->UHF stability eigenvalues: 
-       A -0.054851     
-
-    Rotating orbitals by 0.500000 * pi / 2 radians along unstable eigenvector.
-    Running SCF again with the rotated orbitals.
-  ==> Iterations <==
-
-                        Total Energy        Delta E     RMS |[F,P]|
-
-   @UHF iter  31:  -225.89235940815070   -7.05506e+01   8.53182e-03 DIIS
-   @UHF iter  32:  -225.97534398676137   -8.29846e-02   4.00155e-03 DIIS
-   @UHF iter  33:  -226.04979766635819   -7.44537e-02   5.53099e-03 DIIS
-   @UHF iter  34:  -226.08258750817043   -3.27898e-02   2.80563e-03 DIIS
-   @UHF iter  35:  -226.09243091160357   -9.84340e-03   2.48217e-03 DIIS
-   @UHF iter  36:  -226.09018434122663    2.24657e-03   3.52920e-03 DIIS
-   @UHF iter  37:  -226.09669638487335   -6.51204e-03   1.58122e-03 DIIS
-   @UHF iter  38:  -226.09833322110512   -1.63684e-03   3.37417e-04 DIIS
-   @UHF iter  39:  -226.09839167228088   -5.84512e-05   2.63471e-04 DIIS
-   @UHF iter  40:  -226.09844700673256   -5.53345e-05   5.68857e-05 DIIS
-   @UHF iter  41:  -226.09845001588030   -3.00915e-06   8.95939e-05 DIIS
-   @UHF iter  42:  -226.09845551041829   -5.49454e-06   9.29049e-06 DIIS
-   @UHF iter  43:  -226.09845571489478   -2.04476e-07   4.34433e-06 DIIS
-   @UHF iter  44:  -226.09845576818270   -5.32879e-08   1.48057e-06 DIIS
-   @UHF iter  45:  -226.09845577388748   -5.70478e-09   5.82219e-07 DIIS
-   @UHF iter  46:  -226.09845577428109   -3.93612e-10   9.49242e-08 DIIS
-   @UHF iter  47:  -226.09845577429931   -1.82183e-11   2.69814e-08 DIIS
-   @UHF iter  48:  -226.09845577430082   -1.50635e-12   1.05752e-08 DIIS
-   @UHF iter  49:  -226.09845577430093   -1.13687e-13   4.51049e-09 DIIS
-
-         ------------------------------------------------------------
-                              UHF Stability code                     
-                                Jérôme Gonthier                     
-               Strong inspiration from R. Parrish's CIS              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-    Full point group: Cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 2:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
-
-  Nuclear repulsion =   69.126539574631352
-  ==> Basis Set <==
-
-  Basis Set: 6-31G
-    Blend: 6-31G
-    Number of shells: 21
-    Number of basis function: 33
-    Number of Cartesian functions: 33
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-  ==> DLUSolver (by Jerome Gonthier) <== 
- ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
-
-   Number of roots         =           1
-   Number of guess vectors =           3
-   Maximum subspace size   =          12
-   Minimum subspace size   =           2
-   Subspace expansion norm =       1E-06
-   Convergence cutoff      =       1E-06
-   Maximum iterations      =         100
-   Preconditioning         =      JACOBI
-
-  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
-  ==> Inspired by R.Parrish CISRHamiltonian <== 
-
-  ==> DirectJK: Integral-Direct J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Integrals threads:           1
-    Schwarz Cutoff:          1E-12
-
-  => Iterations <=
-
-             Iter  Converged   Subspace    Residual
-  DLU           1          0          1   9.214E-01
-  DLU           2          0          2   8.134E-01
-  DLU           3          0          3   3.795E-01
-  DLU           4          0          4   2.242E-01
-  DLU           5          0          5   1.274E-01
-  DLU           6          0          6   5.341E-02
-  DLU           7          0          7   1.851E-02
-  DLU           8          0          8   3.686E-03
-  DLU           9          0          9   9.656E-04
-  DLU          10          0         10   2.322E-04
-  DLU          11          0         11   6.463E-05
-  DLU          12          0         12   1.753E-05
-  DLU          13          0         13   4.213E-06
-  DLU          14          0          3   2.358E-06
-  DLU          15          1          4   2.828E-07
-
-    DLUSolver converged.
+   @UHF iter  20:  -226.09845576506339   -2.26098e+02   3.47780e-06 DIIS
+   @UHF iter  21:  -226.09845577329537   -8.23198e-09   9.27333e-07 DIIS
+   @UHF iter  22:  -226.09845577401506   -7.19695e-10   4.25119e-07 DIIS
+   @UHF iter  23:  -226.09845577416192   -1.46855e-10   1.88996e-07 DIIS
+   @UHF iter  24:  -226.09845577423249   -7.05711e-11   1.35646e-07 DIIS
+   @UHF iter  25:  -226.09845577427529   -4.28031e-11   7.58958e-08 DIIS
+   @UHF iter  26:  -226.09845577429618   -2.08900e-11   3.36567e-08 DIIS
+   @UHF iter  27:  -226.09845577429863   -2.44427e-12   2.15512e-08 DIIS
+   @UHF iter  28:  -226.09845577430022   -1.59162e-12   1.12400e-08 DIIS
+   @UHF iter  29:  -226.09845577430059   -3.69482e-13   4.05425e-09 DIIS
+  Energy and wave function converged.
 
     Wavefunction stable under totally symmetric rotations.
     Lowest totally symmetric eigenvalue: 0.025149 
@@ -1893,14 +1360,14 @@ Total time:
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   9.318882753E-03
+   @Spin Contamination Metric:   9.318886477E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.593188828E-01
+   @S^2 Observed:                7.593188865E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Alpha Occupied:                                                       
 
@@ -1942,22 +1409,17 @@ Total time:
               A 
     DOCC [    13 ]
     SOCC [     1 ]
+    NA   [    14 ]
+    NB   [    13 ]
 
-  Energy converged.
-
-  @UHF Final Energy:  -226.09845577430093
+  @UHF Final Energy:  -226.09845577430059
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             69.1265395746313516
-    One-Electron Energy =                -448.9805947476841084
-    Two-Electron Energy =                 153.7555993987518264
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                       -226.0984557743009304
-
+    One-Electron Energy =                -448.9805950418920588
+    Two-Electron Energy =                 153.7555996929601179
+    Total Energy =                       -226.0984557743005894
 
   UHF NO Occupations:
   HONO-2 :   12  A 1.9983228
@@ -1969,54 +1431,59 @@ Total time:
   LUNO+3 :   18  A 0.0002485
 
 
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    19.6065      Z:    55.9417
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:   -19.9152      Z:   -57.9504
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.3087      Z:    -2.0087     Total:     2.0323
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.7847      Z:    -5.1055     Total:     5.1655
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :        -19.9152347           19.6065000           -0.3087347
+ Dipole Z            :        -57.9503691           55.9417000           -2.0086691
+ Magnitude           :                                                    2.0322571
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:39:50 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:28 2022
 Module time:
-	user time   =       5.97 seconds =       0.10 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       2.59 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      11.96 seconds =       0.20 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       7.41 seconds =       0.12 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          8 seconds =       0.13 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer A HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:39:50 2017
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:02:28 2022
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1, 4-5 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
-    atoms 2-3, 6 entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 1, 4-5 entry O          line   117 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3, 6 entry H          line    26 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               UHF Reference
                         1 Threads,   1907 MiB Core
          ---------------------------------------------------------
@@ -2030,12 +1497,12 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O(Gh)      0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O(Gh)      0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H(Gh)      0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
+         O            0.000000000000     0.000000000000     6.000000000000    15.994914619570
+         H            0.000000000000     1.431500000000     4.890600000000     1.007825032230
+         H            0.000000000000    -1.431500000000     4.890600000000     1.007825032230
+      Gh(O)           0.000000000000     0.000000000000     0.000000000000    15.994914619570
+      Gh(O)           0.000000000000     2.503900000000     0.000000000000    15.994914619570
+      Gh(H)           0.000000000000    -0.424700000000    -1.839500000000     1.007825032230
 
   Running in c1 symmetry.
 
@@ -2058,14 +1525,14 @@ Total time:
   Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: 6-31G
     Blend: 6-31G
     Number of shells: 21
-    Number of basis function: 33
+    Number of basis functions: 33
     Number of Cartesian functions: 33
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -2075,154 +1542,85 @@ Total time:
     Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1, 4-5 entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3, 6 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         33      33       0       0       0       0
-   -------------------------------------------------------
-    Total      33      33       5       5       5       0
-   -------------------------------------------------------
+    atoms 1, 4-5 entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3, 6 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              1430
+    Memory [MiB]:             1430
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
     Blend: CC-PVDZ-JKFIT
     Number of shells: 99
-    Number of basis function: 318
+    Number of basis functions: 318
     Number of Cartesian functions: 318
     Spherical Harmonics?: false
     Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 3.0848735527E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 8.8768854587E-03.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Generalized Wolfsberg-Helmholtz.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         33      33       5       5       5       0
+   -------------------------------------------------------
+    Total      33      33       5       5       5       0
+   -------------------------------------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:   -74.77964424465065   -7.47796e+01   5.23299e-02 
-   @DF-UHF iter   2:   -75.51893178191403   -7.39288e-01   3.37111e-02 DIIS
-   @DF-UHF iter   3:   -75.98292480445241   -4.63993e-01   1.66248e-03 DIIS
-   @DF-UHF iter   4:   -75.98441110698047   -1.48630e-03   2.12007e-04 DIIS
-   @DF-UHF iter   5:   -75.98444805460289   -3.69476e-05   3.65158e-05 DIIS
-   @DF-UHF iter   6:   -75.98444940062510   -1.34602e-06   7.34438e-06 DIIS
-   @DF-UHF iter   7:   -75.98444946646870   -6.58436e-08   6.30731e-07 DIIS
-   @DF-UHF iter   8:   -75.98444946689193   -4.23228e-10   1.08019e-07 DIIS
-   @DF-UHF iter   9:   -75.98444946691514   -2.32063e-11   2.37973e-08 DIIS
-   @DF-UHF iter  10:   -75.98444946691605   -9.09495e-13   3.13342e-09 DIIS
+   @DF-UHF iter   1:   -74.77964424468975   -7.47796e+01   5.23299e-02 ADIIS/DIIS
+   @DF-UHF iter   2:   -75.51893178194697   -7.39288e-01   3.37111e-02 ADIIS/DIIS
+   @DF-UHF iter   3:   -75.97387178434948   -4.54940e-01   5.09100e-03 ADIIS/DIIS
+   @DF-UHF iter   4:   -75.98439891520829   -1.05271e-02   2.35000e-04 ADIIS/DIIS
+   @DF-UHF iter   5:   -75.98444721851770   -4.83033e-05   4.55997e-05 DIIS
+   @DF-UHF iter   6:   -75.98444937386847   -2.15535e-06   9.18284e-06 DIIS
+   @DF-UHF iter   7:   -75.98444946485007   -9.09816e-08   1.17759e-06 DIIS
+   @DF-UHF iter   8:   -75.98444946684009   -1.99002e-09   2.64436e-07 DIIS
+   @DF-UHF iter   9:   -75.98444946694541   -1.05317e-10   4.09272e-08 DIIS
+   @DF-UHF iter  10:   -75.98444946694667   -1.26477e-12   2.70878e-09 DIIS
 
   DF guess converged.
 
-  ==> Integral Setup <==
-
   ==> DirectJK: Integral-Direct J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     Integrals threads:           1
-    Schwarz Cutoff:          1E-12
+    Screening Type:           CSAM
+    Screening Cutoff:        1E-12
+    Incremental Fock:           No
+    LinK:                       No
 
-   @UHF iter  11:   -75.98446420511351   -1.47382e-05   4.23571e-07 DIIS
-   @UHF iter  12:   -75.98446420522970   -1.16188e-10   9.36998e-08 DIIS
-   @UHF iter  13:   -75.98446420523634   -6.63647e-12   3.64024e-08 DIIS
-   @UHF iter  14:   -75.98446420523692   -5.82645e-13   7.24234e-09 DIIS
-
-         ------------------------------------------------------------
-                              UHF Stability code                     
-                                Jérôme Gonthier                     
-               Strong inspiration from R. Parrish's CIS              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-    Full point group: Cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H          0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H          0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O(Gh)      0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O(Gh)      0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H(Gh)      0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
-
-  Nuclear repulsion =    9.183859101865687
-  ==> Basis Set <==
-
-  Basis Set: 6-31G
-    Blend: 6-31G
-    Number of shells: 21
-    Number of basis function: 33
-    Number of Cartesian functions: 33
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-  ==> DLUSolver (by Jerome Gonthier) <== 
- ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
-
-   Number of roots         =           1
-   Number of guess vectors =           3
-   Maximum subspace size   =          12
-   Minimum subspace size   =           2
-   Subspace expansion norm =       1E-06
-   Convergence cutoff      =       1E-06
-   Maximum iterations      =         100
-   Preconditioning         =      JACOBI
-
-  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
-  ==> Inspired by R.Parrish CISRHamiltonian <== 
-
-  ==> DirectJK: Integral-Direct J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Integrals threads:           1
-    Schwarz Cutoff:          1E-12
-
-  => Iterations <=
-
-             Iter  Converged   Subspace    Residual
-  DLU           1          0          1   3.661E-01
-  DLU           2          0          2   2.343E-01
-  DLU           3          0          3   2.470E-02
-  DLU           4          0          4   9.596E-03
-  DLU           5          0          5   8.417E-03
-  DLU           6          0          6   1.373E-03
-  DLU           7          0          7   4.289E-04
-  DLU           8          0          8   6.287E-05
-  DLU           9          0          9   9.280E-06
-  DLU          10          1         10   9.861E-07
-
-    DLUSolver converged.
+   @UHF iter  11:   -75.98446420511345   -7.59845e+01   4.23726e-07 DIIS
+   @UHF iter  12:   -75.98446420522967   -1.16216e-10   9.37708e-08 DIIS
+   @UHF iter  13:   -75.98446420523642   -6.75016e-12   3.65001e-08 DIIS
+   @UHF iter  14:   -75.98446420523703   -6.11067e-13   7.24759e-09 DIIS
+  Energy and wave function converged.
 
     Wavefunction stable under totally symmetric rotations.
     Lowest totally symmetric eigenvalue: 0.280385 
@@ -2233,14 +1631,14 @@ Total time:
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   6.217248938E-15
+   @Spin Contamination Metric:  -7.105427358E-15
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:                6.217248938E-15
+   @S^2 Observed:               -7.105427358E-15
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Alpha Occupied:                                                       
 
@@ -2282,22 +1680,17 @@ Total time:
               A 
     DOCC [     5 ]
     SOCC [     0 ]
+    NA   [     5 ]
+    NB   [     5 ]
 
-  Energy converged.
-
-  @UHF Final Energy:   -75.98446420523692
+  @UHF Final Energy:   -75.98446420523703
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1838591018656874
-    One-Electron Energy =                -122.9556088421921345
-    Two-Electron Energy =                  37.7872855350895165
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.9844642052369181
-
+    One-Electron Energy =                -122.9556088429808511
+    Two-Electron Energy =                  37.7872855358781194
+    Total Energy =                        -75.9844642052370318
 
   UHF NO Occupations:
   HONO-2 :    3  A 2.0000000
@@ -2309,54 +1702,59 @@ Total time:
   LUNO+3 :    9  A 0.0000000
 
 
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    57.7812
 
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0001      Z:   -58.8082
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0001      Z:    -1.0270     Total:     1.0270
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0004      Z:    -2.6103     Total:     2.6103
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :         -0.0001477            0.0000000           -0.0001477
+ Dipole Z            :        -58.8081517           57.7812000           -1.0269517
+ Magnitude           :                                                    1.0269517
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:39:52 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:30 2022
 Module time:
-	user time   =       1.83 seconds =       0.03 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.67 seconds =       0.03 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      13.80 seconds =       0.23 minutes
-	system time =       0.16 seconds =       0.00 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =       9.09 seconds =       0.15 minutes
+	system time =       0.42 seconds =       0.01 minutes
+	total time  =         10 seconds =       0.17 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer B HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:39:52 2017
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:02:30 2022
 
    => Loading Basis Set <=
 
     Name: 6-31G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1, 4-5 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
-    atoms 2-3, 6 entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 1, 4-5 entry O          line   117 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
+    atoms 2-3, 6 entry H          line    26 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               UHF Reference
                         1 Threads,   1907 MiB Core
          ---------------------------------------------------------
@@ -2370,12 +1768,12 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O(Gh)      0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H(Gh)      0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H(Gh)      0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
+      Gh(O)           0.000000000000     0.000000000000     6.000000000000    15.994914619570
+      Gh(H)           0.000000000000     1.431500000000     4.890600000000     1.007825032230
+      Gh(H)           0.000000000000    -1.431500000000     4.890600000000     1.007825032230
+         O            0.000000000000     0.000000000000     0.000000000000    15.994914619570
+         O            0.000000000000     2.503900000000     0.000000000000    15.994914619570
+         H            0.000000000000    -0.424700000000    -1.839500000000     1.007825032230
 
   Running in c1 symmetry.
 
@@ -2398,14 +1796,14 @@ Total time:
   Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: 6-31G
     Blend: 6-31G
     Number of shells: 21
-    Number of basis function: 33
+    Number of basis functions: 33
     Number of Cartesian functions: 33
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -2415,171 +1813,97 @@ Total time:
     Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1, 4-5 entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3, 6 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         33      33       0       0       0       0
-   -------------------------------------------------------
-    Total      33      33       9       8       8       1
-   -------------------------------------------------------
+    atoms 1, 4-5 entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3, 6 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              1430
+    Memory [MiB]:             1430
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
     Blend: CC-PVDZ-JKFIT
     Number of shells: 99
-    Number of basis function: 318
+    Number of basis functions: 318
     Number of Cartesian functions: 318
     Spherical Harmonics?: false
     Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 3.0848735527E-02.
-  Using Symmetric Orthogonalization.
+  Reciprocal condition number of the overlap matrix is 8.8768854587E-03.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Generalized Wolfsberg-Helmholtz.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         33      33       9       8       8       1
+   -------------------------------------------------------
+    Total      33      33       9       8       8       1
+   -------------------------------------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:  -149.47315480144795   -1.49473e+02   4.31568e-02 
-   @DF-UHF iter   2:  -150.03484964509229   -5.61695e-01   1.25414e-02 DIIS
-   @DF-UHF iter   3:  -150.09864344807596   -6.37938e-02   3.39979e-03 DIIS
-   @DF-UHF iter   4:  -150.10609911390301   -7.45567e-03   1.01198e-03 DIIS
-   @DF-UHF iter   5:  -150.10766290388995   -1.56379e-03   8.01866e-04 DIIS
-   @DF-UHF iter   6:  -150.10858270717563   -9.19803e-04   4.31805e-04 DIIS
-   @DF-UHF iter   7:  -150.10946692277173   -8.84216e-04   1.45058e-04 DIIS
-   @DF-UHF iter   8:  -150.10952976793510   -6.28452e-05   7.34169e-05 DIIS
-   @DF-UHF iter   9:  -150.10954851742213   -1.87495e-05   3.98887e-05 DIIS
-   @DF-UHF iter  10:  -150.10955560523166   -7.08781e-06   1.34516e-05 DIIS
-   @DF-UHF iter  11:  -150.10955618619374   -5.80962e-07   4.25992e-06 DIIS
-   @DF-UHF iter  12:  -150.10955622007015   -3.38764e-08   2.04126e-06 DIIS
-   @DF-UHF iter  13:  -150.10955623112966   -1.10595e-08   9.06682e-07 DIIS
-   @DF-UHF iter  14:  -150.10955623282780   -1.69814e-09   1.84906e-07 DIIS
-   @DF-UHF iter  15:  -150.10955623290482   -7.70228e-11   4.26359e-08 DIIS
-   @DF-UHF iter  16:  -150.10955623290769   -2.87059e-12   1.60778e-08 DIIS
-   @DF-UHF iter  17:  -150.10955623290809   -3.97904e-13   4.73648e-09 DIIS
+   @DF-UHF iter   1:  -149.47315480150752   -1.49473e+02   4.31586e-02 ADIIS/DIIS
+   @DF-UHF iter   2:  -150.03484964514962   -5.61695e-01   1.25520e-02 ADIIS/DIIS
+   @DF-UHF iter   3:  -150.09835202320431   -6.35024e-02   3.53992e-03 ADIIS/DIIS
+   @DF-UHF iter   4:  -150.10609127595083   -7.73925e-03   1.09650e-03 ADIIS/DIIS
+   @DF-UHF iter   5:  -150.10766095511275   -1.56968e-03   8.06846e-04 ADIIS/DIIS
+   @DF-UHF iter   6:  -150.10858087769950   -9.19923e-04   4.37067e-04 ADIIS/DIIS
+   @DF-UHF iter   7:  -150.10946565337034   -8.84776e-04   1.46202e-04 ADIIS/DIIS
+   @DF-UHF iter   8:  -150.10952974580402   -6.40924e-05   7.49159e-05 DIIS
+   @DF-UHF iter   9:  -150.10954850451895   -1.87587e-05   4.21610e-05 DIIS
+   @DF-UHF iter  10:  -150.10955562806348   -7.12354e-06   1.37589e-05 DIIS
+   @DF-UHF iter  11:  -150.10955618757311   -5.59510e-07   4.16755e-06 DIIS
+   @DF-UHF iter  12:  -150.10955622045518   -3.28821e-08   2.04005e-06 DIIS
+   @DF-UHF iter  13:  -150.10955623119969   -1.07445e-08   9.07533e-07 DIIS
+   @DF-UHF iter  14:  -150.10955623288322   -1.68353e-09   1.97440e-07 DIIS
+   @DF-UHF iter  15:  -150.10955623296201   -7.87850e-11   4.21860e-08 DIIS
+   @DF-UHF iter  16:  -150.10955623296510   -3.09797e-12   1.43398e-08 DIIS
+   @DF-UHF iter  17:  -150.10955623296533   -2.27374e-13   4.68005e-09 DIIS
 
   DF guess converged.
 
-  ==> Integral Setup <==
-
   ==> DirectJK: Integral-Direct J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     Integrals threads:           1
-    Schwarz Cutoff:          1E-12
+    Screening Type:           CSAM
+    Screening Cutoff:        1E-12
+    Incremental Fock:           No
+    LinK:                       No
 
-   @UHF iter  18:  -150.10971234437341   -1.56111e-04   3.42334e-06 DIIS
-   @UHF iter  19:  -150.10971235219952   -7.82612e-09   9.14126e-07 DIIS
-   @UHF iter  20:  -150.10971235289549   -6.95962e-10   4.26789e-07 DIIS
-   @UHF iter  21:  -150.10971235304720   -1.51715e-10   1.86337e-07 DIIS
-   @UHF iter  22:  -150.10971235311604   -6.88374e-11   1.36833e-07 DIIS
-   @UHF iter  23:  -150.10971235316347   -4.74358e-11   7.57775e-08 DIIS
-   @UHF iter  24:  -150.10971235318542   -2.19416e-11   2.87844e-08 DIIS
-   @UHF iter  25:  -150.10971235318794   -2.52953e-12   1.46885e-08 DIIS
-   @UHF iter  26:  -150.10971235318897   -1.02318e-12   6.16659e-09 DIIS
-
-         ------------------------------------------------------------
-                              UHF Stability code                     
-                                Jérôme Gonthier                     
-               Strong inspiration from R. Parrish's CIS              
-         ------------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-    Full point group: Cs
-
-    Geometry (in Bohr), charge = 0, multiplicity = 2:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           O(Gh)      0.000000000000     0.000000000000     6.000000000000    15.994914619560
-           H(Gh)      0.000000000000     1.431500000000     4.890600000000     1.007825032070
-           H(Gh)      0.000000000000    -1.431500000000     4.890600000000     1.007825032070
-           O          0.000000000000     0.000000000000     0.000000000000    15.994914619560
-           O          0.000000000000     2.503900000000     0.000000000000    15.994914619560
-           H          0.000000000000    -0.424700000000    -1.839500000000     1.007825032070
-
-  Nuclear repulsion =   32.110875642074888
-  ==> Basis Set <==
-
-  Basis Set: 6-31G
-    Blend: 6-31G
-    Number of shells: 21
-    Number of basis function: 33
-    Number of Cartesian functions: 33
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-  ==> DLUSolver (by Jerome Gonthier) <== 
- ==> (Basically a copy-paste from R.Parrish DLR Solver) <== 
-
-   Number of roots         =           1
-   Number of guess vectors =           3
-   Maximum subspace size   =          12
-   Minimum subspace size   =           2
-   Subspace expansion norm =       1E-06
-   Convergence cutoff      =       1E-06
-   Maximum iterations      =         100
-   Preconditioning         =      JACOBI
-
-  ==> USTABHamiltonian (by Jérôme Gonthier) <== 
-  ==> Inspired by R.Parrish CISRHamiltonian <== 
-
-  ==> DirectJK: Integral-Direct J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Integrals threads:           1
-    Schwarz Cutoff:          1E-12
-
-  => Iterations <=
-
-             Iter  Converged   Subspace    Residual
-  DLU           1          0          1   9.236E-01
-  DLU           2          0          2   8.379E-01
-  DLU           3          0          3   4.207E-01
-  DLU           4          0          4   2.581E-01
-  DLU           5          0          5   1.436E-01
-  DLU           6          0          6   6.118E-02
-  DLU           7          0          7   2.066E-02
-  DLU           8          0          8   3.288E-03
-  DLU           9          0          9   8.962E-04
-  DLU          10          0         10   2.240E-04
-  DLU          11          0         11   8.580E-05
-  DLU          12          0         12   2.266E-05
-  DLU          13          0         13   4.368E-06
-  DLU          14          0          3   2.564E-06
-  DLU          15          1          4   3.553E-07
-
-    DLUSolver converged.
+   @UHF iter  18:  -150.10971234437326   -1.50110e+02   3.44167e-06 DIIS
+   @UHF iter  19:  -150.10971235219924   -7.82597e-09   9.16182e-07 DIIS
+   @UHF iter  20:  -150.10971235289531   -6.96076e-10   4.36824e-07 DIIS
+   @UHF iter  21:  -150.10971235304714   -1.51829e-10   1.91677e-07 DIIS
+   @UHF iter  22:  -150.10971235311595   -6.88090e-11   1.40961e-07 DIIS
+   @UHF iter  23:  -150.10971235316359   -4.76348e-11   7.57837e-08 DIIS
+   @UHF iter  24:  -150.10971235318542   -2.18279e-11   2.87872e-08 DIIS
+   @UHF iter  25:  -150.10971235318794   -2.52953e-12   1.48681e-08 DIIS
+   @UHF iter  26:  -150.10971235318900   -1.05160e-12   6.20091e-09 DIIS
+  Energy and wave function converged.
 
     Wavefunction stable under totally symmetric rotations.
     Lowest totally symmetric eigenvalue: 0.023183 
@@ -2596,8 +1920,8 @@ Total time:
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Alpha Occupied:                                                       
 
@@ -2638,22 +1962,17 @@ Total time:
               A 
     DOCC [     8 ]
     SOCC [     1 ]
+    NA   [     9 ]
+    NB   [     8 ]
 
-  Energy converged.
-
-  @UHF Final Energy:  -150.10971235318897
+  @UHF Final Energy:  -150.10971235318900
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             32.1108756420748875
-    One-Electron Energy =                -270.5481799774103706
-    Two-Electron Energy =                  88.3275919821465010
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.1097123531889679
-
+    One-Electron Energy =                -270.5481799774103138
+    Two-Electron Energy =                  88.3275919821464299
+    Total Energy =                       -150.1097123531889963
 
   UHF NO Occupations:
   HONO-2 :    7  A 1.9983072
@@ -2665,40 +1984,54 @@ Total time:
   LUNO+3 :   13  A 0.0002451
 
 
+Computation Completed
 
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    19.6065      Z:    -1.8395
 
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:   -19.9252      Z:     0.9340
+ Multipole Moments:
 
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.3187      Z:    -0.9055     Total:     0.9599
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
 
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.8100      Z:    -2.3016     Total:     2.4399
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :        -19.9251631           19.6065000           -0.3186631
+ Dipole Z            :          0.9339854           -1.8395000           -0.9055146
+ Magnitude           :                                                    0.9599494
 
+ ------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:39:55 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:32 2022
 Module time:
-	user time   =       2.79 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       2.52 seconds =       0.04 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      16.59 seconds =       0.28 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =      11.62 seconds =       0.19 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =         12 seconds =       0.20 minutes
+  Constructing Basis Sets for SAPT...
+
    => Loading Basis Set <=
 
     Name: CC-PVDZ-RI
     Role: RIFIT
     Keyword: DF_BASIS_SAPT
-    atoms 1, 4-5 entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3, 6 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1, 4-5 entry O          line   235 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3, 6 entry H          line    19 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+
+   => Loading Basis Set <=
+
+    Name: (6-31G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_ELST
+    atoms 1, 4-5 entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3, 6 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -2706,8 +2039,8 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:39:55 2017
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Thu Nov  3 16:02:33 2022
 
 	 --------------------------------------------------------
 	                         SAPT                      
@@ -2719,7 +2052,7 @@ Total time:
 
    => Resources <=
 
-    Memory (MB):              1716
+    Memory [MiB]:             1716
 
    => Orbital Ranges <=
 
@@ -2755,7 +2088,7 @@ Total time:
   Basis Set: 6-31G
     Blend: 6-31G
     Number of shells: 21
-    Number of basis function: 33
+    Number of basis functions: 33
     Number of Cartesian functions: 33
     Spherical Harmonics?: false
     Max angular momentum: 1
@@ -2768,18 +2101,21 @@ Total time:
     K tasked:                  Yes
     wK tasked:                  No
     Integrals threads:           1
-    Schwarz Cutoff:          1E-12
+    Screening Type:           CSAM
+    Screening Cutoff:        1E-12
+    Incremental Fock:           No
+    LinK:                       No
 
-    Elst10,r            =    -0.006018468946 H
-    Exch10              =     0.002126583176 H
-    Exch10(S^2)         =     0.002124505934 H
+    Elst10,r            =    -0.006018468945 H
+    Exch10              =     0.002126583178 H
+    Exch10(S^2)         =     0.002124505935 H
 
-    Exch10(S^2) DM      =     0.002124505934 H
+    Exch10(S^2) DM      =     0.002124505935 H
 
     Ind20,u (A<-B)      =    -0.000384615913 H
     Ind20,u (B<-A)      =    -0.000280187748 H
     Ind20,u             =    -0.000664803661 H
-    Exch-Ind20,u (A<-B) =     0.000337688309 H
+    Exch-Ind20,u (A<-B) =     0.000337688310 H
     Exch-Ind20,u (B<-A) =     0.000106587305 H
     Exch-Ind20,u        =     0.000444275614 H
 
@@ -2795,47 +2131,33 @@ Total time:
     2      3.411E-02    8.295E-02           0
     3      1.064E-02    1.994E-02           0
     4      2.256E-03    7.008E-03           0
-    5      4.659E-04    3.417E-03           0
-    6      5.666E-05    2.161E-03           0
-    7      4.895E-06    9.250E-04           0
-    8      4.353E-07    4.744E-04           0
-    9      4.488E-08    2.182E-04           0
+    5      4.659E-04    3.417E-03           1
+    6      5.666E-05    2.161E-03           1
+    7      4.895E-06    9.250E-04           1
+    8      4.353E-07    4.744E-04           1
+    9      4.488E-08    2.182E-04           1
     10     1.099E-08    9.517E-05           1
     11     1.134E-09    1.291E-05           1
     12     1.010E-10*   3.364E-06           1
     13     1.010E-10*   1.066E-06           1
-    14     1.010E-10*   3.847E-07           1
-    15     1.010E-10*   9.934E-08           1
-    16     1.010E-10*   2.055E-08           1
-    17     1.010E-10*   3.898E-09           1
-    18     1.010E-10*   1.234E-09           1
-    19     1.010E-10*   5.429E-10*          1
+    14     1.010E-10*   3.847E-07           2
+    15     1.010E-10*   9.934E-08           2
+    16     1.010E-10*   2.055E-08           2
+    17     1.010E-10*   3.898E-09           2
+    18     1.010E-10*   1.234E-09           2
+    19     1.010E-10*   5.428E-10*          2
     -----------------------------------------
 
     Ind20,r (A<-B)      =    -0.000451865008 H
-    Ind20,r (B<-A)      =    -0.000349872558 H
-    Ind20,r             =    -0.000801737565 H
+    Ind20,r (B<-A)      =    -0.000349872557 H
+    Ind20,r             =    -0.000801737566 H
     Exch-Ind20,r (A<-B) =     0.000395366671 H
     Exch-Ind20,r (B<-A) =     0.000133464586 H
     Exch-Ind20,r        =     0.000528831257 H
 
   PT2 TERMS:
 
-  ==> DFERI: Density Fitted 3-Index Tensors <==
-
-    Schwarz cutoff =   1.000E-12
-    J cutoff       =   1.000E-12
-    Mem (GB)       =           1
-
-   => Auxiliary Basis <=
-
-  Basis Set: CC-PVDZ-RI
-    Blend: CC-PVDZ-RI
-    Number of shells: 72
-    Number of basis function: 210
-    Number of Cartesian functions: 243
-    Spherical Harmonics?: true
-    Max angular momentum: 3
+  DFHelper Memory: AOs need 0.002 GiB; user supplied 1.676 GiB. Using in-core AOs.
 
     Disp20              =    -0.000498134232 H
     Exch-Disp20         =     0.000073788315 H
@@ -2843,39 +2165,42 @@ Total time:
 
     SAPT Results 
   --------------------------------------------------------------------------------------------------------
-    Electrostatics                 -6.01846895 [mEh]      -3.77664644 [kcal/mol]     -15.80149022 [kJ/mol]
-      Elst10,r                     -6.01846895 [mEh]      -3.77664644 [kcal/mol]     -15.80149022 [kJ/mol]
+    Electrostatics                 -6.01846895 [mEh]      -3.77664628 [kcal/mol]     -15.80148804 [kJ/mol]
+      Elst10,r                     -6.01846895 [mEh]      -3.77664628 [kcal/mol]     -15.80148804 [kJ/mol]
 
-    Exchange                        2.12658318 [mEh]       1.33445115 [kcal/mol]       5.58334413 [kJ/mol]
-      Exch10                        2.12658318 [mEh]       1.33445115 [kcal/mol]       5.58334413 [kJ/mol]
-      Exch10(S^2)                   2.12450593 [mEh]       1.33314766 [kcal/mol]       5.57789033 [kJ/mol]
+    Exchange                        2.12658318 [mEh]       1.33445109 [kcal/mol]       5.58334336 [kJ/mol]
+      Exch10                        2.12658318 [mEh]       1.33445109 [kcal/mol]       5.58334336 [kJ/mol]
+      Exch10(S^2)                   2.12450594 [mEh]       1.33314760 [kcal/mol]       5.57788956 [kJ/mol]
 
-    Induction                      -0.38733011 [mEh]      -0.24305332 [kcal/mol]      -1.01693519 [kJ/mol]
-      Ind20,r                      -0.80173757 [mEh]      -0.50309794 [kcal/mol]      -2.10496198 [kJ/mol]
-      Exch-Ind20,r                  0.52883126 [mEh]       0.33184664 [kcal/mol]       1.38844647 [kJ/mol]
-      delta HF,r (2)               -0.11442380 [mEh]      -0.07180202 [kcal/mol]      -0.30041968 [kJ/mol]
+    Induction                      -0.38733011 [mEh]      -0.24305331 [kcal/mol]      -1.01693505 [kJ/mol]
+      Ind20,r                      -0.80173757 [mEh]      -0.50309792 [kcal/mol]      -2.10496169 [kJ/mol]
+      Exch-Ind20,r                  0.52883126 [mEh]       0.33184662 [kcal/mol]       1.38844627 [kJ/mol]
+      delta HF,r (2)               -0.11442380 [mEh]      -0.07180202 [kcal/mol]      -0.30041964 [kJ/mol]
 
-    Dispersion                     -0.42434592 [mEh]      -0.26628109 [kcal/mol]      -1.11412020 [kJ/mol]
-      Disp20                       -0.49813423 [mEh]      -0.31258396 [kcal/mol]      -1.30785143 [kJ/mol]
-      Exch-Disp20                   0.07378832 [mEh]       0.04630287 [kcal/mol]       0.19373122 [kJ/mol]
+    Dispersion                     -0.42434592 [mEh]      -0.26628108 [kcal/mol]      -1.11412005 [kJ/mol]
+      Disp20                       -0.49813423 [mEh]      -0.31258395 [kcal/mol]      -1.30785125 [kJ/mol]
+      Exch-Disp20                   0.07378832 [mEh]       0.04630287 [kcal/mol]       0.19373120 [kJ/mol]
 
-  Total HF                         -4.27921588 [mEh]      -2.68524861 [kcal/mol]     -11.23508128 [kJ/mol]
-  Total SAPT0                      -4.70356179 [mEh]      -2.95152971 [kcal/mol]     -12.34920148 [kJ/mol]
+  Total HF                         -4.27921587 [mEh]      -2.68524850 [kcal/mol]     -11.23507973 [kJ/mol]
+  Total SAPT0                      -4.70356179 [mEh]      -2.95152958 [kcal/mol]     -12.34919978 [kJ/mol]
   --------------------------------------------------------------------------------------------------------
 
-*** tstop() called on psinet at Mon May 15 15:39:58 2017
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Thu Nov  3 16:02:35 2022
 Module time:
-	user time   =       2.38 seconds =       0.04 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       2.25 seconds =       0.04 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      19.04 seconds =       0.32 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =         20 seconds =       0.33 minutes
-	SAPT0 Eelst.......................................................PASSED
-	SAPT0 Eexch.......................................................PASSED
-	SAPT0 Eind........................................................PASSED
-	SAPT0 Edisp.......................................................PASSED
-	SAPT0 Etotal......................................................PASSED
+	user time   =      13.99 seconds =       0.23 minutes
+	system time =       0.59 seconds =       0.01 minutes
+	total time  =         15 seconds =       0.25 minutes
+    SAPT0 Eelst...........................................................................PASSED
+    SAPT0 Eexch...........................................................................PASSED
+    SAPT0 Eind............................................................................PASSED
+    SAPT0 Edisp...........................................................................PASSED
+    SAPT0 Etotal..........................................................................PASSED
+
+    Psi4 stopped on: Thursday, 03 November 2022 04:02PM
+    Psi4 wall time for execution: 0:00:15.65
 
 *** Psi4 exiting successfully. Buy a developer a beer!
