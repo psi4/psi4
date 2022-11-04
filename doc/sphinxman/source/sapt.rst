@@ -533,7 +533,7 @@ estimated by scaling from the uncoupled value either by a fitted fixed
 value as suggested by [Hesselmann:2014:094107]_, or by the ratio of
 coupled and uncoupled dispersion energy. This can be controlled by
 keyword |sapt__sapt_dft_exch_disp_scale_scheme|, with ``FIXED`` being
-the former approach (default scheme prior to Nov 2022; Hesselmann scale value), ``DISP`` being the present approach (since Nove 2022) and ``NONE`` for not
+the Hesselmann approach (Psi's default prior to Nov 2022), the Xie approach (Psi's default after Nov 2022) and ``NONE`` for not
 scaling and using the uncoupled exchange-dispersion energy directly.
 
 .. warning:: Since Nov 2022, the defaults of options |sapt__sapt_dft_exch_disp_scale_scheme| and |sapt__sapt_dft_exch_disp_fixed_scale|
