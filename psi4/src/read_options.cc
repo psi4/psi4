@@ -1438,6 +1438,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("SOLVER_N_GUESS", 1);
         /*- Number of roots to converge for all irreps during instability analysis. (Overridden by SOLVER_ROOTS_PER_IRREP.) -*/
         options.add_int("SOLVER_N_ROOT", 1);
+        /*- Number of roots to converge, per irrep, during instability analysis. (Overrides SOLVER_N_ROOT.) -*/
+        options.add("SOLVER_ROOTS_PER_IRREP", new ArrayType());
         /*- Do use second-order SCF convergence methods? -*/
         options.add_bool("SOSCF", false);
         /*- When to start second-order SCF iterations based on gradient RMS. -*/
@@ -1776,8 +1778,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SOLVER_CONVERGENCE", 1.0E-6);
         /*- DL Solver number of guesses  -*/
         options.add_int("SOLVER_N_GUESS", 1);
-        /*- Number of roots to converge, per irrep, during instability analysis. (Overrides SOLVER_N_ROOT.) -*/
-        options.add("SOLVER_ROOTS_PER_IRREP", new ArrayType());
         /*- Solver precondition type
          -*/
         options.add_str("SOLVER_PRECONDITION", "JACOBI", "SUBSPACE JACOBI NONE");
