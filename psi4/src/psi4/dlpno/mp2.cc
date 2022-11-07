@@ -1292,9 +1292,9 @@ void DLPNOMP2::print_aux_domains() {
     size_t naocc = lmo_to_ribfs_.size();
     outfile->Printf("\n");
     outfile->Printf("    Auxiliary BFs per Local MO:\n");
-    outfile->Printf("      Average = %4d AUX BFs (%d atoms)\n", total_bfs / naocc, total_atoms / naocc);
-    outfile->Printf("      Min     = %4d AUX BFs (%d atoms)\n", min_bfs, min_atoms);
-    outfile->Printf("      Max     = %4d AUX BFs (%d atoms)\n", max_bfs, max_atoms);
+    outfile->Printf("      Average = %4zu AUX BFs (%zu atoms)\n", total_bfs / naocc, total_atoms / naocc);
+    outfile->Printf("      Min     = %4zu AUX BFs (%zu atoms)\n", min_bfs, min_atoms);
+    outfile->Printf("      Max     = %4zu AUX BFs (%zu atoms)\n", max_bfs, max_atoms);
 }
 
 void DLPNOMP2::print_pao_domains() {
@@ -1315,9 +1315,9 @@ void DLPNOMP2::print_pao_domains() {
     size_t naocc = lmo_to_paos_.size();
     outfile->Printf("  \n");
     outfile->Printf("    Projected AOs per Local MO:\n");
-    outfile->Printf("      Average = %4d PAOs (%d atoms)\n", total_paos / naocc, total_atoms / naocc);
-    outfile->Printf("      Min     = %4d PAOs (%d atoms)\n", min_paos, min_atoms);
-    outfile->Printf("      Max     = %4d PAOs (%d atoms)\n", max_paos, max_atoms);
+    outfile->Printf("      Average = %4zu PAOs (%zu atoms)\n", total_paos / naocc, total_atoms / naocc);
+    outfile->Printf("      Min     = %4zu PAOs (%zu atoms)\n", min_paos, min_atoms);
+    outfile->Printf("      Max     = %4zu PAOs (%zu atoms)\n", max_paos, max_atoms);
 }
 
 void DLPNOMP2::print_lmo_domains() {
