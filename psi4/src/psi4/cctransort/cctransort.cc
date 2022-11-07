@@ -49,7 +49,7 @@ int **cacheprep_rhf(int level, int *cachefiles);
 void cachedone_uhf(int **cachelist);
 void cachedone_rhf(int **cachelist);
 
-void memcheck(int reference);
+void memcheck(const int reference);
 
 vector<int> pitzer2qt(vector<Dimension> &spaces);
 
