@@ -300,8 +300,8 @@ the molecule as given, and the molecule after one electron has been removed
 (e.g., the energy difference between a neutral molecule and its cation).
 
 The values of GRAC shifts should be given in Hartree. For the example above,
-the GRAC shift value of both molecules are calculated to be 0.1307, and the 
-user would specify them using the following keywords::
+the GRAC shift value of both molecules are calculated to be 0.1307 (using experimental
+IP from CCCBDB), and the user would specify them using the following keywords::
 
 
     set globals {
@@ -530,11 +530,15 @@ term needs to be computed with orbital response for good accuracy,
 and it is recommended to enable |sapt__sapt_dft_do_hybrid| (set to
 ``True`` by default). The coupled exchange-dispersion energy is usually
 estimated by scaling from the uncoupled value either by a fitted fixed
-value as suggested by [Hesselmann:2014:094107]_, or by the ratio of
-coupled and uncoupled dispersion energy. This can be controlled by
-keyword |sapt__sapt_dft_exch_disp_scale_scheme|, with ``FIXED`` being
-the Hesselmann approach (Psi's default prior to Nov 2022), the Xie approach (Psi's default after Nov 2022) and ``NONE`` for not
-scaling and using the uncoupled exchange-dispersion energy directly.
+value initially suggested by [Hesselmann:2014:094107]_ and then revised
+by [Xie:2022:024801]_ for non-local Hartree-Fock (LHF) scheme. Alternatively,
+one can scale it by the ratio of
+coupled and uncoupled dispersion energy as suggested by [Podeszwa:2006:400]_. 
+This can be controlled by keyword |sapt__sapt_dft_exch_disp_scale_scheme|, 
+with ``FIXED`` being the Podeszwa approach as in (Psi's default prior 
+to Nov 2022), the Hesselmann approach (Psi's default after Nov 2022),
+and ``NONE`` for not scaling and using the uncoupled exchange-dispersion 
+energy directly.
 
 .. warning:: Since Nov 2022, the defaults of options |sapt__sapt_dft_exch_disp_scale_scheme| and |sapt__sapt_dft_exch_disp_fixed_scale|
              have been changed. Before, the former defaulted to ``FIXED`` with Hesselmann value of 0.686 for the latter. Now, the former defaults to ``DISP`` and should you instead select ``FIXED``, the default for the latter is the Xie value of 0.770. This might cause

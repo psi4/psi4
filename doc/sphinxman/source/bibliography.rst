@@ -524,6 +524,9 @@ Bibliography
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).
 
+.. [Xie:2022:024801]
+   *J. Chem. Phys.*, **157**, 024801 (2022)
+
 .. [Hylleraas:1930:209]
    E. Hylleraas
    *Z. Phys.* **65**, 209 (1930).
@@ -613,4 +616,3 @@ Bibliography
    "Two new unitary-invariant and size-consistent perturbation theoretical approaches to the electron correlation energy",
    R. F. Fink
    *Chem. Phys. Lett.*, **428**, 461 (2006)
-
