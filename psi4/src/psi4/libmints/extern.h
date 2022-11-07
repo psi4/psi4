@@ -102,7 +102,7 @@ class PSI_API ExternalPotential {
     double computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern);
 
     /// Print a trace of the external potential
-    void print(std::string out_fname = "outfile") const;
+    void print(const std::string& out_fname = "outfile") const;
 
     /// Python print helper
     void py_print() const { print("outfile"); }
