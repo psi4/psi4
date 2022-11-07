@@ -62,7 +62,7 @@ namespace psi {
 void CdSalc::print() const {
     outfile->Printf("\tirrep = %d, ncomponent = %ld\n", irrep_, ncomponent());
     for (size_t i = 0; i < ncomponent(); ++i) {
-        outfile->Printf("\t\t%d: atom %d, direction %c, coef % lf\n", i, components_[i].atom,
+        outfile->Printf("\t\t%zu: atom %d, direction %c, coef % lf\n", i, components_[i].atom,
                         direction(components_[i].xyz), components_[i].coef);
     }
 }
@@ -70,17 +70,17 @@ void CdSalc::print() const {
 void CdSalcWRTAtom::print() const {
     outfile->Printf("\tx component, size = %ld\n", x_.size());
     for (size_t i = 0; i < x_.size(); ++i) {
-        outfile->Printf("\t\t%d: salc %d, irrep %d, coef %lf\n", i, x_[i].salc, x_[i].irrep, x_[i].coef);
+        outfile->Printf("\t\t%zu: salc %d, irrep %d, coef %lf\n", i, x_[i].salc, x_[i].irrep, x_[i].coef);
     }
 
     outfile->Printf("\ty component, size = %ld\n", y_.size());
     for (size_t i = 0; i < y_.size(); ++i) {
-        outfile->Printf("\t\t%d: salc %d, irrep %d, coef %lf\n", i, y_[i].salc, y_[i].irrep, y_[i].coef);
+        outfile->Printf("\t\t%zu: salc %d, irrep %d, coef %lf\n", i, y_[i].salc, y_[i].irrep, y_[i].coef);
     }
 
     outfile->Printf("\tz component, size = %ld\n", z_.size());
     for (size_t i = 0; i < z_.size(); ++i) {
-        outfile->Printf("\t\t%d: salc %d, irrep %d, coef %lf\n", i, z_[i].salc, z_[i].irrep, z_[i].coef);
+        outfile->Printf("\t\t%zu: salc %d, irrep %d, coef %lf\n", i, z_[i].salc, z_[i].irrep, z_[i].coef);
     }
 }
 
@@ -374,7 +374,7 @@ void CdSalcList::print() const {
     outfile->Printf("\n  By Atomic Center:\n");
     outfile->Printf("  Number of atomic centers: %ld\n", atom_salcs_.size());
     for (size_t i = 0; i < atom_salcs_.size(); ++i) {
-        outfile->Printf("   Atomic Center %d:\n", i);
+        outfile->Printf("   Atomic Center %zu:\n", i);
         atom_salcs_[i].print();
     }
     outfile->Printf("\n");
