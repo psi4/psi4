@@ -821,7 +821,7 @@ void print_ci_space(struct stringwr *strlist, int num_strings, int nirreps, int 
             outfile->Printf("   Links:\n");
             for (strsym = 0; strsym < strtypes; strsym++) {
                 for (j = 0; j < strlist->cnt[strsym]; j++) {
-                    outfile->Printf("   %3d [%3d] %c (%2d %3d)   %d\n", strlist->ij[strsym][j], strlist->oij[strsym][j],
+                    outfile->Printf("   %3d [%3d] %c (%2d %3zu)   %d\n", strlist->ij[strsym][j], strlist->oij[strsym][j],
                                     (strlist->sgn[strsym][j] == 1) ? '+' : '-', strsym, strlist->ridx[strsym][j],
                                     static_cast<int>(strlist->sgn[strsym][j]));
                 }
