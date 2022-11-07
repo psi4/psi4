@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 07 November 2022 10:56AM
+    Psi4 started on: Monday, 07 November 2022 11:04AM
 
-    Process ID: 29881
+    Process ID: 30461
     Host:       ds6
     PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-scf5-tests/psi4-install/share/psi4
     Memory:     500.0 MiB
@@ -145,13 +145,13 @@ E = energy('scf')
 compare_values(Eref_sing_df, E, 4, 'Singlet DFJ+COSX UHF energy') #TEST
 
 set scf_type link
-set screening density 
+set screening density
 E = energy('scf')
 compare_values(Eref_sing_can, E, 4, 'Singlet DFJ+LinK UHF energy') #TEST
 
 print('    -Singlet CUHF:') #TEST
 set scf reference cuhf
-set screening csam 
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -178,7 +178,7 @@ E = energy('scf')
 compare_values(Eref_sing_can, E, 4, 'Singlet DFJ+COSX CUHF energy') #TEST
 
 set scf_type link
-set screening density 
+set screening density
 E = energy('scf')
 compare_values(Eref_sing_can, E, 4, 'Singlet DFJ+LinK CUHF energy') #TEST
 
@@ -192,7 +192,7 @@ set {
 
 print('    -Triplet UHF:') #TEST
 set scf reference uhf
-set screening csam 
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -227,7 +227,7 @@ clean()
 
 print('    -Triplet ROHF:') #TEST
 set scf reference rohf
-set screening csam 
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -257,7 +257,7 @@ E = energy('scf')
 compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+COSX ROHF energy') #TEST
 
 set scf_type link
-set screening density 
+set screening density
 E = energy('scf')
 compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+LinK ROHF energy') #TEST
 
@@ -265,7 +265,7 @@ clean()
 
 print('    -Triplet CUHF:') #TEST
 set scf reference cuhf
-set screening csam 
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -295,11 +295,9 @@ E = energy('scf')
 compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+COSX CUHF energy') #TEST
 
 set scf_type link
-set screening density 
+set screening density
 E = energy('scf')
 compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+LinK CUHF energy') #TEST
-
-
 --------------------------------------------------------------------------
     Triplet nuclear repulsion energy......................................................PASSED
     Singlet nuclear repulsion energy......................................................PASSED
@@ -307,7 +305,7 @@ compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+LinK CUHF energy') #TEST
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:33 2022
+*** at Mon Nov  7 11:04:15 2022
 
    => Loading Basis Set <=
 
@@ -434,10 +432,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:  -149.27731917078717   -1.49277e+02   0.00000e+00 
-   @RHF iter   1:  -149.56362429559402   -2.86305e-01   1.10129e-02 ADIIS/DIIS
-   @RHF iter   2:  -149.58582140635929   -2.21971e-02   2.91434e-03 ADIIS/DIIS
-   @RHF iter   3:  -149.58712033600358   -1.29893e-03   6.40033e-04 ADIIS/DIIS
-   @RHF iter   4:  -149.58723140197705   -1.11066e-04   1.37095e-04 ADIIS/DIIS
+   @RHF iter   1:  -149.56362429559402   -2.86305e-01   1.10129e-02 DIIS/ADIIS
+   @RHF iter   2:  -149.58582140635929   -2.21971e-02   2.91434e-03 DIIS/ADIIS
+   @RHF iter   3:  -149.58712033600358   -1.29893e-03   6.40033e-04 DIIS/ADIIS
+   @RHF iter   4:  -149.58723140197705   -1.11066e-04   1.37095e-04 DIIS/ADIIS
    @RHF iter   5:  -149.58723670345904   -5.30148e-06   1.80224e-05 DIIS
    @RHF iter   6:  -149.58723684553323   -1.42074e-07   2.57334e-06 DIIS
    @RHF iter   7:  -149.58723684812222   -2.58899e-09   2.40539e-07 DIIS
@@ -513,21 +511,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:34 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:16 2022
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     Singlet PK RHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:34 2022
+*** at Mon Nov  7 11:04:16 2022
 
    => Loading Basis Set <=
 
@@ -669,10 +667,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-RHF iter SAD:  -149.27728822299315   -1.49277e+02   0.00000e+00 
-   @DF-RHF iter   1:  -149.56354408328301   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-RHF iter   2:  -149.58573446084225   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-RHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-RHF iter   4:  -149.58714509680499   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-RHF iter   1:  -149.56354408328301   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-RHF iter   2:  -149.58573446084225   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-RHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-RHF iter   4:  -149.58714509680499   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-RHF iter   5:  -149.58715039895961   -5.30215e-06   1.80355e-05 DIIS
    @DF-RHF iter   6:  -149.58715054109817   -1.42139e-07   2.57889e-06 DIIS
    @DF-RHF iter   7:  -149.58715054369765   -2.59948e-09   2.41536e-07 DIIS
@@ -765,13 +763,13 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:35 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:17 2022
 Module time:
-	user time   =       0.78 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.79 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.30 seconds =       0.02 minutes
+	user time   =       1.33 seconds =       0.02 minutes
 	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
     Singlet Direct RHF energy.............................................................PASSED
@@ -779,7 +777,7 @@ Total time:
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:35 2022
+*** at Mon Nov  7 11:04:17 2022
 
    => Loading Basis Set <=
 
@@ -888,10 +886,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:  -149.27731917078719   -1.49277e+02   0.00000e+00 
-   @RHF iter   1:  -149.56362429559408   -2.86305e-01   1.10129e-02 ADIIS/DIIS
-   @RHF iter   2:  -149.58582140635937   -2.21971e-02   2.91434e-03 ADIIS/DIIS
-   @RHF iter   3:  -149.58712033600364   -1.29893e-03   6.40033e-04 ADIIS/DIIS
-   @RHF iter   4:  -149.58723140197696   -1.11066e-04   1.37095e-04 ADIIS/DIIS
+   @RHF iter   1:  -149.56362429559408   -2.86305e-01   1.10129e-02 DIIS/ADIIS
+   @RHF iter   2:  -149.58582140635937   -2.21971e-02   2.91434e-03 DIIS/ADIIS
+   @RHF iter   3:  -149.58712033600364   -1.29893e-03   6.40033e-04 DIIS/ADIIS
+   @RHF iter   4:  -149.58723140197696   -1.11066e-04   1.37095e-04 DIIS/ADIIS
    @RHF iter   5:  -149.58723670345884   -5.30148e-06   1.80224e-05 DIIS
    @RHF iter   6:  -149.58723684553328   -1.42074e-07   2.57334e-06 DIIS
    @RHF iter   7:  -149.58723684812233   -2.58905e-09   2.40539e-07 DIIS
@@ -967,21 +965,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:36 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:17 2022
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.70 seconds =       0.03 minutes
+	user time   =       1.71 seconds =       0.03 minutes
 	system time =       0.09 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
     Singlet Disk RHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:36 2022
+*** at Mon Nov  7 11:04:17 2022
 
    => Loading Basis Set <=
 
@@ -1120,10 +1118,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-RHF iter SAD:  -149.27728822299318   -1.49277e+02   0.00000e+00 
-   @DF-RHF iter   1:  -149.56354408328303   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-RHF iter   2:  -149.58573446084227   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-RHF iter   3:  -149.58703388315291   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-RHF iter   4:  -149.58714509680490   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-RHF iter   1:  -149.56354408328303   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-RHF iter   2:  -149.58573446084227   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-RHF iter   3:  -149.58703388315291   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-RHF iter   4:  -149.58714509680490   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-RHF iter   5:  -149.58715039895969   -5.30215e-06   1.80355e-05 DIIS
    @DF-RHF iter   6:  -149.58715054109820   -1.42139e-07   2.57889e-06 DIIS
    @DF-RHF iter   7:  -149.58715054369767   -2.59948e-09   2.41536e-07 DIIS
@@ -1199,21 +1197,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:36 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:18 2022
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.96 seconds =       0.03 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       1.95 seconds =       0.03 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
     Singlet DiskDF RHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:36 2022
+*** at Mon Nov  7 11:04:18 2022
 
    => Loading Basis Set <=
 
@@ -1353,10 +1351,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-RHF iter SAD:  -149.27728822299315   -1.49277e+02   0.00000e+00 
-   @DF-RHF iter   1:  -149.56354408328301   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-RHF iter   2:  -149.58573446084225   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-RHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-RHF iter   4:  -149.58714509680499   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-RHF iter   1:  -149.56354408328301   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-RHF iter   2:  -149.58573446084225   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-RHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-RHF iter   4:  -149.58714509680499   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-RHF iter   5:  -149.58715039895961   -5.30215e-06   1.80355e-05 DIIS
    @DF-RHF iter   6:  -149.58715054109817   -1.42139e-07   2.57889e-06 DIIS
    @DF-RHF iter   7:  -149.58715054369765   -2.59948e-09   2.41536e-07 DIIS
@@ -1432,21 +1430,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:37 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:18 2022
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       2.19 seconds =       0.04 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
     Singlet MemDF RHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:37 2022
+*** at Mon Nov  7 11:04:18 2022
 
    => Loading Basis Set <=
 
@@ -1568,17 +1566,17 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:  -149.27713328631921   -1.49277e+02   0.00000e+00 
-   @RHF iter   1:  -149.56382697604784   -2.86694e-01   1.10975e-02 ADIIS/DIIS
-   @RHF iter   2:  -149.58629558037478   -2.24686e-02   2.92559e-03 ADIIS/DIIS
-   @RHF iter   3:  -149.58760428588187   -1.30871e-03   6.47395e-04 ADIIS/DIIS
-   @RHF iter   4:  -149.58772283023296   -1.18544e-04   1.38075e-04 ADIIS/DIIS
-   @RHF iter   5:  -149.58772855372331   -5.72349e-06   1.83160e-05 DIIS
-   @RHF iter   6:  -149.58772885952462   -3.05801e-07   2.47041e-06 DIIS
-   @RHF iter   7:  -149.58772885956972   -4.51053e-11   2.44347e-07 DIIS
+   @RHF iter   1:  -149.56382697604792   -2.86694e-01   1.10975e-02 DIIS/ADIIS
+   @RHF iter   2:  -149.58629558037478   -2.24686e-02   2.92559e-03 DIIS/ADIIS
+   @RHF iter   3:  -149.58760428588212   -1.30871e-03   6.47395e-04 DIIS/ADIIS
+   @RHF iter   4:  -149.58772283023296   -1.18544e-04   1.38075e-04 DIIS/ADIIS
+   @RHF iter   5:  -149.58772855372317   -5.72349e-06   1.83160e-05 DIIS
+   @RHF iter   6:  -149.58772885952450   -3.05801e-07   2.47041e-06 DIIS
+   @RHF iter   7:  -149.58772885956978   -4.52758e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @RHF iter   8:  -149.58722317116360    5.05688e-04   9.91149e-04 ADIIS/DIIS
+   @RHF iter   8:  -149.58722317116366    5.05688e-04   9.91149e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -1620,14 +1618,14 @@ Scratch directory: /scratch/dpoole34/
     NA   [     3,    0,    0,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    1,    0,    2,    1,    1 ]
 
-  @RHF Final Energy:  -149.58722317116360
+  @RHF Final Energy:  -149.58722317116366
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.8059033672356009
-    Two-Electron Energy =                  86.4301879389083325
-    Total Energy =                       -149.5872231711636005
+    One-Electron Energy =                -266.8059033672359419
+    Two-Electron Energy =                  86.4301879389086025
+    Total Energy =                       -149.5872231711636857
 
 Computation Completed
 
@@ -1651,13 +1649,13 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:39 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:21 2022
 Module time:
-	user time   =       2.54 seconds =       0.04 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.58 seconds =       0.04 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       4.76 seconds =       0.08 minutes
+	user time   =       4.79 seconds =       0.08 minutes
 	system time =       0.10 seconds =       0.00 minutes
 	total time  =          6 seconds =       0.10 minutes
     Singlet DFJ+COSX RHF energy...........................................................PASSED
@@ -1665,7 +1663,7 @@ Total time:
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:39 2022
+*** at Mon Nov  7 11:04:21 2022
 
    => Loading Basis Set <=
 
@@ -1784,10 +1782,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:  -149.27733086414963   -1.49277e+02   0.00000e+00 
-   @RHF iter   1:  -149.56365008860490   -2.86319e-01   1.10142e-02 ADIIS/DIIS
-   @RHF iter   2:  -149.58585218222908   -2.22021e-02   2.91422e-03 ADIIS/DIIS
-   @RHF iter   3:  -149.58715113835373   -1.29896e-03   6.40333e-04 ADIIS/DIIS
-   @RHF iter   4:  -149.58726227365065   -1.11135e-04   1.37172e-04 ADIIS/DIIS
+   @RHF iter   1:  -149.56365008860490   -2.86319e-01   1.10142e-02 DIIS/ADIIS
+   @RHF iter   2:  -149.58585218222908   -2.22021e-02   2.91422e-03 DIIS/ADIIS
+   @RHF iter   3:  -149.58715113835373   -1.29896e-03   6.40333e-04 DIIS/ADIIS
+   @RHF iter   4:  -149.58726227365065   -1.11135e-04   1.37172e-04 DIIS/ADIIS
    @RHF iter   5:  -149.58726757682930   -5.30318e-06   1.80326e-05 DIIS
    @RHF iter   6:  -149.58726771909232   -1.42263e-07   2.57489e-06 DIIS
    @RHF iter   7:  -149.58726772168643   -2.59411e-09   2.41117e-07 DIIS
@@ -1863,21 +1861,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:41 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:22 2022
 Module time:
-	user time   =       1.34 seconds =       0.02 minutes
+	user time   =       1.33 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.12 seconds =       0.10 minutes
+	user time   =       6.15 seconds =       0.10 minutes
 	system time =       0.11 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	total time  =          7 seconds =       0.12 minutes
     Singlet DFJ+LinK RHF energy...........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:41 2022
+*** at Mon Nov  7 11:04:22 2022
 
    => Loading Basis Set <=
 
@@ -2004,10 +2002,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:  -149.27731917078717   -1.49277e+02   0.00000e+00 
-   @UHF iter   1:  -149.56362429559402   -2.86305e-01   1.10129e-02 ADIIS/DIIS
-   @UHF iter   2:  -149.58582140635932   -2.21971e-02   2.91434e-03 ADIIS/DIIS
-   @UHF iter   3:  -149.58712033600358   -1.29893e-03   6.40033e-04 ADIIS/DIIS
-   @UHF iter   4:  -149.58723140197682   -1.11066e-04   1.37095e-04 ADIIS/DIIS
+   @UHF iter   1:  -149.56362429559402   -2.86305e-01   1.10129e-02 DIIS/ADIIS
+   @UHF iter   2:  -149.58582140635932   -2.21971e-02   2.91434e-03 DIIS/ADIIS
+   @UHF iter   3:  -149.58712033600358   -1.29893e-03   6.40033e-04 DIIS/ADIIS
+   @UHF iter   4:  -149.58723140197682   -1.11066e-04   1.37095e-04 DIIS/ADIIS
    @UHF iter   5:  -149.58723670345896   -5.30148e-06   1.80224e-05 DIIS
    @UHF iter   6:  -149.58723684553325   -1.42074e-07   2.57334e-06 DIIS
    @UHF iter   7:  -149.58723684812239   -2.58913e-09   2.40539e-07 DIIS
@@ -2127,21 +2125,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:41 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:26 2022
 Module time:
 	user time   =       0.42 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =       6.57 seconds =       0.11 minutes
+	user time   =       6.60 seconds =       0.11 minutes
 	system time =       0.12 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	total time  =         11 seconds =       0.18 minutes
     Singlet PK UHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:41 2022
+*** at Mon Nov  7 11:04:26 2022
 
    => Loading Basis Set <=
 
@@ -2283,10 +2281,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-UHF iter SAD:  -149.27728822299315   -1.49277e+02   0.00000e+00 
-   @DF-UHF iter   1:  -149.56354408328301   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-UHF iter   2:  -149.58573446084222   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-UHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-UHF iter   4:  -149.58714509680516   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-UHF iter   1:  -149.56354408328301   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-UHF iter   2:  -149.58573446084222   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-UHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-UHF iter   4:  -149.58714509680516   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-UHF iter   5:  -149.58715039895964   -5.30215e-06   1.80355e-05 DIIS
    @DF-UHF iter   6:  -149.58715054109825   -1.42139e-07   2.57889e-06 DIIS
    @DF-UHF iter   7:  -149.58715054369759   -2.59934e-09   2.41536e-07 DIIS
@@ -2423,21 +2421,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:42 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:27 2022
 Module time:
-	user time   =       0.89 seconds =       0.01 minutes
+	user time   =       0.88 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       7.50 seconds =       0.12 minutes
+	user time   =       7.52 seconds =       0.13 minutes
 	system time =       0.13 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
+	total time  =         12 seconds =       0.20 minutes
     Singlet Direct UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:42 2022
+*** at Mon Nov  7 11:04:27 2022
 
    => Loading Basis Set <=
 
@@ -2546,10 +2544,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:  -149.27731917078719   -1.49277e+02   0.00000e+00 
-   @UHF iter   1:  -149.56362429559408   -2.86305e-01   1.10129e-02 ADIIS/DIIS
-   @UHF iter   2:  -149.58582140635937   -2.21971e-02   2.91434e-03 ADIIS/DIIS
-   @UHF iter   3:  -149.58712033600369   -1.29893e-03   6.40033e-04 ADIIS/DIIS
-   @UHF iter   4:  -149.58723140197694   -1.11066e-04   1.37095e-04 ADIIS/DIIS
+   @UHF iter   1:  -149.56362429559408   -2.86305e-01   1.10129e-02 DIIS/ADIIS
+   @UHF iter   2:  -149.58582140635937   -2.21971e-02   2.91434e-03 DIIS/ADIIS
+   @UHF iter   3:  -149.58712033600369   -1.29893e-03   6.40033e-04 DIIS/ADIIS
+   @UHF iter   4:  -149.58723140197694   -1.11066e-04   1.37095e-04 DIIS/ADIIS
    @UHF iter   5:  -149.58723670345893   -5.30148e-06   1.80224e-05 DIIS
    @UHF iter   6:  -149.58723684553314   -1.42074e-07   2.57334e-06 DIIS
    @UHF iter   7:  -149.58723684812236   -2.58922e-09   2.40539e-07 DIIS
@@ -2669,21 +2667,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:43 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:28 2022
 Module time:
 	user time   =       0.38 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       7.90 seconds =       0.13 minutes
+	user time   =       7.93 seconds =       0.13 minutes
 	system time =       0.15 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	total time  =         13 seconds =       0.22 minutes
     Singlet Disk UHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:43 2022
+*** at Mon Nov  7 11:04:28 2022
 
    => Loading Basis Set <=
 
@@ -2822,10 +2820,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-UHF iter SAD:  -149.27728822299318   -1.49277e+02   0.00000e+00 
-   @DF-UHF iter   1:  -149.56354408328303   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-UHF iter   2:  -149.58573446084227   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-UHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-UHF iter   4:  -149.58714509680505   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-UHF iter   1:  -149.56354408328303   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-UHF iter   2:  -149.58573446084227   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-UHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-UHF iter   4:  -149.58714509680505   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-UHF iter   5:  -149.58715039895972   -5.30215e-06   1.80355e-05 DIIS
    @DF-UHF iter   6:  -149.58715054109814   -1.42138e-07   2.57889e-06 DIIS
    @DF-UHF iter   7:  -149.58715054369765   -2.59951e-09   2.41536e-07 DIIS
@@ -2945,21 +2943,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:43 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:28 2022
 Module time:
-	user time   =       0.25 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.17 seconds =       0.14 minutes
+	user time   =       8.18 seconds =       0.14 minutes
 	system time =       0.15 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	total time  =         13 seconds =       0.22 minutes
     Singlet DiskDF UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:43 2022
+*** at Mon Nov  7 11:04:28 2022
 
    => Loading Basis Set <=
 
@@ -3099,10 +3097,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-UHF iter SAD:  -149.27728822299315   -1.49277e+02   0.00000e+00 
-   @DF-UHF iter   1:  -149.56354408328301   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-UHF iter   2:  -149.58573446084222   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-UHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-UHF iter   4:  -149.58714509680516   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-UHF iter   1:  -149.56354408328301   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-UHF iter   2:  -149.58573446084222   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-UHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-UHF iter   4:  -149.58714509680516   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-UHF iter   5:  -149.58715039895964   -5.30215e-06   1.80355e-05 DIIS
    @DF-UHF iter   6:  -149.58715054109825   -1.42139e-07   2.57889e-06 DIIS
    @DF-UHF iter   7:  -149.58715054369759   -2.59934e-09   2.41536e-07 DIIS
@@ -3222,21 +3220,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:43 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:29 2022
 Module time:
 	user time   =       0.23 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.42 seconds =       0.14 minutes
+	user time   =       8.44 seconds =       0.14 minutes
 	system time =       0.16 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	total time  =         14 seconds =       0.23 minutes
     Singlet MemDF UHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:43 2022
+*** at Mon Nov  7 11:04:29 2022
 
    => Loading Basis Set <=
 
@@ -3358,25 +3356,25 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:  -149.27713328631921   -1.49277e+02   0.00000e+00 
-   @UHF iter   1:  -149.56382697604784   -2.86694e-01   1.10975e-02 ADIIS/DIIS
-   @UHF iter   2:  -149.58629558037475   -2.24686e-02   2.92559e-03 ADIIS/DIIS
-   @UHF iter   3:  -149.58760428588198   -1.30871e-03   6.47395e-04 ADIIS/DIIS
-   @UHF iter   4:  -149.58772283023285   -1.18544e-04   1.38075e-04 ADIIS/DIIS
+   @UHF iter   1:  -149.56382697604792   -2.86694e-01   1.10975e-02 DIIS/ADIIS
+   @UHF iter   2:  -149.58629558037478   -2.24686e-02   2.92559e-03 DIIS/ADIIS
+   @UHF iter   3:  -149.58760428588204   -1.30871e-03   6.47395e-04 DIIS/ADIIS
+   @UHF iter   4:  -149.58772283023285   -1.18544e-04   1.38075e-04 DIIS/ADIIS
    @UHF iter   5:  -149.58772855372325   -5.72349e-06   1.83160e-05 DIIS
-   @UHF iter   6:  -149.58772885952459   -3.05801e-07   2.47041e-06 DIIS
-   @UHF iter   7:  -149.58772885956961   -4.50200e-11   2.44347e-07 DIIS
+   @UHF iter   6:  -149.58772885952456   -3.05801e-07   2.47041e-06 DIIS
+   @UHF iter   7:  -149.58772885956972   -4.51621e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @UHF iter   8:  -149.58722317116369    5.05688e-04   9.91149e-04 ADIIS/DIIS
+   @UHF iter   8:  -149.58722317116366    5.05688e-04   9.91149e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   6.217248938E-15
+   @Spin Contamination Metric:   1.776356839E-15
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:                6.217248938E-15
+   @S^2 Observed:                1.776356839E-15
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
@@ -3444,23 +3442,23 @@ Scratch directory: /scratch/dpoole34/
     NA   [     3,    0,    0,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    1,    0,    2,    1,    1 ]
 
-  @UHF Final Energy:  -149.58722317116369
+  @UHF Final Energy:  -149.58722317116366
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.8059033672359988
-    Two-Electron Energy =                  86.4301879389086594
-    Total Energy =                       -149.5872231711636857
+    One-Electron Energy =                -266.8059033672354303
+    Two-Electron Energy =                  86.4301879389081193
+    Total Energy =                       -149.5872231711636573
 
   UHF NO Occupations:
-  HONO-2 :    2B1u 2.0000000
+  HONO-2 :    3 Ag 2.0000000
   HONO-1 :    1B3g 2.0000000
   HONO-0 :    1B2u 2.0000000
   LUNO+0 :    4 Ag 0.0000000
-  LUNO+1 :    2B3u 0.0000000
-  LUNO+2 :    3B3u 0.0000000
-  LUNO+3 :    3B1u 0.0000000
+  LUNO+1 :    5 Ag 0.0000000
+  LUNO+2 :    3B1u 0.0000000
+  LUNO+3 :    2B3u 0.0000000
 
 
 Computation Completed
@@ -3485,21 +3483,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:46 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:31 2022
 Module time:
-	user time   =       2.70 seconds =       0.05 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       2.68 seconds =       0.04 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
 	user time   =      11.14 seconds =       0.19 minutes
-	system time =       0.16 seconds =       0.00 minutes
-	total time  =         13 seconds =       0.22 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =         16 seconds =       0.27 minutes
     Singlet DFJ+COSX UHF energy...........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:46 2022
+*** at Mon Nov  7 11:04:31 2022
 
    => Loading Basis Set <=
 
@@ -3618,10 +3616,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:  -149.27733086414963   -1.49277e+02   0.00000e+00 
-   @UHF iter   1:  -149.56365008860490   -2.86319e-01   1.10142e-02 ADIIS/DIIS
-   @UHF iter   2:  -149.58585218222930   -2.22021e-02   2.91422e-03 ADIIS/DIIS
-   @UHF iter   3:  -149.58715113835379   -1.29896e-03   6.40333e-04 ADIIS/DIIS
-   @UHF iter   4:  -149.58726227365051   -1.11135e-04   1.37172e-04 ADIIS/DIIS
+   @UHF iter   1:  -149.56365008860490   -2.86319e-01   1.10142e-02 DIIS/ADIIS
+   @UHF iter   2:  -149.58585218222930   -2.22021e-02   2.91422e-03 DIIS/ADIIS
+   @UHF iter   3:  -149.58715113835379   -1.29896e-03   6.40333e-04 DIIS/ADIIS
+   @UHF iter   4:  -149.58726227365051   -1.11135e-04   1.37172e-04 DIIS/ADIIS
    @UHF iter   5:  -149.58726757682933   -5.30318e-06   1.80326e-05 DIIS
    @UHF iter   6:  -149.58726771909227   -1.42263e-07   2.57489e-06 DIIS
    @UHF iter   7:  -149.58726772168646   -2.59419e-09   2.41117e-07 DIIS
@@ -3741,21 +3739,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:47 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:33 2022
 Module time:
-	user time   =       1.41 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.45 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      12.58 seconds =       0.21 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =      12.61 seconds =       0.21 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =         18 seconds =       0.30 minutes
     Singlet DFJ+LinK UHF energy...........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:47 2022
+*** at Mon Nov  7 11:04:33 2022
 
    => Loading Basis Set <=
 
@@ -3882,10 +3880,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @CUHF iter SAD:  -149.27731917078714   -1.49277e+02   0.00000e+00 
-   @CUHF iter   1:  -149.56362429559388   -2.86305e-01   1.10129e-02 ADIIS/DIIS
-   @CUHF iter   2:  -149.58582140635932   -2.21971e-02   2.91434e-03 ADIIS/DIIS
-   @CUHF iter   3:  -149.58712033600364   -1.29893e-03   6.40033e-04 ADIIS/DIIS
-   @CUHF iter   4:  -149.58723140197694   -1.11066e-04   1.37095e-04 ADIIS/DIIS
+   @CUHF iter   1:  -149.56362429559388   -2.86305e-01   1.10129e-02 DIIS/ADIIS
+   @CUHF iter   2:  -149.58582140635932   -2.21971e-02   2.91434e-03 DIIS/ADIIS
+   @CUHF iter   3:  -149.58712033600364   -1.29893e-03   6.40033e-04 DIIS/ADIIS
+   @CUHF iter   4:  -149.58723140197694   -1.11066e-04   1.37095e-04 DIIS/ADIIS
    @CUHF iter   5:  -149.58723670345898   -5.30148e-06   1.80224e-05 DIIS
    @CUHF iter   6:  -149.58723684553317   -1.42074e-07   2.57334e-06 DIIS
    @CUHF iter   7:  -149.58723684812225   -2.58908e-09   2.40539e-07 DIIS
@@ -3993,21 +3991,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:48 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:33 2022
 Module time:
 	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      13.02 seconds =       0.22 minutes
+	user time   =      13.05 seconds =       0.22 minutes
 	system time =       0.19 seconds =       0.00 minutes
-	total time  =         15 seconds =       0.25 minutes
+	total time  =         18 seconds =       0.30 minutes
     Singlet PK CUHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:48 2022
+*** at Mon Nov  7 11:04:33 2022
 
    => Loading Basis Set <=
 
@@ -4149,10 +4147,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-CUHF iter SAD:  -149.27728822299312   -1.49277e+02   0.00000e+00 
-   @DF-CUHF iter   1:  -149.56354408328309   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-CUHF iter   2:  -149.58573446084225   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-CUHF iter   3:  -149.58703388315297   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-CUHF iter   4:  -149.58714509680490   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-CUHF iter   1:  -149.56354408328309   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-CUHF iter   2:  -149.58573446084225   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-CUHF iter   3:  -149.58703388315297   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-CUHF iter   4:  -149.58714509680490   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-CUHF iter   5:  -149.58715039895961   -5.30215e-06   1.80355e-05 DIIS
    @DF-CUHF iter   6:  -149.58715054109820   -1.42139e-07   2.57889e-06 DIIS
    @DF-CUHF iter   7:  -149.58715054369745   -2.59925e-09   2.41536e-07 DIIS
@@ -4277,21 +4275,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:49 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:34 2022
 Module time:
-	user time   =       0.88 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      13.92 seconds =       0.23 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      13.94 seconds =       0.23 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =         19 seconds =       0.32 minutes
     Singlet Direct CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:49 2022
+*** at Mon Nov  7 11:04:34 2022
 
    => Loading Basis Set <=
 
@@ -4400,10 +4398,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @CUHF iter SAD:  -149.27731917078719   -1.49277e+02   0.00000e+00 
-   @CUHF iter   1:  -149.56362429559400   -2.86305e-01   1.10129e-02 ADIIS/DIIS
-   @CUHF iter   2:  -149.58582140635932   -2.21971e-02   2.91434e-03 ADIIS/DIIS
-   @CUHF iter   3:  -149.58712033600366   -1.29893e-03   6.40033e-04 ADIIS/DIIS
-   @CUHF iter   4:  -149.58723140197691   -1.11066e-04   1.37095e-04 ADIIS/DIIS
+   @CUHF iter   1:  -149.56362429559400   -2.86305e-01   1.10129e-02 DIIS/ADIIS
+   @CUHF iter   2:  -149.58582140635932   -2.21971e-02   2.91434e-03 DIIS/ADIIS
+   @CUHF iter   3:  -149.58712033600366   -1.29893e-03   6.40033e-04 DIIS/ADIIS
+   @CUHF iter   4:  -149.58723140197691   -1.11066e-04   1.37095e-04 DIIS/ADIIS
    @CUHF iter   5:  -149.58723670345893   -5.30148e-06   1.80224e-05 DIIS
    @CUHF iter   6:  -149.58723684553323   -1.42074e-07   2.57334e-06 DIIS
    @CUHF iter   7:  -149.58723684812227   -2.58905e-09   2.40539e-07 DIIS
@@ -4511,21 +4509,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:49 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:35 2022
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      14.30 seconds =       0.24 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      14.35 seconds =       0.24 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =         20 seconds =       0.33 minutes
     Singlet Disk CUHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:49 2022
+*** at Mon Nov  7 11:04:35 2022
 
    => Loading Basis Set <=
 
@@ -4664,10 +4662,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-CUHF iter SAD:  -149.27728822299318   -1.49277e+02   0.00000e+00 
-   @DF-CUHF iter   1:  -149.56354408328306   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-CUHF iter   2:  -149.58573446084216   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-CUHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-CUHF iter   4:  -149.58714509680505   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-CUHF iter   1:  -149.56354408328306   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-CUHF iter   2:  -149.58573446084216   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-CUHF iter   3:  -149.58703388315294   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-CUHF iter   4:  -149.58714509680505   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-CUHF iter   5:  -149.58715039895969   -5.30215e-06   1.80355e-05 DIIS
    @DF-CUHF iter   6:  -149.58715054109817   -1.42138e-07   2.57889e-06 DIIS
    @DF-CUHF iter   7:  -149.58715054369762   -2.59945e-09   2.41536e-07 DIIS
@@ -4775,21 +4773,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:50 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:35 2022
 Module time:
-	user time   =       0.25 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      14.58 seconds =       0.24 minutes
+	user time   =      14.60 seconds =       0.24 minutes
 	system time =       0.22 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
+	total time  =         20 seconds =       0.33 minutes
     Singlet DiskDF CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:50 2022
+*** at Mon Nov  7 11:04:35 2022
 
    => Loading Basis Set <=
 
@@ -4929,10 +4927,10 @@ Scratch directory: /scratch/dpoole34/
                            Total Energy        Delta E     RMS |[F,P]|
 
    @DF-CUHF iter SAD:  -149.27728822299312   -1.49277e+02   0.00000e+00 
-   @DF-CUHF iter   1:  -149.56354408328309   -2.86256e-01   1.10101e-02 ADIIS/DIIS
-   @DF-CUHF iter   2:  -149.58573446084225   -2.21904e-02   2.91563e-03 ADIIS/DIIS
-   @DF-CUHF iter   3:  -149.58703388315297   -1.29942e-03   6.40386e-04 ADIIS/DIIS
-   @DF-CUHF iter   4:  -149.58714509680490   -1.11214e-04   1.37129e-04 ADIIS/DIIS
+   @DF-CUHF iter   1:  -149.56354408328309   -2.86256e-01   1.10101e-02 DIIS/ADIIS
+   @DF-CUHF iter   2:  -149.58573446084225   -2.21904e-02   2.91563e-03 DIIS/ADIIS
+   @DF-CUHF iter   3:  -149.58703388315297   -1.29942e-03   6.40386e-04 DIIS/ADIIS
+   @DF-CUHF iter   4:  -149.58714509680490   -1.11214e-04   1.37129e-04 DIIS/ADIIS
    @DF-CUHF iter   5:  -149.58715039895961   -5.30215e-06   1.80355e-05 DIIS
    @DF-CUHF iter   6:  -149.58715054109820   -1.42139e-07   2.57889e-06 DIIS
    @DF-CUHF iter   7:  -149.58715054369745   -2.59925e-09   2.41536e-07 DIIS
@@ -5040,21 +5038,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:50 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:35 2022
 Module time:
-	user time   =       0.22 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      14.82 seconds =       0.25 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =      14.87 seconds =       0.25 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =         20 seconds =       0.33 minutes
     Singlet MemDF CUHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:50 2022
+*** at Mon Nov  7 11:04:35 2022
 
    => Loading Basis Set <=
 
@@ -5176,17 +5174,17 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @CUHF iter SAD:  -149.27713328631918   -1.49277e+02   0.00000e+00 
-   @CUHF iter   1:  -149.56382697604786   -2.86694e-01   1.10975e-02 ADIIS/DIIS
-   @CUHF iter   2:  -149.58629558037481   -2.24686e-02   2.92559e-03 ADIIS/DIIS
-   @CUHF iter   3:  -149.58760428588192   -1.30871e-03   6.47395e-04 ADIIS/DIIS
-   @CUHF iter   4:  -149.58772283023288   -1.18544e-04   1.38075e-04 ADIIS/DIIS
+   @CUHF iter   1:  -149.56382697604786   -2.86694e-01   1.10975e-02 DIIS/ADIIS
+   @CUHF iter   2:  -149.58629558037481   -2.24686e-02   2.92559e-03 DIIS/ADIIS
+   @CUHF iter   3:  -149.58760428588189   -1.30871e-03   6.47395e-04 DIIS/ADIIS
+   @CUHF iter   4:  -149.58772283023296   -1.18544e-04   1.38075e-04 DIIS/ADIIS
    @CUHF iter   5:  -149.58772855372328   -5.72349e-06   1.83160e-05 DIIS
    @CUHF iter   6:  -149.58772885952447   -3.05801e-07   2.47041e-06 DIIS
-   @CUHF iter   7:  -149.58772885956978   -4.53042e-11   2.44347e-07 DIIS
+   @CUHF iter   7:  -149.58772885956972   -4.52474e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @CUHF iter   8:  -149.58722317116374    5.05688e-04   9.91149e-04 ADIIS/DIIS
+   @CUHF iter   8:  -149.58722317116366    5.05688e-04   9.91149e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -5260,14 +5258,14 @@ Scratch directory: /scratch/dpoole34/
     NA   [     3,    0,    0,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    1,    0,    2,    1,    1 ]
 
-  @CUHF Final Energy:  -149.58722317116374
+  @CUHF Final Energy:  -149.58722317116366
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.8059033672354303
-    Two-Electron Energy =                  86.4301879389080341
-    Total Energy =                       -149.5872231711637426
+    One-Electron Energy =                -266.8059033672357714
+    Two-Electron Energy =                  86.4301879389084604
+    Total Energy =                       -149.5872231711636573
 
 Computation Completed
 
@@ -5291,21 +5289,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:52 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:38 2022
 Module time:
-	user time   =       2.66 seconds =       0.04 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.68 seconds =       0.04 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      17.51 seconds =       0.29 minutes
+	user time   =      17.57 seconds =       0.29 minutes
 	system time =       0.23 seconds =       0.00 minutes
-	total time  =         19 seconds =       0.32 minutes
+	total time  =         23 seconds =       0.38 minutes
     Singlet DFJ+COSX CUHF energy..........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:52 2022
+*** at Mon Nov  7 11:04:38 2022
 
    => Loading Basis Set <=
 
@@ -5424,10 +5422,10 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @CUHF iter SAD:  -149.27733086414960   -1.49277e+02   0.00000e+00 
-   @CUHF iter   1:  -149.56365008860479   -2.86319e-01   1.10142e-02 ADIIS/DIIS
-   @CUHF iter   2:  -149.58585218222908   -2.22021e-02   2.91422e-03 ADIIS/DIIS
-   @CUHF iter   3:  -149.58715113835387   -1.29896e-03   6.40333e-04 ADIIS/DIIS
-   @CUHF iter   4:  -149.58726227365037   -1.11135e-04   1.37172e-04 ADIIS/DIIS
+   @CUHF iter   1:  -149.56365008860479   -2.86319e-01   1.10142e-02 DIIS/ADIIS
+   @CUHF iter   2:  -149.58585218222908   -2.22021e-02   2.91422e-03 DIIS/ADIIS
+   @CUHF iter   3:  -149.58715113835387   -1.29896e-03   6.40333e-04 DIIS/ADIIS
+   @CUHF iter   4:  -149.58726227365037   -1.11135e-04   1.37172e-04 DIIS/ADIIS
    @CUHF iter   5:  -149.58726757682930   -5.30318e-06   1.80326e-05 DIIS
    @CUHF iter   6:  -149.58726771909238   -1.42263e-07   2.57489e-06 DIIS
    @CUHF iter   7:  -149.58726772168640   -2.59402e-09   2.41117e-07 DIIS
@@ -5535,21 +5533,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:54 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:39 2022
 Module time:
-	user time   =       1.41 seconds =       0.02 minutes
+	user time   =       1.40 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      18.95 seconds =       0.32 minutes
+	user time   =      19.00 seconds =       0.32 minutes
 	system time =       0.24 seconds =       0.00 minutes
-	total time  =         21 seconds =       0.35 minutes
+	total time  =         24 seconds =       0.40 minutes
     Singlet DFJ+LinK CUHF energy..........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:54 2022
+*** at Mon Nov  7 11:04:39 2022
 
    => Loading Basis Set <=
 
@@ -5684,10 +5682,10 @@ Scratch directory: /scratch/dpoole34/
 
    @UHF iter   1:  -131.02769686138831   -1.31028e+02   3.53809e-01 ADIIS
    @UHF iter   2:  -140.13786809233886   -9.11017e+00   1.85373e-01 ADIIS
-   @UHF iter   3:  -149.07892636084327   -8.94106e+00   6.21073e-02 ADIIS/DIIS
-   @UHF iter   4:  -149.65363562366332   -5.74709e-01   1.05419e-02 ADIIS/DIIS
-   @UHF iter   5:  -149.67031494578450   -1.66793e-02   1.87170e-03 ADIIS/DIIS
-   @UHF iter   6:  -149.67129417341366   -9.79228e-04   4.35106e-04 ADIIS/DIIS
+   @UHF iter   3:  -149.07892636084327   -8.94106e+00   6.21073e-02 DIIS/ADIIS
+   @UHF iter   4:  -149.65363562366332   -5.74709e-01   1.05419e-02 DIIS/ADIIS
+   @UHF iter   5:  -149.67031494578450   -1.66793e-02   1.87170e-03 DIIS/ADIIS
+   @UHF iter   6:  -149.67129417341366   -9.79228e-04   4.35106e-04 DIIS/ADIIS
    @UHF iter   7:  -149.67135318247261   -5.90091e-05   6.76805e-05 DIIS
    @UHF iter   8:  -149.67135514057824   -1.95811e-06   9.41668e-06 DIIS
    @UHF iter   9:  -149.67135517086550   -3.02873e-08   8.36275e-07 DIIS
@@ -5806,21 +5804,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:54 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:40 2022
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
+	user time   =       0.38 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      19.34 seconds =       0.32 minutes
+	user time   =      19.41 seconds =       0.32 minutes
 	system time =       0.25 seconds =       0.00 minutes
-	total time  =         21 seconds =       0.35 minutes
+	total time  =         25 seconds =       0.42 minutes
     Triplet PK UHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:54 2022
+*** at Mon Nov  7 11:04:40 2022
 
    => Loading Basis Set <=
 
@@ -5970,10 +5968,10 @@ Scratch directory: /scratch/dpoole34/
 
    @DF-UHF iter   1:  -131.02345177007209   -1.31023e+02   3.54007e-01 ADIIS
    @DF-UHF iter   2:  -140.13876897996707   -9.11532e+00   1.85394e-01 ADIIS
-   @DF-UHF iter   3:  -149.07887534187844   -8.94011e+00   6.20999e-02 ADIIS/DIIS
-   @DF-UHF iter   4:  -149.65353829309876   -5.74663e-01   1.05459e-02 ADIIS/DIIS
-   @DF-UHF iter   5:  -149.67021624295950   -1.66779e-02   1.87099e-03 ADIIS/DIIS
-   @DF-UHF iter   6:  -149.67119529927663   -9.79056e-04   4.34543e-04 ADIIS/DIIS
+   @DF-UHF iter   3:  -149.07887534187844   -8.94011e+00   6.20999e-02 DIIS/ADIIS
+   @DF-UHF iter   4:  -149.65353829309876   -5.74663e-01   1.05459e-02 DIIS/ADIIS
+   @DF-UHF iter   5:  -149.67021624295950   -1.66779e-02   1.87099e-03 DIIS/ADIIS
+   @DF-UHF iter   6:  -149.67119529927663   -9.79056e-04   4.34543e-04 DIIS/ADIIS
    @DF-UHF iter   7:  -149.67125425357943   -5.89543e-05   6.76766e-05 DIIS
    @DF-UHF iter   8:  -149.67125621119939   -1.95762e-06   9.39479e-06 DIIS
    @DF-UHF iter   9:  -149.67125624137390   -3.01745e-08   8.37130e-07 DIIS
@@ -6108,21 +6106,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:55 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:41 2022
 Module time:
 	user time   =       0.66 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      20.02 seconds =       0.33 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =         22 seconds =       0.37 minutes
+	user time   =      20.09 seconds =       0.33 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =         26 seconds =       0.43 minutes
     Triplet Direct UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:55 2022
+*** at Mon Nov  7 11:04:41 2022
 
    => Loading Basis Set <=
 
@@ -6239,10 +6237,10 @@ Scratch directory: /scratch/dpoole34/
 
    @UHF iter   1:  -131.02769686138825   -1.31028e+02   3.53809e-01 ADIIS
    @UHF iter   2:  -140.13786809233764   -9.11017e+00   1.85373e-01 ADIIS
-   @UHF iter   3:  -149.07892636084318   -8.94106e+00   6.21073e-02 ADIIS/DIIS
-   @UHF iter   4:  -149.65363562366338   -5.74709e-01   1.05419e-02 ADIIS/DIIS
-   @UHF iter   5:  -149.67031494578438   -1.66793e-02   1.87170e-03 ADIIS/DIIS
-   @UHF iter   6:  -149.67129417341368   -9.79228e-04   4.35106e-04 ADIIS/DIIS
+   @UHF iter   3:  -149.07892636084318   -8.94106e+00   6.21073e-02 DIIS/ADIIS
+   @UHF iter   4:  -149.65363562366338   -5.74709e-01   1.05419e-02 DIIS/ADIIS
+   @UHF iter   5:  -149.67031494578438   -1.66793e-02   1.87170e-03 DIIS/ADIIS
+   @UHF iter   6:  -149.67129417341368   -9.79228e-04   4.35106e-04 DIIS/ADIIS
    @UHF iter   7:  -149.67135318247261   -5.90091e-05   6.76805e-05 DIIS
    @UHF iter   8:  -149.67135514057824   -1.95811e-06   9.41668e-06 DIIS
    @UHF iter   9:  -149.67135517086550   -3.02873e-08   8.36275e-07 DIIS
@@ -6361,21 +6359,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:55 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:41 2022
 Module time:
-	user time   =       0.28 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      20.33 seconds =       0.34 minutes
-	system time =       0.27 seconds =       0.00 minutes
-	total time  =         22 seconds =       0.37 minutes
+	user time   =      20.45 seconds =       0.34 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =         26 seconds =       0.43 minutes
     Triplet Disk UHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:55 2022
+*** at Mon Nov  7 11:04:41 2022
 
    => Loading Basis Set <=
 
@@ -6522,10 +6520,10 @@ Scratch directory: /scratch/dpoole34/
 
    @DF-UHF iter   1:  -131.02345177007214   -1.31023e+02   3.54007e-01 ADIIS
    @DF-UHF iter   2:  -140.13876897996718   -9.11532e+00   1.85394e-01 ADIIS
-   @DF-UHF iter   3:  -149.07887534187839   -8.94011e+00   6.20999e-02 ADIIS/DIIS
-   @DF-UHF iter   4:  -149.65353829309876   -5.74663e-01   1.05459e-02 ADIIS/DIIS
-   @DF-UHF iter   5:  -149.67021624295947   -1.66779e-02   1.87099e-03 ADIIS/DIIS
-   @DF-UHF iter   6:  -149.67119529927672   -9.79056e-04   4.34543e-04 ADIIS/DIIS
+   @DF-UHF iter   3:  -149.07887534187839   -8.94011e+00   6.20999e-02 DIIS/ADIIS
+   @DF-UHF iter   4:  -149.65353829309876   -5.74663e-01   1.05459e-02 DIIS/ADIIS
+   @DF-UHF iter   5:  -149.67021624295947   -1.66779e-02   1.87099e-03 DIIS/ADIIS
+   @DF-UHF iter   6:  -149.67119529927672   -9.79056e-04   4.34543e-04 DIIS/ADIIS
    @DF-UHF iter   7:  -149.67125425357938   -5.89543e-05   6.76766e-05 DIIS
    @DF-UHF iter   8:  -149.67125621119945   -1.95762e-06   9.39479e-06 DIIS
    @DF-UHF iter   9:  -149.67125624137401   -3.01746e-08   8.37130e-07 DIIS
@@ -6644,21 +6642,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:56 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:41 2022
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      20.55 seconds =       0.34 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =         23 seconds =       0.38 minutes
+	user time   =      20.67 seconds =       0.34 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =         26 seconds =       0.43 minutes
     Triplet DiskDF UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:56 2022
+*** at Mon Nov  7 11:04:41 2022
 
    => Loading Basis Set <=
 
@@ -6806,10 +6804,10 @@ Scratch directory: /scratch/dpoole34/
 
    @DF-UHF iter   1:  -131.02345177007209   -1.31023e+02   3.54007e-01 ADIIS
    @DF-UHF iter   2:  -140.13876897996707   -9.11532e+00   1.85394e-01 ADIIS
-   @DF-UHF iter   3:  -149.07887534187844   -8.94011e+00   6.20999e-02 ADIIS/DIIS
-   @DF-UHF iter   4:  -149.65353829309876   -5.74663e-01   1.05459e-02 ADIIS/DIIS
-   @DF-UHF iter   5:  -149.67021624295950   -1.66779e-02   1.87099e-03 ADIIS/DIIS
-   @DF-UHF iter   6:  -149.67119529927663   -9.79056e-04   4.34543e-04 ADIIS/DIIS
+   @DF-UHF iter   3:  -149.07887534187844   -8.94011e+00   6.20999e-02 DIIS/ADIIS
+   @DF-UHF iter   4:  -149.65353829309876   -5.74663e-01   1.05459e-02 DIIS/ADIIS
+   @DF-UHF iter   5:  -149.67021624295950   -1.66779e-02   1.87099e-03 DIIS/ADIIS
+   @DF-UHF iter   6:  -149.67119529927663   -9.79056e-04   4.34543e-04 DIIS/ADIIS
    @DF-UHF iter   7:  -149.67125425357943   -5.89543e-05   6.76766e-05 DIIS
    @DF-UHF iter   8:  -149.67125621119939   -1.95762e-06   9.39479e-06 DIIS
    @DF-UHF iter   9:  -149.67125624137390   -3.01745e-08   8.37130e-07 DIIS
@@ -6928,21 +6926,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:56 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:42 2022
 Module time:
 	user time   =       0.19 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      20.76 seconds =       0.35 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =         23 seconds =       0.38 minutes
+	user time   =      20.89 seconds =       0.35 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =         27 seconds =       0.45 minutes
     Triplet MemDF UHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:56 2022
+*** at Mon Nov  7 11:04:42 2022
 
    => Loading Basis Set <=
 
@@ -7071,18 +7069,18 @@ Scratch directory: /scratch/dpoole34/
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
    @UHF iter   1:  -131.02266731942416   -1.31023e+02   3.53990e-01 ADIIS
-   @UHF iter   2:  -140.14034734140625   -9.11768e+00   1.85365e-01 ADIIS
-   @UHF iter   3:  -149.07920849522230   -8.93886e+00   6.20863e-02 ADIIS/DIIS
-   @UHF iter   4:  -149.65391531644991   -5.74707e-01   1.05356e-02 ADIIS/DIIS
-   @UHF iter   5:  -149.67061947228302   -1.67042e-02   1.87593e-03 ADIIS/DIIS
-   @UHF iter   6:  -149.67160507761122   -9.85605e-04   4.33948e-04 ADIIS/DIIS
-   @UHF iter   7:  -149.67166177628386   -5.66987e-05   6.80300e-05 DIIS
-   @UHF iter   8:  -149.67166378928812   -2.01300e-06   9.42637e-06 DIIS
-   @UHF iter   9:  -149.67166383531955   -4.60314e-08   8.91526e-07 DIIS
+   @UHF iter   2:  -140.14034734140617   -9.11768e+00   1.85365e-01 ADIIS
+   @UHF iter   3:  -149.07920849522245   -8.93886e+00   6.20863e-02 DIIS/ADIIS
+   @UHF iter   4:  -149.65391531645002   -5.74707e-01   1.05356e-02 DIIS/ADIIS
+   @UHF iter   5:  -149.67061947228331   -1.67042e-02   1.87593e-03 DIIS/ADIIS
+   @UHF iter   6:  -149.67160507761122   -9.85605e-04   4.33948e-04 DIIS/ADIIS
+   @UHF iter   7:  -149.67166177628383   -5.66987e-05   6.80300e-05 DIIS
+   @UHF iter   8:  -149.67166378928798   -2.01300e-06   9.42637e-06 DIIS
+   @UHF iter   9:  -149.67166383531969   -4.60317e-08   8.91526e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @UHF iter  10:  -149.67132922569726    3.34610e-04   9.51899e-04 ADIIS/DIIS
+   @UHF iter  10:  -149.67132922569729    3.34610e-04   9.51899e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -7157,14 +7155,14 @@ Scratch directory: /scratch/dpoole34/
     NA   [     3,    0,    1,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
-  @UHF Final Energy:  -149.67132922569726
+  @UHF Final Energy:  -149.67132922569729
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9129345756500129
-    Two-Electron Energy =                  86.4531130927890956
-    Total Energy =                       -149.6713292256972636
+    One-Electron Energy =                -266.9129345756497855
+    Two-Electron Energy =                  86.4531130927888256
+    Total Energy =                       -149.6713292256973205
 
   UHF NO Occupations:
   HONO-2 :    1B2u 1.9937328
@@ -7198,21 +7196,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:56:59 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:44 2022
 Module time:
-	user time   =       2.89 seconds =       0.05 minutes
+	user time   =       2.90 seconds =       0.05 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      23.67 seconds =       0.39 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =         26 seconds =       0.43 minutes
+	user time   =      23.82 seconds =       0.40 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =         29 seconds =       0.48 minutes
     Triplet DFJ+COSX UHF energy...........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:56:59 2022
+*** at Mon Nov  7 11:04:45 2022
 
    => Loading Basis Set <=
 
@@ -7339,10 +7337,10 @@ Scratch directory: /scratch/dpoole34/
 
    @UHF iter   1:  -131.02824188718694   -1.31028e+02   3.53803e-01 ADIIS
    @UHF iter   2:  -140.14242970807607   -9.11419e+00   1.85341e-01 ADIIS
-   @UHF iter   3:  -149.07857131918411   -8.93614e+00   6.21257e-02 ADIIS/DIIS
-   @UHF iter   4:  -149.65363342630815   -5.75062e-01   1.05493e-02 ADIIS/DIIS
-   @UHF iter   5:  -149.67033333467208   -1.66999e-02   1.87124e-03 ADIIS/DIIS
-   @UHF iter   6:  -149.67131230279944   -9.78968e-04   4.34980e-04 ADIIS/DIIS
+   @UHF iter   3:  -149.07857131918411   -8.93614e+00   6.21257e-02 DIIS/ADIIS
+   @UHF iter   4:  -149.65363342630815   -5.75062e-01   1.05493e-02 DIIS/ADIIS
+   @UHF iter   5:  -149.67033333467208   -1.66999e-02   1.87124e-03 DIIS/ADIIS
+   @UHF iter   6:  -149.67131230279944   -9.78968e-04   4.34980e-04 DIIS/ADIIS
    @UHF iter   7:  -149.67137129107354   -5.89883e-05   6.76925e-05 DIIS
    @UHF iter   8:  -149.67137324958753   -1.95851e-06   9.40593e-06 DIIS
    @UHF iter   9:  -149.67137327981726   -3.02297e-08   8.35758e-07 DIIS
@@ -7461,21 +7459,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:02 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:46 2022
 Module time:
-	user time   =       1.67 seconds =       0.03 minutes
+	user time   =       1.63 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      25.36 seconds =       0.42 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =      25.48 seconds =       0.42 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =         31 seconds =       0.52 minutes
     Triplet DFJ+LinK UHF energy...........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:02 2022
+*** at Mon Nov  7 11:04:46 2022
 
    => Loading Basis Set <=
 
@@ -7693,21 +7691,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:02 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:47 2022
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
+	user time   =       0.33 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      25.73 seconds =       0.43 minutes
-	system time =       0.31 seconds =       0.01 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =      25.84 seconds =       0.43 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =         32 seconds =       0.53 minutes
     Triplet PK ROHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:02 2022
+*** at Mon Nov  7 11:04:47 2022
 
    => Loading Basis Set <=
 
@@ -7956,21 +7954,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:03 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:47 2022
 Module time:
-	user time   =       0.63 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.62 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      26.40 seconds =       0.44 minutes
+	user time   =      26.49 seconds =       0.44 minutes
 	system time =       0.32 seconds =       0.01 minutes
-	total time  =         30 seconds =       0.50 minutes
+	total time  =         32 seconds =       0.53 minutes
     Triplet Direct ROHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:03 2022
+*** at Mon Nov  7 11:04:47 2022
 
    => Loading Basis Set <=
 
@@ -8170,21 +8168,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:04 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:48 2022
 Module time:
-	user time   =       0.32 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      26.75 seconds =       0.45 minutes
-	system time =       0.33 seconds =       0.01 minutes
-	total time  =         31 seconds =       0.52 minutes
+	user time   =      26.74 seconds =       0.45 minutes
+	system time =       0.34 seconds =       0.01 minutes
+	total time  =         33 seconds =       0.55 minutes
     Triplet Disk ROHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:04 2022
+*** at Mon Nov  7 11:04:48 2022
 
    => Loading Basis Set <=
 
@@ -8414,21 +8412,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:04 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:48 2022
 Module time:
-	user time   =       0.16 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =      26.94 seconds =       0.45 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =         31 seconds =       0.52 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =         33 seconds =       0.55 minutes
     Triplet DiskDF ROHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:04 2022
+*** at Mon Nov  7 11:04:48 2022
 
    => Loading Basis Set <=
 
@@ -8659,21 +8657,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:04 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:48 2022
 Module time:
 	user time   =       0.14 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =      27.11 seconds =       0.45 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =         31 seconds =       0.52 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =         33 seconds =       0.55 minutes
     Triplet MemDF ROHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:04 2022
+*** at Mon Nov  7 11:04:48 2022
 
    => Loading Basis Set <=
 
@@ -8803,13 +8801,13 @@ Scratch directory: /scratch/dpoole34/
 
    @ROHF iter   1:  -131.02266731942382   -1.31023e+02   2.71851e-01 DIIS
    @ROHF iter   2:  -139.64070004271159   -8.61803e+00   1.37369e-01 DIIS
-   @ROHF iter   3:  -148.99660951088319   -9.35591e+00   5.06619e-02 DIIS
-   @ROHF iter   4:  -149.63963700749684   -6.43027e-01   6.07525e-03 DIIS
-   @ROHF iter   5:  -149.65187157255187   -1.22346e-02   4.84799e-04 DIIS
-   @ROHF iter   6:  -149.65198834090879   -1.16768e-04   1.12106e-04 DIIS
-   @ROHF iter   7:  -149.65199670359939   -8.36269e-06   1.71152e-05 DIIS
-   @ROHF iter   8:  -149.65199683539879   -1.31799e-07   2.91717e-06 DIIS
-   @ROHF iter   9:  -149.65199681028335    2.51154e-08   3.52335e-07 DIIS
+   @ROHF iter   3:  -148.99660951088313   -9.35591e+00   5.06619e-02 DIIS
+   @ROHF iter   4:  -149.63963700749704   -6.43027e-01   6.07525e-03 DIIS
+   @ROHF iter   5:  -149.65187157255184   -1.22346e-02   4.84799e-04 DIIS
+   @ROHF iter   6:  -149.65198834090864   -1.16768e-04   1.12106e-04 DIIS
+   @ROHF iter   7:  -149.65199670359942   -8.36269e-06   1.71152e-05 DIIS
+   @ROHF iter   8:  -149.65199683539865   -1.31799e-07   2.91717e-06 DIIS
+   @ROHF iter   9:  -149.65199681028329    2.51154e-08   3.52335e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
@@ -8864,8 +8862,8 @@ Scratch directory: /scratch/dpoole34/
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9107678299204736
-    Two-Electron Energy =                  86.4705866325295460
+    One-Electron Energy =                -266.9107678299205872
+    Two-Electron Energy =                  86.4705866325296597
     Total Energy =                       -149.6516889402272739
 
 Computation Completed
@@ -8890,21 +8888,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:07 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:51 2022
 Module time:
-	user time   =       2.90 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       2.87 seconds =       0.05 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      30.04 seconds =       0.50 minutes
+	user time   =      30.00 seconds =       0.50 minutes
 	system time =       0.35 seconds =       0.01 minutes
-	total time  =         34 seconds =       0.57 minutes
+	total time  =         36 seconds =       0.60 minutes
     Triplet DFJ+COSX ROHF energy..........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:07 2022
+*** at Mon Nov  7 11:04:51 2022
 
    => Loading Basis Set <=
 
@@ -9114,21 +9112,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:09 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:52 2022
 Module time:
-	user time   =       1.64 seconds =       0.03 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.61 seconds =       0.03 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      31.70 seconds =       0.53 minutes
-	system time =       0.36 seconds =       0.01 minutes
-	total time  =         36 seconds =       0.60 minutes
+	user time   =      31.63 seconds =       0.53 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =         37 seconds =       0.62 minutes
     Triplet DFJ+LinK ROHF energy..........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:09 2022
+*** at Mon Nov  7 11:04:53 2022
 
    => Loading Basis Set <=
 
@@ -9263,10 +9261,10 @@ Scratch directory: /scratch/dpoole34/
 
    @CUHF iter   1:  -131.02769686138825   -1.31028e+02   3.53708e-01 ADIIS
    @CUHF iter   2:  -140.10353912873543   -9.07584e+00   1.85166e-01 ADIIS
-   @CUHF iter   3:  -149.07256385046506   -8.96902e+00   6.18739e-02 ADIIS/DIIS
-   @CUHF iter   4:  -149.63818987448280   -5.65626e-01   1.00903e-02 ADIIS/DIIS
-   @CUHF iter   5:  -149.65122786458716   -1.30380e-02   1.50677e-03 ADIIS/DIIS
-   @CUHF iter   6:  -149.65168121631356   -4.53352e-04   2.17117e-04 ADIIS/DIIS
+   @CUHF iter   3:  -149.07256385046506   -8.96902e+00   6.18739e-02 DIIS/ADIIS
+   @CUHF iter   4:  -149.63818987448280   -5.65626e-01   1.00903e-02 DIIS/ADIIS
+   @CUHF iter   5:  -149.65122786458716   -1.30380e-02   1.50677e-03 DIIS/ADIIS
+   @CUHF iter   6:  -149.65168121631356   -4.53352e-04   2.17117e-04 DIIS/ADIIS
    @CUHF iter   7:  -149.65170871431565   -2.74980e-05   1.84194e-05 DIIS
    @CUHF iter   8:  -149.65170789138176    8.22934e-07   2.07188e-06 DIIS
    @CUHF iter   9:  -149.65170764199598    2.49386e-07   3.39347e-07 DIIS
@@ -9373,21 +9371,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:09 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:53 2022
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      32.09 seconds =       0.53 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =         36 seconds =       0.60 minutes
+	user time   =      32.04 seconds =       0.53 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =         38 seconds =       0.63 minutes
     Triplet PK CUHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:09 2022
+*** at Mon Nov  7 11:04:53 2022
 
    => Loading Basis Set <=
 
@@ -9537,10 +9535,10 @@ Scratch directory: /scratch/dpoole34/
 
    @DF-CUHF iter   1:  -131.02345177007203   -1.31023e+02   3.53905e-01 ADIIS
    @DF-CUHF iter   2:  -140.10421225181634   -9.08076e+00   1.85188e-01 ADIIS
-   @DF-CUHF iter   3:  -149.07251737243496   -8.96831e+00   6.18656e-02 ADIIS/DIIS
-   @DF-CUHF iter   4:  -149.63808950369364   -5.65572e-01   1.00945e-02 ADIIS/DIIS
-   @DF-CUHF iter   5:  -149.65112849378588   -1.30390e-02   1.50612e-03 ADIIS/DIIS
-   @DF-CUHF iter   6:  -149.65158147606775   -4.52982e-04   2.16998e-04 ADIIS/DIIS
+   @DF-CUHF iter   3:  -149.07251737243496   -8.96831e+00   6.18656e-02 DIIS/ADIIS
+   @DF-CUHF iter   4:  -149.63808950369364   -5.65572e-01   1.00945e-02 DIIS/ADIIS
+   @DF-CUHF iter   5:  -149.65112849378588   -1.30390e-02   1.50612e-03 DIIS/ADIIS
+   @DF-CUHF iter   6:  -149.65158147606775   -4.52982e-04   2.16998e-04 DIIS/ADIIS
    @DF-CUHF iter   7:  -149.65160902343251   -2.75474e-05   1.83726e-05 DIIS
    @DF-CUHF iter   8:  -149.65160819598432    8.27448e-07   2.07458e-06 DIIS
    @DF-CUHF iter   9:  -149.65160794655134    2.49433e-07   3.38450e-07 DIIS
@@ -9663,21 +9661,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:10 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:54 2022
 Module time:
-	user time   =       0.66 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.68 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =      32.77 seconds =       0.55 minutes
 	system time =       0.38 seconds =       0.01 minutes
-	total time  =         37 seconds =       0.62 minutes
+	total time  =         39 seconds =       0.65 minutes
     Triplet Direct CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:10 2022
+*** at Mon Nov  7 11:04:54 2022
 
    => Loading Basis Set <=
 
@@ -9794,10 +9792,10 @@ Scratch directory: /scratch/dpoole34/
 
    @CUHF iter   1:  -131.02769686138819   -1.31028e+02   3.53708e-01 ADIIS
    @CUHF iter   2:  -140.10353912873418   -9.07584e+00   1.85166e-01 ADIIS
-   @CUHF iter   3:  -149.07256385046523   -8.96902e+00   6.18739e-02 ADIIS/DIIS
-   @CUHF iter   4:  -149.63818987448269   -5.65626e-01   1.00903e-02 ADIIS/DIIS
-   @CUHF iter   5:  -149.65122786458724   -1.30380e-02   1.50677e-03 ADIIS/DIIS
-   @CUHF iter   6:  -149.65168121631359   -4.53352e-04   2.17117e-04 ADIIS/DIIS
+   @CUHF iter   3:  -149.07256385046523   -8.96902e+00   6.18739e-02 DIIS/ADIIS
+   @CUHF iter   4:  -149.63818987448269   -5.65626e-01   1.00903e-02 DIIS/ADIIS
+   @CUHF iter   5:  -149.65122786458724   -1.30380e-02   1.50677e-03 DIIS/ADIIS
+   @CUHF iter   6:  -149.65168121631359   -4.53352e-04   2.17117e-04 DIIS/ADIIS
    @CUHF iter   7:  -149.65170871431570   -2.74980e-05   1.84194e-05 DIIS
    @CUHF iter   8:  -149.65170789138173    8.22934e-07   2.07188e-06 DIIS
    @CUHF iter   9:  -149.65170764199598    2.49386e-07   3.39347e-07 DIIS
@@ -9904,21 +9902,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:10 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:54 2022
 Module time:
-	user time   =       0.28 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      33.08 seconds =       0.55 minutes
+	user time   =      33.14 seconds =       0.55 minutes
 	system time =       0.40 seconds =       0.01 minutes
-	total time  =         37 seconds =       0.62 minutes
+	total time  =         39 seconds =       0.65 minutes
     Triplet Disk CUHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:10 2022
+*** at Mon Nov  7 11:04:54 2022
 
    => Loading Basis Set <=
 
@@ -10065,10 +10063,10 @@ Scratch directory: /scratch/dpoole34/
 
    @DF-CUHF iter   1:  -131.02345177007209   -1.31023e+02   3.53905e-01 ADIIS
    @DF-CUHF iter   2:  -140.10421225181673   -9.08076e+00   1.85188e-01 ADIIS
-   @DF-CUHF iter   3:  -149.07251737243493   -8.96831e+00   6.18656e-02 ADIIS/DIIS
-   @DF-CUHF iter   4:  -149.63808950369372   -5.65572e-01   1.00945e-02 ADIIS/DIIS
-   @DF-CUHF iter   5:  -149.65112849378588   -1.30390e-02   1.50612e-03 ADIIS/DIIS
-   @DF-CUHF iter   6:  -149.65158147606783   -4.52982e-04   2.16998e-04 ADIIS/DIIS
+   @DF-CUHF iter   3:  -149.07251737243493   -8.96831e+00   6.18656e-02 DIIS/ADIIS
+   @DF-CUHF iter   4:  -149.63808950369372   -5.65572e-01   1.00945e-02 DIIS/ADIIS
+   @DF-CUHF iter   5:  -149.65112849378588   -1.30390e-02   1.50612e-03 DIIS/ADIIS
+   @DF-CUHF iter   6:  -149.65158147606783   -4.52982e-04   2.16998e-04 DIIS/ADIIS
    @DF-CUHF iter   7:  -149.65160902343254   -2.75474e-05   1.83726e-05 DIIS
    @DF-CUHF iter   8:  -149.65160819598424    8.27448e-07   2.07458e-06 DIIS
    @DF-CUHF iter   9:  -149.65160794655139    2.49433e-07   3.38450e-07 DIIS
@@ -10175,21 +10173,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:10 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:54 2022
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
+	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      33.31 seconds =       0.56 minutes
+	user time   =      33.34 seconds =       0.56 minutes
 	system time =       0.40 seconds =       0.01 minutes
-	total time  =         37 seconds =       0.62 minutes
+	total time  =         39 seconds =       0.65 minutes
     Triplet DiskDF CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:11 2022
+*** at Mon Nov  7 11:04:54 2022
 
    => Loading Basis Set <=
 
@@ -10337,10 +10335,10 @@ Scratch directory: /scratch/dpoole34/
 
    @DF-CUHF iter   1:  -131.02345177007203   -1.31023e+02   3.53905e-01 ADIIS
    @DF-CUHF iter   2:  -140.10421225181634   -9.08076e+00   1.85188e-01 ADIIS
-   @DF-CUHF iter   3:  -149.07251737243496   -8.96831e+00   6.18656e-02 ADIIS/DIIS
-   @DF-CUHF iter   4:  -149.63808950369364   -5.65572e-01   1.00945e-02 ADIIS/DIIS
-   @DF-CUHF iter   5:  -149.65112849378588   -1.30390e-02   1.50612e-03 ADIIS/DIIS
-   @DF-CUHF iter   6:  -149.65158147606775   -4.52982e-04   2.16998e-04 ADIIS/DIIS
+   @DF-CUHF iter   3:  -149.07251737243496   -8.96831e+00   6.18656e-02 DIIS/ADIIS
+   @DF-CUHF iter   4:  -149.63808950369364   -5.65572e-01   1.00945e-02 DIIS/ADIIS
+   @DF-CUHF iter   5:  -149.65112849378588   -1.30390e-02   1.50612e-03 DIIS/ADIIS
+   @DF-CUHF iter   6:  -149.65158147606775   -4.52982e-04   2.16998e-04 DIIS/ADIIS
    @DF-CUHF iter   7:  -149.65160902343251   -2.75474e-05   1.83726e-05 DIIS
    @DF-CUHF iter   8:  -149.65160819598432    8.27448e-07   2.07458e-06 DIIS
    @DF-CUHF iter   9:  -149.65160794655134    2.49433e-07   3.38450e-07 DIIS
@@ -10447,21 +10445,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:11 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:55 2022
 Module time:
 	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      33.52 seconds =       0.56 minutes
+	user time   =      33.54 seconds =       0.56 minutes
 	system time =       0.40 seconds =       0.01 minutes
-	total time  =         38 seconds =       0.63 minutes
+	total time  =         40 seconds =       0.67 minutes
     Triplet MemDF CUHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:11 2022
+*** at Mon Nov  7 11:04:55 2022
 
    => Loading Basis Set <=
 
@@ -10590,18 +10588,18 @@ Scratch directory: /scratch/dpoole34/
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
    @CUHF iter   1:  -131.02266731942410   -1.31023e+02   3.53890e-01 ADIIS
-   @CUHF iter   2:  -140.10621696114706   -9.08355e+00   1.85157e-01 ADIIS
-   @CUHF iter   3:  -149.07283195574351   -8.96661e+00   6.18535e-02 ADIIS/DIIS
-   @CUHF iter   4:  -149.63845093676014   -5.65619e-01   1.00842e-02 ADIIS/DIIS
-   @CUHF iter   5:  -149.65151108189124   -1.30601e-02   1.51377e-03 ADIIS/DIIS
-   @CUHF iter   6:  -149.65197130478208   -4.60223e-04   2.18032e-04 ADIIS/DIIS
-   @CUHF iter   7:  -149.65199790962743   -2.66048e-05   1.85204e-05 DIIS
+   @CUHF iter   2:  -140.10621696114717   -9.08355e+00   1.85157e-01 ADIIS
+   @CUHF iter   3:  -149.07283195574354   -8.96661e+00   6.18535e-02 DIIS/ADIIS
+   @CUHF iter   4:  -149.63845093676019   -5.65619e-01   1.00842e-02 DIIS/ADIIS
+   @CUHF iter   5:  -149.65151108189110   -1.30601e-02   1.51377e-03 DIIS/ADIIS
+   @CUHF iter   6:  -149.65197130478225   -4.60223e-04   2.18032e-04 DIIS/ADIIS
+   @CUHF iter   7:  -149.65199790962745   -2.66048e-05   1.85204e-05 DIIS
    @CUHF iter   8:  -149.65199703995123    8.69676e-07   2.10529e-06 DIIS
-   @CUHF iter   9:  -149.65199679272936    2.47222e-07   3.47492e-07 DIIS
+   @CUHF iter   9:  -149.65199679272925    2.47222e-07   3.47492e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @CUHF iter  10:  -149.65168894016244    3.07853e-04   9.18132e-04 ADIIS/DIIS
+   @CUHF iter  10:  -149.65168894016242    3.07853e-04   9.18132e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -10674,13 +10672,13 @@ Scratch directory: /scratch/dpoole34/
     NA   [     3,    0,    1,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
-  @CUHF Final Energy:  -149.65168894016244
+  @CUHF Final Energy:  -149.65168894016242
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9107736954303505
-    Two-Electron Energy =                  86.4705924981042529
+    One-Electron Energy =                -266.9107736954306347
+    Two-Electron Energy =                  86.4705924981045513
     Total Energy =                       -149.6516889401624439
 
 Computation Completed
@@ -10705,21 +10703,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:14 2022
+*** tstop() called on ds6 at Mon Nov  7 11:04:58 2022
 Module time:
-	user time   =       2.92 seconds =       0.05 minutes
+	user time   =       2.90 seconds =       0.05 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
 	user time   =      36.47 seconds =       0.61 minutes
 	system time =       0.41 seconds =       0.01 minutes
-	total time  =         41 seconds =       0.68 minutes
+	total time  =         43 seconds =       0.72 minutes
     Triplet DFJ+COSX CUHF energy..........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Mon Nov  7 10:57:14 2022
+*** at Mon Nov  7 11:04:58 2022
 
    => Loading Basis Set <=
 
@@ -10846,10 +10844,10 @@ Scratch directory: /scratch/dpoole34/
 
    @CUHF iter   1:  -131.02824188718688   -1.31028e+02   3.53702e-01 ADIIS
    @CUHF iter   2:  -140.10809986937551   -9.07986e+00   1.85134e-01 ADIIS
-   @CUHF iter   3:  -149.07220799997776   -8.96411e+00   6.18921e-02 ADIIS/DIIS
-   @CUHF iter   4:  -149.63818696514187   -5.65979e-01   1.00981e-02 ADIIS/DIIS
-   @CUHF iter   5:  -149.65124590648077   -1.30589e-02   1.50640e-03 ADIIS/DIIS
-   @CUHF iter   6:  -149.65169910490732   -4.53198e-04   2.17102e-04 ADIIS/DIIS
+   @CUHF iter   3:  -149.07220799997776   -8.96411e+00   6.18921e-02 DIIS/ADIIS
+   @CUHF iter   4:  -149.63818696514187   -5.65979e-01   1.00981e-02 DIIS/ADIIS
+   @CUHF iter   5:  -149.65124590648077   -1.30589e-02   1.50640e-03 DIIS/ADIIS
+   @CUHF iter   6:  -149.65169910490732   -4.53198e-04   2.17102e-04 DIIS/ADIIS
    @CUHF iter   7:  -149.65172663379934   -2.75289e-05   1.84171e-05 DIIS
    @CUHF iter   8:  -149.65172580983565    8.23964e-07   2.07767e-06 DIIS
    @CUHF iter   9:  -149.65172556019772    2.49638e-07   3.39954e-07 DIIS
@@ -10956,18 +10954,18 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Mon Nov  7 10:57:15 2022
+*** tstop() called on ds6 at Mon Nov  7 11:05:04 2022
 Module time:
-	user time   =       1.64 seconds =       0.03 minutes
+	user time   =       1.66 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =      38.14 seconds =       0.64 minutes
+	user time   =      38.15 seconds =       0.64 minutes
 	system time =       0.42 seconds =       0.01 minutes
-	total time  =         42 seconds =       0.70 minutes
+	total time  =         49 seconds =       0.82 minutes
     Triplet DFJ+LinK CUHF energy..........................................................PASSED
 
-    Psi4 stopped on: Monday, 07 November 2022 10:57AM
-    Psi4 wall time for execution: 0:00:42.15
+    Psi4 stopped on: Monday, 07 November 2022 11:05AM
+    Psi4 wall time for execution: 0:00:48.89
 
 *** Psi4 exiting successfully. Buy a developer a beer!
