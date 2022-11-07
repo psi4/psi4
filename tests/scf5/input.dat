@@ -102,13 +102,13 @@ E = energy('scf')
 compare_values(Eref_sing_df, E, 4, 'Singlet DFJ+COSX UHF energy') #TEST
 
 set scf_type link
-set screening density 
+set screening density
 E = energy('scf')
 compare_values(Eref_sing_can, E, 4, 'Singlet DFJ+LinK UHF energy') #TEST
 
 print('    -Singlet CUHF:') #TEST
 set scf reference cuhf
-set screening csam 
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -135,7 +135,7 @@ E = energy('scf')
 compare_values(Eref_sing_can, E, 4, 'Singlet DFJ+COSX CUHF energy') #TEST
 
 set scf_type link
-set screening density 
+set screening density
 E = energy('scf')
 compare_values(Eref_sing_can, E, 4, 'Singlet DFJ+LinK CUHF energy') #TEST
 
@@ -149,7 +149,7 @@ set {
 
 print('    -Triplet UHF:') #TEST
 set scf reference uhf
-set screening csam 
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -184,7 +184,7 @@ clean()
 
 print('    -Triplet ROHF:') #TEST
 set scf reference rohf
-set screening csam 
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -214,7 +214,7 @@ E = energy('scf')
 compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+COSX ROHF energy') #TEST
 
 set scf_type link
-set screening density 
+set screening density
 E = energy('scf')
 compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+LinK ROHF energy') #TEST
 
@@ -222,7 +222,7 @@ clean()
 
 print('    -Triplet CUHF:') #TEST
 set scf reference cuhf
-set screening csam 
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -252,8 +252,6 @@ E = energy('scf')
 compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+COSX CUHF energy') #TEST
 
 set scf_type link
-set screening density 
+set screening density
 E = energy('scf')
 compare_values(Eref_rohf_can, E, 4, 'Triplet DFJ+LinK CUHF energy') #TEST
-
-
