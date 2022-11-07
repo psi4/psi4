@@ -201,7 +201,7 @@ def _UHF_stability_analysis(self):
     # (See DOI 10.1063/1.467504 eq. 8 for explicit formulas. You can show non-periodicity in general in the simple case that P^1/2 is 2-by-2 diagonal.)
     # As such, this algorithm is best regarded as a first attempt open to improvements.
     # Example improvement: if the orbital rotation increases the energy, take a smaller step, not a larger.
-    if unstable and self.options().get_double("STABILITY_ANALYSIS") == "FOLLOW":
+    if unstable and self.options().get_str("STABILITY_ANALYSIS") == "FOLLOW":
         # ==> Increment step_scale_ if necessary <==
         if hasattr(self, "last_hess_eigval") and abs(self.last_hess_eigval - current_eigenvalue) < 1e-4:
             core.print_out("    Negative eigenvalue similar to previous one, wavefunction\n")

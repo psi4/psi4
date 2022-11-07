@@ -794,9 +794,10 @@ def davidson_solver(
         _print_array("SS eigenvectors", alpha, verbose)
         _print_array("SS eigenvalues", lam, verbose)
 
-        # remove zeros/negatives
-        #alpha = alpha[:, lam > 1.0e-10]
-        #lam = lam[lam > 1.0e-10]
+        if nonneg_only:
+            # remove zeros/negatives
+            alpha = alpha[:, lam > 1.0e-10]
+            lam = lam[lam > 1.0e-10]
 
         # sort/truncate to nroot
         idx = np.argsort(lam)
