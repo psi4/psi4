@@ -99,7 +99,7 @@ compare_values(Eref_sing_df, E, 6, 'Singlet MemDF UHF energy') #TEST
 
 set scf_type cosx
 E = energy('scf')
-compare_values(Eref_sing_df, E, 4, 'Singlet DFJ+COSX UHF energy') #TEST
+compare_values(Eref_sing_can, E, 4, 'Singlet DFJ+COSX UHF energy') #TEST
 
 set scf_type link
 set screening density
