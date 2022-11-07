@@ -230,7 +230,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
             }
         }
     }
-    outfile->Printf("        Number of abc combinations: %i\n", nabc);
+    outfile->Printf("        Number of abc combinations: %li\n", nabc);
     outfile->Printf("\n");
 
     for (int i = 0; i < nthreads; i++) etrip[i] = 0.0;
