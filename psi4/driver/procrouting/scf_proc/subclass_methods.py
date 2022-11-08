@@ -142,11 +142,12 @@ def _UHF_stability_analysis(self):
         if len(roots) != wfn.nirrep():
             raise ValidationError(f"SOLVER_ROOTS_PER_IRREP specified {wfn.nirrep()} irreps, but there are {len(roots)} irreps.")
     r_convergence = self.options().get_double("SOLVER_CONVERGENCE")
+    # Below formula borrowed from TDSCF code.
+    max_vecs_per_root = int(-np.log10(r_convergence) * 50)
     if not self.options().has_changed("SOLVER_N_GUESS"):
-        # Below formula borrowed from TDSCF code.
-        max_vecs_per_root = int(-np.log10(r_convergence) * 50)
+        nguess = nroot * 4 
     else:
-        max_vecs_per_root = self.options().get_int("SOLVER_N_GUESS")
+        nguess = self.options().get_int("SOLVER_N_GUESS")
     engine = TDUSCFEngine(self, ptype="hess")
 
     # => Compute eigenvectors and do trivial data processing <=
@@ -160,7 +161,7 @@ def _UHF_stability_analysis(self):
         engine.reset_for_state_symm(engine.G_gs ^ h)
         ret = solvers.davidson_solver(engine=engine,
                                       nroot=nroot,
-                                      guess=engine.generate_guess(nroot * 4),
+                                      guess=engine.generate_guess(nguess),
                                       r_convergence=r_convergence,
                                       max_ss_size=max_vecs_per_root * nroot,
                                       verbose=0)

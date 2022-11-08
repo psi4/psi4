@@ -950,7 +950,7 @@ The Davidson solver for the eigenvalues is controlled through several keywords.
 
   |scf__solver_roots_per_irrep|: The number of eigenvectors to solve in each irreducible representation. An array of as many integers as there are irreducible representations.
 
-  |scf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably.
+  |scf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Defaults to 4 guess vectors per root.
 
 
 
