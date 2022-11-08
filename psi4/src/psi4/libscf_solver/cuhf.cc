@@ -368,6 +368,7 @@ double CUHF::compute_initial_E() { return nuclearrep_ + Dt_->vector_dot(H_); }
 
 double CUHF::compute_E() {
     double DH = Dt_->vector_dot(H_);
+    double DT = Dt_->vector_dot(T_);
     double DFa = Da_->vector_dot(Fa_);
     double DFb = Db_->vector_dot(Fb_);
 
@@ -376,6 +377,7 @@ double CUHF::compute_E() {
     double Eelec = 0.5 * (DH + DFa + DFb);
 
     energies_["Nuclear"] = nuclearrep_;
+    energies_["Kinetic"] = DT;
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;

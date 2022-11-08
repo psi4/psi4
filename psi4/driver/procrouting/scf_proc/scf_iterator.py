@@ -704,6 +704,7 @@ def scf_print_energies(self):
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
     epe = self.get_energies('PE Energy')
+    ke = self.get_energues('Kinetic')
 
     hf_energy = enuc + e1 + e2
     dft_energy = hf_energy + exc + ed + evv10
@@ -738,6 +739,10 @@ def scf_print_energies(self):
         #self.set_variable(self.functional().name() + ' FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
         self.set_variable("DFT TOTAL ENERGY", dft_energy)  # overwritten later for DH  # P::e SCF
     else:
+        auto potential = total_energy - ke
+        self.set_variable("HF KINETIC ENERGY", hf_energy)  # P::e SCF
+        self.set_variable("HF POTENTIAL ENERGY", potential)  # P::e SCF
+        self.set_variable("HF VIRIAL RATIO", - potential / ke)  # P::e SCF
         self.set_variable("HF TOTAL ENERGY", hf_energy)  # P::e SCF
     if hasattr(self, "_disp_functor"):
         self.set_variable("DISPERSION CORRECTION ENERGY", ed)  # P::e SCF
