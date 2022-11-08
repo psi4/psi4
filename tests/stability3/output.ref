@@ -1,0 +1,360 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.7a1.dev95 
+
+                         Git: Rev {tragedy} 3f6c9bc dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, and A. Jiang
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 08 November 2022 10:44AM
+
+    Process ID: 2107
+    Host:       jonathons-mbp.wireless.emory.edu
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test LDA stability analysis against QChem.
+
+molecule bb {
+   0 3 
+   b   
+   b 1 R 
+   R = 1.587553
+symmetry c1
+}
+
+set {
+reference uks 
+basis def2-svp
+STABILITY_ANALYSIS check
+SOLVER_N_GUESS 4
+solver_n_root 2
+scf_type pk
+}
+
+ref_eigenvalues = psi4.Matrix.from_list([[-0.0142], [0.0203]]) # TEST
+
+energy('svwn')
+compare_matrices(ref_eigenvalues, variable("SCF STABILITY EIGENVALUES"), 4, "Instability Eigenvalues") # TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+
+*** tstart() called on jonathons-mbp.wireless.emory.edu
+*** at Tue Nov  8 10:44:25 2022
+
+   => Loading Basis Set <=
+
+    Name: DEF2-SVP
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry B          line    70 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/def2-svp.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         B            0.000000000000     0.000000000000    -0.793776500000    11.009305360000
+         B            0.000000000000     0.000000000000     0.793776500000    11.009305360000
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      1.21509  C =      1.21509 [cm^-1]
+  Rotational constants: A = ************  B =  36427.62115  C =  36427.62115 [MHz]
+  Nuclear repulsion =    8.333221169151519
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 10
+  Nalpha       = 6
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: DEF2-SVP
+    Blend: DEF2-SVP
+    Number of shells: 12
+    Number of basis functions: 28
+    Number of Cartesian functions: 30
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: SVWN <= 
+
+    SVWN3 (RPA) LSDA Functional
+
+    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999
+
+
+    Deriv               =              1
+    GGA                 =          FALSE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =          FALSE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    1.0000         XC_LDA_X
+
+   => Correlation Functionals <=
+
+    1.0000   XC_LDA_C_VWN_RPA
+
+   => LibXC Density Thresholds  <==
+
+    XC_LDA_C_VWN_RPA:  1.00E-15 
+    XC_LDA_X:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    Blocking Scheme        =         OCTREE
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          42588
+    Total Blocks           =            390
+    Max Points             =            255
+    Max Functions          =             28
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              12
+      Number of primitives:             24
+      Number of atomic orbitals:        30
+      Number of basis functions:        28
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 165242 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    Memory [MiB]:              366
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Cached 100.0% of DFT collocation blocks in 0.009 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 4.1794765727E-03.
+  Reciprocal condition number of the overlap matrix is 1.2298573001E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         28      28 
+   -------------------------
+    Total      28      28
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UKS iter SAD:   -48.57469558794340   -4.85747e+01   0.00000e+00 
+   @UKS iter   1:   -48.91706361652432   -3.42368e-01   8.43060e-03 ADIIS/DIIS
+   @UKS iter   2:   -48.91929391429867   -2.23030e-03   8.29304e-03 ADIIS/DIIS
+   @UKS iter   3:   -48.97986519884312   -6.05713e-02   3.15481e-04 ADIIS/DIIS
+   @UKS iter   4:   -48.97993793662960   -7.27378e-05   4.59377e-05 DIIS
+   @UKS iter   5:   -48.97994004177806   -2.10515e-06   6.07128e-06 DIIS
+   @UKS iter   6:   -48.97994007636500   -3.45869e-08   6.20266e-07 DIIS
+  Energy and wave function converged.
+
+    Negative totally symmetric eigenvalue detected: -0.014250 
+    Wavefunction unstable!
+    Lowest UHF->UHF stability eigenvalues: 
+       A -0.014250        A 0.020263      
+
+    Stability analysis over.
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Nalpha   =    6.0000004885 ; deviation = 4.885e-07
+      Nbeta    =    4.0000004736 ; deviation = 4.736e-07
+      Ntotal   =   10.0000009621 ; deviation = 9.621e-07 
+
+   @Spin Contamination Metric:   2.413669208E-03
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.002413669E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A     -6.542531     2A     -6.542100     3A     -0.514377  
+       4A     -0.288307     5A     -0.244547     6A     -0.244547  
+
+    Alpha Virtual:                                                        
+
+       7A     -0.221363     8A     -0.074288     9A     -0.074288  
+      10A      0.141780    11A      0.158874    12A      0.200835  
+      13A      0.208983    14A      0.208983    15A      0.222611  
+      16A      0.280264    17A      0.280264    18A      0.457887  
+      19A      0.802159    20A      0.802159    21A      0.830191  
+      22A      0.830191    23A      1.049039    24A      1.049039  
+      25A      1.186447    26A      1.401456    27A      1.401456  
+      28A      1.635117  
+
+    Beta Occupied:                                                        
+
+       1A     -6.531579     2A     -6.531110     3A     -0.463365  
+       4A     -0.256630  
+
+    Beta Virtual:                                                         
+
+       5A     -0.197847     6A     -0.192320     7A     -0.192320  
+       8A     -0.030833     9A     -0.030833    10A      0.171445  
+      11A      0.179001    12A      0.215862    13A      0.241917  
+      14A      0.243618    15A      0.243618    16A      0.311930  
+      17A      0.311930    18A      0.492185    19A      0.845091  
+      20A      0.845091    21A      0.890683    22A      0.890683  
+      23A      1.109278    24A      1.109278    25A      1.222844  
+      26A      1.444685    27A      1.444685    28A      1.663936  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     4 ]
+    SOCC [     2 ]
+    NA   [     6 ]
+    NB   [     4 ]
+
+  @UKS Final Energy:   -48.97994007636500
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.3332211691515194
+    One-Electron Energy =                 -81.3056243624134254
+    Two-Electron Energy =                  31.4651575760988393
+    DFT Exchange-Correlation Energy =      -7.4726944592019295
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -48.9799400763650041
+
+  UHF NO Occupations:
+  HONO-2 :    4  A 1.9989634
+  HONO-1 :    5  A 1.0000000
+  HONO-0 :    6  A 1.0000000
+  LUNO+0 :    7  A 0.0010366
+  LUNO+1 :    8  A 0.0001703
+  LUNO+2 :    9  A 0.0000003
+  LUNO+3 :   10  A 0.0000002
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Magnitude           :                                                    0.0000000
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Tue Nov  8 10:44:28 2022
+Module time:
+	user time   =       2.45 seconds =       0.04 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       2.45 seconds =       0.04 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+    Instability Eigenvalues...............................................................PASSED
+
+    Psi4 stopped on: Tuesday, 08 November 2022 10:44AM
+    Psi4 wall time for execution: 0:00:02.66
+
+*** Psi4 exiting successfully. Buy a developer a beer!
