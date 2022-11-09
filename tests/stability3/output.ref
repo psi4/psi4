@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.7a1.dev95 
+                               Psi4 1.7a1.dev98 
 
-                         Git: Rev {tragedy} 3f6c9bc dirty
+                         Git: Rev {tragedy} 2515951 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 08 November 2022 10:44AM
+    Psi4 started on: Wednesday, 09 November 2022 01:10PM
 
-    Process ID: 2107
+    Process ID: 10965
     Host:       jonathons-mbp.wireless.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -52,10 +52,9 @@ symmetry c1
 }
 
 set {
-reference uks 
+reference uks
 basis def2-svp
 STABILITY_ANALYSIS check
-SOLVER_N_GUESS 4
 solver_n_root 2
 scf_type pk
 }
@@ -69,7 +68,7 @@ compare_matrices(ref_eigenvalues, variable("SCF STABILITY EIGENVALUES"), 4, "Ins
 Scratch directory: /tmp/
 
 *** tstart() called on jonathons-mbp.wireless.emory.edu
-*** at Tue Nov  8 10:44:25 2022
+*** at Wed Nov  9 13:10:06 2022
 
    => Loading Basis Set <=
 
@@ -237,10 +236,10 @@ Scratch directory: /tmp/
    @UKS iter   6:   -48.97994007636500   -3.45869e-08   6.20266e-07 DIIS
   Energy and wave function converged.
 
-    Negative totally symmetric eigenvalue detected: -0.014250 
+    Negative totally symmetric eigenvalue detected: -0.014249 
     Wavefunction unstable!
     Lowest UHF->UHF stability eigenvalues: 
-       A -0.014250        A 0.020263      
+       A -0.014249        A 0.020263      
 
     Stability analysis over.
 
@@ -343,18 +342,18 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on jonathons-mbp.wireless.emory.edu at Tue Nov  8 10:44:28 2022
+*** tstop() called on jonathons-mbp.wireless.emory.edu at Wed Nov  9 13:10:08 2022
 Module time:
-	user time   =       2.45 seconds =       0.04 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.84 seconds =       0.03 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       2.45 seconds =       0.04 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.84 seconds =       0.03 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
     Instability Eigenvalues...............................................................PASSED
 
-    Psi4 stopped on: Tuesday, 08 November 2022 10:44AM
-    Psi4 wall time for execution: 0:00:02.66
+    Psi4 stopped on: Wednesday, 09 November 2022 01:10PM
+    Psi4 wall time for execution: 0:00:02.26
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -12,7 +12,6 @@ set {
 reference uks
 basis def2-svp
 STABILITY_ANALYSIS check
-SOLVER_N_GUESS 4
 solver_n_root 2
 scf_type pk
 }
