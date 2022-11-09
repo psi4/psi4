@@ -144,10 +144,6 @@ def _UHF_stability_analysis(self):
     r_convergence = self.options().get_double("SOLVER_CONVERGENCE")
     # Below formula borrowed from TDSCF code.
     max_vecs_per_root = int(-np.log10(r_convergence) * 50)
-    if not self.options().has_changed("SOLVER_N_GUESS"):
-        nguess = nroot * 4 
-    else:
-        nguess = self.options().get_int("SOLVER_N_GUESS")
     engine = TDUSCFEngine(self, ptype="hess")
 
     # => Compute eigenvectors and do trivial data processing <=
@@ -156,6 +152,10 @@ def _UHF_stability_analysis(self):
     unstable = False
     for h, nroot in enumerate(roots):
         if not nroot: continue
+        if not self.options().has_changed("SOLVER_N_GUESS"):
+            nguess = nroot * 4
+        else:
+            nguess = self.options().get_int("SOLVER_N_GUESS")
         # The below line changes the guess the engine generates, which controls the final states.
         # This selects for eigenvectors of irrep h.
         engine.reset_for_state_symm(engine.G_gs ^ h)

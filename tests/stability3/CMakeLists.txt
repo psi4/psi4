@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(stability2 "psi;quicktests;stability")
+add_regression_test(stability3 "psi;quicktests;stability")

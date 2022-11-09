@@ -535,7 +535,7 @@ def scf_finalize_energy(self):
 
         # We need the integral file, make sure it is written and
         # compute it if needed
-        if core.get_option('SCF', 'REFERENCE') != "UHF":
+        if core.get_option('SCF', 'REFERENCE') not in {"UHF", "UKS"}:
             # Don't bother computing needed integrals if we can't do anything with them.
             if self.functional().needs_xc():
                 raise ValidationError("Stability analysis not yet supported for XC functionals.")
