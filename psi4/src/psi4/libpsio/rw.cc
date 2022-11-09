@@ -50,7 +50,6 @@ namespace psi {
  ** \ingroup PSIO
  */
 void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int wrt) {
-    int errcod;
     size_t i;
     size_t errcod_uli;
     size_t page, offset;
@@ -67,12 +66,10 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
 
     /* Seek all volumes to correct starting positions */
     first_vol = page % numvols;
-    errcod = psio_volseek(&(this_unit->vol[first_vol]), page, offset, numvols);
-    if (errcod == -1) psio_error(unit, PSIO_ERROR_LSEEK);
+    psio_volseek(&(this_unit->vol[first_vol]), page, offset, numvols, unit);
     for (i = 1, this_page = page + 1; i < numvols; i++, this_page++) {
         this_vol = this_page % numvols;
-        errcod = psio_volseek(&(this_unit->vol[this_vol]), this_page, (size_t)0, numvols);
-        if (errcod == -1) psio_error(unit, PSIO_ERROR_LSEEK);
+        psio_volseek(&(this_unit->vol[this_vol]), this_page, (size_t)0, numvols, unit);
     }
 
     /* Number of bytes left on the first page */
@@ -86,10 +83,26 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
     buf_offset = 0;
     if (wrt) {
         errcod_uli = SYSTEM_WRITE(this_unit->vol[first_vol].stream, &(buffer[buf_offset]), this_page_total);
-        if (errcod_uli != this_page_total) psio_error(unit, PSIO_ERROR_WRITE);
+        const int saved_errno = errno;
+        if (errcod_uli != this_page_total) {
+            const std::string beginning =
+                (errcod_uli == -1) ? "WRITE failed." : "WRITE failed. Only some of the bytes were written!";
+            const std::string context = "Error writing the first partial page";
+            const std::string errmsg = (errcod_uli == -1) ? psio_compose_err_msg(beginning, context, unit, saved_errno)
+                                                          : psio_compose_err_msg(beginning, context, unit);
+            psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+        }
     } else {
         errcod_uli = SYSTEM_READ(this_unit->vol[first_vol].stream, &(buffer[buf_offset]), this_page_total);
-        if (errcod_uli != this_page_total) psio_error(unit, PSIO_ERROR_READ);
+        const int saved_errno = errno;
+        if (errcod_uli != this_page_total) {
+            const std::string beginning =
+                (errcod_uli == -1) ? "READ failed." : "READ failed. Only some of the bytes were read!";
+            const std::string context = "Error reading the first partial page";
+            const std::string errmsg = (errcod_uli == -1) ? psio_compose_err_msg(beginning, context, unit, saved_errno)
+                                                          : psio_compose_err_msg(beginning, context, unit);
+            psio_error(unit, PSIO_ERROR_READ, errmsg);
+        }
     }
 
     /* Total number of bytes remaining to be read/written */
@@ -103,10 +116,28 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
         this_page_total = PSIO_PAGELEN;
         if (wrt) {
             errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), this_page_total);
-            if (errcod_uli != this_page_total) psio_error(unit, PSIO_ERROR_WRITE);
+            const int saved_errno = errno;
+            if (errcod_uli != this_page_total) {
+                const std::string beginning =
+                    (errcod_uli == -1) ? "WRITE failed." : "WRITE failed. Only some of the bytes were written!";
+                const std::string context = "Error writing a full page";
+                const std::string errmsg = (errcod_uli == -1)
+                                               ? psio_compose_err_msg(beginning, context, unit, saved_errno)
+                                               : psio_compose_err_msg(beginning, context, unit);
+                psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+            }
         } else {
             errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), this_page_total);
-            if (errcod_uli != this_page_total) psio_error(unit, PSIO_ERROR_READ);
+            const int saved_errno = errno;
+            if (errcod_uli != this_page_total) {
+                const std::string beginning =
+                    (errcod_uli == -1) ? "READ failed." : "READ failed. Only some of the bytes were read!";
+                const std::string context = "Error reading a full page";
+                const std::string errmsg = (errcod_uli == -1)
+                                               ? psio_compose_err_msg(beginning, context, unit, saved_errno)
+                                               : psio_compose_err_msg(beginning, context, unit);
+                psio_error(unit, PSIO_ERROR_READ, errmsg);
+            }
         }
         buf_offset += this_page_total;
     }
@@ -117,10 +148,28 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size, int 
     if (bytes_left) {
         if (wrt) {
             errcod_uli = SYSTEM_WRITE(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), bytes_left);
-            if (errcod_uli != bytes_left) psio_error(unit, PSIO_ERROR_WRITE);
+            const int saved_errno = errno;
+            if (errcod_uli != bytes_left) {
+                const std::string beginning =
+                    (errcod_uli == -1) ? "WRITE failed." : "WRITE failed. Only some of the bytes were written!";
+                const std::string context = "Error writing the last partial page";
+                const std::string errmsg = (errcod_uli == -1)
+                                               ? psio_compose_err_msg(beginning, context, unit, saved_errno)
+                                               : psio_compose_err_msg(beginning, context, unit);
+                psio_error(unit, PSIO_ERROR_WRITE, errmsg);
+            }
         } else {
             errcod_uli = SYSTEM_READ(this_unit->vol[this_vol].stream, &(buffer[buf_offset]), bytes_left);
-            if (errcod_uli != bytes_left) psio_error(unit, PSIO_ERROR_READ);
+            const int saved_errno = errno;
+            if (errcod_uli != bytes_left) {
+                const std::string beginning =
+                    (errcod_uli == -1) ? "READ failed." : "READ failed. Only some of the bytes were read!";
+                const std::string context = "Error reading the last partial page";
+                const std::string errmsg = (errcod_uli == -1)
+                                               ? psio_compose_err_msg(beginning, context, unit, saved_errno)
+                                               : psio_compose_err_msg(beginning, context, unit);
+                psio_error(unit, PSIO_ERROR_READ, errmsg);
+            }
         }
     }
 }

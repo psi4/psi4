@@ -2,6 +2,7 @@ list(APPEND sources
   aio_handler.cc
   change_namespace.cc
   close.cc
+  compose_err_msg.cc
   done.cc
   decode_errno.cc
   error.cc

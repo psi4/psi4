@@ -30,6 +30,7 @@
 #define PSIO_H
 
 #include <cstdio>
+#include <optional>
 #include "psi4/libpsio/config.h"
 #include <string>
 
@@ -60,6 +61,9 @@
 namespace psi {
 
 std::string decode_errno(const int errno_in);
+std::string psio_compose_err_msg(const std::string &beginning, const std::string &context, const size_t unit,
+                                 const std::optional<int> errno_in = std::nullopt);
+
 int psio_init();
 void psio_error(size_t unit, size_t errval, std::string prev_msg = "");
 int psio_open(size_t unit, int status);
@@ -68,7 +72,7 @@ std::string psio_getpid();
 
 PSI_API psio_address psio_get_address(psio_address start, size_t shift);
 psio_address psio_get_global_address(psio_address entry_start, psio_address rel_address);
-int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols);
+void psio_volseek(const psio_vol *vol, size_t page, const size_t offset, const size_t numvols, const size_t unit);
 
 int psio_tocwrite(size_t unit);
 void psio_tocprint(size_t unit);  // debug printing
