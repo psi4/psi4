@@ -84,14 +84,16 @@ set scf_type mem_df
 E = energy('scf')
 compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF RHF energy') #TEST
 
-set scf_type cosx
-E = energy('scf')
-compare_values(Eref["Singlet"]["Composite"]["DFJ+COSX"], E, 6, 'Singlet DFJ+COSX RHF energy') #TEST
+for method in Eref["Singlet"]["Composite"].keys():
+    if method == "COSX": 
+      set scf_type cosx # NOTE: if I knew how to directly assign scf_type to the value in method in Psithon here, I would
+      set screening csam
+    elif method == "LinK":
+      set scf_type link 
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
-compare_values(Eref["Singlet"]["Composite"]["DFJ+LinK"], E, 4, 'Singlet DFJ+LinK RHF energy') #TEST
+    E = energy('scf')
+    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} RHF energy') #TEST
 
 print('    -Singlet UHF:') #TEST
 set scf reference uhf
@@ -117,14 +119,16 @@ set scf_type mem_df
 E = energy('scf')
 compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF UHF energy') #TEST
 
-set scf_type cosx
-E = energy('scf')
-compare_values(Eref["Singlet"]["Composite"]["DFJ+COSX"], E, 6, 'Singlet DFJ+COSX UHF energy') #TEST
+for method in Eref["Singlet"]["Composite"].keys():
+    if method == "COSX": 
+      set scf_type cosx 
+      set screening csam
+    elif method == "LinK":
+      set scf_type link 
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
-compare_values(Eref["Singlet"]["Composite"]["DFJ+LinK"], E, 4, 'Singlet DFJ+LinK UHF energy') #TEST
+    E = energy('scf')
+    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} UHF energy') #TEST
 
 print('    -Singlet CUHF:') #TEST
 set scf reference cuhf
@@ -150,14 +154,16 @@ set scf_type mem_df
 E = energy('scf')
 compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF CUHF energy') #TEST
 
-set scf_type cosx
-E = energy('scf')
-compare_values(Eref["Singlet"]["Composite"]["DFJ+COSX"], E, 6, 'Singlet DFJ+COSX CUHF energy') #TEST
+for method in Eref["Singlet"]["Composite"].keys():
+    if method == "COSX": 
+      set scf_type cosx 
+      set screening csam
+    elif method == "LinK":
+      set scf_type link 
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
-compare_values(Eref["Singlet"]["Composite"]["DFJ+LinK"], E, 4, 'Singlet DFJ+LinK CUHF energy') #TEST
+    E = energy('scf')
+    compare_values(Eref["Singlet"]["Composite"][method], E, 6, f'Singlet {method} CUHF energy') #TEST
 
 activate(triplet_o2)
 set {
@@ -191,14 +197,16 @@ set scf_type mem_df
 E = energy('scf')
 compare_values(Eref["Triplet UHF"]["DF"], E, 6, 'Triplet MemDF UHF energy') #TEST
 
-set scf_type cosx
-E = energy('scf')
-compare_values(Eref["Triplet UHF"]["Composite"]["DFJ+COSX"], E, 6, 'Triplet DFJ+COSX UHF energy') #TEST
+for method in Eref["Triplet UHF"]["Composite"].keys():
+    if method == "COSX": 
+      set scf_type cosx 
+      set screening csam
+    elif method == "LinK":
+      set scf_type link 
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
-compare_values(Eref["Triplet UHF"]["Composite"]["DFJ+LinK"], E, 4, 'Triplet DFJ+LinK UHF energy') #TEST
+    E = energy('scf')
+    compare_values(Eref["Triplet UHF"]["Composite"][method], E, 6, f'Triplet {method} UHF energy') #TEST
 
 clean()
 
@@ -229,14 +237,16 @@ set scf_type mem_df
 E = energy('scf')
 compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF ROHF energy') #TEST
 
-set scf_type cosx
-E = energy('scf')
-compare_values(Eref["Triplet ROHF"]["Composite"]["DFJ+COSX"], E, 6, 'Triplet DFJ+COSX ROHF energy') #TEST
+for method in Eref["Triplet ROHF"]["Composite"].keys():
+    if method == "COSX": 
+      set scf_type cosx 
+      set screening csam
+    elif method == "LinK":
+      set scf_type link 
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
-compare_values(Eref["Triplet ROHF"]["Composite"]["DFJ+LinK"], E, 4, 'Triplet DFJ+LinK ROHF energy') #TEST
+    E = energy('scf')
+    compare_values(Eref["Triplet ROHF"]["Composite"][method], E, 6, f'Triplet {method} ROHF energy') #TEST
 
 clean()
 
@@ -267,11 +277,13 @@ set scf_type mem_df
 E = energy('scf')
 compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF CUHF energy') #TEST
 
-set scf_type cosx
-E = energy('scf')
-compare_values(Eref["Triplet ROHF"]["Composite"]["DFJ+COSX"], E, 6, 'Triplet DFJ+COSX CUHF energy') #TEST
+for method in Eref["Triplet ROHF"]["Composite"].keys():
+    if method == "COSX": 
+      set scf_type cosx 
+      set screening csam
+    elif method == "LinK":
+      set scf_type link 
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
-compare_values(Eref["Triplet ROHF"]["Composite"]["DFJ+LinK"], E, 4, 'Triplet DFJ+LinK CUHF energy') #TEST
+    E = energy('scf')
+    compare_values(Eref["Triplet ROHF"]["Composite"][method], E, 6, f'Triplet {method} CUHF energy') #TEST
