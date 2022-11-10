@@ -49,7 +49,6 @@ void DFOCC::ccd_3index_intr() {
         T->gemm(false, false, bQiaA, U, 1.0, 0.0);
         U.reset();
         T->write(psio_, PSIF_DFOCC_AMPS);
-        T.reset();
     }// if (reference_ == "RESTRICTED")
 
     // UHF
@@ -69,7 +68,6 @@ void DFOCC::ccd_3index_intr() {
         TQiaA = std::make_shared<Tensor2d>("T2 (Q|IA)", nQ, naoccA, navirA);
         TQiaA->gemm(false, true, bQiaA, L, 1.0, 0.0);
         L.reset();
-        //std::cout << "ccd_3index_int (1) is done. \n";
 
         // T(Q,IA) += \sum(j,b) (T2AB(Ij,Ab) * b(Q,jb))
         M = std::make_shared<Tensor2d>("M (IA|jb)", naoccA, navirA, naoccB, navirB);
@@ -101,9 +99,6 @@ void DFOCC::ccd_3index_intr() {
         TQiaB->gemm(false, false, bQiaA, M, 1.0, 1.0);
         M.reset();
         TQiaB->write(psio_, PSIF_DFOCC_AMPS);
-        TQiaB.reset();
-         //std::cout << "ccd_3index_int is done. \n";
-
     }// else if (reference_ == "UNRESTRICTED")
 
     // outfile->Printf("\t3indices done.\n");

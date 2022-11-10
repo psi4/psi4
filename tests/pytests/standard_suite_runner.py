@@ -120,8 +120,11 @@ def runner_asserter(inp, subject, method, basis, tnm):
     )
 
     # check all calcs against conventional reference to looser tolerance
-    atol_conv = 3.0e-4  # for df-ccsd. mp2 ok with 1.e-4
+    atol_conv = 1.5e-4
     rtol_conv = 1.0e-16  # qcdb 1.0e-3
+    if (method in ["ccsd", "ccsd(t)"] and corl_type in ["df", "cd"]) or (method == "wb97x"):
+        # fnocc non-conv ccsd opposite-spin df error is larger than corl df error. TODO: see if other methods/module/mols show this or if suspicious.
+        atol_conv = 3.0e-4
     chash_conv = answer_hash(
         system=subject.name(), basis=basis, fcae=fcae, reference=reference, corl_type="conv", scf_type="pk", sdsc=sdsc
     )

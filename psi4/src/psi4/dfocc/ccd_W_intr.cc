@@ -190,7 +190,6 @@ void DFOCC::ccd_W_MNIJT2AA()
     W.reset();
     Tau.reset();
     T2new->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    T2new.reset();
 }// ccd_W_MNIJT2AA
 
 //======================================================================

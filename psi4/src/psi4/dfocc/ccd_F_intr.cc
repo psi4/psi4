@@ -76,7 +76,6 @@ void DFOCC::ccd_F_intr() {
 
         // F_ae -=  \sum_{Q,m} Tau'_ma^Q b_me^Q
         FabA->contract(true, false, navirA, navirA, nQ * naoccA, Tau, bQiaA, -1.0, 1.0);
-        Tau.reset();
     }// if (reference_ == "RESTRICTED")
 
     // UHF
@@ -157,7 +156,6 @@ void DFOCC::ccd_F_intr() {
         Tau = std::make_shared<Tensor2d>("T2 (Q|ia)", nQ, naoccB, navirB);
         Tau->read(psio_, PSIF_DFOCC_AMPS);
         FabB->contract(true, false, navirB, navirB, nQ*naoccB, Tau, bQiaB, -1.0, 1.0);
-        Tau.reset();
 
     }// else if (reference_ == "UNRESTRICTED")
 
