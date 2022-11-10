@@ -952,7 +952,8 @@ The Davidson solver for the eigenvalues is controlled through several keywords.
 
   |scf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Defaults to 4 guess vectors per root.
 
-
+.. warning:: Prior to Dec 2022, v1.7, Psi4 had a different set of keywords controlling instability analysis, and those were included in the CPHF module rather than the SCF module.
+.. warning:: Extending Davidson instability analysis to Kohn-Sham references is under development. As of 1.7, only LDA functionals are currently supported.
 
 In case convergence problems are encountered during the Davidson procedure, file a bug report.
 If the solver seems to converge on the wrong eigenvalue, try increasing |scf__solver_n_guess|.
