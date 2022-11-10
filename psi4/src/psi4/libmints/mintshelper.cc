@@ -1765,25 +1765,19 @@ SharedVector MintsHelper::electrostatic_potential_value(SharedVector charges, Sh
                                                 coords->pointer()[i][2]}});
     }
     potential_integrals_->set_charge_field(Zxyz);
-    // SharedMatrix Zxyz =  std::make_shared<Matrix>("Zxyz", coords->nrow(), 4);
-    // for (size_t i = 0; i < coords->nrow(); ++i) {
-    //     Zxyz->pointer()[i][0] = charges->pointer()[i];
-    //     Zxyz->pointer()[i][1] = coords->pointer()[i][0];
-    //     Zxyz->pointer()[i][2] = coords->pointer()[i][1];
-    //     Zxyz->pointer()[i][3] = coords->pointer()[i][2];
+
+    // TODO Is this needed or not?
+    auto D_carts = D;
+    // PetiteList petite(basisset_, integral_, true);
+    // auto my_aotoso_ = petite.aotoso();
+
+    // SharedMatrix D_carts;
+    // if (basisset_->has_puream()) {
+    //     D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
+    //     D_carts->back_transform(D, my_aotoso_);
+    // } else {
+    //     D_carts = D;
     // }
-    // potential_integrals_->set_charge_field(Zxyz);
-
-    PetiteList petite(basisset_, integral_, true);
-    auto my_aotoso_ = petite.aotoso();
-
-    SharedMatrix D_carts;
-    if (basisset_->has_puream()) {
-        D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
-        D_carts->back_transform(D, my_aotoso_);
-    } else {
-        D_carts = D;
-    }
 
     SharedVector potvalues = std::make_shared<Vector>("potential values", coords->nrow());
     ContractOverDensityFunctor contract_density_functor(potvalues->dim(), potvalues->pointer(), D_carts);
