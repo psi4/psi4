@@ -204,6 +204,7 @@ jobs:
             # pip
           - pip
           - pip:
+             - pyddx
              - git+https://github.com/i-pi/i-pi.git@master-py3
         EOF
         cat > aux.yaml <<EOF

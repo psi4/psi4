@@ -1,14 +1,15 @@
-import psi4
 import pytest
 import numpy as np
 
-from psi4 import core
-from psi4.driver.procrouting.solvent import ddx
+import psi4
 
 from utils import compare_values
 from addons import using
 
-pytestmark = pytest.mark.quick
+from psi4 import core
+from psi4.driver.procrouting.solvent import ddx
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 __geoms = {
     "benzene":
@@ -87,6 +88,8 @@ def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
     assert abs(delta - delta_ref) < 1e-6
 
 
+@pytest.mark.quick
+@uusing("ddx")
 @pytest.mark.parametrize("inp", [
    pytest.param({
        "geom": __geoms["h"],
@@ -135,6 +138,8 @@ def test_ddx_fock_build(inp):
     E, _ = get_EV(inp["dm"])
     assert compare_values(inp["ref"], E, atol=1e-16, rtol=1e-2)
 
+@pytest.mark.quick
+@uusing("ddx")
 @pytest.mark.parametrize("inp", [
     pytest.param({
         "geom": __geoms["h2o"],
@@ -201,6 +206,8 @@ def test_ddx_rhf_reference(inp):
     assert compare_values(inp["ref"], scf_e, 4, "Total SCF energy with DDX versus Gaussian")
 
 
+@pytest.mark.quick
+@uusing("ddx")
 @pytest.mark.parametrize("inp", [
     pytest.param({
         "geom": __geoms["h2o"],
