@@ -6,29 +6,29 @@ print(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet
 psi4_io.set_specific_retention(32,False)
 
 Eref = {  
-    "Nuclear"          :   30.7884922572,     #TEST
+    "Nuclear"       :   30.7884922572,     #TEST
     "Singlet": {
-        "Canonical"    : -149.58723684929720, #TEST
-        "DF"           : -149.58715054487624, #TEST
+        "Canonical" : -149.58723684929720, #TEST
+        "DF"        : -149.58715054487624, #TEST
         "Composite": {
-          "DFJ+COSX"   : -149.58722317236171, #TEST, updated 
-          "DFJ+LinK"   : -149.58726772171027  #TEST, updated 
+          "COSX"    : -149.58722317236171, #TEST
+          "LinK"    : -149.58726772171027  #TEST
         } 
     },
     "Triplet UHF": {
-        "Canonical"    : -149.67135517240553, #TEST
-        "DF"           : -149.67125624291961, #TEST
+        "Canonical" : -149.67135517240553, #TEST
+        "DF"        : -149.67125624291961, #TEST
         "Composite": {
-          "DFJ+COSX"   : -149.67132922581225, #TEST, updated 
-          "DFJ+LinK"   : -149.67137328005577  #TEST, updated 
+          "COSX"    : -149.67132922581225, #TEST
+          "LinK"    : -149.67137328005577  #TEST
         }
     },
     "Triplet ROHF": {
-        "Canonical"    : -149.65170765757173, #TEST
-        "DF"           : -149.65160796208073, #TEST
+        "Canonical" : -149.65170765757173, #TEST
+        "DF"        : -149.65160796208073, #TEST
         "Composite": {
-          "DFJ+COSX"   : -149.65168894156605, #TEST, updated 
-          "DFJ+LinK"   : -149.65172557470324  #TEST, updated
+          "COSX"    : -149.65168894156605, #TEST
+          "LinK"    : -149.65172557470324  #TEST
         }
     }
 }
