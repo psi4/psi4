@@ -137,9 +137,9 @@ void VBase::set_D(std::vector<SharedMatrix> Dvec) {
 
     // Build AO2USO matrix, if needed
     if (!AO2USO_ && (Dvec[0]->nirrep() != 1)) {
-        std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_, primary_, primary_, primary_));
-        auto pet = std::make_shared<PetiteList>(primary_, integral);
-        AO2USO_ = SharedMatrix(pet->aotoso());
+        auto integral = std::make_shared<IntegralFactory>(primary_);
+        PetiteList pet(primary_, integral);
+        AO2USO_ = SharedMatrix(pet.aotoso());
         USO2AO_ = AO2USO_->transpose();
     }
 
@@ -679,11 +679,8 @@ void VBase::set_grac_shift(double grac_shift) {
     if (!grac_initialized_) {
         double grac_alpha = options_.get_double("DFT_GRAC_ALPHA");
         double grac_beta = options_.get_double("DFT_GRAC_BETA");
-        std::shared_ptr<Functional> grac_x_func = static_cast<std::shared_ptr<Functional>>(
-            new LibXCFunctional(options_.get_str("DFT_GRAC_X_FUNC"), functional_->is_unpolarized()));
-
-        std::shared_ptr<Functional> grac_c_func = static_cast<std::shared_ptr<Functional>>(
-            new LibXCFunctional(options_.get_str("DFT_GRAC_C_FUNC"), functional_->is_unpolarized()));
+        auto grac_x_func = std::make_shared<LibXCFunctional>(options_.get_str("DFT_GRAC_X_FUNC"), functional_->is_unpolarized());
+        auto grac_c_func = std::make_shared<LibXCFunctional>(options_.get_str("DFT_GRAC_C_FUNC"), functional_->is_unpolarized());
 
         // Special case for LRC, needs to be this way due to defaults.
         if (functional_->is_x_lrc()) {
@@ -1104,9 +1101,9 @@ void SAP::initialize() {
     }
 
     // Initialize symmetry
-    std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_, primary_, primary_, primary_));
-    auto pet = std::make_shared<PetiteList>(primary_, integral);
-    AO2USO_ = SharedMatrix(pet->aotoso());
+    auto integral = std::make_shared<IntegralFactory>(primary_);
+    PetiteList pet(primary_, integral);
+    AO2USO_ = SharedMatrix(pet.aotoso());
     USO2AO_ = AO2USO_->transpose();
     nbf_ = AO2USO_->rowspi()[0];
 }
