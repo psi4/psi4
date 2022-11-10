@@ -6,18 +6,30 @@ print(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet
 psi4_io.set_specific_retention(32,False)
 
 Eref = {  
-    "Nuclear"      :   30.7884922572,     #TEST
+    "Nuclear"          :   30.7884922572,     #TEST
     "Singlet": {
-        "Canonical": -149.58723684929720, #TEST
-        "DF"       : -149.58715054487624  #TEST
+        "Canonical"    : -149.58723684929720, #TEST
+        "DF"           : -149.58715054487624, #TEST
+        "Composite": {
+          "DFJ+COSX"   : -149.58723684929720, #TEST
+          "DFJ+LinK"   : -149.58723684929720  #TEST
+        } 
     },
     "Triplet UHF": {
-        "Canonical": -149.67135517240553, #TEST
-        "DF"       : -149.67125624291961  #TEST
+        "Canonical"    : -149.67135517240553, #TEST
+        "DF"           : -149.67125624291961, #TEST
+        "Composite": {
+          "DFJ+COSX"   : -149.67135517240553, #TEST
+          "DFJ+LinK"   : -149.67135517240553  #TEST
+        }
     },
     "Triplet ROHF": {
-        "Canonical": -149.65170765757173, #TEST
-        "DF"       : -149.65160796208073  #TEST
+        "Canonical"    : -149.65170765757173, #TEST
+        "DF"           : -149.65160796208073, #TEST
+        "Composite": {
+          "DFJ+COSX"   : -149.65170765757173, #TEST
+          "DFJ+LinK"   : -149.65170765757173  #TEST
+        }
     }
 }
 
@@ -74,12 +86,12 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF RHF energy') #TEST
 
 set scf_type cosx
 E = energy('scf')
-compare_values(Eref["Singlet"]["Canonical"], E, 4, 'Singlet DFJ+COSX RHF energy') #TEST
+compare_values(Eref["Singlet"]["Composite"]["DFJ+COSX"], E, 4, 'Singlet DFJ+COSX RHF energy') #TEST
 
 set scf_type link
 set screening density
 E = energy('scf')
-compare_values(Eref["Singlet"]["Canonical"], E, 4, 'Singlet DFJ+LinK RHF energy') #TEST
+compare_values(Eref["Singlet"]["Composite"]["DFJ+LinK"], E, 4, 'Singlet DFJ+LinK RHF energy') #TEST
 
 print('    -Singlet UHF:') #TEST
 set scf reference uhf
@@ -107,12 +119,12 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF UHF energy') #TEST
 
 set scf_type cosx
 E = energy('scf')
-compare_values(Eref["Singlet"]["Canonical"], E, 4, 'Singlet DFJ+COSX UHF energy') #TEST
+compare_values(Eref["Singlet"]["Composite"]["DFJ+COSX"], E, 4, 'Singlet DFJ+COSX UHF energy') #TEST
 
 set scf_type link
 set screening density
 E = energy('scf')
-compare_values(Eref["Singlet"]["Canonical"], E, 4, 'Singlet DFJ+LinK UHF energy') #TEST
+compare_values(Eref["Singlet"]["Composite"]["DFJ+LinK"], E, 4, 'Singlet DFJ+LinK UHF energy') #TEST
 
 print('    -Singlet CUHF:') #TEST
 set scf reference cuhf
@@ -140,12 +152,12 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF CUHF energy') #TEST
 
 set scf_type cosx
 E = energy('scf')
-compare_values(Eref["Singlet"]["Canonical"], E, 4, 'Singlet DFJ+COSX CUHF energy') #TEST
+compare_values(Eref["Singlet"]["Composite"]["DFJ+COSX"], E, 4, 'Singlet DFJ+COSX CUHF energy') #TEST
 
 set scf_type link
 set screening density
 E = energy('scf')
-compare_values(Eref["Singlet"]["Canonical"], E, 4, 'Singlet DFJ+LinK CUHF energy') #TEST
+compare_values(Eref["Singlet"]["Composite"]["DFJ+LinK"], E, 4, 'Singlet DFJ+LinK CUHF energy') #TEST
 
 activate(triplet_o2)
 set {
@@ -181,12 +193,12 @@ compare_values(Eref["Triplet UHF"]["DF"], E, 6, 'Triplet MemDF UHF energy') #TES
 
 set scf_type cosx
 E = energy('scf')
-compare_values(Eref["Triplet UHF"]["Canonical"], E, 4, 'Triplet DFJ+COSX UHF energy') #TEST
+compare_values(Eref["Triplet UHF"]["Composite"]["DFJ+COSX"], E, 4, 'Triplet DFJ+COSX UHF energy') #TEST
 
 set scf_type link
 set screening density
 E = energy('scf')
-compare_values(Eref["Triplet UHF"]["Canonical"], E, 4, 'Triplet DFJ+LinK UHF energy') #TEST
+compare_values(Eref["Triplet UHF"]["Composite"]["DFJ+LinK"], E, 4, 'Triplet DFJ+LinK UHF energy') #TEST
 
 clean()
 
@@ -219,12 +231,12 @@ compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF ROHF energy') #T
 
 set scf_type cosx
 E = energy('scf')
-compare_values(Eref["Triplet ROHF"]["Canonical"], E, 4, 'Triplet DFJ+COSX ROHF energy') #TEST
+compare_values(Eref["Triplet ROHF"]["Composite"]["DFJ+COSX"], E, 4, 'Triplet DFJ+COSX ROHF energy') #TEST
 
 set scf_type link
 set screening density
 E = energy('scf')
-compare_values(Eref["Triplet ROHF"]["Canonical"], E, 4, 'Triplet DFJ+LinK ROHF energy') #TEST
+compare_values(Eref["Triplet ROHF"]["Composite"]["DFJ+LinK"], E, 4, 'Triplet DFJ+LinK ROHF energy') #TEST
 
 clean()
 
@@ -257,9 +269,9 @@ compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF CUHF energy') #T
 
 set scf_type cosx
 E = energy('scf')
-compare_values(Eref["Triplet ROHF"]["Canonical"], E, 4, 'Triplet DFJ+COSX CUHF energy') #TEST
+compare_values(Eref["Triplet ROHF"]["Composite"]["DFJ+COSX"], E, 4, 'Triplet DFJ+COSX CUHF energy') #TEST
 
 set scf_type link
 set screening density
 E = energy('scf')
-compare_values(Eref["Triplet ROHF"]["Canonical"], E, 4, 'Triplet DFJ+LinK CUHF energy') #TEST
+compare_values(Eref["Triplet ROHF"]["Composite"]["DFJ+LinK"], E, 4, 'Triplet DFJ+LinK CUHF energy') #TEST
