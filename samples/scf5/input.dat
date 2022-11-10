@@ -30,6 +30,7 @@ set {
 }
 
 set scf reference rhf
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -44,9 +45,17 @@ set scf_type disk_df
 E = energy('scf')
 
 set scf_type mem_df
+E = energy('scf')
+
+set scf_type cosx
+E = energy('scf')
+
+set scf_type link
+set screening density
 E = energy('scf')
 
 set scf reference uhf
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -61,9 +70,17 @@ set scf_type disk_df
 E = energy('scf')
 
 set scf_type mem_df
+E = energy('scf')
+
+set scf_type cosx
+E = energy('scf')
+
+set scf_type link
+set screening density
 E = energy('scf')
 
 set scf reference cuhf
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -78,6 +95,13 @@ set scf_type disk_df
 E = energy('scf')
 
 set scf_type mem_df
+E = energy('scf')
+
+set scf_type cosx
+E = energy('scf')
+
+set scf_type link
+set screening density
 E = energy('scf')
 
 activate(triplet_o2)
@@ -89,6 +113,7 @@ set {
 }
 
 set scf reference uhf
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -103,11 +128,19 @@ set scf_type disk_df
 E = energy('scf')
 
 set scf_type mem_df
+E = energy('scf')
+
+set scf_type cosx
+E = energy('scf')
+
+set scf_type link
+set screening density
 E = energy('scf')
 
 clean()
 
 set scf reference rohf
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -125,11 +158,19 @@ set scf_type disk_df
 E = energy('scf')
 
 set scf_type mem_df
+E = energy('scf')
+
+set scf_type cosx
+E = energy('scf')
+
+set scf_type link
+set screening density
 E = energy('scf')
 
 clean()
 
 set scf reference cuhf
+set screening csam
 
 set scf_type pk
 E = energy('scf')
@@ -147,4 +188,11 @@ set scf_type disk_df
 E = energy('scf')
 
 set scf_type mem_df
+E = energy('scf')
+
+set scf_type cosx
+E = energy('scf')
+
+set scf_type link
+set screening density
 E = energy('scf')
