@@ -58,6 +58,5 @@ void export_options(py::module& m) {
         .def("get_current_module", &Options::get_current_module, "gets current module")
         .def("validate_options", &Options::validate_options, "validate options for *arg0* module")
         .def("print_module_options", &Options::print, "print global and local options prepared for current module")
-        .def("print_global_options", &Options::print_globals, "print the global, cross-module options")
-        .def("has_changed", [](Options& options, std::string option) { return options[option].has_changed();} );
+        .def("print_global_options", &Options::print_globals, "print the global, cross-module options");
 }

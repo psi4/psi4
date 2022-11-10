@@ -135,13 +135,13 @@ def _UHF_stability_analysis(self):
         raise ValidationError("Stability analysis not yet supported for non-LDA functionals.")
 
     # => Prep options for eigenvector solver <=
-    if not self.options().has_changed("SOLVER_ROOTS_PER_IRREP"):
-        roots = [self.options().get_int("SOLVER_N_ROOT")] * self.nirrep()
+    if not core.has_option_changed("SCF", "SOLVER_ROOTS_PER_IRREP"):
+        roots = [core.get_option("SCF", "SOLVER_N_ROOT")] * self.nirrep()
     else:
-        roots = self.options().get_int_vector("SOLVER_ROOTS_PER_IRREP")
+        roots = core.get_option("SCF", "SOLVER_ROOTS_PER_IRREP")
         if len(roots) != wfn.nirrep():
             raise ValidationError(f"SOLVER_ROOTS_PER_IRREP specified {wfn.nirrep()} irreps, but there are {len(roots)} irreps.")
-    r_convergence = self.options().get_double("SOLVER_CONVERGENCE")
+    r_convergence = core.get_option("SCF", "SOLVER_CONVERGENCE")
     # Below formula borrowed from TDSCF code.
     max_vecs_per_root = int(-np.log10(r_convergence) * 50)
     engine = TDUSCFEngine(self, ptype="hess")
@@ -152,10 +152,10 @@ def _UHF_stability_analysis(self):
     unstable = False
     for h, nroot in enumerate(roots):
         if not nroot: continue
-        if not self.options().has_changed("SOLVER_N_GUESS"):
+        if not core.has_option_changed("SCF", "SOLVER_N_GUESS"):
             nguess = nroot * 4
         else:
-            nguess = self.options().get_int("SOLVER_N_GUESS")
+            nguess = core.get_option("SCF", "SOLVER_N_GUESS")
         # The below line changes the guess the engine generates, which controls the final states.
         # This selects for eigenvectors of irrep h.
         engine.reset_for_state_symm(engine.G_gs ^ h)
@@ -202,15 +202,15 @@ def _UHF_stability_analysis(self):
     # (See DOI 10.1063/1.467504 eq. 8 for explicit formulas. You can show non-periodicity in general in the simple case that P^1/2 is 2-by-2 diagonal.)
     # As such, this algorithm is best regarded as a first attempt open to improvements.
     # Example improvement: if the orbital rotation increases the energy, take a smaller step, not a larger.
-    if unstable and self.options().get_str("STABILITY_ANALYSIS") == "FOLLOW":
+    if unstable and core.get_option("SCF", "STABILITY_ANALYSIS") == "FOLLOW":
         # ==> Increment step_scale_ if necessary <==
         if hasattr(self, "last_hess_eigval") and abs(self.last_hess_eigval - current_eigenvalue) < 1e-4:
             core.print_out("    Negative eigenvalue similar to previous one, wavefunction\n")
             core.print_out("    likely to be in the same minimum.\n")
-            self.step_scale += self.options().get_double("FOLLOW_STEP_INCREMENT")
+            self.step_scale += core.get_option("SCF", "FOLLOW_STEP_INCREMENT")
             core.print_out(f"    Modifying FOLLOW_STEP_SCALE to {step_scale}.\n")
         else:
-            self.step_scale = self.options().get_double("FOLLOW_STEP_SCALE")
+            self.step_scale = core.get_option("SCF", "FOLLOW_STEP_SCALE")
             self.last_hess_eigval = current_eigenvalue
         # ==> Perform the orbital rotation! <==
         # The current eigenvector is normalized to 1/2.
