@@ -85,11 +85,10 @@ E = energy('scf')
 compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF RHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
     if method == "COSX": 
-      set scf_type cosx # NOTE: if I knew how to directly assign scf_type to the value in method in Psithon here, I would
       set screening csam
-    elif method == "LinK":
-      set scf_type link 
+    else:
       set screening density
 
     E = energy('scf')
@@ -120,11 +119,10 @@ E = energy('scf')
 compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF UHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
     if method == "COSX": 
-      set scf_type cosx 
       set screening csam
-    elif method == "LinK":
-      set scf_type link 
+    else:
       set screening density
 
     E = energy('scf')
@@ -155,11 +153,10 @@ E = energy('scf')
 compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF CUHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
     if method == "COSX": 
-      set scf_type cosx 
       set screening csam
-    elif method == "LinK":
-      set scf_type link 
+    else:
       set screening density
 
     E = energy('scf')
@@ -198,11 +195,10 @@ E = energy('scf')
 compare_values(Eref["Triplet UHF"]["DF"], E, 6, 'Triplet MemDF UHF energy') #TEST
 
 for method in Eref["Triplet UHF"]["Composite"].keys():
+    set scf_type $method 
     if method == "COSX": 
-      set scf_type cosx 
       set screening csam
-    elif method == "LinK":
-      set scf_type link 
+    else:
       set screening density
 
     E = energy('scf')
@@ -238,11 +234,10 @@ E = energy('scf')
 compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF ROHF energy') #TEST
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
+    set scf_type $method 
     if method == "COSX": 
-      set scf_type cosx 
       set screening csam
-    elif method == "LinK":
-      set scf_type link 
+    else:
       set screening density
 
     E = energy('scf')
@@ -278,11 +273,10 @@ E = energy('scf')
 compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF CUHF energy') #TEST
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
+    set scf_type $method 
     if method == "COSX": 
-      set scf_type cosx 
       set screening csam
-    elif method == "LinK":
-      set scf_type link 
+    else:
       set screening density
 
     E = energy('scf')
