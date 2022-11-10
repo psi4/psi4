@@ -1,7 +1,7 @@
 if(${ENABLE_ddx})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_ddx}))
         include(FindPythonModule)
-        find_python_module(pyddx ATLEAST 0.0.0 QUIET)
+        find_python_module(pyddx ATLEAST 0.0.4 QUIET)
     endif()
 
     if(${pyddx_FOUND})
@@ -16,12 +16,12 @@ if(${ENABLE_ddx})
         include(ExternalProject)
         message(STATUS "Suitable ddx could not be located, ${Magenta}Building ddx${ColourReset} instead.")
 
-	    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
-	    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" _install_bin)
+        file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
+        file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" _install_bin)
 
         ExternalProject_Add(ddx_external
             BUILD_ALWAYS 1
-            URL https://github.com/ACoM-Computational-Mathematics/ddX/archive/v0.2.0.tar.gz
+            URL https://github.com/ddsolvation/ddX/archive/v0.0.4.tar.gz
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
