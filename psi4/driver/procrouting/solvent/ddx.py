@@ -29,11 +29,11 @@ import numpy as np
 
 from qcelemental import constants
 
-from psi4 import core
-from psi4.driver.p4util.exceptions import ValidationError
-
 import pyddx
 import pyddx.data
+
+from psi4 import core
+from psi4.driver.p4util.exceptions import ValidationError
 
 
 def get_ddx_options(molecule):
@@ -200,15 +200,8 @@ class DdxInterface:
                for (block, ylm) in zip(self.dftgrid.blocks(), self.scaled_ylms)]
         V_ddx = self.numints.potential_integral(eta)
 
-        # This hack is needed because ExternalPotential() assumes the same
-        # units as the molecule.
-        convfac = 1.0
-        if self.basisset.molecule().units() == "Angstrom":
-            convfac = constants.bohr2angstroms
-
         extern = core.ExternalPotential()
         for xi_nj, pos_nj in zip(self.state.xi, self.model.cavity.T):
-            pos_nj = convfac * pos_nj
             extern.addCharge(xi_nj, pos_nj[0], pos_nj[1], pos_nj[2])
         V_ddx.add(extern.computePotentialMatrix(self.basisset))
 
