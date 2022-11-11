@@ -1,13 +1,11 @@
+import psi4
 import pytest
 import numpy as np
 
-import psi4
+from psi4 import core
 
 from utils import compare_values
-from addons import using
-
-from psi4 import core
-from psi4.driver.procrouting.solvent import ddx
+from addons import using, uusing
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
