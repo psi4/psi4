@@ -1187,7 +1187,7 @@ def optimize(name, **kwargs):
     molecule = kwargs.pop('molecule', core.get_active_molecule())
 
     # If we are freezing cartesian, do not orient or COM
-    if core.get_local_option("OPTKING", "FROZEN_CARTESIAN"):
+    if core.get_option("OPTKING", "FROZEN_CARTESIAN"):
         molecule.fix_orientation(True)
         molecule.fix_com(True)
     molecule.update_geometry()
@@ -1213,7 +1213,7 @@ def optimize(name, **kwargs):
         if initial_sym != current_sym:
 
             # Try to resymmetrize molecule if slightly broken.
-            molecule.symmetrize(core.get_local_option("OPTKING", "CARTESIAN_SYM_TOLERANCE"))
+            molecule.symmetrize(core.get_option("OPTKING", "CARTESIAN_SYM_TOLERANCE"))
 
             if molecule.schoenflies_symbol() != initial_sym:
                 raise ValidationError("""Point group changed! (%s <-- %s) You should restart """
@@ -1297,7 +1297,7 @@ def optimize(name, **kwargs):
 
             # Create OptimizationResult like Schema. Not validated since optimize() does not pass AtomicResults.
             opt_data = opt_object.close()
-            if core.get_local_option('OPTKING', 'WRITE_OPT_HISTORY'):
+            if core.get_option('OPTKING', 'WRITE_OPT_HISTORY'):
                 with open(f"{core.get_writer_file_prefix(molecule.name())}.opt.json", 'w+') as f:
                     json.dump(opt_data, f, indent=2)
 

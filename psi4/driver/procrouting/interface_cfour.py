@@ -214,7 +214,7 @@ def run_cfour(name, **kwargs):
     # Call executable xcfour, directing cfour output to the psi4 output file
     cfour_executable = kwargs['c4exec'] if 'c4exec' in kwargs else 'xcfour'
     try:
-        retcode = subprocess.Popen([cfour_executable], bufsize=0, stdout=subprocess.PIPE, env=lenv)
+        retcode = subprocess.Popen(cfour_executable.split(), bufsize=0, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
         sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
         message = ('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
@@ -276,8 +276,7 @@ def run_cfour(name, **kwargs):
         #   blank_molecule_psi4_yo so as to not interfere with future cfour {} blocks
 
     if c4grad is not None:
-        mat = core.Matrix.from_list(c4grad)
-        core.set_gradient(mat)
+        psi_grad = core.Matrix.from_list(c4grad)
 
         #print '    <<<   [3] C4-GRD-GRAD   >>>'
         #mat.print()
@@ -375,13 +374,13 @@ def run_cfour(name, **kwargs):
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
     core.print_variables()
     if c4grad is not None:
-        core.get_gradient().print_out()
+        psi_grad.print_out()
 
     core.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
     core.print_variables()
     if c4grad is not None:
-        core.get_gradient().print_out()
+        psi_grad.print_out()
 
     # Quit if Cfour threw error
     if 'CFOUR ERROR CODE' in core.variables():
@@ -410,7 +409,7 @@ def run_cfour(name, **kwargs):
     if dertype == 0:
         finalquantity = psivar['CURRENT ENERGY']
     elif dertype == 1:
-        finalquantity = core.get_gradient()
+        finalquantity = psi_grad
         wfn.set_gradient(finalquantity)
         if finalquantity.rows(0) < 20:
             core.print_out('CURRENT GRADIENT')
