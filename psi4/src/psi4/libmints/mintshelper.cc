@@ -2108,7 +2108,7 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
     std::vector<SharedMatrix> gradtemps;
     for (size_t i = 0; i < nthread_; i++) {
         gradtemps.push_back(grad->clone());
-        ecp_ints_vec.push_back(std::shared_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral_->ao_ecp(1))));
+        ecp_ints_vec.push_back(std::shared_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral_->ao_ecp(1).release())));
     }
 
     // Lower Triangle

@@ -115,18 +115,18 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_potential(int deriv) {
     return  std::make_unique<PotentialSOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_ecp(int deriv) {
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_ecp(int deriv) {
 #ifdef USING_ecpint
-    return new ECPInt(spherical_transforms_, bs1_, bs2_, deriv);
+    return std::make_unique<ECPInt>(spherical_transforms_, bs1_, bs2_, deriv);
 #else
     throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
 #endif
 }
 
-OneBodySOInt* IntegralFactory::so_ecp(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_ecp(int deriv) {
 #ifdef USING_ecpint
     std::shared_ptr<OneBodyAOInt> ao_int(ao_ecp(deriv));
-    return new ECPSOInt(ao_int, this);
+    return  std::make_unique<ECPSOInt>(ao_int, this);
 #else
     throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
 #endif
