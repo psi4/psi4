@@ -450,16 +450,16 @@ class PSI_API IntegralFactory {
     virtual std::unique_ptr<OneBodySOInt> so_ecp(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the relativistic nuclear attraction integral.
-    virtual OneBodyAOInt* ao_rel_potential(int deriv = 0);
-    virtual OneBodySOInt* so_rel_potential(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_rel_potential(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_rel_potential(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the dipole integral.
-    virtual OneBodyAOInt* ao_dipole(int deriv = 0);
-    virtual OneBodySOInt* so_dipole(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_dipole(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_dipole(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the quadrupole integral.
-    virtual OneBodyAOInt* ao_quadrupole();
-    virtual OneBodySOInt* so_quadrupole();
+    virtual std::unique_ptr<OneBodyAOInt> ao_quadrupole();
+    virtual std::unique_ptr<OneBodySOInt> so_quadrupole();
 
     /// Returns an OneBodyInt that computes arbitrary-order multipole integrals.
     virtual OneBodyAOInt* ao_multipoles(int order, int deriv = 0);
@@ -484,11 +484,11 @@ class PSI_API IntegralFactory {
     virtual OneBodyAOInt* electric_field(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the point electrostatic potential
-    virtual OneBodyAOInt* electrostatic();
+    virtual std::unique_ptr<OneBodyAOInt> electrostatic();
 
     /// Returns an OneBodyInt that computes the electrostatic potential at desired points
     /// Want to change the name of this after the PCM dust settles
-    virtual OneBodyAOInt* pcm_potentialint();
+    virtual std::unique_ptr<OneBodyAOInt> pcm_potentialint();
 
     /// Returns an ERI integral object
     virtual TwoBodyAOInt* eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);

@@ -1042,7 +1042,7 @@ void OEProp::compute_esp_over_grid() { epc_.compute_esp_over_grid(true); }
 void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     auto mol = basisset_->molecule();
 
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
 
     if (print_output) {
         outfile->Printf("\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
@@ -1094,7 +1094,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
     SharedVector output = std::make_shared<Vector>(number_of_grid_points);
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
 
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
@@ -1132,7 +1132,7 @@ void OEProp::compute_field_over_grid() { epc_.compute_field_over_grid(true); }
 void ESPPropCalc::compute_field_over_grid(bool print_output) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
 
     if (print_output) {
         outfile->Printf("\n Field computed on the grid and written to grid_field.dat\n");
@@ -1241,7 +1241,7 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     auto nesps = std::make_shared<std::vector<double>>(mol->natom());
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
 
     int nbf = basisset_->nbf();
     int natoms = mol->natom();

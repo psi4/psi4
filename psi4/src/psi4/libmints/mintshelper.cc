@@ -1399,7 +1399,7 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
 
     OperatorSymmetry msymm(1, molecule_, integral_, factory_);
     std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-    OneBodySOInt *so_dipole = integral_->so_dipole();
+    std::unique_ptr<OneBodySOInt> so_dipole = integral_->so_dipole();
     so_dipole->compute(dipoles);
 
     if (lambda[0] != 0.0) {
