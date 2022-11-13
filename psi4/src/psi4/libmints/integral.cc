@@ -97,13 +97,13 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_overlap(int deriv) {
 
 std::unique_ptr<ThreeCenterOverlapInt> IntegralFactory::overlap_3c() { return std::make_unique<ThreeCenterOverlapInt>(bs1_, bs2_, bs3_); }
 
-OneBodyAOInt* IntegralFactory::ao_kinetic(int deriv) {
-    return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_kinetic(int deriv) {
+    return std::make_unique<KineticInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_kinetic(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_kinetic(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_kinetic(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
 OneBodyAOInt* IntegralFactory::ao_potential(int deriv) {
