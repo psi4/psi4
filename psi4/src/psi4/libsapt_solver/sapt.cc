@@ -229,7 +229,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
 
     free_block(sAJ);
 
-    auto potA = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
+    auto potA = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential().release()));
     std::vector<std::pair<double, std::array<double, 3>>> ZxyzA;
     for (int n = 0, p = 0; n < monomerA->natom(); n++) {
         if (monomerA->Z(n)) {
@@ -240,7 +240,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     VAmat_ = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer A)"));
     potA->compute(VAmat_);
 
-    auto potB = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
+    auto potB = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential().release()));
     std::vector<std::pair<double, std::array<double, 3>>> ZxyzB;
     for (int n = 0, p = 0; n < monomerB->natom(); n++) {
         if (monomerB->Z(n)) {

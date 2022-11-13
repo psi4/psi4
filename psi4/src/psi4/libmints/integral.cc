@@ -106,13 +106,13 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_kinetic(int deriv) {
     return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_potential(int deriv) {
-    return new PotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_potential(int deriv) {
+    return std::make_unique<PotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_potential(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_potential(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
-    return new PotentialSOInt(ao_int, this);
+    return  std::make_unique<PotentialSOInt>(ao_int, this);
 }
 
 OneBodyAOInt* IntegralFactory::ao_ecp(int deriv) {
