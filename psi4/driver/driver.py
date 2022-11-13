@@ -424,7 +424,7 @@ def energy(name, **kwargs):
     """
     kwargs = p4util.kwargs_lower(kwargs)
 
-    # Bounce to MDI if mdi kwarg
+    # Bounce to MDI (MolSSI driver interface) if mdi kwarg
     use_mdi = kwargs.pop('mdi', False)
     if use_mdi:
         return mdi_run(name, **kwargs)
