@@ -133,9 +133,9 @@ SharedMatrix OrbitalSpace::overlap(const OrbitalSpace &space1, const OrbitalSpac
     SharedMatrix Smat =
         std::make_shared<Matrix>("Overlap between space1 and space2", p1.SO_basisdim(), p2.SO_basisdim());
 
-    OneBodySOInt *S = mix_ints.so_overlap();
+    std::unique_ptr<OneBodySOInt> S = mix_ints.so_overlap();
     S->compute(Smat);
-    delete S;
+    S.reset();
 
     return Smat;
 }
@@ -148,9 +148,9 @@ SharedMatrix OrbitalSpace::overlap(const std::shared_ptr<BasisSet> &basis1, cons
     SharedMatrix Smat =
         std::make_shared<Matrix>("Overlap between space1 and space2", sobasis1.dimension(), sobasis2.dimension());
 
-    OneBodySOInt *S = mix_ints.so_overlap();
+    std::unique_ptr<OneBodySOInt> S = mix_ints.so_overlap();
     S->compute(Smat);
-    delete S;
+    S.reset();
 
     return Smat;
 }

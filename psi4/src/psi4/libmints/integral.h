@@ -429,13 +429,13 @@ class PSI_API IntegralFactory {
                            std::shared_ptr<BasisSet> bs4);
 
     /// Returns an OneBodyInt that computes the overlap integral.
-    virtual OneBodyAOInt* ao_overlap(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_overlap(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the overlap integral.
-    virtual OneBodySOInt* so_overlap(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_overlap(int deriv = 0);
 
     /// Returns a ThreeCenterOverlapINt that computes the overlap between three centers
-    virtual ThreeCenterOverlapInt* overlap_3c();
+    virtual std::unique_ptr<ThreeCenterOverlapInt> overlap_3c();
 
     /// Returns an OneBodyInt that computes the kinetic energy integral.
     virtual OneBodyAOInt* ao_kinetic(int deriv = 0);

@@ -86,16 +86,16 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     init_spherical_harmonics(8);
 }
 
-OneBodyAOInt* IntegralFactory::ao_overlap(int deriv) {
-    return new OverlapInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_overlap(int deriv) {
+    return std::make_unique<OverlapInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_overlap(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_overlap(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_overlap(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-ThreeCenterOverlapInt* IntegralFactory::overlap_3c() { return new ThreeCenterOverlapInt(bs1_, bs2_, bs3_); }
+std::unique_ptr<ThreeCenterOverlapInt> IntegralFactory::overlap_3c() { return std::make_unique<ThreeCenterOverlapInt>(bs1_, bs2_, bs3_); }
 
 OneBodyAOInt* IntegralFactory::ao_kinetic(int deriv) {
     return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
