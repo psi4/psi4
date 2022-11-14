@@ -1145,7 +1145,7 @@ void ESPPropCalc::compute_field_over_grid(bool print_output) {
         Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
     }
 
-    std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
+    std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field().release()));
 
     int nbf = basisset_->nbf();
     std::vector<SharedMatrix> intmats;
@@ -1196,7 +1196,7 @@ SharedMatrix ESPPropCalc::compute_field_over_grid_in_memory(SharedMatrix input_g
         Dtot->add(wfn_->Db_subset("AO"));
     }
 
-    std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
+    std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field().release()));
 
     // Scale the coordinates if needed
     auto coords = input_grid;

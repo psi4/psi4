@@ -481,7 +481,7 @@ class PSI_API IntegralFactory {
     virtual std::unique_ptr<OneBodyAOInt> ao_multipole_potential(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the electric field
-    virtual OneBodyAOInt* electric_field(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> electric_field(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the point electrostatic potential
     virtual std::unique_ptr<OneBodyAOInt> electrostatic();
@@ -491,36 +491,36 @@ class PSI_API IntegralFactory {
     virtual std::unique_ptr<OneBodyAOInt> pcm_potentialint();
 
     /// Returns an ERI integral object
-    virtual TwoBodyAOInt* eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual std::unique_ptr<TwoBodyAOInt> eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
-    virtual TwoBodyAOInt* erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual std::unique_ptr<TwoBodyAOInt> erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an erf ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
+    virtual std::unique_ptr<TwoBodyAOInt> erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
                                   bool needs_exchange = false);
 
     /// Returns an erf complement ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
+    virtual std::unique_ptr<TwoBodyAOInt> erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
                                              bool needs_exchange = false);
 
     /// Returns an Yukawa integral object (Slater-type geminal times Coulomb, e^(-z*r)/r)
-    virtual TwoBodyAOInt* yukawa_eri(double zeta, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual std::unique_ptr<TwoBodyAOInt> yukawa_eri(double zeta, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an F12 integral object
-    virtual TwoBodyAOInt* f12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+    virtual std::unique_ptr<TwoBodyAOInt> f12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                               bool use_shell_pairs = true);
 
     /// Returns an F12 squared integral object
-    virtual TwoBodyAOInt* f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+    virtual std::unique_ptr<TwoBodyAOInt> f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                       bool use_shell_pairs = true);
 
     /// Returns an F12G12 integral object
-    virtual TwoBodyAOInt* f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+    virtual std::unique_ptr<TwoBodyAOInt> f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                  bool use_shell_pairs = true);
 
     /// Returns an F12 double commutator integral object
-    virtual TwoBodyAOInt* f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+    virtual std::unique_ptr<TwoBodyAOInt> f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                                 bool use_shell_pairs = true);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
