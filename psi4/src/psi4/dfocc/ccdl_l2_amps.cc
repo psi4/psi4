@@ -285,7 +285,6 @@ void DFOCC::ccdl_l2AA_amps()
     R->subtract(L);
     L.reset();
     R->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    R.reset();
 } // end ccdl_l2AA_amps
 
 //======================================================================
@@ -421,7 +420,6 @@ void DFOCC::ccdl_l2BB_amps()
     R->subtract(L);
     L.reset();
     R->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    R.reset();
 } // end ccsdl_l2BB_amps
 
 //======================================================================

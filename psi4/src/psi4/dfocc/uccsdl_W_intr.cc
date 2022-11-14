@@ -73,10 +73,6 @@ void DFOCC::uccsdl_ZMBEJ_AAAA()
     J->gemm(true, false, bQiaA, bQiaB, 1.0, 0.0);
     Z->gemm(false, false, J, T, 1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    J.reset();
-    T.reset();
 } //ccsdl_ZMBEJ_AAAA()
 
 void DFOCC::uccsdl_Zmbej_BBBB()
@@ -118,10 +114,6 @@ void DFOCC::uccsdl_Zmbej_BBBB()
     J->gemm(true, false, bQiaB, bQiaA, 1.0, 0.0);
     Z->gemm(false, false, J, T, 1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    J.reset();
-    T.reset();
 } // ccsdl_Zmbej_BBBB()
 
 void DFOCC::uccsdl_ZMbEj_ABAB()
@@ -160,9 +152,6 @@ void DFOCC::uccsdl_ZMbEj_ABAB()
     Z->gemm(false, false, K, T, 1.0, 1.0);
 //Z->print();
     Z->write(psio_, PSIF_DFOCC_AMPS);
-    Z.reset();
-    K.reset();
-    T.reset();
 } // ccsdl_ZMbEj_ABAB()
 
 void DFOCC::uccsdl_ZmBeJ_BABA()
@@ -200,10 +189,6 @@ void DFOCC::uccsdl_ZmBeJ_BABA()
     T2.reset();
     Z->gemm(false, false, K, T, 1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    K.reset();
-    T.reset();
 } // ccsdl_ZmBeJ_BABA()
 
 void DFOCC::uccsdl_ZMbeJ_ABBA()
@@ -232,10 +217,6 @@ void DFOCC::uccsdl_ZMbeJ_ABBA()
     T2.reset();
     Z->gemm(false, false, X, T, 1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    X.reset();
-    T.reset(); 
 }  // ccsdl_ZMbeJ_ABBA() 
 
 void DFOCC::uccsdl_ZmBEj_BAAB()
@@ -264,10 +245,6 @@ void DFOCC::uccsdl_ZmBEj_BAAB()
     J.reset();
     Z->gemm(false, false, X, T, -1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    X.reset();
-    T.reset();
 }// ccsdl_ZmBEj_BAAB()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -309,9 +286,6 @@ void DFOCC::uccsdl_WMBEJ_AAAA()
     T.reset(); 
     W->sort(2413, X, 1.0, 1.0);
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-    W.reset();
-    X.reset();
 } // end ccsdl_WMBEJ_AAAA 
 
 
@@ -352,9 +326,6 @@ void DFOCC::uccsdl_Wmbej_BBBB()
     T.reset();
     W->sort(2413, X, 1.0, 1.0);
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-    W.reset();
-    X.reset();
 } // end ccsdl_Wmbej_BBBB
 
 
@@ -376,8 +347,6 @@ void DFOCC::uccsdl_WMbEj_ABAB()
     W->gemm(true, false, bQiaA, T1, 1.0, 1.0);
     T1.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-    W.reset();
 } // end ccsdl_WMbEj_ABAB
 
 void DFOCC::uccsdl_WmBeJ_BABA()
@@ -397,8 +366,6 @@ void DFOCC::uccsdl_WmBeJ_BABA()
     W->gemm(true, false, bQiaB, T1, 1.0, 1.0);
     T1.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-    W.reset();
 } // end ccsdl_WmBeJ_BABA
 
 void DFOCC::uccsdl_WMbeJ_ABBA()
@@ -483,9 +450,6 @@ void DFOCC::uccsdl_WmBEj_BAAB()
     T.reset();
     W->sort(2413, X, 1.0, 1.0);
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-    W.reset();
-    X.reset();
 } // end ccsdl_WmBEj_BAAB
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -507,9 +471,6 @@ void DFOCC::uccsdl_WMNIE_AAAA()
     W->sort(2314, X, 1.0, 0.0);
     W->sort(3214, X, -1.0, 1.0);
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-    W.reset();
-    X.reset();
 } // end ccsdl_WMNIE_AAAA
 
 
@@ -531,9 +492,6 @@ void DFOCC::uccsdl_Wmnie_BBBB()
     W->sort(2314, X, 1.0, 0.0);
     W->sort(3214, X, -1.0, 1.0);    
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-    W.reset();
-    X.reset();
 } // end ccsdl_Wmnie_BBBB
 
 void DFOCC::uccsdl_WMnIe_ABAB()
@@ -553,18 +511,6 @@ void DFOCC::uccsdl_WMnIe_ABAB()
     W = std::make_shared<Tensor2d>("WL (Mn|Ie)", naoccA, naoccB, naoccA, navirB);
     W->sort(2314, X, 1.0, 0.0);
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-/*
-SharedTensor2d A = std::make_shared<Tensor2d>("X (Mn|Ie)", naoccA, naoccB, naoccA, navirB);
-A->add(W);
-A->sort(2134, W, -1.0, 1.0);
-A->print();
-A.reset();
-*/
-    W.reset();
-    X.reset();
-
-
 } // end ccsdl_WMnIe_ABAB
 
 void DFOCC::uccsdl_WmNiE_BABA()
@@ -584,9 +530,6 @@ void DFOCC::uccsdl_WmNiE_BABA()
     W = std::make_shared<Tensor2d>("WL (mN|iE)", naoccB, naoccA, naoccB, navirA);
     W->sort(2314, X, 1.0, 0.0);
     W->write(psio_, PSIF_DFOCC_AMPS);
-//W->print();
-    W.reset();
-    X.reset();
 } // end ccsdl_WmNiE_BABA
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -633,7 +576,6 @@ void DFOCC::uccsdl_WMNIJ_AAAA()
     I.reset();
     Tau.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
 } // end ccsdl_WMNIJ()
 
 void DFOCC::uccsdl_Wmnij_BBBB()
@@ -677,9 +619,6 @@ void DFOCC::uccsdl_Wmnij_BBBB()
     J.reset();
     W->gemm(false, true, I, Tau, 1.0, 1.0);
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
-    I.reset();
-    Tau.reset();
 } // end ccsd_W_mnij()
 
 void DFOCC::uccsdl_WMnIj_ABAB()
@@ -726,9 +665,6 @@ void DFOCC::uccsdl_WMnIj_ABAB()
     J.reset();
     W->gemm(false, true, I, Tau, 1.0, 1.0);
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
-    I.reset();
-    Tau.reset();
 } // end ccsd_W_MnIj()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -834,10 +770,6 @@ void DFOCC::uccsdl_WMBIJ_AAAA()
     WL->sort(1423, X, 1.0, 1.0);
     WL->sort(1432, X, -1.0, 1.0);
     WL->write(psio_, PSIF_DFOCC_AMPS);
-//WL->print();
-    X.reset();
-    WL.reset();
-
 } // end ccsdl_WMBIJ_AAAA
 
 
@@ -942,9 +874,6 @@ void DFOCC::uccsdl_Wmbij_BBBB()
     WL->sort(1423, X, 1.0, 1.0);
     WL->sort(1432, X, -1.0, 1.0);
     WL->write(psio_, PSIF_DFOCC_AMPS);
-    X.reset();
-    WL.reset();
-//outfile->Printf("\tI am here.\n");
 } // end ccsdl_Wmbij_BBBB 
 
 void DFOCC::uccsdl_WMbIj_ABAB()
@@ -1069,10 +998,6 @@ void DFOCC::uccsdl_WMbIj_ABAB()
     WL->sort(3214, X, -1.0, 1.0);
     X.reset();
     WL->write(psio_, PSIF_DFOCC_AMPS);
-//WL->print();
-    WL.reset();    
-//outfile->Printf("\tI am here.\n");
-
 } // end ccsdl_WMbIj_ABAB
 
 void DFOCC::uccsdl_WmBiJ_BABA()
@@ -1198,35 +1123,6 @@ void DFOCC::uccsdl_WmBiJ_BABA()
     WL->write(psio_, PSIF_DFOCC_AMPS);
     X.reset();
     WL.reset();
-//outfile->Printf("\tI am here.\n");
-
-/*
-    // Control
-
-    SharedTensor2d A, B;
-
-    X = std::make_shared<Tensor2d>("WL (MB|IJ)", naoccA, navirA, naoccA, naoccA);
-    X->read(psio_, PSIF_DFOCC_AMPS);
-    X->print();
-    X.reset();
-
-    Y = std::make_shared<Tensor2d>("WL (mb|ij)", naoccB, navirB, naoccB, naoccB);
-    Y->read(psio_, PSIF_DFOCC_AMPS);
-    Y->print(); 
-    Y.reset();
-
-    Z = std::make_shared<Tensor2d>("WL (Mb|Ij)", naoccA, navirB, naoccA, naoccB);
-    Z->read(psio_, PSIF_DFOCC_AMPS);
-    B = std::make_shared<Tensor2d>("WL (mB|iJ)", naoccB, navirA, naoccB, naoccA);
-    B->read(psio_, PSIF_DFOCC_AMPS);
-    A = std::make_shared<Tensor2d>("A (Mb|Ij)", naoccA, navirB, naoccA, naoccB);
-    A->copy(Z);
-    Z.reset();
-    A->sort(1243, B, -1.0, 1.0);
-    B.reset();
-    A->print();
-    A.reset();
-*/
 } // end ccsdl_WmBiJ_BABA
 
 }  // namespace dfoccwave

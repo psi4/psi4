@@ -519,7 +519,6 @@ void DFOCC::ccd_tpdm() {
     G.reset();
     G2->write(psio_, PSIF_DFOCC_DENS, true, true);
     if (print_ > 3) G2->print();
-    G2.reset();
 
  }// else if (reference_ == "UNRESTRICTED")
     timer_off("tpdm");

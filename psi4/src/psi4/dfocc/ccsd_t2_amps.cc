@@ -170,8 +170,6 @@ void DFOCC::ccsd_t2_amps() {
         K = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
         K->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
         Ecorr = U->vector_dot(K);
-        U.reset();
-        K.reset();
         Eccsd = Escf + Ecorr;
 
     }  // if (reference_ == "RESTRICTED")

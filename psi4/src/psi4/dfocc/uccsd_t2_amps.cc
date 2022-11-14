@@ -163,8 +163,6 @@ void DFOCC::uccsd_t2AA_amps()
     R->subtract(T);
     T.reset();
     R->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    R.reset();
-
 }// end ccsd_t2AA_amps
 
 
@@ -298,8 +296,6 @@ void DFOCC::uccsd_t2BB_amps()
     R->subtract(T);
     T.reset();
     R->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    R.reset();
-
 }// End ccsd_t2BB_amps
 
 

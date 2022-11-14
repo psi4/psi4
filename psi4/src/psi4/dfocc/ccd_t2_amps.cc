@@ -252,10 +252,7 @@ void DFOCC::ccd_t2AA_amps()
         R->copy(T2new);
         R->subtract(T);
         R->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-        R.reset();
     }
-    T2new.reset();
-    T.reset();
 }// end ccd_t2AA_amps
 
 void DFOCC::ccd_t2BB_amps()
@@ -362,10 +359,7 @@ void DFOCC::ccd_t2BB_amps()
         R->copy(T2new);
         R->subtract(T);
         R->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-        R.reset();
     }
-    T2new.reset();
-    T.reset();
 
 }// End ccd_t2BB_amps
 
@@ -622,9 +616,6 @@ void DFOCC::ccd_t2AB_amps()
         TAA->write(psio_, PSIF_DFOCC_AMPS);
         TBB->write(psio_, PSIF_DFOCC_AMPS);
         TAB->write(psio_, PSIF_DFOCC_AMPS);
-        TAA.reset();
-        TBB.reset();
-        TAB.reset();
     }  // end if diis
 
     //=========================

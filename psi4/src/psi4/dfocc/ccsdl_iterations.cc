@@ -169,7 +169,6 @@ void DFOCC::ccsdl_iterations() {
         L2->copy(T2);
         T2.reset();
         L2->write(psio_, PSIF_DFOCC_AMPS);
-        L2.reset();
         //=== END DFUCCSD ===
     } // else if unrestricted
 

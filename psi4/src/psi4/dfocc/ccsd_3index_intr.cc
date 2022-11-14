@@ -131,9 +131,6 @@ void DFOCC::ccsd_3index_intr() {
         Tau->add(K);
         K.reset();
         Tau->write(psio_, PSIF_DFOCC_AMPS);
-        Tau.reset();
-        // outfile->Printf("\t3indices done.\n");
-
     }  // if (reference_ == "RESTRICTED")
 
     // UHF

@@ -119,7 +119,6 @@ void DFOCC::ccdl_iterations() {
         L2->copy(T2);
         T2.reset();
         L2->write(psio_, PSIF_DFOCC_AMPS);
-        L2.reset();
     }// else if (reference_ == "UNRESTRICTED")
 
     //==========================================================================================
@@ -241,7 +240,6 @@ void DFOCC::ccdl_iterations() {
     // if (df_ints_incore) {
     reset_mo_df_ints();
     //}
-    //std::cout << "I am here \n";
 
 }  // end ccdl_iterations
 

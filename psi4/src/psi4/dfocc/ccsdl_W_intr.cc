@@ -1425,7 +1425,6 @@ void DFOCC::ccsdl_WabefL2AA() {
     }
     A.reset();
     Lnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    Lnew.reset();
 
     timer_off("WabefL2");
 
@@ -1585,7 +1584,6 @@ void DFOCC::ccsdl_WabefL2BB() {
     }
     A.reset();
     Lnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    Lnew.reset();
 
     timer_off("WabefL2");
 

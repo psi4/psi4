@@ -228,7 +228,6 @@ void DFOCC::ccd_W_mnijT2BB()
     W.reset();
     Tau.reset();
     T2new->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    T2new.reset();
 
 }// ccd_W_mnijT2BB
 
@@ -267,7 +266,6 @@ void DFOCC::ccd_W_MnIjT2AB()
     W.reset();
     Tau.reset();
     T2new->write(psio_, PSIF_DFOCC_AMPS);
-    T2new.reset();
 
 }// ccd_W_MnIjT2AB
 
@@ -403,7 +401,6 @@ void DFOCC::ccd_W_MBEJAAAA()
     X.reset();
     L.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
 
 }// End ccd_W_MBEJAAAA
 
@@ -447,7 +444,6 @@ void DFOCC::ccd_W_mbejBBBB()
     X.reset();
     L.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
 }// ccd_W_mbejBBBB
 
 //======================================================================
@@ -485,7 +481,6 @@ void DFOCC::ccd_W_MbEjABAB()
     X.reset();
     L.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
 }// ccd_W_MbEjABAB
 
 //======================================================================
@@ -526,7 +521,6 @@ void DFOCC::ccd_W_mBeJBABA()
     X.reset();
     L.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
 }// ccd_W_mBeJBABA
 
 //======================================================================
@@ -562,7 +556,6 @@ void DFOCC::ccd_W_MbeJABBA()
     X.reset();
     L.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
 }// ccd_W_MbeJABBA
 
 //======================================================================
@@ -598,7 +591,6 @@ void DFOCC::ccd_W_mBEjBAAB()
     X.reset();
     L.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
 }// ccd_W_mBEjBAAB
 
 //======================================================================

@@ -780,8 +780,6 @@ void DFOCC::uccsd_pdm_3index_intr()
     Z->gemm(false, false, bQiaA, X, 1.0, 1.0);
     X.reset();
     Z->write(psio_, PSIF_DFOCC_AMPS);
-    Z.reset();
-
 }  // end ccsd_pdm_3index_intr()
 
 
@@ -1377,9 +1375,6 @@ Yt2->print();
     X.reset();
 //Z->print();
     Z->write(psio_, PSIF_DFOCC_AMPS);
-    Z.reset();
-
-//outfile->Printf("\tI am here.\n");
 } // end ccsd_pdm_yQia
 
 }  // namespace dfoccwave

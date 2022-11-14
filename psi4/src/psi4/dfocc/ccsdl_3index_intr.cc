@@ -261,8 +261,6 @@ void DFOCC::ccsdl_3index_intr() {
         T.reset();
         Y.reset();
         Z->write(psio_, PSIF_DFOCC_AMPS);
-        Z.reset();
-
     }  // if (reference_ == "RESTRICTED")
 
     // UHF
@@ -1180,10 +1178,6 @@ void DFOCC::ccsdl_3index_intr() {
         K->read(psio_, PSIF_DFOCC_AMPS);
         T->gemm(false, false, K, U, 1.0, 1.0);
         T->write(psio_, PSIF_DFOCC_AMPS);
-        T.reset();
-        K.reset();
-        U.reset();
-
     }// else if (reference_ == "UNRESTRICTED")
 
     // outfile->Printf("\t3indices done.\n");

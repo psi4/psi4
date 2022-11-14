@@ -376,8 +376,6 @@ void DFOCC::ccdl_WmnijAA()
     W->gemm(false, true, I, Tau, 1.0, 1.0);
     I.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
-
 }// ccd_WmnijAA
 
 //======================================================================
@@ -409,8 +407,6 @@ void DFOCC::ccdl_WmnijBB()
     W->gemm(false, true, I, Tau, 1.0, 1.0);
     I.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
-
 }// ccd_WmnijBB
 
 //======================================================================
@@ -441,7 +437,6 @@ void DFOCC::ccdl_WmnijAB()
     W->gemm(false, true, I, Tau, 1.0, 1.0);
     I.reset();
     W->write(psio_, PSIF_DFOCC_AMPS);
-    W.reset();
 
 }// ccd_WmnijAB
 
@@ -618,10 +613,6 @@ void DFOCC::ccdl_WMBEJ_AAAA()
     J->gemm(true, false, bQiaA, bQiaB, 1.0, 0.0);
     Z->gemm(false, false, J, T, 1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    J.reset();
-    T.reset();
 } //ccsdl_ZMBEJ_AAAA()
 
 void DFOCC::ccdl_Wmbej_BBBB()
@@ -663,10 +654,6 @@ void DFOCC::ccdl_Wmbej_BBBB()
     J->gemm(true, false, bQiaB, bQiaA, 1.0, 0.0);
     Z->gemm(false, false, J, T, 1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    J.reset();
-    T.reset();
 } // ccsdl_Zmbej_BBBB()
 
 void DFOCC::ccdl_WMbEj_ABAB()
@@ -703,11 +690,7 @@ void DFOCC::ccdl_WMbEj_ABAB()
     T->sort(1324, T2, 1.0, 0.0);
     T2.reset();
     Z->gemm(false, false, K, T, 1.0, 1.0);
-//Z->print();
     Z->write(psio_, PSIF_DFOCC_AMPS);
-    Z.reset();
-    K.reset();
-    T.reset();
 } // ccsdl_ZMbEj_ABAB()
 
 void DFOCC::ccdl_WmBeJ_BABA()
@@ -745,10 +728,6 @@ void DFOCC::ccdl_WmBeJ_BABA()
     T2.reset();
     Z->gemm(false, false, K, T, 1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    K.reset();
-    T.reset();
 } // ccsdl_ZmBeJ_BABA()
 
 void DFOCC::ccdl_WMbeJ_ABBA()
@@ -777,10 +756,6 @@ void DFOCC::ccdl_WMbeJ_ABBA()
     T2.reset();
     Z->gemm(false, false, X, T, 1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    X.reset();
-    T.reset();
 }  // ccsdl_ZMbeJ_ABBA()
 
 void DFOCC::ccdl_WmBEj_BAAB()
@@ -809,10 +784,6 @@ void DFOCC::ccdl_WmBEj_BAAB()
     J.reset();
     Z->gemm(false, false, X, T, -1.0, 1.0);
     Z->write(psio_, PSIF_DFOCC_AMPS);
-//Z->print();
-    Z.reset();
-    X.reset();
-    T.reset();
 }// ccsdl_ZmBEj_BAAB()
 
 //======================================================================

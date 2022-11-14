@@ -214,7 +214,6 @@ void DFOCC::ccd_pdm_3index_intr() {
         Vab->gemm(false, false, bQijA, X, -1.0, 1.0);
         X.reset();
         Vab->write(psio_, PSIF_DFOCC_AMPS);
-        Vab.reset();
     }// end if (reference_ == "RESTRICTED")
 
     // UHF
@@ -476,7 +475,6 @@ void DFOCC::ccd_pdm_yQia() {
         Z->gemm(false, false, bQiaA, Y, 1.0, 0.0);
         Y.reset();
         Z->write(psio_, PSIF_DFOCC_AMPS);
-        Z.reset();
     }// end if (reference_ == "RESTRICTED")
 
     // UHF
@@ -902,9 +900,6 @@ void DFOCC::ccd_pdm_yQia() {
         Z->gemm(false, false, bQiaA, X, 1.0, 1.0);
         X.reset();
         Z->write(psio_, PSIF_DFOCC_AMPS);
-        Z.reset();
-
-        //std::cout << "I am here \n";
     }// end else if (reference_ == "UNRESTRICTED")
 }  // end ccd_pdm_yQia
 

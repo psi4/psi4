@@ -1327,7 +1327,6 @@ void DFOCC::ccsd_Wabef2T2AA() {
     }
     A.reset();
     Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    Tnew.reset();
 
     timer_off("WabefT2");
 
@@ -1482,7 +1481,6 @@ void DFOCC::ccsd_Wabef2T2BB() {
     }
     A.reset();
     Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
-    Tnew.reset();
 
     timer_off("WabefT2");
 
