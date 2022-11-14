@@ -61,7 +61,7 @@ void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector c
     bases_.push_back(std::make_pair(basis, coefs));
 }
 
-void ExternalPotential::print(std::string out) const {
+void ExternalPotential::print(const std::string& out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => External Potential Field: %s <= \n\n", name_.c_str());
 
@@ -80,12 +80,12 @@ void ExternalPotential::print(std::string out) const {
     if (bases_.size()) {
         printer->Printf("    > Diffuse Bases < \n\n");
         for (size_t i = 0; i < bases_.size(); i++) {
-            printer->Printf("    Molecule %d\n\n", i + 1);
+            printer->Printf("    Molecule %zu\n\n", i + 1);
             bases_[i].first->molecule()->print();
-            printer->Printf("    Basis %d\n\n", i + 1);
+            printer->Printf("    Basis %zu\n\n", i + 1);
             bases_[i].first->print_by_level(out, print_);
             if (print_ > 2) {
-                printer->Printf("    Density Coefficients %d\n\n", i + 1);
+                printer->Printf("    Density Coefficients %zu\n\n", i + 1);
                 bases_[i].second->print();
             }
         }

@@ -49,9 +49,12 @@ namespace psi {
  */
 void psio_error(size_t unit, size_t errval, std::string prev_msg /* = ""*/) {
     std::cerr << "PSIO_ERROR: unit = " << unit << ", errval = " << errval << std::endl;
-    /* Try to save the TOCs for all open units */
-    /* psio_tocwrite() does not call psio_error() so this is OK */
-    for (int i = 0; i < PSIO_MAXUNIT; i++) psio_tocwrite(i);
+    // Try to save the TOCs for all open units
+    // psio_tocwrite() may end up indirectly calling psio_error() again if a write keeps failing, possibly leading to
+    // infinite recursion. To avoid this, the TOCs are not saved if psio_error() is called with a write error.
+    if (errval != PSIO_ERROR_WRITE){
+        for (int i = 0; i < PSIO_MAXUNIT; i++) psio_tocwrite(i);
+    }
     if ((prev_msg.length() > 0) && (prev_msg.back() != '\n')) {
         prev_msg += '\n';
     }

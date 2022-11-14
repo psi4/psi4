@@ -501,7 +501,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     if (debug_) {
         outfile->Printf("  ==> DirectJK: Task Blocking <==\n\n");
         for (size_t task = 0; task < ntask; task++) {
-            outfile->Printf("  Task: %3d, Task Start: %4d, Task End: %4d\n", task, task_starts[task],
+            outfile->Printf("  Task: %3zu, Task Start: %4d, Task End: %4d\n", task, task_starts[task],
                             task_starts[task + 1]);
             for (int P2 = task_starts[task]; P2 < task_starts[task + 1]; P2++) {
                 int P = task_shells[P2];

@@ -59,7 +59,7 @@ except ImportError:
 
 class MDIEngine():
     def __init__(self, scf_method: str, **kwargs):
-        """ Initialize an MDIEngine object for communication with MDI
+        """ Initialize an MDIEngine object for communication with MDI (MolSSI driver interface)
 
         Parameters
         ----------
@@ -454,7 +454,7 @@ def mdi_init(mdi_arguments):
 
 
 def mdi_run(scf_method: str, **kwargs):
-    """ Begin functioning as an MDI engine
+    """ Begin functioning as an MDI (MolSSI driver interface) engine
 
     Parameters
     ----------

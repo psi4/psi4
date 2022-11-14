@@ -1051,7 +1051,7 @@ void DLUSolver::eigenvals() {
         outfile->Printf("   > Eigenvalues <\n\n");
         for (size_t m = 0; m < E_.size(); m++) {
             for (size_t h = 0; h < E_[0].size(); ++h) {
-                outfile->Printf("    Eigenvalue %zu, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf("    Eigenvalue %zu, Irrep %zu = %24.16E\n", m, h, E_[m][h]);
             }
         }
         outfile->Printf("\n");
