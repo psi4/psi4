@@ -1690,33 +1690,11 @@ def scf_helper(name, post_scf=True, **kwargs):
         p4util.banner('Guess SCF, %s Basis' % (guessbasis))
         core.print_out('\n')
 
-    # sort out broken_symmetry settings.
-    if 'brokensymmetry' in kwargs:
-        multp = scf_molecule.multiplicity()
-        if multp != 1:
-            raise ValidationError('Broken symmetry is only for singlets.')
-        if core.get_option('SCF', 'REFERENCE') not in ['UHF', 'UKS']:
-            raise ValidationError("""You must specify 'set reference uhf' to use broken symmetry.""")
-        do_broken = True
-    else:
-        do_broken = False
-
     if cast and read_orbitals:
         raise ValidationError("""Detected options to both cast and read orbitals""")
 
-    if cast and do_broken:
-        raise ValidationError("""Detected options to both cast and perform a broken symmetry computation""")
-
     if (core.get_option('SCF', 'STABILITY_ANALYSIS') == 'FOLLOW') and (core.get_option('SCF', 'REFERENCE') != 'UHF'):
         raise ValidationError(f"""Stability analysis root following is only available for unrestricted Hartree--Fock, not present {core.get_option('SCF', 'REFERENCE')}""")
-
-    # broken set-up
-    if do_broken:
-        raise ValidationError("""Broken symmetry computations are not currently enabled.""")
-        scf_molecule.set_multiplicity(3)
-        core.print_out('\n')
-        p4util.banner('  Computing high-spin triplet guess  ')
-        core.print_out('\n')
 
     # If GUESS is auto guess what it should be
     if core.get_option('SCF', 'GUESS') == "AUTO":
@@ -1732,8 +1710,8 @@ def scf_helper(name, post_scf=True, **kwargs):
             core.set_global_option('BASIS', 'def2-msvp')
 
     # the FIRST scf call
-    if cast or do_broken:
-        # Cast or broken are special cases
+    if cast:
+        # Cast is a special case
         base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
         core.print_out("\n         ---------------------------------------------------------\n")
         if banner:
@@ -1748,15 +1726,6 @@ def scf_helper(name, post_scf=True, **kwargs):
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
             ref_wfn.set_variable("-D Energy", disp_energy)
         ref_wfn.compute_energy()
-
-    # broken clean-up
-    if do_broken:
-        raise ValidationError("Broken Symmetry computations are temporarily disabled.")
-        scf_molecule.set_multiplicity(1)
-        core.set_local_option('SCF', 'GUESS', 'READ')
-        core.print_out('\n')
-        p4util.banner('  Computing broken symmetry solution from high-spin triplet guess  ')
-        core.print_out('\n')
 
     # cast clean-up
     if cast:
