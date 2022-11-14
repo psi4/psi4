@@ -149,7 +149,7 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
     PetiteList petite(basisset, integrals, true);
     my_aotoso_ = petite.aotoso();
 
-    potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint());
+    potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint().release());
 
     context_ = detail::init_PCMSolver(pcmsolver_parsed_fname_, molecule);
     outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
