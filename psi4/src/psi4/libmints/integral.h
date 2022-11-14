@@ -462,23 +462,23 @@ class PSI_API IntegralFactory {
     virtual std::unique_ptr<OneBodySOInt> so_quadrupole();
 
     /// Returns an OneBodyInt that computes arbitrary-order multipole integrals.
-    virtual OneBodyAOInt* ao_multipoles(int order, int deriv = 0);
-    virtual OneBodySOInt* so_multipoles(int order, int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_multipoles(int order, int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_multipoles(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the traceless quadrupole integral.
-    virtual OneBodyAOInt* ao_traceless_quadrupole();
-    virtual OneBodySOInt* so_traceless_quadrupole();
+    virtual std::unique_ptr<OneBodyAOInt> ao_traceless_quadrupole();
+    virtual std::unique_ptr<OneBodySOInt> so_traceless_quadrupole();
 
     /// Returns an OneBodyInt that computes the nabla integral.
-    virtual OneBodyAOInt* ao_nabla(int deriv = 0);
-    virtual OneBodySOInt* so_nabla(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_nabla(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_nabla(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the nabla integral.
-    virtual OneBodyAOInt* ao_angular_momentum(int deriv = 0);
-    virtual OneBodySOInt* so_angular_momentum(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_angular_momentum(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_angular_momentum(int deriv = 0);
 
     /// Returns a OneBodyInt that computes the multipole potential integrals for PE and EFP
-    virtual OneBodyAOInt* ao_multipole_potential(int order, int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_multipole_potential(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyAOInt* electric_field(int deriv = 0);

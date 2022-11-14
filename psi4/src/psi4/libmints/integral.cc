@@ -152,20 +152,20 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_dipole(int deriv) {
     return  std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_nabla(int deriv) { return new NablaInt(spherical_transforms_, bs1_, bs2_, deriv); }
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_nabla(int deriv) { return  std::make_unique<NablaInt>(spherical_transforms_, bs1_, bs2_, deriv); }
 
-OneBodySOInt* IntegralFactory::so_nabla(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_nabla(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_nabla(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_angular_momentum(int deriv) {
-    return new AngularMomentumInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_angular_momentum(int deriv) {
+    return std::make_unique<AngularMomentumInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_angular_momentum(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_angular_momentum(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_angular_momentum(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_quadrupole() { return  std::make_unique<QuadrupoleInt>(spherical_transforms_, bs1_, bs2_); }
@@ -175,26 +175,26 @@ std::unique_ptr<OneBodySOInt> IntegralFactory::so_quadrupole() {
     return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_multipoles(int order, int deriv) {
-    return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_multipoles(int order, int deriv) {
+    return  std::make_unique<MultipoleInt>(spherical_transforms_, bs1_, bs2_, order, deriv);
 }
 
-OneBodyAOInt* IntegralFactory::ao_multipole_potential(int order, int deriv) {
-    return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, order, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_multipole_potential(int order, int deriv) {
+    return  std::make_unique<MultipolePotentialInt>(spherical_transforms_, bs1_, bs2_, order, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_multipoles(int order, int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_multipoles(int order, int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order, deriv));
-    return new OneBodySOInt(ao_int, this);
+    return  std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_traceless_quadrupole() {
-    return new TracelessQuadrupoleInt(spherical_transforms_, bs1_, bs2_);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_traceless_quadrupole() {
+    return  std::make_unique<TracelessQuadrupoleInt>(spherical_transforms_, bs1_, bs2_);
 }
 
-OneBodySOInt* IntegralFactory::so_traceless_quadrupole() {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_traceless_quadrupole() {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_traceless_quadrupole());
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
 OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
