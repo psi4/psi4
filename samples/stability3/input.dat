@@ -1,0 +1,22 @@
+#! Test LDA stability analysis against QChem.
+
+molecule bb {
+   0 3 
+   b   
+   b 1 R 
+   R = 1.587553
+symmetry c1
+}
+
+set {
+reference uks
+basis def2-svp
+STABILITY_ANALYSIS check
+solver_n_root 2
+scf_type pk
+}
+
+ref_eigenvalues = psi4.Matrix.from_list([[-0.0142], [0.0203]]) # TEST
+
+energy('svwn')
+compare_matrices(ref_eigenvalues, variable("SCF STABILITY EIGENVALUES"), 4, "Instability Eigenvalues") # TEST

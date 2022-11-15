@@ -940,35 +940,25 @@ will automatically increment |scf__follow_step_scale| by 0.2 every time the SCF 
 found unstable minimum. The increment can be adjusted by setting |scf__follow_step_increment|.
 The default value is 0.2; adjust if needed to try different values of |scf__follow_step_scale| in a single computation.
 
-The Davidson solver for the eigenvalues is controlled through several keywords. In the following
-we only report the most pertinent for stability analysis, see documentation for the :ref:`CPHF <apdx:cphf>`
-module for a complete list.
-Some default values were modified for the stability analysis code, in that case they are
-explicitly indicated here.
+The Davidson solver for the eigenvalues is controlled through several keywords.
 
-  |cphf__solver_maxiter|: maximum number of iterations
+  |scf__solver_maxiter|: maximum number of iterations
 
-  |cphf__solver_convergence|: eigenvector convergence threshold
+  |scf__solver_convergence|: eigenvector convergence threshold
 
-  |cphf__solver_n_root|: Solve for N eigenvectors in each irreducible representation
+  |scf__solver_n_root|: Solve for N eigenvectors in each irreducible representation
 
-  |cphf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Default within this context: 3
+  |scf__solver_roots_per_irrep|: The number of eigenvectors to solve in each irreducible representation. An array of as many integers as there are irreducible representations.
 
-  |cphf__solver_min_subspace|: Minimum size of the subspace when collapsing.
+  |scf__solver_n_guess|: Use N guess vectors, this needs to be larger than the number of roots so that the lowest ones can be captured reliably. Defaults to 4 guess vectors per root.
 
-  |cphf__solver_max_subspace|: Maximum size of the subspace. Default within this context: 12
+.. warning:: Prior to Dec 2022, v1.7, Psi4 had a different set of keywords controlling instability analysis, and those were included in the CPHF module rather than the SCF module.
+.. warning:: Extending Davidson instability analysis to Kohn-Sham references is under development. As of 1.7, only LDA functionals are currently supported.
 
-
-In case convergence problems are encountered during the Davidson procedure,
-it is recommended to first increase |cphf__solver_max_subspace|, especially if you solve
-for a large number of roots. This will result in a higher computational cost of each iteration, but should
-make the solver better behaved. However, note that |cphf__solver_max_subspace| should never be larger than
-the full subspace minus the number of desired roots to avoid adding artificial zero eigenvalues.
-This may happen in minimal basis sets, especially with symmetry, but the code automatically adjusts
-|cphf__solver_max_subspace| if it is too large.
-If the solver seems to converge on the wrong eigenvalue, try increasing |cphf__solver_n_guess|.
+In case convergence problems are encountered during the Davidson procedure, file a bug report.
+If the solver seems to converge on the wrong eigenvalue, try increasing |scf__solver_n_guess|.
 Otherwise, if the solver is almost converged but reaches the maximum number of iterations, try increasing
-|cphf__solver_maxiter|.
+|scf__solver_maxiter|.
 
 
 .. _`sec:scf-ecps`:

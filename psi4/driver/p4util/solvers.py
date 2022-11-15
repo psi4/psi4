@@ -344,7 +344,7 @@ def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, r_converge
         core.print_out(f"  {' ' * len(solver_name)}           Max[D[value]]     Max[|R|]   # vectors\n")
     else:
         # verbose printing, value, delta, and |R| for each root
-        core.print_out("    {' ' * len(solver_name)}       value      D[value]      |R|   # vectors\n")
+        core.print_out(f"    {' ' * len(solver_name)}       value      D[value]      |R|   # vectors\n")
 
 
 def _diag_print_info(solver_name, info, verbose=1):
@@ -474,7 +474,8 @@ def _best_vectors(engine, ss_vectors: np.ndarray, basis_vectors: List) -> List:
 
 
 class SolverEngine(ABC):
-    """Abstract Base Class defining the API required by solver engines
+    """Abstract Base Class defining the API for a matrix-vector product object
+    required by solvers.
 
     Engines implement the correct product functions for iterative solvers that
     do not require the target matrix be stored directly.
@@ -672,7 +673,8 @@ def davidson_solver(
     r_convergence: float = 1.0E-4,
     max_ss_size: int = 100,
     maxiter: int = 60,
-    verbose: int = 1) -> Dict[str, Any]:
+    verbose: int = 1,
+    nonneg_only: bool = False) -> Dict[str, Any]:
     """Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
 
     If the large matrix `A` has dimension `{NxN}` and N is very large, and only
@@ -704,6 +706,8 @@ def davidson_solver(
         The maximum number of iterations
     verbose
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
+    nonneg_only
+        Should eigenpairs with eigenvalue < 0 be ignored?
 
     Returns
     -------
@@ -790,9 +794,10 @@ def davidson_solver(
         _print_array("SS eigenvectors", alpha, verbose)
         _print_array("SS eigenvalues", lam, verbose)
 
-        # remove zeros/negatives
-        alpha = alpha[:, lam > 1.0e-10]
-        lam = lam[lam > 1.0e-10]
+        if nonneg_only:
+            # remove zeros/negatives
+            alpha = alpha[:, lam > 1.0e-10]
+            lam = lam[lam > 1.0e-10]
 
         # sort/truncate to nroot
         idx = np.argsort(lam)
@@ -907,7 +912,7 @@ def hamiltonian_solver(
     maxiter
         The maximum number of iterations
     verbose
-        The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
+        The amount of logging info to print (0 -> none, 1 -> some, 2 -> all but matrices, >2 -> everything)
 
     Returns
     -------

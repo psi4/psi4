@@ -41,7 +41,6 @@ class UHF : public HF {
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
 
     double compute_initial_E() override;
-    bool stability_analysis_pk();
 
     void common_init();
 
@@ -83,7 +82,6 @@ class UHF : public HF {
 
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
-    bool stability_analysis() override;
 
     /// Hessian-vector computers and solvers
     std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x) override;

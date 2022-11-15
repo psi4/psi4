@@ -1341,11 +1341,11 @@ SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso) {
     return FDSmSDF;
 }
 
-void HF::print_stability_analysis(std::vector<std::pair<double, int> >& vec) {
+void HF::print_stability_analysis(std::vector<std::pair<double, int> >& vec) const {
     std::sort(vec.begin(), vec.end());
     std::vector<std::pair<double, int> >::const_iterator iter = vec.begin();
     outfile->Printf("    ");
-    std::vector<std::string> irrep_labels = molecule_->irrep_labels();
+    auto irrep_labels = molecule_->irrep_labels();
     int count = 0;
     for (; iter != vec.end(); ++iter) {
         ++count;
