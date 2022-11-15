@@ -992,6 +992,10 @@ PSI Variables by Alpha
 
    The virial ratio of the Hartree--Fock method. Only defined for a fully quantum mechanical computation, i.e., not QM/MM.
 
+.. psivar:: HF TOTAL GRADIENT
+
+   The total electronic gradient [E_h/a0] of the Hartree--Fock method, ({nat}, 3).
+
 .. psivar:: HF DIPOLE GRADIENT
 
    The derivative of the Hartree--Fock method dipole [E_h a0/u] = [(e a0/a0)^2/u] with respect to nuclear perturbations
