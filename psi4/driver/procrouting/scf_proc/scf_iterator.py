@@ -709,6 +709,7 @@ def scf_print_energies(self):
     hf_energy = enuc + e1 + e2
     dft_energy = hf_energy + exc + ed + evv10
     total_energy = dft_energy + eefp + epcm + epe
+    full_qm = not core.get_option('SCF', 'PCM') and not core.get_option('SCF', 'PE') and not hasattr(self.molecule(), 'EFP')
 
     core.print_out("   => Energetics <=\n\n")
     core.print_out("    Nuclear Repulsion Energy =        {:24.16f}\n".format(enuc))
@@ -739,10 +740,11 @@ def scf_print_energies(self):
         #self.set_variable(self.functional().name() + ' FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
         self.set_variable("DFT TOTAL ENERGY", dft_energy)  # overwritten later for DH  # P::e SCF
     else:
-        auto potential = total_energy - ke
+        potential = total_energy - ke
         self.set_variable("HF KINETIC ENERGY", hf_energy)  # P::e SCF
         self.set_variable("HF POTENTIAL ENERGY", potential)  # P::e SCF
-        self.set_variable("HF VIRIAL RATIO", - potential / ke)  # P::e SCF
+        if full_qm:
+            self.set_variable("HF VIRIAL RATIO", - potential / ke)  # P::e SCF
         self.set_variable("HF TOTAL ENERGY", hf_energy)  # P::e SCF
     if hasattr(self, "_disp_functor"):
         self.set_variable("DISPERSION CORRECTION ENERGY", ed)  # P::e SCF

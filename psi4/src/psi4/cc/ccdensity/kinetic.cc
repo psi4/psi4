@@ -117,9 +117,9 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
     outfile->Printf("\t-V/T (corr)            = %20.15f\n", -vcorr / tcorr);
     outfile->Printf("\t-V/T (total)           = %20.15f\n", -vtot / ttot);
 
-    wfn.set_scalar_variable("CC DELTA KINETIC ENERGY", tcorr);
-    wfn.set_scalar_variable("CC DELTA POTENTIAL ENERGY", vcorr);
-    wfn.set_scalar_variable("CC DELTA VIRIAL RATIO", -vtot / ttot + vref / tref);
+    wfn->set_scalar_variable("CC CORRELATION KINETIC ENERGY", tcorr);
+    wfn->set_scalar_variable("CC CORRELATION POTENTIAL ENERGY", vcorr);
+    wfn->set_scalar_variable("CC CORRELATION VIRIAL RATIO", -vtot / ttot + vref / tref);
 
     /*** Release memory ***/
     free_block(X);

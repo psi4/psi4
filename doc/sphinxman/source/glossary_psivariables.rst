@@ -46,23 +46,23 @@ PSI Variables by Alpha
 
 .. psivar:: [T] CORRECTION ENERGY
 
-   The coupled-cluster bracket perturbative triples correction [Eh].
+   The coupled-cluster bracket perturbative triples correction [E_h].
 
 .. psivar:: (T) CORRECTION ENERGY
 
-   The coupled-cluster perturbative triples correction [Eh].
+   The coupled-cluster perturbative triples correction [E_h].
 
 .. psivar:: (AT) CORRECTION ENERGY
    A-(T) CORRECTION ENERGY
 
-   The coupled-cluster asymmetric perturbative triples correction [Eh].
+   The coupled-cluster asymmetric perturbative triples correction [E_h].
 
 .. psivar:: AAA (T) CORRECTION ENERGY
    AAB (T) CORRECTION ENERGY
    ABB (T) CORRECTION ENERGY
    BBB (T) CORRECTION ENERGY
 
-   Spin components of the UHF-based coupled-cluster perturbative triples correction [Eh].
+   Spin components of the UHF-based coupled-cluster perturbative triples correction [E_h].
 
 .. psivar:: ACPF DIPOLE
 
@@ -75,33 +75,33 @@ PSI Variables by Alpha
 .. psivar:: ACPF TOTAL ENERGY
    ACPF CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the averaged coupled-pair functional level of theory.
 
 .. psivar:: ADC ROOT 0 -> ROOT n EXCITATION ENERGY
    TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY
 
-   The excitation energy [Eh} from ground state to root *n*.
+   The excitation energy [E_h] from ground state to root *n*.
    DFT functional labeled if canonical.
 
 .. psivar:: ADC ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY
    TD-fctl ROOT 0 (IN h) -> ROOT n (IN i) EXCITATION ENERGY
 
-   The excitation energy [Eh] from the ground state (which is of irrep *h*)
+   The excitation energy [E_h] from the ground state (which is of irrep *h*)
    to root *n* within irrep *i*.
    DFT functional labeled if canonical.
 
 .. psivar:: ADC ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY
    TD-fctl ROOT 0 (h) -> ROOT n (i) EXCITATION ENERGY
 
-   The excitation energy [Eh] from the ground state (which is of irrep *h*)
+   The excitation energy [E_h] from the ground state (which is of irrep *h*)
    to root *n* (which is of irrep *i*).
    DFT functional labeled if canonical.
 
 .. psivar:: ADC ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION
    TD-fctl ROOT 0 -> ROOT n EXCITATION ENERGY - h TRANSITION
 
-   The excitation energy [Eh] from the ground state to root *n*, and the
+   The excitation energy [E_h] from the ground state to root *n*, and the
    transition is of irrep *h*.
    DFT functional labeled if canonical.
 
@@ -233,7 +233,7 @@ PSI Variables by Alpha
 .. psivar:: AQCC TOTAL ENERGY
    AQCC CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the averaged quadratic coupled-cluster level of theory.
 .. psivar:: BRUECKNER CONVERGED
 
@@ -251,49 +251,49 @@ PSI Variables by Alpha
    CBS CORRELATION ENERGY
    CBS REFERENCE ENERGY
 
-   The total electronic energy [Eh] and its breakdown into reference total
-   energy [Eh] and correlation correction components [Eh] for the compound
+   The total electronic energy [E_h] and its breakdown into reference total
+   energy [E_h] and correlation correction components [E_h] for the compound
    method requested through cbs().
 
 .. psivar:: CCname ROOT n TOTAL ENERGY
    TD-fctl ROOT n TOTAL ENERGY
 
-   The total electronic energy [Eh] for the requested theory and root *n* (*n* starts at 0).
+   The total electronic energy [E_h] for the requested theory and root *n* (*n* starts at 0).
    DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n (IN h) TOTAL ENERGY
    TD-fctl ROOT n (IN h) TOTAL ENERGY
 
-   The total electronic energy [Eh] for the requested theory and root *n* within irrep *h* (*n* starts at 0).
+   The total electronic energy [E_h] for the requested theory and root *n* within irrep *h* (*n* starts at 0).
    DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n (h) TOTAL ENERGY
    TD-fctl ROOT n (h) TOTAL ENERGY
 
-   The total electronic energy [Eh] for the requested theory and root *n*, which is of irrep *h* (*n* starts at 0).
+   The total electronic energy [E_h] for the requested theory and root *n*, which is of irrep *h* (*n* starts at 0).
    DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n TOTAL ENERGY - h TRANSITION
    TD-fctl ROOT n TOTAL ENERGY - h TRANSITION
 
-   The total electronic energy [Eh] for the requested theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0).
+   The total electronic energy [E_h] for the requested theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0).
 
 .. psivar:: CCname ROOT n CORRELATION ENERGY
 
-   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n* (*n* starts at 0).
+   The correlation energy [E_h] for the requested coupled cluster level of theory and root *n* (*n* starts at 0).
    DFT functional labeled if canonical.
 
 .. psivar:: CCname ROOT n (IN h) CORRELATION ENERGY
 
-   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n* within irrep *h* (*n* starts at 0).
+   The correlation energy [E_h] for the requested coupled cluster level of theory and root *n* within irrep *h* (*n* starts at 0).
 
 .. psivar:: CCname ROOT n (h) CORRELATION ENERGY
 
-   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n*, which is of irrep *h* (*n* starts at 0).
+   The correlation energy [E_h] for the requested coupled cluster level of theory and root *n*, which is of irrep *h* (*n* starts at 0).
 
 .. psivar:: CCname ROOT n CORRELATION ENERGY - h TRANSITION
 
-   The correlation energy [Eh] for the requested coupled cluster level of theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0).
+   The correlation energy [E_h] for the requested coupled cluster level of theory and root *n*, and the transition is of irrep *h*, (*n* starts at 0).
 
 .. psivar:: CCname ROOT n DIPOLE
 
@@ -405,6 +405,18 @@ PSI Variables by Alpha
 .. psivar:: CC TOTAL ENERGY
    CC CORRELATION ENERGY
 
+.. psivar:: CC CORRELATION KINETIC ENERGY
+
+   The correlation correction to the kinetic energy [E_h], as computed by a coupled cluster method.
+
+.. psivar:: CC CORRELATION POTENTIAL ENERGY
+
+   The correlation correction to the potential energy [E_h], as computed by a coupled cluster method.
+
+.. psivar:: CC CORRELATION VIRIAL RATIO
+
+   The correlation correction to the virial ratio, as computed by a coupled cluster method. Only defined for a fully quantum mechanical computation, i.e., not QM/MM.
+
 .. psivar:: CC T1 DIAGNOSTIC
    CC D1 DIAGNOSTIC
    CC NEW D1 DIAGNOSTIC
@@ -421,7 +433,7 @@ PSI Variables by Alpha
    CCnn TOTAL ENERGY
    CCnn CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the requested approximate coupled-cluster (CC2, CC3, up to CC\ *nn*)
    level of theory.
 
@@ -480,7 +492,7 @@ PSI Variables by Alpha
 .. psivar:: CCD TOTAL ENERGY
    CCD CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the coupled-cluster doubles level of theory.
 
 .. psivar:: CC ALPHA-ALPHA PAIR ENERGIES
@@ -528,7 +540,7 @@ PSI Variables by Alpha
    CCn TOTAL ENERGY
    CCn CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the requested full coupled-cluster (CCSD, CCSDT, up to CC\ *n*)
    level of theory.
 
@@ -543,7 +555,7 @@ PSI Variables by Alpha
    CC(n-1)(n) TOTAL ENERGY
    CC(n-1)(n) CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the perturbatively corrected coupled-cluster (CCSD(T), A-CCSD(T) = CCSD(AT), CCSDT(Q),
    up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
 
@@ -554,7 +566,7 @@ PSI Variables by Alpha
    CCn-1a TOTAL ENERGY
    CCn-1a CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the approximate coupled-cluster (CCSD(T)-1a, CCSDT(Q)-1a,
    up to CC\ *n*\ -1a) level of theory.
 
@@ -565,7 +577,7 @@ PSI Variables by Alpha
    CCn-1b TOTAL ENERGY
    CCn-1b CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the approximate coupled-cluster (CCSD(T)-1b, CCSDT(Q)-1b,
    up to CC\ *n*\ -1b) level of theory.
 
@@ -576,7 +588,7 @@ PSI Variables by Alpha
    CCn-3 TOTAL ENERGY
    CCn-3 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the approximate coupled-cluster (CCSD(T)-3, CCSDT(Q)-3,
    up to CC\ *n*\ -3) level of theory.
 
@@ -587,7 +599,7 @@ PSI Variables by Alpha
    CC(n-1)(n)_L TOTAL ENERGY
    CC(n-1)(n)_L CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the approximate coupled-cluster (CCSD(T)_L, CCSDT(Q)_L,
    up to CC(\ *n*\ -1)(\ *n*\ )L level of theory.
 
@@ -596,7 +608,7 @@ PSI Variables by Alpha
    CCSDT(Q)/B TOTAL ENERGY
    CCSDT(Q)/B CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the modified CCSDT(Q) level of theory.
 
 .. psivar:: CEPA(0) DIPOLE
@@ -616,7 +628,7 @@ PSI Variables by Alpha
    CEPA(3) TOTAL ENERGY
    CEPA(3) CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the requested variant of coupled electron pair approximation level of theory.
 
 .. psivar:: CFOUR ERROR CODE
@@ -650,20 +662,20 @@ PSI Variables by Alpha
 .. psivar:: CI ROOT n TOTAL ENERGY
    CI ROOT n CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the requested configuration interaction level of theory and root
    *n* (numbering starts at 0).
 
 .. psivar:: CI STATE-AVERAGED TOTAL ENERGY
    CI STATE-AVERAGED CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for state-averaged CI/CASSCF levels of theory.
 
 .. psivar:: CI TOTAL ENERGY
    CI CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the requested configuration interaction level of theory and root.
 
 .. psivar:: CISD DIPOLE
@@ -683,13 +695,13 @@ PSI Variables by Alpha
    CIn CORRELATION ENERGY
    CIn TOTAL ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the labeled configuration interaction level of theory and root.
    *n* is CI order for *n* > 4.
 
 .. psivar:: CP-CORRECTED 2-BODY INTERACTION ENERGY
 
-   The interaction energy [Eh] considering only two-body interactions,
+   The interaction energy [E_h] considering only two-body interactions,
    computed with counterpoise correction.
    Related variable :psivar:`UNCP-CORRECTED 2-BODY INTERACTION ENERGY`.
 
@@ -697,17 +709,17 @@ PSI Variables by Alpha
 
 .. psivar:: CURRENT CORRELATION ENERGY
 
-   The correlation energy [Eh] corresponding to the :psivar:`CURRENT ENERGY` variable.
+   The correlation energy [E_h] corresponding to the :psivar:`CURRENT ENERGY` variable.
 
 .. psivar:: CURRENT ENERGY
 
-   The total electronic energy [Eh] of the most recent stage of a
+   The total electronic energy [E_h] of the most recent stage of a
    calculation (frequently overwritten). This is the quantity tracked by
    the geometry optimizer.
 
 .. psivar:: CURRENT REFERENCE ENERGY
 
-   The total electronic energy [Eh] of the reference stage corresponding to
+   The total electronic energy [E_h] of the reference stage corresponding to
    the :psivar:`CURRENT ENERGY` variable.
 
 .. psivar:: CURRENT DIPOLE
@@ -734,7 +746,7 @@ PSI Variables by Alpha
    CUSTOM SCS-MP2 CORRELATION ENERGY
 
    Changeable quantities based on options.
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2-like method formed by any reweighting of :psivar:`MP2 DOUBLES ENERGY`
    for opposite-spin and same-spin contributions, with
    any singles carried along.
@@ -761,7 +773,7 @@ PSI Variables by Alpha
    CUSTOM SCS-OLCCD CORRELATION ENERGY
 
    Changeable quantities based on options.
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the method formed by any reweighting of the named :samp:`{method} DOUBLES ENERGY`
    for opposite-spin and same-spin contributions, with
    any singles carried along.
@@ -796,14 +808,14 @@ PSI Variables by Alpha
 
 .. psivar:: DCT LAMBDA ENERGY
 
-   An energy term in density cumulant theory [Eh]. This term is the
+   An energy term in density cumulant theory [E_h]. This term is the
    2-electron cumulant's contribution contribution to the reduced
    density matrix energy expression. Not recommended for interpretative
    use except by reduced density matrix specialists.
 
 .. psivar:: DCT SCF ENERGY
 
-   An energy term in density cumulant theory [Eh]. This term is the
+   An energy term in density cumulant theory [E_h]. This term is the
    1-electron reduced density matrix (1RDM) contribution to the reduced
    density matrix energy expression, plus the contribution of the
    antisymmetrized product of 1RDMs. Not recommended for interpretative
@@ -811,12 +823,12 @@ PSI Variables by Alpha
 
 .. psivar:: DCT THREE-PARTICLE ENERGY
 
-   The three-particle correlation energy correction [Eh] in density cumulant
+   The three-particle correlation energy correction [E_h] in density cumulant
    theory, akin to :psivar:`(T) CORRECTION ENERGY` in coupled-cluster.
 
 .. psivar:: DCT TOTAL ENERGY
 
-   Total energy [Eh] in density cumulant theory. Sum of :psivar:`DCT SCF ENERGY`,
+   Total energy [E_h] in density cumulant theory. Sum of :psivar:`DCT SCF ENERGY`,
    :psivar:`DCT LAMBDA ENERGY`, and :psivar:`DCT THREE-PARTICLE ENERGY` when present.
 
 .. psivar:: DETCI AVG DVEC NORM
@@ -825,7 +837,7 @@ PSI Variables by Alpha
 
 .. psivar:: DFT FUNCTIONAL TOTAL ENERGY
 
-   The total electronic energy [Eh] for the underlying functional of the
+   The total electronic energy [E_h] for the underlying functional of the
    requested DFT method, without any dispersion correction; the first four
    terms in Eq. :eq:`SCFterms` or :eq:`DFTterms`. Quantity
    :math:`E_{\text{FCTL}}` in Eqs.  :eq:`SCFterms` and :eq:`DFTterms`.
@@ -834,7 +846,7 @@ PSI Variables by Alpha
 
 .. psivar:: DFT TOTAL ENERGY
 
-   The total electronic energy [Eh] for the requested DFT method,
+   The total electronic energy [E_h] for the requested DFT method,
    :math:`E_{\text{DFT}}` in Eq. :eq:`DFTterms`.
 
    .. math::
@@ -863,22 +875,22 @@ PSI Variables by Alpha
 
 .. psivar:: DFT TOTAL HESSIAN
 
-   The total electronic second derivative [Eh/a0/a0] for the requested DFT method, (3 * {nat}, 3 * {nat}).
+   The total electronic second derivative [E_h/a0/a0] for the requested DFT method, (3 * {nat}, 3 * {nat}).
 
 .. psivar:: DFT XC ENERGY
 
-   The functional energy contribution [Eh] to the total SCF energy (DFT only).
+   The functional energy contribution [E_h] to the total SCF energy (DFT only).
    Quantity :math:`E_{xc}` in Eqs. :eq:`SCFterms` and :eq:`DFTterms`.
 
 .. psivar:: DFT VV10 ENERGY
 
-   The VV10 nonlocal contribution [Eh] to the total SCF energy (DFT only).
+   The VV10 nonlocal contribution [E_h] to the total SCF energy (DFT only).
    Included in :psivar:`DFT FUNCTIONAL TOTAL ENERGY`.
 
 .. psivar:: DISPERSION CORRECTION ENERGY
    fctl DISPERSION CORRECTION ENERGY
 
-   The dispersion correction [Eh] appended to an underlying functional
+   The dispersion correction [E_h] appended to an underlying functional
    when a DFT-D method is requested. Quantity :math:`E_{\text{-D}}`
    in Eqs. :eq:`SCFterms` and :eq:`DFTterms`.
    When dispersion parameters are untweaked for a functional and dispersion
@@ -886,7 +898,7 @@ PSI Variables by Alpha
 
 .. psivar:: DOUBLE-HYBRID CORRECTION ENERGY
 
-   The scaled MP2 correlation energy correction [Eh] appended to an
+   The scaled MP2 correlation energy correction [E_h] appended to an
    underlying functional when a DH-DFT method is requested.
    Quantity :math:`E_{\text{DH}}` in Eq. :eq:`DFTterms`.
 
@@ -905,11 +917,11 @@ PSI Variables by Alpha
 
 .. psivar:: DMRG-SCF TOTAL ENERGY
 
-   The total DMRG total electonic energy [Eh]. Not unique because oribital spaces vary.
+   The total DMRG total electonic energy [E_h]. Not unique because oribital spaces vary.
 
 .. psivar:: DMRG-CASPT2 TOTAL ENERGY
 
-   The total DMRG plus CASPT2 total electonic energy [Eh] . Not unique because orbital spaces vary.
+   The total DMRG plus CASPT2 total electonic energy [E_h] . Not unique because orbital spaces vary.
 
 .. psivar:: EFP DISP ENERGY
    EFP ELST ENERGY
@@ -917,13 +929,13 @@ PSI Variables by Alpha
    EFP IND ENERGY
 
    Respectively, the dispersion, electrostatics, exchange, and induction
-   components of the total electronic interaction energy [Eh] for EFP/EFP
+   components of the total electronic interaction energy [E_h] for EFP/EFP
    computations. The sum of these four components yields
    :psivar:`EFP TOTAL ENERGY`.
 
 .. psivar:: EFP TOTAL ENERGY
 
-   The total electronic interaction energy [Eh] for EFP/EFP computations.
+   The total electronic interaction energy [E_h] for EFP/EFP computations.
 
 .. psivar:: EFP TORQUE
 
@@ -931,29 +943,29 @@ PSI Variables by Alpha
 
 .. psivar:: ENTHALPY
 
-   Total enthalpy H [Eh] at given temperature.
+   Total enthalpy H [E_h] at given temperature.
 
 .. psivar:: ENTHALPY CORRECTION
 
-   Sum of electronic, translational, rotational, and vibrational corrections [Eh] to the enthalpy at given temperature.
+   Sum of electronic, translational, rotational, and vibrational corrections [E_h] to the enthalpy at given temperature.
 
 .. psivar:: ESP AT CENTER n
 
-   Property of electrostatic potential [Eh / e] at location, usually atom center, n.
+   Property of electrostatic potential [E_h / e] at location, usually atom center, n.
 
 .. psivar:: FCI TOTAL ENERGY
    FCI CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the full configuration interaction level of theory.
 
 .. psivar:: GIBBS FREE ENERGY
 
-   Total Gibbs free energy [Eh], free enthalpy at given temperature.
+   Total Gibbs free energy [E_h], free enthalpy at given temperature.
 
 .. psivar:: GIBBS FREE ENERGY CORRECTION
 
-   Sum of electronic, translational, rotational, and vibrational corrections [Eh] to the free enthalpy at given temperature.
+   Sum of electronic, translational, rotational, and vibrational corrections [E_h] to the free enthalpy at given temperature.
 
 .. psivar:: GRID ELECTRONS TOTAL
    GRID ELECTRONS ALPHA
@@ -963,14 +975,22 @@ PSI Variables by Alpha
 
 .. psivar:: HF TOTAL ENERGY
 
-   The total electronic energy [Eh] for the Hartree--Fock method, without
+   The total electronic energy [E_h] for the Hartree--Fock method, without
    any dispersion correction; the first three (or four, since
    :math:`E_{xc} = 0`) terms in Eq. :eq:`SCFterms`. Quantity :math:`E_{\text{HF}}`
    in Eq. :eq:`SCFterms`.
 
-.. psivar:: HF TOTAL GRADIENT
+.. psivar:: HF KINETIC ENERGY
 
-   The total electronic gradient [E_h/a0] of the Hartree--Fock method, ({nat}, 3).
+   The total kinetic energy [E_h] of the Hartree--Fock method.
+
+.. psivar:: HF POTENTIAL ENERGY
+
+   The total potential energy [E_h] of the Hartree--Fock method.
+
+.. psivar:: HF VIRIAL RATIO
+
+   The virial ratio of the Hartree--Fock method. Only defined for a fully quantum mechanical computation, i.e., not QM/MM.
 
 .. psivar:: HF DIPOLE GRADIENT
 
@@ -979,27 +999,27 @@ PSI Variables by Alpha
 
 .. psivar:: HF TOTAL HESSIAN
 
-   The total electronic second derivative [Eh/a0/a0] for the Hartree-Fock method, (3 * {nat}, 3 * {nat}).
+   The total electronic second derivative [E_h/a0/a0] for the Hartree-Fock method, (3 * {nat}, 3 * {nat}).
 
 .. psivar:: LCCD TOTAL ENERGY
    LCCD CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the linearized coupled cluster doubles level of theory.
 
 .. psivar:: LCCSD TOTAL ENERGY
    LCCSD CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the linearized coupled cluster singles and doubles level of theory.
 
 .. psivar:: LCC2 (+LMP2) TOTAL ENERGY
 
-   The total electronic energy [Eh] for the local CC2 level of theory.
+   The total electronic energy [E_h] for the local CC2 level of theory.
 
 .. psivar:: LCCSD (+LMP2) TOTAL ENERGY
 
-   The total electronic energy [Eh] for the local CCSD level of theory.
+   The total electronic energy [E_h] for the local CCSD level of theory.
 
 .. psivar:: LEFT-RIGHT CC2 EIGENVECTOR OVERLAP
    LEFT-RIGHT CC3 EIGENVECTOR OVERLAP
@@ -1051,7 +1071,7 @@ PSI Variables by Alpha
 
 .. psivar:: MCSCF TOTAL ENERGY
 
-   Multiconfigurational self-consistent-field energy [Eh] in the course of
+   Multiconfigurational self-consistent-field energy [E_h] in the course of
    a configuration interaction computation. May be single-root or state-averaged.
 
 .. psivar:: mtd DIPOLE
@@ -1085,7 +1105,7 @@ PSI Variables by Alpha
 .. psivar:: MP2 TOTAL ENERGY
    MP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2 level of theory.
 
 .. psivar:: MP2 TOTAL GRADIENT
@@ -1098,29 +1118,29 @@ PSI Variables by Alpha
 
 .. psivar:: MP2 TOTAL HESSIAN
 
-   The total electronic second derivative [Eh/a0/a0] for the MP2 level of theory, (3 * {nat}, 3 * {nat}).
+   The total electronic second derivative [E_h/a0/a0] for the MP2 level of theory, (3 * {nat}, 3 * {nat}).
 
 .. psivar:: MP2.5 TOTAL ENERGY
    MP2.5 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2.5 level of theory.
 
 .. psivar:: MP3 TOTAL ENERGY
    MP3 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP3 level of theory.
 
 .. psivar:: MP4(T) CORRECTION ENERGY
 
-   The MP4 triples component [Eh]. Quantity is second right-hand term in
+   The MP4 triples component [E_h]. Quantity is second right-hand term in
    Eq. :eq:`MP4terms`.
 
 .. psivar:: MP4(SDQ) TOTAL ENERGY
    MP4(SDQ) CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP4 singles, doubles, quadruples level of theory.  Quantity
    :psivar:`MP4(SDQ) CORRELATION ENERGY` is
    first right-hand term in Eq. :eq:`MP4terms`.
@@ -1130,7 +1150,7 @@ PSI Variables by Alpha
    MP4(SDTQ) TOTAL ENERGY
    MP4(SDTQ) CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the full MP4 level of theory. Quantity :psivar:`MP4 CORRELATION
    ENERGY` / :psivar:`MP4(SDTQ) CORRELATION ENERGY`
    is left-hand term in Eq. :eq:`MP4terms`.
@@ -1141,7 +1161,7 @@ PSI Variables by Alpha
 .. psivar:: MPn TOTAL ENERGY
    MPn CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the labeled |MollerPlesset| perturbation theory level.
    *n* is MP perturbation order.
 
@@ -1167,7 +1187,7 @@ PSI Variables by Alpha
    OREMP2 DOUBLES ENERGY
    OLCCD DOUBLES ENERGY
 
-   The doubles portion [Eh] of the named correlation energy
+   The doubles portion [E_h] of the named correlation energy
    including same-spin and opposite-spin correlations.
 
 .. psivar:: MP2 SINGLES ENERGY
@@ -1189,7 +1209,7 @@ PSI Variables by Alpha
    OREMP2 SINGLES ENERGY
    OLCCD SINGLES ENERGY
 
-   The singles portion [Eh] of the named correlation energy.
+   The singles portion [E_h] of the named correlation energy.
    Zero except in ROHF.
 
 .. psivar:: MP2 SAME-SPIN CORRELATION ENERGY
@@ -1214,7 +1234,7 @@ PSI Variables by Alpha
    OREMP2 SAME-SPIN CORRELATION ENERGY
    OLCCD SAME-SPIN CORRELATION ENERGY
 
-   The unscaled portion [Eh] of the named correlation energy
+   The unscaled portion [E_h] of the named correlation energy
    from same-spin or triplet doubles correlations.
 
 .. psivar:: MP2 OPPOSITE-SPIN CORRELATION ENERGY
@@ -1239,14 +1259,14 @@ PSI Variables by Alpha
    OREMP2 OPPOSITE-SPIN CORRELATION ENERGY
    OLCCD OPPOSITE-SPIN CORRELATION ENERGY
 
-   The unscaled portion [Eh] of the named correlation energy
+   The unscaled portion [E_h] of the named correlation energy
    from opposite-spin or singlet doubles correlations.
 
 .. psivar:: MRPT TOTAL ENERGY
    MP2-CCSD TOTAL ENERGY
    MRCC TOTAL ENERGY
 
-   Energies [Eh] from correlated multi-reference theories.
+   Energies [E_h] from correlated multi-reference theories.
 
 .. psivar:: MULLIKEN CHARGES
 
@@ -1260,7 +1280,7 @@ PSI Variables by Alpha
 
 .. psivar:: NBODY (i, j, ..., k)@(a, b, ..., c) TOTAL ENERGY
 
-   The total energy [Eh] of a component of the requested N-Body energy.
+   The total energy [E_h] of a component of the requested N-Body energy.
    The first parenthetical list over *i*, *j*, ..., *k* enumerates
    molecular fragments included in the computation in 1-indexed,
    input-file order, while the second enumerates list over *a*, *b*,
@@ -1273,7 +1293,7 @@ PSI Variables by Alpha
 
 .. psivar:: NUCLEAR REPULSION ENERGY
 
-   The nuclear repulsion energy contribution [Eh] to the total SCF energy.
+   The nuclear repulsion energy contribution [E_h] to the total SCF energy.
    Quantity :math:`E_{NN}` in Eq. :eq:`SCFterms`.
 
    .. math:: E_{NN} = \sum_{i, j<i}^{N_{atom}}\frac{Z_i Z_j}{|\mathbf{R}_i - \mathbf{R}_j|}
@@ -1282,103 +1302,103 @@ PSI Variables by Alpha
 .. psivar:: OCEPA(0) TOTAL ENERGY
    OCEPA(0) CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the orbital-optimized CEPA(0) level of theory.
 
 .. psivar:: OLCCD TOTAL ENERGY
    OLCCD CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the orbital-optimized linearized coupled cluster doubles level of theory.
 
 .. psivar:: OLCCD REFERENCE CORRECTION ENERGY
 
-   The difference [Eh] between the single-determinant energy of the final and
+   The difference [E_h] between the single-determinant energy of the final and
    initial orbitals for the orbital-optimized linearized coupled cluster
    doubles level of theory.
 
 .. psivar:: OMP2 TOTAL ENERGY
    OMP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the orbital-optimized MP2 level of theory.
 
 .. psivar:: OMP2 REFERENCE CORRECTION ENERGY
 
-   The difference [Eh] between the single-determinant energy of the final and
+   The difference [E_h] between the single-determinant energy of the final and
    initial orbitals for the orbital-optimized MP2 level of theory.
 
 .. psivar:: OMP2.5 TOTAL ENERGY
    OMP2.5 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the orbital-optimized MP2.5 level of theory.
 
 .. psivar:: OMP2.5 REFERENCE CORRECTION ENERGY
 
-   The difference [Eh] between the single-determinant energy of the final and
+   The difference [E_h] between the single-determinant energy of the final and
    initial orbitals for the orbital-optimized MP2.5 level of theory.
 
 .. psivar:: OMP3 TOTAL ENERGY
    OMP3 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the orbital-optimized MP3 level of theory.
 
 .. psivar:: OMP3 REFERENCE CORRECTION ENERGY
 
-   The difference [Eh] between the single-determinant energy of the final and
+   The difference [E_h] between the single-determinant energy of the final and
    initial orbitals for the orbital-optimized MP3 level of theory.
 
 .. psivar:: OREMP2 TOTAL ENERGY
    OREMP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the orbital-optimized retaining-the-excitation-degree |MollerPlesset|
    hybrid perturbation theory level.
 
 .. psivar:: OREMP2 REFERENCE CORRECTION ENERGY
 
-   The difference [Eh] between the single-determinant energy of the final and
+   The difference [E_h] between the single-determinant energy of the final and
    initial orbitals for the orbital-optimized retaining-the-excitation-degree
    |MollerPlesset| hybrid perturbation theory level.
 
 .. psivar:: ONE-ELECTRON ENERGY
 
-   The one-electron energy contribution [Eh] to the total SCF energy.
+   The one-electron energy contribution [E_h] to the total SCF energy.
    Quantity :math:`E_{1e^-}` in Eq. :eq:`SCFterms`.
 
 .. psivar:: PCM POLARIZATION ENERGY
 
-   The energy contribution [Eh] from the polarizable continuum model for solvation.
+   The energy contribution [E_h] from the polarizable continuum model for solvation.
 
 .. psivar:: PE ENERGY
 
-   The energy contribution [Eh] from the polarizable embedding model for solvation.
+   The energy contribution [E_h] from the polarizable embedding model for solvation.
 
 .. psivar:: QCISD TOTAL ENERGY
    QCISD CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the quadratic configuration interaction singles and doubles level
    of theory.
 
 .. psivar:: QCISD(T) TOTAL ENERGY
    QCISD(T) CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the quadratic configuration interaction singles and doubles with
    perturbative triples correction level of theory.
 
 .. psivar:: QCISD(T) CORRECTION ENERGY
 
    The quadratic configuration interaction singles and doubles perturbative
-   triples correction [Eh].
+   triples correction [E_h].
 
 .. psivar:: REMP2 TOTAL ENERGY
    REMP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the retaining-the-excitation-degree |MollerPlesset| hybrid perturbation
    theory level.
 
@@ -1388,48 +1408,48 @@ PSI Variables by Alpha
    SAPT IND ENERGY
 
    Respectively, the dispersion, electrostatics, exchange, and induction
-   components of the total electronic interaction energy [Eh] for the
+   components of the total electronic interaction energy [E_h] for the
    requested SAPT level of theory. The sum of these four components yields
    :psivar:`SAPT TOTAL ENERGY`.
 
 .. psivar:: SAPT TOTAL ENERGY
    SAPT ENERGY
 
-   The total electronic interaction energy [Eh] for the requested SAPT
+   The total electronic interaction energy [E_h] for the requested SAPT
    level of theory.
 
 .. psivar:: SAPT ELST10,R ENERGY
 
-   An electrostatics-classified SAPT term energy [Eh] implemented for SAPT0.
+   An electrostatics-classified SAPT term energy [E_h] implemented for SAPT0.
 
 .. psivar:: SAPT ELST EXTERN-EXTERN ENERGY
 
-   Electrostatic interaction [Eh] between the point charges in fragments
+   Electrostatic interaction [E_h] between the point charges in fragments
    A and B in F/I-SAPT.
 
 .. psivar:: SAPT EXCH10 ENERGY
 
-   An exchange-classified SAPT term energy [Eh] implemented for SAPT0.
+   An exchange-classified SAPT term energy [E_h] implemented for SAPT0.
 
 .. psivar:: SAPT EXCH10(S^2) ENERGY
 
-   An exchange-classified SAPT term energy [Eh] implemented for SAPT0.
+   An exchange-classified SAPT term energy [E_h] implemented for SAPT0.
 
 .. psivar:: SAPT IND20,R ENERGY
    SAPT EXCH-IND20,R ENERGY
    SAPT IND20,U ENERGY
    SAPT EXCH-IND20,U ENERGY
 
-   An induction-classified SAPT term energy [Eh] implemented for SAPT0.
+   An induction-classified SAPT term energy [E_h] implemented for SAPT0.
 
 .. psivar:: SAPT DISP20 ENERGY
    SAPT EXCH-DISP20 ENERGY
 
-   A dispersion-classified SAPT term energy [Eh] implemented for SAPT0.
+   A dispersion-classified SAPT term energy [E_h] implemented for SAPT0.
 
 .. psivar:: SAPT EXCH-DISP20(S^INF) ENERGY
 
-   A dispersion-classified SAPT term energy [Eh] implemented for SAPT0. See :ref:`sec:saptinf`.
+   A dispersion-classified SAPT term energy [E_h] implemented for SAPT0. See :ref:`sec:saptinf`.
 
 .. psivar:: SAPT SAME-SPIN DISP20 ENERGY
    SAPT SAME-SPIN EXCH-DISP20 ENERGY
@@ -1440,106 +1460,106 @@ PSI Variables by Alpha
 
 .. psivar:: SAPT HF(2) ENERGY ABC(HF)
 
-   The total Hartree--Fock energy [Eh] of the supersystem implemented for F/I-SAPT.
+   The total Hartree--Fock energy [E_h] of the supersystem implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY AC(0)
 
-   The Hartree--Fock energy [Eh] of subsystems A and C implemented for F/I-SAPT.
+   The Hartree--Fock energy [E_h] of subsystems A and C implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY BC(0)
 
-   The Hartree--Fock energy [Eh] of subsystems B and C implemented for F/I-SAPT.
+   The Hartree--Fock energy [E_h] of subsystems B and C implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY A(0)
 
-   The Hartree--Fock energy [Eh] of subsystem A implemented for F/I-SAPT.
+   The Hartree--Fock energy [E_h] of subsystem A implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY B(0)
 
-   The Hartree--Fock energy [Eh] of subsystem B implemented for F/I-SAPT.
+   The Hartree--Fock energy [E_h] of subsystem B implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY AC(HF)
 
-   The Hartree--Fock localized energy [Eh] of subsystems A and C implemented for F/I-SAPT.
+   The Hartree--Fock localized energy [E_h] of subsystems A and C implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY BC(HF)
 
-   The Hartree--Fock localized energy [Eh] of subsystems B and C implemented for F/I-SAPT.
+   The Hartree--Fock localized energy [E_h] of subsystems B and C implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY AB(HF)
 
-   The Hartree--Fock localized energy [Eh] of subsystems A and B implemented for F/I-SAPT.
+   The Hartree--Fock localized energy [E_h] of subsystems A and B implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY A(HF)
 
-   The Hartree--Fock localized energy [Eh] of subsystem A implemented for F/I-SAPT.
+   The Hartree--Fock localized energy [E_h] of subsystem A implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY B(HF)
 
-   The Hartree--Fock localized energy [Eh] of subsystem B implemented for F/I-SAPT.
+   The Hartree--Fock localized energy [E_h] of subsystem B implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY C
 
-   The Hartree--Fock energy [Eh] of subsystem C implemented for F/I-SAPT.
+   The Hartree--Fock energy [E_h] of subsystem C implemented for F/I-SAPT.
 
 .. psivar:: SAPT HF(2) ENERGY HF
 
-   The FI-SAPT Hartree--Fock interaction energy [Eh] implemented for F/I-SAPT.
+   The FI-SAPT Hartree--Fock interaction energy [E_h] implemented for F/I-SAPT.
 
 .. psivar:: SAPT ELST12,R ENERGY
 
-   An electrostatics-classified SAPT term energy [Eh] implemented for SAPT2.
+   An electrostatics-classified SAPT term energy [E_h] implemented for SAPT2.
 
 .. psivar:: SAPT EXCH11(S^2) ENERGY
    SAPT EXCH12(S^2) ENERGY
 
-   An exchange-classified SAPT term energy [Eh] implemented for SAPT2.
+   An exchange-classified SAPT term energy [E_h] implemented for SAPT2.
 
 .. psivar:: SAPT IND22 ENERGY
    SAPT EXCH-IND22 ENERGY
 
-   An induction-classified SAPT term energy [Eh] implemented for SAPT2.
+   An induction-classified SAPT term energy [E_h] implemented for SAPT2.
 
 .. .. psivar:: SAPT HF TOTAL ENERGY
 .. .. psivar:: SAPT CT ENERGY
 
 .. psivar:: SAPT DISP21 ENERGY
 
-   A dispersion-classified SAPT term energy [Eh] implemented for SAPT2+.
+   A dispersion-classified SAPT term energy [E_h] implemented for SAPT2+.
 
 .. psivar:: SAPT DISP22(SDQ) ENERGY
    SAPT DISP22(T) ENERGY
    SAPT EST.DISP22(T) ENERGY
 
-   Dispersion-classified MBPT-based SAPT term energy [Eh] implemented for SAPT2+.
+   Dispersion-classified MBPT-based SAPT term energy [E_h] implemented for SAPT2+.
 
 .. psivar:: SAPT DISP2(CCD) ENERGY
    SAPT DISP22(S)(CCD) ENERGY
    SAPT DISP22(T)(CCD) ENERGY
    SAPT EST.DISP22(T)(CCD) ENERGY
 
-   Dispersion-classified coupled-cluster-based SAPT term energy [Eh] implemented for SAPT2+.
+   Dispersion-classified coupled-cluster-based SAPT term energy [E_h] implemented for SAPT2+.
 
 .. psivar:: SAPT ELST13,R ENERGY
 
-   An electrostatics-classified SAPT term energy [Eh] implemented for SAPT2+(3).
+   An electrostatics-classified SAPT term energy [E_h] implemented for SAPT2+(3).
 
 .. psivar:: SAPT IND30,R ENERGY
    SAPT IND-DISP30 ENERGY
    SAPT EXCH-IND30,R ENERGY
 
-   A induction-classified SAPT term energy [Eh] implemented for SAPT2+3.
+   A induction-classified SAPT term energy [E_h] implemented for SAPT2+3.
 
 .. psivar:: SAPT EXCH-IND30(S^INF) ENERGY
    SAPT EXCH-IND30,R(S^INF) ENERGY
 
-   A induction-classified SAPT term energy [Eh] implemented for SAPT2+3. See :ref:`sec:saptinf`.
+   A induction-classified SAPT term energy [E_h] implemented for SAPT2+3. See :ref:`sec:saptinf`.
 
 .. psivar:: SAPT DISP30 ENERGY
    SAPT EXCH-DISP30 ENERGY
    SAPT EXCH-IND-DISP30 ENERGY
 
-   A dispersion-classified SAPT term energy [Eh] implemented for SAPT2+3.
+   A dispersion-classified SAPT term energy [E_h] implemented for SAPT2+3.
 
 .. psivar:: SAPT ALPHA
 
@@ -1585,7 +1605,7 @@ PSI Variables by Alpha
    SAPT2+3 IND ENERGY
 
    Respectively, the dispersion, electrostatics, exchange, and induction
-   components of the total electronic interaction energy [Eh] for the
+   components of the total electronic interaction energy [E_h] for the
    given SAPT level of theory. The sum of these four components yields
    the :samp:`{SAPT Level} TOTAL ENERGY`
 
@@ -1596,7 +1616,7 @@ PSI Variables by Alpha
    SAPT2+(3) TOTAL ENERGY
    SAPT2+3 TOTAL ENERGY
 
-   The total electronic interaction energy [Eh] for the labeled SAPT level
+   The total electronic interaction energy [E_h] for the labeled SAPT level
    of theory.
 
 .. psivar:: SAPT2+(CCD) DISP ENERGY
@@ -1613,7 +1633,7 @@ PSI Variables by Alpha
    SAPT2+3(CCD) IND ENERGY
 
    Respectively, the dispersion, electrostatics, exchange, and induction
-   components of the total electronic interaction energy [Eh] for the
+   components of the total electronic interaction energy [E_h] for the
    given SAPT level of theory that incorporates coupled-cluster dispersion.
    The sum of these four components yields the :samp:`{SAPT Level} TOTAL ENERGY`
 
@@ -1621,7 +1641,7 @@ PSI Variables by Alpha
    SAPT2+(3)(CCD) TOTAL ENERGY
    SAPT2+3(CCD) TOTAL ENERGY
 
-   The total electronic interaction energy [Eh] for the labeled SAPT level
+   The total electronic interaction energy [E_h] for the labeled SAPT level
    of theory that incorporates coupled-cluster dispersion.
 
 .. psivar:: SAPT2+DMP2 DISP ENERGY
@@ -1650,7 +1670,7 @@ PSI Variables by Alpha
    SAPT2+3(CCD)DMP2 IND ENERGY
 
    Respectively, the dispersion, electrostatics, exchange, and induction
-   components of the total electronic interaction energy [Eh] for the
+   components of the total electronic interaction energy [E_h] for the
    given SAPT level of theory that incorporates MP2 induction correction.
    The sum of these four components yields the :samp:`{SAPT Level} TOTAL ENERGY`
 
@@ -1661,7 +1681,7 @@ PSI Variables by Alpha
    SAPT2+(3)(CCD)DMP2 TOTAL ENERGY
    SAPT2+3(CCD)DMP2 TOTAL ENERGY
 
-   The total electronic interaction energy [Eh] for the labeled SAPT level
+   The total electronic interaction energy [E_h] for the labeled SAPT level
    of theory that incorporates MP2 induction correction.
 
 .. psivar:: SCF ITERATIONS
@@ -1681,7 +1701,7 @@ PSI Variables by Alpha
 
 .. psivar:: SCF TOTAL ENERGY
 
-   The total electronic energy [Eh] of the SCF stage of the calculation.
+   The total electronic energy [E_h] of the SCF stage of the calculation.
    The :samp:`{method} CORRELATION ENERGY` variables from subsequent stages of a
    calculation are often the corresponding :samp:`{method} TOTAL ENERGY`
    variables less this quantity. Constructed from Eq. :eq:`SCFterms`,
@@ -1713,7 +1733,7 @@ PSI Variables by Alpha
 
 .. psivar:: SCF TOTAL HESSIAN
 
-   The total electronic second derivative [Eh/a0/a0] for the SCF stage, (3 * {nat}, 3 * {nat}).
+   The total electronic second derivative [E_h/a0/a0] for the SCF stage, (3 * {nat}, 3 * {nat}).
 
 .. psivar:: SCF STABILITY EIGENVALUES
 
@@ -1722,7 +1742,7 @@ PSI Variables by Alpha
 .. psivar:: SCS-CCSD TOTAL ENERGY
    SCS-CCSD CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the CCSD-like method formed by reweighting :psivar:`CCSD DOUBLES ENERGY`
    by 1.27 opposite-spin and 1.13 same-spin contributions, with
    any singles carried along.
@@ -1730,7 +1750,7 @@ PSI Variables by Alpha
 .. psivar:: SCS-MP2 TOTAL ENERGY
    SCS-MP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2-like method formed by reweighting :psivar:`MP2 DOUBLES ENERGY`
    by 6/5 opposite-spin and 1/3 same-spin contributions, with
    any singles carried along.
@@ -1738,7 +1758,7 @@ PSI Variables by Alpha
 .. psivar:: SCS-MP2-VDW TOTAL ENERGY
    SCS-MP2-VDW CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2-like method formed by reweighting :psivar:`MP2 DOUBLES ENERGY`
    by 1.28 opposite-spin and 0.50 same-spin contributions, with
    any singles carried along. DOI: 10.1080/00268970802641242
@@ -1746,7 +1766,7 @@ PSI Variables by Alpha
 .. psivar:: SCS(N)-MP2 TOTAL ENERGY
    SCS(N)-MP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2-like method formed by reweighting :psivar:`MP2 DOUBLES ENERGY`
    by 0 opposite-spin and 1.76 same-spin contributions, with
    any singles carried along. doi: 10.1021/ct6002737
@@ -1762,7 +1782,7 @@ PSI Variables by Alpha
 .. psivar:: SCS-OMP2 TOTAL ENERGY
    SCS-OMP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the OMP2-like method formed by reweighting :psivar:`OMP2 DOUBLES ENERGY`
    by 6/5 opposite-spin and 1/3 same-spin contributions, with
    any singles carried along.
@@ -1770,7 +1790,7 @@ PSI Variables by Alpha
 .. psivar:: SCS-MP3 TOTAL ENERGY
    SCS-MP3 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP3-like method formed by reweighting the difference between
    :psivar:`MP3 DOUBLES ENERGY` and :psivar:`MP2 DOUBLES ENERGY`
    by 0.25, atop the SCS-MP2 energy, with any singles carried along.
@@ -1778,7 +1798,7 @@ PSI Variables by Alpha
 .. psivar:: SCS-OMP3 TOTAL ENERGY
    SCS-OMP3 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the OMP3-like method formed by reweighting the difference between
    :psivar:`OMP3 DOUBLES ENERGY` and :psivar:`OMP2 DOUBLES ENERGY`
    by 0.25, atop the SCS-OMP2 energy, with any singles carried along.
@@ -1786,7 +1806,7 @@ PSI Variables by Alpha
 .. psivar:: SOS-MP2 TOTAL ENERGY
    SOS-MP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2-like method formed by reweighting :psivar:`MP2 DOUBLES ENERGY`
    by 1.3 opposite-spin and 0 same-spin contributions, with
    any singles carried along.
@@ -1794,7 +1814,7 @@ PSI Variables by Alpha
 .. psivar:: SOS-OMP2 TOTAL ENERGY
    SOS-OMP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the OMP2-like method formed by reweighting :psivar:`OMP2 DOUBLES ENERGY`
    by 1.2 opposite-spin and 0 same-spin contributions, with
    any singles carried along.
@@ -1802,7 +1822,7 @@ PSI Variables by Alpha
 .. psivar:: SOS-OMP3 TOTAL ENERGY
    SOS-OMP3 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the OMP3-like method formed by reweighting the difference between
    :psivar:`OMP3 DOUBLES ENERGY` and :psivar:`OMP2 DOUBLES ENERGY`
    by 0.25, atop the SOS-OMP2
@@ -1811,7 +1831,7 @@ PSI Variables by Alpha
 .. psivar:: SOS-PI-MP2 TOTAL ENERGY
    SOS-PI-MP2 CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the MP2-like method formed by reweighting :psivar:`MP2 DOUBLES ENERGY`
    by 1.4 opposite-spin and 0 same-spin contributions, with
    any singles carried along.
@@ -1962,20 +1982,20 @@ PSI Variables by Alpha
 
 .. psivar:: THERMAL ENERGY
 
-   Total thermal energy E [Eh] at given temperature.
+   Total thermal energy E [E_h] at given temperature.
 
 .. psivar:: THERMAL ENERGY CORRECTION
 
-   Sum of electronic, translational, rotational, and vibrational corrections [Eh] to the thermal energy at given temperature.
+   Sum of electronic, translational, rotational, and vibrational corrections [E_h] to the thermal energy at given temperature.
 
 .. psivar:: TWO-ELECTRON ENERGY
 
-   The two-electron energy contribution [Eh] to the total SCF energy.
+   The two-electron energy contribution [E_h] to the total SCF energy.
    Quantity :math:`E_{2e^-}` in Eq. :eq:`SCFterms`.
 
 .. psivar:: UNCP-CORRECTED 2-BODY INTERACTION ENERGY
 
-   The interaction energy [Eh] considering only two-body interactions,
+   The interaction energy [E_h] considering only two-body interactions,
    computed without counterpoise correction.
    Related variable :psivar:`CP-CORRECTED 2-BODY INTERACTION ENERGY`.
 
@@ -1988,15 +2008,15 @@ PSI Variables by Alpha
 .. psivar:: ZAPTn TOTAL ENERGY
    ZAPTn CORRELATION ENERGY
 
-   The total electronic energy [Eh] and correlation energy component [Eh]
+   The total electronic energy [E_h] and correlation energy component [E_h]
    for the labeled Z-averaged perturbation theory level.
    *n* is ZAPT perturbation order.
 
 .. psivar:: ZERO K ENTHALPY
 
-   Total electronic and zero-point energy [Eh] at 0 [K].
+   Total electronic and zero-point energy [E_h] at 0 [K].
 
 .. psivar:: ZPVE
 
-   Vibrational zero-point energy [Eh] at 0 [K].
+   Vibrational zero-point energy [E_h] at 0 [K].
 
