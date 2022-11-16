@@ -330,8 +330,6 @@ void CIWavefunction::get_parameters(Options &options) {
             Parameters_->diag_method = METHOD_DAVIDSON_LIU_SEM;
         } else if (line1 == "SEM") {
             Parameters_->diag_method = METHOD_DAVIDSON_LIU_SEM;
-        } else if (line1 == "SEMTEST") {
-            Parameters_->diag_method = METHOD_RSPTEST_OF_SEM;
         }
     }
 
@@ -391,8 +389,6 @@ void CIWavefunction::get_parameters(Options &options) {
     Parameters_->maxnvect = options.get_int("MAX_NUM_VECS");
 
     if (Parameters_->maxnvect == 0 && Parameters_->diag_method == METHOD_DAVIDSON_LIU_SEM) {
-        Parameters_->maxnvect = Parameters_->maxiter * Parameters_->num_roots + Parameters_->num_init_vecs;
-    } else if (Parameters_->maxnvect == 0 && Parameters_->diag_method == METHOD_RSPTEST_OF_SEM) {
         Parameters_->maxnvect = Parameters_->maxiter * Parameters_->num_roots + Parameters_->num_init_vecs;
     } else if (Parameters_->maxnvect == 0 && Parameters_->diag_method == METHOD_MITRUSHENKOV) {
         Parameters_->maxnvect = 2;
@@ -713,9 +709,6 @@ void CIWavefunction::print_parameters() {
             break;
         case 3:
             outfile->Printf("%6s", "SEM");
-            break;
-        case 4:
-            outfile->Printf("%6s", "SEMTEST");
             break;
         default:
             outfile->Printf("%6s", "???");
