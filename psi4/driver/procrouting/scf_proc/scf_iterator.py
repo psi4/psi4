@@ -704,7 +704,7 @@ def scf_print_energies(self):
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
     epe = self.get_energies('PE Energy')
-    ke = self.get_energues('Kinetic')
+    ke = self.get_energies('Kinetic')
 
     hf_energy = enuc + e1 + e2
     dft_energy = hf_energy + exc + ed + evv10
