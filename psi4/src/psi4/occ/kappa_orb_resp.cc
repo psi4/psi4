@@ -143,19 +143,7 @@ void OCCWave::kappa_orb_resp() {
 
         // Solve the orb-resp equations
         pcg_conver = 0;  // here 0 means successfull
-        if (lineq == "CDGESV")
-            Aorb->cdgesv(kappaA, pcg_conver);
-        else if (lineq == "FLIN") {
-            double det = 0.0;
-            Aorb->lineq_flin(kappaA, &det);
-            if (std::fabs(det) < DIIS_MIN_DET) {
-                outfile->Printf("Warning!!! MO Hessian matrix is near-singular\n");
-                outfile->Printf("Determinant is %6.3E\n", det);
-
-                pcg_conver = 1;  // here 1 means unsuccessful
-            }
-        } else if (lineq == "POPLE")
-            Aorb->lineq_pople(kappaA, 6, cutoff);
+        Aorb->cdgesv(kappaA, pcg_conver);
         delete Aorb;
 
         // If LINEQ FAILED!
@@ -464,20 +452,7 @@ void OCCWave::kappa_orb_resp() {
 
         // Solve the orb-resp equations
         pcg_conver = 0;  // here 0 means successfull
-        if (lineq == "CDGESV")
-            Aorb->cdgesv(kappa, pcg_conver);
-        else if (lineq == "FLIN") {
-            double det = 0.0;
-            Aorb->lineq_flin(kappa, &det);
-            if (std::fabs(det) < DIIS_MIN_DET) {
-                // if (std::fabs(det) < 1e-2) {
-                outfile->Printf("Warning!!! MO Hessian matrix is near-singular\n");
-                outfile->Printf("Determinant is %6.3E\n", det);
-
-                pcg_conver = 1;  // here 1 means unsuccessful
-            }
-        } else if (lineq == "POPLE")
-            Aorb->lineq_pople(kappa, 6, cutoff);
+        Aorb->cdgesv(kappa, pcg_conver);
         delete Aorb;
 
         // Build kappaA and kappaB

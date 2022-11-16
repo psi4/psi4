@@ -347,7 +347,6 @@ class OCCWave : public Wavefunction {
     std::string jobtype;
     std::string dertype;
     std::string basis;
-    std::string lineq;
     std::string orth_type;
     std::string natorb;
     std::string semicanonic;

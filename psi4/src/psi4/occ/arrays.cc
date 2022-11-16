@@ -422,18 +422,6 @@ void Array2d::cdgesv(Array1d* Xvec, int errcod) {
     }
 }  //
 
-void Array2d::lineq_flin(Array1d* Xvec, double* det) {
-    if (dim1_) {
-        flin(A2d_, Xvec->A1d_, dim1_, 1, det);
-    }
-}  //
-
-void Array2d::lineq_pople(Array1d* Xvec, int num_vecs, double cutoff) {
-    if (dim1_) {
-        pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, "outfile", 0);
-    }
-}  //
-
 // TODO:
 // DGER compute the rank-one update of a general matrix: A <-- A + alpha * x * yT
 // dger(m, n, alpha, x, incx, y, incy, a, lda);

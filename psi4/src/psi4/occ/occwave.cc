@@ -92,7 +92,6 @@ void OCCWave::common_init() {
     spin_scale_type_ = options_.get_str("SPIN_SCALE_TYPE");
     write_mo_coeff = options_.get_str("MO_WRITE");
     read_mo_coeff = options_.get_str("MO_READ");
-    lineq = options_.get_str("LINEQ_SOLVER");
     dertype = options_.get_str("DERTYPE");
     pcg_beta_type_ = options_.get_str("PCG_BETA_TYPE");
     twopdm_abcd_type = options_.get_str("TPDM_ABCD_TYPE");
