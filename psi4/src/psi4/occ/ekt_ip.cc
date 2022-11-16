@@ -87,9 +87,9 @@ void OCCWave::ekt_ip() {
     UvecA->zero();
     Diag_g1A.zero();
     if (reference_ == "RESTRICTED")
-        g1symm->diagonalize(UvecA, Diag_g1A);
+        g1symm->diagonalize(*UvecA, Diag_g1A);
     else if (reference_ == "UNRESTRICTED")
-        g1symmA->diagonalize(UvecA, Diag_g1A);
+        g1symmA->diagonalize(*UvecA, Diag_g1A);
 
     // Make sure all eigenvalues are positive
     for (int h = 0; h < nirrep_; ++h) {
@@ -308,7 +308,7 @@ void OCCWave::ekt_ip() {
         // Diagonalize OPDM
         UvecB->zero();
         Diag_g1B.zero();
-        g1symmB->diagonalize(UvecB, Diag_g1B);
+        g1symmB->diagonalize(*UvecB, Diag_g1B);
 
         // Make sure all eigenvalues are positive
         for (int h = 0; h < nirrep_; ++h) {

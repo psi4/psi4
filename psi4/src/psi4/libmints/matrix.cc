@@ -1691,24 +1691,29 @@ double Matrix::vector_dot(const Matrix *const rhs) {
 
 double Matrix::vector_dot(const SharedMatrix &rhs) { return vector_dot(rhs.get()); }
 
-void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_order nMatz) {
+void Matrix::diagonalize(Matrix *eigvectors, Vector *eigvalues, diagonalize_order nMatz /* = ascending*/) {
+    diagonalize(*eigvectors, *eigvalues, nMatz);
+}
+
+void Matrix::diagonalize(Matrix &eigvectors, Vector &eigvalues, diagonalize_order nMatz /* = ascending*/) {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
     }
     for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->pointer(h), static_cast<int>(nMatz),
-                   eigvectors->matrix_[h], 1.0e-14);
+            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues.pointer(h), static_cast<int>(nMatz),
+                   eigvectors.matrix_[h], 1.0e-14);
         }
     }
 }
 
-void Matrix::diagonalize(SharedMatrix &eigvectors, std::shared_ptr<Vector> &eigvalues, diagonalize_order nMatz) {
-    diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
+void Matrix::diagonalize(SharedMatrix &eigvectors, std::shared_ptr<Vector> &eigvalues,
+                         diagonalize_order nMatz /* = ascending*/) {
+    diagonalize(*eigvectors, *eigvalues, nMatz);
 }
 
-void Matrix::diagonalize(SharedMatrix &eigvectors, Vector &eigvalues, diagonalize_order nMatz) {
-    diagonalize(eigvectors.get(), &eigvalues, nMatz);
+void Matrix::diagonalize(SharedMatrix &eigvectors, Vector &eigvalues, diagonalize_order nMatz /* = ascending*/) {
+    diagonalize(*eigvectors, eigvalues, nMatz);
 }
 
 void Matrix::diagonalize(SharedMatrix &metric, SharedMatrix & /*eigvectors*/, std::shared_ptr<Vector> &eigvalues,
@@ -2768,14 +2773,6 @@ void Matrix::back_transform(const Matrix &transformer) {
 }
 
 double Matrix::vector_dot(const Matrix &rhs) { return vector_dot(&rhs); }
-
-void Matrix::diagonalize(Matrix &eigvectors, Vector &eigvalues, int nMatz) {
-    for (int h = 0; h < nirrep_; ++h) {
-        if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues.pointer(h), nMatz, eigvectors.matrix_[h], 1.0e-14);
-        }
-    }
-}
 
 void Matrix::write_to_dpdfile2(dpdfile2 *outFile) {
     global_dpd_->file2_mat_init(outFile);
