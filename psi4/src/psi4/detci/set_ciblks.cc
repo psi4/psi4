@@ -323,6 +323,10 @@ void CIWavefunction::set_ciblks() {
                         (double)CIblks_->vectlen, (double)CIblks_->vectlen, nblocks);
     }
 
+    if (CIblks_->vectlen < Parameters_->num_roots) {
+        throw PSIEXCEPTION("DETCI asked to compute more roots than there are determinants.");
+    }
+
     // If we only have less than two dets we die
     if (CIblks_->vectlen < 2) {
         throw PSIEXCEPTION("DETCI requires at least two determinants! Quitting...");
