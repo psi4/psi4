@@ -34,6 +34,7 @@
 
 #include "psi4/libqt/qt.h"
 #include "libciomr.h"
+#include <vector>
 
 namespace psi {
 /*!
@@ -51,7 +52,7 @@ namespace psi {
     // We need to make a copy of the matrix before diagonalization, because LAPACK overwrites it.
     // LAPACK also needs the mtx to be flattened to a 1D array, so a copy is inevitable.
     // The new 1D array will correspond to a column-major array, suitable for LAPACK.
-    double* tmp_matrix = init_array(N * N);
+    std::vector<double> tmp_matrix(N * N);
     for (int i = 0, ij = 0; i < N; i++) {
         for (int j = 0; j < N; j++, ij++) {
             tmp_matrix[ij] = array[j][i];
@@ -59,9 +60,9 @@ namespace psi {
     }
     // LAPACK also needs some extra memory to store temporaries in
     // TODO: query C_DSYEV for optimal workspace size
-    double* tmp_work = init_array(3 * N);
+    std::vector<double> tmp_work(3 * N);
     const char jobtype = (e_vecs != nullptr) ? 'V' : 'N';
-    const auto info = C_DSYEV(jobtype, 'U', N, tmp_matrix, N, e_vals, tmp_work, 3 * N);
+    const auto info = C_DSYEV(jobtype, 'U', N, tmp_matrix.data(), N, e_vals, tmp_work.data(), 3 * N);
     if ((info == 0) && (e_vecs != nullptr)) {
         // tmp_matrix has now been overwritten with the eigenvecs as the columns, flattened as column-major
         // Copy them to the columns of a row-major 2D array
@@ -71,8 +72,6 @@ namespace psi {
             }
         }
     }
-    free(tmp_work);
-    free(tmp_matrix);
     return info;
 }
 }  // namespace psi
