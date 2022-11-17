@@ -3,6 +3,7 @@ list(APPEND sources
   blas_intfc.cc
   blas_intfc23.cc
   cc_excited.cc
+  david.cc
   dirprd_block.cc
   dot_block.cc
   dx_read.cc
