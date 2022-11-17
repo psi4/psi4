@@ -60,9 +60,10 @@ namespace psi {
     }
     // LAPACK also needs some extra memory to store temporaries in
     // TODO: query C_DSYEV for optimal workspace size
-    std::vector<double> tmp_work(3 * N);
+    const int64_t workspace_size = 3 * N;
+    std::vector<double> tmp_work(workspace_size);
     const char jobtype = (e_vecs != nullptr) ? 'V' : 'N';
-    const auto info = C_DSYEV(jobtype, 'U', N, tmp_matrix.data(), N, e_vals, tmp_work.data(), 3 * N);
+    const auto info = C_DSYEV(jobtype, 'U', N, tmp_matrix.data(), N, e_vals, tmp_work.data(), workspace_size);
     if ((info == 0) && (e_vecs != nullptr)) {
         // tmp_matrix has now been overwritten with the eigenvecs as the columns, flattened as column-major
         // Copy them to the columns of a row-major 2D array
