@@ -26,7 +26,6 @@ list(APPEND sources
   s3_block_bz.cc
   s3v.cc
   sem.cc
-  sem_test.cc
   set_ciblks.cc
   sigma.cc
   slater.cc
