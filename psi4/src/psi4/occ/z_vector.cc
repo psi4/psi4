@@ -146,19 +146,7 @@ void OCCWave::z_vector() {
 
         // Solve the orb-resp equations
         pcg_conver = 0;  // here 0 means successfull
-        if (lineq == "CDGESV")
-            Aorb->cdgesv(zvectorA, pcg_conver);
-        else if (lineq == "FLIN") {
-            double det = 0.0;
-            Aorb->lineq_flin(zvectorA, &det);
-            if (std::fabs(det) < DIIS_MIN_DET) {
-                outfile->Printf("Warning!!! MO Hessian matrix is near-singular\n");
-                outfile->Printf("Determinant is %6.3E\n", det);
-
-                pcg_conver = 1;  // here 1 means unsuccessful
-            }
-        } else if (lineq == "POPLE")
-            Aorb->lineq_pople(zvectorA, 6, cutoff);
+        Aorb->cdgesv(zvectorA, pcg_conver);
         delete Aorb;
 
         // If LINEQ FAILED!
@@ -447,20 +435,7 @@ void OCCWave::z_vector() {
 
         // Solve the orb-resp equations
         pcg_conver = 0;  // here 0 means successfull
-        if (lineq == "CDGESV")
-            Aorb->cdgesv(zvector, pcg_conver);
-        else if (lineq == "FLIN") {
-            double det = 0.0;
-            Aorb->lineq_flin(zvector, &det);
-            if (std::fabs(det) < DIIS_MIN_DET) {
-                // if (std::fabs(det) < 1e-2) {
-                outfile->Printf("Warning!!! MO Hessian matrix is near-singular\n");
-                outfile->Printf("Determinant is %6.3E\n", det);
-
-                pcg_conver = 1;  // here 1 means unsuccessful
-            }
-        } else if (lineq == "POPLE")
-            Aorb->lineq_pople(zvector, 6, cutoff);
+        Aorb->cdgesv(zvector, pcg_conver);
         delete Aorb;
 
         // Build zvectorA and zvectorB

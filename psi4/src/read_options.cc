@@ -2852,8 +2852,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- mixing parameter for the REMP hybrid perturbation theory, A specifies the Moller-Plesset fraction -*/
         options.add_double("REMP_A", 0.15E0);
 
-        /*- The solver will be used for simultaneous linear equations. -*/
-        options.add_str("LINEQ_SOLVER", "CDGESV", "CDGESV FLIN POPLE");
         /*- The algorithm for orthogonalization of MOs -*/
         options.add_str("ORTH_TYPE", "MGS", "GS MGS");
         /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step
