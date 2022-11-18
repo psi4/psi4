@@ -1766,21 +1766,8 @@ SharedVector MintsHelper::electrostatic_potential_value(SharedVector charges, Sh
     }
     potential_integrals_->set_charge_field(Zxyz);
 
-    // TODO Is this needed or not?
-    auto D_carts = D;
-    // PetiteList petite(basisset_, integral_, true);
-    // auto my_aotoso_ = petite.aotoso();
-
-    // SharedMatrix D_carts;
-    // if (basisset_->has_puream()) {
-    //     D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
-    //     D_carts->back_transform(D, my_aotoso_);
-    // } else {
-    //     D_carts = D;
-    // }
-
     SharedVector potvalues = std::make_shared<Vector>("potential values", coords->nrow());
-    ContractOverDensityFunctor contract_density_functor(potvalues->dim(), potvalues->pointer(), D_carts);
+    ContractOverDensityFunctor contract_density_functor(potvalues->dim(), potvalues->pointer(), D);
     potential_integrals_->compute(contract_density_functor);
     return potvalues;
 }
