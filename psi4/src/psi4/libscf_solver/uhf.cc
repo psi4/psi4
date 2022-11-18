@@ -356,6 +356,8 @@ double UHF::compute_initial_E() {
 
 double UHF::compute_E() {
     // E_DFT = 2.0 D*H + D*J - \alpha D*K + E_xc
+    double kinetic_E = Da_->vector_dot(T_);
+    kinetic_E += Db_->vector_dot(T_);
     double one_electron_E = Da_->vector_dot(H_);
     one_electron_E += Db_->vector_dot(H_);
     double coulomb_E = Da_->vector_dot(J_);
@@ -397,6 +399,7 @@ double UHF::compute_E() {
     }
 
     energies_["Nuclear"] = nuclearrep_;
+    energies_["Kinetic"] = kinetic_E;
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = 0.5 * (coulomb_E + exchange_E);
     energies_["XC"] = XC_E;

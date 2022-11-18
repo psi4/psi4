@@ -483,9 +483,11 @@ double ROHF::compute_initial_E() { return nuclearrep_ + Dt_->vector_dot(H_); }
 
 double ROHF::compute_E() {
     double one_electron_E = Dt_->vector_dot(H_);
+    double kinetic_E = Dt_->vector_dot(T_);
     double two_electron_E = 0.5 * (Da_->vector_dot(Ga_) + Db_->vector_dot(Gb_));
 
     energies_["Nuclear"] = nuclearrep_;
+    energies_["Kinetic"] = kinetic_E;
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;

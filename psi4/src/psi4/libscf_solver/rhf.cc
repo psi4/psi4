@@ -301,6 +301,7 @@ double RHF::compute_initial_E() {
 
 double RHF::compute_E() {
     double one_electron_E = 2.0 * Da_->vector_dot(H_);
+    double kinetic_E = 2.0 * Da_->vector_dot(T_);
     double coulomb_E = 2.0 * Da_->vector_dot(J_);
 
     double XC_E = 0.0;
@@ -339,6 +340,7 @@ double RHF::compute_E() {
     double two_electron_E = Da_->vector_dot(Fa_) - 0.5 * one_electron_E;
 
     energies_["Nuclear"] = nuclearrep_;
+    energies_["Kinetic"] = kinetic_E;
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = coulomb_E + exchange_E;
     energies_["XC"] = XC_E;
