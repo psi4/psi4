@@ -107,6 +107,8 @@ def test_ddx_fock_build(inp):
     Tests COSMO energy against reference from Gaussian
     and internal consistency of Fock matrix versus the energy.
     """
+    from psi4.driver.procrouting.solvent import ddx
+
     psi4.set_options({
         # Note: DFT grids used for DDX numerical integration
         "dft_spherical_points": 350,

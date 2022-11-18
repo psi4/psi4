@@ -204,7 +204,6 @@ jobs:
             # pip
           - pip
           - pip:
-             - pyddx
              - git+https://github.com/i-pi/i-pi.git@master-py3
         EOF
         cat > aux.yaml <<EOF
@@ -222,6 +221,7 @@ jobs:
           - geometric
           - openfermion>=1.0
           - openfermionpsi4
+          - pyddx
           - pymdi
           - qcengine=0.25.0
 
@@ -273,6 +273,7 @@ jobs:
           - geometric
           #- psi4/label/dev::mp2d
           #- openfermionpsi4
+          #- pyddx
           - pymdi
           - psi4/label/dev::resp
           - psi4/label/dev::snsmp2

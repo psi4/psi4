@@ -28,6 +28,7 @@
 import numpy as np
 
 from qcelemental import constants
+from pkg_resources import parse_version
 
 import pyddx
 import pyddx.data
@@ -115,6 +116,16 @@ def _print_cavity(charges, centres, radii, unit="Angstrom"):
 
 class DdxInterface:
     def __init__(self, molecule, options, basisset):
+        # verify that the minimal version is used if pyddx is provided
+        # from outside the Psi4 ecosystem
+        min_version = "0.1.0"
+        if parse_version(pyddx.__version__) < parse_version(min_version):
+            raise ModuleNotFoundError("pyddx version {} is required at least. "
+                                      "Version {}"
+                                      " was found.".format(min_version,
+                                                           pyddx.__version__))
+
+
         self.basisset = basisset
         self.mints = core.MintsHelper(self.basisset)
         self.op_solver = options["solver"]
@@ -127,7 +138,7 @@ class DdxInterface:
         self.cavity = core.Matrix.from_array(self.model.cavity.T)
 
         # Print summary of options
-        core.print_out("  ==> DDX options <==\n")
+        core.print_out(pyddx.banner())
         for k in sorted(list(self.model.input_parameters)):
             if k not in ("sphere_charges", "sphere_centres", "sphere_radii"):
                 core.print_out(f"    {k:<15s} = {self.model.input_parameters[k]}\n")
@@ -169,24 +180,37 @@ class DdxInterface:
                 self.model.scaled_ylm([x, y, z], block.parent_atom(), out=mtx[i, :])
             self.scaled_ylms.append(core.Matrix.from_array(mtx.T))
 
-        self.state = self.model.initial_guess()
+        # Build the nuclear contributions
+        solute_multipoles = (
+            options["model"]["sphere_charges"].reshape(1, -1) / np.sqrt(4 * np.pi)
+        )
+        self.nuclear = self.model.multipole_electrostatics(solute_multipoles)
+        self.nuclear["psi"] = self.model.multipole_psi(solute_multipoles)
+
+        self.state = None
 
     def get_solvation_contributions(self, density_matrix, elec_only=False):
-        assert not elec_only  # Not yet implemented
-
-        # Initialise with nuclear contributions:
-        nuclear = self.model.solute_nuclear_contribution()
-        phi, psi = nuclear["phi"], nuclear["psi"]
-
-        # Add electronic contributions
-        psi += self.numints.dd_density_integral(self.scaled_ylms, density_matrix).np.T
+        # Compute electronic contributions
+        psi = self.numints.dd_density_integral(self.scaled_ylms, density_matrix).np.T
         dummy_charges = core.Vector.from_array(np.ones(self.model.n_cav))
         coords = core.Matrix.from_array(self.model.cavity.T)
-        phi += self.mints.electrostatic_potential_value(dummy_charges, coords, density_matrix).np
+        phi = self.mints.electrostatic_potential_value(dummy_charges, coords, density_matrix).np
+
+        if not elec_only:
+            psi += self.nuclear["psi"]
+            phi += self.nuclear["phi"]
+
+        # Update solvation problem with current phi and psi
+        if self.state is None:
+            self.state = pyddx.State(self.model, phi, psi)
+            self.state.fill_guess()
+            self.state.fill_guess_adjoint()
+        else:
+            self.state.update_problem(phi, psi)
 
         # Solve problem and adjoint problem
-        self.state = self.model.solve(self.state, phi, **self.op_solver)
-        self.state = self.model.adjoint_solve(self.state, psi, **self.op_solver)
+        self.state.solve(**self.op_solver)
+        self.state.solve_adjoint(**self.op_solver)
 
         # Compute solvation energy
         f_epsilon = 1.0
