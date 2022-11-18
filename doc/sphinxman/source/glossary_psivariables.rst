@@ -415,11 +415,11 @@ PSI Variables by Alpha
 
 .. psivar:: CC CORRELATION VIRIAL RATIO
 
-   The correlation virial ratio, as defined in DOI: 10.1063/1.1535440 for basis set completeness analysis. Computed using coupled cluster.
+   The correlation virial ratio, as defined in https://doi/org/10.1063/1.1535440 for basis set completeness analysis. Computed using coupled cluster.
 
 .. psivar:: CC VIRIAL RATIO
 
-   The virial ratio, as computed by a coupled cluster method. Only defined for a fully quantum mechanical computation, i.e., not QM/MM.
+   The virial ratio, as computed by a coupled cluster method. Only defined for a fully quantum mechanical computation, i.e., not QM/MM or solvated.
 
 .. psivar:: CC T1 DIAGNOSTIC
    CC D1 DIAGNOSTIC
