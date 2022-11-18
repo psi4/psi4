@@ -4,7 +4,7 @@ import numpy as np
 
 from psi4 import core
 
-from utils import compare_values
+from utils import *
 from addons import using, uusing
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
