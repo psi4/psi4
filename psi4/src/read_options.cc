@@ -338,8 +338,16 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Number of Lebedev grid points to use -*/
         options.add_int("N_LEBEDEV", 302);
 
-        /*- Sphere overlap regularisation parameter -*/
+        /*- Regularization parameter for characteristic function of sphere overlap.
+            Advanced parameter, which usually does not need to be modified. Valid
+            values are within the range [0, 1]. -*/
         options.add_double("ETA", 0.1);
+
+        /*- Shift for characteristic function of sphere overlap.
+            Advanced parameter, which usually does not need to be modified. Valid values
+            are within the range [-1, 1] with -100 denoting an automatic selection of the
+            best shift. -*/
+        options.add_double("SHIFT", -100.0);
     }
 
     if (name == "PE" || options.read_globals()) {

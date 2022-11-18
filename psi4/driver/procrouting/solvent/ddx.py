@@ -30,11 +30,11 @@ import numpy as np
 from qcelemental import constants
 from pkg_resources import parse_version
 
-import pyddx
-import pyddx.data
-
 from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
+
+import pyddx
+import pyddx.data
 
 
 def get_ddx_options(molecule):
@@ -87,6 +87,7 @@ def get_ddx_options(molecule):
         "sphere_radii": radii,
         "solvent_epsilon": solvent_epsilon,
         "eta": core.get_option("DDX", "ETA"),
+        "shift": core.get_option("DDX", "SHIFT"),
         "lmax": core.get_option("DDX", "LMAX"),
         "n_lebedev": core.get_option("DDX", "N_LEBEDEV"),
         "maxiter": 100,       # TODO Configurable
@@ -213,7 +214,7 @@ class DdxInterface:
         self.state.solve_adjoint(**self.op_solver)
 
         # Compute solvation energy
-        f_epsilon = 1.0
+        fepsilon = 1.0
         if self.model.model == "cosmo":
             epsilon = self.model.solvent_epsilon
             fepsilon = (epsilon - 1) / epsilon
