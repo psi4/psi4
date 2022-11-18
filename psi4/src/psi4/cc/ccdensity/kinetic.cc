@@ -120,7 +120,7 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
     wfn->set_scalar_variable("CC CORRELATION KINETIC ENERGY", tcorr);
     wfn->set_scalar_variable("CC CORRELATION POTENTIAL ENERGY", vcorr);
     wfn->set_scalar_variable("CC CORRELATION VIRIAL RATIO", -vcorr / tcorr);
-    wfn->set_scalar_variable("CC VIRIAL RATIO", -vtot / ttot)
+    wfn->set_scalar_variable("CC VIRIAL RATIO", -vtot / ttot);
 
     /*** Release memory ***/
     free_block(X);
