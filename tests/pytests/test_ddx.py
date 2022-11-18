@@ -37,16 +37,6 @@ __geoms = {
     symmetry c1
     units angstrom
     """,
-    "methane":
-    """
-    C  0.268924   -0.099602    0.000000
-    H  0.625579   -1.108412    0.000000
-    H  0.625597    0.404797    0.873652
-    H  0.625597    0.404797   -0.873652
-    H -0.801076   -0.099588    0.000000
-    symmetry c1
-    units angstrom
-    """,
     "h2o":
     """
     O -0.966135 0.119522 0
@@ -110,10 +100,6 @@ def test_ddx_fock_build(inp):
     from psi4.driver.procrouting.solvent import ddx
 
     psi4.set_options({
-        # Note: DFT grids used for DDX numerical integration
-        "dft_spherical_points": 350,
-        "dft_nuclear_scheme": "Becke",
-        "dft_pruning_scheme": "robust",
         "df_scf_guess": False,
         #
         "ddx__model": "cosmo",
@@ -122,6 +108,8 @@ def test_ddx_fock_build(inp):
         "ddx__lmax": 3,
         "ddx__n_lebedev": 302,
         "ddx__radii": inp["radii"],
+        "ddx__dft_spherical_points": 350,
+        "ddx__dft_radial_points": 99,
     })
 
     # build the DDX object to test
@@ -148,14 +136,6 @@ def test_ddx_fock_build(inp):
         "ref": -75.5946789010,  # from Gaussian
         "solvation": -0.009402,
     }, id='h2o'),
-    #
-    pytest.param({
-        "geom": __geoms["methane"],
-        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "lmax": 3,
-                "n_lebedev": 302, "radii_set": "uff", "shift": 0.0, },
-        "ref": -39.9764868732,  # from Gaussian
-        "solvation": -0.000083,
-    }, id='ch4'),
     #
     pytest.param({
         "geom": __geoms["fcm"],
@@ -200,7 +180,7 @@ def test_ddx_rhf_reference(inp):
     for key in inp["ddx"].keys():
         psi4.set_options({"ddx__" + key: inp["ddx"][key]})
     scf_e, wfn = psi4.energy('SCF', return_wfn=True, molecule=mol)
-    ddx_e = wfn.get_variable("ddx energy")
+    ddx_e = wfn.scalar_variable("ddx energy")
 
     assert compare_values(inp["solvation"], ddx_e, 4, "DDX solvation energy versus Gaussian")
     assert compare_values(inp["ref"], scf_e, 4, "Total SCF energy with DDX versus Gaussian")
@@ -214,18 +194,20 @@ def test_ddx_rhf_reference(inp):
         "basis": "cc-pvdz",
         "ddx": {"model": "cosmo", "solvent": "water", "eta": 0.05,
                 "lmax": 10, "n_lebedev": 302, "radii_set": "bondi",
-                "radii_scaling": 1.2},
+                "radii_scaling": 1.2, "dft_spherical_points": 302,
+                "dft_radial_points": 75, },
         "solvent": "water",
-        "ref": -76.0346400389023,
+        "ref": -76.03464496611537,
     }, id='h2o-cosmo'),
     pytest.param({
         "geom": __geoms["h2o"],
         "basis": "cc-pvdz",
         "ddx": {"model": "pcm", "solvent": "water", "eta": 0.1,
                 "lmax": 10, "n_lebedev": 302, "radii_set": "bondi",
-                "radii_scaling": 1.2},
+                "radii_scaling": 1.2, "dft_spherical_points": 302,
+                "dft_radial_points": 75, },
         "solvent": "water",
-        "ref": -76.03458075209939,
+        "ref": -76.03458316484547,
     }, id='h2o-pcm'),
 ])
 def test_ddx_rhf_consistency(inp):

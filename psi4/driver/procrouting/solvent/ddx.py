@@ -86,17 +86,34 @@ def get_ddx_options(molecule):
         "sphere_centres": molecule.geometry().np.T,
         "sphere_radii": radii,
         "solvent_epsilon": solvent_epsilon,
-        "eta": core.get_option("DDX", "ETA"),
-        "shift": core.get_option("DDX", "SHIFT"),
         "lmax": core.get_option("DDX", "LMAX"),
         "n_lebedev": core.get_option("DDX", "N_LEBEDEV"),
-        "maxiter": 100,       # TODO Configurable
-        "jacobi_n_diis": 20,  # TODO Configurable
+        "maxiter": core.get_option("DDX", "MAXITER"),
+        "jacobi_n_diis": core.get_option("DDX", "DIIS_MAX_VECS"),
+        "n_proc": 1,  # TODO Multi-threading still buggy in DDX
+        "incore": core.get_option("DDX", "INCORE"),
+        "enable_fmm": core.get_option("DDX", "FMM"),
+        "fmm_local_lmax": core.get_option("DDX", "FMM_LOCAL_LMAX"),
+        "fmm_multipole_lmax": core.get_option("DDX", "FMM_MULTIPOLE_LMAX"),
+        "logfile": core.get_option("DDX", "LOGFILE"),
+        "eta": core.get_option("DDX", "ETA"),
+        "shift": core.get_option("DDX", "SHIFT"),
     }
     solver_options = {
-        "tol": 1e-8,  # TODO Configurable!
+        "tol": core.get_option("DDX", "SOLVATION_CONVERGENCE"),
     }
-    return {"model": model_options, "solver": solver_options }
+    grid_options = {
+        # This overrides some DFT grid parameters just for the integrals
+        # needed for DDX. The defaults are safe to avoid people from falling
+        # into traps if they change their DFT grid setup.
+        "DFT_SPHERICAL_POINTS": core.get_option("DDX", "DFT_SPHERICAL_POINTS"),
+        "DFT_RADIAL_POINTS": core.get_option("DDX", "DFT_RADIAL_POINTS"),
+        "DFT_NUCLEAR_SCHEME": "BECKE",  # Treutler and others might work here,
+        "DFT_RADIAL_SCHEME": "BECKE",   # but this is so far untested with Psi4
+        "DFT_PRUNING_SCHEME": "ROBUST",
+        "DFT_BLOCK_SCHEME": "ATOMIC",
+    }
+    return {"model": model_options, "solver": solver_options, "grid": grid_options}
 
 
 def _print_cavity(charges, centres, radii, unit="Angstrom"):
@@ -126,10 +143,10 @@ class DdxInterface:
                                       " was found.".format(min_version,
                                                            pyddx.__version__))
 
-
         self.basisset = basisset
         self.mints = core.MintsHelper(self.basisset)
         self.op_solver = options["solver"]
+        op_grid = options["grid"]
 
         # Setup the model
         try:
@@ -140,36 +157,25 @@ class DdxInterface:
 
         # Print summary of options
         core.print_out(pyddx.banner())
+        core.print_out("\n")
         for k in sorted(list(self.model.input_parameters)):
             if k not in ("sphere_charges", "sphere_centres", "sphere_radii"):
-                core.print_out(f"    {k:<15s} = {self.model.input_parameters[k]}\n")
+                core.print_out(f"    {k:<18s} = {self.model.input_parameters[k]}\n")
         for k in sorted(list(self.op_solver.keys())):
-            core.print_out(f"    {k:<15s} = {self.op_solver[k]}\n")
+            core.print_out(f"    {k:<18s} = {self.op_solver[k]}\n")
+        core.print_out(f"\n    DDX numerical integration setup:\n\n")
+        for k in sorted(list(options["grid"].keys())):
+            core.print_out(f"    {k.lower():<20s} = {op_grid[k]}\n")
+
         _print_cavity(self.model.sphere_charges, self.model.sphere_centres,
                       self.model.sphere_radii, "Angstrom")
         _print_cavity(self.model.sphere_charges, self.model.sphere_centres,
                       self.model.sphere_radii, "Bohr")
         core.print_out("\n")
 
-        # DFT grid for numerical integration
-        # TODO Make configurable!
-        int_opts = {
-            # "DFT_BLOCK_MAX_POINTS": 0,
-            # "DFT_BLOCK_MIN_POINTS": 0,
-            # "DFT_SPHERICAL_POINTS": 0,
-            # "DFT_RADIAL_POINTS": 0,
-            # "PRINT": 0,
-            # "DEBUG": 0,
-            # "BENCH": 0,
-        }
-        string_opts = {
-            # "DFT_RADIAL_SCHEME": "",
-            # "DFT_PRUNING_SCHEME": "",
-            # "DFT_NUCLEAR_SCHEME": "",
-            # "DFT_GRID_NAME": "",
-            "DFT_BLOCK_SCHEME": "ATOMIC",
-        }
-        self.dftgrid = core.DFTGrid.build(molecule, basisset, int_opts, string_opts)
+        grid_int_opts = {k: v for (k, v) in op_grid.items() if isinstance(v, int)}
+        grid_string_opts = {k: v for (k, v) in op_grid.items() if isinstance(v, str)}
+        self.dftgrid = core.DFTGrid.build(molecule, basisset, grid_int_opts, grid_string_opts)
         self.numints = core.NumIntHelper(self.dftgrid)
 
         # Build the scaled ylms

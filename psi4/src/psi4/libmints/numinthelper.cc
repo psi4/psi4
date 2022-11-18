@@ -16,7 +16,6 @@ NumIntHelper::NumIntHelper(std::shared_ptr<DFTGrid> numint_grid) : print_(0), nt
 #ifdef _OPENMP
     nthread_ = Process::environment.get_n_threads();
 #endif
-    nthread_ = 1;  // TODO For testing
 
     Options& options_ = Process::environment.options;
     print_ = options_.get_int("PRINT");
