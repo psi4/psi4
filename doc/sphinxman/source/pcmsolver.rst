@@ -28,7 +28,7 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. index:: PCMSolver, PCM
+.. index:: PCMSolver, PCM, continuum solvation
 
 .. _`sec:pcmsolver`:
 
@@ -98,7 +98,13 @@ Using the polarizable continuum model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The inclusion of a PCM description of the solvent into your calculation
-is achieved by setting |globals__pcm| ``true`` in your input file.
+can be achieved in two ways in |PSIfour|, using either the PCMSolver or ddx package.
+PCMSolver is based on a boundary-element discretisation [Cances:1998:309]_,
+while ddx is based on a domain decomposition approach
+[Cances:2013:054111]_ making it linear scaling.
+For more details about ddx see the :ref:`section on ddx <sec:ddx>`.
+
+Using PCMsolver is achieved instead by setting |globals__pcm| ``true`` in your input file.
 |Psifour| understands the additional option |pcm__pcm_scf_type| with possible values ``total``
 (the default) or ``separate``.
 The latter forces the separate handling of nuclear and electronic electrostatic potentials and

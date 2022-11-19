@@ -47,7 +47,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
 
     # Static-doc reST files
     set(STATICDOC abbr_accents.rst adc.rst adcc.rst appendices.rst basissets.rst
-    basissets_byelement.rst bibliography.rst cbs.rst cbs_eqn.rst
+    basissets_byelement.rst bibliography.rst cbs.rst cbs_eqn.rst ddx.rst
     nbody.rst customizing.rst db.rst detci.rst dfmp2.rst dlpnomp2.rst
     diatomic.rst documentation.rst energy.rst external.rst fchk.rst
     freq.rst gdma.rst glossary_psivariables.rst index.rst intercalls.rst

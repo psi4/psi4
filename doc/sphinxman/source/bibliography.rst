@@ -385,9 +385,25 @@ Bibliography
    R. Cammi,
    *J. Chem. Phys.* **131**, 164104 (2009).
 
+.. [Barone:1998:1995]
+   V. Barone and M. Cossi,
+   *J. Phys. Chem. A* **102**, 1995 (1998).
+
 .. [Tomasi:2005:2999]
    J. Tomasi, B. Mennucci, and R. Cammi
    *Chem. Rev.* **105**, 2999 (2005).
+
+.. [Cances:1998:309]
+   E. Cances, B. Mennucci
+   *J. Math. Chem.* **23**, 309 (1998).
+
+.. [Cances:2013:054111]
+   E. Cances, Y. Maday, B. Stamm
+   *J. Chem. Phys.* **139**, 054111 (2013).
+
+.. [Stamm:2016:054101]
+   B. Stamm, E. Cancès, F. Lipparini, Y. Maday
+   *J. Chem. Phys.* **144**, 054101 (2016).
 
 .. [McGibbon:2017:161725]
    R. T. McGibbon, A. G. Taube, A. G. Donchev, K. Siva, F. Hern\ |a_acute|\ andez, C. Hargus, K. H. Law, J. L. Klepeis, D. E. Shaw
