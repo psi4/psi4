@@ -39,8 +39,8 @@ from psi4.driver.p4util.exceptions import ValidationError
 
 
 def get_pe_options():
-    if core.get_option('SCF', 'PCM'):
-        raise ValidationError("""Error: 3-layer QM/PE/PCM not implemented.\n""")
+    if core.get_option('SCF', 'PCM') or core.get_option('SCF', 'DDX'):
+        raise ValidationError("""Error: 3-layer QM/PE/continuum solvation not implemented.\n""")
     rmin = core.get_option('PE', 'BORDER_RMIN')
     if core.get_option('PE', 'BORDER_RMIN_UNIT').upper() == "AA":
         rmin *= 1.0 / constants.bohr2angstroms
