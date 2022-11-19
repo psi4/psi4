@@ -69,7 +69,6 @@ double SCF::energy(int cycle, double old_energy) {
         allocate2(double, eigenvectors, nci, nci);
 
         if (DSYEV_ascending(nci, H_tcscf, eigenvalues, eigenvectors) != 0){
-            outfile->Printf("DSYEV failed in mcscf::SCF::energy()");
             throw PSIEXCEPTION("DSYEV failed in mcscf::SCF::energy()");
         }
 

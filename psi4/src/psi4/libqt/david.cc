@@ -127,7 +127,6 @@ int david(double **A, int N, int M, double *eps, double **v, double cutoff, int 
         }
 
         if (DSYEV_ascending(init_dim, G, lambda, alpha) != 0){
-            outfile->Printf("DSYEV failed in libqt Davidson solver!");
             throw PSIEXCEPTION("DSYEV failed in libqt Davidson solver!");
         }
 
@@ -173,7 +172,6 @@ int david(double **A, int N, int M, double *eps, double **v, double cutoff, int 
 
         /* diagonalize mini-matrix */
         if (DSYEV_ascending(L, G, lambda, alpha) != 0){
-            outfile->Printf("DSYEV failed in libqt Davidson solver!");
             throw PSIEXCEPTION("DSYEV failed in libqt Davidson solver!");
         }
 

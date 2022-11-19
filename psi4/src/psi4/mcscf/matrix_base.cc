@@ -105,7 +105,6 @@ void MatrixBase::diagonalize(MatrixBase* eigenmatrix, VectorBase* eigenvalues) {
     // Diagonalize the block
     if (elements_ > 0 && (rows_ == cols_)) {
         if (DSYEV_ascending(rows_, matrix_, eigenvalues->get_vector(), eigenmatrix->get_matrix()) != 0){
-            outfile->Printf("DSYEV failed in mcscf::MatrixBase::diagonalize()");
             throw PSIEXCEPTION("DSYEV failed in mcscf::MatrixBase::diagonalize()");
         }
     } else {

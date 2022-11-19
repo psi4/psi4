@@ -961,7 +961,6 @@ bool RHF::stability_analysis() {
             global_dpd_->buf4_mat_irrep_init(&Asing, h);
             global_dpd_->buf4_mat_irrep_rd(&Asing, h);
             if (DSYEV_ascending(dim, Asing.matrix[h], evals, evecs) != 0){
-                outfile->Printf("DSYEV diagonalizer failed in RHF stability check!");
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in RHF stability check!");
             }
             global_dpd_->buf4_mat_irrep_close(&Asing, h);
@@ -975,7 +974,6 @@ bool RHF::stability_analysis() {
             global_dpd_->buf4_mat_irrep_init(&Atrip, h);
             global_dpd_->buf4_mat_irrep_rd(&Atrip, h);
             if (DSYEV_ascending(dim, Atrip.matrix[h], evals, evecs) != 0){
-                outfile->Printf("DSYEV diagonalizer failed in RHF stability check!");
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in RHF stability check!");
             }
             global_dpd_->buf4_mat_irrep_close(&Atrip, h);

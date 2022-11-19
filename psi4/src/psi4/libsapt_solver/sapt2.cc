@@ -917,7 +917,6 @@ void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm, double *evals, 
     double **nat_orbs_MO = block_matrix(nvirA, nvirA);
 
     if (DSYEV_descending(nvirA, P, occnum, nat_orbs_MO) != 0){
-        outfile->Printf("DSYEV diagonalizer failed in SAPT natural obrital calculation!");
         throw PSIEXCEPTION("DSYEV diagonalizer failed in SAPT natural obrital calculation!");
     }
 
@@ -952,7 +951,6 @@ void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm, double *evals, 
     double *epsilon = init_array(num_no_vir);
     double **X = block_matrix(num_no_vir, num_no_vir);
     if (DSYEV_ascending(num_no_vir, Fock_NO, epsilon, X) != 0){
-        outfile->Printf("DSYEV diagonalizer failed in SAPT natural obrital calculation!");
         throw PSIEXCEPTION("DSYEV diagonalizer failed in SAPT natural obrital calculation!");
     }
 

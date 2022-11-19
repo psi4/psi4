@@ -83,7 +83,6 @@ double CCEnergyWavefunction::d1diag_t1_rhf() {
 
             E = init_array(T1.params->rowtot[h]);
             if (DSYEV_ascending(T1.params->rowtot[h], T, E) != 0){
-                outfile->Printf("DSYEV diagonalizer failed in D1 diagnostic!");
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
             }
 
@@ -127,7 +126,6 @@ static double d1diag_subblock(double **Tave, int row0, int rown, int col0, int c
 
         E = init_array(nrow);
         if (DSYEV_ascending(nrow, Tsq, E) != 0){
-            outfile->Printf("DSYEV diagonalizer failed in D1 diagnostic!");
             throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
         }
 

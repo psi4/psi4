@@ -1265,7 +1265,6 @@ bool ROHF::stability_analysis() {
             double** evecs = block_matrix(rank, rank);
 
             if (DSYEV_ascending(rank, A.matrix[h], evals, evecs) != 0){
-                outfile->Printf("DSYEV diagonalizer failed in ROHF stability check!");
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in ROHF stability check!");
             }
             global_dpd_->buf4_mat_irrep_close(&A, h);

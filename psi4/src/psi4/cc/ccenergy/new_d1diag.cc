@@ -81,7 +81,6 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
 
             E = init_array(nclsd);
             if (DSYEV_ascending(nclsd, T1_sq, E) != 0){
-                outfile->Printf("DSYEV diagonalizer failed in D1 diagnostic!");
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
             }
             for (int i = 0; i < nclsd; i++)
@@ -102,7 +101,6 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
 
             E = init_array(nclsd);
             if (DSYEV_ascending(nclsd, T1_sq, E) != 0){
-                outfile->Printf("DSYEV diagonalizer failed in D1 diagnostic!");
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
             }
             for (int i = 0; i < nclsd; i++)
@@ -123,7 +121,6 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
 
             E = init_array(nopen);
             if (DSYEV_ascending(nopen, T1_sq, E) != 0){
-                outfile->Printf("DSYEV diagonalizer failed in D1 diagnostic!");
                 throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
             }
             for (int i = 0; i < nopen; i++)
