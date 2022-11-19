@@ -394,11 +394,11 @@ Bibliography
    *Chem. Rev.* **105**, 2999 (2005).
 
 .. [Cances:1998:309]
-   E. Cances, B. Mennucci
+   E. Canc\ |e_grave|\ s, B. Mennucci
    *J. Math. Chem.* **23**, 309 (1998).
 
 .. [Cances:2013:054111]
-   E. Cances, Y. Maday, B. Stamm
+   E. Canc\ |e_grave|\ s, Y. Maday, B. Stamm
    *J. Chem. Phys.* **139**, 054111 (2013).
 
 .. [Stamm:2016:054101]

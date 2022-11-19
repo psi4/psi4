@@ -290,6 +290,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("PCM", false);
     /*- PE boolean for polarizable embedding module -*/
     options.add_bool("PE", false);
+    /*- DDX boolean for ddx module -*/
+    options.add_bool("DDX", false);
 
     if (name == "PCM" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable continuum model (PCM) computations. -*/
@@ -302,8 +304,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("PCM_CC_TYPE", "PTE", "PTE");
     }
 
-    /*- DDX boolean for ddx module -*/
-    options.add_bool("DDX", false);
     if (name == "DDX" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs continuum solvation model computations using
             the domain-decomposition paradigm. -*/
