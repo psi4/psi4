@@ -1,9 +1,9 @@
+import psi4
 import pytest
 import numpy as np
 
-import psi4
-
 from psi4 import core
+
 from utils import *
 from addons import using, uusing
 
@@ -243,11 +243,9 @@ def test_ddx_eri_algorithms(scf_type):
         "scf_type": scf_type,
         "basis": "6-31g",
         "ddx": True,
-    })
-    psi4.set_module_options("ddx", {
-        "model":     "pcm",
-        "solvent":   "water",
-        "radii_set": "uff",
+        "ddx__model": "pcm",
+        "ddx__solvent": "water",
+        "ddx__radii_set": "uff",
     })
     ref = -56.1715394
     scf_e = psi4.energy('SCF')
