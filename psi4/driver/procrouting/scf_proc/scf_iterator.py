@@ -319,8 +319,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             uddx, Vddx = self.ddx_state.get_solvation_contributions(Dt)
             SCFE += uddx
             self.push_back_external_potential(Vddx)
-        self.set_variable("DDX ENERGY", uddx)  # P::e DDX
-        self.set_energies("DDX Energy", uddx)
+        self.set_variable("DD SOLVATION ENERGY", uddx)  # P::e DDX
+        self.set_energies("DD Solvation Energy", uddx)
 
         upe = 0.0
         if core.get_option('SCF', 'PE'):
@@ -712,13 +712,13 @@ def scf_print_energies(self):
     evv10 = self.get_energies('VV10')
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
-    eddx = self.get_energies('DDX Energy')
+    edd = self.get_energies('DD Solvation Energy')
     epe = self.get_energies('PE Energy')
     ke = self.get_energies('Kinetic')
 
     hf_energy = enuc + e1 + e2
     dft_energy = hf_energy + exc + ed + evv10
-    total_energy = dft_energy + eefp + epcm + eddx + epe
+    total_energy = dft_energy + eefp + epcm + edd + epe
     full_qm = (not core.get_option('SCF', 'PCM') and not core.get_option('SCF', 'DDX') and not core.get_option('SCF', 'PE')
                and not hasattr(self.molecule(), 'EFP'))
 
@@ -733,7 +733,7 @@ def scf_print_energies(self):
     if core.get_option('SCF', 'PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
     if core.get_option('SCF', 'DDX'):
-        core.print_out("    DDX Solvation Energy =            {:24.16f}\n".format(eddx))
+        core.print_out("    DD Solvation Energy =            {:24.16f}\n".format(edd))
     if core.get_option('SCF', 'PE'):
         core.print_out("    PE Energy =                       {:24.16f}\n".format(epe))
     if hasattr(self.molecule(), 'EFP'):

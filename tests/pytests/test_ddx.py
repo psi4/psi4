@@ -180,7 +180,7 @@ def test_ddx_rhf_reference(inp):
     for key in inp["ddx"].keys():
         psi4.set_options({"ddx__" + key: inp["ddx"][key]})
     scf_e, wfn = psi4.energy('SCF', return_wfn=True, molecule=mol)
-    ddx_e = wfn.scalar_variable("ddx energy")
+    ddx_e = wfn.scalar_variable("dd solvation energy")
 
     assert compare_values(inp["solvation"], ddx_e, 4, "DDX solvation energy versus Gaussian")
     assert compare_values(inp["ref"], scf_e, 4, "Total SCF energy with DDX versus Gaussian")
