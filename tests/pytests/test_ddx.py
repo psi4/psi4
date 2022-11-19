@@ -1,9 +1,9 @@
-import psi4
 import pytest
 import numpy as np
 
-from psi4 import core
+import psi4
 
+from psi4 import core
 from utils import *
 from addons import using, uusing
 
@@ -45,6 +45,17 @@ __geoms = {
     symmetry c1
     units angstrom
     """,
+    "nh3":
+    """
+    N     -0.0000000001    -0.1040380466      0.0000000000
+    H     -0.9015844116     0.4818470201     -1.5615900098
+    H     -0.9015844116     0.4818470201      1.5615900098
+    H      1.8031688251     0.4818470204      0.0000000000
+    symmetry c1
+    no_reorient
+    no_com
+    units bohr
+    """,
     "h2":
     """
     H 0 0 0.5
@@ -58,7 +69,7 @@ __geoms = {
     1 1
     symmetry c1
     units angstrom
-    """
+    """,
 }
 
 
@@ -222,3 +233,22 @@ def test_ddx_rhf_consistency(inp):
         psi4.set_options({"ddx__" + key: inp["ddx"][key]})
     scf_e, wfn = psi4.energy('SCF', return_wfn=True, molecule=mol)
     assert compare_values(inp["ref"], scf_e, 9, "Total SCF energy with DDX versus reference data")
+
+
+@uusing("ddx")
+@pytest.mark.parametrize("scf_type", ["pk", "out_of_core", "direct", "df", "cd"])
+def test_ddx_eri_algorithms(scf_type):
+    mol = psi4.geometry(__geoms["nh3"])
+    psi4.set_options({
+        "scf_type": scf_type,
+        "basis": "6-31g",
+        "ddx": True,
+    })
+    psi4.set_module_options("ddx", {
+        "model":     "pcm",
+        "solvent":   "water",
+        "radii_set": "uff",
+    })
+    ref = -56.1715394
+    scf_e = psi4.energy('SCF')
+    assert compare_values(ref, scf_e, 4, "Total SCF energy with DDX versus reference data")
