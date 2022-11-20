@@ -1304,7 +1304,7 @@ void export_mints(py::module& m) {
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
              "Determines if the P,Q,R,S shell combination is significant");
 
-    py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
+    py::class_<Libint2ERI, std::unique_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
                                                         "Computes normal two electron repulsion integrals");
 #ifdef ENABLE_Libint1t
     py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
