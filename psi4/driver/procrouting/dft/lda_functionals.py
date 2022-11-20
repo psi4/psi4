@@ -41,6 +41,16 @@ funcs.append({
     }
 })
 
+funcs.append({
+    "name": "SPW92",
+    "x_functionals": {
+        "LDA_X": {}
+    },
+    "c_functionals": {
+        "LDA_C_PW": {}
+    }
+})
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
