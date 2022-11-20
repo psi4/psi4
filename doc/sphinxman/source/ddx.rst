@@ -98,6 +98,9 @@ PCMSolver is based on a boundary-element discretisation [Cances:1998:309]_,
 while ddx is based on a domain decomposition approach
 [Cances:2013:054111]_ making it linear scaling.
 For more details about PCMSolver see the :ref:`section on PCMsolver <sec:pcmsolver>`.
+For a concise introduction to the `theory behind ddx <https://ddsolvation.github.io/ddX/md_docs_theory.html>`
+or further `literature references <https://ddsolvation.github.io/ddX/label_references.html>`
+see the ddx documentation.
 
 The usage of ddx-based solvation models is enabled
 by specifying |globals__ddx| ``true`` in your input file.
