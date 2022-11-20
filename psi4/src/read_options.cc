@@ -328,7 +328,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SOLVENT_EPSILON", 0);
 
         /*- Maximal degree of modelling spherical harmonics -*/
-        options.add_int("LMAX", 10);
+        options.add_int("LMAX", 7);
 
         /*- Number of Lebedev grid points to use -*/
         options.add_int("N_LEBEDEV", 302);
@@ -355,7 +355,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Use the fast multipole method to accelerate the solver -*/
         options.add_bool("FMM", true);
 
-        /*- Maximal degree of multipole spherical harmonics (far-field FMM interactions). -*/
+        /*- Maximal degree of multipole spherical harmonics (far-field FMM interactions).
+	    Using the same value as |ddx__lmax| is recommended and done by default. -*/
         options.add_int("FMM_MULTIPOLE_LMAX", 7);
 
         /*- Maximal degree of local spherical harmonics (near-field FMM interations). -*/

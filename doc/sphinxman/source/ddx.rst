@@ -102,10 +102,10 @@ For more details about PCMSolver see the :ref:`section on PCMsolver <sec:pcmsolv
 The usage of ddx-based solvation models is enabled
 by specifying |globals__ddx| ``true`` in your input file.
 The solvation model itself is selected using the |ddx__model| parameter.
-
-|Psifour| understands a number of other options to configure
-numerical details in the library (discretisation, iterative solver, cavity setup),
-see the next section.
+Additionally the definition of the solvent and solute cavity is required
+and further parameters allow to influence details of discretisation,
+numerical integration and iterative solvers,
+see the next sections for details.
 
 .. note:: At present dd-based solvation models
           can only be used for energy calculations with SCF
@@ -136,21 +136,44 @@ the following: ::
         "basis": "sto-3g",
         "scf_type": "pk",
         "ddx": True,
-    })
-
-    psi4.set_module_options("ddx", {
-        "model":     "pcm",
-        "solvent":   "water",
-        "radii_set": "uff",
+        "ddx__model":     "pcm",
+        "ddx__solvent":   "water",
+        "ddx__radii_set": "uff",
     })
 
     scf_e = psi4.energy('SCF')
 
+Solvent model and solvent cavity definition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Cavity and solvent setup
-~~~~~~~~~~~~~~~~~~~~~~~~
+Beyond setting |globals__ddx| to ``true`` and selecting
+a solvent model using |ddx__model|,
+the definition of the solvent is mandatory.
+Regularly one might want to influence the setup of the solvent
+cavity as well.
 
-TODO
+The **solvent** can be defined either by directly providing a dielectric
+constant using |ddx__solvent_epsilon| or by looking up the dielectric
+constant in from a solvent trivial name provided by |ddx__solvent|
+(e.g. ``water``, ``ethanol``, ``cis-1,2-dimethylcyclohexane``).
+By convention solvent names are all lowercase and use dashes (``-``) to separate
+quantifiers like ``o``, ``n`` etc.
+The full list understood by ddx can be obtained using ::
+
+    import pyddx
+    print(pyddx.data.solvent_epsilon.keys())
+
+The **cavity** in ddx is defined as a union of spheres around each atom.
+Usually the spehere radii for each atom are determined using a standard
+set of tabulated radii per atomic species, determined by the |ddx__radii_set| parameter.
+Currently ``bondi`` and ``uff`` are supported for |ddx__radii_set|
+with ``uff`` selected by default.
+These radius values are conventionally scaled by an additional factor before use,
+conventionally 1.1 for ``uff`` and 1.2 for ``bondi``. Customisation of the scaling
+is possible using the |ddx__radii_scaling| parameter.
+A more fine-grained control over the sphere radii is available by explicitly providing
+a list of radii (one per atom, exactly in the order of the input geometry)
+using the |ddx__radii| parameter.
 
 .. include:: autodir_options_c/globals__ddx.rst
 .. include:: autodir_options_c/ddx__model.rst
@@ -163,7 +186,20 @@ TODO
 Numerical integration and discretisation parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO
+These parameters can be altered to balance the cost and accuracy
+of the implict description of the solvation.
+
+|ddx__dft_radial_points| and |ddx__dft_spherical_points| influence
+the accuracy of the numerical grid used to obtain the representation
+of the electric field of the solute density
+(for which a standard DFT integration grid is used).
+Unlike the case for DFT grids a finer grid than the employed default is
+rarely needed. In fact often even a coarser grid than the default
+can be used without trading too much accuracy
+(e.g. 50 radial and 230 spherical points).
+
+|ddx__lmax| and |ddx__n_lebedev| determine the accuracy of the discretisation
+on the boundary of the spheres around each atom. The defaults are usually good.
 
 .. include:: autodir_options_c/ddx__dft_radial_points.rst
 .. include:: autodir_options_c/ddx__dft_spherical_points.rst
@@ -184,6 +220,10 @@ e.g. if only a very crude or a highly accurate SCF solution is targeted.
 
 Further keywords for ddx
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+These parameter should rarely require changes.
+In particular |ddx__eta|, |ddx__shift| and |ddx__logfile|
+are expert parameters and should not be altered beyond debugging.
 
 .. include:: autodir_options_c/ddx__eta.rst
 .. include:: autodir_options_c/ddx__fmm_local_lmax.rst

@@ -80,6 +80,10 @@ def get_ddx_options(molecule):
     else:
         solvent_epsilon = pyddx.data.solvent_epsilon[solvent]
 
+    fmm_multipole_lmax = core.get_option("DDX", "LMAX")
+    if core.has_option_changed("DDX", "FMM_MULTIPOLE_LMAX"):
+        fmm_multipole_lmax = core.get_option("DDX", "FMM_MULTIPOLE_LMAX")
+
     model_options = {
         "model": core.get_option("DDX", "MODEL").lower(),
         "sphere_charges": np.array([molecule.Z(i) for i in range(molecule.natom())]),
@@ -94,7 +98,7 @@ def get_ddx_options(molecule):
         "incore": core.get_option("DDX", "INCORE"),
         "enable_fmm": core.get_option("DDX", "FMM"),
         "fmm_local_lmax": core.get_option("DDX", "FMM_LOCAL_LMAX"),
-        "fmm_multipole_lmax": core.get_option("DDX", "FMM_MULTIPOLE_LMAX"),
+        "fmm_multipole_lmax": fmm_multipole_lmax,
         "logfile": core.get_option("DDX", "LOGFILE"),
         "eta": core.get_option("DDX", "ETA"),
         "shift": core.get_option("DDX", "SHIFT"),
