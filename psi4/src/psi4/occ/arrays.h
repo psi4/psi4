@@ -89,6 +89,7 @@ class Array1d {
     // dirprd: A1d_[i] = a[i] * b[i]
     void dirprd(Array1d* a, Array1d* b);
     std::string name() const { return name_; }
+    double* nonconst_array() const { return A1d_; }
     const double* array() const { return A1d_; }
 
     friend class Array2d;

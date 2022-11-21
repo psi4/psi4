@@ -69,8 +69,8 @@ void OCCWave::kappa_orb_resp() {
         global_dpd_->buf4_close(&K);
 
         // Build the MO Hessian
-        Aorb = new Array2d("MO Hessian Matrix", nidpA, nidpA);
-        Aorb->zero();
+        Matrix Aorb("MO Hessian Matrix", nidpA, nidpA);
+        Aorb.zero();
         // A(ai,bj) = 8*(ai|bj)
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
                                "MO Ints (VO|VO)");
@@ -84,7 +84,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                Aorb->set(ai, bj, 8.0 * K.matrix[h][ai][bj]);
+                Aorb.set(ai, bj, 8.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -103,7 +103,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                Aorb->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
+                Aorb.add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -122,7 +122,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                Aorb->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
+                Aorb.add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -137,14 +137,13 @@ void OCCWave::kappa_orb_resp() {
             int i = idpcolA[x];
             int h = idpirrA[x];
             double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);
-            Aorb->add(x, x, 2.0 * value);
+            Aorb.add(x, x, 2.0 * value);
         }
-        if (print_ > 2) Aorb->print();
+        if (print_ > 2) Aorb.print();
 
         // Solve the orb-resp equations
-        pcg_conver = 0;  // here 0 means successfull
-        Aorb->cdgesv(kappaA, pcg_conver);
-        delete Aorb;
+        std::vector<int> dummy(Aorb.nrow());
+        pcg_conver = C_DGESV(Aorb.nrow(), 1, Aorb.get_pointer(), Aorb.ncol(), dummy.data(), kappaA->nonconst_array(), Aorb.ncol());
 
         // If LINEQ FAILED!
         if (pcg_conver != 0) {
@@ -241,8 +240,8 @@ void OCCWave::kappa_orb_resp() {
 
         // Build the MO Hessian
         // Alpha-Alpha spin cae
-        AorbAA = new Array2d("Alpha-Alpha MO Hessian Matrix", nidpA, nidpA);
-        AorbAA->zero();
+        Array2d AorbS("Alpha-Alpha MO Hessian Matrix", nidpA, nidpA);
+        AorbS.zero();
         // A(AI,BJ) = 4*(AI|BJ)
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), ID("[V,O]"), 0,
                                "MO Ints (VO|VO)");
@@ -256,7 +255,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                AorbAA->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
+                AorbS.set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -275,7 +274,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                AorbAA->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
+                AorbS.add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -294,7 +293,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                AorbAA->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
+                AorbS.add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -306,24 +305,23 @@ void OCCWave::kappa_orb_resp() {
             int i = idpcolA[x];
             int h = idpirrA[x];
             double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);
-            AorbAA->add(x, x, 2.0 * value);
+            AorbS.add(x, x, 2.0 * value);
         }
-        if (print_ > 2) AorbAA->print();
+        if (print_ > 2) AorbS.print();
 
         // Build the UHF MO Hessian matrix
-        Aorb = new Array2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot);
-        Aorb->zero();
+        Matrix Aorb("UHF MO Hessian Matrix", nidp_tot, nidp_tot);
+        Aorb.zero();
         // AAAA part
         for (int x = 0; x < nidpA; x++) {
             for (int y = 0; y < nidpA; y++) {
-                Aorb->set(x, y, AorbAA->get(x, y));
+                Aorb.set(x, y, AorbS.get(x, y));
             }
         }
-        delete AorbAA;
 
         // Beta-Beta spin cae
-        AorbBB = new Array2d("Beta-Beta MO Hessian Matrix", nidpB, nidpB);
-        AorbBB->zero();
+        AorbS = Array2d("Beta-Beta MO Hessian Matrix", nidpB, nidpB);
+        AorbS.zero();
         // A(ai,bj) = 4*(ai|bj)
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), ID("[v,o]"), 0,
                                "MO Ints (vo|vo)");
@@ -337,7 +335,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                AorbBB->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
+                AorbS.set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -356,7 +354,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                AorbBB->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
+                AorbS.add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -375,7 +373,7 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                AorbBB->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
+                AorbS.add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
@@ -387,22 +385,21 @@ void OCCWave::kappa_orb_resp() {
             int i = idpcolB[x];
             int h = idpirrB[x];
             double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);
-            AorbBB->add(x, x, 2.0 * value);
+            AorbS.add(x, x, 2.0 * value);
         }
-        if (print_ > 2) AorbBB->print();
+        if (print_ > 2) AorbS.print();
 
         // Build the UHF MO Hessian matrix
         // BBBB part
         for (int x = 0; x < nidpB; x++) {
             for (int y = 0; y < nidpB; y++) {
-                Aorb->set(x + nidpA, y + nidpA, AorbBB->get(x, y));
+                Aorb.set(x + nidpA, y + nidpA, AorbS.get(x, y));
             }
         }
-        delete AorbBB;
 
         // Alpha-Beta spin cae
-        AorbAB = new Array2d("Alpha-Beta MO Hessian Matrix", nidpA, nidpB);
-        AorbAB->zero();
+        AorbS = Array2d("Alpha-Beta MO Hessian Matrix", nidpA, nidpB);
+        AorbS.zero();
         // A(AI,bj) = 4*(AI|bj)
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"), ID("[V,O]"), ID("[v,o]"), 0,
                                "MO Ints (VO|vo)");
@@ -416,12 +413,12 @@ void OCCWave::kappa_orb_resp() {
             for (int bj = 0; bj < K.params->coltot[h]; ++bj) {
                 int b = K.params->colorb[h][bj][0];
                 int j = K.params->colorb[h][bj][1];
-                AorbAB->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
+                AorbS.set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&K, h);
         global_dpd_->buf4_close(&K);
-        if (print_ > 2) AorbAB->print();
+        if (print_ > 2) AorbS.print();
 
         // Close dpd files
         psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -430,20 +427,19 @@ void OCCWave::kappa_orb_resp() {
         // AABB part
         for (int x = 0; x < nidpA; x++) {
             for (int y = 0; y < nidpB; y++) {
-                Aorb->set(x, y + nidpA, AorbAB->get(x, y));
+                Aorb.set(x, y + nidpA, AorbS.get(x, y));
             }
         }
 
         // BBAA part
         for (int x = 0; x < nidpB; x++) {
             for (int y = 0; y < nidpA; y++) {
-                Aorb->set(x + nidpA, y, AorbAB->get(y, x));
+                Aorb.set(x + nidpA, y, AorbS.get(y, x));
             }
         }
-        delete AorbAB;
 
         // Print
-        if (print_ > 2) Aorb->print();
+        if (print_ > 2) Aorb.print();
 
         // Build total kappa
         kappa->zero();
@@ -451,9 +447,8 @@ void OCCWave::kappa_orb_resp() {
         for (int x = 0; x < nidpB; x++) kappa->set(x + nidpA, -wogB->get(x));
 
         // Solve the orb-resp equations
-        pcg_conver = 0;  // here 0 means successfull
-        Aorb->cdgesv(kappa, pcg_conver);
-        delete Aorb;
+        std::vector<int> dummy(Aorb.nrow());
+        pcg_conver = C_DGESV(Aorb.nrow(), 1, Aorb.get_pointer(), Aorb.ncol(), dummy.data(), kappaA->nonconst_array(), Aorb.ncol());
 
         // Build kappaA and kappaB
         // kappa->print();
