@@ -741,7 +741,7 @@ def scf_print_energies(self):
         self.set_variable("DFT TOTAL ENERGY", dft_energy)  # overwritten later for DH  # P::e SCF
     else:
         potential = total_energy - ke
-        self.set_variable("HF KINETIC ENERGY", hf_energy)  # P::e SCF
+        self.set_variable("HF KINETIC ENERGY", ke)  # P::e SCF
         self.set_variable("HF POTENTIAL ENERGY", potential)  # P::e SCF
         if full_qm:
             self.set_variable("HF VIRIAL RATIO", - potential / ke)  # P::e SCF
