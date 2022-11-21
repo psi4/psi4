@@ -3746,74 +3746,15 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_close(&zI_OO);
     global_dpd_->file2_close(&zI_VV);
 
-    // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
-    aW.scale(-2.0);
-    bW.scale(-2.0);
-
-    // Reorder the energy-weighted density matrix to the QT order
-
-    double **a_qt = block_matrix(nmo_, nmo_);
-    double **b_qt = block_matrix(nmo_, nmo_);
-
-    int offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = alpha_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                a_qt[corr_i][corr_j] = aW.get(h, i, j);
-            }
-        }
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = beta_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = beta_pitzer_to_corr[pitzer_j];
-                b_qt[corr_i][corr_j] = bW.get(h, i, j);
-            }
-        }
-        offset += nmopi_[h];
-    }
-
-    // Write qt-ordered energy-weighted density matrix to the file
-    psio_->open(PSIF_MO_LAG, PSIO_OPEN_OLD);
-    psio_->write_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->write_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *)b_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->close(PSIF_MO_LAG, 1);
-
-    // Reorder the one-particle density matrix to the QT order
-
-    offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = alpha_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                a_qt[corr_i][corr_j] = a_opdm->get(h, i, j);
-            }
-        }
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = beta_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = beta_pitzer_to_corr[pitzer_j];
-                b_qt[corr_i][corr_j] = b_opdm->get(h, i, j);
-            }
-        }
-        offset += nmopi_[h];
-    }
-
-    // Write qt-ordered OPDM to the file
-    psio_->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
-    psio_->write_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *)b_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->close(PSIF_MO_OPDM, 1);
+    /* Save the SO EWDM to the wavefunction as Lagrangian_.
+     * All other EWDM processing operations are then redundant, but it's what deriv.cc:compute expects...
+     */
+    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
+    auto temp_lagrangian = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    Lagrangian_->back_transform(aW, *Ca_);
+    temp_lagrangian->back_transform(bW, *Cb_);
+    Lagrangian_->add(temp_lagrangian);
+    Lagrangian_->scale(-1.0);
 
     auto *aocc_qt = new int[nalpha_];
     auto *bocc_qt = new int[nbeta_];
@@ -3824,7 +3765,7 @@ void DCTSolver::compute_ewdm_dc() {
     int bocc_count = 0;
     int avir_count = 0;
     int bvir_count = 0;
-    offset = 0;
+    int offset = 0;
 
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
@@ -4633,76 +4574,9 @@ void DCTSolver::compute_ewdm_odc() {
     Lagrangian_->add(temp_lagrangian);
     Lagrangian_->scale(-1.0);
 
-    // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
-    aW.scale(-2.0);
-    bW.scale(-2.0);
-
     if (options_.get_str("DCT_TYPE") == "DF") {
         return;
     }
-
-    // Reorder the energy-weighted density matrix to the QT order
-    double **a_qt = block_matrix(nmo_, nmo_);
-    double **b_qt = block_matrix(nmo_, nmo_);
-
-    int offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = alpha_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                a_qt[corr_i][corr_j] = aW.get(h, i, j);
-            }
-        }
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = beta_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = beta_pitzer_to_corr[pitzer_j];
-                b_qt[corr_i][corr_j] = bW.get(h, i, j);
-            }
-        }
-        offset += nmopi_[h];
-    }
-
-    // Write qt-ordered energy-weighted density matrix to the file
-    psio_->open(PSIF_MO_LAG, PSIO_OPEN_OLD);
-    psio_->write_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->write_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *)b_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->close(PSIF_MO_LAG, 1);
-
-    // Reorder the one-particle density matrix to the QT order
-    offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = alpha_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                a_qt[corr_i][corr_j] = a_opdm->get(h, i, j);
-            }
-        }
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = beta_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = beta_pitzer_to_corr[pitzer_j];
-                b_qt[corr_i][corr_j] = b_opdm->get(h, i, j);
-            }
-        }
-        offset += nmopi_[h];
-    }
-
-    // Write qt-ordered OPDM to the file
-    psio_->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
-    psio_->write_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *)b_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->close(PSIF_MO_OPDM, 1);
 
     auto *aocc_qt = new int[nalpha_];
     auto *bocc_qt = new int[nbeta_];
@@ -4713,7 +4587,7 @@ void DCTSolver::compute_ewdm_odc() {
     int bocc_count = 0;
     int avir_count = 0;
     int bvir_count = 0;
-    offset = 0;
+    int offset = 0;
 
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {

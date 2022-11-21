@@ -90,6 +90,10 @@ double DCTSolver::compute_energy() {
         }
     }
 
+    // Enforce that ODPM is hermitian. This may fail when the non-OO DCT is used.
+    if (Da_) Da_->hermitivitize();
+    if (Db_) Db_->hermitivitize();
+
     // Free up memory and close files
     finalize();
 

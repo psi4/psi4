@@ -94,59 +94,15 @@ void OCCWave::dump_pdms() {
             alpha_pitzer_to_corr[alpha_corr_to_pitzer[n]] = n;
         }
 
-        // Reorder the one-particle density matrix to the QT order
-        double **a_qt = block_matrix(nmo_, nmo_);
-
-        int offset = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < nmopi_[h]; ++i) {
-                int pitzer_i = i + offset;
-                int corr_i = alpha_pitzer_to_corr[pitzer_i];
-                for (int j = 0; j < nmopi_[h]; ++j) {
-                    int pitzer_j = j + offset;
-                    int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                    a_qt[corr_i][corr_j] = g1symm->get(h, i, j);
-                }
-            }
-            offset += nmopi_[h];
-        }
-        // print_mat(a_qt, nmo_, nmo_, outfile);
-
-        // Write qt-ordered OPDM to the file
-        psio_->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
-        psio_->write_entry(PSIF_MO_OPDM, "MO-basis OPDM", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-        psio_->close(PSIF_MO_OPDM, 1);
-
-        // Scale the generalized-Fock matrix by 2.0 to make it the same form as in the coupled-cluster code
-        GFock->scale(2.0);
-
-        // Reorder the Generalized-Fock matrix to the QT order
-        offset = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < nmopi_[h]; ++i) {
-                int pitzer_i = i + offset;
-                int corr_i = alpha_pitzer_to_corr[pitzer_i];
-                for (int j = 0; j < nmopi_[h]; ++j) {
-                    int pitzer_j = j + offset;
-                    int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                    a_qt[corr_i][corr_j] = GFock->get(h, i, j);
-                }
-            }
-            offset += nmopi_[h];
-        }
-
-        // Write qt-ordered Generalized-Fock matrix to the file
-        psio_->open(PSIF_MO_LAG, PSIO_OPEN_OLD);
-        psio_->write_entry(PSIF_MO_LAG, "MO-basis Lagrangian", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-        psio_->close(PSIF_MO_LAG, 1);
-        free_block(a_qt);
+        Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
+        Lagrangian_->back_transform(*GFock, *Ca_);
 
         auto *aocc_qt = new int[nooA];
         auto *avir_qt = new int[nvoA];
 
         int aocc_count = 0;
         int avir_count = 0;
-        offset = 0;
+        int offset = 0;
 
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < occpiA[h]; ++i) {
@@ -307,74 +263,11 @@ void OCCWave::dump_pdms() {
             beta_pitzer_to_corr[beta_corr_to_pitzer[n]] = n;
         }
 
-        // Reorder the one-particle density matrix to the QT order
-        double **a_qt = block_matrix(nmo_, nmo_);
-        double **b_qt = block_matrix(nmo_, nmo_);
-
-        int offset = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < nmopi_[h]; ++i) {
-                int pitzer_i = i + offset;
-                int corr_i = alpha_pitzer_to_corr[pitzer_i];
-                for (int j = 0; j < nmopi_[h]; ++j) {
-                    int pitzer_j = j + offset;
-                    int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                    a_qt[corr_i][corr_j] = g1symmA->get(h, i, j);
-                }
-            }
-            for (int i = 0; i < nmopi_[h]; ++i) {
-                int pitzer_i = i + offset;
-                int corr_i = beta_pitzer_to_corr[pitzer_i];
-                for (int j = 0; j < nmopi_[h]; ++j) {
-                    int pitzer_j = j + offset;
-                    int corr_j = beta_pitzer_to_corr[pitzer_j];
-                    b_qt[corr_i][corr_j] = g1symmB->get(h, i, j);
-                }
-            }
-            offset += nmopi_[h];
-        }
-
-        // Write qt-ordered OPDM to the file
-        psio_->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
-        psio_->write_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-        psio_->write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *)b_qt[0], sizeof(double) * nmo_ * nmo_);
-        psio_->close(PSIF_MO_OPDM, 1);
-
-        // Scale the generalized-Fock matrix by 2.0 to make it the same form as in the coupled-cluster code
-        GFockA->scale(2.0);
-        GFockB->scale(2.0);
-
-        // Reorder the Generalized-Fock matrix to the QT order
-        offset = 0;
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < nmopi_[h]; ++i) {
-                int pitzer_i = i + offset;
-                int corr_i = alpha_pitzer_to_corr[pitzer_i];
-                for (int j = 0; j < nmopi_[h]; ++j) {
-                    int pitzer_j = j + offset;
-                    int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                    a_qt[corr_i][corr_j] = GFockA->get(h, i, j);
-                }
-            }
-            for (int i = 0; i < nmopi_[h]; ++i) {
-                int pitzer_i = i + offset;
-                int corr_i = beta_pitzer_to_corr[pitzer_i];
-                for (int j = 0; j < nmopi_[h]; ++j) {
-                    int pitzer_j = j + offset;
-                    int corr_j = beta_pitzer_to_corr[pitzer_j];
-                    b_qt[corr_i][corr_j] = GFockB->get(h, i, j);
-                }
-            }
-            offset += nmopi_[h];
-        }
-
-        // Write qt-ordered Generalized-Fock matrix to the file
-        psio_->open(PSIF_MO_LAG, PSIO_OPEN_OLD);
-        psio_->write_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-        psio_->write_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *)b_qt[0], sizeof(double) * nmo_ * nmo_);
-        psio_->close(PSIF_MO_LAG, 1);
-        free_block(a_qt);
-        free_block(b_qt);
+        Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
+        auto temp_lagrangian = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+        Lagrangian_->back_transform(*GFockA, *Ca_);
+        temp_lagrangian->back_transform(*GFockB, *Cb_);
+        Lagrangian_->add(temp_lagrangian);
 
         auto *aocc_qt = new int[nooA];
         auto *bocc_qt = new int[nooB];
@@ -385,7 +278,7 @@ void OCCWave::dump_pdms() {
         int bocc_count = 0;
         int avir_count = 0;
         int bvir_count = 0;
-        offset = 0;
+        int offset = 0;
 
         for (int h = 0; h < nirrep_; ++h) {
             for (int i = 0; i < occpiA[h]; ++i) {

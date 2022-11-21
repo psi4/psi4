@@ -46,7 +46,7 @@ using namespace psi;
 /**
  * Transform the one- and two-particle density matrices from the MO to the SO basis
  */
-void IntegralTransform::backtransform_density() {
+void IntegralTransform::backtransform_density(bool reset_oneel) {
     check_initialized();
     // This limitation can be remedied by accounting for the fact that Pitzer orbital numbering is not
     // dense, so certain quantities must be alloc'd for the full MO space.  It's no limitation, though
@@ -75,63 +75,65 @@ void IntegralTransform::backtransform_density() {
     psio_->open(PSIF_MO_LAG, PSIO_OPEN_OLD);
 
     if (transformationType_ == TransformationType::Restricted) {
-        /*
-         * Start by transforming the OPDM to the SO basis
-         */
-        psio_->read_entry(PSIF_MO_OPDM, "MO-basis OPDM", (char *)tempOPDM[0], sizeof(double) * nActive * nActive);
-        for (int p = 0; p < nActive; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                int P = aCorrToPitzer_[p];
-                int Q = aCorrToPitzer_[q];
-                size_t PQ = INDEX(P, Q);
-                tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+        if (reset_oneel) {
+            /*
+             * Start by transforming the OPDM to the SO basis
+             */
+            psio_->read_entry(PSIF_MO_OPDM, "MO-basis OPDM", (char *)tempOPDM[0], sizeof(double) * nActive * nActive);
+            for (int p = 0; p < nActive; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    int P = aCorrToPitzer_[p];
+                    int Q = aCorrToPitzer_[q];
+                    size_t PQ = INDEX(P, Q);
+                    tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+                }
             }
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis OPDM");
-            print_array(tempMo, nmo_, "outfile");
-        }
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pC = Ca_->pointer(h);
-            trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The SO basis OPDM");
-            print_array(tempSo, nso_, "outfile");
-        }
-        psio_->write_entry(PSIF_AO_OPDM, "SO-basis OPDM", (char *)tempSo, sizeof(double) * nTriSo_);
-
-        /*
-         * The Lagrangian
-         */
-        psio_->read_entry(PSIF_MO_LAG, "MO-basis Lagrangian", (char *)tempOPDM[0], sizeof(double) * nActive * nActive);
-        for (int p = 0; p < nActive; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                int P = aCorrToPitzer_[p];
-                int Q = aCorrToPitzer_[q];
-                size_t PQ = INDEX(P, Q);
-                tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+            if (print_ > 4) {
+                outfile->Printf("The MO basis OPDM");
+                print_array(tempMo, nmo_, "outfile");
             }
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis Lagrangian\n");
-            print_array(tempMo, nmo_, "outfile");
-        }
 
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pC = Ca_->pointer(h);
-            trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
+            for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
+                double **pC = Ca_->pointer(h);
+                trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
+                soOffset += sopi_[h];
+                moOffset += mopi_[h];
+            }
+            if (print_ > 4) {
+                outfile->Printf("The SO basis OPDM");
+                print_array(tempSo, nso_, "outfile");
+            }
+            psio_->write_entry(PSIF_AO_OPDM, "SO-basis OPDM", (char *)tempSo, sizeof(double) * nTriSo_);
+
+            /*
+             * The Lagrangian
+             */
+            psio_->read_entry(PSIF_MO_LAG, "MO-basis Lagrangian", (char *)tempOPDM[0], sizeof(double) * nActive * nActive);
+            for (int p = 0; p < nActive; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    int P = aCorrToPitzer_[p];
+                    int Q = aCorrToPitzer_[q];
+                    size_t PQ = INDEX(P, Q);
+                    tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+                }
+            }
+            if (print_ > 4) {
+                outfile->Printf("The MO basis Lagrangian\n");
+                print_array(tempMo, nmo_, "outfile");
+            }
+
+            for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
+                double **pC = Ca_->pointer(h);
+                trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
+                soOffset += sopi_[h];
+                moOffset += mopi_[h];
+            }
+            if (print_ > 4) {
+                outfile->Printf("The SO basis Lagrangian\n");
+                print_array(tempSo, nso_, "outfile");
+            }
+            psio_->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *)tempSo, sizeof(double) * nTriSo_);
         }
-        if (print_ > 4) {
-            outfile->Printf("The SO basis Lagrangian\n");
-            print_array(tempSo, nso_, "outfile");
-        }
-        psio_->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *)tempSo, sizeof(double) * nTriSo_);
 
         /*
          * Now, work on the TPDM
@@ -141,101 +143,103 @@ void IntegralTransform::backtransform_density() {
         /*
          * Start by transforming the OPDM to the SO basis
          */
-        psio_->read_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *)tempOPDM[0], sizeof(double) * nActive * nActive);
-        for (int p = 0; p < nActive; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                int P = aCorrToPitzer_[p];
-                int Q = aCorrToPitzer_[q];
-                size_t PQ = INDEX(P, Q);
-                tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+        if (reset_oneel) {
+            psio_->read_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *)tempOPDM[0], sizeof(double) * nActive * nActive);
+            for (int p = 0; p < nActive; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    int P = aCorrToPitzer_[p];
+                    int Q = aCorrToPitzer_[q];
+                    size_t PQ = INDEX(P, Q);
+                    tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+                }
             }
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis Alpha OPDM");
-            print_array(tempMo, nmo_, "outfile");
-        }
+            if (print_ > 4) {
+                outfile->Printf("The MO basis Alpha OPDM");
+                print_array(tempMo, nmo_, "outfile");
+            }
 
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pC = Ca_->pointer(h);
-            trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        psio_->read_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *)tempOPDM[0], sizeof(double) * nActive * nActive);
-        for (int p = 0; p < nActive; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                int P = bCorrToPitzer_[p];
-                int Q = bCorrToPitzer_[q];
-                size_t PQ = INDEX(P, Q);
-                tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+            for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
+                double **pC = Ca_->pointer(h);
+                trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
+                soOffset += sopi_[h];
+                moOffset += mopi_[h];
             }
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis Beta OPDM");
-            print_array(tempMo, nmo_, "outfile");
-        }
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
-            double **pC = Cb_->pointer(h);
-            trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true, 1.0);
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The SO basis OPDM");
-            print_array(tempSo, nso_, "outfile");
-        }
-        psio_->write_entry(PSIF_AO_OPDM, "SO-basis OPDM", (char *)tempSo, sizeof(double) * nTriSo_);
+            psio_->read_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *)tempOPDM[0], sizeof(double) * nActive * nActive);
+            for (int p = 0; p < nActive; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    int P = bCorrToPitzer_[p];
+                    int Q = bCorrToPitzer_[q];
+                    size_t PQ = INDEX(P, Q);
+                    tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+                }
+            }
+            if (print_ > 4) {
+                outfile->Printf("The MO basis Beta OPDM");
+                print_array(tempMo, nmo_, "outfile");
+            }
+            for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
+                // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
+                double **pC = Cb_->pointer(h);
+                trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true, 1.0);
+                soOffset += sopi_[h];
+                moOffset += mopi_[h];
+            }
+            if (print_ > 4) {
+                outfile->Printf("The SO basis OPDM");
+                print_array(tempSo, nso_, "outfile");
+            }
+            psio_->write_entry(PSIF_AO_OPDM, "SO-basis OPDM", (char *)tempSo, sizeof(double) * nTriSo_);
 
-        /*
-         * The Lagrangian
-         */
-        psio_->read_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *)tempOPDM[0],
-                          sizeof(double) * nActive * nActive);
-        for (int p = 0; p < nActive; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                int P = aCorrToPitzer_[p];
-                int Q = aCorrToPitzer_[q];
-                size_t PQ = INDEX(P, Q);
-                tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+            /*
+             * The Lagrangian
+             */
+            psio_->read_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *)tempOPDM[0],
+                              sizeof(double) * nActive * nActive);
+            for (int p = 0; p < nActive; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    int P = aCorrToPitzer_[p];
+                    int Q = aCorrToPitzer_[q];
+                    size_t PQ = INDEX(P, Q);
+                    tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+                }
             }
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis Alpha Lagrangian\n");
-            print_array(tempMo, nmo_, "outfile");
-        }
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pC = Ca_->pointer(h);
-            trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        psio_->read_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *)tempOPDM[0],
-                          sizeof(double) * nActive * nActive);
-        for (int p = 0; p < nActive; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                int P = bCorrToPitzer_[p];
-                int Q = bCorrToPitzer_[q];
-                size_t PQ = INDEX(P, Q);
-                tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+            if (print_ > 4) {
+                outfile->Printf("The MO basis Alpha Lagrangian\n");
+                print_array(tempMo, nmo_, "outfile");
             }
+            for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
+                double **pC = Ca_->pointer(h);
+                trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
+                soOffset += sopi_[h];
+                moOffset += mopi_[h];
+            }
+            psio_->read_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *)tempOPDM[0],
+                              sizeof(double) * nActive * nActive);
+            for (int p = 0; p < nActive; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    int P = bCorrToPitzer_[p];
+                    int Q = bCorrToPitzer_[q];
+                    size_t PQ = INDEX(P, Q);
+                    tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+                }
+            }
+            if (print_ > 4) {
+                outfile->Printf("The MO basis Beta Lagrangian\n");
+                print_array(tempMo, nmo_, "outfile");
+            }
+            for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
+                // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
+                double **pC = Cb_->pointer(h);
+                trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true, 1.0);
+                soOffset += sopi_[h];
+                moOffset += mopi_[h];
+            }
+            if (print_ > 4) {
+                outfile->Printf("The SO basis Lagrangian\n");
+                print_array(tempSo, nso_, "outfile");
+            }
+            psio_->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *)tempSo, sizeof(double) * nTriSo_);
         }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis Beta Lagrangian\n");
-            print_array(tempMo, nmo_, "outfile");
-        }
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
-            double **pC = Cb_->pointer(h);
-            trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true, 1.0);
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The SO basis Lagrangian\n");
-            print_array(tempSo, nso_, "outfile");
-        }
-        psio_->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *)tempSo, sizeof(double) * nTriSo_);
 
         /*
          * Now, work on the TPDM

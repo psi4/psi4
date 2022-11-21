@@ -90,6 +90,9 @@ void OCCWave::omp3_response_pdms() {
         if (print_ > 1) {
             g1symm->print();
         }
+        Da_ = linalg::triplet(Ca_, g1symm, Ca_, false, false, true);
+        Da_->scale(0.5);
+        Db_->copy(Da_);
 
         // TPDM
         timer_on("V int");
@@ -204,6 +207,8 @@ void OCCWave::omp3_response_pdms() {
             g1symmA->print();
             g1symmB->print();
         }
+        Da_ = linalg::triplet(Ca_, g1symmA, Ca_, false, false, true);
+        Db_ = linalg::triplet(Cb_, g1symmB, Cb_, false, false, true);
 
         // TPDM
         timer_on("V int");
