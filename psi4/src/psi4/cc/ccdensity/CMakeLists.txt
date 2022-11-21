@@ -2,7 +2,6 @@ target_sources(cc
   PRIVATE
     #${CMAKE_CURRENT_SOURCE_DIR}/G_norm.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/add_core_UHF.cc
-    #${CMAKE_CURRENT_SOURCE_DIR}/densgrid_RHF.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/resort_gamma.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/resort_tei.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/G.cc
