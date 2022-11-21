@@ -295,8 +295,6 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
             add_core_ROHF(&OutBuf);
             add_ref_RHF(&OutBuf);
 
-            if (params.onepdm_grid_dump) dx_write(ref_wfn, options, moinfo.opdm);
-
             dump_RHF(&OutBuf, rho_params[i]);
 
             iwl_buf_flush(&OutBuf, 1);
