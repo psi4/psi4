@@ -1,7 +1,7 @@
 if(${ENABLE_adcc})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_adcc}))
         include(FindPythonModule)
-        find_python_module(adcc ATLEAST 0.15.9 QUIET)
+        find_python_module(adcc ATLEAST 0.15.13 QUIET)
     endif()
 
     if(${adcc_FOUND})
@@ -18,7 +18,7 @@ if(${ENABLE_adcc})
 
         ExternalProject_Add(adcc_external
             BUILD_ALWAYS 1
-            URL https://github.com/adc-connect/adcc/archive/v0.15.9.tar.gz
+            URL https://github.com/adc-connect/adcc/archive/v0.15.13.tar.gz
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
