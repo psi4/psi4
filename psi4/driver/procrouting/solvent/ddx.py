@@ -94,7 +94,7 @@ def get_ddx_options(molecule):
         "n_lebedev": core.get_option("DDX", "N_LEBEDEV"),
         "maxiter": core.get_option("DDX", "MAXITER"),
         "jacobi_n_diis": core.get_option("DDX", "DIIS_MAX_VECS"),
-        "n_proc": 1,  # TODO Multi-threading still buggy in DDX
+        "n_proc": core.get_num_threads(),
         "incore": core.get_option("DDX", "INCORE"),
         "enable_fmm": core.get_option("DDX", "FMM"),
         "fmm_local_lmax": core.get_option("DDX", "FMM_LOCAL_LMAX"),
@@ -140,7 +140,7 @@ class DdxInterface:
     def __init__(self, molecule, options, basisset):
         # verify that the minimal version is used if pyddx is provided
         # from outside the Psi4 ecosystem
-        min_version = "0.1.0"
+        min_version = "0.1.3"
         if parse_version(pyddx.__version__) < parse_version(min_version):
             raise ModuleNotFoundError("pyddx version {} is required at least. "
                                       "Version {}"
