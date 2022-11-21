@@ -235,6 +235,10 @@ Additionally, there are runtime-only dependencies:
 
 * SciPy https://scipy.org/ (avoidable if necessary by following directions in runtime error message)
 
+* py-cpuinfo (provides ``import cpuinfo``) https://github.com/workhorsy/py-cpuinfo (transitive dependency of QCEngine)
+
+* psutil https://github.com/giampaolo/psutil (transitive dependency of QCEngine)
+
 Dropped Dependencies:
 
 * Boost (September 2016; dropped by v1.1)
