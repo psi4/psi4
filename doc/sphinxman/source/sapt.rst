@@ -530,14 +530,14 @@ term needs to be computed with orbital response for good accuracy,
 and it is recommended to enable |sapt__sapt_dft_do_hybrid| (set to
 ``True`` by default). The coupled exchange-dispersion energy is usually
 estimated by scaling from the uncoupled value either by a fitted fixed
-value initially suggested by [Hesselmann:2014:094107]_ and then revised
-by [Xie:2022:024801]_ for non-local Hartree-Fock (LHF) scheme. Alternatively,
-one can scale it by the ratio of
-coupled and uncoupled dispersion energy as suggested by [Podeszwa:2006:400]_. 
+value (suggested initially by [Hesselmann:2014:094107]_ for a local Hartree--Fock (LHF) formulation and then revised
+by [Xie:2022:024801]_ for non-LHF) or
+by the ratio of
+coupled and uncoupled dispersion energy (suggested by [Podeszwa:2006:400]_ ). 
 This can be controlled by keyword |sapt__sapt_dft_exch_disp_scale_scheme|, 
-with ``FIXED`` being the Podeszwa approach as in (Psi's default prior 
-to Nov 2022), the Hesselmann approach (Psi's default after Nov 2022),
-and ``NONE`` for not scaling and using the uncoupled exchange-dispersion 
+with ``FIXED`` using the Hesselmann/Xie approach (|PSIfours| default prior 
+to Nov 2022), ``DISP`` using the Podeszwa approach (|PSIfours| default after Nov 2022),
+or ``NONE`` for not scaling and using the uncoupled exchange-dispersion 
 energy directly.
 
 .. warning:: Since Nov 2022, the defaults of options |sapt__sapt_dft_exch_disp_scale_scheme| and |sapt__sapt_dft_exch_disp_fixed_scale|
