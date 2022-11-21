@@ -405,6 +405,14 @@ Bibliography
    B. Stamm, E. Cancès, F. Lipparini, Y. Maday
    *J. Chem. Phys.* **144**, 054101 (2016).
 
+.. [Bondi:1964:441]
+   A. Bondi
+   *J. Phys. Chem.* **68**, 441 (1964).
+
+.. [Rappe:1992:114]
+   A. K. Rappe, C. J. Casewit, K. S. Colwell, W. A. Goddard III, W. M. Skiff
+   *J. Am. Chem. Soc.*, **25**, 114 (1992).
+
 .. [McGibbon:2017:161725]
    R. T. McGibbon, A. G. Taube, A. G. Donchev, K. Siva, F. Hern\ |a_acute|\ andez, C. Hargus, K. H. Law, J. L. Klepeis, D. E. Shaw
    *J. Chem. Phys.* **147**, 161725 (2017).

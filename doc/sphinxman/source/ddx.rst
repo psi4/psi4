@@ -169,8 +169,8 @@ The full list understood by ddx can be obtained using ::
 The **cavity** in ddx is defined as a union of spheres around each atom.
 Usually the spehere radii for each atom are determined using a standard
 set of tabulated radii per atomic species, determined by the |ddx__radii_set| parameter.
-Currently ``bondi`` and ``uff`` are supported for |ddx__radii_set|
-with ``uff`` selected by default.
+Currently ``bondi`` [Bondi:1964:441]_ and ``uff`` [Rappe:1992:114]_
+are supported for |ddx__radii_set| with ``uff`` selected by default.
 These radius values are conventionally scaled by an additional factor before use,
 conventionally 1.1 for ``uff`` and 1.2 for ``bondi``. Customisation of the scaling
 is possible using the |ddx__radii_scaling| parameter.
