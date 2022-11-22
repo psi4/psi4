@@ -2336,7 +2336,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
         dfh->write_disk_tensor("Far", Dar, {astart, astart + nablock});
     }
 
-    dfh->add_disk_tensor("Fbs", std::make_tuple(na, nr, nQ));
+    dfh->add_disk_tensor("Fbs", std::make_tuple(nb, ns, nQ));
 
     for (size_t bstart = 0; bstart < nb; bstart += max_b) {
         size_t nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);

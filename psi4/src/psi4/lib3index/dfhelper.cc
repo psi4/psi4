@@ -1940,8 +1940,9 @@ void DFHelper::transform() {
                 // to completion per transformation
                 for (size_t k = 0; k < strides_[i]; k++) {
                     // get transformation info
-                    std::string left = std::get<0>(transf_[order_[count + k]]);
-                    std::string right = std::get<1>(transf_[order_[count + k]]);
+                    auto transf_name = order_[count + k];
+                    auto left = std::get<0>(transf_[transf_name]);
+                    auto right = std::get<1>(transf_[transf_name]);
                     bool bleft = (bspace.compare(left) == 0 ? true : false);
 
                     // get worst space
@@ -1988,13 +1989,13 @@ void DFHelper::transform() {
                     timer_off("DFH: Total Workflow");
 
                     // put the transformations away
-                    timer_on("DFH: MO to disk");
+                    timer_on("DFH: MO to disk, " + transf_name);
                     if (direct_iaQ_) {
                         put_transformations_Qpq(begin, end, wsize, bsize, Fp, count + k, bleft);
                     } else {
                         put_transformations_pQq(begin, end, block_size, bcount, wsize, bsize, Np, Fp, count + k, bleft);
                     }
-                    timer_off("DFH: MO to disk");
+                    timer_off("DFH: MO to disk, " + transf_name);
                 }
             }
         }
@@ -2004,7 +2005,13 @@ void DFHelper::transform() {
 
     // transformations complete, time for metric contractions
 
-    timer_on("DFH: Direct Contractions");
+    timer_on("DFH: Metric Contractions");
+
+    // release in-core AO 
+    if (AO_core_ && release_core_AO_before_metric_)  {
+        Ppq_.reset();
+    }
+
     if (direct_iaQ_ || direct_) {
         // prepare metric
         std::unique_ptr<double[]> metric;
@@ -2036,8 +2043,9 @@ void DFHelper::transform() {
 
             } else {
                 // total size allowed, in doubles
+                size_t rem_mem = memory_ - (AO_core_ && !release_core_AO_before_metric_ ? naux_ * nbf_ * nbf_ : 0);
                 size_t total_mem =
-                    (memory_ > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (memory_ - naux_ * naux_) / 2);
+                    (rem_mem > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (rem_mem - naux_ * naux_) / 2);
 
                 std::unique_ptr<double[]> M(new double[total_mem]);
                 std::unique_ptr<double[]> F(new double[total_mem]);
@@ -2051,8 +2059,9 @@ void DFHelper::transform() {
             if (!MO_core_) {
                 // total size allowed, in doubles.
                 // note that memory - naux_2 cannot be negative (handled in init)
+                size_t rem_mem = memory_ - (AO_core_ && !release_core_AO_before_metric_ ? big_skips_[nbf_] : 0);
                 size_t total_mem =
-                    (memory_ > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (memory_ - naux_ * naux_) / 2);
+                    (rem_mem > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (rem_mem - naux_ * naux_) / 2);
 
                 std::unique_ptr<double[]> M(new double[total_mem]);
                 std::unique_ptr<double[]> F(new double[total_mem]);
@@ -2092,7 +2101,7 @@ void DFHelper::transform() {
             }
         }
     }
-    timer_off("DFH: Direct Contractions");
+    timer_off("DFH: Metric Contractions");
     timer_off("DFH: transform()");
     transformed_ = true;
 

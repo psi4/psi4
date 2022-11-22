@@ -76,7 +76,8 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     // ==> Form Metric <==
-
+   
+    timer_on("Form JS");
     size_t naux = auxiliary_->nbf();
     metric_ = std::make_shared<Matrix>("Inv Coulomb Metric", naux, naux);
 
@@ -140,6 +141,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     std::shared_ptr<OneBodyAOInt> overlap(factory.ao_overlap());
     aux_overlap_ = std::make_shared<Matrix>("Auxiliary Overlap", naux, naux);
     overlap->compute(aux_overlap_);
+    timer_off("Form JS");
 
     // ==> Form 3-index object <==
 
@@ -184,17 +186,18 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     // transform
+    dfh_->set_release_core_AO_before_metric(true);
     dfh_->transform();
 
     // transformations specific for hybrid functional
-    // clear spaces to re-order spaces and transformations in DFHelper
-    // clear transformations to avoid overwriting pqQ tensors 
 
     if (is_hybrid_) {
         // Contracted 3-index integrals to reproduce 4-index ERI
+        // Clear spaces to re-order spaces and transformations in DFHelper
+        // Clear transformations to avoid overwriting pqQ tensors 
         dfh_->clear_spaces();
         dfh_->clear_transformations();
-        dfh_->set_method("STORE");
+        dfh_->set_method("DIRECT_iaQ");
         dfh_->set_metric_pow(-0.5);
         dfh_->initialize();
 
@@ -209,6 +212,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
         dfh_->add_transformation("bbR", "b", "b", "pqQ");
         dfh_->add_transformation("bsR", "b", "s", "pqQ");
         dfh_->add_transformation("ssR", "s", "s", "pqQ");
+        dfh_->set_release_core_AO_before_metric(true);
         dfh_->transform();
     }
 
@@ -216,22 +220,22 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
 
     if (is_hybrid_) {
         // QR Factorization of (ar|Q)
-        timer_on("QR Factorization");
+        timer_on("FDDS: QR");
         R_A_ = QR("A");
         R_B_ = QR("B");
-        timer_off("QR Factorization");
+        timer_off("FDDS: QR");
 
         // form (ar|(Q)X|Q) = (ar'|a'r) (a'r'|(Q)|Q)
-        timer_on("Form X");
+        timer_on("FDDS: Form X");
         form_X("A");
         form_X("B");
-        timer_off("Form X");
+        timer_off("FDDS: Form X");
 
         // form (ar|(Q)Y|Q) = (aa'|rr') (a'r'|(Q)|Q)
-        timer_on("Form Y");
+        timer_on("FDDS: Form Y");
         form_Y("A");
         form_Y("B");
-        timer_off("Form Y");
+        timer_off("FDDS: Form Y");
     }
 
 }

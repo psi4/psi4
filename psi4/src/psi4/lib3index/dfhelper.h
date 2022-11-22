@@ -104,6 +104,12 @@ class PSI_API DFHelper {
     void set_AO_core(bool core) { AO_core_ = core; }
     bool get_AO_core() { return AO_core_; }
 
+    /// Sets the flag to release early the memory storing in-core AO integrals.
+    /// Methods where the AO integrals are not needed in the
+    /// metric contraction step, like SAPT(DFT), can call this to free
+    /// up memory for storing intermediates during metric contraction.
+    void set_release_core_AO_before_metric(bool release) { release_core_AO_before_metric_ = release; }
+
     ///
     /// Sets the MO integrals to in-core. (Defaults to FALSE)
     /// @param core True to indicate in-core
@@ -335,6 +341,7 @@ class PSI_API DFHelper {
     bool symm_compute_;
     bool AO_core_ = true;
     bool MO_core_ = false;
+    bool release_core_AO_before_metric_ = false;
     size_t nthreads_ = 1;
     double cutoff_ = 1e-12;
     double condition_ = 1e-12;
