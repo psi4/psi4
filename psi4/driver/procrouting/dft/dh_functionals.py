@@ -164,7 +164,7 @@ funcs.append({
         "ss": 0.40,
     },
     "dispersion": {
-        "type": "d3bj",
+        "type": "d3bj2b",
         "params": {
             "s6": 0.57,
             "a2": 5.4,
@@ -325,7 +325,7 @@ funcs.append({
         "ss": 0.22
     },
     "dispersion": {
-        "type": "d3bj",
+        "type": "d3bj2b",
         "params": {
             "s6": 0.48,
             "a2": 5.6,
@@ -480,7 +480,7 @@ funcs.append({
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-PBEPBE-D3BJ Dispersion-corrected SCS Double Hybrid XC Functional\n',
     "dispersion": {
-        "type": "d3bj",
+        "type": "d3bj2b",
         "params": {
             "s6": 0.78,
             "a2": 6.1,
@@ -758,7 +758,7 @@ funcs.append({
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-PBEB95-D3BJ Dispersion-corrected SCS Double Hybrid Meta-GGA XC Functional\n',
     "dispersion": {
-        "type": "d3bj",
+        "type": "d3bj2b",
         "params": {
             "s6": 0.61,
             "a2": 6.2,

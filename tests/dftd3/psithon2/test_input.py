@@ -1,8 +1,8 @@
 from addons import *
 
-# ok after qcng execute handles deep files
+@uusing("dftd3")
 @ctest_labeler("")
-def hide_test_dftd3_psithon2():
+def test_dftd3_psithon2():
     ctest_runner(__file__, [
         "psiaux1/myccpvdzri.gbs",
         "psiaux1/S33.py",

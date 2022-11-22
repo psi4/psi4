@@ -239,7 +239,7 @@ funcs.append({
         "GGA_XC_B97_D": {}
     },
     "dispersion": {
-        "type": "d3zero",
+        "type": "d3zero2b",
         "params": {
             's6': 1.0,
             's8': 0.909,
@@ -256,7 +256,7 @@ funcs.append({
         "GGA_XC_B97_D": {}
     },
     "dispersion": {
-        "type": "d3bj",
+        "type": "d3bj2b",
         "params": {
             's6': 1.000,
             's8': 2.2609,
@@ -272,7 +272,7 @@ funcs.append({
         "GGA_XC_B97_D": {}
     },
     "dispersion": {
-        "type": "d3mzero",
+        "type": "d3mzero2b",
         "params": {
             's6': 1.000,
             's8': 1.020078,
@@ -288,7 +288,7 @@ funcs.append({
         "GGA_XC_B97_D": {}
     },
     "dispersion": {
-        "type": "d3mbj",
+        "type": "d3mbj2b",
         "params": {
             's6': 1.000,
             's8': 1.206988,

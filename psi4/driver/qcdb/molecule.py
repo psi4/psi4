@@ -1481,7 +1481,11 @@ class Molecule(LibmintsMolecule):
                 'verbose': verbose,
             },
         }
-        jobrec = qcng.compute(resinp, 'gcp', raise_error=True)
+        try:
+            jobrec = qcng.compute(resinp, 'mctc-gcp', raise_error=True)
+        except qcng.exceptions.ResourceError:
+            jobrec = qcng.compute(resinp, 'gcp', raise_error=True)
+
         jobrec = jobrec.dict()
 
         # hack (instead of checking dertype GRAD) to collect `(nat, 3)` ndarray of gradient if present

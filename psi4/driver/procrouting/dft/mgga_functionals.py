@@ -203,7 +203,7 @@ funcs.append({
         "MGGA_XC_B97M_V": {}
     },
     "dispersion": {
-        "type": "d3bj",
+        "type": "d3bj2b",
         "nlc": False,
         "params": {
             's6': 1.0000,

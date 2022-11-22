@@ -1,6 +1,8 @@
 #! Exercises the various DFT-D corrections, both through python directly and through c++
 #! all dft values updated to new BraggSlater radii
 
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
 # S22-9, B3LYP
 refs = {}  #TEST
 refs['d2'] = {}  #TEST
@@ -88,17 +90,18 @@ print('  Part I: -D correction from Py-side')  #TEST
 fctl = 'b3lyp'
 der = 0
 hasD3M = True
-try:
-    for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
-        E = eeee.run_dftd3(fctl, dlvl, dertype=der)
-        compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
-        E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
-        compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
-        E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
-        compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
-except qcdb.Dftd3Error as e:
-    print("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
-    hasD3M = False
+if d3_engine == "dftd3":
+    try:
+        for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
+            E = eeee.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
+            E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
+            E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
+    except qcdb.Dftd3Error as e:
+        print("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
+        hasD3M = False
 
 #hasD3M = False  # temporary until fctl released into superfunctionals list
 # why have the hasD3M switch, you ask? why not just try catch throughout to
@@ -176,15 +179,16 @@ qmBcp.update_geometry()
 
 print('  Part III: -D correction from Py-side on Py-mol')  #TEST
 levels = ['d2', 'd3zero', 'd3bj']
-if hasD3M:
-    levels.extend(['d3mzero', 'd3mbj'])
-for dlvl in levels:
-        E = qeeee.run_dftd3(fctl, dlvl, dertype=der)
-        compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
-        E = qmAuncp.run_dftd3(fctl, dlvl, dertype=der)
-        compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
-        E = qmBcp.run_dftd3(fctl, dlvl, dertype=der)
-        compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
+if d3_engine == "dftd3":
+    if hasD3M:
+        levels.extend(['d3mzero', 'd3mbj'])
+    for dlvl in levels:
+            E = qeeee.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['d'], E, 7, 'dimer ' + dlvl)  #TEST
+            E = qmAuncp.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['m'], E, 7, 'monoA ' + dlvl)  #TEST
+            E = qmBcp.run_dftd3(fctl, dlvl, dertype=der)
+            compare_values(refs[dlvl]['m'], E, 7, 'monoB(CP) ' + dlvl)  #TEST
 
 
 # <<<  Part 4  >>>
