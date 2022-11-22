@@ -496,15 +496,7 @@ void DFJLinK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
         for (size_t thread = 0; thread < nthreads_; thread++) {
             J[jki]->add(JT[jki][thread]);
         }
-	outfile->Printf("J 0 internal pre-Hermit (0,0): %f \n", J[jki]->pointer()[0][0]);
-	outfile->Printf("J 0 internal pre-Hermit (0,1): %f \n", J[jki]->pointer()[0][1]);
-	outfile->Printf("J 0 internal pre-Hermit (1,0): %f \n", J[jki]->pointer()[1][0]);
-
         J[jki]->hermitivitize();
-    
-    	outfile->Printf("J 0 internal post-Hermit (0,0): %f \n", J[jki]->pointer()[0][0]);
-	outfile->Printf("J 0 internal post-Hermit (0,1): %f \n", J[jki]->pointer()[0][1]);
-	outfile->Printf("J 0 internal post-Hermit (1,0): %f \n", J[jki]->pointer()[1][0]);
     }
 
 }
@@ -836,6 +828,9 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
         if (!touched) continue;
 
         // => Stripe out (Writing to K matrix) <= //
+        for (auto& KTmat : KT[thread]) {
+            KTmat->scale(2.0);
+        }
 
         for (size_t ind = 0; ind < D.size(); ind++) {
             double** KTp = KT[thread][ind]->pointer();
@@ -895,16 +890,7 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
     }  // End master task list
 
     for (auto& Kmat : K) {
-	outfile->Printf("K 0 internal pre-Hermit (0,0): %f \n", Kmat->pointer()[0][0]);
-	outfile->Printf("K 0 internal pre-Hermit (0,1): %f \n", Kmat->pointer()[0][1]);
-	outfile->Printf("K 0 internal pre-Hermit (1,0): %f \n", Kmat->pointer()[1][0]);
-    }
-    for (auto& Kmat : K) {
-        Kmat->scale(2.0);
         Kmat->hermitivitize();
-	outfile->Printf("K 0 internal post-Hermit (0,0): %f \n", Kmat->pointer()[0][0]);
-	outfile->Printf("K 0 internal post-Hermit (0,1): %f \n", Kmat->pointer()[0][1]);
-	outfile->Printf("K 0 internal post-Hermit (1,0): %f \n", Kmat->pointer()[1][0]);
     }
 
     if (bench_) {
