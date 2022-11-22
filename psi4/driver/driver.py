@@ -1187,7 +1187,11 @@ def optimize(name, **kwargs):
     molecule = kwargs.pop('molecule', core.get_active_molecule())
 
     # If we are freezing cartesian, do not orient or COM
-    if core.get_option("OPTKING", "FROZEN_CARTESIAN"):
+    if any([core.get_option('OPTKING', 'FROZEN_CARTESIAN'), core.get_option('OPTKING', 'EXT_FORCE_CARTESIAN')]):
+        if molecule.has_zmatrix():
+            raise ValidationError("Job includes cartesian coordinate constraints. This cannot be fully "
+                                  "obeyed due to zmatrix in input. Please convert your zmatrix to cartesian "
+                                  "coordinates if cartesian constraints are needed ")
         molecule.fix_orientation(True)
         molecule.fix_com(True)
     molecule.update_geometry()
@@ -1212,14 +1216,20 @@ def optimize(name, **kwargs):
         current_sym = molecule.schoenflies_symbol()
         if initial_sym != current_sym:
 
+            if any([core.get_option('OPTKING', 'FROZEN_CARTESIAN'), core.get_option('OPTKING', 'EXT_FORCE_CARTESIAN')]):
+                raise ValidationError("Symmetrize cannot be called while cartesian constraints are active "
+                                      "symmetrize was about to be called. Please check symmetry dependent input "
+                                      ", such as DOCC, is correct or turn off symmetry")
+
             # Try to resymmetrize molecule if slightly broken.
             molecule.symmetrize(core.get_option("OPTKING", "CARTESIAN_SYM_TOLERANCE"))
 
             if molecule.schoenflies_symbol() != initial_sym:
-                raise ValidationError("""Point group changed! (%s <-- %s) You should restart """
-                                      """using the last geometry in the output, after """
-                                      """carefully making sure all symmetry-dependent """
-                                      """input, such as DOCC, is correct.""" % (current_sym, initial_sym))
+                raise ValidationError("Point group changed! (%s <-- %s) You should restart "
+                                      "using the last geometry in the output, after "
+                                      "carefully making sure all symmetry-dependent "
+                                      "input, such as DOCC, is correct." % (current_sym, initial_sym))
+
         kwargs['opt_iter'] = n
         core.set_variable('GEOMETRY ITERATIONS', n)
 
