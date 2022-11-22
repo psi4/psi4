@@ -421,8 +421,6 @@ class CIWavefunction : public Wavefunction {
                   double conv_rms, double enuc, double edrc, int nroots, int maxiter, int maxnvect);
     void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx, int *ibetlist, int *ibetidx,
                              int *blknums);
-    void sem_test(double **A, int N, int M, int L, double **evecs, double *evals, double **b, double conv_e,
-                  double conv_rms, int maxiter, double offst, int *vu, int maxnvect);
 
     /// => Sigma Calculations <= //
     struct sigma_data *SigmaData_;

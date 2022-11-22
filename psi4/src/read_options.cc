@@ -506,8 +506,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         inverse subspace method (1990); ``MITRUSHENKOV``, to use a 2x2
         Olsen/Davidson method; and ``DAVIDSON`` (or ``SEM``) to use Liu's
         Simultaneous Expansion Method, which is identical to the Davidson method
-        if only one root is to be found.  There also exists a SEM debugging mode,
-        ``SEMTEST``.  The ``SEM`` method is the most robust, but it also
+        if only one root is to be found.
+        The ``SEM`` method is the most robust, but it also
         requires $2NM+1$ CI vectors on disk, where $N$ is the maximum number of
         iterations and $M$ is the number of roots. -*/
         options.add_str("DIAG_METHOD", "SEM", "RSP DAVIDSON SEM");
