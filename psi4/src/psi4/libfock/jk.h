@@ -1308,7 +1308,7 @@ class PSI_API DFJLinK : public JK {
 
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
-    
+
     // Is the JK currently on a guess iteration
     bool initial_iteration_ = true;
   

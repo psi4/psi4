@@ -209,7 +209,7 @@ void DFJLinK::compute_JK() {
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
 	incfock_setup();
-	
+        
 	timer_off("DFJLinK: INCFOCK Preprocessing");
     } else {
 	D_ref_ = D_ao_;
@@ -654,7 +654,7 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
 #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
     for (size_t ipair = 0L; ipair < natom_pair; ipair++) { // O(N) shell-pairs in asymptotic limit
         
-	int Patom = atom_pairs[ipair].first;
+        int Patom = atom_pairs[ipair].first;
         int Qatom = atom_pairs[ipair].second;
         
         // Number of shells per atom
@@ -674,7 +674,7 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
         thread = omp_get_thread_num();
 #endif
 
-	// Keep track of contraction indices for stripeout (Towards end of this function)
+        // Keep track of contraction indices for stripeout (Towards end of this function)
         std::vector<std::unordered_set<int>> P_stripeout_list(nPshell);
         std::vector<std::unordered_set<int>> Q_stripeout_list(nQshell);
 
@@ -761,7 +761,7 @@ void DFJLinK::build_K(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K
                     // Basis Function offset from first basis function in the atom
                     int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
                     int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
- 
+
                     for (size_t ind = 0; ind < D.size(); ind++) {
                         double** Kp = K[ind]->pointer();
                         double** Dp = D[ind]->pointer();
