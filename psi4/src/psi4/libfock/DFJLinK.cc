@@ -226,30 +226,22 @@ void DFJLinK::compute_JK() {
     // => Perform matrix calculations <= //
     
     // Direct DF-J
-    outfile->Printf("J SCF d Pre: %f \n", D_ref_[0]->pointer()[0][0]);
-    outfile->Printf("J 0 Pre: %f \n", J_ao_[0]->pointer()[0][0]);
     if (do_J_) {
         timer_on("DFJLinK: J");
         
-	//for (auto& Jmat : J_ao_) Jmat->zero();
 	build_J(D_ref_, J_ao_);
         
 	timer_off("DFJLinK: J");
     }
-    outfile->Printf("J 0 Post: %f \n", J_ao_[0]->pointer()[0][0]);
     
     // LinK
-    outfile->Printf("K SCF d Pre: %f \n", D_ref_[0]->pointer()[0][0]);
-    outfile->Printf("K 0 Pre: %f \n", K_ao_[0]->pointer()[0][0]);
     if (do_K_) {
         timer_on("DFJLinK: K");
         
-	//for (auto& Kmat : K_ao_) Kmat->zero();
         build_K(D_ref_, K_ao_);
         
 	timer_off("DFJLinK: K");
     }
-    outfile->Printf("K 0 Post: %f \n", K_ao_[0]->pointer()[0][0]);
    
     // => Finalize Incremental Fock if required <= //
     
