@@ -61,8 +61,12 @@ if d3_engine == "dftd3":
     E, G = mB.run_dftd3('b3lyp', 'd3bj')
     compare_values(ref_d3bj[2], E, 6, '10: Ethyne -D3 (bj)')              #TEST
 
-    E, G = eneyne.run_dftd4('b3lyp', 'd4')
-    compare_values(ref_d3zero[0], E, 2, '11(fake): Ethene-Ethyne -D4 (alias)')  #TEST
+    try:
+        E, G = eneyne.run_dftd4('b3lyp', 'd4')
+    except qcng.exceptions.ResourceError:
+        pass
+    else:                                                                           #TEST
+        compare_values(ref_d3zero[0], E, 2, '11(fake): Ethene-Ethyne -D4 (alias)')  #TEST
     E, G = eneyne.run_dftd3('b3lyp', 'd3zero')
     compare_values(ref_d3zero[0], E, 6, '11(fake d3): Ethene-Ethyne -D3 (alias)')  #TEST
     E, G = eneyne.run_dftd3('b3lyp', 'd3')

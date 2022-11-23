@@ -81,8 +81,7 @@ class EmpiricalDispersion():
     Attributes
     ----------
     dashlevel : str
-        {"d1", "d2", "chg", "das2009", "das2010", "nl", "dmp2", "d4bjeeqatm",
-         "d3zero2b", "d3bj2b", "d3mzero2b", "d3mbj2b", "d3zeroatm", "d3bjatm", "d3mzeroatm", "d3mbjatm"}
+        {"d1", "d2", "chg", "das2009", "das2010", "nl", "dmp2", "d3zero2b", "d3bj2b", "d3mzero2b", "d3mbj2b", "d3zeroatm", "d3bjatm", "d3mzeroatm", "d3mbjatm", "d4bjeeqatm"}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `empirical_dispersion_resources.dashcoeff`.
@@ -147,7 +146,9 @@ class EmpiricalDispersion():
         which can be computed by dftd3 executable or simple-dftd3 Python module.
     gcp_engine
         Override which code computes the gcp correction. Now can use
-        classic gcp executable or mctc-gcp.
+        classic gcp or mctc-gcp executables.
+    save_pairwise_disp
+        Whether to request atomic pairwise analysis.
 
     """
     def __init__(self, *, name_hint: str = None, level_hint: str = None, param_tweaks: Union[Dict, List] = None, engine: str = None, gcp_engine: str = None, save_pairwise_disp: bool = False):
