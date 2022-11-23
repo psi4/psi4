@@ -221,9 +221,6 @@ void DFJLinK::compute_JK() {
         for (auto eri_computer : eri_computers_["4-Center"]) {
             eri_computer->update_density(D_ref_);
 	}
-        for (auto eri_computer : eri_computers_["3-Center"]) {
-            eri_computer->update_density(D_ref_);
-	}
     }
 
     // => Perform matrix calculations <= //
