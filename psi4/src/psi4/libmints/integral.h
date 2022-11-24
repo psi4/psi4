@@ -38,6 +38,7 @@ PRAGMA_WARNING_POP
 
 #include "onebody.h"
 #include "twobody.h"
+#include "electricfield.h"
 
 
 namespace psi {
@@ -90,6 +91,7 @@ class GaussianShell;
 class OneBodyAOInt;
 class OneBodySOInt;
 class TwoBodyAOInt;
+class ElectricFieldInt;
 class ThreeCenterOverlapInt;
 class CartesianIter;
 class RedundantCartesianIter;
@@ -480,8 +482,8 @@ class PSI_API IntegralFactory {
     /// Returns a OneBodyInt that computes the multipole potential integrals for PE and EFP
     virtual OneBodyAOInt* ao_multipole_potential(int order, int deriv = 0);
 
-    /// Returns an OneBodyInt that computes the electric field
-    virtual OneBodyAOInt* electric_field(int deriv = 0);
+    /// Returns an ElectricFieldInt that computes the electric field
+    virtual ElectricFieldInt* electric_field(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the point electrostatic potential
     virtual OneBodyAOInt* electrostatic();
