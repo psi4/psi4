@@ -142,40 +142,35 @@ def test_ddx_fock_build(inp):
 @pytest.mark.parametrize("inp", [
     pytest.param({
         "geom": __geoms["h2o"],
-        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "lmax": 3,
-                "n_lebedev": 302, "radii_set": "uff", "shift": 0.0, },
+        "ddx": {"solvent_epsilon": 1e8, "eta": 0, },
         "ref": -75.5946789010,  # from Gaussian
         "solvation": -0.009402,
     }, id='h2o'),
     #
     pytest.param({
         "geom": __geoms["fcm"],
-        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "lmax": 3,
-                "n_lebedev": 302, "radii_set": "uff", "shift": 0.0, },
+        "ddx": {"solvent_epsilon": 1e8, "eta": 0, },
         "ref": -594.993575419,  # from Gaussian
         "solvation": -0.006719,
     }, id='fcm'),
     #
     pytest.param({
         "geom": __geoms["fcm"],
-        "ddx": {"model": "cosmo", "solvent_epsilon": 2.0, "eta": 0, "lmax": 3,
-                "n_lebedev": 302, "radii_set": "uff", "shift": 0.0, },
+        "ddx": {"solvent_epsilon": 2.0, "eta": 0, },
         "ref": -594.990420855,  # from Gaussian
         "solvation": -0.002964,
     }, id='fcmeps'),
     #
     pytest.param({
         "geom": __geoms["fcm"],
-        "ddx": {"model": "cosmo", "solvent_epsilon": 2.0, "eta": 0.2, "lmax": 3,
-                "n_lebedev": 302, "radii_set": "uff", "shift": 0.0, },
+        "ddx": {"solvent_epsilon": 2.0, "eta": 0.2, },
         "ref": -594.990487330,  # from Gaussian
         "solvation": -0.003041,
     }, id='fcmepseta'),
     #
     pytest.param({
         "geom": __geoms["benzene"],
-        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "lmax": 3,
-                "n_lebedev": 302, "radii_set": "uff", "shift": 0.0, },
+        "ddx": {"solvent_epsilon": 1e8, "eta": 0, },
         "ref": -229.420391688,  # from Gaussian
         "solvation": -0.005182,
     }, id='benzene'),
@@ -187,6 +182,14 @@ def test_ddx_rhf_reference(inp):
         "basis": "3-21g",
         "guess": "core",
         "scf_type": "direct",
+        #
+        "ddx__model": "cosmo",
+        "ddx__radii_set": "uff",
+        "ddx__lmax": 3,
+        "ddx__n_lebedev": 302,
+        "ddx__dft_spherical_points": 302,
+        "ddx__dft_radial_points": 75,
+        "ddx__shift": 0.0,
     })
     for key in inp["ddx"].keys():
         psi4.set_options({"ddx__" + key: inp["ddx"][key]})
@@ -203,31 +206,26 @@ def test_ddx_rhf_reference(inp):
     pytest.param({
         "geom": __geoms["h2o"],
         "basis": "cc-pvdz",
-        "ddx": {"model": "cosmo", "solvent": "water", "eta": 0.05,
-                "lmax": 10, "n_lebedev": 302, "radii_set": "bondi",
-                "radii_scaling": 1.2, "dft_spherical_points": 302,
-                "dft_radial_points": 75, },
-        "solvent": "water",
-        "ref": -76.03464496611537,
+        "ddx": {"model": "cosmo", "solvent": "water", "radii_set": "bondi", },
+        "ref": -76.0346355428018,
     }, id='h2o-cosmo'),
     pytest.param({
-        "geom": __geoms["h2o"],
+        "geom": __geoms["fcm"],
         "basis": "cc-pvdz",
-        "ddx": {"model": "pcm", "solvent": "water", "eta": 0.1,
-                "lmax": 10, "n_lebedev": 302, "radii_set": "bondi",
-                "radii_scaling": 1.2, "dft_spherical_points": 302,
-                "dft_radial_points": 75, },
-        "solvent": "water",
-        "ref": -76.03458316484547,
-    }, id='h2o-pcm'),
+        "ddx": {"model": "pcm", "solvent": "water", "radii_set": "uff", },
+        "ref": -597.9718942424215,
+    }, id='fcm-pcm'),
 ])
 def test_ddx_rhf_consistency(inp):
     mol = psi4.geometry(inp["geom"])
     psi4.set_options({
         "ddx": True,
         "basis": inp["basis"],
-        "guess": "core",
-        "scf_type": "direct",
+        #
+        "ddx__lmax": 10,
+        "ddx__n_lebedev": 302,
+        "ddx__dft_spherical_points": 302,
+        "ddx__dft_radial_points": 75,
     })
     for key in inp["ddx"].keys():
         psi4.set_options({"ddx__" + key: inp["ddx"][key]})
