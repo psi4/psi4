@@ -385,9 +385,9 @@ Bibliography
    R. Cammi,
    *J. Chem. Phys.* **131**, 164104 (2009).
 
-.. [Barone:1998:1995]
-   V. Barone and M. Cossi,
-   *J. Phys. Chem. A* **102**, 1995 (1998).
+.. [Klamt:1993:799]
+   A. Klamt, and G. Schüürmann
+   *J. Chem. Soc., Perkin Trans. 2* **5**, 799 (1993).
 
 .. [Tomasi:2005:2999]
    J. Tomasi, B. Mennucci, and R. Cammi
@@ -404,6 +404,14 @@ Bibliography
 .. [Stamm:2016:054101]
    B. Stamm, E. Cancès, F. Lipparini, Y. Maday
    *J. Chem. Phys.* **144**, 054101 (2016).
+
+.. [Lipparini:2014:184108]
+   F. Lipparini, G. Scalmani, L. Lagardère, B. Stamm, E. Cancès, Y. Maday, J.-P. Piquemal, M. Frisch, B. Mennucci
+   *J. Chem. Phys.* **141**, 184108 (2014).
+
+.. [Nottoli:2019:6061]
+   M. Nottoli, B. Stamm, G. Scalmani, F. Lipparini
+   *J. Chem. Theory Comput.* **15**, 6061 (2019).
 
 .. [Bondi:1964:441]
    A. Bondi

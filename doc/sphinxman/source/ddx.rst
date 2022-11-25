@@ -54,8 +54,8 @@ Interface to ddx by A. Mikhalev, A. Jha, M. Nottoli and M. F. Herbst
 by A. Mikhalev *et. al.*. The library provides a linear-scaling implementation
 of standard continuum solvation models using a domain-decomposition ansatz
 [Cances:2013:054111]_ [Stamm:2016:054101]_.
-Currently the conductor-like screening model (COSMO) [Barone:1998:1995]_
-and the polarisable continuum model (PCM) [Tomasi:2005:2999]_
+Currently the conductor-like screening model (COSMO) [Klamt:1993:799]_ [Lipparini:2014:184108]_
+and the polarisable continuum model (PCM) [Tomasi:2005:2999]_ [Nottoli:2019:6061]_
 are supported.
 No additional licence or configuration is required to use ddx with Psi4.
 
@@ -98,8 +98,9 @@ PCMSolver is based on a boundary-element discretisation [Cances:1998:309]_,
 while ddx is based on a domain decomposition approach
 [Cances:2013:054111]_ making it linear scaling.
 For more details about PCMSolver see the :ref:`section on PCMsolver <sec:pcmsolver>`.
-For a concise introduction to the `theory behind ddx <https://ddsolvation.github.io/ddX/md_docs_theory.html>`
-or further `literature references <https://ddsolvation.github.io/ddX/label_references.html>`
+For a concise introduction to the
+`theory behind ddx <https://ddsolvation.github.io/ddX/md_docs_theory.html>`_
+or further `literature references <https://ddsolvation.github.io/ddX/label_references.html>`_
 see the ddx documentation.
 
 The usage of ddx-based solvation models is enabled
@@ -194,12 +195,12 @@ of the implict description of the solvation.
 
 |ddx__dft_radial_points| and |ddx__dft_spherical_points| influence
 the accuracy of the numerical grid used to obtain the representation
-of the electric field of the solute density
-(for which a standard DFT integration grid is used).
-Unlike the case for DFT grids a finer grid than the employed default is
-rarely needed. In fact often even a coarser grid than the default
-can be used without trading too much accuracy
-(e.g. 50 radial and 230 spherical points).
+of the electric potential / field of the solute density,
+since a standard DFT integration grid is used to obtain these quantities.
+In contrast to the integration of DFT quantities much lower accuracy
+is required, such that for this step considerably smaller grids are employed.
+If extremly high accuracy reference solutions are required, the DDX
+DFT integration parameters might need to be increased, but this is rarely needed.
 
 |ddx__lmax| and |ddx__n_lebedev| determine the accuracy of the discretisation
 on the boundary of the spheres around each atom. The defaults are usually good.

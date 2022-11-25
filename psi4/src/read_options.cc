@@ -328,9 +328,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SOLVENT_EPSILON", 0);
 
         /*- Maximal degree of modelling spherical harmonics -*/
-        options.add_int("LMAX", 7);
+        options.add_int("LMAX", 9);
 
-        /*- Number of Lebedev grid points to use -*/
+        /*- Number of Lebedev grid points to use.
+            (A :ref:`Lebedev Points <table:lebedevorder>` number) -*/
         options.add_int("N_LEBEDEV", 302);
 
         /*- Maximal number of iterations used inside DDX -*/
@@ -344,10 +345,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Number of spherical points used to compute the integrals for DDX calculations
             (A :ref:`Lebedev Points <table:lebedevorder>` number) -*/
-        options.add_int("DFT_SPHERICAL_POINTS", 302);
+        options.add_int("DFT_SPHERICAL_POINTS", 110);
 
         /*- Number of radial points used to compute the integrals for DDX calculations -*/
-        options.add_int("DFT_RADIAL_POINTS", 75);
+        options.add_int("DFT_RADIAL_POINTS", 35);
 
         /*- Use an in-core version, which uses more memory, but is generally faster -*/
         options.add_bool("INCORE", false);
@@ -356,8 +357,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("FMM", true);
 
         /*- Maximal degree of multipole spherical harmonics (far-field FMM interactions).
-	    Using the same value as |ddx__lmax| is recommended and done by default. -*/
-        options.add_int("FMM_MULTIPOLE_LMAX", 7);
+            Using the same value as |ddx__lmax| is recommended and done by default. -*/
+        options.add_int("FMM_MULTIPOLE_LMAX", 9);
 
         /*- Maximal degree of local spherical harmonics (near-field FMM interations). -*/
         options.add_int("FMM_LOCAL_LMAX", 6);
