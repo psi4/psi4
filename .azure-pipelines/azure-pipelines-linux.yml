@@ -117,7 +117,7 @@ jobs:
       #   b/c their c++ symbols don't mix with the different Travis compilers. for other
       #   reasons, pkgs are being compiled less statically, sad for CI.
       # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
-      cmake -Bbuild -H. \
+      cmake -Bbuild -S. \
         -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
         -DCMAKE_C_COMPILER=${C_COMPILER} \
         -DCMAKE_Fortran_COMPILER=${F_COMPILER} \
