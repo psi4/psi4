@@ -92,16 +92,9 @@ struct RHO_Params {
     int R_ground;
     double R0;
     double L0;
-    char L1A_lbl[32];
-    char L1B_lbl[32];
-    char L2AA_lbl[32];
-    char L2BB_lbl[32];
-    char L2AB_lbl[32];
+#ifdef EOM_DEBUG
     char R1A_lbl[32];
-    char R1B_lbl[32];
-    char R2AA_lbl[32];
-    char R2BB_lbl[32];
-    char R2AB_lbl[32];
+#endif
     double cceom_energy;
     double overlap1;   /* <L1|R1> */
     double overlap2;   /* <L2|R2> */

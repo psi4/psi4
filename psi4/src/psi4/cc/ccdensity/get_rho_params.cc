@@ -181,17 +181,9 @@ void get_rho_params(Options &options) {
         else
             rho_params[i].L0 = 0.0;
 
+#ifdef EOM_DEBUG
         sprintf(rho_params[i].R1A_lbl, "RIA %d %d", rho_params[i].R_irr, rho_params[i].R_root);
-        sprintf(rho_params[i].R1B_lbl, "Ria %d %d", rho_params[i].R_irr, rho_params[i].R_root);
-        sprintf(rho_params[i].R2AA_lbl, "RIJAB %d %d", rho_params[i].R_irr, rho_params[i].R_root);
-        sprintf(rho_params[i].R2BB_lbl, "Rijab %d %d", rho_params[i].R_irr, rho_params[i].R_root);
-        sprintf(rho_params[i].R2AB_lbl, "RIjAb %d %d", rho_params[i].R_irr, rho_params[i].R_root);
-        sprintf(rho_params[i].L1A_lbl, "LIA %d %d", rho_params[i].L_irr, rho_params[i].L_root);
-        sprintf(rho_params[i].L1B_lbl, "Lia %d %d", rho_params[i].L_irr, rho_params[i].L_root);
-        sprintf(rho_params[i].L2AA_lbl, "LIJAB %d %d", rho_params[i].L_irr, rho_params[i].L_root);
-        sprintf(rho_params[i].L2BB_lbl, "Lijab %d %d", rho_params[i].L_irr, rho_params[i].L_root);
-        sprintf(rho_params[i].L2AB_lbl, "LIjAb %d %d", rho_params[i].L_irr, rho_params[i].L_root);
-
+#endif
         sprintf(rho_params[i].DIJ_lbl, "DIJ %d", i - 1); /* change to a different label ? */
         sprintf(rho_params[i].Dij_lbl, "Dij %d", i - 1);
         sprintf(rho_params[i].DAB_lbl, "DAB %d", i - 1);
