@@ -104,6 +104,9 @@ class PSI_API Timer {
 };
 
 void generate_combinations(int n, int k, std::vector<std::vector<int>> &combinations);
+
+template <typename T>
+std::string to_str_width(const T, const size_t width);
 }
 
 #endif  // _psi_src_lib_libpsi4util_libpsi4util_h_
