@@ -2047,10 +2047,10 @@ void SAPTDIIS::store_vectors() {
     double *vec = init_array(vec_length_);
 
     psio_->read_entry(filenum_, vec_label_, (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
-    psio_->write_entry(diis_file_, diis_vec_label.data(), (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
+    psio_->write_entry(diis_file_, diis_vec_label.c_str(), (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
 
     psio_->read_entry(filenum_, err_label_, (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
-    psio_->write_entry(diis_file_, diis_err_label.data(), (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
+    psio_->write_entry(diis_file_, diis_err_label.c_str(), (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
 
     free(vec);
 }
@@ -2069,10 +2069,10 @@ void SAPTDIIS::get_new_vector() {
 
     for (int i = 0; i < num_vecs_; i++) {
         std::string err_label_i = get_err_label(i);
-        psio_->read_entry(diis_file_, err_label_i.data(), (char *)&(vec_i[0]), vec_length_ * (size_t)sizeof(double));
+        psio_->read_entry(diis_file_, err_label_i.c_str(), (char *)&(vec_i[0]), vec_length_ * (size_t)sizeof(double));
         for (int j = 0; j <= i; j++) {
             std::string err_label_j = get_err_label(j);
-            psio_->read_entry(diis_file_, err_label_j.data(), (char *)&(vec_j[0]), vec_length_ * (size_t)sizeof(double));
+            psio_->read_entry(diis_file_, err_label_j.c_str(), (char *)&(vec_j[0]), vec_length_ * (size_t)sizeof(double));
             Bmat[i][j] = Bmat[j][i] = C_DDOT(vec_length_, vec_i, 1, vec_j, 1);
         }
     }
@@ -2092,7 +2092,7 @@ void SAPTDIIS::get_new_vector() {
 
     for (int i = 0; i < num_vecs_; i++) {
         std::string vec_label_i = get_vec_label(i);
-        psio_->read_entry(diis_file_, vec_label_i.data(), (char *)&(vec_i[0]), vec_length_ * (size_t)sizeof(double));
+        psio_->read_entry(diis_file_, vec_label_i.c_str(), (char *)&(vec_i[0]), vec_length_ * (size_t)sizeof(double));
         C_DAXPY(vec_length_, Cvec[i], vec_i, 1, vec_j, 1);
     }
 
