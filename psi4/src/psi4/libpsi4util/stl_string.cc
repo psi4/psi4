@@ -207,4 +207,13 @@ double Timer::get() {
     // Convert clock ticks to seconds
     return std::chrono::duration_cast<std::chrono::duration<double>>(duration).count();
 }
+
+template <typename T>
+std::string to_str_width(const T, const size_t width){
+    std::string str = std::to_string(T);
+    while(str.length() < width){
+        str.insert(str.begin(),' ');
+    }
+    return str;
 }
+}  // namespace psi
