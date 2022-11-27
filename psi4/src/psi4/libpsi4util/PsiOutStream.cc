@@ -43,7 +43,9 @@ PsiOutStream::PsiOutStream(std::string fname, std::ios_base::openmode mode) {
     } else {
         std::ofstream* tmpf = new std::ofstream(fname, mode);
         if (!tmpf->is_open()) {
-            throw PSIEXCEPTION("PsiOutStream: Failed to open file.");
+            std::ostringstream oss;
+            oss << "PsiOutStream: Failed to open file " << fname << ".";
+            throw PSIEXCEPTION(oss.str());
         }
 
         stream_ = tmpf;
