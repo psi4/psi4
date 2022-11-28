@@ -164,8 +164,8 @@ void DFJLinK::incfock_setup() {
         size_t njk = D_ao_.size();
 
         // If there is no previous pseudo-density, this iteration is normal
-        if(initial_iteration_ || D_prev_.size() != njk) {
-	    initial_iteration_ = true;
+        if (initial_iteration_ || D_prev_.size() != njk) {
+	        initial_iteration_ = true;
 
             D_ref_ = D_ao_;
             zero();
