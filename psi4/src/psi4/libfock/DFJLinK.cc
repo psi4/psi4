@@ -169,7 +169,7 @@ void DFJLinK::incfock_setup() {
 
             D_ref_ = D_ao_;
             zero();
-        } else { // Otherwise, the iteraction is incremental
+        } else { // Otherwise, the iteration is incremental
             for (size_t jki = 0; jki < njk; jki++) {
                 D_ref_[jki] = D_ao_[jki]->clone();
                 D_ref_[jki]->subtract(D_prev_[jki]);
