@@ -34,3 +34,4 @@ set {
 
 linK_energy = energy('b3lyp')
 psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
+compare(1, variable("SCF ITERATIONS") < 13.0, "LinK Incfock Efficient")
