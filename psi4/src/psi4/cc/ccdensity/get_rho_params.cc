@@ -245,7 +245,6 @@ void get_rho_params(Options &options) {
     params.R0 = rho_params[0].R0;
     params.L0 = rho_params[0].L0;
     params.cceom_energy = rho_params[0].cceom_energy;
-
     return;
 }
 
