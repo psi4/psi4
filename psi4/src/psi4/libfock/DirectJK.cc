@@ -153,12 +153,10 @@ void DirectJK::incfock_setup() {
 }
 
 void DirectJK::incfock_postiter() {
-    if (do_incfock_iter_) {
-        // Save a copy of the density for the next iteration
-        D_prev_.clear();
-        for(auto const &Di : D_ao_) {
-            D_prev_.push_back(Di->clone());
-        }
+    // Save a copy of the density for the next iteration
+    D_prev_.clear();
+    for(auto const &Di : D_ao_) {
+        D_prev_.push_back(Di->clone());
     }
 }
 
