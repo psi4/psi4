@@ -12,7 +12,7 @@ dependencies:
   - eigen
   - networkx
   - pybind11
-  - python=3.8.*
+  - python=3.10.*
     # qc
   - psi4/label/dev::gau2grid
   - psi4/label/dev::libint2
