@@ -31,7 +31,6 @@ set {
 
 set scf reference rhf
 set screening csam
-set incfock true
 
 set scf_type pk
 E = energy('scf')
