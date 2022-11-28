@@ -212,7 +212,7 @@ void DFJLinK::compute_JK() {
         
 	timer_off("DFJLinK: INCFOCK Preprocessing");
     } else {
-	D_ref_ = D_ao_;
+	    D_ref_ = D_ao_;
         zero();
     }
     
