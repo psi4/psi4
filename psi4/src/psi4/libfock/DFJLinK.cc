@@ -208,7 +208,7 @@ void DFJLinK::compute_JK() {
         
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
-	incfock_setup();
+	    incfock_setup();
         
 	timer_off("DFJLinK: INCFOCK Preprocessing");
     } else {
