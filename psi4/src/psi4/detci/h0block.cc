@@ -698,7 +698,9 @@ void CIWavefunction::H0block_fill() {
             size);
     }
 
-    sq_rsp(size, size, H0block_->H0b, H0block_->H0b_eigvals, 1, H0block_->H0b_diag, 1.0E-14);
+    if (DSYEV_ascending(size, H0block_->H0b, H0block_->H0b_eigvals, H0block_->H0b_diag) != 0){
+        throw PSIEXCEPTION("DSYEV diagonalizer failed in DETCI H0block_fill!");
+    }
 
     if (print_) {
         outfile->Printf("    H0 Block Eigenvalue = %12.8lf\n", H0block_->H0b_eigvals[0] + CalcInfo_->enuc);

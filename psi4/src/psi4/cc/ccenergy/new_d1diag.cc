@@ -39,6 +39,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "psi4/cc/ccwave.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 namespace ccenergy {
@@ -50,7 +51,7 @@ namespace ccenergy {
 double CCEnergyWavefunction::new_d1diag_t1_rohf() {
     int nclsd, nuocc, nopen;
     double **T1_hp, **T1_hx, **T1_xp, **T1_sq;
-    double *E, **C;
+    double *E;
     double max_hp = 0.0, max_xp = 0.0, max_hx = 0.0, max;
     dpdfile2 T1_a, T1_b;
 
@@ -79,12 +80,12 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
                     &(T1_sq[0][0]), nclsd);
 
             E = init_array(nclsd);
-            C = block_matrix(nclsd, nclsd);
-            sq_rsp(nclsd, nclsd, T1_sq, E, 0, C, 1e-12);
+            if (DSYEV_ascending(nclsd, T1_sq, E) != 0){
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
+            }
             for (int i = 0; i < nclsd; i++)
                 if (E[i] > max_hp) max_hp = E[i];
             free(E);
-            free_block(C);
             free_block(T1_sq);
             free_block(T1_hp);
         }
@@ -99,12 +100,12 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
                     &(T1_sq[0][0]), nclsd);
 
             E = init_array(nclsd);
-            C = block_matrix(nclsd, nclsd);
-            sq_rsp(nclsd, nclsd, T1_sq, E, 0, C, 1e-12);
+            if (DSYEV_ascending(nclsd, T1_sq, E) != 0){
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
+            }
             for (int i = 0; i < nclsd; i++)
                 if (E[i] > max_hx) max_hx = E[i];
             free(E);
-            free_block(C);
             free_block(T1_sq);
             free_block(T1_hx);
         }
@@ -119,12 +120,12 @@ double CCEnergyWavefunction::new_d1diag_t1_rohf() {
                     &(T1_sq[0][0]), nopen);
 
             E = init_array(nopen);
-            C = block_matrix(nopen, nopen);
-            sq_rsp(nopen, nopen, T1_sq, E, 0, C, 1e-12);
+            if (DSYEV_ascending(nopen, T1_sq, E) != 0){
+                throw PSIEXCEPTION("DSYEV diagonalizer failed in D1 diagnostic!");
+            }
             for (int i = 0; i < nopen; i++)
                 if (E[i] > max_xp) max_xp = E[i];
             free(E);
-            free_block(C);
             free_block(T1_sq);
             free_block(T1_xp);
         }
