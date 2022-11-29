@@ -110,10 +110,6 @@ SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction re
     // Call the plugin
     if (ref_wfn) {
         return info.plugin(ref_wfn, Process::environment.options);
-    } else if (Process::environment.legacy_wavefunction()) {
-        outfile->Printf(
-            "Using the legacy wavefunction from global memory instead of explicit wavefunction passing is deprecated, and as soon as 1.5 it will stop working.");
-        return info.plugin(Process::environment.legacy_wavefunction(), Process::environment.options);
     } else {
         throw PSIEXCEPTION("Psi4::plugin: No wavefunction passed into the plugin, aborting");
     }

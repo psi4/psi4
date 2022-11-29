@@ -1719,7 +1719,6 @@ def scf_helper(name, post_scf=True, **kwargs):
         if cast:
             core.print_out("         " + "SCF Castup computation".center(58))
         ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
-        core.set_legacy_wavefunction(ref_wfn)
 
         # Compute additive correction: dftd3, mp2d, dftd4, etc.
         if hasattr(ref_wfn, "_disp_functor"):
@@ -1748,7 +1747,6 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out("         " + banner.center(58))
 
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
-    core.set_legacy_wavefunction(scf_wfn)
 
     # The wfn from_file routine adds the npy suffix if needed, but we add it here so that
     # we can use os.path.isfile to query whether the file exists before attempting to read

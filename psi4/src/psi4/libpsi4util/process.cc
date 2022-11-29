@@ -86,12 +86,6 @@ void Process::Environment::set_legacy_molecule(const std::shared_ptr<Molecule> &
 
 std::shared_ptr<Molecule> Process::Environment::legacy_molecule() const { return legacy_molecule_; }
 
-void Process::Environment::set_legacy_wavefunction(const std::shared_ptr<Wavefunction> &legacy_wavefunction) {
-    legacy_wavefunction_ = legacy_wavefunction;
-}
-
-std::shared_ptr<Wavefunction> Process::Environment::legacy_wavefunction() const { return legacy_wavefunction_; }
-
 Process::Environment Process::get_environment() { return environment; }
 
 size_t Process::Environment::get_memory() const { return memory_; }

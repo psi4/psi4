@@ -1000,13 +1000,6 @@ void py_psi_set_n_threads(size_t nthread, bool quiet) {
 
 int py_psi_get_n_threads() { return Process::environment.get_n_threads(); }
 
-PSI_DEPRECATED("Using core.legacy_wavefunction rather than setting return_wfn=True for a computation is deprecated, "
-        "and as soon as 1.5, it will stop working.")
-std::shared_ptr<Wavefunction> py_psi_legacy_wavefunction() { return Process::environment.legacy_wavefunction(); }
-PSI_DEPRECATED("Using core.set_legacy_wavefunction rather than passing a wavefunction into a computation is deprecated, "
-        "and as soon as 1.5, it will stop working.")
-void py_psi_set_legacy_wavefunction(SharedWavefunction wfn) { Process::environment.set_legacy_wavefunction(wfn); }
-
 void py_psi_print_variable_map() {
     int largest_key = 0;
     for (std::map<std::string, double>::iterator it = Process::environment.globals.begin();
@@ -1187,10 +1180,6 @@ PYBIND11_MODULE(core, core) {
     core.def("set_legacy_molecule", py_psi_set_legacy_molecule, "molecule"_a,
              "Activates a previously defined *molecule* in global memory so next computations use it. FOR INTERNAL OPTKING USE ONLY.");
     core.def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active legacy molecule object. FOR INTERNAL OPTKING USE ONLY.");
-    core.def("legacy_wavefunction", py_psi_legacy_wavefunction,
-             "\nReturns the current legacy_wavefunction object from the most recent computation. FOR AGED PLUGIN USE ONLY\n\n.. deprecated:: 1.5\n");
-    core.def("set_legacy_wavefunction", py_psi_set_legacy_wavefunction, "wfn"_a,
-             "Sets the current legacy_wavefunction object from the most recent computation. FOR AGED PLUGIN USE ONLY.\n.. deprecated:: 1.5\n");
     core.def("get_legacy_gradient", py_psi_get_gradient,
              "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE ONLY.");
     core.def("set_legacy_gradient", py_psi_set_gradient, "grad"_a,

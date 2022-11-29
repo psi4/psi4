@@ -119,8 +119,6 @@ void HF::common_init() {
         nso_ += nsopi_[h];
     }
 
-    density_fitted_ = false;
-
     energies_["Total Energy"] = 0.0;
 
     // Read in DOCC and SOCC from memory
