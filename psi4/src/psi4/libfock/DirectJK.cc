@@ -162,12 +162,12 @@ void DirectJK::incfock_postiter() {
 
 void DirectJK::compute_JK() {
 
-    // zero out J, K, and wK matrices
-    zero();
-
 #ifdef USING_BrianQC
     if (brianEnable) {
-        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
+        // zero out J, K, and wK matrices
+        zero();
+        
+	brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
 
         if (do_wK_ and not brianEnableDFT) {
@@ -397,15 +397,6 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     
     timer_on("build_JK_matrices()");
 
-    // => Zeroing <= //
-    for (auto& Jmat : J) {
-        Jmat->zero();
-    }
-    
-    for (auto& Kmat : K) {
-        Kmat->zero();
-    }
-    
     // => Sizing <= //
 
     int nshell = primary_->nshell();
@@ -718,6 +709,17 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         if (!touched) continue;
 
         // => Stripe out <= //
+        if (build_J) {
+	    for (auto& JTmat : JT[thread]) {
+                JTmat->scale(2.0);
+	    }
+        }
+        
+        if (build_K) {
+	    for (auto& KTmat : KT[thread]) {
+                KTmat->scale(2.0);
+	    }
+        }
 
         // if (thread == 0) timer_on("JK: Atomic");
         for (size_t ind = 0; ind < D.size(); ind++) {
@@ -919,13 +921,11 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     }  // End master task list
 
     for (auto& Jmat : J) {
-        Jmat->scale(2.0);
         Jmat->hermitivitize();
     }
 
     if (lr_symmetric_) {
         for (auto& Kmat : K) {
-            Kmat->scale(2.0);
             Kmat->hermitivitize();
         }
     }
