@@ -749,7 +749,7 @@ class PSI_API DirectJK : public JK {
     int incfock_count_;
     bool do_incfock_iter_;
 
-   /// Previous iteration pseudo-density matrix
+    /// Previous iteration pseudo-density matrix
     std::vector<SharedMatrix> D_prev_;
 
     /// Pseudo-density matrix to be used this iteration

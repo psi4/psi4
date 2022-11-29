@@ -167,7 +167,7 @@ void DirectJK::compute_JK() {
         // zero out J, K, and wK matrices
         zero();
         
-	brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
+        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
 
         if (do_wK_ and not brianEnableDFT) {
@@ -337,7 +337,7 @@ void DirectJK::compute_JK() {
         
         incfock_setup();
 	
-	timer_off("DirectJK: INCFOCK Preprocessing");
+        timer_off("DirectJK: INCFOCK Preprocessing");
     } else {
         D_ref_ = D_ao_;
         zero();
