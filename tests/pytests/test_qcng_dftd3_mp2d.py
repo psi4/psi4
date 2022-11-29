@@ -19,21 +19,27 @@ pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 import platform
 skipmac =  pytest.mark.skipif(platform.system().startswith("Darwin"), reason="Mac fails 3body and getting replaced")
 
-@uusing("dftd3")
+@pytest.mark.parametrize(
+    "program",
+    [
+        pytest.param("dftd3", marks=using("classic-dftd3")),
+        pytest.param("s-dftd3", marks=using("s-dftd3")),
+    ])
 @pytest.mark.parametrize("method", [
     "b3lyp-d3",
     "b3lyp-d3m",
     "b3lyp-d3bj",
     "b3lyp-d3mbj",
 ])
-def test_dftd3_task(method):
+def test_dftd3_task(method, program):
     json_data = {"molecule": qcng.get_molecule("eneyne"), "driver": "energy", "model": {"method": method}}
 
-    ret = qcng.compute(json_data, "dftd3", raise_error=True, return_dict=True)
+    ret = qcng.compute(json_data, program, raise_error=True, return_dict=True)
 
     assert ret["driver"] == "energy"
     assert "provenance" in ret
-    assert "normal termination of dftd3" in ret["stdout"]
+    if program == "dftd3":
+        assert "normal termination of dftd3" in ret["stdout"]
 
     for key in ["cpu", "hostname", "username", "wall_time"]:
         assert key in ret["provenance"]
@@ -137,7 +143,7 @@ def eneyne_ne_qcschemamols():
 
 
 db3lypd3bj = {
-    'dashlevel': 'd3bj',
+    'dashlevel': 'd3bj2b',
     'dashparams': {
         's8': 1.9889,
         's6': 1.0,
@@ -152,7 +158,7 @@ db3lypd3bjcustom['fctldash'] = ''
 db3lypd3bjcustom['dashparams']['a2'] = 5.4211
 
 dpbed3zero = {
-    'dashlevel': 'd3zero',
+    'dashlevel': 'd3zero2b',
     'dashparams': {
         's6': 1.0,
         's8': 0.722,
@@ -265,7 +271,7 @@ def test_dftd3__from_arrays__supplement():
     assert compare_recursive(ans, res, tnm() + ' idempotent', atol=1.e-4)
 
 
-@uusing("dftd3")
+@uusing("classic-dftd3")
 def test_3():
     sys = qcel.molparse.from_string(seneyne)['qm']
 
@@ -288,7 +294,7 @@ def test_3():
     assert compare('B3LYP-D3(BJ)', _compute_key(res['extras']['local_keywords']), 'key')
 
 
-@uusing("dftd3")
+@uusing("classic-dftd3")
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -408,15 +414,20 @@ def test_mp2d__run_mp2d__2body(inp, subjects, request):
         pytest.param(eneyne_ne_qcschemamols),
     ],
     ids=['qmol', 'pmol', 'qcmol'])
-@pytest.mark.parametrize("inp", [
-    ({'parent': 'eneyne', 'name': 'd3-b3lyp-d', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}),
-    ({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}),
-    ({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}),
-    ({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}),
-    ({'parent': 'eneyne', 'name': 'd3-PBE-D2', 'subject': 'mAgB', 'lbl': 'PBE-D2'}),
-    ({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}),
+@pytest.mark.parametrize("inp, program", [
+    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-d', 'subject': 'dimer', 'lbl': 'B3LYP-D2'}, "dftd3", marks=using("classic-dftd3")),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}, "dftd3", marks=using("classic-dftd3")),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}, "dftd3", marks=using("classic-dftd3")),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}, "dftd3", marks=using("classic-dftd3")),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D2', 'subject': 'mAgB', 'lbl': 'PBE-D2'}, "dftd3", marks=using("classic-dftd3")),
+    pytest.param({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}, "dftd3", marks=using("classic-dftd3")),
+
+    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-d3bj', 'subject': 'mA', 'lbl': 'B3LYP-D3(BJ)'}, "s-dftd3", marks=using("s-dftd3")),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'mB', 'lbl': 'PBE-D3'}, "s-dftd3", marks=using("s-dftd3")),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-PBE-D3zero', 'subject': 'gAmB', 'lbl': 'PBE-D3'}, "s-dftd3", marks=using("s-dftd3")),
+    pytest.param({'parent': 'ne', 'name': 'd3-b3lyp-d3bj', 'subject': 'atom', 'lbl': 'B3LYP-D3(BJ)'}, "s-dftd3", marks=using("s-dftd3")),
 ])  # yapf: disable
-def test_dftd3__run_dftd3__2body(inp, subjects, request):
+def test_dftd3__run_dftd3__2body(inp, program, subjects, request):
     subject = subjects()[inp['parent']][inp['subject']]
     expected = ref[inp['parent']][inp['lbl']][inp['subject']]
     gexpected = gref[inp['parent']][inp['lbl']][inp['subject']]
@@ -426,6 +437,11 @@ def test_dftd3__run_dftd3__2body(inp, subjects, request):
     else:
         mol = subject.to_schema(dtype=2)
 
+    if program == "s-dftd3":
+        keywords = {'apply_qcengine_aliases': True, 'level_hint': inp['name'].split("-")[-1]}
+    else:
+        keywords = {}
+
     resinp = {
         'schema_name': 'qcschema_input',
         'schema_version': 1,
@@ -434,23 +450,25 @@ def test_dftd3__run_dftd3__2body(inp, subjects, request):
         'model': {
             'method': inp['name']
         },
-        'keywords': {},
+        'keywords': keywords,
     }
-    jrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+    jrec = qcng.compute(resinp, program, raise_error=True)
     jrec = jrec.dict()
 
-    assert len(jrec['extras']['qcvars']) == 8
+    assert len(jrec['extras']['qcvars']) == (8 if program == "dftd3" else 6)
 
-    assert compare_values(expected, jrec['extras']['qcvars']['CURRENT ENERGY'], atol=1.e-7)
-    assert compare_values(expected, jrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'], atol=1.e-7)
-    assert compare_values(expected, jrec['extras']['qcvars']['2-BODY DISPERSION CORRECTION ENERGY'], atol=1.e-7)
-    assert compare_values(expected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION ENERGY'], atol=1.e-7)
+    assert compare_values(expected, jrec['extras']['qcvars']['CURRENT ENERGY'], atol=5.e-7)
+    assert compare_values(expected, jrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'], atol=5.e-7)
+    if program == "dftd3":
+        assert compare_values(expected, jrec['extras']['qcvars']['2-BODY DISPERSION CORRECTION ENERGY'], atol=1.e-7)
+    assert compare_values(expected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION ENERGY'], atol=5.e-7)
 
-    assert compare_values(gexpected, jrec['extras']['qcvars']['CURRENT GRADIENT'], atol=1.e-7)
-    assert compare_values(gexpected, jrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'], atol=1.e-7)
-    assert compare_values(gexpected, jrec['extras']['qcvars']['2-BODY DISPERSION CORRECTION GRADIENT'], atol=1.e-7)
+    assert compare_values(gexpected, jrec['extras']['qcvars']['CURRENT GRADIENT'], atol=5.e-7)
+    assert compare_values(gexpected, jrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'], atol=5.e-7)
+    if program == "dftd3":
+        assert compare_values(gexpected, jrec['extras']['qcvars']['2-BODY DISPERSION CORRECTION GRADIENT'], atol=1.e-7)
     assert compare_values(
-        gexpected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION GRADIENT'], atol=1.e-7)
+        gexpected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION GRADIENT'], atol=5.e-7)
 
 
 @uusing("dftd3_321")

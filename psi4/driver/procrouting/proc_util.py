@@ -332,6 +332,7 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
         pw_disp = dimer_wfn.variable("PAIRWISE DISPERSION CORRECTION ANALYSIS")
         # fisapt-d was designed with classic dftd3 pairwise that was too large by a factor of 2 (satisfied sum(pairwise) = 2 * two-body-dispersion-energy)
         # by QCEngine v0.26.0, dftd3 interface corrected to match s-dftd3 and dftd4, so file dropped here changes, and fsapt.py script compensates
+        core.print_out("\n  Warning: Use the `Empirical_Disp.dat` file only with `fsapt.py` from Psi4 v1.7.0 or later.\n")
         pw_disp.name = 'Empirical_Disp'
         filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
         fisapt_proc._drop(pw_disp, filepath)

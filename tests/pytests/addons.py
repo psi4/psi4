@@ -91,6 +91,8 @@ def has_program(name):
         return _programs_qcng["s-dftd3"] or _programs_qcng["dftd3"]
     elif name == "gcp":
         return _programs_qcng["mctc-gcp"] or _programs_qcng["gcp"]
+    elif name == "classic-dftd3":
+        return _programs_qcng["dftd3"]
     elif name in _programs:
         return _programs[name]
     elif name in _programs_qcng:
