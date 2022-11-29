@@ -46,6 +46,8 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 #    - Eigen (for Libint2; e.g., `conda install eigen`)
 #    - SciPy (runtime only; e.g., `conda install scipy`)
+#    - py-cpuinfo (runtime only; e.g., `conda install py-cpuinfo`)
+#    - psutil (runtime only; e.g., `conda install psutil`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -98,7 +100,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 option(ENABLE_ambit "Enables the ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_cppe "Enables CPPE for Polarizable Embedding" OFF)
-option(ENABLE_adcc "Enables adcc for algebraic-diagrammatic construction methods (can also be added at runtime)" OFF)
+option(ENABLE_adcc "Enables adcc for algebraic-diagrammatic construction methods (requires libtensorlight; can also be added at runtime)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
