@@ -155,7 +155,9 @@ class PSI_API IntegralTransform {
     void transform_tei_first_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2);
     void transform_tei_second_half(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
                                    const std::shared_ptr<MOSpace> s3, const std::shared_ptr<MOSpace> s4);
-    void backtransform_density();
+    // WARNING! reset_oneel is set to true for backwards compatibility. Soon, this option will be removed
+    // and only the reset_oneel = false logic will be available.
+    void backtransform_density(bool reset_oneel = true);
     void backtransform_tpdm_restricted();
     void backtransform_tpdm_unrestricted();
     void print_dpd_lookup();

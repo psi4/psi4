@@ -334,7 +334,8 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     std::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
     // Whether the SCF contribution is separate from the correlated terms
     // This is currently a hack and should be improved.
-    bool reference_separate = (X) && ref_wfn && wfn_->module() != "dct";
+    bool reference_separate = (X) && ref_wfn && wfn_->module() != "dct" && wfn_->module() != "occ";
+    bool reset_oneel = !(Da && (!wfn_->same_a_b_orbs() || Db) && X);
 
     // deriv_calc_type exists for historical reasons and should likely be removed.
     deriv_calc_type = DerivCalcType::Correlated;
@@ -364,15 +365,17 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
             // Some codes already presort the tpdm, do not follow this as an example
             if (tpdm_presorted_) ints_transform->set_tpdm_already_presorted(true);
 
-            ints_transform->backtransform_density();
+            ints_transform->backtransform_density(reset_oneel);
 
-            Da = factory_->create_shared_matrix("SO-basis OPDM");
-            Db = factory_->create_shared_matrix("nullptr");
-            Da->load(_default_psio_lib_, PSIF_AO_OPDM);
-            X = factory_->create_shared_matrix("SO-basis Lagrangian");
-            X->load(_default_psio_lib_, PSIF_AO_OPDM);
-            // The CC lagrangian is defined with a different prefactor to SCF / MP2, so we account for it here
-            X->scale(0.5);
+            if (reset_oneel) {
+                Da = factory_->create_shared_matrix("SO-basis OPDM");
+                Db = factory_->create_shared_matrix("nullptr");
+                Da->load(_default_psio_lib_, PSIF_AO_OPDM);
+                X = factory_->create_shared_matrix("SO-basis Lagrangian");
+                X->load(_default_psio_lib_, PSIF_AO_OPDM);
+                // The CC lagrangian is defined with a different prefactor to SCF / MP2, so we account for it here
+                X->scale(0.5);
+                }
         }
 
         _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);

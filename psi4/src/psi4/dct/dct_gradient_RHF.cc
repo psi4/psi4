@@ -448,55 +448,9 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     Lagrangian_->back_transform(aW, *Ca_);
     Lagrangian_->scale(-2.0);  // Doubling is equivalent to adding beta spin case
 
-    // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
-    aW.scale(-4.0);  // scale by -4.0 because Lagragian_beta = Lagragian_alpha
-
     if (options_.get_str("DCT_TYPE") == "DF") {
         return;
     }
-
-    // Reorder the energy-weighted density matrix to the QT order
-    double **a_qt = block_matrix(nmo_, nmo_);
-
-    int offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = alpha_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                a_qt[corr_i][corr_j] = aW.get(h, i, j);
-            }
-        }
-        offset += nmopi_[h];
-    }
-
-    // Write qt-ordered energy-weighted density matrix to the file
-    psio_->open(PSIF_MO_LAG, PSIO_OPEN_OLD);
-    psio_->write_entry(PSIF_MO_LAG, "MO-basis Lagrangian", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->close(PSIF_MO_LAG, 1);
-
-    // Reorder the one-particle density matrix to the QT order
-    offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nmopi_[h]; ++i) {
-            int pitzer_i = i + offset;
-            int corr_i = alpha_pitzer_to_corr[pitzer_i];
-            for (int j = 0; j < nmopi_[h]; ++j) {
-                int pitzer_j = j + offset;
-                int corr_j = alpha_pitzer_to_corr[pitzer_j];
-                a_qt[corr_i][corr_j] = 2.0 * a_opdm.get(h, i, j);  // Scale by 2.0 because b_qt = a_qt
-            }
-        }
-        offset += nmopi_[h];
-    }
-
-    // Write qt-ordered OPDM to the file
-    psio_->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
-    psio_->write_entry(PSIF_MO_OPDM, "MO-basis OPDM", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
-    psio_->close(PSIF_MO_OPDM, 1);
-    free_block(a_qt);
 
     auto *aocc_qt = new int[nalpha_];
     auto *bocc_qt = new int[nbeta_];
@@ -507,7 +461,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     int bocc_count = 0;
     int avir_count = 0;
     int bvir_count = 0;
-    offset = 0;
+    int offset = 0;
 
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {

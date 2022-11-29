@@ -104,6 +104,9 @@ SharedWavefunction py_psi_plugin(std::string fullpathname, SharedWavefunction re
     // Should be wrapped in a try/catch block.
     outfile->Printf("Calling plugin %s.\n\n\n", fullpathname.c_str());
 
+    outfile->Printf(
+        "Plugins that use gradients: set Da, Db, and Lagrangian for gradient theory on the wavefunction. The old way of passing these will stop working "
+        "as soon as 1.8.");
     // Call the plugin
     if (ref_wfn) {
         return info.plugin(ref_wfn, Process::environment.options);
