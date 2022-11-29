@@ -8,7 +8,7 @@ import psi4
 run in Optking's pytest suite. They are included here as an example of running optking through PsiAPI """
 
 """ frozen, ranged, and external force optimizations """
-
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 @pytest.mark.parametrize(
     "inp",
@@ -20,6 +20,7 @@ run in Optking's pytest suite. They are included here as an example of running o
                 "ref_ene": -150.781130356,
             },
             id="frozen_stre",
+            marks=pytest.mark.quick
         ),
         pytest.param(
             {
@@ -52,6 +53,7 @@ run in Optking's pytest suite. They are included here as an example of running o
                 "ref_ene": -150.7861769,
             },
             id="ranged_bend",
+            marks=pytest.mark.quick
         ),
         pytest.param(
             {
@@ -88,6 +90,7 @@ run in Optking's pytest suite. They are included here as an example of running o
                 "ref_ene": -150.786647,
             },
             id="ext_f_dihedral",
+            marks=pytest.mark.quick
         ),
     ],
 )
@@ -126,6 +129,7 @@ def test_constraints(inp):
                 "ref_ene": -150.7866491,
             },
             id="frozen_cart1",
+            marks=pytest.mark.quick
         ),
         pytest.param(
             {
@@ -169,6 +173,7 @@ def test_constraints(inp):
                 "ref_ene": -150.7866742,
             },
             id="ext_f_cartesian",
+            marks=pytest.mark.quick
         ),
     ])
 def test_cart_constraints(inp):

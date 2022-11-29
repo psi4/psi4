@@ -276,7 +276,7 @@ def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, exe
 
     if execute:
         core.set_output_file(str(out), append)
-        print(logger.handlers)
+        # warning baseFilename is not part of the documented API for the logging module and could change.
         filenames = [handle.baseFilename for handle in logger.handlers]
         if not f_handler.baseFilename in filenames:
             logger.addHandler(f_handler)

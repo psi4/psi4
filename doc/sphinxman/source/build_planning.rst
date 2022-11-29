@@ -221,6 +221,8 @@ build system will automatically download and build.
 
 * QCEngine |w---w| `[what is QCEngine?] <https://qcengine.readthedocs.io/en/latest/>`_ (March 2019; added by v1.4)
 
+* optking |w---w| `[what is optking] <https://optking.readthedocs.io/en/latest/>`_ (runtime dependency, required at build-time) 
+
 Additionally, there are runtime-only dependencies:
 
 * msgpack-python for MessagePack https://msgpack.org/ (transitive dependency of QCElemental; optional for QCElemental but required for |PSIfour|)
