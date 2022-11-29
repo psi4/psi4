@@ -161,7 +161,7 @@ void DirectJK::incfock_postiter() {
 }
 
 void DirectJK::compute_JK() {
-
+   
 #ifdef USING_BrianQC
     if (brianEnable) {
         // zero out J, K, and wK matrices
@@ -396,6 +396,22 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     if (!build_J && !build_K) return;
     
     timer_on("build_JK_matrices()");
+
+    // => Zeroing... <= //
+    
+    // Ideally, this wouldnt be here at all
+    // It would be better covered in incfock_setup()
+    // But removing this causes a couple of tests to fail for some reason
+    
+    if (!do_incfock_iter_) {
+        for (auto& Jmat : J) {
+            Jmat->zero();
+        }
+    
+        for (auto& Kmat : K) {
+            Kmat->zero();
+        }
+    }
 
     // => Sizing <= //
 
