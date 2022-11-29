@@ -73,7 +73,13 @@ PSI_API void arr_to_mat(double **a, double *b, int m, int n);
 PSI_API void print_array(double *a, int m, std::string out);
 PSI_API void print_mat(double **a, int rows, int cols, std::string out);
 
+PSI_DEPRECATED(
+    "The rsp diagonalizer is deprecated and 1.7 will be the last release to have it. Please use DSPEV from LAPACK "
+    "instead.")
 PSI_API void rsp(int nm, int n, int nv, double *array, double *evals, int matz, double **evecs, double toler);
+PSI_DEPRECATED(
+    "The sq_rsp diagonalizer is deprecated and 1.7 will be the last release to have it. Please use DSYEV from LAPACK "
+    "instead.")
 PSI_API void sq_rsp(int nm, int n, double **array, double *evals, int matz, double **evecs, double toler);
 PSI_API void sq_to_tri(double **bmat, double *amat, int size);
 
