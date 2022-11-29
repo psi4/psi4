@@ -731,7 +731,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 	    }
         }
         
-        if (build_K) {
+        if (build_K && lr_symmetric_) {
 	    for (auto& KTmat : KT[thread]) {
                 KTmat->scale(2.0);
 	    }
