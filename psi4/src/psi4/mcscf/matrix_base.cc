@@ -31,6 +31,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/psi4-dec.h"
 
@@ -107,7 +108,6 @@ void MatrixBase::diagonalize(MatrixBase* eigenmatrix, VectorBase* eigenvalues) {
             throw PSIEXCEPTION("DSYEV failed in mcscf::MatrixBase::diagonalize()");
         }
     } else {
-        outfile->Printf("MatrixBase::diagonalize(...) cannot diagonalize non-square matrices!");
         throw PSIEXCEPTION("MatrixBase::diagonalize(...) cannot diagonalize non-square matrices!");
     }
 }
