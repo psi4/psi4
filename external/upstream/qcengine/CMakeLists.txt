@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcengine}))
     include(FindPythonModule)
-    find_python_module(qcengine ATLEAST 0.24.2 QUIET)
+    find_python_module(qcengine ATLEAST 0.25.0 QUIET)
 endif()
 
 if(${qcengine_FOUND})
@@ -21,9 +21,7 @@ else()
     ExternalProject_Add(qcengine_external
         DEPENDS qcelemental_external
         BUILD_ALWAYS 1
-        # TODO-dfocc2: reset URL after qcng v0.24.2
-        # URL https://github.com/MolSSI/QCEngine/archive/v0.24.2.tar.gz
-        URL https://github.com/loriab/QCEngine/archive/stdsuite_refs_for_dfocc_5.tar.gz
+        URL https://github.com/MolSSI/QCEngine/archive/v0.25.0.tar.gz
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND ${Python_EXECUTABLE} setup.py build

@@ -99,7 +99,7 @@ jobs:
         pytest-xdist \
         msgpack-python \
         conda-forge::qcelemental \
-        conda-forge::qcengine \
+        conda-forge::qcengine=0.25.0 \
         scipy
       source activate p4env
       which python

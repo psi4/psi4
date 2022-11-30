@@ -15,7 +15,7 @@ else()
         # Default: use a stable release tarball of libxc. To use the
         # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
-        URL https://gitlab.com/libxc/libxc/-/archive/5.1.5/libxc-5.1.5.tar.gz
+        URL https://gitlab.com/libxc/libxc/-/archive/5.2.3/libxc-5.2.3.tar.gz
         #GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
         #GIT_TAG 5.1.5
         #UPDATE_COMMAND ""

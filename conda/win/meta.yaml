@@ -16,7 +16,7 @@ requirements:
     - pytest>=7.0.1
     - python={{ PY_VER }}
     - qcelemental=0.25.1
-    - qcengine=0.24.1
+    - qcengine=0.25.0
     - msgpack-python
     - gau2grid
     - libint2 2.6.0 h2e52968_4
