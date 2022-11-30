@@ -21,7 +21,6 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/V.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/V_cc2.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_core_ROHF.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/add_ref.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_RHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_ROHF.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/add_ref_UHF.cc
