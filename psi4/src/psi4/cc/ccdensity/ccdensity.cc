@@ -80,7 +80,7 @@ void build_A();
 void build_Z();
 void relax_I();
 void relax_D(const struct RHO_Params& rho_params);
-void sortI();
+void sortI(Wavefunction& wfn);
 void fold(const struct RHO_Params& rho_params);
 void deanti(const struct RHO_Params& rho_params);
 void add_ref_RHF(struct iwlbuf *);
@@ -282,8 +282,8 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
             if (params.relax_opdm) {
                 relax_D(rho_params[i]); /* adds orbital response contributions to onepdm */
             }
-            sortone(rho_params[i]); /* builds large moinfo.opdm matrix */
-            sortI();                /* builds large lagrangian matrix I */
+            sortone(rho_params[i]);                                                   /* builds large moinfo.opdm matrix */
+            sortI(*ref_wfn);    /* builds large lagrangian matrix I */
             fold(rho_params[i]);
             deanti(rho_params[i]);
         }
@@ -337,40 +337,13 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
         // Grab the GS OPDM and set it in the ref_wfn object
         auto Pa = std::make_shared<Matrix>("P alpha", Ca->colspi(), Ca->colspi());
         auto Pb = std::make_shared<Matrix>("P beta", Cb->colspi(), Cb->colspi());
-        int mo_offset = 0;
-
-        /*
-        for (int h = 0; h < Ca->nirrep(); h++) {
-            int nmo = nmopi[h];
-            int nfv = frzvpi[h];
-            int nmor = nmo - nfv;
-            if (!nmo || !nmor) continue;
-
-            // Loop over QT, convert to Pitzer
-            double **Pap = Pa->pointer(h);
-            double **Pbp = Pb->pointer(h);
-            for (int i = 0; i < nmor; i++) {
-                for (int j = 0; j < nmor; j++) {
-                    int I = moinfo.pitzer2qt[i + mo_offset];
-                    int J = moinfo.pitzer2qt[j + mo_offset];
-                    if (ref_wfn->same_a_b_dens())
-                        Pap[i][j] = moinfo.opdm[I][J];
-                    else {
-                        Pap[i][j] = moinfo.opdm_a[I][J];
-                        Pbp[i][j] = moinfo.opdm_b[I][J];
-                    }
-                }
-            }
-            mo_offset += nmo;
-        }
-        */
 
         SharedMatrix Pa_x, Pb_x;
         if (ref_wfn->same_a_b_dens()) {
-            Pa_x = block_to_matrix(moinfo.opdm);
+            Pa_x = moinfo.opdm.clone();
         } else {
-            Pa_x = block_to_matrix(moinfo.opdm_a);
-            Pb_x = block_to_matrix(moinfo.opdm_b);
+            Pa_x = moinfo.opdm_a.clone();
+            Pb_x = moinfo.opdm_b.clone();
         }
 
         std::string short_name;
@@ -415,10 +388,6 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
         // Process::environment.globals["CCname ROOT n QUADRUPOLE"]
         // Process::environment.globals["CCname ROOT n QUADRUPOLE - h TRANSITION"]
         // Process::environment.globals["CCname ROOT n (h) QUADRUPOLE"]
-
-        free_block(moinfo.opdm);
-        free_block(moinfo.opdm_a);
-        free_block(moinfo.opdm_b);
 
         psio_close(PSIF_CC_TMP, 0);
         psio_open(PSIF_CC_TMP, PSIO_OPEN_NEW);

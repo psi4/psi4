@@ -34,6 +34,7 @@
 #include "psi4/libdpd/dpd.h"
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/libiwl/iwl.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -60,96 +61,36 @@ namespace ccdensity {
 ** TDC, 2/2008
 */
 
-void sortI_RHF() {
-    int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
-    int row, col, i, j, I, J, a, b, A, B, p, q;
-    double **O, chksum, value;
+void sortI_RHF(Wavefunction& wfn) {
     dpdfile2 D;
 
-    nmo = moinfo.nmo;
-    nfzc = moinfo.nfzc;
-    nfzv = moinfo.nfzv;
-    nclsd = moinfo.nclsd;
-    nopen = moinfo.nopen;
-    nirreps = moinfo.nirreps;
-    const auto& occpi = moinfo.occpi;
-    const auto& virtpi = moinfo.virtpi;
-    const auto& occ_off = moinfo.occ_off;
-    const auto& vir_off = moinfo.vir_off;
-    const auto& occ_sym = moinfo.occ_sym;
-    const auto& vir_sym = moinfo.vir_sym;
-    const auto& openpi = moinfo.openpi;
-    const auto& qt_occ = moinfo.qt_occ;
-    const auto& qt_vir = moinfo.qt_vir;
+    Slice occ_slice(moinfo.frdocc, moinfo.frdocc + moinfo.occpi);
+    Slice vir_slice(moinfo.frdocc + moinfo.occpi, moinfo.orbspi - moinfo.fruocc);
 
-    O = block_matrix(nmo, nmo);
+    auto O = std::make_shared<Matrix>("Lagrangian matrix", moinfo.orbspi, moinfo.orbspi);
 
     /* Sort alpha components first */
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (j = 0; j < occpi[h]; j++) {
-                J = qt_occ[occ_off[h] + j];
-                O[I][J] += 2.0 * D.matrix[h][i][j];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    Matrix temp(&D);
+    O->set_block(occ_slice, temp);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (a = 0; a < virtpi[h]; a++) {
-            A = qt_vir[vir_off[h] + a];
-            for (b = 0; b < virtpi[h]; b++) {
-                B = qt_vir[vir_off[h] + b];
-
-                O[A][B] += 2.0 * D.matrix[h][a][b];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    O->set_block(vir_slice, temp);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < virtpi[h]; a++) {
-                A = qt_vir[vir_off[h] + a];
-
-                O[A][I] += 2.0 * D.matrix[h][i][a];
-                O[I][A] += 2.0 * D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    O->set_block(occ_slice, vir_slice, temp);
+    temp = *temp.transpose();
+    O->set_block(vir_slice, occ_slice, temp);
     global_dpd_->file2_close(&D);
 
-    /* Symmetrize the Lagrangian */
-    for (p = 0; p < (nmo - nfzv); p++) {
-        for (q = 0; q < p; q++) {
-            value = 0.5 * (O[p][q] + O[q][p]);
-            O[p][q] = O[q][p] = value;
-        }
-    }
+    O->hermitivitize();
+    O->scale(-2.0);
 
-    /* Multiply the Lagrangian by -2.0 for the final energy derivative
-       expression */
-    for (p = 0; p < (nmo - nfzv); p++) {
-        for (q = 0; q < (nmo - nfzv); q++) {
-            O[p][q] *= -2.0;
-        }
-    }
-
-    moinfo.I = O;
+    wfn.set_lagrangian(linalg::triplet(wfn.Ca(), O, wfn.Ca(), false, false, true));
 }
 
 }  // namespace ccdensity

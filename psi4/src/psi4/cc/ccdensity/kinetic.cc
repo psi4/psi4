@@ -53,14 +53,12 @@ void kinetic(std::shared_ptr<Wavefunction> wfn) {
     /* RHF/ROHF only for now */
     if (params.ref == 2) return;
 
-    auto Da = block_to_matrix(moinfo.opdm);
-
     /*** Transform the kinetic energy integrals to the MO basis ***/
     auto T = wfn->mintshelper()->so_kinetic();
     T->transform(moinfo.Ca);
 
     /*** Contract the correlated kinetic energy ***/
-    auto tcorr = T->vector_dot(Da);
+    auto tcorr = T->vector_dot(moinfo.opdm);
 
     /*** Recall the SCF kinetic energy ***/
     auto tref = wfn->scalar_variable("HF KINETIC ENERGY");

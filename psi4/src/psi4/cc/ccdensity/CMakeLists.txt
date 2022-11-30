@@ -101,7 +101,6 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/td_print.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/td_setup.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tdensity.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/to_matrix.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/transL.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/transdip.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/transp.cc

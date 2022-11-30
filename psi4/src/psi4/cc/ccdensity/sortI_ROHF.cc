@@ -35,6 +35,7 @@
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libiwl/iwl.h"
+#include "psi4/libmints/wavefunction.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -53,145 +54,84 @@ namespace ccdensity {
 ** my sortone.c code here, so don't let some of the variable names
 ** confuse you. */
 
-void sortI_ROHF() {
-    int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
-    int row, col, i, j, I, J, a, b, A, B, p, q;
-    double **O, chksum, value;
+void sortI_ROHF(Wavefunction& wfn) {
     dpdfile2 D;
 
-    nmo = moinfo.nmo;
-    nfzc = moinfo.nfzc;
-    nfzv = moinfo.nfzv;
-    nclsd = moinfo.nclsd;
-    nopen = moinfo.nopen;
-    nirreps = moinfo.nirreps;
-    const auto& occpi = moinfo.occpi;
-    const auto& virtpi = moinfo.virtpi;
-    const auto& occ_off = moinfo.occ_off;
-    const auto& vir_off = moinfo.vir_off;
-    const auto& occ_sym = moinfo.occ_sym;
-    const auto& vir_sym = moinfo.vir_sym;
-    const auto& openpi = moinfo.openpi;
-    const auto& qt_occ = moinfo.qt_occ;
-    const auto& qt_vir = moinfo.qt_vir;
+    Slice aocc_in_full(moinfo.frdocc, moinfo.frdocc + moinfo.occpi);
+    Slice avir_in_vir(Dimension(moinfo.nirreps), moinfo.virtpi - moinfo.openpi);
+    Slice avir_in_full(moinfo.frdocc + moinfo.occpi, moinfo.orbspi - moinfo.fruocc);
+    Slice aocc_in_occ(Dimension(moinfo.nirreps), moinfo.occpi);
 
-    O = block_matrix(nmo, nmo);
+    auto O = std::make_shared<Matrix>("Lagrangian matrix", moinfo.orbspi, moinfo.orbspi);
 
     /* Sort alpha components first */
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (j = 0; j < occpi[h]; j++) {
-                J = qt_occ[occ_off[h] + j];
-                O[I][J] += D.matrix[h][i][j];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    Matrix temp(&D);
+    O->set_block(aocc_in_full, temp);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (a = 0; a < (virtpi[h] - openpi[h]); a++) {
-            A = qt_vir[vir_off[h] + a];
-            for (b = 0; b < (virtpi[h] - openpi[h]); b++) {
-                B = qt_vir[vir_off[h] + b];
-
-                O[A][B] += D.matrix[h][a][b];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    auto temp2 = temp.get_block(avir_in_vir, avir_in_vir);
+    O->set_block(avir_in_full, *temp2);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < (virtpi[h] - openpi[h]); a++) {
-                A = qt_vir[vir_off[h] + a];
-
-                O[A][I] += D.matrix[h][i][a];
-                O[I][A] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(aocc_in_occ, avir_in_vir);
+    O->set_block(aocc_in_full, avir_in_full, temp2);
+    temp2 = temp2->transpose();
+    O->set_block(avir_in_full, aocc_in_full, temp2);
     global_dpd_->file2_close(&D);
 
     /* Sort beta components */
+    // vir is stored in DPD as UOCC then SOCC.
+    // The standard order used by Psi is SOCC then UOCC.
+    // This inconsistency is why we need to treat uocc and socc separately.
+    Slice docc_in_full(moinfo.frdocc, moinfo.frdocc + moinfo.occpi - moinfo.openpi);
+    Slice docc_in_occ(Dimension(moinfo.nirreps), moinfo.occpi - moinfo.openpi);
+    Slice socc_in_full(moinfo.frdocc + moinfo.clsdpi, moinfo.frdocc + moinfo.occpi);
+    Slice socc_in_vir(moinfo.virtpi - moinfo.openpi, moinfo.virtpi);
+    Slice uocc_in_vir(Dimension(moinfo.nirreps), moinfo.virtpi - moinfo.openpi);
+    Slice uocc_in_full(moinfo.frdocc + moinfo.occpi, moinfo.orbspi - moinfo.fruocc);
+    
+    Matrix O_b(moinfo.orbspi, moinfo.orbspi);
+
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(i,j)");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < (occpi[h] - openpi[h]); i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (j = 0; j < (occpi[h] - openpi[h]); j++) {
-                J = qt_occ[occ_off[h] + j];
-                O[I][J] += D.matrix[h][i][j];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(docc_in_occ);
+    O_b.set_block(docc_in_full, *temp2);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'ab");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (a = 0; a < virtpi[h]; a++) {
-            A = qt_vir[vir_off[h] + a];
-            for (b = 0; b < virtpi[h]; b++) {
-                B = qt_vir[vir_off[h] + b];
-
-                O[A][B] += D.matrix[h][a][b];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(uocc_in_vir);
+    O_b.set_block(uocc_in_full, *temp2);
+    temp2 = temp.get_block(socc_in_vir);
+    O_b.set_block(socc_in_full, *temp2);
+    temp2 = temp.get_block(uocc_in_vir, socc_in_vir);
+    O_b.set_block(uocc_in_full, socc_in_full, *temp2);
+    temp2 = temp.get_block(socc_in_vir, uocc_in_vir);
+    O_b.set_block(socc_in_full, uocc_in_full, *temp2);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(i,a)");
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < (occpi[h] - openpi[h]); i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < virtpi[h]; a++) {
-                A = qt_vir[vir_off[h] + a];
-
-                O[A][I] += D.matrix[h][i][a];
-                O[I][A] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(docc_in_occ, socc_in_vir);
+    O_b.set_block(docc_in_full, socc_in_full, *temp2);
+    temp2 = temp2->transpose();
+    O_b.set_block(socc_in_full, docc_in_full, *temp2);
+    temp2 = temp.get_block(docc_in_occ, uocc_in_vir);
+    O_b.set_block(docc_in_full, uocc_in_full, *temp2);
+    temp2 = temp2->transpose();
+    O_b.set_block(uocc_in_full, docc_in_full, *temp2);
     global_dpd_->file2_close(&D);
 
-    /* Symmetrize the Lagrangian */
-    for (p = 0; p < (nmo - nfzv); p++) {
-        for (q = 0; q < p; q++) {
-            value = 0.5 * (O[p][q] + O[q][p]);
-            O[p][q] = O[q][p] = value;
-        }
-    }
+    O->add(O_b);
+    O->hermitivitize();
+    O->scale(-1.0);
 
-    /* Multiply the Lagrangian by -2.0 for the final energy derivative
-       expression */
-    for (p = 0; p < (nmo - nfzv); p++) {
-        for (q = 0; q < (nmo - nfzv); q++) {
-            O[p][q] *= -2.0;
-        }
-    }
-
-    moinfo.I = O;
+    wfn.set_lagrangian(linalg::triplet(wfn.Ca(), O, wfn.Ca(), false, false, true));
 }
 
 }  // namespace ccdensity

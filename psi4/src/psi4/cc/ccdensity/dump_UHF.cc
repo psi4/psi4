@@ -82,11 +82,6 @@ psio_write_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) moinfo.opdm_b[0],
     psio_close(PSIF_MO_OPDM, 1);
 
     if (!params.onepdm) {
-        psio_open(PSIF_MO_LAG, PSIO_OPEN_OLD);
-        psio_write_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *)moinfo.I_a[0], sizeof(double) * nmo * nmo);
-        psio_write_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *)moinfo.I_b[0], sizeof(double) * nmo * nmo);
-        psio_close(PSIF_MO_LAG, 1);
-
         global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "GIJKL");
         global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 0, "G(IJ,KL)");
         global_dpd_->buf4_close(&G);

@@ -42,47 +42,39 @@ namespace psi {
 namespace ccdensity {
 
 void add_ref_ROHF(struct iwlbuf *OutBuf) {
-    int i, j;
-    int nfzc, nclsd, nopen;
-
-    nfzc = moinfo.nfzc;
-    nclsd = moinfo.nclsd;
-    nopen = moinfo.nopen;
-
-    /*** One-electron component ***/
-    // NB: We're also storing alpha and beta densities for examining NOs
-    for (i = 0; i < (nfzc + nclsd); i++) {
-        moinfo.opdm[i][i] += 2.0;
-        moinfo.opdm_a[i][i] += 1.0;
-        moinfo.opdm_b[i][i] += 1.0;
-    }
-
-    for (i = nfzc + nclsd; i < (nfzc + nclsd + nopen); i++) {
-        moinfo.opdm[i][i] += 1.0;
-        moinfo.opdm_a[i][i] += 1.0;
-    }
-
-    /*** Two-electron component ***/
-
-    /* docc-docc */
-    for (i = 0; i < (nfzc + nclsd); i++) {
-        iwl_buf_wrt_val(OutBuf, i, i, i, i, 1.0, 0, "outfile", 0);
-        for (j = 0; j < i; j++) {
-            iwl_buf_wrt_val(OutBuf, i, i, j, j, 2.0, 0, "outfile", 0);
-            iwl_buf_wrt_val(OutBuf, i, j, j, i, -1.0, 0, "outfile", 0);
+    int mo_offset = 0;
+    for (int h = 0; h < moinfo.nirreps; h++) {
+        auto clsd_h = moinfo.frdocc[h] + moinfo.clsdpi[h];
+        for (int i = 0; i < moinfo.frdocc[h] + moinfo.clsdpi[h]; i++) {
+            // One electron closed-shell
+            moinfo.opdm.add(h, i, i, 2.0);
+            moinfo.opdm_a.add(h, i, i, 1.0);
+            moinfo.opdm_b.add(h, i, i, 1.0);
+            // Two electron closed-shell
+            auto qt_i = moinfo.pitzer2qt[i + mo_offset];
+            iwl_buf_wrt_val(OutBuf, qt_i, qt_i, qt_i, qt_i, 1.0, 0, "outfile", 0);
+            for (int qt_j = 0; qt_j < qt_i; qt_j++) {
+                iwl_buf_wrt_val(OutBuf, qt_i, qt_i, qt_j, qt_j, 2.0, 0, "outfile", 0);
+                iwl_buf_wrt_val(OutBuf, qt_i, qt_j, qt_j, qt_i, -1.0, 0, "outfile", 0);
+            }
         }
-    }
-
-    /* socc-docc && socc-socc*/
-    for (i = (nfzc + nclsd); i < (nfzc + nclsd + nopen); i++) {
-        for (j = 0; j < (nfzc + nclsd); j++) {
-            iwl_buf_wrt_val(OutBuf, i, i, j, j, 1.0, 0, "outfile", 0);
-            iwl_buf_wrt_val(OutBuf, i, j, j, i, -0.5, 0, "outfile", 0);
+        for (int i = 0; i < moinfo.openpi[h]; i++) {
+            // One electron open-shell
+            moinfo.opdm.add(h, i + clsd_h, i + clsd_h, 1);
+            moinfo.opdm_a.add(h, i + clsd_h, i + clsd_h, 1);
+            auto qt_i = moinfo.pitzer2qt[i + mo_offset + clsd_h];
+            // Two electron open x closed
+            for (int qt_j = 0; qt_j < moinfo.nfzc + moinfo.nclsd; qt_j++) {
+                iwl_buf_wrt_val(OutBuf, qt_i, qt_i, qt_j, qt_j, 1.0, 0, "outfile", 0);
+                iwl_buf_wrt_val(OutBuf, qt_i, qt_j, qt_j, qt_i, -0.5, 0, "outfile", 0);
+            }
+            // Two electron open x open
+            for (int qt_j = (moinfo.nfzc + moinfo.nclsd); qt_j < qt_i; qt_j++) {
+                iwl_buf_wrt_val(OutBuf, qt_i, qt_i, qt_j, qt_j, 0.5, 0, "outfile", 0);
+                iwl_buf_wrt_val(OutBuf, qt_i, qt_j, qt_j, qt_i, -0.5, 0, "outfile", 0);
+            }
         }
-        for (j = (nfzc + nclsd); j < i; j++) {
-            iwl_buf_wrt_val(OutBuf, i, i, j, j, 0.5, 0, "outfile", 0);
-            iwl_buf_wrt_val(OutBuf, i, j, j, i, -0.5, 0, "outfile", 0);
-        }
+        mo_offset += moinfo.orbspi[h];
     }
 }
 

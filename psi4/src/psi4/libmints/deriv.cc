@@ -334,7 +334,7 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     std::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
     // Whether the SCF contribution is separate from the correlated terms
     // This is currently a hack and should be improved.
-    bool reference_separate = (X) && ref_wfn && wfn_->module() != "dct" && wfn_->module() != "occ";
+    bool reference_separate = (X) && ref_wfn && wfn_->module() != "dct" && wfn_->module() != "occ" && wfn_->module() != "ccenergy";
     bool reset_oneel = !(Da && (!wfn_->same_a_b_orbs() || Db) && X);
 
     // deriv_calc_type exists for historical reasons and should likely be removed.

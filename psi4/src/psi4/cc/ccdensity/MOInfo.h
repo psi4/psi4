@@ -41,8 +41,6 @@
 namespace psi {
 namespace ccdensity {
 
-SharedMatrix block_to_matrix(double **);
-
 struct MOInfo {
     int nirreps;                     /* no. of irreducible representations */
     int nmo;                         /* no. of molecular orbitals */
@@ -96,12 +94,9 @@ struct MOInfo {
     double eref;                     /* Reference energy */
     double ecc;                      /* CC energy (CC2, CCSD, or CC3) from ccenergy */
     double et;                       /* (T) energy from cctriples */
-    double **opdm;                   /* Onepdm in the full (fzc+clsd+socc+uocc) space */
-    double **opdm_a;                 /* Alpha Onepdm in the full (fzc+clsd+socc+uocc) space */
-    double **opdm_b;                 /* Beta Onepdm in the full (fzc+clsd+socc+uocc) space */
-    double **I;                      /* Lagrangian matrix in the full space */
-    double **I_a;                    /* Alpha Lagrangian matrix in the full space */
-    double **I_b;                    /* Beta Lagrangian matrix in the full space */
+    Matrix opdm;                     /* Onepdm in the full (fzc+clsd+socc+uocc) space */
+    Matrix opdm_a;                   /* Alpha Onepdm in the full (fzc+clsd+socc+uocc) space */
+    Matrix opdm_b;                   /* Beta Onepdm in the full (fzc+clsd+socc+uocc) space */
     Matrix ltd_mat;                  /* <0|O|n> Left transition density */
     Matrix ltd_a_mat;                /* <0|O|n> Left transition alpha density */
     Matrix ltd_b_mat;                /* <0|O|n> Left transition beta density */

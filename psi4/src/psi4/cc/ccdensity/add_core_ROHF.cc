@@ -43,22 +43,23 @@ namespace psi {
 namespace ccdensity {
 
 void add_core_ROHF(struct iwlbuf *OutBuf) {
-    int p, q, m;
-    int nmo, nfzv, nfzc;
-    double value;
+    const auto actpi = moinfo.occpi + moinfo.virtpi;
+    int mo_offset = 0;
 
-    nmo = moinfo.nmo;
-    nfzv = moinfo.nfzv;
-    nfzc = moinfo.nfzc;
-
-    for (p = nfzc; p < (nmo - nfzv); p++) {
-        for (q = nfzc; q < (nmo - nfzv); q++) {
-            value = moinfo.opdm[p][q];
-            for (m = 0; m < nfzc; m++) {
-                iwl_buf_wrt_val(OutBuf, p, q, m, m, value, 0, "outfile", 0);
-                iwl_buf_wrt_val(OutBuf, p, m, m, q, -0.5 * value, 0, "outfile", 0);
+    for (int h = 0; h < moinfo.nirreps; h++) {
+        mo_offset += moinfo.frdocc[h];
+        for (int p = 0; p < actpi[h]; p++) {
+            for (int q = 0; q < actpi[h]; q++) {
+                double value = moinfo.opdm.get(h, p, q);
+                double p_qt = moinfo.pitzer2qt[p + mo_offset];
+                double q_qt = moinfo.pitzer2qt[q + mo_offset];
+                for (int m = 0; m < moinfo.nfzc; m++) {
+                    iwl_buf_wrt_val(OutBuf, p_qt, q_qt, m, m, value, 0, "outfile", 0);
+                    iwl_buf_wrt_val(OutBuf, p_qt, m, m, q_qt, -0.5 * value, 0, "outfile", 0);
+                }
             }
         }
+        mo_offset += moinfo.orbspi[h] - moinfo.frdocc[h];
     }
 }
 

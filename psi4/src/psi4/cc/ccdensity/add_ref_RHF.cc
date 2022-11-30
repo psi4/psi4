@@ -42,28 +42,26 @@ namespace psi {
 namespace ccdensity {
 
 void add_ref_RHF(struct iwlbuf *OutBuf) {
-    int i, j;
-    int nfzc, nclsd, nopen;
-
-    nfzc = moinfo.nfzc;
-    nclsd = moinfo.nclsd;
-    nopen = moinfo.nopen;
-
-    /*** One-electron component ***/
-
-    for (i = 0; i < (nfzc + nclsd); i++) moinfo.opdm[i][i] += 2.0;
-
-    for (i = nfzc + nclsd; i < (nfzc + nclsd + nopen); i++) moinfo.opdm[i][i] += 1.0;
-
-    /*** Two-electron component ***/
-
-    /* docc-docc */
-    for (i = 0; i < (nfzc + nclsd); i++) {
-        iwl_buf_wrt_val(OutBuf, i, i, i, i, 1.0, 0, "outfile", 0);
-        for (j = 0; j < i; j++) {
-            iwl_buf_wrt_val(OutBuf, i, i, j, j, 2.0, 0, "outfile", 0);
-            iwl_buf_wrt_val(OutBuf, i, j, j, i, -1.0, 0, "outfile", 0);
+    int mo_offset = 0;
+    for (int h = 0; h < moinfo.nirreps; h++) {
+        auto clsd_h = moinfo.frdocc[h] + moinfo.clsdpi[h];
+        // Closed-shell
+        for (int i = 0; i < moinfo.frdocc[h] + moinfo.clsdpi[h]; i++) {
+            // One electron closed-shell
+            moinfo.opdm.add(h, i, i, 2);
+            // Two electron closed-shell
+            auto qt_i = moinfo.pitzer2qt[i + mo_offset];
+            iwl_buf_wrt_val(OutBuf, qt_i, qt_i, qt_i, qt_i, 1.0, 0, "outfile", 0);
+            for (int qt_j = 0; qt_j < qt_i; qt_j++) {
+                iwl_buf_wrt_val(OutBuf, qt_i, qt_i, qt_j, qt_j, 2.0, 0, "outfile", 0);
+                iwl_buf_wrt_val(OutBuf, qt_i, qt_j, qt_j, qt_i, -1.0, 0, "outfile", 0);
+            }
         }
+        // One electron open-shell. Had better be zero.
+        for (int i = 0; i < moinfo.openpi[h]; i++) {
+            moinfo.opdm.add(h, i + clsd_h, i + clsd_h, 1);
+        }
+        mo_offset += moinfo.orbspi[h];
     }
 }
 

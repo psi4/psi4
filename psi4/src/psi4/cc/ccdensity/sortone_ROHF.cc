@@ -60,198 +60,98 @@ namespace ccdensity {
 */
 
 void sortone_ROHF(const struct RHO_Params& rho_params) {
-    int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
-    int row, col, i, j, I, J, a, b, A, B, p, q;
-    double chksum, value;
     dpdfile2 D;
-    psio_address next;
-
-    nmo = moinfo.nmo;
-    nfzc = moinfo.nfzc;
-    nfzv = moinfo.nfzv;
-    nclsd = moinfo.nclsd;
-    nopen = moinfo.nopen;
-    nirreps = moinfo.nirreps;
-    const auto& occpi = moinfo.occpi;
-    const auto& virtpi = moinfo.virtpi;
-    const auto& occ_off = moinfo.occ_off;
-    const auto& vir_off = moinfo.vir_off;
-    const auto& occ_sym = moinfo.occ_sym;
-    const auto& vir_sym = moinfo.vir_sym;
-    const auto& openpi = moinfo.openpi;
-    const auto& qt_occ = moinfo.qt_occ;
-    const auto& qt_vir = moinfo.qt_vir;
-
-    /* O = block_matrix(nmo-nfzc,nmo-nfzc); */
-    double **O_a = block_matrix(nmo, nmo);
-    double **O_b = block_matrix(nmo, nmo);
 
     /* Sort A components first */
+    Slice aocc_in_full(moinfo.frdocc, moinfo.frdocc + moinfo.occpi);
+    Slice avir_in_vir(Dimension(moinfo.nirreps), moinfo.virtpi - moinfo.openpi);
+    Slice avir_in_full(moinfo.frdocc + moinfo.occpi, moinfo.orbspi - moinfo.fruocc);
+    Slice aocc_in_occ(Dimension(moinfo.nirreps), moinfo.occpi);
+
+    Matrix O_a(moinfo.orbspi, moinfo.orbspi);
+
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (j = 0; j < occpi[h]; j++) {
-                J = qt_occ[occ_off[h] + j];
-                O_a[I][J] += D.matrix[h][i][j];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    Matrix temp(&D);
+    O_a.set_block(aocc_in_full, temp);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (a = 0; a < (virtpi[h] - openpi[h]); a++) {
-            A = qt_vir[vir_off[h] + a];
-            for (b = 0; b < (virtpi[h] - openpi[h]); b++) {
-                B = qt_vir[vir_off[h] + b];
-
-                O_a[A][B] += D.matrix[h][a][b];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    auto temp2 = temp.get_block(avir_in_vir);
+    O_a.set_block(avir_in_full, *temp2);
     global_dpd_->file2_close(&D);
 
     /* Note that this component of the density is stored occ-vir */
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < (virtpi[h] - openpi[h]); a++) {
-                A = qt_vir[vir_off[h] + a];
-
-                O_a[A][I] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(aocc_in_occ, avir_in_vir);
+    temp2 = temp2->transpose();
+    O_a.set_block(avir_in_full, aocc_in_full, temp2);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < occpi[h]; i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < (virtpi[h] - openpi[h]); a++) {
-                A = qt_vir[vir_off[h] + a];
-
-                O_a[I][A] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(aocc_in_occ, avir_in_vir);
+    O_a.set_block(aocc_in_full, avir_in_full, temp2);
     global_dpd_->file2_close(&D);
 
     /* Sort B components */
+    // vir is stored in DPD as UOCC then SOCC.
+    // The standard order used by Psi is SOCC then UOCC.
+    // This inconsistency is why we need to treat uocc and socc separately.
+    Slice docc_in_full(moinfo.frdocc, moinfo.frdocc + moinfo.occpi - moinfo.openpi);
+    Slice docc_in_occ(Dimension(moinfo.nirreps), moinfo.occpi - moinfo.openpi);
+    Slice socc_in_full(moinfo.frdocc + moinfo.clsdpi, moinfo.frdocc + moinfo.occpi);
+    Slice socc_in_vir(moinfo.virtpi - moinfo.openpi, moinfo.virtpi);
+    Slice uocc_in_vir(Dimension(moinfo.nirreps), moinfo.virtpi - moinfo.openpi);
+    Slice uocc_in_full(moinfo.frdocc + moinfo.occpi, moinfo.orbspi - moinfo.fruocc);
+
+    Matrix O_b(moinfo.orbspi, moinfo.orbspi);
+
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < (occpi[h] - openpi[h]); i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (j = 0; j < (occpi[h] - openpi[h]); j++) {
-                J = qt_occ[occ_off[h] + j];
-                O_b[I][J] += D.matrix[h][i][j];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(docc_in_occ);
+    O_b.set_block(docc_in_full, *temp2);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (a = 0; a < virtpi[h]; a++) {
-            A = qt_vir[vir_off[h] + a];
-            for (b = 0; b < virtpi[h]; b++) {
-                B = qt_vir[vir_off[h] + b];
-
-                O_b[A][B] += D.matrix[h][a][b];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(uocc_in_vir);
+    O_b.set_block(uocc_in_full, *temp2);
+    temp2 = temp.get_block(socc_in_vir);
+    O_b.set_block(socc_in_full, *temp2);
+    temp2 = temp.get_block(uocc_in_vir, socc_in_vir);
+    O_b.set_block(uocc_in_full, socc_in_full, *temp2);
+    temp2 = temp.get_block(socc_in_vir, uocc_in_vir);
+    O_b.set_block(socc_in_full, uocc_in_full, *temp2);
     global_dpd_->file2_close(&D);
 
     /* Note that this component of the density is stored occ-vir */
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < (occpi[h] - openpi[h]); i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < virtpi[h]; a++) {
-                A = qt_vir[vir_off[h] + a];
-
-                O_b[A][I] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.transpose();
+    auto temp3 = temp2->get_block(socc_in_vir, docc_in_occ);
+    O_b.set_block(socc_in_full, docc_in_full, *temp3);
+    temp3 = temp2->get_block(uocc_in_vir, docc_in_occ);
+    O_b.set_block(uocc_in_full, docc_in_full, *temp3);
     global_dpd_->file2_close(&D);
 
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
-    global_dpd_->file2_mat_init(&D);
-    global_dpd_->file2_mat_rd(&D);
-    for (h = 0; h < nirreps; h++) {
-        for (i = 0; i < (occpi[h] - openpi[h]); i++) {
-            I = qt_occ[occ_off[h] + i];
-            for (a = 0; a < virtpi[h]; a++) {
-                A = qt_vir[vir_off[h] + a];
-
-                O_b[I][A] += D.matrix[h][i][a];
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&D);
+    temp = Matrix(&D);
+    temp2 = temp.get_block(docc_in_occ, socc_in_vir);
+    O_b.set_block(docc_in_full, socc_in_full, *temp2);
+    temp2 = temp.get_block(docc_in_occ, uocc_in_vir);
+    O_b.set_block(docc_in_full, uocc_in_full, *temp2);
     global_dpd_->file2_close(&D);
 
     /* Symmetrize the onepdm */
 
-    for (p = 0; p < nmo; p++) {
-        for (q = 0; q < p; q++) {
-            value = 0.5 * (O_a[p][q] + O_a[q][p]);
-            O_a[p][q] = O_a[q][p] = value;
-
-            value = 0.5 * (O_b[p][q] + O_b[q][p]);
-            O_b[p][q] = O_b[q][p] = value;
-        }
-    }
+    O_a.hermitivitize();
+    O_b.hermitivitize();
     moinfo.opdm_a = O_a;
     moinfo.opdm_b = O_b;
-
-    /*
-    for (i=0;i<(nmo-nfzv);++i) {
-      for (j=0;j<(nmo-nfzv); ++j) {
-        outfile->Printf("%15.10lf\n", O[i][j]);
-      }
-      outfile->Printf("\n");
-    }
-    outfile->Printf("End of sortone\n");
-          */
-    /*
-    for (i=0;i<2;++i) {
-      for (j=0;j<5;++j)
-        outfile->Printf("%15.10lf",O[i][j]);
-      outfile->Printf("\n");
-    }
-    print_mat(O,nmo-nfzv,nmo-nfzv,outfile);
-    */
-
-    double **O = block_matrix(nmo, nmo);
-    for (p = 0; p < nmo; p++)
-        for (q = 0; q < nmo; q++) O[p][q] = O_a[p][q] + O_b[p][q];
-    moinfo.opdm = O;
+    moinfo.opdm = Matrix(O_a);
+    moinfo.opdm.add(O_b);
 }
 }
 }  // namespace psi

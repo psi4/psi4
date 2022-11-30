@@ -93,10 +93,6 @@ void dump_RHF(struct iwlbuf *OutBuf, const struct RHO_Params& rho_params) {
     psio_close(PSIF_MO_OPDM, 1);
 
     if (!params.onepdm) {
-        psio_open(PSIF_MO_LAG, PSIO_OPEN_OLD);
-        psio_write_entry(PSIF_MO_LAG, "MO-basis Lagrangian", (char *)moinfo.I[0], sizeof(double) * nmo * nmo);
-        psio_close(PSIF_MO_LAG, 1);
-
         global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
         global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 0, "G(IK,JL)");
         global_dpd_->buf4_close(&G);

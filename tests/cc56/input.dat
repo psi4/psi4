@@ -39,9 +39,9 @@ compare_values(ref0A2, core.variable("CCSD ROOT 0 (IN A2) TOTAL ENERGY"), 6, "Ro
 ### Dipole check
 
 test_data = {                   # TEST
-(0, "B1", 0, "A1"):  1.0109909, # TEST
-(1, "B1", 1, "A1"):  0.4953101, # TEST
-(0, "A2", 2, "B2"): -0.0535458, # TEST
+(0, "B1", 0, "A1"):  0.9924065, # TEST
+(1, "B1", 1, "A1"): -0.1336723, # TEST
+(0, "A2", 2, "B2"): -0.0430842, # TEST
 }                               # TEST
 
 for transition, value in test_data.items(): # TEST
