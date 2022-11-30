@@ -156,9 +156,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Number of mo per irrep
     Dimension nmopi_;
 
-    /// Whether this wavefunction was obtained using density fitting
-    bool density_fitted_;
-
     /// The energy associated with this wavefunction
     double energy_;
 
@@ -237,9 +234,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Should natural orbital occupations be available, they will be here
     std::vector<std::vector<std::tuple<double, int, int>>> no_occupations_;
-
-    /// If frequencies are available, they will be here:
-    SharedVector frequencies_;
 
     /// Same orbs or dens
     bool same_a_b_dens_;
@@ -376,12 +370,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     std::shared_ptr<Wavefunction> reference_wavefunction() const;
     /// Sets the reference wavefunction
     void set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn);
-
-    /// Returns whether this wavefunction was obtained using density fitting or not
-    PSI_DEPRECATED(
-        "Using `Wavefunction.density_fitted` is deprecated for lack of use and will be removed in Psi4 1.7. "
-        "If you need an analogue of this, create a Wavefunction subclass.")
-    bool density_fitted() const { return density_fitted_; }
 
     /// Returns the print level
     int get_print() const { return print_; }
@@ -651,16 +639,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     void set_no_occupations(const std::vector<std::vector<std::tuple<double, int, int>>> no_ocs) {
         no_occupations_ = no_ocs;
     }
-
-    /// Returns the frequencies
-    PSI_DEPRECATED(
-        "Using `Wavefunction.frequencies` c-side instead of `Wavefunction.frequencies` py-side is deprecated, and as soon as "
-        "1.4 it will stop working")
-    SharedVector frequencies() const;
-
-    /// Set the frequencies for the wavefunction
-    PSI_DEPRECATED("Using `Wavefunction.set_frequencies` is deprecated, and as soon as 1.4 it will stop working")
-    void set_frequencies(std::shared_ptr<Vector> freqs);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }

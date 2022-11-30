@@ -401,7 +401,6 @@ def _core_wavefunction_to_file(wfn: core.Wavefunction, filename: str = None) -> 
             'PCM_enabled':    wfn.PCM_enabled(),
             'same_a_b_dens':  wfn.same_a_b_dens(),
             'same_a_b_orbs':  wfn.same_a_b_orbs(),
-            'density_fitted': wfn.density_fitted(),
             'basispuream':    wfn.basisset().has_puream()
         },
         'float': {
@@ -1461,52 +1460,7 @@ def _core_wavefunction_frequencies(self):
     return core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data))
 
 
-def _core_wavefunction_legacy_frequencies(cls):
-    """
-    .. deprecated:: 1.4
-       Use :py:meth:`~psi4.core.Wavefunction.frequencies` instead.
-
-    """
-    warnings.warn(
-        "Using `psi4.core.Wavefunction.legacy_frequencies` (accessing c-side member data) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return cls.legacy_frequencies()
-
-
-def _core_wavefunction_set_frequencies(cls, val):
-    """
-    .. deprecated:: 1.4
-
-    """
-    warnings.warn(
-        "Using `psi4.core.Wavefunction.set_frequencies` (accessing c-side member data) instead of `psi4.core.Wavefunction.frequency_analysis` (py-side member data) is deprecated, and as soon as 1.4 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return cls.set_legacy_frequencies(val)
-
-
 core.Wavefunction.frequencies = _core_wavefunction_frequencies
-core.Wavefunction.legacy_frequencies = _core_wavefunction_legacy_frequencies
-core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
-
-
-def _core_wavefunction_X(cls):
-    """
-    .. deprecated:: 1.5
-       Use :py:meth:`~psi4.core.Wavefunction.lagrangian` instead.
-
-    """
-    warnings.warn(
-        "Using `psi4.core.Wavefunction.X` instead of `psi4.core.Wavefunction.lagrangian` is deprecated, and as soon as 1.5 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return cls.lagrangian()
-
-
-core.Wavefunction.X = _core_wavefunction_X
-
-## Psi4 v1.3 Export Deprecations
 
 
 def _core_get_gradient():

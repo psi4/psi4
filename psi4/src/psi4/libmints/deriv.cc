@@ -391,10 +391,6 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
 
     // Now, compute the one electron terms
     auto Dtot_AO = std::make_shared<Matrix>("AO basis total D", wfn_->nso(), wfn_->nso());
-    if (wfn_->density_fitted()) {
-        Dtot_AO->add(wfn_->Da_subset("AO"));
-        Dtot_AO->add(wfn_->Db_subset("AO"));
-    }
     auto Dtot = Da->clone();
     Dtot->add(Db);
     Dtot_AO->remove_symmetry(Dtot, wfn_->aotoso()->transpose());

@@ -142,7 +142,6 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     // set vectors
     epsilon_a_ = vectors["epsilon_a"];
     epsilon_b_ = vectors["epsilon_b"];
-    frequencies_ = vectors["frequencies"];
 
     // set dimensions
     frzcpi_ = dimensions["frzcpi"];
@@ -169,7 +168,6 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     PCM_enabled_ = booleans["PCM_enabled"];
     same_a_b_dens_ = booleans["same_a_b_dens"];
     same_a_b_orbs_ = booleans["same_a_b_orbs"];
-    density_fitted_ = booleans["density_fitted"];
 
     // set floats
     energy_ = floats["energy"];
@@ -206,7 +204,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 
     print_ = other->print_;
     debug_ = other->debug_;
-    density_fitted_ = other->density_fitted_;
 
     energy_ = other->energy_;
     efzc_ = other->efzc_;
@@ -292,7 +289,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
 
     print_ = other->print_;
     debug_ = other->debug_;
-    density_fitted_ = other->density_fitted_;
 
     energy_ = other->energy_;
     efzc_ = other->efzc_;
@@ -378,7 +374,6 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
 
     wfn->print_ = print_;
     wfn->debug_ = debug_;
-    wfn->density_fitted_ = density_fitted_;
 
     wfn->energy_ = energy_;
     wfn->efzc_ = efzc_;
@@ -505,7 +500,6 @@ void Wavefunction::common_init() {
         nbetapi_[k] = 0;
     }
 
-    density_fitted_ = false;
     energy_ = 0.0;
     efzc_ = 0.0;
     same_a_b_dens_ = true;
@@ -1234,10 +1228,6 @@ void Wavefunction::set_gradient(SharedMatrix grad) { set_array_variable("CURRENT
 SharedMatrix Wavefunction::hessian() const { return hessian_; }
 
 void Wavefunction::set_hessian(SharedMatrix hess) { set_array_variable("CURRENT HESSIAN", hess); }
-
-SharedVector Wavefunction::frequencies() const { return frequencies_; }
-
-void Wavefunction::set_frequencies(std::shared_ptr<Vector> freqs) { frequencies_ = freqs; }
 
 void Wavefunction::save() const {}
 

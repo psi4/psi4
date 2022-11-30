@@ -73,7 +73,6 @@ class PSI_API Process {
         SharedMatrix gradient_;
 
         std::shared_ptr<Molecule> legacy_molecule_;
-        std::shared_ptr<Wavefunction> legacy_wavefunction_;
 
        public:
         void initialize();
@@ -88,11 +87,6 @@ class PSI_API Process {
         void set_legacy_molecule(const std::shared_ptr<Molecule>& molecule);
         /// Return active molecule
         std::shared_ptr<Molecule> legacy_molecule() const;
-
-        /// Set wavefunction
-        void set_legacy_wavefunction(const std::shared_ptr<Wavefunction>& wavefunction);
-        /// Get wavefunction
-        std::shared_ptr<Wavefunction> legacy_wavefunction() const;
 
         /// Set gradient manually
         void set_gradient(const SharedMatrix g) { gradient_ = g; }

@@ -424,7 +424,6 @@ def frac_nuke(name: Union[str, Callable], **kwargs) -> Dict[float, float]:
 
         # Determine HOMO
         print('DGAS: What ref should this point to?')
-        #ref = core.legacy_wavefunction()
         eps_a = wfn.epsilon_a()
         eps_b = wfn.epsilon_b()
         if Na == Nb:
