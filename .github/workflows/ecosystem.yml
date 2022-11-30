@@ -116,7 +116,7 @@ jobs:
           - psi4/label/dev::gau2grid
           - psi4/label/dev::libint2
           - psi4/label/dev::qcelemental
-          - psi4/label/dev::qcengine
+          - psi4/label/dev::qcengine=0.25.0
           - psi4/label/dev::libxc
             # qc opt'l
           - psi4/label/dev::ambit
@@ -179,7 +179,7 @@ jobs:
           - psi4/label/dev::gau2grid
           - psi4/label/dev::libint2
           - psi4/label/dev::qcelemental
-          - psi4/label/dev::qcengine
+          - psi4/label/dev::qcengine=0.25.0
           - psi4/label/dev::libxc
             # qc req'd from buildtime
           - psi4/label/dev::ambit
@@ -222,7 +222,7 @@ jobs:
           - openfermion>=1.0
           - openfermionpsi4
           - pymdi
-          - qcengine
+          - qcengine=0.25.0
 
         # toml needed for psi4 to load parameters from dftd4-python
         EOF
@@ -251,7 +251,7 @@ jobs:
           - gau2grid
           - psi4/label/dev::libint2
           - qcelemental
-          - qcengine
+          - qcengine=0.25.0
           - libxc
             # qc req'd from buildtime
           #- psi4/label/dev::ambit
