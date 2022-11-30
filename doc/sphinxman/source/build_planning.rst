@@ -314,7 +314,11 @@ Additionally, there are runtime-loaded capabilities:
 
 * dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>`
 
+* simple-dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>` (Nov 2022; added by v1.7) preferred alternative to dftd3
+
 * gcp |w---w| :ref:`[what is gCP?] <sec:gcp>`
+
+* mctc-gcp |w---w| :ref:`[what is gCP?] <sec:gcp>` (Nov 2022; added by v1.7) preferred alternative to gcp
 
 * mrcc |w---w| :ref:`[what is MPCC?] <sec:mrcc>`
 
