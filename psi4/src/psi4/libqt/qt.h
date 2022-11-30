@@ -95,8 +95,6 @@ void print_block(double*, int, int, FILE*);
 
 int david(double** A, int N, int M, double* eps, double** v, double cutoff, int print);
 
-int* get_frzcpi();
-int* get_frzvpi();
 int cc_excited(const char* wfn);
 int cc_excited(std::string wfn);
 void free_3d_array(double*** A, int p, int q);
