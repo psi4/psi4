@@ -166,7 +166,7 @@ void DFJCOSK::common_init() {
     early_screening_ = true;
 
     // incremental Fock setup
-    incfock_ = options_.get_bool("COSX_INCFOCK");
+    incfock_ = options_.get_bool("INCFOCK");
     
     // => Direct Density-Fitted Coulomb Setup <= //
 
@@ -334,12 +334,10 @@ void DFJCOSK::incfock_setup() {
 }
 
 void DFJCOSK::incfock_postiter() {
-    if (do_incfock_iter_) {
-        // Save a copy of the density for the next iteration
-        D_prev_.clear();
-        for(auto const &Di : D_ao_) {
-            D_prev_.push_back(Di->clone());
-        }
+    // Save a copy of the density for the next iteration
+    D_prev_.clear();
+    for(auto const &Di : D_ao_) {
+        D_prev_.push_back(Di->clone());
     }
 }
 
