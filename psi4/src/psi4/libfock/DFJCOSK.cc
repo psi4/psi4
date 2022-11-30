@@ -318,8 +318,10 @@ void DFJCOSK::incfock_setup() {
 	size_t njk = D_ao_.size();
 
         // If there is no previous pseudo-density, this iteration is normal
-        if(D_prev_.size() != njk) {
-            D_ref_ = D_ao_;
+        if(initial_iteration_ || D_prev_.size() != njk) {
+            initial_iteration_ = true;
+	    
+	    D_ref_ = D_ao_;
             zero();
         } else { // Otherwise, the iteraction is incremental
             for (size_t jki = 0; jki < njk; jki++) {
@@ -349,10 +351,14 @@ void DFJCOSK::compute_JK() {
     if (incfock_) {
         timer_on("DFJCOSK: INCFOCK Preprocessing");
 
-        // always do incfock on this iteration
-	// TODO: Adds bells and whistles from DFJLinK
-        do_incfock_iter_ = incfock_; 
-        
+        int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
+        double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
+        double Dnorm = Process::environment.globals["SCF D NORM"];
+        // Do IFB on this iteration?
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+
+        if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
+	
 	incfock_setup();
         
 	timer_off("DFJCOSK: INCFOCK Preprocessing");
@@ -364,23 +370,30 @@ void DFJCOSK::compute_JK() {
     // Direct DF-J
     if (do_J_) {
         timer_on("DFJ");
-        build_J(D_ref_, J_ao_);
-        timer_off("DFJ");
+   
+   	build_J(D_ref_, J_ao_);
+   
+   	timer_off("DFJ");
     }
     
     // COSX
     if (do_K_) {
         timer_on("COSK");
-        build_K(D_ref_, K_ao_);
-        timer_off("COSK");
+   
+   	build_K(D_ref_, K_ao_);
+   
+   	timer_off("COSK");
     }
 
     // => Finalize Incremental Fock if required <= //
+
     if (incfock_) {
         timer_on("DFJCOSK: INCFOCK Postprocessing");
         incfock_postiter();
         timer_off("DFJCOSK: INCFOCK Postprocessing");
     }
+    
+    if (initial_iteration_) initial_iteration_ = false;
 }
 
 void DFJCOSK::postiterations() {}

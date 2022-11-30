@@ -1199,6 +1199,8 @@ class PSI_API DFJCOSK : public JK {
 
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
+      /// The number of times INCFOCK has been performed (includes resets)
+    int incfock_count_;
     bool do_incfock_iter_;
 
     /// Previous iteration pseudo-density matrix
@@ -1209,6 +1211,9 @@ class PSI_API DFJCOSK : public JK {
     //   (2) the difference density: D_eff == dD_lr = (C_lo x C_ro)_{iter} - (C_lo x C_ro)_{iter - 1}
     std::vector<SharedMatrix> D_ref_;
 
+    // Is the JK currently on a guess iteration
+    bool initial_iteration_ = true;
+ 
     // => Density Fitting Stuff <= //
 
     /// Auxiliary basis set
