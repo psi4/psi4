@@ -1,5 +1,8 @@
+import sys
+import pytest
 from addons import *
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="path import issues on windows")
 @uusing("dftd3")
 @ctest_labeler("")
 def test_dftd3_psithon2():

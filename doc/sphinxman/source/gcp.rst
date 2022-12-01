@@ -57,7 +57,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/gcp/badges/version.svg
      :target: https://anaconda.org/psi4/gcp
 
-* There are two implementations of gCP; see :ref:`table:empdispimpl`. The newer
+* There are two implementations of gCP; see :ref:`table:empdispimpl` . The newer
   "mctc" one is preferred, while the older "classic" one will work for the immediate future.
   |PSIfour| will automatically select whichever is available.
 
@@ -102,7 +102,7 @@ only to implement the "HF-3c" [Sure:2013:1672]_ and "PBEh-3c"
 [Grimme:2015:054107]_ methods (both energy and gradient). The interface
 can use classic or mctc-gcp executables interchangeably and will prefer the latter.
 A :ref:`DFTD3 <sec:dftd3>` executable, classic or simple-dftd3,
- must also be available for these methods to
+must also be available for these methods to
 run. Unlike every other method in |PSIfour|, if a basis set has not been
 set, these will default to their intended basis sets: MINIX for HF-3c
 and def2-mSVP for PBEh-3c. If a basis has previously been set, but you
