@@ -90,19 +90,24 @@ Installation
 * .. image:: https://anaconda.org/psi4/dftd3/badges/version.svg
      :target: https://anaconda.org/psi4/dftd3
 
-* DFTD3 is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
+* There are two implementations of DFTD3; see :ref:`table:empdispimpl` . The newer
+  "s-dftd3" one is preferred, while the older "classic" one will work for the immediate future.
+  |PSIfour| will automatically select whichever is available.
+
+* DFTD3 is available as a conda package for Linux and macOS and Windows.
 
 * If using the Psi4conda installer, DFTD3 has already been installed alongside.
 
-* If using the |PSIfour| conda package, the dftd3 conda package can
-  be obtained through ``conda install dftd3 -c psi4`` or ``conda install
-  psi4-rt -c psi4``.
+* If using the |PSIfour| conda package, the classic dftd3 conda package can
+  be obtained through ``conda install dftd3 -c psi4`` or the newer implementation
+  through ``conda install dftd3-python -c conda-forge``.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  the dftd3 executable can be obtained through ``conda install dftd3 -c psi4``.
+  the dftd3 executable can be obtained through ``conda install dftd3 -c psi4``
+  or ``conda install dftd3-python -c conda-forge``.
 
-* To remove a conda installation, ``conda remove dftd3``.
+* To remove a conda installation, ``conda remove dftd3`` or ``conda remove dftd3-python``.
 
 **Source**
 
@@ -118,8 +123,9 @@ Installation
   be used as-is; for earlier versions, patches are available:
   :source:`psi4/share/psi4/scripts/patch_grimme_dftd3.3.0.2`.
 
-To be used by |PSIfour|, the program binary (``dftd3``) must be
-found in your :envvar:`PSIPATH` or :envvar:`PATH` (in that order). If
+To be used by |PSIfour|, the classic program binary (``dftd3``) must be
+found in your :envvar:`PATH` or the s-dftd3 module in your :envvar:`PYTHONPATH`
+so QCEngine can detect it. Check if and where found through ``qcengine info``. If
 |PSIfour| is unable to execute the binary, an error will be reported.
 To preferentially use a particular dftd3 compilation, simply adjust its
 position in the path environment variables.
@@ -204,6 +210,7 @@ fit for individual functionals are now :math:`s_6`, :math:`s_8`,
 All parameters characterizing the dispersion correction are taken from
 `Grimme's website <https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/get-the-current-version-of-dft-d3>`_
 or else from the literature.
+With s-dftd3, parameters are also tabulated in the program source.
 
 Running DFTD3 or DFTD4
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -214,6 +221,7 @@ A number of *a posteriori* dispersion corrections are available in
 available only through the ``DFTD3`` or ``DFTD4`` programs. Once installed, the
 ``dftd3``/|PSIfour| and ``dftd4``/|PSIfour| interfaces are transparent, and all corrections are
 interfaced exactly alike.
+The -D3 interface can use classic or simple-dftd3 programs interchangeably and will prefer the latter.
 
 Dispersion corrections are built into DFT functionals, so appending an *a
 posteriori* correction to a computation is as simple as
@@ -240,7 +248,7 @@ define them. The dispersion correction is available after a calculation in
 the PSI variable :psivar:`DISPERSION CORRECTION ENERGY`.
 By default, the output from the ``dftd3``
 program is suppressed; to see it in the output file, set print > 2.
-No text output is available from the ``dftd4`` program.
+No text output is available from the ``dftd4`` or ``s-dftd3`` programs.
 
 
 .. _`table:dashd`:
@@ -317,6 +325,8 @@ be computed with::
    energy = m.run_dftd3('d3-atmgr', dertype=0)
    print(energy)
 
+Since v1.7, it is preferred to use ``s-dftd3`` for ATM since the 3-body can be run concurrent
+with the 2-body contribution.
 
 .. rubric:: Footnotes
 
@@ -367,6 +377,7 @@ interest, the dispersion programs can be run independently of the scf
 through the python function :py:func:`~qcdb.Molecule.run_dftd3` or :py:func:`~qcdb.Molecule.run_dftd4`. (These functions
 call QCEngine, which is the same |PSIfour| + ``dftd3``/``dftd4`` interface that is called during an scf job.)
 This "D-only" route is much faster than running a DFT-D energy.
+This route is NOT available for ``s-dftd3``. File an issue if a definite need arises.
 
 Note that in a DFT+D energy or gradient calculation, user-specified
 dispersion parameters override any information provided about the

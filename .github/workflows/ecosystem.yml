@@ -190,10 +190,10 @@ jobs:
           - psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
             # qc opt'l
-          - psi4/label/dev::dftd3
+#          - psi4/label/dev::dftd3
           - psi4/label/dev::pylibefp
           - psi4/label/dev::fockci
-          - psi4/label/dev::gcp
+#          - psi4/label/dev::gcp
           - psi4/label/dev::mp2d
           - psi4/label/dev::resp
           - psi4/label/dev::snsmp2
@@ -217,7 +217,9 @@ jobs:
             # qc opt'l
           - adcc
           - cppe
+          - dftd3-python
           - dftd4-python
+          - gcp-correction
           - geometric
           - openfermion>=1.0
           - openfermionpsi4
@@ -278,11 +280,13 @@ jobs:
             # qc opt'l
           #- adcc
           #- cppe
-          - psi4/label/dev::dftd3
+#          - psi4/label/dev::dftd3
+          - dftd3-python
           - dftd4-python
           #- psi4/label/dev::pylibefp
           #- psi4/label/dev::fockci
-          - psi4/label/dev::gcp
+#          - psi4/label/dev::gcp
+          - gcp-correction
           - geometric
           #- psi4/label/dev::mp2d
           #- openfermionpsi4

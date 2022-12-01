@@ -214,12 +214,12 @@ triple, or aromatic bonding motifs when partitioning the molecule into fragments
    such that :psivar:`2-BODY PAIRWISE DISPERSION CORRECTION ANALYSIS`
    was doubled when generated from dftd3 compared to the output from other
    programs (s-dftd3 and dftd4). This shows up in the QCVariable and in the
-   ``Empirical_Disp.dat`` file written during ``energy("fisapt0-d3")`` (and
-   other -D3 variants). Fortunately, the ``fsapt.py`` script compensated
+   ``Empirical_Disp.dat`` file written during ``energy("fisapt0-d3")`` (all
+   -D3 variants). Fortunately, the ``fsapt.py`` script compensated
    for dftd3 (by far the most used program for this task). Users of the
-   pairwise analysis should take care to use the new QCEngine and Psi4
-   AND ``fsapt.py`` script distributed with Psi4. ``fisapt0-d4`` run
-   with previous Psi4 will be wrong. ``fisapt0-d3`` run with previous
+   pairwise analysis should take care to use the new QCEngine
+   AND ``fsapt.py`` script distributed with NEW Psi4. ``fisapt0-d4`` run
+   with previous Psi4/fsapt.py will be wrong. ``fisapt0-d3`` run with previous
    Psi4/fsapt.py but new QCEngine will be wrong. If you've got legacy
    calculations, it is extremely easy to check or reanalyze them to
    salvage them, so please contact the developers with the circumstances
