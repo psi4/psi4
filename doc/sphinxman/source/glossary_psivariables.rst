@@ -2033,3 +2033,8 @@ PSI Variables by Alpha
 
    Vibrational zero-point energy [E_h] at 0 [K].
 
+.. psivar:: 2-BODY PAIRWISE DISPERSION CORRECTION ANALYSIS
+
+   The interatomic contributions to the dispersion correction [E_h].
+   Sums to the dispersion energy.
+

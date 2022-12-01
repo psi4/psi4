@@ -57,19 +57,24 @@ Installation
 * .. image:: https://anaconda.org/psi4/gcp/badges/version.svg
      :target: https://anaconda.org/psi4/gcp
 
-* gCP is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
+* There are two implementations of gCP; see :ref:`table:empdispimpl`. The newer
+  "mctc" one is preferred, while the older "classic" one will work for the immediate future.
+  |PSIfour| will automatically select whichever is available.
+
+* gCP is available as a conda package for Linux and macOS and Windows.
 
 * If using the Psi4conda installer, gCP has already been installed alongside.
 
-* If using the |PSIfour| conda package, the gcp conda package can
-  be obtained through ``conda install gcp -c psi4`` or ``conda install
-  psi4-rt -c psi4``.
+* If using the |PSIfour| conda package, the classic gcp conda package can
+  be obtained through ``conda install gcp -c psi4`` or the newer implementation
+  through ``conda install gcp-correction -c conda-forge``.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  the gcp executable can be obtained through ``conda install gcp -c psi4``.
+  the gcp executable can be obtained through ``conda install gcp -c psi4``
+  or ``conda install gcp-correction -c conda-forge``.
 
-* To remove a conda installation, ``conda remove gcp``.
+* To remove a conda installation, ``conda remove gcp`` or ``conda remove gcp-correction``.
 
 **Source**
 
@@ -81,8 +86,9 @@ Installation
   (essentially, download the freely available tarball, unpack the source,
   edit the Makefile to select a Fortran compiler, and run make).
 
-To be used by |PSIfour|, the program binary (``gcp``) must be
-found in your :envvar:`PSIPATH` or :envvar:`PATH` (in that order). If
+To be used by |PSIfour|, the program binary (``gcp`` or ``mctc-gcp``) must be
+found in your :envvar:`PATH` so that QCEngine can detect it. Check if and where
+found through ``qcengine info``. If
 |PSIfour| is unable to execute the binary, an error will be reported.
 To preferentially use a particular gcp compilation, simply adjust its
 position in the path environment variables.
@@ -93,8 +99,10 @@ Running gCP
 
 At present there is a limited interface to gCP that is used
 only to implement the "HF-3c" [Sure:2013:1672]_ and "PBEh-3c"
-[Grimme:2015:054107]_ methods (both energy and gradient). The :ref:`DFTD3
-<sec:dftd3>` executable must also be available for these methods to
+[Grimme:2015:054107]_ methods (both energy and gradient). The interface
+can use classic or mctc-gcp executables interchangeably and will prefer the latter.
+A :ref:`DFTD3 <sec:dftd3>` executable, classic or simple-dftd3,
+ must also be available for these methods to
 run. Unlike every other method in |PSIfour|, if a basis set has not been
 set, these will default to their intended basis sets: MINIX for HF-3c
 and def2-mSVP for PBEh-3c. If a basis has previously been set, but you
