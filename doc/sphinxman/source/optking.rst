@@ -41,17 +41,17 @@ Geometry Optimization
 
 *Module:* :ref:`Keywords <apdx:optking>`, `OPTKING <https://github.com/psi-rking/optking>`_
 
-|PSIfour| carries out molecular optimizations using a python module called
+|PSIfour| carries out molecular optimizations using a Python module called
 optking.  The optking program takes as input nuclear gradients and,
 optionally, nuclear second derivatives |w---w| both in Cartesian coordinates.
 The default minimization algorithm employs an empirical model Hessian,
-redundant internal coordinates, an RFO step, and the BFGS Hessian update.
+redundant internal coordinates, an RFO step with trust radius scaling, and the BFGS Hessian update.
 
 The principal literature references include the introduction of redundant
 internal coordinates by Peng et al. [Peng:1996:49]_.
 The general approach employed in this code
 is similar to the "model Hessian plus RF method" described and tested by Bakken and
-Helgaker [Bakken:2002:9160]_. (However, for separated
+Helgaker [Bakken:2002:9160]_. However, for separated
 fragments, we have chosen not to employ their "extra-redundant" coordinates.
 
 The internal coordinates are generated automatically based on an assumed bond
@@ -59,16 +59,14 @@ connectivity.  The connectivity is determined by testing if the interatomic
 distance is less than the sum of atomic radii times the value of
 |optking__covalent_connect|. If the user finds that some
 connectivity is lacking by default, then this value may be increased.
-Otherwise, the coordinate system can be created explicitly using optking's api.
-See the :ref:`sec:optkingExamples`
 
 .. warning:: The selection of a Z-matrix input, and in particular the inclusion
    of dummy atoms, has no effect on the behavior of the optimizer, which begins
    from a Cartesian representation of the system.
 
-Presently by default, separate fragments are bonded by
+Presently, by default, separate fragments are bonded by the
 nearest atoms, and the whole system is treated as if it were part of one
-molecule.  However, with the option |optking__frag_mode|, fragments
+molecule. However, with the option |optking__frag_mode|, fragments
 may instead be related by a unique set of interfragment coordinates defined by
 reference points within each fragment.  The reference points can be atomic
 positions (current default) or linear combinations of atomic positions
@@ -140,6 +138,11 @@ Then the following are examples of various types of calculations that can be com
 
    set full_hess_every 1
    optimize('scf')
+
+.. code-block:: none
+    
+    import optking
+    
 
 Hessian
 ^^^^^^^
@@ -266,7 +269,6 @@ For bends, the corresponding keyword is "frozen_bend".
 
 Note that the effect of the frozen and ranged keywords is independent of
 how the geometry of the molecule was input (whether Z-matrix or cartesian, etc.)..
-RANGED_DIHEDRAL
 
 * To scan the potential energy surface by optimizing at several fixed values
   of the dihedral angle of HOOH.
@@ -300,7 +302,7 @@ RANGED_DIHEDRAL
    for point in PES:
      print("\t%5.1f%20.10f" % (point[0], point[1]))
 
-* To scan the potential energy surface without the |optking__ranged_dihedral| keyword a zmatrix
+* To scan the potential energy surface without the |optking__ranged_dihedral| keyword, a zmatrix
   can be used. **Warning!** rotating dihedrals in large increments without allowing the molecule to relax
   in between increments can lead to unphysical geometries with overlapping functional groups in larger molecules.
 
@@ -341,11 +343,11 @@ Multi-Fragment Optimizations
 
 .. _DimerSection:
 
-Control over the intermolecular coordinates are controlled through |optking__interfrag_mode|,
+The intermolecular coordinates are controlled through |optking__interfrag_mode|,
 |optking__frag_ref_atoms|, and |optking__interfrag_coords|.
 
-* To specify the reference points to use for coordinates |optking__frag_ref_atoms| is
-  specified. Each list corresponds to a fragment. A list of indices denotes a linear combination
+* Specify the reference points to use for coordinates via |optking__frag_ref_atoms|.
+  Each list corresponds to a fragment. A list of indices denotes a linear combination
   of the atoms. In this case the first reference point for the second dimer is the center of the
   benzene ring.
 
@@ -385,7 +387,7 @@ Control over the intermolecular coordinates are controlled through |optking__int
    
    optimize("mp2")
 
-For even greater control a dictionary can be passed to |optking__interfrag_coords|
+For even greater control, a dictionary can be passed to |optking__interfrag_coords|
 
 The coordinates that are created between two dimers depend upon the number of atoms present
 The fragments `A` and `B` have up to 3 reference atoms each as shown in the
@@ -488,7 +490,7 @@ For difficult cases, the following suggestions are made.
 * |optking__dynamic_level| allows optking to change the method of optimization
   toward algorithms that, while often less efficient, may help to converge difficult
   cases.  If this is initially set to 1, then optking, as poor steps are detected,
-  will increase the level through several forms of more robust and cautious algorithms.
+  will increase the dynamic level through several forms of more robust and cautious algorithms.
   The changes will reduce the trust radius, allow backward steps (partial line
   searching), add cartesian coordinates, switch to cartesian coordinates, and take
   steepest-descent steps.
@@ -501,10 +503,11 @@ For difficult cases, the following suggestions are made.
 * Optking does support the specification of ghost atoms. Certain internal coordinates such 
   as torsions become poorly defined when they contain near-linear bends. 
   An internal error `AlgError` may be raised in such cases. Optking will avoid such
-  coordinates when choosing an initial coordinate system. In such cases, try
-  restarting from the most recent geometry. Alternatively, setting |optking__opt_coordinates| 
-  to cartesian will avoid any internal coordiante difficulties altogether. 
-  These coordinate changes can be automatically performed by turning |optking__dynamic_level| to 1.
+  coordinates when choosing an initial coordinate system; however, they may arise in the course
+  of an optimization. In such cases, try restarting from the most recent geometry.
+  Alternatively, setting |optking__opt_coordinates| to cartesian will avoid any internal
+  coordinate difficulties altogether. These coordinate changes can be automatically
+  performed by turning |optking__dynamic_level| to 1.
 
 .. warning:: In some cases, such as the coordinate issues described above, optking will reset to maintain
   a consistent history. If an error occurs in Psi4 due to |optking__geom_maxiter| being exceeded but
