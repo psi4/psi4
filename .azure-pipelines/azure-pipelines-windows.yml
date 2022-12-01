@@ -137,7 +137,7 @@ jobs:
                         conda-forge::libxc ^
                         psi4/label/dev::libint2=*=h2e52968_4 ^
                         conda-forge::qcelemental ^
-                        conda-forge::qcengine=0.25.0 ^
+                        conda-forge::qcengine=0.26.0 ^
                         conda-forge::optking ^
                         scipy
           conda install --only-deps anaconda-client

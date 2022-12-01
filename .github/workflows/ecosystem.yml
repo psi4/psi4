@@ -116,7 +116,7 @@ jobs:
           - psi4/label/dev::gau2grid
           - psi4/label/dev::libint2
           - psi4/label/dev::qcelemental
-          - psi4/label/dev::qcengine=0.25.0
+          - psi4/label/dev::qcengine=0.26.0
           - psi4/label/dev::libxc
             # qc opt'l
           - psi4/label/dev::ambit
@@ -179,7 +179,7 @@ jobs:
           - psi4/label/dev::gau2grid
           - psi4/label/dev::libint2
           - psi4/label/dev::qcelemental
-          - psi4/label/dev::qcengine=0.25.0
+          - psi4/label/dev::qcengine=0.26.0
           - psi4/label/dev::libxc
             # qc req'd from buildtime
           - psi4/label/dev::ambit
@@ -223,7 +223,7 @@ jobs:
           - openfermionpsi4
           - pyddx
           - pymdi
-          - qcengine=0.25.0
+          - qcengine=0.26.0
           - qcfractal
           - qcportal
 
@@ -265,7 +265,7 @@ jobs:
           - gau2grid
           - psi4/label/dev::libint2
           - qcelemental
-          - qcengine=0.25.0
+          - qcengine=0.26.0
           - libxc
             # qc req'd from buildtime
           #- psi4/label/dev::ambit
