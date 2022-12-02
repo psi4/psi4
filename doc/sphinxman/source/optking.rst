@@ -82,7 +82,6 @@ Basic Keywords
 .. include:: autodir_options_c/optking__geom_maxiter.rst
 .. include:: autodir_options_c/optking__g_convergence.rst
 .. include:: autodir_options_c/optking__full_hess_every.rst
-.. include:: autodir_options_c/optking__intcos_generate_exit.rst
 
 .. index:: geometry optimization; minima
 .. _`sec:optkingExamples`:
@@ -111,7 +110,7 @@ Then the following are examples of various types of calculations that can be com
    set step_type nr
    optimize('scf')
 
-* Optimize using energy points instead of gradients::
+* Optimize using finite differences of energies instead of gradients::
 
    optimize('scf', dertype='energy')
 
@@ -267,8 +266,13 @@ For bends, the corresponding keyword is "frozen_bend".
      ")
    }
 
-Note that the effect of the frozen and ranged keywords is independent of
-how the geometry of the molecule was input (whether Z-matrix or cartesian, etc.)..
+Note that the effect of the frozen and ranged keywords is generally independent of
+how the geometry of the molecule was input (whether Z-matrix or Cartesian, etc.)..
+At this time; however, enforcing Cartesian constraints when using a zmatrix for
+molecular input is not supported. Freezing or constraining Cartesian coordinates
+requires Cartesian molecule input. If numerical errors results in the symmetry 
+breaking, while Cartesian constraints are active, symmetrization cannot occur and
+an error will be raised, prompting you to restart the job.
 
 * To scan the potential energy surface by optimizing at several fixed values
   of the dihedral angle of HOOH.
@@ -344,19 +348,20 @@ Multi-Fragment Optimizations
 .. _DimerSection:
 
 In previous versions of optking, the metric for connecting atoms was increased until all atoms,
-in the system, were connected. This is the current behavior for |optking__frag_mode| `single`.
-Setting |optking_frag_mode| to `multi` will now add a special
-set of intermolecular coordinates between fragments - internally referred to as DimerFrag 
-coordinates. For a set of molecular fragments, a reference point is chosen on each fragment.
-The reference point may be an atom or a linear combination of atomic positions. Stretches, bends, and 
-dihedral angles between two the fragments will be created using these reference points. Up to six
-reference points will be created (depending upon the number of atoms in each fragment). See
-:ref:`Dimer coordinate table <table:DimerFrag>` for how reference points are created.
-For a set of three dimers A, B, and C, sets of coordinates are created between each pair AB, AC,
-and BC. Each DimerFrag will likely use different reference points. The intermolecular coordinates can be 
-controlled through |optking__interfrag_mode|, |optking__frag_ref_atoms|, and |optking__interfrag_coords|. 
+were connected. This is the current behavior for |optking__frag_mode| `singleo`.
+Setting |optking__frag_mode| to `multi` will now add a special
+set of intermolecular coordinates between fragments - internally referred to as DimerFrag
+coordinates. For a set of molecular fragments, a set of reference points are chosen on each
+fragment. The reference points may be an atom or a linear combination of atomic positions.
+Stretches, bends, and dihedral angles between two of the fragments will be created using
+these reference points. Up to six reference points will be created (depending upon the number
+of atoms in each fragment). See :ref:`Dimer coordinate table <table:DimerFrag>` for how
+reference points are created. For a set of three dimers A, B, and C, sets of coordinates are
+created between each pair: AB, AC, and BC. Each DimerFrag will likely use different reference
+points. Creation of the intermolecular coordinates can be controlled through
+|optking__interfrag_mode|, |optking__frag_ref_atoms|, and |optking__interfrag_coords|. 
 
-.. Warning:: Manually creating the interfragment coordinates is meant for power users.
+.. note:: Manually creating the interfragment coordinates is meant for power users.
     Setting |optking__interfrag_mode| to `multi` should suffice in almost all cases.
     :ref:`Dimer coordinate table <table:DimerFrag>`. provides the name and ordering
     convention for the coordinates.
@@ -396,8 +401,9 @@ controlled through |optking__interfrag_mode|, |optking__frag_ref_atoms|, and |op
    
    optimize("mp2")
 
-.. Warning:: The molecule input for psi4 has no effect upon optking. Specifying independent
-    fragments with the `--` seperator, will not trigger optking to add specific interfragment coordinates.
+.. Warning:: The molecule input for psi4 has no effect upon optking, expect to provide Cartesian
+    coordinates. Specifying independent fragments with the `--` seperator, will not trigger 
+    optking to add specific interfragment coordinates. Use |optking__frag_mode| `multi`.
 
 * Specify the reference points to use for coordinates via |optking__frag_ref_atoms|.
   Each list corresponds to a fragment. A list of indices denotes a linear combination
