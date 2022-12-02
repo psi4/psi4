@@ -1254,9 +1254,7 @@ def optimize(name, **kwargs):
         elif 'hessian' in opt_calcs:
             # compute hessian as requested.
 
-            # TODO test optimize dertype=0
             # procedures proctable analytic hessians
-            # TODO check distributed driver working (mp2?)
             _, hess_wfn = frequencies(hessian_with_method,
                                       molecule=molecule,
                                       ref_gradient=G,
@@ -1270,7 +1268,21 @@ def optimize(name, **kwargs):
         opt_object.molsys.geom = molecule.geometry().np
         core.print_out(opt_object.pre_step_str())  # print optking's molecule
         opt_object.compute()  # process E, gX, H
-        opt_object.take_step()
+        try:
+            opt_object.take_step()
+        except optking.exceptions.AlgError:
+            # Optking encountered an algorithm error and reset.
+            if not opt_object.HX:
+                n += 1
+                continue
+            else:
+                raise ConvergenceError(
+                        "Psi4 caught an AlgError. This should only happen after optking resets the history"
+                        "and needs another Hessian",
+                        n,
+                        wfn
+                )
+
         core.print_out(opt_object.post_step_str())  # print convergence and step info
 
         # Update psi4's molecule with new step. (Psi4 can rotate this molecule)
