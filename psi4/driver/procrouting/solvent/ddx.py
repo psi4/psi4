@@ -201,6 +201,8 @@ class DdxInterface:
         self.state = None
 
     def get_solvation_contributions(self, density_matrix, elec_only=False):
+        # TODO elec_only=True has not yet been tested. Will be properly integrated in a follow-up
+        #
         # Compute electronic contributions
         psi = self.numints.dd_density_integral(self.scaled_ylms, density_matrix).np.T
         dummy_charges = core.Vector.from_array(np.ones(self.model.n_cav))
