@@ -343,13 +343,66 @@ Multi-Fragment Optimizations
 
 .. _DimerSection:
 
-The intermolecular coordinates are controlled through |optking__interfrag_mode|,
-|optking__frag_ref_atoms|, and |optking__interfrag_coords|.
+In previous versions of optking, the metric for connecting atoms was increased until all atoms,
+in the system, were connected. This is the current behavior for |optking__frag_mode| `single`.
+Setting |optking_frag_mode| to `multi` will now add a special
+set of intermolecular coordinates between fragments - internally referred to as DimerFrag 
+coordinates. For a set of molecular fragments, a reference point is chosen on each fragment.
+The reference point may be an atom or a linear combination of atomic positions. Stretches, bends, and 
+dihedral angles between two the fragments will be created using these reference points. Up to six
+reference points will be created (depending upon the number of atoms in each fragment). See
+:ref:`Dimer coordinate table <table:DimerFrag>` for how reference points are created.
+For a set of three dimers A, B, and C, sets of coordinates are created between each pair AB, AC,
+and BC. Each DimerFrag will likely use different reference points. The intermolecular coordinates can be 
+controlled through |optking__interfrag_mode|, |optking__frag_ref_atoms|, and |optking__interfrag_coords|. 
+
+.. Warning:: Manually creating the interfragment coordinates is meant for power users.
+    Setting |optking__interfrag_mode| to `multi` should suffice in almost all cases.
+    :ref:`Dimer coordinate table <table:DimerFrag>`. provides the name and ordering
+    convention for the coordinates.
+
+* Basic multi-fragment optimization
+
+.. code-block:: none
+
+   memory 4GB 
+   molecule mol {
+       0 1 
+       O   -0.5026452583       -0.9681078610       -0.4772692868
+       H   -2.3292990446       -1.1611084524       -0.4772692868
+       H   -0.8887241813        0.8340933116       -0.4772692868
+       --  
+       0 1 
+       C    0.8853463281       -5.2235996493        0.5504918473
+       C    1.8139169342       -2.1992967152        3.8040686146
+       C    2.8624456357       -4.1143863257        0.5409035710
+       C   -0.6240195463       -4.8153482424        2.1904642137
+       C   -0.1646305764       -3.3031992532        3.8141619690
+       C    3.3271056135       -2.6064153737        2.1669340785
+       H    0.5244823836       -6.4459192939       -0.7478283184
+       H    4.0823309159       -4.4449979205       -0.7680411190
+       H   -2.2074914566       -5.7109913627        2.2110247636
+       H   -1.3768100495       -2.9846751653        5.1327625515
+       H    4.9209603634       -1.7288723155        2.1638694922
+       H    2.1923374156       -0.9964630692        5.1155773223
+       nocom
+       units au
+   }
+   
+   set {
+       basis 6-31+G 
+       frag_mode MULTI
+   }
+   
+   optimize("mp2")
+
+.. Warning:: The molecule input for psi4 has no effect upon optking. Specifying independent
+    fragments with the `--` seperator, will not trigger optking to add specific interfragment coordinates.
 
 * Specify the reference points to use for coordinates via |optking__frag_ref_atoms|.
   Each list corresponds to a fragment. A list of indices denotes a linear combination
-  of the atoms. In this case the first reference point for the second dimer is the center of the
-  benzene ring.
+  of the atoms. In this case, the first reference point for the second fragment is the center
+  of the benzene ring.
 
 .. code-block:: none
 
@@ -390,9 +443,10 @@ The intermolecular coordinates are controlled through |optking__interfrag_mode|,
 For even greater control, a dictionary can be passed to |optking__interfrag_coords|
 
 The coordinates that are created between two dimers depend upon the number of atoms present
-The fragments `A` and `B` have up to 3 reference atoms each as shown in the
-The interfragment coordinates are named and can be frozen according to their names as show in 
+The fragments `A` and `B` have up to 3 reference atoms each as shown in
 :ref:`Dimer coordinate table <table:DimerFrag>`.
+The interfragment coordinates are named and can be frozen according to their names as show in 
+example below.
 
 .. _`table:DimerFrag`:
 
@@ -511,7 +565,7 @@ For difficult cases, the following suggestions are made.
 
 .. warning:: In some cases, such as the coordinate issues described above, optking will reset to maintain
   a consistent history. If an error occurs in Psi4 due to |optking__geom_maxiter| being exceeded but
-  the final step report indicates that optking has not taken |optking__geom_maxiter| steps such a 
+  the final step report indicates that optking has not taken |optking__geom_maxiter| steps, such a 
   reset has occured. Inspection will show that the step counter was reset to 1 somewhere in the
   optimization.
 
