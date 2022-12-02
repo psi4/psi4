@@ -493,7 +493,7 @@
             "@type": "Person",
             "givenName": "Stefan",
             "familyName": "Behnle",
-            "affiliation": "Eberhard Karls Universität Tübingen Mathematisch-Naturwissenschaftliche Fakultät",
+            "affiliation": "Eberhard Karls Universit\u00e4t T\u00fcbingen Mathematisch-Naturwissenschaftliche Fakult\u00e4t",
             "latitude": 48.5373,
             "longitude": 9.0351,
             "@id": "https://orcid.org/0000-0003-3797-7272",
@@ -507,6 +507,7 @@
             "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
             "latitude": 33.780,
             "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0002-6930-2184",
             "identifier": "https://github.com/davpoolechem"
         },
         {
