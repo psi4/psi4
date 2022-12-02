@@ -1,4 +1,5 @@
-#! RHF Linear Exchange Algorithm example for water
+#! RHF Linear Exchange Algorithm test for water
+
 
 molecule mol {
     0 1
@@ -23,3 +24,5 @@ set {
 }
 
 linK_energy = energy('scf')
+psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
+compare(1, variable("SCF ITERATIONS") < 12.0, "LinK Incfock Efficient")
