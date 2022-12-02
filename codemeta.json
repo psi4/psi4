@@ -6,7 +6,7 @@
     "codeRepository": "https://github.com/psi4/psi4",
     "issueTracker": "https://github.com/psi4/psi4/issues",
     "license": "https://opensource.org/licenses/lgpl-3.0.html",
-    "version": "1.6",
+    "version": "1.7",
     "author": [
         {
             "@type": "Person",
@@ -488,6 +488,38 @@
             "longitude": -84.3965,
             "@id": "https://orcid.org/0000-0002-6946-209X",
             "identifier": "https://github.com/andyj10224"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Stefan",
+            "familyName": "Behnle",
+            "affiliation": "Eberhard Karls Universit\u00e4t T\u00fcbingen Mathematisch-Naturwissenschaftliche Fakult\u00e4t",
+            "latitude": 48.5373,
+            "longitude": 9.0351,
+            "@id": "https://orcid.org/0000-0003-3797-7272",
+            "identifier": "https://github.com/behnle"
+        },
+        {
+            "@type": "Person",
+            "givenName": "David",
+            "additionalName": "L.",
+            "familyName": "Poole",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0002-6930-2184",
+            "identifier": "https://github.com/davpoolechem"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Alexander",
+            "additionalName": "G.",
+            "familyName": "Heide",
+            "affiliation": "Center for Computational Quantum Chemistry, University of Georgia",
+            "latitude": 33.94797,
+            "longitude": -83.37482,
+            "@id": "https://orcid.org/0000-0002-9780-8123",
+            "identifier": "https://github.com/AlexHeide"
         }
     ],
     "developmentStatus": "active",
