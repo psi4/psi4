@@ -309,6 +309,8 @@ jobs:
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
+        mamba-version: "*"
+        use-mamba: true
         activate-environment: baseenv
         environment-file: build.yaml
         show-channel-urls: true
@@ -317,8 +319,8 @@ jobs:
 
     - name: Buildtime Conda environment
       run: |
-        conda info
-        conda list
+        mamba info
+        mamba list
 
     # TODO-dfocc2: reset x3 CMAKE_INSIST_FIND_PACKAGE_qcengine=ON after qcng v0.24.1
     - name: Configure Psi4, Conda defaults GNU (L)
@@ -451,18 +453,18 @@ jobs:
     - name: Runtime Conda environment(s)
       run: |
         echo "::group::Prepare Environment"
-        conda deactivate
-        conda remove -n baseenv --all
-        conda env create --file run.yaml
+        mamba deactivate
+        mamba remove -n baseenv --all
+        mamba env create --file run.yaml
         if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        conda env create --file aux.yaml
+        mamba env create --file aux.yaml
         fi
-        conda activate baseenv
+        mamba activate baseenv
         echo "::endgroup::"
-        conda info
-        conda list -n baseenv
+        mamba info
+        mamba list -n baseenv
         if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        conda list -n auxenv
+        mamba list -n auxenv
         qcengine info
         fi
 
@@ -494,7 +496,7 @@ jobs:
       if: matrix.cfg.base-channel != 'conda-forge'
       working-directory: ./objdir
       run: |
-        conda activate --stack auxenv
+        mamba activate --stack auxenv
         printenv | grep CONDA_PREFIX
         if [[ "${{ runner.os }}" == "Linux" ]]; then
             # (1st entry) need to find the Psi4 module
@@ -513,7 +515,7 @@ jobs:
     - name: Write user Conda environment files
       run: |
         echo "::group::Prepare Environment"
-        conda install ruamel_yaml -c ${{ matrix.cfg.base-channel }}
+        mamba install ruamel_yaml -c ${{ matrix.cfg.base-channel }}
         echo "::endgroup::"
         cat > userenvs.py <<EOF
         from pathlib import Path
