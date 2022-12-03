@@ -79,6 +79,8 @@ _programs = {
     "snsmp2": which_import("snsmp2", return_bool=True),
     "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
     "qcdb": False,  # capabilities of in-psi and out-of-psi qcdb not aligned
+    "qcfractal": which_import("qcfractal", return_bool=True),
+    "qcportal": which_import("qcportal", return_bool=True),
 }
 
 

@@ -223,9 +223,19 @@ jobs:
           - openfermionpsi4
           - pymdi
           - qcengine=0.25.0
+          - qcfractal
+          - qcportal
 
         # toml needed for psi4 to load parameters from dftd4-python
         EOF
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" build.yaml
+          sed -i "s;- qcportal;- qcarchive/label/next::qcportal;g" build.yaml
+        fi
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" build.yaml
+          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" build.yaml
+        fi
         fi
         #
         # Runtime for single-channel (W)
