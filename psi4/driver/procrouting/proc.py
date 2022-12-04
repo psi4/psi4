@@ -846,6 +846,9 @@ def select_ccsd(name, **kwargs):
                 func = run_mrcc
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
+        elif mtd_type in ["DF", "CD"]:
+            if module in ["", "OCC"]:
+                func = run_dfocc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
             if module == 'CCT3' and extras.addons("cct3"):
@@ -886,6 +889,9 @@ def select_ccsd_gradient(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
@@ -964,6 +970,9 @@ def select_ccsd_t_(name, **kwargs):
                 func = run_mrcc
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
+        elif mtd_type in ["DF", "CD"]:
+            if module in ["OCC"]:  # SOON "",
+                func = run_dfocc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
             if module == 'MRCC' and which("dmrcc", return_bool=True):
@@ -1001,6 +1010,9 @@ def select_ccsd_t__gradient(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy_gradient
+        elif mtd_type == 'DF':
+            if module in ['OCC']:  # SOON "",
+                func = run_dfocc_gradient
 
     if func is None:
         raise ManagedMethodError([__name__, name, type_var, mtd_type, reference, module])
@@ -1012,7 +1024,7 @@ def select_ccsd_t__gradient(name, **kwargs):
 
 
 def select_ccsd_at_(name, **kwargs):
-    """Function selecting the algorithm for a CCSD(AT) energy call
+    """Function selecting the algorithm for a a-CCSD(T) energy call
     and directing to specified or best-performance default modules.
 
     """
@@ -1043,6 +1055,12 @@ def select_ccsd_at_(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
                 func = run_mrcc
+        elif mtd_type == "DF":
+            if module in ["OCC"]:  # SOON "",
+                func = run_dfocc
+        elif mtd_type == "CD":
+            if module in ["OCC"]:  # SOON "",
+                func = run_dfocc
     elif reference == "ROHF":
         if mtd_type == 'CONV':
             if module in ['', 'MRCC'] and which("dmrcc", return_bool=True):
@@ -1162,7 +1180,7 @@ def select_ccd(name, **kwargs):
     module = core.get_global_option("QC_MODULE")
 
     func = None
-    if reference in ["RHF"]:  # , "UHF"]
+    if reference in ["RHF", "UHF"]:
         if mtd_type == "CONV":
             if module in [""]:
                 core.print_out("""\nThis method is not available with conventional integrals. Add "set """
@@ -1193,7 +1211,7 @@ def select_ccd_gradient(name, **kwargs):
     module = core.get_global_option("QC_MODULE")
 
     func = None
-    if reference in ["RHF"]:  # , "UHF"]
+    if reference in ["RHF", "UHF"]:
         if mtd_type == "CONV":
             if module in [""]:
                 core.print_out("""\nThis method is not available with conventional integrals. Add "set """
@@ -1922,6 +1940,8 @@ def scf_helper(name, post_scf=True, **kwargs):
         c1_molecule.update_geometry()
         c1_basis = core.BasisSet.build(c1_molecule, "ORBITAL", core.get_global_option('BASIS'), quiet=True)
         tmp = scf_wfn.c1_deep_copy(c1_basis)
+        if not scf_wfn.has_variable("-D ENERGY"):
+            tmp.del_variable("-D ENERGY")
         c1_jkbasis = core.BasisSet.build(c1_molecule, "DF_BASIS_SCF",
                                          core.get_global_option("DF_BASIS_SCF"),
                                          "JKFIT", core.get_global_option('BASIS'), quiet=True)

@@ -373,7 +373,24 @@ Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globa
 
 Publications resulting from the use of the non-OO CC codes should cite the following publications:
 
-* **REMP** [Behnle:2019:REMP]_, [Behnle:2022:OREMP]
+* **MP2** [Bozkaya:2011:omp2]_, [Bozkaya:2013:omp2grad]_, and [Bozkaya:2014:dfomp2grad]_
+
+* **MP3** [Bozkaya:2011:omp3]_ , [Bozkaya:2013:omp3]_, [Bozkaya:2013:omp3grad]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
+
+* **MP2.5** [Bozkaya:2011:omp3]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
+
+* **REMP** [Behnle:2019:REMP]_, [Behnle:2022:OREMP]_
+
+* **LCCD** [Bozkaya:2013:ocepa]_ and [Bozkaya:2016:dfolccd]_
+
+* **CCD** [Bozkaya:2020:dfoccd]_
+
+* **CCSD** [Bozkaya:2016:dfccsdgrad]_
+
+* **CCSD(T)** [Bozkaya:2017:dfccsdtgrad]_
+
+* **CCSD(AT)** [Bozkaya:2016:dfccsdat]_
+
 
 .. _`table:occ_nonoo_calls`:
 

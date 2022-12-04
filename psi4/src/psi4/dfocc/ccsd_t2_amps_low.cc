@@ -126,16 +126,16 @@ void DFOCC::ccsd_t2_amps_low() {
     if (do_diis_ == 0) T->write_symm(psio_, PSIF_DFOCC_AMPS);
 
     // DIIS
-    std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA * navirA, naoccA * navirA));
+    auto RT2 = std::make_shared<Matrix>("RT2", naoccA * navirA, naoccA * navirA);
     Tau->to_matrix(RT2);
     Tau.reset();
-    std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
+    auto T2 = std::make_shared<Matrix>("T2", naoccA * navirA, naoccA * navirA);
     T->to_matrix(T2);
     T.reset();
-    std::shared_ptr<Matrix> RT1(new Matrix("RT1", naoccA, navirA));
+    auto RT1 = std::make_shared<Matrix>("RT1", naoccA, navirA);
     Rt1A->to_matrix(RT1);
     Rt1A.reset();
-    std::shared_ptr<Matrix> T1(new Matrix("T1", naoccA, navirA));
+    auto T1 = std::make_shared<Matrix>("T1", naoccA, navirA);
     t1A->to_matrix(T1);
 
     // add entry

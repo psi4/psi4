@@ -1,0 +1,32 @@
+#! DF-CCSD(T) cc-pVDZ energy for the NH molecule.
+
+refnuc      =  3.50194996133039  #TEST
+refscf      = -54.96603000632251 #TEST
+refcc       = -55.09162493182154 #TEST
+
+molecule nh {
+  0 3
+  N    -0.873042000000      0.576431000000      0.000000000000
+  H     0.153816000000      0.322601000000      0.000000000000
+  nocom
+  noreorient
+  symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  guess gwh
+  reference uhf
+  scf_type df
+  cc_type df
+  qc_module occ
+  freeze_core true
+}
+
+energy('ccsd(t)')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                      #TEST
+compare_values(refcc, variable("CCSD(T) Total Energy"), 6, "CCSD(T) Total Energy (a.u.)");           #TEST

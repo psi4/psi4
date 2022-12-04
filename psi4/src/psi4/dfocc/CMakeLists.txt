@@ -106,6 +106,17 @@ list(APPEND sources
   update_mo.cc
   z_vector.cc
   z_vector_pcg.cc
+  uccsd_W_intr.cc
+  uccsd_t2_amps.cc
+  uccsd_energy.cc
+  uccsdl_W_intr.cc
+  uccsdl_l2_amps.cc
+  uccsdl_energy.cc
+  uccsd_tpdm.cc
+  uccsd_pdm_3index_intr.cc
+  uccsd_triples_hm.cc
+  uccsdl_triples_hm.cc
+  uccsd_triples_grad_hm.cc
   )
 psi4_add_module(bin dfocc sources)
 

@@ -33,6 +33,7 @@
 #include "psi4/psifiles.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/process.h"
@@ -137,7 +138,7 @@ void DFOCC::get_moinfo() {
         CmoA = std::make_shared<Tensor2d>("Alpha MO Coefficients", nso_, nmo_);
         CmoA->set(Ca_);
         if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
-            Cmo_refA = SharedTensor2d(new Tensor2d("Alpha Reference MO Coefficients", nso_, nmo_));
+            Cmo_refA = std::make_shared<Tensor2d>("Alpha Reference MO Coefficients", nso_, nmo_);
             Cmo_refA->copy(CmoA);
         }
         if (print_ > 2) CmoA->print();
@@ -484,7 +485,7 @@ void DFOCC::remove_binary_file(int fileno) {
     std::ostringstream convert;
     convert << fileno;
     std::string scr = PSIOManager::shared_object()->get_default_path();
-    std::string pid_ = psio_getpid();
+    std::string pid_ = psio_->getpid();
     std::string fname = scr + "psi." + pid_ + "." + convert.str();
     // std::string fname = scr + "psi_dfocc." + convert.str();
     remove(const_cast<char *>(fname.c_str()));

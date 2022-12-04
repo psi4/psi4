@@ -621,3 +621,50 @@ Bibliography
    "Two new unitary-invariant and size-consistent perturbation theoretical approaches to the electron correlation energy",
    R. F. Fink
    *Chem. Phys. Lett.*, **428**, 461 (2006)
+   https://doi.org/10.1016/j.cplett.2006.07.081
+
+.. .. [Bozkaya:2014:dfomp2]
+..    U. Bozkaya,
+..    *J. Chem. Phys.* **141**, 124108 (2014).
+..    https://doi.org/10.1063/1.4896235
+
+.. [Bozkaya:2014:dfomp2grad]
+   U. Bozkaya,
+   *J. Chem. Theory Comput.* **10**, 4389-4399 (2014).
+   https://doi.org/10.1021/ct500634s
+
+.. [Bozkaya:2016:dfomp3]
+   U. Bozkaya,
+   *J. Chem. Theory Comput.* **12**, 1179-1188 (2016).
+   https://doi.org/10.1021/acs.jctc.5b01128
+
+.. [Bozkaya:2016:dfolccd]
+   U. Bozkaya,
+   *Phys. Chem. Chem. Phys.* **18**, 11362-11373 (2016).
+   https://doi.org/10.1039/c6cp00164e
+
+.. [Bozkaya:2016:dfccsdat]
+   U. Bozkaya,
+   *J. Chem. Phys.* **144**, 144108 (2016).
+   https://doi.org/10.1063/1.4945706
+
+.. [Bozkaya:2016:dfccsdgrad]
+   U. Bozkaya and C. D. Sherrill,
+   *J. Chem. Phys.* **144**, 174103 (2016).
+   https://doi.org/10.1063/1.4948318
+
+.. [Bozkaya:2017:dfccsdtgrad]
+   U. Bozkaya and C. D. Sherrill,
+   *J. Chem. Phys.* **147**, 044104 (2017).
+   https://doi.org/10.1063/1.4994918
+
+.. [Bozkaya:2018:dfomp3grad]
+   U. Bozkaya,
+   *J. Comput. Chem.* **39**, 351-360 (2018).
+   https://doi.org/10.1002/jcc.25122
+
+.. [Bozkaya:2020:dfoccd]
+   U. Bozkaya,
+   *J. Chem. Phys.* **153**, 244115 (2020).
+   https://doi.org/10.1063/5.0035811
+
