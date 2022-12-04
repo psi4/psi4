@@ -477,7 +477,10 @@ jobs:
 
     - name: Patch QCFractal for Python
       if: runner.os == 'macOS'
-      run: sed -E -i.bak "s/for result in self.queue.values():/for result in list(self.queue.values()):/g" /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+      run: |
+        cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        sed -E -i.bak "s;for result in self.queue.values();for result in list(self.queue.values());g" /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
     - name: Test OpenMP
       working-directory: ./install/lib
