@@ -332,6 +332,16 @@ double Tensor1d::xay(const SharedTensor2d &a, const SharedTensor1d &y) {
     return value;
 }  //
 
+SharedTensor2d Tensor1d::to_2d(int row, int col) {
+  if (row*col != dim1_) {
+      printf("Tensor1d-->to_2d dimensisons are not consistent!");
+      exit(1);
+  }
+  auto temp = std::make_shared<Tensor2d>("Temp", row, col);
+  C_DCOPY(dim1_, A1d_, 1, temp->A2d_[0], 1);
+  return temp;
+} //
+
 void Tensor1d::axpy(const SharedTensor1d &a, double alpha) {
     size_t length = (size_t)dim1_;
     C_DAXPY(length, alpha, a->A1d_, 1, A1d_, 1);
@@ -827,6 +837,38 @@ void Tensor2d::gemm(bool transa, bool transb, const SharedTensor2d &a, const Sha
     ncb = transb ? k : n;  // ldb
     ncc = n;               // ldc
 
+    // C(m,n) = \sum(k) A(m,k) B(k,n)
+    if (!transa && !transb) {
+        if (m != a->dim1()  || n != b->dim2() || a->dim2() != b->dim1()) {
+            outfile->Printf("\tTensor2d::gemm dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::gemm dimensions are NOT consistent!");
+        }
+    }
+
+    // C(m,n) = \sum(k) A(m,k) B(n,k)
+    else if (!transa && transb) {
+        if (m != a->dim1()  || n != b->dim1() || a->dim2() != b->dim2()) {
+            outfile->Printf("\tTensor2d::gemm dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::gemm dimensions are NOT consistent!");
+        }
+    }
+
+    // C(m,n) = \sum(k) A(k,m) B(k,n)
+    else if (transa && !transb) {
+        if (m != a->dim2()  || n != b->dim2() || a->dim1() != b->dim1()) {
+            outfile->Printf("\tTensor2d::gemm dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::gemm dimensions are NOT consistent!");
+        }
+    }
+
+    // C(m,n) = \sum(k) A(k,m) B(n,k)
+    else if (transa && transb) {
+        if (m != a->dim2()  || n != b->dim1() || a->dim1() != b->dim2()) {
+            outfile->Printf("\tTensor2d::gemm dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::gemm dimensions are NOT consistent!");
+        }
+    }
+
     if (m && n && k) {
         C_DGEMM(ta, tb, m, n, k, alpha, &(a->A2d_[0][0]), nca, &(b->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
     }
@@ -889,6 +931,25 @@ void Tensor2d::contract323(bool transa, bool transb, int m, int n, const SharedT
     ncb = transb ? k : n;
     ncc = n;
 
+    // contract323: C[Q](m,n) = \sum_{k} A[Q](m,k) * B(k,n). Note: contract332 should be called with beta=1.0
+    // Check C[Q](m,n)
+    if (m * n != dim2_) {
+        outfile->Printf("\tTensor2d::contract323 the m*n value is NOT consistent with the col dimension of the Tensor C!\n");
+        throw PSIEXCEPTION("Tensor2d::contract323 the m*n value is NOT consistent with the col dimension of the Tensor C!");
+    }
+
+    // Check A[Q](m,k)
+    if (m * k != a->dim2()) {
+        outfile->Printf("\tTensor2d::contract323 the m*k value is NOT consistent with the col dimension of the Tensor A!\n");
+        throw PSIEXCEPTION("Tensor2d::contract323 the m*k value is NOT consistent with the col dimension of the Tensor A!");
+    }
+
+    // Check B(k,n)
+    if (n * k != b->dim1() * b->dim2()) {
+        outfile->Printf("\tTensor2d::contract323 the n*k value is NOT consistent with dimensions of the Tensor B!\n");
+        throw PSIEXCEPTION("Tensor2d::contract323 the n*k value is NOT consistent with dimensions of the Tensor B!");
+    }
+
     if (m && n && k) {
 #pragma omp parallel for
         for (int Q = 0; Q < dim1_; Q++) {
@@ -907,6 +968,25 @@ void Tensor2d::contract233(bool transa, bool transb, int m, int n, const SharedT
     lda = transa ? m : k;
     ldb = transb ? k : n;
     ldc = n;
+
+    // contract233: C[Q](m,n) = \sum_{k} A(m,k) * B[Q](k,n)
+    // Check C[Q](m,n)
+    if (m * n != dim2_) {
+        outfile->Printf("\tTensor2d::contract233 the m*n value is NOT consistent with the col dimension of the Tensor C!\n");
+        throw PSIEXCEPTION("Tensor2d::contract233 the m*n value is NOT consistent with the col dimension of the Tensor C!");
+    }
+
+    // Check A(m,k)
+    if (m * k != a->dim1() * a->dim2()) {
+        outfile->Printf("\tTensor2d::contract233 the m*k value is NOT consistent with dimensions of the Tensor A!\n");
+        throw PSIEXCEPTION("Tensor2d::contract233 the m*k value is NOT consistent with dimensions of the Tensor A!");
+    }
+
+    // Check B[Q](k,n)
+    if (n * k != b->dim2()) {
+        outfile->Printf("\tTensor2d::contract233 the n*k value is NOT consistent with the col dimension of the Tensor B!\n");
+        throw PSIEXCEPTION("Tensor2d::contract233 the n*k value is NOT consistent with the col dimension of the Tensor B!");
+    }
 
     if (m && n && k) {
 #pragma omp parallel for
@@ -927,6 +1007,25 @@ void Tensor2d::contract332(bool transa, bool transb, int k, const SharedTensor2d
     nca = transa ? m : k;
     ncb = transb ? k : n;
     ncc = n;
+
+    // contract332: C(m,n) = \sum_{k} A[Q](m,k) * B[Q](k,n)
+    // Check C(m,n)
+    if (m * n != dim1_ * dim2_) {
+        outfile->Printf("\tTensor2d::contract332 the m*n value is NOT consistent with dimensions of the Tensor C!\n");
+        throw PSIEXCEPTION("Tensor2d::contract332 the m*n value is NOT consistent with dimensions of the Tensor C!");
+    }
+
+    // Check A[Q](m,k)
+    if (m * k != a->dim2()) {
+        outfile->Printf("\tTensor2d::contract332 the m*k value is NOT consistent with the col dimension of the Tensor A!\n");
+        throw PSIEXCEPTION("Tensor2d::contract332 the m*k value is NOT consistent with the col dimension of the Tensor A!");
+    }
+
+    // Check B[Q](k,n)
+    if (n * k != b->dim2()) {
+        outfile->Printf("\tTensor2d::contract332 the n*k value is NOT consistent with the col dimension of the Tensor B!\n");
+        throw PSIEXCEPTION("Tensor2d::contract332 the n*k value is NOT consistent with the col dimension of the Tensor B!");
+    }
 
     if (m && n && k) {
         //#pragma omp parallel for
@@ -954,6 +1053,12 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
+        // Check dims
+        if (d1_ != b->dim2() || d2_ != a->d2_ || d3_ != a->d3_ || d4_ != a->d4_) {
+            outfile->Printf("\tTensor2d::contract424 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract424 dimensions are NOT consistent!");
+        }
+
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, b->A2d_[0], lda, a->A2d_[0], ldb, beta, A2d_[0], ldc);
         }
@@ -970,6 +1075,12 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
+        // Check dims
+        if (d1_ != b->dim1() || d2_ != a->d2_ || d3_ != a->d3_ || d4_ != a->d4_) {
+            outfile->Printf("\tTensor2d::contract424 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract424 dimensions are NOT consistent!");
+        }
+
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, b->A2d_[0], lda, a->A2d_[0], ldb, beta, A2d_[0], ldc);
         }
@@ -986,6 +1097,12 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
+        // Check dims
+        if (d1_ != a->d1_ || d2_ != b->dim2() || d3_ != a->d3_ || d4_ != a->d4_) {
+            outfile->Printf("\tTensor2d::contract424 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract424 dimensions are NOT consistent!");
+        }
+
         SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d3_, a->d4_, a->d2_);
         SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_, d3_, d4_, d2_);
         temp1->sort(1342, a, 1.0, 0.0);
@@ -1013,6 +1130,12 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = k;
         ldc = n;
 
+        // Check dims
+        if (d1_ != a->d1_ || d2_ != b->dim1() || d3_ != a->d3_ || d4_ != a->d4_) {
+            outfile->Printf("\tTensor2d::contract424 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract424 dimensions are NOT consistent!");
+        }
+
         SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d3_, a->d4_, a->d2_);
         SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_, d3_, d4_, d2_);
         temp1->sort(1342, a, 1.0, 0.0);
@@ -1040,6 +1163,12 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
+        // Check dims
+        if (d1_ != a->d1_ || d2_ != a->d2_ || d3_ != b->dim2() || d4_ != a->d4_) {
+            outfile->Printf("\tTensor2d::contract424 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract424 dimensions are NOT consistent!");
+        }
+
         SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d2_, a->d4_, a->d3_);
         SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_, d2_, d4_, d3_);
         temp1->sort(1243, a, 1.0, 0.0);
@@ -1067,6 +1196,12 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         ldb = k;
         ldc = n;
 
+        // Check dims
+        if (d1_ != a->d1_ || d2_ != a->d2_ || d3_ != b->dim1() || d4_ != a->d4_) {
+            outfile->Printf("\tTensor2d::contract424 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract424 dimensions are NOT consistent!");
+        }
+
         SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d2_, a->d4_, a->d3_);
         SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", d1_, d2_, d4_, d3_);
         temp1->sort(1243, a, 1.0, 0.0);
@@ -1093,6 +1228,13 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         lda = k;
         ldb = n;
         ldc = n;
+
+        // Check dims
+        if (d1_ != a->d1_ || d2_ != a->d2_ || d3_ != a->d3_ || d4_ != b->dim2()) {
+            outfile->Printf("\tTensor2d::contract424 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract424 dimensions are NOT consistent!");
+        }
+
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), ldb, beta, &(A2d_[0][0]), ldc);
         }
@@ -1108,180 +1250,17 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
         lda = k;
         ldb = k;
         ldc = n;
+
+        // Check dims
+        if (d1_ != a->d1_ || d2_ != a->d2_ || d3_ != a->d3_ || d4_ != b->dim1()) {
+            outfile->Printf("\tTensor2d::contract424 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract424 dimensions are NOT consistent!");
+        }
+
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), ldb, beta, &(A2d_[0][0]), ldc);
         }
     }
-
-    /*
-    // C(pq,rs) = \sum_{o} A(pq,ro) B(o,s)
-    else if (target_x == 4 && target_y == 1) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1_; p++) {
-         for (int q = 0; q < d2_; q++) {
-              int pq = row_idx_[p][q];
-              for (int r = 0; r < d3_; r++) {
-                   for (int s = 0; s < d4_; s++) {
-                        int rs = col_idx_[r][s];
-                        double sum = 0.0;
-                        for (int o = 0; o < b->dim1(); o++) {
-                             int ro = a->col_idx_[r][o];
-                             sum += a->get(pq,ro) * b->get(o,s);
-                        }
-                        A2d_[pq][rs] = (alpha * sum) + (beta * A2d_[pq][rs]);
-                   }
-              }
-         }
-    }
-    }
-
-    // C(pq,rs) = \sum_{o} A(pq,ro) B(s,o)
-    else if (target_x == 4 && target_y == 2) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1_; p++) {
-         for (int q = 0; q < d2_; q++) {
-              int pq = row_idx_[p][q];
-              for (int r = 0; r < d3_; r++) {
-                   for (int s = 0; s < d4_; s++) {
-                        int rs = col_idx_[r][s];
-                        double sum = 0.0;
-                        for (int o = 0; o < b->dim2(); o++) {
-                             int ro = a->col_idx_[r][o];
-                             sum += a->get(pq,ro) * b->get(s,o);
-                        }
-                        A2d_[pq][rs] = (alpha * sum) + (beta * A2d_[pq][rs]);
-                   }
-              }
-         }
-    }
-    }
-
-    // C(pq,rs) = \sum_{o} A(oq,rs) B(o,p)
-    if (target_x == 1 && target_y == 1) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1_; p++) {
-         for (int q = 0; q < d2_; q++) {
-              int pq = row_idx_[p][q];
-              for (int r = 0; r < d3_; r++) {
-                   for (int s = 0; s < d4_; s++) {
-                        int rs = col_idx_[r][s];
-                        double sum = 0.0;
-                        for (int o = 0; o < b->dim1(); o++) {
-                             int oq = a->row_idx_[o][q];
-                             sum += a->get(oq,rs) * b->get(o,p);
-                        }
-                        A2d_[pq][rs] = (alpha * sum) + (beta * A2d_[pq][rs]);
-                   }
-              }
-         }
-    }
-    }
-
-    // C(pq,rs) = \sum_{o} A(oq,rs) B(p,o)
-    else if (target_x == 1 && target_y == 2) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1_; p++) {
-         for (int q = 0; q < d2_; q++) {
-              int pq = row_idx_[p][q];
-              for (int r = 0; r < d3_; r++) {
-                   for (int s = 0; s < d4_; s++) {
-                        int rs = col_idx_[r][s];
-                        double sum = 0.0;
-                        for (int o = 0; o < b->dim2(); o++) {
-                             int oq = a->row_idx_[o][q];
-                             sum += a->get(oq,rs) * b->get(p,o);
-                        }
-                        A2d_[pq][rs] = (alpha * sum) + (beta * A2d_[pq][rs]);
-                   }
-              }
-         }
-    }
-    }
-
-    // C(pq,rs) = \sum_{o} A(po,rs) B(o,q)
-    else if (target_x == 2 && target_y == 1) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1_; p++) {
-         for (int q = 0; q < d2_; q++) {
-              int pq = row_idx_[p][q];
-              for (int r = 0; r < d3_; r++) {
-                   for (int s = 0; s < d4_; s++) {
-                        int rs = col_idx_[r][s];
-                        double sum = 0.0;
-                        for (int o = 0; o < b->dim1(); o++) {
-                             int po = a->row_idx_[p][o];
-                             sum += a->get(po,rs) * b->get(o,q);
-                        }
-                        A2d_[pq][rs] = (alpha * sum) + (beta * A2d_[pq][rs]);
-                   }
-              }
-         }
-    }
-    }
-
-    // C(pq,rs) = \sum_{o} A(po,rs) B(q,o)
-    else if (target_x == 2 && target_y == 2) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1_; p++) {
-         for (int q = 0; q < d2_; q++) {
-              int pq = row_idx_[p][q];
-              for (int r = 0; r < d3_; r++) {
-                   for (int s = 0; s < d4_; s++) {
-                        int rs = col_idx_[r][s];
-                        double sum = 0.0;
-                        for (int o = 0; o < b->dim2(); o++) {
-                             int po = a->row_idx_[p][o];
-                             sum += a->get(po,rs) * b->get(q,o);
-                        }
-                        A2d_[pq][rs] = (alpha * sum) + (beta * A2d_[pq][rs]);
-                   }
-              }
-         }
-    }
-    }
-
-    // C(pq,rs) = \sum_{o} A(pq,os) B(o,r)
-    else if (target_x == 3 && target_y == 1) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1_; p++) {
-         for (int q = 0; q < d2_; q++) {
-              int pq = row_idx_[p][q];
-              for (int r = 0; r < d3_; r++) {
-                   for (int s = 0; s < d4_; s++) {
-                        int rs = col_idx_[r][s];
-                        double sum = 0.0;
-                        for (int o = 0; o < b->dim1(); o++) {
-                             int os = a->col_idx_[o][s];
-                             sum += a->get(pq,os) * b->get(o,r);
-                        }
-                        A2d_[pq][rs] = (alpha * sum) + (beta * A2d_[pq][rs]);
-                   }
-              }
-         }
-    }
-    }
-
-    // C(pq,rs) = \sum_{o} A(pq,os) B(r,o)
-    else if (target_x == 3 && target_y == 2) {
-    #pragma omp parallel for
-    for (int p = 0; p < d1_; p++) {
-         for (int q = 0; q < d2_; q++) {
-              int pq = row_idx_[p][q];
-              for (int r = 0; r < d3_; r++) {
-                   for (int s = 0; s < d4_; s++) {
-                        int rs = col_idx_[r][s];
-                        double sum = 0.0;
-                        for (int o = 0; o < b->dim2(); o++) {
-                             int os = a->col_idx_[o][s];
-                             sum += a->get(pq,os) * b->get(r,o);
-                        }
-                        A2d_[pq][rs] = (alpha * sum) + (beta * A2d_[pq][rs]);
-                   }
-              }
-         }
-    }
-    }
-    */
 
     else {
         outfile->Printf("\tcontract424: Unrecognized targets! \n");
@@ -1309,6 +1288,12 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = k;
         ldc = n;
 
+        // Check dims
+        if (dim1_ != a->d1_ || dim2_ != b->d1_ || a->d2_ != b->d2_ || a->d3_ != b->d3_ || a->d4_ != b->d4_) {
+            outfile->Printf("\tTensor2d::contract442 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract442 dimensions are NOT consistent!");
+        }
+
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), ldb, beta, &(A2d_[0][0]), ldc);
         }
@@ -1324,6 +1309,12 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         lda = k;
         ldb = k;
         ldc = n;
+
+        // Check dims
+        if (dim1_ != a->d1_ || dim2_ != b->d2_ || a->d2_ != b->d1_ || a->d3_ != b->d3_ || a->d4_ != b->d4_) {
+            outfile->Printf("\tTensor2d::contract442 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract442 dimensions are NOT consistent!");
+        }
 
         SharedTensor2d temp = std::make_shared<Tensor2d>("temp", b->d2_, b->d1_, b->d3_, b->d4_);
         temp->sort(2134, b, 1.0, 0.0);
@@ -1344,6 +1335,12 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = n;
         ldc = n;
 
+        // Check dims
+        if (dim1_ != a->d1_ || dim2_ != b->d3_ || a->d2_ != b->d1_ || a->d3_ != b->d2_ || a->d4_ != b->d4_) {
+            outfile->Printf("\tTensor2d::contract442 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract442 dimensions are NOT consistent!");
+        }
+
         SharedTensor2d temp = std::make_shared<Tensor2d>("temp", b->d1_, b->d2_, b->d4_, b->d3_);
         temp->sort(1243, b, 1.0, 0.0);
         if (m && n && k) {
@@ -1362,6 +1359,13 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         lda = k;
         ldb = n;
         ldc = n;
+
+        // Check dims
+        if (dim1_ != a->d1_ || dim2_ != b->d4_ || a->d2_ != b->d1_ || a->d3_ != b->d2_ || a->d4_ != b->d3_) {
+            outfile->Printf("\tTensor2d::contract442 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract442 dimensions are NOT consistent!");
+        }
+
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), ldb, beta, &(A2d_[0][0]), ldc);
         }
@@ -1377,6 +1381,12 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         lda = k;
         ldb = n;
         ldc = n;
+
+        // Check dims
+        if (dim1_ != a->d4_ || dim2_ != b->d4_ || a->d1_ != b->d1_ || a->d2_ != b->d2_ || a->d3_ != b->d3_) {
+            outfile->Printf("\tTensor2d::contract442 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract442 dimensions are NOT consistent!");
+        }
 
         SharedTensor2d temp = std::make_shared<Tensor2d>("temp", a->d4_, a->d1_, a->d2_, a->d3_);
         temp->sort(4123, a, 1.0, 0.0);
@@ -1397,6 +1407,12 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         lda = k;
         ldb = n;
         ldc = n;
+
+        // Check dims
+        if (dim1_ != a->d4_ || dim2_ != b->d3_ || a->d1_ != b->d1_ || a->d2_ != b->d2_ || a->d3_ != b->d4_) {
+            outfile->Printf("\tTensor2d::contract442 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract442 dimensions are NOT consistent!");
+        }
 
         SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp", a->d4_, a->d1_, a->d2_, a->d3_);
         SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp", b->d1_, b->d2_, b->d4_, b->d3_);
@@ -1421,6 +1437,12 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         ldb = k;
         ldc = n;
 
+        // Check dims
+        if (dim1_ != a->d2_ || dim2_ != b->d2_ || a->d1_ != b->d1_ || a->d3_ != b->d3_ || a->d4_ != b->d4_) {
+            outfile->Printf("\tTensor2d::contract442 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract442 dimensions are NOT consistent!");
+        }
+
         SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d2_, a->d1_, a->d3_, a->d4_);
         SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", b->d2_, b->d1_, b->d3_, b->d4_);
         temp1->sort(2134, a, 1.0, 0.0);
@@ -1443,6 +1465,12 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, 
         lda = m;
         ldb = n;
         ldc = n;
+
+        // Check dims
+        if (dim1_ != a->d3_ || dim2_ != b->d3_ || a->d1_ != b->d1_ || a->d2_ != b->d2_ || a->d4_ != b->d4_) {
+            outfile->Printf("\tTensor2d::contract442 dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::contract442 dimensions are NOT consistent!");
+        }
 
         SharedTensor2d temp1 = std::make_shared<Tensor2d>("temp1", a->d1_, a->d2_, a->d4_, a->d3_);
         SharedTensor2d temp2 = std::make_shared<Tensor2d>("temp2", b->d1_, b->d2_, b->d4_, b->d3_);
@@ -1472,6 +1500,21 @@ void Tensor2d::gemv(bool transa, const SharedTensor2d &a, const SharedTensor1d &
     incx = 1;  // increments in elements of b vector
     incy = 1;  // increments in elements of A2d_
 
+    // gemv: C(n) = \sum_{m} A'(n,m) * b(m)
+    if (transa) {
+        if (n != dim1_ * dim2_ || m != b->dim1()) {
+            outfile->Printf("\tTensor2d::gemv dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::gemv dimensions are NOT consistent!");
+        }
+    }
+    // gemv: C(m) = \sum_{n} A(m,n) * b(n)
+    else {
+        if (m != dim1_ * dim2_ || n != b->dim1()) {
+            outfile->Printf("\tTensor2d::gemv dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::gemv dimensions are NOT consistent!");
+        }
+    }
+
     if (m && n) {
         C_DGEMV(ta, m, n, alpha, &(a->A2d_[0][0]), lda, b->A1d_, incx, beta, &(A2d_[0][0]), incy);
     }
@@ -1486,6 +1529,21 @@ void Tensor2d::gemv(bool transa, const SharedTensor2d &a, const SharedTensor2d &
     lda = n;
     incx = 1;  // increments in elements of b vector
     incy = 1;  // increments in elements of A2d_
+
+    // gemv: C(pq) = \sum_{rs} A(rs,pq) * b(rs)
+    if (transa) {
+        if (dim1_ != a->d3_ || dim2_ != a->d4_ || b->dim1_ != a->d1_ || b->dim2_ != a->d2_) {
+            outfile->Printf("\tTensor2d::gemv dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::gemv dimensions are NOT consistent!");
+        }
+    }
+    // gemv: C(pq) = \sum_{rs} A(pq,rs) * b(rs)
+    else {
+        if (dim1_ != a->d1_ || dim2_ != a->d2_ || b->dim1_ != a->d3_ || b->dim2_ != a->d4_) {
+            outfile->Printf("\tTensor2d::gemv dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::gemv dimensions are NOT consistent!");
+        }
+    }
 
     if (m && n) {
         C_DGEMV(ta, m, n, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), incx, beta, &(A2d_[0][0]), incy);
@@ -1541,6 +1599,11 @@ void Tensor2d::axpy(size_t length, int inc_a, const SharedTensor2d &a, int inc_2
 void Tensor2d::axpy(size_t length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d,
                     double alpha) {
     C_DAXPY(length, alpha, A->A2d_[0] + start_a, inc_a, A2d_[0] + start_2d, inc_2d);
+}  //
+
+void Tensor2d::axpy(size_t length, int start_a, int inc_a, const SharedTensor1d &A, int start_2d, int inc_2d,
+                    double alpha) {
+    C_DAXPY(length, alpha, A->A1d_ + start_a, inc_a, A2d_[0] + start_2d, inc_2d);
 }  //
 
 double Tensor2d::norm() {
@@ -1662,6 +1725,28 @@ void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int st
 
 void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff) {
     sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, 1, eigvectors->A2d_, cutoff);
+
+}  //
+
+void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
+                           bool ascending) {
+    int matz;
+    if (ascending)
+        matz = 1;
+    else
+        matz = 3;
+    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, matz, eigvectors->A2d_, cutoff);
+
+}  //
+
+void Tensor2d::diagonalize(int dim, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
+                           bool ascending) {
+    int matz;
+    if (ascending)
+        matz = 1;
+    else
+        matz = 3;
+    sq_rsp(dim, dim, A2d_, eigvalues->A1d_, matz, eigvectors->A2d_, cutoff);
 
 }  //
 
@@ -2085,6 +2170,17 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
     if (!already_open) psio->close(fileno, 1);  // Close and keep
 }
 
+void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, const std::string &label, size_t fileno) {
+    //Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno))
+        already_open = true;
+    else
+        psio->open(fileno, PSIO_OPEN_OLD);
+    psio->read_entry(fileno, const_cast<char *>(label.c_str()), (char *)A2d_[0], sizeof(double) * dim1_ * dim2_);
+    if (!already_open) psio->close(fileno, 1);  // Close and keep
+}
+
 void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end) {
     // Check to see if the file is open
     bool already_open = false;
@@ -2222,14 +2318,14 @@ void Tensor2d::read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno) {
 
 bool Tensor2d::read(PSIO *psio, int itap, const char *label, int dim) {
     int ntri = 0.5 * dim * (dim + 1);
-    double *mybuffer = init_array(ntri);
+    double *mybuffer = new double[ntri];
     memset(mybuffer, 0, sizeof(double) * ntri);
     IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, "outfile");
 
     double **Asq = block_matrix(dim, dim);
     memset(Asq[0], 0, sizeof(double) * dim * dim);
     tri_to_sq(mybuffer, Asq, dim);
-    free(mybuffer);
+    delete [] mybuffer;
 
     set(Asq);
     free_block(Asq);
@@ -2238,14 +2334,14 @@ bool Tensor2d::read(PSIO *psio, int itap, const char *label, int dim) {
 
 bool Tensor2d::read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim) {
     int ntri = 0.5 * dim * (dim + 1);
-    double *mybuffer = init_array(ntri);
+    double *mybuffer = new double[ntri];
     memset(mybuffer, 0, sizeof(double) * ntri);
     IWL::read_one(psio.get(), itap, label, mybuffer, ntri, 0, 0, "outfile");
 
     double **Asq = block_matrix(dim, dim);
     memset(Asq[0], 0, sizeof(double) * dim * dim);
     tri_to_sq(mybuffer, Asq, dim);
-    free(mybuffer);
+    delete [] mybuffer;
 
     set(Asq);
     free_block(Asq);
@@ -2290,12 +2386,11 @@ void Tensor2d::mywrite(const std::string &filename) {
     OutFile.close();
 }  //
 
-void Tensor2d::mywrite(int fileno) {
+void Tensor2d::mywrite(std::shared_ptr<psi::PSIO> psio, int fileno) {
     std::ostringstream convert;
     convert << fileno;
     std::string scr = PSIOManager::shared_object()->get_default_path();
-    std::string pid_ = psio_getpid();
-    // std::string fname = scr + "psi_dfocc." + convert.str();
+    std::string pid_ = psio->getpid();
     std::string fname = scr + "psi." + pid_ + "." + convert.str();
 
     // write binary data
@@ -2305,12 +2400,26 @@ void Tensor2d::mywrite(int fileno) {
     OutFile.close();
 }  //
 
-void Tensor2d::mywrite(int fileno, bool append) {
+void Tensor2d::mywrite(std::shared_ptr<psi::PSIO> psio, int fileno, size_t start) {
     std::ostringstream convert;
     convert << fileno;
     std::string scr = PSIOManager::shared_object()->get_default_path();
-    std::string pid_ = psio_getpid();
-    // std::string fname = scr + "psi_dfocc." + convert.str();
+    std::string pid_ = psio->getpid();
+    std::string fname = scr + "psi." + pid_ + "." + convert.str();
+
+    // write binary data
+    std::ofstream OutFile;
+    OutFile.open(const_cast<char *>(fname.c_str()), std::ios::out | std::ios::binary | std::ios::in);
+    OutFile.seekp(start, std::ios::beg);
+    OutFile.write((char *)A2d_[0], dim1_ * dim2_ * sizeof(double));
+    OutFile.close();
+}  //
+
+void Tensor2d::mywrite(std::shared_ptr<psi::PSIO> psio, int fileno, bool append) {
+    std::ostringstream convert;
+    convert << fileno;
+    std::string scr = PSIOManager::shared_object()->get_default_path();
+    std::string pid_ = psio->getpid();
     std::string fname = scr + "psi." + pid_ + "." + convert.str();
 
     // write binary data
@@ -2332,12 +2441,11 @@ void Tensor2d::myread(const std::string &filename) {
 
 }  //
 
-void Tensor2d::myread(int fileno) {
+void Tensor2d::myread(std::shared_ptr<psi::PSIO> psio, int fileno) {
     std::ostringstream convert;
     convert << fileno;
     std::string scr = PSIOManager::shared_object()->get_default_path();
-    std::string pid_ = psio_getpid();
-    // std::string fname = scr + "psi_dfocc." + convert.str();
+    std::string pid_ = psio->getpid();
     std::string fname = scr + "psi." + pid_ + "." + convert.str();
 
     // read binary data
@@ -2348,12 +2456,11 @@ void Tensor2d::myread(int fileno) {
 
 }  //
 
-void Tensor2d::myread(int fileno, bool append) {
+void Tensor2d::myread(std::shared_ptr<psi::PSIO> psio, int fileno, bool append) {
     std::ostringstream convert;
     convert << fileno;
     std::string scr = PSIOManager::shared_object()->get_default_path();
-    std::string pid_ = psio_getpid();
-    // std::string fname = scr + "psi_dfocc." + convert.str();
+    std::string pid_ = psio->getpid();
     std::string fname = scr + "psi." + pid_ + "." + convert.str();
 
     // read binary data
@@ -2367,13 +2474,12 @@ void Tensor2d::myread(int fileno, bool append) {
 
 }  //
 
-void Tensor2d::myread(int fileno, size_t start) {
+void Tensor2d::myread(std::shared_ptr<psi::PSIO> psio, int fileno, size_t start) {
     std::ostringstream convert;
     convert << fileno;
     std::string scr = PSIOManager::shared_object()->get_default_path();
-    std::string pid_ = psio_getpid();
+    std::string pid_ = psio->getpid();
     std::string fname = scr + "psi." + pid_ + "." + convert.str();
-    // std::string fname = scr + "psi_dfocc." + convert.str();
 
     // read binary data
     std::ifstream InFile;
@@ -2468,6 +2574,51 @@ void Tensor2d::gs() {
     }
 }  //
 
+/*
+** SCHMIDT_ADD(): Assume A is a orthogonal matrix.  This function Gram-Schmidt
+** orthogonalizes a new vector v and adds it to matrix A.  A must contain
+** a free row pointer for a new row.  Don't add orthogonalized v' if
+** norm(v') < NORM_TOL.
+**
+** David Sherrill, Feb 1994
+** Ugur Bozkaya, Nov 2017
+**
+** \param A    = matrix to add new vector to
+** \param rows = current number of rows in A
+**               (A must have ptr for 'rows+1' row.)
+** \param cols = columns in A
+** \parm v     = vector to add to A after it has been made orthogonal
+**               to rest of A
+**
+** Returns: 1 if a vector is added to A, 0 otherwise
+*/
+int Tensor2d::gs_add(int rows, SharedTensor1d v) {
+   double dotval, normval ;
+   int i, I ;
+   int cols = dim2_;
+   double NORM_TOL = 1.0E-5;
+
+   for (i=0; i<rows; i++) {
+        dotval = C_DDOT(cols, A2d_[i], 1, v->A1d_, 1);
+        for (I=0; I<cols; I++) {
+	     v->subtract(I, dotval * A2d_[i][I]);
+        }
+   }
+
+   // dot_arr(v, v, cols, &normval) ;
+   normval = C_DDOT(cols, v->A1d_, 1, v->A1d_, 1);
+   normval = std::sqrt(normval) ;
+
+   if (normval < NORM_TOL)
+      return(0) ;
+   else {
+      //if (A2d_[rows] == NULL) A2d_[rows] = init_array(cols) ;
+      if (A2d_[rows] == NULL) A2d_[rows] = new double[cols] ;
+      for (I=0; I<cols; I++) A2d_[rows][I] = v->get(I) / normval ;
+      return(1) ;
+      }
+}  //
+
 double *Tensor2d::row_vector(int n) {
     double *temp = new double[dim2_];
     memset(temp, 0, dim2_ * sizeof(double));
@@ -2489,6 +2640,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     int d4 = A->d4_;
 
     if (sort_type == 1243) {
+        if (d1_ != d1 || d2_ != d2 || d3_ != d4  || d4_ != d3 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2505,6 +2660,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 1324) {
+        if (d1_ != d1 || d2_ != d3 || d3_ != d2  || d4_ != d4 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2522,6 +2681,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 1342) {
+        if (d1_ != d1 || d2_ != d3 || d3_ != d4  || d4_ != d2 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2539,6 +2702,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 1423) {
+        if (d1_ != d1 || d2_ != d4 || d3_ != d2  || d4_ != d3 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2556,6 +2723,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 1432) {
+        if (d1_ != d1 || d2_ != d4 || d3_ != d3  || d4_ != d2 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2573,6 +2744,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 2134) {
+        if (d1_ != d2 || d2_ != d1 || d3_ != d3  || d4_ != d4 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2589,6 +2764,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 2143) {
+        if (d1_ != d2 || d2_ != d1 || d3_ != d4  || d4_ != d3 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2606,6 +2785,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 2314) {
+        if (d1_ != d2 || d2_ != d3 || d3_ != d1  || d4_ != d4 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2623,6 +2806,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 2341) {
+        if (d1_ != d2 || d2_ != d3 || d3_ != d4  || d4_ != d1 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2640,6 +2827,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 2413) {
+        if (d1_ != d2 || d2_ != d4 || d3_ != d1  || d4_ != d3 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2657,6 +2848,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 2431) {
+        if (d1_ != d2 || d2_ != d4 || d3_ != d3  || d4_ != d1 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2674,6 +2869,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 3124) {
+        if (d1_ != d3 || d2_ != d1 || d3_ != d2  || d4_ != d4 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2691,6 +2890,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 3142) {
+        if (d1_ != d3 || d2_ != d1 || d3_ != d4  || d4_ != d2 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2708,6 +2911,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 3214) {
+        if (d1_ != d3 || d2_ != d2 || d3_ != d1  || d4_ != d4 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2725,6 +2932,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 3241) {
+        if (d1_ != d3 || d2_ != d2 || d3_ != d4  || d4_ != d1 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2742,6 +2953,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 3412) {
+        if (d1_ != d3 || d2_ != d4 || d3_ != d1  || d4_ != d2 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2757,6 +2972,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 3421) {
+        if (d1_ != d3 || d2_ != d4 || d3_ != d2  || d4_ != d1 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2773,6 +2992,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 4123) {
+        if (d1_ != d4 || d2_ != d1 || d3_ != d2  || d4_ != d3 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2790,6 +3013,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 4132) {
+        if (d1_ != d4 || d2_ != d1 || d3_ != d3  || d4_ != d2 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2807,6 +3034,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 4213) {
+        if (d1_ != d4 || d2_ != d2 || d3_ != d1  || d4_ != d3 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2824,6 +3055,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 4231) {
+        if (d1_ != d4 || d2_ != d2 || d3_ != d3  || d4_ != d1 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2841,6 +3076,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 4312) {
+        if (d1_ != d4 || d2_ != d3 || d3_ != d1  || d4_ != d2 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2857,6 +3096,10 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
 
     else if (sort_type == 4321) {
+        if (d1_ != d4 || d2_ != d3 || d3_ != d2  || d4_ != d1 ) {
+            outfile->Printf("\tTensor2d::sort dimensions are NOT consistent!\n");
+            throw PSIEXCEPTION("Tensor2d::sort dimensions are NOT consistent!");
+        }
 #pragma omp parallel for
         for (int p = 0; p < d1; p++) {
             for (int q = 0; q < d2; q++) {
@@ -2889,6 +3132,58 @@ void Tensor2d::sort3a(int sort_type, int d1, int d2, int d3, const SharedTensor2
                     int rq = q + (r * d2);
                     int qr = r + (q * d3);
                     A2d_[p][rq] = (alpha * A->A2d_[p][qr]) + (beta * A2d_[p][rq]);
+                }
+            }
+        }
+    }
+
+    else if (sort_type == 231) {
+#pragma omp parallel for
+        for (int p = 0; p < d1; p++) {
+            for (int q = 0; q < d2; q++) {
+                for (int r = 0; r < d3; r++) {
+                    int rp = p + (r * d1);
+                    int qr = r + (q * d3);
+                    A2d_[q][rp] = (alpha * A->A2d_[p][qr]) + (beta * A2d_[q][rp]);
+                }
+            }
+        }
+    }
+
+    else if (sort_type == 213) {
+#pragma omp parallel for
+        for (int p = 0; p < d1; p++) {
+            for (int q = 0; q < d2; q++) {
+                for (int r = 0; r < d3; r++) {
+                    int pr = r + (p * d3);
+                    int qr = r + (q * d3);
+                    A2d_[q][pr] = (alpha * A->A2d_[p][qr]) + (beta * A2d_[q][pr]);
+                }
+            }
+        }
+    }
+
+    else if (sort_type == 312) {
+#pragma omp parallel for
+        for (int p = 0; p < d1; p++) {
+            for (int q = 0; q < d2; q++) {
+                for (int r = 0; r < d3; r++) {
+                    int qr = r + (q * d3);
+                    int pq = q + (p * d2);
+                    A2d_[r][pq] = (alpha * A->A2d_[p][qr]) + (beta * A2d_[r][pq]);
+                }
+            }
+        }
+    }
+
+    else if (sort_type == 321) {
+#pragma omp parallel for
+        for (int p = 0; p < d1; p++) {
+            for (int q = 0; q < d2; q++) {
+                for (int r = 0; r < d3; r++) {
+                    int qr = r + (q * d3);
+                    int qp = p + (q * d1);
+                    A2d_[r][qp] = (alpha * A->A2d_[p][qr]) + (beta * A2d_[r][qp]);
                 }
             }
         }

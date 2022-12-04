@@ -108,7 +108,6 @@ void MatrixBase::diagonalize(MatrixBase* eigenmatrix, VectorBase* eigenvalues) {
             throw PSIEXCEPTION("DSYEV failed in mcscf::MatrixBase::diagonalize()");
         }
     } else {
-        outfile->Printf("MatrixBase::diagonalize(...) cannot diagonalize non-square matrices!");
         throw PSIEXCEPTION("MatrixBase::diagonalize(...) cannot diagonalize non-square matrices!");
     }
 }

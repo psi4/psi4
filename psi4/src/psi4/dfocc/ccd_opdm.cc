@@ -39,49 +39,106 @@ namespace dfoccwave {
 void DFOCC::ccd_opdm() {
     SharedTensor2d T, U, X;
     timer_on("opdm");
-    // if (reference_ == "RESTRICTED") {
+    if (reference_ == "RESTRICTED") {
 
-    // G1_ij = -(G_ij + G_ji)
-    T = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
-    T->symmetrize(GijA);
-    T->scale(-2.0);
-    G1c_oo->set_act_oo(nfrzc, naoccA, T);
-    T.reset();
+        // G1_ij = -(G_ij + G_ji)
+        T = std::make_shared<Tensor2d>("G Intermediate <I|J>", naoccA, naoccA);
+        T->symmetrize(GijA);
+        T->scale(-2.0);
+        G1c_oo->set_act_oo(nfrzc, naoccA, T);
+        T.reset();
 
-    //  G1_ab = -(G_ab + G_ba)
-    T = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
-    T->symmetrize(GabA);
-    T->scale(-2.0);
-    G1c_vv->set_act_vv(T);
-    T.reset();
+        //  G1_ab = -(G_ab + G_ba)
+        T = std::make_shared<Tensor2d>("G Intermediate <A|B>", navirA, navirA);
+        T->symmetrize(GabA);
+        T->scale(-2.0);
+        G1c_vv->set_act_vv(T);
+        T.reset();
 
-    // set OV block
-    G1c_ov->zero();
+        // set OV block
+        G1c_ov->zero();
 
-    // Build G1_ai
-    G1c_vo->trans(G1c_ov);
+        // Build G1_ai
+        G1c_vo->trans(G1c_ov);
 
-    // Build G1c
-    G1c->set_oo(G1c_oo);
-    G1c->set_ov(G1c_ov);
-    G1c->set_vo(G1c_vo);
-    G1c->set_vv(noccA, G1c_vv);
-    // G1c->print();
+        // Build G1c
+        G1c->set_oo(G1c_oo);
+        G1c->set_ov(G1c_ov);
+        G1c->set_vo(G1c_vo);
+        G1c->set_vv(noccA, G1c_vv);
+        // G1c->print();
 
-    // Build G1
-    G1->copy(G1c);
-    for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
+        // Build G1
+        G1->copy(G1c);
+        for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
 
-    if (print_ > 2) {
-        G1->print();
-        double trace = G1->trace();
-        outfile->Printf("\t trace: %12.12f \n", trace);
-    }
+        if (print_ > 2) {
+            G1->print();
+            double trace = G1->trace();
+            outfile->Printf("\t trace: %12.12f \n", trace);
+        }
+    }// end if (reference_ == "RESTRICTED")
 
-    //}// end if (reference_ == "RESTRICTED")
+    else if (reference_ == "UNRESTRICTED") {
+        // G1_IJ = -(G_IJ + G_JI)
+        T = std::make_shared<Tensor2d>("G Intermediate <I|J>", naoccA, naoccA);
+        T->symmetrize(GijA);
+        T->scale(-1.0);
+        G1c_ooA->set_act_oo(nfrzc, naoccA, T);
+        T.reset();
+        //G1c_ooA->set_act_oo(nfrzc, naoccA, GijA);
+        //G1c_ooA->scale(-1.0);
 
-    // else if (reference_ == "UNRESTRICTED") {
-    //}// else if (reference_ == "UNRESTRICTED")
+        // G1_ij = -(G_ij + G_ji)
+        T = std::make_shared<Tensor2d>("G Intermediate <i|j>", naoccB, naoccB);
+        T->symmetrize(GijB);
+        T->scale(-1.0);
+        G1c_ooB->set_act_oo(nfrzc, naoccB, T);
+        T.reset();
+        //G1c_ooB->set_act_oo(nfrzc, naoccB, GijB);
+        //G1c_ooB->scale(-1.0);
+
+        //  G1_AB = -(G_AB + G_AB)
+        T = std::make_shared<Tensor2d>("G Intermediate <A|B>", navirA, navirA);
+        T->symmetrize(GabA);
+        T->scale(-1.0);
+        G1c_vvA->set_act_vv(T);
+        T.reset();
+        //G1c_vvA->set_act_vv(GabA);
+        //G1c_vvA->scale(-1.0);
+
+        T = std::make_shared<Tensor2d>("G Intermediate <a|b>", navirB, navirB);
+        T->symmetrize(GabB);
+        T->scale(-1.0);
+        G1c_vvB->set_act_vv(T);
+        T.reset();
+        //G1c_vvB->set_act_vv(GabB);
+        //G1c_vvB->scale(-1.0);
+
+        // Build G1c
+        G1cA->set_oo(G1c_ooA);
+        G1cA->set_vv(noccA, G1c_vvA);
+        G1cB->set_oo(G1c_ooB);
+        G1cB->set_vv(noccB, G1c_vvB);
+
+        // Build G1
+        G1A->copy(G1cA);
+        G1B->copy(G1cB);
+        for (int i = 0; i < noccA; i++) G1A->add(i, i, 1.0);
+        for (int i = 0; i < noccB; i++) G1B->add(i, i, 1.0);
+
+        // print
+        if (print_ > 2) {
+            G1A->print();
+            G1B->print();
+            double trace = G1A->trace();
+            outfile->Printf("\t Alpha trace: %12.12f \n", trace);
+            trace = G1B->trace();
+            outfile->Printf("\t Beta trace: %12.12f \n", trace);
+        }
+
+    }  // else if (reference_ == "UNRESTRICTED")
+
     timer_off("opdm");
 }  // end ccd_opdm
 

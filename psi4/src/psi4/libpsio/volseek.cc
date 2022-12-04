@@ -33,6 +33,7 @@
 
 #include "psi4/libpsio/psio.h"
 #include "psi4/psi4-dec.h"
+#include <cerrno>
 // This is strictly used to avoid overflow errors on lseek() calls
 #define PSIO_BIGNUM 10000
 
