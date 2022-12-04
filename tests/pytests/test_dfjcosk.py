@@ -141,4 +141,4 @@ def test_dfjcosk_incfock(inp, mols):
     
     # how do SCF iteration counts compare?
     if hasattr(wfn_dfjcosk_noinc, "iteration_") and hasattr(wfn_dfjcosk_inc, "iteration_"):
-        assert compare_values(wfn_dfjcosk_noinc.iteration_, wfn_dfjcosk_inc.iteration_, 3)
+        assert compare(True, (niter_inc - niter_noinc) <= 3, "IncFock efficient?")
