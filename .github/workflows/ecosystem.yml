@@ -229,9 +229,9 @@ jobs:
         # toml needed for psi4 to load parameters from dftd4-python
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;- qcfractal=0.15.8.1;g" aux.yaml
-          sed -i "s;- qcportal;- qcportal=0.15.8;g" aux.yaml
-          # try again someday
+          # "next" packages aren't self-contained, and "0.15.8" not available fro py310. try again someday
+          sed -i "s;- qcfractal;;g" aux.yaml
+          sed -i "s;- qcportal;;g" aux.yaml
           #sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" aux.yaml
           #sed -i "s;- qcportal;- qcarchive/label/next::qcportal;g" aux.yaml
         fi
@@ -322,6 +322,10 @@ jobs:
       run: |
         conda info
         conda list
+
+    - name: Switch to Mamba solver (L, M)
+      if: matrix.cfg.base-channel != 'conda-forge'
+      run: |
         conda install -n base conda-libmamba-solver
         conda config --set solver libmamba
 
@@ -470,6 +474,10 @@ jobs:
         conda list -n auxenv
         qcengine info
         fi
+
+    - name: Patch QCFractal for Python
+      if: runner.os == 'macOS'
+      run: sed -E -i.bak "s/for result in self.queue.values():/for result in list(self.queue.values()):/g" /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
     - name: Test OpenMP
       working-directory: ./install/lib
