@@ -379,10 +379,8 @@ void DFJCOSK::compute_JK() {
     // COSX
     if (do_K_) {
         timer_on("COSK");
-   
-   	build_K(D_ref_, K_ao_);
-   
-   	timer_off("COSK");
+   	    build_K(D_ref_, K_ao_);
+   	    timer_off("COSK");
     }
 
     // => Finalize Incremental Fock if required <= //
