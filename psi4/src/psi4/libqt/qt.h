@@ -53,8 +53,8 @@ void fill_sym_matrix(double** A, int size);
 double combinations(int n, int k);
 double factorial(int n);
 void schmidt(double** A, int rows, int cols, std::string out_fname);
-PSI_API
-int schmidt_add(double** A, int rows, int cols, double* v);
+PSI_DEPRECATED("The libqt schmidt_add function is deprecated and 1.7 will be the last release to have it.")
+PSI_API int schmidt_add(double** A, int rows, int cols, double* v);
 void normalize(double** A, int rows, int cols);
 double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
