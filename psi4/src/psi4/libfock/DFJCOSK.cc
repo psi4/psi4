@@ -363,7 +363,7 @@ void DFJCOSK::compute_JK() {
         
 	timer_off("DFJCOSK: INCFOCK Preprocessing");
     } else {
-	D_ref_ = D_ao_;
+	    D_ref_ = D_ao_;
         zero();
     }
  
