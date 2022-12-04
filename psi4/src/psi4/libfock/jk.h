@@ -755,7 +755,7 @@ class PSI_API DirectJK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
-    // Is the JK currently on a guess iteration
+    // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
 
     std::string name() override { return "DirectJK"; }
@@ -1211,7 +1211,7 @@ class PSI_API DFJCOSK : public JK {
     //   (2) the difference density: D_eff == dD_lr = (C_lo x C_ro)_{iter} - (C_lo x C_ro)_{iter - 1}
     std::vector<SharedMatrix> D_ref_;
 
-    // Is the JK currently on a guess iteration
+    // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
  
     // => Density Fitting Stuff <= //
@@ -1323,7 +1323,7 @@ class PSI_API DFJLinK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
-    // Is the JK currently on a guess iteration
+    // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
   
     // => Density Fitting Stuff <= //
