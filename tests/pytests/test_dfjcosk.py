@@ -1,6 +1,6 @@
 import pytest
 
-from utils import compare_values
+from utils import compare_values, compare
 
 import psi4
 
@@ -140,5 +140,7 @@ def test_dfjcosk_incfock(inp, mols):
     assert compare_values(energy_dfjcosk_noinc, energy_dfjcosk_inc, atol=1e-6)
     
     # how do SCF iteration counts compare?
-    if hasattr(wfn_dfjcosk_noinc, "iteration_") and hasattr(wfn_dfjcosk_inc, "iteration_"):
-        assert compare(True, (niter_inc - niter_noinc) <= 3, "IncFock efficient?")
+    niter_noinc = int(wfn_dfjcosk_noinc.variable("SCF ITERATIONS")) if wfn_dfjcosk_noinc.has_scalar_variable("SCF ITERATIONS") else 0
+    niter_inc = int(wfn_dfjcosk_inc.variable("SCF ITERATIONS")) if wfn_dfjcosk_inc.has_scalar_variable("SCF ITERATIONS") else 0
+    
+    assert compare(True, abs(niter_inc - niter_noinc) <= 3, "IncFock efficient?")
