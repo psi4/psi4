@@ -321,7 +321,7 @@ void DFJCOSK::incfock_setup() {
         if(initial_iteration_ || D_prev_.size() != njk) {
             initial_iteration_ = true;
 	    
-	    D_ref_ = D_ao_;
+	        D_ref_ = D_ao_;
             zero();
         } else { // Otherwise, the iteraction is incremental
             for (size_t jki = 0; jki < njk; jki++) {
