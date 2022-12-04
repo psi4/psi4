@@ -64,14 +64,6 @@ void reorder_qt(const int* docc_in, const int* socc_in, int* frozen_docc_in, int
 PSI_API
 void reorder_qt_uhf(const int* docc, const int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
                     int* orbspi, int nirreps);
-// int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
-//      int *docc, int *socc, int *frdocc, int *fruocc,
-//      int **ras_opi, int *order, int ras_type);
-// int ras_set2(int nirreps, int nbfso, int delete_fzdocc,
-//      int delete_restrdocc, int *orbspi,
-//      int *docc, int *socc, int *frdocc, int *fruocc,
-//      int *restrdocc, int *restruocc, int **ras_opi, int *order,
-//      int ras_type, int hoffmann, Options& options);
 int ras_set3(int nirreps, int nmo, int* orbspi, int* docc, int* socc, int* frdocc, int* fruocc, int* restrdocc,
              int* restruocc, int** ras_opi, int* core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
 void newmm_rking(double** A, int transa, double** B, int transb, double** C, int num_rows, int num_links, int num_cols,
