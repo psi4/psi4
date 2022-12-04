@@ -255,7 +255,7 @@ class AtomicComputer(BaseComputer):
 
 def _singlepointrecord_to_atomicresult(spr) -> AtomicResult:
     extras = spr.raw_data.extras
-    extras.pop("_qcfractal_compressed_outputs")
+    extras.pop("_qcfractal_compressed_outputs", None)
 
     atres = {
         "driver": spr.raw_data.specification.driver,

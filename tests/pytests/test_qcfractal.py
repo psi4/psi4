@@ -17,8 +17,17 @@ pytestmark = [pytest.mark.psi, pytest.mark.api]
 ])
 def test_qcf_cbs_mbe(parallel):
     if parallel:
-        from qcfractal import FractalSnowflake
-        snowflake = FractalSnowflake(logging=True, max_workers=4)
+        try:
+            from qcfractal import FractalSnowflake
+            qca_next_branch = False
+        except ImportError:
+            from qcfractal.snowflake import FractalSnowflake
+            qca_next_branch = True
+
+        if not qca_next_branch:
+            snowflake = FractalSnowflake(logging=True, max_workers=4)
+        else:
+            snowflake = FractalSnowflake()
         client = snowflake.client()
     
     import psi4

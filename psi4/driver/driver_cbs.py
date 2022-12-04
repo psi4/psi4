@@ -1635,10 +1635,10 @@ class CompositeComputer(BaseComputer):
                     mc['f_gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
             if 'CURRENT DIPOLE' in task.extras['qcvars']:
-                mc['f_dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
+                mc['f_dipole'] = np.array(task.extras['qcvars']['CURRENT DIPOLE'])
 
             if 'CURRENT DIPOLE GRADIENT' in task.extras['qcvars']:
-                mc['f_dipder'] = task.extras['qcvars']['CURRENT DIPOLE GRADIENT']
+                mc['f_dipder'] = np.array(task.extras['qcvars']['CURRENT DIPOLE GRADIENT'])
 
             # Fill in energies for subsumed methods
             if self.metameta['ptype'] == 'energy':
