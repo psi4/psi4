@@ -42,7 +42,7 @@ def prepare_results(self, client: Optional["qcportal.FractalClient"] = None) -> 
     """
     from psi4.driver.driver_nbody import _print_nbody_energy
 
-    ptype = self.driver
+    ptype = self.driver.name
     natoms = self.molecule.natom()
     supersystem = {k: v for k, v in self.task_list.items() if k.startswith('supersystem')}
 

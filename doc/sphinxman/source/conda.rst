@@ -179,7 +179,10 @@ Activate environment and make the adjustments to :envvar:`PATH` and
 
 * The ``psi4-rt`` package can be added to the package list to get the
   QC runtime add-ons; could say any combination of ``v2rdm_casscf snsmp2
-  openfermion-psi4 adcc cppe ddx`` etc. instead of ``psi4-rt``.
+  resp`` etc. instead of ``psi4-rt``.
+  As of |PSIfour| v1.7, the ``psi4-rt`` package is being slowly retired
+  due to more optional dependencies being on conda-forge. Similar collections
+  of dependencies can be obtained from environment spec files like :source:`devtools/conda-envs` .
 
 * Grab a Miniconda through one of the below, selecting OS.
 

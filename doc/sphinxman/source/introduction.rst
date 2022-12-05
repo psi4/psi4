@@ -589,6 +589,7 @@ Architectures
     <https://docs.microsoft.com/en-us/windows/wsl/about>`_)
     or as source code (git repository or zipped archive from
     https://github.com/psi4/psi4.
+    At least initially, |PSIfour| 1.7 will not have binary packages for Mac.
 Compilers
     |PSIfour| has been successfully compiled using Intel, GCC, and Clang
     compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
@@ -605,8 +606,9 @@ Python
     |PSIfour| 1.4 supports Python 3.6, 3.7, 3.8, and 3.9.
     |PSIfour| 1.5 supports Python 3.7, 3.8, and 3.9.
     |PSIfour| 1.6 supports Python 3.8, 3.9, and 3.10.
-    The future plan is to support the two or three latest Python versions.
-    The current master supports 3.8, 3.9, and 3.10.
+    |PSIfour| 1.7 supports Python 3.8, 3.9, 3.10, and 3.11 (no binary packages for 3.11).
+    The future plan is to support the approximately three latest Python versions.
+    The current master supports 3.8, 3.9, 3.10, and 3.11.
 
 .. index:: license
 
