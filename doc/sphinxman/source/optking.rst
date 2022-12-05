@@ -369,9 +369,9 @@ fragments will be created using these reference points. See
 For a set of three dimers A, B, and C, sets of coordinates are created between each pair:
 AB, AC, and BC. Each `DimerFrag` may use different reference points. 
 Creation of the intermolecular coordinates can be controlled through |optking__frag_ref_atoms| 
-and |optking__interfrag_coords|. |optking_frag_ref_atoms| specifies which atoms 
+and |optking__interfrag_coords|. |optking__frag_ref_atoms| specifies which atoms 
 (or linear combination of atoms) to use for the reference points and |optking__interfrag_coords|,
-which encompasses |otking__frag_ref_atoms|, allows for constraints and labels to be added to the
+which encompasses |optking__frag_ref_atoms|, allows for constraints and labels to be added to the
 intermolecular coordinates.
 
 .. note:: Manual specification of the interfragment coordinates is supported for power users,
