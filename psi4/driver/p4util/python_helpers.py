@@ -1463,34 +1463,6 @@ def _core_wavefunction_frequencies(self):
 core.Wavefunction.frequencies = _core_wavefunction_frequencies
 
 
-def _core_get_gradient():
-    """
-    .. deprecated:: 1.2
-
-    """
-    warnings.warn(
-        "Using `psi4.core.get_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and as soon as 1.6 (or whenever Py optking is adopted) it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.get_legacy_gradient()
-
-
-def _core_set_gradient(val):
-    """
-    .. deprecated:: 1.2
-
-    """
-    warnings.warn(
-        "Using `psi4.core.set_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and as soon as 1.6 (or whenever Py optking is adopted) it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return core.set_legacy_gradient(val)
-
-
-core.get_gradient = _core_get_gradient
-core.set_gradient = _core_set_gradient
-
-
 def _core_doublet(A, B, transA, transB):
     """Multiply two matrices together.
 

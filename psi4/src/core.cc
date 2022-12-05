@@ -156,10 +156,6 @@ void py_psi_plugin_close_all();
 
 extern std::map<std::string, plugin_info> plugins;
 
-namespace opt {
-psi::PsiReturnType optking(psi::Options&);
-void opt_clean();
-}  // namespace opt
 // Forward declare /src/bin/ methods
 namespace psi {
 
@@ -309,13 +305,6 @@ void py_psi_prepare_options_for_module(std::string const& name) {
     // Now we've read in the defaults, make sure that user-specified options are recognized by the current module
     Process::environment.options.validate_options();
 }
-
-int py_psi_optking() {
-    py_psi_prepare_options_for_module("OPTKING");
-    return opt::optking(Process::environment.options);
-}
-
-void py_psi_opt_clean(void) { opt::opt_clean(); }
 
 // int py_psi_mints()
 // {
@@ -963,13 +952,7 @@ py::object py_psi_get_option(std::string const& module, std::string const& key) 
 
 void py_psi_set_active_molecule(std::shared_ptr<Molecule> molecule) { Process::environment.set_molecule(molecule); }
 
-void py_psi_set_legacy_molecule(std::shared_ptr<Molecule> molecule) { Process::environment.set_legacy_molecule(molecule); }
 std::shared_ptr<Molecule> py_psi_get_active_molecule() { return Process::environment.molecule(); }
-std::shared_ptr<Molecule> py_psi_get_legacy_molecule() { return Process::environment.legacy_molecule(); }
-
-void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(grad); }
-
-SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
 
 void py_psi_set_memory(size_t mem, bool quiet) {
     Process::environment.set_memory(mem);
@@ -1129,8 +1112,6 @@ PYBIND11_MODULE(core, core) {
     py::enum_<PsiReturnType>(core, "PsiReturnType", "Return status.")  // after C-OptKing, only Failure slightly used
         .value("Success", Success)
         .value("Failure", Failure)
-        .value("Balk", Balk)
-        .value("EndLoop", EndLoop)
         .export_values();
 
     core.def("version", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.version removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");
@@ -1177,13 +1158,6 @@ PYBIND11_MODULE(core, core) {
     core.def("set_active_molecule", py_psi_set_active_molecule, "molecule"_a,
              "Activates a previously defined *molecule* in global memory so next computations use it.");
     core.def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
-    core.def("set_legacy_molecule", py_psi_set_legacy_molecule, "molecule"_a,
-             "Activates a previously defined *molecule* in global memory so next computations use it. FOR INTERNAL OPTKING USE ONLY.");
-    core.def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active legacy molecule object. FOR INTERNAL OPTKING USE ONLY.");
-    core.def("get_legacy_gradient", py_psi_get_gradient,
-             "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE ONLY.");
-    core.def("set_legacy_gradient", py_psi_set_gradient, "grad"_a,
-        "Assigns the global gradient to the values in the (nat, 3) Matrix argument. FOR INTERNAL OPTKING USE ONLY.");
     core.def("set_memory_bytes", py_psi_set_memory, "memory"_a, "quiet"_a = false,
              "Sets the memory available to Psi (in bytes); prefer :func:`psi4.driver.set_memory`.");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
@@ -1333,7 +1307,6 @@ PYBIND11_MODULE(core, core) {
              "Reads in the density matrices from Kallay's MRCC code.");
     core.def("sapt", py_psi_sapt, "dimer_wfn"_a, "monoa_wfn"_a, "monob_wfn"_a, "Runs the symmetry adapted perturbation theory code.");
     core.def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
-    core.def("optking", py_psi_optking, "Runs the geometry optimization code.");
     core.def("cctransort", py_psi_cctransort, "ref_wfn"_a,
              "Runs cctransort that transforms and reorders integrals for use in the coupled cluster codes.");
     core.def("ccenergy", py_psi_ccenergy, "ref_wfn"_a, "Runs the coupled cluster energy code.");
@@ -1350,7 +1323,6 @@ PYBIND11_MODULE(core, core) {
     core.def("cceom", py_psi_cceom, "ref_wfn"_a, "Runs the equation of motion coupled cluster code for excited states.");
     core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
-    core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
         auto mode = std::ostream::trunc;

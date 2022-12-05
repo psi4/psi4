@@ -873,6 +873,8 @@ void export_mints(py::module& m) {
              "Gets the label of the orbital basis set on a given atom arg0")
         .def("print_in_input_format", &Molecule::print_in_input_format,
              "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.")
+        .def("has_zmatrix", &Molecule::has_zmatrix,
+            "Get whether or not this molecule has at least one zmatrix entry")
         .def("create_psi4_string_from_molecule", &Molecule::create_psi4_string_from_molecule,
              "Gets a string re-expressing in input format the current state of the molecule."
              "Contains Cartesian geometry info, fragmentation, charges and multiplicities, "

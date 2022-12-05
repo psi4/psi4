@@ -45,7 +45,6 @@ except psi4.OptimizationConvergenceError as oce:
     grad_p4_mA = oce.wfn.gradient()
 
 clean()
-opt_clean()
 
 try:
     optimize('c4-mp2', molecule=c4watdim)
@@ -59,7 +58,6 @@ except psi4.driver.qcdb.ValidationError:
 #compare_matrices(grad_p4_mA, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
 #
 #clean()
-#opt_clean()
 #
 #activate(methdim)
 #try:
@@ -68,7 +66,6 @@ except psi4.driver.qcdb.ValidationError:
 #    grad_p4_mB = oce.wfn.gradient()
 #
 #clean()
-#opt_clean()
 #
 #activate(c4methdim)
 #try:
@@ -77,5 +74,4 @@ except psi4.driver.qcdb.ValidationError:
 #    pass
 #compare_matrices(grad_p4_mB, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
 #
-#opt_clean()
 

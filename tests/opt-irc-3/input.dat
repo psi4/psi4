@@ -17,14 +17,17 @@ molecule h2o2 {
     OO        =    1.4057357716
 }
 
+# This shows how to request a specific number of irc points. The "zeroth" point is the TS
 # g_convergence needs to be tight for IRCs:
 set g_convergence gau_verytight
 
 set {
   basis                      sto-3g
   opt_type                   irc
-  geom_maxiter               10
+  ensure_bt_convergence      true
+  irc_points                 1
   irc_step_size              0.5
+  hess_update                bofill
 }
 
 frequencies('scf', dertype=1)
@@ -35,12 +38,9 @@ h2o2.reset_point_group('c2')
 # An ideal test would check the energy at the minima, but there's
 # an unpredictable last step; see #860. Instead, check after 10 steps.
 # We just need to make sure this makes it past the second point.
-try:
-    energy = optimize('scf')
-except psi4.OptimizationConvergenceError as ex:
-    wfn = ex.wfn
+energy, wfn = optimize('scf', return_wfn=True)
 
-compare_values(-148.752629, wfn.energy(), 5, "Energy of IRC point after 10 iterations")  #TEST
+compare_values(-148.752629, energy, 5, "Energy of the first converged IRC point")  #TEST
 
 # clean up scratch since optimization ended abruptly
 psi4_io.set_specific_retention(1, False)

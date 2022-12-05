@@ -67,7 +67,6 @@ del psi4_module_loc, pymod, pymod_dir_step, data_dir
 
 # Cleanup core at exit
 import atexit
-atexit.register(core.set_legacy_molecule, None)
 atexit.register(core.clean_options)
 atexit.register(core.clean)
 atexit.register(core.finalize)

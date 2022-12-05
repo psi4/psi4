@@ -2639,14 +2639,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Specifies minimum search, transition-state search, or IRC following -*/
         options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
         /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
-        options.add_str("STEP_TYPE", "RFO", "RFO NR SD LINESEARCH_STATIC");
+        options.add_str("STEP_TYPE", "RFO", "RFO P_RFO NR SD LINESEARCH");
         /*- Geometry optimization coordinates to use.
             REDUNDANT and INTERNAL are synonyms and the default.
-            DELOCALIZED are the coordinates of Baker.
-            NATURAL are the coordinates of Pulay.
             CARTESIAN uses only cartesian coordinates.
             BOTH uses both redundant and cartesian coordinates.  -*/
-        options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL DELOCALIZED NATURAL CARTESIAN BOTH");
+        options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL CARTESIAN BOTH");
         /*- Do follow the initial RFO vector after the first step? -*/
         options.add_bool("RFO_FOLLOW_ROOT", false);
         /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
@@ -2657,8 +2655,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("IRC_STEP_SIZE", 0.2);
         /*- IRC mapping direction -*/
         options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
-        /*- Decide when to stop IRC calculations -*/
-        options.add_str("IRC_STOP", "STOP", "ASK STOP GO");
+        /*- Maximum number of IRC points to collect before stopping. -*/
+        options.add_int("IRC_POINTS", 20);
         /*- Initial maximum step size in bohr or radian along an internal coordinate -*/
         options.add_double("INTRAFRAG_STEP_LIMIT", 0.5);
         /*- Lower bound for dynamic trust radius [au] -*/
@@ -2686,18 +2684,35 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("FROZEN_BEND", "");
         /*- Specify dihedral angles between atoms to be frozen (unchanged) -*/
         options.add_str("FROZEN_DIHEDRAL", "");
+        /*- Specify out-of-plane angles between atoms to be frozen (unchanged) -*/
+        options.add_str("FROZEN_OOFP", "");
         /*- Specify atom and X, XY, XYZ, ... to be frozen (unchanged) -*/
         options.add_str("FROZEN_CARTESIAN", "");
-        /*- Specify distances between atoms to be fixed (eq. value specified) -*/
-        options.add_str("FIXED_DISTANCE", "");
-        /*- Specify angles between atoms to be fixed (eq. value specified) -*/
-        options.add_str("FIXED_BEND", "");
-        /*- Specify dihedral angles between atoms to be fixed (eq. value specified) -*/
-        options.add_str("FIXED_DIHEDRAL", "");
-        /*- Should an xyz trajectory file be kept (useful for visualization)? -*/
-        options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
-        /*- Symmetry tolerance for testing whether a mode is symmetric. -*/
-        options.add_double("SYMM_TOL", 0.05);
+        /*- Specify range for distances between atoms to be constrained to (eq. value specified)
+            analogous to the previous FIXED_DISTANCE -*/
+        options.add_str("RANGED_DISTANCE", "");
+        /*- Specify range for angles between atoms to be constrained to (eq. value specified)
+            analogous to the previous FIXED_BEND -*/
+        options.add_str("RANGED_BEND", "");
+        /*- Specify range for the dihedral angles between atoms to be constrained to (eq. value specified)
+            analogous to the previous FIXED_DIHEDRAL -*/
+        options.add_str("RANGED_DIHEDRAL", "");
+        /*- Specify range for the out-of-plane angles between atoms to be constrained to (eq. value specified)
+            analogous to the old FIXED_<COORD> keyword-*/
+        options.add_str("RANGED_OOFP", "");
+
+        /*- Specify formula for external forces for the distance between atoms -*/
+        options.add_str("EXT_FORCE_DISTANCE", "");
+        /*- Specify formula for external forces for angles between atoms -*/
+        options.add_str("EXT_FORCE_BEND", "");
+        /*- Specify formula for external forces for dihedral angles between atoms -*/
+        options.add_str("EXT_FORCE_DIHEDRAL", "");
+        /*- Specify formula for external forces for out-of-plane angles between atoms -*/
+        options.add_str("EXT_FORCE_OOFP", "");
+        /*- Symmetry formula for external forces for cartesian coordinates on atoms . -*/
+        options.add_str("EXT_FORCE_CARTESIAN", "");
+        /*- Tolerance for symmetrizing cartesian geometry between steps -*/
+        options.add_double("CARTESIAN_SYM_TOLERANCE", 1e-7);
 
         /*- SUBSECTION Convergence Control -*/
 
@@ -2728,7 +2743,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Hessian update scheme -*/
         options.add_str("HESS_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
         /*- Number of previous steps to use in Hessian update, 0 uses all -*/
-        options.add_int("HESS_UPDATE_USE_LAST", 2);
+        options.add_int("HESS_UPDATE_USE_LAST", 4);
         /*- Do limit the magnitude of changes caused by the Hessian update? -*/
         options.add_bool("HESS_UPDATE_LIMIT", true);
         /*- If |optking__hess_update_limit| is true, changes to the Hessian
@@ -2743,6 +2758,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do read Cartesian Hessian?  Only for experts - use
         |optking__full_hess_every| instead. -*/
         options.add_bool("CART_HESS_READ", false);
+        /* - Specify file for Cartesian Hessian (or JSON Schema-like file) to get Hessians from
+        Only for experts - use |optking__full_hess_every| instead. Requires |optking__CART_HESS_READ | - */
+        options.add_str("HESSIAN_FILE", "");
         /*- Frequency with which to compute the full Hessian in the course
         of a geometry optimization. 0 means to compute the initial Hessian only, 1
         means recompute every step, and N means recompute every N steps. The
@@ -2766,15 +2784,19 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- When interfragment coordinates are present, use as reference points either
         principal axes or fixed linear combinations of atoms. -*/
         options.add_str("INTERFRAG_MODE", "FIXED", "FIXED PRINCIPAL_AXES");
+        /*- Use 1/R for the interfragment stretching coordinate instead of R -*/
+        options.add_bool("INTERFRAG_DIST_INV", false);
+        /*- Dictionary to define a dimer. Contains "Natoms per frag", "A Frag", "A Ref Atoms", "B Frag", and "B Ref Atoms" -*/
+        options.add_str("INTERFRAG_COORDS", "");
+        /*- Specify atoms to use for reference points in interfragment coordinates -*/
+        options.add("FRAG_REF_ATOMS", new ArrayType());
+
         /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
         options.add_bool("ADD_AUXILIARY_BONDS", true);
         /*- Re-estimate the Hessian at every step, i.e., ignore the currently stored Hessian. -*/
         options.add_bool("H_GUESS_EVERY", false);
         /*- This factor times standard covalent distance is used to add extra stretch coordinates. -*/
         options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
-        /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments?
-        Otherwise, use $R@@{AB}$. -*/
-        options.add_bool("INTERFRAG_DIST_INV", false);
         /*- Model Hessian to guess interfragment force constants -*/
         options.add_str("INTERFRAG_HESS", "DEFAULT", "DEFAULT FISCHER_LIKE");
         /*- When determining connectivity, a bond is assigned if interatomic distance
@@ -2784,35 +2806,33 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         is assigned if interatomic distance is less than (this number) * sum of covalent radii. The
         value is then increased until all the fragments are connected (directly or indirectly). -*/
         options.add_double("INTERFRAGMENT_CONNECT", 1.8);
+        /*- Tolerance for whether to reject a set of generated reference atoms due to collinearity -*/
+        options.add_double("INTERFRAG_COLLINEAR_TOL", 0.01);
+
         /*- For now, this is a general maximum distance for the definition of H-bonds -*/
         options.add_double("H_BOND_CONNECT", 4.3);
         /*- Do only generate the internal coordinates and then stop? -*/
         options.add_bool("INTCOS_GENERATE_EXIT", false);
         /*- SUBSECTION Misc. -*/
 
-        /*- Do save and print the geometry from the last projected step at the end
-        of a geometry optimization? Otherwise (and by default), save and print
-        the previous geometry at which was computed the gradient that satisfied
-        the convergence criteria. -*/
-        options.add_bool("FINAL_GEOM_WRITE", false);
         /*- Do test B matrix? -*/
         options.add_bool("TEST_B", false);
         /*- Do test derivative B matrix? -*/
         options.add_bool("TEST_DERIVATIVE_B", false);
-        /*- Keep internal coordinate definition file. -*/
-        options.add_bool("KEEP_INTCOS", false);
-        /*- In constrained optimizations, for coordinates with user-specified
-        equilibrium values, this is the initial force constant (in au) used to apply an
-        additional force to each coordinate. -*/
-        options.add_double("FIXED_COORD_FORCE_CONSTANT", 0.5);
-        /*- If doing a static line search, scan this many points. -*/
-        options.add_int("LINESEARCH_STATIC_N", 8);
-        /*- If doing a static line search, this fixes the shortest step, whose largest
-            change in an internal coordinate is set to this value (in au) -*/
-        options.add_double("LINESEARCH_STATIC_MIN", 0.001);
-        /*- If doing a static line search, this fixes the largest step, whose largest
-            change in an internal coordinate is set to this value (in au) -*/
-        options.add_double("LINESEARCH_STATIC_MAX", 0.100);
+
+        /*- Write the optimization history / state to disc -*/
+        options.add_bool("WRITE_OPT_RESULT", false);
+        /*- Save OptKing's internal classes for possible restart upon error -*/
+        options.add_bool("SAVE_OPTIMIZATION", false);
+        /*- Restart the optimization from optking's written history -*/
+        options.add_double("OPT_RESTART", 0);
+        /*- Write Optimization Trajectory -*/
+        options.add_bool("WRITE_TRAJECTORY", false);
+        /*- Should an xyz trajectory file be kept (useful for visualization)? -*/
+        options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
+        /*- Write the full history to disk. Produces a non validated OptimizationResult. -*/
+        options.add_bool("WRITE_OPT_HISTORY", false);
+
     }
     if (name == "FINDIF" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear

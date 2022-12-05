@@ -41,7 +41,6 @@ foreach(dir_name
   mcscf
   mrcc
   occ
-  optking
   psimrcc
   sapt
   scfgrad

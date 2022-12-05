@@ -70,9 +70,6 @@ class PSI_API Process {
         std::shared_ptr<PSIOManager> _psio_manager_keepalive;
 
         std::shared_ptr<Molecule> molecule_;
-        SharedMatrix gradient_;
-
-        std::shared_ptr<Molecule> legacy_molecule_;
 
        public:
         void initialize();
@@ -81,17 +78,6 @@ class PSI_API Process {
         void set_molecule(const std::shared_ptr<Molecule>& molecule);
         /// Return active molecule
         std::shared_ptr<Molecule> molecule() const;
-
-        /// Temporary slots for legacy as a stop-gap
-        /// Set active molecule
-        void set_legacy_molecule(const std::shared_ptr<Molecule>& molecule);
-        /// Return active molecule
-        std::shared_ptr<Molecule> legacy_molecule() const;
-
-        /// Set gradient manually
-        void set_gradient(const SharedMatrix g) { gradient_ = g; }
-        /// Get gradient manually
-        SharedMatrix gradient() const { return gradient_; }
 
         /// Map containing current energies
         std::map<std::string, double> globals;

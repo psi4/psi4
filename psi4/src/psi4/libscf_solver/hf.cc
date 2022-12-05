@@ -363,14 +363,13 @@ void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
 void HF::initialize_gtfock_jk() {
     // Build the JK from options, symmetric type
 #ifdef HAVE_JK_FACTORY
+    // construction of `jk_` depends on communication through legacy_molecule, now removed
+
     // DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
-    std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
-    Process::environment.set_legacy_molecule(molecule_);
     if (options_.get_bool("SOSCF"))
         jk_ = std::make_shared<GTFockJK>(basisset_, 2, false);
     else
         jk_ = std::make_shared<GTFockJK>(basisset_, 2, true);
-    Process::environment.set_legacy_molecule(other_legacy);
 #else
     throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
 #endif
