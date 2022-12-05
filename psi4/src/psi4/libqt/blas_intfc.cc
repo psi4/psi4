@@ -211,7 +211,7 @@ void PSI_API C_DROT(size_t length, double *x, int inc_x, double *y, int inc_y, d
  * \ingroup QT
  */
 
-double PSI_API C_DDOT(size_t length, const double* const x, int inc_x, const double* const y, int inc_y) {
+double PSI_API C_DDOT(size_t length, const double *const x, int inc_x, const double *const y, int inc_y) {
     if (length == 0) return 0.0;
 
     double reg = 0.0;
