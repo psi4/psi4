@@ -33,6 +33,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
+#include "psi4/libmints/wavefunction.h"
 #define EXTERN
 #include "globals.h"
 
@@ -48,17 +49,17 @@ namespace ccdensity {
 ** my sortone.c code here, so don't let some of the variable names
 ** confuse you. */
 
-void sortI_RHF();
-void sortI_ROHF();
-void sortI_UHF();
+void sortI_RHF(Wavefunction&);
+void sortI_ROHF(Wavefunction&);
+void sortI_UHF(Wavefunction&);
 
-void sortI() {
+void sortI(Wavefunction& wfn) {
     if (params.ref == 0)
-        sortI_RHF();
+        return sortI_RHF(wfn);
     else if (params.ref == 1)
-        sortI_ROHF();
+        return sortI_ROHF(wfn);
     else if (params.ref == 2)
-        sortI_UHF();
+        return sortI_UHF(wfn);
 }
 
 }  // namespace ccdensity
