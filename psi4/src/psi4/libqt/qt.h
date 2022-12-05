@@ -84,7 +84,6 @@ void stop_skip_timers();
 void clean_timers();
 
 void print_block(double*, int, int, FILE*);
-
 int david(double** A, int N, int M, double* eps, double** v, double cutoff, int print);
 
 int cc_excited(const char* wfn);
