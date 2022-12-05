@@ -90,7 +90,6 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     }
 
     // Extract variables
-#if XC_MAJOR_VERSION < 6
     if (xc_functional_->info->family == XC_FAMILY_HYB_GGA || xc_functional_->info->family == XC_FAMILY_HYB_MGGA
 #ifdef XC_FAMILY_HYB_LDA
         || xc_functional_->info->family == XC_FAMILY_HYB_LDA
@@ -143,77 +142,22 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
             global_exch_ = alpha + beta;
             lr_exch_ = -1.0 * beta;
         }
+
         if (!lrc_) {
             // Global hybrid
             global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
         }
     }
-#else
-    switch (xc_hyb_type(xc_functional_.get())) {
-        case (XC_HYB_SEMILOCAL):
-            lrc_ = false;
-            global_exch_ = 0.0;
-            lr_exch_ = 0.0;
-            break;
-
-        case (XC_HYB_HYBRID):
-            lrc_ = false;
-            global_exch_ = xc_hyb_exx_coef(xc_functional_.get());
-            lr_exch_ = 0.0;
-            break;
-
-        case (XC_HYB_CAM):
-            lrc_ = true;
-            double alpha, beta;
-            xc_hyb_cam_coef(xc_functional_.get(), &omega_, &alpha, &beta);
-            /*
-              The values alpha and beta have a different meaning in
-              psi4 and libxc.
-
-              In libxc, alpha is the contribution from full exact
-              exchange (at all ranges), and beta is the contribution
-              from short-range only exchange, yielding alpha exact
-              exchange at the long range and alpha+beta in the short
-              range in total.
-
-              In Psi4, alpha is the amount of exchange at all ranges,
-              while beta is the difference between the amount of
-              exchange in the long range and in the short range,
-              meaning alpha+beta at the long range, and alpha only at
-              the short range.
-
-              These differences amount to the transform
-
-              SR      = LibXC_ALPHA + LibXC_BETA = Psi4_ALPHA
-              LR      = LibXC_ALPHA              = Psi4_ALPHA + Psi4_BETA
-              LR - SR =             - LibXC_BETA =              Psi4_BETA
-            */
-
-            global_exch_ = alpha + beta;
-            lr_exch_ = -1.0 * beta;
-            break;
-
-        default:
-            outfile->Printf("Functional '%s' is a type of functional which is not supported in Psi4\n",
-                            xc_name.c_str());
-            throw PSIEXCEPTION("Not all types of functionals are supported in Psi4 at present");
-    }
-#endif
 
     // Figure out the family
     int family = xc_functional_->info->family;
 
-#if XC_MAJOR_VERSION < 6
     std::vector<int> gga_vec = {XC_FAMILY_GGA, XC_FAMILY_HYB_GGA};
-    std::vector<int> meta_vec = {XC_FAMILY_MGGA, XC_FAMILY_HYB_MGGA};
-#else
-    std::vector<int> gga_vec = {XC_FAMILY_GGA};
-    std::vector<int> meta_vec = {XC_FAMILY_MGGA};
-#endif
     if (std::find(gga_vec.begin(), gga_vec.end(), family) != gga_vec.end()) {
         gga_ = true;
     }
 
+    std::vector<int> meta_vec = {XC_FAMILY_MGGA, XC_FAMILY_HYB_MGGA};
     if (std::find(meta_vec.begin(), meta_vec.end(), family) != meta_vec.end()) {
         gga_ = true;
         meta_ = true;
