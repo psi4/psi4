@@ -128,31 +128,64 @@ class AtomicComputer(BaseComputer):
 
         if client:
             self.computed = True
-            from qcportal.models import KeywordSet, Molecule
 
-            # Build the keywords
-            keyword_id = client.add_keywords([KeywordSet(values=self.keywords)])[0]
+            try:
+                # QCFractal v0.15.8
+                from qcportal.models import KeywordSet, Molecule
+                qca_next_branch = False
+            except ImportError:
+                # QCFractal `next`
+                from qcelemental.models import Molecule
+                qca_next_branch = True
 
             # Build the molecule
             mol = Molecule(**self.molecule.to_schema(dtype=2))
 
-            r = client.add_compute(
-                "psi4", self.method, self.basis, self.driver, keyword_id, [mol]
-            )
-            self.result_id = r.ids[0]
-            # NOTE: The following will re-run errored jobs by default
-            if self.result_id in r.existing:
-                ret = client.query_tasks(base_result=self.result_id)
-                if ret:
-                    if ret[0].status == "ERROR":
-                        client.modify_tasks("restart", base_result=self.result_id)
-                        logger.info("Resubmitting Errored Job {}".format(self.result_id))
-                    elif ret[0].status == "COMPLETE":
+            if not qca_next_branch:
+                # QCFractal v0.15.8
+
+                # Build the keywords
+                keyword_id = client.add_keywords([KeywordSet(values=self.keywords)])[0]
+
+                r = client.add_compute("psi4", self.method, self.basis, self.driver, keyword_id, [mol])
+                self.result_id = r.ids[0]
+                # NOTE: The following will re-run errored jobs by default
+                if self.result_id in r.existing:
+                    ret = client.query_tasks(base_result=self.result_id)
+                    if ret:
+                        if ret[0].status == "ERROR":
+                            client.modify_tasks("restart", base_result=self.result_id)
+                            logger.info("Resubmitting Errored Job {}".format(self.result_id))
+                        elif ret[0].status == "COMPLETE":
+                            logger.debug("Job already completed {}".format(self.result_id))
+                    else:
                         logger.debug("Job already completed {}".format(self.result_id))
                 else:
-                    logger.debug("Job already completed {}".format(self.result_id))
+                    logger.debug("Submitting AtomicResult {}".format(self.result_id))
+
             else:
-                logger.debug("Submitting AtomicResult {}".format(self.result_id))
+                # QCFractal `next`
+
+                meta, ids = client.add_singlepoints(
+                    molecules=mol,
+                    program="psi4",
+                    driver=self.driver,
+                    method=self.method,
+                    basis=self.basis,
+                    keywords=self.keywords,
+                    # protocols,
+                )
+                self.result_id = ids[0]
+                # NOTE: The following will re-run errored jobs by default
+                if meta.existing_idx:
+                    rec = client.get_singlepoints(self.result_id)
+                    if rec.status == "error":
+                        client.reset_records(self.result_id)
+                        logger.info("Resubmitting Errored Job {}".format(self.result_id))
+                    elif rec.status == "complete":
+                        logger.debug("Job already completed {}".format(self.result_id))
+                else:
+                    logger.debug("Submitting AtomicResult {}".format(self.result_id))
 
             return
 
@@ -192,13 +225,61 @@ class AtomicComputer(BaseComputer):
             return self.result
 
         if client:
-            result = client.query_results(id=self.result_id)
-            logger.debug(f"Querying AtomicResult {self.result_id}")
-            if len(result) == 0:
-                return self.result
+            try:
+                # QCFractal/QCPortal v0.15.8
+                result = client.query_results(id=self.result_id)
+                qca_next_branch = False
+            except AttributeError:
+                # QCFractal/QCPortal `next`
+                record = client.get_singlepoints(record_ids=self.result_id)
+                qca_next_branch = True
 
-            self.result = result[0]
+            logger.debug(f"Querying AtomicResult {self.result_id}")
+
+            if not qca_next_branch:
+                # QCFractal v0.15.8
+                if len(result) == 0:
+                    return self.result
+
+                self.result = result[0]
+
+            else:
+                # QCFractal `next`
+                if record.status != "complete":
+                    return self.result
+
+                self.result = _singlepointrecord_to_atomicresult(record)
+
             return self.result
+
+
+def _singlepointrecord_to_atomicresult(spr) -> AtomicResult:
+    extras = spr.raw_data.extras
+    extras.pop("_qcfractal_compressed_outputs", None)
+
+    atres = {
+        "driver": spr.raw_data.specification.driver,
+        "model": {
+          "method": spr.raw_data.specification.method,
+          "basis": spr.raw_data.specification.basis,
+        },
+        "molecule": spr.molecule,
+        "keywords": spr.raw_data.specification.keywords,
+        "properties": spr.properties,
+        "protocols": spr.raw_data.specification.protocols,
+        "return_result": spr.return_result,
+        "extras": extras,
+        "stdout": spr.stdout,
+        "native_files": spr.native_files,
+        "wavefunction": spr.wavefunction,
+        "provenance": spr.raw_data.compute_history[0].provenance,
+        "success": spr.status == "complete",
+    }
+
+    from qcelemental.models import AtomicResult
+    atres = AtomicResult(**atres)
+
+    return atres
 
 
 def _drink_filter(stdout: str) -> str:
