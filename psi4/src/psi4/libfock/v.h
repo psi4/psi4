@@ -70,9 +70,9 @@ class PSI_API VBase {
     Options& options_;
     /// Basis set used in the integration
     std::shared_ptr<BasisSet> primary_;
-    /// Desired superfunctional kernal
+    /// Desired superfunctional kernel
     std::shared_ptr<SuperFunctional> functional_;
-    /// Desired superfunctional kernal
+    /// Desired superfunctional kernel
     std::vector<std::shared_ptr<SuperFunctional>> functional_workers_;
     /// Point function computer (densities, gammas, basis values)
     std::vector<std::shared_ptr<PointFunctions>> point_workers_;
@@ -133,7 +133,9 @@ class PSI_API VBase {
 
     /// Throws by default
     virtual void compute_V(std::vector<SharedMatrix> ret);
-    virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
+    /// Throws by default. Compute the orbital derivative of the KS potential for each spin,
+    /// contract against Dx, and putting the result in ret.
+    virtual void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
     virtual std::vector<SharedMatrix> compute_fock_derivatives();
     virtual SharedMatrix compute_gradient();
     virtual SharedMatrix compute_hessian();
@@ -170,8 +172,10 @@ class RV : public VBase {
     void initialize() override;
     void finalize() override;
 
+    // compute_V assuming same orbitals for different spin. Computes V_alpha, not spin-summed V.
     void compute_V(std::vector<SharedMatrix> ret) override;
-    void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
+    /// compute_Vx assuming same orbitals for different spin. ret[i] is Vx where x = Dx[i].
+    void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
     std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_gradient() override;
     SharedMatrix compute_hessian() override;
@@ -189,7 +193,9 @@ class UV : public VBase {
     void finalize() override;
 
     void compute_V(std::vector<SharedMatrix> ret) override;
-    void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
+    /// compute_Vx not assuming same orbitals for different spin.
+    /// ret[2n], ret[2n+1] are alpha and beta Vx where x concatenates Dx[2n] (alpha) and Dx[2n+1] (beta).
+    void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
     SharedMatrix compute_gradient() override;
 
     void print_header() const override;

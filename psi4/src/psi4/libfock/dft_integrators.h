@@ -126,54 +126,61 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
     // printf("Ansatz %d\n", ansatz);
 
     // Block data
-    const std::vector<int>& function_map = block->functions_local_to_global();
-    int nlocal = function_map.size();
-    int npoints = block->npoints();
-    double* w = block->w();
+    const auto& function_map = block->functions_local_to_global();
+    auto nlocal = function_map.size();
+    auto npoints = block->npoints();
+    auto w = block->w();
 
     // Scratch is updated
-    double** Tp = pworker->scratch()[0]->pointer();
+    auto Tp = pworker->scratch()[0]->pointer();
 
     // Points data
-    double** phi = pworker->basis_value("PHI")->pointer();
-    double* rho_a = pworker->point_value("RHO_A")->pointer();
-    size_t coll_funcs = pworker->basis_value("PHI")->ncol();
+    auto phi = pworker->basis_value("PHI")->pointer();
+    auto rho_a = pworker->point_value("RHO_A")->pointer();
+    auto coll_funcs = pworker->basis_value("PHI")->ncol();
 
     // V2 Temporary
-    int max_functions = V->ncol();
-    double** V2p = V->pointer();
+    auto max_functions = V->ncol();
+    auto V2p = V->pointer();
 
-    // => LSDA contribution (symmetrized) <= //
-    double* v_rho_a = fworker->value("V_RHO_A")->pointer();
+    // => LSDA contribution <= //
+    // LSDA Contribution at point p is einsum("mp, np, p, ps -> mns", phi, phi, w, v_rho)
+    // Ta := 1/2 einsum("np, p, p -> np", phi, phi, w, v_rho_a)
+    auto v_rho_a = fworker->value("V_RHO_A")->pointer();
     for (int P = 0; P < npoints; P++) {
         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
         C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
     }
     // parallel_timer_off("LSDA Phi_tmp", rank);
 
-    // => GGA contribution (symmetrized) <= //
+    // => GGA contribution <= //
     if (ansatz >= 1) {
+        // GGA contribution at point p is 2 einsum("mp, npx, px, px, p, p, pxs -> mns" phi, phiX, rho_X, w, v_gamma)
+        // Our special definition of v_gamma allows us to suppress a spinsum.
+        // We'll need to symmetrize this later.
+        // Ta += einsum("npx, px, px, p, p, px -> np" phiX, rho_X, w, v_gamma_alpha)
         // parallel_timer_on("GGA Phi_tmp", rank);
-        double** phix = pworker->basis_value("PHI_X")->pointer();
-        double** phiy = pworker->basis_value("PHI_Y")->pointer();
-        double** phiz = pworker->basis_value("PHI_Z")->pointer();
-        double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-        double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-        double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-        double* v_sigma_aa = fworker->value("V_GAMMA_AA")->pointer();
+        auto phix = pworker->basis_value("PHI_X")->pointer();
+        auto phiy = pworker->basis_value("PHI_Y")->pointer();
+        auto phiz = pworker->basis_value("PHI_Z")->pointer();
+        auto rho_ax = pworker->point_value("RHO_AX")->pointer();
+        auto rho_ay = pworker->point_value("RHO_AY")->pointer();
+        auto rho_az = pworker->point_value("RHO_AZ")->pointer();
+        auto v_gamma_aa = fworker->value("V_GAMMA_AA")->pointer();
 
         for (int P = 0; P < npoints; P++) {
-            C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
-            C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
-            C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
+            C_DAXPY(nlocal, w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
+            C_DAXPY(nlocal, w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
+            C_DAXPY(nlocal, w[P] * (2.0 * v_gamma_aa[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
         }
         // parallel_timer_off("GGA Phi_tmp", rank);
     }
 
-    // Collect V terms
+    // ==> Contract T aginst phi to complete the LDA and GGA contributions <==
     C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, V2p[0],
             max_functions);
 
+    // ==> Forcibly symmetrize V and scale by 2 <==
     for (int m = 0; m < nlocal; m++) {
         for (int n = 0; n <= m; n++) {
             V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m];
@@ -183,10 +190,10 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
     // => Meta contribution <= //
     if (ansatz >= 2) {
         // parallel_timer_on("Meta", rank);
-        double** phix = pworker->basis_value("PHI_X")->pointer();
-        double** phiy = pworker->basis_value("PHI_Y")->pointer();
-        double** phiz = pworker->basis_value("PHI_Z")->pointer();
-        double* v_tau_a = fworker->value("V_TAU_A")->pointer();
+        auto phix = pworker->basis_value("PHI_X")->pointer();
+        auto phiy = pworker->basis_value("PHI_Y")->pointer();
+        auto phiz = pworker->basis_value("PHI_Z")->pointer();
+        auto v_tau_a = fworker->value("V_TAU_A")->pointer();
 
         double** phi_w[3];
         phi_w[0] = phix;
@@ -194,7 +201,7 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
         phi_w[2] = phiz;
 
         for (int i = 0; i < 3; i++) {
-            double** phiw = phi_w[i];
+            auto phiw = phi_w[i];
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tp[P], Tp[P] + nlocal, 0.0);
                 C_DAXPY(nlocal, v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
