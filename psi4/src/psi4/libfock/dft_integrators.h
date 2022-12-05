@@ -82,7 +82,7 @@ inline std::vector<double> rks_quadrature_integrate(std::shared_ptr<BlockOPoints
     return ret;
 }
 
-inline void sap_integrator(std::shared_ptr<BlockOPoints> block, const std::vector<double>& sap_potential,
+inline void sap_integrator(std::shared_ptr<BlockOPoints> block, const SharedVector& sap_potential,
                            std::shared_ptr<PointFunctions> pworker, SharedMatrix V) {
     // Block data
     const std::vector<int>& function_map = block->functions_local_to_global();
@@ -100,11 +100,12 @@ inline void sap_integrator(std::shared_ptr<BlockOPoints> block, const std::vecto
     // V2 Temporary
     int max_functions = V->ncol();
     double** V2p = V->pointer();
+    auto& potential = *sap_potential;
 
     // => LSDA contribution (symmetrized) <= //
     for (int P = 0; P < npoints; P++) {
         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
-        C_DAXPY(nlocal, 0.5 * sap_potential[P] * w[P], phi[P], 1, Tp[P], 1);
+        C_DAXPY(nlocal, 0.5 * potential[P] * w[P], phi[P], 1, Tp[P], 1);
     }
     // parallel_timer_off("LSDA Phi_tmp", rank);
 

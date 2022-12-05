@@ -228,6 +228,8 @@ class DFTGrid : public MolecularGrid {
     Options& options_;
 
    public:
+    std::shared_ptr<BasisSet> primary() const { return primary_; }
+
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
     DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
             std::map<std::string, int> int_opts_map, std::map<std::string, std::string> str_opts_map, Options& options);

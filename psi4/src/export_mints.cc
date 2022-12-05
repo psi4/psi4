@@ -1502,6 +1502,9 @@ void export_mints(py::module& m) {
              "coordinates (needed for EFP and PE)")
         .def("electric_field_value", &MintsHelper::electric_field_value,
              "Electric field expectation value at given sites")
+        .def("electrostatic_potential_value", &MintsHelper::electrostatic_potential_value,
+             "Electrostatic potential values at given sites with associated charge, specified as an (n_sites, 4) matrix.",
+             "charges"_a, "coords"_a, "D"_a)
 
         // Two-electron AO
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)
@@ -1589,6 +1592,7 @@ void export_mints(py::module& m) {
              "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a)
         .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
              "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
+
 
     py::class_<OrbitalSpace>(m, "OrbitalSpace", "Contains information about the orbitals")
         .def(py::init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&,

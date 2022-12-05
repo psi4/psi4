@@ -101,6 +101,7 @@ option(ENABLE_ambit "Enables the ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_cppe "Enables CPPE for Polarizable Embedding" OFF)
 option(ENABLE_adcc "Enables adcc for algebraic-diagrammatic construction methods (requires libtensorlight; can also be added at runtime)" OFF)
+option(ENABLE_ddx "Enables ddx for domain-decomposition contiuum solvation models (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
@@ -230,6 +231,7 @@ ExternalProject_Add(psi4-core
            libint_external
            libint2_external
            pcmsolver_external
+           ddx_external
            pybind11_external
            pylibefp_external
            qcelemental_external
@@ -273,6 +275,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
+              -DENABLE_ddx=${ENABLE_ddx}
               -DENABLE_mdi=${ENABLE_mdi}
               -DENABLE_BrianQC=${ENABLE_BrianQC}
               -DENABLE_OPENMP=${ENABLE_OPENMP}
@@ -291,6 +294,7 @@ ExternalProject_Add(psi4-core
               -DLibint2_DIR=${Libint2_DIR}
               -Dlibint2_DIR=${Libint2_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
+              -Dddx_DIR=${ddx_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}

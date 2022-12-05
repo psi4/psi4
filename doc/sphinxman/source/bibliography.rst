@@ -385,9 +385,41 @@ Bibliography
    R. Cammi,
    *J. Chem. Phys.* **131**, 164104 (2009).
 
+.. [Klamt:1993:799]
+   A. Klamt, and G. Schüürmann
+   *J. Chem. Soc., Perkin Trans. 2* **5**, 799 (1993).
+
 .. [Tomasi:2005:2999]
    J. Tomasi, B. Mennucci, and R. Cammi
    *Chem. Rev.* **105**, 2999 (2005).
+
+.. [Cances:1998:309]
+   E. Canc\ |e_grave|\ s, B. Mennucci
+   *J. Math. Chem.* **23**, 309 (1998).
+
+.. [Cances:2013:054111]
+   E. Canc\ |e_grave|\ s, Y. Maday, B. Stamm
+   *J. Chem. Phys.* **139**, 054111 (2013).
+
+.. [Stamm:2016:054101]
+   B. Stamm, E. Cancès, F. Lipparini, Y. Maday
+   *J. Chem. Phys.* **144**, 054101 (2016).
+
+.. [Lipparini:2014:184108]
+   F. Lipparini, G. Scalmani, L. Lagardère, B. Stamm, E. Cancès, Y. Maday, J.-P. Piquemal, M. Frisch, B. Mennucci
+   *J. Chem. Phys.* **141**, 184108 (2014).
+
+.. [Nottoli:2019:6061]
+   M. Nottoli, B. Stamm, G. Scalmani, F. Lipparini
+   *J. Chem. Theory Comput.* **15**, 6061 (2019).
+
+.. [Bondi:1964:441]
+   A. Bondi
+   *J. Phys. Chem.* **68**, 441 (1964).
+
+.. [Rappe:1992:114]
+   A. K. Rappe, C. J. Casewit, K. S. Colwell, W. A. Goddard III, W. M. Skiff
+   *J. Am. Chem. Soc.*, **25**, 114 (1992).
 
 .. [McGibbon:2017:161725]
    R. T. McGibbon, A. G. Taube, A. G. Donchev, K. Siva, F. Hern\ |a_acute|\ andez, C. Hargus, K. H. Law, J. L. Klepeis, D. E. Shaw

@@ -1380,6 +1380,11 @@ PSI Variables by Alpha
 
    The energy contribution [E_h] from the polarizable continuum model for solvation.
 
+.. psivar:: DD SOLVATION ENERGY
+
+   The energy contribution [Eh] from continuum solvation models based on a
+   domain-decomposition ansatz.
+
 .. psivar:: PE ENERGY
 
    The energy contribution [E_h] from the polarizable embedding model for solvation.

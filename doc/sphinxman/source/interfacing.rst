@@ -48,6 +48,7 @@ platform capabilities, *etc*.
    cfour
    chemps2
    cppe
+   ddx
    dftd3
    dkh
    ecpint

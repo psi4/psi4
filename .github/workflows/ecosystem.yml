@@ -221,6 +221,7 @@ jobs:
           - geometric
           - openfermion>=1.0
           - openfermionpsi4
+          - pyddx
           - pymdi
           - qcengine=0.25.0
           - qcfractal
@@ -285,6 +286,7 @@ jobs:
           - geometric
           #- psi4/label/dev::mp2d
           #- openfermionpsi4
+          #- pyddx
           - pymdi
           - psi4/label/dev::resp
           - psi4/label/dev::snsmp2

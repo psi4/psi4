@@ -344,6 +344,8 @@ Additionally, there are runtime-loaded capabilities:
 
 * MDI |w---w| https://github.com/MolSSI-MDI/MDI_Library
 
+* :ref:`ddx <sec:ddx>` |w---w| https://github.com/ddsolvation/ddx
+
 
 .. _`faq:condapsi4dev`:
 

@@ -1602,14 +1602,14 @@ def scf_helper(name, post_scf=True, **kwargs):
     elif _chkfile is True:
         write_checkpoint_file = True
 
-    # PCM needs to be run w/o symmetry
-    if core.get_option("SCF", "PCM"):
+    # Continuum solvation needs to be run w/o symmetry
+    if core.get_option("SCF", "PCM") or core.get_option("SCF", "DDX"):
         c1_molecule = scf_molecule.clone()
         c1_molecule.reset_point_group('c1')
         c1_molecule.update_geometry()
 
         scf_molecule = c1_molecule
-        core.print_out("""  PCM does not make use of molecular symmetry: """
+        core.print_out("""  PCM or DDX continuum solvation does not make use of molecular symmetry: """
                        """further calculations in C1 point group.\n""")
 
     # PE needs to use exactly input orientation to correspond to potfile
@@ -1842,6 +1842,16 @@ def scf_helper(name, post_scf=True, **kwargs):
         pcmsolver_parsed_fname = core.get_local_option('PCM', 'PCMSOLVER_PARSED_FNAME')
         pcm_print_level = core.get_option('SCF', "PRINT")
         scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
+
+    # DDPCM preparation
+    if core.get_option('SCF', 'DDX'):
+        if not solvent._have_ddx:
+            raise ModuleNotFoundError('Python module ddx not found. Solve by installing it: `pip install pyddx`')
+        ddx_options = solvent.ddx.get_ddx_options(scf_molecule)
+        scf_wfn.ddx_state = solvent.ddx.DdxInterface(
+            molecule=scf_molecule, options=ddx_options,
+            basisset=scf_wfn.basisset()
+        )
 
     # PE preparation
     if core.get_option('SCF', 'PE'):

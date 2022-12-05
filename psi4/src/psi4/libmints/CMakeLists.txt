@@ -35,6 +35,7 @@ list(APPEND sources
   molecule.cc
   intvector.cc
   mintshelper.cc
+  numinthelper.cc
   coordentry.cc
   matrix.cc
   gshell.cc
