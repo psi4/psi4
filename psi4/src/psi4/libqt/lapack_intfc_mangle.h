@@ -72,7 +72,6 @@
 #define F_DGEESX FC_GLOBAL(dgeesx, DGEESX)
 #define F_DGEEV FC_GLOBAL(dgeev, DGEEV)
 #define F_DGEEVX FC_GLOBAL(dgeevx, DGEEVX)
-#define F_DGEGS FC_GLOBAL(dgegs, DGEGS)
 #define F_DGEGV FC_GLOBAL(dgegv, DGEGV)
 #define F_DGEHRD FC_GLOBAL(dgehrd, DGEHRD)
 #define F_DGELQF FC_GLOBAL(dgelqf, DGELQF)
@@ -273,7 +272,6 @@
 #define F_DGEESX dgeesx_
 #define F_DGEEV dgeev_
 #define F_DGEEVX dgeevx_
-#define F_DGEGS dgegs_
 #define F_DGEGV dgegv_
 #define F_DGEHRD dgehrd_
 #define F_DGELQF dgelqf_
@@ -473,7 +471,6 @@
 #define F_DGEESX dgeesx
 #define F_DGEEV dgeev
 #define F_DGEEVX dgeevx
-#define F_DGEGS dgegs
 #define F_DGEGV dgegv
 #define F_DGEHRD dgehrd
 #define F_DGELQF dgelqf
@@ -673,7 +670,6 @@
 #define F_DGEESX DGEESX
 #define F_DGEEV DGEEV
 #define F_DGEEVX DGEEVX
-#define F_DGEGS DGEGS
 #define F_DGEGV DGEGV
 #define F_DGEHRD DGEHRD
 #define F_DGELQF DGELQF
@@ -873,7 +869,6 @@
 #define F_DGEESX DGEESX_
 #define F_DGEEV DGEEV_
 #define F_DGEEVX DGEEVX_
-#define F_DGEGS DGEGS_
 #define F_DGEGV DGEGV_
 #define F_DGEHRD DGEHRD_
 #define F_DGELQF DGELQF_

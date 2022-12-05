@@ -93,7 +93,6 @@ void export_blas_lapack(py::module& m) {
     def("DGEES", &psi::PSI_DGEES);
     def("DGEESX", &psi::PSI_DGEESX);
     def("DGEEVX", &psi::PSI_DGEEVX);
-    def("DGEGS", &psi::PSI_DGEGS);
     def("DGEGV", &psi::PSI_DGEGV);
     def("DGEHRD", &psi::PSI_DGEHRD);
     def("DGELQF", &psi::PSI_DGELQF);
