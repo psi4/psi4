@@ -351,9 +351,9 @@ void DFJCOSK::compute_JK() {
     if (incfock_) {
         timer_on("DFJCOSK: INCFOCK Preprocessing");
 
-        int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
-        double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
-        double Dnorm = Process::environment.globals["SCF D NORM"];
+        auto reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
+        auto incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
+        auto Dnorm = Process::environment.globals["SCF D NORM"];
         // Do IFB on this iteration?
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
 
