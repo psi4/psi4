@@ -282,7 +282,7 @@ PsiReturnType ccdensity(std::shared_ptr<ccenergy::CCEnergyWavefunction> ref_wfn,
             if (params.relax_opdm) {
                 relax_D(rho_params[i]); /* adds orbital response contributions to onepdm */
             }
-            sortone(rho_params[i]);                                                   /* builds large moinfo.opdm matrix */
+            sortone(rho_params[i]);  /* builds large moinfo.opdm matrix */
             sortI(*ref_wfn);    /* builds large lagrangian matrix I */
             fold(rho_params[i]);
             deanti(rho_params[i]);

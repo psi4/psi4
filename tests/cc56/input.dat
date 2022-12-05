@@ -36,7 +36,7 @@ ref0A2 = -75.260476163556 # TEST
 compare_values(ref1B1, core.variable("CCSD ROOT 1 (IN B1) TOTAL ENERGY"), 6, "Root 1 (A1) Energy") # TEST
 compare_values(ref0A2, core.variable("CCSD ROOT 0 (IN A2) TOTAL ENERGY"), 6, "Root 0 (A2) Energy") # TEST
 
-### Dipole check
+### Dipole check - validated against CFOUR 12/22
 
 test_data = {                   # TEST
 (0, "B1", 0, "A1"):  0.9924065, # TEST

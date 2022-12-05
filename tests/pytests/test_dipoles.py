@@ -23,52 +23,33 @@ perturbation_strength = 0.001
     pytest.param({'name': 'dct', 'options': {'dct_type': 'df'}, 'varname': 'DCT'}, id='df-rdct'),
     pytest.param({'name': 'dct', 'options': {'dct_type': 'df', 'reference': 'uhf'}, 'varname': 'DCT'}, id='df-udct'),
     pytest.param({'name': 'ccsd', 'options': {'opdm_relax': 'true'}, 'varname': 'CCSD'}, id='ccsd'),
+    pytest.param({'name': 'ccsd', 'options': {'opdm_relax': 'true', 'reference': 'uhf'}, 'varname': 'CCSD'}, id='ccsd'),
     ]
 )
 def test_dipole(inp):
-    h2o = psi4.geometry("""
+    h2o_singlet = psi4.geometry("""
         O
         H 1 1.0
         H 1 1.0 2 101.5
     """)
-
-    psi4.set_options({'perturb_h': True, 'perturb_with': 'dipole', 'basis': 'cc-pvdz'})
-    psi4.set_options(inp['options'])
-    energies = dict()
-    for l in [1, -1, 2, -2]:
-        psi4.set_options({'perturb_dipole': [0, 0, l * perturbation_strength]})
-        energies[l] = psi4.energy(inp['name'])
-    findif_dipole = [0, 0, (8 * energies[1] - 8 * energies[-1] - energies[2] + energies[-2]) / (12 * perturbation_strength)]
-
-    psi4.set_options({'perturb_h': False})
-    wfn = psi4.properties(inp['name'], properties=['dipole'], return_wfn=True)[1]
-    analytic_dipole = wfn.variable(inp['varname'] + " DIPOLE")
-
-    assert compare_values(findif_dipole, analytic_dipole, 5, "findif vs. analytic dipole")
-
-@ pytest.mark.slow
-@pytest.mark.parametrize("inp", [
-    pytest.param({'name': 'ccsd', 'options': {'opdm_relax': 'true'}, 'varname': 'CCSD'}, id='ccsd')
-    ]
-)
-def test_dipoleU(inp):
-    h2o = psi4.geometry("""
+    h2o_doublet = psi4.geometry("""
         1 2
         O
         H 1 1.0
         H 1 1.0 2 101.5
     """)
 
-    psi4.set_options({'perturb_h': True, 'perturb_with': 'dipole', 'basis': 'cc-pvdz', 'reference': 'uhf'})
+    mol = h2o_singlet if inp["options"].get("reference", "rhf") == "rhf" else h2o_doublet
+    psi4.set_options({'perturb_h': True, 'perturb_with': 'dipole', 'basis': 'cc-pvdz'})
     psi4.set_options(inp['options'])
     energies = dict()
     for l in [1, -1, 2, -2]:
         psi4.set_options({'perturb_dipole': [0, 0, l * perturbation_strength]})
-        energies[l] = psi4.energy(inp['name'])
+        energies[l] = psi4.energy(inp['name'], molecule=mol)
     findif_dipole = [0, 0, (8 * energies[1] - 8 * energies[-1] - energies[2] + energies[-2]) / (12 * perturbation_strength)]
 
     psi4.set_options({'perturb_h': False})
-    wfn = psi4.properties(inp['name'], properties=['dipole'], return_wfn=True)[1]
+    wfn = psi4.properties(inp['name'], properties=['dipole'], molecule=mol, return_wfn=True)[1]
     analytic_dipole = wfn.variable(inp['varname'] + " DIPOLE")
 
     assert compare_values(findif_dipole, analytic_dipole, 5, "findif vs. analytic dipole")
