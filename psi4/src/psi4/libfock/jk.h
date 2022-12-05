@@ -755,7 +755,7 @@ class PSI_API DirectJK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
-    // Is the JK currently on a guess iteration
+    // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
 
     std::string name() override { return "DirectJK"; }
@@ -1196,9 +1196,24 @@ class PSI_API DFJCOSK : public JK {
     int nthreads_;
     /// Options object
     Options& options_;
+
+    /// Perform Incremental Fock Build for J and K Matrices? (default false)
+    bool incfock_;
+      /// The number of times INCFOCK has been performed (includes resets)
+    int incfock_count_;
+    bool do_incfock_iter_;
+
     /// Previous iteration pseudo-density matrix
     std::vector<SharedMatrix> D_prev_;
+    
+    // D_ref_, the effective pseudo-density matrix is either:
+    //   (1) the regular density: D_eff == D_lr = C_lo x C*ro
+    //   (2) the difference density: D_eff == dD_lr = (C_lo x C_ro)_{iter} - (C_lo x C_ro)_{iter - 1}
+    std::vector<SharedMatrix> D_ref_;
 
+    // Is the JK currently on the first SCF iteration of this SCF cycle?
+    bool initial_iteration_ = true;
+ 
     // => Density Fitting Stuff <= //
 
     /// Auxiliary basis set
@@ -1232,6 +1247,10 @@ class PSI_API DFJCOSK : public JK {
     void compute_JK() override;
     /// Delete integrals, files, etc
     void postiterations() override;
+    /// Set up Incfock variables per iteration
+    void incfock_setup();
+    /// Post-iteration Incfock processing
+    void incfock_postiter();
 
     /// Build the coulomb (J) matrix
     void build_J(std::vector<std::shared_ptr<Matrix> >& D,
@@ -1259,6 +1278,7 @@ class PSI_API DFJCOSK : public JK {
     ~DFJCOSK() override;
 
     // => Knobs <= //
+    bool do_incfock_iter() { return do_incfock_iter_; }
 
     /**
     * Print header information regarding JK
@@ -1303,7 +1323,7 @@ class PSI_API DFJLinK : public JK {
     /// Pseudo-density matrix to be used this iteration
     std::vector<SharedMatrix> D_ref_;
 
-    // Is the JK currently on a guess iteration
+    // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
   
     // => Density Fitting Stuff <= //

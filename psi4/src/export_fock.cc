@@ -197,7 +197,8 @@ void export_fock(py::module &m) {
         .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Was the last Fock build incremental?");
 
     py::class_<DFJCOSK, std::shared_ptr<DFJCOSK>, JK>(m, "DFJCOSK", "docstring")
-        .def("clear_D_prev", &DFJCOSK::clear_D_prev, "Clear previous D matrices.");
+        .def("do_incfock_iter", &DFJCOSK::do_incfock_iter, "Was the last Fock build incremental?")
+    	.def("clear_D_prev", &DFJCOSK::clear_D_prev, "Clear previous D matrices.");
 
     py::class_<DFJLinK, std::shared_ptr<DFJLinK>, JK>(m, "DFJLinK", "docstring")
         .def("do_incfock_iter", &DFJLinK::do_incfock_iter, "Was the last Fock build incremental?");

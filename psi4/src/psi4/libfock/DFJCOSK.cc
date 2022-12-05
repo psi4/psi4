@@ -165,6 +165,9 @@ void DFJCOSK::common_init() {
     // and a large grid for the final iterations
     early_screening_ = true;
 
+    // incremental Fock setup
+    incfock_ = options_.get_bool("INCFOCK");
+    
     // => Direct Density-Fitted Coulomb Setup <= //
 
     // pre-compute coulomb fitting metric
@@ -298,7 +301,7 @@ void DFJCOSK::print_header() const {
         if (do_wK_) outfile->Printf("    Omega:              %11.3E\n", omega_);
         outfile->Printf("    Integrals threads:  %11d\n", nthreads_);
         outfile->Printf("    Memory [MiB]:       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf("    Incremental Fock :  %11s\n", (options_.get_bool("COSX_INCFOCK") ? "Yes" : "No"));
+        outfile->Printf("    Incremental Fock :  %11s\n", (incfock_ ? "Yes" : "No"));
         outfile->Printf("    J Screening Type:   %11s\n", screen_type.c_str());
         outfile->Printf("    J Screening Cutoff: %11.0E\n", cutoff_);
         outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSX_INTS_TOLERANCE"));
@@ -310,55 +313,85 @@ void DFJCOSK::print_header() const {
 
 void DFJCOSK::preiterations() {}
 
-void DFJCOSK::compute_JK() {
-
-    int njk = D_ao_.size();
-
-    // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
-    if (do_wK_) throw PSIEXCEPTION("COSK does not support wK integrals yet!");
-
-    // D_eff, the effective pseudo-density matrix is either:
-    //   (1) the regular density: D_eff == D_lr = C_lo x C*ro
-    //   (2) the difference density: D_eff == dD_lr = (C_lo x C_ro)_{iter} - (C_lo x C_ro)_{iter - 1}
-    //
-    std::vector<SharedMatrix> D_eff(njk);
-
-    if(options_.get_bool("COSX_INCFOCK")) {
+void DFJCOSK::incfock_setup() {
+    if (do_incfock_iter_) {
+	    auto njk = D_ao_.size();
 
         // If there is no previous pseudo-density, this iteration is normal
-        if(D_prev_.size() != njk) {
-            D_eff = D_ao_;
+        if(initial_iteration_ || D_prev_.size() != njk) {
+            initial_iteration_ = true;
+	    
+	        D_ref_ = D_ao_;
             zero();
         } else { // Otherwise, the iteraction is incremental
             for (size_t jki = 0; jki < njk; jki++) {
-                D_eff[jki] = D_ao_[jki]->clone();
-                D_eff[jki]->subtract(D_prev_[jki]);
+                D_ref_[jki] = D_ao_[jki]->clone();
+                D_ref_[jki]->subtract(D_prev_[jki]);
             }
         }
-
-        // Save a copy of the density for the next iteration
-        D_prev_.clear();
-        for(auto const &Di : D_ao_) {
-            D_prev_.push_back(Di->clone());
-        }
-
     } else {
-        D_eff = D_ao_;
+        D_ref_ = D_ao_;
         zero();
     }
+}
 
+void DFJCOSK::incfock_postiter() {
+    // Save a copy of the density for the next iteration
+    D_prev_.clear();
+    for(auto const &Di : D_ao_) {
+        D_prev_.push_back(Di->clone());
+    }
+}
+
+void DFJCOSK::compute_JK() {
+    // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
+    if (do_wK_) throw PSIEXCEPTION("COSK does not support wK integrals yet!");
+
+    // explicit setup of Incfock for this SCF iteration
+    if (incfock_) {
+        timer_on("DFJCOSK: INCFOCK Preprocessing");
+
+        auto reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
+        auto incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
+        auto Dnorm = Process::environment.globals["SCF D NORM"];
+        // Do IFB on this iteration?
+        do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+
+        if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
+	
+	incfock_setup();
+        
+	timer_off("DFJCOSK: INCFOCK Preprocessing");
+    } else {
+	    D_ref_ = D_ao_;
+        zero();
+    }
+ 
+    // Direct DF-J
     if (do_J_) {
         timer_on("DFJ");
-        build_J(D_eff, J_ao_);
-        timer_off("DFJ");
+   
+   	build_J(D_ref_, J_ao_);
+   
+   	timer_off("DFJ");
     }
     
+    // COSX
     if (do_K_) {
         timer_on("COSK");
-        build_K(D_eff, K_ao_);
-        timer_off("COSK");
+   	    build_K(D_ref_, K_ao_);
+   	    timer_off("COSK");
     }
 
+    // => Finalize Incremental Fock if required <= //
+
+    if (incfock_) {
+        timer_on("DFJCOSK: INCFOCK Postprocessing");
+        incfock_postiter();
+        timer_off("DFJCOSK: INCFOCK Postprocessing");
+    }
+    
+    if (initial_iteration_) initial_iteration_ = false;
 }
 
 void DFJCOSK::postiterations() {}
