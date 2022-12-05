@@ -315,7 +315,7 @@ void DFJCOSK::preiterations() {}
 
 void DFJCOSK::incfock_setup() {
     if (do_incfock_iter_) {
-	    size_t njk = D_ao_.size();
+	    auto njk = D_ao_.size();
 
         // If there is no previous pseudo-density, this iteration is normal
         if(initial_iteration_ || D_prev_.size() != njk) {
