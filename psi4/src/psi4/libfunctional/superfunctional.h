@@ -99,8 +99,26 @@ class SuperFunctional {
     bool libxc_xc_func_;
     int max_points_;
     int deriv_;
+    // For the functional itself. Each vector elt. is the contribution of a
+    // particular point to an integral. Populated by compute_functional. Only fields
+    // needed for the particular functional, given LSDA/GGA/Meta status and spin-polarization
+    // are populated. Some fields change definition depending on spin polarization.
+    // LSDA:
+    //   always:
+    //      V_RHO_A : ∂f/∂ρ_α
+    //   if is_unpolarized():
+    //      V_RHO_B : ∂f/∂ρ_β
+    // GGA:
+    //   if is_unpolarized():
+    //      V_GAMMA_AA : ∂f/∂γ_αα
+    //      V_GAMMA_AB : ∂f/∂γ_αβ
+    //      V_GAMMA_BB : ∂f/∂γ_ββ
+    //   else:
+    //      V_GAMMA_AA : (2 * ∂f/∂γ_αα + ∂f/∂γ_αβ) / 2
     std::map<std::string, SharedVector> values_;
+    // For GRAC
     std::map<std::string, SharedVector> ac_values_;
+    // For VV10
     std::map<std::string, SharedVector> vv_values_;
 
     // => Other LibXC settings
@@ -130,6 +148,7 @@ class SuperFunctional {
 
     // => Computers <= //
 
+    // Populates values_
     std::map<std::string, SharedVector>& compute_functional(const std::map<std::string, SharedVector>& vals,
                                                             int npoints = -1);
     void test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa, SharedVector gamma_ab,

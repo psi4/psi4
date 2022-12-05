@@ -58,6 +58,7 @@ class PSI_API BasisFunctions {
     /// Maximum derivative to compute
     int deriv_;
     /// Map of value names to Matrices containing values
+    /// PHI : values of AOs at points in space
     std::map<std::string, SharedMatrix> basis_values_;
     /// Map of temp names to Matrices containing temps
     std::map<std::string, SharedMatrix> basis_temps_;
@@ -71,7 +72,8 @@ class PSI_API BasisFunctions {
     virtual ~BasisFunctions();
 
     // => Computers <= //
-
+    /// Compute value of basis functions (and derivatives) at points in block.
+    /// Store in basis_values_. Needed derivatives specified by deriv_.
     void compute_functions(std::shared_ptr<BlockOPoints> block);
 
     // => Accessors <= //
@@ -136,7 +138,9 @@ class PointFunctions : public BasisFunctions {
     }
 
     // => Computers <= //
-
+    /// Compute needed DFT intermediates, e.g. rho, gamma, at the points in block.
+    /// ansatz_ determines which intermediates are needed.
+    /// force_compute forces basis function values at points to be re-computed.
     virtual void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true) = 0;
 
     // => Accessors <= //
@@ -232,6 +236,11 @@ class RKSFunctions : public PointFunctions {
     void set_pointers(SharedMatrix Da_occ_AO) override;
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) override;
 
+    /// Compute the needed DFT intermediates at the points in the block.
+    /// "Which DFT intermediates are needed?" is determined from ansatz_.
+    /// RHO_A : Spin-summed density
+    /// RHO_AX | RHO_AY | RHO_AZ : Spin-summed density gradient components
+    /// GAMMA_AA : Spin-summed density gradient dotted with itself
     void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true) override;
 
     std::vector<SharedMatrix> scratch() override;
@@ -291,6 +300,11 @@ class UKSFunctions : public PointFunctions {
         cache_map_ = cache_map;
     }
 
+    /// Compute the needed DFT intermediates at the points in the block.
+    /// "Which DFT intermediates are needed?" is determined from ansatz_.
+    /// RHO_A | RHO_B : Spindensity
+    /// RHO_AX | RHO_AY | RHO_AZ | RHO_BX | RHO_BY | RHO_BZ : Spindensity gradient components
+    /// GAMMA_AA | GAMMA_AB | GAMMA_BB : Spindensity gradients dotted together
     void compute_points(std::shared_ptr<BlockOPoints> block, bool force_compute = true) override;
 
     std::vector<SharedMatrix> scratch() override;
