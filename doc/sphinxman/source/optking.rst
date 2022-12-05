@@ -356,13 +356,13 @@ Multi-Fragment Optimizations
 
 .. _DimerSection:
 
-In previous versions of optking, the metric for connecting atoms was increased until all atoms,
+In previous versions of optking, the metric for connecting atoms was increased until all atoms
 were connected. This is the current behavior for |optking__frag_mode| `single`.
 Setting |optking__frag_mode| to `multi` will now add a special
 set of intermolecular coordinates between fragments - internally referred to as DimerFrag
 coordinates (see `here <DimerIntro_>` for the brief description). 
 For each pair of molecular fragments, a set of up to 3 reference points
-are chosen on each fragment. Each reference points will be either an atom or a linear combination
+are chosen on each fragment. Each reference point will be either an atom or a linear combination
 of positions of atoms within that fragment. Stretches, bends, and dihedral angles between the two 
 fragments will be created using these reference points. See 
 :ref:`Dimer coordinate table <table:DimerFrag>` for how reference points are created.
