@@ -232,24 +232,12 @@ int C_DGGQRF(int n, int m, int p, double* a, int lda, double* taua, double* b, i
              int lwork);
 int C_DGGRQF(int m, int p, int n, double* a, int lda, double* taua, double* b, int ldb, double* taub, double* work,
              int lwork);
-#ifdef LAPACK_HAS_DGGSVD3
 int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
               int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
               double* work, int lwork, int* iwork);
-#else
-static_assert(false,
-              "Your LAPACK library does not provide DGGSVD3, which is required by Psi4 1.7 and later. Please use a "
-              "more modern LAPACK library.");
-#endif
-#ifdef LAPACK_HAS_DGGSVP3
 int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
               double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
               double* tau, double* work, int lwork);
-#else
-static_assert(false,
-              "Your LAPACK library does not provide DGGSVP3, which is required by Psi4 1.7 and later. Please use a "
-              "more modern LAPACK library.");
-#endif
 int C_DGTCON(char norm, int n, double* dl, double* d, double* du, double* du2, int* ipiv, double anorm, double* rcond,
              double* work, int* iwork);
 int C_DGTRFS(char trans, int n, int nrhs, double* dl, double* d, double* du, double* dlf, double* df, double* duf,

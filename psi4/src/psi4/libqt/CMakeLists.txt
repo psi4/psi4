@@ -24,27 +24,8 @@ list(APPEND sources
   timer.cc
   )
 
-if(WIN32)
-  set(_has_dggsvd3 TRUE)
-  set(_has_dggsvp3 TRUE)
-else()
-  if(Fortran_ENABLED)
-    include(CheckFortranFunctionExists)
-    set(CMAKE_REQUIRED_LIBRARIES tgt::lapk)
-    # Check whether DGGSVD3 is available
-    check_fortran_function_exists(DGGSVD3 _has_dggsvd3)
-    # Check whether DGGSVP3 is available
-    check_fortran_function_exists(DGGSVP3 _has_dggsvp3)
-    unset(CMAKE_REQUIRED_LIBRARIES)
-  endif()
-endif()
-
 psi4_add_module(lib qt sources)
 target_compile_definitions(qt
   PRIVATE
-    $<$<BOOL:${_has_dggsvd3}>:LAPACK_HAS_DGGSVD3>
-    $<$<BOOL:${_has_dggsvp3}>:LAPACK_HAS_DGGSVP3>
     FC_SYMBOL=${FC_SYMBOL}
   )
-unset(_has_dggsvd3)
-unset(_has_dggsvp3)
