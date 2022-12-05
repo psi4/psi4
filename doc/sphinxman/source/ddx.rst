@@ -105,7 +105,7 @@ see the ddx documentation.
 
 The usage of ddx-based solvation models is enabled
 by specifying |globals__ddx| ``true`` in your input file.
-The solvation model itself is selected using the |ddx__model| parameter.
+The solvation model itself is selected using the |ddx__ddx_model| parameter.
 Additionally the definition of the solvent and solute cavity is required
 and further parameters allow to influence details of discretisation,
 numerical integration and iterative solvers,
@@ -140,9 +140,9 @@ the following: ::
         "basis": "sto-3g",
         "scf_type": "pk",
         "ddx": True,
-        "ddx__model":     "pcm",
-        "ddx__solvent":   "water",
-        "ddx__radii_set": "uff",
+        "ddx_model":     "pcm",
+        "ddx_solvent":   "water",
+        "ddx_radii_set": "uff",
     })
 
     scf_e = psi4.energy('SCF')
@@ -151,14 +151,14 @@ Solvent model and solvent cavity definition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Beyond setting |globals__ddx| to ``true`` and selecting
-a solvent model using |ddx__model|,
+a solvent model using |ddx__ddx_model|,
 the definition of the solvent is mandatory.
 Regularly one might want to influence the setup of the solvent
 cavity as well.
 
 The **solvent** can be defined either by directly providing a dielectric
-constant using |ddx__solvent_epsilon| or by looking up the dielectric
-constant in from a solvent trivial name provided by |ddx__solvent|
+constant using |ddx__ddx_solvent_epsilon| or by looking up the dielectric
+constant in from a solvent trivial name provided by |ddx__ddx_solvent|
 (e.g. ``water``, ``ethanol``, ``cis-1,2-dimethylcyclohexane``).
 By convention solvent names are all lowercase and use dashes (``-``) to separate
 quantifiers like ``o``, ``n`` etc.
@@ -169,23 +169,23 @@ The full list understood by ddx can be obtained using ::
 
 The **cavity** in ddx is defined as a union of spheres around each atom.
 Usually the spehere radii for each atom are determined using a standard
-set of tabulated radii per atomic species, determined by the |ddx__radii_set| parameter.
+set of tabulated radii per atomic species, determined by the |ddx__ddx_radii_set| parameter.
 Currently ``bondi`` [Bondi:1964:441]_ and ``uff`` [Rappe:1992:114]_
-are supported for |ddx__radii_set| with ``uff`` selected by default.
+are supported for |ddx__ddx_radii_set| with ``uff`` selected by default.
 These radius values are conventionally scaled by an additional factor before use,
 conventionally 1.1 for ``uff`` and 1.2 for ``bondi``. Customisation of the scaling
-is possible using the |ddx__radii_scaling| parameter.
+is possible using the |ddx__ddx_radii_scaling| parameter.
 A more fine-grained control over the sphere radii is available by explicitly providing
 a list of radii (one per atom, exactly in the order of the input geometry)
-using the |ddx__radii| parameter.
+using the |ddx__ddx_radii| parameter.
 
 .. include:: autodir_options_c/globals__ddx.rst
-.. include:: autodir_options_c/ddx__model.rst
-.. include:: autodir_options_c/ddx__radii.rst
-.. include:: autodir_options_c/ddx__radii_scaling.rst
-.. include:: autodir_options_c/ddx__radii_set.rst
-.. include:: autodir_options_c/ddx__solvent_epsilon.rst
-.. include:: autodir_options_c/ddx__solvent.rst
+.. include:: autodir_options_c/ddx__ddx_model.rst
+.. include:: autodir_options_c/ddx__ddx_radii.rst
+.. include:: autodir_options_c/ddx__ddx_radii_scaling.rst
+.. include:: autodir_options_c/ddx__ddx_radii_set.rst
+.. include:: autodir_options_c/ddx__ddx_solvent_epsilon.rst
+.. include:: autodir_options_c/ddx__ddx_solvent.rst
 
 Numerical integration and discretisation parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,49 +193,54 @@ Numerical integration and discretisation parameters
 These parameters can be altered to balance the cost and accuracy
 of the implict description of the solvation.
 
-|ddx__dft_radial_points| and |ddx__dft_spherical_points| influence
+|ddx__ddx_solute_radial_points| and |ddx__ddx_solute_spherical_points| influence
 the accuracy of the numerical grid used to obtain the representation
 of the electric potential / field of the solute density,
 since a standard DFT integration grid is used to obtain these quantities.
 In contrast to the integration of DFT quantities much lower accuracy
 is required, such that for this step considerably smaller grids are employed.
-If extremly high accuracy reference solutions are required, the DDX
+If extremely high accuracy reference solutions are required, the DDX
 DFT integration parameters might need to be increased, but this is rarely needed.
 
-|ddx__lmax| and |ddx__n_lebedev| determine the accuracy of the discretisation
-on the boundary of the spheres around each atom. The defaults are usually good.
+|ddx__ddx_lmax| and |ddx__ddx_n_lebedev| determine the accuracy of the computations
+on the boundary of the spheres around each atom performed by DDX. |ddx__ddx_lmax|
+determines the largest angular momentum of the spherical harmonics basis used
+to discretise quantities on the atomic spheres and |ddx__ddx_n_lebedev| determines the
+number of points of the Lebedev angular grid used for integration on the spheres.
+|ddx__ddx_n_lebedev| should be chosen higher than |ddx__ddx_solute_spherical_points|
+and the defaults are usually good.
 
-.. include:: autodir_options_c/ddx__dft_radial_points.rst
-.. include:: autodir_options_c/ddx__dft_spherical_points.rst
-.. include:: autodir_options_c/ddx__lmax.rst
-.. include:: autodir_options_c/ddx__n_lebedev.rst
+.. include:: autodir_options_c/ddx__ddx_solute_radial_points.rst
+.. include:: autodir_options_c/ddx__ddx_solute_spherical_points.rst
+.. include:: autodir_options_c/ddx__ddx_lmax.rst
+.. include:: autodir_options_c/ddx__ddx_n_lebedev.rst
 
 Iterative solver parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These parameters determine how the forward and adjoint linear systems
 of the solvation model are solved. Usually these parameters do not need
-to be changed. Occasionally |ddx__solvation_convergence| might need to be adapted,
+to be changed. Occasionally |ddx__ddx_solvation_convergence| might need to be adapted,
 e.g. if only a very crude or a highly accurate SCF solution is targeted.
 
-.. include:: autodir_options_c/ddx__diis_max_vecs.rst
-.. include:: autodir_options_c/ddx__maxiter.rst
-.. include:: autodir_options_c/ddx__solvation_convergence.rst
+.. include:: autodir_options_c/ddx__ddx_diis_max_vecs.rst
+.. include:: autodir_options_c/ddx__ddx_maxiter.rst
+.. include:: autodir_options_c/ddx__ddx_solvation_convergence.rst
 
 Further keywords for ddx
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 These parameter should rarely require changes.
-In particular |ddx__eta|, |ddx__shift| and |ddx__logfile|
+In particular |ddx__ddx_eta|, |ddx__ddx_shift| and |ddx__ddx_logfile|
 are expert parameters and should not be altered beyond debugging.
 
-.. include:: autodir_options_c/ddx__eta.rst
-.. include:: autodir_options_c/ddx__fmm_local_lmax.rst
-.. include:: autodir_options_c/ddx__fmm_multipole_lmax.rst
-.. include:: autodir_options_c/ddx__fmm.rst
-.. include:: autodir_options_c/ddx__incore.rst
-.. include:: autodir_options_c/ddx__logfile.rst
-.. include:: autodir_options_c/ddx__shift.rst
+.. include:: autodir_options_c/ddx__ddx_eta.rst
+.. include:: autodir_options_c/ddx__ddx_fmm_local_lmax.rst
+.. include:: autodir_options_c/ddx__ddx_fmm_multipole_lmax.rst
+.. include:: autodir_options_c/ddx__ddx_fmm.rst
+.. include:: autodir_options_c/ddx__ddx_incore.rst
+.. include:: autodir_options_c/ddx__ddx_logfile.rst
+.. include:: autodir_options_c/ddx__ddx_shift.rst
 
 
 .. _`cmake:ddx`:

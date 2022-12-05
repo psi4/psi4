@@ -46,18 +46,18 @@ def get_ddx_options(molecule):
     else:
         convfac = 1.0
 
-    if core.has_option_changed("DDX", "RADII"):
-        radii = convfac * np.fromiter(core.get_option("DDX", "RADII"), float)
+    if core.has_option_changed("DDX", "DDX_RADII"):
+        radii = convfac * np.fromiter(core.get_option("DDX", "DDX_RADII"), float)
         if not radii.shape[0] == molecule.natom():
             raise ValidationError("Length of vector of custom cavity radii does "
                                   "not agree with number of atoms.")
     else:
-        radii_set = core.get_option("DDX", "RADII_SET").lower()
+        radii_set = core.get_option("DDX", "DDX_RADII_SET").lower()
         radii_lookup = getattr(pyddx.data, "radius_" + radii_set)
 
         # Use user-specified or ddx-recommended radius offset/scaling
-        if core.has_option_changed("DDX", "RADII_SCALING"):
-            radii_scaling = core.get_option("DDX", "RADII_SCALING")
+        if core.has_option_changed("DDX", "DDX_RADII_SCALING"):
+            radii_scaling = core.get_option("DDX", "DDX_RADII_SCALING")
         else:
             radii_scaling = getattr(pyddx.data, "radius_" + radii_set + "_scaling")
 
@@ -70,9 +70,9 @@ def get_ddx_options(molecule):
                                       "manually using the 'RADII' option.")
             radii[i] = radii_scaling * radii_lookup[element]
 
-    solvent = core.get_option("DDX", "SOLVENT").lower()
-    if core.has_option_changed("DDX", "SOLVENT_EPSILON"):
-        solvent_epsilon = core.get_option("DDX", "SOLVENT_EPSILON")
+    solvent = core.get_option("DDX", "DDX_SOLVENT").lower()
+    if core.has_option_changed("DDX", "DDX_SOLVENT_EPSILON"):
+        solvent_epsilon = core.get_option("DDX", "DDX_SOLVENT_EPSILON")
     elif solvent == "":
         raise ValidationError("Required option 'SOLVENT' is missing.")
     elif solvent not in pyddx.data.solvent_epsilon:
@@ -80,38 +80,38 @@ def get_ddx_options(molecule):
     else:
         solvent_epsilon = pyddx.data.solvent_epsilon[solvent]
 
-    fmm_multipole_lmax = core.get_option("DDX", "LMAX")
-    if core.has_option_changed("DDX", "FMM_MULTIPOLE_LMAX"):
-        fmm_multipole_lmax = core.get_option("DDX", "FMM_MULTIPOLE_LMAX")
+    fmm_multipole_lmax = core.get_option("DDX", "DDX_LMAX")
+    if core.has_option_changed("DDX", "DDX_FMM_MULTIPOLE_LMAX"):
+        fmm_multipole_lmax = core.get_option("DDX", "DDX_FMM_MULTIPOLE_LMAX")
 
     model_options = {
-        "model": core.get_option("DDX", "MODEL").lower(),
+        "model": core.get_option("DDX", "DDX_MODEL").lower(),
         "sphere_charges": np.array([molecule.Z(i) for i in range(molecule.natom())]),
         "sphere_centres": molecule.geometry().np.T,
         "sphere_radii": radii,
         "solvent_epsilon": solvent_epsilon,
-        "lmax": core.get_option("DDX", "LMAX"),
-        "n_lebedev": core.get_option("DDX", "N_LEBEDEV"),
-        "maxiter": core.get_option("DDX", "MAXITER"),
-        "jacobi_n_diis": core.get_option("DDX", "DIIS_MAX_VECS"),
+        "lmax": core.get_option("DDX", "DDX_LMAX"),
+        "n_lebedev": core.get_option("DDX", "DDX_N_LEBEDEV"),
+        "maxiter": core.get_option("DDX", "DDX_MAXITER"),
+        "jacobi_n_diis": core.get_option("DDX", "DDX_DIIS_MAX_VECS"),
         "n_proc": core.get_num_threads(),
-        "incore": core.get_option("DDX", "INCORE"),
-        "enable_fmm": core.get_option("DDX", "FMM"),
-        "fmm_local_lmax": core.get_option("DDX", "FMM_LOCAL_LMAX"),
+        "incore": core.get_option("DDX", "DDX_INCORE"),
+        "enable_fmm": core.get_option("DDX", "DDX_FMM"),
+        "fmm_local_lmax": core.get_option("DDX", "DDX_FMM_LOCAL_LMAX"),
         "fmm_multipole_lmax": fmm_multipole_lmax,
-        "logfile": core.get_option("DDX", "LOGFILE"),
-        "eta": core.get_option("DDX", "ETA"),
-        "shift": core.get_option("DDX", "SHIFT"),
+        "logfile": core.get_option("DDX", "DDX_LOGFILE"),
+        "eta": core.get_option("DDX", "DDX_ETA"),
+        "shift": core.get_option("DDX", "DDX_SHIFT"),
     }
     solver_options = {
-        "tol": core.get_option("DDX", "SOLVATION_CONVERGENCE"),
+        "tol": core.get_option("DDX", "DDX_SOLVATION_CONVERGENCE"),
     }
     grid_options = {
         # This overrides some DFT grid parameters just for the integrals
         # needed for DDX. The defaults are safe to avoid people from falling
         # into traps if they change their DFT grid setup.
-        "DFT_SPHERICAL_POINTS": core.get_option("DDX", "DFT_SPHERICAL_POINTS"),
-        "DFT_RADIAL_POINTS": core.get_option("DDX", "DFT_RADIAL_POINTS"),
+        "DFT_SPHERICAL_POINTS": core.get_option("DDX", "DDX_SOLUTE_SPHERICAL_POINTS"),
+        "DFT_RADIAL_POINTS": core.get_option("DDX", "DDX_SOLUTE_RADIAL_POINTS"),
         "DFT_NUCLEAR_SCHEME": "BECKE",  # Treutler and others might work here,
         "DFT_RADIAL_SCHEME": "BECKE",   # but this is so far untested with Psi4
         "DFT_PRUNING_SCHEME": "ROBUST",

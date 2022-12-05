@@ -309,73 +309,73 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             the domain-decomposition paradigm. -*/
 
         /*- Switch available solvation models -*/
-        options.add_str("MODEL", "PCM", "PCM COSMO");
+        options.add_str("DDX_MODEL", "PCM", "PCM COSMO");
 
         /*- Radius set for cavity spheres. Ignored if RADII is set. -*/
-        options.add_str("RADII_SET", "UFF", "UFF BONDI");
+        options.add_str("DDX_RADII_SET", "UFF", "UFF BONDI");
 
         /*- Scaling factor for cavity spheres. Ignored if RADII is set. The default depends on
             the radii set chosen. -*/
-        options.add_double("RADII_SCALING", 1.1);
+        options.add_double("DDX_RADII_SCALING", 1.1);
 
         /*- Custom cavity radii. One per atom, uses the unit of the molecule. -*/
-        options.add("RADII", new ArrayType());
+        options.add("DDX_RADII", new ArrayType());
 
         /*- Solvent to use. Not case sensitive. Ignored if SOLVENT_EPSILON is set. -*/
-        options.add_str("SOLVENT", "");
+        options.add_str("DDX_SOLVENT", "");
 
         /*- Dielectric constant of the solvent to use -*/
-        options.add_double("SOLVENT_EPSILON", 0);
+        options.add_double("DDX_SOLVENT_EPSILON", 0);
 
         /*- Maximal degree of modelling spherical harmonics -*/
-        options.add_int("LMAX", 9);
+        options.add_int("DDX_LMAX", 9);
 
         /*- Number of Lebedev grid points to use.
             (A :ref:`Lebedev Points <table:lebedevorder>` number) -*/
-        options.add_int("N_LEBEDEV", 302);
+        options.add_int("DDX_N_LEBEDEV", 302);
 
         /*- Maximal number of iterations used inside DDX -*/
-        options.add_int("MAXITER", 100);
+        options.add_int("DDX_MAXITER", 100);
 
         /*- Number of previous iterates to use in DIIS acceleration inside DDX -*/
-        options.add_int("DIIS_MAX_VECS", 20);
+        options.add_int("DDX_DIIS_MAX_VECS", 20);
 
         /*- Tolerance to which DDX linear systems are solved -*/
-        options.add_double("SOLVATION_CONVERGENCE", 1e-8);
+        options.add_double("DDX_SOLVATION_CONVERGENCE", 1e-8);
 
-        /*- Number of spherical points used to compute the integrals for DDX calculations
-            (A :ref:`Lebedev Points <table:lebedevorder>` number) -*/
-        options.add_int("DFT_SPHERICAL_POINTS", 110);
+        /*- Number of spherical points used to compute the solute electric potential/field
+            integrals for DDX calculations (A :ref:`Lebedev Points <table:lebedevorder>` number) -*/
+        options.add_int("DDX_SOLUTE_SPHERICAL_POINTS", 110);
 
         /*- Number of radial points used to compute the integrals for DDX calculations -*/
-        options.add_int("DFT_RADIAL_POINTS", 35);
+        options.add_int("DDX_SOLUTE_RADIAL_POINTS", 35);
 
         /*- Use an in-core version, which uses more memory, but is generally faster -*/
-        options.add_bool("INCORE", false);
+        options.add_bool("DDX_INCORE", false);
 
         /*- Use the fast multipole method to accelerate the solver -*/
-        options.add_bool("FMM", true);
+        options.add_bool("DDX_FMM", true);
 
         /*- Maximal degree of multipole spherical harmonics (far-field FMM interactions).
-            Using the same value as |ddx__lmax| is recommended and done by default. -*/
-        options.add_int("FMM_MULTIPOLE_LMAX", 9);
+            Using the same value as |ddx__ddx_lmax| is recommended and done by default. -*/
+        options.add_int("DDX_FMM_MULTIPOLE_LMAX", 9);
 
         /*- Maximal degree of local spherical harmonics (near-field FMM interations). -*/
-        options.add_int("FMM_LOCAL_LMAX", 6);
+        options.add_int("DDX_FMM_LOCAL_LMAX", 6);
 
         /*- Logfile to dump a full trace of the DDX solver history for debugging. !expert -*/
-        options.add_str("LOGFILE", "");
+        options.add_str("DDX_LOGFILE", "");
 
         /*- Regularization parameter for characteristic function of sphere overlap.
             Advanced parameter, which usually does not need to be modified. Valid
             values are within the range [0, 1]. !expert -*/
-        options.add_double("ETA", 0.1);
+        options.add_double("DDX_ETA", 0.1);
 
         /*- Shift for characteristic function of sphere overlap.
             Advanced parameter, which usually does not need to be modified. Valid values
             are within the range [-1, 1] with -100 denoting an automatic selection of the
             best shift. !expert -*/
-        options.add_double("SHIFT", -100.0);
+        options.add_double("DDX_SHIFT", -100.0);
     }
 
     if (name == "PE" || options.read_globals()) {

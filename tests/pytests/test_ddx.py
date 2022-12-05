@@ -113,14 +113,14 @@ def test_ddx_fock_build(inp):
     psi4.set_options({
         "df_scf_guess": False,
         #
-        "ddx__model": "cosmo",
-        "ddx__solvent_epsilon": 1e8,
-        "ddx__eta": 0,
-        "ddx__lmax": 3,
-        "ddx__n_lebedev": 302,
-        "ddx__radii": inp["radii"],
-        "ddx__dft_spherical_points": 350,
-        "ddx__dft_radial_points": 99,
+        "ddx_model": "cosmo",
+        "ddx_solvent_epsilon": 1e8,
+        "ddx_eta": 0,
+        "ddx_lmax": 3,
+        "ddx_n_lebedev": 302,
+        "ddx_radii": inp["radii"],
+        "ddx_solute_spherical_points": 350,
+        "ddx_solute_radial_points": 99,
     })
 
     # build the DDX object to test
@@ -183,16 +183,16 @@ def test_ddx_rhf_reference(inp):
         "guess": "core",
         "scf_type": "direct",
         #
-        "ddx__model": "cosmo",
-        "ddx__radii_set": "uff",
-        "ddx__lmax": 3,
-        "ddx__n_lebedev": 302,
-        "ddx__dft_spherical_points": 302,
-        "ddx__dft_radial_points": 75,
-        "ddx__shift": 0.0,
+        "ddx_model": "cosmo",
+        "ddx_radii_set": "uff",
+        "ddx_lmax": 3,
+        "ddx_n_lebedev": 302,
+        "ddx_solute_spherical_points": 302,
+        "ddx_solute_radial_points": 75,
+        "ddx_shift": 0.0,
     })
     for key in inp["ddx"].keys():
-        psi4.set_options({"ddx__" + key: inp["ddx"][key]})
+        psi4.set_options({"ddx_" + key: inp["ddx"][key]})
     scf_e, wfn = psi4.energy('SCF', return_wfn=True, molecule=mol)
     ddx_e = wfn.scalar_variable("dd solvation energy")
 
@@ -222,13 +222,13 @@ def test_ddx_rhf_consistency(inp):
         "ddx": True,
         "basis": inp["basis"],
         #
-        "ddx__lmax": 10,
-        "ddx__n_lebedev": 302,
-        "ddx__dft_spherical_points": 302,
-        "ddx__dft_radial_points": 75,
+        "ddx_lmax": 10,
+        "ddx_n_lebedev": 302,
+        "ddx_solute_spherical_points": 302,
+        "ddx_solute_radial_points": 75,
     })
     for key in inp["ddx"].keys():
-        psi4.set_options({"ddx__" + key: inp["ddx"][key]})
+        psi4.set_options({"ddx_" + key: inp["ddx"][key]})
     scf_e, wfn = psi4.energy('SCF', return_wfn=True, molecule=mol)
     assert compare_values(inp["ref"], scf_e, 9, "Total SCF energy with DDX versus reference data")
 
@@ -241,9 +241,9 @@ def test_ddx_eri_algorithms(scf_type):
         "scf_type": scf_type,
         "basis": "6-31g",
         "ddx": True,
-        "ddx__model": "pcm",
-        "ddx__solvent": "water",
-        "ddx__radii_set": "uff",
+        "ddx_model": "pcm",
+        "ddx_solvent": "water",
+        "ddx_radii_set": "uff",
     })
     ref = -56.1715394
     scf_e = psi4.energy('SCF')
