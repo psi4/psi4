@@ -1,6 +1,8 @@
 #! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN, calling Grimme's dftd3 program for -D2 gradients
 #! update reference for new BraggSlater radii
 
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
 
 molecule {
   0 1
@@ -23,11 +25,15 @@ set {
 grad = gradient('bp86-d2', engine='libdisp')
 clean()
 
-grad = gradient('bp86-d2', engine='dftd3')
+grad = gradient('bp86-d3m2b')
 
 molecule atoms {
   @He
   Ne 1 1.0
 }
 
-E, G = atoms.run_dftd3('bp86-d3(bj)')
+
+if d3_engine == "dftd3":
+    E, G = atoms.run_dftd3('bp86-d3(bj)')
+
+g, wfn = gradient("bp86-d3(bj)", return_wfn=True)

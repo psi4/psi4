@@ -5,7 +5,7 @@ dependencies:
   - blas=*=mkl
   - python=3.10
     # build
-  - boost-cpp
+  #- boost-cpp
   - cmake
   - gcc_linux-64
   - gxx_linux-64
@@ -18,11 +18,12 @@ dependencies:
   - psi4/label/dev::gau2grid
   - psi4/label/dev::libint2
   - psi4/label/dev::qcelemental
-  - psi4/label/dev::qcengine
+  - psi4/label/dev::qcengine=0.26.0
   - psi4/label/dev::libxc
     # qc opt'l
   - psi4/label/dev::ambit
   - psi4/label/dev::chemps2
+  - psi4/label/dev::libecpint
   - psi4/label/dev::dkh
   - psi4/label/dev::gdma
   - psi4/label/dev::pcmsolver
@@ -33,14 +34,12 @@ dependencies:
   - numpy
   - scipy
   - memory_profiler
-  - psi4/label/dev::dftd3
   - psi4/label/dev::pylibefp
   - psi4/label/dev::fockci
-  - psi4/label/dev::gcp
   - psi4/label/dev::mp2d
   - psi4/label/dev::resp
   - psi4/label/dev::snsmp2
-  - conda-forge::pytest>=7.0.1
+  - pytest
   - pytest-xdist
   - tomli
   - pip

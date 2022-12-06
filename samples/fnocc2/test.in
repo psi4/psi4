@@ -15,7 +15,7 @@ energy('g2')
 refg2    = -76.332048079709 #TEST
 refgibbs = -76.349644857811 #TEST
 
-compare_values(refg2, variable("G2 TOTAL ENERGY"), 8, "G2 energy (0 K)") #TEST
-compare_values(refgibbs, variable("G2 FREE ENERGY"), 8, "G2 free energy (298 K)") #TEST
+compare_values(refg2, variable("G2 TOTAL ENERGY"), 7, "G2 energy (0 K)") #TEST
+compare_values(refgibbs, variable("G2 FREE ENERGY"), 7, "G2 free energy (298 K)") #TEST
 
 clean()

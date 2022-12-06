@@ -79,6 +79,7 @@ clean()
 
 ###########################
 ref_d2         = [-0.00390110, -0.00165271, -0.00058118]  #TEST
+ref_hfd32b     = [-152.929712333, None, None]  #TEST
 
 molecule eneyne {
 C   0.000000  -0.667578  -2.124659
@@ -95,8 +96,8 @@ H   0.000000   0.000000   3.963929
 }
 
 eneyne.update_geometry()
-E, G = eneyne.run_dftd3('b3lyp', 'd2')
-compare_values(ref_d2[0], E, 7, 'PSIPATH dftd3')              #TEST
+E = energy("hf-d32b")
+compare_values(ref_hfd32b[0], E, 7, 'PSIPATH dftd3')              #TEST
 clean()
 
 ###########################

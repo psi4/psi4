@@ -24,7 +24,7 @@ wfn = properties('eom-ccsd', properties=['dipole', 'oscillator_strength'], retur
 
 
 
-### Dipole check
+### Dipole check - validated against CFOUR 12/22
 
 
 

@@ -8,10 +8,16 @@ dependencies:
     # qc opt'l
   - adcc
   - cppe
+  - dftd3-python
   - dftd4-python
+  - gcp-correction
   - geometric
+  - openfermion>=1.0
   - openfermionpsi4
+  - pyddx
   - pymdi
-  - qcengine
+  - qcengine=0.26.0
+
+
 
 # toml needed for psi4 to load parameters from dftd4-python

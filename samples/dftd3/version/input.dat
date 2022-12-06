@@ -1,6 +1,8 @@
 #! Exercises the various DFT-D corrections, both through python directly and through c++
 #! all dft values updated to new BraggSlater radii
 
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
 # S22-9, B3LYP
 
 # S22-9 monomer, all fctl
@@ -40,14 +42,15 @@ mBcp.update_geometry()
 fctl = 'b3lyp'
 der = 0
 hasD3M = True
-try:
-    for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
-        E = eeee.run_dftd3(fctl, dlvl, dertype=der)
-        E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
-        E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
-except qcdb.Dftd3Error as e:
-    print("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
-    hasD3M = False
+if d3_engine == "dftd3":
+    try:
+        for dlvl in ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']:
+            E = eeee.run_dftd3(fctl, dlvl, dertype=der)
+            E = mAuncp.run_dftd3(fctl, dlvl, dertype=der)
+            E = mBcp.run_dftd3(fctl, dlvl, dertype=der)
+    except qcdb.Dftd3Error as e:
+        print("""dftd3 version cannot compute some -D variants. some future tests will not be run""")
+        hasD3M = False
 
 #hasD3M = False  # temporary until fctl released into superfunctionals list
 # why have the hasD3M switch, you ask? why not just try catch throughout to
@@ -107,12 +110,13 @@ qmAcp.update_geometry()
 qmBcp.update_geometry()
 
 levels = ['d2', 'd3zero', 'd3bj']
-if hasD3M:
-    levels.extend(['d3mzero', 'd3mbj'])
-for dlvl in levels:
-        E = qeeee.run_dftd3(fctl, dlvl, dertype=der)
-        E = qmAuncp.run_dftd3(fctl, dlvl, dertype=der)
-        E = qmBcp.run_dftd3(fctl, dlvl, dertype=der)
+if d3_engine == "dftd3":
+    if hasD3M:
+        levels.extend(['d3mzero', 'd3mbj'])
+    for dlvl in levels:
+            E = qeeee.run_dftd3(fctl, dlvl, dertype=der)
+            E = qmAuncp.run_dftd3(fctl, dlvl, dertype=der)
+            E = qmBcp.run_dftd3(fctl, dlvl, dertype=der)
 
 
 # <<<  Part 4  >>>

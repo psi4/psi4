@@ -12,6 +12,8 @@ sys.path.append(qcdbpath)
 
 import S22
 
+d3_engine = psi4.driver.EmpiricalDispersion(name_hint="b3lyp", level_hint="d3bj").engine
+
 set scf_type pk
 digits = 6
 
@@ -71,12 +73,13 @@ for rxn in [4, 8, 16, 20]:
     ma.update_geometry()
     mb.update_geometry()
 
-    E, G = di.run_dftd3('hf3c', 'd3bj', verbose=True)
-    E1, G2 = ma.run_dftd3('hf3c', 'd3bj', verbose=True)
-    E2, G2 = mb.run_dftd3('hf3c', 'd3bj', verbose=True)
-    hf3c_d3 = [E, E1, E2]
+    if d3_engine == "dftd3":
+        E, G = di.run_dftd3('hf3c', 'd3bj', verbose=True)
+        E1, G2 = ma.run_dftd3('hf3c', 'd3bj', verbose=True)
+        E2, G2 = mb.run_dftd3('hf3c', 'd3bj', verbose=True)
+        hf3c_d3 = [E, E1, E2]
 
-    if rxn == 4:
+        if rxn == 4:
 
     E, G = di.run_gcp(func='HF3c', verbose=True)
     E1, G1 = ma.run_gcp(func='HF3c', verbose=True)
@@ -93,9 +96,10 @@ for rxn in [4, 8, 16, 20]:
 
     if rxn == 4:
 
-    hf3c = ie(hf3c_gcp) + ie(hf3c_d3) + ie(hf3c_hf)
+    if d3_engine == "dftd3":
+        hf3c = ie(hf3c_gcp) + ie(hf3c_d3) + ie(hf3c_hf)
 
-    print("""{:4} {:16.8f} {:8.3f} {:8.2f} {:10.4f} : {:8.2f} {:8.2f} {:8.2f}""".format(
+        print("""{:4} {:16.8f} {:8.3f} {:8.2f} {:10.4f} : {:8.2f} {:8.2f} {:8.2f}""".format(
             rxn, hf3c, hf3c * 627.5095, orca22[rxn-1] * 627.5095, (hf3c - orca22[rxn-1]) * 627.5095,
             627.5095 * ie(hf3c_gcp),
             627.5095 * ie(hf3c_d3),

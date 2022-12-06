@@ -87,7 +87,7 @@ H   0.000000   0.000000   3.963929
 }
 
 eneyne.update_geometry()
-E, G = eneyne.run_dftd3('b3lyp', 'd2')
+E = energy("hf-d32b")
 clean()
 
 ###########################
