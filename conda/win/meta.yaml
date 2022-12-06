@@ -18,11 +18,12 @@ requirements:
     - qcelemental=0.25.1
     - qcengine=0.26.0
     - msgpack-python
+    - optking
     - gau2grid
     - libint2 2.6.0 h2e52968_4
     - libxc
-    - dftd3
-    - gcp
+    - dftd3-python
+    - gcp-correction
     - scipy
 
 build:

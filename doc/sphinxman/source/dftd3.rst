@@ -223,6 +223,14 @@ available only through the ``DFTD3`` or ``DFTD4`` programs. Once installed, the
 interfaced exactly alike.
 The -D3 interface can use classic or simple-dftd3 programs interchangeably and will prefer the latter.
 
+Despite different defaults in these programs when run independently,
+when run through |PSIfour| as EmpiricalDispersion engine, each should
+produce the same result. Moreover, |PSIfours| own defaults and aliases
+are unchanged by the new engines, so ``-D`` continues to mean ``-D2``,
+``-D3`` continues to mean zero-damping *without* 3-body correction,
+and input files should continue producing the same results. Please file
+an issue if found otherwise.
+
 Dispersion corrections are built into DFT functionals, so appending an *a
 posteriori* correction to a computation is as simple as
 ``energy('b2plyp-d')`` *vs.* ``energy('b2plyp')``. For example, the
