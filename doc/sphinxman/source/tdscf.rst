@@ -134,7 +134,7 @@ Known limitations
 
 .. warning:: The implementation cannot currently handle the following cases:
              - Excited states of triplet symmetry from a restricted DFT reference.
-             - Excited states from an unrestricted reference other than HF or LDA.
+             - Functionals with meta or VV10 components.
 
 .. warning:: The length-gauge rotatory strengths |PSIfour| computes are
              currently **not** gauge-origin invariant.
