@@ -332,7 +332,7 @@ size_t CompositeJK::memory_estimate() {
 void CompositeJK::print_header() const {
     std::string screen_type = options_.get_str("SCREENING");
     if (print_) {
-        outfile->Printf("  ==> LinK: Density-Fitted J and Linear Exchange K <==\n\n");
+        outfile->Printf("  ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==\n\n");
 
         outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
@@ -350,6 +350,7 @@ void CompositeJK::print_header() const {
             if (options_.get_str("SCF_TYPE") == "LINK") print_linK_header();
 	    if (options_.get_str("SCF_TYPE") == "COSX") print_COSX_header();
         }
+        outfile->Printf("\n");  
     }
 }
 

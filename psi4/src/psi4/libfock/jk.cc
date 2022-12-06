@@ -152,8 +152,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
-    } else if (jk_type == "COSX") {
-        auto jk = std::make_shared<DFJCOSK>(primary, auxiliary, options);
+    } else if (jk_type == "LINK" || jk_type == "COSX" ) {
+        auto jk = std::make_shared<CompositeJK>(primary, auxiliary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -163,17 +163,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return jk;
 
-    } else if (jk_type == "LINK") {
-        auto jk = std::make_shared<DFJLinK>(primary, auxiliary, options);
-
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-        if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
-        if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
-        if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
-        if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
-
-        return jk;
-    
     } else {
         std::stringstream message;
         message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;

@@ -1553,6 +1553,12 @@ class PSI_API CompositeJK : public JK {
     ~CompositeJK() override;
 
     bool do_incfock_iter() { return do_incfock_iter_; }
+    
+    /**
+     * Clear D_prev_
+     */
+    void clear_D_prev() { D_prev_.clear();}
+
     // => Knobs <= //
     /**
     * Print header information regarding JK

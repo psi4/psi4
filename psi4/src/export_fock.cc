@@ -197,12 +197,10 @@ void export_fock(py::module &m) {
     py::class_<DirectJK, std::shared_ptr<DirectJK>, JK>(m, "DirectJK", "docstring")
         .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Was the last Fock build incremental?");
 
-    py::class_<DFJCOSK, std::shared_ptr<DFJCOSK>, JK>(m, "DFJCOSK", "docstring")
-        .def("do_incfock_iter", &DFJCOSK::do_incfock_iter, "Was the last Fock build incremental?")
-    	.def("clear_D_prev", &DFJCOSK::clear_D_prev, "Clear previous D matrices.");
+    py::class_<CompositeJK, std::shared_ptr<CompositeJK>, JK>(m, "CompositeJK", "docstring")
+        .def("do_incfock_iter", &CompositeJK::do_incfock_iter, "Was the last Fock build incremental?")
+        .def("clear_D_prev", &CompositeJK::clear_D_prev, "Clear previous D matrices.");
 
-    py::class_<DFJLinK, std::shared_ptr<DFJLinK>, JK>(m, "DFJLinK", "docstring")
-        .def("do_incfock_iter", &DFJLinK::do_incfock_iter, "Was the last Fock build incremental?");
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
                     [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return scf::SADGuess(basis, atomic_bases, Process::environment.options); })
