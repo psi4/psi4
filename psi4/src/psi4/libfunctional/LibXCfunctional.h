@@ -83,7 +83,6 @@ class LibXCFunctional : public Functional {
     void set_density_cutoff(double cut) override;
     void set_omega(double omega);
     void set_tweak(std::map<std::string, double>, bool);
-    void set_tweak(std::vector<double>, bool);
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
     // Make queries to libxc

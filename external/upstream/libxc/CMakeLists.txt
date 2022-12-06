@@ -1,4 +1,8 @@
-find_package(Libxc 5.1.2 CONFIG QUIET COMPONENTS C)
+find_package(Libxc 6.0.0 CONFIG QUIET COMPONENTS C)
+if(NOT ${Libxc_FOUND})
+    # LibxcConfig.cmake encodes searching only within major version, so need two calls to allow v5 or v6
+    find_package(Libxc 5.1.2 CONFIG QUIET COMPONENTS C)
+endif()
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
@@ -15,7 +19,7 @@ else()
         # Default: use a stable release tarball of libxc. To use the
         # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
-        URL https://gitlab.com/libxc/libxc/-/archive/5.2.3/libxc-5.2.3.tar.gz
+        URL https://gitlab.com/libxc/libxc/-/archive/6.0.0/libxc-6.0.0.tar.gz
         #GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
         #GIT_TAG 5.1.5
         #UPDATE_COMMAND ""

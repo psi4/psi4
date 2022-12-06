@@ -178,7 +178,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         xc_nlc_coef(xc_functional_.get(), &vv10_b_, &vv10_c_);
         needs_vv10_ = true;
     }
-}
+}  // namespace psi
 LibXCFunctional::~LibXCFunctional() { xc_func_end(xc_functional_.get()); }
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     // Build functional
@@ -260,48 +260,6 @@ std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& fu
     }
 
     return params;
-}
-void LibXCFunctional::set_tweak(std::vector<double> values, bool quiet) {
-    size_t vsize = values.size();
-    int npars = xc_func_info_get_n_ext_params(xc_functional_.get()->info);
-    if (npars == 0) {
-        throw PSIEXCEPTION(
-            "LibXCfunctional: set_tweak: There are no known tweaks for this functional, please double check "
-            "the functional form and add them if required.");
-    } else if (npars != vsize) {
-        std::ostringstream oss;
-        oss << "got " << vsize << ", expected " << npars;
-        throw PSIEXCEPTION(
-            "LibXCfunctional: set_tweak: Mismatch in size of tweaker vector and expected number of "
-            "input parameters:" +
-            oss.str() + "\n");
-    }
-
-    std::vector<double> tweakers_list = values;
-    std::map<std::string, double> tweakers_dict;
-    std::string allowed_keys_join;
-
-    for (int par = 0; par < npars; par++) {
-        std::string key = xc_func_info_get_ext_params_name(const_cast<xc_func_info_type*>(xc_functional_->info), par);
-        allowed_keys_join += key;
-        if (par + 1 != npars) allowed_keys_join += ", ";
-        double default_value =
-            xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
-        if (!quiet)
-            outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par + 1,
-                            npars, key.c_str(), tweakers_list[par], default_value);
-        tweakers_dict.insert(std::pair<std::string, double>(key, tweakers_list[par]));
-    }
-
-    outfile->Printf(
-        "Using `LibXCFunctional.set_tweak(std::vector<double>)` instead of "
-        "`LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and as soon as 1.5 it will stop "
-        "working. "
-        "Allowed keys are: %s\n",
-        allowed_keys_join.c_str());
-
-    xc_func_set_ext_params(xc_functional_.get(), tweakers_list.data());
-    user_tweakers_ = tweakers_dict;
 }
 void LibXCFunctional::set_tweak(std::map<std::string, double> values, bool quiet) {
     int npars = xc_func_info_get_n_ext_params(xc_functional_.get()->info);
