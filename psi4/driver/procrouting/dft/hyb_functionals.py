@@ -114,7 +114,7 @@ funcs.append({
     },
     "c_functionals": {},
     "dispersion": {
-        "type": "d3bj",
+        "type": "d3bj2b",
         "params": {
             's6': 1.000,
             's8': 0.8777,
@@ -149,7 +149,7 @@ funcs.append({
         }
     },
     "dispersion": {
-        "type": "d3bj",
+        "type": "d3bj2b",
         "params": {
             's6': 1.000,
             's8': 0.0000,
@@ -534,7 +534,7 @@ funcs.append({
     },
     "dispersion": {
         "nlc": False,
-        "type": "d3bj",
+        "type": "d3bj2b",
         "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n',
         "params": {
             's6': 1.000,
@@ -557,7 +557,7 @@ funcs.append({
     },
     "dispersion": {
         "nlc": False,
-        "type": "d3bj",
+        "type": "d3bj2b",
         "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14 5725, 2018\n',
         "params": {
             's6': 1.000,

@@ -414,14 +414,14 @@ def extract_osapt_data(filepath):
     vals['IndBA'] = np.array(read_block('%s/IndBA.dat' % filepath, H_to_kcal_))
     # Read exact F-SAPT0 dispersion data
     try:
-        vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_) # Exact F-SAPT0 Dispersion
+        vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_)
     except FileNotFoundError:
         print('No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n')
         vals['Disp'] = np.zeros_like(np.array(vals['Elst']))
 
     # Read empirical F-SAPT0-D dispersion data
     try:
-        vals['EDisp'] = read_block('%s/Empirical_Disp.dat'  % filepath, H_to_kcal_) # Exact F-SAPT0 Dispersion
+        vals['EDisp'] = read_block('%s/Empirical_Disp.dat'  % filepath, H_to_kcal_)
     except (FileNotFoundError, OSError):
         vals['EDisp'] = np.zeros_like(np.array(vals['Elst']))
 
@@ -463,7 +463,7 @@ def fragment_d3_disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]])
             fe = 0.0
             for i in idA:
                 for j in idB:
-                    fe += d3disp[i][j]
+                    fe += d3disp[i][j] + d3disp[j][i]
             # Energies read are already in kcal/mol!
             D3frags[fA][fB] = fe
     return D3frags

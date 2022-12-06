@@ -27,7 +27,7 @@
 #
 
 import collections
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 from qcelemental.models import AtomicInput
@@ -38,17 +38,41 @@ from psi4.driver import p4util
 from psi4.driver import driver_findif
 from psi4.driver.p4util.exceptions import ValidationError
 
-_engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das2009', 'das2010']),
-                                          ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
-                                          ('nl', ['nl']),
-                                          ('mp2d', ['dmp2']),
-                                          ("dftd4", ["d4bjeeqatm"]),
-                                        ]) # yapf: disable
+_engine_can_do = collections.OrderedDict([
+    # engine order establishes default for each disp
+    ("libdisp",  ["d1", "d2",                                                                                                               "chg", "das2009", "das2010",]),
+    ("s-dftd3",  [            "d3zero2b", "d3bj2b", "d3mzero2b", "d3mbj2b", "d3zeroatm", "d3bjatm", "d3mzeroatm", "d3mbjatm",                                           ]),
+    ("dftd3",    [      "d2", "d3zero2b", "d3bj2b", "d3mzero2b", "d3mbj2b",                                                                                             ]),
+    ("nl",       [                                                                                                                          "nl",                       ]),
+    ("mp2d",     [                                                                                                                          "dmp2",                     ]),
+    ("dftd4",    [                                                                                                            "d4bjeeqatm",                             ]),
+    ("mctc-gcp", [                                                                                                                          "3c",                       ]),
+    ("gcp",      [                                                                                                                          "3c",                       ]),
+]) # yapf: disable
 
-_capable_engines_for_disp = collections.defaultdict(list)
-for eng, disps in _engine_can_do.items():
-    for disp in disps:
-        _capable_engines_for_disp[disp].append(eng)
+
+def _capable_engines_for_disp()-> Dict[str, List[str]]:
+    """Invert _engine_can_do dictionary and check program detection.
+
+    Returns a dictionary with keys all dispersion levels and values a list of all
+    capable engines, where the engine in the first element is available, if any are.
+
+    """
+    from qcengine.testing import _programs as _programs_qcng
+
+    programs_disp = {k: v for k, v in _programs_qcng.items() if k in _engine_can_do}
+    programs_disp["libdisp"] = True
+    programs_disp["nl"] = True
+
+    capable = collections.defaultdict(list)
+    capable_sorted_by_available = collections.defaultdict(list)
+    for eng, disps in _engine_can_do.items():
+        for disp in disps:
+            capable[disp].append(eng)
+    for disp, engines in capable.items():
+        capable_sorted_by_available[disp] = sorted(engines, key=lambda x: (not programs_disp[x], x))
+
+    return capable_sorted_by_available
 
 
 class EmpiricalDispersion():
@@ -57,7 +81,7 @@ class EmpiricalDispersion():
     Attributes
     ----------
     dashlevel : str
-        {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2', "d4bjeeqatm"}
+        {"d1", "d2", "chg", "das2009", "das2010", "nl", "dmp2", "d3zero2b", "d3bj2b", "d3mzero2b", "d3mbj2b", "d3zeroatm", "d3bjatm", "d3mzeroatm", "d3mbjatm", "d4bjeeqatm"}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `empirical_dispersion_resources.dashcoeff`.
@@ -88,7 +112,7 @@ class EmpiricalDispersion():
         `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
         validating :py:attr:`fctldash`.
     engine : str
-        {'libdisp', 'dftd3', 'nl', 'mp2d', "dftd4"}
+        {'libdisp', "s-dftd3", 'dftd3', 'nl', 'mp2d', "dftd4"}
         Compute engine for dispersion. One of Psi4's internal libdisp
         library, external Grimme or Beran projects, or nl.
     disp : Dispersion
@@ -117,11 +141,17 @@ class EmpiricalDispersion():
         initialized by `name_hint`.  Extra parameters will error.
     engine
         Override which code computes dispersion. See above for allowed
-        values. Really only relevant for -D2, which can be computed by
-        libdisp or dftd3.
+        values. Formerly (pre Nov 2022) only relevant for -D2, which can be computed by
+        libdisp or dftd3. Now (post Nov 2022) also relevant for -D3 variants,
+        which can be computed by dftd3 executable or simple-dftd3 Python module.
+    gcp_engine
+        Override which code computes the gcp correction. Now can use
+        classic gcp or mctc-gcp executables.
+    save_pairwise_disp
+        Whether to request atomic pairwise analysis.
 
     """
-    def __init__(self, *, name_hint: str = None, level_hint: str = None, param_tweaks: Union[Dict, List] = None, engine: str = None, save_pairwise_disp=False):
+    def __init__(self, *, name_hint: str = None, level_hint: str = None, param_tweaks: Union[Dict, List] = None, engine: str = None, gcp_engine: str = None, save_pairwise_disp: bool = False):
         from .dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
         self.save_pairwise_disp = save_pairwise_disp
@@ -139,16 +169,25 @@ class EmpiricalDispersion():
         self.dashlevel_citation = qcng.programs.empirical_dispersion_resources.dashcoeff[self.dashlevel]['citation']
         self.dashparams_citation = resolved['dashparams_citation']
 
+        capable_engines_for_disp = _capable_engines_for_disp()
         if engine is None:
-            self.engine = _capable_engines_for_disp[self.dashlevel][0]
+            self.engine = capable_engines_for_disp[self.dashlevel][0]
         else:
             if self.dashlevel in _engine_can_do[engine]:
                 self.engine = engine
             else:
-                raise ValidationError("""This little engine ({}) can't ({})""".format(engine, self.dashlevel))
+                raise ValidationError(f"This little engine ({engine}) can't ({self.dashlevel})")
 
         if self.engine == 'libdisp':
             self.disp = core.Dispersion.build(self.dashlevel, **resolved['dashparams'])
+
+        if gcp_engine is None:
+            self.gcp_engine = capable_engines_for_disp["3c"][0]
+        else:
+            if "3c" in _engine_can_do[gcp_engine]:
+                self.gcp_engine = gcp_engine
+            else:
+                raise ValidationError(f"This little engine ({engine}) can't (3c)")
 
     def print_out(self):
         """Format dispersion parameters of `self` for output file."""
@@ -191,7 +230,7 @@ class EmpiricalDispersion():
             Set if :py:attr:`fctldash` nonempty.
 
         """
-        if self.engine in ['dftd3', 'mp2d', "dftd4"]:
+        if self.engine in ["s-dftd3", 'dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
                     'driver': 'energy',
@@ -204,6 +243,7 @@ class EmpiricalDispersion():
                         'params_tweaks': self.dashparams,
                         'dashcoeff_supplement': self.dashcoeff_supplement,
                         'pair_resolved': self.save_pairwise_disp,
+                        'apply_qcengine_aliases': True,  # for s-dftd3
                         'verbose': 1,
                     },
                     'molecule': molecule.to_schema(dtype=2),
@@ -229,7 +269,7 @@ class EmpiricalDispersion():
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 jobrec = qcng.compute(
                     resi,
-                    "gcp",
+                    self.gcp_engine,
                     raise_error=True,
                     task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = jobrec.return_result
@@ -262,7 +302,7 @@ class EmpiricalDispersion():
             (nat, 3) dispersion gradient [Eh/a0].
 
         """
-        if self.engine in ['dftd3', 'mp2d', "dftd4"]:
+        if self.engine in ["s-dftd3", 'dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
                     'driver': 'gradient',
@@ -274,6 +314,7 @@ class EmpiricalDispersion():
                         'level_hint': self.dashlevel,
                         'params_tweaks': self.dashparams,
                         'dashcoeff_supplement': self.dashcoeff_supplement,
+                        'apply_qcengine_aliases': True,  # for s-dftd3
                         'verbose': 1,
                     },
                     'molecule': molecule.to_schema(dtype=2),
@@ -294,7 +335,7 @@ class EmpiricalDispersion():
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 jobrec = qcng.compute(
                     resi,
-                    "gcp",
+                    self.gcp_engine,
                     raise_error=True,
                     task_config={"scratch_directory": core.IOManager.shared_object().get_default_path(), "ncores": core.get_num_threads()})
                 gcp_part = core.Matrix.from_array(jobrec.return_result)
