@@ -43,14 +43,14 @@ namespace psi {
 namespace ccdensity {
 
 void add_core_ROHF(struct iwlbuf *OutBuf) {
-    const auto actpi = moinfo.occpi + moinfo.virtpi;
+    const auto actpi = moinfo.occpi + moinfo.virtpi - moinfo.openpi;
     int mo_offset = 0;
 
     for (int h = 0; h < moinfo.nirreps; h++) {
         mo_offset += moinfo.frdocc[h];
         for (int p = 0; p < actpi[h]; p++) {
             for (int q = 0; q < actpi[h]; q++) {
-                double value = moinfo.opdm.get(h, p, q);
+                double value = moinfo.opdm.get(h, p + moinfo.frdocc[h], q + moinfo.frdocc[h]);
                 double p_qt = moinfo.pitzer2qt[p + mo_offset];
                 double q_qt = moinfo.pitzer2qt[q + mo_offset];
                 for (int m = 0; m < moinfo.nfzc; m++) {
