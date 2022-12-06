@@ -1425,6 +1425,142 @@ class PSI_API DFJLinK : public JK {
     void print_header() const override;
 };
 
+/**
+ * Class CompositeJK 
+ *
+ * JK implementation framework enabling arbitrary mixing and matching 
+ * of separate J and K construction algorithms.
+ * Current algorithms in place:
+ * J: Direct DF-J
+ * K: COSX, LinK
+ *
+ * TODO: Implement SplitJK companion framework for truly arbitrary mixing and matching
+ */
+class PSI_API CompositeJK : public JK {
+   protected:
+
+    /// The number of threads to be used for integral computation
+    int nthreads_;
+    /// Options object
+    Options& options_;
+
+    // Perform Density matrix-based integral screening?
+    bool density_screening_;
+
+    // => Incremental Fock build variables <= //
+    
+    /// Perform Incremental Fock Build for J and K Matrices? (default false)
+    bool incfock_;
+    /// The number of times INCFOCK has been performed (includes resets)
+    int incfock_count_;
+    bool do_incfock_iter_;
+
+    /// Previous iteration pseudo-density matrix
+    std::vector<SharedMatrix> D_prev_;
+
+    /// Pseudo-density matrix to be used this iteration
+    std::vector<SharedMatrix> D_ref_;
+
+    // Is the JK currently on the first SCF iteration of this SCF cycle?
+    bool initial_iteration_ = true;
+  
+    // => Density Fitting Stuff, for Direct DF-J <= //
+
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+    /// Coulomb Metric
+    SharedMatrix J_metric_;
+    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
+    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
+
+    // => Semi-Numerical Stuff, for COSX <= //
+
+    /// Small DFTGrid for initial SCF iterations
+    std::shared_ptr<DFTGrid> grid_init_;
+    /// Large DFTGrid for the final SCF iteration
+    std::shared_ptr<DFTGrid> grid_final_;
+    /// Overlap fitting metric for grid_initial_
+    SharedMatrix Q_init_;
+    /// Overlap fitting metric for grid_final_
+    SharedMatrix Q_final_;
+ 
+    // => LinK variables <= //
+
+    // Density-based ERI Screening tolerance to use in the LinK algorithm
+    double linK_ints_cutoff_;
+
+    std::string name() override { return "CompositeJK"; }
+    size_t memory_estimate() override;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    /// Do we need to backtransform to C1 under the hood?
+    bool C1() const override { return true; }
+    /// Setup integrals, files, etc
+    void preiterations() override;
+    /// Compute J/K for current C/D
+    void compute_JK() override;
+    /// Delete integrals, files, etc
+    void postiterations() override;
+
+    /// Set up Incfock variables per iteration
+    void incfock_setup();
+    /// Post-iteration Incfock processing
+    void incfock_postiter();
+
+    /// Build the coulomb (J) matrix
+    void build_J(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& J);
+
+    /**
+     * @author Andy Jiang, Georgia Tech, December 2021
+     * 
+     * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
+     * doi: 10.1063/1.476741
+     * 
+     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
+     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
+     * @param K The list of AO K matrices to build (Same size as D)
+     * 
+     */
+    void build_linK(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& K);
+
+    /// Build the exchange (K) matrix using COSX
+    void build_COSK(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& K);
+
+    /// Common initialization
+    void common_init();
+
+    /**
+    * Return number of ERI shell quartets computed during the JK build process.
+    */
+    size_t num_computed_shells() override;
+
+   public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    CompositeJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+    /// Destructor
+    ~CompositeJK() override;
+
+    bool do_incfock_iter() { return do_incfock_iter_; }
+    // => Knobs <= //
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    void print_header() const override;
+}
+
 }
 
 #endif
