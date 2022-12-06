@@ -5,7 +5,7 @@ dependencies:
   - blas=*=mkl
   - python=3.9
     # build
-  - boost-cpp
+  #- boost-cpp
   - cmake
 
 
@@ -17,8 +17,6 @@ dependencies:
     # qc req'd
   - gau2grid
   - psi4/label/dev::libint2
-  - psi4/label/dev::qcelemental
-  - psi4/label/dev::qcengine
   - libxc
   - mkl=2021.4
   - msgpack-python
@@ -26,16 +24,17 @@ dependencies:
   - numpy
   - scipy
   - toml
+  - optking
   - qcelemental
   - qcengine
-  - psi4/label/dev::dftd3
+  - dftd3-python
   - dftd4-python
-  - psi4/label/dev::gcp
+  - gcp-correction
   - geometric
   - pymdi
   - psi4/label/dev::resp
   - psi4/label/dev::snsmp2
-  - conda-forge::pytest>=7.0.1
+  - pytest
   - pytest-xdist
   - pip
   - pip:

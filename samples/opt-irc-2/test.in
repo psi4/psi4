@@ -33,18 +33,24 @@ molecule hcn {
 }
 
 # g_convergence needs to be tight for IRCs:
-set g_convergence gau_verytight
+# Updated comment AH: Old optking only used max and rms disp (not forces)
+# current optimizer will use forces as criteria for IRC points. IRC points don't
+# need to be converged that tightly. This test will struggle with gau_verytight
+# The current criteria replicates the disp of the old gau_verytight criteria
 
 set {
   basis           dzp
   opt_type        irc
-  geom_maxiter    150
+  geom_maxiter    200
   irc_direction   backward
   cart_hess_read  true  # read hessian back in from output.hcn.hess
+  max_disp_g_convergence 6e-6
+  rms_disp_g_convergence 4e-6
+  irc_points 25
 }
 
 energy = optimize('scf')
 
-# The below test is "delicate." The current IRC code overshoots the endpoint, and the # TEST
-# final value it will get to is very sensitive to small changes in the code.          # TEST
+# This test used to overshoot the endpoint. This should not longer be the case. Step 22 is now determined
+# to be the endpoint
 compare_values(-92.874584188151, energy, "Energy of last IRC point", atol=3.e-4)  #TEST

@@ -18,6 +18,7 @@ dependencies:
   - psi4/label/dev::libint2
   - psi4/label/dev::libxc
   - psi4/label/dev::libecpint
+  - optking
   - qcengine
   - qcportal=0.15.8
     # docs

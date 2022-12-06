@@ -23,27 +23,24 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
-
-molecule NH3  {
-  X
-  N 1 rX
-  H 2 rNH 1 aXNH
-  H 2 rNH 1 aXNH 3 a1
-  H 2 rNH 1 aXNH 4 a1
-
-  rX = 1.0
-  rNH = 0.95
-  aXNH = 115.0
-  a1 = 120.0
-}
-try:
-    opt('c4-scf')
-except psi4.ConvergenceError:
-    pass
-clean()
-opt_clean()
+# molecule NH3  {
+#   X
+#   N 1 rX
+#   H 2 rNH 1 aXNH
+#   H 2 rNH 1 aXNH 3 a1
+#   H 2 rNH 1 aXNH 4 a1
+# 
+#   rX = 1.0
+#   rNH = 0.95
+#   aXNH = 115.0
+#   a1 = 120.0
+# }
+# try:
+#     opt('c4-scf')
+# except psi4.ConvergenceError:
+#     pass
+# clean()
 
 set cfour_scf_damping 700
 
@@ -58,7 +55,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule C2H2 {
@@ -74,7 +70,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 set cfour_scf_damping 900
 
@@ -89,7 +84,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 ###molecule CN  {
@@ -102,40 +96,37 @@ opt_clean()
 ###set reference uhf
 ###opt('c4-scf')
 ###clean()
-###opt_clean()
 ###set reference rhf
 
 
-molecule CHFClBr  {
-  H
-  C  1 1.0
-  F  2 1.0 1 105.0
-  Cl 2 1.0 1 105.0 3  120.0
-  Br 2 1.0 1 105.0 3 -120.0
-}
-set basis 3-21g
-try:
-    opt('c4-scf')
-except psi4.ConvergenceError:
-    pass
-clean()
-opt_clean()
-set basis 6-31g
+# molecule CHFClBr  {
+#   H
+#   C  1 1.0
+#   F  2 1.0 1 105.0
+#   Cl 2 1.0 1 105.0 3  120.0
+#   Br 2 1.0 1 105.0 3 -120.0
+# }
+# set basis 3-21g
+# try:
+#     opt('c4-scf')
+# except psi4.ConvergenceError:
+#     pass
+# clean()
+# set basis 6-31g
 
 
-molecule CH2ClBr  {
-  Cl
-  C  1 1.0
-  F  2 1.0 1 105.0
-  H  2 1.0 1 105.0 3  120.0
-  H  2 1.0 1 105.0 3 -120.0
-}
-try:
-    opt('c4-scf')
-except psi4.ConvergenceError:
-    pass
-clean()
-opt_clean()
+# molecule CH2ClBr  {
+#   Cl
+#   C  1 1.0
+#   F  2 1.0 1 105.0
+#   H  2 1.0 1 105.0 3  120.0
+#   H  2 1.0 1 105.0 3 -120.0
+# }
+# try:
+#     opt('c4-scf')
+# except psi4.ConvergenceError:
+#     pass
+# clean()
 
 import sys
 sys.exit(0)
@@ -154,7 +145,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule HOCl  {
@@ -167,7 +157,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule C4H4Cl2F2  {
@@ -190,7 +179,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule HOOH_dimer  {
@@ -209,7 +197,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule HOOH  {
@@ -223,7 +210,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 ###molecule NOHOHOH  {
@@ -238,7 +224,6 @@ opt_clean()
 ###}
 ###opt('c4-scf')
 ###clean()
-###opt_clean()
 
 
 molecule H2O  {
@@ -251,7 +236,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule CH2F2  {
@@ -267,7 +251,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule NH3  {
@@ -285,7 +268,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 #####molecule BrF5  {
@@ -300,7 +282,6 @@ opt_clean()
 #####set basis 3-21g
 #####opt('c4-scf')
 #####clean()
-#####opt_clean()
 #####set basis 6-31g
 
 
@@ -319,7 +300,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 set guess sad
 
 
@@ -335,7 +315,6 @@ set guess sad
 ###}
 ###opt('c4-scf')
 ###clean()
-###opt_clean()
 
 
 molecule TFCOT {
@@ -361,7 +340,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule Li_H2O_4_p  {
@@ -396,7 +374,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule ethylene_cation  {
@@ -416,7 +393,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule ethane_gauche  {
@@ -434,7 +410,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 ###molecule triplet_ethylene  {
@@ -451,7 +426,6 @@ opt_clean()
 ###}
 ###opt('c4-scf')
 ###clean()
-###opt_clean()
 
 
 molecule allene  {
@@ -468,7 +442,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule ethane_staggered  {
@@ -486,7 +459,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule singlet_ethylene  {
@@ -506,7 +478,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule ethane_eclipsed  {
@@ -524,7 +495,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 ###molecule BH4p  {
@@ -538,7 +508,6 @@ opt_clean()
 ###}
 ###opt('c4-scf')
 ###clean()
-###opt_clean()
 
 
 molecule CH4  {
@@ -554,7 +523,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule SF6  {
@@ -572,7 +540,6 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 
 molecule Ih  {
@@ -597,6 +564,5 @@ try:
 except psi4.ConvergenceError:
     pass
 clean()
-opt_clean()
 
 

@@ -66,7 +66,7 @@ wfn.set_hessian(core.Matrix.from_array(H))
 # Have irrep to None if you computed all frequencies, and set it to anything else otherwise 
 vibinfo = vibanal_wfn(wfn, irrep=None, project_trans=True, project_rot=True)
 vibonly = qcdb.vib.filter_nonvib(vibinfo)
-wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
+# OLD SYNTAX: depr v1.4 and removed v1.7 wfn.set_frequencies(core.Vector.from_array(qcdb.vib.filter_omega_to_real(vibonly['omega'].data)))
 wfn.frequency_analysis = vibinfo
 
 # Now let's make sure that the frequencies match the analytic ones...

@@ -85,6 +85,7 @@ jobs:
           -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -DENABLE_ecpint=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_optking=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -DSPHINXMAN_STRICT=ON \

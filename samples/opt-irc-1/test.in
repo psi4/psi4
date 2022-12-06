@@ -18,9 +18,10 @@ set g_convergence gau_verytight
 set {
   basis                      dzp
   opt_type                   irc
-  geom_maxiter               50
+  geom_maxiter               60
   irc_direction              backward
   d_convergence              9
+  irc_points                 12
 }
 
 energy = frequencies('scf', dertype=1)

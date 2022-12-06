@@ -2,6 +2,7 @@
 #! that is not linear in the optimized structure but is in a 
 #! symmetry plane of the molecule.
 
+SCF_E  = -795.1433964231258     #TEST
 
 molecule {
 0 1
@@ -17,8 +18,21 @@ set {
   basis 6-31G(d)
   reference rhf
   ensure_bt_convergence True
+  geom_maxiter 4
+  write_opt_history True
+}
+
+
+try:
+  thisenergy = optimize('SCF')
+except driver.p4util.exceptions.OptimizationConvergenceError:
+  pass
+
+set {
+  geom_maxiter 20
 }
 
 thisenergy = optimize('SCF')
 
+compare_values(SCF_E, thisenergy, 5, "6-31G(D) SCF optimization of SF4") #TEST 
 

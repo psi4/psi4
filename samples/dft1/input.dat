@@ -39,6 +39,8 @@ V16 = energy('scf', dft_functional="pw86pbe")
 
 V17 = energy('scf', dft_functional="m05")
 
+V18 = energy('scf', dft_functional="spw92")
+
 set scf_type direct
 set reference uks
 
@@ -55,6 +57,8 @@ V25 = energy('scf', dft_functional="b86bpbe")
 V26 = energy('scf', dft_functional="pw86pbe")
 
 V27 = energy('scf', dft_functional="m05")
+
+V28 = energy('scf', dft_functional="spw92")
 
 molecule h2op {
 1 2
@@ -76,6 +80,8 @@ V35 = energy('scf', dft_functional="b86bpbe")
 V36 = energy('scf', dft_functional="pw86pbe")
 
 V37 = energy('scf', dft_functional="m05")
+
+V38 = energy('scf', dft_functional="spw92")
 
 molecule h2om {
 -1 2
@@ -99,3 +105,5 @@ V45 = energy('scf', dft_functional="b86bpbe")
 V46 = energy('scf', dft_functional="pw86pbe")
 
 V47 = energy('scf', dft_functional="m05")
+
+V48 = energy('scf', dft_functional="spw92")

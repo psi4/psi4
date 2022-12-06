@@ -10,6 +10,7 @@ set {
     basis 6-31G**
 }
 
-optimize('ccsd')
+wfn = optimize('ccsd', return_wfn=True)[1]
+
 
 

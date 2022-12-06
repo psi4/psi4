@@ -103,29 +103,26 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[0], variable('nuclear repulsion energy'), 3, '[1]  NRE: zmat, external values')  #TEST
 clean()
-opt_clean()
 
-
-molecule NH3  {
-  X
-  N 1 rX
-  H 2 rNH 1 aXNH
-  H 2 rNH 1 aXNH 3 a1
-  H 2 rNH 1 aXNH 4 a1
-
-  rX = 1.0
-  rNH = 0.95
-  aXNH = 115.0
-  a1 = 120.0
-}
-try:
-    opt('c4-scf')
-except psi4.ConvergenceError:
-    pass
-print(variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[1], variable('nuclear repulsion energy'), 3, '[2]  NRE: zmat, external values, w/dummy')  #TEST
-clean()
-opt_clean()
+# molecule NH3  {
+#   X
+#   N 1 rX
+#   H 2 rNH 1 aXNH
+#   H 2 rNH 1 aXNH 3 a1
+#   H 2 rNH 1 aXNH 4 a1
+# 
+#   rX = 1.0
+#   rNH = 0.95
+#   aXNH = 115.0
+#   a1 = 120.0
+# }
+# try:
+#     opt('c4-scf')
+# except psi4.ConvergenceError:
+#     pass
+# print(variable('nuclear repulsion energy'))  #TEST
+# compare_values(nre3_ref[1], variable('nuclear repulsion energy'), 3, '[2]  NRE: zmat, external values, w/dummy')  #TEST
+# clean()
 
 set cfour_scf_damping 700
 
@@ -142,7 +139,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[2], variable('nuclear repulsion energy'), 3, '[3]  NRE: cartesian, pure')  #TEST
 clean()
-opt_clean()
 
 
 molecule C2H2 {
@@ -160,7 +156,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[3], variable('nuclear repulsion energy'), 3, '[4]  NRE: cartesian, external values, +/-')  #TEST
 clean()
-opt_clean()
 
 set cfour_scf_damping 900
 
@@ -177,7 +172,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[4], variable('nuclear repulsion energy'), 3, '[5]  NRE: cartesian, external values')  #TEST
 clean()
-opt_clean()
 
 
 ###molecule CN  {
@@ -192,44 +186,41 @@ opt_clean()
 ###print variable('nuclear repulsion energy')  #TEST
 ###compare_values(nre3_ref[5], variable('nuclear repulsion energy'), 3, '[6]  NRE: cartesian, external values')  #TEST
 ###clean()
-###opt_clean()
 ###set reference rhf
 
 
-molecule CHFClBr  {
-  H
-  C  1 1.0
-  F  2 1.0 1 105.0
-  Cl 2 1.0 1 105.0 3  120.0
-  Br 2 1.0 1 105.0 3 -120.0
-}
-set basis 3-21g
-try:
-    opt('c4-scf')
-except psi4.ConvergenceError:
-    pass
-print(variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[6], variable('nuclear repulsion energy'), 3, '[7]  NRE: zmat, internal values')  #TEST
-clean()
-opt_clean()
-set basis 6-31g
+# molecule CHFClBr  {
+#   H
+#   C  1 1.0
+#   F  2 1.0 1 105.0
+#   Cl 2 1.0 1 105.0 3  120.0
+#   Br 2 1.0 1 105.0 3 -120.0
+# }
+# set basis 3-21g
+# try:
+#     opt('c4-scf')
+# except psi4.ConvergenceError:
+#     pass
+# print(variable('nuclear repulsion energy'))  #TEST
+# compare_values(nre3_ref[6], variable('nuclear repulsion energy'), 3, '[7]  NRE: zmat, internal values')  #TEST
+# clean()
+# set basis 6-31g
 
 
-molecule CH2ClBr  {
-  Cl
-  C  1 1.0
-  F  2 1.0 1 105.0
-  H  2 1.0 1 105.0 3  120.0
-  H  2 1.0 1 105.0 3 -120.0
-}
-try:
-    opt('c4-scf')
-except psi4.ConvergenceError:
-    pass
-print(variable('nuclear repulsion energy'))  #TEST
-compare_values(nre3_ref[7], variable('nuclear repulsion energy'), 3, '[8]  NRE: zmat, internal values')  #TEST
-clean()
-opt_clean()
+# molecule CH2ClBr  {
+#   Cl
+#   C  1 1.0
+#   F  2 1.0 1 105.0
+#   H  2 1.0 1 105.0 3  120.0
+#   H  2 1.0 1 105.0 3 -120.0
+# }
+# try:
+#     opt('c4-scf')
+# except psi4.ConvergenceError:
+#     pass
+# print(variable('nuclear repulsion energy'))  #TEST
+# compare_values(nre3_ref[7], variable('nuclear repulsion energy'), 3, '[8]  NRE: zmat, internal values')  #TEST
+# clean()
 
 import sys
 sys.exit(0)
@@ -250,7 +241,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[8], variable('nuclear repulsion energy'), 3, '[8b]  NRE: zmat, external and internal values, +/-')  #TEST
 clean()
-opt_clean()
 
 
 molecule HOCl  {
@@ -265,7 +255,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[9], variable('nuclear repulsion energy'), 3, '[9]  NRE: zmat, internal values')  #TEST
 clean()
-opt_clean()
 
 
 molecule C4H4Cl2F2  {
@@ -290,7 +279,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[10], variable('nuclear repulsion energy'), 3, '[10] NRE: cartesian, pure, bohr')  #TEST
 clean()
-opt_clean()
 
 
 molecule HOOH_dimer  {
@@ -311,7 +299,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[11], variable('nuclear repulsion energy'), 3, '[11] NRE: cartesian, pure')  #TEST
 clean()
-opt_clean()
 
 
 molecule HOOH  {
@@ -327,7 +314,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[12], variable('nuclear repulsion energy'), 3, '[12] NRE: zmat, internal values')  #TEST
 clean()
-opt_clean()
 
 
 ###molecule NOHOHOH  {
@@ -344,7 +330,6 @@ opt_clean()
 ###print variable('nuclear repulsion energy')  #TEST
 ###compare_values(nre3_ref[13], variable('nuclear repulsion energy'), 3, '[13] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
-###opt_clean()
 
 
 molecule H2O  {
@@ -359,7 +344,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[14], variable('nuclear repulsion energy'), 3, '[14] NRE: zmat, internal values')  #TEST
 clean()
-opt_clean()
 
 
 molecule CH2F2  {
@@ -377,7 +361,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[15], variable('nuclear repulsion energy'), 3, '[15] NRE: cartesian, pure, bohr')  #TEST
 clean()
-opt_clean()
 
 
 molecule NH3  {
@@ -397,7 +380,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[16], variable('nuclear repulsion energy'), 3, '[16] NRE: zmat, external & internal values, w/dummy')  #TEST
 clean()
-opt_clean()
 
 
 #####molecule BrF5  {
@@ -414,7 +396,6 @@ opt_clean()
 #####print variable('nuclear repulsion energy')  #TEST
 ######compare_values(nre3_ref[17], variable('nuclear repulsion energy'), 3, '[17] NRE: zmat, external & internal values')  #TEST
 #####clean()
-#####opt_clean()
 #####set basis 6-31g
 
 
@@ -435,7 +416,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[18], variable('nuclear repulsion energy'), 3, '[18] NRE: zmat, external values')  #TEST
 clean()
-opt_clean()
 set guess sad
 
 
@@ -453,7 +433,6 @@ set guess sad
 ###print variable('nuclear repulsion energy')  #TEST
 ###compare_values(nre3_ref[19], variable('nuclear repulsion energy'), 3, '[19] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
-###opt_clean()
 
 
 molecule TFCOT {
@@ -481,7 +460,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[20], variable('nuclear repulsion energy'), 3, '[20] NRE: cartesian, pure')  #TEST
 clean()
-opt_clean()
 
 
 molecule Li_H2O_4_p  {
@@ -518,7 +496,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[21], variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')  #TEST
 clean()
-opt_clean()
 
 
 molecule ethylene_cation  {
@@ -540,7 +517,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[22], variable('nuclear repulsion energy'), 3, '[22] NRE: zmat, external values')  #TEST
 clean()
-opt_clean()
 
 
 molecule ethane_gauche  {
@@ -560,7 +536,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[23], variable('nuclear repulsion energy'), 3, '[23] NRE: zmat, internal values')  #TEST
 clean()
-opt_clean()
 
 
 ###molecule triplet_ethylene  {
@@ -579,7 +554,6 @@ opt_clean()
 ###print variable('nuclear repulsion energy')  #TEST
 ###compare_values(nre3_ref[24], variable('nuclear repulsion energy'), 3, '[24] NRE: zmat, external values')  #TEST
 ###clean()
-###opt_clean()
 
 
 molecule allene  {
@@ -598,7 +572,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[25], variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')  #TEST
 clean()
-opt_clean()
 
 
 molecule ethane_staggered  {
@@ -618,7 +591,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[26], variable('nuclear repulsion energy'), 3, '[26] NRE: zmat, internal values')  #TEST
 clean()
-opt_clean()
 
 
 molecule singlet_ethylene  {
@@ -640,7 +612,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[27], variable('nuclear repulsion energy'), 3, '[27] NRE: zmat, external values')  #TEST
 clean()
-opt_clean()
 
 
 molecule ethane_eclipsed  {
@@ -660,7 +631,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[28], variable('nuclear repulsion energy'), 3, '[28] NRE: zmat, internal values')  #TEST
 clean()
-opt_clean()
 
 
 ###molecule BH4p  {
@@ -676,7 +646,6 @@ opt_clean()
 ###print variable('nuclear repulsion energy')  #TEST
 ###compare_values(nre3_ref[29], variable('nuclear repulsion energy'), 3, '[29] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
-###opt_clean()
 
 
 molecule CH4  {
@@ -694,7 +663,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[30], variable('nuclear repulsion energy'), 3, '[30] NRE: zmat, external and internal values, w/TDA')  #TEST
 clean()
-opt_clean()
 
 
 molecule SF6  {
@@ -714,7 +682,6 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[31], variable('nuclear repulsion energy'), 3, '[31] NRE: zmat, external and internal values')  #TEST
 clean()
-opt_clean()
 
 
 molecule Ih  {
@@ -741,6 +708,5 @@ except psi4.ConvergenceError:
 print(variable('nuclear repulsion energy'))  #TEST
 compare_values(nre3_ref[32], variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')  #TEST
 clean()
-opt_clean()
 
 

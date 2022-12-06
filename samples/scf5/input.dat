@@ -4,6 +4,20 @@
 #Ensure that the checkpoint file is always nuked
 psi4_io.set_specific_retention(32,False)
 
+Eref = {  
+    "Singlet": {
+        "Composite": {
+        } 
+    },
+    "Triplet UHF": {
+        "Composite": {
+        }
+    },
+    "Triplet ROHF": {
+        "Composite": {
+        }
+    }
+}
 
 molecule singlet_o2 {
     0 1
@@ -47,12 +61,14 @@ E = energy('scf')
 set scf_type mem_df
 E = energy('scf')
 
-set scf_type cosx
-E = energy('scf')
+for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
+    if method == "COSX": 
+      set screening csam
+    else:
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
+    E = energy('scf')
 
 set scf reference uhf
 set screening csam
@@ -72,12 +88,14 @@ E = energy('scf')
 set scf_type mem_df
 E = energy('scf')
 
-set scf_type cosx
-E = energy('scf')
+for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
+    if method == "COSX": 
+      set screening csam
+    else:
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
+    E = energy('scf')
 
 set scf reference cuhf
 set screening csam
@@ -97,12 +115,14 @@ E = energy('scf')
 set scf_type mem_df
 E = energy('scf')
 
-set scf_type cosx
-E = energy('scf')
+for method in Eref["Singlet"]["Composite"].keys():
+    set scf_type $method 
+    if method == "COSX": 
+      set screening csam
+    else:
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
+    E = energy('scf')
 
 activate(triplet_o2)
 set {
@@ -130,12 +150,14 @@ E = energy('scf')
 set scf_type mem_df
 E = energy('scf')
 
-set scf_type cosx
-E = energy('scf')
+for method in Eref["Triplet UHF"]["Composite"].keys():
+    set scf_type $method 
+    if method == "COSX": 
+      set screening csam
+    else:
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
+    E = energy('scf')
 
 clean()
 
@@ -160,12 +182,14 @@ E = energy('scf')
 set scf_type mem_df
 E = energy('scf')
 
-set scf_type cosx
-E = energy('scf')
+for method in Eref["Triplet ROHF"]["Composite"].keys():
+    set scf_type $method 
+    if method == "COSX": 
+      set screening csam
+    else:
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
+    E = energy('scf')
 
 clean()
 
@@ -190,9 +214,11 @@ E = energy('scf')
 set scf_type mem_df
 E = energy('scf')
 
-set scf_type cosx
-E = energy('scf')
+for method in Eref["Triplet ROHF"]["Composite"].keys():
+    set scf_type $method 
+    if method == "COSX": 
+      set screening csam
+    else:
+      set screening density
 
-set scf_type link
-set screening density
-E = energy('scf')
+    E = energy('scf')
