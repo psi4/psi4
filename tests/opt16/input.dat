@@ -1,0 +1,26 @@
+#! SCF 6-31G(d) optimization of TS for HCN to HNC
+#! Checks correct behavior for writing orbitals to disk in
+#! finite difference calculations for a symmetric molecule.
+#! The last two displacements break the plane of symmetry.
+
+SCF_E = -92.7236996864523064
+
+molecule {
+0 1
+C  -0.0399606537   1.7574844925   0.0000000000    
+N   1.2331003808   0.0000000000   0.0000000000    
+H  -1.1931397271  -1.7574844925   0.0000000000    
+units bohr
+}
+
+set {
+  scf_type pk
+  basis 6-31G
+  opt_type ts
+  full_hess_every 0
+}
+
+thisenergy = optimize('scf', dertype='gradient')
+
+compare_values(SCF_E, thisenergy, 5, "TS optimization of CNH - finite difference hessian with symmetry") #TEST 
+

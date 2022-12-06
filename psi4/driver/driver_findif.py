@@ -1278,6 +1278,8 @@ class FiniteDifferenceComputer(BaseComputer):
                 "basis": data["basis"],
                 "keywords": data["keywords"] or {},
             }
+            # Displacements can run in lower symmetry. Don't overwrite orbitals from reference geom
+            packet['keywords']['function_kwargs'].update({"write_orbitals": False})
             if 'cbs_metadata' in data:
                 packet['cbs_metadata'] = data['cbs_metadata']
 
