@@ -16,6 +16,6 @@ dependencies:
   - openfermionpsi4
   - pyddx
   - pymdi
-  - qcengine=0.26.0
+  - qcengine
 
 # toml needed for psi4 to load parameters from dftd4-python

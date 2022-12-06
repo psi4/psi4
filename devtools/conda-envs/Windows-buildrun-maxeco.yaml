@@ -17,8 +17,6 @@ dependencies:
     # qc req'd
   - gau2grid
   - psi4/label/dev::libint2
-  - psi4/label/dev::qcelemental
-  - psi4/label/dev::qcengine=0.26.0
   - libxc
   - mkl=2021.4
   - msgpack-python
@@ -26,8 +24,9 @@ dependencies:
   - numpy
   - scipy
   - toml
+  - optking
   - qcelemental
-  - qcengine=0.26.0
+  - qcengine
   - dftd3-python
   - dftd4-python
   - gcp-correction
