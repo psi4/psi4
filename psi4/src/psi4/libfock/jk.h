@@ -1559,7 +1559,11 @@ class PSI_API CompositeJK : public JK {
     * type on output file
     */
     void print_header() const override;
-}
+    
+    void print_DFJ_header() const;
+    void print_linK_header() const;
+    void print_COSX_header() const;
+};
 
 }
 
