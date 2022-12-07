@@ -178,11 +178,6 @@ void DFHelper::initialize() {
 
     // figure out AO_core
     AO_core();
-    if (print_lvl_ > 0) {
-        outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
-                        (required_core_size_ * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
-        outfile->Printf("%s in-core AOs.\n\n", AO_core_ ? "Using" : "Turning off");
-    }
 
     // prepare AOs for STORE method
     if (AO_core_) {
@@ -232,6 +227,11 @@ void DFHelper::AO_core() {
     // Tmp buffers
     required_core_size_ += 3 * nbf_ * nbf_ * Qshell_max_;
 
+    if (print_lvl_ > 0) {
+        outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
+                        (required_core_size_ * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
+    }
+
     // determine AO_core_ either automatically...
     if (options_.get_str("FORCE_MEM") == "AUTO") {
         // a fraction of memory to use, do we want it as an option?
@@ -241,15 +241,28 @@ void DFHelper::AO_core() {
     // .. or force AO_core_ if user specifies
     } else if (options_.get_str("FORCE_MEM") == "NO_INCORE") {
         AO_core_ = false;
+
+        if (print_lvl_ > 0) {
+            outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core MemDFJK algorithm will be used.");
+        }
     } else if (options_.get_str("FORCE_MEM") == "FORCE_INCORE") {
         if (memory_ < required_core_size_) {
-            throw PSIEXCEPTION("FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.");
+            throw PSIEXCEPTION("FORCE_MEM=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.");
 	} else {
             AO_core_ = true;
-        }
+        
+	    if (print_lvl_ > 0) {
+                outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core MemDFJK algorithm will be used."); 
+            }
+	}
     } else { 
-        throw PSIEXCEPTION("Invalid FORCE_MEM option! The choices are AUTO, FORCE_INCORE, and NO_INCORE.");
+        throw PSIEXCEPTION("Invalid FORCE_MEM option! The choices for FORCE_MEM are AUTO, FORCE_INCORE, and NO_INCORE.");
     }
+
+    if (print_lvl_ > 0) {
+        outfile->Printf("%s in-core AOs.\n\n", AO_core_ ? "Using" : "Turning off");
+    }
+
 }
 void DFHelper::print_header() {
     // Preps any required metadata, safe to call multiple times
