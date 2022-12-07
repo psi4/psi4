@@ -61,9 +61,12 @@
 
 namespace psi {
 
-DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
-    primary_ = primary;
-    aux_ = aux;
+DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux,
+    Options& options) : primary_(primary), aux_(aux), options_(options) {
+    
+    //primary_ = primary;
+    //aux_ = aux;
+    //options_ = options;
 
     nbf_ = primary_->nbf();
     naux_ = aux_->nbf();

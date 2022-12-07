@@ -53,14 +53,13 @@ using namespace psi;
 
 namespace psi {
 
-MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
-    : JK(primary), auxiliary_(auxiliary) {
+MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) {
     common_init();
 }
 
 MemDFJK::~MemDFJK() {}
 
-void MemDFJK::common_init() { dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_); }
+void MemDFJK::common_init() { dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_, options_); }
 size_t MemDFJK::memory_estimate() {
     dfh_->set_nthreads(omp_nthread_);
     dfh_->set_schwarz_cutoff(cutoff_);

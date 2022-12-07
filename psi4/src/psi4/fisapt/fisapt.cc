@@ -2195,7 +2195,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     }
 
     // => Get integrals from DFHelper <= //
-    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary));
+    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary, options_));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
@@ -2677,7 +2677,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     }
 
     // => Get integrals from DFHelper <= //
-    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary));
+    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary, options_));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);
@@ -3313,7 +3313,7 @@ void FISAPT::felst() {
 #endif
 
     // => Get integrals from DFHelper <= //
-    dfh_ = std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF"));
+    dfh_ = std::make_shared<DFHelper>(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_);
     dfh_->set_memory(doubles_);
     dfh_->set_method("DIRECT_iaQ");
     dfh_->set_nthreads(nT);
@@ -4520,7 +4520,7 @@ void FISAPT::fdisp() {
         ncol += (size_t)mat->ncol();
     }
 
-    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary));
+    auto dfh(std::make_shared<DFHelper>(primary_, auxiliary, options_));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);

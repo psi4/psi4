@@ -111,7 +111,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "MEM_DF") {
-        MemDFJK* jk = new MemDFJK(primary, auxiliary);
+        MemDFJK* jk = new MemDFJK(primary, auxiliary, options);
         // TODO: re-enable after fixing all bugs
         jk->set_wcombine(false);
         _set_dfjk_options<MemDFJK>(jk, options);

@@ -51,7 +51,8 @@ class TwoBodyAOInt;
 
 class PSI_API DFHelper {
    public:
-    DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
+    DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux, 
+        Options& options);
     ~DFHelper();
 
     ///
@@ -329,6 +330,9 @@ class PSI_API DFHelper {
     std::shared_ptr<BasisSet> aux_;
     size_t nbf_;
     size_t naux_;
+
+    // => Options object <=
+    Options& options_;
 
     // => memory in doubles <=
     size_t memory_ = 256000000;
