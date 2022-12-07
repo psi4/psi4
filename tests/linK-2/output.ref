@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.7a1.dev131 
+                               Psi4 1.8a1.dev5 
 
-                         Git: Rev {dpoole34/dfjlink} 548ccaa dirty
+                         Git: Rev {dpoole34/compositejk-pilot} 88d59af 
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -19,7 +19,8 @@
                             Additional Code Authors
     E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
     J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
-    P. Verma, M. H. Lechner, and A. Jiang
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, and D. L. Poole
 
              Previous Authors, Complete List of Code Contributors,
                        and Citations for Specific Modules
@@ -30,11 +31,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 03 November 2022 10:09AM
+    Psi4 started on: Wednesday, 07 December 2022 06:24PM
 
-    Process ID: 12992
+    Process ID: 17836
     Host:       ds6
-    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4
+    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -77,20 +78,21 @@ set {
 
 linK_energy = energy('b3lyp')
 psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
+compare(1, variable("SCF ITERATIONS") < 13.0, "LinK Incfock Efficient")
 --------------------------------------------------------------------------
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Nov  3 10:09:54 2022
+*** at Wed Dec  7 18:24:12 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   186 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvtz.gbs 
-    atoms 7-12 entry H          line    23 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-6  entry C          line   186 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 7-12 entry H          line    23 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -216,12 +218,12 @@ Scratch directory: /scratch/dpoole34/
     Name: (CC-PVTZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-6  entry C          line   125 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
-    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-6  entry C          line   125 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJLinK: Density-Fitted J and Linear Exchange K <==
+  ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
     K tasked:                  Yes
@@ -230,12 +232,19 @@ Scratch directory: /scratch/dpoole34/
     Memory [MiB]:                0
     Incremental Fock:          Yes
     Screening Type:        DENSITY
+
+  ==> DFJ: Integral-Direct Density-Fitted J <==
+
     J Screening Cutoff:      1E-12
+
+  ==> LinK: Linear Exchange K <==
+
     K Screening Cutoff:      1E-12
+
   Cached 20.0% of DFT collocation blocks in 0.306 [GiB].
 
-  Minimum eigenvalue in the overlap matrix is 3.7592595820E-05.
-  Reciprocal condition number of the overlap matrix is 4.6398212530E-06.
+  Minimum eigenvalue in the overlap matrix is 3.7592595819E-05.
+  Reciprocal condition number of the overlap matrix is 4.6398212529E-06.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -254,17 +263,21 @@ Scratch directory: /scratch/dpoole34/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -231.83029426915809   -2.31830e+02   0.00000e+00 
-   @RKS iter   1:  -231.83555581126717   -5.26154e-03   3.65101e-03 ADIIS/DIIS
-   @RKS iter   2:  -231.53471074547173    3.00845e-01   4.63419e-03 ADIIS/DIIS/INCFOCK
-   @RKS iter   3:  -232.32939413751410   -7.94683e-01   3.59964e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -232.33321033193812   -3.81619e-03   7.46497e-05 DIIS/INCFOCK
-   @RKS iter   5:  -232.33338551709298   -1.75185e-04   7.55361e-06 DIIS/INCFOCK
-   @RKS iter   6:  -232.33338587751217   -3.60419e-07   6.94038e-06 DIIS
-   @RKS iter   7:  -232.33338777965500   -1.90214e-06   6.76768e-07 DIIS
-   @RKS iter   8:  -232.33338779468244   -1.50274e-08   3.09013e-07 DIIS
-   @RKS iter   9:  -232.33338779778856   -3.10612e-09   1.70372e-08 DIIS
-   @RKS iter  10:  -232.33338779779811   -9.54969e-12   6.56351e-09 DIIS
+   @RKS iter SAD:  -231.83029426915795   -2.31830e+02   0.00000e+00 
+   @RKS iter   1:  -231.83555581126564   -5.26154e-03   3.65101e-03 ADIIS/DIIS
+   @RKS iter   2:  -231.53471074546925    3.00845e-01   4.63419e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -232.32939413751242   -7.94683e-01   3.59964e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -232.33321033193715   -3.81619e-03   7.46497e-05 DIIS/INCFOCK
+   @RKS iter   5:  -232.33338551709210   -1.75185e-04   7.55361e-06 DIIS/INCFOCK
+   @RKS iter   6:  -232.33338587751186   -3.60420e-07   6.94038e-06 DIIS
+   @RKS iter   7:  -232.33338777965471   -1.90214e-06   6.76768e-07 DIIS
+   @RKS iter   8:  -232.33338779468022   -1.50255e-08   3.09013e-07 DIIS
+   @RKS iter   9:  -232.33338779778967   -3.10945e-09   1.70372e-08 DIIS
+   @RKS iter  10:  -232.33338779779760   -7.92966e-12   6.56351e-09 DIIS
+  Energy and wave function converged with early screening.
+  Performing final iteration with tighter screening.
+
+   @RKS iter  11:  -232.33338779779805   -4.54747e-13   1.36726e-09 DIIS
   Energy and wave function converged.
 
 
@@ -278,8 +291,8 @@ Scratch directory: /scratch/dpoole34/
 
     Doubly Occupied:                                                      
 
-       1A    -10.179329     2A    -10.179061     3A    -10.179019  
-       4A    -10.178473     5A    -10.178462     6A    -10.178170  
+       1A    -10.179329     2A    -10.179062     3A    -10.179019  
+       4A    -10.178473     5A    -10.178463     6A    -10.178170  
        7A     -0.856472     8A     -0.748540     9A     -0.748358  
       10A     -0.605604    11A     -0.605526    12A     -0.527215  
       13A     -0.464484    14A     -0.449859    15A     -0.425105  
@@ -303,7 +316,7 @@ Scratch directory: /scratch/dpoole34/
       58A      0.547574    59A      0.573835    60A      0.573932  
       61A      0.649931    62A      0.674176    63A      0.674461  
       64A      0.707600    65A      0.727891    66A      0.728095  
-      67A      0.745393    68A      0.761131    69A      0.761496  
+      67A      0.745392    68A      0.761131    69A      0.761496  
       70A      0.797823    71A      0.860876    72A      0.860947  
       73A      0.897760    74A      0.926185    75A      0.961501  
       76A      1.001640    77A      1.002053    78A      1.018517  
@@ -321,7 +334,7 @@ Scratch directory: /scratch/dpoole34/
      112A      1.963117   113A      1.969223   114A      1.986416  
      115A      1.986973   116A      2.064469   117A      2.091604  
      118A      2.091743   119A      2.142847   120A      2.160437  
-     121A      2.161467   122A      2.175177   123A      2.175284  
+     121A      2.161467   122A      2.175177   123A      2.175283  
      124A      2.289803   125A      2.353555   126A      2.412282  
      127A      2.412334   128A      2.456379   129A      2.457258  
      130A      2.472275   131A      2.496252   132A      2.565728  
@@ -331,7 +344,7 @@ Scratch directory: /scratch/dpoole34/
      142A      2.749800   143A      2.750259   144A      2.751364  
      145A      2.785951   146A      2.828123   147A      2.828726  
      148A      2.901608   149A      2.905143   150A      2.905321  
-     151A      2.965628   152A      2.965874   153A      2.979919  
+     151A      2.965628   152A      2.965874   153A      2.979918  
      154A      2.980036   155A      3.011735   156A      3.037598  
      157A      3.049723   158A      3.050653   159A      3.054345  
      160A      3.054815   161A      3.057674   162A      3.058034  
@@ -364,7 +377,7 @@ Scratch directory: /scratch/dpoole34/
      241A      5.032690   242A      5.053999   243A      5.054643  
      244A      5.156973   245A      5.158066   246A      5.350301  
      247A      5.350329   248A      5.458716   249A      5.675459  
-     250A      5.677217   251A      5.706866   252A      5.867545  
+     250A      5.677216   251A      5.706866   252A      5.867545  
      253A      5.867699   254A      5.947481   255A      6.116008  
      256A      6.117115   257A      6.439483   258A      6.925240  
      259A      8.904397   260A     12.359169   261A     12.360813  
@@ -376,17 +389,17 @@ Scratch directory: /scratch/dpoole34/
     NA   [    21 ]
     NB   [    21 ]
 
-  @RKS Final Energy:  -232.33338779779811
+  @RKS Final Energy:  -232.33338779779805
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993538263935989
-    Two-Electron Energy =                 306.9305824916650067
-    DFT Exchange-Correlation Energy =     -28.1755478233484311
+    One-Electron Energy =                -714.7993539993822196
+    Two-Electron Energy =                 306.9305826533810659
+    DFT Exchange-Correlation Energy =     -28.1755478120758234
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333877977981388
+    Total Energy =                       -232.3333877977980819
 
 Computation Completed
 
@@ -403,25 +416,26 @@ Properties computed using the SCF density matrix
  ------------------------------------------------------------------------------------
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
- Dipole X            :        147.6174494         -147.6125312            0.0049183
- Dipole Y            :         22.9056466          -22.9024868            0.0031597
+ Dipole X            :        147.6174493         -147.6125312            0.0049182
+ Dipole Y            :         22.9056464          -22.9024868            0.0031596
  Dipole Z            :          0.0000000            0.0000000            0.0000000
- Magnitude           :                                                    0.0058458
+ Magnitude           :                                                    0.0058456
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Nov  3 10:15:51 2022
+*** tstop() called on ds6 at Wed Dec  7 18:31:01 2022
 Module time:
-	user time   =     356.11 seconds =       5.94 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =        357 seconds =       5.95 minutes
+	user time   =     408.65 seconds =       6.81 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =        409 seconds =       6.82 minutes
 Total time:
-	user time   =     356.11 seconds =       5.94 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =        357 seconds =       5.95 minutes
+	user time   =     408.65 seconds =       6.81 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =        409 seconds =       6.82 minutes
     B3LYP Energy (using LinK algo)........................................................PASSED
+    LinK Incfock Efficient................................................................PASSED
 
-    Psi4 stopped on: Thursday, 03 November 2022 10:15AM
-    Psi4 wall time for execution: 0:05:57.07
+    Psi4 stopped on: Wednesday, 07 December 2022 06:31PM
+    Psi4 wall time for execution: 0:06:49.87
 
 *** Psi4 exiting successfully. Buy a developer a beer!
