@@ -232,9 +232,24 @@ void DFHelper::AO_core() {
     // Tmp buffers
     required_core_size_ += 3 * nbf_ * nbf_ * Qshell_max_;
 
-    // a fraction of memory to use, do we want it as an option?
-    AO_core_ = true;
-    if (memory_ < required_core_size_) AO_core_ = false;
+    // determine AO_core_ either automatically...
+    if (options_.get_str("FORCE_MEM") == "AUTO") {
+        // a fraction of memory to use, do we want it as an option?
+        AO_core_ = true;
+        if (memory_ < required_core_size_) AO_core_ = false;
+    
+    // .. or force AO_core_ if user specifies
+    } else if (options_.get_str("FORCE_MEM") == "NO_INCORE") {
+        AO_core_ = false;
+    } else if (options_.get_str("FORCE_MEM") == "FORCE_INCORE") {
+        if (memory_ < required_core_size_) {
+            throw PSIEXCEPTION("FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.");
+	} else {
+            AO_core_ = true;
+        }
+    } else { 
+        throw PSIEXCEPTION("Invalid FORCE_MEM option! The choices are AUTO, FORCE_INCORE, and NO_INCORE.");
+    }
 }
 void DFHelper::print_header() {
     // Preps any required metadata, safe to call multiple times
