@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.8a1.dev5 
+                               Psi4 1.8a1.dev17 
 
-                         Git: Rev {dpoole34/compositejk-pilot} 88d59af 
+                         Git: Rev {dpoole34/compositejk-pilot} e4f6b14 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -31,9 +31,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 07 December 2022 06:38PM
+    Psi4 started on: Thursday, 08 December 2022 03:54PM
 
-    Process ID: 19890
+    Process ID: 26541
     Host:       ds6
     PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4
     Memory:     500.0 MiB
@@ -68,7 +68,7 @@ molecule mol {
 
 set {
     reference uhf
-    scf_type link 
+    scf_type directdfj+link 
     df_scf_guess false
     basis 6-31G*
     e_convergence 1.0e-10
@@ -91,7 +91,7 @@ compare(1, variable("SCF ITERATIONS") < 19.0, "ROHF LinK Incfock Efficient")
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:38:55 2022
+*** at Thu Dec  8 15:54:41 2022
 
    => Loading Basis Set <=
 
@@ -146,7 +146,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DIRECTDFJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -173,6 +173,9 @@ Scratch directory: /scratch/dpoole34/
     atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
     atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+LINK 
+j_type_: DIRECTDFJ 
+k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -185,7 +188,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:          Yes
     Screening Type:        DENSITY
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -214,11 +217,11 @@ Scratch directory: /scratch/dpoole34/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:  -229.97628349801798   -2.29976e+02   0.00000e+00 
-   @UHF iter   1:  -230.34049812990128   -3.64215e-01   2.84897e-03 ADIIS/DIIS
-   @UHF iter   2:  -230.40556115546840   -6.50630e-02   9.10573e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   3:  -230.41345636158763   -7.89521e-03   4.49251e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   4:  -230.41572974153320   -2.27338e-03   1.91643e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   5:  -230.41688607751922   -1.15634e-03   1.04622e-04 ADIIS/DIIS/INCFOCK
+   @UHF iter   1:  -230.34049812990128   -3.64215e-01   2.84897e-03 DIIS/ADIIS
+   @UHF iter   2:  -230.40556115546840   -6.50630e-02   9.10573e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   3:  -230.41345636158763   -7.89521e-03   4.49251e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   4:  -230.41572974153320   -2.27338e-03   1.91643e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   5:  -230.41688607751922   -1.15634e-03   1.04622e-04 DIIS/ADIIS/INCFOCK
    @UHF iter   6:  -230.41726728449041   -3.81207e-04   3.44251e-05 DIIS
    @UHF iter   7:  -230.41729518028322   -2.78958e-05   8.95035e-06 DIIS/INCFOCK
    @UHF iter   8:  -230.41729655766784   -1.37738e-06   3.00576e-06 DIIS
@@ -377,14 +380,14 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:39:34 2022
+*** tstop() called on ds6 at Thu Dec  8 15:55:20 2022
 Module time:
-	user time   =      38.08 seconds =       0.63 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =      38.10 seconds =       0.64 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =         39 seconds =       0.65 minutes
 Total time:
-	user time   =      38.08 seconds =       0.63 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =      38.10 seconds =       0.64 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =         39 seconds =       0.65 minutes
     UHF Energy (using LinK algo)..........................................................PASSED
     UHF LinK Incfock Efficient............................................................PASSED
@@ -392,7 +395,7 @@ Total time:
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:39:34 2022
+*** at Thu Dec  8 15:55:20 2022
 
    => Loading Basis Set <=
 
@@ -447,7 +450,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DIRECTDFJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -474,6 +477,9 @@ Scratch directory: /scratch/dpoole34/
     atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
     atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+LINK 
+j_type_: DIRECTDFJ 
+k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -486,7 +492,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:          Yes
     Screening Type:        DENSITY
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -619,19 +625,19 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:39:59 2022
+*** tstop() called on ds6 at Thu Dec  8 15:55:44 2022
 Module time:
-	user time   =      24.60 seconds =       0.41 minutes
+	user time   =      24.64 seconds =       0.41 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =         25 seconds =       0.42 minutes
+	total time  =         24 seconds =       0.40 minutes
 Total time:
-	user time   =      62.71 seconds =       1.05 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         64 seconds =       1.07 minutes
+	user time   =      62.77 seconds =       1.05 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         63 seconds =       1.05 minutes
     ROHF Energy (using LinK algo).........................................................PASSED
     ROHF LinK Incfock Efficient...........................................................PASSED
 
-    Psi4 stopped on: Wednesday, 07 December 2022 06:39PM
-    Psi4 wall time for execution: 0:01:03.17
+    Psi4 stopped on: Thursday, 08 December 2022 03:55PM
+    Psi4 wall time for execution: 0:01:03.25
 
 *** Psi4 exiting successfully. Buy a developer a beer!
