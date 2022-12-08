@@ -695,22 +695,22 @@ matched arbitrarily to optimize performance based on the calculation
 in question. In general, such combinations of algorithms display lower
 scaling then their combined counterparts, and thus perform better 
 with larger systems. Such combinations of algorithms can be utilized 
-by setting the |globals__scf_type| keyword to "J_alg+K_alg", 
-where J_alg is the name of the separate Coulomb construction to use, 
-and K_alg is the name of the separate Exchange construction algorithm to use.
+by setting the |globals__scf_type| keyword to ``J_alg+K_alg``, 
+where *J_alg* is the name of the separate Coulomb construction algoritm to use, 
+and *K_alg* is the name of the separate Exchange construction algorithm to use.
 More information about the machinery of separate Coulomb and Exchange matrix
-construction algorithms in Psi4 can be found in :ref:`sec:compositejk`
+construction algorithms in Psi4 can be found in the :ref:`sec:compositejk` section.
 
 Specialized algorithms available to construct the Coulomb term
 separately are as follows:
 
 DIRECTDFJ
-    An integral-direct algorithm constructing the Coulomb term based on [Weigend:2002:directdfj]_
+    An integral-direct algorithm constructing the Coulomb term based on [Weigend:2002:4285]_
     The DIRECTDFJ algorithm combines the benefits of integral-direct SCF approaches 
     with that of density-fitting. Specifically, DFJ utilizes no I/O and displays 
-    effective performance with large system size through a combination of 
+    strong performance with large system size through a combination of 
     effective parallelization and utilization of density-fitting to minimize 
-    integral computations. See the :ref:`sec:scfddfj` for more information.
+    ERI computational cost. See the :ref:`sec:scfddfj` section for more information.
 
 Specialized algorithms available to construct the Exchange term
 separately are as follows:
@@ -723,11 +723,9 @@ COSX
     large systems and multi-core CPUs. See :ref:`sec:scfcosx` for more information.
 LINK
     An implementation of the linear-scaling "Linear Exchange" (LinK)
-    algorithm described in [Ochsenfeld:1998:1663]_. As with the COSX option, 
-    the Coulomb term is computed with an integral-direct density-fitting 
-    algorithm. The LINK algorithm provides many of the benefits of integral-direct
-    SCF algorithms, including no disk I/O, low memory usage, and effective
-    parallelization. Additionally, the
+    algorithm described in [Ochsenfeld:1998:1663]_. The LINK algorithm provides 
+    many of the benefits of integral-direct SCF algorithms, including no disk I/O, 
+    low memory usage, and effective parallelization. Additionally, the
     LINK implementation scales well with system size 
     while simultaneously providing a formally-exact computation of the 
     Exchange term. See :ref:`sec:scflink` for more information.
@@ -806,7 +804,7 @@ to false, which disables this acceleration entirely.
 Alongside the more traditional SCF algorithms in Psi4, in which both the Coulomb (J) and the Exchange (K) contributions to the Fock matrix are computed
 simultaneously using a single algorithm, "composite" algorithms also exist for the construction of the Fock matrix. These "composite" algorithms
 consist of a collection of SCF algorithms that construct one of J or K, but not both. Two such algorithms, one to construct J and one 
-to construct K, can then be combined to form the full Fock matrix during an iteration of the SCF procedure. 
+to construct K, can then be combined to form the full Fock matrix during the SCF procedure. 
 
 Generally, algorithms that are specifically designed to construct one of J or K exploit properties specific to J or K to improve performance.
 Exploitation of these properties can lead to either a reduced prefactor or a reduced algorithmic scaling for computing that specific
@@ -819,11 +817,12 @@ algorithms tend to perform better than combined Fock build algorithms for suffic
 Multiple separate J and K construction algorithms to construct the Fock matrix in a composite fashion are available for use in Psi4, and they can be 
 mixed and matched with each other freely. The algorithms availble for use in a composite fashion are as follows:
 
-Separate J Construction: DIRECTDFJ
+Separate J Construction: DIRECTDFJ 
+
 Separate K Construction: COSX, LINK
 
-Two composite algorithms can be combined with each other by setting the |globals__scf_type| keyword to "J_alg+K_alg", where J_alg is an available
-algorithm for the separate construction of J, and K_alg is an available algorithm for the separate construction of K. For example, if one wanted
+Two composite algorithms can be combined with each other by setting the |globals__scf_type| keyword to ``J_alg+K_alg``, where *J_alg* is an available
+algorithm for the separate construction of J, and *K_alg* is an available algorithm for the separate construction of K. For example, if one wanted
 to run an integral-direct density-fitted algorithm for Coulomb construction (i.e., DIRECTDFJ) in conjunction with the Linear Exchange algorithm
 for Exchange construction (i.e., LINK), one would use the |globals__scf_type| keyword "DIRECTDFJ+LINK".  
 
@@ -837,10 +836,10 @@ By reducing the dimensionality of the ERI tensor, application of the RI (often r
 SCF calculations. The reduction in ERI tensor rank also makes DF an appealing option for conventional SCF calculations, where the ERIs are stored 
 in core or on disk. However, even when using DF, I/O becomes a significant bottleneck for systems of a sufficient size when performing conventional SCF
 calculations. In principle, though, DF approaches can be utilized in an integral-direct context, gaining the benefits of DF methods without suffering the
-I/O bottlenecks that conventional DF methods will eventually run into. One such approach, outlined by Weigend in [Weigend:2002:directdfj]_,
+I/O bottlenecks that conventional DF methods will eventually run into. One such approach, outlined by Weigend in [Weigend:2002:4285]_,
 is available for use in Psi4 for the separate construction of the Coulomb contribution to the Fock matrix.  This implementation can be used alongside 
 Psi4's separate Exchange construction algorithms for composite Fock matrix construction by using the keyword DIRECTDFJ as the Coulomb construction 
-algorithm when specifying |globals__scf_type| to use a composite algorithm combination ("DIRECTDFJ+K_alg"). 
+algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DIRECTDFJ+K_alg``). 
 
 DIRECTDFJ supports multiple capabilities to improve performance. Specifically, DIRECTDFJ allows for a combination of density-matrix based ERI 
 screening (set |globals__screening| to ``DENSITY``) and incremental Fock matrix construction (set |scf__incfock| to ``TRUE``). These two, when combined,
@@ -893,7 +892,7 @@ Linear Exchange
 ~~~~~~~~~~~~~~~
 
 Large SCF calculations can benefit from specialized screening procedures that further reduce the scaling of the ERI contribution to the Fock matrix.
-LinK, the linear-scaling exchange method described in [Ochsenfeld:1998:1663]_, is available in Psi4 in conjunction with integral-direct density fitting for Coulomb construction (|globals__scf_type| set to ``LINK``).
+LinK, the linear-scaling exchange method described in [Ochsenfeld:1998:1663]_, is available in Psi4 in conjunction with composite algorithms that build J (|globals__scf_type| set to ``J_alg+LINK``).
 LinK achieves linear-scaling by exploiting shell pair sparsity in the density matrix and overlap sparsity between shell pairs. Specifically, LinK exploits the fact that the Exchange term
 requires only a linear-scaling number of significant elements through reformulating the
 shell quartet screening process to scale linearly with system size.
