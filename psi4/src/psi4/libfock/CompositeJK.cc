@@ -185,9 +185,9 @@ void CompositeJK::common_init() {
     timer_on("CompositeJK: ERI Computers");
     
     auto zero = BasisSet::zero_ao_basis_set();
-    
+
     // initialize 4-Center ERIs
-    eri_computers_["4-Center"].emplace({}); 
+    eri_computers_["4-Center"].emplace({});
     eri_computers_["4-Center"].resize(nthreads_);
 
     IntegralFactory factory(primary_, primary_, primary_, primary_);
@@ -200,7 +200,7 @@ void CompositeJK::common_init() {
     IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
     eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
 
-    // create each threads' ERI computers 
+    // create each threads' ERI computers
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
         eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
@@ -213,36 +213,36 @@ void CompositeJK::common_init() {
     // Direct DF-J
     if (j_type_ == "DIRECTDFJ") {
         // pre-compute coulomb fitting metric
-        timer_on("CompositeJK: Coulomb Metric");
-    
+        timer_on("CompositeJK: DIRECTDFJ Coulomb Metric");
+
         FittingMetric J_metric_obj(auxiliary_, true);
         J_metric_obj.form_fitting_metric();
         J_metric_ = J_metric_obj.get_metric();
-    
-        timer_off("CompositeJK: Coulomb Metric");
+
+        timer_off("CompositeJK: DIRECTDFJ Coulomb Metric");
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
-    } 
+    }
 
     // => Set up separate K algorithm <= //
 
     // Linear Exchange (LinK)
-    if (k_type_ == "LINK") { 
+    if (k_type_ == "LINK") {
         // set up LinK integral tolerance
         if (options_["LINK_INTS_TOLERANCE"].has_changed()) {
             linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
-    	} else {
-        	linK_ints_cutoff_ = cutoff_; 
-    	}
+        } else {
+            linK_ints_cutoff_ = cutoff_;
+        }
     
-    // Chain-of-Spheres Exchange (COSX) 
-    } else if (k_type_ == "COSX") { 
-    	timer_on("Grid Construction");
+    // Chain-of-Spheres Exchange (COSX)
+    } else if (k_type_ == "COSX") {
+        timer_on("CompositeJK: COSX Grid Construction");
 
-    	// TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
+        // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
 
-    	// Create a small DFTGrid for the initial SCF iterations
-    	std::map<std::string, std::string> grid_init_str_options = {
+        // Create a small DFTGrid for the initial SCF iterations
+        std::map<std::string, std::string> grid_init_str_options = {
             {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
             {"DFT_RADIAL_SCHEME",  "TREUTLER"},
             {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
@@ -250,7 +250,7 @@ void CompositeJK::common_init() {
             {"DFT_BLOCK_SCHEME",   "OCTREE"},
         };
         std::map<std::string, int> grid_init_int_options = {
-            {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_INITIAL")}, 
+            {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_INITIAL")},
             {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_INITIAL")},
             {"DFT_BLOCK_MIN_POINTS", 100},
             {"DFT_BLOCK_MAX_POINTS", 256},
@@ -263,7 +263,7 @@ void CompositeJK::common_init() {
             {"DFT_WEIGHTS_TOLERANCE", 1e-15},
         };
         grid_init_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_init_int_options, grid_init_str_options, grid_init_float_options, options_);
-    
+
         // Create a large DFTGrid for the final SCF iteration
         std::map<std::string, std::string> grid_final_str_options = {
             {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
@@ -286,56 +286,56 @@ void CompositeJK::common_init() {
             {"DFT_WEIGHTS_TOLERANCE", 1e-15},
         };
         grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
-    
-        timer_off("Grid Construction");
-    
+
+        timer_off("CompositeJK: COSX Grid Construction");
+
         // => Overlap Fitting Metric <= //
-    
+
         // Fit an overlap metric (Q) for both grids to reduce numerical error
-    
+
         // DOI 10.1063/1.3646921, EQ. 18
         // Note: the above reference defines Q as S_an @ S_num^{-1} @ X
         // Here, Q refers to just S_ @ S_num^{-1} (no X)
         // This Q is contracted with X later to agree with the literature definition
-    
-        timer_on("Numeric Overlap");
-    
+
+        timer_on("CompositeJK: COSX Numeric Overlap");
+
         // compute the numeric overlap matrix for each grid
         auto S_num_init = compute_numeric_overlap(*grid_init_, primary_);
         auto S_num_final = compute_numeric_overlap(*grid_final_, primary_ );
-    
-        timer_off("Numeric Overlap");
-    
-        timer_on("Analytic Overlap");
-    
+
+        timer_off("CompositeJK: COSX Numeric Overlap");
+
+        timer_on("CompositeJK: COSX Analytic Overlap");
+
         // compute the analytic overlap matrix
         MintsHelper helper(primary_, options_);
         auto S_an = helper.ao_overlap();
-    
-        timer_off("Analytic Overlap");
-    
+
+        timer_off("CompositeJK: COSX Analytic Overlap");
+
         // form the overlap metric (Q) for each grid
-    
-        timer_on("Overlap Metric Solve");
-    
+
+        timer_on("CompositeJK: COSX Overlap Metric Solve");
+
         int nbf = primary_->nbf();
         std::vector<int> ipiv(nbf);
-    
+
         // solve: Q_init_ = S_an @ S_num_init_^{-1}
         Q_init_ = S_an->clone();
         C_DGESV(nbf, nbf, S_num_init.pointer()[0], nbf, ipiv.data(), Q_init_->pointer()[0], nbf);
-    
+
         // solve: Q_final_ = S_an @ S_num_final_^{-1}
         Q_final_ = S_an->clone();
         C_DGESV(nbf, nbf, S_num_final.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
-    
-        timer_off("Overlap Metric Solve");
+
+        timer_off("CompositeJK: COSX Overlap Metric Solve");
     } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
     } 
 }
 
-size_t CompositeJK::num_computed_shells() { 
+size_t CompositeJK::num_computed_shells() {
     //no bench data returned - to come in a future update
     return JK::num_computed_shells(); 
 }
