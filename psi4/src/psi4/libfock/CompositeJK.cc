@@ -51,7 +51,7 @@ using namespace psi;
 
 namespace psi {
 
-Matrix compute_numeric_overlap_comp(const DFTGrid &grid, const std::shared_ptr<BasisSet> &primary) {
+Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisSet> &primary) {
 
     // DOI 10.1063/1.3646921, EQ. 9
 
@@ -105,7 +105,7 @@ Matrix compute_numeric_overlap_comp(const DFTGrid &grid, const std::shared_ptr<B
 
 }
 
-Matrix compute_esp_bound_comp(const BasisSet &primary) {
+Matrix compute_esp_bound(const BasisSet &primary) {
 
     // DOI 10.1016/j.chemphys.2008.10.036, EQ. 20
     // This is a pretty loose ESP bound, which should eventually be swapped out for something tighter
@@ -145,7 +145,7 @@ Matrix compute_esp_bound_comp(const BasisSet &primary) {
     return esp_bound;
 
 }
-CompositeJK::CompositeJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) { 
+CompositeJK::CompositeJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) {
     timer_on("CompositeJK: Setup");
     common_init(); 
     timer_off("CompositeJK: Setup");
@@ -155,9 +155,9 @@ CompositeJK::~CompositeJK() {}
 
 void CompositeJK::common_init() {
 
-    // => General Setup <= // 
-    
-    // thread count	
+    // => General Setup <= //
+
+    // thread count
     nthreads_ = 1;
 #ifdef _OPENMP
     nthreads_ = Process::environment.get_n_threads();
@@ -172,14 +172,10 @@ void CompositeJK::common_init() {
     }
 
     // derive separate J+K algorithms from scf_type
-    auto jk_type = options_.get_str("SCF_TYPE"); 
+    auto jk_type = options_.get_str("SCF_TYPE");
     j_type_ = jk_type.substr(0, jk_type.find("+"));
     k_type_ = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
 
-    outfile->Printf("jk_type: %s \n", jk_type.c_str());
-    outfile->Printf("j_type_: %s \n", j_type_.c_str());
-    outfile->Printf("k_type_: %s \n", k_type_.c_str());
-    
     // other options
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
@@ -190,20 +186,20 @@ void CompositeJK::common_init() {
     
     auto zero = BasisSet::zero_ao_basis_set();
     
-    // initialize 4-Center ERIs  
+    // initialize 4-Center ERIs
     eri_computers_["4-Center"].emplace({}); 
     eri_computers_["4-Center"].resize(nthreads_);
-    
+
     IntegralFactory factory(primary_, primary_, primary_, primary_);
     eri_computers_["4-Center"][0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
-    
+
     // initialize 3-Center ERIs
     eri_computers_["3-Center"].emplace({});
     eri_computers_["3-Center"].resize(nthreads_);
-    
+
     IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
     eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
-    
+
     // create each threads' ERI computers 
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
@@ -305,8 +301,8 @@ void CompositeJK::common_init() {
         timer_on("Numeric Overlap");
     
         // compute the numeric overlap matrix for each grid
-        auto S_num_init = compute_numeric_overlap_comp(*grid_init_, primary_);
-        auto S_num_final = compute_numeric_overlap_comp(*grid_final_, primary_ );
+        auto S_num_init = compute_numeric_overlap(*grid_init_, primary_);
+        auto S_num_final = compute_numeric_overlap(*grid_final_, primary_ );
     
         timer_off("Numeric Overlap");
     
@@ -1182,7 +1178,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     }
 
     // precompute bounds for the one-electron integrals
-    auto esp_bound = compute_esp_bound_comp(*primary_);
+    auto esp_bound = compute_esp_bound(*primary_);
     auto esp_boundp = esp_bound.pointer();
 
     // inter-atom and inter-shell distances [Bohr]
