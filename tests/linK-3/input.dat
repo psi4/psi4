@@ -24,7 +24,7 @@ molecule mol {
 
 set {
     reference uhf
-    scf_type directdfj+link 
+    scf_type directdfj+link
     df_scf_guess false
     basis 6-31G*
     e_convergence 1.0e-10

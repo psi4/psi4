@@ -1204,7 +1204,7 @@ class PSI_API MemDFJK : public JK {
 /**
  * Class CompositeJK 
  *
- * JK implementation framework enabling arbitrary mixing and matching 
+ * JK implementation framework enabling arbitrary mixing and matching
  * of separate J and K construction algorithms.
  * Current algorithms in place:
  * J: Direct DF-J
@@ -1212,7 +1212,7 @@ class PSI_API MemDFJK : public JK {
  *
  * TODO: Implement SplitJK companion framework for truly arbitrary mixing and matching
  */
-class PSI_API CompositeJK : public JK {
+class PSI_API CompositeJK: public JK {
    protected:
 
     /// The number of threads to be used for integral computation
@@ -1220,7 +1220,7 @@ class PSI_API CompositeJK : public JK {
     /// Options object
     Options& options_;
 
-    /// CompositeJK algorithmic info 
+    /// CompositeJK algorithm info
     std::string j_type_;
     std::string k_type_;
 
@@ -1333,7 +1333,7 @@ class PSI_API CompositeJK : public JK {
     ~CompositeJK() override;
 
     bool do_incfock_iter() { return do_incfock_iter_; }
-    
+
     /**
      * Clear D_prev_
      */
@@ -1345,7 +1345,7 @@ class PSI_API CompositeJK : public JK {
     * type on output file
     */
     void print_header() const override;
-    
+
     void print_DirectDFJ_header() const;
     void print_linK_header() const;
     void print_COSX_header() const;
