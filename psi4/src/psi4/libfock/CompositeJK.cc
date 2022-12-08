@@ -172,9 +172,9 @@ void CompositeJK::common_init() {
     }
 
     // derive separate J+K algorithms from scf_type
-    bool jk_type = options.get_str("SCF_TYPE"); 
-    auto j_type_ = scf_type.substr(0, scf_type.find("+"));
-    auto k_type_ = scf_type.substr(scf_type.find("+") + 1, scf_type.length());
+    auto jk_type = options_.get_str("SCF_TYPE"); 
+    auto j_type_ = jk_type.substr(0, jk_type.find("+"));
+    auto k_type_ = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
 
     // other options
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
@@ -221,7 +221,7 @@ void CompositeJK::common_init() {
     
         timer_off("CompositeJK: Coulomb Metric");
     } else {
-        throw PSIEXCEPTION("Invalid Composite J algorithm selected!")
+        throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     } 
 
     // => Set up separate K algorithm <= //
@@ -331,7 +331,7 @@ void CompositeJK::common_init() {
     
         timer_off("Overlap Metric Solve");
     } else {
-        throw PSIEXCEPTION("Invalid Composite K algorithm selected!")
+        throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
     } 
 }
 
@@ -470,7 +470,7 @@ void CompositeJK::compute_JK() {
         timer_on("CompositeJK: J");
        
         if (j_type_ == "DFJ") {	
-	    build_J(D_ref_, J_ao_);
+	    build_DFJ(D_ref_, J_ao_);
 	}
 
 	timer_off("CompositeJK: J");
@@ -502,7 +502,7 @@ void CompositeJK::compute_JK() {
 
 void CompositeJK::postiterations() {}
 
-void CompositeJK::build_J(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
+void CompositeJK::build_DFJ(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
     
     timer_on("Setup");
 

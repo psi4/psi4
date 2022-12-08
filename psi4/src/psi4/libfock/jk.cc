@@ -71,7 +71,7 @@ JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
 
-    bool is_composite = jk_type.contains("+");
+    bool is_composite = jk_type.contains('+');
 
     bool do_density_screen = options.get_str("SCREENING") == "DENSITY";
     bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
