@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.8a1.dev5 
+                               Psi4 1.8a1.dev17 
 
-                         Git: Rev {dpoole34/compositejk-pilot} 88d59af 
+                         Git: Rev {dpoole34/compositejk-pilot} e4f6b14 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -31,9 +31,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 07 December 2022 06:44PM
+    Psi4 started on: Thursday, 08 December 2022 03:56PM
 
-    Process ID: 21049
+    Process ID: 26703
     Host:       ds6
     PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4
     Memory:     500.0 MiB
@@ -55,24 +55,24 @@ Eref = {
         "Canonical" : -149.58723684929720, #TEST
         "DF"        : -149.58715054487624, #TEST
         "Composite": {
-          "COSX"    : -149.58722317236171, #TEST
-          "LinK"    : -149.58726772171027  #TEST
+          "DirectDFJ+COSX"    : -149.58722317236171, #TEST
+          "DirectDFJ+LinK"    : -149.58726772171027  #TEST
         } 
     },
     "Triplet UHF": {
         "Canonical" : -149.67135517240553, #TEST
         "DF"        : -149.67125624291961, #TEST
         "Composite": {
-          "COSX"    : -149.67132922581225, #TEST
-          "LinK"    : -149.67137328005577  #TEST
+          "DirectDFJ+COSX"    : -149.67132922581225, #TEST
+          "DirectDFJ+LinK"    : -149.67137328005577  #TEST
         }
     },
     "Triplet ROHF": {
         "Canonical" : -149.65170765757173, #TEST
         "DF"        : -149.65160796208073, #TEST
         "Composite": {
-          "COSX"    : -149.65168894156605, #TEST
-          "LinK"    : -149.65172557470324  #TEST
+          "DirectDFJ+COSX"    : -149.65168894156605, #TEST
+          "DirectDFJ+LinK"    : -149.65172557470324  #TEST
         }
     }
 }
@@ -130,7 +130,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF RHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "COSX": 
+    if method == "DirectDFJ+COSX": 
       set screening csam
     else:
       set screening density
@@ -164,7 +164,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF UHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "COSX": 
+    if method == "DirectDFJ+COSX": 
       set screening csam
     else:
       set screening density
@@ -198,7 +198,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF CUHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "COSX": 
+    if method == "DirectDFJ+COSX": 
       set screening csam
     else:
       set screening density
@@ -240,7 +240,7 @@ compare_values(Eref["Triplet UHF"]["DF"], E, 6, 'Triplet MemDF UHF energy') #TES
 
 for method in Eref["Triplet UHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "COSX": 
+    if method == "DirectDFJ+COSX": 
       set screening csam
     else:
       set screening density
@@ -279,7 +279,7 @@ compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF ROHF energy') #T
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "COSX": 
+    if method == "DirectDFJ+COSX": 
       set screening csam
     else:
       set screening density
@@ -318,7 +318,7 @@ compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF CUHF energy') #T
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "COSX": 
+    if method == "DirectDFJ+COSX": 
       set screening csam
     else:
       set screening density
@@ -332,7 +332,7 @@ for method in Eref["Triplet ROHF"]["Composite"].keys():
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:33 2022
+*** at Thu Dec  8 15:56:27 2022
 
    => Loading Basis Set <=
 
@@ -538,21 +538,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:34 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:28 2022
 Module time:
-	user time   =       0.56 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.56 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     Singlet PK RHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:34 2022
+*** at Thu Dec  8 15:56:28 2022
 
    => Loading Basis Set <=
 
@@ -790,21 +790,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:34 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:29 2022
 Module time:
-	user time   =       0.81 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       1.40 seconds =       0.02 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.80 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.31 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
     Singlet Direct RHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:34 2022
+*** at Thu Dec  8 15:56:29 2022
 
    => Loading Basis Set <=
 
@@ -992,21 +992,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:35 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:29 2022
 Module time:
 	user time   =       0.33 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.76 seconds =       0.03 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       1.66 seconds =       0.03 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
     Singlet Disk RHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:35 2022
+*** at Thu Dec  8 15:56:29 2022
 
    => Loading Basis Set <=
 
@@ -1224,21 +1224,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:35 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:29 2022
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.01 seconds =       0.03 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       1.90 seconds =       0.03 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
     Singlet DiskDF RHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:35 2022
+*** at Thu Dec  8 15:56:29 2022
 
    => Loading Basis Set <=
 
@@ -1457,21 +1457,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:35 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:29 2022
 Module time:
-	user time   =       0.22 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.25 seconds =       0.04 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       2.14 seconds =       0.04 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
     Singlet MemDF RHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:35 2022
+*** at Thu Dec  8 15:56:29 2022
 
    => Loading Basis Set <=
 
@@ -1515,7 +1515,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COSX.
+  SCF Algorithm Type is DIRECTDFJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1549,6 +1549,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+COSX 
+j_type_: DIRECTDFJ 
+k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -1561,7 +1564,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -1603,14 +1606,14 @@ Scratch directory: /scratch/dpoole34/
    @RHF iter   1:  -149.56382697604778   -2.86694e-01   1.10975e-02 DIIS/ADIIS
    @RHF iter   2:  -149.58629558037484   -2.24686e-02   2.92559e-03 DIIS/ADIIS
    @RHF iter   3:  -149.58760428588195   -1.30871e-03   6.47395e-04 DIIS/ADIIS
-   @RHF iter   4:  -149.58772283023285   -1.18544e-04   1.38075e-04 DIIS/ADIIS
-   @RHF iter   5:  -149.58772855372320   -5.72349e-06   1.83160e-05 DIIS
-   @RHF iter   6:  -149.58772885952456   -3.05801e-07   2.47041e-06 DIIS
-   @RHF iter   7:  -149.58772885956967   -4.51053e-11   2.44347e-07 DIIS
+   @RHF iter   4:  -149.58772283023291   -1.18544e-04   1.38075e-04 DIIS/ADIIS
+   @RHF iter   5:  -149.58772855372339   -5.72349e-06   1.83160e-05 DIIS
+   @RHF iter   6:  -149.58772885952462   -3.05801e-07   2.47041e-06 DIIS
+   @RHF iter   7:  -149.58772885956984   -4.52189e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @RHF iter   8:  -149.58722317116377    5.05688e-04   9.91149e-04 DIIS/ADIIS
+   @RHF iter   8:  -149.58722317116360    5.05688e-04   9.91149e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -1652,14 +1655,14 @@ Scratch directory: /scratch/dpoole34/
     NA   [     3,    0,    0,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    1,    0,    2,    1,    1 ]
 
-  @RHF Final Energy:  -149.58722317116377
+  @RHF Final Energy:  -149.58722317116360
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.8059033672357714
-    Two-Electron Energy =                  86.4301879389083325
-    Total Energy =                       -149.5872231711637710
+    One-Electron Energy =                -266.8059033672358851
+    Two-Electron Energy =                  86.4301879389086025
+    Total Energy =                       -149.5872231711636289
 
 Computation Completed
 
@@ -1683,21 +1686,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:38 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:32 2022
 Module time:
-	user time   =       2.72 seconds =       0.05 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       2.66 seconds =       0.04 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       5.00 seconds =       0.08 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       4.83 seconds =       0.08 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
-    Singlet COSX RHF energy...............................................................PASSED
+    Singlet DirectDFJ+COSX RHF energy.....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:38 2022
+*** at Thu Dec  8 15:56:32 2022
 
    => Loading Basis Set <=
 
@@ -1741,7 +1744,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DIRECTDFJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1775,6 +1778,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+LINK 
+j_type_: DIRECTDFJ 
+k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -1787,7 +1793,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -1906,21 +1912,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:40 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:34 2022
 Module time:
 	user time   =       1.56 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       6.59 seconds =       0.11 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       6.41 seconds =       0.11 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          7 seconds =       0.12 minutes
-    Singlet LinK RHF energy...............................................................PASSED
+    Singlet DirectDFJ+LinK RHF energy.....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:40 2022
+*** at Thu Dec  8 15:56:34 2022
 
    => Loading Basis Set <=
 
@@ -2170,21 +2176,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:40 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:34 2022
 Module time:
 	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.04 seconds =       0.12 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       6.86 seconds =       0.11 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          7 seconds =       0.12 minutes
     Singlet PK UHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:40 2022
+*** at Thu Dec  8 15:56:34 2022
 
    => Loading Basis Set <=
 
@@ -2466,21 +2472,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:41 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:35 2022
 Module time:
-	user time   =       0.90 seconds =       0.02 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.91 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       7.97 seconds =       0.13 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       7.79 seconds =       0.13 minutes
+	system time =       0.11 seconds =       0.00 minutes
 	total time  =          8 seconds =       0.13 minutes
     Singlet Direct UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:41 2022
+*** at Thu Dec  8 15:56:35 2022
 
    => Loading Basis Set <=
 
@@ -2712,21 +2718,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:42 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:36 2022
 Module time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.38 seconds =       0.14 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =       8.14 seconds =       0.14 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =          9 seconds =       0.15 minutes
     Singlet Disk UHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:42 2022
+*** at Thu Dec  8 15:56:36 2022
 
    => Loading Basis Set <=
 
@@ -2988,21 +2994,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:42 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:36 2022
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.65 seconds =       0.14 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =       8.40 seconds =       0.14 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          9 seconds =       0.15 minutes
     Singlet DiskDF UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:42 2022
+*** at Thu Dec  8 15:56:36 2022
 
    => Loading Basis Set <=
 
@@ -3265,21 +3271,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:42 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:36 2022
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.94 seconds =       0.15 minutes
-	system time =       0.15 seconds =       0.00 minutes
+	user time   =       8.66 seconds =       0.14 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          9 seconds =       0.15 minutes
     Singlet MemDF UHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:42 2022
+*** at Thu Dec  8 15:56:36 2022
 
    => Loading Basis Set <=
 
@@ -3323,7 +3329,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COSX.
+  SCF Algorithm Type is DIRECTDFJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -3357,6 +3363,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+COSX 
+j_type_: DIRECTDFJ 
+k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -3369,7 +3378,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -3411,10 +3420,10 @@ Scratch directory: /scratch/dpoole34/
    @UHF iter   1:  -149.56382697604778   -2.86694e-01   1.10975e-02 DIIS/ADIIS
    @UHF iter   2:  -149.58629558037470   -2.24686e-02   2.92559e-03 DIIS/ADIIS
    @UHF iter   3:  -149.58760428588192   -1.30871e-03   6.47395e-04 DIIS/ADIIS
-   @UHF iter   4:  -149.58772283023288   -1.18544e-04   1.38075e-04 DIIS/ADIIS
-   @UHF iter   5:  -149.58772855372325   -5.72349e-06   1.83160e-05 DIIS
-   @UHF iter   6:  -149.58772885952445   -3.05801e-07   2.47041e-06 DIIS
-   @UHF iter   7:  -149.58772885956992   -4.54747e-11   2.44347e-07 DIIS
+   @UHF iter   4:  -149.58772283023299   -1.18544e-04   1.38075e-04 DIIS/ADIIS
+   @UHF iter   5:  -149.58772855372328   -5.72349e-06   1.83160e-05 DIIS
+   @UHF iter   6:  -149.58772885952459   -3.05801e-07   2.47041e-06 DIIS
+   @UHF iter   7:  -149.58772885956975   -4.51621e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
@@ -3424,9 +3433,9 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:  -1.776356839E-14
+   @Spin Contamination Metric:  -8.881784197E-15
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:               -1.776356839E-14
+   @S^2 Observed:               -8.881784197E-15
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
@@ -3507,10 +3516,10 @@ Scratch directory: /scratch/dpoole34/
   HONO-2 :    1B3g 2.0000000
   HONO-1 :    3 Ag 2.0000000
   HONO-0 :    1B2u 2.0000000
-  LUNO+0 :    4 Ag 0.0000000
-  LUNO+1 :    5 Ag 0.0000000
-  LUNO+2 :    2B3u 0.0000000
-  LUNO+3 :    3B1u 0.0000000
+  LUNO+0 :    2B2u 0.0000000
+  LUNO+1 :    3B1u 0.0000000
+  LUNO+2 :    4B1u 0.0000000
+  LUNO+3 :    2B3g 0.0000000
 
 
 Computation Completed
@@ -3535,21 +3544,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:45 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:39 2022
 Module time:
-	user time   =       2.80 seconds =       0.05 minutes
+	user time   =       2.75 seconds =       0.05 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      11.77 seconds =       0.20 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =      11.44 seconds =       0.19 minutes
+	system time =       0.14 seconds =       0.00 minutes
 	total time  =         12 seconds =       0.20 minutes
-    Singlet COSX UHF energy...............................................................PASSED
+    Singlet DirectDFJ+COSX UHF energy.....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:45 2022
+*** at Thu Dec  8 15:56:39 2022
 
    => Loading Basis Set <=
 
@@ -3593,7 +3602,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DIRECTDFJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -3627,6 +3636,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+LINK 
+j_type_: DIRECTDFJ 
+k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -3639,7 +3651,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -3802,21 +3814,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:47 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:41 2022
 Module time:
-	user time   =       1.67 seconds =       0.03 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.64 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      13.47 seconds =       0.22 minutes
-	system time =       0.17 seconds =       0.00 minutes
+	user time   =      13.11 seconds =       0.22 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =         14 seconds =       0.23 minutes
-    Singlet LinK UHF energy...............................................................PASSED
+    Singlet DirectDFJ+LinK UHF energy.....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:47 2022
+*** at Thu Dec  8 15:56:41 2022
 
    => Loading Basis Set <=
 
@@ -4054,21 +4066,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:47 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:41 2022
 Module time:
 	user time   =       0.42 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      13.92 seconds =       0.23 minutes
-	system time =       0.18 seconds =       0.00 minutes
+	user time   =      13.56 seconds =       0.23 minutes
+	system time =       0.17 seconds =       0.00 minutes
 	total time  =         14 seconds =       0.23 minutes
     Singlet PK CUHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:47 2022
+*** at Thu Dec  8 15:56:41 2022
 
    => Loading Basis Set <=
 
@@ -4338,13 +4350,13 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:48 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:42 2022
 Module time:
-	user time   =       0.93 seconds =       0.02 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.90 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      14.88 seconds =       0.25 minutes
+	user time   =      14.48 seconds =       0.24 minutes
 	system time =       0.18 seconds =       0.00 minutes
 	total time  =         15 seconds =       0.25 minutes
     Singlet Direct CUHF energy............................................................PASSED
@@ -4352,7 +4364,7 @@ Total time:
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:48 2022
+*** at Thu Dec  8 15:56:42 2022
 
    => Loading Basis Set <=
 
@@ -4572,21 +4584,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:49 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:43 2022
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      15.28 seconds =       0.25 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =      14.84 seconds =       0.25 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =         16 seconds =       0.27 minutes
     Singlet Disk CUHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:49 2022
+*** at Thu Dec  8 15:56:43 2022
 
    => Loading Basis Set <=
 
@@ -4836,13 +4848,13 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:49 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:43 2022
 Module time:
 	user time   =       0.24 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      15.54 seconds =       0.26 minutes
+	user time   =      15.10 seconds =       0.25 minutes
 	system time =       0.20 seconds =       0.00 minutes
 	total time  =         16 seconds =       0.27 minutes
     Singlet DiskDF CUHF energy............................................................PASSED
@@ -4850,7 +4862,7 @@ Total time:
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:49 2022
+*** at Thu Dec  8 15:56:43 2022
 
    => Loading Basis Set <=
 
@@ -5101,21 +5113,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:50 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:43 2022
 Module time:
-	user time   =       0.25 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      15.82 seconds =       0.26 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =      15.41 seconds =       0.26 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =         16 seconds =       0.27 minutes
     Singlet MemDF CUHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:50 2022
+*** at Thu Dec  8 15:56:43 2022
 
    => Loading Basis Set <=
 
@@ -5159,7 +5171,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COSX.
+  SCF Algorithm Type is DIRECTDFJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -5193,6 +5205,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+COSX 
+j_type_: DIRECTDFJ 
+k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -5205,7 +5220,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -5246,15 +5261,15 @@ Scratch directory: /scratch/dpoole34/
    @CUHF iter SAD:  -149.27713328631935   -1.49277e+02   0.00000e+00 
    @CUHF iter   1:  -149.56382697604778   -2.86694e-01   1.10975e-02 DIIS/ADIIS
    @CUHF iter   2:  -149.58629558037475   -2.24686e-02   2.92559e-03 DIIS/ADIIS
-   @CUHF iter   3:  -149.58760428588189   -1.30871e-03   6.47395e-04 DIIS/ADIIS
-   @CUHF iter   4:  -149.58772283023285   -1.18544e-04   1.38075e-04 DIIS/ADIIS
-   @CUHF iter   5:  -149.58772855372328   -5.72349e-06   1.83160e-05 DIIS
-   @CUHF iter   6:  -149.58772885952465   -3.05801e-07   2.47041e-06 DIIS
-   @CUHF iter   7:  -149.58772885956986   -4.52189e-11   2.44347e-07 DIIS
+   @CUHF iter   3:  -149.58760428588184   -1.30871e-03   6.47395e-04 DIIS/ADIIS
+   @CUHF iter   4:  -149.58772283023282   -1.18544e-04   1.38075e-04 DIIS/ADIIS
+   @CUHF iter   5:  -149.58772855372334   -5.72349e-06   1.83160e-05 DIIS
+   @CUHF iter   6:  -149.58772885952450   -3.05801e-07   2.47041e-06 DIIS
+   @CUHF iter   7:  -149.58772885956984   -4.53326e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @CUHF iter   8:  -149.58722317116371    5.05688e-04   9.91149e-04 DIIS/ADIIS
+   @CUHF iter   8:  -149.58722317116369    5.05688e-04   9.91149e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -5328,14 +5343,14 @@ Scratch directory: /scratch/dpoole34/
     NA   [     3,    0,    0,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    1,    0,    2,    1,    1 ]
 
-  @CUHF Final Energy:  -149.58722317116371
+  @CUHF Final Energy:  -149.58722317116369
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.8059033672361124
-    Two-Electron Energy =                  86.4301879389087730
-    Total Energy =                       -149.5872231711636857
+    One-Electron Energy =                -266.8059033672361693
+    Two-Electron Energy =                  86.4301879389088441
+    Total Energy =                       -149.5872231711636573
 
 Computation Completed
 
@@ -5359,21 +5374,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:52 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:46 2022
 Module time:
 	user time   =       2.80 seconds =       0.05 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      18.65 seconds =       0.31 minutes
-	system time =       0.22 seconds =       0.00 minutes
+	user time   =      18.24 seconds =       0.30 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =         19 seconds =       0.32 minutes
-    Singlet COSX CUHF energy..............................................................PASSED
+    Singlet DirectDFJ+COSX CUHF energy....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:52 2022
+*** at Thu Dec  8 15:56:46 2022
 
    => Loading Basis Set <=
 
@@ -5417,7 +5432,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DIRECTDFJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -5451,6 +5466,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+LINK 
+j_type_: DIRECTDFJ 
+k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -5463,7 +5481,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -5614,21 +5632,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:54 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:48 2022
 Module time:
-	user time   =       1.69 seconds =       0.03 minutes
+	user time   =       1.64 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      20.36 seconds =       0.34 minutes
-	system time =       0.23 seconds =       0.00 minutes
+	user time   =      19.91 seconds =       0.33 minutes
+	system time =       0.22 seconds =       0.00 minutes
 	total time  =         21 seconds =       0.35 minutes
-    Singlet LinK CUHF energy..............................................................PASSED
+    Singlet DirectDFJ+LinK CUHF energy....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:54 2022
+*** at Thu Dec  8 15:56:48 2022
 
    => Loading Basis Set <=
 
@@ -5885,21 +5903,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:55 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:48 2022
 Module time:
-	user time   =       0.38 seconds =       0.01 minutes
+	user time   =       0.37 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      20.77 seconds =       0.35 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =         22 seconds =       0.37 minutes
+	user time   =      20.31 seconds =       0.34 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =         21 seconds =       0.35 minutes
     Triplet PK UHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:55 2022
+*** at Thu Dec  8 15:56:48 2022
 
    => Loading Basis Set <=
 
@@ -6187,13 +6205,13 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:55 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:49 2022
 Module time:
-	user time   =       0.70 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.67 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      21.49 seconds =       0.36 minutes
+	user time   =      21.01 seconds =       0.35 minutes
 	system time =       0.24 seconds =       0.00 minutes
 	total time  =         22 seconds =       0.37 minutes
     Triplet Direct UHF energy.............................................................PASSED
@@ -6201,7 +6219,7 @@ Total time:
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:55 2022
+*** at Thu Dec  8 15:56:49 2022
 
    => Loading Basis Set <=
 
@@ -6440,21 +6458,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:56 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:49 2022
 Module time:
-	user time   =       0.32 seconds =       0.01 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      21.84 seconds =       0.36 minutes
+	user time   =      21.31 seconds =       0.36 minutes
 	system time =       0.26 seconds =       0.00 minutes
-	total time  =         23 seconds =       0.38 minutes
+	total time  =         22 seconds =       0.37 minutes
     Triplet Disk UHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:56 2022
+*** at Thu Dec  8 15:56:49 2022
 
    => Loading Basis Set <=
 
@@ -6723,21 +6741,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:57 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:49 2022
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      22.12 seconds =       0.37 minutes
-	system time =       0.27 seconds =       0.00 minutes
-	total time  =         24 seconds =       0.40 minutes
+	user time   =      21.52 seconds =       0.36 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =         22 seconds =       0.37 minutes
     Triplet DiskDF UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:57 2022
+*** at Thu Dec  8 15:56:49 2022
 
    => Loading Basis Set <=
 
@@ -7007,21 +7025,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:44:57 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:50 2022
 Module time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      22.32 seconds =       0.37 minutes
+	user time   =      21.74 seconds =       0.36 minutes
 	system time =       0.27 seconds =       0.00 minutes
-	total time  =         24 seconds =       0.40 minutes
+	total time  =         23 seconds =       0.38 minutes
     Triplet MemDF UHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:44:57 2022
+*** at Thu Dec  8 15:56:50 2022
 
    => Loading Basis Set <=
 
@@ -7065,7 +7083,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COSX.
+  SCF Algorithm Type is DIRECTDFJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -7099,6 +7117,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+COSX 
+j_type_: DIRECTDFJ 
+k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -7111,7 +7132,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -7157,14 +7178,14 @@ Scratch directory: /scratch/dpoole34/
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
    @UHF iter   1:  -131.02266731942422   -1.31023e+02   3.53990e-01 ADIIS
-   @UHF iter   2:  -140.14034734140554   -9.11768e+00   1.85365e-01 ADIIS
+   @UHF iter   2:  -140.14034734140540   -9.11768e+00   1.85365e-01 ADIIS
    @UHF iter   3:  -149.07920849522236   -8.93886e+00   6.20863e-02 DIIS/ADIIS
-   @UHF iter   4:  -149.65391531644997   -5.74707e-01   1.05356e-02 DIIS/ADIIS
-   @UHF iter   5:  -149.67061947228314   -1.67042e-02   1.87593e-03 DIIS/ADIIS
-   @UHF iter   6:  -149.67160507761125   -9.85605e-04   4.33948e-04 DIIS/ADIIS
-   @UHF iter   7:  -149.67166177628391   -5.66987e-05   6.80300e-05 DIIS
-   @UHF iter   8:  -149.67166378928815   -2.01300e-06   9.42637e-06 DIIS
-   @UHF iter   9:  -149.67166383531966   -4.60315e-08   8.91526e-07 DIIS
+   @UHF iter   4:  -149.65391531645002   -5.74707e-01   1.05356e-02 DIIS/ADIIS
+   @UHF iter   5:  -149.67061947228331   -1.67042e-02   1.87593e-03 DIIS/ADIIS
+   @UHF iter   6:  -149.67160507761122   -9.85605e-04   4.33948e-04 DIIS/ADIIS
+   @UHF iter   7:  -149.67166177628388   -5.66987e-05   6.80300e-05 DIIS
+   @UHF iter   8:  -149.67166378928812   -2.01300e-06   9.42637e-06 DIIS
+   @UHF iter   9:  -149.67166383531969   -4.60316e-08   8.91526e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
@@ -7248,9 +7269,9 @@ Scratch directory: /scratch/dpoole34/
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9129345756499561
-    Two-Electron Energy =                  86.4531130927888825
-    Total Energy =                       -149.6713292256974341
+    One-Electron Energy =                -266.9129345756498424
+    Two-Electron Energy =                  86.4531130927887830
+    Total Energy =                       -149.6713292256974057
 
   UHF NO Occupations:
   HONO-2 :    1B2u 1.9937328
@@ -7284,21 +7305,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:00 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:53 2022
 Module time:
-	user time   =       3.14 seconds =       0.05 minutes
+	user time   =       3.02 seconds =       0.05 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      25.49 seconds =       0.42 minutes
+	user time   =      24.79 seconds =       0.41 minutes
 	system time =       0.28 seconds =       0.00 minutes
-	total time  =         27 seconds =       0.45 minutes
-    Triplet COSX UHF energy...............................................................PASSED
+	total time  =         26 seconds =       0.43 minutes
+    Triplet DirectDFJ+COSX UHF energy.....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:00 2022
+*** at Thu Dec  8 15:56:53 2022
 
    => Loading Basis Set <=
 
@@ -7342,7 +7363,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DIRECTDFJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -7376,6 +7397,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+LINK 
+j_type_: DIRECTDFJ 
+k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -7388,7 +7412,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -7558,21 +7582,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:02 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:55 2022
 Module time:
-	user time   =       1.90 seconds =       0.03 minutes
+	user time   =       1.86 seconds =       0.03 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      27.42 seconds =       0.46 minutes
+	user time   =      26.68 seconds =       0.44 minutes
 	system time =       0.28 seconds =       0.00 minutes
-	total time  =         29 seconds =       0.48 minutes
-    Triplet LinK UHF energy...............................................................PASSED
+	total time  =         28 seconds =       0.47 minutes
+    Triplet DirectDFJ+LinK UHF energy.....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:02 2022
+*** at Thu Dec  8 15:56:55 2022
 
    => Loading Basis Set <=
 
@@ -7790,21 +7814,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:03 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:55 2022
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      27.79 seconds =       0.46 minutes
+	user time   =      27.07 seconds =       0.45 minutes
 	system time =       0.29 seconds =       0.00 minutes
-	total time  =         30 seconds =       0.50 minutes
+	total time  =         28 seconds =       0.47 minutes
     Triplet PK ROHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:03 2022
+*** at Thu Dec  8 15:56:55 2022
 
    => Loading Basis Set <=
 
@@ -8053,21 +8077,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:03 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:56 2022
 Module time:
-	user time   =       0.66 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.68 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      28.48 seconds =       0.47 minutes
+	user time   =      27.77 seconds =       0.46 minutes
 	system time =       0.30 seconds =       0.01 minutes
-	total time  =         30 seconds =       0.50 minutes
+	total time  =         29 seconds =       0.48 minutes
     Triplet Direct ROHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:03 2022
+*** at Thu Dec  8 15:56:56 2022
 
    => Loading Basis Set <=
 
@@ -8267,21 +8291,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:04 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:56 2022
 Module time:
-	user time   =       0.28 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      28.79 seconds =       0.48 minutes
+	user time   =      28.06 seconds =       0.47 minutes
 	system time =       0.31 seconds =       0.01 minutes
-	total time  =         31 seconds =       0.52 minutes
+	total time  =         29 seconds =       0.48 minutes
     Triplet Disk ROHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:04 2022
+*** at Thu Dec  8 15:56:56 2022
 
    => Loading Basis Set <=
 
@@ -8511,21 +8535,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:04 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:56 2022
 Module time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      28.98 seconds =       0.48 minutes
-	system time =       0.31 seconds =       0.01 minutes
-	total time  =         31 seconds =       0.52 minutes
+	user time   =      28.24 seconds =       0.47 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =         29 seconds =       0.48 minutes
     Triplet DiskDF ROHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:04 2022
+*** at Thu Dec  8 15:56:56 2022
 
    => Loading Basis Set <=
 
@@ -8756,21 +8780,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:04 2022
+*** tstop() called on ds6 at Thu Dec  8 15:56:57 2022
 Module time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      29.15 seconds =       0.49 minutes
+	user time   =      28.44 seconds =       0.47 minutes
 	system time =       0.32 seconds =       0.01 minutes
-	total time  =         31 seconds =       0.52 minutes
+	total time  =         30 seconds =       0.50 minutes
     Triplet MemDF ROHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:04 2022
+*** at Thu Dec  8 15:56:57 2022
 
    => Loading Basis Set <=
 
@@ -8814,7 +8838,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COSX.
+  SCF Algorithm Type is DIRECTDFJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -8848,6 +8872,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+COSX 
+j_type_: DIRECTDFJ 
+k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -8860,7 +8887,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -8909,11 +8936,11 @@ Scratch directory: /scratch/dpoole34/
    @ROHF iter   2:  -139.64070004271142   -8.61803e+00   1.37369e-01 DIIS
    @ROHF iter   3:  -148.99660951088305   -9.35591e+00   5.06619e-02 DIIS
    @ROHF iter   4:  -149.63963700749702   -6.43027e-01   6.07525e-03 DIIS
-   @ROHF iter   5:  -149.65187157255187   -1.22346e-02   4.84799e-04 DIIS
-   @ROHF iter   6:  -149.65198834090879   -1.16768e-04   1.12106e-04 DIIS
-   @ROHF iter   7:  -149.65199670359948   -8.36269e-06   1.71152e-05 DIIS
+   @ROHF iter   5:  -149.65187157255193   -1.22346e-02   4.84799e-04 DIIS
+   @ROHF iter   6:  -149.65198834090882   -1.16768e-04   1.12106e-04 DIIS
+   @ROHF iter   7:  -149.65199670359937   -8.36269e-06   1.71152e-05 DIIS
    @ROHF iter   8:  -149.65199683539876   -1.31799e-07   2.91717e-06 DIIS
-   @ROHF iter   9:  -149.65199681028329    2.51155e-08   3.52335e-07 DIIS
+   @ROHF iter   9:  -149.65199681028324    2.51155e-08   3.52335e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
@@ -8968,9 +8995,9 @@ Scratch directory: /scratch/dpoole34/
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9107678299205872
-    Two-Electron Energy =                  86.4705866325296739
-    Total Energy =                       -149.6516889402272454
+    One-Electron Energy =                -266.9107678299204736
+    Two-Electron Energy =                  86.4705866325295460
+    Total Energy =                       -149.6516889402272739
 
 Computation Completed
 
@@ -8994,21 +9021,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:07 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:00 2022
 Module time:
-	user time   =       2.98 seconds =       0.05 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       2.96 seconds =       0.05 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      32.16 seconds =       0.54 minutes
-	system time =       0.32 seconds =       0.01 minutes
-	total time  =         34 seconds =       0.57 minutes
-    Triplet COSX ROHF energy..............................................................PASSED
+	user time   =      31.43 seconds =       0.52 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =         33 seconds =       0.55 minutes
+    Triplet DirectDFJ+COSX ROHF energy....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:07 2022
+*** at Thu Dec  8 15:57:00 2022
 
    => Loading Basis Set <=
 
@@ -9052,7 +9079,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DIRECTDFJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -9086,6 +9113,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+LINK 
+j_type_: DIRECTDFJ 
+k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -9098,7 +9128,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -9229,21 +9259,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:09 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:02 2022
 Module time:
-	user time   =       1.87 seconds =       0.03 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.86 seconds =       0.03 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      34.05 seconds =       0.57 minutes
+	user time   =      33.31 seconds =       0.56 minutes
 	system time =       0.33 seconds =       0.01 minutes
-	total time  =         36 seconds =       0.60 minutes
-    Triplet LinK ROHF energy..............................................................PASSED
+	total time  =         35 seconds =       0.58 minutes
+    Triplet DirectDFJ+LinK ROHF energy....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:09 2022
+*** at Thu Dec  8 15:57:02 2022
 
    => Loading Basis Set <=
 
@@ -9488,21 +9518,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:10 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:02 2022
 Module time:
 	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      34.44 seconds =       0.57 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =         37 seconds =       0.62 minutes
+	user time   =      33.70 seconds =       0.56 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =         35 seconds =       0.58 minutes
     Triplet PK CUHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:10 2022
+*** at Thu Dec  8 15:57:02 2022
 
    => Loading Basis Set <=
 
@@ -9778,21 +9808,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:10 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:03 2022
 Module time:
-	user time   =       0.68 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      35.15 seconds =       0.59 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =         37 seconds =       0.62 minutes
+	user time   =      34.39 seconds =       0.57 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =         36 seconds =       0.60 minutes
     Triplet Direct CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:10 2022
+*** at Thu Dec  8 15:57:03 2022
 
    => Loading Basis Set <=
 
@@ -10019,21 +10049,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:11 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:03 2022
 Module time:
-	user time   =       0.32 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.29 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      35.49 seconds =       0.59 minutes
-	system time =       0.36 seconds =       0.01 minutes
-	total time  =         38 seconds =       0.63 minutes
+	user time   =      34.71 seconds =       0.58 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =         36 seconds =       0.60 minutes
     Triplet Disk CUHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:11 2022
+*** at Thu Dec  8 15:57:03 2022
 
    => Loading Basis Set <=
 
@@ -10290,21 +10320,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:11 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:03 2022
 Module time:
 	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      35.70 seconds =       0.60 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =         38 seconds =       0.63 minutes
+	user time   =      34.92 seconds =       0.58 minutes
+	system time =       0.38 seconds =       0.01 minutes
+	total time  =         36 seconds =       0.60 minutes
     Triplet DiskDF CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:11 2022
+*** at Thu Dec  8 15:57:03 2022
 
    => Loading Basis Set <=
 
@@ -10562,21 +10592,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:11 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:04 2022
 Module time:
 	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      35.91 seconds =       0.60 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =         38 seconds =       0.63 minutes
+	user time   =      35.13 seconds =       0.59 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =         37 seconds =       0.62 minutes
     Triplet MemDF CUHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:11 2022
+*** at Thu Dec  8 15:57:04 2022
 
    => Loading Basis Set <=
 
@@ -10620,7 +10650,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is COSX.
+  SCF Algorithm Type is DIRECTDFJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -10654,6 +10684,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+COSX 
+j_type_: DIRECTDFJ 
+k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -10666,7 +10699,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -10713,13 +10746,13 @@ Scratch directory: /scratch/dpoole34/
 
    @CUHF iter   1:  -131.02266731942410   -1.31023e+02   3.53890e-01 ADIIS
    @CUHF iter   2:  -140.10621696114637   -9.08355e+00   1.85157e-01 ADIIS
-   @CUHF iter   3:  -149.07283195574360   -8.96661e+00   6.18535e-02 DIIS/ADIIS
-   @CUHF iter   4:  -149.63845093676019   -5.65619e-01   1.00842e-02 DIIS/ADIIS
-   @CUHF iter   5:  -149.65151108189124   -1.30601e-02   1.51377e-03 DIIS/ADIIS
-   @CUHF iter   6:  -149.65197130478228   -4.60223e-04   2.18032e-04 DIIS/ADIIS
-   @CUHF iter   7:  -149.65199790962760   -2.66048e-05   1.85204e-05 DIIS
+   @CUHF iter   3:  -149.07283195574368   -8.96661e+00   6.18535e-02 DIIS/ADIIS
+   @CUHF iter   4:  -149.63845093676028   -5.65619e-01   1.00842e-02 DIIS/ADIIS
+   @CUHF iter   5:  -149.65151108189110   -1.30601e-02   1.51377e-03 DIIS/ADIIS
+   @CUHF iter   6:  -149.65197130478217   -4.60223e-04   2.18032e-04 DIIS/ADIIS
+   @CUHF iter   7:  -149.65199790962754   -2.66048e-05   1.85204e-05 DIIS
    @CUHF iter   8:  -149.65199703995134    8.69676e-07   2.10529e-06 DIIS
-   @CUHF iter   9:  -149.65199679272922    2.47222e-07   3.47492e-07 DIIS
+   @CUHF iter   9:  -149.65199679272942    2.47222e-07   3.47492e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
@@ -10801,8 +10834,8 @@ Scratch directory: /scratch/dpoole34/
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9107736954306347
-    Two-Electron Energy =                  86.4705924981044802
+    One-Electron Energy =                -266.9107736954305210
+    Two-Electron Energy =                  86.4705924981043665
     Total Energy =                       -149.6516889401625008
 
 Computation Completed
@@ -10827,21 +10860,21 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:14 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:07 2022
 Module time:
-	user time   =       2.99 seconds =       0.05 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       3.01 seconds =       0.05 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      38.93 seconds =       0.65 minutes
+	user time   =      38.16 seconds =       0.64 minutes
 	system time =       0.39 seconds =       0.01 minutes
-	total time  =         41 seconds =       0.68 minutes
-    Triplet COSX CUHF energy..............................................................PASSED
+	total time  =         40 seconds =       0.67 minutes
+    Triplet DirectDFJ+COSX CUHF energy....................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Wed Dec  7 18:45:14 2022
+*** at Thu Dec  8 15:57:07 2022
 
    => Loading Basis Set <=
 
@@ -10885,7 +10918,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DIRECTDFJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -10919,6 +10952,9 @@ Scratch directory: /scratch/dpoole34/
     Keyword: DF_BASIS_SCF
     atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
+jk_type: DIRECTDFJ+LINK 
+j_type_: DIRECTDFJ 
+k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
@@ -10931,7 +10967,7 @@ Scratch directory: /scratch/dpoole34/
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DFJ: Integral-Direct Density-Fitted J <==
+  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -11089,18 +11125,18 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Wed Dec  7 18:45:16 2022
+*** tstop() called on ds6 at Thu Dec  8 15:57:09 2022
 Module time:
-	user time   =       1.91 seconds =       0.03 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       1.87 seconds =       0.03 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      40.86 seconds =       0.68 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =         43 seconds =       0.72 minutes
-    Triplet LinK CUHF energy..............................................................PASSED
+	user time   =      40.06 seconds =       0.67 minutes
+	system time =       0.40 seconds =       0.01 minutes
+	total time  =         42 seconds =       0.70 minutes
+    Triplet DirectDFJ+LinK CUHF energy....................................................PASSED
 
-    Psi4 stopped on: Wednesday, 07 December 2022 06:45PM
-    Psi4 wall time for execution: 0:00:43.48
+    Psi4 stopped on: Thursday, 08 December 2022 03:57PM
+    Psi4 wall time for execution: 0:00:41.59
 
 *** Psi4 exiting successfully. Buy a developer a beer!
