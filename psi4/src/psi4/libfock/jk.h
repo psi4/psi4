@@ -1444,6 +1444,10 @@ class PSI_API CompositeJK : public JK {
     /// Options object
     Options& options_;
 
+    /// CompositeJK things
+    std::string j_type_;
+    std::string k_type_;
+
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 

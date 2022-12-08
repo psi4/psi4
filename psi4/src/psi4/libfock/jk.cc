@@ -71,6 +71,8 @@ JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
 
+    bool is_composite = jk_type.contains("+");
+
     bool do_density_screen = options.get_str("SCREENING") == "DENSITY";
     bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
     
@@ -152,7 +154,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
-    } else if (jk_type == "LINK" || jk_type == "COSX" ) {
+    /// handle composite methods
+    } else if (is_composite) {
         auto jk = std::make_shared<CompositeJK>(primary, auxiliary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));

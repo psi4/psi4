@@ -171,6 +171,11 @@ void CompositeJK::common_init() {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
 
+    // derive separate J+K algorithms from scf_type
+    bool jk_type = options.get_str("SCF_TYPE"); 
+    auto j_type_ = scf_type.substr(0, scf_type.find("+"));
+    auto k_type_ = scf_type.substr(scf_type.find("+") + 1, scf_type.length());
+
     // other options
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
@@ -203,27 +208,35 @@ void CompositeJK::common_init() {
 
     timer_off("CompositeJK: ERI Computers");
 
-    // => Direct Density-Fitted Coulomb Setup <= //
+    // => Set up separate J algorithm <= //
 
-    // pre-compute coulomb fitting metric
-    timer_on("CompositeJK: Coulomb Metric");
+    // Direct DF-J
+    if (j_type_ == "DFJ") {
+        // pre-compute coulomb fitting metric
+        timer_on("CompositeJK: Coulomb Metric");
     
-    FittingMetric J_metric_obj(auxiliary_, true);
-    J_metric_obj.form_fitting_metric();
-    J_metric_ = J_metric_obj.get_metric();
+        FittingMetric J_metric_obj(auxiliary_, true);
+        J_metric_obj.form_fitting_metric();
+        J_metric_ = J_metric_obj.get_metric();
     
-    timer_off("CompositeJK: Coulomb Metric");
+        timer_off("CompositeJK: Coulomb Metric");
+    } else {
+        throw PSIEXCEPTION("Invalid Composite J algorithm selected!")
+    } 
 
-    // => Linear Exchange Setup <= //
-    if (options_.get_str("SCF_TYPE") == "LINK") { 
+    // => Set up separate K algorithm <= //
+
+    // Linear Exchange (LinK)
+    if (k_type_ == "LINK") { 
         // set up LinK integral tolerance
         if (options_["LINK_INTS_TOLERANCE"].has_changed()) {
             linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
     	} else {
         	linK_ints_cutoff_ = cutoff_; 
     	}
-    // => Chain of Spheres Exchange Setup <= //
-    } else if (options_.get_str("SCF_TYPE") == "COSX") { 
+    
+    // Chain-of-Spheres Exchange (COSX) 
+    } else if (k_type_ == "COSX") { 
     	timer_on("Grid Construction");
 
     	// TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
@@ -317,7 +330,9 @@ void CompositeJK::common_init() {
         C_DGESV(nbf, nbf, S_num_final.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
     
         timer_off("Overlap Metric Solve");
-    }
+    } else {
+        throw PSIEXCEPTION("Invalid Composite K algorithm selected!")
+    } 
 }
 
 size_t CompositeJK::num_computed_shells() { 
