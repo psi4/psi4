@@ -234,7 +234,7 @@ void CompositeJK::common_init() {
         } else {
             linK_ints_cutoff_ = cutoff_;
         }
-    
+
     // Chain-of-Spheres Exchange (COSX)
     } else if (k_type_ == "COSX") {
         timer_on("CompositeJK: COSX Grid Construction");
@@ -332,12 +332,12 @@ void CompositeJK::common_init() {
         timer_off("CompositeJK: COSX Overlap Metric Solve");
     } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
-    } 
+    }
 }
 
 size_t CompositeJK::num_computed_shells() {
     //no bench data returned - to come in a future update
-    return JK::num_computed_shells(); 
+    return JK::num_computed_shells();
 }
 
 size_t CompositeJK::memory_estimate() {
@@ -357,7 +357,7 @@ void CompositeJK::print_header() const {
         outfile->Printf("    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf("    Incremental Fock:  %11s\n", (incfock_ ? "Yes" : "No"));
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
-       
+
 	if (do_J_) {
             if (j_type_ == "DIRECTDFJ") { print_DirectDFJ_header(); }
 	}
@@ -365,13 +365,13 @@ void CompositeJK::print_header() const {
             if (k_type_ == "LINK") { print_linK_header(); }
 	    else if (k_type_ == "COSX") { print_COSX_header(); }
         }
-        outfile->Printf("\n");  
+        outfile->Printf("\n");
     }
 }
 
 void CompositeJK::print_DirectDFJ_header() const {
     if (print_) {
-        outfile->Printf("\n");  
+        outfile->Printf("\n");
         outfile->Printf("  ==> DirectDFJ: Integral-Direct Density-Fitted J <==\n\n");
 
         outfile->Printf("    J Screening Cutoff:%11.0E\n", cutoff_);
@@ -380,7 +380,7 @@ void CompositeJK::print_DirectDFJ_header() const {
 
 void CompositeJK::print_linK_header() const {
     if (print_) {
-        outfile->Printf("\n");  
+        outfile->Printf("\n");
         outfile->Printf("  ==> LinK: Linear Exchange K <==\n\n");
 
         outfile->Printf("    K Screening Cutoff:%11.0E\n", linK_ints_cutoff_);
@@ -389,7 +389,7 @@ void CompositeJK::print_linK_header() const {
 
 void CompositeJK::print_COSX_header() const {
     if (print_) {
-        outfile->Printf("\n");  
+        outfile->Printf("\n");
         outfile->Printf("  ==> COSX: Chain-of-Spheres Semi-Numerical K <==\n\n");
 
         outfile->Printf("    K Screening Cutoff: %11.0E\n", options_.get_double("COSX_INTS_TOLERANCE"));
@@ -403,11 +403,11 @@ void CompositeJK::preiterations() {}
 
 void CompositeJK::incfock_setup() {
     if (do_incfock_iter_) {
-        size_t njk = D_ao_.size();
+        auto njk = D_ao_.size();
 
         // If there is no previous pseudo-density, this iteration is normal
         if (initial_iteration_ || D_prev_.size() != njk) {
-	        initial_iteration_ = true;
+            initial_iteration_ = true;
 
             D_ref_ = D_ao_;
             zero();
@@ -432,30 +432,30 @@ void CompositeJK::incfock_postiter() {
 }
 
 void CompositeJK::compute_JK() {
-  
     // wK not supported in CompositeJK yet
+    // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
     if (do_wK_) throw PSIEXCEPTION("LINK does not support wK integrals yet!");
-   
+
     // explicit setup of Incfock for this SCF iteration
     if (incfock_) {
         timer_on("CompositeJK: INCFOCK Preprocessing");
 
-        int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
-        double incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
-        double Dnorm = Process::environment.globals["SCF D NORM"];
+        auto reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
+        auto incfock_conv = options_.get_double("INCFOCK_CONVERGENCE");
+        auto Dnorm = Process::environment.globals["SCF D NORM"];
         // Do IFB on this iteration?
         do_incfock_iter_ = (Dnorm >= incfock_conv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
-        
+
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
 
-	    incfock_setup();
+        incfock_setup();
         
 	timer_off("CompositeJK: INCFOCK Preprocessing");
     } else {
-	    D_ref_ = D_ao_;
+        D_ref_ = D_ao_;
         zero();
     }
-    
+
     // update ERI engine density matrices for density screening
     if (density_screening_) {
         for (auto eri_computer : eri_computers_["4-Center"]) {
@@ -464,33 +464,36 @@ void CompositeJK::compute_JK() {
     }
 
     // => Perform matrix calculations <= //
-    
-    // Direct DF-J
+
+    // Coulomb Matrix
     if (do_J_) {
         timer_on("CompositeJK: J");
-       
-        if (j_type_ == "DIRECTDFJ") {	
+
+        // Direct DF-J
+        if (j_type_ == "DIRECTDFJ") {
 	    build_DirectDFJ(D_ref_, J_ao_);
 	}
 
-	timer_off("CompositeJK: J");
+        timer_off("CompositeJK: J");
     }
-    
-    // LinK
+
+    // Exchange Matrix
     if (do_K_) {
         timer_on("CompositeJK: K");
-        
-        if (k_type_ == "LINK") {	
+
+        // LinK
+        if (k_type_ == "LINK") {
 	    build_linK(D_ref_, K_ao_);
-        } else if (k_type_ == "COSX") {	
+        // COSX
+        } else if (k_type_ == "COSX") {
 	    build_COSK(D_ref_, K_ao_);
-        }	
+        }
 		
 	timer_off("CompositeJK: K");
     }
-   
+
     // => Finalize Incremental Fock if required <= //
-    
+
     if (incfock_) {
         timer_on("CompositeJK: INCFOCK Postprocessing");
         incfock_postiter();
