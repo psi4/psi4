@@ -363,7 +363,7 @@ void CompositeJK::print_header() const {
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
        
 	if (do_J_) {
-            print_DirectDFJ_header();
+            if (j_type_ == "DIRECTDFJ") { print_DirectDFJ_header(); }
 	}
 	if (do_K_) {
             if (k_type_ == "LINK") { print_linK_header(); }
