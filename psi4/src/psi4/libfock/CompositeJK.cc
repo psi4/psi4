@@ -488,7 +488,7 @@ void CompositeJK::compute_JK() {
         } else if (k_type_ == "COSX") {
 	    build_COSK(D_ref_, K_ao_);
         }
-		
+
 	timer_off("CompositeJK: K");
     }
 
@@ -751,7 +751,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
     // => Sizing <= //
     int nshell = primary_->nshell();
     int nbf = primary_->nbf();
-    int nthread = nthreads_; 
+    int nthread = nthreads_;
 
     // => Atom Blocking <= //
     std::vector<int> shell_endpoints_for_atom;
@@ -819,7 +819,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
     // ==> Prep Bra-Bra Shell Pairs <== //
 
     // A comparator used for sorting integral screening values
-    auto screen_compare = [](const std::pair<int, double> &a, 
+    auto screen_compare = [](const std::pair<int, double> &a,
                                     const std::pair<int, double> &b) { return a.second > b.second; };
 
     std::vector<std::vector<int>> significant_bras(nshell);
@@ -904,7 +904,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
     for (size_t ipair = 0L; ipair < natom_pair; ipair++) { // O(N) shell-pairs in asymptotic limit
         int Patom = atom_pairs[ipair].first;
         int Qatom = atom_pairs[ipair].second;
-        
+
         // Number of shells per atom
         int nPshell = shell_endpoints_for_atom[Patom + 1] - shell_endpoints_for_atom[Patom];
         int nQshell = shell_endpoints_for_atom[Qatom + 1] - shell_endpoints_for_atom[Qatom];
