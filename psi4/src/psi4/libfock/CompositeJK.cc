@@ -173,9 +173,13 @@ void CompositeJK::common_init() {
 
     // derive separate J+K algorithms from scf_type
     auto jk_type = options_.get_str("SCF_TYPE"); 
-    auto j_type_ = jk_type.substr(0, jk_type.find("+"));
-    auto k_type_ = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
+    j_type_ = jk_type.substr(0, jk_type.find("+"));
+    k_type_ = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
 
+    outfile->Printf("jk_type: %s \n", jk_type.c_str());
+    outfile->Printf("j_type_: %s \n", j_type_.c_str());
+    outfile->Printf("k_type_: %s \n", k_type_.c_str());
+    
     // other options
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     set_cutoff(options_.get_double("INTS_TOLERANCE"));

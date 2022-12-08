@@ -1220,7 +1220,7 @@ class PSI_API CompositeJK : public JK {
     /// Options object
     Options& options_;
 
-    /// CompositeJK things
+    /// CompositeJK algorithmic info 
     std::string j_type_;
     std::string k_type_;
 
