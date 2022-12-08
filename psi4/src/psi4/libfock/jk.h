@@ -1512,8 +1512,8 @@ class PSI_API CompositeJK : public JK {
     /// Post-iteration Incfock processing
     void incfock_postiter();
 
-    /// Build the coulomb (J) matrix
-    void build_J(std::vector<std::shared_ptr<Matrix> >& D,
+    /// Build the coulomb (J) matrix using Direct DF-J
+    void build_DFJ(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& J);
 
     /**

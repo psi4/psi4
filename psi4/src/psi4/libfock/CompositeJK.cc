@@ -362,8 +362,8 @@ void CompositeJK::print_header() const {
             print_DFJ_header();
 	}
 	if (do_K_) {
-            if (options_.get_str("SCF_TYPE") == "LINK") print_linK_header();
-	    if (options_.get_str("SCF_TYPE") == "COSX") print_COSX_header();
+            if (k_type_ == "LINK") { print_linK_header(); }
+	    else if (k_type_ == "COSX") { print_COSX_header(); }
         }
         outfile->Printf("\n");  
     }
@@ -468,9 +468,11 @@ void CompositeJK::compute_JK() {
     // Direct DF-J
     if (do_J_) {
         timer_on("CompositeJK: J");
-        
-	build_J(D_ref_, J_ao_);
-        
+       
+        if (j_type_ == "DFJ") {	
+	    build_J(D_ref_, J_ao_);
+	}
+
 	timer_off("CompositeJK: J");
     }
     
@@ -478,9 +480,9 @@ void CompositeJK::compute_JK() {
     if (do_K_) {
         timer_on("CompositeJK: K");
         
-        if (options_.get_str("SCF_TYPE") == "LINK") {
+        if (k_type_ == "LINK") {	
 	    build_linK(D_ref_, K_ao_);
-	} else if (options_.get_str("SCF_TYPE") == "COSX") {
+        } else if (k_type_ == "COSX") {	
 	    build_COSK(D_ref_, K_ao_);
         }	
 		
