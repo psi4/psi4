@@ -1212,7 +1212,7 @@ class PSI_API MemDFJK : public JK {
  *
  * TODO: Implement SplitJK companion framework for truly arbitrary mixing and matching
  */
-class PSI_API CompositeJK: public JK {
+class PSI_API CompositeJK : public JK {
    protected:
 
     /// The number of threads to be used for integral computation
