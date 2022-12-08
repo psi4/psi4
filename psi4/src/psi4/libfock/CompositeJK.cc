@@ -215,7 +215,7 @@ void CompositeJK::common_init() {
     // => Set up separate J algorithm <= //
 
     // Direct DF-J
-    if (j_type_ == "DFJ") {
+    if (j_type_ == "DIRECTDFJ") {
         // pre-compute coulomb fitting metric
         timer_on("CompositeJK: Coulomb Metric");
     
@@ -363,7 +363,7 @@ void CompositeJK::print_header() const {
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
        
 	if (do_J_) {
-            print_DFJ_header();
+            print_DirectDFJ_header();
 	}
 	if (do_K_) {
             if (k_type_ == "LINK") { print_linK_header(); }
@@ -373,10 +373,10 @@ void CompositeJK::print_header() const {
     }
 }
 
-void CompositeJK::print_DFJ_header() const {
+void CompositeJK::print_DirectDFJ_header() const {
     if (print_) {
         outfile->Printf("\n");  
-        outfile->Printf("  ==> DFJ: Integral-Direct Density-Fitted J <==\n\n");
+        outfile->Printf("  ==> DirectDFJ: Integral-Direct Density-Fitted J <==\n\n");
 
         outfile->Printf("    J Screening Cutoff:%11.0E\n", cutoff_);
     }
@@ -473,8 +473,8 @@ void CompositeJK::compute_JK() {
     if (do_J_) {
         timer_on("CompositeJK: J");
        
-        if (j_type_ == "DFJ") {	
-	    build_DFJ(D_ref_, J_ao_);
+        if (j_type_ == "DIRECTDFJ") {	
+	    build_DirectDFJ(D_ref_, J_ao_);
 	}
 
 	timer_off("CompositeJK: J");
@@ -506,7 +506,7 @@ void CompositeJK::compute_JK() {
 
 void CompositeJK::postiterations() {}
 
-void CompositeJK::build_DFJ(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
+void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
     
     timer_on("Setup");
 
