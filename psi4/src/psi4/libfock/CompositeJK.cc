@@ -434,7 +434,7 @@ void CompositeJK::incfock_postiter() {
 void CompositeJK::compute_JK() {
     // wK not supported in CompositeJK yet
     // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
-    if (do_wK_) throw PSIEXCEPTION("LINK does not support wK integrals yet!");
+    if (do_wK_) throw PSIEXCEPTION("CompositeJK algorithms do not support wK integrals yet!");
 
     // explicit setup of Incfock for this SCF iteration
     if (incfock_) {
