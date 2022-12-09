@@ -2970,7 +2970,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     rho_bk_z[P] = C_DDOT(nlocal, phi_z[P], 1, Tbp[P], 1);
                     gamma_bbk[P] = rho_bk_x[P] * rho_bx[P];
                     gamma_bbk[P] += rho_bk_y[P] * rho_by[P];
-                    gamma_bbk[P] += rho_ak_z[P] * rho_bz[P];
+                    gamma_bbk[P] += rho_bk_z[P] * rho_bz[P];
                     gamma_bbk[P] *= 2.0;
 
                     // Alpha-Beta
