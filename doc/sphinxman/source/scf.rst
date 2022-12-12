@@ -703,7 +703,7 @@ LINK
     Exchange term. See :ref:`sec:scflink` for more information.
 
 In some cases the above algorithms have multiple implementations that return
-the same result, but are optimal under different molecules sizes and hardware
+the same result, but are optimal under different molecules sizes and hardware/no_
 configurations. Psi4 will automatically detect the correct algorithm to run and
 only expert users should manually select the below implementations. The DF
 algorithm has the following two implementations
@@ -722,7 +722,15 @@ algorithm is chosen. It is therefore highly recommended that the keyword "DF"
 be selected in all cases so that the correct implementation can be selected by
 |PSIfours| internal routines. Expert users can manually switch between MEM_DF and
 DISK_DF; however, they may find documented exceptions during use as several
-post SCF algorithms require a specific implementation.
+post SCF algorithms require a specific implementation. Additionally, expert users 
+can manually switch between the in-memory and on-disk options for MEM_DF using 
+the |globals__force_mem| option. Using ``FORCE_MEM = AUTO``, which allows |PSIfour| 
+to automatically select the in-memory or on-disk option for MEM_DF, is the default 
+and recommend option. However, the in-memory option for MEM_DF can be forced by using
+``FORCE_MEM = FORCE_INCORE``, and the on-disk option for MEM_DF can be forced by using
+``FORCE_MEM = NO_INCORE``. Note that an exception will be thrown if 
+``FORCE_MEM = FORCE_INCORE`` is used with MEM_DF without allocating sufficient memory to 
+|PSIfour|.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
