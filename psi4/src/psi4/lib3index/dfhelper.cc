@@ -253,7 +253,7 @@ void DFHelper::AO_core() {
             AO_core_ = true;
         
 	    if (print_lvl_ > 0) {
-                outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core MemDFJK algorithm will be used."); 
+                outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core MemDFJK algorithm will be used.\n"); 
             }
 	}
     } else { 
