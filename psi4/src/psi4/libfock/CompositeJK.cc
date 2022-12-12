@@ -743,6 +743,7 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
 
 }
 
+// build the K matrix using Ochsenfelds's Linear Exchange (LinK) algorithm 
 // To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
 void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& K) {
 
@@ -820,6 +821,8 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
         }
     }
 
+    // ==> Start "Pre-ordering and pre-selection to find significant elements in P_uv" in Fig. 1 of paper <== //
+    
     // ==> Prep Bra-Bra Shell Pairs <== //
 
     // A comparator used for sorting integral screening values
@@ -865,6 +868,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
     std::vector<std::vector<int>> significant_kets(nshell);
 
     // => Use shell ceilings to compute significant ket-shells for each bra-shell <= //
+    // => Implementation of Eq. 4 in paper <= //
 #pragma omp parallel for
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PR_shell_values;
@@ -883,6 +887,8 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
 
     size_t natom_pair = atom_pairs.size();
 
+    // ==> End "Pre-ordering and pre-selection to find significant elements in P_uv" in Fig. 1 of paper <== //
+    
     // ==> Intermediate Buffers <== //
 
     // Temporary buffers used during the K contraction process to
@@ -899,6 +905,8 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
         KT.push_back(K2);
     }
 
+    // ==> Start "Loop over significant "bra"-shell pairs uh" in Fig. 1 of paper <== //
+    
     // Number of computed shell quartets is tracked for benchmarking purposes
     size_t computed_shells = 0L;
 
@@ -940,7 +948,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
                 int dP = P - Pstart;
                 int dQ = Q - Qstart;
 
-                // => Formation of Significant Shell Pair List ML <= //
+                // => Start "Formation of Significant Shell Pair List ML" in Fig. 1 of Paper <= //
 
                 // Significant ket shell pairs RS for bra shell pair PQ
                 // represents the merge of ML_P and ML_Q (mini-lists) as defined in Oschenfeld
