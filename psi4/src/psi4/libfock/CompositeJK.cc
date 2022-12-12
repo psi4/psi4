@@ -505,6 +505,8 @@ void CompositeJK::compute_JK() {
 
 void CompositeJK::postiterations() {}
 
+// build the J matrix using Weigend's integral-direct density fitting algorithm
+// algorithm is in Figure 1 of https://doi.org/10.1039/B204199P
 void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J) {
     
     timer_on("Setup");
@@ -580,6 +582,7 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
 
     // contract D with three-index DF ERIs to get G:
     // G_{p} = D_{mn} * (mn|p)
+    // G_{p} correlates to gamma_P in Figure 1 of Weigend's paper
 
     timer_on("ERI1");
 #pragma omp parallel for schedule(guided) num_threads(nthreads_) reduction(+ : computed_triplets1)
@@ -631,6 +634,7 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
 
     //  linear solve for H:
     //  G_{p} = H_{q} (q|p)
+    //  H_{p} correlates to gamma_Q in Figure 1 of Weigend's paper
 
     timer_on("Metric");
 

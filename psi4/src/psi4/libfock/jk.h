@@ -1289,6 +1289,7 @@ class PSI_API CompositeJK : public JK {
     void incfock_postiter();
 
     /// Build the coulomb (J) matrix using Direct DF-J
+    /// Reference is https://doi.org/10.1039/B204199P
     void build_DirectDFJ(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& J);
 
