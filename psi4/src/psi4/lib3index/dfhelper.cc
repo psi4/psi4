@@ -228,7 +228,7 @@ void DFHelper::AO_core() {
     required_core_size_ += 3 * nbf_ * nbf_ * Qshell_max_;
 
     if (print_lvl_ > 0) {
-        outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
+        outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. \n",
                         (required_core_size_ * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
     }
 
@@ -238,16 +238,17 @@ void DFHelper::AO_core() {
         AO_core_ = true;
         if (memory_ < required_core_size_) AO_core_ = false;
     
-    // .. or force AO_core_ if user specifies
+    // .. or forcibly disable AO_core_ if user specifies ...
     } else if (options_.get_str("FORCE_MEM") == "NO_INCORE") {
         AO_core_ = false;
 
         if (print_lvl_ > 0) {
-            outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core MemDFJK algorithm will be used.");
+            outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core MemDFJK algorithm will be used.\n");
         }
+    // .. or force AO_core_ if user specifies
     } else if (options_.get_str("FORCE_MEM") == "FORCE_INCORE") {
         if (memory_ < required_core_size_) {
-            throw PSIEXCEPTION("FORCE_MEM=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.");
+            throw PSIEXCEPTION("FORCE_MEM=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
 	} else {
             AO_core_ = true;
         
@@ -260,7 +261,7 @@ void DFHelper::AO_core() {
     }
 
     if (print_lvl_ > 0) {
-        outfile->Printf("%s in-core AOs.\n\n", AO_core_ ? "Using" : "Turning off");
+        outfile->Printf("  %s in-core AOs.\n\n", AO_core_ ? "Using" : "Turning off");
     }
 
 }

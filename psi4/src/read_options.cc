@@ -1408,6 +1408,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             orbitals before switching to the use of exact integrals in
             a |globals__scf_type| ``DIRECT`` calculation -*/
         options.add_bool("DF_SCF_GUESS", true);
+        /*- Forcibly disable or enable in- or out-of-core algorithms for MemDF/DiskDF. For debug purposes. !expert -*/
+        options.add_str("FORCE_MEM", "AUTO", "AUTO FORCE_INCORE NO_INCORE");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
         /*- Memory safety factor for allocating JK -*/
