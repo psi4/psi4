@@ -412,13 +412,14 @@ void DFHelper::prepare_AO() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-#pragma omp parallel num_threads(nthreads_)
-    {
-        int rank = 0;
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+//#pragma omp parallel num_threads(nthreads_)
+//    {
+//        int rank = 0;
+//#ifdef _OPENMP
+//        rank = omp_get_thread_num();
+//#endif
+    for(int rank = 1; rank < nthreads_; rank++) {
+	eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     // gather blocking info
