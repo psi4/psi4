@@ -48,7 +48,7 @@ info = psi4.DSYEV(0, 'V','U', n, A, n, D, W, 4*n)
 A.name = "Eigenvectors"
 
 # Make first element of eigenvector positive if desired
-for i in range(1,n):
+for i in range(0,n):
     if A.get(i,0) < 0 :
         A.scale_row(0, i, -1)
 

@@ -86,7 +86,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF RHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DirectDFJ+COSX":
       set screening csam
     else:
       set screening density
@@ -120,7 +120,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF UHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DirectDFJ+COSX":
       set screening csam
     else:
       set screening density
@@ -154,7 +154,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF CUHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DirectDFJ+COSX":
       set screening csam
     else:
       set screening density
@@ -196,7 +196,7 @@ compare_values(Eref["Triplet UHF"]["DF"], E, 6, 'Triplet MemDF UHF energy') #TES
 
 for method in Eref["Triplet UHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DirectDFJ+COSX":
       set screening csam
     else:
       set screening density
@@ -235,7 +235,7 @@ compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF ROHF energy') #T
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DirectDFJ+COSX":
       set screening csam
     else:
       set screening density
@@ -274,7 +274,7 @@ compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF CUHF energy') #T
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DirectDFJ+COSX":
       set screening csam
     else:
       set screening density

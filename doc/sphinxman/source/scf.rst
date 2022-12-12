@@ -824,7 +824,7 @@ Separate K Construction: COSX, LINK
 Two composite algorithms can be combined with each other by setting the |globals__scf_type| keyword to ``J_alg+K_alg``, where *J_alg* is an available
 algorithm for the separate construction of J, and *K_alg* is an available algorithm for the separate construction of K. For example, if one wanted
 to run an integral-direct density-fitted algorithm for Coulomb construction (i.e., DIRECTDFJ) in conjunction with the Linear Exchange algorithm
-for Exchange construction (i.e., LINK), one would use the |globals__scf_type| keyword "DIRECTDFJ+LINK".  
+for Exchange construction (i.e., LINK), one would use the |globals__scf_type| keyword ``DIRECTDFJ+LINK``.  
 
 .. _`sec:scfddfj`:
 
