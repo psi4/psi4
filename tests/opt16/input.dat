@@ -1,7 +1,9 @@
 #! SCF 6-31G(d) optimization of TS for HCN to HNC
-#! Checks correct behavior for writing orbitals to disk in
-#! finite difference calculations for a symmetric molecule.
-#! The last two displacements break the plane of symmetry.
+#! Performs finite difference hessian calculation. Then optimizes
+#! using previous orbitals for scf guess, in subsequent calculations.
+#! The last two displacements of the hessian break the plane of symemtry,
+#! This test confirms that only the reference geometry, with the correct
+#! symmetry, writes orbitals to disk. SCF will fail (ValidationError) otherwise.
 
 SCF_E = -92.7236996864523064
 
