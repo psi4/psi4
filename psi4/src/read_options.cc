@@ -1701,7 +1701,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The DFT Correlation hybrid parameter -*/
         options.add_double("DFT_ALPHA_C", 0.0);
         /*- Minima spindensity cutoff for the second derivative -*/
-        options.add_double("DFT_V2_RHO_CUTOFF", 1.e-6);
+        options.add_double("DFT_V2_RHO_CUTOFF", 5.e-7);
         /*- The gradient regularized asymptotic correction shift value -*/
         options.add_double("DFT_GRAC_SHIFT", 0.0);
         /*- The gradient regularized asymptotic correction alpha value -*/
