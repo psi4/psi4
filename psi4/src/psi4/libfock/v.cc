@@ -2991,7 +2991,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
 
-                if (rho_a[P] > v2_rho_cutoff_ || rho_[b] > v2_rho_cutoff_) {
+                if (rho_a[P] > v2_rho_cutoff_ || rho_b[P] > v2_rho_cutoff_) {
                     tmp_val = v2_rho2_aa[P] * rho_ak[P];
                     tmp_val += v2_rho2_ab[P] * rho_bk[P];
                     tmp_val *= 0.5 * w[P];
