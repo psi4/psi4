@@ -235,10 +235,10 @@ jobs:
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           # "next" packages aren't self-contained, and "0.15.8" not available fro py310. try again someday
-          sed -i "s;- qcfractal;;g" aux.yaml
-          sed -i "s;- qcportal;;g" aux.yaml
-          #sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" aux.yaml
-          #sed -i "s;- qcportal;- qcarchive/label/next::qcportal;g" aux.yaml
+          # sed -i "s;- qcfractal;;g" aux.yaml
+          # sed -i "s;- qcportal;;g" aux.yaml
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcarchivetesting;g" aux.yaml
+          sed -i "s;- qcportal;- postgresql;g" aux.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" aux.yaml
