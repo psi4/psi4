@@ -1236,8 +1236,6 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
 
 RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
     : VBase(functional, primary, options) {
-    // For convenience, turn a spindensity cutoff into a spatial density cutoff.
-    v2_rho_cutoff_ *= 2;
     }
 RV::~RV() {}
 void RV::initialize() {
@@ -2991,7 +2989,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
 
-                if (rho_a[P] > v2_rho_cutoff_ || rho_b[P] > v2_rho_cutoff_) {
+                if (rho_a[P] + rho_b[P] > v2_rho_cutoff_) {
                     tmp_val = v2_rho2_aa[P] * rho_ak[P];
                     tmp_val += v2_rho2_ab[P] * rho_bk[P];
                     tmp_val *= 0.5 * w[P];
@@ -3032,7 +3030,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
                 // This one is a doozy
                 for (int P = 0; P < npoints; P++) {
-                    if ((rho_a[P] < v2_rho_cutoff_) || (rho_b[P] < v2_rho_cutoff_)) continue;
+                    if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
                     // V alpha contributions
                     tmp_val = v2_rho_a_gamma_aa[P] * gamma_aak[P];
                     tmp_val += v2_rho_a_gamma_ab[P] * gamma_abk[P];
