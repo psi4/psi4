@@ -1,124 +1,56 @@
-#! Sample with post-Argon atoms !nosample
+#! Test SCF and DF-MP2 on post-Ar atoms
 
 molecule {
 Ba
-Ba 1 2.0
-units bohr
+Ba 1 4.0
 }
 
 set {
-  basis def2-sv_p_
-  scf_type df
-  DF_BASIS_SCF def2-sv_p_-jkfit
+  basis def2-svp
+  points 5
 }
 
-analytic_grad = gradient('mp2')
-clean()
+ref_energy =  -50.11011922912507 #TEST
 
-
-molecule {
-Ba
-Ba 1 2.0
-units bohr
-}
-
-set {
-  basis def2-sv_p_
-  scf_type df
-  DF_BASIS_SCF def2-sv_p_-jkfit
-}
-
-analytic_grad = gradient('scf')
+analytic_grad, wfn = gradient('scf', return_wfn=True)
+this_energy = wfn.energy()
+findif_grad = gradient('scf', dertype=0)
+assert compare_values(findif_grad, analytic_grad, 6, "Analytic vs. FinDiff Gradient (SCF)") #TEST
+assert compare_values(ref_energy, this_energy, 6, "Calculated vs. Reference Energy (SCF)") #TEST
 clean()
 
 
 molecule {
 In
-In 1 2.0
-units bohr
-}
-
-set {
-  basis STO-3G
-  scf_type pk
-}
-
-thisenergy = energy('mp2')
-clean()
-
-
-molecule {
-In
-In 1 2.0
-units bohr
-}
-
-set {
-  basis STO-3G
-  scf_type pk
-}
-
-thisenergy = energy('scf')
-clean()
-
-
-molecule {
-Rn
-Rn 1 2.0
-units bohr
-}
-
-set {
-  basis def2-svpd
-  scf_type df
-  DF_BASIS_SCF def2-svpd-ri
-}
-
-thisenergy = energy('mp2')
-clean()
-
-
-molecule {
-Rn
-Rn 1 2.0
-units bohr
-}
-
-set {
-  basis def2-svpd
-  scf_type df
-  DF_BASIS_SCF def2-svpd-ri
-}
-
-thisenergy = energy('scf')
-clean()
-
-
-molecule {
-Sr
-Sr 1 2.0
-units bohr
+In 1 4.0
 }
 
 set {
   basis def2-svp
-  scf_type pk
+  points 5
 }
 
-analytic_grad = gradient('mp2')
-clean()
+ref_energy = -378.4048482415655 #TEST
 
+analytic_grad, wfn = gradient('scf', return_wfn=True)
+this_energy = wfn.energy()
+findif_grad = gradient('scf', dertype=0)
+assert compare_values(findif_grad, analytic_grad, 6, "Analytic vs. FinDiff Gradient (SCF)") #TEST
+assert compare_values(ref_energy, this_energy, 6, "Calculated vs. Reference Energy (SCF)") #TEST
+clean()
 
 molecule {
 Sr
-Sr 1 2.0
-units bohr
+Sr 1 4.0
 }
 
 set {
   basis def2-svp
-  scf_type pk
+  mp2_type df
 }
 
-analytic_grad = gradient('scf')
+ref_energy =-60.8332750388071943  #TEST
+
+this_energy = energy('mp2')
+assert compare_values(ref_energy, this_energy, 6, "Calculated vs. Reference Energy (DF-MP2)") #TEST
 clean()
