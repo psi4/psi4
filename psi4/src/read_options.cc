@@ -1700,8 +1700,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DFT_OMEGA_C", 0.0);
         /*- The DFT Correlation hybrid parameter -*/
         options.add_double("DFT_ALPHA_C", 0.0);
-        /*- Minima spin-summed density cutoff for the second derivative -*/
-        options.add_double("DFT_V2_RHO_CUTOFF", 1.e-12);
+        /*- Minima spin-summed density cutoff for the second derivative. Defaults to the density tolerance. -*/
+        options.add_double("DFT_V2_RHO_CUTOFF", -1.0);
         /*- The gradient regularized asymptotic correction shift value -*/
         options.add_double("DFT_GRAC_SHIFT", 0.0);
         /*- The gradient regularized asymptotic correction alpha value -*/

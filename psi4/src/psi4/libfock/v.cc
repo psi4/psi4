@@ -100,7 +100,11 @@ VBase::~VBase() {}
 void VBase::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
-    v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
+    if (options_["DFT_V2_RHO_CUTOFF"].has_changed()) {
+        v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
+    } else {
+        v2_rho_cutoff_ = functional_->density_tolerance();
+    }
     vv10_rho_cutoff_ = options_.get_double("DFT_VV10_RHO_CUTOFF");
     grac_initialized_ = false;
     cache_map_deriv_ = -1;
@@ -1235,8 +1239,7 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
 }
 
 RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
-    : VBase(functional, primary, options) {
-    }
+    : VBase(functional, primary, options) {}
 RV::~RV() {}
 void RV::initialize() {
     VBase::initialize();
