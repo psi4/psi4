@@ -544,29 +544,29 @@ void DLPNOMP2::prep_sparsity() {
     // => Coefficient Sparsity <= //
 
     // which basis functions (on which atoms) contribute to each local MO?
-    SparseMap lmo_to_bfs(naocc);
-    SparseMap lmo_to_atoms(naocc);
+    lmo_to_bfs_.resize(naocc);
+    lmo_to_atoms_.resize(naocc);
 
     for (int i = 0; i < naocc; ++i) {
         for (int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
             if (fabs(C_lmo_->get(bf_ind, i)) > options_.get_double("T_CUT_CLMO")) {
-                lmo_to_bfs[i].push_back(bf_ind);
+                lmo_to_bfs_[i].push_back(bf_ind);
             }
         }
-        lmo_to_atoms[i] = block_list(lmo_to_bfs[i], bf_to_atom);
+        lmo_to_atoms_[i] = block_list(lmo_to_bfs_[i], bf_to_atom);
     }
 
     // which basis functions (on which atoms) contribute to each projected AO?
-    SparseMap pao_to_bfs(nbf);
-    SparseMap pao_to_atoms(nbf);
+    pao_to_bfs_.resize(nbf);
+    pao_to_atoms_.resize(nbf);
 
     for (int u = 0; u < nbf; ++u) {
         for (int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
             if (fabs(C_pao_->get(bf_ind, u)) > options_.get_double("T_CUT_CPAO")) {
-                pao_to_bfs[u].push_back(bf_ind);
+                pao_to_bfs_[u].push_back(bf_ind);
             }
         }
-        pao_to_atoms[u] = block_list(pao_to_bfs[u], bf_to_atom);
+        pao_to_atoms_[u] = block_list(pao_to_bfs_[u], bf_to_atom);
     }
 
     // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
@@ -578,13 +578,13 @@ void DLPNOMP2::prep_sparsity() {
 
     // We'll use these maps to screen the the local MO transform (first index):
     //   (mn|Q) * C_mi -> (in|Q)
-    riatom_to_atoms1_ = chain_maps(riatom_to_lmos_ext_, lmo_to_atoms);
+    riatom_to_atoms1_ = chain_maps(riatom_to_lmos_ext_, lmo_to_atoms_);
     riatom_to_shells1_ = chain_maps(riatom_to_atoms1_, atom_to_shell_);
     riatom_to_bfs1_ = chain_maps(riatom_to_atoms1_, atom_to_bf_);
 
     // We'll use these maps to screen the projected AO transform (second index):
     //   (mn|Q) * C_nu -> (mu|Q)
-    riatom_to_atoms2_ = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms));
+    riatom_to_atoms2_ = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms_));
     riatom_to_shells2_ = chain_maps(riatom_to_atoms2_, atom_to_shell_);
     riatom_to_bfs2_ = chain_maps(riatom_to_atoms2_, atom_to_bf_);
 
@@ -1463,6 +1463,74 @@ void DLPNOMP2::print_results() {
     outfile->Printf("    MP2 Correlation Energy:           %16.12f \n", e_lmp2_);
     outfile->Printf("    LMO Truncation Correction:        %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:        %16.12f \n", de_pno_total_);
+}
+
+void DLPNOMP2::store_information() {
+    // Store LMO information
+    lmo_matrices_["C_LMO"] = C_lmo_;
+    lmo_matrices_["F_LMO"] = F_lmo_;
+
+    // Store PAO information
+    pao_matrices_["C_PAO"] = C_pao_;
+    pao_matrices_["F_PAO"] = F_pao_;
+    pao_matrices_["S_PAO"] = S_pao_;
+
+    // Store PNO information
+    pno_matrices_["K_IAJB"] = K_iajb_;
+    pno_matrices_["T_IAJB"] = T_iajb_;
+    pno_matrices_["Tt_IAJB"] = Tt_iajb_;
+    pno_matrices_["X_PNO"] = X_pno_;
+
+    // Stores SparseMap information
+    sparse_maps_["ATOM_TO_BF"] = atom_to_bf_;
+    sparse_maps_["ATOM_TO_RIBF"] = atom_to_ribf_;
+    sparse_maps_["ATOM_TO_SHELL"] = atom_to_shell_;
+    sparse_maps_["ATOM_TO_RISHELL"] = atom_to_rishell_;
+
+    sparse_maps_["LMO_TO_BF"] = lmo_to_bfs_;
+    sparse_maps_["LMO_TO_ATOM"] = lmo_to_atoms_;
+    sparse_maps_["PAO_TO_BF"] = pao_to_bfs_;
+    sparse_maps_["PAO_TO_ATOM"] = pao_to_atoms_;
+
+    sparse_maps_["LMO_TO_RIBF"] = lmo_to_ribfs_;
+    sparse_maps_["LMO_TO_RIATOM"] = lmo_to_riatoms_;
+    sparse_maps_["LMO_TO_PAO"] = lmo_to_paos_;
+    sparse_maps_["LMO_TO_PAOATOM"] = lmo_to_paoatoms_;
+
+    sparse_maps_["LMOPAIR_TO_RIBF"] = lmopair_to_ribfs_;
+    sparse_maps_["LMOPAIR_TO_RIATOM"] = lmopair_to_riatoms_;
+    sparse_maps_["LMOPAIR_TO_PAO"] = lmopair_to_paos_;
+    sparse_maps_["LMOPAIR_TO_PAOATOM"] = lmopair_to_paoatoms_;
+
+    sparse_maps_["LMO_TO_RIATOM_EXT"] = lmo_to_riatoms_ext_;
+    sparse_maps_["RIATOM_TO_LMO_EXT"] = riatom_to_lmos_ext_;
+    sparse_maps_["RIATOM_TO_PAO_EXT"] = riatom_to_paos_ext_;
+    sparse_maps_["RIATOM_TO_ATOM_1"] = riatom_to_atoms1_;
+    sparse_maps_["RIATOM_TO_SHELL_1"] = riatom_to_shells1_;
+    sparse_maps_["RIATOM_TO_BF_1"] = riatom_to_bfs1_;
+    sparse_maps_["RIATOM_TO_ATOM_2"] = riatom_to_atoms2_;
+    sparse_maps_["RIATOM_TO_SHELL_2"] = riatom_to_shells2_;
+    sparse_maps_["RIATOM_TO_BF_2"] = riatom_to_bfs2_;
+}
+
+SharedMatrix DLPNOMP2::get_lmo_matrix(std::string key) {
+    if (!lmo_matrices_.size()) store_information();
+    return lmo_matrices_[key];
+}
+
+SharedMatrix DLPNOMP2::get_pao_matrix(std::string key) {
+    if (!pao_matrices_.size()) store_information();
+    return pao_matrices_[key];
+}
+
+std::vector<SharedMatrix> DLPNOMP2::get_pno_matrix(std::string key) {
+    if (!pno_matrices_.size()) store_information();
+    return pno_matrices_[key];
+}
+
+SparseMap DLPNOMP2::get_sparse_map(std::string key) {
+    if (!sparse_maps_.size()) store_information();
+    return sparse_maps_[key];
 }
 
 }  // namespace dlpno

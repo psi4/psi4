@@ -33,6 +33,9 @@
 
 #include "psi4/libmints/wavefunction.h"
 
+#include <map>
+#include <string>
+
 namespace psi {
 namespace dlpno {
 
@@ -52,10 +55,12 @@ class DLPNOMP2 : public Wavefunction {
     SharedMatrix full_metric_;
 
     /// localized molecular orbitals (LMOs)
+    std::map<std::string, SharedMatrix> lmo_matrices_; ///<A lookup table of each LMO matrix
     SharedMatrix C_lmo_;
     SharedMatrix F_lmo_;
 
     /// projected atomic orbitals (PAOs)
+    std::map<std::string, SharedMatrix> pao_matrices_; ///<A lookup table of each PAO matrix
     SharedMatrix C_pao_;
     SharedMatrix F_pao_;
     SharedMatrix S_pao_;
@@ -73,6 +78,7 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> qia_;
 
     /// pair natural orbitals (PNOs)
+    std::map<std::string, std::vector<SharedMatrix>> pno_matrices_; ///<A lookup table of each PNO matrix
     std::vector<SharedMatrix> K_iajb_;  ///< exchange operators (i.e. (ia|jb) integrals)
     std::vector<SharedMatrix> T_iajb_;  ///< amplitudes
     std::vector<SharedMatrix> Tt_iajb_; ///< antisymmetrized amplitudes
@@ -95,12 +101,19 @@ class DLPNOMP2 : public Wavefunction {
     double e_lmp2_os_; ///< opposite-spin component of e_lmp2_
 
     // => Sparse Maps <= //
+    std::map<std::string, SparseMap> sparse_maps_; ///< A lookup table of each SparseMap
 
     // orbital / aux bases
     SparseMap atom_to_bf_; ///< which orbital BFs are on a given atom?
     SparseMap atom_to_ribf_; ///< which aux BFs are on a given atom?
     SparseMap atom_to_shell_; ///< which orbital basis shells are on a given atom?
     SparseMap atom_to_rishell_; ///< which aux basis shells are on a given atom?
+
+    // AO to LMO/PAO
+    SparseMap lmo_to_bfs_;
+    SparseMap lmo_to_atoms_;
+    SparseMap pao_to_bfs_;
+    SparseMap pao_to_atoms_;
 
     // LMO domains
     SparseMap lmo_to_ribfs_; ///< which aux BFs are needed for density-fitting a LMO?
@@ -177,9 +190,37 @@ class DLPNOMP2 : public Wavefunction {
     void print_integral_sparsity();
     void print_results();
 
+    /// Create lookup tables for all sparsity information (LMO, PAO, PNOs, SparseMaps)
+    void store_information();
+
    public:
     DLPNOMP2(SharedWavefunction ref_wfn, Options& options);
     ~DLPNOMP2() override;
+
+    /// Gets LMO matrix from LMO lookup table
+    SharedMatrix get_lmo_matrix(std::string key);
+    /// Gets PAO matrix from PAO lookup table
+    SharedMatrix get_pao_matrix(std::string key);
+    /// Gets PNO matrix from PNO lookup table
+    std::vector<SharedMatrix> get_pno_matrix(std::string key);
+    /// Gets specific sparse map by key
+    SparseMap get_sparse_map(std::string key);
+    /// Returns PNO virtual energies per pair ij
+    std::vector<SharedVector> eps_pno() { return e_pno_; }
+
+    /// LMO indices (i, j) to significant LMO pair index (ij); insignificant (i, j) maps to -1
+    std::vector<std::vector<int>> i_j_to_ij() { return i_j_to_ij_; }
+    /// LMO pair index (ij) to both LMO indices (i, j)
+    std::vector<std::pair<int,int>> ij_to_i_j() { return ij_to_i_j_; }
+    /// LMO pair index (ij) to LMO pair index (ji)
+    std::vector<int> ij_to_ji() { return ij_to_ji_; }
+
+    /// Returns LMP2 Correlation Energy
+    double e_lmp2() { return e_lmp2_; }
+    /// Returns LMO Truncation Correction
+    double de_lmo_total() { return de_dipole_; }
+    /// Returns PNO Truncation Correction
+    double de_pno_total() { return de_pno_total_; }
 
     double compute_energy() override;
 };
