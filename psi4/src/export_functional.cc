@@ -119,10 +119,10 @@ void export_functional(py::module &m) {
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
 
     py::class_<SuperFunctional, std::shared_ptr<SuperFunctional>>(m, "SuperFunctional", "docstring")
-
+        
         .def(py::init<>())
         .def_static("blank", &SuperFunctional::blank, "Initialize a blank SuperFunctional.")
-        .def_static("XC_build", &SuperFunctional::XC_build, "Builds a SuperFunctional from a XC string.")
+        .def_static("XC_build", &SuperFunctional::XC_build, "name"_a, "unpolarized"_a, "tweak"_a = py::dict{}, "Builds a SuperFunctional from a XC string.")
         .def("allocate", &SuperFunctional::allocate,
              "Allocates the vectors, should be called after ansatz or npoint changes.")
         .def("compute_functional", &SuperFunctional::compute_functional,

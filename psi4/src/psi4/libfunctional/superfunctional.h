@@ -159,7 +159,7 @@ class SuperFunctional {
 
     // Build a blank superfunctional
     static std::shared_ptr<SuperFunctional> blank();
-    static std::shared_ptr<SuperFunctional> XC_build(std::string name, bool unpolarized);
+    static std::shared_ptr<SuperFunctional> XC_build(std::string name, bool unpolarized, const std::optional<std::map<std::string, double>>& );
 
     // Clones a *polarized*, complete superfunctional. Used, e.g., in spin-symmetry-
     // breaking eigenvectors of the MO hessian or linear response eigenproblem.

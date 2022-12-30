@@ -563,7 +563,7 @@ funcs.append({
             's6': 1.000,
             's8': 0.2641,
             'a1': 0.0000,
-            'a2': 5.4959
+            'a2': 5.4959,
         },
     },
     "description":
@@ -615,7 +615,7 @@ funcs.append({
         "alpha": 0.25
     },
     "description": '    r2SCAN0 Hybrid Meta-GGA XC Functional\n',
-    "citation": ' M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
+    "citation": '    M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
     "doi": "10.1063/5.0086040",
 })
 
@@ -631,7 +631,7 @@ funcs.append({
         "alpha": 0.10
     },
     "description": '    r2SCANh Hybrid Meta-GGA XC Functional\n',
-    "citation": ' M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
+    "citation": '    M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
     "doi": "10.1063/5.0086040",
 })
 
@@ -647,7 +647,7 @@ funcs.append({
         "alpha": 0.50
     },
     "description": '    r2SCAN50 Hybrid Meta-GGA XC Functional\n',
-    "citation": ' M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
+    "citation": '    M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
     "doi": "10.1063/5.0086040",
 })
 

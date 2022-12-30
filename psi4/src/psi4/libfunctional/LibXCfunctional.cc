@@ -326,7 +326,6 @@ void LibXCFunctional::set_tweak(std::map<std::string, double> values, bool quiet
         allowed_keys_join += key;
         if (par + 1 != npars) allowed_keys_join += ", ";
     }
-
     for (auto const& tweak : tweakers_dict) {
         auto it = std::find(allowed_keys.begin(), allowed_keys.end(), tweak.first);
         if (it != allowed_keys.end()) {

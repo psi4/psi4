@@ -308,7 +308,7 @@ the ``dftd3``/|PSIfour| interface enables computations of three-body dispersion
 corrections. In ``DFT-D3``, three-body dispersion is approximated with the
 Axilrod-Teller-Muto model:
 
-.. math:: E_{disp}^{(3)}=-\frac{1}{6}\sum_{A\neqB\neqC}\frac{C_{9}^{ABC}(3\cos{\theta_a}\cos{\theta_b}\cos{\theta_c}+1)}{(r_{AB}r_{BC}r_{AC})^{3}}f_{damp}(\bar{r}_{ABC})
+.. math:: E_{disp}^{(3)}=-\frac{1}{6}\sum_{A\neq B\neq C}\frac{C_{9}^{ABC}(3\cos{\theta_a}\cos{\theta_b}\cos{\theta_c}+1)}{(r_{AB}r_{BC}r_{AC})^{3}}f_{damp}(\bar{r}_{ABC})
  
 where :math:`\theta_a` is the angle at atom A corresponding to the triangle formed by atoms A, B, and C,
 and :math:`\bar{r}_{ABC}` is the geometric mean of the corresponding atomic-pair distances.

@@ -351,6 +351,42 @@ funcs.append({
     '    BP86 GGA XC Functional based on VWN5 corr. & more accurate ftilde value\n',
 })
 
+# B97-3c = modified B97(GGA) + D3BJ + SRB(through mctc-gcp)
+funcs.append({
+    "name": "B973c",
+    "alias": ["B97-3c"],
+    "xc_functionals": {
+        # "GGA_XC_B97_3C": {} #for libxc >= v6.0
+        "GGA_XC_B97_D": {
+            "tweak": { # needed until libxc >= v6.0
+            "_cx0": 1.076616,
+            "_cx1":-0.469912,
+            "_cx2":3.322442,
+            "_css0":0.543788,
+            "_css1":-1.444420,
+            "_css2":1.637436,
+            "_cos0":0.635047,
+            "_cos1":5.532103,
+            "_cos2":-15.301575,
+            },
+        },
+    },
+    "description": '    B97-3c GGA-based 3C composite method with a TZ basis set, D3 and short-range basis set correction.\n',
+    "citation": '     J. G. Brandenburg, C.Bannwarth, A. Hansen, S. Grimme J. Chem. Phys. 148, 064104, 2018\n',
+    "doi": "10.1063/1.5012601",
+    "dispersion": {
+        "type": "d3bjatm",
+        "params": {
+            's6': 1.000,
+            's8': 1.500,
+            'a1': 0.370,
+            'a2': 4.100,
+            's9': 1.000
+        },
+    },
+})
+
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional

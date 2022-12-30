@@ -247,7 +247,7 @@ for key in functionals:
         procedures['energy']['fisapt0-' + disp] = proc.run_fisapt
 
 # Will complete modelchem spec with basis='(auto)' for following methods
-integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2']
+integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2','rscan3c','r2scan-3c','b973c','b97-3c']
 
 # Integrate arbitrary order with driver routines
 for lvl in range(2, 99):

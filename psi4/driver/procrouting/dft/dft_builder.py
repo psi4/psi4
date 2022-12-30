@@ -258,7 +258,11 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
     if "xc_functionals" in func_dictionary:
         for xc_key in func_dictionary["xc_functionals"]:
             xc_name = ("XC_" + xc_key).upper()
-        sup = core.SuperFunctional.XC_build(xc_name, restricted)
+            xc_params = func_dictionary["xc_functionals"][xc_key]
+            if "tweak" in xc_params:
+                sup = core.SuperFunctional.XC_build(xc_name, restricted, xc_params["tweak"])
+            else:
+                sup = core.SuperFunctional.XC_build(xc_name, restricted)
         descr = "    " + func_dictionary["name"] + " "
         if sup.is_gga():
             if sup.x_alpha() > 0:

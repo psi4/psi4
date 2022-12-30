@@ -98,15 +98,13 @@ Running gCP
 ~~~~~~~~~~~
 
 At present there is a limited interface to gCP that is used
-only to implement the "HF-3c" [Sure:2013:1672]_ and "PBEh-3c"
-[Grimme:2015:054107]_ methods (both energy and gradient). The interface
-can use classic or mctc-gcp executables interchangeably and will prefer the latter.
-A :ref:`DFTD3 <sec:dftd3>` executable, classic or simple-dftd3,
-must also be available for these methods to
-run. Unlike every other method in |PSIfour|, if a basis set has not been
-set, these will default to their intended basis sets: MINIX for HF-3c
-and def2-mSVP for PBEh-3c. If a basis has previously been set, but you
-want to use the default basis, use the slash syntax to "empty" the basis
+only to implement the "HF-3c" [Sure:2013:1672]_, "PBEh-3c"
+[Grimme:2015:054107]_, "B97-3c" [Brandenburg]_, and "r2SCAN-3c" [REF..]_ methods (both energy and gradient).
+The interface can use classic or mctc-gcp executables but only the latter implements "B97-3c" and "r2SCAN-3c".
+A :ref:`DFTD3 <sec:dftd3>` executable, classic or simple-dftd3, must also be available for these methods to
+run. These method are defined with their own basis set and thus no basis set should be set by the user.
+|PSIfour| will select the intended basis sets: HF-3c/MINIX, PBEh-3c/def2-mSVP, B97-3c/def2-mTZVP, r2SCAN-3c/def2-mTZVPP.
+If a basis has previously been set for another calculation, use the slash syntax to "empty" the basis
 option for the scope of the current calculation, ``energy("hf3c/")``.
 
 A few practical examples:
@@ -119,15 +117,10 @@ A few practical examples:
 
    optimize('pbeh3c')
 
-* HF-3c with non-standard basis ::
+* r2SCAN-3c with default basis after basis set ::
 
    set basis cc-pvdz
-   energy('hf3c')
-
-* PBEh-3c with default basis after basis set ::
-
-   set basis cc-pvdz
-   energy('pbeh3c/')
+   energy('r2can3c/')
 
 If only BSSE/basis set corrections (rather than total energies) are of
 interest, the ``gcp`` program can be run independently of the scf
