@@ -491,6 +491,8 @@ void FISAPT::partition() {
         }
     }
 
+    // We save matrices with the localized orbital (IBO) coefficients for A, B, C, and the two link orbitals only.
+    // We need the latter for later link reassignment in the SAOn/SIAOn methods.
     matrices_["LoccA"] = FISAPT::extract_columns(orbsA, matrices_["Locc"]);
     matrices_["LoccB"] = FISAPT::extract_columns(orbsB, matrices_["Locc"]);
     matrices_["LoccC"] = FISAPT::extract_columns(orbsC, matrices_["Locc"]);
@@ -1032,6 +1034,8 @@ void FISAPT::freeze_core() {
 void FISAPT::unify() {
     outfile->Printf("  ==> Unification <==\n\n");
 
+    // Matrices Cocc0A, Cocc0B come from the SCF calculation for noninteracting fragments A,B embedded in C
+    // Matrices LoccA,LoccB,LoccC,LoccL come from the SCF calculation for entire molecule, and then localization.
     std::shared_ptr<Matrix> Cocc_A = matrices_["Cocc0A"];
     std::shared_ptr<Matrix> Cocc_B = matrices_["Cocc0B"];
     std::shared_ptr<Matrix> Cocc_C = matrices_["LoccC"];
@@ -1061,6 +1065,7 @@ void FISAPT::unify() {
     std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     std::string link_ortho = options_.get_str("FISAPT_LINK_ORTHO");
 
+    // For the SAOn/SIAOn link assignments, the nuclear charge assignment to fragments is altered (one proton from the connecting atoms on A,B is no longer counted as part of C). Therefore, later we will need to store both the new SAOn/SIAOn nuclear charges (ZA,ZB,ZC) and old, ISAPT(C) charges (ZAbak,ZBbak,ZCbak).
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
         ZA = ZAbak;
         ZB = ZBbak;
@@ -1069,6 +1074,8 @@ void FISAPT::unify() {
     double* ZAp = ZA->pointer();
     double* ZBp = ZB->pointer();
     double* ZCp = ZC->pointer();
+    // Now we will identify the link intrinsic hybrid orbitals that will be reassigned (with one electron each) from C to A,B.
+    // These link IHOs will be kept in matrices thislinkA/thislinkB.
 
     std::vector<int> link_orbs;
     int nm = primary_->nbf();
@@ -1092,6 +1099,8 @@ void FISAPT::unify() {
     int nvir = matrices_["Call"]->colspi()[0] - na;
 
     if (link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+//In the SIAO algorithms, we project the link IBOs onto IAOs of the respective fragment.
+//IAOs have tails, but every IAO has a primary, dominant  center so we can easily assign them to fragments A/B/C.
         outfile->Printf("  ==> Link bond redistribution (SIAOn) <==\n\n");
         int natoms = primary_->molecule()->natom();  
         std::shared_ptr<Matrix> Iao(matrices_["IAO"]->clone());
@@ -1100,7 +1109,7 @@ void FISAPT::unify() {
         int nminao = minao->nbf();
         outfile->Printf("\n Number of MINAO functions: %d Number of IBOs: %d",nminao,na);
         auto Sminao = reference_->mintshelper()->ao_overlap(minao,minao);
-//IAOs themselves are localized on atoms - find out which atoms and how well localized
+//IAOs themselves are localized on atoms - find out which atoms and how well localized. The matrix atiao will have the weight of atom k in the IAO number l.
         auto atiao = std::make_shared<Matrix>("ATIAO", nminao, natoms);
         double** atiaop = atiao->pointer();
         atiao->zero();
@@ -1113,6 +1122,7 @@ void FISAPT::unify() {
 //      atiao->print();
 //it seems that IAOs are ordered and localized in the same way as the MINAO basis functions, so 
 //minao->function_to_center(k) returns the center for IAO number k.
+//We can now express the two link IBOs as linear combinations of IAOs.
         std::shared_ptr<Matrix> CLiao = linalg::triplet(matrices_["IAO"], Sao, matrices_["LoccL"], true, false, false);
         double** CLiaop = CLiao->pointer();
         std::shared_ptr<Matrix> CLiaoA(CLiao->clone());
@@ -1121,6 +1131,7 @@ void FISAPT::unify() {
         double** CLiaoAp = CLiaoA->pointer();
         double** CLiaoBp = CLiaoB->pointer();
         double** CLiaoCp = CLiaoC->pointer();
+//The FRAG matrix has 1/2/3 when the atom belongs to A/B/C, respectively.
         for (int k = 0; k < nminao; k++) {
           if (FRAGp[minao->function_to_center(k)] == 1.0) {
             for (int l = 0; l < 2; l++) {
@@ -1153,6 +1164,13 @@ void FISAPT::unify() {
             ortho_targetA = matrices_["Cocc0A"];
             ortho_targetB = matrices_["Cocc0B"];
             }
+// At this point, the matrices CLiaoA,CLiaoB,CLiaoC have the 2 link orbitals expanded in IAOs of one fragment only, the rest are zeroed out.
+// We now recast the projected vectors back to the AO basis, identify which one is A and which is B, 
+// and orthogonalize to the occupied orbitals of a given fragment.
+// Orthogonalization options:
+//     FRAGMENT (default): orthogonalize to occupied orbitals of the noninteracting fragment A/B embedded in C
+//     WHOLE: orthogonalize to occupied IBOs of the whole molecule localized on A/B
+//     NONE: do not orthogonalize
         std::shared_ptr<Matrix> CLiaoA_AO = linalg::doublet(matrices_["IAO"], CLiaoA, false, false);
         std::shared_ptr<Matrix> CLiaoB_AO = linalg::doublet(matrices_["IAO"], CLiaoB, false, false);
         for (int l = 0; l < 2; l++) {
@@ -1165,7 +1183,7 @@ void FISAPT::unify() {
                 thislinkA0->copy(thislinkA);
                 if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
                     std::shared_ptr<Matrix> CoccLA_ortho = linalg::triplet(ortho_targetA, Sao, thislinkA, true, false, false);
-                    CoccLA_ortho->print();
+                    // CoccLA_ortho->print();
                     double** CoccLA_orthop = CoccLA_ortho->pointer();
                     for (int j = 0; j < norbA; j++) {
                         di[0] = j;
@@ -1188,7 +1206,7 @@ void FISAPT::unify() {
                 thislinkB0->copy(thislinkB);
                 if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
                     std::shared_ptr<Matrix> CoccLB_ortho = linalg::triplet(ortho_targetB, Sao, thislinkB, true, false, false);
-                    CoccLB_ortho->print();
+                    // CoccLB_ortho->print();
                     double** CoccLB_orthop = CoccLB_ortho->pointer();
                     for (int j = 0; j < norbB; j++) {
                         di[0] = j;
@@ -1208,7 +1226,7 @@ void FISAPT::unify() {
         } 
     }
     else if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" ) {
-    //now redistribute the linking bonds proportionally//
+//In the SAO algorithms, we project the link IBOs onto AO basis functions of the respective fragment.
         outfile->Printf("  ==> Link bond redistribution (SAOn) <==\n\n");
         vectors_["ZA"] = ZA;
         vectors_["ZB"] = ZB;
@@ -1249,6 +1267,12 @@ void FISAPT::unify() {
         outfile->Printf("\n Norm of link vectors untruncated: \n");
         LinkAllnorm->print();
 
+// At this point, the matrices LinkA,LinkB,LinkC have the 2 link orbitals expanded in AOs of one fragment only, the rest are zeroed out.
+// We now identify which one is A and which is B, and orthogonalize to the occupied orbitals of a given fragment.
+// Orthogonalization options:
+//     FRAGMENT (default): orthogonalize to occupied orbitals of the noninteracting fragment A/B embedded in C
+//     WHOLE: orthogonalize to occupied IBOs of the whole molecule localized on A/B
+//     NONE: do not orthogonalize
         std::shared_ptr<Matrix> ortho_targetA = matrices_["LoccA"];
         std::shared_ptr<Matrix> ortho_targetB = matrices_["LoccB"];
         if (link_ortho == "FRAGMENT") {
@@ -1265,7 +1289,7 @@ void FISAPT::unify() {
                 thislinkA0->copy(thislinkA);
                 if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
                     std::shared_ptr<Matrix> CoccLA_ortho = linalg::triplet(ortho_targetA, Sao, thislinkA, true, false, false);
-                    CoccLA_ortho->print();
+                    // CoccLA_ortho->print();
                     double** CoccLA_orthop = CoccLA_ortho->pointer();
                     for (int j = 0; j < norbA; j++) {
                         di[0] = j;
@@ -1289,7 +1313,7 @@ void FISAPT::unify() {
                 thislinkB0->copy(thislinkB);
                 if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
                     std::shared_ptr<Matrix> CoccLB_ortho = linalg::triplet(ortho_targetB, Sao, thislinkB, true, false, false);
-                    CoccLB_ortho->print();
+                    // CoccLB_ortho->print();
                     double** CoccLB_orthop = CoccLB_ortho->pointer();
                     for (int j = 0; j < norbB; j++) {
                         di[0] = j;
@@ -1320,6 +1344,9 @@ void FISAPT::unify() {
     matrices_["D_B0"] = D_B->clone();
     matrices_["D_C0"] = D_C->clone();
 
+// At this point, for all SAOn/SIAOn variants, matrices thislinkA and thislinkB contain the link hybrid orbitals that are being reassigned from C to A/B.
+// We can now introduce this reassignment to the fragment density matrices D_A, D_B, D_C.
+// Note the multiplication by 1/sqrt{2} which correspond to multiplying the density matrix contribution by 1/2 (the orbital is singly occupied).
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
         outfile->Printf("\n Trace of D_A before link reassignment: %10.6f \n",D_A->vector_dot(Sao));
         outfile->Printf("\n Trace of D_B before link reassignment: %10.6f \n",D_B->vector_dot(Sao));
@@ -1372,7 +1399,7 @@ void FISAPT::unify() {
     std::shared_ptr<Matrix> J_C(matrices_["JC"]->clone());
     std::shared_ptr<Matrix> K_C(matrices_["KC"]->clone());
 
-// now redo Coulomb operators
+// If density has been reassigned between fragments (the SAOn/SIAOn variants), we need to redo the Coulomb and exchange operators now.
     SharedMatrix AlloccA(Cocc_A->clone());
     SharedMatrix AlloccB(Cocc_B->clone());
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
@@ -1437,18 +1464,24 @@ void FISAPT::unify() {
 }
 
 void FISAPT::unify_part2() {
-// What happens between part1 and part2 is a recalculation of one-electron integrals with updated nuclear charges
+// What must happen between unify() and unify_part2() is a recalculation of one-electron integrals with updated nuclear charges,
+// that is, another call to nuclear().
     outfile->Printf("  ==> Unification (part 2) <==\n\n");
 
     std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     std::string link_ortho = options_.get_str("FISAPT_LINK_ORTHO");
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
 
-//now redo monomer SCF calculations with the hybrid orbital on B removed from the embedding potential for A
-//and vice versa
+//Now redo monomer SCF calculations with the hybrid orbital on B removed from the embedding potential for A
+//and vice versa.
+//This is the FIRST iteration towards self-consistency.
+//If zero iterations requested (SAO0/SIAO0), we still come in here but do not save the SCF vectors. MAybe that is unnecessary? 
+//Anyway, SAO0/SIAO0 is bad, you should always do at least one iteration.
+//old nuclear potential, with +1 charges on the connecting atoms of A/B belonging to C
     matrices_["V_A0"] = matrices_["V_A"];
     matrices_["V_B0"] = matrices_["V_B"];
     matrices_["V_C0"] = matrices_["V_C"];
+//new, updated nuclear potential, with full charges on A/B belonging to A/B
     matrices_["V_A"] = matrices_["VA"];
     matrices_["V_B"] = matrices_["VB"];
     matrices_["V_C"] = matrices_["VC"];
@@ -1496,7 +1529,7 @@ void FISAPT::unify_part2() {
     nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], VA_SCF, matrices_["thislinkA"], true, false, false)->get(0,0);
     nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["V_C"], matrices_["thislinkA"], true, false, false)->get(0,0);
     nucrep += 4.0*matrices_["D_C"]->vector_dot(matrices_["JLA"]) - 2.0*matrices_["D_C"]->vector_dot(matrices_["KLA"] );
-    // Seems ultra-weird but maybe these "self-interaction" terms need to be included?
+    // Seems ultra-weird but apparently these "self-interaction" terms need to be included.
     nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["JLA"], matrices_["thislinkA"], true, false, false)->get(0,0);
     nucrep -= linalg::triplet(matrices_["thislinkA"], matrices_["KLA"], matrices_["thislinkA"], true, false, false)->get(0,0);
     std::shared_ptr<FISAPTSCF> scfA =
@@ -1526,7 +1559,7 @@ void FISAPT::unify_part2() {
     nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], VB_SCF, matrices_["thislinkB"], true, false, false)->get(0,0);
     nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["V_C"], matrices_["thislinkB"], true, false, false)->get(0,0);
     nucrep += 4.0*matrices_["D_C"]->vector_dot(matrices_["JLB"]) - 2.0*matrices_["D_C"]->vector_dot(matrices_["KLB"] );
-    // Seems ultra-weird but maybe these "self-interaction" terms need to be included?
+    // Seems ultra-weird but apparently these "self-interaction" terms need to be included.
     nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["JLB"], matrices_["thislinkB"], true, false, false)->get(0,0);
     nucrep -= linalg::triplet(matrices_["thislinkB"], matrices_["KLB"], matrices_["thislinkB"], true, false, false)->get(0,0);
     std::shared_ptr<FISAPTSCF> scfB =
@@ -1544,8 +1577,8 @@ void FISAPT::unify_part2() {
         vectors_["eps_vir0B"] = scfB->vectors()["eps_vir"];
     }
 
-//now reorthogonalize the truncated link orbital to A/B.
-//It does not change a lot, but just for correctness...                
+//Now reorthogonalize the truncated link orbital to the new A/B SCF space, completing the FIRST iteration to self-consistency.
+//thislinkA0/thislinkB0 are the original unorthogonalized link IHOs computed before.
     if (link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
         std::shared_ptr<Matrix> thislinkA(matrices_["thislinkA0"]->clone());
         std::shared_ptr<Matrix> thislinkB(matrices_["thislinkB0"]->clone());
@@ -1566,7 +1599,7 @@ void FISAPT::unify_part2() {
             }
         if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
             std::shared_ptr<Matrix> CoccLA_ortho = linalg::triplet(ortho_targetA, matrices_["S"], thislinkA, true, false, false);
-            CoccLA_ortho->print();
+            // CoccLA_ortho->print();
             double** CoccLA_orthop = CoccLA_ortho->pointer();
             for (int j = 0; j < norbA; j++) {
                 di[0] = j;
@@ -1580,7 +1613,7 @@ void FISAPT::unify_part2() {
         thislinkA->scale(1.0/std::sqrt(thisnormAp[0][0]));
         if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
             std::shared_ptr<Matrix> CoccLB_ortho = linalg::triplet(ortho_targetB, matrices_["S"], thislinkB, true, false, false);
-            CoccLB_ortho->print();
+            // CoccLB_ortho->print();
             double** CoccLB_orthop = CoccLB_ortho->pointer();
             for (int j = 0; j < norbB; j++) {
                 di[0] = j;
@@ -1593,6 +1626,8 @@ void FISAPT::unify_part2() {
         double** thisnormBp = thisnormB->pointer();
         thislinkB->scale(1.0/std::sqrt(thisnormBp[0][0]));
 
+// We can now use the link IHOs from the first iteration to update the fragment density matrices D_A, D_B, D_C.
+// Note the multiplication by 1/sqrt{2} which correspond to multiplying the density matrix contribution by 1/2 (the orbital is singly occupied).
         std::shared_ptr<Matrix> Cocc_C = matrices_["LoccC"];
         std::shared_ptr<Matrix> D_A = linalg::doublet(matrices_["Cocc0A"], matrices_["Cocc0A"], false, true);
         std::shared_ptr<Matrix> D_B = linalg::doublet(matrices_["Cocc0B"], matrices_["Cocc0B"], false, true);
@@ -1637,7 +1672,7 @@ void FISAPT::unify_part2() {
         std::shared_ptr<Matrix> J_C(matrices_["JC"]->clone());
         std::shared_ptr<Matrix> K_C(matrices_["KC"]->clone());
 
-// now redo Coulomb operators
+// Now redo the Coulomb and exchange operators with the new densities. We do just the link part and save it separately as well.
         SharedMatrix AlloccA(matrices_["Cocc0A"]->clone());
         SharedMatrix AlloccB(matrices_["Cocc0B"]->clone());
         AlloccA = linalg::horzcat({matrices_["Cocc0A"],thislinkA});
@@ -1685,9 +1720,9 @@ void FISAPT::unify_part2() {
      
     if (link_assignment == "SAO2" || link_assignment == "SIAO2" ) {
 
-//do another iteration of this only when SAO2/SIAO2 is requested
-//now redo monomer SCF calculations with the hybrid orbital on B removed from the embedding potential for A
-//and vice versa
+//Now redo monomer SCF calculations with the hybrid orbital on B removed from the embedding potential for A
+//and vice versa.
+//This is the SECOND iteration towards self-consistency, performed only when SAO2/SIAO2 is requested.
     outfile->Printf("  ==> Redo Relaxed SCF Equations (SAO2/SIAO2) <==\n\n");
 
     // => Embedding Potential for C <= //
@@ -1716,7 +1751,6 @@ void FISAPT::unify_part2() {
     nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], VA_SCF, matrices_["thislinkA"], true, false, false)->get(0,0);
     nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["VC"], matrices_["thislinkA"], true, false, false)->get(0,0);
     nucrep += 4.0*matrices_["D_C"]->vector_dot(matrices_["JLA"]) - 2.0*matrices_["D_C"]->vector_dot(matrices_["KLA"] );
-    // Seems ultra-weird but maybe these "self-interaction" terms need to be included?
     nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["JLA"], matrices_["thislinkA"], true, false, false)->get(0,0);
     nucrep -= linalg::triplet(matrices_["thislinkA"], matrices_["KLA"], matrices_["thislinkA"], true, false, false)->get(0,0);
     std::shared_ptr<FISAPTSCF> scfA2 =
@@ -1741,7 +1775,6 @@ void FISAPT::unify_part2() {
     nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], VB_SCF, matrices_["thislinkB"], true, false, false)->get(0,0);
     nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["VC"], matrices_["thislinkB"], true, false, false)->get(0,0);
     nucrep += 4.0*matrices_["D_C"]->vector_dot(matrices_["JLB"]) - 2.0*matrices_["D_C"]->vector_dot(matrices_["KLB"] );
-    // Seems ultra-weird but maybe these "self-interaction" terms need to be included?
     nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["JLB"], matrices_["thislinkB"], true, false, false)->get(0,0);
     nucrep -= linalg::triplet(matrices_["thislinkB"], matrices_["KLB"], matrices_["thislinkB"], true, false, false)->get(0,0);
     std::shared_ptr<FISAPTSCF> scfB2 =
@@ -1757,8 +1790,8 @@ void FISAPT::unify_part2() {
     vectors_["eps_occ0B"] = scfB2->vectors()["eps_occ"];
     vectors_["eps_vir0B"] = scfB2->vectors()["eps_vir"];
 
-//now reorthogonalize the truncated link orbital to A/B.
-//It does not change a lot, but just for correctness...                
+//Now reorthogonalize the truncated link orbital to the new A/B SCF space, completing the SECOND iteration to self-consistency.
+//thislinkA0/thislinkB0 are the original unorthogonalized link IHOs computed before.
     thislinkA->copy(matrices_["thislinkA0"]);
     thislinkB->copy(matrices_["thislinkB0"]);
     if (link_ortho == "FRAGMENT") {
@@ -1771,7 +1804,7 @@ void FISAPT::unify_part2() {
         } 
     if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
         std::shared_ptr<Matrix> CoccLA_ortho = linalg::triplet(ortho_targetA, matrices_["S"], thislinkA, true, false, false);
-        CoccLA_ortho->print();
+        // CoccLA_ortho->print();
         double** CoccLA_orthop = CoccLA_ortho->pointer();
         for (int j = 0; j < norbA; j++) {
             di[0] = j;
@@ -1786,7 +1819,7 @@ void FISAPT::unify_part2() {
 
     if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
         std::shared_ptr<Matrix> CoccLB_ortho = linalg::triplet(ortho_targetB, matrices_["S"], thislinkB, true, false, false);
-        CoccLB_ortho->print();
+        // CoccLB_ortho->print();
         double** CoccLB_orthop = CoccLB_ortho->pointer();
         for (int j = 0; j < norbB; j++) {
             di[0] = j;
@@ -1799,6 +1832,8 @@ void FISAPT::unify_part2() {
     double** thisnormBp = thisnormB->pointer();
     thislinkB->scale(1.0/std::sqrt(thisnormBp[0][0]));
 
+// We can now use the link IHOs from the second iteration to update the fragment density matrices D_A, D_B, D_C.
+// Note the multiplication by 1/sqrt{2} which correspond to multiplying the density matrix contribution by 1/2 (the orbital is singly occupied).
     D_A = linalg::doublet(matrices_["Cocc0A"], matrices_["Cocc0A"], false, true);
     D_B = linalg::doublet(matrices_["Cocc0B"], matrices_["Cocc0B"], false, true);
     D_C->zero();
@@ -1841,7 +1876,7 @@ void FISAPT::unify_part2() {
     J_C->copy(matrices_["JC"]);
     K_C->copy(matrices_["KC"]);
 
-// now redo Coulomb operators
+// Finally, redo the Coulomb and exchange operators one last time.
     AlloccA = linalg::horzcat({matrices_["Cocc0A"],thislinkA});
     AlloccB = linalg::horzcat({matrices_["Cocc0B"],thislinkB});
  
@@ -1884,10 +1919,19 @@ void FISAPT::unify_part2() {
     }
     }
     }
+// Now we are done even for SAO2/SIAO2.
 }
 
-//create cube files for displaying link orbitals and densities
+// Create cube files for displaying link orbitals and densities.
+// Three kinds of cubes are supported: 
+// FISAPT_CUBE_LINKIBOS==true - compute the two link IBOs
+// FISAPT_CUBE_LINKIHOS==true - compute the two link IHOs obtained by projecting link IBOs onto a suitable fragment space
+// FISAPT_CUBE_DENSMAT==true - compute the three densities for fragments A/B/C
 void FISAPT::do_cubes() {
+
+    if (!(options_.get_bool("FISAPT_CUBE_LINKIHOS")) && (!(options_.get_bool("FISAPT_CUBE_LINKIBOS")) && (!(options_.get_bool("FISAPT_CUBE_DENSMAT")) {
+    return;
+    }
     std::shared_ptr<BasisSet> auxiliary = reference_->get_basisset("DF_BASIS_SAPT");
     std::shared_ptr<CubicScalarGrid> grid_ = std::make_shared<CubicScalarGrid>(primary_, options_);
     grid_->set_filepath(options_.get_str("CUBEPROP_FILEPATH"));
@@ -2303,6 +2347,7 @@ void FISAPT::dHF() {
 }
 
 // Compute total electrostatics contribution
+// This definition works just as well for the SAOn/SIAOn methods because the densities and Coulomb operators have been adjusted.
 void FISAPT::elst() {
     outfile->Printf("  ==> Electrostatics <==\n\n");
 
@@ -2347,6 +2392,7 @@ void FISAPT::elst() {
 }
 
 // Compute total exchange contribution
+// Special code (https://doi.org/10.1021/acs.jpca.2c06465) is used for the SAOn/SIAOn variants - see below.
 void FISAPT::exch() {
     outfile->Printf("  ==> Exchange <==\n\n");
 
@@ -2378,7 +2424,6 @@ void FISAPT::exch() {
     std::shared_ptr<Matrix> Cocc_A = matrices_["Cocc_A"];   
     std::shared_ptr<Matrix> Cocc_B = matrices_["Cocc_B"];
 
-    // conventional algorithms that have to be altered for new link assignments
     std::shared_ptr<Matrix> C_O = linalg::triplet(D_B, S, Cocc_A);
     Cl.clear();
     Cr.clear();
@@ -2546,22 +2591,28 @@ void FISAPT::exch() {
     // fflush(outfile);
     } // (link_assignment == "C" || link_assignment == "AB" )
 
-    // now the updated exchange energy for new link assignments
+// Now come the first-order exchange energy expressions appropriate for the SAOn/SIAOn link assignments.
+// The expressions depend on the (parallel, perpendicular, or averaged) spin coupling between the two singly occupied link orbitals.
+// If FISAPT_EXCH_PARPERP == true, all 3 spin couplings are calculated.
+// If FISAPT_EXCH_PARPERP == false, only the averaged spin coupling is computed, avoiding the computation of a bunch of terms that cancel out in that case.
+// See https://doi.org/10.1021/acs.jpca.2c06465 for details - equation numbers below refer to this paper and its SI.
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
 
-//first let's do E(10)exch(S^2) for the parallel and perpendicular spin coupling of link orbitals
+//first let's do E(10)exch(S^2) for the parallel and perpendicular spin coupling of link orbitals - Eq. (5)
     std::shared_ptr<Matrix> Cocc_A = matrices_["AlloccA"];
     std::shared_ptr<Matrix> Cocc_B = matrices_["AlloccB"];
     std::shared_ptr<Matrix> Sab = linalg::triplet(matrices_["AlloccA"], S, matrices_["AlloccB"], true, false, false);
     double** Sabp = Sab->pointer();
     std::shared_ptr<Matrix> D_X(D_A->clone());
     std::shared_ptr<Matrix> D_Y(D_A->clone());
+//here we need the link-only parts of density matrices D_X,D_Y and their corresponding Coulomb and exchange matrices (computed earlier)
     D_X = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
     D_Y = linalg::doublet(matrices_["thislinkB"], matrices_["thislinkB"], false, true);
     std::shared_ptr<Matrix> J_X = matrices_["JLA"];
     std::shared_ptr<Matrix> K_X = matrices_["KLA"];
     std::shared_ptr<Matrix> J_Y = matrices_["JLB"];
     std::shared_ptr<Matrix> K_Y = matrices_["KLB"];
+//a few extra J/K matrices still need to be computed here
     std::shared_ptr<Matrix> C_AOB = linalg::triplet(D_B, S, Cocc_A);
     std::shared_ptr<Matrix> C_XOB = linalg::triplet(D_B, S, matrices_["thislinkA"]);
     std::shared_ptr<Matrix> C_AOY = linalg::triplet(D_Y, S, Cocc_A);
@@ -2583,7 +2634,7 @@ void FISAPT::exch() {
     std::shared_ptr<Matrix> K_XOY = K[3];
 
     if (options_.get_bool("FISAPT_EXCH_PARPERP")) {
-//we calculate the parallel and perpendicular results separately
+//we calculate the parallel and perpendicular results separately - Eq. (5) with the upper and lower signs
         double Exch10_S2PAR = 0.0;
         std::vector<double> Exch10_S2PAR_terms;
         Exch10_S2PAR_terms.resize(6);
@@ -2707,6 +2758,7 @@ void FISAPT::exch() {
     }
     else {
 //we only calculate the average of parallel and perpendicular results, so some terms are not needed at all
+//this means we compute Eq. (5) but skip all the terms with a +- or -+ in front of them - these terms cancel out
         double Exch10_S2AVG = 0.0;
         std::vector<double> Exch10_S2AVG_terms;
         Exch10_S2AVG_terms.resize(6);
@@ -2749,15 +2801,16 @@ void FISAPT::exch() {
     }
 //end of parallel- and perpendicular-link-coupling E(10)exch(S^2)
 
-//now comes the new E(10)exch(full) code with parallel spin coupling between singly occupied link orbitals
+//Now, for the nonapproximated E(10)exch with the SAOn/SIAOn link assignments, there is no shortcut - we have to calculate both spin couplings and only average the final number regardless of the FISAPT_EXCH_PARPERP value (we tried averaging out the matrices and the results were very bad).
+//First comes the parallel spin coupling between singly occupied link orbitals
     int na = matrices_["AlloccA"]->colspi()[0] - 1;
     int nb = matrices_["AlloccB"]->colspi()[0] - 1;
     std::shared_ptr<Matrix> Saa = linalg::triplet(matrices_["AlloccA"], S, matrices_["AlloccA"], true, false, false);
     std::shared_ptr<Matrix> Sbb = linalg::triplet(matrices_["AlloccB"], S, matrices_["AlloccB"], true, false, false);
+//We now construct and invert the extended overlap matrix - Eq. (12)
     auto Tbig = std::make_shared<Matrix>("T", 2*na + 2*nb + 2, 2*na + 2*nb + 2);
     Tbig->identity();
     double** Tbigp = Tbig->pointer();
-//we calculate the parallel and perpendicular results separately - we have to do so regardless of the FISAPT_EXCH_PARPERP value
         for (int a = 0; a < na; a++) {
             for (int b = 0; b < nb; b++) {
                 Tbigp[a][b + 2*na + 1] = Tbigp[b + 2*na + 1][a] = Sabp[a][b];
@@ -2854,6 +2907,7 @@ void FISAPT::exch() {
         double** Enuc2p = matrices_["E NUC"]->pointer();
         Enuc += 2.0 * Enuc2p[0][1];  // A - B
 
+//The full first-order energy (elst+exch) is given by Eq. (21)
         double E10_full_ss = Enuc;
         E10_full_ss += 2.0 * Dri_ss->vector_dot(V_B);
         E10_full_ss += 2.0 * Dsj_ss->vector_dot(V_A);
@@ -2872,7 +2926,8 @@ void FISAPT::exch() {
         outfile->Printf("\n E(10)(elst) part (PAR)  : %16.12f ",E10_elst);
         outfile->Printf("\n E(10)(exch) part (PAR)  : %16.12f \n\n",E10_full_par-E10_elst);
 
-//Now we will do the same E(10)exch(full) thing for a perpendicular spin coupling of link orbitals, by copy-paste
+//Now we do the same but with the perpendicular spin coupling between singly occupied link orbitals
+//We now construct and invert the extended overlap matrix - Eq. (13)
         Tbig->identity();
         for (int a = 0; a < na; a++) {
             for (int b = 0; b < nb; b++) {
@@ -2961,6 +3016,7 @@ void FISAPT::exch() {
         Dri_os = linalg::triplet(matrices_["AlloccA"], Dii_os, matrices_["AlloccA"], false, false, true);
         Dri_os->add(linalg::triplet(matrices_["AlloccB"], Dji_os, matrices_["AlloccA"], false, false, true));
 
+//The full first-order energy (elst+exch) is given by Eq. (21)
         E10_full_ss = Enuc;
         E10_full_ss += 2.0 * Dri_ss->vector_dot(V_B);
         E10_full_ss += 2.0 * Dsj_ss->vector_dot(V_A);
@@ -2974,7 +3030,7 @@ void FISAPT::exch() {
         outfile->Printf("\n E(10)(exch) part (PERP): : %16.12f \n\n",E10_full_perp-E10_elst);
         scalars_["Exch10"] = 0.5*(E10_full_par+E10_full_perp)-E10_elst;
 //  The algorithm which only calculates the average of parallel and perpendicular matrices proved to be
-//  inaccurate (and not invariant with respect to the A<->B interchange) so we remove it
+//  inaccurate (and not invariant with respect to the A<->B interchange) so the code has been removed.
 //end of the new E(10)exch(full) code
     } // new link assignments
 
@@ -3034,9 +3090,15 @@ void FISAPT::ind() {
     auto uBpar = std::make_shared<Matrix>("uBpar", na, nr);
     auto uBperp = std::make_shared<Matrix>("uBperp", na, nr);
 
+// Now come the second-order exchange-induction energy expressions appropriate for the SAOn/SIAOn link assignments.
+// The expressions depend on the (parallel, perpendicular, or averaged) spin coupling between the two singly occupied link orbitals.
+// If FISAPT_EXCH_PARPERP == true, all 3 spin couplings are calculated.
+// If FISAPT_EXCH_PARPERP == false, only the averaged spin coupling is computed, avoiding the computation of a bunch of terms that cancel out in that case.
+// See https://doi.org/10.1021/acs.jpca.2c06465 for details - equation numbers below refer to this paper and its SI.
     std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
 
+//here we need the link-only parts of density matrices D_X,D_Y and their corresponding Coulomb and exchange matrices (computed earlier)
         std::shared_ptr<Matrix> D_X(D_A->clone());
         std::shared_ptr<Matrix> D_Y(D_A->clone());
         D_X = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
@@ -3045,6 +3107,7 @@ void FISAPT::ind() {
         auto K_X(matrices_["KLA"]->clone());
         auto J_Y(matrices_["JLB"]->clone());
         auto K_Y(matrices_["KLB"]->clone());
+//we need a couple extra J/K matrices as well
         std::shared_ptr<Matrix> C_AOB = linalg::triplet(D_B, S, matrices_["AlloccA"]);
         std::shared_ptr<Matrix> C_XOB = linalg::triplet(D_B, S, matrices_["thislinkA"]);
         std::shared_ptr<Matrix> C_AOY = linalg::triplet(D_Y, S, matrices_["AlloccA"]);
@@ -3674,7 +3737,8 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::sh
     return linalg::triplet(Ca, W, Cr, true, false, false);
 }
 
-// build exchange-induction potential - parallel spin coupling
+// Build the exchange-induction potential - SAOn/SIAOn variants, parallel spin coupling
+// This is Eq. (9) in https://doi.org/10.1021/acs.jpca.2c06465 with upper signs picked for all +- and -+
 std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_par(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
     std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
     std::shared_ptr<Matrix> Cr = vars["Cvir_A"];
@@ -3862,7 +3926,8 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_par(std::map<std::string, std
     return linalg::triplet(Ca, W, Cr, true, false, false);
 }
 
-// build exchange-induction potential - perpendicular spin coupling
+// Build the exchange-induction potential - SAOn/SIAOn variants, perpendicular spin coupling
+// This is Eq. (9) in https://doi.org/10.1021/acs.jpca.2c06465 with lower signs picked for all +- and -+
 std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_perp(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
     std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
     std::shared_ptr<Matrix> Cr = vars["Cvir_A"];
@@ -4050,7 +4115,8 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_perp(std::map<std::string, st
     return linalg::triplet(Ca, W, Cr, true, false, false);
 }
 
-// build exchange-induction potential - average of parallel and perpendicular spin coupling
+// Build the exchange-induction potential - SAOn/SIAOn variants, averaged spin coupling
+// This is Eq. (9) in https://doi.org/10.1021/acs.jpca.2c06465 with all the +- and -+ omitted as they cancel out when averaging
 std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_avg(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
     std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
     std::shared_ptr<Matrix> Cr = vars["Cvir_A"];
@@ -4200,6 +4266,7 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_avg(std::map<std::string, std
 }
 
 // Compute total dispersion contribution
+// This definition is NOT appropriate for the SAOn/SIAOn ISAPT variants, but it is not called in an ISAPT workflow (FISAPT::fdisp is).
 void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
                   bool do_print) {
     if (do_print) {
@@ -4221,7 +4288,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     std::shared_ptr<Vector> eps_vir0A = vector_cache["eps_vir0A"];
     std::shared_ptr<Vector> eps_vir0B = vector_cache["eps_vir0B"];
 
-    //KP At the moment, we're not calling freeze_core() to regenerate the matrices Caocc0A, Caocc0B after
+    //For the SAOn/SIAOn variants, we are NOT calling freeze_core() to regenerate the matrices Caocc0A, Caocc0B after
     //redoing the orbitals, so we should not be loading old orbital coefficients.
     std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
@@ -4651,6 +4718,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 }
 
 // Compute total dispersion energy and S-infinity version of total exchange-dispersion
+// This code applies to regular SAPT, not FISAPT, and is called from the SAPT workflow when DO_DISP_EXCH_SINF == true.
 void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
                         bool do_print) {
     if (do_print) {
@@ -4694,7 +4762,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     std::shared_ptr<Matrix> V_A = matrix_cache["V_A"];
     std::shared_ptr<Matrix> V_B = matrix_cache["V_B"];
 
-    // => Intermolelcular overlap matrix and inverse <= //
+    // => Intermolecular overlap matrix and inverse <= //
     std::shared_ptr<Matrix> Sab = linalg::triplet(Cocc0A, S, Cocc0B, true, false, false);
     double** Sabp = Sab->pointer();
     auto D = std::make_shared<Matrix>("D", na + nb, na + nb);
@@ -5224,6 +5292,7 @@ void FISAPT::print_trailer() {
 }
 
 void FISAPT::raw_plot(const std::string& filepath) {
+// Konrad: there is at the moment some redundancy between do_cubes and raw_plot that should be eliminated. My bad.
     outfile->Printf("  ==> Scalar Field Plots <==\n\n");
 
     outfile->Printf("    F-SAPT Plot Filepath = %s\n\n", filepath.c_str());
@@ -6505,6 +6574,7 @@ void FISAPT::find() {
 }
 
 // Compute fragment-fragment partitioning of dispersion contribution
+// This is also where the modified exchange-dispersion expressions for the SAOn/SIAOn ISAPT algorithms are coded.
 void FISAPT::fdisp() {
     outfile->Printf("  ==> F-SAPT Dispersion <==\n\n");
 
@@ -7030,6 +7100,9 @@ void FISAPT::fdisp() {
 
     // ==> Master Loop <== //
 
+// For the SAOn/SIAOn algorithms if parallel and perpendicular spin couplings are requested for E(20)exch-disp, 
+// we need to compute the expression from https://doi.org/10.1021/acs.jpca.2c06465, Eq. (8) in the SI.
+// If only averaged spin coupling is requested, the standard SAPT0 formula works and we don't do anything extra.
     if ((link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") && parperp) {
 
         auto BYas = std::make_shared<Matrix>("BYas", max_s * na, nQ);
