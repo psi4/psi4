@@ -125,6 +125,11 @@ for functional_name in dict_functionals:
         for formal in functional_aliases:
             # "bless" the original functional dft/*_functionals dispersion definition including aliases
             dashcoeff_supplement[disp['type']]['definitions'][formal] = disp
+            # add omitted default parameters of the dispersion correction
+            for p,val in dashcoeff[disp['type']]['default'].items():
+                if p not in dashcoeff_supplement[disp['type']]['definitions'][formal]['params'].keys():
+                    dashcoeff_supplement[disp['type']]['definitions'][formal]['params'][p]=val
+            # print(functional_name,dashcoeff_supplement[disp['type']]['definitions'][formal])
             # generate dispersion aliases for every functional alias
             for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
                 if resolved_dispersion_level == disp["type"]:
@@ -235,7 +240,7 @@ def check_consistency(func_dictionary):
         allowed_params = sorted(dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
         if "params" not in disp or sorted(disp["params"].keys()) != allowed_params:
             raise ValidationError(
-                f"SCF: Dispersion params ({list(disp['params'].keys())}) must include all ({allowed_params})")
+                f"SCF: Dispersion params for {name} ({list(disp['params'].keys())}) must include all ({allowed_params})")
     # 3d) check formatting for dispersion citation
         if "citation" in disp:
             cit = disp["citation"]

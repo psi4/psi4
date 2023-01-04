@@ -278,7 +278,7 @@ class EmpiricalDispersion():
                     wfn.set_variable("PAIRWISE DISPERSION CORRECTION ANALYSIS",
                                      jobrec.extras['qcvars']["2-BODY PAIRWISE DISPERSION CORRECTION ANALYSIS"])
 
-            if self.fctldash in ['hf3c', 'pbeh3c', 'r2scan3cXX', 'b973cXX']: #ToDo turn gcp on
+            if self.fctldash in ['hf3c', 'pbeh3c', 'r2scan3c', 'b973c']: #ToDo turn gcp on
                 jobrec = qcng.compute(
                     resi,
                     self.gcp_engine,
