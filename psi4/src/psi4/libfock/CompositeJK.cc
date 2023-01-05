@@ -350,7 +350,9 @@ void CompositeJK::print_header() const {
         outfile->Printf("  ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==\n\n");
 
         outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        if (do_J_) outfile->Printf("    J algorithm:       %11s\n", j_type_.c_str());
         outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        if (do_K_) outfile->Printf("    K algorithm:       %11s\n", k_type_.c_str());
         outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
         outfile->Printf("    Integrals threads: %11d\n", nthreads_);
