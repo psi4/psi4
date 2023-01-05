@@ -358,12 +358,12 @@ void CompositeJK::print_header() const {
         outfile->Printf("    Incremental Fock:  %11s\n", (incfock_ ? "Yes" : "No"));
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
 
-	if (do_J_) {
+        if (do_J_) {
             if (j_type_ == "DIRECTDFJ") { print_DirectDFJ_header(); }
-	}
-	if (do_K_) {
+        }
+        if (do_K_) {
             if (k_type_ == "LINK") { print_linK_header(); }
-	    else if (k_type_ == "COSX") { print_COSX_header(); }
+            else if (k_type_ == "COSX") { print_COSX_header(); }
         }
         outfile->Printf("\n");
     }
