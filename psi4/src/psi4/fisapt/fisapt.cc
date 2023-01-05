@@ -332,9 +332,12 @@ void FISAPT::partition() {
     std::vector<int> orbsC;
     std::vector<int> orbsL;
 
-    std::shared_ptr<Vector> ZAbak(vectors_["ZA"]->clone());
-    std::shared_ptr<Vector> ZBbak(vectors_["ZB"]->clone());
-    std::shared_ptr<Vector> ZCbak(vectors_["ZC"]->clone());
+//  std::shared_ptr<Vector> ZAbak(vectors_["ZA"]->clone());
+//  std::shared_ptr<Vector> ZBbak(vectors_["ZB"]->clone());
+//  std::shared_ptr<Vector> ZCbak(vectors_["ZC"]->clone());
+    std::shared_ptr<Vector> ZAbak = vectors_["ZA"];
+    std::shared_ptr<Vector> ZBbak = vectors_["ZB"];
+    std::shared_ptr<Vector> ZCbak = vectors_["ZC"];
     vectors_["ZAbak"] = ZAbak;
     vectors_["ZBbak"] = ZBbak;
     vectors_["ZCbak"] = ZCbak;
@@ -1055,12 +1058,12 @@ void FISAPT::unify() {
     double** LinkAp = LinkA->pointer();
     double** LinkBp = LinkB->pointer();
     double** LinkCp = LinkC->pointer();
-    std::shared_ptr<Vector> ZA(vectors_["ZA"]->clone());
-    std::shared_ptr<Vector> ZB(vectors_["ZB"]->clone());
-    std::shared_ptr<Vector> ZC(vectors_["ZC"]->clone());
-    std::shared_ptr<Vector> ZAbak(vectors_["ZAbak"]->clone());
-    std::shared_ptr<Vector> ZBbak(vectors_["ZBbak"]->clone());
-    std::shared_ptr<Vector> ZCbak(vectors_["ZCbak"]->clone());
+    std::shared_ptr<Vector> ZA = vectors_["ZA"];
+    std::shared_ptr<Vector> ZB = vectors_["ZB"];
+    std::shared_ptr<Vector> ZC = vectors_["ZC"];
+    std::shared_ptr<Vector> ZAbak = vectors_["ZAbak"];
+    std::shared_ptr<Vector> ZBbak = vectors_["ZBbak"];
+    std::shared_ptr<Vector> ZCbak = vectors_["ZCbak"];
 
     std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     std::string link_ortho = options_.get_str("FISAPT_LINK_ORTHO");
@@ -1929,7 +1932,7 @@ void FISAPT::unify_part2() {
 // FISAPT_CUBE_DENSMAT==true - compute the three densities for fragments A/B/C
 void FISAPT::do_cubes() {
 
-    if (!(options_.get_bool("FISAPT_CUBE_LINKIHOS")) && (!(options_.get_bool("FISAPT_CUBE_LINKIBOS")) && (!(options_.get_bool("FISAPT_CUBE_DENSMAT")) {
+    if ((!(options_.get_bool("FISAPT_CUBE_LINKIHOS"))) && (!(options_.get_bool("FISAPT_CUBE_LINKIBOS"))) && (!(options_.get_bool("FISAPT_CUBE_DENSMAT")))) {
     return;
     }
     std::shared_ptr<BasisSet> auxiliary = reference_->get_basisset("DF_BASIS_SAPT");
