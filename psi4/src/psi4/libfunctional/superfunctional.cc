@@ -78,7 +78,7 @@ void SuperFunctional::common_init() {
     density_tolerance_ = 0.0;
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::blank() { return std::make_shared<SuperFunctional>(); }
-    std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized, const std::optional<std::map<std::string, double>>& tweakers_) {
+std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized, const std::optional<std::map<std::string, double>>& tweakers_) {
     // Only allow build from full XC kernels
     if (name.find("XC_") == std::string::npos) {
         throw PSIEXCEPTION("XC_build requires full XC_ functional names");

@@ -129,7 +129,6 @@ for functional_name in dict_functionals:
             for p,val in dashcoeff[disp['type']]['default'].items():
                 if p not in dashcoeff_supplement[disp['type']]['definitions'][formal]['params'].keys():
                     dashcoeff_supplement[disp['type']]['definitions'][formal]['params'][p]=val
-            # print(functional_name,dashcoeff_supplement[disp['type']]['definitions'][formal])
             # generate dispersion aliases for every functional alias
             for nominal_dispersion_level, resolved_dispersion_level in _dispersion_aliases.items():
                 if resolved_dispersion_level == disp["type"]:
