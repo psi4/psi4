@@ -35,6 +35,7 @@
 #include <vector>
 #include <cstdlib>
 #include <string>
+#include <optional>
 namespace psi {
 
 class Functional;
