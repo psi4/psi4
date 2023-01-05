@@ -74,6 +74,9 @@ jobs:
         echo $macos_Mm $macos_M
         if [[ "${macos_M}" == "11" ]]; then
             macos_Mm=11.3
+        elif [[ "${macos_M}" == "12" ]]; then
+            # until phracker merges and releases 12 via https://github.com/phracker/MacOSX-SDKs/pull/44
+            macos_Mm=11.3
         fi
         echo $macos_Mm
         curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/${macos_Mm}/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
