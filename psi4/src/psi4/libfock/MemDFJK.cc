@@ -63,6 +63,7 @@ void MemDFJK::common_init() { dfh_ = std::make_shared<DFHelper>(primary_, auxili
 size_t MemDFJK::memory_estimate() {
     dfh_->set_nthreads(omp_nthread_);
     dfh_->set_schwarz_cutoff(cutoff_);
+    dfh_->set_memory(memory_ - memory_overhead());
     return dfh_->get_core_size();
 }
 

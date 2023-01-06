@@ -149,6 +149,10 @@ def scf_initialize(self):
 
     # Change allocation for collocation matrices based on DFT type
     jk = _build_jk(self, total_memory)
+
+    # check memory estimate with lower bound approximation of 90% total memory
+    # since up to 10% can be given to collocation
+    jk.set_memory(int(0.9*total_memory)) 
     jk_size = jk.memory_estimate()
 
     # Give remaining to collocation
