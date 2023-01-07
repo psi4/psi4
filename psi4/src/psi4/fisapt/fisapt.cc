@@ -310,10 +310,16 @@ void FISAPT::partition() {
     vectors_["ZA"] = std::make_shared<Vector>("ZA", nA);
     vectors_["ZB"] = std::make_shared<Vector>("ZB", nA);
     vectors_["ZC"] = std::make_shared<Vector>("ZC", nA);
+    vectors_["ZA_orig"] = std::make_shared<Vector>("ZA_orig", nA);
+    vectors_["ZB_orig"] = std::make_shared<Vector>("ZB_orig", nA);
+    vectors_["ZC_orig"] = std::make_shared<Vector>("ZC_orig", nA);
 
     double* ZAp = vectors_["ZA"]->pointer();
     double* ZBp = vectors_["ZB"]->pointer();
     double* ZCp = vectors_["ZC"]->pointer();
+    double* ZA_origp = vectors_["ZA_orig"]->pointer();
+    double* ZB_origp = vectors_["ZB_orig"]->pointer();
+    double* ZC_origp = vectors_["ZC_orig"]->pointer();
 
     for (int ind = 0; ind < indA.size(); ind++) {
         ZAp[indA[ind]] = mol->Z(indA[ind]);
@@ -325,22 +331,16 @@ void FISAPT::partition() {
         ZCp[indC[ind]] = mol->Z(indC[ind]);
     }
 
+    vectors_["ZA_orig"]->copy(*vectors_["ZA"]);
+    vectors_["ZB_orig"]->copy(*vectors_["ZB"]);
+    vectors_["ZC_orig"]->copy(*vectors_["ZC"]);
+
     // => Local Orbital Targets <= //
 
     std::vector<int> orbsA;
     std::vector<int> orbsB;
     std::vector<int> orbsC;
     std::vector<int> orbsL;
-
-//  std::shared_ptr<Vector> ZAbak(vectors_["ZA"]->clone());
-//  std::shared_ptr<Vector> ZBbak(vectors_["ZB"]->clone());
-//  std::shared_ptr<Vector> ZCbak(vectors_["ZC"]->clone());
-    std::shared_ptr<Vector> ZAbak = vectors_["ZA"];
-    std::shared_ptr<Vector> ZBbak = vectors_["ZB"];
-    std::shared_ptr<Vector> ZCbak = vectors_["ZC"];
-    vectors_["ZAbak"] = ZAbak;
-    vectors_["ZBbak"] = ZBbak;
-    vectors_["ZCbak"] = ZCbak;
 
     // => Assign Links <= //
 
@@ -401,6 +401,8 @@ void FISAPT::partition() {
             }
         }
     }
+//We altered the nuclear charges for the C algorithm in vectors_["ZA"]-vectors_["ZC"].
+//We keep the unaltered charges for the SAOn/SIAOn algorithms in vectors_["ZA_orig"]-vectors_["ZC_orig"].
 
     // => Remaining Orbitals <= //
 
@@ -1058,21 +1060,25 @@ void FISAPT::unify() {
     double** LinkAp = LinkA->pointer();
     double** LinkBp = LinkB->pointer();
     double** LinkCp = LinkC->pointer();
-    std::shared_ptr<Vector> ZA = vectors_["ZA"];
-    std::shared_ptr<Vector> ZB = vectors_["ZB"];
-    std::shared_ptr<Vector> ZC = vectors_["ZC"];
-    std::shared_ptr<Vector> ZAbak = vectors_["ZAbak"];
-    std::shared_ptr<Vector> ZBbak = vectors_["ZBbak"];
-    std::shared_ptr<Vector> ZCbak = vectors_["ZCbak"];
+    std::shared_ptr<Molecule> mol = primary_->molecule();
+    int nA = mol->natom();
+    std::shared_ptr<Vector> ZA = std::make_shared<Vector>("ZA2", nA);
+    std::shared_ptr<Vector> ZB = std::make_shared<Vector>("ZB2", nA);
+    std::shared_ptr<Vector> ZC = std::make_shared<Vector>("ZC2", nA);
 
     std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     std::string link_ortho = options_.get_str("FISAPT_LINK_ORTHO");
 
-    // For the SAOn/SIAOn link assignments, the nuclear charge assignment to fragments is altered (one proton from the connecting atoms on A,B is no longer counted as part of C). Therefore, later we will need to store both the new SAOn/SIAOn nuclear charges (ZA,ZB,ZC) and old, ISAPT(C) charges (ZAbak,ZBbak,ZCbak).
+    // For the SAOn/SIAOn link assignments, the nuclear charge assignment to fragments is altered (one proton from the connecting atoms on A,B is no longer counted as part of C). Therefore, we need to revert to the unmodified nuclear charges saved earlier.
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
-        ZA = ZAbak;
-        ZB = ZBbak;
-        ZC = ZCbak;
+        ZA->copy(*vectors_["ZA_orig"]);
+        ZB->copy(*vectors_["ZB_orig"]);
+        ZC->copy(*vectors_["ZC_orig"]);
+    }
+    else {
+        ZA->copy(*vectors_["ZA"]);
+        ZB->copy(*vectors_["ZB"]);
+        ZC->copy(*vectors_["ZC"]);
     }
     double* ZAp = ZA->pointer();
     double* ZBp = ZB->pointer();
@@ -1158,6 +1164,7 @@ void FISAPT::unify() {
           outfile->Printf(" Fragmentation problem! %3d %5.1f\n",k,FRAGp[minao->function_to_center(k)]);
           }
         }
+// We no longer need ISAPT(C) nuclear charges and can overwrite them.
         vectors_["ZA"] = ZA;
         vectors_["ZB"] = ZB;
         vectors_["ZC"] = ZC;
@@ -1231,6 +1238,7 @@ void FISAPT::unify() {
     else if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" ) {
 //In the SAO algorithms, we project the link IBOs onto AO basis functions of the respective fragment.
         outfile->Printf("  ==> Link bond redistribution (SAOn) <==\n\n");
+// We no longer need ISAPT(C) nuclear charges and can overwrite them.
         vectors_["ZA"] = ZA;
         vectors_["ZB"] = ZB;
         vectors_["ZC"] = ZC;
