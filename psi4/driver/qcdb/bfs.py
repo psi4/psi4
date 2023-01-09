@@ -152,7 +152,7 @@ def _get_covalent_radii(elem):
     except AttributeError:
         caps = [qcel.periodictable.to_E(z) for z in elem]
 
-    covrad = np.fromiter((covalent_radii_lookup[caps[at]] for at in range(nat)), dtype=np.float, count=nat)
+    covrad = np.fromiter((covalent_radii_lookup[caps[at]] for at in range(nat)), dtype=float, count=nat)
     return np.divide(covrad, qcel.constants.bohr2angstroms)
 
 
