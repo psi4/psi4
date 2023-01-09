@@ -1,0 +1,772 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.8a1.dev5 
+
+                         Git: Rev {dlpno-pybind} 4d94910 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, and D. L. Poole
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 22 December 2022 11:53AM
+
+    Process ID: 215427
+    Host:       ds10
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! comparison of DF-MP2 and DLPNO-MP2 with a cartesian basis set
+
+ref_scf                  =    -76.017451914              #TEST
+                              
+ref_dfmp2_corl           =     -0.191881076              #TEST
+ref_dfmp2_os_corl        =     -0.142443579              #TEST
+ref_dfmp2_ss_corl        =     -0.049437497              #TEST
+ref_dfmp2_tot            =    -76.209332990              #TEST
+                                               
+ref_dlpnomp2_corl        =     -0.191878431              #TEST
+ref_dlpnomp2_os_corl     =     -0.142441355              #TEST
+ref_dlpnomp2_ss_corl     =     -0.049429774              #TEST
+ref_dlpnomp2_tot         =    -76.209330345              #TEST
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis 6-31+G*
+set puream False
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+print('   Testing DF-MP2 ...')
+val = energy('mp2')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
+compare_values(ref_dfmp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')    #TEST
+compare_values(ref_dfmp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dfmp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')      #TEST
+compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                    #TEST
+compare_values(ref_dfmp2_tot, val, 7, 'mp2 return')                                        #TEST
+clean()
+
+print('   Testing DLPNO-MP2 ...')
+val = energy('dlpno-mp2')
+
+# The DLPNO-MP2 energy is close to the DF-MP2 energy, but not exactly the same
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')       #TEST
+compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')               #TEST
+compare_values(ref_dlpnomp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')    #TEST
+compare_values(ref_dlpnomp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')   #TEST
+compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                 #TEST
+compare_values(ref_dlpnomp2_tot, val, 7, 'mp2 return')                                     #TEST
+clean()
+--------------------------------------------------------------------------
+
+Scratch directory: /scratch/jiang/
+
+*** tstart() called on ds10
+*** at Thu Dec 22 11:53:42 2022
+
+   => Loading Basis Set <=
+
+    Name: 6-31+G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   157 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/6-31pgs.gbs 
+    atoms 2-3 entry H          line    46 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/6-31pgs.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065570021889    15.994914619570
+         H            0.000000000000    -0.756689922073     0.520321915104     1.007825032230
+         H            0.000000000000     0.756689922073     0.520321915104     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.43416  B =     14.60648  C =      9.53165 [cm^-1]
+  Rotational constants: A = 822455.52651  B = 437891.14479  C = 285751.53189 [MHz]
+  Nuclear repulsion =    9.196933714281483
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31+G*
+    Blend: 6-31+G*
+    Number of shells: 12
+    Number of basis functions: 23
+    Number of Cartesian functions: 23
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31+G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   310 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/heavy-aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line   116 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/heavy-aug-cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31+G* AUX)
+    Blend: HEAVY-AUG-CC-PVDZ-JKFIT
+    Number of shells: 46
+    Number of basis functions: 151
+    Number of Cartesian functions: 151
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.7442288429E-02.
+  Reciprocal condition number of the overlap matrix is 3.2578382621E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         23      23 
+   -------------------------
+    Total      23      23
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -75.52547918963791   -7.55255e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.94306903094275   -4.17590e-01   1.83437e-02 ADIIS/DIIS
+   @DF-RHF iter   2:   -75.99318783410030   -5.01188e-02   1.15570e-02 ADIIS/DIIS
+   @DF-RHF iter   3:   -76.01695685733429   -2.37690e-02   1.26684e-03 ADIIS/DIIS
+   @DF-RHF iter   4:   -76.01743342545281   -4.76568e-04   2.03357e-04 ADIIS/DIIS
+   @DF-RHF iter   5:   -76.01745093036031   -1.75049e-05   3.63393e-05 DIIS
+   @DF-RHF iter   6:   -76.01745186121319   -9.30853e-07   7.87383e-06 DIIS
+   @DF-RHF iter   7:   -76.01745191355681   -5.23436e-08   1.02228e-06 DIIS
+   @DF-RHF iter   8:   -76.01745191429636   -7.39547e-10   1.81712e-07 DIIS
+   @DF-RHF iter   9:   -76.01745191431893   -2.25668e-11   4.56601e-08 DIIS
+   @DF-RHF iter  10:   -76.01745191432015   -1.22213e-12   5.53801e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.580931     2A     -1.357511     3A     -0.722616  
+       4A     -0.585051     5A     -0.509309  
+
+    Virtual:                                                              
+
+       6A      0.145640     7A      0.220543     8A      0.250789  
+       9A      0.252631    10A      0.352844    11A      0.387616  
+      12A      1.231178    13A      1.341056    14A      1.391977  
+      15A      1.404426    16A      1.416356    17A      1.480353  
+      18A      2.007034    19A      2.019398    20A      2.054219  
+      21A      2.621965    22A      3.019278    23A      4.103903  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+    NA   [     5 ]
+    NB   [     5 ]
+
+  @DF-RHF Final Energy:   -76.01745191432015
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1969337142814833
+    One-Electron Energy =                -122.9179342004567843
+    Two-Electron Energy =                  37.7035485718551513
+    Total Energy =                        -76.0174519143201479
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :         -0.0577799            0.9752568            0.9174769
+ Magnitude           :                                                    0.9174769
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on ds10 at Thu Dec 22 11:53:42 2022
+Module time:
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ds10
+*** at Thu Dec 22 11:53:42 2022
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //               DFMP2               //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31+G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   208 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/heavy-aug-cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    44 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/heavy-aug-cc-pvdz-ri.gbs 
+
+	 --------------------------------------------------------
+	                          DF-MP2                         
+	      2nd-Order Density-Fitted Moller-Plesset Theory     
+	              RMP2 Wavefunction,   1 Threads             
+	                                                         
+	        Rob Parrish, Justin Turney, Andy Simmonett,      
+	           Ed Hohenstein, and C. David Sherrill          
+	 --------------------------------------------------------
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31+G* AUX)
+    Blend: HEAVY-AUG-CC-PVDZ-RI
+    Number of shells: 34
+    Number of basis functions: 116
+    Number of Cartesian functions: 116
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+	 --------------------------------------------------------
+	                 NBF =    23, NAUX =   116
+	 --------------------------------------------------------
+	   CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+	   PAIRS       1       5       4      18      18       0
+	 --------------------------------------------------------
+
+	-----------------------------------------------------------
+	 ==================> DF-MP2 Energies <==================== 
+	-----------------------------------------------------------
+	 Reference Energy          =     -76.0174519143201479 [Eh]
+	 Singles Energy            =      -0.0000000000000000 [Eh]
+	 Same-Spin Energy          =      -0.0494374969230378 [Eh]
+	 Opposite-Spin Energy      =      -0.1424435788448957 [Eh]
+	 Correlation Energy        =      -0.1918810757679335 [Eh]
+	 Total Energy              =     -76.2093329900880860 [Eh]
+	-----------------------------------------------------------
+	 ================> DF-SCS-MP2 Energies <================== 
+	-----------------------------------------------------------
+	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
+	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+	 SCS Same-Spin Energy      =      -0.0164791656410126 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1709322946138749 [Eh]
+	 SCS Correlation Energy    =      -0.1874114602548874 [Eh]
+	 SCS Total Energy          =     -76.2048633745750408 [Eh]
+	-----------------------------------------------------------
+
+
+*** tstop() called on ds10 at Thu Dec 22 11:53:42 2022
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 os-corl...........................................................................PASSED
+    mp2 ss-corl...........................................................................PASSED
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 return............................................................................PASSED
+
+Scratch directory: /scratch/jiang/
+
+*** tstart() called on ds10
+*** at Thu Dec 22 11:53:42 2022
+
+   => Loading Basis Set <=
+
+    Name: 6-31+G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   157 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/6-31pgs.gbs 
+    atoms 2-3 entry H          line    46 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/6-31pgs.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065570021889    15.994914619570
+         H            0.000000000000    -0.756689922073     0.520321915104     1.007825032230
+         H            0.000000000000     0.756689922073     0.520321915104     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.43416  B =     14.60648  C =      9.53165 [cm^-1]
+  Rotational constants: A = 822455.52651  B = 437891.14479  C = 285751.53189 [MHz]
+  Nuclear repulsion =    9.196933714281487
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31+G*
+    Blend: 6-31+G*
+    Number of shells: 12
+    Number of basis functions: 23
+    Number of Cartesian functions: 23
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31+G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   310 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/heavy-aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line   116 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/heavy-aug-cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31+G* AUX)
+    Blend: HEAVY-AUG-CC-PVDZ-JKFIT
+    Number of shells: 46
+    Number of basis functions: 151
+    Number of Cartesian functions: 151
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.7442288429E-02.
+  Reciprocal condition number of the overlap matrix is 3.2578382621E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         23      23 
+   -------------------------
+    Total      23      23
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -75.52547918961092   -7.55255e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.94306903091365   -4.17590e-01   1.83437e-02 ADIIS/DIIS
+   @DF-RHF iter   2:   -75.99318783407065   -5.01188e-02   1.15570e-02 ADIIS/DIIS
+   @DF-RHF iter   3:   -76.01695685730473   -2.37690e-02   1.26684e-03 ADIIS/DIIS
+   @DF-RHF iter   4:   -76.01743342542311   -4.76568e-04   2.03357e-04 ADIIS/DIIS
+   @DF-RHF iter   5:   -76.01745093033060   -1.75049e-05   3.63393e-05 DIIS
+   @DF-RHF iter   6:   -76.01745186118355   -9.30853e-07   7.87383e-06 DIIS
+   @DF-RHF iter   7:   -76.01745191352722   -5.23437e-08   1.02228e-06 DIIS
+   @DF-RHF iter   8:   -76.01745191426656   -7.39334e-10   1.81712e-07 DIIS
+   @DF-RHF iter   9:   -76.01745191428935   -2.27942e-11   4.56601e-08 DIIS
+   @DF-RHF iter  10:   -76.01745191429052   -1.16529e-12   5.53801e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.580931     2A     -1.357511     3A     -0.722616  
+       4A     -0.585051     5A     -0.509309  
+
+    Virtual:                                                              
+
+       6A      0.145640     7A      0.220543     8A      0.250789  
+       9A      0.252631    10A      0.352844    11A      0.387616  
+      12A      1.231178    13A      1.341056    14A      1.391977  
+      15A      1.404426    16A      1.416356    17A      1.480353  
+      18A      2.007034    19A      2.019398    20A      2.054219  
+      21A      2.621965    22A      3.019278    23A      4.103903  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+    NA   [     5 ]
+    NB   [     5 ]
+
+  @DF-RHF Final Energy:   -76.01745191429052
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1969337142814869
+    One-Electron Energy =                -122.9179342004377844
+    Two-Electron Energy =                  37.7035485718657810
+    Total Energy =                        -76.0174519142905183
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.0577799            0.9752568            0.9174769
+ Magnitude           :                                                    0.9174769
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on ds10 at Thu Dec 22 11:53:42 2022
+Module time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ds10
+*** at Thu Dec 22 11:53:42 2022
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //             DLPNO-MP2             //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31+G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   208 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/heavy-aug-cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    44 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/heavy-aug-cc-pvdz-ri.gbs 
+
+   --------------------------------------------
+                     DLPNO-MP2                 
+                   by Zach Glick               
+   --------------------------------------------
+
+  DLPNO convergence set to NORMAL.
+
+  Detailed DLPNO thresholds and cutoffs:
+    T_CUT_DO     = 1.000e-02 
+    T_CUT_PNO    = 1.000e-08 
+    T_CUT_DO_ij  = 1.000e-05 
+    T_CUT_PRE    = 1.000e-06 
+    T_CUT_DO_PRE = 3.000e-02 
+    T_CUT_MKN    = 1.000e-03 
+    T_CUT_CLMO   = 1.000e-02 
+    T_CUT_CPAO   = 1.000e-03 
+    S_CUT        = 1.000e-08 
+    F_CUT        = 1.000e-05 
+
+  ==> Boys Localizer <==
+
+    Convergence =   1.000E-12
+    Maxiter     =        1000
+
+    Iteration                   Metric       Residual
+    @Boys    0   1.8955979945361745E-01              -
+    @Boys    1   2.1938484774063101E+00   1.057338E+01
+    @Boys    2   2.4791579023261354E+00   1.300497E-01
+    @Boys    3   2.5172522648606037E+00   1.536585E-02
+    @Boys    4   2.5223395679913239E+00   2.020975E-03
+    @Boys    5   2.5227404376450173E+00   1.589277E-04
+    @Boys    6   2.5228215924747097E+00   3.216931E-05
+    @Boys    7   2.5228340242073810E+00   4.927710E-06
+    @Boys    8   2.5228364449724348E+00   9.595419E-07
+    @Boys    9   2.5228367804811391E+00   1.329887E-07
+    @Boys   10   2.5228368834992736E+00   4.083424E-08
+    @Boys   11   2.5228368951799069E+00   4.629960E-09
+    @Boys   12   2.5228368979878084E+00   1.112994E-09
+    @Boys   13   2.5228368984813070E+00   1.956126E-10
+    @Boys   14   2.5228368985628289E+00   3.231358E-11
+    @Boys   15   2.5228368985740288E+00   4.439419E-12
+    @Boys   16   2.5228368985756262E+00   6.331717E-13
+
+    Boys Localizer converged.
+
+  ==> Forming Local MO Domains <==
+
+    Auxiliary BFs per Local MO:
+      Average =  116 AUX BFs (3 atoms)
+      Min     =  116 AUX BFs (3 atoms)
+      Max     =  116 AUX BFs (3 atoms)
+  
+    Projected AOs per Local MO:
+      Average =   23 PAOs (3 atoms)
+      Min     =   23 PAOs (3 atoms)
+      Max     =   23 PAOs (3 atoms)
+
+    Local MOs per Local MO:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+ 
+    Screened 0 of 16 LMO pairs (0.00 %)
+             0 pairs met overlap criteria
+             4 pairs met energy criteria
+ 
+    Screened LMO pair energy =  0.000000000000 
+
+  ==> Merging LMO Domains into LMO Pair Domains <==
+  
+    Auxiliary BFs per Local MO pair:
+      Average =  116 AUX BFs (3 atoms)
+      Min     =  116 AUX BFs (3 atoms)
+      Max     =  116 AUX BFs (3 atoms)
+  
+    Projected AOs per Local MO pair:
+      Average =   23 PAOs (3 atoms)
+      Min     =   23 PAOs (3 atoms)
+      Max     =   23 PAOs (3 atoms)
+
+  ==> Transforming 3-Index Integrals to LMO/PAO basis <==
+
+    Coefficient sparsity in AO -> LMO transform:   0.00 % 
+    Coefficient sparsity in AO -> PAO transform:   0.00 % 
+    Coefficient sparsity in combined transforms:   0.00 % 
+
+    Storing transformed LMO/PAO integrals in sparse format.
+    Required memory: 0.000 GiB (0.00 % reduction from dense format) 
+
+  ==> Forming Pair Natural Orbitals <==
+  
+    Natural Orbitals per Local MO pair:
+      Avg:  17 NOs 
+      Min:  17 NOs 
+      Max:  18 NOs 
+  
+    PNO truncation energy = -0.000000003946
+
+  ==> Local MP2 <==
+
+    E_CONVERGENCE = 1.00e-06
+    R_CONVERGENCE = 1.00e-06
+
+                     Corr. Energy    Delta E     Max R
+  @LMP2 iter   0:  -0.189469543915 -1.895e-01  1.342e-03
+  @LMP2 iter   1:  -0.191769999500 -2.300e-03  3.674e-04
+  @LMP2 iter   2:  -0.191870772776 -1.008e-04  7.254e-05
+  @LMP2 iter   3:  -0.191878160650 -7.388e-06  1.478e-05
+  @LMP2 iter   4:  -0.191878422417 -2.618e-07  1.800e-06
+  @LMP2 iter   5:  -0.191878427198 -4.782e-09  3.499e-07
+  
+  Total DLPNO-MP2 Correlation Energy:  -0.191878431144 
+    MP2 Correlation Energy:            -0.191878427198 
+    LMO Truncation Correction:          0.000000000000 
+    PNO Truncation Correction:         -0.000000003946 
+
+*** tstop() called on ds10 at Thu Dec 22 11:53:42 2022
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 os-corl...........................................................................PASSED
+    mp2 ss-corl...........................................................................FAILED
+Traceback (most recent call last):
+  File "/theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/bin/psi4", line 338, in <module>
+    exec(content)
+  File "<string>", line 60, in <module>
+  File "/theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/lib/psi4/driver/qcdb/testing.py", line 104, in _mergedapis_compare_values
+    return qcel.testing.compare_values(expected, computed, **kwargs)
+  File "/theoryfs2/ds/jiang/miniconda3/envs/p4dev/lib/python3.9/site-packages/qcelemental/testing.py", line 178, in compare_values
+    return return_handler(allclose, label, message, return_message, quiet)
+  File "/theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/lib/psi4/driver/p4util/testing.py", line 204, in _psi4_true_raise_handler
+    raise TestComparisonError(message)
+
+psi4.driver.p4util.exceptions.TestComparisonError: 	mp2 ss-corl: computed value (-0.049437017) does not match (-0.049429774) to atol=1e-07 by difference (-0.000007243).
+
+
+Printing out the relevant lines from the Psithon --> Python processed input file:
+    val = energy('dlpno-mp2')
+    compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                       
+    compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')      
+    compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')              
+    compare_values(ref_dlpnomp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')   
+--> compare_values(ref_dlpnomp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')       
+    compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')               
+    compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')  
+    compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                
+    compare_values(ref_dlpnomp2_tot, val, 7, 'mp2 return')                                    
+    clean()
+
+!----------------------------------------------------------------------------------!
+!                                                                                  !
+!         mp2 ss-corl: computed value (-0.049437017) does not match (-0.049429774) !
+!     to atol=1e-07 by difference (-0.000007243).                                  !
+!                                                                                  !
+!----------------------------------------------------------------------------------!
+
+    Psi4 stopped on: Thursday, 22 December 2022 11:53AM
+    Psi4 wall time for execution: 0:00:00.95
+
+*** Psi4 encountered an error. Buy a developer more coffee!
+*** Resources and help at github.com/psi4/psi4.

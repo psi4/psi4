@@ -649,12 +649,8 @@ SharedMatrix PointFunctions::orbital_value(const std::string& key) { return orbi
 
 BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
     : primary_(primary), max_points_(max_points), max_functions_(max_functions) {
-    if (!primary_->has_puream()) {
-        puream_ = false;
-        return;
-    }
-
-    puream_ = true;
+    
+    puream_ = primary_->has_puream();
     set_deriv(0);
 }
 BasisFunctions::~BasisFunctions() {}
