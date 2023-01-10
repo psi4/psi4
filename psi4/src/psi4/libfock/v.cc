@@ -102,6 +102,9 @@ void VBase::common_init() {
     debug_ = options_.get_int("DEBUG");
     if (options_["DFT_V2_RHO_CUTOFF"].has_changed()) {
         v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
+        if (v2_rho_cutoff_ > functional_->density_tolerance()) {
+            throw PSIEXCEPTION("DFT_V2_RHO_CUTOFF must never exceed DFT_DENSITY_TOLERANCE.");
+        }
     } else {
         v2_rho_cutoff_ = functional_->density_tolerance();
     }
