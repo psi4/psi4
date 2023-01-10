@@ -251,7 +251,7 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
     // change if you move the basis function left.
 
     // NOTE:
-    // ∂E/∂D ∂D/∂x = 0 because ∂E/∂D = 0 by Hellmann-Feynman.
+    // ∂E/∂D ∂D/∂x = 0 because ∂E/∂D = 0 because SCF optimizes D to minimize E.
     // Therefore, we don't compute density-derivative terms. They sum to zero.
 
     //   Dr = einsum("pm, pn, mnσ -> pσ", phi, phi, D)
