@@ -218,38 +218,58 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
                                     SharedMatrix G, SharedMatrix U, int ansatz = -1) {
     ansatz = (ansatz == -1 ? fworker->ansatz() : ansatz);
 
-    // Get scratch pointers
-    double** Gp = G->pointer();
+    // => Setup scratch pointers, and associated variables <= //
+    auto Gp = G->pointer();
 
-    double** Up = U->pointer();
-    double** Tp = pworker->scratch()[0]->pointer();
-    double** Dp = pworker->D_scratch()[0]->pointer();
+    auto Up = U->pointer();
+    auto Tp = pworker->scratch()[0]->pointer();
+    auto Dp = pworker->D_scratch()[0]->pointer();
 
     // Fine for now, but not true once we start caching
-    int max_functions = U->ncol();
+    auto max_functions = U->ncol();
 
-    // Get block data
-    int npoints = block->npoints();
-    double* w = block->w();
-    const std::vector<int>& function_map = block->functions_local_to_global();
-    int nlocal = function_map.size();
+    // => Per-block setup <= //
+    auto npoints = block->npoints();
+    auto w = block->w();
+    const auto& function_map = block->functions_local_to_global();
+    auto nlocal = function_map.size();
 
-    // Get points data
-    double** phi = pworker->basis_value("PHI")->pointer();
-    double** phi_x = pworker->basis_value("PHI_X")->pointer();
-    double** phi_y = pworker->basis_value("PHI_Y")->pointer();
-    double** phi_z = pworker->basis_value("PHI_Z")->pointer();
-    double* rho_a = pworker->point_value("RHO_A")->pointer();
-    size_t coll_funcs = pworker->basis_value("PHI")->ncol();
+    // => Setup accessors to computed values <= //
+    auto phi = pworker->basis_value("PHI")->pointer();
+    auto phi_x = pworker->basis_value("PHI_X")->pointer();
+    auto phi_y = pworker->basis_value("PHI_Y")->pointer();
+    auto phi_z = pworker->basis_value("PHI_Z")->pointer();
+    auto rho_a = pworker->point_value("RHO_A")->pointer();
+    auto coll_funcs = pworker->basis_value("PHI")->ncol();
 
-    // => LSDA Contribution <= //
-    double* v_rho_a = fworker->value("V_RHO_A")->pointer();
+    // NOTE:
+    // Let d/dx be a derivative of a functon in R^3 with respect to coordinate x.
+    // Let d/d(x,i) be a derivative with respect to displacing atom i in the x direction.
+    // Then d/d(x,i) phi_mu,p = - d/dx phi^x_mu,p * δ_mu,i
+    //    δ = 1 if mu centered on atom i, else 0.
+    // i.e., the change in a basis function at a point if you move right is the same as the
+    // change if you move the basis function left.
+
+    // NOTE:
+    // ∂E/∂D ∂D/∂x = 0 because ∂E/∂D = 0 because SCF optimizes D to minimize E.
+    // Therefore, we don't compute density-derivative terms. They sum to zero.
+
+    //   Dr = einsum("pm, pn, mnσ -> pσ", phi, phi, D)
+    // E_xc = einsum("p, p", w, f)... where f is a function of Dr
+
+    // => phi_x type contributions <= //
+    // ==> LSDA Contribution <== //
+    // dE_LSDA = -einsum("p, p, pmx, pn, mn, mi -> ix", w, ∂E∂ρ, phix, phi, D, δ)
+    //           -einsum("p, p, pm, pnx, mn, ni -> ix", w, ∂E∂ρ, phi, phix, D, δ)
+    //         = -2 * einsum("p, p, pm, pnx, mn, ni -> ix", w, ∂E∂ρ, phi, phix, D, δ) [assuming D hermitian]
+    //      T := -2 * einsum("p, p, pn -> pn", w, ∂E∂ρ[α], phi)
+    auto v_rho_a = fworker->value("V_RHO_A")->pointer();
     for (int P = 0; P < npoints; P++) {
         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
         C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tp[P], 1);
     }
 
-    // => GGA Contribution (Term 1) <= //
+    // ==> GGA Contribution (Term 1) <== //
     if (fworker->is_gga()) {
         double* rho_ax = pworker->point_value("RHO_AX")->pointer();
         double* rho_ay = pworker->point_value("RHO_AY")->pointer();
@@ -263,12 +283,14 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         }
     }
 
-    // => Synthesis <= //
+    // ==> Complete Terms <== //
+    // U := einsum("pm, mn -> pn", T, D)
     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tp[0], max_functions, Dp[0], max_functions, 0.0, Up[0],
             max_functions);
 
+    // dE += einsum("pn, pnx, ni -> ix", Ua + Ub, phix, δ)
     for (int ml = 0; ml < nlocal; ml++) {
-        int A = primary->function_to_center(function_map[ml]);
+        auto A = primary->function_to_center(function_map[ml]);
         Gp[A][0] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
         Gp[A][1] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
         Gp[A][2] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_z[0][ml], coll_funcs);

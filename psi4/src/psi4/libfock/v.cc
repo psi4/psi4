@@ -1931,12 +1931,14 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
     timer_off("RV: Form Vx");
 }
 SharedMatrix RV::compute_gradient() {
+    // => Validation <= //
     if ((D_AO_.size() != 1)) throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
     if (functional_->needs_vv10()) {
         throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
     }
 
+    // => Setup <= //
     // How many atoms?
     int natom = primary_->molecule()->natom();
 
@@ -1972,23 +1974,25 @@ SharedMatrix RV::compute_gradient() {
     std::vector<double> rhoayq(num_threads_);
     std::vector<double> rhoazq(num_threads_);
 
-// Traverse the blocks of points
+    // => Master gradient loop <= //
 #pragma omp parallel for private(rank) schedule(dynamic) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
-// Get thread info
+        // ==> Per-thread setup <==
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-
-        // Get per-rank workers
-        auto block = grid_->blocks()[Q];
         auto fworker = functional_workers_[rank];
         auto pworker = point_workers_[rank];
 
+        // ==> Per-block setup <==
+        auto block = grid_->blocks()[Q];
+
+        // ==> Compute rho, gamma, etc. for block <== //
         parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
         parallel_timer_off("Properties", rank);
 
+        // ==> Compute functional values for block <== //
         parallel_timer_on("Functional", rank);
         auto& vals = fworker->compute_functional(pworker->point_values());
         parallel_timer_off("Functional", rank);
@@ -3211,28 +3215,30 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
     timer_off("UV: Form Vx");
 }
 SharedMatrix UV::compute_gradient() {
+    // => Validation <= //
     if ((D_AO_.size() != 2)) throw PSIEXCEPTION("V: UKS should have two D Matrices");
 
     if (functional_->needs_vv10()) {
         throw PSIEXCEPTION("V: UKS cannot compute VV10 gradient contribution.");
     }
 
+    // => Setup <= //
     int rank = 0;
 
     // Build the target gradient Matrix
-    int natom = primary_->molecule()->natom();
+    auto natom = primary_->molecule()->natom();
     auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
-    double** Gp = G->pointer();
+    auto Gp = G->pointer();
 
     // What local XC ansatz are we in?
-    int ansatz = functional_->ansatz();
+    auto ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
-    int max_functions = grid_->max_functions();
-    int max_points = grid_->max_points();
+    auto max_functions = grid_->max_functions();
+    auto max_points = grid_->max_points();
 
     // Set Hessian derivative level in properties
-    int old_deriv = point_workers_[0]->deriv();
+    auto old_deriv = point_workers_[0]->deriv();
 
     // Setup the pointers
     for (size_t i = 0; i < num_threads_; i++) {
@@ -3257,59 +3263,62 @@ SharedMatrix UV::compute_gradient() {
     std::vector<double> rhobzq(num_threads_);
 
     // timer_off("V: V_XC");
+    // => Master gradient loop <= //
+#pragma omp parallel for private(rank) schedule(dynamic) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
-// Get thread info
+        // ==> Per-thread setup <== //
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
-        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
-        double* QTp = Q_temp[rank]->pointer();
+        auto fworker = functional_workers_[rank];
+        auto pworker = point_workers_[rank];
+        auto QTp = Q_temp[rank]->pointer();
 
-        double** Tap = pworker->scratch()[0]->pointer();
-        double** Tbp = pworker->scratch()[1]->pointer();
-        double** Dap = pworker->D_scratch()[0]->pointer();
-        double** Dbp = pworker->D_scratch()[1]->pointer();
+        auto Tap = pworker->scratch()[0]->pointer();
+        auto Tbp = pworker->scratch()[1]->pointer();
+        auto Dap = pworker->D_scratch()[0]->pointer();
+        auto Dbp = pworker->D_scratch()[1]->pointer();
 
-        SharedMatrix Ua_local(pworker->scratch()[0]->clone());
-        double** Uap = Ua_local->pointer();
-        SharedMatrix Ub_local(pworker->scratch()[1]->clone());
-        double** Ubp = Ub_local->pointer();
+        auto Ua_local = pworker->scratch()[0]->clone();
+        auto Uap = Ua_local->pointer();
+        auto Ub_local = pworker->scratch()[1]->clone();
+        auto Ubp = Ub_local->pointer();
 
-        // Grid info
-        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
-        int npoints = block->npoints();
-        double* x = block->x();
-        double* y = block->y();
-        double* z = block->z();
-        double* w = block->w();
-        const std::vector<int>& function_map = block->functions_local_to_global();
-        int nlocal = function_map.size();
+        // ==> Per-block setup <== //
+        auto block = grid_->blocks()[Q];
+        auto npoints = block->npoints();
+        auto x = block->x();
+        auto y = block->y();
+        auto z = block->z();
+        auto w = block->w();
+        const auto& function_map = block->functions_local_to_global();
+        auto nlocal = function_map.size();
 
-        // Compute grid and functional
+        // ==> Compute rho, gamma, etc. for block <== //
         parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
         parallel_timer_off("Properties", rank);
 
+        // ==> Compute functional values for block <== //
         parallel_timer_on("Functional", rank);
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
         parallel_timer_off("Functional", rank);
 
-        // More pointers
+        // ==> Setup accessors to computed values, and associated variables <== //
         parallel_timer_on("V_xc gradient", rank);
-        double** phi = pworker->basis_value("PHI")->pointer();
-        double** phi_x = pworker->basis_value("PHI_X")->pointer();
-        double** phi_y = pworker->basis_value("PHI_Y")->pointer();
-        double** phi_z = pworker->basis_value("PHI_Z")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* rho_b = pworker->point_value("RHO_B")->pointer();
-        double* zk = vals["V"]->pointer();
-        double* v_rho_a = vals["V_RHO_A"]->pointer();
-        double* v_rho_b = vals["V_RHO_B"]->pointer();
+        auto phi = pworker->basis_value("PHI")->pointer();
+        auto phi_x = pworker->basis_value("PHI_X")->pointer();
+        auto phi_y = pworker->basis_value("PHI_Y")->pointer();
+        auto phi_z = pworker->basis_value("PHI_Z")->pointer();
+        auto rho_a = pworker->point_value("RHO_A")->pointer();
+        auto rho_b = pworker->point_value("RHO_B")->pointer();
+        auto zk = vals["V"]->pointer();
+        auto v_rho_a = vals["V_RHO_A"]->pointer();
+        auto v_rho_b = vals["V_RHO_B"]->pointer();
         size_t coll_funcs = pworker->basis_value("PHI")->ncol();
 
-        // => Quadrature values <= //
+        // ==> Compute quadrature values <== //
         functionalq[rank] += C_DDOT(npoints, w, 1, zk, 1);
         for (int P = 0; P < npoints; P++) {
             QTp[P] = w[P] * rho_a[P];
@@ -3326,7 +3335,28 @@ SharedMatrix UV::compute_gradient() {
         rhobyq[rank] += C_DDOT(npoints, QTp, 1, y, 1);
         rhobzq[rank] += C_DDOT(npoints, QTp, 1, z, 1);
 
-        // => LSDA Contribution <= //
+        // NOTE:
+        // Let d/dx be a derivative of a functon in R^3 with respect to coordinate x.
+        // Let d/d(x,i) be a derivative with respect to displacing atom i in the x direction.
+        // Then d/d(x,i) phi_mu,p = - d/dx phi^x_mu,p * δ_mu,i
+        //    δ = 1 if mu centered on atom i, else 0.
+        // i.e., the change in a basis function at a point if you move right is the same as the
+        // change if you move the basis function left.
+
+        // NOTE:
+        // ∂E/∂D ∂D/∂x = 0 because ∂E/∂D = 0 because SCF optimizes D to minimize E.
+        // Therefore, we don't compute density-derivative terms. They sum to zero.
+
+        //   Dr = einsum("pm, pn, mnσ -> pσ", phi, phi, D)
+        // E_xc = einsum("p, p", w, f)... where f is a function of Dr
+
+        // ==> phi_x type contributions <== //
+        // ===> LSDA Contribution <=== //
+        // dE_LSDA = -einsum("p, pσ, pmx, pn, mnσ, mi -> ix", w, ∂E∂ρ, phix, phi, D, δ)
+        //           -einsum("p, pσ, pm, pnx, mnσ, ni -> ix", w, ∂E∂ρ, phi, phix, D, δ)
+        //         = -2 * einsum("p, pσ, pm, pnx, mnσ, ni -> ix", w, ∂E∂ρ, phi, phix, D, δ) [assuming D hermitian]
+        //     Ta := -2 * einsum("p, p, pn -> pn", w, ∂E∂ρ[α], phi)
+        //     Tb := -2 * einsum("p, p, pm -> pm", w, ∂E∂ρ[β], phi)
         for (int P = 0; P < npoints; P++) {
             std::fill(Tap[P], Tap[P] + nlocal, 0.0);
             std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
@@ -3334,7 +3364,7 @@ SharedMatrix UV::compute_gradient() {
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_b[P], phi[P], 1, Tbp[P], 1);
         }
 
-        // => GGA Contribution (Term 1) <= //
+        // ===> GGA Contribution (Term 1) <=== //
         if (fworker->is_gga()) {
             double* rho_ax = pworker->point_value("RHO_AX")->pointer();
             double* rho_ay = pworker->point_value("RHO_AY")->pointer();
@@ -3362,14 +3392,17 @@ SharedMatrix UV::compute_gradient() {
             }
         }
 
-        // => Synthesis <= //
+        // ===> Complete Terms <=== //
+        // Ua := einsum("pm, mn -> pn", Ta, D[α])
+        // Ub := einsum("pm, mn -> pn", Tb, D[β])
         C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tap[0], max_functions, Dap[0], max_functions, 0.0, Uap[0],
                 max_functions);
         C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tbp[0], max_functions, Dbp[0], max_functions, 0.0, Ubp[0],
                 max_functions);
 
+        // dE += einsum("pn, pnx, ni -> ix", Ua + Ub, phix, δ)
         for (int ml = 0; ml < nlocal; ml++) {
-            int A = primary_->function_to_center(function_map[ml]);
+            auto A = primary_->function_to_center(function_map[ml]);
             Gp[A][0] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
             Gp[A][1] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
             Gp[A][2] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_z[0][ml], coll_funcs);
