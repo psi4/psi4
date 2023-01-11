@@ -56,7 +56,7 @@ using namespace psi;
 namespace psi {
 
 template <class T>
-void _set_dfjk_options(T* jk, Options& options) {
+void _set_dfjk_options(std::shared_ptr<T> jk, Options& options) {
     if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
     if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
     if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
@@ -104,20 +104,20 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "DISK_DF") {
-        DiskDFJK* jk = new DiskDFJK(primary, auxiliary);
+        auto jk = std::make_shared<DiskDFJK>(primary, auxiliary);
         _set_dfjk_options<DiskDFJK>(jk, options);
         if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "MEM_DF") {
-        MemDFJK* jk = new MemDFJK(primary, auxiliary, options);
+        auto jk = std::make_shared<MemDFJK>(primary, auxiliary, options);
         // TODO: re-enable after fixing all bugs
         jk->set_wcombine(false);
         _set_dfjk_options<MemDFJK>(jk, options);
         if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
     } else if (jk_type == "PK") {
         PKJK* jk = new PKJK(primary, options);
 

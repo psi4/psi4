@@ -531,12 +531,12 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::unique_ptr<JK> jk;
     // Need a very special auxiliary basis here
     if (SAD_use_fitting(options_)) {
-        MemDFJK* dfjk = new MemDFJK(bas, fit, options_);
+        auto dfjk = std::make_unique<MemDFJK>(bas, fit, options_);
 
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         dfjk->dfh()->set_print_lvl(0);
-        jk = std::unique_ptr<JK>(dfjk);
+        jk = std::move(dfjk);
     } else {
         DirectJK* directjk(new DirectJK(bas, options_));
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
