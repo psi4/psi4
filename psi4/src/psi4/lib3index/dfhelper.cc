@@ -61,8 +61,17 @@
 
 namespace psi {
 
+DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) 
+    : primary_(primary), aux_(aux) {
+    nbf_ = primary_->nbf();
+    naux_ = aux_->nbf();
+    prepare_blocking();
+}
+
 DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux,
-    Options& options) : primary_(primary), aux_(aux), options_(options) {
+    Options& options) : primary_(primary), aux_(aux) {
+    if (options["FORCE_MEM"].has_changed()) set_subalgo(options.get_str("FORCE_MEM"));
+    
     nbf_ = primary_->nbf();
     naux_ = aux_->nbf();
     prepare_blocking();
@@ -230,20 +239,20 @@ void DFHelper::AO_core(bool set_AO_core=true) {
         }
 
         // determine AO_core_ either automatically...
-        if (options_.get_str("FORCE_MEM") == "AUTO") {
+        if (subalgo_ == "AUTO") {
             // a fraction of memory to use, do we want it as an option?
             AO_core_ = true;
             if (memory_ < required_core_size_) AO_core_ = false;
 
         // .. or forcibly disable AO_core_ if user specifies ...
-        } else if (options_.get_str("FORCE_MEM") == "NO_INCORE") {
+        } else if (subalgo_ == "NO_INCORE") {
             AO_core_ = false;
 
             if (print_lvl_ > 0) {
                 outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core MEM_DF algorithm will be used.\n");
             }
         // .. or force AO_core_ if user specifies
-        } else if (options_.get_str("FORCE_MEM") == "FORCE_INCORE") {
+        } else if (subalgo_ == "FORCE_INCORE") {
             if (memory_ < required_core_size_) {
                 throw PSIEXCEPTION("FORCE_MEM=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
 	    } else {

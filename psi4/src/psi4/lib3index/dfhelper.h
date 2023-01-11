@@ -51,6 +51,7 @@ class TwoBodyAOInt;
 
 class PSI_API DFHelper {
    public:
+    DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
     DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux,
         Options& options);
     ~DFHelper();
@@ -81,6 +82,14 @@ class PSI_API DFHelper {
     ///
     void set_memory(size_t doubles) { memory_ = doubles; }
     size_t get_memory() { return memory_; }
+
+    ///
+    /// Indicates whether to use the in-core or out-of-core
+    //  subalgorithm available in MemDFJK, or to let
+    //  Psi4 select automatically based on allocated memory 
+    /// defaults to AUTO (Psi4 selects by default) 
+    ///
+    void set_subalgo(std::string subalgo) { subalgo_ = subalgo; }
 
     /// Returns the number of doubles in the *screened* AO integrals
     size_t get_AO_size() { return big_skips_[nbf_]; }
@@ -331,9 +340,6 @@ class PSI_API DFHelper {
     size_t nbf_;
     size_t naux_;
 
-    // => Options object <=
-    Options& options_;
-
     // => memory in doubles <=
     size_t memory_ = 256000000;
     size_t required_core_size_;
@@ -365,6 +371,8 @@ class PSI_API DFHelper {
     // Can we early-exit prepare_sparsity?
     bool sparsity_prepared_ = false;
     int print_lvl_ = 1;
+    // Use in-core or out-of-core algo?
+    std::string subalgo_ = "AUTO";
 
     // => in-core machinery <=
     void AO_core(bool set_AO_core);
