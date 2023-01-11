@@ -245,7 +245,7 @@ void DFHelper::AO_core(bool set_AO_core=true) {
             AO_core_ = false;
 
             if (print_lvl_ > 0) {
-                outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core MemDFJK algorithm will be used.\n");
+                outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core MEM_DF algorithm will be used.\n");
             }
         // .. or force AO_core_ if user specifies
         } else if (options_.get_str("FORCE_MEM") == "FORCE_INCORE") {
@@ -255,7 +255,7 @@ void DFHelper::AO_core(bool set_AO_core=true) {
                 AO_core_ = true;
         
 	        if (print_lvl_ > 0) {
-                    outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core MemDFJK algorithm will be used.\n"); 
+                    outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core MEM_DF algorithm will be used.\n"); 
                 }
 	    }
         } else { 
