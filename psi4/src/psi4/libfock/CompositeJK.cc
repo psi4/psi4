@@ -191,7 +191,7 @@ void CompositeJK::common_init() {
     
     // derive separate J+K algorithms from scf_type
     auto jk_type = options_.get_str("SCF_TYPE");
-    j_type_ = jk_type.substr(0, jk_type.find("+"));
+    auto j_type = jk_type.substr(0, jk_type.find("+"));
     k_type_ = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
 
     // occurs if no composite K algorithm was specified; useful for LDA/GGA DFT runs
@@ -216,17 +216,9 @@ void CompositeJK::common_init() {
     IntegralFactory factory(primary_, primary_, primary_, primary_);
     eri_computers_["4-Center"][0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
 
-    // initialize 3-Center ERIs
-    eri_computers_["3-Center"].emplace({});
-    eri_computers_["3-Center"].resize(nthreads_);
-
-    IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
-    eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
-
     // create each threads' ERI computers
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
-        eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
     }
 
     timer_off("CompositeJK: ERI Computers");
@@ -235,16 +227,21 @@ void CompositeJK::common_init() {
 
     // Direct DF-J
     if (j_type_ == "DFDIRJ") {
-        // pre-compute coulomb fitting metric
-        timer_on("CompositeJK: DFDIRJ Coulomb Metric");
+	    // initialize SplitJK algo
+	    j_algo_ = std::make_shared<DirectDFJ>();
 
-        FittingMetric J_metric_obj(auxiliary_, true);
-        J_metric_obj.form_fitting_metric();
-        J_metric_ = J_metric_obj.get_metric();
+    	// create 3-center ERIs
+        eri_computers_["3-Center"].emplace({});
+        eri_computers_["3-Center"].resize(nthreads_);
 
         computed_shells_per_iter_["Triplets"] = {};
         
-        timer_off("CompositeJK: DFDIRJ Coulomb Metric");
+        IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
+        eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
+
+        for(int rank = 1; rank < nthreads_; rank++) {
+            eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
+        }
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     }
@@ -429,7 +426,7 @@ void CompositeJK::print_header() const {
         outfile->Printf("  ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==\n\n");
 
         outfile->Printf("    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        if (do_J_) outfile->Printf("    J algorithm:       %11s\n", j_type_.c_str());
+        if (do_J_) outfile->Printf("    J algorithm:       %11s\n", j_algo_->name().c_str());
         outfile->Printf("    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         if (do_K_) outfile->Printf("    K algorithm:       %11s\n", k_type_.c_str());
         outfile->Printf("    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
@@ -440,22 +437,13 @@ void CompositeJK::print_header() const {
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
 
         if (do_J_) {
-            if (j_type_ == "DFDIRJ") { print_DirectDFJ_header(); }
-        }
+            j_algo_->print_header();
+	    }
         if (do_K_) {
             if (k_type_ == "LINK") { print_linK_header(); }
             else if (k_type_ == "COSX") { print_COSX_header(); }
         }
         outfile->Printf("\n");
-    }
-}
-
-void CompositeJK::print_DirectDFJ_header() const {
-    if (print_) {
-        outfile->Printf("\n");
-        outfile->Printf("  ==> DF-DirJ: Integral-Direct Density-Fitted J <==\n\n");
-
-        outfile->Printf("    J Screening Cutoff:%11.0E\n", cutoff_);
     }
 }
 
@@ -550,10 +538,7 @@ void CompositeJK::compute_JK() {
     if (do_J_) {
         timer_on("CompositeJK: J");
 
-        // Direct DF-J
-        if (j_type_ == "DFDIRJ") {
-            build_DirectDFJ(D_ref_, J_ao_);
-        }
+	    j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
 
         timer_off("CompositeJK: J");
     }

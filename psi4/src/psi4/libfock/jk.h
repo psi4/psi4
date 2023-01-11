@@ -40,6 +40,8 @@ PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
 
+#include "psi4/libfock/SplitJK.h"
+
 namespace psi {
 class MinimalInterface;
 class BasisSet;
@@ -1221,7 +1223,8 @@ class PSI_API CompositeJK : public JK {
     Options& options_;
 
     /// CompositeJK algorithm info
-    std::string j_type_;
+    std::shared_ptr<SplitJK> j_algo_;
+    //std::shared_ptr<SplitJK> k_algo_;
     std::string k_type_;
 
     // Perform Density matrix-based integral screening?
@@ -1244,15 +1247,6 @@ class PSI_API CompositeJK : public JK {
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
   
-    // => Density Fitting Stuff, for Direct DF-J <= //
-
-    /// Auxiliary basis set
-    std::shared_ptr<BasisSet> auxiliary_;
-    /// Coulomb Metric
-    SharedMatrix J_metric_;
-    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
-    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
-
     // => Semi-Numerical Stuff, for COSX <= //
 
     /// Small DFTGrid for initial SCF iterations
@@ -1287,11 +1281,6 @@ class PSI_API CompositeJK : public JK {
     void incfock_setup();
     /// Post-iteration Incfock processing
     void incfock_postiter();
-
-    /// Build the coulomb (J) matrix using Direct DF-J
-    /// Reference is https://doi.org/10.1039/B204199P
-    void build_DirectDFJ(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& J);
 
     /**
      * @author Andy Jiang, Georgia Tech, December 2021
@@ -1356,7 +1345,6 @@ class PSI_API CompositeJK : public JK {
     */
     void print_header() const override;
 
-    void print_DirectDFJ_header() const;
     void print_linK_header() const;
     void print_COSX_header() const;
 };
