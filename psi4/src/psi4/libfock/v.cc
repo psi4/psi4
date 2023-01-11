@@ -100,7 +100,14 @@ VBase::~VBase() {}
 void VBase::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
-    v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
+    if (options_["DFT_V2_RHO_CUTOFF"].has_changed()) {
+        v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
+        if (v2_rho_cutoff_ > functional_->density_tolerance()) {
+            throw PSIEXCEPTION("DFT_V2_RHO_CUTOFF must never exceed DFT_DENSITY_TOLERANCE.");
+        }
+    } else {
+        v2_rho_cutoff_ = functional_->density_tolerance();
+    }
     vv10_rho_cutoff_ = options_.get_double("DFT_VV10_RHO_CUTOFF");
     grac_initialized_ = false;
     cache_map_deriv_ = -1;
@@ -2992,14 +2999,12 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
 
-                if (rho_a[P] > v2_rho_cutoff_) {
+                if (rho_a[P] + rho_b[P] > v2_rho_cutoff_) {
                     tmp_val = v2_rho2_aa[P] * rho_ak[P];
                     tmp_val += v2_rho2_ab[P] * rho_bk[P];
                     tmp_val *= 0.5 * w[P];
                     C_DAXPY(nlocal, tmp_val, phi[P], 1, Tap[P], 1);
-                }
 
-                if (rho_b[P] > v2_rho_cutoff_) {
                     tmp_val = v2_rho2_bb[P] * rho_bk[P];
                     tmp_val += v2_rho2_ab[P] * rho_ak[P];
                     tmp_val *= 0.5 * w[P];
@@ -3035,24 +3040,20 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
                 // This one is a doozy
                 for (int P = 0; P < npoints; P++) {
+                    if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
                     // V alpha contributions
-                    if (rho_a[P] > v2_rho_cutoff_) {
-                        tmp_val = v2_rho_a_gamma_aa[P] * gamma_aak[P];
-                        tmp_val += v2_rho_a_gamma_ab[P] * gamma_abk[P];
-                        tmp_val += v2_rho_a_gamma_bb[P] * gamma_bbk[P];
-                        C_DAXPY(nlocal, (0.5 * w[P] * tmp_val), phi[P], 1, Tap[P], 1);
-                    }
+                    tmp_val = v2_rho_a_gamma_aa[P] * gamma_aak[P];
+                    tmp_val += v2_rho_a_gamma_ab[P] * gamma_abk[P];
+                    tmp_val += v2_rho_a_gamma_bb[P] * gamma_bbk[P];
+                    C_DAXPY(nlocal, (0.5 * w[P] * tmp_val), phi[P], 1, Tap[P], 1);
 
                     // V beta contributions
-                    if (rho_b[P] > v2_rho_cutoff_) {
-                        tmp_val = v2_rho_b_gamma_aa[P] * gamma_aak[P];
-                        tmp_val += v2_rho_b_gamma_ab[P] * gamma_abk[P];
-                        tmp_val += v2_rho_b_gamma_bb[P] * gamma_bbk[P];
-                        C_DAXPY(nlocal, (0.5 * w[P] * tmp_val), phi[P], 1, Tbp[P], 1);
-                    }
+                    tmp_val = v2_rho_b_gamma_aa[P] * gamma_aak[P];
+                    tmp_val += v2_rho_b_gamma_ab[P] * gamma_abk[P];
+                    tmp_val += v2_rho_b_gamma_bb[P] * gamma_bbk[P];
+                    C_DAXPY(nlocal, (0.5 * w[P] * tmp_val), phi[P], 1, Tbp[P], 1);
 
                     // => Alpha W terms <= //
-                    if ((rho_a[P] < v2_rho_cutoff_) || (rho_b[P] < v2_rho_cutoff_)) continue;
 
                     // rho_ak
                     v2_val_aa = v2_rho_a_gamma_aa[P] * rho_ak[P];
