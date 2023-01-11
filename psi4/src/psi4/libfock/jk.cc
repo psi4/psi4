@@ -197,7 +197,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
             // Build exact estimate via Schwarz metrics
             auto jk = build_JK(primary, auxiliary, options, "MEM_DF");
             jk->set_do_wK(do_wK);
-            if (jk->memory_estimate() < doubles) {
+	    if (jk->memory_estimate() < doubles) {
                 return jk;
             }
             jk.reset();

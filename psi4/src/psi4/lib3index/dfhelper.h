@@ -87,7 +87,7 @@ class PSI_API DFHelper {
 
     /// Returns the size of the in-core version in doubles
     size_t get_core_size() {
-        AO_core();
+        AO_core(false);
         return required_core_size_;
     }
 
@@ -367,7 +367,7 @@ class PSI_API DFHelper {
     int print_lvl_ = 1;
 
     // => in-core machinery <=
-    void AO_core();
+    void AO_core(bool set_AO_core);
     std::unique_ptr<double[]> Ppq_;
     // Maps x -> (P|Q) ^ x.
     std::map<double, SharedMatrix> metrics_;
