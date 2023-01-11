@@ -61,7 +61,7 @@
 
 namespace psi {
 
-DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) 
+DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux)
     : primary_(primary), aux_(aux) {
     nbf_ = primary_->nbf();
     naux_ = aux_->nbf();
@@ -71,7 +71,7 @@ DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
 DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux,
     Options& options) : primary_(primary), aux_(aux) {
     if (options["FORCE_MEM"].has_changed()) set_subalgo(options.get_str("FORCE_MEM"));
-    
+
     nbf_ = primary_->nbf();
     naux_ = aux_->nbf();
     prepare_blocking();

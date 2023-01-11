@@ -86,8 +86,8 @@ class PSI_API DFHelper {
     ///
     /// Indicates whether to use the in-core or out-of-core
     //  subalgorithm available in MemDFJK, or to let
-    //  Psi4 select automatically based on allocated memory 
-    /// defaults to AUTO (Psi4 selects by default) 
+    //  Psi4 select automatically based on allocated memory
+    /// defaults to AUTO (Psi4 selects by default)
     ///
     void set_subalgo(std::string subalgo) { subalgo_ = subalgo; }
 
