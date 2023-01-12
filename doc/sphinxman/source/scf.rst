@@ -703,7 +703,7 @@ LINK
     Exchange term. See :ref:`sec:scflink` for more information.
 
 In some cases the above algorithms have multiple implementations that return
-the same result, but are optimal under different molecules sizes and hardware/no_
+the same result, but are optimal under different molecules sizes and hardware
 configurations. Psi4 will automatically detect the correct algorithm to run and
 only expert users should manually select the below implementations. The DF
 algorithm has the following two implementations
