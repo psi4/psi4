@@ -1513,6 +1513,182 @@ void DLPNOMP2::store_information() {
     sparse_maps_["RIATOM_TO_BF_2"] = riatom_to_bfs2_;
 }
 
+void DLPNOMP2::compute_qij() {
+    timer_on("(mn|K)->(ij|K)");
+
+    int nbf = basisset_->nbf();
+    int naux = ribasis_->nbf();
+
+    size_t nthread = 1;
+#ifdef _OPENMP
+    nthread = omp_get_max_threads();
+#endif
+
+    std::shared_ptr<IntegralFactory> factory =
+        std::make_shared<IntegralFactory>(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eris(nthread);
+
+    eris[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    for (size_t thread = 1; thread < nthread; thread++) {
+        eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
+    }
+
+    auto SC_lmo = linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);
+
+    qij_.resize(naux);
+
+    // LMO-LMO DF ints
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int Q = 0; Q < ribasis_->nshell(); Q++) {
+        int nq = ribasis_->shell(Q).nfunction();
+        int qstart = ribasis_->shell(Q).function_index();
+        int centerQ = ribasis_->shell_to_center(Q);
+
+        size_t thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        // Sparse lists for LMO/LMO
+        auto bf_map_lmo = riatom_to_bfs1_[centerQ];
+
+        // inverse map, from global basis function index to auxiliary specific index
+        std::vector<int> bf_map_lmo_inv(nbf, -1);
+        for (int m_ind = 0; m_ind < bf_map_lmo.size(); m_ind++) {
+            bf_map_lmo_inv[bf_map_lmo[m_ind]] = m_ind;
+        }
+
+        for (size_t q = 0; q < nq; q++) {
+            qij_[qstart + q] = std::make_shared<Matrix>("(mn|Q)", bf_map_lmo.size(), bf_map_lmo.size());
+        }
+
+        for (int M : riatom_to_shells1_[centerQ]) {
+            int nm = basisset_->shell(M).nfunction();
+            int mstart = basisset_->shell(M).function_index();
+            int centerM = basisset_->shell_to_center(M);
+
+            for (int N : riatom_to_shells1_[centerQ]) {
+                int nn = basisset_->shell(N).nfunction();
+                int nstart = basisset_->shell(N).function_index();
+                int centerN = basisset_->shell_to_center(N);
+
+                // TODO: Permutational Symmetry
+                eris[thread]->compute_shell(Q, 0, M, N);
+                const double* buffer = eris[thread]->buffer();
+
+                for (int q = 0; q < nq; q++) {
+                    for (int m = 0; m < nm; m++) {
+                        for (int n = 0; n < nn; n++) {
+                            int index_m = bf_map_lmo_inv[mstart + m];
+                            int index_n = bf_map_lmo_inv[nstart + n];
+                            qij_[qstart + q]->set(index_m, index_n, *(buffer));
+                            buffer++;
+                        }
+                    }
+                }
+
+            } // N loop
+        } // M loop
+
+        auto C_lmo_slice = submatrix_rows_and_cols(*SC_lmo, riatom_to_bfs1_[centerQ], riatom_to_lmos_ext_[centerQ]);
+        auto S_aa = submatrix_rows_and_cols(*reference_wavefunction_->S(), riatom_to_bfs1_[centerQ], riatom_to_bfs1_[centerQ]);
+        C_DGESV_wrapper(S_aa, C_lmo_slice);
+
+        // (mn|Q) C_mi C_nj ->(ij|Q)
+        for (size_t q = 0; q < nq; q++) {
+            qij_[qstart+q] = linalg::triplet(C_lmo_slice, qij_[qstart+q], C_lmo_slice, true, false, false);
+        }
+    }
+
+    timer_off("(mn|K)->(ij|K)");
+}
+
+void DLPNOMP2::compute_qab() {
+    timer_on("(mn|K)->(ab|K)");
+
+    int nbf = basisset_->nbf();
+    int naux = ribasis_->nbf();
+
+    size_t nthread = 1;
+#ifdef _OPENMP
+    nthread = omp_get_max_threads();
+#endif
+
+    std::shared_ptr<IntegralFactory> factory =
+        std::make_shared<IntegralFactory>(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eris(nthread);
+
+    eris[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    for (size_t thread = 1; thread < nthread; thread++) {
+        eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
+    }
+
+    qab_.resize(naux);
+
+    // LMO-LMO DF ints
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int Q = 0; Q < ribasis_->nshell(); Q++) {
+        int nq = ribasis_->shell(Q).nfunction();
+        int qstart = ribasis_->shell(Q).function_index();
+        int centerQ = ribasis_->shell_to_center(Q);
+
+        size_t thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        // Sparse lists for PAO/PAO
+        auto bf_map_pao = riatom_to_bfs2_[centerQ];
+
+        // inverse map, from global basis function index to auxiliary specific index
+        std::vector<int> bf_map_pao_inv(nbf, -1);
+        for (int m_ind = 0; m_ind < bf_map_pao.size(); m_ind++) {
+            bf_map_pao_inv[bf_map_pao[m_ind]] = m_ind;
+        }
+
+        for (size_t q = 0; q < nq; q++) {
+            qab_[qstart + q] = std::make_shared<Matrix>("(mn|Q)", bf_map_pao.size(), bf_map_pao.size());
+        }
+
+        for (int M : riatom_to_shells2_[centerQ]) {
+            int nm = basisset_->shell(M).nfunction();
+            int mstart = basisset_->shell(M).function_index();
+            int centerM = basisset_->shell_to_center(M);
+
+            for (int N : riatom_to_shells2_[centerQ]) {
+                int nn = basisset_->shell(N).nfunction();
+                int nstart = basisset_->shell(N).function_index();
+                int centerN = basisset_->shell_to_center(N);
+
+                // TODO: Permutational Symmetry
+                eris[thread]->compute_shell(Q, 0, M, N);
+                const double* buffer = eris[thread]->buffer();
+
+                for (int q = 0; q < nq; q++) {
+                    for (int m = 0; m < nm; m++) {
+                        for (int n = 0; n < nn; n++) {
+                            int index_m = bf_map_pao_inv[mstart + m];
+                            int index_n = bf_map_pao_inv[nstart + n];
+                            qab_[qstart + q]->set(index_m, index_n, *(buffer));
+                            buffer++;
+                        }
+                    }
+                }
+
+            }  // N loop
+        } // M loop
+
+        auto C_pao_slice = submatrix_rows_and_cols(*C_pao_, riatom_to_bfs2_[centerQ], riatom_to_paos_ext_[centerQ]);
+
+        // (mn|Q) C_mi C_nj ->(ij|Q)
+        for (size_t q = 0; q < nq; q++) {
+            qab_[qstart + q] = linalg::triplet(C_pao_slice, qab_[qstart + q], C_pao_slice, true, false, false);
+        }
+    }
+
+    timer_off("(mn|K)->(ab|K)");
+}
+
 SharedMatrix DLPNOMP2::get_lmo_matrix(std::string key) {
     if (!lmo_matrices_.size()) store_information();
     return lmo_matrices_[key];
@@ -1531,6 +1707,16 @@ std::vector<SharedMatrix> DLPNOMP2::get_pno_matrix(std::string key) {
 SparseMap DLPNOMP2::get_sparse_map(std::string key) {
     if (!sparse_maps_.size()) store_information();
     return sparse_maps_[key];
+}
+
+std::vector<SharedMatrix> DLPNOMP2::get_qij() {
+    if (qij_.empty()) compute_qij();
+    return qij_;
+}
+
+std::vector<SharedMatrix> DLPNOMP2::get_qab() {
+    if (qab_.empty()) compute_qab();
+    return qab_;
 }
 
 }  // namespace dlpno

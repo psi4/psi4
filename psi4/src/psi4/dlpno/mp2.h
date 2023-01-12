@@ -146,6 +146,12 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<bool>> riatom_to_atoms1_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms2_dense_;
 
+    /// CC Integrals
+    // LMO/LMO ERIs
+    std::vector<SharedMatrix> qij_;
+    // PAO/PAO ERIs
+    std::vector<SharedMatrix> qab_;
+
     void common_init();
 
     std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix S, SharedMatrix F);
@@ -193,6 +199,11 @@ class DLPNOMP2 : public Wavefunction {
     /// Create lookup tables for all sparsity information (LMO, PAO, PNOs, SparseMaps)
     void store_information();
 
+    /// A function to compute Qij integrals
+    void compute_qij();
+    /// A function to compute Qab integrals
+    void compute_qab();
+
    public:
     DLPNOMP2(SharedWavefunction ref_wfn, Options& options);
     ~DLPNOMP2() override;
@@ -214,6 +225,11 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::pair<int,int>> ij_to_i_j() { return ij_to_i_j_; }
     /// LMO pair index (ij) to LMO pair index (ji)
     std::vector<int> ij_to_ji() { return ij_to_ji_; }
+
+    /// Gets qij matrix
+    std::vector<SharedMatrix> get_qij();
+    /// Gets qab matrix
+    std::vector<SharedMatrix> get_qab();
 
     /// Returns LMP2 Correlation Energy
     double e_lmp2() { return e_lmp2_; }
