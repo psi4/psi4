@@ -401,6 +401,7 @@ void DLPNOMP2::prep_sparsity() {
     int nshell = basisset_->nshell();
     int naux = ribasis_->nbf();
     int naocc = nalpha_ - nfrzc();
+    int npao = C_pao_->colspi(0);  // same as nbf
 
     auto bf_to_atom = std::vector<int>(nbf);
     auto ribf_to_atom = std::vector<int>(naux);
@@ -593,6 +594,9 @@ void DLPNOMP2::prep_sparsity() {
     // riatom_to_lmos_ext_dense_[riatom][lmo] is the index of lmo in riatom_to_lmos_ext_[riatom]
     //   (if present), else -1
     riatom_to_lmos_ext_dense_.resize(natom);
+    // riatom_to_paos_ext_dense_[riatom][pao] is the index of pao in riatom_to_paos_ext_[riatom]
+    //   (if present), else -1
+    riatom_to_paos_ext_dense_.resize(natom);
 
     // riatom_to_atoms1_dense_(1,2)[riatom][a] is true if the orbitals basis functions of atom A
     //   are needed for the (LMO,PAO) transform
@@ -601,12 +605,17 @@ void DLPNOMP2::prep_sparsity() {
 
     for (int a_ri = 0; a_ri < natom; a_ri++) {
         riatom_to_lmos_ext_dense_[a_ri] = std::vector<int>(naocc, -1);
+        riatom_to_paos_ext_dense_[a_ri] = std::vector<int>(npao, -1);
         riatom_to_atoms1_dense_[a_ri] = std::vector<bool>(natom, false);
         riatom_to_atoms2_dense_[a_ri] = std::vector<bool>(natom, false);
 
         for (int i_ind = 0; i_ind < riatom_to_lmos_ext_[a_ri].size(); i_ind++) {
             int i = riatom_to_lmos_ext_[a_ri][i_ind];
             riatom_to_lmos_ext_dense_[a_ri][i] = i_ind;
+        }
+        for (int u_ind = 0; u_ind < riatom_to_paos_ext_[a_ri].size(); u_ind++) {
+            int u = riatom_to_paos_ext_[a_ri][u_ind];
+            riatom_to_paos_ext_dense_[a_ri][u] = u_ind;
         }
         for (int a_bf : riatom_to_atoms1_[a_ri]) {
             riatom_to_atoms1_dense_[a_ri][a_bf] = true;
@@ -716,7 +725,7 @@ void DLPNOMP2::compute_df_ints() {
             }  // N loop
         }      // M loop
 
-        auto C_pao_slice = submatrix_rows(*C_pao_, riatom_to_bfs2_[centerQ]);  // TODO: PAO slices
+        auto C_pao_slice = submatrix_rows_and_cols(*C_pao_, riatom_to_bfs2_[centerQ], riatom_to_paos_ext_[centerQ]);
 
         //// Here we'll refit the coefficients of C_lmo_slice to minimize residual from unscreened orbitals
         //// This lets us get away with agressive coefficient screening
@@ -791,8 +800,8 @@ void DLPNOMP2::pno_transform() {
             int centerq = ribasis_->function_to_center(q);
             for (int a_ij = 0; a_ij < npao_ij; a_ij++) {
                 int a = lmopair_to_paos_[ij][a_ij];
-                i_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][i], a));
-                j_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][j], a));
+                i_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][a]));
+                j_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][j], riatom_to_paos_ext_dense_[centerq][a]));
             }
         }
 
