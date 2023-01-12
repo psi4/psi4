@@ -182,15 +182,11 @@ class PSI_API DirectDFJ : public SplitJK {
  * @param K The list of AO K matrices to build (Same size as D)
  * 
  */
-#if 0
 class PSI_API LinK : public SplitJK {
     // => LinK variables <= //
 
     // Density-based ERI Screening tolerance to use in the LinK algorithm
     double linK_ints_cutoff_;
-
-    /// Common initialization
-    void common_init();
 
    public:
     // => Constructors < = //
@@ -216,8 +212,16 @@ class PSI_API LinK : public SplitJK {
     * type on output file
     */
     void print_header() const override;
+
+    size_t num_computed_shells() override;
+
+    /**
+    * print name of method
+    */ 
+    std::string name() override { return "LinK"; }
 };
 
+#if 0
 class PSI_API COSK : public SplitJK {
     // => Semi-Numerical Stuff <= //
 

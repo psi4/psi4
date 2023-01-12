@@ -1258,11 +1258,6 @@ class PSI_API CompositeJK : public JK {
     /// Overlap fitting metric for grid_final_
     SharedMatrix Q_final_;
  
-    // => LinK variables <= //
-
-    // Density-based ERI Screening tolerance to use in the LinK algorithm
-    double linK_ints_cutoff_;
-
     std::string name() override { return "CompositeJK"; }
     size_t memory_estimate() override;
 
@@ -1281,20 +1276,6 @@ class PSI_API CompositeJK : public JK {
     void incfock_setup();
     /// Post-iteration Incfock processing
     void incfock_postiter();
-
-    /**
-     * @author Andy Jiang, Georgia Tech, December 2021
-     * 
-     * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
-     * doi: 10.1063/1.476741
-     * 
-     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
-     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
-     * @param K The list of AO K matrices to build (Same size as D)
-     * 
-     */
-    void build_linK(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& K);
 
     /// Build the exchange (K) matrix using COSX
     // primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036 
@@ -1345,7 +1326,6 @@ class PSI_API CompositeJK : public JK {
     */
     void print_header() const override;
 
-    void print_linK_header() const;
     void print_COSX_header() const;
 };
 
