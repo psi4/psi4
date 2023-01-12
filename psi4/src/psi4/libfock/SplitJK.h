@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef SplitJK_H
-#define SplitJK_H
+#ifndef SPLITJK_H
+#define SPLITJK_H
 
 #include <vector>
 
@@ -39,6 +39,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
+//#include "jk.h"
 
 namespace psi {
 class MinimalInterface;
