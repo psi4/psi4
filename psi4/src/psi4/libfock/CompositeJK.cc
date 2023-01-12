@@ -494,6 +494,11 @@ void CompositeJK::compute_JK() {
     // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
     if (do_wK_) throw PSIEXCEPTION("CompositeJK algorithms do not support wK integrals yet!");
 
+    // LinK does not support non-symmetric matrices
+    if (!lr_symmetric_ && k_type_ == "LINK") {
+        throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
+    }
+
     // explicit setup of Incfock for this SCF iteration
     if (incfock_) {
         timer_on("CompositeJK: INCFOCK Preprocessing");

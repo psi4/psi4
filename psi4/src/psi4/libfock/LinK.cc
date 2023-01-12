@@ -91,10 +91,6 @@ void LinK::print_header() const {
 // To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
 void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
-    //if (!lr_symmetric_) {
-    //    throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
-    //}
-
     // ==> Prep Auxiliary Quantities <== //
 
     // => Sizing <= //

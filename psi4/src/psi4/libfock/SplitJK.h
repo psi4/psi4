@@ -192,7 +192,7 @@ class PSI_API LinK : public SplitJK {
     // => LinK variables <= //
 
     // Density-based ERI Screening tolerance to use in the LinK algorithm
-    double linK_ints_cutoff_;
+    double linK_ints_cutoff_;    
 
    public:
     // => Constructors < = //
