@@ -46,6 +46,7 @@ namespace psi {
 
 SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_(primary) {
     if (options["BENCH"].has_changed()) bench_ = options.get_int("BENCH");
+    if (options["DEBUG"].has_changed()) debug_ = options.get_int("DEBUG");
     if (options["INTS_TOLERANCE"].has_changed()) cutoff_ = options.get_double("INTS_TOLERANCE");
 };
 

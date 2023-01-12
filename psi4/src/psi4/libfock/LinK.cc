@@ -66,7 +66,7 @@ LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
 
     // set up LinK integral tolerance
     if (options["LINK_INTS_TOLERANCE"].has_changed()) {
-        linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
+        linK_ints_cutoff_ = options.get_double("LINK_INTS_TOLERANCE");
     } else {
         linK_ints_cutoff_ = cutoff_;
     }
@@ -89,11 +89,11 @@ void LinK::print_header() const {
 
 // build the K matrix using Ochsenfelds's Linear Exchange (LinK) algorithm 
 // To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
-void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J,
+void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
-    if (!lr_symmetric_) {
-        throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
-    }
+    //if (!lr_symmetric_) {
+    //    throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
+    //}
 
     // ==> Prep Auxiliary Quantities <== //
 

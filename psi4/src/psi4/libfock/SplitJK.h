@@ -80,6 +80,11 @@ class PSI_API SplitJK : public JK {
     /// SplitJK algorithm info
     std::string algo_; 
 
+    /// general options
+    bool bench_;
+    int debug_;
+    double cutoff_;
+
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 
@@ -146,8 +151,9 @@ class PSI_API DirectDFJ : public SplitJK {
     /// Destructor
     ~DirectDFJ() override;
 
-   void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp) override;
+    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& G_comp,
+		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
     /**
@@ -198,13 +204,14 @@ class PSI_API LinK : public SplitJK {
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    LinK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+    LinK(std::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     ~LinK() override;
 
     /// Build the exchange (K) matrix using LinK 
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp) override;
+                 std::vector<std::shared_ptr<Matrix> >& G_comp,
+		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
     /**
