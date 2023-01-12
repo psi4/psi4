@@ -130,6 +130,7 @@ class DLPNOMP2 : public Wavefunction {
 
     // Dense analogues of some sparse maps for quick lookup
     std::vector<std::vector<int>> riatom_to_lmos_ext_dense_;
+    std::vector<std::vector<int>> riatom_to_paos_ext_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms1_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms2_dense_;
 
