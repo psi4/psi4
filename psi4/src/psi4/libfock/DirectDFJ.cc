@@ -87,7 +87,7 @@ size_t DirectDFJ::memory_estimate() {
 void DirectDFJ::print_header() const {
     if (print_) {
         outfile->Printf("\n");
-        outfile->Printf("  ==> DirectDFJ: Integral-Direct Density-Fitted J <==\n\n");
+        outfile->Printf("  ==> DF-DirJ: Integral-Direct Density-Fitted J <==\n\n");
 
         outfile->Printf("    J Screening Cutoff:%11.0E\n", cutoff_);
     }

@@ -1224,7 +1224,7 @@ class PSI_API CompositeJK : public JK {
 
     /// CompositeJK algorithm info
     std::shared_ptr<SplitJK> j_algo_;
-    //std::shared_ptr<SplitJK> k_algo_;
+    std::shared_ptr<SplitJK> k_algo_;
     std::string k_type_;
 
     // Perform Density matrix-based integral screening?

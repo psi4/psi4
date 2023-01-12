@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -252,6 +252,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     // ==> Start "Loop over significant "bra"-shell pairs uh" in Fig. 1 of paper <== //
     
     // Number of computed shell quartets is tracked for benchmarking purposes
+    num_computed_shells_ = 0L;
     size_t computed_shells = 0L;
 
     // ==> Integral Formation Loop <== //
@@ -486,13 +487,9 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         Kmat->hermitivitize();
     }
 
-    if (bench_) {
-        auto mode = std::ostream::app;
-        auto printer = PsiOutStream("bench.dat", mode);
-        size_t ntri = nshell * (nshell + 1L) / 2L;
-        size_t possible_shells = ntri * (ntri + 1L) / 2L;
-        printer.Printf("(LinK) Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
-                        possible_shells, computed_shells / (double)possible_shells);
+    num_computed_shells_ = computed_shells;
+    if (get_bench()) {
+        computed_shells_per_iter_["Quartets"].push_back(num_computed_shells());
     }
 }
 
