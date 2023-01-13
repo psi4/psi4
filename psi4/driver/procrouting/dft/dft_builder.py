@@ -82,7 +82,7 @@ dict = {
 import collections
 import copy
 
-from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases
+from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases, new_d4_api
 
 from psi4 import core
 
@@ -97,6 +97,9 @@ dict_functionals.update(mgga_functionals.functional_list)
 dict_functionals.update(hyb_functionals.functional_list)
 dict_functionals.update(dh_functionals.functional_list)
 
+# remove r2scan-3c from dictionary if dftd4 <= v3.5.0
+if new_d4_api is False:
+    dict_functionals.pop("r2scan3c")
 
 def get_functional_aliases(functional_dict):
     if "alias" in functional_dict:
