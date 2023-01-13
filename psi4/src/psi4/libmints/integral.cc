@@ -197,7 +197,7 @@ OneBodySOInt* IntegralFactory::so_traceless_quadrupole() {
     return new OneBodySOInt(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
+ElectricFieldInt* IntegralFactory::electric_field(int deriv) {
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 

@@ -1720,7 +1720,7 @@ std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> 
 SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix moments) {
     SharedMatrix mat = std::make_shared<Matrix>("Induction operator", basisset_->nbf(), basisset_->nbf());
     ContractOverDipolesFunctor dipfun(moments, mat);
-    auto field_integrals_ = static_cast<ElectricFieldInt *>(integral_->electric_field());
+    auto field_integrals_ = integral_->electric_field();
     field_integrals_->compute_with_functor(dipfun, coords);
     mat->scale(-1.0);
 
@@ -1728,7 +1728,7 @@ SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix m
 }
 
 SharedMatrix MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix D) {
-    auto field_integrals_ = static_cast<ElectricFieldInt *>(integral_->electric_field());
+    auto field_integrals_ = integral_->electric_field();
 
     SharedMatrix efields = std::make_shared<Matrix>("efields", coords->nrow(), 3);
     auto fieldfun = ContractOverDensityFieldFunctor(efields, D);
