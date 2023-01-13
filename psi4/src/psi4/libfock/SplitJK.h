@@ -88,6 +88,10 @@ class PSI_API SplitJK : public JK {
 
     // Perform Density matrix-based integral screening?
     bool density_screening_;
+    /// Use severe screening techniques? Useful in early SCF iterations 
+    bool early_screening_;
+     /// Left-right symmetric? Determined in each call of compute()
+    bool lr_symmetric_;
 
    public:
     // => Constructors < = //
@@ -110,9 +114,8 @@ class PSI_API SplitJK : public JK {
 
     // => Knobs <= //
    
-    // needed for COSX
-    virtual void set_early_screening(bool early_screening) { return; }
-    virtual void set_lr_symmetric(bool lr_symmetric) { return; } 
+    void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
+    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric_; } 
 
     /**
     * Print header information regarding JK
@@ -199,8 +202,6 @@ class PSI_API LinK : public SplitJK {
 
     // Density-based ERI Screening tolerance to use in the LinK algorithm
     double linK_ints_cutoff_;
-    /// Left-right symmetric? 
-    bool lr_symmetric_;
 
    public:
     // => Constructors < = //
@@ -222,8 +223,6 @@ class PSI_API LinK : public SplitJK {
 		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
-
-    void set_lr_symmetric(bool lr_symmetric) override { lr_symmetric_ = lr_symmetric; }
 
     /**
     * Print header information regarding JK
@@ -259,11 +258,7 @@ class PSI_API COSK : public SplitJK {
     double basis_tol_; 
     /// use overlap-fitted COSX algo?
     bool overlap_fitted_; 
-    /// Use severe screening techniques? Useful in early SCF iterations 
-    bool early_screening_;
-     /// Left-right symmetric? Determined in each call of compute()
-    bool lr_symmetric_;
-
+   
    public:
     // => Constructors < = //
 
@@ -284,9 +279,6 @@ class PSI_API COSK : public SplitJK {
 		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
     
     // => Knobs <= //
-    void set_early_screening(bool early_screening) override { early_screening_ = early_screening; }
-    void set_lr_symmetric(bool lr_symmetric) override { lr_symmetric_ = lr_symmetric; }
-
     /**
     * Print header information regarding JK
     * type on output file

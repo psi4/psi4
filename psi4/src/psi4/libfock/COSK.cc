@@ -337,6 +337,15 @@ void COSK::print_header() const {
 void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
 
+    // => some debug printout <= //
+    outfile->Printf("    COSX kscreen_: %11.0E\n", kscreen_);
+    outfile->Printf("    COSX dscreen_: %11.0E\n", dscreen_);
+    outfile->Printf("    COSX basis_tol_: %11.0E\n", basis_tol_);
+    outfile->Printf("    COSX Overlap Fitting:  %11s\n\n", (overlap_fitted_ ? "Yes" : "No"));
+   
+    outfile->Printf("    COSX early_screening_: %11s\n", (early_screening_ ? "Yes" : "No"));
+    outfile->Printf("    COSX LR Symmetric?:  %11s\n\n", (lr_symmetric_ ? "Yes" : "No"));
+    
     // => Sizing <= //
     int njk = D.size();
     int nbf = primary_->nbf();
