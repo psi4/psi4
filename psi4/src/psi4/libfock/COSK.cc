@@ -178,10 +178,14 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     early_screening_ = false;
     lr_symmetric_ = true;
 
-    if (options["COSX_INTS_TOLERANCE"].has_changed()) kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
-    if (options["COSX_DENSITY_TOLERANCE"].has_changed()) dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
-    if (options["COSX_BASIS_TOLERANCE"].has_changed()) basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
-    if (options["COSX_OVERLAP_FITTING"].has_changed()) overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
+    //if (options["COSX_INTS_TOLERANCE"].has_changed()) kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
+    //if (options["COSX_DENSITY_TOLERANCE"].has_changed()) dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
+    //if (options["COSX_BASIS_TOLERANCE"].has_changed()) basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
+    //if (options["COSX_OVERLAP_FITTING"].has_changed()) overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
+    kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
+    dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
+    basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
+    overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
 
     timer_on("COSK: COSX Grid Construction");
 

@@ -73,6 +73,7 @@ LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     } else {
         linK_ints_cutoff_ = cutoff_;
     }
+    
     timer_off("LinK: Setup");
 }
 

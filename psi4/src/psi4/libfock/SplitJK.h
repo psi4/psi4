@@ -111,8 +111,8 @@ class PSI_API SplitJK : public JK {
     // => Knobs <= //
    
     // needed for COSX
-    void set_early_screening(bool early_screening) { return; }
-    void set_lr_symmetric(bool lr_symmetric) { return; } 
+    virtual void set_early_screening(bool early_screening) { return; }
+    virtual void set_lr_symmetric(bool lr_symmetric) { return; } 
 
     /**
     * Print header information regarding JK
@@ -199,7 +199,7 @@ class PSI_API LinK : public SplitJK {
 
     // Density-based ERI Screening tolerance to use in the LinK algorithm
     double linK_ints_cutoff_;
-    /// Left-right symmetric? Determined in each call of compute()
+    /// Left-right symmetric? 
     bool lr_symmetric_;
 
    public:
@@ -223,7 +223,7 @@ class PSI_API LinK : public SplitJK {
 
     // => Knobs <= //
 
-    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
+    void set_lr_symmetric(bool lr_symmetric) override { lr_symmetric_ = lr_symmetric; }
 
     /**
     * Print header information regarding JK
@@ -284,8 +284,8 @@ class PSI_API COSK : public SplitJK {
 		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
     
     // => Knobs <= //
-    void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
-    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
+    void set_early_screening(bool early_screening) override { early_screening_ = early_screening; }
+    void set_lr_symmetric(bool lr_symmetric) override { lr_symmetric_ = lr_symmetric; }
 
     /**
     * Print header information regarding JK
