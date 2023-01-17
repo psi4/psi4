@@ -5,7 +5,7 @@ dependencies:
   - blas=*=mkl
   - intel-openmp!=2019.5
     # build
-  - cmake>=3.15
+  - cmake
   - doxygen
   - gxx_linux-64
     # core
