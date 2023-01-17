@@ -162,6 +162,7 @@ provided in the molecule block :samp:`molecule {optional_molecule_name} \\{...\\
    line of the molecule block, they are interpreted as the molecular charge
    and multiplicity (:math:`2 M_s + 1`), respectively. For multi-fragment 
    complexes, each fragment can have a :samp:`{charge} {multiplicity}` line.
+   If not explicitly provided, each fragment is assumed to be :samp:`{0} {1}`.
 
 **Units**
    By default, |Angstrom| units are used; this is changed by adding
