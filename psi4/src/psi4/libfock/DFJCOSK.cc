@@ -663,7 +663,7 @@ void DFJCOSK::build_K(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::
     // initialize per-thread objects
     IntegralFactory factory(primary_);
     for(size_t thread = 0; thread < nthreads_; thread++) {
-        int_computers[thread] = std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory.electrostatic()));
+        int_computers[thread] = std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory.electrostatic().release()));
         bf_computers[thread] = std::make_shared<BasisFunctions>(primary_, grid->max_points(), grid->max_functions());
         for(size_t jki = 0; jki < njk; jki++) {
             KT[jki][thread] = std::make_shared<Matrix>(nbf, nbf);

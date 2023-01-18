@@ -439,7 +439,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
     std::vector<std::shared_ptr<PotentialInt>> VintT;
     for (int thread = 0; thread < nthreads; thread++) {
         VtempT.push_back(std::make_shared<Matrix>("Vtemp", naux, 1));
-        VintT.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential())));
+        VintT.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential().release())));
     }
 
 #pragma omp parallel for schedule(dynamic)

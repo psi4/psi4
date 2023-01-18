@@ -1400,7 +1400,7 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
 
     OperatorSymmetry msymm(1, molecule_, integral_, factory_);
     std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-    OneBodySOInt *so_dipole = integral_->so_dipole();
+    std::unique_ptr<OneBodySOInt> so_dipole = integral_->so_dipole();
     so_dipole->compute(dipoles);
 
     if (lambda[0] != 0.0) {
@@ -1720,7 +1720,7 @@ std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> 
 SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix moments) {
     SharedMatrix mat = std::make_shared<Matrix>("Induction operator", basisset_->nbf(), basisset_->nbf());
     ContractOverDipolesFunctor dipfun(moments, mat);
-    auto field_integrals_ = static_cast<ElectricFieldInt *>(integral_->electric_field());
+    auto field_integrals_ = std::unique_ptr<ElectricFieldInt>(static_cast<ElectricFieldInt *>(integral_->electric_field().release()));
     field_integrals_->compute_with_functor(dipfun, coords);
     mat->scale(-1.0);
 
@@ -1728,7 +1728,7 @@ SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix m
 }
 
 SharedMatrix MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix D) {
-    auto field_integrals_ = static_cast<ElectricFieldInt *>(integral_->electric_field());
+    auto field_integrals_ = std::unique_ptr<ElectricFieldInt>(static_cast<ElectricFieldInt *>(integral_->electric_field().release()));
 
     SharedMatrix efields = std::make_shared<Matrix>("efields", coords->nrow(), 3);
     auto fieldfun = ContractOverDensityFieldFunctor(efields, D);
@@ -2130,7 +2130,7 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
     std::vector<SharedMatrix> gradtemps;
     for (size_t i = 0; i < nthread_; i++) {
         gradtemps.push_back(grad->clone());
-        ecp_ints_vec.push_back(std::shared_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral_->ao_ecp(1))));
+        ecp_ints_vec.push_back(std::shared_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral_->ao_ecp(1).release())));
     }
 
     // Lower Triangle

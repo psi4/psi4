@@ -501,7 +501,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
 #ifdef USING_ecpint
     {
         // Effective core potential derivatives
-        std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(1)));
+        std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(1).release()));
 
         auto Emix = std::make_shared<Matrix>("Emix", nso, nocc);
         auto Emiy = std::make_shared<Matrix>("Emiy", nso, nocc);
@@ -3285,7 +3285,7 @@ void USCFDeriv::ecp_deriv(std::shared_ptr<Matrix> C,
                           std::shared_ptr<Matrix> Cocc,
                           int nso, int nocc, int nvir, bool alpha)
 {
-    std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(1)));
+    std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(1).release()));
     size_t nmo = nocc + nvir;
     int natom = molecule_->natom();
 

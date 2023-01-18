@@ -509,7 +509,7 @@ SharedMatrix SCFDeriv::compute_hessian()
         hessian_terms.push_back("Effective Core Potential");
 
         // Potential energy derivatives
-        std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(2)));
+        std::shared_ptr<ECPInt> ecpint(dynamic_cast<ECPInt*>(integral_->ao_ecp(2).release()));
         const auto& buffers = ecpint->buffers();
 
         for (int P = 0; P < basisset_->nshell(); P++) {

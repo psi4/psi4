@@ -144,7 +144,7 @@ void X2CInt::compute_integrals() {
     if ((lambda_[0] != 0.0) or (lambda_[1] != 0) or (lambda_[2] != 0)) {
         OperatorSymmetry msymm(1, molecule_, integral_, soFactory_);
         std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-        OneBodySOInt *so_dipole = integral_->so_dipole();
+        std::unique_ptr<OneBodySOInt> so_dipole = integral_->so_dipole();
         so_dipole->compute(dipoles);
 
         std::vector<std::string> axis_label{"x", "y", "z"};
