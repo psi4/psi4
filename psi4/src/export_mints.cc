@@ -1677,10 +1677,6 @@ void export_mints(py::module& m) {
         .def("write", &MoldenWriter::write, "Writes wavefunction information in molden format", "filename"_a, "Ca"_a,
              "Cb"_a, "Ea"_a, "Eb"_a, "OccA"_a, "OccB"_a, "dovirtual"_a);
 
-    py::class_<NBOWriter, std::shared_ptr<NBOWriter>>(m, "NBOWriter", "The Natural Bond Orbital Writer")
-        .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("write", &NBOWriter::write, "Write the natural bond orbitals to a file", "filename"_a);
-
     py::class_<MOWriter, std::shared_ptr<MOWriter>>(m, "MOWriter", "Writes the MOs")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("write", &MOWriter::write, "Write the MOs");  // should the writer.h file take a filename as an argument?
