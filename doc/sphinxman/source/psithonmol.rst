@@ -540,13 +540,13 @@ block::
 This specifies that there are two neutral, spin-singlet fragments. It is
 possible to further specify that the overall complex is neutral and spin-singlet
 by inserting another :samp:`{charge} {multiplicity}` line, separated from the first
-molecule block by a `--` line. If any information is missing, Psi will set the
+molecule block by a `--` line. If any information is missing, |PSIfour| will set the
 unprovided charges and multiplicities to be consistent with those that are given.
 For example, the overall charge must be simply the sum of all fragment charges.
-Psi further assumes that any unpaired electrons are coupled to yield the highest
+|PSIfour| further assumes that any unpaired electrons are coupled to yield the highest
 possible :math:`M_s` value. Psi will also favor neutral, spin-singlet fragments.
 For anything complicated, we strongly suggest explicitly providing the charge
-and multiplicity of each fragment.
+and multiplicity of each fragment as well as the total molecular charge and multiplicity. For details and examples, see https://github.com/MolSSI/QCElemental/blob/master/qcelemental/molparse/chgmult.py#L105-L136 .
 
 Having defined a molecule containing fragments like ``eneyne`` above, it
 is a simple matter to perform calculations on only a subset of the
