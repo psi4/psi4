@@ -156,7 +156,7 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
     std::vector<double> nbeta(molecule_->natom(), 0);
     std::vector<int> nelec(molecule_->natom(), 0);
 
-    // Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
+    // Ground state high spin occupancy array, atoms 0 to 36 (see Griffith's Quantum Mechanics, pp. 217)
     // For 37 to 86, save for f-block: Atomic, Molecular, & Optical Physics Handbook, Ed. Gordon W. F. Drake, American
     // Institute of Physics, Woodbury, New York, USA, 1996.
 
@@ -254,7 +254,7 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
 
         if (print_ > 1) {
             outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:\n", uniA, index);
-            outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, nbf = %d\n", nalpha[uniA], nbeta[uniA], nbf);
+            outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, nbf = %d\n", nalpha[index], nbeta[index], nbf);
         }
 
         // Occupation numbers
@@ -287,7 +287,7 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
 
             // Sanity check: can't have more active orbitals than basis functions
             if (nact > nbf - nfzc) {
-                nact = nbf - nfzc;
+                throw PSIEXCEPTION("SAD: Atom " + molecule_->symbol(index) + " has more electrons than basis functions.");
             }
 
             // Number of occupied orbitals is
