@@ -21,9 +21,9 @@ molecule mol {
 }
 
 set {
-    scf_type link 
-    df_scf_guess false
-    basis cc-pVTZ
+    scf_type disk_df 
+    force_mem auto
+    basis aug-cc-pVQZ
     e_convergence 1.0e-10
     screening density
     incfock true
@@ -31,6 +31,8 @@ set {
     linK_ints_tolerance 1.0e-12
 }
 
-linK_energy = energy('b3lyp')
+memory 3 GB
+
+linK_energy = energy('hf')
 psi4.compare_values(ref_energy, linK_energy, 8, "B3LYP Energy (using LinK algo)")
 compare(1, variable("SCF ITERATIONS") < 13.0, "LinK Incfock Efficient")

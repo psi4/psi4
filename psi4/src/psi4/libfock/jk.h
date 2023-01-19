@@ -892,6 +892,9 @@ class GTFockJK : public JK {
  */
 class PSI_API DiskDFJK : public JK {
    protected:
+    /// Options object
+    Options& options_;
+	   
     // => DF-Specific stuff <= //
 
     std::string name() override { return "DiskDFJK"; }
@@ -909,6 +912,8 @@ class PSI_API DiskDFJK : public JK {
     double condition_;
     /// File number for (Q|mn) tensor
     size_t unit_;
+    // Use in-core or out-of-core algo?
+    std::string subalgo_ = "AUTO";
     /// Core or disk?
     bool is_core_;
     /// Maximum number of rows to handle at a time
@@ -989,7 +994,7 @@ class PSI_API DiskDFJK : public JK {
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    DiskDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
+    DiskDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options_);
 
     /// Destructor
     ~DiskDFJK() override;
@@ -1027,6 +1032,13 @@ class PSI_API DiskDFJK : public JK {
      * @param val a positive integer
      */
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
+    ///
+    /// Indicates whether to use the in-core or out-of-core
+    //  subalgorithm available in MemDFJK, or to let
+    //  Psi4 select automatically based on allocated memory
+    /// defaults to AUTO (Psi4 selects by default)
+    ///
+    void set_subalgo(std::string subalgo) { subalgo_ = subalgo; }
 
     // => Accessors <= //
 
@@ -1083,7 +1095,7 @@ class PSI_API CDJK : public DiskDFJK {
      *        structure as this molecule
      * @param cholesky_tolerance tolerance for cholesky decomposition.
      */
-    CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance);
+    CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance);
 
     /// Destructor
     ~CDJK() override;

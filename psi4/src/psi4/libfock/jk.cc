@@ -89,7 +89,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     if (jk_type == "CD") {
-        CDJK* jk = new CDJK(primary, options.get_double("CHOLESKY_TOLERANCE"));
+        auto jk = std::make_shared<CDJK>(primary, options, options.get_double("CHOLESKY_TOLERANCE"));
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -101,10 +101,10 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "DISK_DF") {
-        auto jk = std::make_shared<DiskDFJK>(primary, auxiliary);
+        auto jk = std::make_shared<DiskDFJK>(primary, auxiliary, options);
         _set_dfjk_options<DiskDFJK>(jk, options);
         if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
 
