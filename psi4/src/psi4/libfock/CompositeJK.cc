@@ -336,8 +336,7 @@ void CompositeJK::common_init() {
 }
 
 size_t CompositeJK::num_computed_shells() {
-    //no bench data returned - to come in a future update
-    return JK::num_computed_shells();
+    return num_computed_shells_;
 }
 
 size_t CompositeJK::memory_estimate() {
@@ -910,6 +909,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
     // ==> Start "Loop over significant "bra"-shell pairs uh" in Fig. 1 of paper <== //
     
     // Number of computed shell quartets is tracked for benchmarking purposes
+    num_computed_shells_ = 0L;
     size_t computed_shells = 0L;
 
     // ==> Integral Formation Loop <== //
@@ -1144,13 +1144,9 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
         Kmat->hermitivitize();
     }
 
-    if (bench_) {
-        auto mode = std::ostream::app;
-        auto printer = PsiOutStream("bench.dat", mode);
-        size_t ntri = nshell * (nshell + 1L) / 2L;
-        size_t possible_shells = ntri * (ntri + 1L) / 2L;
-        printer.Printf("(LinK) Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
-                        possible_shells, computed_shells / (double)possible_shells);
+    num_computed_shells_ = computed_shells;
+    if (get_bench()) {
+        computed_shells_per_iter_.push_back(num_computed_shells());
     }
 }
 
@@ -1225,6 +1221,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     // => Integral Computation <= //
 
     // benchmarking statistics
+    num_computed_shells_ = 0L;
     size_t int_shells_total = 0;
     size_t int_shells_computed = 0;
 
@@ -1550,13 +1547,10 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         }
     }
 
-    if (bench_) {
-        auto mode = std::ostream::app;
-        PsiOutStream printer("bench.dat", mode);
-        size_t ints_per_atom = int_shells_computed  / (size_t) natom;
-        printer.Printf("COSK ESP Shells: %zu,%zu,%zu\n", ints_per_atom, int_shells_computed, int_shells_total);
+    num_computed_shells_ = int_shells_computed;
+    if (get_bench()) {
+        computed_shells_per_iter_.push_back(num_computed_shells());
     }
-
 }
 
 }  // namespace psi
