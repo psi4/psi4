@@ -360,7 +360,7 @@ void IntegralTransform::presort_so_tei() {
             }
         }
 
-        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_FZC, mopi_, mopi_);
+        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_FZC, sopi_, sopi_);
         aFzcMat->set(aFzcOp.data());
         aFzcMat->transform(Ca_);
         aFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
@@ -376,12 +376,12 @@ void IntegralTransform::presort_so_tei() {
             }
         }
 
-        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_A_FZC, mopi_, mopi_);
+        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_A_FZC, sopi_, sopi_);
         aFzcMat->set(aFzcOp.data());
         aFzcMat->transform(Ca_);
         aFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
 
-        auto bFzcMat = std::make_shared<Matrix>(PSIF_MO_B_FZC, mopi_, mopi_);
+        auto bFzcMat = std::make_shared<Matrix>(PSIF_MO_B_FZC, sopi_, sopi_);
         bFzcMat->set(bFzcOp.data());
         bFzcMat->transform(Cb_);
         bFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
