@@ -295,7 +295,7 @@ bool DiskDFJK::is_core() {
     // .. or forcibly disable AO_core_ if user specifies ...
     } else if (subalgo_ == "NO_INCORE") {
         if (print_ > 0) {
-            outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core MEM_DF algorithm will be used.\n");
+            outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core DISK_DF algorithm will be used.\n\n");
         }
 	
 	do_core = false; 
@@ -306,7 +306,7 @@ bool DiskDFJK::is_core() {
             throw PSIEXCEPTION("FORCE_MEM=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
         } else {
             if (print_ > 0) {
-                outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core MEM_DF algorithm will be used.\n");
+                outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core DISK_DF algorithm will be used.\n\n");
             }
             do_core = true; 
         }
