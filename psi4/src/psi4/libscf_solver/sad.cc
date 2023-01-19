@@ -287,7 +287,10 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
 
             // Sanity check: can't have more active orbitals than basis functions
             if (nact > nbf - nfzc) {
-                throw PSIEXCEPTION("SAD: Atom " + molecule_->symbol(index) + " has more electrons than basis functions.");
+                nact = nbf-nfzc;
+                if (nact < 0) {
+                    throw PSIEXCEPTION("SAD: Atom " + molecule_->symbol(index) + " has more core electrons than basis functions.");
+                }
             }
 
             // Number of occupied orbitals is
