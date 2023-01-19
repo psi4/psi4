@@ -89,4 +89,6 @@ template void PCMPotentialInt::compute(ContractOverChargesFunctor&);
 template void PCMPotentialInt::compute(PrintIntegralsFunctor&);
 template void PCMPotentialInt::compute(ContractOverDensityFunctor&);
 
+PCMPotentialInt::~PCMPotentialInt() = default;
+
 }  // namespace psi

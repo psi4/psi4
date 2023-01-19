@@ -46,7 +46,8 @@ jobs:
       if: ${{ github.repository == 'psi4/psi4' }}
       uses: conda-incubator/setup-miniconda@v2
       with:
-        mamba-version: "*"
+        miniforge-variant: Mambaforge
+        use-mamba: true
         activate-environment: test
         add-pip-as-python-dependency: true
         auto-activate-base: false

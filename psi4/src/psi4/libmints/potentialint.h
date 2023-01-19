@@ -60,6 +60,7 @@ class PCMPotentialInt : public PotentialInt {
     /// Drives the loops over all shell pairs, to compute integrals
     template <typename PCMPotentialIntFunctor>
     void compute(PCMPotentialIntFunctor &functor);
+    virtual ~PCMPotentialInt();
 };
 
 class PrintIntegralsFunctor {
