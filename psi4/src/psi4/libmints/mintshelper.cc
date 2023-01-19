@@ -1757,7 +1757,7 @@ SharedVector MintsHelper::electrostatic_potential_value(SharedVector charges, Sh
         throw PSIEXCEPTION("Dimension mismatch charges and coordinates.");
     }
 
-    auto potential_integrals_ = static_cast<PCMPotentialInt *>(integral_->pcm_potentialint());
+    auto potential_integrals_ = std::unique_ptr<PCMPotentialInt>(static_cast<PCMPotentialInt *>(integral_->pcm_potentialint().release()));
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i = 0; i < coords->nrow(); ++i) {
         Zxyz.push_back({charges->pointer()[i], {coords->pointer()[i][0],
