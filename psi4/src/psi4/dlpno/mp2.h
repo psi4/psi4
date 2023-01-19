@@ -226,6 +226,8 @@ class DLPNOMP2 : public Wavefunction {
     /// LMO pair index (ij) to LMO pair index (ji)
     std::vector<int> ij_to_ji() { return ij_to_ji_; }
 
+    /// Geta qia matrix
+    std::vector<SharedMatrix> get_qia();
     /// Gets qij matrix
     std::vector<SharedMatrix> get_qij();
     /// Gets qab matrix

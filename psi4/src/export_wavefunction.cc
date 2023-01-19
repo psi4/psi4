@@ -655,6 +655,7 @@ void export_wavefunction(py::module& m) {
         .def("de_lmo_total", &dlpno::DLPNOMP2::de_lmo_total,
              "Returns LMO pair truncation correction (dipole error estimate)")
         .def("de_pno_total", &dlpno::DLPNOMP2::de_pno_total, "Returns PNO truncation correction")
+        .def("get_qia", &dlpno::DLPNOMP2::get_qia, "Returns qia matrix")
         .def("get_qij", &dlpno::DLPNOMP2::get_qij, "Returns qij matrix")
         .def("get_qab", &dlpno::DLPNOMP2::get_qab, "Returns qab matrix");
 }

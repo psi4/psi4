@@ -1709,6 +1709,10 @@ SparseMap DLPNOMP2::get_sparse_map(std::string key) {
     return sparse_maps_[key];
 }
 
+std::vector<SharedMatrix> DLPNOMP2::get_qia() {
+    return qia_;
+}
+
 std::vector<SharedMatrix> DLPNOMP2::get_qij() {
     if (qij_.empty()) compute_qij();
     return qij_;
