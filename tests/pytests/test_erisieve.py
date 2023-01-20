@@ -200,8 +200,8 @@ def test_schwarz_vs_density_quartets():
     density_energy, density_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
     # prep for comparing results to expected values
-    schwarz_computed_shells = schwarz_wfn.jk().computed_shells_per_iter()
-    density_computed_shells = density_wfn.jk().computed_shells_per_iter()
+    schwarz_computed_shells = schwarz_wfn.jk().computed_shells_per_iter()["Quartets"]
+    density_computed_shells = density_wfn.jk().computed_shells_per_iter()["Quartets"]
 
     schwarz_computed_shells_expected = [20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290]
     density_computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
@@ -261,8 +261,8 @@ def test_rhf_vs_uhf_screening():
     uhf_energy, uhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
     # prep for comparing results to expected values
-    rhf_computed_shells = rhf_wfn.jk().computed_shells_per_iter()
-    uhf_computed_shells = uhf_wfn.jk().computed_shells_per_iter()
+    rhf_computed_shells = rhf_wfn.jk().computed_shells_per_iter()["Quartets"]
+    uhf_computed_shells = uhf_wfn.jk().computed_shells_per_iter()["Quartets"]
     
     computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
 

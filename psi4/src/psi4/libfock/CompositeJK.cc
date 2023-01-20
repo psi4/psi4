@@ -171,6 +171,8 @@ void CompositeJK::common_init() {
         throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
     }
 
+    computed_shells_per_iter_["Quartets"] = {};
+    
     // derive separate J+K algorithms from scf_type
     auto jk_type = options_.get_str("SCF_TYPE");
     j_type_ = jk_type.substr(0, jk_type.find("+"));
@@ -219,7 +221,9 @@ void CompositeJK::common_init() {
         J_metric_obj.form_fitting_metric();
         J_metric_ = J_metric_obj.get_metric();
 
-        timer_off("CompositeJK: DIRECTDFJ Coulomb Metric");
+        computed_shells_per_iter_["Triplets"] = {};
+        
+	timer_off("CompositeJK: DIRECTDFJ Coulomb Metric");
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     }
@@ -1146,7 +1150,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
 
     num_computed_shells_ = computed_shells;
     if (get_bench()) {
-        computed_shells_per_iter_.push_back(num_computed_shells());
+        computed_shells_per_iter_["Quartets"].push_back(num_computed_shells());
     }
 }
 
@@ -1549,7 +1553,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     num_computed_shells_ = int_shells_computed;
     if (get_bench()) {
-        computed_shells_per_iter_.push_back(num_computed_shells());
+        computed_shells_per_iter_["Quartets"].push_back(num_computed_shells());
     }
 }
 

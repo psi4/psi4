@@ -251,8 +251,8 @@ class PSI_API JK {
     bool early_screening_;
     /// Number of ERI shell quartets computed, i.e., not screened out
     size_t num_computed_shells_;
-    /// Tally of ERI shell quartets computed per SCF iteration 
-    std::vector<size_t> computed_shells_per_iter_;
+    /// Tally of ERI shell n-lets (triplets, quartets) computed per SCF iteration 
+    std::unordered_map<std::string, std::vector<size_t> > computed_shells_per_iter_;
 
     // => Tasks <= //
 
@@ -584,7 +584,7 @@ class PSI_API JK {
     /**
     * Return number of ERI shell quartets computed per SCF iteration during the JK build process.
     */
-    const std::vector<size_t>& computed_shells_per_iter();
+    const std::unordered_map<std::string, std::vector<size_t> >& computed_shells_per_iter();
 
     /**
     * Print header information regarding JK
