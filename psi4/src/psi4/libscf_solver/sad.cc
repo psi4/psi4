@@ -252,6 +252,10 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
             continue;
         }
 
+        if (nelec[index] > 2 * nbf) {
+            throw PSIEXCEPTION("SAD: Atom " + molecule_->symbol(index) + " has more electrons than basis functions.");
+        }
+
         if (print_ > 1) {
             outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:\n", uniA, index);
             outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, nbf = %d\n", nalpha[index], nbeta[index], nbf);
@@ -288,9 +292,6 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
             // Sanity check: can't have more active orbitals than basis functions
             if (nact > nbf - nfzc) {
                 nact = nbf - nfzc;
-                if (nact < 0) {
-                    throw PSIEXCEPTION("SAD: Atom " + molecule_->symbol(index) + " has more core electrons than basis functions.");
-                }
             }
 
             // Number of occupied orbitals is
