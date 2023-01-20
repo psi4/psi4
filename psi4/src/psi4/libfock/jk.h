@@ -582,9 +582,10 @@ class PSI_API JK {
     const std::vector<SharedMatrix>& D() const { return D_; }
 
     /**
-    * Return number of ERI shell quartets computed per SCF iteration during the JK build process.
+    * Return number of ERI shell n-lets (triplets, quartets) computed per SCF iteration during the JK build process.
     */
     const std::unordered_map<std::string, std::vector<size_t> >& computed_shells_per_iter();
+    const std::vector<size_t>& computed_shells_per_iter(const std::string& n_let);
 
     /**
     * Print header information regarding JK

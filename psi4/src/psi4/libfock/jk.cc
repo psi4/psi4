@@ -214,6 +214,10 @@ const std::unordered_map<std::string, std::vector<size_t> >& JK::computed_shells
     return computed_shells_per_iter_;
 }
 
+const std::vector<size_t>& JK::computed_shells_per_iter(const std::string& n_let) {
+    return computed_shells_per_iter_[n_let];
+}
+
 void JK::common_init() {
     print_ = 1;
     debug_ = 0;
