@@ -583,6 +583,9 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
 
     timer_off("Setup");
 
+    // Number of computed shell triplets is tracked for benchmarking purposes
+    num_computed_shells_ = 0L;
+
     //  => First Contraction <= //
 
     // contract D with three-index DF ERIs to get G:
@@ -733,10 +736,9 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
 
     timer_off("ERI2");
 
-    if (bench_) {
-        auto mode = std::ostream::app;
-        PsiOutStream printer("bench.dat", mode);
-        printer.Printf(" ERI Shells: %zu,%zu,%zu\n", computed_triplets1, computed_triplets2, nshelltriplet);
+    num_computed_shells_ = computed_triplets1 + computed_triplets2;
+    if (get_bench()) {
+        computed_shells_per_iter_["Triplets"].push_back(num_computed_shells());
     }
 
     for(size_t jki = 0; jki < njk; jki++) {
