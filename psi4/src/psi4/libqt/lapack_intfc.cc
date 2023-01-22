@@ -69,18 +69,14 @@ extern int F_DGEEV(char*, char*, int*, double*, int*, double*, double*, double*,
                    int*);
 extern int F_DGEEVX(char*, char*, char*, char*, int*, double*, int*, double*, double*, double*, int*, double*, int*,
                     int*, int*, double*, double*, double*, double*, double*, int*, int*, int*);
-extern int F_DGEGV(char*, char*, int*, double*, int*, double*, int*, double*, double*, double*, double*, int*, double*,
-                   int*, double*, int*, int*);
 extern int F_DGEHRD(int*, int*, int*, double*, int*, double*, double*, int*, int*);
 extern int F_DGELQF(int*, int*, double*, int*, double*, double*, int*, int*);
 extern int F_DGELS(char*, int*, int*, int*, double*, int*, double*, int*, double*, int*, int*);
 extern int F_DGELSD(int*, int*, int*, double*, int*, double*, int*, double*, double*, int*, double*, int*, int*, int*);
 extern int F_DGELSS(int*, int*, int*, double*, int*, double*, int*, double*, double*, int*, double*, int*, int*);
-extern int F_DGELSX(int*, int*, int*, double*, int*, double*, int*, int*, double*, int*, double*, int*);
 extern int F_DGELSY(int*, int*, int*, double*, int*, double*, int*, int*, double*, int*, double*, int*, int*);
 extern int F_DGEQLF(int*, int*, double*, int*, double*, double*, int*, int*);
 extern int F_DGEQP3(int*, int*, double*, int*, int*, double*, double*, int*, int*);
-extern int F_DGEQPF(int*, int*, double*, int*, int*, double*, double*, int*);
 extern int F_DGEQRF(int*, int*, double*, int*, double*, double*, int*, int*);
 extern int F_DGERFS(char*, int*, int*, double*, int*, double*, int*, int*, double*, int*, double*, int*, double*,
                     double*, double*, int*, int*);
@@ -108,12 +104,8 @@ extern int F_DGGHRD(char*, char*, int*, int*, int*, double*, int*, double*, int*
 extern int F_DGGLSE(int*, int*, int*, double*, int*, double*, int*, double*, double*, double*, double*, int*, int*);
 extern int F_DGGQRF(int*, int*, int*, double*, int*, double*, double*, int*, double*, double*, int*, int*);
 extern int F_DGGRQF(int*, int*, int*, double*, int*, double*, double*, int*, double*, double*, int*, int*);
-extern int F_DGGSVD(char*, char*, char*, int*, int*, int*, int*, int*, double*, int*, double*, int*, double*, double*,
-                    double*, int*, double*, int*, double*, int*, double*, int*, int*);
 extern int F_DGGSVD3(char*, char*, char*, int*, int*, int*, int*, int*, double*, int*, double*, int*, double*, double*,
                      double*, int*, double*, int*, double*, int*, double*, int*, int*, int*);
-extern int F_DGGSVP(char*, char*, char*, int*, int*, int*, double*, int*, double*, int*, double*, double*, int*, int*,
-                    double*, int*, double*, int*, double*, int*, int*, double*, double*, int*);
 extern int F_DGGSVP3(char*, char*, char*, int*, int*, int*, double*, int*, double*, int*, double*, double*, int*, int*,
                      double*, int*, double*, int*, double*, int*, int*, double*, double*, int*, int*);
 extern int F_DGTCON(char*, int*, double*, double*, double*, double*, int*, double*, double*, double*, int*, int*);
@@ -286,7 +278,6 @@ extern int F_DTRSNA(char*, char*, int*, double*, int*, double*, int*, double*, i
 extern int F_DTRSYL(char*, char*, int*, int*, int*, double*, int*, double*, int*, double*, int*, double*, int*);
 extern int F_DTRTRI(char*, char*, int*, double*, int*, int*);
 extern int F_DTRTRS(char*, char*, char*, int*, int*, double*, int*, double*, int*, int*);
-extern int F_DTZRQF(int*, int*, double*, int*, double*, int*);
 extern int F_DTZRZF(int*, int*, double*, int*, double*, double*, int*, int*);
 }
 
@@ -2494,220 +2485,6 @@ int C_DGEEVX(char balanc, char jobvl, char jobvr, char sense, int n, double* a, 
  *  Purpose
  *  =======
  *
- *  This routine is deprecated and has been replaced by routine DGGEV.
- *
- *  DGEGV computes the eigenvalues and, optionally, the left and/or right
- *  eigenvectors of a real matrix pair (A,B).
- *  Given two square matrices A and B,
- *  the generalized nonsymmetric eigenvalue problem (GNEP) is to find the
- *  eigenvalues lambda and corresponding (non-zero) eigenvectors x such
- *  that
- *
- *     A*x = lambda*B*x.
- *
- *  An alternate form is to find the eigenvalues mu and corresponding
- *  eigenvectors y such that
- *
- *     mu*A*y = B*y.
- *
- *  These two forms are equivalent with mu = 1/lambda and x = y if
- *  neither lambda nor mu is zero.  In order to deal with the case that
- *  lambda or mu is zero or small, two values alpha and beta are returned
- *  for each eigenvalue, such that lambda = alpha/beta and
- *  mu = beta/alpha.
- *
- *  The vectors x and y in the above equations are right eigenvectors of
- *  the matrix pair (A,B).  Vectors u and v satisfying
- *
- *     u**H*A = lambda*u**H*B  or  mu*v**H*A = v**H*B
- *
- *  are left eigenvectors of (A,B).
- *
- *  Note: this routine performs "full balancing" on A and B -- see
- *  "Further Details", below.
- *
- *  Arguments
- *  =========
- *
- *  JOBVL   (input) CHARACTER*1
- *          = 'N':  do not compute the left generalized eigenvectors;
- *          = 'V':  compute the left generalized eigenvectors (returned
- *                  in VL).
- *
- *  JOBVR   (input) CHARACTER*1
- *          = 'N':  do not compute the right generalized eigenvectors;
- *          = 'V':  compute the right generalized eigenvectors (returned
- *                  in VR).
- *
- *  N       (input) INTEGER
- *          The order of the matrices A, B, VL, and VR.  N >= 0.
- *
- *  A       (input/output) DOUBLE PRECISION array, dimension (LDA, N)
- *          On entry, the matrix A.
- *          If JOBVL = 'V' or JOBVR = 'V', then on exit A
- *          contains the real Schur form of A from the generalized Schur
- *          factorization of the pair (A,B) after balancing.
- *          If no eigenvectors were computed, then only the diagonal
- *          blocks from the Schur form will be correct.  See DGGHRD and
- *          DHGEQZ for details.
- *
- *  LDA     (input) INTEGER
- *          The leading dimension of A.  LDA >= max(1,N).
- *
- *  B       (input/output) DOUBLE PRECISION array, dimension (LDB, N)
- *          On entry, the matrix B.
- *          If JOBVL = 'V' or JOBVR = 'V', then on exit B contains the
- *          upper triangular matrix obtained from B in the generalized
- *          Schur factorization of the pair (A,B) after balancing.
- *          If no eigenvectors were computed, then only those elements of
- *          B corresponding to the diagonal blocks from the Schur form of
- *          A will be correct.  See DGGHRD and DHGEQZ for details.
- *
- *  LDB     (input) INTEGER
- *          The leading dimension of B.  LDB >= max(1,N).
- *
- *  ALPHAR  (output) DOUBLE PRECISION array, dimension (N)
- *          The real parts of each scalar alpha defining an eigenvalue of
- *          GNEP.
- *
- *  ALPHAI  (output) DOUBLE PRECISION array, dimension (N)
- *          The imaginary parts of each scalar alpha defining an
- *          eigenvalue of GNEP.  If ALPHAI(j) is zero, then the j-th
- *          eigenvalue is real; if positive, then the j-th and
- *          (j+1)-st eigenvalues are a complex conjugate pair, with
- *          ALPHAI(j+1) = -ALPHAI(j).
- *
- *  BETA    (output) DOUBLE PRECISION array, dimension (N)
- *          The scalars beta that define the eigenvalues of GNEP.
- *
- *          Together, the quantities alpha = (ALPHAR(j),ALPHAI(j)) and
- *          beta = BETA(j) represent the j-th eigenvalue of the matrix
- *          pair (A,B), in one of the forms lambda = alpha/beta or
- *          mu = beta/alpha.  Since either lambda or mu may overflow,
- *          they should not, in general, be computed.
- *
- *  VL      (output) DOUBLE PRECISION array, dimension (LDVL,N)
- *          If JOBVL = 'V', the left eigenvectors u(j) are stored
- *          in the columns of VL, in the same order as their eigenvalues.
- *          If the j-th eigenvalue is real, then u(j) = VL(:,j).
- *          If the j-th and (j+1)-st eigenvalues form a complex conjugate
- *          pair, then
- *             u(j) = VL(:,j) + i*VL(:,j+1)
- *          and
- *            u(j+1) = VL(:,j) - i*VL(:,j+1).
- *
- *          Each eigenvector is scaled so that its largest component has
- *          abs(real part) + abs(imag. part) = 1, except for eigenvectors
- *          corresponding to an eigenvalue with alpha = beta = 0, which
- *          are set to zero.
- *          Not referenced if JOBVL = 'N'.
- *
- *  LDVL    (input) INTEGER
- *          The leading dimension of the matrix VL. LDVL >= 1, and
- *          if JOBVL = 'V', LDVL >= N.
- *
- *  VR      (output) DOUBLE PRECISION array, dimension (LDVR,N)
- *          If JOBVR = 'V', the right eigenvectors x(j) are stored
- *          in the columns of VR, in the same order as their eigenvalues.
- *          If the j-th eigenvalue is real, then x(j) = VR(:,j).
- *          If the j-th and (j+1)-st eigenvalues form a complex conjugate
- *          pair, then
- *            x(j) = VR(:,j) + i*VR(:,j+1)
- *          and
- *            x(j+1) = VR(:,j) - i*VR(:,j+1).
- *
- *          Each eigenvector is scaled so that its largest component has
- *          abs(real part) + abs(imag. part) = 1, except for eigenvalues
- *          corresponding to an eigenvalue with alpha = beta = 0, which
- *          are set to zero.
- *          Not referenced if JOBVR = 'N'.
- *
- *  LDVR    (input) INTEGER
- *          The leading dimension of the matrix VR. LDVR >= 1, and
- *          if JOBVR = 'V', LDVR >= N.
- *
- *  WORK    (workspace/output) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
- *          On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
- *
- *  LWORK   (input) INTEGER
- *          The dimension of the array WORK.  LWORK >= max(1,8*N).
- *          For good performance, LWORK must generally be larger.
- *          To compute the optimal value of LWORK, call ILAENV to get
- *          blocksizes (for DGEQRF, DORMQR, and DORGQR.)  Then compute:
- *          NB  -- MAX of the blocksizes for DGEQRF, DORMQR, and DORGQR;
- *          The optimal LWORK is:
- *              2*N + MAX( 6*N, N*(NB+1) ).
- *
- *          If LWORK = -1, then a workspace query is assumed; the routine
- *          only calculates the optimal size of the WORK array, returns
- *          this value as the first entry of the WORK array, and no error
- *          message related to LWORK is issued by XERBLA.
- *
- *  C++ Return value: INFO    (output) INTEGER
- *          = 0:  successful exit
- *          < 0:  if INFO = -i, the i-th argument had an illegal value.
- *          = 1,...,N:
- *                The QZ iteration failed.  No eigenvectors have been
- *                calculated, but ALPHAR(j), ALPHAI(j), and BETA(j)
- *                should be correct for j=INFO+1,...,N.
- *          > N:  errors that usually indicate LAPACK problems:
- *                =N+1: error return from DGGBAL
- *                =N+2: error return from DGEQRF
- *                =N+3: error return from DORMQR
- *                =N+4: error return from DORGQR
- *                =N+5: error return from DGGHRD
- *                =N+6: error return from DHGEQZ (other than failed
- *                                                iteration)
- *                =N+7: error return from DTGEVC
- *                =N+8: error return from DGGBAK (computing VL)
- *                =N+9: error return from DGGBAK (computing VR)
- *                =N+10: error return from DLASCL (various calls)
- *
- *  Further Details
- *  ===============
- *
- *  Balancing
- *  ---------
- *
- *  This driver calls DGGBAL to both permute and scale rows and columns
- *  of A and B.  The permutations PL and PR are chosen so that PL*A*PR
- *  and PL*B*R will be upper triangular except for the diagonal blocks
- *  A(i:j,i:j) and B(i:j,i:j), with i and j as close together as
- *  possible.  The diagonal scaling matrices DL and DR are chosen so
- *  that the pair  DL*PL*A*PR*DR, DL*PL*B*PR*DR have elements close to
- *  one (except for the elements that start out zero.)
- *
- *  After the eigenvalues and eigenvectors of the balanced matrices
- *  have been computed, DGGBAK transforms the eigenvectors back to what
- *  they would have been (in perfect arithmetic) if they had not been
- *  balanced.
- *
- *  Contents of A and B on Exit
- *  -------- -- - --- - -- ----
- *
- *  If any eigenvectors are computed (either JOBVL='V' or JOBVR='V' or
- *  both), then on exit the arrays A and B will contain the real Schur
- *  form[*] of the "balanced" versions of A and B.  If no eigenvectors
- *  are computed, then only the diagonal blocks will be correct.
- *
- *  [*] See DHGEQZ, DGEGS, or read the book "Matrix Computations",
- *      by Golub & van Loan, pub. by Johns Hopkins U. Press.
- *
- *  =====================================================================
- *
- *     .. Parameters ..
- **/
-int C_DGEGV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ldb, double* alphar, double* alphai,
-            double* beta, double* vl, int ldvl, double* vr, int ldvr, double* work, int lwork) {
-    int info;
-    ::F_DGGEV(&jobvl, &jobvr, &n, a, &lda, b, &ldb, alphar, alphai, beta, vl, &ldvl, vr, &ldvr, work, &lwork, &info);
-    return info;
-}
-
-/**
- *  Purpose
- *  =======
- *
  *  DGEHRD reduces a real general matrix A to upper Hessenberg form H by
  *  an orthogonal similarity transformation:  Q' * A * Q = H .
  *
@@ -3220,113 +2997,6 @@ int C_DGELSS(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, dou
  *  Purpose
  *  =======
  *
- *  This routine is deprecated and has been replaced by routine DGELSY.
- *
- *  DGELSX computes the minimum-norm solution to a real linear least
- *  squares problem:
- *      minimize || A * X - B ||
- *  using a complete orthogonal factorization of A.  A is an M-by-N
- *  matrix which may be rank-deficient.
- *
- *  Several right hand side vectors b and solution vectors x can be
- *  handled in a single call; they are stored as the columns of the
- *  M-by-NRHS right hand side matrix B and the N-by-NRHS solution
- *  matrix X.
- *
- *  The routine first computes a QR factorization with column pivoting:
- *      A * P = Q * [ R11 R12 ]
- *                  [  0  R22 ]
- *  with R11 defined as the largest leading submatrix whose estimated
- *  condition number is less than 1/RCOND.  The order of R11, RANK,
- *  is the effective rank of A.
- *
- *  Then, R22 is considered to be negligible, and R12 is annihilated
- *  by orthogonal transformations from the right, arriving at the
- *  complete orthogonal factorization:
- *     A * P = Q * [ T11 0 ] * Z
- *                 [  0  0 ]
- *  The minimum-norm solution is then
- *     X = P * Z' [ inv(T11)*Q1'*B ]
- *                [        0       ]
- *  where Q1 consists of the first RANK columns of Q.
- *
- *  Arguments
- *  =========
- *
- *  M       (input) INTEGER
- *          The number of rows of the matrix A.  M >= 0.
- *
- *  N       (input) INTEGER
- *          The number of columns of the matrix A.  N >= 0.
- *
- *  NRHS    (input) INTEGER
- *          The number of right hand sides, i.e., the number of
- *          columns of matrices B and X. NRHS >= 0.
- *
- *  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
- *          On entry, the M-by-N matrix A.
- *          On exit, A has been overwritten by details of its
- *          complete orthogonal factorization.
- *
- *  LDA     (input) INTEGER
- *          The leading dimension of the array A.  LDA >= max(1,M).
- *
- *  B       (input/output) DOUBLE PRECISION array, dimension (LDB,NRHS)
- *          On entry, the M-by-NRHS right hand side matrix B.
- *          On exit, the N-by-NRHS solution matrix X.
- *          If m >= n and RANK = n, the residual sum-of-squares for
- *          the solution in the i-th column is given by the sum of
- *          squares of elements N+1:M in that column.
- *
- *  LDB     (input) INTEGER
- *          The leading dimension of the array B. LDB >= max(1,M,N).
- *
- *  JPVT    (input/output) INTEGER array, dimension (N)
- *          On entry, if JPVT(i) .ne. 0, the i-th column of A is an
- *          initial column, otherwise it is a free column.  Before
- *          the QR factorization of A, all initial columns are
- *          permuted to the leading positions; only the remaining
- *          free columns are moved as a result of column pivoting
- *          during the factorization.
- *          On exit, if JPVT(i) = k, then the i-th column of A*P
- *          was the k-th column of A.
- *
- *  RCOND   (input) DOUBLE PRECISION
- *          RCOND is used to determine the effective rank of A, which
- *          is defined as the order of the largest leading triangular
- *          submatrix R11 in the QR factorization with pivoting of A,
- *          whose estimated condition number < 1/RCOND.
- *
- *  RANK    (output) INTEGER
- *          The effective rank of A, i.e., the order of the submatrix
- *          R11.  This is the same as the order of the submatrix T11
- *          in the complete orthogonal factorization of A.
- *
- *  WORK    (workspace) DOUBLE PRECISION array, dimension
- *                      (max( min(M,N)+3*N, 2*min(M,N)+NRHS )),
- *
- *  C++ Return value: INFO    (output) INTEGER
- *          = 0:  successful exit
- *          < 0:  if INFO = -i, the i-th argument had an illegal value
- *
- *  =====================================================================
- *
- *     .. Parameters ..
- **/
-int C_DGELSX(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, int* jpvt, double rcond, int* rank,
-             double* work) {
-    int info;
-    // Infer dimension of work array
-    // max( min(M,N)+3*N, 2*min(M,N)+NRHS )
-    int lwork = std::max(std::min(m, n) + 3 * n, 2 * std::min(m, n) + nrhs);
-    ::F_DGELSY(&m, &n, &nrhs, a, &lda, b, &ldb, jpvt, &rcond, rank, work, &lwork, &info);
-    return info;
-}
-
-/**
- *  Purpose
- *  =======
- *
  *  DGELSY computes the minimum-norm solution to a real linear least
  *  squares problem:
  *      minimize || A * X - B ||
@@ -3606,86 +3276,6 @@ int C_DGEQLF(int m, int n, double* a, int lda, double* tau, double* work, int lw
  **/
 int C_DGEQP3(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work, int lwork) {
     int info;
-    ::F_DGEQP3(&m, &n, a, &lda, jpvt, tau, work, &lwork, &info);
-    return info;
-}
-
-/**
- *  Purpose
- *  =======
- *
- *  This routine is deprecated and has been replaced by routine DGEQP3.
- *
- *  DGEQPF computes a QR factorization with column pivoting of a
- *  real M-by-N matrix A: A*P = Q*R.
- *
- *  Arguments
- *  =========
- *
- *  M       (input) INTEGER
- *          The number of rows of the matrix A. M >= 0.
- *
- *  N       (input) INTEGER
- *          The number of columns of the matrix A. N >= 0
- *
- *  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
- *          On entry, the M-by-N matrix A.
- *          On exit, the upper triangle of the array contains the
- *          min(M,N)-by-N upper triangular matrix R; the elements
- *          below the diagonal, together with the array TAU,
- *          represent the orthogonal matrix Q as a product of
- *          min(m,n) elementary reflectors.
- *
- *  LDA     (input) INTEGER
- *          The leading dimension of the array A. LDA >= max(1,M).
- *
- *  JPVT    (input/output) INTEGER array, dimension (N)
- *          On entry, if JPVT(i) .ne. 0, the i-th column of A is permuted
- *          to the front of A*P (a leading column); if JPVT(i) = 0,
- *          the i-th column of A is a free column.
- *          On exit, if JPVT(i) = k, then the i-th column of A*P
- *          was the k-th column of A.
- *
- *  TAU     (output) DOUBLE PRECISION array, dimension (min(M,N))
- *          The scalar factors of the elementary reflectors.
- *
- *  WORK    (workspace) DOUBLE PRECISION array, dimension (3*N)
- *
- *  C++ Return value: INFO    (output) INTEGER
- *          = 0:  successful exit
- *          < 0:  if INFO = -i, the i-th argument had an illegal value
- *
- *  Further Details
- *  ===============
- *
- *  The matrix Q is represented as a product of elementary reflectors
- *
- *     Q = H(1) H(2) . . . H(n)
- *
- *  Each H(i) has the form
- *
- *     H = I - tau * v * v'
- *
- *  where tau is a real scalar, and v is a real vector with
- *  v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i).
- *
- *  The matrix P is represented in jpvt as follows: If
- *     jpvt(j) = i
- *  then the jth column of P is the ith canonical unit vector.
- *
- *  Partial column norm updating strategy modified by
- *    Z. Drmac and Z. Bujanovic, Dept. of Mathematics,
- *    University of Zagreb, Croatia.
- *     June 2010
- *  For more details see LAPACK Working Note 176.
- *
- *  =====================================================================
- *
- *     .. Parameters ..
- **/
-int C_DGEQPF(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work) {
-    int info;
-    int lwork = 3 * n;
     ::F_DGEQP3(&m, &n, a, &lda, jpvt, tau, work, &lwork, &info);
     return info;
 }
@@ -20268,100 +19858,6 @@ int C_DTRTRI(char uplo, char diag, int n, double* a, int lda) {
 int C_DTRTRS(char uplo, char trans, char diag, int n, int nrhs, double* a, int lda, double* b, int ldb) {
     int info;
     ::F_DTRTRS(&uplo, &trans, &diag, &n, &nrhs, a, &lda, b, &ldb, &info);
-    return info;
-}
-
-/**
- *  Purpose
- *  =======
- *
- *  This routine is deprecated and has been replaced by routine DTZRZF.
- *
- *  DTZRQF reduces the M-by-N ( M<=N ) real upper trapezoidal matrix A
- *  to upper triangular form by means of orthogonal transformations.
- *
- *  The upper trapezoidal matrix A is factored as
- *
- *     A = ( R  0 ) * Z,
- *
- *  where Z is an N-by-N orthogonal matrix and R is an M-by-M upper
- *  triangular matrix.
- *
- *  Arguments
- *  =========
- *
- *  M       (input) INTEGER
- *          The number of rows of the matrix A.  M >= 0.
- *
- *  N       (input) INTEGER
- *          The number of columns of the matrix A.  N >= M.
- *
- *  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
- *          On entry, the leading M-by-N upper trapezoidal part of the
- *          array A must contain the matrix to be factorized.
- *          On exit, the leading M-by-M upper triangular part of A
- *          contains the upper triangular matrix R, and elements M+1 to
- *          N of the first M rows of A, with the array TAU, represent the
- *          orthogonal matrix Z as a product of M elementary reflectors.
- *
- *  LDA     (input) INTEGER
- *          The leading dimension of the array A.  LDA >= max(1,M).
- *
- *  TAU     (output) DOUBLE PRECISION array, dimension (M)
- *          The scalar factors of the elementary reflectors.
- *
- *  C++ Return value: INFO    (output) INTEGER
- *          = 0:  successful exit
- *          < 0:  if INFO = -i, the i-th argument had an illegal value
- *
- *  Further Details
- *  ===============
- *
- *  The factorization is obtained by Householder's method.  The kth
- *  transformation matrix, Z( k ), which is used to introduce zeros into
- *  the ( m - k + 1 )th row of A, is given in the form
- *
- *     Z( k ) = ( I     0   ),
- *              ( 0  T( k ) )
- *
- *  where
- *
- *     T( k ) = I - tau*u( k )*u( k )',   u( k ) = (   1    ),
- *                                                 (   0    )
- *                                                 ( z( k ) )
- *
- *  tau is a scalar and z( k ) is an ( n - m ) element vector.
- *  tau and z( k ) are chosen to annihilate the elements of the kth row
- *  of X.
- *
- *  The scalar tau is returned in the kth element of TAU and the vector
- *  u( k ) in the kth row of A, such that the elements of z( k ) are
- *  in  a( k, m + 1 ), ..., a( k, n ). The elements of R are returned in
- *  the upper triangular part of A.
- *
- *  Z is given by
- *
- *     Z =  Z( 1 ) * Z( 2 ) * ... * Z( m ).
- *
- *  =====================================================================
- *
- *     .. Parameters ..
- **/
-int C_DTZRQF(int m, int n, double* a, int lda, double* tau) {
-    int info;
-    // First invoke F_DTZRZF querying for the optimal size of the work array.
-    auto tmp = new double[5];
-    int lwork = -1;
-    ::F_DTZRZF(&m, &n, a, &lda, tau, tmp, &lwork, &info);
-    if (info == 0) {
-        lwork = tmp[0];
-    }
-    delete[] tmp;
-    // Now allocate the work array of the correct size and call F_DTZRZF
-    // to do the real work.
-    auto work = new double[lwork];
-    ::F_DTZRZF(&m, &n, a, &lda, tau, work, &lwork, &info);
-    if (info == 0) delete[] work;
     return info;
 }
 
