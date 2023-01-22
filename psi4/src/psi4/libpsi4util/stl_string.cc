@@ -207,19 +207,4 @@ double Timer::get() {
     // Convert clock ticks to seconds
     return std::chrono::duration_cast<std::chrono::duration<double>>(duration).count();
 }
-
-/// @brief Converts an input type that is supported by std::to_string, to an std::string that is padded with spaces to a
-/// specified minimum width. This mimics some of the functionality of C-style formatting, eg. %3d.
-/// @tparam T : type of the variable to be converted
-/// @param input : variable to be converted
-/// @param width : pad the string with spaces until it is at least this wide, in a right-justified fashion
-/// @return std::string representation of the input variable, padded if required
-template <typename T>
-std::string to_str_width(const T &input, const size_t width) {
-    std::string str = std::to_string(input);
-    while (str.length() < width) {
-        str.insert(str.begin(), ' ');
-    }
-    return str;
-}
 }  // namespace psi
