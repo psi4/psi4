@@ -163,7 +163,13 @@ OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms
     target_ = new double[buffsize];
 
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    libint2::initialize();
+#if LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+    libint2::initialize(libint2::SHGShellOrdering_Standard);
+#elif LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+    libint2::initialize(libint2::SHGShellOrdering_Gaussian);
+#else
+#  error "unknown value of macro LIBINT2_SHGAUSS_ORDERING"
+#endif
     shellpairs_ = build_shell_pair_list_no_spdata(bs1, bs2, threshold);
 }
 

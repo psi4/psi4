@@ -28,7 +28,7 @@
 # CHOOSE! `make export`
 #find_package(Libint2 CONFIG)
 # CHOOSE! pure cmake
-find_package(Libint2 CONFIG COMPONENTS gss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
+find_package(Libint2 CONFIG COMPONENTS sss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
 
 if(${Libint2_FOUND})
     # CHOOSE! `make export`
