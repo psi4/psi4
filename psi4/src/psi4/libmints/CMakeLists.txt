@@ -82,9 +82,17 @@ target_link_libraries(l2intf
     tgt::lapack
     Libint2::cxx
   )
+target_compile_definitions(l2intf
+  PRIVATE
+    LIBINT2_SHGAUSS_ORDERING=${LIBINT2_SHGAUSS_ORDERING}
+  )
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
+target_compile_definitions(mints
+  PRIVATE
+    LIBINT2_SHGAUSS_ORDERING=${LIBINT2_SHGAUSS_ORDERING}
+  )
 
 # Always linked-to external projects
 target_link_libraries(mints
