@@ -42,7 +42,7 @@ foreach(test_name aediis-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
                   dct-grad3 dct-grad4 dct1 dct2 dct3 dct4 dct5 dct6 dct7 dct8 dct9
-                  dct10 dct11 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp
+                  dct10 dct11 dct12 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp
                   dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1
                   dfccsd-t-grad1
                   dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-fc dfmp2-freq1 dfmp2-freq2
