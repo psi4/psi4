@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -2770,9 +2770,6 @@ def run_dfmp2_gradient(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
-
-    if ref_wfn.basisset().has_ECP():
-        raise ValidationError('DF-MP2 gradients with an ECP are not yet available.  Use dertype=0 to select numerical gradients.')
 
     core.tstart()
     core.print_out('\n')

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -64,14 +64,6 @@ void reorder_qt(const int* docc_in, const int* socc_in, int* frozen_docc_in, int
 PSI_API
 void reorder_qt_uhf(const int* docc, const int* socc, int* frozen_docc, int* frozen_uocc, int* order_alpha, int* order_beta,
                     int* orbspi, int nirreps);
-// int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
-//      int *docc, int *socc, int *frdocc, int *fruocc,
-//      int **ras_opi, int *order, int ras_type);
-// int ras_set2(int nirreps, int nbfso, int delete_fzdocc,
-//      int delete_restrdocc, int *orbspi,
-//      int *docc, int *socc, int *frdocc, int *fruocc,
-//      int *restrdocc, int *restruocc, int **ras_opi, int *order,
-//      int ras_type, int hoffmann, Options& options);
 int ras_set3(int nirreps, int nmo, int* orbspi, int* docc, int* socc, int* frdocc, int* fruocc, int* restrdocc,
              int* restruocc, int** ras_opi, int* core_guess, int* order, int ras_type, bool is_mcscf, Options& options);
 void newmm_rking(double** A, int transa, double** B, int transb, double** C, int num_rows, int num_links, int num_cols,
@@ -92,11 +84,8 @@ void stop_skip_timers();
 void clean_timers();
 
 void print_block(double*, int, int, FILE*);
-
 int david(double** A, int N, int M, double* eps, double** v, double cutoff, int print);
 
-int* get_frzcpi();
-int* get_frzvpi();
 int cc_excited(const char* wfn);
 int cc_excited(std::string wfn);
 void free_3d_array(double*** A, int p, int q);
