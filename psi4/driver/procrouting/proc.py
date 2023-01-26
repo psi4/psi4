@@ -2771,9 +2771,6 @@ def run_dfmp2_gradient(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if ref_wfn.basisset().has_ECP():
-        raise ValidationError('DF-MP2 gradients with an ECP are not yet available.  Use dertype=0 to select numerical gradients.')
-
     core.tstart()
     core.print_out('\n')
     p4util.banner('DFMP2')
