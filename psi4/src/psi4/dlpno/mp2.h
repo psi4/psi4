@@ -91,6 +91,8 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
 
+    std::vector<SharedMatrix> K_maef_; /// (m e_mm|a_mm f_mm)
+
     // final energies
     double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs
     double de_pno_total_; ///< energy correction for PNO truncation
@@ -205,6 +207,9 @@ class DLPNOMP2 : public Wavefunction {
     /// A function to compute Qab integrals
     void compute_qab();
 
+    /// Computes K_maef_ integrals for DLPNO-CCSD computation
+    void compute_K_maef();
+
    public:
     DLPNOMP2(SharedWavefunction ref_wfn, Options& options);
     ~DLPNOMP2() override;
@@ -233,6 +238,8 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> get_qij();
     /// Gets qab matrix
     std::vector<SharedMatrix> get_qab();
+    /// Gets Kmaef integrals (for CC)
+    std::vector<SharedMatrix> get_K_maef();
 
     /// Returns LMP2 Correlation Energy
     double e_lmp2() { return e_lmp2_; }
@@ -242,7 +249,7 @@ class DLPNOMP2 : public Wavefunction {
     double de_pno_total() { return de_pno_total_; }
 
     double compute_energy() override;
-};
+    };
 
 }  // namespace dlpno
 }  // namespace psi
