@@ -1701,6 +1701,63 @@ void DLPNOMP2::compute_qab() {
     timer_off("(mn|K)->(ab|K)");
 }
 
+void DLPNOMP2::compute_K_mbij() {
+    timer_on("Compute K_mbij");
+
+    int nbf = basisset_->nbf();
+    int naocc = C_lmo_->colspi(0);
+    int nlmo_pair = ij_to_i_j_.size();
+    int npao = C_pao_->colspi(0);
+
+    K_mbij_.resize(nlmo_pair);
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < nlmo_pair; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+
+        // number of PAOs in the pair domain (before removing linear dependencies)
+        int npao_ij = lmopair_to_paos_[ij].size();
+
+        // number of auxiliary basis in the pair domain
+        int naux_ij = lmopair_to_ribfs_[ij].size();
+
+        auto q_mi = std::make_shared<Matrix>("Three-index Integrals", naux_ij, naocc);
+        q_mi->zero();
+        auto q_bj = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
+
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            int q = lmopair_to_ribfs_[ij][q_ij];
+            int centerq = ribasis_->function_to_center(q);
+
+            for (int m = 0; m < naocc; m++) {
+                int m_sparse = riatom_to_lmos_ext_dense_[centerq][m];
+                if (m_sparse != -1) {
+                    int i_sparse = riatom_to_lmos_ext_dense_[centerq][i];
+                    q_mi->set(q_ij, m, qij_[q]->get(m_sparse, i_sparse));
+                }
+            }
+
+            for (int b_ij = 0; b_ij < npao_ij; b_ij++) {
+                int b = lmopair_to_paos_[ij][b_ij];
+                int b_sparse = riatom_to_paos_ext_dense_[centerq][b];
+                int j_sparse = riatom_to_lmos_ext_dense_[centerq][j];
+                q_bj->set(q_ij, b_ij, qia_[q]->get(j_sparse, b_sparse));
+            }
+        }
+
+        // Transform integrals from PAOs to PNOs (reduce size of virtual space)
+        auto q_bj_pno = linalg::doublet(q_bj, X_pno_[ij], false, false);
+
+        // Form Kmaef integrals
+        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmopair_to_ribfs_[ij], lmopair_to_ribfs_[ij]);
+        C_DGESV_wrapper(A_solve, q_bj_pno);
+
+        K_mbij_[ij] = linalg::doublet(q_mi, q_bj_pno, true, false);
+    }
+
+    timer_off("Compute K_mbij");
+}
+
 void DLPNOMP2::compute_K_maef() {
     timer_on("Compute K_maef");
 
@@ -1867,6 +1924,11 @@ std::vector<SharedMatrix> DLPNOMP2::get_qij() {
 std::vector<SharedMatrix> DLPNOMP2::get_qab() {
     if (qab_.empty()) compute_qab();
     return qab_;
+}
+
+std::vector<SharedMatrix> DLPNOMP2::get_K_mbij() {
+    if (K_mbij_.empty()) compute_K_mbij();
+    return K_mbij_;
 }
 
 std::vector<SharedMatrix> DLPNOMP2::get_K_maef() {

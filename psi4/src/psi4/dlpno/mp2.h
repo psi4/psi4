@@ -91,8 +91,9 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
 
-    std::vector<SharedMatrix> K_maef_; /// (m e_mm|a_mm f_mm)
-    std::vector<SharedMatrix> K_abef_; /// (a_ij e_ij|b_ij f_ij)
+    std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
+    std::vector<SharedMatrix> K_maef_; /// (m e_mm | a_mm f_mm)
+    std::vector<SharedMatrix> K_abef_; /// (a_ij e_ij | b_ij f_ij)
 
     // final energies
     double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs
@@ -208,6 +209,8 @@ class DLPNOMP2 : public Wavefunction {
     /// A function to compute Qab integrals
     void compute_qab();
 
+    /// Computes K_mbij_ integrals for DLPNO-CCSD computation (mi|b_ij j)
+    void compute_K_mbij();
     /// Computes K_maef_ integrals for DLPNO-CCSD computation
     void compute_K_maef();
     /// Computes K_abef_ integrals for DLPNO-CCSD computation
@@ -241,6 +244,9 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> get_qij();
     /// Gets qab matrix
     std::vector<SharedMatrix> get_qab();
+    
+    /// Gets Kmbij integrals (for CC)
+    std::vector<SharedMatrix> get_K_mbij();
     /// Gets Kmaef integrals (for CC)
     std::vector<SharedMatrix> get_K_maef();
     /// Gets Kabef integrals (for CC)
