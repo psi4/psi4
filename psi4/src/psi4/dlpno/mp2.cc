@@ -1708,7 +1708,7 @@ void DLPNOMP2::compute_K_maef() {
     int naocc = C_lmo_->colspi(0);
     int npao = C_pao_->colspi(0);
 
-    K_maef_.resize(naocc);
+    K_maef_.resize(naocc); // (m e_mm | a_mm f_mm) // O(N) mm = PNO of pair mm
 
 #pragma omp parallel for schedule(dynamic, 1)
     for (int m = 0; m < naocc; ++m) {
@@ -1768,6 +1768,73 @@ void DLPNOMP2::compute_K_maef() {
     timer_off("Compute K_maef");
 }
 
+void DLPNOMP2::compute_K_abef() {
+    timer_on("Compute K_abef");
+
+    int nbf = basisset_->nbf();
+    int nlmo_pair = ij_to_i_j_.size();
+    int naocc = C_lmo_->colspi(0);
+    int npao = C_pao_->colspi(0);
+
+    K_abef_.resize(nlmo_pair);
+
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < nlmo_pair; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+
+        // number of PAOs in the pair domain (before removing linear dependencies)
+        int npao_ij = lmopair_to_paos_[ij].size();
+
+        // number of auxiliary basis in the pair domain
+        int naux_ij = lmopair_to_ribfs_[ij].size();
+
+        auto q_ae = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij * npao_ij);
+
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            int q = lmopair_to_ribfs_[ij][q_ij];
+            int centerq = ribasis_->function_to_center(q);
+
+            for (int a_ij = 0; a_ij < npao_ij; a_ij++) {
+                int a = lmopair_to_paos_[ij][a_ij];
+                int a_sparse = riatom_to_paos_ext_dense_[centerq][a];
+
+                for (int b_ij = 0; b_ij < npao_ij; b_ij++) {
+                    int b = lmopair_to_paos_[ij][b_ij];
+                    int b_sparse = riatom_to_paos_ext_dense_[centerq][b];
+                    q_ae->set(q_ij, a_ij * npao_ij + b_ij, qab_[q]->get(a_sparse, b_sparse));
+                }
+            }
+        }
+
+        // Transform integrals from PAOs to PNOs (reduce size of virtual space)
+        int npno_ij = n_pno_[ij];
+        auto q_ae_pno = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npno_ij * npno_ij);
+
+        double* q_aep = q_ae->get_pointer();
+        double* q_ae_pnop = q_ae_pno->get_pointer();
+
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            auto ae_temp1 = std::make_shared<Matrix>(npao_ij, npao_ij);
+            double* ae_temp1p = ae_temp1->get_pointer();
+            C_DCOPY(npao_ij * npao_ij, &(q_aep[q_ij * npao_ij * npao_ij]), 1, ae_temp1p, 1);
+
+            auto ae_temp2 = linalg::triplet(X_pno_[ij], ae_temp1, X_pno_[ij], true, false, false);
+            double* ae_temp2p = ae_temp2->get_pointer();
+            C_DCOPY(npno_ij * npno_ij, ae_temp2p, 1, &(q_ae_pnop[q_ij * npno_ij * npno_ij]), 1);
+        }
+
+        // Form Kabef integrals
+        auto q_bf_pno = q_ae_pno->clone();
+        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmopair_to_ribfs_[ij], lmopair_to_ribfs_[ij]);
+        C_DGESV_wrapper(A_solve, q_ae_pno);
+
+        K_abef_[ij] = linalg::doublet(q_ae_pno, q_bf_pno, true, false);
+    }
+
+    timer_off("Compute K_abef");
+}
+
 SharedMatrix DLPNOMP2::get_lmo_matrix(std::string key) {
     if (!lmo_matrices_.size()) store_information();
     return lmo_matrices_[key];
@@ -1805,6 +1872,11 @@ std::vector<SharedMatrix> DLPNOMP2::get_qab() {
 std::vector<SharedMatrix> DLPNOMP2::get_K_maef() {
     if (K_maef_.empty()) compute_K_maef();
     return K_maef_;
+}
+
+std::vector<SharedMatrix> DLPNOMP2::get_K_abef() {
+    if (K_abef_.empty()) compute_K_abef();
+    return K_abef_;
 }
 
 }  // namespace dlpno

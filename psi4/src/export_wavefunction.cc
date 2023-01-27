@@ -658,5 +658,6 @@ void export_wavefunction(py::module& m) {
         .def("get_qia", &dlpno::DLPNOMP2::get_qia, "Returns qia matrix")
         .def("get_qij", &dlpno::DLPNOMP2::get_qij, "Returns qij matrix")
         .def("get_qab", &dlpno::DLPNOMP2::get_qab, "Returns qab matrix")
-        .def("get_K_maef", &dlpno::DLPNOMP2::get_K_maef, "Returns K_maef integrals");
+        .def("get_K_maef", &dlpno::DLPNOMP2::get_K_maef, "Returns K_maef integrals")
+        .def("get_K_abef", &dlpno::DLPNOMP2::get_K_abef, "Returns K_abef integrals");
 }
