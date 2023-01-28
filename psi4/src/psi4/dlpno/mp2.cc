@@ -1729,6 +1729,79 @@ void DLPNOMP2::compute_qab() {
     timer_off("(mn|K)->(ab|K)");
 }
 
+void DLPNOMP2::compute_J_ijab() {
+    timer_on("Compute J_ijab");
+
+    int nbf = basisset_->nbf();
+    int naocc = C_lmo_->colspi(0);
+    int nlmo_pair = ij_to_i_j_.size();
+    int npao = C_pao_->colspi(0);
+
+    J_ijab_.resize(nlmo_pair);
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < nlmo_pair; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+
+        // number of PAOs in the pair domain (before removing linear dependencies)
+        int npao_ij = lmopair_to_paos_[ij].size();
+
+        // number of auxiliary basis in the pair domain
+        int naux_ij = lmopair_to_ribfs_[ij].size();
+
+        auto q_pair = std::make_shared<Matrix>("Three-index Integrals", naux_ij, 1);
+        auto q_ab = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij * npao_ij);
+
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            int q = lmopair_to_ribfs_[ij][q_ij];
+            int centerq = ribasis_->function_to_center(q);
+            int i_sparse = riatom_to_lmos_ext_dense_[centerq][i];
+            int j_sparse = riatom_to_lmos_ext_dense_[centerq][j];
+            q_pair->set(q_ij, 0, qij_[q]->get(i_sparse, j_sparse));
+
+            for (int a_ij = 0; a_ij < npao_ij; a_ij++) {
+                int a = lmopair_to_paos_[ij][a_ij];
+                int a_sparse = riatom_to_paos_ext_dense_[centerq][a];
+
+                for (int b_ij = 0; b_ij < npao_ij; b_ij++) {
+                    int b = lmopair_to_paos_[ij][b_ij];
+                    int b_sparse = riatom_to_paos_ext_dense_[centerq][b];
+                    q_ab->set(q_ij, a_ij * npao_ij + b_ij, qab_[q]->get(a_sparse, b_sparse));
+                }
+            }
+        }
+
+        // Transform integrals from PAOs to PNOs (reduce size of virtual space)
+        int npno_ij = n_pno_[ij];
+        auto q_ab_pno = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npno_ij * npno_ij);
+        double* q_abp = q_ab->get_pointer();
+        double* q_ab_pnop = q_ab_pno->get_pointer();
+
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            auto ab_temp1 = std::make_shared<Matrix>(npao_ij, npao_ij);
+            double* ab_temp1p = ab_temp1->get_pointer();
+            C_DCOPY(npao_ij * npao_ij, &(q_abp[q_ij * npao_ij * npao_ij]), 1, ab_temp1p, 1);
+
+            auto ab_temp2 = linalg::triplet(X_pno_[ij], ab_temp1, X_pno_[ij], true, false, false);
+            double* ab_temp2p = ab_temp2->get_pointer();
+            C_DCOPY(npno_ij * npno_ij, ab_temp2p, 1, &(q_ab_pnop[q_ij * npno_ij * npno_ij]), 1);
+        }
+
+        // Form Jijab integrals
+        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmopair_to_ribfs_[ij], lmopair_to_ribfs_[ij]);
+        C_DGESV_wrapper(A_solve, q_pair);
+
+        auto J_ijab_temp = linalg::doublet(q_pair, q_ab_pno, true, false);
+        double *J_ijab_tempp = J_ijab_temp->get_pointer();
+
+        J_ijab_[ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
+        double *J_ijabp = J_ijab_[ij]->get_pointer();
+        C_DCOPY(npno_ij * npno_ij, J_ijab_tempp, 1, J_ijabp, 1);
+    }
+
+    timer_off("Compute J_ijab");
+}
+
 void DLPNOMP2::compute_K_mnij() {
     timer_on("Compute K_mnij");
 
@@ -2000,6 +2073,11 @@ std::vector<SharedMatrix> DLPNOMP2::get_qij() {
 std::vector<SharedMatrix> DLPNOMP2::get_qab() {
     if (qab_.empty()) compute_qab();
     return qab_;
+}
+
+std::vector<SharedMatrix> DLPNOMP2::get_J_ijab() {
+    if (J_ijab_.empty()) compute_J_ijab();
+    return J_ijab_;
 }
 
 std::vector<SharedMatrix> DLPNOMP2::get_K_mnij() {

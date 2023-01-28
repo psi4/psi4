@@ -91,6 +91,7 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
 
+    std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
     std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
     std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
     std::vector<SharedMatrix> K_maef_; /// (m e_mm | a_mm f_mm)
@@ -212,9 +213,11 @@ class DLPNOMP2 : public Wavefunction {
     /// A function to compute Qab integrals
     void compute_qab();
 
-    /// Computes K_mnij_ integrals for DLPNO-CCSD computation (mi|nj)
+    /// Computes J_ijab_ integrals for DLPNO-CCSD computation
+    void compute_J_ijab();
+    /// Computes K_mnij_ integrals for DLPNO-CCSD computation
     void compute_K_mnij();
-    /// Computes K_mbij_ integrals for DLPNO-CCSD computation (mi|b_ij j)
+    /// Computes K_mbij_ integrals for DLPNO-CCSD computation
     void compute_K_mbij();
     /// Computes K_maef_ integrals for DLPNO-CCSD computation
     void compute_K_maef();
@@ -249,7 +252,9 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> get_qij();
     /// Gets qab matrix
     std::vector<SharedMatrix> get_qab();
-    
+
+    /// Gets Jijab integrals (for CC)
+    std::vector<SharedMatrix> get_J_ijab();
     /// Gets Kmnij integrals (for CC)
     std::vector<SharedMatrix> get_K_mnij();
     /// Gets Kmbij integrals (for CC)
