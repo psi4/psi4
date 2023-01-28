@@ -91,6 +91,7 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
 
+    std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
     std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
     std::vector<SharedMatrix> K_maef_; /// (m e_mm | a_mm f_mm)
     std::vector<SharedMatrix> K_abef_; /// (a_ij e_ij | b_ij f_ij)
@@ -133,6 +134,7 @@ class DLPNOMP2 : public Wavefunction {
     SparseMap lmopair_to_riatoms_; ///< aux BFs on which atoms are needed for density-fitting a pair of LMOs?
     SparseMap lmopair_to_paos_; ///< which PAOs span the virtual space of a pair of LMOs?
     SparseMap lmopair_to_paoatoms_; ///< PAOs on which atoms span the virtual space of a pair of LMOs?
+    SparseMap lmopair_to_lmos_; ///< Which LMOs "interact" with an LMO pair (determined by DOI integrals)
 
     // Extended LMO Domains 
     SparseMap lmo_to_riatoms_ext_; ///< aux BFs on which atoms are needed for density-fitting a LMO and all connected LMOs
@@ -150,6 +152,7 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<int>> riatom_to_paos_ext_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms1_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms2_dense_;
+    std::vector<std::vector<int>> lmopair_to_lmos_dense_;
 
     /// CC Integrals
     // LMO/LMO ERIs
@@ -209,6 +212,8 @@ class DLPNOMP2 : public Wavefunction {
     /// A function to compute Qab integrals
     void compute_qab();
 
+    /// Computes K_mnij_ integrals for DLPNO-CCSD computation (mi|nj)
+    void compute_K_mnij();
     /// Computes K_mbij_ integrals for DLPNO-CCSD computation (mi|b_ij j)
     void compute_K_mbij();
     /// Computes K_maef_ integrals for DLPNO-CCSD computation
@@ -245,6 +250,8 @@ class DLPNOMP2 : public Wavefunction {
     /// Gets qab matrix
     std::vector<SharedMatrix> get_qab();
     
+    /// Gets Kmnij integrals (for CC)
+    std::vector<SharedMatrix> get_K_mnij();
     /// Gets Kmbij integrals (for CC)
     std::vector<SharedMatrix> get_K_mbij();
     /// Gets Kmaef integrals (for CC)
