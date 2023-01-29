@@ -228,8 +228,8 @@ void Molecule::set_reinterpret_coordentry(bool rc) { reinterpret_coordentries_ =
 
 void Molecule::clear() {
     lock_frame_ = false;
-    atoms_.empty();
-    full_atoms_.empty();
+    atoms_.clear();
+    full_atoms_.clear();
 }
 
 void Molecule::add_atom(double Z, double x, double y, double z, std::string symbol, double mass, double charge,
