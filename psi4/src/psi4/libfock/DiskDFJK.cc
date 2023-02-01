@@ -65,7 +65,7 @@ void DiskDFJK::common_init() {
     df_ints_io_ = "NONE";
     condition_ = 1.0E-12;
     unit_ = PSIF_DFSCF_BJ;
-    if (options_["FORCE_MEM"].has_changed()) set_subalgo(options_.get_str("FORCE_MEM"));
+    if (options_["SCF_SUBTYPE"].has_changed()) set_subalgo(options_.get_str("SCF_SUBTYPE"));
     is_core_ = true;
     psio_ = PSIO::shared_object();
     // We need to make an integral object so we can figure out memory requirements from the sieve
@@ -293,25 +293,25 @@ bool DiskDFJK::is_core() {
         do_core = memory_estimate() < memory_;
 
     // .. or forcibly disable AO_core_ if user specifies ...
-    } else if (subalgo_ == "NO_INCORE") {
+    } else if (subalgo_ == "OUT_OF_CORE") {
         if (print_ > 0) {
-            outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core DISK_DF algorithm will be used.\n\n");
+            outfile->Printf("  SCF_SUBTYPE = OUT_OF_CORE selected. Out-of-core DISK_DF algorithm will be used.\n\n");
         }
 	
 	do_core = false; 
 
    // .. or force AO_core_ if user specifies
-    } else if (subalgo_ == "FORCE_INCORE") {
+    } else if (subalgo_ == "INCORE") {
         if (memory_estimate() > memory_) {
-            throw PSIEXCEPTION("FORCE_MEM=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+            throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
         } else {
             if (print_ > 0) {
-                outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core DISK_DF algorithm will be used.\n\n");
+                outfile->Printf("  SCF_SUBTYPE=INCORE selected. In-core DISK_DF algorithm will be used.\n\n");
             }
             do_core = true; 
         }
     } else {
-        throw PSIEXCEPTION("Invalid FORCE_MEM option! The choices for FORCE_MEM are AUTO, FORCE_INCORE, and NO_INCORE.");
+        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
     }
 
     return do_core;
