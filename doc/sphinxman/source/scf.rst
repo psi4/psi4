@@ -724,7 +724,7 @@ be selected in all cases so that the correct implementation can be selected by
 DISK_DF; however, they may find documented exceptions during use as several
 post SCF algorithms require a specific implementation. Additionally, expert users 
 can manually switch between the in-memory and on-disk options for MEM_DF using 
-the |scf__force_mem| option. Using ``SCF_SUBTYPE = AUTO``, which allows |PSIfour| 
+the |scf__scf_subtype| option. Using ``SCF_SUBTYPE = AUTO``, which allows |PSIfour| 
 to automatically select the in-memory or on-disk option for MEM_DF, is the default 
 and recommend option. However, the in-memory option for MEM_DF can be forced by using
 ``SCF_SUBTYPE = INCORE``, and the on-disk option for MEM_DF can be forced by using
