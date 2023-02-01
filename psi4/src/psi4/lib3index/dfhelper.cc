@@ -70,7 +70,7 @@ DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> 
 
 DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux,
     Options& options) : primary_(primary), aux_(aux) {
-    if (options["FORCE_MEM"].has_changed()) set_subalgo(options.get_str("FORCE_MEM"));
+    if (options["SCF_SUBTYPE"].has_changed()) set_subalgo(options.get_str("SCF_SUBTYPE"));
 
     nbf_ = primary_->nbf();
     naux_ = aux_->nbf();
@@ -249,21 +249,21 @@ void DFHelper::AO_core(bool set_AO_core=true) {
             AO_core_ = false;
 
             if (print_lvl_ > 0) {
-                outfile->Printf("  FORCE_MEM = NO_INCORE selected. Out-of-core MEM_DF algorithm will be used.\n");
+                outfile->Printf("  SCF_SUBTYPE = NO_INCORE selected. Out-of-core MEM_DF algorithm will be used.\n");
             }
         // .. or force AO_core_ if user specifies
         } else if (subalgo_ == "FORCE_INCORE") {
             if (memory_ < required_core_size_) {
-                throw PSIEXCEPTION("FORCE_MEM=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+                throw PSIEXCEPTION("SCF_SUBTYPE=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
 	        } else {
                 AO_core_ = true;
 
 	        if (print_lvl_ > 0) {
-                    outfile->Printf("  FORCE_MEM=FORCE_INCORE selected. In-core MEM_DF algorithm will be used.\n");
+                    outfile->Printf("  SCF_SUBTYPE=FORCE_INCORE selected. In-core MEM_DF algorithm will be used.\n");
                 }
 	    }
         } else {
-            throw PSIEXCEPTION("Invalid FORCE_MEM option! The choices for FORCE_MEM are AUTO, FORCE_INCORE, and NO_INCORE.");
+            throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, FORCE_INCORE, and NO_INCORE.");
         }
 
         if (print_lvl_ > 0) {
