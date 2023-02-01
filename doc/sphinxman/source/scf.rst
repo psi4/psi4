@@ -727,9 +727,9 @@ can manually switch between the in-memory and on-disk options for MEM_DF using
 the |scf__force_mem| option. Using ``SCF_SUBTYPE = AUTO``, which allows |PSIfour| 
 to automatically select the in-memory or on-disk option for MEM_DF, is the default 
 and recommend option. However, the in-memory option for MEM_DF can be forced by using
-``SCF_SUBTYPE = FORCE_INCORE``, and the on-disk option for MEM_DF can be forced by using
-``SCF_SUBTYPE = NO_INCORE``. Note that an exception will be thrown if 
-``SCF_SUBTYPE = FORCE_INCORE`` is used with MEM_DF without allocating sufficient memory to 
+``SCF_SUBTYPE = INCORE``, and the on-disk option for MEM_DF can be forced by using
+``SCF_SUBTYPE = OUT_OF_CORE``. Note that an exception will be thrown if 
+``SCF_SUBTYPE = INCORE`` is used with MEM_DF without allocating sufficient memory to 
 |PSIfour|.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to

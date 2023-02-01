@@ -245,25 +245,25 @@ void DFHelper::AO_core(bool set_AO_core=true) {
             if (memory_ < required_core_size_) AO_core_ = false;
 
         // .. or forcibly disable AO_core_ if user specifies ...
-        } else if (subalgo_ == "NO_INCORE") {
+        } else if (subalgo_ == "OUT_OF_CORE") {
             AO_core_ = false;
 
             if (print_lvl_ > 0) {
-                outfile->Printf("  SCF_SUBTYPE = NO_INCORE selected. Out-of-core MEM_DF algorithm will be used.\n");
+                outfile->Printf("  SCF_SUBTYPE = OUT_OF_CORE selected. Out-of-core MEM_DF algorithm will be used.\n");
             }
         // .. or force AO_core_ if user specifies
-        } else if (subalgo_ == "FORCE_INCORE") {
+        } else if (subalgo_ == "INCORE") {
             if (memory_ < required_core_size_) {
-                throw PSIEXCEPTION("SCF_SUBTYPE=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+                throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
 	        } else {
                 AO_core_ = true;
 
 	        if (print_lvl_ > 0) {
-                    outfile->Printf("  SCF_SUBTYPE=FORCE_INCORE selected. In-core MEM_DF algorithm will be used.\n");
+                    outfile->Printf("  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.\n");
                 }
 	    }
         } else {
-            throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, FORCE_INCORE, and NO_INCORE.");
+            throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
         }
 
         if (print_lvl_ > 0) {

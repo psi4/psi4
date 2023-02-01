@@ -1409,7 +1409,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             a |globals__scf_type| ``DIRECT`` calculation -*/
         options.add_bool("DF_SCF_GUESS", true);
         /*- Forcibly disable or enable in- or out-of-core algorithms for MemDF/DiskDF. For debug purposes. !expert -*/
-        options.add_str("SCF_SUBTYPE", "AUTO", "AUTO FORCE_INCORE NO_INCORE");
+        options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
         /*- Memory safety factor for allocating JK -*/
