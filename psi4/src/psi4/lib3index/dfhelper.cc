@@ -255,7 +255,7 @@ void DFHelper::AO_core(bool set_AO_core=true) {
         } else if (subalgo_ == "FORCE_INCORE") {
             if (memory_ < required_core_size_) {
                 throw PSIEXCEPTION("FORCE_MEM=FORCE_INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
-	    } else {
+	        } else {
                 AO_core_ = true;
 
 	        if (print_lvl_ > 0) {
