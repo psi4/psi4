@@ -47,7 +47,6 @@
 #include "psi4/libqt/qt.h"
 
 #include <algorithm>
-#include <unordered_set>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -800,6 +799,8 @@ void DLPNOMP2::pno_transform() {
     de_pno_os_.resize(n_lmo_pairs);  // opposite-spin contributions to de_pno_
     de_pno_ss_.resize(n_lmo_pairs);  // same-spin contributions to de_pno_
 
+    D_ij_.resize(n_lmo_pairs);
+
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
@@ -881,6 +882,7 @@ void DLPNOMP2::pno_transform() {
         // Construct pair density from amplitudes
         auto D_ij = linalg::doublet(Tt_pao_ij, T_pao_ij, false, true);
         D_ij->add(linalg::doublet(Tt_pao_ij, T_pao_ij, true, false));
+        auto D_ij_copy = D_ij->clone();
 
         // Diagonalization of pair density gives PNOs (in basis of the LMO's virtual domain) and PNO occ numbers
         auto X_pno_ij = std::make_shared<Matrix>("eigenvectors", nvir_ij, nvir_ij);
@@ -934,6 +936,8 @@ void DLPNOMP2::pno_transform() {
         de_pno_os_[ij] = de_pno_ij_os;
         de_pno_ss_[ij] = de_pno_ij_ss;
 
+        D_ij_[ij] = D_ij_copy;
+
         // account for symmetry
         if (i < j) {
             K_iajb_[ji] = K_iajb_[ij]->transpose();
@@ -944,6 +948,8 @@ void DLPNOMP2::pno_transform() {
             de_pno_[ji] = de_pno_ij;
             de_pno_os_[ji] = de_pno_ij_os;
             de_pno_ss_[ji] = de_pno_ij_os;
+
+            D_ij_[ji] = D_ij_[ij];
         }
     }
 
@@ -2041,6 +2047,146 @@ void DLPNOMP2::compute_K_abef() {
     timer_off("Compute K_abef");
 }
 
+void DLPNOMP2::tno_transform() {
+    timer_on("TNO transform");
+
+    int naocc = C_lmo_->colspi(0);
+    int n_lmo_pairs = ij_to_i_j_.size();
+
+    int ijk = 0;
+    for (int ij = 0; ij < n_lmo_pairs; ij++) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+        for (int k_ij : lmopair_to_lmos_[ij]) {
+            int k = lmopair_to_lmos_[ij][k_ij];
+            ijk_to_i_j_k_.push_back(std::make_tuple(i, j, k));
+            i_j_k_to_ijk_[i * naocc * naocc + j * naocc + k] = ijk;
+            ijk++;
+        }
+    }
+
+    int n_lmo_triplets = ijk_to_i_j_k_.size();
+    lmotriplet_to_paos_.resize(n_lmo_triplets);
+    X_tno_.resize(n_lmo_triplets);
+    e_tno_.resize(n_lmo_triplets);
+    n_tno_.resize(n_lmo_triplets);
+
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
+        int i, j, k;
+        std::tie(i, j, k) = ijk_to_i_j_k_[ijk];
+        int ij = i_j_to_ij_[i][j], jk = i_j_to_ij_[j][k], ik = i_j_to_ij_[i][k];
+
+        lmotriplet_to_paos_[ijk] = merge_lists(lmopair_to_paos_[ij], lmo_to_paos_[k]);
+
+        if (i > j || i > k || j > k) continue;
+
+        // number of PAOs in the triplet domain (before removing linear dependencies)
+        int npao_ijk = lmotriplet_to_paos_[ijk].size();
+
+        // Canonicalize PAOs of triplet ijk
+        auto S_pao_ijk = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmotriplet_to_paos_[ijk]);
+        auto F_pao_ijk = submatrix_rows_and_cols(*F_pao_, lmotriplet_to_paos_[ijk], lmotriplet_to_paos_[ijk]);
+
+        SharedMatrix X_pao_ijk;
+        SharedVector e_pao_ijk;
+        std::tie(X_pao_ijk, e_pao_ijk) = orthocanonicalizer(S_pao_ijk, F_pao_ijk);
+
+        F_pao_ijk = linalg::triplet(X_pao_ijk, F_pao_ijk, X_pao_ijk, true, false, false);
+
+        // Form the triplet density
+        auto D_ijk = D_ij_[ij]->clone();
+        D_ijk->add(D_ij_[jk]);
+        D_ijk->add(D_ij_[ik]);
+        D_ijk->scale(1.0 / 3.0);
+
+        size_t nvir_ijk = F_pao_ijk->rowspi(0);
+
+        // Diagonalization of triplet density gives TNOs (in basis of LMO's virtual domain)
+        // as well as TNO occ numbers
+        auto X_tno_ijk = std::make_shared<Matrix>("eigenvectors", nvir_ijk, nvir_ijk);
+        Vector tno_occ("eigenvalues", nvir_ijk);
+        D_ijk->diagonalize(*X_tno_ijk, tno_occ, descending);
+
+        int nvir_ijk_final = 0;
+        for (size_t a = 0; a < nvir_ijk; ++a) {
+            // TODO: Introduce a T_CUT_TNO parameter
+            if (fabs(tno_occ.get(a)) >= T_CUT_PNO_) {
+                nvir_ijk_final++;
+            }
+        }
+
+        Dimension zero(1);
+        Dimension dim_final(1);
+        dim_final.fill(nvir_ijk_final);
+
+        // This transformation gives orbitals that are orthonormal but not canonical
+        X_tno_ijk = X_tno_ijk->get_block({zero, X_tno_ijk->rowspi()}, {zero, dim_final});
+        tno_occ = tno_occ.get_block({zero, dim_final});
+
+        SharedMatrix tno_canon;
+        SharedVector e_tno_ijk;
+        std::tie(tno_canon, e_tno_ijk) = canonicalizer(X_tno_ijk, F_pao_ijk);
+
+        X_tno_ijk = linalg::doublet(X_tno_ijk, tno_canon, false, false);
+        X_tno_ijk = linalg::doublet(X_pao_ijk, X_tno_ijk, false, false);
+
+        X_tno_[ijk] = X_tno_ijk;
+        e_tno_[ijk] = e_tno_ijk;
+        n_tno_[ijk] = X_tno_ijk->colspi(0);
+
+        // account for symmetry
+        if (i != j || j != k || i != k) {
+            int ikj = i_j_k_to_ijk_[i * naocc * naocc + k * naocc + j];
+            int jik = i_j_k_to_ijk_[j * naocc * naocc + i * naocc + k];
+            int jki = i_j_k_to_ijk_[j * naocc * naocc + k * naocc + i];
+            int kij = i_j_k_to_ijk_[k * naocc * naocc + i * naocc + j];
+            int kji = i_j_k_to_ijk_[k * naocc * naocc + j * naocc + i];
+
+            std::vector<int> perms{ikj, jik, jki, kij, kji};
+            for (int perm : perms) {
+                X_tno_[perm] = X_tno_ijk;
+                e_tno_[perm] = e_tno_ijk;
+                n_tno_[perm] = X_tno_ijk->colspi(0);
+            }
+        }
+    }
+
+    timer_off("TNO transform");
+}
+
+void DLPNOMP2::compute_pno_tno_overlaps() {
+    timer_on("PNO/TNO overlaps");
+
+    int n_lmo_pairs = ij_to_i_j_.size();
+    int naocc = nalpha_ - nfrzc();
+
+    S_pno_tno_ij_ilm_.resize(n_lmo_pairs);
+
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+
+        S_pno_tno_ij_ilm_[ij].resize(n_lmo_pairs);
+
+        for (int lm = 0; lm < n_lmo_pairs; ++lm) {
+            int l, m;
+            std::tie(l, m) = ij_to_i_j_[lm];
+            int ilm_dense = i * naocc * naocc + l * naocc + m;
+            if (i_j_k_to_ijk_.count(ilm_dense)) {
+                int ilm = i_j_k_to_ijk_[ilm_dense];
+                S_pno_tno_ij_ilm_[ij][lm] = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], \
+                                                                    lmotriplet_to_paos_[ilm]);
+                S_pno_tno_ij_ilm_[ij][lm] = linalg::triplet(X_pno_[ij], S_pno_tno_ij_ilm_[ij][lm], X_tno_[ilm], 
+                                                            true, false, false);
+            }
+        }
+    }
+
+    timer_off("PNO/TNO overlaps");
+}
+
 SharedMatrix DLPNOMP2::get_lmo_matrix(std::string key) {
     if (!lmo_matrices_.size()) store_information();
     return lmo_matrices_[key];
@@ -2098,6 +2244,11 @@ std::vector<SharedMatrix> DLPNOMP2::get_K_maef() {
 std::vector<SharedMatrix> DLPNOMP2::get_K_abef() {
     if (K_abef_.empty()) compute_K_abef();
     return K_abef_;
+}
+
+void DLPNOMP2::compute_triples_info() {
+    tno_transform();
+    compute_pno_tno_overlaps();
 }
 
 }  // namespace dlpno

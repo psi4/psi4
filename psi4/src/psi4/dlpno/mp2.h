@@ -34,7 +34,9 @@
 #include "psi4/libmints/wavefunction.h"
 
 #include <map>
+#include <tuple>
 #include <string>
+#include <unordered_map>
 
 namespace psi {
 namespace dlpno {
@@ -84,12 +86,19 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> Tt_iajb_; ///< antisymmetrized amplitudes
     std::vector<SharedMatrix> X_pno_;   ///< global PAO -> canonical PNO transforms
     std::vector<SharedVector> e_pno_;   ///< PNO orbital energies
+    std::vector<SharedMatrix> D_ij_; ///< pair densities
     std::vector<int> n_pno_;       ///< number of pnos
     std::vector<double> de_pno_;   ///< PNO truncation energy error
     std::vector<double> de_pno_os_;   ///< opposite-spin contributions to de_pno_
     std::vector<double> de_pno_ss_;   ///< same-spin contributions to de_pno_
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
+
+    /// triplet natural orbitals (TNOs)
+    std::vector<SharedMatrix> X_tno_; ///< global PAO -> canonical TNO transforms
+    std::vector<SharedVector> e_tno_; ///< TNO orbital energies
+    std::vector<int> n_tno_; ///<number of tnos per triplet domain
+    std::vector<std::vector<SharedMatrix>> S_pno_tno_ij_ilm_;
 
     std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
     std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
@@ -129,6 +138,8 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<int>> i_j_to_ij_; ///< LMO indices (i, j) to significant LMO pair index (ij); insignificant (i, j) maps to -1
     std::vector<std::pair<int,int>> ij_to_i_j_; ///< LMO pair index (ij) to both LMO indices (i, j)
     std::vector<int> ij_to_ji_; ///< LMO pair index (ij) to LMO pair index (ji)
+    std::unordered_map<int, int> i_j_k_to_ijk_;  ///< LMO indices (i, j, k) to significant LMO triplet index (ijk)
+    std::vector<std::tuple<int, int, int>> ijk_to_i_j_k_;  ///< LMO triplet index (ijk) to all three LMO indices (i, j, k)
 
     // LMO Pair Domains
     SparseMap lmopair_to_ribfs_; ///< which aux BFs are needed for density-fitting a pair of LMOs?
@@ -136,6 +147,8 @@ class DLPNOMP2 : public Wavefunction {
     SparseMap lmopair_to_paos_; ///< which PAOs span the virtual space of a pair of LMOs?
     SparseMap lmopair_to_paoatoms_; ///< PAOs on which atoms span the virtual space of a pair of LMOs?
     SparseMap lmopair_to_lmos_; ///< Which LMOs "interact" with an LMO pair (determined by DOI integrals)
+    // LMO triples domains
+    SparseMap lmotriplet_to_paos_;
 
     // Extended LMO Domains 
     SparseMap lmo_to_riatoms_ext_; ///< aux BFs on which atoms are needed for density-fitting a LMO and all connected LMOs
@@ -205,6 +218,12 @@ class DLPNOMP2 : public Wavefunction {
     void print_integral_sparsity();
     void print_results();
 
+    /// Create TNOs (Triples Natural Orbitals) for DLPNO-CCSD(T)
+    void tno_transform();
+
+    /// Compute PNO/TNO overlap matrices
+    void compute_pno_tno_overlaps();
+
     /// Create lookup tables for all sparsity information (LMO, PAO, PNOs, SparseMaps)
     void store_information();
 
@@ -238,6 +257,12 @@ class DLPNOMP2 : public Wavefunction {
     SparseMap get_sparse_map(std::string key);
     /// Returns PNO virtual energies per pair ij
     std::vector<SharedVector> eps_pno() { return e_pno_; }
+    /// Returns X_tno matrix
+    std::vector<SharedMatrix> get_X_tno() { return X_tno_; }
+    /// Returns TNO virtual energies for triplet ijk
+    std::vector<SharedVector> eps_tno() { return e_tno_; }
+    /// Returns the PNO/TNO overlap matrix
+    std::vector<std::vector<SharedMatrix>> get_S_pno_tno() { return S_pno_tno_ij_ilm_; }
 
     /// LMO indices (i, j) to significant LMO pair index (ij); insignificant (i, j) maps to -1
     std::vector<std::vector<int>> i_j_to_ij() { return i_j_to_ij_; }
@@ -245,6 +270,11 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::pair<int,int>> ij_to_i_j() { return ij_to_i_j_; }
     /// LMO pair index (ij) to LMO pair index (ji)
     std::vector<int> ij_to_ji() { return ij_to_ji_; }
+
+    /// LMO indices (i, j, k) to significant LMO triplet index (ijk)
+    std::unordered_map<int, int> i_j_k_to_ijk() { return i_j_k_to_ijk_; }
+    /// LMO triplet index (ijk) to all three LMO indices (i, j, k)
+    std::vector<std::tuple<int, int, int>> ijk_to_i_j_k() { return ijk_to_i_j_k_; }
 
     /// Geta qia matrix
     std::vector<SharedMatrix> get_qia();
@@ -271,8 +301,12 @@ class DLPNOMP2 : public Wavefunction {
     /// Returns PNO Truncation Correction
     double de_pno_total() { return de_pno_total_; }
 
+    /// Computes information for DLPNO-(T)
+    void compute_triples_info();
+
     double compute_energy() override;
-    };
+
+};
 
 }  // namespace dlpno
 }  // namespace psi
