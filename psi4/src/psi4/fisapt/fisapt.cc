@@ -1062,9 +1062,9 @@ void FISAPT::unify() {
     double** LinkCp = LinkC->pointer();
     std::shared_ptr<Molecule> mol = primary_->molecule();
     int nA = mol->natom();
-    std::shared_ptr<Vector> ZA = std::make_shared<Vector>("ZA2", nA);
-    std::shared_ptr<Vector> ZB = std::make_shared<Vector>("ZB2", nA);
-    std::shared_ptr<Vector> ZC = std::make_shared<Vector>("ZC2", nA);
+    std::shared_ptr<Vector> ZA = std::make_shared<Vector>("ZA", nA);
+    std::shared_ptr<Vector> ZB = std::make_shared<Vector>("ZB", nA);
+    std::shared_ptr<Vector> ZC = std::make_shared<Vector>("ZC", nA);
 
     std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     std::string link_ortho = options_.get_str("FISAPT_LINK_ORTHO");
@@ -5804,13 +5804,22 @@ void FISAPT::fexch() {
     int nr = matrices_["Cvir0A"]->colspi()[0];
     int ns = matrices_["Cvir0B"]->colspi()[0];
 
+//for the SAOn/SIAOn variants, we sometimes need na1 = na+1 (with link orbital) and sometimes na (without) - be careful with this!
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    int na1 = na;
+    int nb1 = nb;
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+        na1 = na + 1;
+        nb1 = nb + 1;
+    }
+
     // => Targets <= //
 
     double Exch10_2 = 0.0;
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(3);
 
-    matrices_["Exch_AB"] = std::make_shared<Matrix>("Exch_AB", nA + na + 1, nB + nb + 1); // Add one entry for external
+    matrices_["Exch_AB"] = std::make_shared<Matrix>("Exch_AB", nA + na1 + 1, nB + nb1 + 1); // Add one entry for external
                                                                                           // potentials in A and B
     double** Ep = matrices_["Exch_AB"]->pointer();
 
@@ -6762,6 +6771,15 @@ void FISAPT::fdisp() {
     size_t naQ = na * (size_t)nQ;
     size_t nbQ = nb * (size_t)nQ;
 
+//for the SAOn/SIAOn variants, we sometimes need na1 = na+1 (with link orbital) and sometimes na (without) - be careful with this!
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    int na1 = na;
+    int nb1 = nb;
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+        na1 = na + 1;
+        nb1 = nb + 1;
+    }
+
     int nfa = matrices_["Lfocc0A"]->colspi()[0];
     int nfb = matrices_["Lfocc0B"]->colspi()[0];
 
@@ -6772,7 +6790,7 @@ void FISAPT::fdisp() {
 
     // => Targets <= //
 
-    matrices_["Disp_AB"] = std::make_shared<Matrix>("Disp_AB", nA + nfa + na + 1, nB + nfb + nb + 1); // add one entry for external
+    matrices_["Disp_AB"] = std::make_shared<Matrix>("Disp_AB", nA + nfa + na1 + 1, nB + nfb + nb1 + 1); // add one entry for external
                                                                                                       // potentials in A and B
     double** Ep = matrices_["Disp_AB"]->pointer();
 
@@ -6812,7 +6830,6 @@ void FISAPT::fdisp() {
     std::shared_ptr<Matrix> K_B = matrices_["K_B"];
     std::shared_ptr<Matrix> K_O = matrices_["K_O"];
 
-    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     bool parperp = options_.get_bool("FISAPT_EXCH_PARPERP");
 
     std::shared_ptr<Matrix> Caocc_A = matrices_["Caocc0A"];
