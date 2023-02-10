@@ -3073,12 +3073,14 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(const IntegralFactory *integral, in
                                              bool use_shell_pairs, bool needs_exchange)
     : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs) {
     // Initialize libint static data
-#if LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
-    libint2::initialize(libint2::SHGShellOrdering_Standard);
-#elif LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
-    libint2::initialize(libint2::SHGShellOrdering_Gaussian);
+
+    libint2::initialize();
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Standard);
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Gaussian);
 #else
-#  error "unknown value of macro LIBINT2_SHGAUSS_ORDERING"
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
 #endif
 
     // Make sure there's enough space for the sieve generation.  This array is used to return an array of

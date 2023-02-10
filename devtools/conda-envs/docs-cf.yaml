@@ -16,7 +16,7 @@ dependencies:
   - python=3.11.*
     # qc
   - gau2grid
-  - psi4/label/dev::libint2
+  - conda-forge/label/libint_dev::libint
   - libxc-c
   - psi4/label/dev::libecpint
   - optking

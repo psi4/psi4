@@ -118,12 +118,12 @@ static inline int icart(int a, int b, int c) { return (((((a + b + c + 1) << 1) 
 static inline int ipure_gaussian(int, int m) { return m < 0 ? 2 * -m : (m == 0 ? 0 : 2 * m - 1); }
 static inline int ipure_standard(int l, int m) { return m + l; }
 
-#if LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
 static inline int ipure(int l, int m) { return ipure_standard(l, m); }
-#elif LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
 static inline int ipure(int l, int m) { return ipure_gaussian(l, m); }
 #else
-#  error "unknown value of macro LIBINT2_SHGAUSS_ORDERING"
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
 #endif
 
 void solidharmcontrib(int sign, const uint64_t &bin, const uint64_t &den, uint64_t norm2num, uint64_t norm2den, int r2,
@@ -220,8 +220,8 @@ void solidharmonic_standard(int l, Matrix &coefmat) {
     }
 }
 
-#if LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
 void solidharmonic(int l, Matrix &coefmat) { return solidharmonic_standard(l, coefmat); }
-#elif LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
 void solidharmonic(int l, Matrix &coefmat) { return solidharmonic_gaussian(l, coefmat); }
 #endif
