@@ -1675,6 +1675,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
 void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
     timer_on("RV: Form Vx");
 
+    // => Validate object / inputs <=
     if (D_AO_.size() != 1) {
         throw PSIEXCEPTION("Vx: RKS should have only one D Matrix");
     }
@@ -1686,6 +1687,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         throw PSIEXCEPTION("Vx: RKS cannot compute VV10 Vx contribution.");
     }
 
+    // => Initialize variables, esp. pointers and matrices <=
     // Thread info
     int rank = 0;
 
@@ -1695,26 +1697,27 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         throw PSIEXCEPTION("Vx: RKS does not support rotated V builds for MGGA's");
     }
 
-    int old_point_deriv = point_workers_[0]->deriv();
-    int old_func_deriv = functional_->deriv();
+    auto old_point_deriv = point_workers_[0]->deriv();
+    auto old_func_deriv = functional_->deriv();
 
     // How many functions are there (for lda in Vtemp, T)
-    int max_functions = grid_->max_functions();
-    int max_points = grid_->max_points();
+    auto max_functions = grid_->max_functions();
+    auto max_points = grid_->max_points();
 
     // Set pointers to SCF density
-    for (size_t i = 0; i < num_threads_; i++) {
-        point_workers_[i]->set_pointers(D_AO_[0]);
+    for (const auto& worker: point_workers_) {
+        worker->set_pointers(D_AO_[0]);
     }
 
+    // Create vector of AO-basis densities
     std::vector<SharedMatrix> Dx_vec;
-    for (size_t i = 0; i < Dx.size(); i++) {
-        if (Dx[i]->nirrep() != 1) {
+    for (const auto& D: Dx) {
+        if (D->nirrep() != 1) {
             auto Dx_mat = std::make_shared<Matrix>("D AO temp", nbf_, nbf_);
-            Dx_mat->remove_symmetry(Dx[i], USO2AO_);
+            Dx_mat->remove_symmetry(D, USO2AO_);
             Dx_vec.push_back(Dx_mat);
         } else {
-            Dx_vec.push_back(Dx[i]);
+            Dx_vec.push_back(D);
         }
     }
 
@@ -1744,47 +1747,47 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         Vx_AO.push_back(std::make_shared<Matrix>("Vx AO Temp", nbf_, nbf_));
     }
 
-// Traverse the blocks of points
+    // => Compute Vx <=
+    // Remember that this function computes the α block of the output, divided by 2.
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
-// Get thread info
+        // ==> Define block/thread-specific variables <==
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
         // => Setup <= //
-        std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
-        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
-        double** Vx_localp = R_Vx_local[rank]->pointer();
-        double** Dx_localp = R_Dx_local[rank]->pointer();
+        auto fworker = functional_workers_[rank];
+        auto pworker = point_workers_[rank];
+        auto Vx_localp = R_Vx_local[rank]->pointer();
+        auto Dx_localp = R_Dx_local[rank]->pointer();
 
         // => Compute blocks <= //
-        double** Tp = pworker->scratch()[0]->pointer();
+        auto Tp = pworker->scratch()[0]->pointer();
 
-        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
-        int npoints = block->npoints();
-        double* w = block->w();
-        const std::vector<int>& function_map = block->functions_local_to_global();
-        int nlocal = function_map.size();
+        auto block = grid_->blocks()[Q];
+        auto npoints = block->npoints();
+        auto w = block->w();
+        const auto& function_map = block->functions_local_to_global();
+        auto nlocal = function_map.size();
 
-        // Compute Rho, Phi, etc
+        // ==> Compute rho, gamma, etc. for block <==
         parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
         parallel_timer_off("Properties", rank);
 
-        // Compute functional values
-
+        // ==> Compute functional values for block <==
         parallel_timer_on("Functional", rank);
-        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        auto& vals = fworker->compute_functional(pworker->point_values(), npoints);
         parallel_timer_off("Functional", rank);
 
-        // => Grab quantities <= //
-        // LDA
-        double** phi = pworker->basis_value("PHI")->pointer();
-        double* rho_a = pworker->point_value("RHO_A")->pointer();
-        double* v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
-        double* rho_k = R_rho_k[rank]->pointer();
-        size_t coll_funcs = pworker->basis_value("PHI")->ncol();
+        // ==> Define pointers to intermediates <==
+        // LSDA
+        auto phi = pworker->basis_value("PHI")->pointer();
+        auto rho_a = pworker->point_value("RHO_A")->pointer();
+        auto v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
+        auto rho_k = R_rho_k[rank]->pointer();
+        auto coll_funcs = pworker->basis_value("PHI")->ncol();
 
         // GGA
         double* rho_k_x;
@@ -1813,11 +1816,11 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         // Meta
         // Forget that!
 
-        // Loop over perturbation tensors
+        // ==> Compute Vx contribution for each x <==
         for (size_t dindex = 0; dindex < Dx_vec.size(); dindex++) {
-            double** Dxp = Dx_vec[dindex]->pointer();
+            auto Dxp = Dx_vec[dindex]->pointer();
 
-            // => Build Rotated Densities <= //
+            // ===> Build Rotated Densities <=== //
             for (int ml = 0; ml < nlocal; ml++) {
                 int mg = function_map[ml];
                 for (int nl = 0; nl < nlocal; nl++) {
@@ -1826,18 +1829,24 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 }
             }
 
+            // ===> Compute quantities using effective densities <===
+            // N.B. We spin-sum over true density spin-indices, never effective density spin-indices. 
+            // T := einsum("pm, mn -> pn", φ, add_trans(Dk, (1, 0, 2)))
             parallel_timer_on("Derivative Properties", rank);
-            // Rho_a = D^k_xy phi_xa phi_ya
             C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 0.0, Tp[0],
                     max_functions);
             C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dx_localp[0], max_functions, 1.0, Tp[0],
                     max_functions);
 
+            // ρk = einsum("mn, pm, pn -> pσ", Dk, φ, φ)
+            // ρk = 1/2 * add_trans(ρκ, (1, 0, 2))
             for (int P = 0; P < npoints; P++) {
                 rho_k[P] = 0.5 * C_DDOT(nlocal, phi[P], 1, Tp[P], 1);
             }
 
-            // Rho^d_k and gamma_k
+            // ∇ρk = einsum("mn, pm, pn -> p", add_trans(Dk, (1, 0, 2)), ∇φ, φ)
+            //  Γk = add_trans(einsum("xp, xp -> p", ∇ρk, ∇ρ), (0, 2, 1))
+            //      ...2x the size of UKS alpha-spin counterpart thanks to spin-summing of ∇ρ
             if (ansatz >= 1) {
                 for (int P = 0; P < npoints; P++) {
                     rho_k_x[P] = C_DDOT(nlocal, phi_x[P], 1, Tp[P], 1);
@@ -1851,32 +1860,53 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             }
             parallel_timer_off("Derivative Properties", rank);
 
-            // => LSDA contribution (symmetrized) <= //
+            // ===> LSDA contribution <=== //
+            //                                         ∂^2
+            // T := 1/2 einsum("p, p, pm, p -> pm", w, ---- f , ρk, φ)
+            //                                         ∂ρ^2
             parallel_timer_on("V_XCd", rank);
-            // parallel_timer_on("LSDA", rank);
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tp[P], Tp[P] + nlocal, 0.0);
+                // Do a simple screen: ignore contributions where rho is too small.
                 if (rho_a[P] < v2_rho_cutoff_) continue;
                 C_DAXPY(nlocal, 0.5 * v2_rho2[P] * w[P] * rho_k[P], phi[P], 1, Tp[P], 1);
             }
-            // parallel_timer_off("LSDA", rank);
 
-            // => GGA contribution <= //
-            // parallel_timer_on("GGA", rank);
+            // ===> GGA contribution <=== //
             if (ansatz >= 1) {
-                double* v_gamma = vals["V_GAMMA_AA"]->pointer();
-                double* v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
-                double* v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
+                // ====> Define pointers for future use <====
+                auto v_gamma = vals["V_GAMMA_AA"]->pointer();
+                auto v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
+                auto v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
                 double tmp_val = 0.0, v2_val = 0.0;
 
+                // There are lots of GGA terms.
                 for (int P = 0; P < npoints; P++) {
                     if (rho_a[P] < v2_rho_cutoff_) continue;
 
+                    // ====> Term 2b, V in DOI: 10.1063/1.466887 <====
+                    //                                         ∂^2
+                    // T += 1/2 einsum("p, p, p, pr -> pr", w, ---- f, Γk, φ)
+                    //                                         ∂ρ∂γ
                     // V contributions
                     C_DAXPY(nlocal, (0.5 * w[P] * v2_rho_gamma[P] * gamma_k[P]), phi[P], 1, Tp[P], 1);
 
-                    // W contributions
+                    // ====> All other terms, W in above DOI  <==== //
+                    //                            ∂^2
+                    // temp = einsum("p, p -> p", ---- f, ρk)
+                    //                            ∂ρ∂γ
+                    //                             ∂^2
+                    // temp += einsum("p, p -> p", ---- f, Γk)
+                    //                             ∂γ∂γ
+                    
+                    // Define Γk terms in 3 intermediate
                     v2_val = (v2_rho_gamma[P] * rho_k[P] + v2_gamma_gamma[P] * gamma_k[P]);
+
+                    //                                      ∂
+                    // temp2 = einsum("p, p, xp -> xpσ", w, -- f, ∇ρk)
+                    //                                      ∂Γ
+                    // temp2 += einsum("p, p, x -> xp", w, temp, ∇ρ)
+                    // T += einsum("xp, xpm -> pm", temp2, ∇φ)
 
                     tmp_val = 2.0 * w[P] * (v_gamma[P] * rho_k_x[P] + v2_val * rho_x[P]);
                     C_DAXPY(nlocal, tmp_val, phi_x[P], 1, Tp[P], 1);
@@ -1888,15 +1918,12 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tp[P], 1);
                 }
             }
-            // parallel_timer_off("GGA", rank);
 
-            // Put it all together
-            // parallel_timer_on("LSDA", rank);
+            // ===> Contract Ta and Tb aginst φ, replacing a point index with  an AO index <===
             C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, Vx_localp[0],
                     max_functions);
-            // parallel_timer_off("LSDA", rank);
 
-            // Symmetrization (V is *always* Hermitian)
+            // ===> Add the adjoint to complete the LDA and GGA contributions  <===
             for (int m = 0; m < nlocal; m++) {
                 for (int n = 0; n <= m; n++) {
                     Vx_localp[m][n] = Vx_localp[n][m] = Vx_localp[m][n] + Vx_localp[n][m];
@@ -1904,7 +1931,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             }
 
             // => Unpacking <= //
-            double** Vxp = Vx_AO[dindex]->pointer();
+            auto Vxp = Vx_AO[dindex]->pointer();
             for (int ml = 0; ml < nlocal; ml++) {
                 int mg = function_map[ml];
                 for (int nl = 0; nl < ml; nl++) {
@@ -2398,6 +2425,146 @@ SharedMatrix RV::compute_hessian() {
     return H;
 }
 
+//    Define add_trans : x, y -> x + x.transpose(y)
+//    ρ = einsum("pm, pn, mnσ -> pσ", φ, φ, D)
+//   ∇ρ = einsum("pmx, pn, mnσ -> pxσ", ∇φ, φ, D) + einsum("pm, pnx, mnσ -> pxσ", φ, ∇φ, D)
+//      = einsum("pmx, pn, mnσ -> pxσ", ∇φ, φ, add_trans(D, (1, 0, 2)))
+//    γ = einsum("pxσ, pxτ -> pστ", ∇ρ, ∇ρ)
+//      WARNING! γ has two spin-indices and is symmetric between them. Functionals "break"
+//      this symmetry by taking γ_αβ as an argument but not the (identical) γ_βα. So that
+//      we can still have two spin-indices, treat ∂/∂γ_βα f = 0 when interpreting our equations.
+//      We will use Γ to denote the sum of the γ quantity and its spin-adjoint. Γk and ∂Γ will
+//      prove especially useful.
+//   We follow these variable names with k to denote that the first instance of D is replaced
+//      by an arbitrary matrix named Dk. This is needed for compute_Vx. The matrix Dk is not
+//      a density, but in the context of TDDFT, it is a candidate for the excitation and
+//      de-excitation components of the transition density.
+
+// E_XC = einsum("p, p", w, f)
+// Operator ∂/∂D is needed in compute_V. You can assume the density is hermitian.
+// Operator ∂^2/∂D^2 is needed in compute_Vx and then multiplied by a qrτ pseudo-density.
+//    Never assume the pseudo-density is hermitian.
+// Operator ∂/∂(x,i) is needed in compute_gradient. You can assume the density is hermitian.
+// The equations we present are not spin-adapted.
+// For singlet spin-adaptation (which is normally what you want), just replace all spin indices
+//    with alpha. The spin-free intermediates are defined so this is the same thing as summing
+//    over all spin cases for internal indices and choosing alpha for external indices.
+// The triplet spin-adaptation of ∂^2/∂D^2 is needed when describing spin-symmetry breaking
+//    phenomena, e.g., excitation to a triplet or symmetry-breaking orbital rotations.
+//    This is derived by taking ∂^2/∂D^2[same-spin] - ∂^2/∂D^2[opposite-spin].
+//    In practice, this should look like taking the corresponding difference of f-derivatives
+//    and then ignoring all spin indices. Incidentally, the + combination provides the
+//    singlet spin-adpatation without redefining intermediates.
+//    WARNING! Treat this paragraph skeptically untl Psi4 actually has triplet TDDFT.
+// Geometric derivative equations assume D is a density that satisfies the SCF equations.
+//    Therefore, densities are assumed hermitian and ∂E/∂D = 0 means ∂E/∂D ∂D/∂x terms may be neglected.
+// Geometric derivative equations use a compound index (i, x) to refer to displacing atom i in the x
+//    direction. Accordingly, we define δ_μi = 1 if μ centered on atom i, else 0. In particular,
+//    d/d(x,i) φ_μ,p = - (d/dx φ_μ,p) * δ_μi, where the minus sign is needed because moving
+//    the φ center in the + direction is equivalent to evaluating φ in the - direction.
+//
+
+// LSDA
+//
+// f explicitly depends on ρ
+//
+// ∂                                           ∂
+// -- E_XC = einsum("p, pσ, pm, pn -> mnσ", w, -- f, φ, φ )
+// ∂D                                          ∂ρ
+//
+// ∂^2                                                       ∂^2
+// ---- E_XC = einsum("p, pστ, pm, pn, pq, pr -> mnσqrτ", w, ---- f, φ, φ, φ, φ )
+// ∂D^2                                                      ∂ρ^2
+//
+// ∂^2                                                     ∂^2
+// ---- E_XC @ Dk = einsum("p, pστ, pm, pn, pτ -> mnσ", w, ---- f, φ, φ, ρk )
+// ∂D^2                                                    ∂ρ^2
+//
+// ∂                                                         ∂     ∂
+// ------ E_XC = -einsum("p, pσ, pmx, pn, mnσ, mi -> ix", w, -- f, -- φ, φ, D, δ)
+// ∂(x,i)                                                    ∂ρ    ∂x
+//                                                           ∂        ∂
+//               -einsum("p, pσ, pm, pnx, mnσ, mi -> ix", w, -- f, φ, -- φ, D, δ)
+//                                                           ∂ρ       ∂x
+//                                                               ∂        ∂
+//             = -2 * einsum("p, pσ, pm, pnx, mnσ, mi -> ix", w, -- f, φ, -- φ, φ, D, δ)
+//                                                               ∂ρ       ∂x
+//             [for D hermitian]
+
+// GGA
+//
+// f explicitly depends on ρ and γ.
+// All terms below are added to the LSDA terms.
+//
+// ∂                                                  ∂
+// -- E_XC = einsum("p, pστ, pxσ, pmx, pn -> mnτ", w, -- f, ∇ρ, ∇φ, φ )
+// ∂D                                                 ∂γ
+//                                                    ∂
+//          +einsum("p, pστ, pxσ, pm, pnx -> mnτ", w, -- f, ∇ρ, φ, ∇φ )
+//                                                    ∂γ
+//                                                    ∂
+//          +einsum("p, pστ, pmx, pn, pxτ -> mnσ", w, -- f, ∇φ, φ, ∇ρ )
+//                                                    ∂γ
+//                                                    ∂
+//          +einsum("p, pστ, pm, pnx, pxτ -> mnσ", w, -- f, φ, ∇φ, ∇ρ )
+//                                                    ∂γ
+//          The effect of (2) is to adjoint over AO indices from (1).
+//          The effect of (4) is to adjoint over AO indices from (3).
+//          The effect of (3) is to swap whether the density contracts with the left or right γ spin index.
+//          Define 
+//          ∂                ∂
+//          -- f = add_trans(-- f, (0, 2, 1))
+//          ∂Γ               ∂γ
+//          ...which is absolutely abuse of notation, but look at how pretty this re-formulation is:
+//                                                             ∂
+//        = add_trans(einsum("p, pστ, xpm, pn, xpτ -> mnσ", w, -- f, ∇φ, φ, ∇ρ ), (1, 0, 2))
+//                                                             ∂Γ
+//
+// ∂^2
+// ---- E_XC
+// ∂D^2
+//
+// Term 1
+//  Define temp = add_trans(einsum("xpr, ps -> xprs", ∇φ, φ), (0, 1, 3, 2))
+//                                                           ∂
+//  = add_trans(einsum("p, pστ, xpm, pn, xprs -> mnσrsτ", w, -- f, ∇φ, φ, temp ), (1, 0, 2, 3, 4, 5))
+//                                                           ∂Γ
+//
+// Term 2
+//                                                                        ∂^2
+//  temp = einsum("p, pτσυ, xpm, pn, xpυ, pr, ps -> mnσrsτ", w, add_trans(---- f, (0, 1, 3, 2)), ∇φ, φ, ∇ρ, φ, φ )
+//                                                                        ∂ρ∂Γ
+//  = add_trans(temp, (3, 4, 5, 0, 1, 2))
+//
+// Term 3
+//                                                                     ∂^2
+//  temp = einsum("p, pσυτχ, xpm, pn, xpυ, pry, ps, pyχ -> mnσrsτ", w, ---- f, ∇φ, φ, ∇ρ, ∇φ, φ, ∇ρ ))
+//                                                                     ∂Γ^2
+//  = add_trans(add_trans(temp, (1, 0, 2, 3, 4, 5)), (0, 1, 2, 4, 3, 5))
+//
+// ∂^2
+// ---- E_XC @ Dk
+// ∂D^2
+//
+// Term 1
+//                                                       ∂
+//  = add_trans(einsum("p, pστ, xpm, pn, xpτ -> mnσ", w, -- f, ∇φ, φ, ∇ρk ), (1, 0, 2))
+//                                                       ∂Γ
+//
+// Term 2a
+//                                                            ∂^2
+//  = add_trans(einsum("p, pτσυ, xpm, pn, xpυ, pτ -> mnσ", w, ---- f, ∇φ, φ, ∇ρ, ρk ), (1, 0, 2))
+//                                                            ∂ρ∂Γ
+// Term 2b
+//                                             ∂^2
+//  = einsum("p, pτσυ, pσυ, pr, ps -> rsτ", w, ---- f, Γk, φ, φ )
+//                                             ∂ρ∂γ
+//
+// Term 3
+//                                                              ∂^2
+//  = add_trans(einsum("p, pσυτχ, xpm, pn, xpυ, pτχ -> mnσ", w, ---- f, ∇φ, φ, ∇ρ, Γk ), (1, 0, 2))
+//                                                              ∂Γ∂γ
+
 UV::UV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
     : VBase(functional, primary, options) {}
 UV::~UV() {}
@@ -2564,9 +2731,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         rhobzq[rank] += C_DDOT(npoints, QTbp, 1, z, 1);
 
         // ==> LSDA contribution <== //
-        // LSDA Contribution at point p is einsum("mp, np, p, ps -> mns", phi, phi, w, v_rho)
-        // Ta := 1/2 einsum("np, p, p -> np", phi, phi, w, v_rho_a)
-        // Tb := 1/2 einsum("np, p, p -> np", phi, phi, w, v_rho_b)
+        //                                               ∂
+        // Ta, Tb := 1/2 einsum("p, p, pn -> pnσ", w, φ, -- f)[σ = α, β]
+        //                                               ∂ρ
         // timer_on("V: LSDA");
         for (int P = 0; P < npoints; P++) {
             std::fill(Tap[P], Tap[P] + nlocal, 0.0);
@@ -2578,11 +2745,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
 
         // ==> GGA contribution <== //
         if (ansatz >= 1) {
-            // GGA contribution at point p is 2 einsum("mp, npx, pxs, px, p, p, pxst -> mnt" phi, phiX, rho_X, w, v_gamma)
-            // ...where s = t doubles v_gamma.
-            // We'll need to symmetrize this later.
-            // Ta += einsum("mp, npx, pxs, px, p, p, pxs -> np" phiX, rho_X, w, v_gamma_alpha)
-            // Tb += einsum("mp, npx, pxs, px, p, p, pxs -> np" phiX, rho_X, w, v_gamma_beta)
+            //                                                                      ∂
+            // Ta, Tb += einsum("p, στ, pστ, xpτ, xpn -> pnσ", w, (σ == τ) ? 2 : 1, -- f, ∇ρ, ∇φ)[σ = α, β]
+            //                                                                      ∂γ
             // timer_on("V: GGA");
             auto phix = pworker->basis_value("PHI_X")->pointer();
             auto phiy = pworker->basis_value("PHI_Y")->pointer();
@@ -2615,13 +2780,13 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
         }
 
         // timer_on("V: LSDA");
-        // ==> Contract Ta and Tba aginst phi to complete the LDA and GGA contributions <==
+        // ==> Contract Ta and Tba aginst φ, replacing a point index with  an AO index <==
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tap[0], max_functions, 0.0, Va2p[0],
                 max_functions);
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tbp[0], max_functions, 0.0, Vb2p[0],
                 max_functions);
 
-        // ==> Forcibly symmetrize V and scale by 2 <==
+        // ==> Add the adjoint to complete the LDA and GGA contributions  <==
         for (int m = 0; m < nlocal; m++) {
             for (int n = 0; n <= m; n++) {
                 Va2p[m][n] = Va2p[n][m] = Va2p[m][n] + Va2p[n][m];
@@ -2744,8 +2909,9 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     timer_off("UV: Form V");
 }
 void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
-    // => Validate object / inputs <=
     timer_on("UV: Form Vx");
+
+    // => Validate object / inputs <=
     if (D_AO_.size() != 2) {
         throw PSIEXCEPTION("Vx: UKS should have two D matrices.");
     }
@@ -2765,31 +2931,32 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
     int rank = 0;
 
     // What local XC ansatz are we in?
-    int ansatz = functional_->ansatz();
+    auto ansatz = functional_->ansatz();
     if (ansatz >= 2) {
         throw PSIEXCEPTION("Vx: UKS does not support rotated V builds for MGGA's");
     }
 
-    int old_point_deriv = point_workers_[0]->deriv();
-    int old_func_deriv = functional_->deriv();
+    auto old_point_deriv = point_workers_[0]->deriv();
+    auto old_func_deriv = functional_->deriv();
 
     // How many functions are there (for lda in Vtemp, T)
-    int max_functions = grid_->max_functions();
-    int max_points = grid_->max_points();
+    auto max_functions = grid_->max_functions();
+    auto max_points = grid_->max_points();
 
     // Set pointers to SCF density
-    for (size_t i = 0; i < num_threads_; i++) {
-        point_workers_[i]->set_pointers(D_AO_[0], D_AO_[1]);
+    for (const auto& worker: point_workers_) {
+        worker->set_pointers(D_AO_[0], D_AO_[1]);
     }
 
+    // Create vector of AO-basis densities
     std::vector<SharedMatrix> Dx_vec;
-    for (size_t i = 0; i < Dx.size(); i++) {
-        if (Dx[i]->nirrep() != 1) {
+    for (const auto& D: Dx) {
+        if (D->nirrep() != 1) {
             auto Dx_mat = std::make_shared<Matrix>("D AO temp", nbf_, nbf_);
-            Dx_mat->remove_symmetry(Dx[i], USO2AO_);
+            Dx_mat->remove_symmetry(D, USO2AO_);
             Dx_vec.push_back(Dx_mat);
         } else {
-            Dx_vec.push_back(Dx[i]);
+            Dx_vec.push_back(D);
         }
     }
 
@@ -2834,10 +3001,10 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         Vax_AO.push_back(std::make_shared<Matrix>("Vbx AO Temp", nbf_, nbf_));
     }
 
-// Traverse the blocks of points
+    // => Compute Vx <=
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
-// Get thread info
+        // ==> Define block/thread-specific variables <==
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
@@ -2860,17 +3027,17 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         const auto& function_map = block->functions_local_to_global();
         auto nlocal = function_map.size();
 
-        // Compute Rho, Phi, etc
+        // ==> Compute rho, gamma, etc. for block <==
         parallel_timer_on("Properties", rank);
         pworker->compute_points(block);
         parallel_timer_off("Properties", rank);
 
-        // Compute functional values
+        // ==> Compute functional values for block <==
         parallel_timer_on("Functional", rank);
         auto& vals = fworker->compute_functional(pworker->point_values(), npoints);
         parallel_timer_off("Functional", rank);
 
-        // => Grab quantities <= //
+        // ==> Define pointers to intermediates <==
         // LSDA
         auto phi = pworker->basis_value("PHI")->pointer();
         auto rho_a = pworker->point_value("RHO_A")->pointer();
@@ -2926,25 +3093,23 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         // Meta
         // Forget that!
 
-        // Loop over perturbation tensors
+        // ==> Compute Vx contribution for each x <==
         for (size_t dindex = 0; dindex < (Dx_vec.size() / 2); dindex++) {
             auto Daxp = Dx_vec[2 * dindex]->pointer();
             auto Dbxp = Dx_vec[2 * dindex + 1]->pointer();
 
-            // ==> Build Rotated Densities <== //
+            // ===> Build Rotated Densities <=== //
             for (int ml = 0; ml < nlocal; ml++) {
                 int mg = function_map[ml];
                 for (int nl = 0; nl < nlocal; nl++) {
                     int ng = function_map[nl];
                     Dax_localp[ml][nl] = Daxp[mg][ng];
                     Dbx_localp[ml][nl] = Dbxp[mg][ng];
-                    // printf("%d %d: %16.8f %16.8f\n", ml, nl, Dax_localp[ml][nl], Dbx_localp[ml][nl]);
                 }
             }
 
-            // Compute rho^k for each spin case and each point in the block..
-            // Rho = D^k_xy phi_xa phi_ya = phi_xa @ [D^k_xy @ phi_ya].T
-            // Contracting against
+            // ===> Compute quantities using effective densities <===
+            // Ta, Tb := einsum("pm, mnσ -> pnσ", φ, add_trans(Dk, (1, 0, 2)))[σ = α, β]
             // Alpha
             parallel_timer_on("Derivative Properties", rank);
             C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dax_localp[0], max_functions, 0.0,
@@ -2958,12 +3123,15 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dbx_localp[0], max_functions, 1.0,
                     Tbp[0], max_functions);
 
+            // ρk = einsum("mnσ, pm, pn -> pσ", Dk, φ, φ)
+            // ρk = 1/2 * add_trans(ρκ, (1, 0, 2))
             for (int P = 0; P < npoints; P++) {
                 rho_ak[P] = 0.5 * C_DDOT(nlocal, phi[P], 1, Tap[P], 1);
                 rho_bk[P] = 0.5 * C_DDOT(nlocal, phi[P], 1, Tbp[P], 1);
             }
 
-            // Rho^d_k and gamma_k
+            // ∇ρk = einsum("mnσ, pm, pn -> pσ", add_trans(Dk, (1, 0, 2)), ∇φ, φ)
+            //  Γk = add_trans(einsum("xpσ, xpτ -> pστ", ∇ρk, ∇ρ), (0, 2, 1))
             if (ansatz >= 1) {
                 for (int P = 0; P < npoints; P++) {
                     // Alpha
@@ -2993,12 +3161,16 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             parallel_timer_off("Derivative Properties", rank);
 
             parallel_timer_on("V_XCd", rank);
-            // => LSDA contribution (symmetrized) <= //
+            // ===> LSDA contribution (symmetrized) <=== //
+            //                                                  ∂^2
+            // Ta, Tb := 1/2 einsum("p, pστ, pm, pτ -> pmσ", w, ---- f , ρk, φ)
+            //                                                  ∂ρ^2
             double tmp_val = 0.0, tmp_ab_val = 0.0;
             for (int P = 0; P < npoints; P++) {
                 std::fill(Tap[P], Tap[P] + nlocal, 0.0);
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
 
+                // Do a simple screen: ignore contributions where rho is too small.
                 if (rho_a[P] + rho_b[P] > v2_rho_cutoff_) {
                     tmp_val = v2_rho2_aa[P] * rho_ak[P];
                     tmp_val += v2_rho2_ab[P] * rho_bk[P];
@@ -3012,8 +3184,9 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 }
             }
 
-            // // => GGA contribution <= //
+            // ===> GGA contribution <=== //
             if (ansatz >= 1) {
+                // ====> Define pointers for future use <====
                 auto gamma_aa = pworker->point_value("GAMMA_AA")->pointer();
                 auto gamma_ab = pworker->point_value("GAMMA_AB")->pointer();
                 auto gamma_bb = pworker->point_value("GAMMA_BB")->pointer();
@@ -3038,9 +3211,13 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
                 double tmp_val = 0.0, v2_val_aa = 0.0, v2_val_ab = 0.0, v2_val_bb = 0.0;
 
-                // This one is a doozy
+                // There are lots of GGA terms.
                 for (int P = 0; P < npoints; P++) {
                     if (rho_a[P] + rho_b[P] < v2_rho_cutoff_) continue;
+                    // ====> Term 2b, V in DOI: 10.1063/1.466887 <====
+                    //                                                    ∂^2
+                    // Ta, Tb += 1/2 einsum("p, pτσυ, pσυ, pr -> prτ", w, ---- f, Γk, φ)[τ = α, β]
+                    //                                                    ∂ρ∂γ
                     // V alpha contributions
                     tmp_val = v2_rho_a_gamma_aa[P] * gamma_aak[P];
                     tmp_val += v2_rho_a_gamma_ab[P] * gamma_abk[P];
@@ -3053,27 +3230,45 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     tmp_val += v2_rho_b_gamma_bb[P] * gamma_bbk[P];
                     C_DAXPY(nlocal, (0.5 * w[P] * tmp_val), phi[P], 1, Tbp[P], 1);
 
-                    // => Alpha W terms <= //
+                    // ====> All other terms, W in above DOI  <==== //
+                    // Compute α block of final result.
 
-                    // rho_ak
+                    //                                  ∂^2
+                    // temp = einsum("pτσυ, pτ -> pσυ", ---- f, ρk)[συ = αα, αβ]
+                    //                                  ∂ρ∂γ
+
+                    // Define ρk[τ=α] terms in 2a intermediate
                     v2_val_aa = v2_rho_a_gamma_aa[P] * rho_ak[P];
                     v2_val_ab = v2_rho_a_gamma_ab[P] * rho_ak[P];
 
-                    // rho_bk
+                    // Define ρk[τ=β] terms in 2a intermediate
                     v2_val_aa += v2_rho_b_gamma_aa[P] * rho_bk[P];
                     v2_val_ab += v2_rho_b_gamma_ab[P] * rho_bk[P];
+                    
+                    //                                     ∂^2
+                    // temp += einsum("pσυτχ, pτχ -> pσυ", ---- f, Γk)[συ = αα, αβ]
+                    //                                     ∂γ∂γ
 
-                    // gamma_aak
+                    // Define Γk[τχ=αα] terms in 3 intermediate
                     v2_val_aa += v2_gamma_aa_gamma_aa[P] * gamma_aak[P];
                     v2_val_ab += v2_gamma_aa_gamma_ab[P] * gamma_aak[P];
 
-                    // gamma_abk
+                    // Define Γk[τχ=αβ] terms in 3 intermediate
                     v2_val_aa += v2_gamma_aa_gamma_ab[P] * gamma_abk[P];
                     v2_val_ab += v2_gamma_ab_gamma_ab[P] * gamma_abk[P];
 
-                    // gamma_bbk
+                    // Define Γk[τχ=ββ] terms in 3 intermediate
                     v2_val_aa += v2_gamma_aa_gamma_bb[P] * gamma_bbk[P];
                     v2_val_ab += v2_gamma_ab_gamma_bb[P] * gamma_bbk[P];
+
+                    // Compute W terms, first 1 and then 2a and 3 at once
+       
+                    //                                         ∂
+                    // temp2 = einsum("p, pστ, xpτ -> xpσ", w, -- f, ∇ρk)[σ = α]
+                    //                                         ∂Γ
+                    // temp2 += einsum("p, pσυ, xpυ -> xpσ", w, temp, ∇ρ)[σ = α]
+                    //   N.B. A prefactor of 2 on the same-spin terms accounts for using γ rather than Γ in defining temp.
+                    // Ta += einsum("xpσ, xpm -> pmσ", temp2, ∇φ)[σ = α]
 
                     // Wx
                     tmp_val = 2.0 * v_gamma_aa[P] * rho_ak_x[P];
@@ -3102,27 +3297,40 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
                     C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tap[P], 1);
 
-                    // => Beta W terms <= //
+                    // Compute β block of final result.
+                    
+                    //                                  ∂^2
+                    // temp = einsum("pτσυ, pτ -> pσυ", ---- f, ρk)[συ = ββ, αβ]
+                    //                                  ∂ρ∂γ
 
-                    // rho_ak
+                    // Define ρk[τ=α] terms in 2a intermediate
                     v2_val_bb = v2_rho_a_gamma_bb[P] * rho_ak[P];
                     v2_val_ab = v2_rho_a_gamma_ab[P] * rho_ak[P];
 
-                    // rho_bk
+                    // Define ρk[τ=β] terms in 2a intermediate
                     v2_val_bb += v2_rho_b_gamma_bb[P] * rho_bk[P];
                     v2_val_ab += v2_rho_b_gamma_ab[P] * rho_bk[P];
 
-                    // gamma_bbk
+                    // Define Γk[τχ=ββ] terms in 3 intermediate
                     v2_val_bb += v2_gamma_bb_gamma_bb[P] * gamma_bbk[P];
                     v2_val_ab += v2_gamma_ab_gamma_bb[P] * gamma_bbk[P];
 
-                    // gamma_abk
+                    // Define Γk[τχ=αβ] terms in 3 intermediate
                     v2_val_bb += v2_gamma_ab_gamma_bb[P] * gamma_abk[P];
                     v2_val_ab += v2_gamma_ab_gamma_ab[P] * gamma_abk[P];
 
-                    // gamma_aak
+                    // Define Γk[τχ=αα] terms in 3 intermediate
                     v2_val_bb += v2_gamma_aa_gamma_bb[P] * gamma_aak[P];
                     v2_val_ab += v2_gamma_aa_gamma_ab[P] * gamma_aak[P];
+
+                    // Compute W terms, first 1 and then 2a and 3 at once
+       
+                    //                                         ∂
+                    // temp2 = einsum("p, pστ, xpτ -> xpσ", w, -- f, ∇ρk)[σ = β]
+                    //                                         ∂Γ
+                    // temp2 += einsum("p, pσυ, xpυ -> xpσ", w, temp, ∇ρ)[σ = β]
+                    //   N.B. That a prefactor of 2 on the same-spin terms accounts for using γ rather than Γ in defining temp.
+                    // Tb += einsum("xpσ, xpm -> pmσ", temp2, ∇φ)[σ = β]
 
                     // Wx
                     tmp_val = 2.0 * v_gamma_bb[P] * rho_bk_x[P];
@@ -3153,25 +3361,23 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 }
             }
 
-            // Put it all together
+            // ===> Contract Ta and Tb aginst φ, replacing a point index with  an AO index <===
             C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tap[0], max_functions, 0.0,
                     Vax_localp[0], max_functions);
             C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tbp[0], max_functions, 0.0,
                     Vbx_localp[0], max_functions);
 
-            // Symmetrization (V is *always* Hermitian)
+            // ===> Add the adjoint to complete the LDA and GGA contributions  <===
             for (int m = 0; m < nlocal; m++) {
                 for (int n = 0; n <= m; n++) {
                     Vax_localp[m][n] = Vax_localp[n][m] = Vax_localp[m][n] + Vax_localp[n][m];
                     Vbx_localp[m][n] = Vbx_localp[n][m] = Vbx_localp[m][n] + Vbx_localp[n][m];
                 }
             }
-            // R_Vax_local[rank]->print();
-            // R_Vbx_local[rank]->print();
 
             // => Unpacking <= //
-            double** Vaxp = Vax_AO[dindex]->pointer();
-            double** Vbxp = Vbx_AO[dindex]->pointer();
+            auto Vaxp = Vax_AO[dindex]->pointer();
+            auto Vbxp = Vbx_AO[dindex]->pointer();
             for (int ml = 0; ml < nlocal; ml++) {
                 int mg = function_map[ml];
                 for (int nl = 0; nl < ml; nl++) {
@@ -3336,28 +3542,11 @@ SharedMatrix UV::compute_gradient() {
         rhobyq[rank] += C_DDOT(npoints, QTp, 1, y, 1);
         rhobzq[rank] += C_DDOT(npoints, QTp, 1, z, 1);
 
-        // NOTE:
-        // Let d/dx be a derivative of a functon in R^3 with respect to coordinate x.
-        // Let d/d(x,i) be a derivative with respect to displacing atom i in the x direction.
-        // Then d/d(x,i) phi_mu,p = - d/dx phi^x_mu,p * δ_mu,i
-        //    δ = 1 if mu centered on atom i, else 0.
-        // i.e., the change in a basis function at a point if you move right is the same as the
-        // change if you move the basis function left.
-
-        // NOTE:
-        // ∂E/∂D ∂D/∂x = 0 because ∂E/∂D = 0 because SCF optimizes D to minimize E.
-        // Therefore, we don't compute density-derivative terms. They sum to zero.
-
-        //   Dr = einsum("pm, pn, mnσ -> pσ", phi, phi, D)
-        // E_xc = einsum("p, p", w, f)... where f is a function of Dr
-
         // ==> phi_x type contributions <== //
         // ===> LSDA Contribution <=== //
-        // dE_LSDA = -einsum("p, pσ, pmx, pn, mnσ, mi -> ix", w, ∂E∂ρ, phix, phi, D, δ)
-        //           -einsum("p, pσ, pm, pnx, mnσ, ni -> ix", w, ∂E∂ρ, phi, phix, D, δ)
-        //         = -2 * einsum("p, pσ, pm, pnx, mnσ, ni -> ix", w, ∂E∂ρ, phi, phix, D, δ) [assuming D hermitian]
-        //     Ta := -2 * einsum("p, p, pn -> pn", w, ∂E∂ρ[α], phi)
-        //     Tb := -2 * einsum("p, p, pm -> pm", w, ∂E∂ρ[β], phi)
+        //                                              ∂        ∂
+        // Ta, Tb := -2 * einsum("p, pσ, pm -> pmσ", w, -- f, φ, -- φ, φ, D, δ)[σ = α, β]
+        //                                              ∂ρ       ∂x
         for (int P = 0; P < npoints; P++) {
             std::fill(Tap[P], Tap[P] + nlocal, 0.0);
             std::fill(Tbp[P], Tbp[P] + nlocal, 0.0);
@@ -3394,14 +3583,15 @@ SharedMatrix UV::compute_gradient() {
         }
 
         // ===> Complete Terms <=== //
-        // Ua := einsum("pm, mn -> pn", Ta, D[α])
-        // Ub := einsum("pm, mn -> pn", Tb, D[β])
+        // Ua, Ub := einsum("pmσ, mnσ -> pnσ")[σ = α, β]
         C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tap[0], max_functions, Dap[0], max_functions, 0.0, Uap[0],
                 max_functions);
         C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tbp[0], max_functions, Dbp[0], max_functions, 0.0, Ubp[0],
                 max_functions);
 
-        // dE += einsum("pn, pnx, ni -> ix", Ua + Ub, phix, δ)
+        //                                       ∂
+        // dE += einsum("pnσ, pnx, ni -> ix", U, -- φ, δ)
+        //                                       ∂x
         for (int ml = 0; ml < nlocal; ml++) {
             auto A = primary_->function_to_center(function_map[ml]);
             Gp[A][0] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_x[0][ml], coll_funcs);

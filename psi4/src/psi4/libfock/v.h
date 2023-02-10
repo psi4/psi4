@@ -175,6 +175,8 @@ class RV : public VBase {
     // compute_V assuming same orbitals for different spin. Computes V_alpha, not spin-summed V.
     void compute_V(std::vector<SharedMatrix> ret) override;
     /// compute_Vx assuming same orbitals for different spin. ret[i] is Vx where x = Dx[i].
+    /// The "true" vector has 2^-0.5 Dx[i] for each input spin case and returns **half** the
+    /// α component of the output.
     void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
     std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_gradient() override;
