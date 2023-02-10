@@ -821,7 +821,7 @@ def optimize_geometric(name, **kwargs):
             self.p4_kwargs = p4_kwargs
     
             molecule = geometric.molecule.Molecule()
-            molecule.elem = [p4_mol.symbol(i) for i in range(p4_mol.natom())]
+            molecule.elem = [p4_mol.symbol(i).capitalize() for i in range(p4_mol.natom())]
             molecule.xyzs = [p4_mol.geometry().np * qcel.constants.bohr2angstroms] 
             molecule.build_bonds()
                                  

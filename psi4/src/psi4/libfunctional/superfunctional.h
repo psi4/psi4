@@ -105,16 +105,37 @@ class SuperFunctional {
     // are populated. Some fields change definition depending on spin polarization.
     // LSDA:
     //   always:
-    //      V_RHO_A : ∂f/∂ρ_α
+    //      V_RHO_A : ∂/∂ρ_α
     //   if is_unpolarized():
-    //      V_RHO_B : ∂f/∂ρ_β
+    //      V_RHO_B : ∂/∂ρ_β
+    //      V_RHO_A_RHO_A : ∂^2/∂ρ_α^2
+    //      V_RHO_A_RHO_B : ∂^2/∂ρ_α∂ρ_β
+    //      V_RHO_B_RHO_B : ∂^2/∂ρ_β^2
+    //   else:
+    //      V_RHO_A_RHO_A : (∂^2/∂ρ_α^2 + ∂^2/∂ρ_α∂ρ_β) / 2
+    //
     // GGA:
     //   if is_unpolarized():
-    //      V_GAMMA_AA : ∂f/∂γ_αα
-    //      V_GAMMA_AB : ∂f/∂γ_αβ
-    //      V_GAMMA_BB : ∂f/∂γ_ββ
+    //      V_GAMMA_AA : ∂/∂γ_αα
+    //      V_GAMMA_AB : ∂/∂γ_αβ
+    //      V_GAMMA_BB : ∂/∂γ_ββ
+    //      V_RHO_A_GAMMA_AA : ∂^2/∂ρ_α∂γ_αα
+    //      V_RHO_A_GAMMA_AB : ∂^2/∂ρ_α∂γ_αβ
+    //      V_RHO_A_GAMMA_BB : ∂^2/∂ρ_α∂γ_ββ
+    //      V_RHO_B_GAMMA_AA : ∂^2/∂ρ_β∂γ_αα
+    //      V_RHO_B_GAMMA_AB : ∂^2/∂ρ_β∂γ_αβ
+    //      V_RHO_B_GAMMA_BB : ∂^2/∂ρ_β∂γ_ββ
+    //      V_GAMMA_AA_GAMMA_AA : ∂^2/∂γ_αα^2
+    //      V_GAMMA_AA_GAMMA_AB : ∂^2/∂γ_αα∂γ_αβ
+    //      V_GAMMA_AA_GAMMA_BB : ∂^2/∂γ_αα∂γ_ββ
+    //      V_GAMMA_AB_GAMMA_AB : ∂^2/∂γ_αβ^2
+    //      V_GAMMA_AB_GAMMA_BB : ∂^2/∂γ_αβ∂γ_ββ
+    //      V_GAMMA_BB_GAMMA_BB : ∂^2/∂γ_ββ^2
     //   else:
-    //      V_GAMMA_AA : (2 * ∂f/∂γ_αα + ∂f/∂γ_αβ) / 2
+    //      V_GAMMA_AA : (∂/∂γ_αα + ∂/∂γ_αβ + ∂/∂γ_ββ) / 2
+    //      V_RHO_A_GAMMA_AA : (∂/∂ρ_α (∂/∂γ_αα + ∂/∂γ_αβ + ∂/∂γ_ββ)) / 4
+    //      V_GAMMA_AA_GAMMA_AA : (∂^2/∂γ_αα^2 + ∂^2/∂γ_αα∂γ_αβ + ∂^2/∂γ_αα∂γ_ββ + ∂^2/∂γ_αβ^2) / 8
+    //        ...note that for closed shells, ∂^2/∂γ_αβ^2 = 2 ∂^2/∂γ_αα∂γ_αβ
     std::map<std::string, SharedVector> values_;
     // For GRAC
     std::map<std::string, SharedVector> ac_values_;

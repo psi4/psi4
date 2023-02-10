@@ -285,9 +285,9 @@ class UKSFunctions : public PointFunctions {
     SharedMatrix Ca_AO_;
     /// Orbital coefficients, AO
     SharedMatrix Cb_AO_;
-    /// Orbital coefficeints, local AO
+    /// Orbital coefficients, local AO
     SharedMatrix Ca_local_;
-    /// Orbital coefficeints, local AO
+    /// Orbital coefficients, local AO
     SharedMatrix Cb_local_;
 
    public:
