@@ -761,12 +761,12 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
         // Make new pointers, gg computes along rows so we need to skip down `nval` rows.
         size_t row_shift = static_cast<size_t>(nvals) * npoints;
         double* phi_start = tmpp + row_shift;
-#if LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
         const int order = (int)puream_ ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
-#elif LIBINT2_SHGAUSS_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
         const int order = (int)puream_ ? GG_SPHERICAL_GAUSSIAN : GG_CARTESIAN_CCA;
 #else
-#  error "unknown value of macro LIBINT2_SHGAUSS_ORDERING"
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
 #endif
 
         // Copmute collocation

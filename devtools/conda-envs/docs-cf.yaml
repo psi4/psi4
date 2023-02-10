@@ -15,7 +15,7 @@ dependencies:
   - python=3.10.*
     # qc
   - psi4/label/dev::gau2grid
-  - psi4/label/dev::libint2
+  - psi4/label/testing::libint2
   - psi4/label/dev::libxc
   - psi4/label/dev::libecpint
   - optking

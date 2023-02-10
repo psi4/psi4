@@ -28,7 +28,7 @@ target_compile_definitions(fock
   PRIVATE
     "restrict=${RESTRICT_KEYWORD}"
     $<$<BOOL:${ENABLE_GTFOCK}>:ENABLE_GTFOCK>
-    LIBINT2_SHGAUSS_ORDERING=${LIBINT2_SHGAUSS_ORDERING}
+    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
 target_link_libraries(fock

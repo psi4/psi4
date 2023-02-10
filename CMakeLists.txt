@@ -1,9 +1,9 @@
 #############################  Superbuild Project  #############################
-if(DEFINED ENV{LGTM_SRC})
-    cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-else ()
-    cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
-    cmake_policy(SET CMP0094 NEW)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_policy(SET CMP0094 NEW)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+    # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
+    cmake_policy(SET CMP0135 NEW)
 endif()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17
@@ -141,12 +141,14 @@ endif()
 ############################  Options: Build How?  #############################
 include(psi4OptionsTools)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
+option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
+include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
+# below are uncommon to adjust
 option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
 option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
-include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
@@ -160,7 +162,6 @@ option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer (requires s
 option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF
                   "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
 option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals. The definition changed with Libint2 but still single integer. Default fine for production." 5)
-option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
@@ -168,11 +169,13 @@ option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR t
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 17)
+option_with_default(psi4_CXX_STANDARD_Libint2 "Specify C++ standard for Psi4 files including Libint2 headers. Older (e.g., 2021.4) Intel compilers may need 14" 17)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
 option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
 option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build Libint2 from source tarball but instead build and run generator (several hours for production library). Edit angular momentum and integrals classes directly in `external/upstream/libint2/CMakeLists.txt` (requires Ninja)." OFF)
-option_with_default(LIBINT2_SHGAUSS_ORDERING "Ordering for shells of solid harmonic Gaussians: standard -- standard ordering (-l, -l+1 ... l); gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l). Changing this is experimental, expert only, and not a future plan. Internal calculations should be correct, but exports like Molden, fchk, QCSchema.Wavefunction won't be." 2) #gaussian)
+option_with_default(psi4_SHGAUSS_ORDERING "Ordering for shells of solid harmonic Gaussians: standard -- standard ordering (-l, -l+1 ... l) -or- gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l). Changing this is experimental, expert only, and not a future plan. Internal calculations should be correct, but exports like Molden, fchk, QCSchema.Wavefunction won't be." gaussian)
+include(custom_int_orderings)
 
 
 ########################  Process & Validate Options  ##########################
@@ -192,19 +195,8 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * library: not at all
 
 set(Python_ADDITIONAL_VERSIONS 3.11 3.10 3.9 3.8)  # adjust with CMake minimum FindPythonInterp
-if(DEFINED ENV{LGTM_SRC})
-    find_package(Python 3.8 EXACT COMPONENTS Interpreter Development REQUIRED)
-else()
-    find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
-endif()
+find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
-
-if(DEFINED ENV{LGTM_SRC})
-    set(BUILD_TESTING OFF)
-    set(BUILD_Libint2_GENERATOR OFF)
-    set(MAX_AM_ERI 1)
-    message(STATUS "LGTM enviroment detected so downgrading Libint2 build.")
-endif()
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
@@ -251,6 +243,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
               -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
+              -Dpsi4_CXX_STANDARD_Libint2=${psi4_CXX_STANDARD_Libint2}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_CXX_EXTENSIONS=OFF
               -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
@@ -311,7 +304,7 @@ ExternalProject_Add(psi4-core
               -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
-              -DLIBINT2_SHGAUSS_ORDERING=${LIBINT2_SHGAUSS_ORDERING}
+              -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
    USES_TERMINAL_BUILD 1
    BUILD_ALWAYS 1)
