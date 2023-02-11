@@ -2707,6 +2707,7 @@ void DLPNOMP2::lccsd_iterations() {
     int iteration = 0, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, r1_curr = 0.0, r2_curr = 0.0;
     bool e_converged = false, r_converged = false;
+
     DIISManager diis1(options_.get_int("DIIS_MAX_VECS"), "LCCSD DIIS (T1)", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
     DIISManager diis2(options_.get_int("DIIS_MAX_VECS"), "LCCSD DIIS (T2)", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
 
@@ -2935,7 +2936,7 @@ void DLPNOMP2::lccsd_iterations() {
             }
         }
 
-        // Update Doubles Amplitude (as well as relavent doubles intermediates)
+        // Update Doubles Amplitude
 #pragma omp parallel for
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             int i, j;
@@ -2948,6 +2949,40 @@ void DLPNOMP2::lccsd_iterations() {
                                 (e_pno_[ij]->get(a_ij) + e_pno_[ij]->get(b_ij) - F_lmo_->get(i,i) - F_lmo_->get(j,j));
                 }
             }
+        }
+
+        // DIIS Extrapolation
+
+        auto T_ia_flat = flatten_mats(T_ia_);
+        auto R_ia_flat = flatten_mats(R_ia);
+
+        auto T_iajb_flat = flatten_mats(T_iajb_);
+        auto R_iajb_flat = flatten_mats(R_iajb);
+
+        if (iteration == 0) {
+            diis1.set_error_vector_size(R_ia_flat.get());
+            diis1.set_vector_size(T_ia_flat.get());
+
+            diis2.set_error_vector_size(R_iajb_flat.get());
+            diis2.set_vector_size(T_iajb_flat.get());
+        }
+
+        diis1.add_entry(R_ia_flat.get(), T_ia_flat.get());
+        diis1.extrapolate(T_ia_flat.get());
+
+        diis2.add_entry(R_iajb_flat.get(), T_iajb_flat.get());
+        diis2.extrapolate(T_iajb_flat.get());
+
+        copy_flat_mats(T_ia_flat, T_ia_);
+        copy_flat_mats(T_iajb_flat, T_iajb_);
+
+        // Update Special Doubles Amplitudes
+#pragma omp parallel for
+        for (int ij = 0; ij < n_lmo_pairs; ij++) {
+            int i, j;
+            std::tie(i, j) = ij_to_i_j_[ij];
+            int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j];
+
             Tt_iajb_[ij] = T_iajb_[ij]->clone();
             Tt_iajb_[ij]->scale(2.0);
             Tt_iajb_[ij]->subtract(T_iajb_[ij]->transpose());
@@ -2991,32 +3026,6 @@ void DLPNOMP2::lccsd_iterations() {
         if (iteration > max_iteration) {
             throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
         }
-
-        /*
-        TODO: Implement DIIS
-        // DIIS Extrapolation
-        auto T_ia_flat = flatten_mats(T_ia_);
-        auto R_ia_flat = flatten_mats(R_ia);
-
-        auto T_iajb_flat = flatten_mats(T_iajb_);
-        auto R_iajb_flat = flatten_mats(R_iajb);
-
-        if (iteration == 0) {
-            diis1.set_error_vector_size(R_ia_flat.get());
-            diis1.set_vector_size(T_ia_flat.get());
-
-            diis2.set_error_vector_size(R_iajb_flat.get());
-            diis2.set_vector_size(T_iajb_flat.get());
-        }
-        diis1.add_entry(R_ia_flat.get(), T_ia_flat.get());
-        diis1.extrapolate(T_ia_flat.get());
-
-        diis2.add_entry(R_iajb_flat.get(), T_iajb_flat.get());
-        diis2.extrapolate(T_iajb_flat.get());
-
-        copy_flat_mats(T_ia_flat, T_ia_);
-        copy_flat_mats(T_iajb_flat, T_iajb_);
-        */
 
     }
 
