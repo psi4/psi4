@@ -1304,6 +1304,18 @@ double DLPNOMP2::compute_energy() {
 
         // Run DLPNO-CCSD
         lccsd_iterations();
+
+        double e_ccsd_corr = e_lccsd_ + de_dipole_ + de_pno_total_;
+        double e_ccsd_total = e_scf + e_ccsd_corr;
+
+        set_scalar_variable("CCSD CORRELATION ENERGY", e_ccsd_corr);
+        set_scalar_variable("CURRENT CORRELATION ENERGY", e_ccsd_corr);
+        set_scalar_variable("MP2 TOTAL ENERGY", e_ccsd_total);
+        set_scalar_variable("CURRENT ENERGY", e_ccsd_total);
+
+        print_ccsd_results();
+
+        return e_ccsd_total;
     }
 
     return e_mp2_total;
@@ -1518,6 +1530,15 @@ void DLPNOMP2::print_results() {
     outfile->Printf("    MP2 Correlation Energy:           %16.12f \n", e_lmp2_);
     outfile->Printf("    LMO Truncation Correction:        %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:        %16.12f \n", de_pno_total_);
+}
+
+void DLPNOMP2::print_ccsd_results() {
+    outfile->Printf("  \n");
+    outfile->Printf("  Total DLPNO-CCSD Correlation Energy: %16.12f \n", e_lccsd_ + de_pno_total_ + de_dipole_);
+    outfile->Printf("    CCSD Correlation Energy:           %16.12f \n", e_lccsd_);
+    outfile->Printf("    LMO Truncation Correction:        %16.12f \n", de_dipole_);
+    outfile->Printf("    PNO Truncation Correction:        %16.12f \n", de_pno_total_);
+    outfile->Printf("    Get Diagonalized!!! --Andy Jiang, February 2023 \n");
 }
 
 void DLPNOMP2::store_information() {
@@ -3018,8 +3039,9 @@ void DLPNOMP2::lccsd_iterations() {
         if (iteration > max_iteration) {
             throw PSIEXCEPTION("Maximum DLPNO iterations exceeded.");
         }
-
     }
+
+    e_lccsd_ = e_curr;
 
     timer_off("LCCSD iterations");
 }

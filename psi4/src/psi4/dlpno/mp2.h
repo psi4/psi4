@@ -117,6 +117,7 @@ class DLPNOMP2 : public Wavefunction {
     double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
     double e_lmp2_ss_; ///< same-spin component of e_lmp2_
     double e_lmp2_os_; ///< opposite-spin component of e_lmp2_
+    double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
 
     // => Sparse Maps <= //
     std::map<std::string, SparseMap> sparse_maps_; ///< A lookup table of each SparseMap
@@ -238,6 +239,8 @@ class DLPNOMP2 : public Wavefunction {
     void print_pao_pair_domains();
     void print_integral_sparsity();
     void print_results();
+
+    void print_ccsd_results();
 
     /// Create TNOs (Triples Natural Orbitals) for DLPNO-CCSD(T)
     void tno_transform();
