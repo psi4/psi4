@@ -84,6 +84,7 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> K_iajb_;  ///< exchange operators (i.e. (ia|jb) integrals)
     std::vector<SharedMatrix> T_iajb_;  ///< amplitudes
     std::vector<SharedMatrix> Tt_iajb_; ///< antisymmetrized amplitudes
+    std::vector<SharedMatrix> T_ia_;   ///< singles amplitudes
     std::vector<SharedMatrix> X_pno_;   ///< global PAO -> canonical PNO transforms
     std::vector<SharedVector> e_pno_;   ///< PNO orbital energies
     std::vector<SharedMatrix> D_ij_; ///< pair densities
@@ -105,6 +106,8 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
     std::vector<SharedMatrix> K_maef_; /// (m e_mm | a_mm f_mm)
     std::vector<SharedMatrix> K_abef_; /// (a_ij e_ij | b_ij f_ij)
+    std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
+    std::vector<SharedMatrix> Lt_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
 
     // final energies
     double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs
@@ -208,6 +211,24 @@ class DLPNOMP2 : public Wavefunction {
 
     /// iteratively solve local MP2 equations  (EQ 13)
     void lmp2_iterations();
+
+    // => CC intermediates <= //
+
+    /// compute Fmi intermediate (Madriaga Eq. 40)
+    SharedMatrix compute_Fmi(const std::vector<SharedMatrix>& tau_tilde);
+    /// compute Fbe_ij intermediate (Madriaga Eq. 39)
+    std::vector<SharedMatrix> compute_Fbe_ij(const std::vector<SharedMatrix>& tau_tilde);
+    /// compute Fme_ij intermediate (Madriaga Eq. 41)
+    std::vector<SharedMatrix> compute_Fme_ij();
+    /// compute Wmnij intermediate (Madriaga Eq. 43)
+    std::vector<SharedMatrix> compute_Wmnij(const std::vector<SharedMatrix>& tau);
+    /// compute Wmbej intermediate (Madriaga Eq. 44)
+    std::vector<SharedMatrix> compute_Wmbej(const std::vector<SharedMatrix>& tau_bar);
+    /// compute Wmbje intermediate (Madriaga Eq. 45)
+    std::vector<SharedMatrix> compute_Wmbje(const std::vector<SharedMatrix>& tau_bar);
+
+    /// iteratively solve local CCSD equations
+    void lccsd_iterations();
 
     void print_header();
     void print_aux_domains();
