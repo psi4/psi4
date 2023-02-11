@@ -403,7 +403,7 @@ def _validate_tdscf(*, wfn, states, triplets, guess) -> None:
         raise ValidationError("TDSCF: Restricted Vx kernel only spin-adapted for singlets")
 
     if wfn.functional().is_meta() or wfn.functional().needs_vv10():
-        raise ValidationError("TDSCF: Unrestricted Kohn-Sham Vx kernel does not support meta or VV10 functionals.")
+        raise ValidationError("TDSCF: Kohn-Sham Vx kernel does not support meta or VV10 functionals.")
 
     if guess != "DENOMINATORS":
         raise ValidationError(f"TDSCF: Guess type {guess} is not valid")
