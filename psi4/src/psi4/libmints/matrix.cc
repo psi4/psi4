@@ -1111,6 +1111,19 @@ void Matrix::transpose_this() {
     }
 }
 
+void Matrix::reshape(int nrow, int ncol) {
+    if (nirrep_ != 1) {
+        throw PSIEXCEPTION("Matrix::reshape is only defined for Matrix with 1 irrep!");
+    }
+
+    if (nrow * ncol != rowspi_[0] * colspi_[0]) {
+        throw PSIEXCEPTION("Invalid input dimensions for Matrix::reshape");
+    }
+
+    rowspi_[0] = nrow;
+    colspi_[0] = ncol;
+}
+
 void Matrix::add(const Matrix *const plus) {
     if (symmetry_ != plus->symmetry_) {
         std::ostringstream oss;
