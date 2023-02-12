@@ -1835,11 +1835,8 @@ void DLPNOMP2::compute_J_ijab() {
         C_DGESV_wrapper(A_solve, q_pair);
 
         auto J_ijab_temp = linalg::doublet(q_pair, q_ab_pno, true, false);
-        double *J_ijab_tempp = J_ijab_temp->get_pointer();
-
-        J_ijab_[ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
-        double *J_ijabp = J_ijab_[ij]->get_pointer();
-        C_DCOPY(npno_ij * npno_ij, J_ijab_tempp, 1, J_ijabp, 1);
+        J_ijab_temp->reshape(npno_ij, npno_ij);
+        J_ijab_[ij] = J_ijab_temp;
     }
 
     timer_off("Compute J_ijab");
