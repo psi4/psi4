@@ -1779,10 +1779,12 @@ void DLPNOMP2::compute_J_ijab() {
     int npao = C_pao_->colspi(0);
 
     J_ijab_.resize(nlmo_pair);
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < nlmo_pair; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
+
+        if (n_pno_[ij] == 0) continue;
 
         // number of PAOs in the pair domain (before removing linear dependencies)
         int npao_ij = lmopair_to_paos_[ij].size();
@@ -1852,13 +1854,15 @@ void DLPNOMP2::compute_K_mnij() {
     int npao = C_pao_->colspi(0);
 
     K_mnij_.resize(nlmo_pair);
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < nlmo_pair; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
 
         // number of LMOs in the pair domain
         int nlmo_ij = lmopair_to_lmos_[ij].size();
+
+        if (nlmo_ij == 0) continue;
 
         // number of auxiliary basis in the pair domain
         int naux_ij = lmopair_to_ribfs_[ij].size();
@@ -1900,7 +1904,7 @@ void DLPNOMP2::compute_K_mbij() {
     int npao = C_pao_->colspi(0);
 
     K_mbij_.resize(nlmo_pair);
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < nlmo_pair; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -1913,6 +1917,8 @@ void DLPNOMP2::compute_K_mbij() {
         // number of auxiliary basis in the pair domain
         int naux_ij = lmopair_to_ribfs_[ij].size();
 
+        if (n_pno_[ij] == 0) continue;
+
         auto q_mi = std::make_shared<Matrix>("Three-index Integrals", naux_ij, nlmo_ij);
         auto q_bj = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
 
@@ -1924,7 +1930,7 @@ void DLPNOMP2::compute_K_mbij() {
                 int m = lmopair_to_lmos_[ij][m_ij];
                 int m_sparse = riatom_to_lmos_ext_dense_[centerq][m];
                 int i_sparse = riatom_to_lmos_ext_dense_[centerq][i];
-                q_mi->set(q_ij, m, qij_[q]->get(m_sparse, i_sparse));
+                q_mi->set(q_ij, m_ij, qij_[q]->get(m_sparse, i_sparse));
             }
 
             for (int b_ij = 0; b_ij < npao_ij; b_ij++) {
@@ -1957,7 +1963,7 @@ void DLPNOMP2::compute_K_maef() {
 
     K_maef_.resize(naocc); // (m e_mm | a_mm f_mm) // O(N) mm = PNO of pair mm
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(static, 1)
     for (int m = 0; m < naocc; ++m) {
         int mm = i_j_to_ij_[m][m];
 
@@ -2039,10 +2045,12 @@ void DLPNOMP2::compute_K_abef() {
 
     K_abef_.resize(nlmo_pair);
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < nlmo_pair; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
+
+        if (n_pno_[ij] == 0) continue;
 
         // number of PAOs in the pair domain (before removing linear dependencies)
         int npao_ij = lmopair_to_paos_[ij].size();
@@ -2136,7 +2144,7 @@ void DLPNOMP2::tno_transform() {
     e_tno_.resize(n_lmo_triplets);
     n_tno_.resize(n_lmo_triplets);
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(static, 1)
     for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
         int i, j, k;
         std::tie(i, j, k) = ijk_to_i_j_k_[ijk];
@@ -2228,7 +2236,7 @@ void DLPNOMP2::compute_pno_tno_overlaps() {
 
     S_pno_tno_ij_ilm_.resize(n_lmo_pairs);
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -2332,7 +2340,7 @@ SharedMatrix DLPNOMP2::compute_Fmi(const std::vector<SharedMatrix>& tau_tilde) {
             int mn = i_j_to_ij_[m][n], nn = i_j_to_ij_[n][n], in = i_j_to_ij_[i][n];
             int nm = ij_to_ji_[mn];
 
-            if (n_pno_[mn] == 0) continue;
+            if (n_pno_[mn] == 0 || n_pno_[in] == 0) continue;
 
             int i_mn = lmopair_to_lmos_dense_[mn][i];
 
@@ -2371,6 +2379,8 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Fbe_ij(const std::vector<SharedMatri
         std::tie(i, j) = ij_to_i_j_[ij];
         int npno_ij = n_pno_[ij];
 
+        if (npno_ij == 0) continue;
+
         // Equation 39, Term 1
         Fbe_ij[ij] = std::make_shared<Matrix>("Fbe_ij", npno_ij, npno_ij);
         Fbe_ij[ij]->zero();
@@ -2383,6 +2393,8 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Fbe_ij(const std::vector<SharedMatri
             int m = lmopair_to_lmos_[ij][m_ij];
             int im = i_j_to_ij_[i][m], mm = i_j_to_ij_[m][m];
             int npno_mm = n_pno_[mm];
+
+            if (n_pno_[im] == 0) continue;
 
             auto S_ij_im = S_pno_ij_ik_[ij][m];
             auto S_im_mm = S_pno_ij_kj_[im][m];
@@ -2453,6 +2465,8 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Fme_ij() {
             int m = lmopair_to_lmos_[ij][m_ij];
             int im = i_j_to_ij_[i][m];
 
+            if (n_pno_[im] == 0) continue;
+
             for (int n_ij = 0; n_ij < lmopair_to_lmos_[ij].size(); n_ij++) {
                 int n = lmopair_to_lmos_[ij][n_ij];
                 int mn = i_j_to_ij_[m][n], nn = i_j_to_ij_[n][n];
@@ -2488,11 +2502,15 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Wmnij(const std::vector<SharedMatrix
         std::tie(i, j) = ij_to_i_j_[ij];
         int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j];
 
+        if (n_pno_[ij] == 0) continue;
+
         Wmnij[ij] = K_mnij_[ij]->clone();
 
         for (int m_ij = 0; m_ij < lmopair_to_lmos_[ij].size(); m_ij++) {
             int m = lmopair_to_lmos_[ij][m_ij];
             int mj = i_j_to_ij_[m][j], im = i_j_to_ij_[i][m];
+
+            if (n_pno_[mj] == 0 || n_pno_[im] == 0) continue;
             
             for (int n_ij = 0; n_ij < lmopair_to_lmos_[ij].size(); n_ij++) {
                 int n = lmopair_to_lmos_[ij][n_ij];
@@ -2548,6 +2566,8 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Wmbej(const std::vector<SharedMatrix
         int mm = i_j_to_ij_[m][m], jj = i_j_to_ij_[j][j], jm = ij_to_ji_[mj];
         int npno_mm = n_pno_[mm], npno_mj = n_pno_[mj];
 
+        if (npno_mj == 0) continue;
+
         Wmbej[mj] = K_iajb_[mj]->transpose()->clone();
         
         SharedMatrix S_mm_mj = S_pno_ij_ik_[mm][j];
@@ -2572,11 +2592,15 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Wmbej(const std::vector<SharedMatrix
             int mn = i_j_to_ij_[m][n], nn = i_j_to_ij_[n][n], jn = i_j_to_ij_[j][n];
             int nm = ij_to_ji_[mn], nj = ij_to_ji_[jn];
 
+            if (n_pno_[nj] == 0) continue;
+
             SharedMatrix S_nn_nj = S_pno_ij_ik_[nn][j];
             SharedMatrix S_nj_mj = S_pno_ij_kj_[nj][m];
             SharedMatrix S_nn_mj = linalg::doublet(S_nn_nj, S_nj_mj, false, false);
             SharedMatrix t_n_temp = linalg::doublet(S_nn_mj, T_ia_[n], true, false);
             C_DGER(npno_mj, npno_mj, -1.0, &(*t_n_temp)(0, 0), 1, &(*K_mbij_[jm])(n_mj, 0), 1, &(*Wmbej[mj])(0, 0), npno_mj);
+
+            if (n_pno_[mn] == 0) continue;
 
             SharedMatrix tau_temp = linalg::triplet(S_pno_ij_kj_[mn][j], tau_bar[jn], \
                                         S_pno_ij_ik_[jn][m], false, false, false);
@@ -2613,6 +2637,8 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Wmbje(const std::vector<SharedMatrix
         int mm = i_j_to_ij_[m][m], jj = i_j_to_ij_[j][j], jm = ij_to_ji_[mj];
         int npno_mm = n_pno_[mm], npno_mj = n_pno_[mj];
 
+        if (npno_mj == 0) continue;
+
         Wmbje[mj] = J_ijab_[mj]->clone();
         Wmbje[mj]->scale(-1.0);
         
@@ -2637,6 +2663,8 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Wmbje(const std::vector<SharedMatrix
             int n = lmopair_to_lmos_[mj][n_mj];
             int mn = i_j_to_ij_[m][n], nn = i_j_to_ij_[n][n], jn = i_j_to_ij_[j][n];
             int nm = ij_to_ji_[mn], nj = ij_to_ji_[jn];
+
+            if (n_pno_[nj] == 0 || n_pno_[mn] == 0) continue;
 
             SharedMatrix S_nn_nj = S_pno_ij_ik_[nn][j];
             SharedMatrix S_nj_mj = S_pno_ij_kj_[nj][m];
@@ -2847,6 +2875,9 @@ void DLPNOMP2::lccsd_iterations() {
                 int m = lmopair_to_lmos_[ij][m_ij];
                 int im = i_j_to_ij_[i][m], mm = i_j_to_ij_[m][m], mj = i_j_to_ij_[m][j];
                 int mi = ij_to_ji_[im];
+
+                if (n_pno_[im] == 0 || n_pno_[mj] == 0) continue;
+
                 int npno_mm = n_pno_[mm];
 
                 // Shared Intermediates
@@ -2882,17 +2913,17 @@ void DLPNOMP2::lccsd_iterations() {
                 auto j_mj_t1_temp = linalg::doublet(j_mj_temp, T_ia_[i], false, false);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*j_mj_t1_temp)(0,0), 1, &(*temp_t1)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
-                // Madriaga Eq. 35, Term 13
-                std::vector<int> m_ij_slice(1, m_ij);
-                auto k_mbij_slice = submatrix_rows(*K_mbij_[ij], m_ij_slice)->transpose();
-                C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*k_mbij_slice)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
-
                 // Madriaga Eq. 35, Term 3
                 auto S_im_ij = S_pno_ij_ik_[im][j];
                 auto proj_t2 = linalg::triplet(S_im_ij, T_iajb_[im], S_im_ij, true, false, false);
                 double tf_dot = T_ia_[j]->vector_dot(submatrix_rows(*Fov_jj, m_slice)->transpose());
                 proj_t2->scale(Fmi->get(m,j) + 0.5 * tf_dot);
                 Rn_iajb[ij]->subtract(proj_t2);
+
+                // Madriaga Eq. 35, Term 13
+                std::vector<int> m_ij_slice(1, m_ij);
+                auto k_mbij_slice = submatrix_rows(*K_mbij_[ij], m_ij_slice)->transpose();
+                C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*k_mbij_slice)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
                 
                 auto S_mj_mi = S_pno_ij_ik_[mj][i];
                 auto Wmbej_mj = linalg::triplet(S_ij_mj, Wmbej[mj], S_mj_mi, false, false, false);
@@ -2930,9 +2961,11 @@ void DLPNOMP2::lccsd_iterations() {
         }
 
         // Compute Doubles Residual from Non-Symmetrized Doubles Residual
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(static, 1)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             int ji = ij_to_ji_[ij];
+            R_iajb[ij] = std::make_shared<Matrix>("R_iajb", n_pno_[ij], n_pno_[ij]);
+
             if (n_pno_[ij] == 0) continue;
 
             R_iajb[ij] = Rn_iajb[ij]->clone();
@@ -2956,6 +2989,8 @@ void DLPNOMP2::lccsd_iterations() {
             int i, j;
             std::tie(i, j) = ij_to_i_j_[ij];
             int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j];
+
+            if (n_pno_[ij] == 0) continue;
 
             for (int a_ij = 0; a_ij < n_pno_[ij]; ++a_ij) {
                 for (int b_ij = 0; b_ij < n_pno_[ij]; ++b_ij) {
@@ -2996,6 +3031,8 @@ void DLPNOMP2::lccsd_iterations() {
             std::tie(i, j) = ij_to_i_j_[ij];
             int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j];
 
+            if (n_pno_[ij] == 0) continue;
+
             Tt_iajb_[ij] = T_iajb_[ij]->clone();
             Tt_iajb_[ij]->scale(2.0);
             Tt_iajb_[ij]->subtract(T_iajb_[ij]->transpose());
@@ -3023,6 +3060,8 @@ void DLPNOMP2::lccsd_iterations() {
         e_curr = 0.0;
 #pragma omp parallel for reduction(+ : e_curr)
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+            if (n_pno_[ij] == 0) continue;
+
             e_curr += tau[ij]->vector_dot(L_iajb_[ij]);
         }
         double r_curr1 = *max_element(R_ia_rms.begin(), R_ia_rms.end());
