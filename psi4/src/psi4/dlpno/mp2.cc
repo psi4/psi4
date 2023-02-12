@@ -2439,51 +2439,34 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Fbe_ij(const std::vector<SharedMatri
     return Fbe_ij;
 }
 
-std::vector<SharedMatrix> DLPNOMP2::compute_Fme_ij() {
-    timer_on("Compute Fme_ij");
+std::vector<SharedMatrix> DLPNOMP2::compute_Fme() {
+    timer_on("Compute Fme");
 
     int n_lmo_pairs = ij_to_i_j_.size();
     int naocc = nalpha_ - nfrzc();
 
-    std::vector<SharedMatrix> Fme_ij(n_lmo_pairs);
+    std::vector<SharedMatrix> Fme(naocc);
 
 #pragma omp parallel for
-    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-        int i, j;
-        std::tie(i, j) = ij_to_i_j_[ij];
+    for (int m = 0; m < naocc; m++) {
+        int mm = i_j_to_ij_[m][m];
+        Fme[m] = std::make_shared<Matrix>("Fme (m)", n_pno_[mm], 1);
+        Fme[m]->zero();
 
-        int npno_ij = n_pno_[ij];
-        if (npno_ij == 0) continue;
+        for (int n = 0; n < naocc; n++) {
+            int mn = i_j_to_ij_[m][n], nn = i_j_to_ij_[n][n];
+            if (mn == -1 || n_pno_[mn] == 0) continue;
 
-        Fme_ij[ij] = std::make_shared<Matrix>(naocc, npno_ij);
-        Fme_ij[ij]->zero();
-
-        for (int m_ij = 0; m_ij < lmopair_to_lmos_[ij].size(); m_ij++) {
-            int m = lmopair_to_lmos_[ij][m_ij];
-            int im = i_j_to_ij_[i][m];
-
-            if (n_pno_[im] == 0) continue;
-
-            for (int n_ij = 0; n_ij < lmopair_to_lmos_[ij].size(); n_ij++) {
-                int n = lmopair_to_lmos_[ij][n_ij];
-                int mn = i_j_to_ij_[m][n], nn = i_j_to_ij_[n][n];
-                if (mn == -1 || n_pno_[mn] == 0) continue;
-
-                SharedMatrix S_ij_im = S_pno_ij_ik_[ij][m];
-                SharedMatrix S_im_mn = S_pno_ij_kj_[im][n];
-                SharedMatrix S_ij_mn = linalg::doublet(S_ij_im, S_im_mn, false, false);
-
-                SharedMatrix S_mn_nn = S_pno_ij_kj_[mn][n];
-                SharedMatrix L_mn_temp = linalg::triplet(S_ij_mn, L_iajb_[mn], S_mn_nn, false, false, false);
-                SharedMatrix Fme_temp = linalg::doublet(L_mn_temp, T_ia_[n], false, false);
-                C_DAXPY(npno_ij, 1.0, &(*Fme_temp)(0,0), 1, &(*Fme_ij[ij])(m, 0), 1);
-            }
+            SharedMatrix S_mn_nn = S_pno_ij_kj_[mn][n];
+            SharedMatrix S_mn_mm = S_pno_ij_ik_[mn][m];
+            SharedMatrix T_n_temp = linalg::doublet(S_mn_nn, T_ia_[n], false, false);
+            Fme[m]->add(linalg::triplet(S_mn_mm, L_iajb_[mn], T_n_temp, true, false, false));
         }
     }
 
-    timer_off("Compute Fme_ij");
+    timer_off("Compute Fme");
 
-    return Fme_ij;
+    return Fme;
 }
 
 std::vector<SharedMatrix> DLPNOMP2::compute_Wmnij(const std::vector<SharedMatrix>& tau) {
@@ -2763,7 +2746,7 @@ void DLPNOMP2::lccsd_iterations() {
         // Build one-particle intermediates
         auto Fmi = compute_Fmi(tau_tilde);
         auto Fbe_ij = compute_Fbe_ij(tau_tilde);
-        auto Fme_ij = compute_Fme_ij();
+        auto Fme = compute_Fme();
 
         // Build two-particle W intermediates
         auto Wmnij = compute_Wmnij(tau);
@@ -2799,10 +2782,8 @@ void DLPNOMP2::lccsd_iterations() {
                 R_ia[i]->subtract(T_m_temp);
 
                 // Madriaga Eq. 34, Term 2
-                SharedMatrix Fme_im = Fme_ij[im];
-                std::vector<int> m_slice(1, m);
-                SharedMatrix Fe_im = submatrix_rows(*Fme_im, m_slice);
-                R_ia[i]->add(linalg::triplet(S_im_ii, Tt_iajb_[im], Fe_im, true, false, true));
+                SharedMatrix Fe_im = linalg::doublet(S_mm_im, Fme[m], true, false);
+                R_ia[i]->add(linalg::triplet(S_im_ii, Tt_iajb_[im], Fe_im, true, false, false));
 
                 // Madriaga Eq. 34, Term 6
                 auto T_mi_mm = linalg::triplet(S_mm_im, Tt_iajb_[mi], S_mm_im, false, false, true);
@@ -2865,9 +2846,6 @@ void DLPNOMP2::lccsd_iterations() {
             k_temp->reshape(npno_jj, npno_jj);
             Rn_iajb[ij]->add(linalg::triplet(S_jj_ij, k_temp, S_jj_ij, true, true, false));
 
-            SharedMatrix Fov_ij = Fme_ij[ij];
-            SharedMatrix Fov_jj = Fme_ij[jj];
-
             for (int m_ij = 0; m_ij < lmopair_to_lmos_[ij].size(); m_ij++) {
                 int m = lmopair_to_lmos_[ij][m_ij];
                 int im = i_j_to_ij_[i][m], mm = i_j_to_ij_[m][m], mj = i_j_to_ij_[m][j];
@@ -2884,9 +2862,8 @@ void DLPNOMP2::lccsd_iterations() {
                 auto temp_t1 = linalg::doublet(S_ij_mm, T_ia_[m], false, false);
 
                 // Madriaga Eq. 35, Term 2b
-                std::vector<int> m_slice(1, m);
-                auto Fov_ij_slice = submatrix_rows(*Fov_ij, m_slice);
-                auto temp_t2 = linalg::doublet(T_iajb_[ij], Fov_ij_slice, false, true);
+                auto Fm_ij = linalg::doublet(S_ij_mm, Fme[m], false, false);
+                auto temp_t2 = linalg::doublet(T_iajb_[ij], Fm_ij, false, false);
                 C_DGER(npno_ij, npno_ij, -0.5, &(*temp_t2)(0,0), 1, &(*temp_t1)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
                 // Madriaga Eq. 35, Term 6
@@ -2913,7 +2890,9 @@ void DLPNOMP2::lccsd_iterations() {
                 // Madriaga Eq. 35, Term 3
                 auto S_im_ij = S_pno_ij_ik_[im][j];
                 auto proj_t2 = linalg::triplet(S_im_ij, T_iajb_[im], S_im_ij, true, false, false);
-                double tf_dot = T_ia_[j]->vector_dot(submatrix_rows(*Fov_jj, m_slice)->transpose());
+                auto S_mj_jj = S_pno_ij_kj_[mj][j];
+                auto S_mm_jj = linalg::doublet(S_mm_mj, S_mj_jj, false, false);
+                double tf_dot = T_ia_[j]->vector_dot(linalg::doublet(S_mm_jj, Fme[m], true, false));
                 proj_t2->scale(Fmi->get(m,j) + 0.5 * tf_dot);
                 Rn_iajb[ij]->subtract(proj_t2);
 

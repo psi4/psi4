@@ -219,8 +219,8 @@ class DLPNOMP2 : public Wavefunction {
     SharedMatrix compute_Fmi(const std::vector<SharedMatrix>& tau_tilde);
     /// compute Fbe_ij intermediate (Madriaga Eq. 39)
     std::vector<SharedMatrix> compute_Fbe_ij(const std::vector<SharedMatrix>& tau_tilde);
-    /// compute Fme_ij intermediate (Madriaga Eq. 41)
-    std::vector<SharedMatrix> compute_Fme_ij();
+    /// compute Fme intermediate (Madriaga Eq. 41)
+    std::vector<SharedMatrix> compute_Fme();
     /// compute Wmnij intermediate (Madriaga Eq. 43)
     std::vector<SharedMatrix> compute_Wmnij(const std::vector<SharedMatrix>& tau);
     /// compute Wmbej intermediate (Madriaga Eq. 44)
