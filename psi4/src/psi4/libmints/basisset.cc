@@ -485,17 +485,12 @@ std::string BasisSet::print_detail_cfour() const {
     const std::string nameUpperCase = to_upper_copy(name_);
 
     for (int64_t uA = 0; uA < molecule_->nunique(); uA++) {
-        const int A = molecule_->unique(uA);
-
-        sprintf(buffer, "%s:P4_%d\n", molecule_->symbol(A).c_str(), A + 1);
-        ss << buffer;
-        sprintf(buffer, "Psi4 basis %s for element %s atom %d\n\n", nameUpperCase.c_str(), molecule_->symbol(A).c_str(),
-                A + 1);
-        ss << buffer;
+        const int64_t A = molecule_->unique(uA);
+        ss << molecule_->symbol(A) << ":P4_" << A + 1 << '\n';
+        ss << "Psi4 basis " << nameUpperCase << " for element " << molecule_->symbol(A) << " atom " << A + 1 << "\n\n";
 
         const int64_t first_shell = center_to_shell_[A];
         const int64_t n_shell = center_to_nshell_[A];
-
         int64_t max_am_center = 0;
         for (int64_t Q = 0; Q < n_shell; Q++)
             max_am_center =
@@ -505,24 +500,13 @@ std::string BasisSet::print_detail_cfour() const {
         for (int64_t Q = 0; Q < n_shell; Q++) shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
 
         // Write number of shells in the basis set
-        sprintf(buffer, "%3d\n", max_am_center + 1);
-        ss << buffer;
-
+        ss << to_str_width(max_am_center + 1, 3) << '\n';
         // Write angular momentum for each shell
-        for (int64_t am = 0; am <= max_am_center; am++) {
-            sprintf(buffer, "%5d", am);
-            ss << buffer;
-        }
-        sprintf(buffer, "\n");
-        ss << buffer;
-
+        for (int64_t am = 0; am <= max_am_center; am++) ss << to_str_width(am, 5);
+        ss << '\n';
         // Write number of contracted basis functions for each shell
-        for (int64_t am = 0; am <= max_am_center; am++) {
-            sprintf(buffer, "%5lu", shell_per_am[am].size());
-            ss << buffer;
-        }
-        sprintf(buffer, "\n");
-        ss << buffer;
+        for (int64_t am = 0; am <= max_am_center; am++) ss << to_str_width(shell_per_am[am].size(), 5);
+        ss << '\n';
 
         std::vector<std::vector<double>> exp_per_am(max_am_center + 1);
         std::vector<std::vector<double>> coef_per_am(max_am_center + 1);
