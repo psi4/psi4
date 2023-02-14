@@ -482,8 +482,7 @@ void BasisSet::print_detail(std::string out) const {
 std::string BasisSet::print_detail_cfour() const {
     char buffer[120];
     std::stringstream ss;
-    std::string nameUpperCase = name_;
-    to_upper(nameUpperCase);
+    const std::string nameUpperCase = to_upper_copy(name_);
 
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
