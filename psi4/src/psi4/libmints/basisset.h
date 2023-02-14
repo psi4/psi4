@@ -341,9 +341,9 @@ class PSI_API BasisSet {
     void print_detail(std::string out) const;
     void print_detail() const { print_detail("outfile"); }
 
-    /** Returns a string in CFOUR-style of the basis (per-atom)
-     *  Format from http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.OldFormatOfAnEntryInTheGENBASFile
-     */
+    /// @brief Returns a string in CFOUR-style of the basis (per-atom). Format from
+    /// https://web.archive.org/web/20221130013041/http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.OldFormatOfAnEntryInTheGENBASFile
+    /// @return CFOUR-style of the basis (per-atom)
     std::string print_detail_cfour() const;
 
     /** Refresh internal basis set data. Useful if someone has pushed to shells_.
