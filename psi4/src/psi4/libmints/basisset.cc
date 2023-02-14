@@ -118,12 +118,11 @@ BasisSet::BasisSet() {
     name_ = "(Empty Basis Set)";
     key_ = "(Empty Basis Set)";
     target_ = "(Empty Basis Set)";
-    shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_.data(), ucoefficients_.data(), uerd_coefficients_.data(),
-                               uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
+    shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_.data(), ucoefficients_.data(),
+                               uerd_coefficients_.data(), uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
 }
 
-BasisSet::~BasisSet() {
-}
+BasisSet::~BasisSet() {}
 
 std::shared_ptr<BasisSet> BasisSet::build(std::shared_ptr<Molecule> /*molecule*/,
                                           const std::vector<ShellInfo> & /*shells*/) {
@@ -213,7 +212,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                 // If center is a post-lanthanide or a post-actinide in Nth period,
                 // freeze all 14 of its (N-2)f electrons too
                 if (current_shell > 5) {
-                    if ((Z + ECP - delta) >= 18 ) delta += 14;
+                    if ((Z + ECP - delta) >= 18) delta += 14;
                 }
                 // If this center has an ECP, some electrons are already frozen
                 if (ECP > 0) delta -= ECP;
@@ -262,7 +261,9 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                 int current_shell = atom_to_period(Z + ECP);
                 int delta = period_to_full_shell(std::max(current_shell - req_shell, 0));
                 // If this center has an ECP, some electrons are already frozen
-                if (delta < ECP) throw PSIEXCEPTION("ECP on atom freezes more electrons than requested by choosing a previous shell.");
+                if (delta < ECP)
+                    throw PSIEXCEPTION(
+                        "ECP on atom freezes more electrons than requested by choosing a previous shell.");
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
                 mol_valence = mol_valence + Z - delta;
@@ -872,9 +873,9 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                 max_ecp_am_ = max_ecp_am_ > std::abs(am) ? max_ecp_am_ : std::abs(am);
                 ecp_shell_center_[ecp_shell_count] = n;
                 if (shelltype == ECPType1 || shelltype == ECPType2) {
-                    ecp_shells_[ecp_shell_count] =
-                        GaussianShell(shelltype, am, ecp_shell_nprim, &uecpcoefficients_[ustart + atom_nprim],
-                                      &uecpexponents_[ustart + atom_nprim], &uecpns_[ustart + atom_nprim], n, &xyz_.data()[3 * n]);
+                    ecp_shells_[ecp_shell_count] = GaussianShell(
+                        shelltype, am, ecp_shell_nprim, &uecpcoefficients_[ustart + atom_nprim],
+                        &uecpexponents_[ustart + atom_nprim], &uecpns_[ustart + atom_nprim], n, &xyz_.data()[3 * n]);
                 } else {
                     throw PSIEXCEPTION("Unknown ECP shell type in BasisSet constructor!");
                 }
@@ -1207,7 +1208,7 @@ void BasisSet::move_atom(int atom, const Vector3 &trans) {
     }
 }
 
-void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
+void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
     zero_arr(phi_ao, nbf());
 
     int ao = 0;
@@ -1233,8 +1234,9 @@ void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
 
             for (int l = 0; l < INT_NCART(am); l++) {
                 Vector3 &components = exp_ao[am][l];
-                cart_buffer[l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
-                                pow(dz, static_cast<double>(components[2])) * cexpr;
+                cart_buffer[l] += pow(dx, static_cast<double>(components[0])) *
+                                  pow(dy, static_cast<double>(components[1])) *
+                                  pow(dz, static_cast<double>(components[2])) * cexpr;
             }
 
             for (int ind = 0; ind < s_transform.n(); ind++) {
@@ -1248,8 +1250,9 @@ void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
         } else {
             for (int l = 0; l < INT_NCART(am); l++) {
                 Vector3 &components = exp_ao[am][l];
-                phi_ao[ao + l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
-                                pow(dz, static_cast<double>(components[2])) * cexpr;
+                phi_ao[ao + l] += pow(dx, static_cast<double>(components[0])) *
+                                  pow(dy, static_cast<double>(components[1])) *
+                                  pow(dz, static_cast<double>(components[2])) * cexpr;
             }
         }
 
