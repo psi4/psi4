@@ -111,17 +111,19 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
     bool do_reord = false;
     bool do_yosh = false;
     bool do_incore = false;
-    if (options["PK_ALGO"].has_changed() && subalgo != "INCORE") {
-        if (algo == "REORDER") {
-            do_reord = true;
-        } else if (algo == "YOSHIMINE") {
-            do_yosh = true;
-        }
-    } else {
-        if (algo_factor * memory > pk_size) {
-            do_reord = true;
+    if (subalgo != "INCORE") {
+        if (options["PK_ALGO"].has_changed()) { 
+            if (algo == "REORDER") {
+                do_reord = true;
+            } else if (algo == "YOSHIMINE") {
+                do_yosh = true;
+            }
         } else {
-            do_yosh = true;
+            if (algo_factor * memory > pk_size) {
+                do_reord = true;
+            } else {
+                do_yosh = true;
+            }
         }
     }
     
