@@ -1383,7 +1383,7 @@ def select_mrcc(name, **kwargs):
         return func(name, **kwargs)
 
 
-def build_disp_functor(name, restricted, save_pairwise_disp=False, **kwargs):
+def build_functional_and_disp(name, restricted, save_pairwise_disp=False, **kwargs):
 
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
         modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
@@ -1427,7 +1427,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
     """
     # Figure out functional and dispersion
-    superfunc, _disp_functor = build_disp_functor(name, restricted=(reference in ["RKS", "RHF"]), **kwargs)
+    superfunc, _disp_functor = build_functional_and_disp(name, restricted=(reference in ["RKS", "RHF"]), **kwargs)
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")
@@ -2803,7 +2803,7 @@ def run_dfmp2d_gradient(name, **kwargs):
     dfmp2_wfn = run_dfmp2_gradient('mp2', **kwargs)
     wfn_grad = dfmp2_wfn.gradient().clone()
 
-    _, _disp_functor = build_disp_functor('MP2D', restricted=True)
+    _, _disp_functor = build_functional_and_disp('MP2D', restricted=True)
     disp_grad = _disp_functor.compute_gradient(dfmp2_wfn.molecule(), dfmp2_wfn)
     wfn_grad.add(disp_grad)
     dfmp2_wfn.set_gradient(wfn_grad)
