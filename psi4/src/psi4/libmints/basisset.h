@@ -402,6 +402,15 @@ class PSI_API BasisSet {
     void compute_phi(double *phi_ao, double x, double y, double z);
     
    private: 
+    /// @brief 
+    /// @tparam T 
+    /// @param container 
+    /// @param value 
+    /// @return 
+    template <typename T>
+    bool none_of_equal(const std::vector<T>& container, const T value) const{
+        return std::none_of(container.cbegin(), container.cend(), [](const T X){return X == value;});
+    }
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);

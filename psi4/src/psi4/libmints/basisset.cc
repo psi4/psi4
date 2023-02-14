@@ -511,12 +511,10 @@ std::string BasisSet::print_detail_cfour() const {
         std::vector<std::vector<double>> exp_per_am(max_am_center + 1);
         std::vector<std::vector<double>> coef_per_am(max_am_center + 1);
         for (int64_t am = 0; am <= max_am_center; am++) {
-            // TODO: std::find safe on floats? seems to work
             // Collect unique exponents among all functions
             for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
                 for (int64_t K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
-                    if (!(std::find(exp_per_am[am].begin(), exp_per_am[am].end(),
-                                    shells_[shell_per_am[am][Q] + first_shell].exp(K)) != exp_per_am[am].end())) {
+                    if(none_of_equal(exp_per_am[am], shells_[shell_per_am[am][Q] + first_shell].exp(K))){
                         exp_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].exp(K));
                     }
                 }
