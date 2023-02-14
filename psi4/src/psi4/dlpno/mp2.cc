@@ -2362,40 +2362,39 @@ SharedMatrix DLPNOMP2::compute_Fmi(const std::vector<SharedMatrix>& tau_tilde) {
     return Fmi;
 }
 
-std::vector<SharedMatrix> DLPNOMP2::compute_Fbe_ij(const std::vector<SharedMatrix>& tau_tilde) {
-    timer_on("Compute Fbe_ij");
+std::vector<SharedMatrix> DLPNOMP2::compute_Fbe(const std::vector<SharedMatrix>& tau_tilde) {
+    timer_on("Compute Fbe");
 
     int n_lmo_pairs = ij_to_i_j_.size();
     int naocc = nalpha_ - nfrzc();
 
-    std::vector<SharedMatrix> Fbe_ij(n_lmo_pairs);
+    std::vector<SharedMatrix> Fbe(naocc);
 
 #pragma omp parallel for
-    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-        int i, j;
-        std::tie(i, j) = ij_to_i_j_[ij];
-        int npno_ij = n_pno_[ij];
+    for (int i = 0; i < naocc; ++i) {
+        int ii = i_j_to_ij_[i][i];
 
-        if (npno_ij == 0) continue;
+        int npno_ii = n_pno_[ii];
+        if (npno_ii == 0) continue;
 
         // Equation 39, Term 1
-        Fbe_ij[ij] = std::make_shared<Matrix>("Fbe_ij", npno_ij, npno_ij);
-        Fbe_ij[ij]->zero();
-        Fbe_ij[ij]->set_diagonal(e_pno_[ij]);
+        Fbe[i] = std::make_shared<Matrix>("Fbe", npno_ii, npno_ii);
+        Fbe[i]->zero();
+        // Fbe[i]->set_diagonal(e_pno_[ii]); (Moved to another part of the code)
 
         // See to it, brothers and sisters, that none of you has a sinful, 
         // unbelieving heart that turns away from the living God (Hebrews 3:12)
 
-        for (int m_ij = 0; m_ij < lmopair_to_lmos_[ij].size(); m_ij++) {
-            int m = lmopair_to_lmos_[ij][m_ij];
+        for (int m_ii = 0; m_ii < lmopair_to_lmos_[ii].size(); m_ii++) {
+            int m = lmopair_to_lmos_[ii][m_ii];
             int im = i_j_to_ij_[i][m], mm = i_j_to_ij_[m][m];
             int npno_mm = n_pno_[mm];
 
             if (n_pno_[im] == 0) continue;
 
-            auto S_ij_im = S_pno_ij_ik_[ij][m];
+            auto S_ii_im = S_pno_ij_ik_[ii][m];
             auto S_im_mm = S_pno_ij_kj_[im][m];
-            auto S_ij_mm = linalg::doublet(S_ij_im, S_im_mm, false, false);
+            auto S_ii_mm = linalg::doublet(S_ii_im, S_im_mm, false, false);
 
             SharedMatrix Fbe_mm = std::make_shared<Matrix>("Fbe_mm", npno_mm, npno_mm);
             Fbe_mm->zero();
@@ -2412,20 +2411,19 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Fbe_ij(const std::vector<SharedMatri
                 C_DAXPY(npno_mm, -1.0, &(*Fbe_temp2)(0,0), 1, &(*Fbe_mm)(a_mm, 0), 1);
             }
 
-            Fbe_ij[ij]->add(linalg::triplet(S_ij_mm, Fbe_mm, S_ij_mm, false, false, true));
+            Fbe[i]->add(linalg::triplet(S_ii_mm, Fbe_mm, S_ii_mm, false, false, true));
 
-            for (int n_ij = 0; n_ij < lmopair_to_lmos_[ij].size(); n_ij++) {
-                int n = lmopair_to_lmos_[ij][n_ij];
+            for (int n_ii = 0; n_ii < lmopair_to_lmos_[ii].size(); n_ii++) {
+                int n = lmopair_to_lmos_[ii][n_ii];
                 int mn = i_j_to_ij_[m][n];
                 if (mn == -1 || n_pno_[mn] == 0) continue;
 
-                SharedMatrix S_ij_im = S_pno_ij_ik_[ij][m];
                 SharedMatrix S_im_mn = S_pno_ij_kj_[im][n];
-                SharedMatrix S_ij_mn = linalg::doublet(S_ij_im, S_im_mn, false, false);
+                SharedMatrix S_ii_mn = linalg::doublet(S_ii_im, S_im_mn, false, false);
                 
-                SharedMatrix tau_tilde_temp = linalg::doublet(S_ij_mn, tau_tilde[mn], false, false);
-                SharedMatrix L_mn_temp = linalg::doublet(S_ij_mn, L_iajb_[mn], false, false);
-                Fbe_ij[ij]->subtract(linalg::doublet(tau_tilde_temp, L_mn_temp, false, true));
+                SharedMatrix tau_tilde_temp = linalg::doublet(S_ii_mn, tau_tilde[mn], false, false);
+                SharedMatrix L_mn_temp = linalg::doublet(S_ii_mn, L_iajb_[mn], false, false);
+                Fbe[i]->subtract(linalg::doublet(tau_tilde_temp, L_mn_temp, false, true));
             }
         }
 
@@ -2434,9 +2432,9 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Fbe_ij(const std::vector<SharedMatri
 
     }
 
-    timer_off("Compute Fbe_ij");
+    timer_off("Compute Fbe");
 
-    return Fbe_ij;
+    return Fbe;
 }
 
 std::vector<SharedMatrix> DLPNOMP2::compute_Fme() {
@@ -2745,7 +2743,7 @@ void DLPNOMP2::lccsd_iterations() {
 
         // Build one-particle intermediates
         auto Fmi = compute_Fmi(tau_tilde);
-        auto Fbe_ij = compute_Fbe_ij(tau_tilde);
+        auto Fbe = compute_Fbe(tau_tilde);
         auto Fme = compute_Fme();
 
         // Build two-particle W intermediates
@@ -2760,8 +2758,11 @@ void DLPNOMP2::lccsd_iterations() {
             int npno_ii = n_pno_[ii];
 
             // Madriaga Eq. 34, Term 2
-            SharedMatrix Fbe_ii = Fbe_ij[ii];
+            SharedMatrix Fbe_ii = Fbe[i];
             R_ia[i] = linalg::doublet(Fbe_ii, T_ia_[i], false, false);
+            for (int a_ii = 0; a_ii < npno_ii; a_ii++) {
+                (*R_ia[i])(a_ii, 0) += e_pno_[ii]->get(a_ii) * (*T_ia_[i])(a_ii, 0);
+            }
 
             for (int m = 0; m < naocc; m++) {
                 int im = i_j_to_ij_[i][m], mm = i_j_to_ij_[m][m], mi = i_j_to_ij_[m][i];
@@ -2826,8 +2827,14 @@ void DLPNOMP2::lccsd_iterations() {
             Rn_iajb[ij]->scale(0.5);
 
             // Madriaga Eq. 35, Term 2a
-            SharedMatrix Fvv_ij = Fbe_ij[ij];
+            SharedMatrix Fvv_ij = linalg::triplet(S_pno_ij_ik_[ii][j], Fbe[i], 
+                                                    S_pno_ij_ik_[ii][j], true, false, false);
             Rn_iajb[ij]->add(linalg::doublet(T_iajb_[ij], Fvv_ij, false, true));
+            for (int a_ij = 0; a_ij < npno_ij; a_ij++) {
+                for (int b_ij = 0; b_ij < npno_ij; b_ij++) {
+                    (*Rn_iajb[ij])(a_ij, b_ij) += e_pno_[ij]->get(b_ij) * (*T_iajb_[ij])(a_ij, b_ij);
+                }
+            }
 
             // Madriaga Eq. 35, Term 5
             auto tau_ij_temp = tau[ij]->clone();
