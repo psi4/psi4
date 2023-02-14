@@ -1403,8 +1403,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("PK_MAX_BUCKETS", 500);
         /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/
         options.add_str("PK_ALGO", "REORDER", "REORDER YOSHIMINE");
-        /*- Deactivate in core algorithm. For debug purposes. !expert -*/
-        options.add_bool("PK_NO_INCORE", false);
         /*- All densities are considered non symmetric, debug only. !expert -*/
         options.add_bool("PK_ALL_NONSYM", false);
         /*- Max memory per buf for PK algo REORDER, for debug and tuning -*/

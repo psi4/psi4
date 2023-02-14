@@ -87,8 +87,9 @@ void ijklBasisIterator::next() {
 std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                                                       size_t memory, Options& options, bool dowK, double omega_in) {
     std::string algo = options.get_str("PK_ALGO");
-    bool noincore = options.get_bool("PK_NO_INCORE");
-
+    std::string subalgo = options.get_str("SCF_SUBTYPE");
+    bool noincore = subalgo == "OUT_OF_CORE";
+    
     // We introduce another safety factor in the memory, otherwise
     // we are apparently prone to being killed by the OS.
     // TODO: Check for memory leaks ? Trace memory usage ?
