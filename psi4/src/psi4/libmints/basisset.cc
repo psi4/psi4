@@ -514,12 +514,11 @@ std::string BasisSet::print_detail_cfour() const {
             // Collect unique exponents among all functions
             for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
                 for (int64_t K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
-                    if(none_of_equal(exp_per_am[am], shells_[shell_per_am[am][Q] + first_shell].exp(K))){
+                    if (none_of_equal(exp_per_am[am], shells_[shell_per_am[am][Q] + first_shell].exp(K))) {
                         exp_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].exp(K));
                     }
                 }
             }
-
             // Collect coefficients for each exp among all functions, zero otherwise
             for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
                 for (size_t ep = 0, K = 0; ep < exp_per_am[am].size(); ep++) {

@@ -48,7 +48,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 
 namespace libint2 {
-    struct Shell;
+struct Shell;
 }
 namespace psi {
 
@@ -400,16 +400,34 @@ class PSI_API BasisSet {
     void move_atom(int atom, const Vector3 &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
-    
-   private: 
-    /// @brief 
-    /// @tparam T 
-    /// @param container 
-    /// @param value 
-    /// @return 
+
+   private:
+    /// @brief Determine if two floating-point numbers are practically equal. Simply comparing two FP numbers is usually
+    /// a bad idea due to numerical noise. They *can* be equal, but only in fairly specific circumstances.
+    /// @param a : first number
+    /// @param b : second number
+    /// @return True if their absolute difference is smaller than 10^-14, false otherwise.
+    bool fpeq(const double a, const double b) const {
+        if (std::abs(a - b) < 1.0E-14) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /// @brief
+    /// @tparam T
+    /// @param container
+    /// @param value
+    /// @return
     template <typename T>
-    bool none_of_equal(const std::vector<T>& container, const T value) const{
-        return std::none_of(container.cbegin(), container.cend(), [](const T X){return X == value;});
+    bool none_of_equal(const std::vector<T> &container, const T value) const {
+        return std::none_of(container.cbegin(), container.cend(), [value](const T X) {
+            if constexpr (std::is_floating_point_v(T)) {
+                return fpeq(X, value);
+            } else {
+                return X == value;
+            }
+        });
     }
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
