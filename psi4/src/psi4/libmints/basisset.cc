@@ -484,7 +484,7 @@ std::string BasisSet::print_detail_cfour() const {
     std::stringstream ss;
     const std::string nameUpperCase = to_upper_copy(name_);
 
-    for (int uA = 0; uA < molecule_->nunique(); uA++) {
+    for (int64_t uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
 
         sprintf(buffer, "%s:P4_%d\n", molecule_->symbol(A).c_str(), A + 1);
@@ -493,23 +493,23 @@ std::string BasisSet::print_detail_cfour() const {
                 A + 1);
         ss << buffer;
 
-        int first_shell = center_to_shell_[A];
-        int n_shell = center_to_nshell_[A];
+        const int64_t first_shell = center_to_shell_[A];
+        const int64_t n_shell = center_to_nshell_[A];
 
-        int max_am_center = 0;
-        for (int Q = 0; Q < n_shell; Q++)
+        int64_t max_am_center = 0;
+        for (int64_t Q = 0; Q < n_shell; Q++)
             max_am_center =
                 (shells_[Q + first_shell].am() > max_am_center) ? shells_[Q + first_shell].am() : max_am_center;
 
-        std::vector<std::vector<int>> shell_per_am(max_am_center + 1);
-        for (int Q = 0; Q < n_shell; Q++) shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
+        std::vector<std::vector<int64_t>> shell_per_am(max_am_center + 1);
+        for (int64_t Q = 0; Q < n_shell; Q++) shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
 
         // Write number of shells in the basis set
         sprintf(buffer, "%3d\n", max_am_center + 1);
         ss << buffer;
 
         // Write angular momentum for each shell
-        for (int am = 0; am <= max_am_center; am++) {
+        for (int64_t am = 0; am <= max_am_center; am++) {
             sprintf(buffer, "%5d", am);
             ss << buffer;
         }
@@ -517,7 +517,7 @@ std::string BasisSet::print_detail_cfour() const {
         ss << buffer;
 
         // Write number of contracted basis functions for each shell
-        for (int am = 0; am <= max_am_center; am++) {
+        for (int64_t am = 0; am <= max_am_center; am++) {
             sprintf(buffer, "%5lu", shell_per_am[am].size());
             ss << buffer;
         }
@@ -526,11 +526,11 @@ std::string BasisSet::print_detail_cfour() const {
 
         std::vector<std::vector<double>> exp_per_am(max_am_center + 1);
         std::vector<std::vector<double>> coef_per_am(max_am_center + 1);
-        for (int am = 0; am <= max_am_center; am++) {
+        for (int64_t am = 0; am <= max_am_center; am++) {
             // TODO: std::find safe on floats? seems to work
             // Collect unique exponents among all functions
             for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
-                for (int K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
+                for (int64_t K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
                     if (!(std::find(exp_per_am[am].begin(), exp_per_am[am].end(),
                                     shells_[shell_per_am[am][Q] + first_shell].exp(K)) != exp_per_am[am].end())) {
                         exp_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].exp(K));
@@ -554,14 +554,14 @@ std::string BasisSet::print_detail_cfour() const {
         }
 
         // Write number of exponents for each shell
-        for (int am = 0; am <= max_am_center; am++) {
+        for (int64_t am = 0; am <= max_am_center; am++) {
             sprintf(buffer, "%5lu", exp_per_am[am].size());
             ss << buffer;
         }
         sprintf(buffer, "\n\n");
         ss << buffer;
 
-        for (int am = 0; am <= max_am_center; am++) {
+        for (int64_t am = 0; am <= max_am_center; am++) {
             // Write exponents for each shell
             for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
                 if (exp_per_am[am][ep] >= 10000000.0)
