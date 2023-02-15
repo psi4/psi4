@@ -106,6 +106,7 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
     std::vector<SharedMatrix> K_maef_; /// (m e_mm | a_mm f_mm)
     std::vector<SharedMatrix> K_abef_; /// (a_ij e_ij | b_ij f_ij)
+    std::vector<std::vector<SharedMatrix>> Qab_ij_; // (q_ij | a_ij b_ij)
     std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
     std::vector<SharedMatrix> Lt_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
 

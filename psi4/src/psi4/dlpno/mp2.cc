@@ -2040,7 +2040,8 @@ void DLPNOMP2::compute_K_abef() {
     int naocc = C_lmo_->colspi(0);
     int npao = C_pao_->colspi(0);
 
-    K_abef_.resize(nlmo_pair);
+    // K_abef_.resize(nlmo_pair);
+    Qab_ij_.resize(nlmo_pair);
 
 #pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < nlmo_pair; ++ij) {
@@ -2054,6 +2055,8 @@ void DLPNOMP2::compute_K_abef() {
 
         // number of auxiliary basis in the pair domain
         int naux_ij = lmopair_to_ribfs_[ij].size();
+
+        Qab_ij_[ij].resize(naux_ij);
 
         auto q_ae = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij * npao_ij);
 
@@ -2091,10 +2094,17 @@ void DLPNOMP2::compute_K_abef() {
         }
 
         // Form Kabef integrals
-        auto q_bf_pno = q_ae_pno->clone();
+        // auto q_bf_pno = q_ae_pno->clone();
         auto A_solve = submatrix_rows_and_cols(*full_metric_, lmopair_to_ribfs_[ij], lmopair_to_ribfs_[ij]);
+        A_solve->power(0.5, 1.0e-14);
         C_DGESV_wrapper(A_solve, q_ae_pno);
 
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            Qab_ij_[ij][q_ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
+            C_DCOPY(npno_ij * npno_ij, &(*q_ae_pno)(q_ij, 0), 1, &(*Qab_ij_[ij][q_ij])(0,0), 1);
+        }
+
+        /*
         // (ae|bf) -> <ab|ef>
         K_abef_[ij] = linalg::doublet(q_ae_pno, q_bf_pno, true, false);
         auto K_abef_temp = std::make_shared<Matrix>("K_abef_temp", npno_ij * npno_ij, npno_ij * npno_ij);
@@ -2112,6 +2122,7 @@ void DLPNOMP2::compute_K_abef() {
             }
         }
         K_abef_[ij] = K_abef_temp;
+        */
     }
 
     timer_off("Compute K_abef");
@@ -2840,12 +2851,19 @@ void DLPNOMP2::lccsd_iterations() {
             }
 
             // Madriaga Eq. 35, Term 5
+            for (int q_ij = 0; q_ij < lmopair_to_ribfs_[ij].size(); q_ij++) {
+                r2_temp = linalg::triplet(Qab_ij_[ij][q_ij], tau[ij], Qab_ij_[ij][q_ij]);
+                r2_temp->scale(0.5);
+                Rn_iajb[ij]->add(r2_temp);
+            }
+            /*
             r2_temp = tau[ij]->clone();
             r2_temp->reshape(npno_ij * npno_ij, 1);
             r2_temp = linalg::doublet(K_abef_[ij], r2_temp, false, false);
             r2_temp->reshape(npno_ij, npno_ij);
             r2_temp->scale(0.5);
             Rn_iajb[ij]->add(r2_temp);
+            */
 
             // Madriaga Eq. 35, Term 12
             auto S_ij_ii = S_pno_ij_ik_[ij][i];
