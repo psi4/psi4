@@ -56,6 +56,7 @@
 #include <regex>
 #include <stdexcept>
 #include <cstdio>
+#include <iomanip>
 #include <cstdlib>
 #include <cmath>
 #include <map>
@@ -480,40 +481,47 @@ void BasisSet::print_detail(std::string out) const {
 /// https://web.archive.org/web/20221130013041/http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.OldFormatOfAnEntryInTheGENBASFile
 /// @return CFOUR-style of the basis (per-atom)
 std::string BasisSet::print_detail_cfour() const {
-    char buffer[120];
     std::stringstream ss;
+    ss << std::fixed << std::showpoint;
     const std::string nameUpperCase = to_upper_copy(name_);
 
-    for (int64_t uA = 0; uA < molecule_->nunique(); uA++) {
-        const int64_t A = molecule_->unique(uA);
+    for (decltype(molecule_->nunique()) uA = 0; uA < molecule_->nunique(); uA++) {
+        const auto A = molecule_->unique(uA);
         ss << molecule_->symbol(A) << ":P4_" << A + 1 << '\n';
         ss << "Psi4 basis " << nameUpperCase << " for element " << molecule_->symbol(A) << " atom " << A + 1 << "\n\n";
 
-        const int64_t first_shell = center_to_shell_[A];
-        const int64_t n_shell = center_to_nshell_[A];
-        int64_t max_am_center = 0;
-        for (int64_t Q = 0; Q < n_shell; Q++)
-            max_am_center =
-                (shells_[Q + first_shell].am() > max_am_center) ? shells_[Q + first_shell].am() : max_am_center;
+        const auto first_shell = center_to_shell_[A];
+        const auto n_shell = center_to_nshell_[A];
+        using nshell_type = decltype(center_to_nshell_)::value_type;
+        using max_am_center_type = decltype(shells_[first_shell].am());
+        // Use an immediately evaluated lambda to find the maximum
+        const auto max_am_center = [&] {
+            max_am_center_type max = 0;
+            for (nshell_type Q = 0; Q < n_shell; Q++) {
+                if (shells_[Q + first_shell].am() > max) max = shells_[Q + first_shell].am();
+            }
+            return max;
+        }();
 
-        std::vector<std::vector<int64_t>> shell_per_am(max_am_center + 1);
-        for (int64_t Q = 0; Q < n_shell; Q++) shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
+        std::vector<std::vector<nshell_type>> shell_per_am(max_am_center + 1);
+        for (nshell_type Q = 0; Q < n_shell; Q++) shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
 
         // Write number of shells in the basis set
         ss << to_str_width(max_am_center + 1, 3) << '\n';
         // Write angular momentum for each shell
-        for (int64_t am = 0; am <= max_am_center; am++) ss << to_str_width(am, 5);
+        for (max_am_center_type am = 0; am <= max_am_center; am++) ss << to_str_width(am, 5);
         ss << '\n';
         // Write number of contracted basis functions for each shell
-        for (int64_t am = 0; am <= max_am_center; am++) ss << to_str_width(shell_per_am[am].size(), 5);
+        for (max_am_center_type am = 0; am <= max_am_center; am++) ss << to_str_width(shell_per_am[am].size(), 5);
         ss << '\n';
 
         std::vector<std::vector<double>> exp_per_am(max_am_center + 1);
         std::vector<std::vector<double>> coef_per_am(max_am_center + 1);
-        for (int64_t am = 0; am <= max_am_center; am++) {
+        for (max_am_center_type am = 0; am <= max_am_center; am++) {
             // Collect unique exponents among all functions
             for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
-                for (int64_t K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
+                using nprim_t = decltype(shells_[0].nprimitive());
+                for (nprim_t K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
                     if (none_of_equal(exp_per_am[am], shells_[shell_per_am[am][Q] + first_shell].exp(K))) {
                         exp_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].exp(K));
                     }
@@ -535,44 +543,33 @@ std::string BasisSet::print_detail_cfour() const {
         }
 
         // Write number of exponents for each shell
-        for (int64_t am = 0; am <= max_am_center; am++) {
-            sprintf(buffer, "%5lu", exp_per_am[am].size());
-            ss << buffer;
-        }
-        sprintf(buffer, "\n\n");
-        ss << buffer;
+        for (max_am_center_type am = 0; am <= max_am_center; am++) ss << to_str_width(exp_per_am[am].size(), 5);
+        ss << "\n\n";
 
-        for (int64_t am = 0; am <= max_am_center; am++) {
+        for (max_am_center_type am = 0; am <= max_am_center; am++) {
             // Write exponents for each shell
             for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
-                if (exp_per_am[am][ep] >= 10000000.0)
-                    sprintf(buffer, "%13.4f ", exp_per_am[am][ep]);
-                else if (exp_per_am[am][ep] >= 1000000.0)
-                    sprintf(buffer, "%13.5f ", exp_per_am[am][ep]);
-                else if (exp_per_am[am][ep] >= 100000.0)
-                    sprintf(buffer, "%13.6f ", exp_per_am[am][ep]);
-                else
-                    sprintf(buffer, "%14.7f", exp_per_am[am][ep]);
-                ss << buffer;
-                if (((ep + 1) % 5 == 0) || ((ep + 1) == exp_per_am[am].size())) {
-                    sprintf(buffer, "\n");
-                    ss << buffer;
+                if (exp_per_am[am][ep] >= 10000000.0) {
+                    ss << std::setprecision(4) << std::setw(13) << exp_per_am[am][ep] << ' ';
+                } else if (exp_per_am[am][ep] >= 1000000.0) {
+                    ss << std::setprecision(5) << std::setw(13) << exp_per_am[am][ep] << ' ';
+                } else if (exp_per_am[am][ep] >= 100000.0) {
+                    ss << std::setprecision(6) << std::setw(13) << exp_per_am[am][ep] << ' ';
+                } else {
+                    ss << std::setprecision(7) << std::setw(14) << exp_per_am[am][ep] << ' ';
                 }
+                if (((ep + 1) % 5 == 0) || ((ep + 1) == exp_per_am[am].size())) ss << '\n';
             }
-            sprintf(buffer, "\n");
-            ss << buffer;
+            ss << '\n';
 
             // Write contraction coefficients for each shell
             for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
                 for (size_t bf = 0; bf < shell_per_am[am].size(); bf++) {
-                    sprintf(buffer, "%10.7f ", coef_per_am[am][bf * exp_per_am[am].size() + ep]);
-                    ss << buffer;
+                    ss << std::setprecision(7) << std::setw(10) << coef_per_am[am][bf * exp_per_am[am].size() + ep] << ' ';
                 }
-                sprintf(buffer, "\n");
-                ss << buffer;
+                ss << '\n';
             }
-            sprintf(buffer, "\n");
-            ss << buffer;
+            ss << '\n';
         }
     }
     return ss.str();

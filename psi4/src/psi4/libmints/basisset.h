@@ -406,14 +406,16 @@ class PSI_API BasisSet {
     /// a bad idea due to numerical noise. They *can* be equal, but only in fairly specific circumstances.
     /// @param a : first number
     /// @param b : second number
-    /// @return True if their absolute difference is smaller than 10^-14, false otherwise.
-    bool fpeq(const double a, const double b) const {
-        if (std::abs(a - b) < 1.0E-14) {
+    /// @param THR : (optional) equality threshold
+    /// @return True if their absolute difference is smaller than THR, false otherwise.
+    bool fpeq(const double a, const double b, const double THR = 1.0E-14) {
+        if (std::abs(a - b) < THR) {
             return true;
         } else {
             return false;
         }
     }
+
     /// @brief
     /// @tparam T
     /// @param container
@@ -429,6 +431,7 @@ class PSI_API BasisSet {
             }
         });
     }
+
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);
