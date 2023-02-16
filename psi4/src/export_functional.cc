@@ -188,7 +188,9 @@ void export_functional(py::module &m) {
         .def("needs_vv10", &SuperFunctional::needs_vv10, "Does this functional need VV10 dispersion.")
         .def("needs_grac", &SuperFunctional::needs_grac, "Does this functional need GRAC.")
         .def("print_out", &SuperFunctional::py_print, "Prints out functional details.")
-        .def("print_detail", &SuperFunctional::py_print_detail, "Prints all SuperFunctional information.");
+        .def("print_detail", &SuperFunctional::py_print_detail, "Prints all SuperFunctional information.")
+        .def("xclib_description", &SuperFunctional::xclib_description, "LibXC version and citation string.")
+        .def("set_xclib_description", &SuperFunctional::set_xclib_description, "Sets the LibXC version and citation string");
 
     typedef void (LibXCFunctional::*tweak_set1)(std::vector<double>, bool);
     typedef void (LibXCFunctional::*tweak_set2)(std::map<std::string, double>, bool);
@@ -203,6 +205,7 @@ void export_functional(py::module &m) {
         .def("set_omega", &LibXCFunctional::set_omega, "docstring")
         .def("set_density_cutoff", &LibXCFunctional::set_density_cutoff, "docstring")
         .def("density_cutoff", &LibXCFunctional::density_cutoff, "docstring")
+        .def("xclib_description", &LibXCFunctional::xclib_description, "query libxc for version and citation")
         .def("query_libxc", &LibXCFunctional::query_libxc, "query libxc regarding functional parameters.");
 
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")
