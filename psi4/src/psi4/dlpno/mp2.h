@@ -102,7 +102,7 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<SharedMatrix>> S_pno_tno_ij_ilm_;
 
     std::vector<std::vector<SharedMatrix>> Qma_mm_; // (q_mm | m a_mm)
-    std::vector<std::vector<SharedMatrix>> Qab_ij_; // (q_ij | a_ij b_ij)
+    std::vector<std::vector<SharedMatrix>> Qab_mm_; // (q_mm | a_mm b_mm)
     std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
     std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
     std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
@@ -153,6 +153,8 @@ class DLPNOMP2 : public Wavefunction {
     SparseMap lmopair_to_lmos_; ///< Which LMOs "interact" with an LMO pair (determined by DOI integrals)
     // LMO triples domains
     SparseMap lmotriplet_to_paos_;
+    // Useful for generating DF integrals
+    std::vector<std::vector<std::vector<int>>> lmopair_pao_to_riatom_pao_;
 
     // Extended LMO Domains 
     SparseMap lmo_to_riatoms_ext_; ///< aux BFs on which atoms are needed for density-fitting a LMO and all connected LMOs
@@ -258,8 +260,8 @@ class DLPNOMP2 : public Wavefunction {
 
     /// Computes Qma_mm integrals for DLPNO-CCSD computation (PNO pair mm)
     void compute_Qma_mm();
-    /// Computes Qab_ij integrals for DLPNO-CCSD computation (PNO pair ij)
-    void compute_Qab_ij();
+    /// Computes Qab_mm integrals for DLPNO-CCSD computation (PNO pair mm)
+    void compute_Qab_mm();
     /// Computes J_ijab_ integrals for DLPNO-CCSD computation
     void compute_J_ijab();
     /// Computes K_mnij_ integrals for DLPNO-CCSD computation
