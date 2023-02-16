@@ -661,8 +661,6 @@ void export_wavefunction(py::module& m) {
         .def("get_J_ijab", &dlpno::DLPNOMP2::get_J_ijab, "Returns J_ijab integrals")
         .def("get_K_mnij", &dlpno::DLPNOMP2::get_K_mnij, "Returns K_mnij integrals")
         .def("get_K_mbij", &dlpno::DLPNOMP2::get_K_mbij, "Returns K_mbij integrals")
-        .def("get_K_maef", &dlpno::DLPNOMP2::get_K_maef, "Returns K_maef integrals")
-        .def("get_K_abef", &dlpno::DLPNOMP2::get_K_abef, "Returns K_abef integrals")
         .def("compute_triples_info", &dlpno::DLPNOMP2::compute_triples_info, "Computes information for DLPNO-(T)")
         .def("get_X_tno", &dlpno::DLPNOMP2::get_X_tno, "Returns X_tno matrix")
         .def("eps_tno", &dlpno::DLPNOMP2::eps_tno, "Returns TNO virtual energies for triplet ijk")
