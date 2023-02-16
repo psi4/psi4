@@ -61,7 +61,7 @@ MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> au
 
 MemDFJK::~MemDFJK() {}
 
-void MemDFJK::common_init() { dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_, options_); }
+void MemDFJK::common_init() { dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_); }
 size_t MemDFJK::memory_estimate() {
     dfh_->set_nthreads(omp_nthread_);
     dfh_->set_schwarz_cutoff(cutoff_);

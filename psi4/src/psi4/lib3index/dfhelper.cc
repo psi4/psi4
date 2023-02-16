@@ -53,6 +53,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
@@ -63,15 +64,10 @@ namespace psi {
 
 DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux)
     : primary_(primary), aux_(aux) {
-    nbf_ = primary_->nbf();
-    naux_ = aux_->nbf();
-    prepare_blocking();
-}
-
-DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux,
-    Options& options) : primary_(primary), aux_(aux) {
-    if (options["SCF_SUBTYPE"].has_changed()) set_subalgo(options.get_str("SCF_SUBTYPE"));
-
+    if(Process::environment.options["SCF_SUBTYPE"].has_changed()) {
+        subalgo_ = Process::environment.options.get_str("SCF_SUBTYPE");
+    }
+    
     nbf_ = primary_->nbf();
     naux_ = aux_->nbf();
     prepare_blocking();

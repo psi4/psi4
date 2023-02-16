@@ -2333,7 +2333,7 @@ void USAPT0::mp2_terms() {
         ncol += (size_t)mat->ncol();
     }
 
-    auto dfh(std::make_shared<DFHelper>(primary_, mp2fit_, options_));
+    auto dfh(std::make_shared<DFHelper>(primary_, mp2fit_));
     dfh->set_memory(memory_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT_iaQ");
     dfh->set_nthreads(nT);

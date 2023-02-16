@@ -157,7 +157,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     for (auto& mat : Cstack_vec) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
     // Build DFHelper
-    dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_, options);
+    dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
     if (is_hybrid_) {
         dfh_->set_method("DIRECT");

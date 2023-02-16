@@ -42,7 +42,6 @@
 namespace psi {
 
 class BasisSet;
-class Options;
 class Matrix;
 class TwoBodyAOInt;
 
@@ -52,8 +51,6 @@ class TwoBodyAOInt;
 class PSI_API DFHelper {
    public:
     DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
-    DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux,
-        Options& options);
     ~DFHelper();
 
     ///
