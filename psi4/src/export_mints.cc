@@ -607,7 +607,7 @@ void export_mints(py::module& m) {
              "Computes the matrix which is the conditioned pseudoinverse of this matrix", "condition"_a, "nremoved"_a)
         .def("apply_denominator", matrix_one(&Matrix::apply_denominator), "Apply matrix of denominators to this matrix",
              "Matrix"_a)
-        .def("copy", matrix_one(&Matrix::copy), "Returns a copy of the matrix")
+        .def("copy", matrix_one(&Matrix::copy), "Copy another Matrix into this.")
         .def("power", &Matrix::power, "Takes the matrix to the alpha power with precision cutoff", "alpha"_a,
              "cutoff"_a = 1.0E-12)
         .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n",
