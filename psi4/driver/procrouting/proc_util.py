@@ -279,8 +279,8 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
 
     save_pair = (saptd_name == "FISAPT0")
 
-    from .proc import build_disp_functor
-    _, _disp_functor = build_disp_functor('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
+    from .proc import build_functional_and_disp
+    _, _disp_functor = build_functional_and_disp('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
 
     ## Dimer dispersion
     dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
