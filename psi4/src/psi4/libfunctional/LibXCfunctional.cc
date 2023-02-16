@@ -46,6 +46,12 @@ using namespace psi;
 
 namespace psi {
 
+std::string LibXCFunctional::xclib_description() {
+    auto xclib = "   => LibXC <=\n\n    Version " + std::string(xc_version_string()) + "\n    " +
+                         xc_reference() + " (" + xc_reference_doi() + ")";
+    return xclib;
+}
+
 LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     xc_func_name_ = xc_name;
     func_id_ = xc_functional_get_number(xc_name.c_str());
@@ -68,10 +74,8 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         throw PSIEXCEPTION("Could not find required LibXC functional");
     }
 
-    xclib_description_ = "   => LibXC <=\n\n    Version " + std::string(xc_version_string()) + "\n    " +
-                         xc_reference() + " (" + xc_reference_doi() + ")";
-
     // Extract citation information
+    xclib_description_ = xclib_description();
     name_ = xc_name;
     description_ = "    " + std::string(xc_functional_->info->name);
     for (size_t i = 0; i < 5; i++) {

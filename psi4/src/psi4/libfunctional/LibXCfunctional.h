@@ -96,6 +96,9 @@ class LibXCFunctional : public Functional {
     double vv10_b() { return vv10_b_; }
     double vv10_c() { return vv10_c_; }
     double density_cutoff() { return density_cutoff_; }
+
+    // Get libxc provenance stamp
+    static std::string xclib_description();
 };
 }  // namespace psi
 

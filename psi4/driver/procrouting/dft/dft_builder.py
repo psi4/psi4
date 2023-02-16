@@ -405,6 +405,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
             sup.set_vv10_c(d_params["params"]["c"])
         dispersion = d_params
 
+    sup.set_xclib_description(core.LibXCFunctional.xclib_description())
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
     sup.set_name(func_dictionary["name"].upper())
