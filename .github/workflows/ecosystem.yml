@@ -107,7 +107,7 @@ jobs:
           - blas=*=mkl
           - python=${{ matrix.cfg.python-version }}
             # build
-          #- boost-cpp
+          - boost-cpp
           - cmake
           - c-compiler
           - cxx-compiler
