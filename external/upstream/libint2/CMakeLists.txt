@@ -29,13 +29,14 @@
 #   *at Libint source generation time*. At Psi4 build time, it's going to be looking for standard (sss), so you'll have to
 #   edit the CMake to use a gss.
 # * Upon additions to the Libint2 API to allow runtime SHGAUSS switching, Psi4 can no longer be adapted to use a libtool+cmake source.
+# * Libraries of different AM are not hot-swappable in a Psi4 build, but they only require a relinking.
 
 find_package(Libint2 2.7.2 CONFIG COMPONENTS sss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
 
 if (TARGET Libint2::cxx)
-    get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
-    get_property(Libint2_VERSION_ver TARGET Libint2::int2 PROPERTY Libint2_VERSION)
-    get_property(Libint2_MAX_AM_ERI TARGET Libint2::int2 PROPERTY Libint2_MAX_AM_ERI)
+    get_target_property(_loc Libint2::int2 LOCATION)
+    get_target_property(Libint2_VERSION Libint2::int2 Libint2_VERSION)
+    get_target_property(Libint2_MAX_AM_ERI Libint2::int2 Libint2_MAX_AM_ERI)
     message(STATUS "${Cyan}Found Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint2_VERSION})")
     add_library(libint2_external INTERFACE)  # dummy
 else()
@@ -46,8 +47,10 @@ else()
     include(ExternalProject)
 
     if(NOT ${BUILD_Libint2_GENERATOR})
-        if (${MAX_AM_ERI} LESS_EQUAL 5)
-            set(_url_am_src "5-4-3-6-5-4")  # passes full.
+        if (${MAX_AM_ERI} GREATER 5)
+            set(_url_am_src "7-7-4-7-7-5")  # passes E&G 7z conv and 6z df, H Qz conv and df. covers all internal basis sets for energy and gradient
+        elseif (${MAX_AM_ERI} LESS_EQUAL 5)
+            set(_url_am_src "5-4-3-6-5-4")  # passes full. production Mac, temp production Linux
         endif()
 
         set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/libint-2.7.2-post1-${_url_am_src}_mm4f12ob2_1.tgz")

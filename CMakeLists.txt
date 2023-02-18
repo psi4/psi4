@@ -302,7 +302,6 @@ ExternalProject_Add(psi4-core
               -Dgdma_DIR=${gdma_DIR}
               -DLibint_DIR=${Libint_DIR}
               -DLibint2_DIR=${Libint2_DIR}
-              -Dlibint2_DIR=${Libint2_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dddx_DIR=${ddx_DIR}
               -Dmdi_DIR=${mdi_DIR}
