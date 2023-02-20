@@ -1835,25 +1835,25 @@ void DLPNOMP2::compute_cc_ints() {
         ooov += nlmo_ij * npno_ij;
         oovv += 4 * npno_ij * npno_ij;
         if (i == j) ovvv += npno_ij * npno_ij * npno_ij;
-        vvvv += npno_ij * npno_ij * npno_ij * npno_ij;
+        if (i <= j) vvvv += npno_ij * npno_ij * npno_ij * npno_ij;
     }
 
-    size_t total_memory = oooo + ooov + oovv + ovvv + vvvv;
+    size_t total_memory = (oooo + ooov + oovv + ovvv + vvvv) * sizeof(double);
 
     outfile->Printf("    Memory Required to Store Each Integral Type:\n");
     outfile->Printf("    (oo|oo) : %8.4f [GiB]\n", oooo * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (oo|ov) : %8.4f [GiB]\n", ooov * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (oo|vv) : %8.4f [GiB]\n", oovv * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (ov|vv) : %8.4f [GiB]\n", ovvv * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    (vv|vv) : %8.4f [GiB]\n", oovv * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Memory Given : %8.4f [GiB]\n", memory_ * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Total Memory Required: %8.4f [GiB]\n\n", total_memory * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (vv|vv) : %8.4f [GiB]\n", vvvv * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Memory Given : %8.4f [GiB]\n", memory_ / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Total Memory Required: %8.4f [GiB]\n\n", total_memory / (1024 * 1024 * 1024.0));
 
     bool compute_vvvv;
     if (total_memory < memory_) {
         outfile->Printf("   Storing 4-virtual integrals in memory...\n\n");
         compute_vvvv = true;
-    } else if (total_memory - vvvv < memory_) {
+    } else if (total_memory - vvvv * sizeof(double) < memory_) {
         outfile->Printf("   Computing 4-virtual integrals as needed...\n\n");
         compute_vvvv = false;
     } else {
@@ -1864,7 +1864,7 @@ void DLPNOMP2::compute_cc_ints() {
     K_mbij_.resize(n_lmo_pairs);
     J_ijab_.resize(n_lmo_pairs);
     K_maef_.resize(naocc);
-    K_abef_.resize(n_lmo_pairs);
+    if (compute_vvvv) K_abef_.resize(n_lmo_pairs);
     L_iajb_.resize(n_lmo_pairs);
     Lt_iajb_.resize(n_lmo_pairs);
 
@@ -1948,7 +1948,7 @@ void DLPNOMP2::compute_cc_ints() {
             }
         }
         
-        if (compute_vvvv) {
+        if (compute_vvvv && i <= j) {
             K_abef_[ij] = linalg::doublet(q_vv, q_vv, true, false);
             auto K_abef_tmp = K_abef_[ij]->clone();
             for (int a_ij = 0; a_ij < npno_ij; a_ij++) {
@@ -2675,7 +2675,7 @@ void DLPNOMP2::lccsd_iterations() {
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             int i, j;
             std::tie(i, j) = ij_to_i_j_[ij];
-            int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j];
+            int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j], ji = ij_to_ji_[ij];
             int npno_ij = n_pno_[ij], npno_ii = n_pno_[ii], npno_jj = n_pno_[jj];
 
             if (npno_ij == 0) continue;
@@ -2726,7 +2726,8 @@ void DLPNOMP2::lccsd_iterations() {
             } else {
                 r2_temp = tau[ij]->clone();
                 r2_temp->reshape(npno_ij * npno_ij, 1);
-                r2_temp = linalg::doublet(K_abef_[ij], r2_temp);
+                if (i > j) r2_temp = linalg::doublet(K_abef_[ji], r2_temp);
+                else r2_temp = linalg::doublet(K_abef_[ij], r2_temp);
                 r2_temp->reshape(npno_ij, npno_ij);
                 r2_temp->scale(0.5);
                 Rn_iajb[ij]->add(r2_temp);
