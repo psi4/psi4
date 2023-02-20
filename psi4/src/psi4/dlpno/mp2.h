@@ -41,6 +41,8 @@
 namespace psi {
 namespace dlpno {
 
+enum VirtualStorage { DIRECT, DF_STORE, STORE };
+
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
 class DLPNOMP2 : public Wavefunction {
@@ -105,6 +107,7 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
     std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
     std::vector<SharedMatrix> K_maef_; /// (m e_mm | a_mm f_mm)
+    std::vector<std::vector<SharedMatrix>> Qab_ij_; // (q_ij | a_ij b_ij)
     std::vector<SharedMatrix> K_abef_; /// (a_ij e_ij | b_ij f_ij)
     std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
     std::vector<SharedMatrix> Lt_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
@@ -176,6 +179,8 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<int>> lmopair_to_lmos_dense_;
 
     /// CC Integrals
+    VirtualStorage virtual_storage_;
+
     // LMO/LMO ERIs
     std::vector<SharedMatrix> qij_;
     // PAO/PAO ERIs
@@ -253,6 +258,9 @@ class DLPNOMP2 : public Wavefunction {
 
     /// Create lookup tables for all sparsity information (LMO, PAO, PNOs, SparseMaps)
     void store_information();
+
+    /// A function to estimate integral memory costs
+    void estimate_memory();
 
     /// A function to compute Qij integrals
     void compute_qij();
