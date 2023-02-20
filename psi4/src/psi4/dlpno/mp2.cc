@@ -1817,6 +1817,49 @@ void DLPNOMP2::compute_cc_ints() {
     int n_lmo_pairs = ij_to_i_j_.size();
     int npao = C_pao_->colspi(0);
 
+    outfile->Printf("   => DLPNO-CCSD Memory Estimate <= \n\n");
+    size_t oooo = 0L;
+    size_t ooov = 0L;
+    size_t oovv = 0L;
+    size_t ovvv = 0L;
+    size_t vvvv = 0L;
+
+    for (int ij = 0; ij < n_lmo_pairs; ij++) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+
+        int nlmo_ij = lmopair_to_lmos_[ij].size();
+        int npno_ij = n_pno_[ij];
+
+        oooo += nlmo_ij * nlmo_ij;
+        ooov += nlmo_ij * npno_ij;
+        oovv += 4 * npno_ij * npno_ij;
+        if (i == j) ovvv += npno_ij * npno_ij * npno_ij;
+        vvvv += npno_ij * npno_ij * npno_ij * npno_ij;
+    }
+
+    size_t total_memory = oooo + ooov + oovv + ovvv + vvvv;
+
+    outfile->Printf("    Memory Required to Store Each Integral Type:\n");
+    outfile->Printf("    (oo|oo) : %8.4f [GiB]\n", oooo * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (oo|ov) : %8.4f [GiB]\n", ooov * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (oo|vv) : %8.4f [GiB]\n", oovv * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (ov|vv) : %8.4f [GiB]\n", ovvv * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (vv|vv) : %8.4f [GiB]\n", oovv * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Memory Given : % 8.4f [GiB]\n", memory_ * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Total Memory Required: %8.4 [GiB]\n\n", total_memory * sizeof(double) / (1024 * 1024 * 1024.0));
+
+    bool compute_vvvv;
+    if (total_memory < memory_) {
+        outfile->Printf("   Storing 4-virtual integrals in memory...\n\n");
+        compute_vvvv = true;
+    } else if (total_memory - vvvv < memory_) {
+        outfile->Printf("   Computing 4-virtual integrals as needed...\n\n");
+        compute_vvvv = false;
+    } else {
+        throw PSIEXCEPTION("Not enough memory given to complete DLPNO-CCSD computation!");
+    }
+
     K_mnij_.resize(n_lmo_pairs);
     K_mbij_.resize(n_lmo_pairs);
     J_ijab_.resize(n_lmo_pairs);
@@ -1905,14 +1948,16 @@ void DLPNOMP2::compute_cc_ints() {
             }
         }
         
-        K_abef_[ij] = linalg::doublet(q_vv, q_vv, true, false);
-        auto K_abef_tmp = K_abef_[ij]->clone();
-        for (int a_ij = 0; a_ij < npno_ij; a_ij++) {
-            for (int b_ij = 0; b_ij < npno_ij; b_ij++) {
-                for (int e_ij = 0; e_ij < npno_ij; e_ij++) {
-                    for (int f_ij = 0; f_ij < npno_ij; f_ij++) {
-                        (*K_abef_[ij])(a_ij * npno_ij + b_ij, e_ij * npno_ij + f_ij) = 
-                                        (*K_abef_tmp)(a_ij * npno_ij + e_ij, b_ij * npno_ij + f_ij);
+        if (compute_vvvv) {
+            K_abef_[ij] = linalg::doublet(q_vv, q_vv, true, false);
+            auto K_abef_tmp = K_abef_[ij]->clone();
+            for (int a_ij = 0; a_ij < npno_ij; a_ij++) {
+                for (int b_ij = 0; b_ij < npno_ij; b_ij++) {
+                    for (int e_ij = 0; e_ij < npno_ij; e_ij++) {
+                        for (int f_ij = 0; f_ij < npno_ij; f_ij++) {
+                            (*K_abef_[ij])(a_ij * npno_ij + b_ij, e_ij * npno_ij + f_ij) = 
+                                            (*K_abef_tmp)(a_ij * npno_ij + e_ij, b_ij * npno_ij + f_ij);
+                        }
                     }
                 }
             }
@@ -2653,7 +2698,7 @@ void DLPNOMP2::lccsd_iterations() {
             }
 
             // Madriaga Eq. 35, Term 5
-            if (false) {
+            if (K_abef_.empty()) {
                 int naux_ij = lmopair_to_ribfs_[ij].size();
                 auto q_ab = std::make_shared<Matrix>(naux_ij, npno_ij * npno_ij);
                 for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
