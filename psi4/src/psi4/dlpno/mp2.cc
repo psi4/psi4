@@ -1821,10 +1821,16 @@ void DLPNOMP2::estimate_memory() {
     int n_lmo_pairs = ij_to_i_j_.size();
     int npao = C_pao_->colspi(0);
 
+    size_t qoo_lmo = 0L;
+    size_t qov_pao = 0L;
     size_t qvv_pao = 0L;
     for (int q = 0; q < naux; q++) {
         int centerq = ribasis_->function_to_center(q);
+        int nlmo_q = riatom_to_lmos_ext_[centerq].size();
         int npao_q = riatom_to_paos_ext_[centerq].size();
+
+        qoo_lmo += nlmo_q * nlmo_q;
+        qov_pao += nlmo_q * npao_q;
         qvv_pao += npao_q * npao_q;
     }
 
@@ -1851,18 +1857,20 @@ void DLPNOMP2::estimate_memory() {
         if (i <= j) vvvv += npno_ij * npno_ij * npno_ij * npno_ij;
     }
 
-    size_t vvvv_memory = (oooo + ooov + oovv + ovvv + vvvv) * sizeof(double);
-    size_t qvv_memory = (oooo + ooov + oovv + ovvv + qvv) * sizeof(double);
-    size_t direct_memory = (oooo + ooov + oovv + ovvv + qvv_pao) * sizeof(double);
+    size_t direct_memory = (qoo_lmo + qov_pao + qvv_pao + oooo + ooov + oovv + ovvv) * sizeof(double);
+    size_t qvv_memory = direct_memory + qvv * sizeof(double);
+    size_t vvvv_memory = direct_memory + vvvv * sizeof(double);
 
     outfile->Printf("    Memory Required to Store Each Integral Type:\n");
-    outfile->Printf("    (oo|oo) : %8.4f [GiB]\n", oooo * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    (oo|ov) : %8.4f [GiB]\n", ooov * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    (oo|vv) : %8.4f [GiB]\n", oovv * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    (ov|vv) : %8.4f [GiB]\n", ovvv * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    (q|vv) [PAO]  : %8.4f [GiB]\n", qvv_pao * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    (q|vv)  : %8.4f [GiB]\n", qvv * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    (vv|vv) : %8.4f [GiB]\n", vvvv * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (q|oo)  [LMO/LMO] : %8.4f [GiB]\n", qoo_lmo * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (q|ov)  [LMO/PAO] : %8.4f [GiB]\n", qov_pao * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (q|vv)  [PAO/PAO] : %8.4f [GiB]\n", qvv_pao * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (oo|oo) [Pair ij] : %8.4f [GiB]\n", oooo * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (oo|ov) [Pair ij] : %8.4f [GiB]\n", ooov * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (oo|vv) [Pair ij] : %8.4f [GiB]\n", oovv * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (ov|vv) [Pair ii] : %8.4f [GiB]\n", ovvv * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (q|vv)  [Pair ij] : %8.4f [GiB]\n", qvv * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    (vv|vv) [Pair ij] : %8.4f [GiB]\n", vvvv * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    Memory Needed for DIRECT :   %8.4f\n", direct_memory / (1024 * 1024 * 1024.0));
     outfile->Printf("    Memory Needed for DF-STORE : %8.4f\n", qvv_memory / (1024 * 1024 * 1024.0));
     outfile->Printf("    Memory Needed for STORE :    %8.4f\n", vvvv_memory / (1024 * 1024 * 1024.0));
