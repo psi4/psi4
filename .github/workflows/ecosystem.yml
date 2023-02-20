@@ -39,17 +39,17 @@ jobs:
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
 
-          #- runs-on: windows-latest
-          #  python-version: "3.9"
-          #  mkl-version: "2021.4"
-          #  base-channel: "conda-forge"
-          #  cmargs: >
-          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
-          #    -D BUILD_SHARED_LIBS=OFF
-          #    -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
-          #    -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
-          #  # Notes:
-          #  # * See mkl-version notes at end
+          - runs-on: windows-latest
+            python-version: "3.9"
+            mkl-version: "2021.4"
+            base-channel: "conda-forge"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D BUILD_SHARED_LIBS=OFF
+              -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
+              -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
+            # Notes:
+            # * See mkl-version notes at end
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}

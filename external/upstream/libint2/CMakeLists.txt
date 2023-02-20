@@ -31,7 +31,7 @@
 # * Upon additions to the Libint2 API to allow runtime SHGAUSS switching, Psi4 can no longer be adapted to use a libtool+cmake source.
 # * Libraries of different AM are not hot-swappable in a Psi4 build, but they only require a relinking.
 
-find_package(Libint2 2.7.2 CONFIG COMPONENTS sss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
+find_package(Libint2 2.7.2 CONFIG COMPONENTS sss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}") # eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
 
 if (TARGET Libint2::cxx)
     get_target_property(_loc Libint2::int2 LOCATION)
