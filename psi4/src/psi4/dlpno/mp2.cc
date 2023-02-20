@@ -1846,8 +1846,8 @@ void DLPNOMP2::compute_cc_ints() {
     outfile->Printf("    (oo|vv) : %8.4f [GiB]\n", oovv * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (ov|vv) : %8.4f [GiB]\n", ovvv * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (vv|vv) : %8.4f [GiB]\n", oovv * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Memory Given : % 8.4f [GiB]\n", memory_ * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Total Memory Required: %8.4 [GiB]\n\n", total_memory * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Memory Given : %8.4f [GiB]\n", memory_ * sizeof(double) / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Total Memory Required: %8.4f [GiB]\n\n", total_memory * sizeof(double) / (1024 * 1024 * 1024.0));
 
     bool compute_vvvv;
     if (total_memory < memory_) {
