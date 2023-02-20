@@ -184,15 +184,7 @@ SharedMatrix submatrix_cols(const Matrix &mat, const std::vector<int> &col_inds)
 
 SharedMatrix submatrix_rows_and_cols(const Matrix &mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds) {
 
-    SharedMatrix mat_new = std::make_shared<Matrix>(mat.name(), row_inds.size(), col_inds.size());
-    for(int r_new = 0; r_new < row_inds.size(); r_new++) {
-        int r_old = row_inds[r_new];
-        for(int c_new = 0; c_new < col_inds.size(); c_new++) {
-            int c_old = col_inds[c_new];
-            mat_new->set(r_new, c_new, mat.get(r_old, c_old));
-        }
-    }
-    return mat_new;
+    return submatrix_cols(*submatrix_rows(mat, row_inds), col_inds);
 }
 
 } // namespace psi

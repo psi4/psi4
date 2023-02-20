@@ -101,11 +101,11 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<int> n_tno_; ///<number of tnos per triplet domain
     std::vector<std::vector<SharedMatrix>> S_pno_tno_ij_ilm_;
 
-    std::vector<std::vector<SharedMatrix>> Qma_mm_; // (q_mm | m a_mm)
-    std::vector<std::vector<SharedMatrix>> Qab_mm_; // (q_mm | a_mm b_mm)
     std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
     std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
     std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
+    std::vector<SharedMatrix> K_maef_; /// (m e_mm | a_mm f_mm)
+    std::vector<SharedMatrix> K_abef_; /// (a_ij e_ij | b_ij f_ij)
     std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
     std::vector<SharedMatrix> Lt_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
 
@@ -154,6 +154,7 @@ class DLPNOMP2 : public Wavefunction {
     // LMO triples domains
     SparseMap lmotriplet_to_paos_;
     // Useful for generating DF integrals
+    std::vector<std::vector<std::vector<int>>> lmopair_lmo_to_riatom_lmo_;
     std::vector<std::vector<std::vector<int>>> lmopair_pao_to_riatom_pao_;
 
     // Extended LMO Domains 
@@ -258,16 +259,8 @@ class DLPNOMP2 : public Wavefunction {
     /// A function to compute Qab integrals
     void compute_qab();
 
-    /// Computes Qma_mm integrals for DLPNO-CCSD computation (PNO pair mm)
-    void compute_Qma_mm();
-    /// Computes Qab_mm integrals for DLPNO-CCSD computation (PNO pair mm)
-    void compute_Qab_mm();
-    /// Computes J_ijab_ integrals for DLPNO-CCSD computation
-    void compute_J_ijab();
-    /// Computes K_mnij_ integrals for DLPNO-CCSD computation
-    void compute_K_mnij();
-    /// Computes K_mbij_ integrals for DLPNO-CCSD computation
-    void compute_K_mbij();
+    /// Compute four-center integrals for CC computations
+    void compute_cc_ints();
 
    public:
     DLPNOMP2(SharedWavefunction ref_wfn, Options& options);
@@ -308,13 +301,6 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> get_qij();
     /// Gets qab matrix
     std::vector<SharedMatrix> get_qab();
-
-    /// Gets Jijab integrals (for CC)
-    std::vector<SharedMatrix> get_J_ijab();
-    /// Gets Kmnij integrals (for CC)
-    std::vector<SharedMatrix> get_K_mnij();
-    /// Gets Kmbij integrals (for CC)
-    std::vector<SharedMatrix> get_K_mbij();
 
     /// Returns LMP2 Correlation Energy
     double e_lmp2() { return e_lmp2_; }
