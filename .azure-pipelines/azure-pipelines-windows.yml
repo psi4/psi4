@@ -135,7 +135,7 @@ jobs:
                         psi4/label/dev::gcp ^
                         conda-forge::gau2grid ^
                         conda-forge::libxc ^
-                        psi4/label/dev::libint2=*=h2e52968_4 ^
+                        psi4/label/testing::libint2 ^
                         conda-forge::qcelemental ^
                         conda-forge::qcengine=0.26.0 ^
                         conda-forge::optking ^
