@@ -148,7 +148,21 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
 endif()
 
-find_package(Libint2 2.7.2 CONFIG REQUIRED COMPONENTS sss CXX_ho impure_sh)# "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
+find_package(
+  Libint2
+  2.7.2
+  CONFIG
+  REQUIRED
+  COMPONENTS
+    sss
+    CXX_ho
+    impure_sh
+    "eri_c4_d0_l${MAX_AM_ERI}" eri_c3_d0_l4 eri_c2_d0_l4 onebody_d0_l4
+     eri_c4_d1_l2              eri_c3_d1_l3 eri_c2_d1_l3 onebody_d1_l3
+                                                         onebody_d2_l3
+  OPTIONAL_COMPONENTS
+     eri_c4_d2_l2              eri_c3_d2_l3 eri_c2_d2_l3
+  )
 get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
 get_property(Libint2_VERSION_ver TARGET Libint2::int2 PROPERTY Libint2_VERSION)
 get_property(Libint2_MAX_AM_ERI TARGET Libint2::int2 PROPERTY Libint2_MAX_AM_ERI)
