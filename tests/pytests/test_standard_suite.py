@@ -308,7 +308,7 @@ def test_hf_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, req
 @pytest.mark.parametrize(
     "dertype",
     [
-        pytest.param(2, id="hes2"),
+        pytest.param(2, id="hes2", marks=pytest.mark.d2ints),
         pytest.param(1, id="hes1", marks=pytest.mark.nonroutine),
         pytest.param(0, id="hes0", marks=pytest.mark.nonroutine),
     ],
@@ -362,7 +362,7 @@ def test_hf_hessian_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
 @pytest.mark.parametrize(
     "dertype",
     [
-        pytest.param(2, id="hes2"),
+        pytest.param(2, id="hes2", marks=pytest.mark.d2ints),
         pytest.param(1, id="hes1"),
         pytest.param(0, id="hes0", marks=pytest.mark.nonroutine),
     ],
@@ -5377,7 +5377,7 @@ def test_svwn_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, r
 @pytest.mark.parametrize(
     "dertype",
     [
-        pytest.param(2, id="hes2"),
+        pytest.param(2, id="hes2", marks=pytest.mark.d2ints),
         pytest.param(1, id="hes1", marks=pytest.mark.nonroutine),
         pytest.param(0, id="hes0", marks=pytest.mark.nonroutine),
     ],
@@ -5431,7 +5431,7 @@ def test_svwn_hessian_module(inp, dertype, basis, subjects, clsd_open_pmols, req
 @pytest.mark.parametrize(
     "dertype",
     [
-        pytest.param(2, id="hes2"),
+        pytest.param(2, id="hes2", marks=pytest.mark.d2ints),
         pytest.param(1, id="hes1"),
         pytest.param(0, id="hes0", marks=pytest.mark.nonroutine),
     ],

@@ -1,4 +1,4 @@
 include(TestingMacros)
 
-add_regression_test(freq-masses "psi;freq")
+add_regression_test(freq-masses "psi;freq;d2ints")
 
