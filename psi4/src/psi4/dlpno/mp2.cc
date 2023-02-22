@@ -1817,7 +1817,7 @@ void DLPNOMP2::estimate_memory() {
 
     int nbf = basisset_->nbf();
     int naux = ribasis_->nbf();
-    int naocc = C_lmo_->colspi(0);
+    int naocc = nalpha_ - nfrzc();
     int n_lmo_pairs = ij_to_i_j_.size();
     int npao = C_pao_->colspi(0);
 
@@ -1896,7 +1896,7 @@ void DLPNOMP2::compute_cc_ints() {
     outfile->Printf("   Computing CC integrals...\n\n");
 
     int nbf = basisset_->nbf();
-    int naocc = C_lmo_->colspi(0);
+    int naocc = nalpha_ - nfrzc();
     int n_lmo_pairs = ij_to_i_j_.size();
     int npao = C_pao_->colspi(0);
 
@@ -2029,7 +2029,7 @@ void DLPNOMP2::compute_cc_ints() {
 void DLPNOMP2::tno_transform() {
     timer_on("TNO transform");
 
-    int naocc = C_lmo_->colspi(0);
+    int naocc = nalpha_ - nfrzc();
     int n_lmo_pairs = ij_to_i_j_.size();
 
     int ijk = 0;
@@ -2264,7 +2264,7 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Fbe(const std::vector<SharedMatrix>&
         // Equation 39, Term 1
         Fbe[i] = std::make_shared<Matrix>("Fbe", npno_ii, npno_ii);
         Fbe[i]->zero();
-        // Fbe[i]->set_diagonal(e_pno_[ii]); (Moved to another part of the code)
+        // Fbe[i]->set_diagonal(e_pno_[ii]); // (Moved to another part of the code)
 
         // See to it, brothers and sisters, that none of you has a sinful, 
         // unbelieving heart that turns away from the living God (Hebrews 3:12)
@@ -2442,7 +2442,7 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Wmbej(const std::vector<SharedMatrix
 
         if (npno_mj == 0) continue;
 
-        Wmbej[mj] = K_iajb_[mj]->transpose()->clone();
+        Wmbej[mj] = K_iajb_[jm]->clone();
         
         SharedMatrix S_mm_mj = S_pno_ij_ik_[mm][j];
         SharedMatrix S_mj_jj = S_pno_ij_kj_[mj][j];
@@ -2568,7 +2568,7 @@ std::vector<SharedMatrix> DLPNOMP2::compute_Wmbje(const std::vector<SharedMatrix
             int j_mn = lmopair_to_lmos_dense_[mn][j];
             std::vector<int> j_mn_slice(1, j_mn);
             SharedMatrix K_mn_temp = linalg::doublet(submatrix_rows(*K_mbij_[mn], j_mn_slice), S_pno_ij_ik_[mn][j])->transpose();
-            C_DGER(npno_mj, npno_mj, -1.0, &(*t_n_temp)(0,0), 1, &(*K_mn_temp)(0, 0), 1, &(*Wmbje[mj])(0, 0), npno_mj);
+            C_DGER(npno_mj, npno_mj, 1.0, &(*t_n_temp)(0,0), 1, &(*K_mn_temp)(0, 0), 1, &(*Wmbje[mj])(0, 0), npno_mj);
 
             SharedMatrix tau_temp = linalg::triplet(S_pno_ij_kj_[mn][j], tau_bar[jn], \
                                         S_pno_ij_ik_[jn][m], false, false, false);
@@ -2680,7 +2680,7 @@ void DLPNOMP2::lccsd_iterations() {
                 T_m_temp->scale(Fmi->get(m,i));
                 R_ia[i]->subtract(T_m_temp);
 
-                // Madriaga Eq. 34, Term 2
+                // Madriaga Eq. 34, Term 4
                 SharedMatrix Fe_im = linalg::doublet(S_mm_im, Fme[m], true, false);
                 R_ia[i]->add(linalg::triplet(S_im_ii, Tt_iajb_[im], Fe_im, true, false, false));
 
@@ -2845,16 +2845,17 @@ void DLPNOMP2::lccsd_iterations() {
                 r2_temp = linalg::doublet(S_ij_mm, r2_temp, false, false);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
-                // Madriaga Eq. 35, Term 11
+                // Madriaga Eq. 35, Term 10
                 auto S_mm_mj = S_pno_ij_ik_[mm][j];
                 auto S_ij_mj = linalg::doublet(S_ij_mm, S_mm_mj, false, false);
                 auto S_ii_ij = S_pno_ij_ik_[ii][j];
                 auto S_ii_mj = linalg::doublet(S_ii_ij, S_ij_mj, false, false);
+
                 r2_temp = linalg::triplet(S_ii_mj, K_iajb_[mj], S_ij_mj, false, false, true);
                 r2_temp = linalg::doublet(T_ia_[i], r2_temp, true, false);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
-                // Madriaga Eq. 35, Term 10
+                // Madriaga Eq. 35, Term 11
                 r2_temp = linalg::triplet(S_ij_mj, J_ijab_[mj], S_ii_mj, false, false, true);
                 r2_temp = linalg::doublet(r2_temp, T_ia_[i], false, false);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*r2_temp)(0,0), 1, &(*temp_t1)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
