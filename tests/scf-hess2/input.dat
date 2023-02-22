@@ -33,7 +33,7 @@ set {
   reference uhf
 }
 
-psi4_hess, wfn = hessian('scf', return_wfn=True)
+psi4_hess, wfn = hessian('hf', return_wfn=True)
 
 compare_arrays(psi3_hess, psi4_hess, 1E-7, "STO-3G Hessian") #TEST
 compare_values(ref_ene, variable('CURRENT ENERGY'), 6, 'STO-3G energy')  #TEST

@@ -49,8 +49,8 @@ mock_proc = {
 
 
 @pytest.mark.parametrize("inp,out", [
-    (('hessian', 'hf', None), (2, 2)),  # analytic
-    (('hessian', 'hf', 2), (2, 2)),  # analytic
+    pytest.param(('hessian', 'hf', None), (2, 2), marks=pytest.mark.d2ints),  # analytic
+    pytest.param(('hessian', 'hf', 2), (2, 2), marks=pytest.mark.d2ints),  # analytic
     (('hessian', 'hf', 1), (2, 1)),
     (('hessian', 'hf', 0), (2, 0)),
     (('gradient', 'hf', None), (1, 1)),  # analytic
