@@ -118,6 +118,7 @@ jobs:
                         anaconda-project ^
                         conda-build ^
                         conda-forge::eigen ^
+                        boost-cpp ^
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^

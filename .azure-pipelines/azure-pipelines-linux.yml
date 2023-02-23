@@ -96,6 +96,7 @@ jobs:
         networkx \
         pytest>=7.0.1 \
         eigen \
+        boost-cpp \
         pytest-xdist \
         msgpack-python \
         conda-forge::qcelemental \
