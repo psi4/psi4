@@ -1646,6 +1646,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         if isinstance(name, dict):
             bannername = name.get("name", "custom functional")
 
+    p4util.libint2_print_out()
 
     # Setup the timer
     if do_timer:
