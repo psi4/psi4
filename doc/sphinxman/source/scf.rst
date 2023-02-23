@@ -475,15 +475,15 @@ For initial orbital selection, several options are available. These include:
 CORE
     Diagonalization of the core Hamiltonian, removing even mean-field electron
     repulsion. Simple, but often too far from the final solution for larger
-    systems.   READ becomes the default for the second and later iterations
-    of geometry optimizations.
+    systems. This is the default for single atoms.
 SAD [:term:`Default <GUESS (SCF)>`]
     Superposition of Atomic Densities. Builds the initial density as the
     spin-averaged sum of atomic UHF computations in the current basis. If an
     open-shell system, uniform scaling of the spin-averaged density matrices is
     performed. If orbitals are needed (*e.g.*, in density fitting), a partial
     Cholesky factorization of the density matrices is used. Often extremely
-    accurate, particularly for closed-shell systems.
+    accurate, particularly for closed-shell systems. This is the default for
+    systems of more than one atom.
 SADNO
     Natural orbitals from Superposition of Atomic Densities. Similar
     to the above, but it forms natural orbitals from the SAD density

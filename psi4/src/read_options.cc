@@ -1421,9 +1421,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Screening threshold for the chosen screening method (SCHWARZ, CSAM, DENSITY)
           Absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1E-12);
-        /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
-          ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
-          like SAD, as described in doi:10.1021/acs.jctc.8b01089 which also describes the SAP guess. -*/
+        /*- The type of guess orbitals. See :ref:`sec:scfguess` for what the options mean and
+         what the defaults are. -*/
         options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD SADNO SAP HUCKEL READ");
         /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
         Useful to produce broken-symmetry unrestricted solutions.
