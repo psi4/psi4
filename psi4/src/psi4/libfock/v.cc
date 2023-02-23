@@ -1672,7 +1672,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
     return Vx;
 }
 
-void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret, bool singlet) {
     timer_on("RV: Form Vx");
 
     // => Validate object / inputs <=
@@ -1778,7 +1778,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
         // ==> Compute functional values for block <==
         parallel_timer_on("Functional", rank);
-        auto& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        auto& vals = fworker->compute_functional(pworker->point_values(), npoints, singlet);
         parallel_timer_off("Functional", rank);
 
         // ==> Define pointers to intermediates <==
@@ -2452,10 +2452,7 @@ SharedMatrix RV::compute_hessian() {
 // The triplet spin-adaptation of ∂^2/∂D^2 is needed when describing spin-symmetry breaking
 //    phenomena, e.g., excitation to a triplet or symmetry-breaking orbital rotations.
 //    This is derived by taking ∂^2/∂D^2[same-spin] - ∂^2/∂D^2[opposite-spin].
-//    In practice, this should look like taking the corresponding difference of f-derivatives
-//    and then ignoring all spin indices. Incidentally, the + combination provides the
-//    singlet spin-adpatation without redefining intermediates.
-//    WARNING! Treat this paragraph skeptically untl Psi4 actually has triplet TDDFT.
+//    Incidentally, the + combination provides the singlet spin-adaptation without redefining intermediates.
 // Geometric derivative equations assume D is a density that satisfies the SCF equations.
 //    Therefore, densities are assumed hermitian and ∂E/∂D = 0 means ∂E/∂D ∂D/∂x terms may be neglected.
 // Geometric derivative equations use a compound index (i, x) to refer to displacing atom i in the x

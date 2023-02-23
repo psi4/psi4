@@ -662,7 +662,66 @@ void SuperFunctional::allocate() {
     }
 }
 std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
-    const std::map<std::string, SharedVector>& vals, int npoints) {
+    const std::map<std::string, SharedVector>& vals, int npoints, bool singlet) {
+    if (!singlet && is_unpolarized() and deriv_ == 2) {
+        // We want triplet spin integration for the second derivatives.
+
+        // First, make a UKS version of this functional.
+        auto UKS = build_polarized();
+
+        // Now compute the UKS version of this functional. Naturally, the input values will need to be UKS-ified first.
+        std::map<std::string, SharedVector> UKS_vals;
+        if (true) {
+            UKS_vals["RHO_A"] = std::make_shared<Vector>(std::move((vals.at("RHO_A")->clone())));
+            UKS_vals["RHO_A"]->scale(0.5); // Un-spinsum
+            UKS_vals["RHO_B"] = UKS_vals["RHO_A"];
+        }
+        if (vals.count("RHO_AX")) {
+            UKS_vals["RHO_AX"] = std::make_shared<Vector>(std::move(vals.at("RHO_AX")->clone()));
+            UKS_vals["RHO_AX"]->scale(0.5); // Un-spinsum
+            UKS_vals["RHO_BX"] = UKS_vals["RHO_AX"];
+            UKS_vals["RHO_AY"] = std::make_shared<Vector>(std::move(vals.at("RHO_AY")->clone()));
+            UKS_vals["RHO_AY"]->scale(0.5); // Un-spinsum
+            UKS_vals["RHO_BY"] = UKS_vals["RHO_AY"];
+            UKS_vals["RHO_AZ"] = std::make_shared<Vector>(std::move(vals.at("RHO_AZ")->clone()));
+            UKS_vals["RHO_AZ"]->scale(0.5); // Un-spinsum
+            UKS_vals["RHO_BZ"] = UKS_vals["RHO_AZ"];
+            UKS_vals["GAMMA_AA"] = std::make_shared<Vector>(std::move(vals.at("GAMMA_AA")->clone()));
+            UKS_vals["GAMMA_AA"]->scale(0.25); // Un-spinsum
+            UKS_vals["GAMMA_AB"] = UKS_vals["GAMMA_AA"];
+            UKS_vals["GAMMA_BB"] = UKS_vals["GAMMA_AA"];
+        }
+
+        auto temp = UKS->compute_functional(UKS_vals, npoints);
+        values_ = std::move(UKS->compute_functional(UKS_vals, npoints));
+
+        // Now we take the magic triplet combinations.
+        if (true) {
+            values_.erase("V_RHO_B_RHO_B");
+            values_.at("V_RHO_A_RHO_A")->axpby(-0.5, 0.5, *values_.at("V_RHO_A_RHO_B"));
+            values_.erase("V_RHO_A_RHO_B");
+        }
+        if (vals.count("RHO_AX")) {
+            values_.erase("V_GAMMA_BB");
+            values_.at("V_GAMMA_AA")->axpby(-0.25, 0.5, *values_.at("V_GAMMA_AB"));
+            values_.erase("V_GAMMA_AB");
+
+            values_.erase("V_RHO_A_GAMMA_AB");
+            values_.erase("V_RHO_B_GAMMA_AA");
+            values_.erase("V_RHO_B_GAMMA_AB");
+            values_.erase("V_RHO_B_GAMMA_BB");
+            values_.at("V_RHO_A_GAMMA_AA")->axpby(-0.25, 0.25, *values_.at("V_RHO_A_GAMMA_BB"));
+            values_.erase("V_RHO_A_GAMMA_BB");
+
+            values_.erase("V_GAMMA_AA_GAMMA_AB");
+            values_.erase("V_GAMMA_AB_GAMMA_AB");
+            values_.erase("V_GAMMA_AB_GAMMA_BB");
+            values_.erase("V_GAMMA_BB_GAMMA_BB");
+            values_.at("V_GAMMA_AA_GAMMA_AA")->axpby(-0.125, 0.125, *values_.at("V_GAMMA_AA_GAMMA_BB"));
+            values_.erase("V_GAMMA_AA_GAMMA_BB");
+        }
+        return values_;
+    }
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
 
     // Zero out values

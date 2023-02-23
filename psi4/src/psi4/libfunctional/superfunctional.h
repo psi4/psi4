@@ -173,8 +173,9 @@ class SuperFunctional {
     // => Computers <= //
 
     // Populates values_
+    // If not spin polarized, singlet controls whether singlet or triplet is asked for.
     std::map<std::string, SharedVector>& compute_functional(const std::map<std::string, SharedVector>& vals,
-                                                            int npoints = -1);
+                                                            int npoints = -1, bool singlet = true);
     void test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa, SharedVector gamma_ab,
                          SharedVector gamma_bb, SharedVector tau_a, SharedVector tau_b);
 
