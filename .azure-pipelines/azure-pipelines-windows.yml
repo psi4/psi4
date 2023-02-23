@@ -255,8 +255,7 @@ jobs:
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          pytest -v -rws --durations=15 -n %NUMBER_OF_PROCESSORS% -m '%PYTEST_TYPE% and not d2ints' stage/lib/psi4/tests/
-          #psi4 --test %PYTEST_TYPE% -n %NUMBER_OF_PROCESSORS%
+          psi4 --test %PYTEST_TYPE%_not_d2ints -n %NUMBER_OF_PROCESSORS%
         displayName: "Test Psi4 (pytest $(pytest.type))"
         workingDirectory: $(Build.BinariesDirectory)
 
