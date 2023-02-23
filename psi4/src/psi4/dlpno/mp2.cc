@@ -2870,13 +2870,12 @@ void DLPNOMP2::lccsd_iterations() {
                 r2_temp = linalg::doublet(S_ij_mj, r2_temp, false, false);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
+                auto S_ii_ij = S_pno_ij_ik_[ii][j];
+                auto S_ii_mj = linalg::doublet(S_ii_ij, S_ij_mj, false, false);
                 auto T_i_temp = linalg::doublet(S_ii_mj, T_ia_[i], true, false);
 
                 // Madriaga Eq. 35, Term 10
                 auto S_mm_mj = S_pno_ij_ik_[mm][j];
-                auto S_ii_ij = S_pno_ij_ik_[ii][j];
-                auto S_ii_mj = linalg::doublet(S_ii_ij, S_ij_mj, false, false);
-
                 r2_temp = linalg::triplet(T_i_temp, K_iajb_[mj], S_ij_mj, true, false, true);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
