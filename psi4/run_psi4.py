@@ -207,7 +207,7 @@ if args['plugin_name']:
     sys.exit()
 
 if args["test"] is not None:
-    if args["test"] not in ['smoke', 'quick', 'full', 'long']:
+    if args["test"] not in ['smoke', 'quick', 'full', 'long', 'smoke_not_d2ints', 'quick_not_d2ints']:
         raise KeyError("The test category {} does not exist.".format(args["test"]))
 
     nthread = int(args["nthread"])
@@ -215,6 +215,10 @@ if args["test"] is not None:
         extras = None
     else:
         extras = ['-n', str(nthread)]
+    if args["test"] == "smoke_not_d2ints":
+        extras.extend(["-m", "smoke and not d2ints"])
+    elif args["test"] == "quick_not_d2ints":
+        extras.extend(["-m", "(quick or smoke) and not d2ints"])
     retcode = psi4.test(args["test"], extras=extras)
     sys.exit(retcode)
 
