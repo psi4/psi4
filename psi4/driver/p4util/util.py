@@ -33,6 +33,7 @@ __all__ = [
     "cubeprop",
     "get_memory",
     "libint2_configuration",
+    "libint2_print_out",
     "oeprop",
     "set_memory",
 ]
@@ -373,3 +374,16 @@ def libint2_configuration() -> Dict[str, List[int]]:
     skel["eri3"] = skel.pop("eri_c3_")
     skel["eri2"] = skel.pop("eri_c2_")
     return skel
+
+
+def libint2_print_out() -> None:
+    ams = libint2_configuration()
+    # excluding sph_emultipole
+    sho = {1: 'standard', 2: 'gaussian'}[core._libint2_solid_harmonics_ordering()]
+    core.print_out("   => Libint2 <=\n\n");
+
+    core.print_out(f"    Primary   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri'])}\n")
+    core.print_out(f"    Auxiliary basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri3'])}\n")
+    core.print_out(f"    Onebody   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['onebody'])}\n")
+    core.print_out(f"    Solid Harmonics ordering:            {sho}\n")
+

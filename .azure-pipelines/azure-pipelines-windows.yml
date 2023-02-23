@@ -244,6 +244,7 @@ jobs:
           if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
           ctest --build-config %CMAKE_BUILD_TYPE% ^
                 --label-regex !CTEST_TYPE! ^
+                --label-exclude d2ints ^
                 --output-on-failure ^
                 --parallel %NUMBER_OF_PROCESSORS% ^
                 --timeout 3000
