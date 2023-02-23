@@ -2870,29 +2870,28 @@ void DLPNOMP2::lccsd_iterations() {
                 r2_temp = linalg::doublet(S_ij_mj, r2_temp, false, false);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
+                auto T_i_temp = linalg::doublet(S_ii_mj, T_ia_[i], true, false);
+
                 // Madriaga Eq. 35, Term 10
                 auto S_mm_mj = S_pno_ij_ik_[mm][j];
                 auto S_ii_ij = S_pno_ij_ik_[ii][j];
                 auto S_ii_mj = linalg::doublet(S_ii_ij, S_ij_mj, false, false);
 
-                r2_temp = linalg::triplet(S_ii_mj, K_iajb_[mj], S_ij_mj, false, false, true);
-                r2_temp = linalg::doublet(T_ia_[i], r2_temp, true, false);
+                r2_temp = linalg::triplet(T_i_temp, K_iajb_[mj], S_ij_mj, true, false, true);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
                 // Madriaga Eq. 35, Term 11
-                r2_temp = linalg::triplet(S_ij_mj, J_ijab_[mj], S_ii_mj, false, false, true);
-                r2_temp = linalg::doublet(r2_temp, T_ia_[i], false, false);
+                r2_temp = linalg::triplet(T_i_temp, J_ijab_[mj], S_ii_mj, true, false, true);
                 C_DGER(npno_ij, npno_ij, -1.0, &(*r2_temp)(0,0), 1, &(*temp_t1)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
                 // Madriaga Eq. 35, Term 3
                 auto S_im_ij = S_pno_ij_ik_[im][j];
                 r2_temp = linalg::triplet(S_im_ij, T_iajb_[im], S_im_ij, true, false, false);
                 auto S_mj_jj = S_pno_ij_kj_[mj][j];
-                auto S_mm_jj = linalg::doublet(S_mm_mj, S_mj_jj, false, false);
                 int m_jj = lmopair_to_lmos_dense_[jj][m];
                 std::vector<int> m_jj_slice(1, m_jj);
                 double tf_dot = T_ia_[j]->vector_dot(submatrix_rows(*Fme[jj], m_jj_slice)->transpose());
-                r2_temp->scale(Fmi->get(m,j) + 0.5 * tf_dot);
+                r2_temp->scale((*Fmi)(m,j) + 0.5 * tf_dot);
                 Rn_iajb[ij]->subtract(r2_temp);
 
                 // Madriaga Eq. 35, Term 13
@@ -2900,7 +2899,6 @@ void DLPNOMP2::lccsd_iterations() {
                 C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
                 
                 auto S_mj_mi = S_pno_ij_ik_[mj][i];
-
                 auto Wmbej_mj = linalg::triplet(S_ij_mj, Wmbej[mj], S_mj_mi, false, false, false);
                 auto Wmbje_mj = linalg::triplet(S_ij_mj, Wmbje[mj], S_mj_mi, false, false, false);
                 auto Wmbje_mi = linalg::triplet(S_ij_im, Wmbje[mi], S_mj_mi, false, false, true);
@@ -2917,11 +2915,6 @@ void DLPNOMP2::lccsd_iterations() {
 
                 // Madriaga Eq. 35, Term 9
                 Rn_iajb[ij]->add(linalg::triplet(S_ij_mj, T_iajb_[mj], Wmbje_mi, false, false, true));
-
-                // Clear memory of two particle intermediates
-                Wmbej_mj = nullptr;
-                Wmbje_mj = nullptr;
-                Wmbje_mi = nullptr;
 
                 // Madriaga Eq. 35, Term 4
                 for (int n_ij = 0; n_ij < lmopair_to_lmos_[ij].size(); n_ij++) {
