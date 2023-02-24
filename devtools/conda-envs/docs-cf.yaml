@@ -9,6 +9,7 @@ dependencies:
   - cmake
   - doxygen
   - cxx-compiler
+  - packaging<0.23
     # core
   - boost-cpp
   - eigen
