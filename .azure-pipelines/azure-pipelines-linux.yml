@@ -109,7 +109,6 @@ jobs:
       conda info
       conda list
     displayName: 'Build Environment'
-        #conda-forge::qcengine=0.26.0 \
 
   - bash: |
       source activate p4env
@@ -159,3 +158,5 @@ jobs:
       source activate p4env
       PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
+
+# setuptools v66 (vendors packaging v23) incompatible with arb. tarballs. thinks the branch names are versions
