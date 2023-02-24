@@ -10,7 +10,7 @@ dependencies:
   - doxygen
   - cxx-compiler
   - packaging<23.0
-  - setuptools<67.0.0
+  - setuptools<66.0.0
     # core
   - boost-cpp
   - eigen

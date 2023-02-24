@@ -132,7 +132,7 @@ jobs:
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
                         packaging<23.0 ^
-                        setuptools<67.0.0 ^
+                        setuptools<66.0.0 ^
                         mpmath ^
                         msgpack-python ^
                         networkx ^
