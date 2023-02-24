@@ -21,7 +21,7 @@ dependencies:
   - libxc-c
   - libecpint
   - optking
-  - qcengine
+  #- qcengine
   - qcportal=0.15.8
     # docs
   - ipykernel

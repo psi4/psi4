@@ -109,6 +109,7 @@ jobs:
       conda info
       conda list
     displayName: 'Build Environment'
+        #conda-forge::qcengine=0.26.0 \
 
   - bash: |
       source activate p4env

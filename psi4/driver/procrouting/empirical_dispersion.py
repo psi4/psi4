@@ -82,7 +82,7 @@ def _capable_engines_for_disp()-> Dict[str, List[str]]:
         for disp in disps:
             capable[disp].append(eng)
     for disp, engines in capable.items():
-        capable_sorted_by_available[disp] = sorted(engines, key=lambda x: (not programs_disp[x], x))
+        capable_sorted_by_available[disp] = sorted(engines, key=lambda x: programs_disp[x], reverse=True)
 
     return capable_sorted_by_available
 
