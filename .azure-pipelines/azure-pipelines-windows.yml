@@ -131,7 +131,7 @@ jobs:
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
-                        packaging<23.0 ^
+                        setuptools<67.0.0 ^
                         mpmath ^
                         msgpack-python ^
                         networkx ^
