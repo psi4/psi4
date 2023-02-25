@@ -108,8 +108,53 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
 
     return sup;
 }
+std::shared_ptr<SuperFunctional> SuperFunctional::build_polarized() {
+    // Build the superfunctional
+    auto sup = std::make_shared<SuperFunctional>();
+
+    // Clone over parts
+    for (int i = 0; i < x_functionals_.size(); i++) {
+        sup->add_x_functional(x_functionals_[i]->build_polarized());
+    }
+    for (int i = 0; i < c_functionals_.size(); i++) {
+        sup->add_c_functional(c_functionals_[i]->build_polarized());
+    }
+
+    sup->deriv_ = deriv_;
+    sup->max_points_ = max_points_;
+    sup->libxc_xc_func_ = libxc_xc_func_;
+    if (needs_vv10_) {
+        sup->needs_vv10_ = true;
+        sup->vv10_b_ = vv10_b_;
+        sup->vv10_c_ = vv10_c_;
+        sup->vv10_beta_ = vv10_beta_;
+    }
+    if (needs_grac_) {
+        sup->needs_grac_ = true;
+        sup->grac_shift_ = grac_shift_;
+        sup->grac_alpha_ = grac_alpha_;
+        sup->grac_beta_ = grac_beta_;
+        sup->set_grac_x_functional(grac_x_functional_->build_polarized());
+        sup->set_grac_c_functional(grac_c_functional_->build_polarized());
+    }
+    sup->name_ = name_;
+    sup->description_ = description_;
+    sup->citation_ = citation_;
+    sup->xclib_description_ = xclib_description_;
+    sup->x_omega_ = x_omega_;
+    sup->c_omega_ = c_omega_;
+    sup->x_alpha_ = x_alpha_;
+    sup->x_beta_ = x_beta_;
+    sup->c_alpha_ = c_alpha_;
+    sup->c_ss_alpha_ = c_ss_alpha_;
+    sup->c_os_alpha_ = c_os_alpha_;
+    sup->density_tolerance_ = density_tolerance_;
+    sup->allocate();
+
+    return sup;
+}
 std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
-    // Build the superfuncitonal
+    // Build the superfunctional
     auto sup = std::make_shared<SuperFunctional>();
 
     // Clone over parts
