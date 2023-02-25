@@ -81,7 +81,7 @@ void Vector::axpy(double scale, const Vector &other) {
 
 void Vector::axpby(double alpha, double beta, const Vector &other) {
     if (v_.size() != other.v_.size()) {
-        throw PSIEXCEPTION("Vector::axpy: Vector sizes do not match!");
+        throw PSIEXCEPTION("Vector::axpby: Vector sizes do not match!");
     }
 
     C_DAXPBY(v_.size(), alpha, const_cast<double *>(other.v_.data()), 1, beta, v_.data(), 1);
