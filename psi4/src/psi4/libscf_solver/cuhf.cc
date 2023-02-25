@@ -94,9 +94,7 @@ void CUHF::common_init() {
     same_a_b_dens_ = false;
     same_a_b_orbs_ = false;
 
-    if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("CUHF: Cannot compute XC components!");
-    }
+    subclass_init();
 }
 
 void CUHF::damping_update(double damping_percentage) {
@@ -423,6 +421,12 @@ void CUHF::compute_SAD_guess(bool natorb) {
         // Form the total density used in energy evaluation
         Dt_->copy(Da_);
         Dt_->add(Db_);
+    }
+}
+
+void CUHF::setup_potential() {
+    if (functional_->needs_xc()) {
+        throw PSIEXCEPTION("CUHF: Cannot compute XC components!");
     }
 }
 }  // namespace scf
