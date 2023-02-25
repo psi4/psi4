@@ -79,6 +79,14 @@ void Vector::axpy(double scale, const Vector &other) {
     C_DAXPY(v_.size(), scale, const_cast<double *>(other.v_.data()), 1, v_.data(), 1);
 }
 
+void Vector::axpby(double alpha, double beta, const Vector &other) {
+    if (v_.size() != other.v_.size()) {
+        throw PSIEXCEPTION("Vector::axpy: Vector sizes do not match!");
+    }
+
+    C_DAXPBY(v_.size(), alpha, const_cast<double *>(other.v_.data()), 1, beta, v_.data(), 1);
+}
+
 void Vector::save(psi::PSIO *const psio, size_t fileno) const {
     // Check to see if the file is open
     bool already_open = false;
