@@ -725,3 +725,10 @@ Bibliography
    F. Weigend,
    *Phys. Chem. Chem. Phys.* **4**, 4285-4291 (2002).
    https://doi.org/10.1039/B204199P
+
+.. [Brandenburg:2018:b973c]
+   J. G. Brandenburg, C.Bannwarth, A. Hansen, S. Grimme,
+   *J. Chem. Phys.* **148**, 064104, (2018).
+   https://doi.org/10.1063/1.5012601
+
+

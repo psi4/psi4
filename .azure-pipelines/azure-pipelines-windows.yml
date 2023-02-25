@@ -158,7 +158,6 @@ jobs:
           which anaconda
           conda list
         displayName: "Install conda packages"
-                        #conda-forge::qcengine=0.26.0 ^
 
       # Install LLVM
       # Note: LLVM distributed by conda is too old

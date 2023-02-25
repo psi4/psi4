@@ -99,7 +99,7 @@ Running gCP
 
 At present there is a limited interface to gCP that is used
 only to implement the "HF-3c" [Sure:2013:1672]_, "PBEh-3c"
-[Grimme:2015:054107]_, "B97-3c" [Brandenburg]_, and "r2SCAN-3c" [REF..]_ methods (both energy and gradient).
+[Grimme:2015:054107]_, "B97-3c" [Brandenburg:2018:b973c]_, and "r2SCAN-3c" [REF..]_ methods (both energy and gradient).
 The interface can use classic or mctc-gcp executables but only the latter implements "B97-3c" and "r2SCAN-3c".
 A :ref:`DFTD3 <sec:dftd3>` executable, classic or simple-dftd3, must also be available for these methods to
 run. These method are defined with their own basis set and thus no basis set should be set by the user.
