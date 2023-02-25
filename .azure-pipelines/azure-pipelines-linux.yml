@@ -41,7 +41,7 @@ jobs:
 
   pool:
     vmImage: $(vmImage)
-  
+
   steps:
   - bash: |
       [[ "${APT_REPOSITORY}" ]] && echo "Add Repo ${APT_REPOSITORY}" && sudo add-apt-repository "${APT_REPOSITORY}"
@@ -108,6 +108,7 @@ jobs:
       source activate p4env
       conda info
       conda list
+      # setuptools v66 (vendors packaging v23) incompatible with arb. tarballs. thinks the branch names are versions
     displayName: 'Build Environment'
 
   - bash: |
