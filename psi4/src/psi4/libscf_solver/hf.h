@@ -304,7 +304,7 @@ class HF : public Wavefunction {
     /// The DFT Potential object (or null if it has been deleted)
     /// This needs to be virtual so that subclasses can enforce their
     /// particular potential's derived class.
-    virtual std::shared_ptr<VBase> V_potential() const { throw PSIEXCEPTION("V_potential virtual") ; }
+    virtual std::shared_ptr<VBase> V_potential() const = 0;
 
     /// Returns the occupation vectors
     std::shared_ptr<Vector> occupation_a() const;

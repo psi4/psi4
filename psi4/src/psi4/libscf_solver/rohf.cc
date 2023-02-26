@@ -1328,7 +1328,7 @@ void ROHF::compute_SAD_guess(bool natorb) {
 
 void ROHF::setup_potential() {
     if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("CUHF: Cannot compute XC components!");
+        throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
     }
 }
 
