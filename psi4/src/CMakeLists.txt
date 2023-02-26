@@ -73,6 +73,10 @@ if(MSVC)
     )
 endif()
 target_link_libraries(core PRIVATE l2export)
+target_compile_definitions(core
+  PRIVATE
+    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
+  )
 target_compile_definitions(l2export
   PRIVATE
     psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}

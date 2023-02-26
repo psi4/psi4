@@ -32,6 +32,8 @@
 #include <sstream>
 #include <sys/stat.h>
 
+#include <libint2/engine.h>
+
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
@@ -1040,6 +1042,16 @@ bool psi4_python_module_initialize() {
     read_options("", Process::environment.options, true);
     Process::environment.options.set_read_globals(false);
 
+    // Setup Libint2
+    libint2::initialize();
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Standard);
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Gaussian);
+#else
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
+
 #ifdef INTEL_Fortran_ENABLED
     static int argc = 1;
     static char* argv = (char*)"";
@@ -1084,6 +1096,8 @@ void psi4_python_module_finalize() {
     // Shut things down:
     // There is only one timer:
     timer_done();
+
+    libint2::finalize();
 
     outfile = std::shared_ptr<PsiOutStream>();
     psi_file_prefix = nullptr;

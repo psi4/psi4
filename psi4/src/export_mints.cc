@@ -1724,17 +1724,6 @@ void export_mints(py::module& m) {
         "Returns string with codes detailing the integral classes, angular momenta, and ordering \
         characteristics of the linked Libint2. Prefer the processed libint2_configuration function.");
 
-    m.def("_libint2_solid_harmonics_ordering", []() {
-            libint2::initialize();
-#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
-            libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Standard);
-#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
-            libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Gaussian);
-#else
-#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
-#endif
-            auto sho = int(libint2::solid_harmonics_ordering());
-            libint2::finalize();
-            return sho;
-          }, "Libint2 SH setting");
+    m.def("_libint2_solid_harmonics_ordering", []() { return int(libint2::solid_harmonics_ordering()); },
+        "Libint2 SH setting");
 }
