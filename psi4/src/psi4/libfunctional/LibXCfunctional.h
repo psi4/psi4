@@ -49,9 +49,9 @@ class LibXCFunctional : public Functional {
     std::unique_ptr<xc_func_type> xc_functional_;
     int func_id_;
     bool user_omega_;
-    bool exc_;
-    bool vxc_;
-    bool fxc_;
+    bool exc_; // Can we compute functional at a point?
+    bool vxc_; // Can we compute first derivative at a point?
+    bool fxc_; // Can we compute second derivative at a point?
 
     // **ONLY** Used to pass information up the chain.
     // Exchange
@@ -76,6 +76,9 @@ class LibXCFunctional : public Functional {
     void compute_functional(const std::map<std::string, SharedVector>& in,
                             const std::map<std::string, SharedVector>& out, int npoints, int deriv) override;
 
+    // Clones a *polarized*, complete functional. Used, e.g., in spin-symmetry-
+    // breaking eigenvectors of the MO hessian or linear response eigenproblem.
+    std::shared_ptr<Functional> build_polarized() override;
     // Clones a *worker* for the functional. This is not a complete functional
     std::shared_ptr<Functional> build_worker() override;
 

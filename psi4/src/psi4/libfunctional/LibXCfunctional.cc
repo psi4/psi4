@@ -184,6 +184,45 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     }
 }  // namespace psi
 LibXCFunctional::~LibXCFunctional() { xc_func_end(xc_functional_.get()); }
+std::shared_ptr<Functional> LibXCFunctional::build_polarized() {
+    if (!unpolarized_) {
+        throw PSIEXCEPTION("LibXCFunctional: Trying to build_polarized_functional from a polarized functional. Are you sure you meant to?");
+    }
+    // Build functional
+    auto func = std::make_shared<LibXCFunctional>(xc_func_name_, false);
+
+    // User omega
+    if (user_omega_) {
+        func->set_omega(omega_);
+    } else {
+        // The only way we enter this branch is if Functional::set_omega
+        // was called on this object. I can think of no justification for that,
+        // but just in case...
+        Functional::set_omega(omega_);
+    }
+
+    // User tweakers
+    if (user_tweakers_.size()) {
+        func->set_tweak(user_tweakers_, true);
+    }
+
+    func->set_alpha(alpha_);
+    func->set_gga(gga_);
+    func->set_meta(meta_);
+    func->set_lsda_cutoff(lsda_cutoff_);
+    func->set_meta_cutoff(meta_cutoff_);
+    func->set_density_cutoff(density_cutoff_);
+    func->exc_ = exc_;
+    func->vxc_ = vxc_;
+    func->fxc_ = fxc_;
+
+    func->set_name(name_);
+    func->set_description(description_);
+    func->set_citation(citation_);
+    func->set_xclib_description(xclib_description_);
+
+    return func;
+}
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     // Build functional
     auto func = std::make_shared<LibXCFunctional>(xc_func_name_, unpolarized_);
