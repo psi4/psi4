@@ -95,7 +95,8 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<double> de_pno_os_;   ///< opposite-spin contributions to de_pno_
     std::vector<double> de_pno_ss_;   ///< same-spin contributions to de_pno_
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
-    std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
+    std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pno overlaps
+    std::vector<std::vector<SharedMatrix>> S_pno_ij_mn_; ///< pno overlaps
 
     /// triplet natural orbitals (TNOs)
     std::vector<SharedMatrix> X_tno_; ///< global PAO -> canonical TNO transforms
@@ -266,6 +267,12 @@ class DLPNOMP2 : public Wavefunction {
     void compute_qij();
     /// A function to compute Qab integrals
     void compute_qab();
+
+    /// compute CC PNO overlaps
+    void compute_cc_pno_overlaps();
+
+    /// Returns the appropriate overlap matrix given two LMO pairs
+    inline SharedMatrix S_PNO(int ij, int mn);
 
     /// Compute four-center integrals for CC computations
     void compute_cc_ints();
