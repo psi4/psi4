@@ -47,21 +47,12 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::shared_ptr<BasisSet> bs1, std:
     int max_nao = INT_NCART(maxam1) * INT_NCART(maxam2) * INT_NCART(maxam3);
     zero_vec_ = std::vector<double>(max_nao, 0.0);
 
-    libint2::initialize();
-#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
-    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Standard);
-#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
-    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Gaussian);
-#else
-#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
-#endif
-
     // set engine precision to 0.0 to disable primitive screening
     engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::delta, max_nprim, max_am, 0, 0.0);
     buffers_.resize(1);
 }
 
-ThreeCenterOverlapInt::~ThreeCenterOverlapInt() { libint2::finalize(); }
+ThreeCenterOverlapInt::~ThreeCenterOverlapInt() {}
 
 std::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis1() { return bs1_; }
 

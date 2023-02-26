@@ -83,10 +83,6 @@ target_link_libraries(l2intf
     tgt::lapack
     Libint2::cxx
   )
-target_compile_definitions(l2intf
-  PRIVATE
-    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
-  )
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)

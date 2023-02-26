@@ -3074,15 +3074,6 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(const IntegralFactory *integral, in
     : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs) {
     // Initialize libint static data
 
-    libint2::initialize();
-#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
-    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Standard);
-#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
-    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Gaussian);
-#else
-#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
-#endif
-
     // Make sure there's enough space for the sieve generation.  This array is used to return an array of
     // zeros back to the caller if libint2 gave us nullptr, so the caller doesn't have to check.
     size_t sieve_size =  std::max(
@@ -3169,7 +3160,7 @@ void Libint2TwoElectronInt::common_init() {
     }
 }
 
-Libint2TwoElectronInt::~Libint2TwoElectronInt() { libint2::finalize(); }
+Libint2TwoElectronInt::~Libint2TwoElectronInt() {}
 
 size_t Libint2TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
     return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
