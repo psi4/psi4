@@ -1046,17 +1046,12 @@ void OEProp::compute_esp_over_grid() { epc_.compute_esp_over_grid(true); }
 void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     auto mol = basisset_->molecule();
 
-    // TODO: move this into openMP section ?
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
 
     if (print_output) {
         outfile->Printf("\n Electrostatic potential to be computed on the grid and written to grid_esp.dat\n");
     }
         
-    // TODO: remove this
-    outfile->Printf("\n DEBUG PRINT Q-POSEV  \n");
-
-    // TODO: move this into openMP section ?
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
         Dtot->scale(2.0);
@@ -1064,7 +1059,6 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
         Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
     }
 
-    // TODO: move this into openMP section ?
     int nbf = basisset_->nbf();
     auto ints = std::make_shared<Matrix>("Ex integrals", nbf, nbf);
 
