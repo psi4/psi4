@@ -1116,10 +1116,6 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
 
     bool convert = mol->units() == Molecule::Angstrom;
 
-//This part used to be parallelized with openMP as follows but was buggy (see PR #1900)
-//#pragma omp parallel for
-    //std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
-
     int nthreads = 1;
  #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
@@ -1134,22 +1130,19 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
     }
 
 
-#pragma omp parallel for schedule(dynamic) //private(epot)
+#pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < number_of_grid_points; ++i) {
         Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
         if (convert) origin /= pc_bohr2angstroms;
-        //auto ints = std::make_shared<Matrix>(nbf, nbf);
-        //ints->zero();
-//#pragma omp critical
-         // Thread info
+         
+        // Thread info
         int thread = 0;
  #ifdef _OPENMP
         thread = omp_get_thread_num();
  #endif
         VtempT[thread]->zero();
         VintT[thread]->compute(VtempT[thread],origin);
-        //double** VtempTp = VtempT[thread]->pointer();
-        //epot->compute(ints, origin);
+        
         double Velec = Dtot->vector_dot(VtempT[thread]);
         double Vnuc = 0.0;
         int natom = mol->natom();
