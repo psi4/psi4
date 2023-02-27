@@ -259,25 +259,6 @@ void HF::common_init() {
         print_header();
     }
 
-    // DFT stuff
-    if (functional_->needs_xc()) {
-        potential_ =
-            VBase::build_V(basisset_, functional_, options_, (options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
-        potential_->initialize();
-
-        // Do the GRAC
-        if (options_.get_double("DFT_GRAC_SHIFT") != 0.0) {
-            potential_->set_grac_shift(options_.get_double("DFT_GRAC_SHIFT"));
-        }
-
-        // Print the KS-specific stuff
-        if (print_) {
-            potential_->print_header();
-        }
-    } else {
-        potential_ = nullptr;
-    }
-
     // -D is zero by default
     set_scalar_variable("-D Energy", 0.0);  // no-autodoc
     energies_["-D"] = 0.0;
@@ -285,6 +266,23 @@ void HF::common_init() {
     // CPHF info
     cphf_nfock_builds_ = 0;
     cphf_converged_ = false;
+}
+
+void HF::subclass_init() {
+    // DFT stuff
+    setup_potential();
+
+    if (V_potential() != nullptr) {
+        // Do the GRAC
+        if (options_.get_double("DFT_GRAC_SHIFT") != 0.0) {
+            V_potential()->set_grac_shift(options_.get_double("DFT_GRAC_SHIFT"));
+        }
+
+        // Print the KS-specific stuff
+        if (print_) {
+            V_potential()->print_header();
+        }
+    }
 }
 
 void HF::damping_update(double damping_percentage) {

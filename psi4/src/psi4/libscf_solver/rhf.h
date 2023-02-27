@@ -30,12 +30,12 @@
 #define RHF_H
 
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libfock/v.h"
 #include "hf.h"
 
 #include "psi4/pybind11.h"
 
 namespace psi {
-
 namespace scf {
 
 class RHF : public HF {
@@ -47,9 +47,12 @@ class RHF : public HF {
     SharedMatrix K_;
     SharedMatrix wK_;
 
+    std::shared_ptr<RV> potential_;
+
     double compute_initial_E() override;
 
     void common_init();
+    void setup_potential() override;
 
    public:
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
@@ -73,6 +76,8 @@ class RHF : public HF {
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
     bool stability_analysis() override;
+
+    std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
     /// Hessian-vector computers and solvers
     std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x) override;

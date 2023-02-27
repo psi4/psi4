@@ -163,7 +163,6 @@ class HF : public Wavefunction {
 
     /// DFT variables
     std::shared_ptr<SuperFunctional> functional_;
-    std::shared_ptr<VBase> potential_;
 
     // CPHF info
     int cphf_nfock_builds_;
@@ -177,6 +176,10 @@ class HF : public Wavefunction {
 
     /// Common initializer
     void common_init();
+    /// Part of the common initializer that runs after subclass specific tasks
+    void subclass_init();
+    /// Construct the DFT potential.
+    virtual void setup_potential() { throw PSIEXCEPTION("setup_potential virtual"); };
 
     /// Maximum overlap method for prevention of oscillation/excited state SCF
     void MOM();
@@ -299,7 +302,9 @@ class HF : public Wavefunction {
     std::shared_ptr<SuperFunctional> functional() const { return functional_; }
 
     /// The DFT Potential object (or null if it has been deleted)
-    std::shared_ptr<VBase> V_potential() const { return potential_; }
+    /// This needs to be virtual so that subclasses can enforce their
+    /// particular potential's derived class.
+    virtual std::shared_ptr<VBase> V_potential() const = 0;
 
     /// Returns the occupation vectors
     std::shared_ptr<Vector> occupation_a() const;

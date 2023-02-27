@@ -112,6 +112,8 @@ void RHF::common_init() {
 
     same_a_b_dens_ = true;
     same_a_b_orbs_ = true;
+
+    subclass_init();
 }
 
 void RHF::finalize() {
@@ -1025,5 +1027,15 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
+
+void RHF::setup_potential() {
+    if (functional_->needs_xc()) {
+        potential_ = std::make_shared<RV>(functional_, basisset_, options_);
+        potential_->initialize();
+    } else {
+        potential_ = nullptr;
+    }
+}
+
 }  // namespace scf
 }  // namespace psi
