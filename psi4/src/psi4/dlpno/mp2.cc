@@ -1837,6 +1837,7 @@ void DLPNOMP2::estimate_memory() {
         qvv_pao += npao_q * npao_q;
     }
 
+    size_t s_oooo = 0L;
     size_t oooo = 0L;
     size_t ooov = 0L;
     size_t oovv = 0L;
@@ -1858,13 +1859,27 @@ void DLPNOMP2::estimate_memory() {
         ovvv += npno_ij * npno_ij * npno_ij;
         if (i <= j) qvv += naux_ij * npno_ij * npno_ij;
         if (i <= j) vvvv += npno_ij * npno_ij * npno_ij * npno_ij;
+
+        if (i >= j) {
+            for (int mn_ij = 0; mn_ij < nlmo_ij * nlmo_ij; mn_ij++) {
+                int m_ij = mn_ij / nlmo_ij, n_ij = mn_ij % nlmo_ij;
+                int m = lmopair_to_lmos_[ij][m_ij], n = lmopair_to_lmos_[ij][n_ij];
+                int mn = i_j_to_ij_[m][n];
+
+                int npno_mn = n_pno_[mn];
+                if (m_ij >= n_ij) {
+                    s_oooo += npno_ij * npno_mn;
+                }
+            }
+        }
     }
 
-    size_t direct_memory = (qoo_lmo + qov_pao + qvv_pao + oooo + ooov + oovv + ovvv) * sizeof(double);
+    size_t direct_memory = (s_oooo + qoo_lmo + qov_pao + qvv_pao + oooo + ooov + oovv + ovvv) * sizeof(double);
     size_t qvv_memory = direct_memory + qvv * sizeof(double);
     size_t vvvv_memory = direct_memory + vvvv * sizeof(double);
 
     outfile->Printf("    Memory Required to Store Each Integral Type:\n");
+    outfile->Printf("    S_pno   [ij/kl]   : %8.4f [GiB]\n", s_oooo * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (q|oo)  [LMO/LMO] : %8.4f [GiB]\n", qoo_lmo * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (q|ov)  [LMO/PAO] : %8.4f [GiB]\n", qov_pao * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (q|vv)  [PAO/PAO] : %8.4f [GiB]\n", qvv_pao * sizeof(double) / (1024 * 1024 * 1024.0));
@@ -1874,18 +1889,23 @@ void DLPNOMP2::estimate_memory() {
     outfile->Printf("    (ov|vv) [Pair ij] : %8.4f [GiB]\n", ovvv * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (q|vv)  [Pair ij] : %8.4f [GiB]\n", qvv * sizeof(double) / (1024 * 1024 * 1024.0));
     outfile->Printf("    (vv|vv) [Pair ij] : %8.4f [GiB]\n", vvvv * sizeof(double) / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Memory Needed for DIRECT :   %8.4f\n", direct_memory / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Memory Needed for DF-STORE : %8.4f\n", qvv_memory / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Memory Needed for STORE :    %8.4f\n", vvvv_memory / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Memory Given : %8.4f [GiB]\n\n", memory_ / (1024 * 1024 * 1024.0));
+    outfile->Printf("    DIRECT Mem Req    : %8.4f [GiB]\n", direct_memory / (1024 * 1024 * 1024.0));
+    outfile->Printf("    DF-STORE Mem Req  : %8.4f [GiB]\n", qvv_memory / (1024 * 1024 * 1024.0));
+    outfile->Printf("    STORE Mem Req     : %8.4f [GiB]\n", vvvv_memory / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Memory Given      : %8.4f [GiB]\n", memory_ / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Using 80% of Mem  : %8.4f [GiB]\n\n", 0.8 * memory_ / (1024 * 1024 * 1024.0));
 
-    if (vvvv_memory < memory_) {
+    /*
+    if (vvvv_memory < 0.8 * memory_) {
         outfile->Printf("   Storing 4-virtual integrals [HIGH MEMORY]...\n\n");
         virtual_storage_ = STORE;
-    } else if (qvv_memory < memory_) {
+    } else 
+    */
+    
+    if (qvv_memory < 0.8 * memory_) {
         outfile->Printf("   Storing DF virtual/virtual integrals [MED MEMORY]...\n\n");
         virtual_storage_ = DF_STORE;
-    } else if (direct_memory < memory_) {
+    } else if (direct_memory < 0.8 * memory_) {
         outfile->Printf("   Computing 4-virtual integrals as needed [LOW MEMORY]...\n\n");
         virtual_storage_ = DIRECT;
     } else {
