@@ -1157,6 +1157,10 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
     }
 }
 
+
+// build the K matrix using Neeses's Chain-of-Spheres Exchange algorithm
+// algorithm is originally proposed in https://doi.org/10.1016/j.chemphys.2008.10.036 
+// overlap fitting is discussed in https://doi.org/10.1063/1.3646921
 void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K) {
 
     // => Sizing <= //
@@ -1343,7 +1347,8 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // significant TAU shells determined from sparsity of the density matrix
         // i.e. KAPPA -> TAU sparsity. Refered to by Neese as a "p-junction"
-        std::vector<int> shell_map_tau;
+        // as discussed in section 3.1 of DOI 10.1016/j.chemphys.2008.10.036
+	std::vector<int> shell_map_tau;
 
         for(size_t TAU = 0; TAU < ns_block_all; TAU++) {
             for(size_t KAPPA_ind = 0; KAPPA_ind < ns_block; KAPPA_ind++) {
@@ -1436,7 +1441,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // => G Matrix <= //
 
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 7
-
+	// algorithm can be found in Scheme 1 of DOI 10.1016/j.chemphys.2008.10.036
         std::vector<SharedMatrix> G_block(njk);
         for(size_t jki = 0; jki < njk; jki++) {
             G_block[jki] = std::make_shared<Matrix>(nbf_block_all, npoints_block);
