@@ -93,6 +93,8 @@ class PSI_API SplitJK : public JK {
      /// Left-right symmetric? Determined in each call of compute()
     bool lr_symmetric_;
 
+    /// Number of ERI shell quartets computed, i.e., not screened out
+    size_t num_computed_shells_;
    public:
     // => Constructors < = //
 
@@ -116,6 +118,9 @@ class PSI_API SplitJK : public JK {
    
     void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
     void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric_; } 
+    /// Bench flag (defaults to 0)
+    void set_bench(int bench) { bench_ = bench; }
+    int get_bench() const { return bench_; }
 
     /**
     * Print header information regarding JK
@@ -274,6 +279,8 @@ class PSI_API COSK : public SplitJK {
     ~COSK() override;
 
     /// Build the exchange (K) matrix using COSX
+    // primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036 
+    // overlap fitting is discussed in https://doi.org/10.1063/1.3646921
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp,
 		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;

@@ -77,7 +77,7 @@ void DirectDFJ::common_init() {
 
 size_t DirectDFJ::num_computed_shells() {
     //no bench data returned - to come in a future update
-    return SplitJK::num_computed_shells();
+    return num_computed_shells_; 
 }
 
 size_t DirectDFJ::memory_estimate() {
@@ -317,12 +317,8 @@ void DirectDFJ::build_G_comp(onentstd::vector<std::shared_ptr<Matrix>>& D, std::
 
     timer_off("ERI2");
 
-    if (bench_) {
-        auto mode = std::ostream::app;
-        PsiOutStream printer("bench.dat", mode);
-        printer.Printf(" ERI Shells: %zu,%zu,%zu\n", computed_triplets1, computed_triplets2, nshelltriplet);
-    }
-
+    num_computed_shells_ = computed_triplets1 + computed_triplets2;
+    
     for(size_t jki = 0; jki < njk; jki++) {
         for (size_t thread = 0; thread < nthreads_; thread++) {
             J[jki]->add(JT[jki][thread]);

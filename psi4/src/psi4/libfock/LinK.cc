@@ -80,8 +80,7 @@ LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
 LinK::~LinK() {}
 
 size_t LinK::num_computed_shells() {
-    //no bench data returned - to come in a future update
-    return SplitJK::num_computed_shells();
+    return num_computed_shells_; 
 }
 
 void LinK::print_header() const {
@@ -494,9 +493,6 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     }
 
     num_computed_shells_ = computed_shells;
-    if (get_bench()) {
-        computed_shells_per_iter_["Quartets"].push_back(num_computed_shells());
-    }
 }
 
 }  // namespace psi
