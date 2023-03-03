@@ -913,7 +913,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
         KT.push_back(K2);
     }
 
-    // ==> Start "Loop over significant "bra"-shell pairs uh" in Fig. 1 of paper <== //
+    // ==> Start "Loop over significant 'bra'-shell pairs uh" in Fig. 1 of paper <== //
     
     // Number of computed shell quartets is tracked for benchmarking purposes
     num_computed_shells_ = 0L;
