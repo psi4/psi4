@@ -254,8 +254,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         KT.push_back(K2);
     }
 
-    // ==> Start "Loop over significant "bra"-shell pairs uh" in Fig. 1 of paper <== //
-    
+    // ==> Start "Loop over significant 'bra'-shell pairs uh" in Fig. 1 of paper <== // 
     // Number of computed shell quartets is tracked for benchmarking purposes
     num_computed_shells_ = 0L;
     size_t computed_shells = 0L;

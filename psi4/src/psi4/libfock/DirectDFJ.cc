@@ -268,6 +268,7 @@ void DirectDFJ::build_G_comp(onentstd::vector<std::shared_ptr<Matrix>>& D, std::
 
     // contract H with three-index DF ERIs to get J
     // J_{mn} = H_{p} (mn|p)
+    // J_{mn} correlates to J_[uv] in Figure 1 of Weigend's paper
 
     timer_on("ERI2");
 
