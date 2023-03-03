@@ -1051,7 +1051,6 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     if (print_output) {
         outfile->Printf("\n Electrostatic potential to be computed on the grid and written to grid_esp.dat\n");
     }
-        
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
         Dtot->scale(2.0);
