@@ -1309,6 +1309,8 @@ class PSI_API CompositeJK : public JK {
                  std::vector<std::shared_ptr<Matrix> >& K);
 
     /// Build the exchange (K) matrix using COSX
+    // primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036 
+    // overlap fitting is discussed in https://doi.org/10.1063/1.3646921
     void build_COSK(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& K);
 
