@@ -99,11 +99,15 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<SharedMatrix>> S_pno_ij_mn_; ///< pno overlaps
 
     /// triplet natural orbitals (TNOs)
+    std::vector<SharedMatrix> W_iajbkc_; ///< W3 intermediate for each lmo triplet
+    std::vector<SharedMatrix> T_iajbkc_; ///< Triples amplitude for each lmo triplet
     std::vector<SharedMatrix> X_tno_; ///< global PAO -> canonical TNO transforms
     std::vector<SharedVector> e_tno_; ///< TNO orbital energies
     std::vector<int> n_tno_; ///<number of tnos per triplet domain
     std::vector<std::vector<SharedMatrix>> S_pno_tno_ij_ilm_;
+    std::vector<std::vector<SharedMatrix>> S_tno_ijk_ljk_; ///< tno overlaps
 
+    /// Integral Types
     std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
     std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
     std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
@@ -122,6 +126,7 @@ class DLPNOMP2 : public Wavefunction {
     double e_lmp2_ss_; ///< same-spin component of e_lmp2_
     double e_lmp2_os_; ///< opposite-spin component of e_lmp2_
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
+    double e_lccsd_t_; ///< local (T) correlation energy
 
     // => Sparse Maps <= //
     std::map<std::string, SparseMap> sparse_maps_; ///< A lookup table of each SparseMap
@@ -256,6 +261,15 @@ class DLPNOMP2 : public Wavefunction {
 
     /// Compute PNO/TNO overlap matrices
     void compute_pno_tno_overlaps();
+    /// Compute TNO/TNO overlap matrices
+    void compute_tno_overlaps();
+
+    /// compute W3 intermediate (for DLPNO-CCSD(T))
+    void compute_W_iajbkc();
+    /// compute (T) energy
+    double compute_t_energy();
+    /// L_CCSD(T) iterations
+    void lccsd_t_iterations();
 
     /// Create lookup tables for all sparsity information (LMO, PAO, PNOs, SparseMaps)
     void store_information();

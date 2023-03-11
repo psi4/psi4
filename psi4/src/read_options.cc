@@ -2504,6 +2504,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DLPNO_MAXITER", 50);
         /*- Perform DLPNO-CCSD? */
         options.add_bool("DLPNO_CCSD", false);
+        /*- Perform DLPNO-CCSD(T)? */
+        options.add_bool("DLPNO_CCSD_T", false);
 
         /*- SUBSECTION Expert Options -*/
 
