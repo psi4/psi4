@@ -1360,7 +1360,6 @@ double DLPNOMP2::compute_energy() {
             timer_on("DLPNO CCSD(T)");
 
             tno_transform();
-            compute_pno_tno_overlaps();
             compute_tno_overlaps();
             compute_W_iajbkc();
             lccsd_t_iterations();
@@ -2178,7 +2177,7 @@ void DLPNOMP2::tno_transform() {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
 
-        if (i > j) continue;
+        if (i > j || n_pno_[ij] == 0) continue;
 
         D_ij[ij] = linalg::doublet(Tt_iajb_[ij], T_iajb_[ij], false, true);
         D_ij[ij]->add(linalg::doublet(Tt_iajb_[ij], T_iajb_[ij], true, false));
@@ -2301,43 +2300,6 @@ void DLPNOMP2::tno_transform() {
     timer_off("TNO transform");
 }
 
-void DLPNOMP2::compute_pno_tno_overlaps() {
-    timer_on("PNO/TNO overlaps");
-
-    int n_lmo_pairs = ij_to_i_j_.size();
-    int naocc = nalpha_ - nfrzc();
-
-    S_pno_tno_ij_ilm_.resize(n_lmo_pairs);
-
-#pragma omp parallel for schedule(static, 1)
-    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
-        int i, j;
-        std::tie(i, j) = ij_to_i_j_[ij];
-
-        if (n_pno_[ij] == 0) continue;
-
-        S_pno_tno_ij_ilm_[ij].resize(n_lmo_pairs);
-
-        for (int lm = 0; lm < n_lmo_pairs; ++lm) {
-            int l, m;
-            std::tie(l, m) = ij_to_i_j_[lm];
-            int ilm_dense = i * naocc * naocc + l * naocc + m;
-            if (i_j_k_to_ijk_.count(ilm_dense)) {
-                int ilm = i_j_k_to_ijk_[ilm_dense];
-
-                if (n_tno_[ilm] == 0) continue;
-
-                S_pno_tno_ij_ilm_[ij][lm] = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], \
-                                                                    lmotriplet_to_paos_[ilm]);
-                S_pno_tno_ij_ilm_[ij][lm] = linalg::triplet(X_pno_[ij], S_pno_tno_ij_ilm_[ij][lm], X_tno_[ilm], 
-                                                            true, false, false);
-            }
-        }
-    }
-
-    timer_off("PNO/TNO overlaps");
-}
-
 void DLPNOMP2::compute_tno_overlaps() {
 
     timer_on("TNO overlaps");
@@ -2345,7 +2307,10 @@ void DLPNOMP2::compute_tno_overlaps() {
     int n_lmo_triplets = ijk_to_i_j_k_.size();
     int naocc = nalpha_ - nfrzc();
 
-    S_tno_ijk_ljk_.resize(n_lmo_triplets);
+    S_ijk_ii_.resize(n_lmo_triplets);
+    S_ijk_ij_.resize(n_lmo_triplets);
+    S_ijk_il_.resize(n_lmo_triplets);
+    S_ijk_ljk_.resize(n_lmo_triplets);
 
 #pragma omp parallel for schedule(dynamic, 1)
     for (int ijk = 0; ijk < n_lmo_triplets; ++ijk) {
@@ -2355,7 +2320,34 @@ void DLPNOMP2::compute_tno_overlaps() {
         int ntno_ijk = n_tno_[ijk];
         if (ntno_ijk == 0) continue;
 
-        S_tno_ijk_ljk_[ijk].resize(naocc);
+        // Compute overlap between TNOs of triplet ijk and PNOs of pair ii
+        int ii = i_j_to_ij_[i][i];
+        auto S_pao_ijk_ii = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmopair_to_paos_[ii]);
+        S_ijk_ii_[ijk] = linalg::triplet(X_tno_[ijk], S_pao_ijk_ii, X_pno_[ii], true, false, false);
+
+        // Compute overlap between TNOs of triplet ijk and PNOs of pair ij
+        int ij = i_j_to_ij_[i][j];
+        if (n_pno_[ij] > 0) {
+            auto S_pao_ijk_ij = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmopair_to_paos_[ij]);
+            S_ijk_ij_[ijk] = linalg::triplet(X_tno_[ijk], S_pao_ijk_ij, X_pno_[ij], true, false, false);
+        }
+
+        // Compute overlap between TNOs of triplet ijk and PNOs of pair ij
+        S_ijk_il_[ijk].resize(naocc);
+        for (int l = 0; l < naocc; l++) {
+            int jk = i_j_to_ij_[j][k];
+            int l_jk = lmopair_to_lmos_dense_[jk][l];
+
+            int il = i_j_to_ij_[i][l];
+
+            if (l_jk != -1 && il != -1 && n_pno_[il] != 0) {
+                auto S_pao_ijk_il = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmopair_to_paos_[il]);
+                S_ijk_il_[ijk][l] = linalg::triplet(X_tno_[ijk], S_pao_ijk_il, X_pno_[il], true, false, false);
+            }
+        }
+
+        // Compute TNO overlaps between triplet spaces ijk and ljk
+        S_ijk_ljk_[ijk].resize(naocc);
 
         for (int l = 0; l < naocc; l++) {
             int ljk_dense = l * naocc * naocc + j * naocc + k;
@@ -2365,7 +2357,7 @@ void DLPNOMP2::compute_tno_overlaps() {
             if (n_tno_[ljk] == 0) continue;
 
             auto S_pao_ijk_ljk = submatrix_rows_and_cols(*S_pao_, lmotriplet_to_paos_[ijk], lmotriplet_to_paos_[ljk]);
-            S_tno_ijk_ljk_[ijk][l] = linalg::triplet(X_tno_[ijk], S_pao_ijk_ljk, X_tno_[ljk], true, false, false);
+            S_ijk_ljk_[ijk][l] = linalg::triplet(X_tno_[ijk], S_pao_ijk_ljk, X_tno_[ljk], true, false, false);
         }
     }
 
@@ -2395,16 +2387,17 @@ void DLPNOMP2::compute_W_iajbkc() {
         
         W_temp[ijk] = std::make_shared<Matrix>(ntno_ijk, ntno_ijk * ntno_ijk);
 
-        auto T_kj = linalg::doublet(T_iajb_[kj], S_PNO(kj, ii));
-        auto K_temp1 = linalg::doublet(T_kj, K_maef_[ii]);
-        K_temp1 = linalg::doublet(S_pno_tno_ij_ilm_[kj][ij], K_temp1, true, false);
+        auto T_kj = linalg::doublet(T_iajb_[kj], S_PNO(kj, ij));
+        auto K_temp1 = linalg::doublet(T_kj, K_maef_[ij]);
+        int kji = i_j_k_to_ijk_[k * naocc * naocc + j * naocc + i];
+        K_temp1 = linalg::doublet(S_ijk_ij_[kji], K_temp1, true, false);
 
         for (int c_ijk = 0; c_ijk < ntno_ijk; c_ijk++) {
             std::vector<int> c_ijk_slice(1, c_ijk);
             auto K_temp1a = submatrix_rows(*K_temp1, c_ijk_slice);
             K_temp1a->reshape(ntno_ijk, ntno_ijk);
 
-            K_temp1a = linalg::triplet(S_pno_tno_ij_ilm_[ii][kj], K_temp1a, S_pno_tno_ij_ilm_[ii][kj], true, false, false);
+            K_temp1a = linalg::triplet(S_ijk_ij_[ijk], K_temp1a, S_ijk_ij_[ijk], false, false, true);
 
             for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
                 for (int b_ijk = 0; b_ijk < ntno_ijk; b_ijk++) {
@@ -2420,10 +2413,10 @@ void DLPNOMP2::compute_W_iajbkc() {
             if (il == -1 || n_pno_[il] == 0) continue;
 
             std::vector<int> l_jk_slice(1, l_jk);
-            auto K_temp2 = linalg::doublet(submatrix_rows(*K_mbij_[jk], l_jk_slice), S_pno_tno_ij_ilm_[jk][ik]);
+            int jki = i_j_k_to_ijk_[j * naocc * naocc + k * naocc + i];
+            auto K_temp2 = linalg::doublet(submatrix_rows(*K_mbij_[jk], l_jk_slice), S_ijk_ij_[jki], false, true);
 
-            auto T_il = linalg::doublet(S_pno_tno_ij_ilm_[il][jk], T_iajb_[il], true, false);
-            T_il = linalg::doublet(T_il, S_pno_tno_ij_ilm_[il][jk], false, false);
+            auto T_il = linalg::triplet(S_ijk_il_[ijk][l], T_iajb_[il], S_ijk_il_[ijk][l], false, false, true);
 
             for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
                 for (int b_ijk = 0; b_ijk < ntno_ijk; b_ijk++) {
@@ -2485,23 +2478,28 @@ double DLPNOMP2::compute_t_energy() {
         int ii = i_j_to_ij_[i][i], jj = i_j_to_ij_[j][j], kk = i_j_to_ij_[k][k];
 
         int ntno_ijk = n_tno_[ijk];
+        if (ntno_ijk == 0) continue;
+
+        int jki = i_j_k_to_ijk_[j * naocc * naocc + k * naocc + i];
+        int ikj = i_j_k_to_ijk_[i * naocc * naocc + k * naocc + j];
+        int kij = i_j_k_to_ijk_[k * naocc * naocc + i * naocc + j];
 
         auto V_ijk = W_iajbkc_[ijk]->clone();
 
-        auto T_temp1 = linalg::doublet(T_ia_[i], S_pno_tno_ij_ilm_[ii][jk], true, false);
-        auto K_temp1 = linalg::triplet(S_pno_tno_ij_ilm_[jk][ik], K_iajb_[jk], S_pno_tno_ij_ilm_[jk][ik], true, false, false);
+        auto T_temp1 = linalg::doublet(S_ijk_ii_[ijk], T_ia_[i], true, false);
+        auto K_temp1 = linalg::triplet(S_ijk_ij_[jki], K_iajb_[jk], S_ijk_ij_[jki], false, false, true);
 
-        auto T_temp2 = linalg::doublet(T_ia_[j], S_pno_tno_ij_ilm_[jj][ik], true, false);
-        auto K_temp2 = linalg::triplet(S_pno_tno_ij_ilm_[ik][jk], K_iajb_[ik], S_pno_tno_ij_ilm_[ik][jk], true, false, false);
+        auto T_temp2 = linalg::doublet(S_ijk_ii_[jki], T_ia_[j], true, false);
+        auto K_temp2 = linalg::triplet(S_ijk_ij_[ikj], K_iajb_[ik], S_ijk_ij_[ikj], false, false, true);
 
-        auto T_temp3 = linalg::doublet(T_ia_[k], S_pno_tno_ij_ilm_[kk][ij], true, false);
-        auto K_temp3 = linalg::triplet(S_pno_tno_ij_ilm_[ij][jk], K_iajb_[ij], S_pno_tno_ij_ilm_[ij][jk], true, false, false);
+        auto T_temp3 = linalg::doublet(S_ijk_ii_[kij], T_ia_[k], true, false);
+        auto K_temp3 = linalg::triplet(S_ijk_ij_[ijk], K_iajb_[ij], S_ijk_ij_[ijk], false, false, true);
 
         for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
             for (int b_ijk = 0; b_ijk < ntno_ijk; b_ijk++) {
                 for (int c_ijk = 0; c_ijk < ntno_ijk; c_ijk++) {
-                    (*V_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) += (*T_temp1)(0, a_ijk) * (*K_temp1)(b_ijk, c_ijk) +
-                            (*T_temp2)(0, b_ijk) * (*K_temp2)(a_ijk, c_ijk) + (*T_temp3)(0, c_ijk) * (*K_temp3)(a_ijk, b_ijk);
+                    (*V_ijk)(a_ijk, b_ijk * ntno_ijk + c_ijk) += (*T_temp1)(a_ijk, 0) * (*K_temp1)(b_ijk, c_ijk) +
+                            (*T_temp2)(b_ijk, 0) * (*K_temp2)(a_ijk, c_ijk) + (*T_temp3)(c_ijk, 0) * (*K_temp3)(a_ijk, b_ijk);
                 }
             }
         }
@@ -2589,12 +2587,12 @@ void DLPNOMP2::lccsd_t_iterations() {
                     int ijl = i_j_k_to_ijk_[ijl_dense];
                     if (n_tno_[ijl] == 0) continue;
 
-                    auto T_temp1 = linalg::doublet(S_tno_ijk_ljk_[kij][l], T_iajbkc_[ijl]);
+                    auto T_temp1 = linalg::doublet(S_ijk_ljk_[kij][l], T_iajbkc_[ijl]);
                     for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
                         std::vector<int> a_ijk_slice(1, a_ijk);
                         auto T_temp2 = submatrix_rows(*T_temp1, a_ijk_slice);
                         T_temp2->reshape(ntno_ijk, ntno_ijk);
-                        T_temp2 = linalg::triplet(S_tno_ijk_ljk_[kij][l], T_temp2, S_tno_ijk_ljk_[kij][l], false, false, true);
+                        T_temp2 = linalg::triplet(S_ijk_ljk_[kij][l], T_temp2, S_ijk_ljk_[kij][l], false, false, true);
 
                         C_DAXPY(ntno_ijk * ntno_ijk, -(*F_lmo_)(l,k), &(*T_temp2)(0,0), 1, &(*R_iajbkc[ijk])(a_ijk, 0), 1);
                     }
@@ -2605,12 +2603,12 @@ void DLPNOMP2::lccsd_t_iterations() {
                     int ilk = i_j_k_to_ijk_[ilk_dense];
                     if (n_tno_[ilk] == 0) continue;
 
-                    auto T_temp1 = linalg::doublet(S_tno_ijk_ljk_[jik][l], T_iajbkc_[ilk]);
+                    auto T_temp1 = linalg::doublet(S_ijk_ljk_[jik][l], T_iajbkc_[ilk]);
                     for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
                         std::vector<int> a_ijk_slice(1, a_ijk);
                         auto T_temp2 = submatrix_rows(*T_temp1, a_ijk_slice);
                         T_temp2->reshape(ntno_ijk, ntno_ijk);
-                        T_temp2 = linalg::triplet(S_tno_ijk_ljk_[jik][l], T_temp2, S_tno_ijk_ljk_[jik][l], false, false, true);
+                        T_temp2 = linalg::triplet(S_ijk_ljk_[jik][l], T_temp2, S_ijk_ljk_[jik][l], false, false, true);
 
                         C_DAXPY(ntno_ijk * ntno_ijk, -(*F_lmo_)(l,j), &(*T_temp2)(0,0), 1, &(*R_iajbkc[ijk])(a_ijk, 0), 1);
                     }
@@ -2621,12 +2619,12 @@ void DLPNOMP2::lccsd_t_iterations() {
                     int ljk = i_j_k_to_ijk_[ljk_dense];
                     if (n_tno_[ljk] == 0) continue;
 
-                    auto T_temp1 = linalg::doublet(S_tno_ijk_ljk_[ijk][l], T_iajbkc_[ljk]);
+                    auto T_temp1 = linalg::doublet(S_ijk_ljk_[ijk][l], T_iajbkc_[ljk]);
                     for (int a_ijk = 0; a_ijk < ntno_ijk; a_ijk++) {
                         std::vector<int> a_ijk_slice(1, a_ijk);
                         auto T_temp2 = submatrix_rows(*T_temp1, a_ijk_slice);
                         T_temp2->reshape(ntno_ijk, ntno_ijk);
-                        T_temp2 = linalg::triplet(S_tno_ijk_ljk_[ijk][l], T_temp2, S_tno_ijk_ljk_[ijk][l], false, false, true);
+                        T_temp2 = linalg::triplet(S_ijk_ljk_[ijk][l], T_temp2, S_ijk_ljk_[ijk][l], false, false, true);
 
                         C_DAXPY(ntno_ijk * ntno_ijk, -(*F_lmo_)(l,i), &(*T_temp2)(0,0), 1, &(*R_iajbkc[ijk])(a_ijk, 0), 1);
                     }
@@ -3531,7 +3529,7 @@ void DLPNOMP2::lccsd_iterations() {
 
 void DLPNOMP2::compute_triples_info() {
     tno_transform();
-    compute_pno_tno_overlaps();
+    compute_tno_overlaps();
 }
 
 }  // namespace dlpno

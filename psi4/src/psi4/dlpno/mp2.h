@@ -105,7 +105,10 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedVector> e_tno_; ///< TNO orbital energies
     std::vector<int> n_tno_; ///<number of tnos per triplet domain
     std::vector<std::vector<SharedMatrix>> S_pno_tno_ij_ilm_;
-    std::vector<std::vector<SharedMatrix>> S_tno_ijk_ljk_; ///< tno overlaps
+    std::vector<SharedMatrix> S_ijk_ii_; ///< tno/diagonal pno overlaps
+    std::vector<SharedMatrix> S_ijk_ij_; ///< tno/pno overlaps
+    std::vector<std::vector<SharedMatrix>> S_ijk_il_; ///< tno/pno overlaps
+    std::vector<std::vector<SharedMatrix>> S_ijk_ljk_; ///< tno overlaps
 
     /// Integral Types
     std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
@@ -258,9 +261,6 @@ class DLPNOMP2 : public Wavefunction {
 
     /// Create TNOs (Triples Natural Orbitals) for DLPNO-CCSD(T)
     void tno_transform();
-
-    /// Compute PNO/TNO overlap matrices
-    void compute_pno_tno_overlaps();
     /// Compute TNO/TNO overlap matrices
     void compute_tno_overlaps();
 
