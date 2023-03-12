@@ -54,6 +54,9 @@ class DLPNOMP2 : public Wavefunction {
     /// threshold for PNO truncation
     double T_CUT_PNO_;
 
+    /// threshold for TNO truncation
+    double T_CUT_TNO_;
+
     /// auxiliary basis
     std::shared_ptr<BasisSet> ribasis_;
     SharedMatrix full_metric_;
@@ -256,8 +259,9 @@ class DLPNOMP2 : public Wavefunction {
     void print_pao_pair_domains();
     void print_integral_sparsity();
     void print_results();
-
+    
     void print_ccsd_results();
+    void print_ccsd_t_results();
 
     /// Create TNOs (Triples Natural Orbitals) for DLPNO-CCSD(T)
     void tno_transform();
