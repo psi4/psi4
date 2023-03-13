@@ -2242,9 +2242,9 @@ void DLPNOMP2::tno_transform() {
                 int v = lmotriplet_to_paos_[ijk][v_ijk];
                 int v_ij = global_pao_to_pao_ij[ij][v], v_jk = global_pao_to_pao_ij[jk][v], v_ik = global_pao_to_pao_ij[ik][v];
 
-                if (u_ij != -1 && v_ij != -1) (*D_ijk)(u_ijk, v_ijk) += (*D_ij[ij])(u_ij, v_ij);
-                if (u_jk != -1 && v_jk != -1) (*D_ijk)(u_ijk, v_ijk) += (*D_ij[jk])(u_jk, v_jk);
-                if (u_ik != -1 && v_ik != -1) (*D_ijk)(u_ijk, v_ijk) += (*D_ij[ik])(u_ik, v_ik);
+                if (n_pno_[ij] > 0 && u_ij != -1 && v_ij != -1) (*D_ijk)(u_ijk, v_ijk) += (*D_ij[ij])(u_ij, v_ij);
+                if (n_pno_[jk] > 0 && u_jk != -1 && v_jk != -1) (*D_ijk)(u_ijk, v_ijk) += (*D_ij[jk])(u_jk, v_jk);
+                if (n_pno_[ik] > 0 && u_ik != -1 && v_ik != -1) (*D_ijk)(u_ijk, v_ijk) += (*D_ij[ik])(u_ik, v_ik);
             }
         }
         D_ijk->scale(1.0 / 3.0);
