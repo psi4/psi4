@@ -106,8 +106,8 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> T_iajbkc_; ///< Triples amplitude for each lmo triplet
     std::vector<SharedMatrix> X_tno_; ///< global PAO -> canonical TNO transforms
     std::vector<SharedVector> e_tno_; ///< TNO orbital energies
+    std::vector<SharedMatrix> denom_ijk_; /// (eps[a_ijk] + eps[b_ijk] + eps[c_ijk] - F[i,i] - F[j,j] - F[k,k])
     std::vector<int> n_tno_; ///<number of tnos per triplet domain
-    std::vector<std::vector<SharedMatrix>> S_pno_tno_ij_ilm_;
     std::vector<SharedMatrix> S_ijk_ii_; ///< tno/diagonal pno overlaps
     std::vector<SharedMatrix> S_ijk_ij_; ///< tno/pno overlaps
     std::vector<std::vector<SharedMatrix>> S_ijk_il_; ///< tno/pno overlaps
@@ -272,6 +272,8 @@ class DLPNOMP2 : public Wavefunction {
     void compute_W_iajbkc();
     /// compute (T) energy
     double compute_t_energy();
+    /// L_CCSD(T0) energy
+    void compute_lccsd_t0();
     /// L_CCSD(T) iterations
     void lccsd_t_iterations();
 
@@ -313,8 +315,6 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedMatrix> get_X_tno() { return X_tno_; }
     /// Returns TNO virtual energies for triplet ijk
     std::vector<SharedVector> eps_tno() { return e_tno_; }
-    /// Returns the PNO/TNO overlap matrix
-    std::vector<std::vector<SharedMatrix>> get_S_pno_tno() { return S_pno_tno_ij_ilm_; }
 
     /// LMO indices (i, j) to significant LMO pair index (ij); insignificant (i, j) maps to -1
     std::vector<std::vector<int>> i_j_to_ij() { return i_j_to_ij_; }

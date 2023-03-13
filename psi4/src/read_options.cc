@@ -2506,6 +2506,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("DLPNO_CCSD", false);
         /*- Perform DLPNO-CCSD(T)? */
         options.add_bool("DLPNO_CCSD_T", false);
+        /*- Use the T0 approximation in DLPNO-CCSD(T)? */
+        options.add_bool("T0_APPROXIMATION", false);
 
         /*- SUBSECTION Expert Options -*/
 

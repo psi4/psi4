@@ -661,7 +661,6 @@ void export_wavefunction(py::module& m) {
         .def("compute_triples_info", &dlpno::DLPNOMP2::compute_triples_info, "Computes information for DLPNO-(T)")
         .def("get_X_tno", &dlpno::DLPNOMP2::get_X_tno, "Returns X_tno matrix")
         .def("eps_tno", &dlpno::DLPNOMP2::eps_tno, "Returns TNO virtual energies for triplet ijk")
-        .def("get_S_pno_tno", &dlpno::DLPNOMP2::get_S_pno_tno, "Returns the PNO/TNO overlap matrix")
         .def("i_j_k_to_ijk", &dlpno::DLPNOMP2::i_j_k_to_ijk,
              "LMO indices (i, j, k) to significant LMO triplet index (ijk)")
         .def("ijk_to_i_j_k", &dlpno::DLPNOMP2::ijk_to_i_j_k,
