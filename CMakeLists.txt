@@ -4,6 +4,7 @@ if(DEFINED ENV{LGTM_SRC})
 else ()
     cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
     cmake_policy(SET CMP0094 NEW)
+    cmake_policy(SET CMP0075 NEW)
 endif()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17

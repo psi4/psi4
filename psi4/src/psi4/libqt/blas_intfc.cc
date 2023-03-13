@@ -148,12 +148,26 @@ void PSI_API C_DAXPY(size_t length, double a, const double *x, int inc_x, double
 void PSI_API C_DAXPBY(size_t length, double a, const double *x, int inc_x, double b, double *y, int inc_y) {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
+#ifdef BLAS_HAS_DAXPBY
     for (int block = 0; block <= big_blocks; block++) {
         const double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DAXPBY(&length_s, &a, x_s, &inc_x, &b, y_s, &inc_y);
     }
+#else
+    for (int block = 0; block <= big_blocks; block++) {
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DSCAL(&length_s, &b, y_s, &inc_y);
+    }
+    for (int block = 0; block <= big_blocks; block++) {
+        const double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
+    }
+#endif
 }
 
 /*!
