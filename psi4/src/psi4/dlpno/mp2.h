@@ -268,6 +268,9 @@ class DLPNOMP2 : public Wavefunction {
     /// Compute TNO/TNO overlap matrices
     void compute_tno_overlaps();
 
+    /// Helper method for symmetrizing matrices in DLPNO-CCSD(T)
+    inline void t_symmetrizer(std::vector<SharedMatrix>& X, int ijk);
+
     /// compute W3 intermediate (for DLPNO-CCSD(T))
     void compute_W_iajbkc();
     /// compute (T) energy
