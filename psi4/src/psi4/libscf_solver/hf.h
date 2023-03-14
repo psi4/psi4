@@ -428,7 +428,7 @@ class HF : public Wavefunction {
 
     // External potentials
     void clear_external_potentials() { external_potentials_.clear(); }
-    void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }
+    void push_back_external_potential(const SharedMatrix& Vext) { external_potentials_.push_back(Vext); }
     void set_external_cpscf_perturbation(const std::string name, PerturbedPotentialFunction fun) {
         external_cpscf_perturbations_[name] = fun;
     }

@@ -194,10 +194,6 @@ def _rotatory_strength(e: float, etm: np.ndarray, mtm: np.ndarray, gauge: str = 
     pytest.param( "METHYLOXIRANE", 'RHF-3',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_triplet, TDA]),
 ]) # yapf: disable
 def test_tdscf(mol, ref, func, ptype, basis, molecules, reference_data):
-    # expected failures
-    if (ref == 'RHF-3') and (func != "HF"):
-        pytest.xfail("RKS Vx kernel only Spin Adapted for Singlet")
-
     molecule = molecules[mol]
     psi4.set_options({'scf_type': 'pk', 'e_convergence': 8, 'd_convergence': 8, 'save_jk': True, 'dft_radial_points': 99, 'dft_spherical_points': 590, 'dft_pruning_scheme': "None"})
     if ref == "UHF":

@@ -420,7 +420,7 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
 
     return ret;
 }
-std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool combine, std::string return_basis) {
+std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bool combine, std::string return_basis, bool singlet) {
     // Make sure we have a JK object
     if (!jk_) {
         throw PSIEXCEPTION("RHF::twoel_Hx: JK object is not initialized, please set option SAVE_JK to True.");
@@ -494,7 +494,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
             Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi(), Dx[i]->symmetry()));
         }
-        potential_->compute_Vx(Dx, Vx);
+        potential_->compute_Vx_full(Dx, Vx, singlet);
     }
 
     std::vector<SharedMatrix> V_ext_pert;
@@ -522,6 +522,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 #endif
 
     std::vector<SharedMatrix> ret;
+    if (!singlet) {
+        for (size_t i = 0; i < x_vec.size(); i++) {
+            J[i]->zero();
+        }
+    }
     if (combine) {
         // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
         for (size_t i = 0; i < x_vec.size(); i++) {
