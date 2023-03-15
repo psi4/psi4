@@ -240,7 +240,7 @@ jobs:
           # "next" packages aren't self-contained, and "0.15.8" not available fro py310. try again someday
           # sed -i "s;- qcfractal;;g" aux.yaml
           # sed -i "s;- qcportal;;g" aux.yaml
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcarchivetesting;g" aux.yaml
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal=0.50b7;g" aux.yaml
           sed -i "s;- qcportal;- postgresql;g" aux.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
