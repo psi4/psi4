@@ -93,18 +93,14 @@ void export_blas_lapack(py::module& m) {
     def("DGEES", &psi::PSI_DGEES);
     def("DGEESX", &psi::PSI_DGEESX);
     def("DGEEVX", &psi::PSI_DGEEVX);
-    def("DGEGS", &psi::PSI_DGEGS);
-    def("DGEGV", &psi::PSI_DGEGV);
     def("DGEHRD", &psi::PSI_DGEHRD);
     def("DGELQF", &psi::PSI_DGELQF);
     def("DGELS", &psi::PSI_DGELS);
     def("DGELSD", &psi::PSI_DGELSD);
     def("DGELSS", &psi::PSI_DGELSS);
-    def("DGELSX", &psi::PSI_DGELSX);
     def("DGELSY", &psi::PSI_DGELSY);
     def("DGEQLF", &psi::PSI_DGEQLF);
     def("DGEQP3", &psi::PSI_DGEQP3);
-    def("DGEQPF", &psi::PSI_DGEQPF);
     def("DGERFS", &psi::PSI_DGERFS);
     def("DGERQF", &psi::PSI_DGERQF);
     def("DGESDD", &psi::PSI_DGESDD);
@@ -124,8 +120,6 @@ void export_blas_lapack(py::module& m) {
     def("DGGLSE", &psi::PSI_DGGLSE);
     def("DGGQRF", &psi::PSI_DGGQRF);
     def("DGGRQF", &psi::PSI_DGGRQF);
-    def("DGGSVD", &psi::PSI_DGGSVD);
-    def("DGGSVP", &psi::PSI_DGGSVP);
     def("DGTCON", &psi::PSI_DGTCON);
     def("DGTRFS", &psi::PSI_DGTRFS);
     def("DGTSV", &psi::PSI_DGTSV);
@@ -221,7 +215,6 @@ void export_blas_lapack(py::module& m) {
     def("DTRSYL", &psi::PSI_DTRSYL);
     def("DTRTRI", &psi::PSI_DTRTRI);
     def("DTRTRS", &psi::PSI_DTRTRS);
-    def("DTZRQF", &psi::PSI_DTZRQF);
     def("DTZRZF", &psi::PSI_DTZRZF);
     **/
 }
