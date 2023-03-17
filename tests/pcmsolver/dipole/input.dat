@@ -7,11 +7,12 @@ ref_energies = { 'HF'    : [-76.0203919443, -76.0223213132,  # TEST
                             -76.4165432999241, -76.42017454551062]  # TEST
                }
 # Reference values, in atomic units, for finite difference formulas
-ref_3pt = { 'HF'    : 0.9646844572, # TEST
-            'B3LYP' : 0.9078186547597511  # TEST
+# * adjusted after PEDRA pruning in v1.2.3
+ref_3pt = { 'HF'    : 0.9646843842,  #TEST  0.9646844572
+            'B3LYP' : 0.9078185863,  #TEST  0.9078186547597511
           }
-ref_5pt = { 'HF'    : 0.9646862512, # TEST
-            'B3LYP' : 0.9078210741364501  # TEST
+ref_5pt = { 'HF'    : 0.9646861782,  #TEST  0.9646862512
+            'B3LYP' : 0.9078210056,  #TEST  0.9078210741364501
           }
 
 molecule h2o {
