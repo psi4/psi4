@@ -257,7 +257,17 @@ void DFJCOSK::common_init() {
     auto S_num_init = compute_numeric_overlap(*grid_init_, primary_);
     auto S_num_final = compute_numeric_overlap(*grid_final_, primary_ );
 
+    outfile->Printf("S_num_init: \n");
+    outfile->Printf("----------- \n");
+    S_num_init.print_out();
+    outfile->Printf("\n");
+
     timer_off("Numeric Overlap");
+
+    outfile->Printf("S_num_final: \n");
+    outfile->Printf("------------ \n");
+    S_num_final.print_out();
+    outfile->Printf("\n");
 
     timer_on("Analytic Overlap");
 
