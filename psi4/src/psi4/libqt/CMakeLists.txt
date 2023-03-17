@@ -31,6 +31,10 @@ list(APPEND CMAKE_REQUIRED_LIBRARIES tgt::blas)
 check_function_exists(daxpby _has_daxpby)
 cmake_pop_check_state()
 
+if(NOT _has_daxpby)
+  message(WARNING "${Yellow}Your BLAS library does not seem to be providing the DAXPBY subroutine. If you are seeing this message, and you are not building with Apple Accelerate, you may want to re-check that the correct BLAS/LAPACK libraries are being used by the build system.${ColourReset}")
+endif()
+
 psi4_add_module(lib qt sources)
 target_compile_definitions(qt
   PRIVATE
