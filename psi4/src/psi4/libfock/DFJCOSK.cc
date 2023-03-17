@@ -95,7 +95,10 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
                 S_nump[mu][nu] += S_num_blockp[mu_local][nu_local];
             }
         }
-
+        outfile->Printf("S_num_block: \n");
+        outfile->Printf("----------- \n");
+	S_num_block.print_out();
+	outfile->Printf("\n");
     }
 
     S_num.hermitivitize();
