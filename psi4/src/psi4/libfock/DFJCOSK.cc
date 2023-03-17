@@ -81,7 +81,11 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
                 X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
             }
         }
-
+        outfile->Printf("X_block: \n");
+        outfile->Printf("-------- \n");
+	X_block.print_out();
+	outfile->Printf("\n");
+ 
         // significant basis functions at these grid points
         const auto &bf_map = block->functions_local_to_global();
 
@@ -96,7 +100,7 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
             }
         }
         outfile->Printf("S_num_block: \n");
-        outfile->Printf("----------- \n");
+        outfile->Printf("------------ \n");
 	S_num_block.print_out();
 	outfile->Printf("\n");
     }
