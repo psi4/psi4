@@ -3,7 +3,7 @@ name: Eco
 on:
   push:
     branches:
-      - master
+      - master-cf
   pull_request:
 
 permissions:
