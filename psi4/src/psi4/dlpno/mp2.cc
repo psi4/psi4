@@ -2043,7 +2043,10 @@ void DLPNOMP2::compute_cc_ints() {
     L_iajb_.resize(n_lmo_pairs);
     Lt_iajb_.resize(n_lmo_pairs);
 
-#pragma omp parallel for schedule(dynamic, 1)
+    size_t qvv_memory = 0L;
+    size_t qvv_svd_memory = 0L;
+
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : qvv_memory) reduction(+ : qvv_svd_memory)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -2139,11 +2142,33 @@ void DLPNOMP2::compute_cc_ints() {
         }
 
         if (virtual_storage_ == DF_STORE && i <= j) {
-            Qab_ij_[ij].resize(naux_ij);
-            for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
-                Qab_ij_[ij][q_ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
-                C_DCOPY(npno_ij * npno_ij, &(*q_vv)(q_ij, 0), 1, &(*Qab_ij_[ij][q_ij])(0,0), 1);
+            auto [U, S, V] = q_vv->svd_temps();
+            q_vv->svd(U, S, V);
+
+            int nsvd_ij = 0;
+            std::vector<int> slice_indices;
+            while (nsvd_ij < S->dim() && S->get(nsvd_ij) >= options_.get_double("T_CUT_SVD")) {
+                U->scale_column(0, nsvd_ij, S->get(nsvd_ij));
+                slice_indices.push_back(nsvd_ij);
+                nsvd_ij += 1;
             }
+
+            // U(Q_ij, r_ij) S(r_ij) V(r_ij, a_ij * e_ij)
+            // U(Q_ij, s_ij) S(s_ij) V(s_ij, b_ij * f_ij)
+            U = submatrix_cols(*U, slice_indices);
+            auto B_rs = linalg::doublet(U, U, true, false);
+            B_rs->power(0.5, 1.0e-14);
+            
+            V = linalg::doublet(B_rs, submatrix_rows(*V, slice_indices));
+
+            Qab_ij_[ij].resize(nsvd_ij);
+            for (int q_ij = 0; q_ij < nsvd_ij; q_ij++) {
+                Qab_ij_[ij][q_ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
+                C_DCOPY(npno_ij * npno_ij, &(*V)(q_ij, 0), 1, &(*Qab_ij_[ij][q_ij])(0,0), 1);
+            }
+
+            qvv_memory += naux_ij * npno_ij * npno_ij;
+            qvv_svd_memory += nsvd_ij * npno_ij * npno_ij;
         }
 
         // L_iajb
@@ -2156,6 +2181,8 @@ void DLPNOMP2::compute_cc_ints() {
         Lt_iajb_[ij]->scale(2.0);
         Lt_iajb_[ij]->subtract(J_ijab_[ij]);
     }
+
+    outfile->Printf("   SVD Memory/DF Memory : %8.4f \n\n", (double) qvv_svd_memory / qvv_memory);
 
     timer_off("Compute CC Ints");
 }
@@ -3493,7 +3520,8 @@ void DLPNOMP2::lccsd_iterations() {
                 r2_temp->scale(0.5);
                 Rn_iajb[ij]->add(r2_temp);
             } else if (virtual_storage_ == DF_STORE) { // Intermediate Memory Algorithm
-                for (int q_ij = 0; q_ij < lmopair_to_ribfs_[ij].size(); q_ij++) {
+                int nsvd_ij = (i > j) ? Qab_ij_[ji].size() : Qab_ij_[ij].size();
+                for (int q_ij = 0; q_ij < nsvd_ij; q_ij++) {
                     if (i > j) r2_temp = linalg::triplet(Qab_ij_[ji][q_ij], tau[ij], Qab_ij_[ji][q_ij]);
                     else r2_temp = linalg::triplet(Qab_ij_[ij][q_ij], tau[ij], Qab_ij_[ij][q_ij]);
                     r2_temp->scale(0.5);

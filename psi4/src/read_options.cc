@@ -2523,6 +2523,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("T_CUT_DO_PRE", 3e-2);
         /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) !expert -*/
         options.add_double("T_CUT_MKN", 1e-3);
+        /*- SVD Tolerance for factoring (Q_ij|a_ij b_ij) two electron integrals */
+        options.add_double("T_CUT_SVD", 1e-8);
         /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
         options.add_double("T_CUT_CLMO", 1e-2);
         /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/
