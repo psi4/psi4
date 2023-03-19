@@ -316,7 +316,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if core.get_option('SCF', 'DDX'):
             Dt = self.Da().clone()
             Dt.add(self.Db())
-            uddx, Vddx = self.ddx_state.get_solvation_contributions(Dt)
+            uddx, Vddx, self.ddx_state = self.ddx.get_solvation_contributions(Dt, self.ddx_state)
             SCFE += uddx
             self.push_back_external_potential(Vddx)
         self.set_variable("DD SOLVATION ENERGY", uddx)  # P::e DDX

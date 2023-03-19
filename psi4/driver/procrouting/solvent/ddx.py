@@ -74,11 +74,16 @@ def get_ddx_options(molecule):
     if core.has_option_changed("DDX", "DDX_SOLVENT_EPSILON"):
         solvent_epsilon = core.get_option("DDX", "DDX_SOLVENT_EPSILON")
     elif solvent == "":
-        raise ValidationError("Required option 'SOLVENT' is missing.")
+        raise ValidationError("Required option 'DDX_SOLVENT' is missing.")
     elif solvent not in pyddx.data.solvent_epsilon:
         raise ValidationError("Unknown solvent {solvent}.")
     else:
         solvent_epsilon = pyddx.data.solvent_epsilon[solvent]
+
+    if core.has_option_changed("DDX", "DDX_SOLVENT_EPSILON_OPTICAL"):
+        solvent_epsilon_optical = core.get_option("DDX", "DDX_SOLVENT_EPSILON_OPTICAL")
+    else:
+        solvent_epsilon_optical = pydata.data.solvent_epsilon_optical.get(solvent, None)
 
     fmm_multipole_lmax = core.get_option("DDX", "DDX_LMAX")
     if core.has_option_changed("DDX", "DDX_FMM_MULTIPOLE_LMAX"):
@@ -86,10 +91,8 @@ def get_ddx_options(molecule):
 
     model_options = {
         "model": core.get_option("DDX", "DDX_MODEL").lower(),
-        "sphere_charges": np.array([molecule.Z(i) for i in range(molecule.natom())]),
         "sphere_centres": molecule.geometry().np.T,
         "sphere_radii": radii,
-        "solvent_epsilon": solvent_epsilon,
         "lmax": core.get_option("DDX", "DDX_LMAX"),
         "n_lebedev": core.get_option("DDX", "DDX_N_LEBEDEV"),
         "maxiter": core.get_option("DDX", "DDX_MAXITER"),
@@ -102,6 +105,10 @@ def get_ddx_options(molecule):
         "logfile": core.get_option("DDX", "DDX_LOGFILE"),
         "eta": core.get_option("DDX", "DDX_ETA"),
         "shift": core.get_option("DDX", "DDX_SHIFT"),
+    }
+    solvent_options = {
+        "solvent_epsilon": solvent_epsilon,
+        "solvent_epsilon_optical": solvent_epsilon_optical,
     }
     solver_options = {
         "tol": core.get_option("DDX", "DDX_SOLVATION_CONVERGENCE"),
@@ -117,7 +124,8 @@ def get_ddx_options(molecule):
         "DFT_PRUNING_SCHEME": "ROBUST",
         "DFT_BLOCK_SCHEME": "ATOMIC",
     }
-    return {"model": model_options, "solver": solver_options, "grid": grid_options}
+    return {"model": model_options, "solvent": solvent_options,
+            "solver": solver_options, "grid": grid_options}
 
 
 def _print_cavity(charges, centres, radii, unit="Angstrom"):
@@ -140,7 +148,7 @@ class DdxInterface:
     def __init__(self, molecule, options, basisset):
         # verify that the minimal version is used if pyddx is provided
         # from outside the Psi4 ecosystem
-        min_version = "0.1.3"
+        min_version = "0.2.0"
         if parse_version(pyddx.__version__) < parse_version(min_version):
             raise ModuleNotFoundError("pyddx version {} is required at least. "
                                       "Version {}"
@@ -151,29 +159,39 @@ class DdxInterface:
         self.mints = core.MintsHelper(self.basisset)
         self.op_solver = options["solver"]
         op_grid = options["grid"]
+        op_solvent = options["solvent"]
 
         # Setup the model
         try:
-            self.model = pyddx.Model(**options["model"])
+            self.model = pyddx.Model(**options["model"],
+                                     solvent_epsilon=op_solvent["solvent_epsilon"])
+            e_optical = op_solvent["solvent_epsilon_optical"]
+            if e_optical:
+                self.model_optical = pyddx.Model(**options["model"], solvent_epsilon=e_optical)
+            else:
+                self.model_optical = None
         except ValidationError as e:
             raise ValidationError(str(e))
         self.cavity = core.Matrix.from_array(self.model.cavity.T)
+        self.sphere_charges = np.array([molecule.Z(i) for i in range(molecule.natom())])
 
         # Print summary of options
         core.print_out(pyddx.banner())
         core.print_out("\n")
         for k in sorted(list(self.model.input_parameters)):
-            if k not in ("sphere_charges", "sphere_centres", "sphere_radii"):
+            if k not in ("sphere_centres", "sphere_radii"):
                 core.print_out(f"    {k:<18s} = {self.model.input_parameters[k]}\n")
+        for k in sorted(list(op_solvent.keys())):
+            core.print_out(f"    {k:<18s} = {op_solvent[k]}\n")
         for k in sorted(list(self.op_solver.keys())):
             core.print_out(f"    {k:<18s} = {self.op_solver[k]}\n")
         core.print_out(f"\n    DDX numerical integration setup:\n\n")
         for k in sorted(list(options["grid"].keys())):
             core.print_out(f"    {k.lower():<20s} = {op_grid[k]}\n")
 
-        _print_cavity(self.model.sphere_charges, self.model.sphere_centres,
+        _print_cavity(self.sphere_charges, self.model.sphere_centres,
                       self.model.sphere_radii, "Angstrom")
-        _print_cavity(self.model.sphere_charges, self.model.sphere_centres,
+        _print_cavity(self.sphere_charges, self.model.sphere_centres,
                       self.model.sphere_radii, "Bohr")
         core.print_out("\n")
 
@@ -192,16 +210,14 @@ class DdxInterface:
             self.scaled_ylms.append(core.Matrix.from_array(mtx.T))
 
         # Build the nuclear contributions
-        solute_multipoles = (
-            options["model"]["sphere_charges"].reshape(1, -1) / np.sqrt(4 * np.pi)
-        )
+        solute_multipoles = self.sphere_charges.reshape(1, -1) / np.sqrt(4 * np.pi)
         self.nuclear = self.model.multipole_electrostatics(solute_multipoles)
         self.nuclear["psi"] = self.model.multipole_psi(solute_multipoles)
 
-        self.state = None
-
-    def get_solvation_contributions(self, density_matrix, elec_only=False):
+    def get_solvation_contributions(self, density_matrix, state=None,
+                                    elec_only=False, nonequilibrium=False):
         # TODO elec_only=True has not yet been tested. Will be properly integrated in a follow-up
+        # TODO nonequilibrium=True has not yet been tested. Will be properly integrated in a follow-up
         #
         # Compute electronic contributions
         psi = self.numints.dd_density_integral(self.scaled_ylms, density_matrix).np.T
@@ -209,38 +225,56 @@ class DdxInterface:
         coords = core.Matrix.from_array(self.model.cavity.T)
         phi = self.mints.electrostatic_potential_value(dummy_charges, coords, density_matrix).np
 
+        elec_field = None
+        derivative_order = self.model.required_phi_derivative_order(compute_forces=False)
+        if derivative_order > 0:
+            elec_field = self.mints.electric_field_value(coords, density_matrix).np
+
         if not elec_only:
             psi += self.nuclear["psi"]
             phi += self.nuclear["phi"]
+            if elec_field:
+                elec_field += self.nuclear["e"]
 
-        # Update solvation problem with current phi and psi
-        if self.state is None:
-            self.state = pyddx.State(self.model, phi, psi)
-            self.state.fill_guess()
-            self.state.fill_guess_adjoint()
+        if not nonequilibrium:
+            model = self.model  # Use standard dielectric constant
+        elif not self.model_optical:
+            raise ValueError("Non-equilibrium solvation not available, likely because no optical dielectric "
+                             "constant is tabulated for the chosen solvent. Pleise provide the optical "
+                             "dielectric constant manually using the option DDX_SOLVENT_EPSILON_OPTICAL "
+                             "or change to a supported solvent (" +
+                             ", ".join(pyddx.data.solvent_epsilon_optical) + ").")
         else:
-            self.state.update_problem(phi, psi)
+            model = self.model_optical  # Use optical dielectric constant
+
+        # Update solvation problem with current phi, elec_field and psi
+        if state is None:
+            state = pyddx.State(model, psi, phi, elec_field)
+            state.fill_guess(**self.op_solver["tol"])
+            state.fill_guess_adjoint(**self.op_solver["tol"])
+        else:
+            state.update_problem(psi, phi, elec_field)
 
         # Solve problem and adjoint problem
-        self.state.solve(**self.op_solver)
-        self.state.solve_adjoint(**self.op_solver)
+        state.solve(**self.op_solver)
+        state.solve_adjoint(**self.op_solver)
 
         # Compute solvation energy
         fepsilon = 1.0
-        if self.model.model == "cosmo":
-            epsilon = self.model.solvent_epsilon
+        if model.model == "cosmo":
+            epsilon = model.solvent_epsilon
             fepsilon = (epsilon - 1) / epsilon
-        E_ddx = 0.5 * fepsilon * np.sum(self.state.x * psi)
+        E_ddx = fepsilon * state.energy()
 
         # Fock-matrix contributions
-        eta = [core.Vector.from_array(ylm.np.T @ self.state.x[:, block.parent_atom()])
+        eta = [core.Vector.from_array(ylm.np.T @ state.x[:, block.parent_atom()])
                for (block, ylm) in zip(self.dftgrid.blocks(), self.scaled_ylms)]
         V_ddx = self.numints.potential_integral(eta)
 
         extern = core.ExternalPotential()
-        for xi_nj, pos_nj in zip(self.state.xi, self.model.cavity.T):
+        for xi_nj, pos_nj in zip(state.xi, model.cavity.T):
             extern.addCharge(xi_nj, pos_nj[0], pos_nj[1], pos_nj[2])
         V_ddx.add(extern.computePotentialMatrix(self.basisset))
 
         V_ddx.scale(-0.5 * fepsilon)  # Scale total potential
-        return E_ddx, V_ddx
+        return E_ddx, V_ddx, state
