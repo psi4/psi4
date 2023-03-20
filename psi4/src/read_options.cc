@@ -330,6 +330,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Optical dielectric constant of the solvent to use for non-equilibrium solvation -*/
         options.add_double("DDX_SOLVENT_EPSILON_OPTICAL", 0);
 
+        /*- Debye-Hückel parameter of the solvent to use. Ignored if DDX_MODEL is not LPB;
+            mandatory for LPB. -*/
+        options.add_double("DDX_SOLVENT_KAPPA", 0);
+
         /*- Maximal degree of modelling spherical harmonics -*/
         options.add_int("DDX_LMAX", 9);
 

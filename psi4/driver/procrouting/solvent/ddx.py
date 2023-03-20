@@ -85,12 +85,20 @@ def get_ddx_options(molecule):
     else:
         solvent_epsilon_optical = pydata.data.solvent_epsilon_optical.get(solvent, None)
 
+    solvent_kappa = 0.0
+    if core.get_option("DDX", "DDX_MODEL").lower() == "lpb":
+        solvent_kappa = core.get_option("DDX", "DDX_SOLVENT_KAPPA")
+        if solvent_kappa <= 0:
+            raise ValidationError("DDX_SOLVENT_KAPPA is required for LPB and should be a "
+                                  "positive quantity")
+
     fmm_multipole_lmax = core.get_option("DDX", "DDX_LMAX")
     if core.has_option_changed("DDX", "DDX_FMM_MULTIPOLE_LMAX"):
         fmm_multipole_lmax = core.get_option("DDX", "DDX_FMM_MULTIPOLE_LMAX")
 
     model_options = {
         "model": core.get_option("DDX", "DDX_MODEL").lower(),
+        "solvent_kappa": solvent_kappa,
         "sphere_centres": molecule.geometry().np.T,
         "sphere_radii": radii,
         "lmax": core.get_option("DDX", "DDX_LMAX"),
@@ -106,7 +114,7 @@ def get_ddx_options(molecule):
         "eta": core.get_option("DDX", "DDX_ETA"),
         "shift": core.get_option("DDX", "DDX_SHIFT"),
     }
-    solvent_options = {
+    dielectric_options = {
         "solvent_epsilon": solvent_epsilon,
         "solvent_epsilon_optical": solvent_epsilon_optical,
     }
@@ -124,7 +132,7 @@ def get_ddx_options(molecule):
         "DFT_PRUNING_SCHEME": "ROBUST",
         "DFT_BLOCK_SCHEME": "ATOMIC",
     }
-    return {"model": model_options, "solvent": solvent_options,
+    return {"model": model_options, "dielectric": dielectric_options,
             "solver": solver_options, "grid": grid_options}
 
 
@@ -159,13 +167,13 @@ class DdxInterface:
         self.mints = core.MintsHelper(self.basisset)
         self.op_solver = options["solver"]
         op_grid = options["grid"]
-        op_solvent = options["solvent"]
+        op_dielectric = options["dielectric"]
 
         # Setup the model
         try:
             self.model = pyddx.Model(**options["model"],
-                                     solvent_epsilon=op_solvent["solvent_epsilon"])
-            e_optical = op_solvent["solvent_epsilon_optical"]
+                                     solvent_epsilon=op_dielectric["solvent_epsilon"])
+            e_optical = op_dielectric["solvent_epsilon_optical"]
             if e_optical:
                 self.model_optical = pyddx.Model(**options["model"], solvent_epsilon=e_optical)
             else:
