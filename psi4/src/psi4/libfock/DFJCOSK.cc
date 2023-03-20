@@ -81,14 +81,9 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         auto X_blockp = X_block.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                outfile->Printf("    Point value: %f; Weight value: %f \n", point_values->get(p, k), w[p]); 
                 X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
 	    }
         }
-        outfile->Printf("X_block: \n");
-        outfile->Printf("-------- \n");
-	X_block.print_out();
-	outfile->Printf("\n");
  
         // significant basis functions at these grid points
         const auto &bf_map = block->functions_local_to_global();
@@ -103,10 +98,6 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
                 S_nump[mu][nu] += S_num_blockp[mu_local][nu_local];
             }
         }
-        outfile->Printf("S_num_block: \n");
-        outfile->Printf("------------ \n");
-	S_num_block.print_out();
-	outfile->Printf("\n");
     }
 
     S_num.hermitivitize();
@@ -280,17 +271,7 @@ void DFJCOSK::common_init() {
     auto S_num_init = compute_numeric_overlap(*grid_init_, primary_);
     auto S_num_final = compute_numeric_overlap(*grid_final_, primary_ );
 
-    outfile->Printf("S_num_init: \n");
-    outfile->Printf("----------- \n");
-    S_num_init.print_out();
-    outfile->Printf("\n");
-
     timer_off("Numeric Overlap");
-
-    outfile->Printf("S_num_final: \n");
-    outfile->Printf("------------ \n");
-    S_num_final.print_out();
-    outfile->Printf("\n");
 
     timer_on("Analytic Overlap");
 
