@@ -254,6 +254,16 @@ void DFJCOSK::common_init() {
 	    } 
         }
     }	    
+
+    for (const auto &final_block : grid_final_->blocks()) {
+        double* w = final_block->w();
+        for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
+            if (w[ipoint] < 0.0) {
+	      throw PSIEXCEPTION("The final COSX grid configuration contains negative weights! This will crash COSX, as per https://github.com/psi4/psi4/issues/2890. A proper fix is incoming, but for now, adjust either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL to remove negative weights.");
+	    } 
+        }
+    }	    
+ 
     timer_off("Grid Construction");
 
     // => Overlap Fitting Metric <= //
