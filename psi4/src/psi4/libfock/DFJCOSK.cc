@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#include <cassert>
+#include <cmath>
+
 #include "jk.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/cubature.h"
@@ -78,8 +81,9 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         auto X_blockp = X_block.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
+                outfile->Printf("    Point value: %f; Weight value: %f \n", point_values->get(p, k), w[p]); 
                 X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
-            }
+	    }
         }
         outfile->Printf("X_block: \n");
         outfile->Printf("-------- \n");
