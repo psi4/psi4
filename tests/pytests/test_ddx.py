@@ -74,14 +74,14 @@ __geoms = {
 
 
 def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
-    E, V = fock_term(density_matrix)
+    E, V, _ = fock_term(density_matrix)
 
     perturbation = np.random.random(density_matrix.np.shape)
     perturbation = perturbation + perturbation.T
     delta = np.sum(V.np * perturbation)
 
-    Em, _ = fock_term(core.Matrix.from_array(density_matrix.np - eps * perturbation))
-    Ep, _ = fock_term(core.Matrix.from_array(density_matrix.np + eps * perturbation))
+    Em, _, _ = fock_term(core.Matrix.from_array(density_matrix.np - eps * perturbation))
+    Ep, _, _ = fock_term(core.Matrix.from_array(density_matrix.np + eps * perturbation))
     delta_ref = (Ep - Em) / (2 * eps)
 
     assert abs(delta - delta_ref) < 1e-6
@@ -134,7 +134,7 @@ def test_ddx_fock_build(inp):
 
     _base_test_fock(get_EV, inp["dm"])
 
-    E, _ = get_EV(inp["dm"])
+    E, _, _ = get_EV(inp["dm"])
     assert compare_values(inp["ref"], E, atol=1e-16, rtol=1e-2)
 
 @pytest.mark.quick

@@ -83,7 +83,7 @@ def get_ddx_options(molecule):
     if core.has_option_changed("DDX", "DDX_SOLVENT_EPSILON_OPTICAL"):
         solvent_epsilon_optical = core.get_option("DDX", "DDX_SOLVENT_EPSILON_OPTICAL")
     else:
-        solvent_epsilon_optical = pydata.data.solvent_epsilon_optical.get(solvent, None)
+        solvent_epsilon_optical = pyddx.data.solvent_epsilon_optical.get(solvent, None)
 
     solvent_kappa = 0.0
     if core.get_option("DDX", "DDX_MODEL").lower() == "lpb":
@@ -187,12 +187,12 @@ class DdxInterface:
         core.print_out(pyddx.banner())
         core.print_out("\n")
         for k in sorted(list(self.model.input_parameters)):
-            if k not in ("sphere_centres", "sphere_radii"):
-                core.print_out(f"    {k:<18s} = {self.model.input_parameters[k]}\n")
-        for k in sorted(list(op_solvent.keys())):
-            core.print_out(f"    {k:<18s} = {op_solvent[k]}\n")
+            if k not in ("sphere_centres", "sphere_radii", "solvent_epsilon"):
+                core.print_out(f"    {k:<23s} = {self.model.input_parameters[k]}\n")
+        for k in sorted(list(op_dielectric.keys())):
+            core.print_out(f"    {k:<23s} = {op_dielectric[k]}\n")
         for k in sorted(list(self.op_solver.keys())):
-            core.print_out(f"    {k:<18s} = {self.op_solver[k]}\n")
+            core.print_out(f"    {k:<23s} = {self.op_solver[k]}\n")
         core.print_out(f"\n    DDX numerical integration setup:\n\n")
         for k in sorted(list(options["grid"].keys())):
             core.print_out(f"    {k.lower():<20s} = {op_grid[k]}\n")
@@ -258,8 +258,8 @@ class DdxInterface:
         # Update solvation problem with current phi, elec_field and psi
         if state is None:
             state = pyddx.State(model, psi, phi, elec_field)
-            state.fill_guess(**self.op_solver["tol"])
-            state.fill_guess_adjoint(**self.op_solver["tol"])
+            state.fill_guess(**self.op_solver)
+            state.fill_guess_adjoint(**self.op_solver)
         else:
             state.update_problem(psi, phi, elec_field)
 
