@@ -251,6 +251,18 @@ void DFJCOSK::common_init() {
     };
     grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
 
+    // Sanity-check of grids to ensure no negative grid weights
+    // COSX crashes when grids with negative weights are used,
+    // which can happen with certain grid configurations
+    // See https://github.com/psi4/psi4/issues/2890
+    for (const auto &init_block : grid_init_->blocks()) {
+        double* w = init_block->w();
+        for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
+            if (w[ipoint] < 0.0) {
+	      throw PSIEXCEPTION("The initial COSX grid configuration contains negative weights! This will crash COSX, as per https://github.com/psi4/psi4/issues/2890. A proper fix is incoming, but for now, adjust either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL to remove negative weights.");
+	    } 
+        }
+    }	    
     timer_off("Grid Construction");
 
     // => Overlap Fitting Metric <= //
