@@ -88,7 +88,7 @@ def quotify(string, isbasis=False):
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
     if isbasis:
-        wordre = re.compile(r'(([$]?)([-+()*.,\w\"\'/\\]+))')
+        wordre = re.compile(r'(([$]?)([-+:()*.,\w\"\'/\\]+))')
     else:
         wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
     string = wordre.sub(process_word_quotes, string)
@@ -278,7 +278,7 @@ def process_basis_block(matchobj):
 
     symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
     label_re = re.compile(
-        r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$',
+        r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+:*\(\)\w]+)\s*$',
         re.IGNORECASE)
     all_re = re.compile(r'^\s*assign\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
@@ -672,7 +672,7 @@ def process_input(raw_input: str, print_level: int = 1) -> str:
     # with undesired multiline matches.  Better the double-negative [^\S\n] instead, which
     # will match any space, tab, etc., except a newline
     set_command = re.compile(
-        r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$',
+        r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*:()\.\w]+))\s*$',
         re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
