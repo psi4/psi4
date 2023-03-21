@@ -1,0 +1,370 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.7 release
+
+                         Git: Rev {HEAD} 6ce35a5 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, and D. L. Poole
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 21 March 2023 01:59PM
+
+    Process ID: 304116
+    Host:       bfortress
+    PSIDATADIR: /home/ben/software/mambaforge/envs/qcenginedevel/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Same test as mints2, but using the BSE to specify the basis sets
+
+refnuc =  204.01995818061    #TEST
+refscf = -228.95763005900784 #TEST
+
+molecule bz {
+    X
+    X   1  RXX
+    X   2  RXX  1  90.0
+    C   3  RCC  2  90.0  1   0.0
+    C   3  RCC  2  90.0  1  60.0
+    C1  3  RCC  2  90.0  1 120.0
+    C   3  RCC  2  90.0  1 180.0
+    C1  3  RCC  2  90.0  1 240.0
+    C   3  RCC  2  90.0  1 300.0
+    H1  3  RCH  2  90.0  1   0.0
+    H   3  RCH  2  90.0  1  60.0
+    H   3  RCH  2  90.0  1 120.0
+    H1  3  RCH  2  90.0  1 180.0
+    H   3  RCH  2  90.0  1 240.0
+    H   3  RCH  2  90.0  1 300.0
+
+    RCC  = 1.3915
+    RCH  = 2.4715
+    RXX  = 1.00
+}
+
+basis  {
+   # First, assign DZ to all atoms
+   assign bse:6-31g
+   # Now, assign 3-21G from bse library all carbon atoms (latest version)
+   assign C bse:3-21g
+   # The two atoms labelled H1 get a STO-3G basis from psi4 library
+   assign H1 sto-3g
+   # Carbons 3 and 5 get a STO-3G basis from BSE, but specify v0
+   assign C1 bse:sto-3g:0
+
+    [DZ]
+    spherical
+    ****
+    H     0 
+    S   3   1.00
+         19.2406000              0.0328280        
+          2.8992000              0.2312080        
+          0.6534000              0.8172380        
+    S   1   1.00
+          0.1776000              1.0000000        
+    ****
+}
+
+ 
+set d_convergence 11
+set e_convergence 11
+set scf_type pk
+ 
+scfenergy = energy('scf')
+
+compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                        #TEST
+compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy") #TEST
+compare_values(refscf, scfenergy, 9, "SCF Energy")                                   #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+
+*** tstart() called on bfortress
+*** at Tue Mar 21 13:59:42 2023
+
+   => Loading Basis Set <=
+
+    Name: ANONYMOUS806EA786
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2, 4, 6  entry C          line    64 bse bse:3-21g 
+    atoms 3, 5       entry C          line    59 bse bse:sto-3g:0 
+    atoms 7, 10      entry H          line    19 file /home/ben/software/mambaforge/envs/qcenginedevel/share/psi4/basis/sto-3g.gbs 
+    atoms 8-9, 11-12 entry H          line    17 bse bse:6-31g 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: D6h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000    -1.391500000000    12.000000000000
+         C            1.205074349366     0.000000000000    -0.695750000000    12.000000000000
+         C            1.205074349366     0.000000000000     0.695750000000    12.000000000000
+         C            0.000000000000    -0.000000000000     1.391500000000    12.000000000000
+         C           -1.205074349366    -0.000000000000     0.695750000000    12.000000000000
+         C           -1.205074349366    -0.000000000000    -0.695750000000    12.000000000000
+         H           -0.000000000000     0.000000000000    -2.471500000000     1.007825032230
+         H            2.140381785453     0.000000000000    -1.235750000000     1.007825032230
+         H            2.140381785453     0.000000000000     1.235750000000     1.007825032230
+         H            0.000000000000     0.000000000000     2.471500000000     1.007825032230
+         H           -2.140381785453    -0.000000000000     1.235750000000     1.007825032230
+         H           -2.140381785453    -0.000000000000    -1.235750000000     1.007825032230
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =      0.19119  B =      0.19119  C =      0.09559 [cm^-1]
+  Rotational constants: A =   5731.60181  B =   5731.60181  C =   2865.80091 [MHz]
+  Nuclear repulsion =  204.019958180606807
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 42
+  Nalpha       = 21
+  Nbeta        = 21
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-11
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: ANONYMOUS806EA786
+    Blend: BSE:3-21G + BSE:6-31G + BSE:STO-3G:0 + STO-3G
+    Number of shells: 36
+    Number of basis functions: 56
+    Number of Cartesian functions: 56
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                  12
+      Number of AO shells:              36
+      Number of primitives:             76
+      Number of atomic orbitals:        56
+      Number of basis functions:        56
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 2548812 doubles for integral storage.
+  We computed 208252 shell quartets total.
+  Whereas there are 222111 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 8.5507216608E-03.
+  Reciprocal condition number of the overlap matrix is 2.1797192213E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A1        27      27 
+     A2         3       3 
+     B1        19      19 
+     B2         7       7 
+   -------------------------
+    Total      56      56
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:  -227.09914572601141   -2.27099e+02   0.00000e+00 
+   @RHF iter   1:  -228.85194821750474   -1.75280e+00   1.23133e-02 DIIS/ADIIS
+   @RHF iter   2:  -228.93278947107086   -8.08413e-02   6.46365e-03 DIIS/ADIIS
+   @RHF iter   3:  -228.95776663370248   -2.49772e-02   9.65792e-04 DIIS/ADIIS
+   @RHF iter   4:  -228.95849137478356   -7.24741e-04   3.35141e-04 DIIS/ADIIS
+   @RHF iter   5:  -228.95856680900417   -7.54342e-05   4.75684e-05 DIIS
+   @RHF iter   6:  -228.95857038861115   -3.57961e-06   1.92299e-05 DIIS
+   @RHF iter   7:  -228.95857115265107   -7.64040e-07   9.46908e-06 DIIS
+   @RHF iter   8:  -228.95857138548399   -2.32833e-07   2.80082e-06 DIIS
+   @RHF iter   9:  -228.95857140165035   -1.61664e-08   8.86282e-07 DIIS
+   @RHF iter  10:  -228.95857140301553   -1.36518e-09   2.67808e-07 DIIS
+   @RHF iter  11:  -228.95857140314200   -1.26477e-10   3.25125e-08 DIIS
+   @RHF iter  12:  -228.95857140314382   -1.81899e-12   6.38503e-09 DIIS
+   @RHF iter  13:  -228.95857140314354    2.84217e-13   9.29757e-10 DIIS
+   @RHF iter  14:  -228.95857140314354    0.00000e+00   2.04173e-10 DIIS
+   @RHF iter  15:  -228.95857140314351    2.84217e-14   6.31464e-11 DIIS
+   @RHF iter  16:  -228.95857140314357   -5.68434e-14   1.23146e-11 DIIS
+   @RHF iter  17:  -228.95857140314342    1.42109e-13   3.34650e-12 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -11.177835     2A1   -11.169401     1B1   -11.163593  
+       3A1   -11.163358     4A1   -11.104453     2B1   -11.104429  
+       5A1    -1.147856     3B1    -1.009597     6A1    -1.007160  
+       4B1    -0.819040     7A1    -0.816046     8A1    -0.709745  
+       9A1    -0.633644     5B1    -0.615092     6B1    -0.584445  
+      10A1    -0.584301     1B2    -0.501846    11A1    -0.484072  
+       7B1    -0.484064     2B2    -0.335771     1A2    -0.327939  
+
+    Virtual:                                                              
+
+       3B2     0.162294     2A2     0.212592    12A1     0.272805  
+       8B1     0.307672    13A1     0.390593     9B1     0.397130  
+       4B2     0.434266    14A1     0.493112    10B1     0.556075  
+      11B1     0.637888    15A1     0.639485    16A1     0.716493  
+      17A1     0.769515    12B1     0.816475    18A1     0.919683  
+      19A1     0.960445     5B2     0.974679    13B1     0.975581  
+      14B1     1.039981    20A1     1.042216     6B2     1.061773  
+       3A2     1.074657    15B1     1.096111    21A1     1.113886  
+       7B2     1.125490    22A1     1.208792    16B1     1.321930  
+      17B1     1.404844    23A1     1.422405    24A1     1.582684  
+      18B1     1.634121    25A1     1.745048    26A1     1.815121  
+      19B1     1.871427    27A1     2.204121  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [    11,    1,    7,    2 ]
+    NA   [    11,    1,    7,    2 ]
+    NB   [    11,    1,    7,    2 ]
+
+  @RHF Final Energy:  -228.95857140314342
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            204.0199581806068068
+    One-Electron Energy =                -712.0696847104665039
+    Two-Electron Energy =                 279.0911551267162736
+    Total Energy =                       -228.9585714031434236
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole            Electronic (a.u.)      Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.2073136            0.0000000            0.2073136
+ Magnitude           :                                                    0.2073136
+
+ ------------------------------------------------------------------------------------
+
+*** tstop() called on bfortress at Tue Mar 21 13:59:43 2023
+Module time:
+	user time   =       1.09 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.09 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    Point group...........................................................................PASSED
+    Nuclear repulsion energy..............................................................PASSED
+    SCF Energy............................................................................FAILED
+Traceback (most recent call last):
+  File "/home/ben/software/mambaforge/envs/qcenginedevel/bin/psi4", line 338, in <module>
+    exec(content)
+  File "<string>", line 70, in <module>
+  File "/home/ben/software/mambaforge/envs/qcenginedevel/lib//python3.10/site-packages/psi4/driver/qcdb/testing.py", line 104, in _mergedapis_compare_values
+    return qcel.testing.compare_values(expected, computed, **kwargs)
+  File "/home/ben/software/mambaforge/envs/qcenginedevel/lib//python3.10/site-packages/qcelemental/testing.py", line 180, in compare_values
+    return return_handler(allclose, label, message, return_message, quiet)
+  File "/home/ben/software/mambaforge/envs/qcenginedevel/lib//python3.10/site-packages/psi4/driver/p4util/testing.py", line 204, in _psi4_true_raise_handler
+    raise TestComparisonError(message)
+
+psi4.driver.p4util.exceptions.TestComparisonError: 	SCF Energy: computed value (-228.95857140314) does not match (-228.95763005901) to atol=1e-09 by difference (-0.00094134414).
+
+
+Printing out the relevant lines from the Psithon --> Python processed input file:
+    core.set_global_option("E_CONVERGENCE", 11)
+    core.set_global_option("SCF_TYPE", "pk")
+    scfenergy = energy('scf')
+    compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                       
+    compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy")
+--> compare_values(refscf, scfenergy, 9, "SCF Energy")                                  
+
+!----------------------------------------------------------------------------------!
+!                                                                                  !
+!         SCF Energy: computed value (-228.95857140314) does not match             !
+!     (-228.95763005901) to atol=1e-09 by difference (-0.00094134414).             !
+!                                                                                  !
+!----------------------------------------------------------------------------------!
+
+    Psi4 stopped on: Tuesday, 21 March 2023 01:59PM
+    Psi4 wall time for execution: 0:00:01.16
+
+*** Psi4 encountered an error. Buy a developer more coffee!
+*** Resources and help at github.com/psi4/psi4.
