@@ -221,6 +221,7 @@ jobs:
           - toml
             # qc opt'l
           - adcc
+          - basis_set_exchange
           - cppe
           - dftd3-python
           - dftd4-python
@@ -285,6 +286,7 @@ jobs:
           #- psi4/label/dev::simint
             # qc opt'l
           #- adcc
+          - basis_set_exchange
           #- cppe
           #- psi4/label/dev::dftd3
           - dftd3-python

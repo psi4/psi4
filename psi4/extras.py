@@ -167,6 +167,7 @@ _addons_ = {
     #"optking": which_import("optking", return_bool=True),
     "psixas": which_import("psixas", return_bool=True),
     #"mctc-gcp": psi4_which("mctc-gcp", return_bool=True),
+    "bse": which_import("basis_set_exchange", return_bool=True),
 }
 
 
