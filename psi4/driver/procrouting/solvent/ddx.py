@@ -85,6 +85,7 @@ def get_ddx_options(molecule):
     else:
         solvent_epsilon_optical = pyddx.data.solvent_epsilon_optical.get(solvent, None)
 
+    # TODO Deal with unit conversion (A^{-1} -> bohr^{-1})
     solvent_kappa = 0.0
     if core.get_option("DDX", "DDX_MODEL").lower() == "lpb":
         solvent_kappa = core.get_option("DDX", "DDX_SOLVENT_KAPPA")
@@ -236,21 +237,21 @@ class DdxInterface:
         elec_field = None
         derivative_order = self.model.required_phi_derivative_order(compute_forces=False)
         if derivative_order > 0:
-            elec_field = self.mints.electric_field_value(coords, density_matrix).np
+            elec_field = self.mints.electric_field_value(coords, density_matrix).np.T
 
         if not elec_only:
             psi += self.nuclear["psi"]
             phi += self.nuclear["phi"]
-            if elec_field:
+            if elec_field is not None:
                 elec_field += self.nuclear["e"]
 
         if not nonequilibrium:
             model = self.model  # Use standard dielectric constant
-        elif not self.model_optical:
+        elif self.model_optical is None:  # Non-equilibrium not available
             raise ValueError("Non-equilibrium solvation not available, likely because no optical dielectric "
                              "constant is tabulated for the chosen solvent. Pleise provide the optical "
                              "dielectric constant manually using the option DDX_SOLVENT_EPSILON_OPTICAL "
-                             "or change to a supported solvent (" +
+                             "or change to a supported solvent (one of " +
                              ", ".join(pyddx.data.solvent_epsilon_optical) + ").")
         else:
             model = self.model_optical  # Use optical dielectric constant
