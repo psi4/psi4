@@ -47,10 +47,14 @@ def collect_version_input_from_fallback(meta_file='metadata.py'):
     return res
 
 
-def is_git_repo(cwd='./', dot_git_qualifies=False, no_git_cmd_result=False):
+def is_git_repo(cwd='./', dot_git_qualifies=False, no_git_cmd_result=False, extraneous_toplevel_patterns=None):
     """Returns boolean as to whether *cwd* is under git control. When no ``git``
     command available in environment, *no_git_cmd_result* returned. If within
     the .git directory of a git repository, *dot_git_qualifies* returned.
+    For rare circumstances when one might be under git control but not in the
+    target software repo that's providing versionable tags (e.g., conda-forge
+    staged-recipes Linux), string patterns in the *extraneous_toplevel_patterns*
+    list will return False.
 
     """
     command = 'git rev-parse --is-inside-work-tree'
@@ -72,7 +76,21 @@ def is_git_repo(cwd='./', dot_git_qualifies=False, no_git_cmd_result=False):
 
     if out.strip() == 'true':
         # in a git repo and not within .git dir
-        return True
+
+        if extraneous_toplevel_patterns:
+            command = 'git rev-parse --show-toplevel'
+            process = subprocess.Popen(command.split(),
+                                       stderr=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       cwd=cwd,
+                                       universal_newlines=True)
+            (out, err) = process.communicate()
+            for ptn in extraneous_toplevel_patterns:
+                if ptn in out.strip():
+                    return False
+            return True
+        else:
+            return True
 
     if out.strip() == 'false':
         # in a git repo in .git dir
@@ -165,7 +183,7 @@ def reconcile_and_compute_version_output(quiet=False):
         sys.exit()
 
     cwd = os.path.dirname(os.path.abspath(__file__))
-    if is_git_repo(cwd=cwd):
+    if is_git_repo(cwd=cwd, extraneous_toplevel_patterns=["staged-recipes"]):
         res.update(collect_version_input_from_git())
 
         # establish the default response
