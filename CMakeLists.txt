@@ -98,7 +98,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 
 ############################  Options: Build What?  ############################
 option(ENABLE_ambit "Enables the ambit tensor library" OFF)
-option(ENABLE_bse "Enables the basis_set_exchange for requesting basis sets (requires jsonschema; can also be added at runtime)" OFF)
+option(ENABLE_bse "Enables the basis_set_exchange for requesting basis sets (requires jsonschema, regex; can also be added at runtime)" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_cppe "Enables CPPE for Polarizable Embedding" OFF)
 option(ENABLE_adcc "Enables adcc for algebraic-diagrammatic construction methods (requires libtensorlight; can also be added at runtime)" OFF)
