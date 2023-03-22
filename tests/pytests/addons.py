@@ -82,6 +82,7 @@ _programs = {
     "qcdb": False,  # capabilities of in-psi and out-of-psi qcdb not aligned
     "qcfractal": which_import("qcfractal", return_bool=True),
     "qcportal": which_import("qcportal", return_bool=True),
+    "bse": which_import("basis_set_exchange", return_bool=True),
 }
 
 

@@ -134,6 +134,13 @@ message(STATUS "Adding test cases: Psi4")
 #   * be listed in the test case CMakeLists.txt as addon-testname (e.g., `add_regression_test(dftd3-energy ...`)
 #   * alphabetize the addons
 
+# <<<  BSE  >>>
+
+if(ENABLE_bse)
+    add_subdirectory(mints2-bse)
+    message(STATUS "Adding test cases: Psi4 + bse")
+endif()
+
 # <<<  CFOUR  >>>
 
 find_program(CFOUR_EXECUTABLE
