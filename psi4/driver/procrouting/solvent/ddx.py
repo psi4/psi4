@@ -238,12 +238,39 @@ class DdxInterface:
         derivative_order = self.model.required_phi_derivative_order(compute_forces=False)
         if derivative_order > 0:
             elec_field = self.mints.electric_field_value(coords, density_matrix).np.T
+            # print()
+            # print()
 
+            # delta = np.random.rand(3)
+            # eps = 1e-4
+
+            # coords_plus = core.Matrix.from_array(self.model.cavity.T + eps * delta)
+            # coords_minus = core.Matrix.from_array(self.model.cavity.T - eps * delta)
+            # phi_minus = self.mints.electrostatic_potential_value(dummy_charges, coords_minus, density_matrix).np
+            # phi_plus  = self.mints.electrostatic_potential_value(dummy_charges, coords_plus, density_matrix).np
+            # ref = (phi_plus - phi_minus) / 2 / eps
+
+            # print((delta @ elec_field)[0:5])
+            # print((ref)[0:5])
+
+            # print(np.max(np.abs(delta @ elec_field - ref)))
+            # print()
+            # print()
+
+        # elec_only = True
         if not elec_only:
             psi += self.nuclear["psi"]
             phi += self.nuclear["phi"]
             if elec_field is not None:
                 elec_field += self.nuclear["e"]
+
+        # psi = self.nuclear["psi"]
+        # phi = self.nuclear["phi"]
+        # elec_field = self.nuclear["e"]
+
+        if elec_field is not None:
+        #     elec_field = -elec_field
+            print(elec_field[:, 0:10].T)
 
         if not nonequilibrium:
             model = self.model  # Use standard dielectric constant
@@ -267,6 +294,8 @@ class DdxInterface:
         # Solve problem and adjoint problem
         state.solve(**self.op_solver)
         state.solve_adjoint(**self.op_solver)
+
+        print("    DDX Iters: ", state.x_n_iter, " ", state.s_n_iter)
 
         # Compute solvation energy
         fepsilon = 1.0
