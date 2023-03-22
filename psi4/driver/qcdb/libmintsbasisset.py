@@ -862,7 +862,7 @@ class BasisSet(object):
                 # If name is prefixed with "bse:", then load from basis set exchange library
                 if bastitle.lower().startswith('bse:'):
                     if not qcel.util.which_import('basis_set_exchange', return_bool=True):
-                        raise ModuleNotFoundError("Python module 'basis_set_exchange' not found. Solve by installing it: `conda install -c conda-forge basis-set-exchange` or `pip install basis-set-exchange`")
+                        raise ModuleNotFoundError("Python module 'basis_set_exchange' not found. Solve by installing it: `conda install -c conda-forge basis_set_exchange` or `pip install basis_set_exchange`")
 
                     import basis_set_exchange as bse
 
