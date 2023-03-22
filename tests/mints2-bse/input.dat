@@ -1,6 +1,4 @@
 #! Similar to mints2, but using the BSE to specify the basis sets
-    
-    
 
 refnuc =  204.0199581806068068 #TEST
 refscf = -228.9585714031434236 #TEST
@@ -28,7 +26,7 @@ molecule bz {
 }
 
 basis  {
-   # First, assign DZ to all atoms
+   # First, assign 6-31g from BSE (latest version) to all atoms
    assign bse:6-31g
    # Now, assign 3-21G from bse library all carbon atoms (latest version)
    assign C bse:3-21g
@@ -36,18 +34,6 @@ basis  {
    assign H1 sto-3g
    # Carbons 3 and 5 get a STO-3G basis from BSE, but specify v0
    assign C1 bse:sto-3g:0
-
-    [DZ]
-    spherical
-    ****
-    H     0 
-    S   3   1.00
-         19.2406000              0.0328280        
-          2.8992000              0.2312080        
-          0.6534000              0.8172380        
-    S   1   1.00
-          0.1776000              1.0000000        
-    ****
 }
 
  

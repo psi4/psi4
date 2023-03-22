@@ -31,21 +31,21 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 21 March 2023 01:59PM
+    Psi4 started on: Wednesday, 22 March 2023 12:11PM
 
-    Process ID: 304116
+    Process ID: 315390
     Host:       bfortress
-    PSIDATADIR: /home/ben/software/mambaforge/envs/qcenginedevel/share/psi4
+    PSIDATADIR: /home/ben/software/mambaforge/envs/psi4devel/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! Same test as mints2, but using the BSE to specify the basis sets
+#! Similar to mints2, but using the BSE to specify the basis sets
 
-refnuc =  204.01995818061    #TEST
-refscf = -228.95763005900784 #TEST
+refnuc =  204.0199581806068068 #TEST
+refscf = -228.9585714031434236 #TEST
 
 molecule bz {
     X
@@ -70,7 +70,7 @@ molecule bz {
 }
 
 basis  {
-   # First, assign DZ to all atoms
+   # First, assign 6-31g (latest version) to all atoms
    assign bse:6-31g
    # Now, assign 3-21G from bse library all carbon atoms (latest version)
    assign C bse:3-21g
@@ -78,18 +78,6 @@ basis  {
    assign H1 sto-3g
    # Carbons 3 and 5 get a STO-3G basis from BSE, but specify v0
    assign C1 bse:sto-3g:0
-
-    [DZ]
-    spherical
-    ****
-    H     0 
-    S   3   1.00
-         19.2406000              0.0328280        
-          2.8992000              0.2312080        
-          0.6534000              0.8172380        
-    S   1   1.00
-          0.1776000              1.0000000        
-    ****
 }
 
  
@@ -107,16 +95,16 @@ compare_values(refscf, scfenergy, 9, "SCF Energy")                              
 Scratch directory: /tmp/
 
 *** tstart() called on bfortress
-*** at Tue Mar 21 13:59:42 2023
+*** at Wed Mar 22 12:11:20 2023
 
    => Loading Basis Set <=
 
-    Name: ANONYMOUS806EA786
+    Name: ANONYMOUS206D8F99
     Role: ORBITAL
     Keyword: BASIS
     atoms 1-2, 4, 6  entry C          line    64 bse bse:3-21g 
     atoms 3, 5       entry C          line    59 bse bse:sto-3g:0 
-    atoms 7, 10      entry H          line    19 file /home/ben/software/mambaforge/envs/qcenginedevel/share/psi4/basis/sto-3g.gbs 
+    atoms 7, 10      entry H          line    19 file /home/ben/software/mambaforge/envs/psi4devel/share/psi4/basis/sto-3g.gbs 
     atoms 8-9, 11-12 entry H          line    17 bse bse:6-31g 
 
 
@@ -175,7 +163,7 @@ Scratch directory: /tmp/
 
   ==> Primary Basis <==
 
-  Basis Set: ANONYMOUS806EA786
+  Basis Set: ANONYMOUS206D8F99
     Blend: BSE:3-21G + BSE:6-31G + BSE:STO-3G:0 + STO-3G
     Number of shells: 36
     Number of basis functions: 56
@@ -235,23 +223,23 @@ Scratch directory: /tmp/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:  -227.09914572601141   -2.27099e+02   0.00000e+00 
-   @RHF iter   1:  -228.85194821750474   -1.75280e+00   1.23133e-02 DIIS/ADIIS
-   @RHF iter   2:  -228.93278947107086   -8.08413e-02   6.46365e-03 DIIS/ADIIS
-   @RHF iter   3:  -228.95776663370248   -2.49772e-02   9.65792e-04 DIIS/ADIIS
-   @RHF iter   4:  -228.95849137478356   -7.24741e-04   3.35141e-04 DIIS/ADIIS
-   @RHF iter   5:  -228.95856680900417   -7.54342e-05   4.75684e-05 DIIS
-   @RHF iter   6:  -228.95857038861115   -3.57961e-06   1.92299e-05 DIIS
-   @RHF iter   7:  -228.95857115265107   -7.64040e-07   9.46908e-06 DIIS
-   @RHF iter   8:  -228.95857138548399   -2.32833e-07   2.80082e-06 DIIS
-   @RHF iter   9:  -228.95857140165035   -1.61664e-08   8.86282e-07 DIIS
-   @RHF iter  10:  -228.95857140301553   -1.36518e-09   2.67808e-07 DIIS
-   @RHF iter  11:  -228.95857140314200   -1.26477e-10   3.25125e-08 DIIS
-   @RHF iter  12:  -228.95857140314382   -1.81899e-12   6.38503e-09 DIIS
-   @RHF iter  13:  -228.95857140314354    2.84217e-13   9.29757e-10 DIIS
-   @RHF iter  14:  -228.95857140314354    0.00000e+00   2.04173e-10 DIIS
-   @RHF iter  15:  -228.95857140314351    2.84217e-14   6.31464e-11 DIIS
-   @RHF iter  16:  -228.95857140314357   -5.68434e-14   1.23146e-11 DIIS
-   @RHF iter  17:  -228.95857140314342    1.42109e-13   3.34650e-12 DIIS
+   @RHF iter   1:  -228.85194821750477   -1.75280e+00   1.23133e-02 ADIIS/DIIS
+   @RHF iter   2:  -228.93278947107086   -8.08413e-02   6.46365e-03 ADIIS/DIIS
+   @RHF iter   3:  -228.95776663370236   -2.49772e-02   9.65792e-04 ADIIS/DIIS
+   @RHF iter   4:  -228.95849137478356   -7.24741e-04   3.35141e-04 ADIIS/DIIS
+   @RHF iter   5:  -228.95856680900442   -7.54342e-05   4.75684e-05 DIIS
+   @RHF iter   6:  -228.95857038861141   -3.57961e-06   1.92299e-05 DIIS
+   @RHF iter   7:  -228.95857115265122   -7.64040e-07   9.46908e-06 DIIS
+   @RHF iter   8:  -228.95857138548422   -2.32833e-07   2.80082e-06 DIIS
+   @RHF iter   9:  -228.95857140165026   -1.61660e-08   8.86282e-07 DIIS
+   @RHF iter  10:  -228.95857140301558   -1.36532e-09   2.67808e-07 DIIS
+   @RHF iter  11:  -228.95857140314189   -1.26306e-10   3.25125e-08 DIIS
+   @RHF iter  12:  -228.95857140314362   -1.73372e-12   6.38503e-09 DIIS
+   @RHF iter  13:  -228.95857140314354    8.52651e-14   9.29757e-10 DIIS
+   @RHF iter  14:  -228.95857140314371   -1.70530e-13   2.04174e-10 DIIS
+   @RHF iter  15:  -228.95857140314348    2.27374e-13   6.31476e-11 DIIS
+   @RHF iter  16:  -228.95857140314340    8.52651e-14   1.23149e-11 DIIS
+   @RHF iter  17:  -228.95857140314342   -2.84217e-14   3.34734e-12 DIIS
   Energy and wave function converged.
 
 
@@ -296,8 +284,8 @@ Scratch directory: /tmp/
    => Energetics <=
 
     Nuclear Repulsion Energy =            204.0199581806068068
-    One-Electron Energy =                -712.0696847104665039
-    Two-Electron Energy =                 279.0911551267162736
+    One-Electron Energy =                -712.0696847104662766
+    Two-Electron Energy =                 279.0911551267160462
     Total Energy =                       -228.9585714031434236
 
 Computation Completed
@@ -322,49 +310,20 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on bfortress at Tue Mar 21 13:59:43 2023
+*** tstop() called on bfortress at Wed Mar 22 12:11:21 2023
 Module time:
-	user time   =       1.09 seconds =       0.02 minutes
+	user time   =       1.07 seconds =       0.02 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.09 seconds =       0.02 minutes
+	user time   =       1.07 seconds =       0.02 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     Point group...........................................................................PASSED
     Nuclear repulsion energy..............................................................PASSED
-    SCF Energy............................................................................FAILED
-Traceback (most recent call last):
-  File "/home/ben/software/mambaforge/envs/qcenginedevel/bin/psi4", line 338, in <module>
-    exec(content)
-  File "<string>", line 70, in <module>
-  File "/home/ben/software/mambaforge/envs/qcenginedevel/lib//python3.10/site-packages/psi4/driver/qcdb/testing.py", line 104, in _mergedapis_compare_values
-    return qcel.testing.compare_values(expected, computed, **kwargs)
-  File "/home/ben/software/mambaforge/envs/qcenginedevel/lib//python3.10/site-packages/qcelemental/testing.py", line 180, in compare_values
-    return return_handler(allclose, label, message, return_message, quiet)
-  File "/home/ben/software/mambaforge/envs/qcenginedevel/lib//python3.10/site-packages/psi4/driver/p4util/testing.py", line 204, in _psi4_true_raise_handler
-    raise TestComparisonError(message)
+    SCF Energy............................................................................PASSED
 
-psi4.driver.p4util.exceptions.TestComparisonError: 	SCF Energy: computed value (-228.95857140314) does not match (-228.95763005901) to atol=1e-09 by difference (-0.00094134414).
+    Psi4 stopped on: Wednesday, 22 March 2023 12:11PM
+    Psi4 wall time for execution: 0:00:01.23
 
-
-Printing out the relevant lines from the Psithon --> Python processed input file:
-    core.set_global_option("E_CONVERGENCE", 11)
-    core.set_global_option("SCF_TYPE", "pk")
-    scfenergy = energy('scf')
-    compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                       
-    compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy")
---> compare_values(refscf, scfenergy, 9, "SCF Energy")                                  
-
-!----------------------------------------------------------------------------------!
-!                                                                                  !
-!         SCF Energy: computed value (-228.95857140314) does not match             !
-!     (-228.95763005901) to atol=1e-09 by difference (-0.00094134414).             !
-!                                                                                  !
-!----------------------------------------------------------------------------------!
-
-    Psi4 stopped on: Tuesday, 21 March 2023 01:59PM
-    Psi4 wall time for execution: 0:00:01.16
-
-*** Psi4 encountered an error. Buy a developer more coffee!
-*** Resources and help at github.com/psi4/psi4.
+*** Psi4 exiting successfully. Buy a developer a beer!
