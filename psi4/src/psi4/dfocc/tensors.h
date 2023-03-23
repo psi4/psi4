@@ -211,8 +211,6 @@ class Tensor2d {
     double get_max_element();
     // diagonalize: diagonalize via rsp
     void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
-    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
-    void diagonalize(int dim, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
     // cdgesv: solve a linear equation via lapack
     void cdgesv(const SharedTensor1d &Xvec);
     void cdgesv(const SharedTensor1d &Xvec, int errcod);
