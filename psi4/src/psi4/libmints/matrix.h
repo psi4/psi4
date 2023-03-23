@@ -1009,8 +1009,14 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     ///
     void sort_cols(const IntVector& sortvec);
     /// Swap rows i and j
+    PSI_DEPRECATED(
+        "Matrix::swap_rows and Matrix::swap_columns are being deprecated due to a lack of users. Unless someone speaks "
+        "up, 1.8 will be the last release to have them.")
     void swap_rows(int h, int i, int j);
     /// Swap cols i and j
+    PSI_DEPRECATED(
+        "Matrix::swap_rows and Matrix::swap_columns are being deprecated due to a lack of users. Unless someone speaks "
+        "up, 1.8 will be the last release to have them.")
     void swap_columns(int h, int i, int j);
 
     /*! Average off-diagonal elements */
