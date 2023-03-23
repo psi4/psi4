@@ -282,6 +282,7 @@ class DdxInterface:
                              ", ".join(pyddx.data.solvent_epsilon_optical) + ").")
         else:
             model = self.model_optical  # Use optical dielectric constant
+        print("    Using epsilon: ", model.solvent_epsilon)
 
         # Update solvation problem with current phi, elec_field and psi
         if state is None:

@@ -687,7 +687,7 @@ def scf_finalize_energy(self):
     if core.get_option('SCF', 'DDX'):
         Dt = self.Da().clone()
         Dt.add(self.Db())
-        Vddx = self.ddx.get_solvation_contributions(Dt, elec_only=False)[1]
+        Vddx = self.ddx.get_solvation_contributions(Dt)[1]
         self.push_back_external_potential(Vddx)
         # Set callback function for CPSCF
         self.set_external_cpscf_perturbation(
