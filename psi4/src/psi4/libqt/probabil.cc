@@ -42,6 +42,7 @@ namespace psi {
 /// \ingroup QT
 uint64_t factorial(const uint64_t n) {
     if (n <= 1) return 1;
+    if (n > 20) throw PSIEXCEPTION("Cannot compute n! if n > 20, as the result would overflow in a 64-bit integer.");
     return (n * factorial(n - 1));
 }
 
