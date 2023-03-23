@@ -1,5 +1,5 @@
 if(${ENABLE_dkh})
-    find_package(dkh 1.2 CONFIG QUIET)
+    find_package(dkh 1.2 CONFIG) # QUIET)
 
     if(${dkh_FOUND})
         get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
@@ -13,7 +13,9 @@ if(${ENABLE_dkh})
         include(ExternalProject)
         message(STATUS "Suitable dkh could not be located, ${Magenta}Building dkh${ColourReset} instead.")
         ExternalProject_Add(dkh_external
-            URL https://github.com/psi4/dkh/archive/v1.2.tar.gz
+            DEPENDS lapack_external
+            #URL https://github.com/psi4/dkh/archive/v1.2.tar.gz
+            URL https://github.com/psi4/dkh/archive/cmake.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -27,6 +29,7 @@ if(${ENABLE_dkh})
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
+                       -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
