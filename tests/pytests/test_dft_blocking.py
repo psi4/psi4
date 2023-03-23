@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import psi4
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 def test_dft_atomic_blocking():
@@ -70,7 +70,7 @@ def test_dft_atomic_blocking():
             inp["RHO_A"] = psi4.core.Vector.from_array(rho)
 
             # Compute the kernel
-            ret = superfunc.compute_functional(inp, -1)
+            ret = superfunc.compute_functional(inp, -1, True)
 
             # Compute the XC energy
             vk = np.array(ret["V"])[:npoints]
