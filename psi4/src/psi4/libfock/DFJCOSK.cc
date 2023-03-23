@@ -26,9 +26,6 @@
  * @END LICENSE
  */
 
-#include <cassert>
-#include <cmath>
-
 #include "jk.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/cubature.h"
@@ -82,9 +79,9 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
                 X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
-	    }
+            }
         }
- 
+
         // significant basis functions at these grid points
         const auto &bf_map = block->functions_local_to_global();
 
@@ -251,19 +248,19 @@ void DFJCOSK::common_init() {
         for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
             if (w[ipoint] < 0.0) {
 	      throw PSIEXCEPTION("The initial COSX grid configuration contains negative weights! This will crash COSX, as per https://github.com/psi4/psi4/issues/2890. A proper fix is incoming, but for now, adjust either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL to remove negative weights.");
-	    } 
+	    }
         }
-    }	    
+    }
 
     for (const auto &final_block : grid_final_->blocks()) {
         double* w = final_block->w();
         for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
             if (w[ipoint] < 0.0) {
 	      throw PSIEXCEPTION("The final COSX grid configuration contains negative weights! This will crash COSX, as per https://github.com/psi4/psi4/issues/2890. A proper fix is incoming, but for now, adjust either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL to remove negative weights.");
-	    } 
+	    }
         }
-    }	    
- 
+    }
+
     timer_off("Grid Construction");
 
     // => Overlap Fitting Metric <= //
