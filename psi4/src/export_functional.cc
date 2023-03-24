@@ -125,7 +125,9 @@ void export_functional(py::module &m) {
         .def_static("XC_build", &SuperFunctional::XC_build, "Builds a SuperFunctional from a XC string.")
         .def("allocate", &SuperFunctional::allocate,
              "Allocates the vectors, should be called after ansatz or npoint changes.")
-        .def("compute_functional", &SuperFunctional::compute_functional, "Computes the SuperFunctional.")
+        .def("compute_functional", &SuperFunctional::compute_functional,
+             "vals"_a, "npoints"_a = -1, "singlet"_a = true,
+             "Computes the SuperFunctional.")
         .def("x_functional", &SuperFunctional::x_functional, "Returns the desired X Functional.")
         .def("c_functional", &SuperFunctional::c_functional, "Returns the desired C Functional.")
         .def("x_functionals", &SuperFunctional::x_functionals, "Returns all X Functionals.")
