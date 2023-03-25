@@ -6,6 +6,7 @@
 # * Remove ``if(NOT PY_${module})`` so runs each time, also remove module caps
 # * Module name, not path in fphsa
 # * Added version handling via parse_version call
+# * Switched PYTHON -> Python
 
 #.rst:
 #

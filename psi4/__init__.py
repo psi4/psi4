@@ -30,25 +30,38 @@
 # Figure out psidatadir: envvar trumps staged/installed
 import os
 psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
+print(f"{psi4_module_loc=}")
 pymod = os.path.normpath(os.path.sep.join(['@PYMOD_INSTALL_LIBDIR@', '@CMAKE_INSTALL_LIBDIR@', 'psi4']))
+print(f"{pymod=}")
 if pymod.startswith(os.path.sep + os.path.sep):
     pymod = pymod[1:]
 pymod_dir_step = os.path.sep.join(['..'] * pymod.count(os.path.sep))
+print(f"{pymod_dir_step=}")
 data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_DATADIR@', 'psi4'])
+print(f"{data_dir=}")
 executable = os.path.abspath(os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_BINDIR@', 'psi4']))
+print(f"{executable=}")
 from pathlib import Path
 if not Path(executable).exists():
     # Win conda recipe moves psi4 executable unknown to CMake
     executable = str((Path(psi4_module_loc) / ".." / ".." / ".." / "Scripts" / "psi4.exe").resolve())
+print(f"{executable=}")
 
 if "PSIDATADIR" in os.environ.keys():
     data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
 elif "CMAKE_INSTALL_DATADIR" in data_dir:
     data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
+print(f"{data_dir=}")
 
 data_dir = os.path.abspath(data_dir)
+print(f"{data_dir=}")
 if not os.path.isdir(data_dir):
-    raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {data_dir}")
+    alt_data_dir = "/opt/anaconda1anaconda2anaconda3/Library/share/psi4"
+    print(f"{alt_data_dir=}")
+    if os.path.isdir(alt_data_dir):
+        data_dir = alt_data_dir
+    else:
+        raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {data_dir}")
 
 # Init core
 from . import core
