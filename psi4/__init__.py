@@ -29,15 +29,39 @@
 
 # Figure out psidatadir: envvar trumps staged/installed
 import os
+from pathlib import Path
 psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
 print(f"{psi4_module_loc=}")
-pymod = os.path.normpath(os.path.sep.join(['@PYMOD_INSTALL_LIBDIR@', '@CMAKE_INSTALL_LIBDIR@', 'psi4']))
+
+prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
+cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
+pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/") 
+print(prefix)
+print(f"{cmake_install_datadir=}")
+print(f"{cmake_install_libdir=}")
+print(f"{pymod_install_libdir=}")
+
+pymod2 = prefix / cmake_install_libdir / pymod_install_libdir / "psi4"
+print(f"{pymod2=}")
+pymod2 = pymod2.resolve()
+print(f"{pymod2=}")
+share2 = prefix / cmake_install_datadir / "psi4"
+print(f"{share2=}")
+rel2 = os.path.relpath(share2, start=pymod2)
+print(f"{rel2=}")
+
+
+pymod = os.path.normpath(os.path.sep.join(['@CMAKE_INSTALL_LIBDIR@', pymod_install_libdir, 'psi4']))
 print(f"{pymod=}")
 if pymod.startswith(os.path.sep + os.path.sep):
     pymod = pymod[1:]
+print(f"{pymod=}")
 pymod_dir_step = os.path.sep.join(['..'] * pymod.count(os.path.sep))
 print(f"{pymod_dir_step=}")
-data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_DATADIR@', 'psi4'])
+data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, cmake_install_datadir, 'psi4'])
+print(f"{data_dir=}")
+data_dir = os.path.sep.join([psi4_module_loc, rel2])
 print(f"{data_dir=}")
 executable = os.path.abspath(os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_BINDIR@', 'psi4']))
 print(f"{executable=}")
