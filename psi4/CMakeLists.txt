@@ -29,8 +29,7 @@ if(${endianness})
 else()
     set(_endian_ext ".little")
 endif()
-# GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
-set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
+set(CMAKECONFIG_INSTALL_DIR "${psi4_INSTALL_CMAKEDIR}")
 
 # <<<  Marshal Dependencies & Add-ons  >>>
 
@@ -398,7 +397,7 @@ install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
               ${PSI4_ROOT}/cmake/custom_static_library.cmake
               ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
               ${PSI4_ROOT}/cmake/xhost.cmake
-        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKECONFIG_INSTALL_DIR})
 
     # <<<  Export Config for Plugins  >>>
 # Determine relative path from Psi4's include directory to PyBind11's
@@ -407,8 +406,8 @@ file(RELATIVE_PATH RELATIVE_PYBIND11_INCLUDE_DIR
     ${pybind11_INCLUDE_DIR})
 configure_package_config_file(
         psi4Config.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4Config.cmake
         INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
-        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/${psi4_INSTALL_CMAKEDIR}/psi4ConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKECONFIG_INSTALL_DIR})

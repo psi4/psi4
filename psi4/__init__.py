@@ -57,10 +57,10 @@ data_dir = os.path.sep.join([psi4_module_loc, rel_data])
 print(f"{data_dir=}")
 executable = os.path.abspath(os.path.sep.join([psi4_module_loc, rel_bin]))
 print(f"{executable=}")
-from pathlib import Path
-if not Path(executable).exists():
-    # Win conda recipe moves psi4 executable unknown to CMake
-    executable = str((Path(psi4_module_loc) / ".." / ".." / ".." / "Scripts" / "psi4.exe").resolve())
+executable_exe = (Path("/opt/anaconda1anaconda2anaconda3") / "Scripts" / "psi4.exe").resolve(strict=False)
+if executable_exe.exists():
+    # Win conda-build generates this unbeknownst to CMake
+    executable = str(executable_exe)
 print(f"{executable=}")
 
 if "PSIDATADIR" in os.environ.keys():
@@ -88,7 +88,7 @@ if "PSI_SCRATCH" in os.environ.keys():
 
 core.set_datadir(data_dir)
 del cmake_install_bindir, cmake_install_datadir, cmake_install_libdir, pymod_install_libdir
-del psi4_module_loc, prefix, full_pymod, full_data, full_bin, rel_data, rel_bin, data_dir
+del psi4_module_loc, prefix, full_pymod, full_data, full_bin, rel_data, rel_bin, data_dir, executable_exe
 
 # Cleanup core at exit
 import atexit

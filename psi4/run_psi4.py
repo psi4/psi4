@@ -112,7 +112,10 @@ args = args.__dict__  # Namespace object seems silly
 
 # Figure out pythonpath
 cmake_install_prefix = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..')
+print(__file__)
+print(f"{cmake_install_prefix=}")
 lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@", "@PYMOD_INSTALL_LIBDIR@"])
+print(f"{lib_dir=}")
 
 if args["inplace"]:
     if "CMAKE_INSTALL_LIBDIR" not in lib_dir:

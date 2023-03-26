@@ -166,6 +166,9 @@ option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
 option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
+option_with_default(psi4_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/psi4)
+option_with_default(TargetLAPACK_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetLAPACK)
+option_with_default(TargetHDF5_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetHDF5)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 17)
@@ -254,6 +257,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
               -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
               -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+              -Dpsi4_INSTALL_CMAKEDIR=${psi4_INSTALL_CMAKEDIR}
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
