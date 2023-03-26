@@ -34,36 +34,28 @@ psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
 print(f"{psi4_module_loc=}")
 
 prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
 cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
 cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
 pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/") 
-print(prefix)
+print(f"{prefix=}")
 print(f"{cmake_install_datadir=}")
 print(f"{cmake_install_libdir=}")
 print(f"{pymod_install_libdir=}")
 
-pymod2 = prefix / cmake_install_libdir / pymod_install_libdir / "psi4"
-print(f"{pymod2=}")
-pymod2 = pymod2.resolve()
-print(f"{pymod2=}")
-share2 = prefix / cmake_install_datadir / "psi4"
-print(f"{share2=}")
-rel2 = os.path.relpath(share2, start=pymod2)
-print(f"{rel2=}")
+full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
+full_data = prefix / cmake_install_datadir / "psi4"
+full_bin = prefix / cmake_install_bindir / "psi4"
+rel_data = os.path.relpath(full_data, start=full_pymod)
+rel_bin = os.path.relpath(full_bin, start=full_pymod)
+print(f"{full_pymod=}")
+print(f" {full_data=}")
+print(f"{rel_data=}")
+print(f"{rel_bin=}")
 
-
-pymod = os.path.normpath(os.path.sep.join(['@CMAKE_INSTALL_LIBDIR@', pymod_install_libdir, 'psi4']))
-print(f"{pymod=}")
-if pymod.startswith(os.path.sep + os.path.sep):
-    pymod = pymod[1:]
-print(f"{pymod=}")
-pymod_dir_step = os.path.sep.join(['..'] * pymod.count(os.path.sep))
-print(f"{pymod_dir_step=}")
-data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, cmake_install_datadir, 'psi4'])
+data_dir = os.path.sep.join([psi4_module_loc, rel_data])
 print(f"{data_dir=}")
-data_dir = os.path.sep.join([psi4_module_loc, rel2])
-print(f"{data_dir=}")
-executable = os.path.abspath(os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_BINDIR@', 'psi4']))
+executable = os.path.abspath(os.path.sep.join([psi4_module_loc, rel_bin]))
 print(f"{executable=}")
 from pathlib import Path
 if not Path(executable).exists():
@@ -80,12 +72,7 @@ print(f"{data_dir=}")
 data_dir = os.path.abspath(data_dir)
 print(f"{data_dir=}")
 if not os.path.isdir(data_dir):
-    alt_data_dir = "/opt/anaconda1anaconda2anaconda3/Library/share/psi4"
-    print(f"{alt_data_dir=}")
-    if os.path.isdir(alt_data_dir):
-        data_dir = alt_data_dir
-    else:
-        raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {data_dir}")
+    raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {data_dir}")
 
 # Init core
 from . import core
@@ -100,7 +87,8 @@ if "PSI_SCRATCH" in os.environ.keys():
     core.IOManager.shared_object().set_default_path(envvar_scratch)
 
 core.set_datadir(data_dir)
-del psi4_module_loc, pymod, pymod_dir_step, data_dir
+del cmake_install_bindir, cmake_install_datadir, cmake_install_libdir, pymod_install_libdir
+del psi4_module_loc, prefix, full_pymod, full_data, full_bin, rel_data, rel_bin, data_dir
 
 # Cleanup core at exit
 import atexit
