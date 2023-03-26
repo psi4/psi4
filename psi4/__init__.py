@@ -27,10 +27,13 @@
 #
 
 
-# Figure out psidatadir: envvar trumps staged/installed
+# Figure out paths
+# * in figuring out psidatadir: envvar trumps staged/installed
+# * some full paths are computed here using the prefix, but all outputs are relative to __file__, so relocatability preserved
+# * note that all path entities are directories except for "executable" that is a file
 import os
 from pathlib import Path
-psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
+psi4_module_loc = Path(__file__).resolve().parent
 print(f"{psi4_module_loc=}")
 
 prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
@@ -45,7 +48,7 @@ print(f"{pymod_install_libdir=}")
 
 full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
 full_data = prefix / cmake_install_datadir / "psi4"
-full_bin = prefix / cmake_install_bindir / "psi4"
+full_bin = prefix / cmake_install_bindir
 rel_data = os.path.relpath(full_data, start=full_pymod)
 rel_bin = os.path.relpath(full_bin, start=full_pymod)
 print(f"{full_pymod=}")
@@ -53,26 +56,28 @@ print(f" {full_data=}")
 print(f"{rel_data=}")
 print(f"{rel_bin=}")
 
-data_dir = os.path.sep.join([psi4_module_loc, rel_data])
+data_dir = psi4_module_loc.joinpath(rel_data)
 print(f"{data_dir=}")
-executable = os.path.abspath(os.path.sep.join([psi4_module_loc, rel_bin]))
+executable = psi4_module_loc.joinpath(rel_bin, "psi4")
 print(f"{executable=}")
 executable_exe = (Path("/opt/anaconda1anaconda2anaconda3") / "Scripts" / "psi4.exe").resolve(strict=False)
 if executable_exe.exists():
     # Win conda-build generates this unbeknownst to CMake
-    executable = str(executable_exe)
+    executable = executable_exe
+executable = str(executable.resolve())
 print(f"{executable=}")
 
 if "PSIDATADIR" in os.environ.keys():
-    data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
-elif "CMAKE_INSTALL_DATADIR" in data_dir:
-    data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
+    data_dir = Path(os.path.expanduser(os.environ["PSIDATADIR"]))
+elif "CMAKE_INSTALL_DATADIR" in str(data_dir):
+    data_dir = Path(os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"]))
 print(f"{data_dir=}")
 
-data_dir = os.path.abspath(data_dir)
+data_dir = data_dir.resolve(strict=False)
 print(f"{data_dir=}")
-if not os.path.isdir(data_dir):
-    raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {data_dir}")
+if not data_dir.is_dir():
+    raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {str(data_dir)}")
+data_dir = str(data_dir)
 
 # Init core
 from . import core

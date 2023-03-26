@@ -110,14 +110,45 @@ Generates a CMake command for building a plugin against this Psi4 installation.
 args, unknown = parser.parse_known_args()
 args = args.__dict__  # Namespace object seems silly
 
-# Figure out pythonpath
-cmake_install_prefix = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..')
-print(__file__)
-print(f"{cmake_install_prefix=}")
-lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@", "@PYMOD_INSTALL_LIBDIR@"])
-print(f"{lib_dir=}")
+# Figure out paths
+# * some full paths are computed here using the prefix, but all outputs are relative to __file__, so relocatability preserved
+# * note that all path entities are directories except for "executable" that is a file
+executable = Path(__file__).resolve()
+psi4_exe_loc = executable.parent
+
+prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
+cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
+cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
+pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/")
+full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
+full_data = prefix / cmake_install_datadir / "psi4"
+full_bin = prefix / cmake_install_bindir
+rel_pymod = os.path.relpath(full_pymod, start=full_bin)
+rel_data = os.path.relpath(full_data, start=full_bin)
+
+data_dir = psi4_exe_loc.joinpath(rel_data).resolve()  # unused
+psi4_module_loc = psi4_exe_loc.joinpath(rel_pymod).resolve()
+lib_dir = str(psi4_module_loc.parent)
+bin_dir = str(psi4_exe_loc)
+
+print(f"{prefix=}")
+print(f"{cmake_install_bindir=}")
+print(f"{cmake_install_datadir=}")
+print(f"{cmake_install_libdir=}")
+print(f"{pymod_install_libdir=}")
+print(f"{full_pymod=}")
+print(f" {full_data=}")
+print(f"  {full_bin=}")
+print(f"{rel_pymod=}")
+print(f"{rel_data=}")
+#print(f"{rel_lib=}")
+print(f"{psi4_module_loc=}")
+print(f"      PATH= {bin_dir=}")
+print(f"PYTHONPATH= {lib_dir=}")
 
 if args["inplace"]:
+    # not tested after pathlib adjustments
     if "CMAKE_INSTALL_LIBDIR" not in lib_dir:
         raise ImportError("Cannot run inplace from an installed directory.")
 
@@ -165,7 +196,6 @@ if args['plugin_compile']:
 
 if args['psiapi_path']:
     pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
-    bin_dir = Path(cmake_install_prefix) / 'bin'
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     sys.exit()
 
