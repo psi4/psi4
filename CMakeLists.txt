@@ -120,6 +120,7 @@ option(ENABLE_Libint1t "Enables Libint1 in special _t variety" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
+option(psi4_SKIP_ENABLE_Fortran "Suppress enabling Fortran language even when Fortran addons enabled. Use when only linking pre-built, not compiling" OFF)
 
 # Append modules added to pasture as needed
 if(ENABLE_ccsort OR ENABLE_transqt2)
@@ -128,9 +129,13 @@ if(ENABLE_ccsort OR ENABLE_transqt2)
 endif()
 
 if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
+  if(psi4_SKIP_ENABLE_Fortran)
+    message(STATUS "NOT Enabling Fortran")
+  else()
     enable_language(Fortran)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
+  endif()
 endif()
 
 if(ENABLE_erd)
