@@ -34,47 +34,32 @@
 import os
 from pathlib import Path
 psi4_module_loc = Path(__file__).resolve().parent
-print(f"{psi4_module_loc=}")
 
 prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
 cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
 cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
 cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
 pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/") 
-print(f"{prefix=}")
-print(f"{cmake_install_datadir=}")
-print(f"{cmake_install_libdir=}")
-print(f"{pymod_install_libdir=}")
-
 full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
 full_data = prefix / cmake_install_datadir / "psi4"
 full_bin = prefix / cmake_install_bindir
 rel_data = os.path.relpath(full_data, start=full_pymod)
 rel_bin = os.path.relpath(full_bin, start=full_pymod)
-print(f"{full_pymod=}")
-print(f" {full_data=}")
-print(f"{rel_data=}")
-print(f"{rel_bin=}")
 
-data_dir = psi4_module_loc.joinpath(rel_data)
-print(f"{data_dir=}")
 executable = psi4_module_loc.joinpath(rel_bin, "psi4")
-print(f"{executable=}")
 executable_exe = (Path("/opt/anaconda1anaconda2anaconda3") / "Scripts" / "psi4.exe").resolve(strict=False)
 if executable_exe.exists():
     # Win conda-build generates this unbeknownst to CMake
     executable = executable_exe
 executable = str(executable.resolve())
-print(f"{executable=}")
 
+data_dir = psi4_module_loc.joinpath(rel_data)
 if "PSIDATADIR" in os.environ.keys():
     data_dir = Path(os.path.expanduser(os.environ["PSIDATADIR"]))
 elif "CMAKE_INSTALL_DATADIR" in str(data_dir):
     data_dir = Path(os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"]))
-print(f"{data_dir=}")
 
 data_dir = data_dir.resolve(strict=False)
-print(f"{data_dir=}")
 if not data_dir.is_dir():
     raise KeyError(f"Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable - current value is {str(data_dir)}")
 data_dir = str(data_dir)
