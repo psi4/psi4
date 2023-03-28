@@ -2513,6 +2513,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Occupation number threshold for removing PNOs !expert -*/
         options.add_double("T_CUT_PNO", 1e-8);
+        /*- How much to scale T_CUT_PNO by for diagonal PNOs !expert */
+        options.add_double("T_CUT_PNO_DIAG_SCALE", 3e-2);
         /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
         options.add_double("T_CUT_DO", 1e-2);
         /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
@@ -2524,7 +2526,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) !expert -*/
         options.add_double("T_CUT_MKN", 1e-3);
         /*- SVD Tolerance for factoring (Q_ij|a_ij b_ij) two electron integrals */
-        options.add_double("T_CUT_SVD", 1e-8);
+        options.add_double("T_CUT_SVD", 1e-3);
         /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
         options.add_double("T_CUT_CLMO", 1e-2);
         /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/

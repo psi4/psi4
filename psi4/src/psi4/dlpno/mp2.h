@@ -54,6 +54,9 @@ class DLPNOMP2 : public Wavefunction {
     /// threshold for PNO truncation
     double T_CUT_PNO_;
 
+    /// T_CUT_PNO scaling factor for diagonal PNOs
+    double T_CUT_PNO_DIAG_SCALE_;
+
     /// threshold for TNO truncation
     double T_CUT_TNO_;
 

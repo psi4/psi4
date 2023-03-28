@@ -67,6 +67,7 @@ void DLPNOMP2::common_init() {
     debug_ = options_.get_int("DEBUG");
 
     T_CUT_PNO_ = options_.get_double("T_CUT_PNO");
+    T_CUT_PNO_DIAG_SCALE_ = options_.get_double("T_CUT_PNO_DIAG_SCALE");
     T_CUT_TNO_ = options_.get_double("T_CUT_TNO");
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
 
@@ -919,9 +920,11 @@ void DLPNOMP2::pno_transform() {
         Vector pno_occ("eigenvalues", nvir_ij);
         D_ij->diagonalize(*X_pno_ij, pno_occ, descending);
 
+        double t_cut_scale = (i == j) ? T_CUT_PNO_DIAG_SCALE_ : 1.0;
+
         int nvir_ij_final = 0;
         for (size_t a = 0; a < nvir_ij; ++a) {
-            if (fabs(pno_occ.get(a)) >= T_CUT_PNO_) {
+            if (fabs(pno_occ.get(a)) >= t_cut_scale * T_CUT_PNO_) {
                 nvir_ij_final++;
             }
         }
