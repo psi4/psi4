@@ -65,7 +65,7 @@ parser.add_argument("--psiapi-path", action='store_true',
                     help="""Generates a bash command to source correct Python """
                          """interpreter and path for ``python -c "import psi4"``""")
 parser.add_argument("--module", action='store_true',
-                    help="""Generates the path to PsiAPI loading.""")
+                    help="""Generates the path to PsiAPI loading. That is, the following file exists: `psi4 --module`/psi4/__init__.py . Also, adding `psi4 --module` to PYTHONPATH allows "import psi4".""")
 parser.add_argument("-v", "--verbose", action='store_true', help="Prints Psithon to Python translation.")
 parser.add_argument("--inplace", action='store_true',
                     help="Runs Psi4 from the source directory. !Warning! expert option.")
@@ -78,7 +78,7 @@ parser.add_argument("--qcschema", "--schema", action='store_true',
 parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
-                    help="Runs pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
+                    help="Runs pytest tests (requires pytest installed). If `pytest-xdist` installed, parallel with `--nthread`.")
 parser.add_argument("--mdi", default=None,
                     help="Sets MDI configuration options")
 parser.add_argument("--loglevel", default=20,

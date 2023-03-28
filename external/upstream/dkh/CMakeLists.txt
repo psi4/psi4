@@ -1,5 +1,5 @@
 if(${ENABLE_dkh})
-    find_package(dkh 1.2 CONFIG) # QUIET)
+    find_package(dkh 1.2 CONFIG QUIET)
 
     if(${dkh_FOUND})
         get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
