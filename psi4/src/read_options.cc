@@ -2503,11 +2503,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Maximum number of iterations to determine the MP2 amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
         /*- Perform DLPNO-CCSD? */
-        options.add_bool("DLPNO_CCSD", false);
-        /*- Perform DLPNO-CCSD(T)? */
-        options.add_bool("DLPNO_CCSD_T", false);
-        /*- Use the T0 approximation in DLPNO-CCSD(T)? */
-        options.add_bool("T0_APPROXIMATION", false);
+        options.add_str("DLPNO_ALGORITHM", "CCSD", "MP2 CCSD");
 
         /*- SUBSECTION Expert Options -*/
 

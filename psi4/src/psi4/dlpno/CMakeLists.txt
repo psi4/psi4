@@ -1,5 +1,7 @@
 list(APPEND sources
+  dlpnobase.cc
   mp2.cc
+  ccsd.cc
   wrapper.cc
   sparse.cc
   )

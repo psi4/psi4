@@ -45,7 +45,7 @@
 
 #include "psi4/cc/ccwave.h"
 
-#include "psi4/dlpno/mp2.h"
+#include "psi4/dlpno/dlpno.h"
 
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
@@ -639,30 +639,13 @@ void export_wavefunction(py::module& m) {
                .. warning:: Symmetry free calculations only (nirreps > 1 will cause error)
                .. warning:: No checks that the amplitudes will fit in core. Do not use for proteins
         )pbdoc");
+    py::class_<dlpno::DLPNOBase, std::shared_ptr<dlpno::DLPNOBase>, Wavefunction>(
+        m, "DLPNOBase", "Wavefunction that contains the backend technology for DLPNO methods")
+        .def(py::init<std::shared_ptr<Wavefunction>, Options&>());
     py::class_<dlpno::DLPNOMP2, std::shared_ptr<dlpno::DLPNOMP2>, Wavefunction>(
-        m, "DLPNOMP2", "Wavefunction that contains the backend technology for DLPNO methods")
-        .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
-        .def("get_lmo_matrix", &dlpno::DLPNOMP2::get_lmo_matrix, "Gets LMO matrix from LMO lookup table")
-        .def("get_pao_matrix", &dlpno::DLPNOMP2::get_pao_matrix, "Gets PAO matrix from PAO lookup table")
-        .def("get_pno_matrix", &dlpno::DLPNOMP2::get_pno_matrix, "Gets PNO matrix from PNO lookup table")
-        .def("get_sparse_map", &dlpno::DLPNOMP2::get_sparse_map, "Gets specific sparse map by key")
-        .def("eps_pno", &dlpno::DLPNOMP2::eps_pno, "Returns PNO virtual energies per pair ij")
-        .def("i_j_to_ij", &dlpno::DLPNOMP2::i_j_to_ij,
-             "LMO indices (i, j) to significant LMO pair index (ij); insignificant (i, j) maps to -1")
-        .def("ij_to_i_j", &dlpno::DLPNOMP2::ij_to_i_j, "LMO pair index (ij) to both LMO indices (i, j)")
-        .def("ij_to_ji", &dlpno::DLPNOMP2::ij_to_ji, "LMO pair index (ij) to LMO pair index (ji)")
-        .def("e_lmp2", &dlpno::DLPNOMP2::e_lmp2, "LMP2 Iteration Energy (not including truncation errors")
-        .def("de_lmo_total", &dlpno::DLPNOMP2::de_lmo_total,
-             "Returns LMO pair truncation correction (dipole error estimate)")
-        .def("de_pno_total", &dlpno::DLPNOMP2::de_pno_total, "Returns PNO truncation correction")
-        .def("get_qia", &dlpno::DLPNOMP2::get_qia, "Returns qia matrix")
-        .def("get_qij", &dlpno::DLPNOMP2::get_qij, "Returns qij matrix")
-        .def("get_qab", &dlpno::DLPNOMP2::get_qab, "Returns qab matrix")
-        .def("compute_triples_info", &dlpno::DLPNOMP2::compute_triples_info, "Computes information for DLPNO-(T)")
-        .def("get_X_tno", &dlpno::DLPNOMP2::get_X_tno, "Returns X_tno matrix")
-        .def("eps_tno", &dlpno::DLPNOMP2::eps_tno, "Returns TNO virtual energies for triplet ijk")
-        .def("i_j_k_to_ijk", &dlpno::DLPNOMP2::i_j_k_to_ijk,
-             "LMO indices (i, j, k) to significant LMO triplet index (ijk)")
-        .def("ijk_to_i_j_k", &dlpno::DLPNOMP2::ijk_to_i_j_k,
-             "LMO triplet index (ijk) to all three LMO indices (i, j, k)");
+        m, "DLPNOMP2", "Wavefunction that runs the DLPNO-MP2 algorithm")
+        .def(py::init<std::shared_ptr<Wavefunction>, Options&>());
+    py::class_<dlpno::DLPNOCCSD, std::shared_ptr<dlpno::DLPNOCCSD>, Wavefunction>(
+        m, "DLPNOCCSD", "Wavefunction that runs the DLPNO-CCSD algorithm")
+        .def(py::init<std::shared_ptr<Wavefunction>, Options&>());
 }

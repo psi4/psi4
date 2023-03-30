@@ -4358,6 +4358,7 @@ def run_dlpnomp2(name, **kwargs):
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
 
+    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "MP2")
     dlpnomp2_wfn = core.dlpno(ref_wfn)
     dlpnomp2_wfn.compute_energy()
 
@@ -4376,6 +4377,57 @@ def run_dlpnomp2(name, **kwargs):
     optstash.restore()
     core.tstop()
     return dlpnomp2_wfn
+
+def run_dlpnoccsd(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DLPNO-CCSD calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DF_BASIS_MP2'],
+        ['SCF_TYPE'])
+
+    # Alter default algorithm
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
+        raise ValidationError("""  DLPNO-CCSD does not make use of molecular symmetry: """
+                              """reference wavefunction must be C1.\n""")
+
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError("DLPNO-CCSD is not available for %s references.",
+                              core.get_global_option('REFERENCE'))
+
+    core.tstart()
+    core.print_out('\n')
+    p4util.banner('DLPNO-CCSD')
+    core.print_out('\n')
+
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+                                    core.get_option("DLPNO", "DF_BASIS_MP2"),
+                                    "RIFIT", core.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
+
+    core.set_local_option("DLPNO", "DLPNO_ALGORITHM", "CCSD")
+    dlpnoccsd_wfn = core.dlpno(ref_wfn)
+    dlpnoccsd_wfn.compute_energy()
+    
+    dlpnoccsd_wfn.set_variable('CURRENT ENERGY', dlpnoccsd_wfn.variable('CCSD TOTAL ENERGY'))
+    dlpnoccsd_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnoccsd_wfn.variable('CCSD CORRELATION ENERGY'))
+
+    # Shove variables into global space
+    for k, v in dlpnoccsd_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
+    core.tstop()
+    return dlpnoccsd_wfn
 
 
 def run_dmrgscf(name, **kwargs):

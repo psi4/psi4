@@ -26,7 +26,7 @@
  * @END LICENSE
  */
 
-#include "mp2.h"
+#include "dlpno.h"
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/exception.h"
@@ -38,7 +38,11 @@ SharedWavefunction dlpno(SharedWavefunction ref_wfn, Options& options) {
 
     std::shared_ptr<Wavefunction> dlpno;
     if (options.get_str("REFERENCE") == "RHF") {
-        dlpno = std::make_shared<DLPNOMP2>(ref_wfn, options);
+        if (options.get_str("DLPNO_ALGORITHM") == "MP2") {
+            dlpno = std::make_shared<DLPNOMP2>(ref_wfn, options);
+        } else {
+            dlpno = std::make_shared<DLPNOCCSD>(ref_wfn, options);
+        }
     } else {
         throw PSIEXCEPTION("DLPNO-MP2 requires closed-shell reference"); 
     }
