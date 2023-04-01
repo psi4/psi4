@@ -71,8 +71,8 @@ void DLPNOBase::common_init() {
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
 
     // did the user manually change expert level options?
-    bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
-    bool T_CUT_DO_changed = options_["T_CUT_DO"].has_changed();
+    const bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
+    const bool T_CUT_DO_changed = options_["T_CUT_DO"].has_changed();
 
     // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
     if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
@@ -101,8 +101,8 @@ void DLPNOBase::common_init() {
  * The workaround used here is to switch the layout of B before and after the call
  */
 void DLPNOBase::C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
-    int N = B->rowspi(0);
-    int M = B->colspi(0);
+    const int N = B->rowspi(0);
+    const int M = B->colspi(0);
     if (N == 0 || M == 0) return;
 
     // create a copy of B in fortran ordering
@@ -115,7 +115,9 @@ void DLPNOBase::C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
 
     // make the C_DGESV call, solving AX=B for X
     std::vector<int> ipiv(N);
-    int errcode = C_DGESV(N, M, A->pointer()[0], N, ipiv.data(), B_fortran.data(), N);
+    if (0 != C_DGESV(N, M, A->pointer()[0], N, ipiv.data(), B_fortran.data(), N)) {
+        throw PSIEXCEPTION("DGESV failed!");
+    }
 
     // copy the fortran-ordered X into the original matrix, reverting to C-ordering
     for (int n = 0; n < N; n++) {

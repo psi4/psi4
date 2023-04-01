@@ -264,7 +264,7 @@ class DLPNOCCSD : public DLPNOBase {
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
 
     /// Returns the appropriate overlap matrix given two LMO pairs
-    inline SharedMatrix S_PNO(int ij, int mn);
+    inline SharedMatrix S_PNO(const int ij, const int mn);
 
     /// compute PNO/PNO overlap matrices for DLPNO-CCSD
     void compute_pno_overlaps();

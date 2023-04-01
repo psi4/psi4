@@ -2502,7 +2502,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
         /*- Maximum number of iterations to determine the MP2 amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
-        /*- Perform DLPNO-CCSD? */
+        /*- Perform DLPNO-CCSD? !expert*/
         options.add_str("DLPNO_ALGORITHM", "CCSD", "MP2 CCSD");
 
         /*- SUBSECTION Expert Options -*/

@@ -1111,7 +1111,7 @@ void Matrix::transpose_this() {
     }
 }
 
-void Matrix::reshape(int nrow, int ncol) {
+void Matrix::reshape(const uint64_t nrow, const uint64_t ncol) {
     if (nirrep_ != 1) {
         throw PSIEXCEPTION("Matrix::reshape is only defined for Matrix with 1 irrep!");
     }
