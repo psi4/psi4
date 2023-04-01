@@ -58,19 +58,19 @@ namespace dlpno {
 DLPNOCCSD::DLPNOCCSD(SharedWavefunction ref_wfn, Options& options) : DLPNOBase(ref_wfn, options) {}
 DLPNOCCSD::~DLPNOCCSD() {}
 
-inline SharedMatrix DLPNOCCSD::S_PNO(int ij, int mn) {
+inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     int i, j, m, n;
     std::tie(i, j) = ij_to_i_j_[ij];
     std::tie(m, n) = ij_to_i_j_[mn];
     
     
-    int m_ij = lmopair_to_lmos_dense_[ij][m], n_ij = lmopair_to_lmos_dense_[ij][n];
+    const int m_ij = lmopair_to_lmos_dense_[ij][m], n_ij = lmopair_to_lmos_dense_[ij][n];
     if (m_ij == -1 || n_ij == -1) {
         outfile->Printf("Invalid PNO Pairs (%d, %d) and (%d, %d)\n", i, j, m, n);
         throw PSIEXCEPTION("Invalid PNO pairs!");
     }
 
-    int nlmo_ij = lmopair_to_lmos_[ij].size();
+    const int nlmo_ij = lmopair_to_lmos_[ij].size();
 
     int mn_ij; 
     if (m_ij < n_ij) {
@@ -80,7 +80,7 @@ inline SharedMatrix DLPNOCCSD::S_PNO(int ij, int mn) {
     }
 
     if (i < j) {
-        int ji = ij_to_ji_[ij];
+        const int ji = ij_to_ji_[ij];
         return S_pno_ij_mn_[ji][mn_ij];
     } else {
         return S_pno_ij_mn_[ij][mn_ij];
@@ -88,9 +88,7 @@ inline SharedMatrix DLPNOCCSD::S_PNO(int ij, int mn) {
 }
 
 void DLPNOCCSD::compute_pno_overlaps() {
-    int n_lmo_pairs = ij_to_i_j_.size();
-    int naocc = nalpha_ - nfrzc();
-
+    const int n_lmo_pairs = ij_to_i_j_.size();
     S_pno_ij_mn_.resize(n_lmo_pairs);
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -98,19 +96,19 @@ void DLPNOCCSD::compute_pno_overlaps() {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
 
-        int npno_ij = n_pno_[ij];
-        int nlmo_ij = lmopair_to_lmos_[ij].size();
+        const int npno_ij = n_pno_[ij];
+        const int nlmo_ij = lmopair_to_lmos_[ij].size();
 
         if (npno_ij == 0 || i < j) continue;
 
         S_pno_ij_mn_[ij].resize(nlmo_ij * nlmo_ij);
 
         for (int mn_ij = 0; mn_ij < nlmo_ij * nlmo_ij; mn_ij++) {
-            int m_ij = mn_ij / nlmo_ij, n_ij = mn_ij % nlmo_ij;
-            int m = lmopair_to_lmos_[ij][m_ij], n = lmopair_to_lmos_[ij][n_ij];
-            int mn = i_j_to_ij_[m][n];
+            const int m_ij = mn_ij / nlmo_ij, n_ij = mn_ij % nlmo_ij;
+            const int m = lmopair_to_lmos_[ij][m_ij], n = lmopair_to_lmos_[ij][n_ij];
+            const int mn = i_j_to_ij_[m][n];
 
-            int npno_mn = n_pno_[mn];
+            const int npno_mn = n_pno_[mn];
             if (npno_mn == 0 || m_ij < n_ij) continue;
 
             S_pno_ij_mn_[ij][mn_ij] = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[mn]);
@@ -124,7 +122,7 @@ void DLPNOCCSD::estimate_memory() {
 
     int n_lmo_pairs = ij_to_i_j_.size();
 
-    size_t qvv = 0L;
+    size_t qvv = 0;
 #pragma omp parallel for schedule(dynamic) reduction(+ : qvv)
     for (int ij = 0; ij < n_lmo_pairs; ij++) {
         int i, j;
@@ -132,13 +130,13 @@ void DLPNOCCSD::estimate_memory() {
 
         if (i > j) continue;
 
-        int naux_ij = lmopair_to_ribfs_[ij].size();
-        int npno_ij = n_pno_[ij];
+        const int naux_ij = lmopair_to_ribfs_[ij].size();
+        const int npno_ij = n_pno_[ij];
 
         qvv += naux_ij * npno_ij * npno_ij;
     }
 
-    size_t qvv_memory = qvv * sizeof(double);
+    const size_t qvv_memory = qvv * sizeof(double);
     outfile->Printf("    Memory Required to store Qvv integrals: %8.4f [GiB]\n", qvv_memory / (1024 * 1024 * 1024.0));
     
     if (qvv_memory < memory_) {
@@ -153,10 +151,7 @@ void DLPNOCCSD::estimate_memory() {
 void DLPNOCCSD::compute_cc_integrals() {
     outfile->Printf("   Computing CC integrals...\n\n");
 
-    int nbf = basisset_->nbf();
-    int naocc = nalpha_ - nfrzc();
     int n_lmo_pairs = ij_to_i_j_.size();
-    int npao = C_pao_->colspi(0);
 
     K_mnij_.resize(n_lmo_pairs);
     K_mbij_.resize(n_lmo_pairs);
@@ -166,25 +161,25 @@ void DLPNOCCSD::compute_cc_integrals() {
     L_iajb_.resize(n_lmo_pairs);
     Lt_iajb_.resize(n_lmo_pairs);
 
-    size_t qvv_memory = 0L;
-    size_t qvv_svd_memory = 0L;
+    size_t qvv_memory = 0;
+    size_t qvv_svd_memory = 0;
 
 #pragma omp parallel for schedule(dynamic, 1) reduction(+ : qvv_memory) reduction(+ : qvv_svd_memory)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
-        int ji = ij_to_ji_[ij];
+        const int ji = ij_to_ji_[ij];
 
         // number of PNOs in the pair domain
-        int npno_ij = n_pno_[ij];
+        const int npno_ij = n_pno_[ij];
         if (npno_ij == 0) continue;
 
         // number of LMOs in the pair domain
-        int nlmo_ij = lmopair_to_lmos_[ij].size();
+        const int nlmo_ij = lmopair_to_lmos_[ij].size();
         // number of PAOs in the pair domain (before removing linear dependencies)
-        int npao_ij = lmopair_to_paos_[ij].size();
+        const int npao_ij = lmopair_to_paos_[ij].size();
         // number of auxiliary functions in the pair domain
-        int naux_ij = lmopair_to_ribfs_[ij].size();
+        const int naux_ij = lmopair_to_ribfs_[ij].size();
 
         auto q_pair = std::make_shared<Matrix>(naux_ij, 1);
 
@@ -195,13 +190,13 @@ void DLPNOCCSD::compute_cc_integrals() {
         auto q_vv = std::make_shared<Matrix>(naux_ij, npno_ij * npno_ij);
 
         for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
-            int q = lmopair_to_ribfs_[ij][q_ij];
-            int centerq = ribasis_->function_to_center(q);
+            const int q = lmopair_to_ribfs_[ij][q_ij];
+            const int centerq = ribasis_->function_to_center(q);
 
-            int i_sparse = riatom_to_lmos_ext_dense_[centerq][i];
-            int j_sparse = riatom_to_lmos_ext_dense_[centerq][j];
-            std::vector<int> i_slice(1, i_sparse);
-            std::vector<int> j_slice(1, j_sparse);
+            const int i_sparse = riatom_to_lmos_ext_dense_[centerq][i];
+            const int j_sparse = riatom_to_lmos_ext_dense_[centerq][j];
+            const std::vector<int> i_slice(1, i_sparse);
+            const std::vector<int> j_slice(1, j_sparse);
 
             q_pair->set(q_ij, 0, (*qij_[q])(i_sparse, j_sparse));
             
@@ -239,7 +234,7 @@ void DLPNOCCSD::compute_cc_integrals() {
         J_ijab_[ij]->reshape(npno_ij, npno_ij);
 
         K_maef_[ji] = linalg::doublet(q_jv, q_vv, true, false);
-        auto K_maef_tmp = K_maef_[ji]->clone();
+        const auto K_maef_tmp = K_maef_[ji]->clone();
         for (int a_ij = 0; a_ij < npno_ij; a_ij++) {
             for (int e_ij = 0; e_ij < npno_ij; e_ij++) {
                 for (int f_ij = 0; f_ij < npno_ij; f_ij++) {
@@ -250,6 +245,8 @@ void DLPNOCCSD::compute_cc_integrals() {
         }
 
         if (virtual_storage_ == CORE && i <= j) {
+            // SVD Decomposition of DF-ERIs
+            // DOI: 10.1063/1.4905005
             auto [U, S, V] = q_vv->svd_temps();
             q_vv->svd(U, S, V);
 
@@ -290,7 +287,7 @@ void DLPNOCCSD::compute_cc_integrals() {
         Lt_iajb_[ij]->subtract(J_ijab_[ij]);
     }
 
-    outfile->Printf("   SVD Memory/DF Memory : %8.4f \n\n", (double) qvv_svd_memory / qvv_memory);
+    outfile->Printf("   SVD Memory/DF Memory : %8.4f \n\n", static_cast<double>(qvv_svd_memory) / qvv_memory);
 }
 
 SharedMatrix DLPNOCCSD::compute_Fmi(const std::vector<SharedMatrix>& tau_tilde) {
