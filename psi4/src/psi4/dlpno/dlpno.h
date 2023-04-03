@@ -128,6 +128,8 @@ class DLPNOBase : public Wavefunction {
       std::vector<std::pair<int,int>> ij_to_i_j_; ///< LMO pair index (ij) to both LMO indices (i, j)
       std::vector<int> ij_to_ji_; ///< LMO pair index (ij) to LMO pair index (ji)
 
+      std::vector<std::pair<int, int>> weak_pairs_; ///< Weak Pairs (as defined for that level of theory)
+
       // LMO Pair Domains
       SparseMap lmopair_to_ribfs_; ///< which aux BFs are needed for density-fitting a pair of LMOs?
       SparseMap lmopair_to_riatoms_; ///< aux BFs on which atoms are needed for density-fitting a pair of LMOs?
@@ -261,6 +263,7 @@ class DLPNOCCSD : public DLPNOBase {
     std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
     std::vector<SharedMatrix> Lt_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
 
+    double de_lmp2_; ///< SC-LMP2 correction for weak pairs
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
 
     /// Returns the appropriate overlap matrix given two LMO pairs
@@ -268,6 +271,9 @@ class DLPNOCCSD : public DLPNOBase {
 
     /// compute PNO/PNO overlap matrices for DLPNO-CCSD
     void compute_pno_overlaps();
+
+    /// compute SC-LMP2 guess for weak pairs
+    void compute_de_lmp2();
 
     // => Computing integrals <= //
 

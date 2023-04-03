@@ -564,18 +564,40 @@ void DLPNOBase::prep_sparsity() {
     i_j_to_ij_.resize(naocc);
     de_dipole_ = 0.0;
 
-    for (size_t i = 0, ij = 0; i < naocc; i++) {
-        for (size_t j = 0; j < naocc; j++) {
-            bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
-            bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > options_.get_double("T_CUT_PRE"));
+    if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
+        for (size_t i = 0, ij = 0; i < naocc; i++) {
+            for (size_t j = 0; j < naocc; j++) {
+                bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
+                bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > options_.get_double("T_CUT_PRE"));
 
-            if (overlap_big || energy_big) {
-                i_j_to_ij_[i].push_back(ij);
-                ij_to_i_j_.push_back(std::make_pair(i, j));
-                ij++;
-            } else {
-                de_dipole_ += dipole_pair_e_->get(i, j);
-                i_j_to_ij_[i].push_back(-1);
+                if (overlap_big || energy_big) {
+                    i_j_to_ij_[i].push_back(ij);
+                    ij_to_i_j_.push_back(std::make_pair(i, j));
+                    ij++;
+                } else {
+                    de_dipole_ += dipole_pair_e_->get(i, j);
+                    i_j_to_ij_[i].push_back(-1);
+                }
+            }
+        }
+    } else {
+        for (size_t i = 0, ij = 0; i < naocc; i++) {
+            for (size_t j = 0; j < naocc; j++) {
+                bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
+                bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > options_.get_double("T_CUT_PRE"));
+
+                if ((i == j) || (overlap_big && energy_big)) {
+                    i_j_to_ij_[i].push_back(ij);
+                    ij_to_i_j_.push_back(std::make_pair(i, j));
+                    ij++;
+                } else {
+                    if (overlap_big || energy_big)
+                        weak_pairs_.push_back(std::make_pair(i,j));
+                    else
+                        de_dipole_ += dipole_pair_e_->get(i, j);
+
+                    i_j_to_ij_[i].push_back(-1);
+                }
             }
         }
     }
@@ -670,8 +692,13 @@ void DLPNOBase::prep_sparsity() {
 
     // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
     //   of all interacting LMOs
+    auto lmo_to_riatoms_ext1 = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
+    auto lmo_to_riatoms_ext2 = extend_maps(lmo_to_riatoms_, weak_pairs_);
+    lmo_to_riatoms_ext_.resize(naocc);
+    for (int i = 0; i < naocc; i++) {
+        lmo_to_riatoms_ext_[i] = merge_lists(lmo_to_riatoms_ext1[i], lmo_to_riatoms_ext2[i]);
+    }
 
-    lmo_to_riatoms_ext_ = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
     riatom_to_lmos_ext_ = invert_map(lmo_to_riatoms_ext_, natom);
     riatom_to_paos_ext_ = chain_maps(riatom_to_lmos_ext_, lmo_to_paos_);
 

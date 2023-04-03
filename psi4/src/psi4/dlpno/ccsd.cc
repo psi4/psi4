@@ -87,6 +87,82 @@ inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     }
 }
 
+void DLPNOCCSD::compute_de_lmp2() {
+    de_lmp2_ = 0.0;
+
+    outfile->Printf("\n   => SC-LMP2 Weak Pair Correction <=\n\n");
+    outfile->Printf("   Number of Weak Pairs: %d\n\n", weak_pairs_.size());
+
+#pragma omp parallel for schedule(dynamic) reduction(+ : de_lmp2_)
+    for (int ij = 0; ij < weak_pairs_.size(); ij++) {
+        int i, j;
+        std::tie(i, j) = weak_pairs_[ij];
+
+        if (i > j) continue;
+
+        auto weak_pair_paos = merge_lists(lmo_to_paos_[i], lmo_to_paos_[j]);
+        int npao_ij = weak_pair_paos.size();
+
+        // number of auxiliary basis in the domain
+        auto weak_pair_ribfs = merge_lists(lmo_to_ribfs_[i], lmo_to_ribfs_[j]);
+        int naux_ij = weak_pair_ribfs.size();
+
+        auto i_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
+        i_qa->zero();
+        auto j_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
+        j_qa->zero();
+
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            int q = weak_pair_ribfs[q_ij];
+            int centerq = ribasis_->function_to_center(q);
+            for (int a_ij = 0; a_ij < npao_ij; a_ij++) {
+                int a = weak_pair_paos[a_ij];
+                i_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][a]));
+                j_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][j], riatom_to_paos_ext_dense_[centerq][a]));
+            }
+        }
+
+        auto A_solve = submatrix_rows_and_cols(*full_metric_, weak_pair_ribfs, weak_pair_ribfs);
+        C_DGESV_wrapper(A_solve, i_qa);
+
+        auto K_pao_ij = linalg::doublet(i_qa, j_qa, true, false);
+
+        //                                      //
+        // ==> Canonicalize PAOs of pair ij <== //
+        //                                      //
+
+        auto S_pao_ij = submatrix_rows_and_cols(*S_pao_, weak_pair_paos, weak_pair_paos);
+        auto F_pao_ij = submatrix_rows_and_cols(*F_pao_, weak_pair_paos, weak_pair_paos);
+
+        SharedMatrix X_pao_ij;  // canonical transformation of this domain's PAOs to
+        SharedVector e_pao_ij;  // energies of the canonical PAOs
+        std::tie(X_pao_ij, e_pao_ij) = orthocanonicalizer(S_pao_ij, F_pao_ij);
+
+        // S_pao_ij = linalg::triplet(X_pao_ij, S_pao_ij, X_pao_ij, true, false, false);
+        F_pao_ij = linalg::triplet(X_pao_ij, F_pao_ij, X_pao_ij, true, false, false);
+        K_pao_ij = linalg::triplet(X_pao_ij, K_pao_ij, X_pao_ij, true, false, false);
+
+        // number of PAOs in the domain after removing linear dependencies
+        int npao_can_ij = X_pao_ij->colspi(0);
+        auto T_pao_ij = K_pao_ij->clone();
+        for (int a = 0; a < npao_can_ij; ++a) {
+            for (int b = 0; b < npao_can_ij; ++b) {
+                T_pao_ij->set(a, b, T_pao_ij->get(a, b) /
+                                        (-e_pao_ij->get(b) + -e_pao_ij->get(a) + F_lmo_->get(i, i) + F_lmo_->get(j, j)));
+            }
+        }
+
+        auto Tt_pao_ij = T_pao_ij->clone();
+        Tt_pao_ij->scale(2.0);
+        Tt_pao_ij->subtract(T_pao_ij->transpose());
+
+        double prefactor = (i == j) ? 1.0 : 2.0;
+        de_lmp2_ += prefactor * Tt_pao_ij->vector_dot(K_pao_ij);
+    }
+
+    outfile->Printf("   SC-LMP2 Weak Pair Correction:        %16.12f\n\n", de_lmp2_);
+}
+
 void DLPNOCCSD::compute_pno_overlaps() {
     const int n_lmo_pairs = ij_to_i_j_.size();
     S_pno_ij_mn_.resize(n_lmo_pairs);
@@ -108,8 +184,7 @@ void DLPNOCCSD::compute_pno_overlaps() {
             const int m = lmopair_to_lmos_[ij][m_ij], n = lmopair_to_lmos_[ij][n_ij];
             const int mn = i_j_to_ij_[m][n];
 
-            const int npno_mn = n_pno_[mn];
-            if (npno_mn == 0 || m_ij < n_ij) continue;
+            if (mn == -1 || n_pno_[mn] == 0 || m_ij < n_ij) continue;
 
             S_pno_ij_mn_[ij][mn_ij] = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[mn]);
             S_pno_ij_mn_[ij][mn_ij] = linalg::triplet(X_pno_[ij], S_pno_ij_mn_[ij][mn_ij], X_pno_[mn], true, false, false);
@@ -1081,6 +1156,10 @@ double DLPNOCCSD::compute_energy() {
     pno_transform();
     timer_off("PNO Transform");
 
+    timer_on("Weak Pair LMP2 Correction");
+    compute_de_lmp2();
+    timer_off("Weak Pair LMP2 Correction");
+
     timer_on("PNO Overlaps");
     compute_pno_overlaps();
     timer_off("PNO Overlaps");
@@ -1102,7 +1181,7 @@ double DLPNOCCSD::compute_energy() {
     timer_off("DLPNO-CCSD");
 
     double e_scf = reference_wavefunction_->energy();
-    double e_ccsd_corr = e_lccsd_ + de_dipole_ + de_pno_total_;
+    double e_ccsd_corr = e_lccsd_ + de_lmp2_ + de_dipole_ + de_pno_total_;
     double e_ccsd_total = e_scf + e_ccsd_corr;
 
     set_scalar_variable("CCSD CORRELATION ENERGY", e_ccsd_corr);
@@ -1137,8 +1216,9 @@ void DLPNOCCSD::print_header() {
 
 void DLPNOCCSD::print_results() {
     outfile->Printf("  \n");
-    outfile->Printf("  Total DLPNO-CCSD Correlation Energy: %16.12f \n", e_lccsd_ + de_pno_total_ + de_dipole_);
+    outfile->Printf("  Total DLPNO-CCSD Correlation Energy: %16.12f \n", e_lccsd_ + de_lmp2_ + de_pno_total_ + de_dipole_);
     outfile->Printf("    CCSD Correlation Energy:           %16.12f \n", e_lccsd_);
+    outfile->Printf("    SC-LMP2 Energy Correction:         %16.12f \n", de_lmp2_);
     outfile->Printf("    LMO Truncation Correction:         %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:         %16.12f \n", de_pno_total_);
     outfile->Printf("  @Total DLPNO-CCSD Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_lccsd_ + de_pno_total_ + de_dipole_);
