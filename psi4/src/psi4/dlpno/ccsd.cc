@@ -88,12 +88,13 @@ inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
 }
 
 void DLPNOCCSD::compute_de_lmp2() {
-    de_lmp2_ = 0.0;
 
     outfile->Printf("\n   => SC-LMP2 Weak Pair Correction <=\n\n");
     outfile->Printf("   Number of Weak Pairs: %d\n\n", weak_pairs_.size());
 
-#pragma omp parallel for schedule(dynamic) reduction(+ : de_lmp2_)
+    double de_lmp2 = 0.0;
+
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : de_lmp2)
     for (int ij = 0; ij < weak_pairs_.size(); ij++) {
         int i, j;
         std::tie(i, j) = weak_pairs_[ij];
@@ -157,8 +158,10 @@ void DLPNOCCSD::compute_de_lmp2() {
         Tt_pao_ij->subtract(T_pao_ij->transpose());
 
         double prefactor = (i == j) ? 1.0 : 2.0;
-        de_lmp2_ += prefactor * Tt_pao_ij->vector_dot(K_pao_ij);
+        de_lmp2 += prefactor * Tt_pao_ij->vector_dot(K_pao_ij);
     }
+
+    de_lmp2_ = de_lmp2;
 
     outfile->Printf("   SC-LMP2 Weak Pair Correction:        %16.12f\n\n", de_lmp2_);
 }
