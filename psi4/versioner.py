@@ -43,7 +43,7 @@ def collect_version_input_from_fallback(meta_file='metadata.py'):
     """
     cwd = os.path.dirname(os.path.abspath(__file__))
     res = dict(re.findall(r"__version_([a-z_]+)\s*=\s*'([^']+)'", open(cwd + '/' + meta_file).read()))
-    res.pop('_')
+    res.pop('_', None)
     return res
 
 
@@ -138,7 +138,7 @@ def collect_version_input_from_git():
                                universal_newlines=True)
     (out, err) = process.communicate()
 
-    res['is_clean'] = False if str(out).rstrip() else True
+    res['is_clean'] = not str(out).rstrip()
 
     command = 'git rev-parse --abbrev-ref HEAD'  # returns HEAD when detached
     process = subprocess.Popen(command.split(),
