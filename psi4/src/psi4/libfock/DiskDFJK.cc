@@ -288,19 +288,19 @@ void DiskDFJK::print_header() const {
 bool DiskDFJK::is_core() {
     auto do_core = is_core_;
 
-    // determine AO_core_ either automatically...
+    // determine do_core either automatically...
     if (subalgo_ == "AUTO") {
         do_core = memory_estimate() < memory_;
 
-    // .. or forcibly disable AO_core_ if user specifies ...
+    // .. or forcibly disable do_core if user specifies ...
     } else if (subalgo_ == "OUT_OF_CORE") {
         if (print_ > 0) {
             outfile->Printf("  SCF_SUBTYPE = OUT_OF_CORE selected. Out-of-core DISK_DF algorithm will be used.\n\n");
         }
-	
-	do_core = false; 
 
-   // .. or force AO_core_ if user specifies
+	do_core = false;
+
+   // .. or force do_core if user specifies
     } else if (subalgo_ == "INCORE") {
         if (memory_estimate() > memory_) {
             throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
@@ -308,7 +308,7 @@ bool DiskDFJK::is_core() {
             if (print_ > 0) {
                 outfile->Printf("  SCF_SUBTYPE=INCORE selected. In-core DISK_DF algorithm will be used.\n\n");
             }
-            do_core = true; 
+            do_core = true;
         }
     } else {
         throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");

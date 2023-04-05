@@ -894,7 +894,7 @@ class PSI_API DiskDFJK : public JK {
    protected:
     /// Options object
     Options& options_;
-	   
+
     // => DF-Specific stuff <= //
 
     std::string name() override { return "DiskDFJK"; }
