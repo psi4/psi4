@@ -726,7 +726,7 @@ post SCF algorithms require a specific implementation. Additionally, expert user
 can manually switch between the in-memory and on-disk options *within* MEM_DF using 
 the |scf__scf_subtype| option. Using ``SCF_SUBTYPE = AUTO``, where |PSIfour| 
 automatically selects the in-memory or on-disk option for MEM_DF based on memory and molecule, is the default 
-and recommend option. However, the in-memory or on-disk algorithms for MEM_DF can be forced by using
+and recommended option. However, the in-memory or on-disk algorithms for MEM_DF can be forced by using
 ``SCF_SUBTYPE = INCORE`` or ``SCF_SUBTYPE = OUT_OF_CORE``, respectively.
 Note that an exception will be thrown if 
 ``SCF_SUBTYPE = INCORE`` is used with MEM_DF without allocating sufficient memory to 
