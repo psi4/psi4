@@ -346,6 +346,7 @@ class PSI_API DFHelper {
     bool direct_ = false;
     bool direct_iaQ_ = false;
     bool symm_compute_;
+    // Use in-core subalgorithm?
     bool AO_core_ = true;
     bool MO_core_ = false;
     bool release_core_AO_before_metric_ = false;
@@ -368,7 +369,10 @@ class PSI_API DFHelper {
     // Can we early-exit prepare_sparsity?
     bool sparsity_prepared_ = false;
     int print_lvl_ = 1;
-    // Use in-core or out-of-core algo?
+    // Which subalgorithm (in-core or out-of-core) do we use?
+    // AUTO lets DFHelper decide based on memory allocated
+    // INCORE forces the in-core subalgorithm (AO_core_ = true)
+    // OUT_OF_CORE forces the out-of-core subalgorithm (AO_core_ = false)
     std::string subalgo_ = "AUTO";
 
     // => in-core machinery <=
