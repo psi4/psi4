@@ -912,9 +912,12 @@ class PSI_API DiskDFJK : public JK {
     double condition_;
     /// File number for (Q|mn) tensor
     size_t unit_;
-    // Use in-core or out-of-core algo?
+    // Which subalgorithm (in-core or out-of-core) do we use?
+    // AUTO lets DFHelper decide based on memory allocated
+    // INCORE forces the in-core subalgorithm (is_core_ = true)
+    // OUT_OF_CORE forces the out-of-core subalgorithm (is_core_ = false)
     std::string subalgo_ = "AUTO";
-    /// Core or disk?
+    // Use in-core subalgorithm?
     bool is_core_;
     /// Maximum number of rows to handle at a time
     int max_rows_;
@@ -1034,7 +1037,7 @@ class PSI_API DiskDFJK : public JK {
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
     ///
     /// Indicates whether to use the in-core or out-of-core
-    //  subalgorithm available in MemDFJK, or to let
+    //  subalgorithm available in DiskDFJK, or to let
     //  Psi4 select automatically based on allocated memory
     /// defaults to AUTO (Psi4 selects by default)
     ///
