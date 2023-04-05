@@ -244,7 +244,7 @@ void DFJCOSK::common_init() {
     // which can happen with certain grid configurations
     // See https://github.com/psi4/psi4/issues/2890
     for (const auto &init_block : grid_init_->blocks()) {
-        double* w = init_block->w();
+        const auto w = init_block->w();
         for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
             if (w[ipoint] < 0.0) {
 	      throw PSIEXCEPTION("The definition of the current initial grid includes negative weights. As these are not suitable for the COSX implementation, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.");
@@ -253,7 +253,7 @@ void DFJCOSK::common_init() {
     }
 
     for (const auto &final_block : grid_final_->blocks()) {
-        double* w = final_block->w();
+        const auto w = final_block->w();
         for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
             if (w[ipoint] < 0.0) {
 	      throw PSIEXCEPTION("The definition of the current final grid includes negative weights. As these are not suitable for the COSX implementation, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.");
