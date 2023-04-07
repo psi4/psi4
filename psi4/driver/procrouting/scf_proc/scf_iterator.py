@@ -684,15 +684,6 @@ def scf_finalize_energy(self):
         # Set callback function for CPSCF
         self.set_external_cpscf_perturbation("PE", lambda pert_dm : self.pe_state.get_pe_contribution(pert_dm, elec_only=True)[1])
 
-    if core.get_option('SCF', 'DDX'):
-        Dt = self.Da().clone()
-        Dt.add(self.Db())
-        Vddx = self.ddx.get_solvation_contributions(Dt)[1]
-        self.push_back_external_potential(Vddx)
-        # Set callback function for CPSCF
-        self.set_external_cpscf_perturbation(
-            "DDX", lambda pert_dm : self.ddx.get_solvation_contributions(pert_dm, elec_only=True, nonequilibrium=True)[1])
-
     # Orbitals are always saved, in case an MO guess is requested later
     # save_orbitals()
 
