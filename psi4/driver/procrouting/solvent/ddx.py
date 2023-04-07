@@ -85,10 +85,9 @@ def get_ddx_options(molecule):
     else:
         solvent_epsilon_optical = pyddx.data.solvent_epsilon_optical.get(solvent, None)
 
-    # TODO Deal with unit conversion (A^{-1} -> bohr^{-1})
     solvent_kappa = 0.0
     if core.get_option("DDX", "DDX_MODEL").lower() == "lpb":
-        solvent_kappa = core.get_option("DDX", "DDX_SOLVENT_KAPPA")
+        solvent_kappa = core.get_option("DDX", "DDX_SOLVENT_KAPPA") / convfac
         if solvent_kappa <= 0:
             raise ValidationError("DDX_SOLVENT_KAPPA is required for LPB and should be a "
                                   "positive quantity")
@@ -157,7 +156,7 @@ class DdxInterface:
     def __init__(self, molecule, options, basisset):
         # verify that the minimal version is used if pyddx is provided
         # from outside the Psi4 ecosystem
-        min_version = "0.2.0"
+        min_version = "0.3.0"
         if parse_version(pyddx.__version__) < parse_version(min_version):
             raise ModuleNotFoundError("pyddx version {} is required at least. "
                                       "Version {}"

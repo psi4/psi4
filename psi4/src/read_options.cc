@@ -331,7 +331,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DDX_SOLVENT_EPSILON_OPTICAL", 0);
 
         /*- Debye-Hückel parameter of the solvent to use. Ignored if DDX_MODEL is not LPB;
-            mandatory for LPB. -*/
+            mandatory for LPB. Uses the unit of the molecule (i.e. either ang^{-1} or bohr^{-1}). -*/
         options.add_double("DDX_SOLVENT_KAPPA", 0);
 
         /*- Maximal degree of modelling spherical harmonics -*/
