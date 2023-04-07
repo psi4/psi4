@@ -54,9 +54,9 @@ Interface to ddx by A. Mikhalev, A. Jha, M. Nottoli and M. F. Herbst
 by A. Mikhalev *et. al.*. The library provides a linear-scaling implementation
 of standard continuum solvation models using a domain-decomposition ansatz
 [Cances:2013:054111]_ [Stamm:2016:054101]_.
-Currently the conductor-like screening model (COSMO) [Klamt:1993:799]_ [Lipparini:2014:184108]_
-and the polarisable continuum model (PCM) [Tomasi:2005:2999]_ [Nottoli:2019:6061]_
-are supported.
+Currently the conductor-like screening model (COSMO) [Klamt:1993:799]_ [Lipparini:2014:184108]_,
+the polarisable continuum model (PCM) [Tomasi:2005:2999]_ [Nottoli:2019:6061]_
+and the linearized poisson-boltzmann model (LPB) [Lu:2008:973]_ [Jha:2023:104105]_ are supported.
 No additional licence or configuration is required to use ddx with Psi4.
 
 
@@ -167,6 +167,25 @@ The full list understood by ddx can be obtained using ::
     import pyddx
     print(pyddx.data.solvent_epsilon.keys())
 
+For when an LPB solvent model is selected (|ddx__ddx_model| is ``LPB``)
+additionally the **Debye-Hückel parameter** |ddx__ddx_solvent_kappa| needs to be provided
+(in units of inverse Bohr or inverse Angström, depending on the unit used to define
+the molecular geometry). ``pyddx`` provides a handy utility function to compute
+the Debye-Hückel parameter. For example ::
+
+    import pyddx
+    from qcelemental import constants
+
+    list_of_ions = [(+1, 0.1), (-1, 0.1)]
+    dielectric_constant = pyddx.data.solvent_epsilon["water"]
+    temperature = 298.15  # Kelvin
+    kappa_invbohr = pyddx.solvent_kappa(list_of_ions, dielectric_constant, temperature)
+    kappa_invang = kappa_invbohr / constants.bohr2angstroms
+
+computes the parameter (in inverse Angström) for a 0.1 mol/l solution of sodium
+chloride in water, thus a solution woith 0.1 mol/l of a ``+1``-charged ion
+and 0.1 mol/l of a ``-1``-charged ion.
+
 The **cavity** in ddx is defined as a union of spheres around each atom.
 Usually the spehere radii for each atom are determined using a standard
 set of tabulated radii per atomic species, determined by the |ddx__ddx_radii_set| parameter.
@@ -177,7 +196,8 @@ conventionally 1.1 for ``uff`` and 1.2 for ``bondi``. Customisation of the scali
 is possible using the |ddx__ddx_radii_scaling| parameter.
 A more fine-grained control over the sphere radii is available by explicitly providing
 a list of radii (one per atom, exactly in the order of the input geometry)
-using the |ddx__ddx_radii| parameter.
+using the |ddx__ddx_radii| parameter. Note that the same unit as for the molecular
+input is expected for the radii.
 
 .. include:: autodir_options_c/globals__ddx.rst
 .. include:: autodir_options_c/ddx__ddx_model.rst
@@ -186,6 +206,7 @@ using the |ddx__ddx_radii| parameter.
 .. include:: autodir_options_c/ddx__ddx_radii_set.rst
 .. include:: autodir_options_c/ddx__ddx_solvent_epsilon.rst
 .. include:: autodir_options_c/ddx__ddx_solvent.rst
+.. include:: autodir_options_c/ddx__ddx_solvent_kappa.rst
 
 Numerical integration and discretisation parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

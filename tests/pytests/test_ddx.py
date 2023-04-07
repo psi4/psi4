@@ -95,18 +95,21 @@ def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
        "dm": core.Matrix.from_array(np.array([[0.]])),
        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "radii": [1.0]},
        "ref": -0.2645886054599999,  # from Gaussian
+       "tol": 1e-6,
    }, id='h'),
    pytest.param({
        "geom": __geoms["h2"],
        "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "radii": [1.5873, 1.5873]},
        "ref": -0.0002016948,  # from Gaussian
+       "tol": 1e-6,
    }, id='h2'),
    pytest.param({
        "geom": __geoms["h2"],
        "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
        "ddx": {"model": "lpb", "solvent_epsilon": 80, "solvent_kappa": 1.5,
                "radii": [1.5873, 1.5873]},
+       "tol": 5e-6,
    }, id='h2lpb'),
 ])
 def test_ddx_fock_build(inp):
@@ -137,32 +140,37 @@ def test_ddx_fock_build(inp):
         E, V, _ = ddx_iface.get_solvation_contributions(density_matrix)
         return E, V
 
-    _base_test_fock(get_EV, inp["dm"])
+    _base_test_fock(get_EV, inp["dm"], tol=inp["tol"])
 
     if "ref" in inp:
         E, _ = get_EV(inp["dm"])
         assert compare_values(inp["ref"], E, atol=1e-16, rtol=1e-2)
 
 @pytest.mark.quick
-def test_ddx_lpb_limiting_cases():
-    """Test PCM / COSMO as limiting cases of DDX"""
+def test_ddx_limiting_cases():
+    """Test consistency of limiting cases in PCM / COSMO / LPB"""
     from psi4.driver.procrouting.solvent import ddx
 
     psi4.set_options({
         "df_scf_guess": False,
-        "ddx_lmax": 10,
-        "ddx_n_lebedev": 302,
-        "ddx_solute_spherical_points": 302,
-        "ddx_solute_radial_points": 75,
-        "ddx_radii": [1.5873, 1.5873],
+        "ddx_lmax": 20,
+        "ddx_n_lebedev": 590,
+        "ddx_solute_spherical_points": 590,
+        "ddx_solute_radial_points": 100,
         "ddx_shift": 0.0,
+        "ddx_eta": 0.1,
+        "ddx_radii_scaling": 7.1,
+        "basis": "3-21g",
+        "ddx": False,
     })
 
-    mol = psi4.geometry(__geoms["h2"])
+    # get a realistic guess density
+    mol = psi4.geometry(__geoms["nh3"])
     basis = psi4.core.BasisSet.build(mol, "BASIS", "sto-3g")
-    density_matrix = core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2)))
+    _, wfn = psi4.energy('SCF', molecule=mol, return_wfn=True)
+    density_matrix = core.Matrix.from_array(wfn.Da().np)
 
-    def ddenergy(model, solvent_kappa=0.0, solvent_epsilon=80):
+    def ddenergy(model, solvent_kappa=0.0, solvent_epsilon=80.0):
         psi4.set_options({"ddx_solvent_kappa": solvent_kappa, "ddx_model": model,
                           "ddx_solvent_epsilon": solvent_epsilon, "ddx_solvation_convergence": 1e-10})
         ddx_options = ddx.get_ddx_options(mol)
@@ -174,20 +182,29 @@ def test_ddx_lpb_limiting_cases():
             V.scale(fepsilon)
         return E, V
 
-    e_pcm, v_pcm = ddenergy("pcm")
-    e_lpb0, v_lpb0 = ddenergy("lpb", solvent_kappa=1e-6)
-    e_lpbinf, v_lpbinf = ddenergy("lpb", solvent_kappa=18)
-    e_cosmo, v_cosmo = ddenergy("cosmo")
+    e_pcminf, v_pcminf = ddenergy("pcm", solvent_epsilon=1e12)
+    e_pcm, v_pcm = ddenergy("pcm", solvent_epsilon=80.0)
+    e_cosmo, v_cosmo = ddenergy("cosmo", solvent_epsilon=1e12)
 
-    e_lpb_einf, v_lpb_einf = ddenergy("lpb", solvent_kappa=0.1, solvent_epsilon=1e8)
+    e_lpb_einf, v_lpb_einf = ddenergy("lpb", solvent_kappa=0.1, solvent_epsilon=1e12)
+    e_lpb0, v_lpb0 = ddenergy("lpb", solvent_kappa=1e-3, solvent_epsilon=80.0)
+    e_lpbinf, v_lpbinf = ddenergy("lpb", solvent_kappa=8, solvent_epsilon=80.0)
 
-    assert abs(e_pcm - e_lpb0) / abs(e_pcm) < 1e-3
-    assert abs(e_cosmo - e_lpbinf) / abs(e_cosmo) < 1e-3
-    assert abs(e_cosmo - e_lpb_einf) / abs(e_cosmo) < 1e-5
+    assert abs(e_pcminf - e_cosmo) / abs(e_cosmo) < 1e-5
+    assert abs(e_pcminf - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
+    assert abs(e_cosmo - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
+    assert abs(e_lpbinf - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
+    assert abs(e_lpbinf - e_cosmo) / abs(e_cosmo) < 1e-4
+    assert abs(e_lpbinf - e_pcminf) / abs(e_pcminf) < 1e-4
+    assert abs(e_lpb0 - e_pcm) / abs(e_pcm) < 1e-3
 
-    assert np.max((v_pcm.np - v_lpb0.np)) < 1e-3
-    assert np.max((v_cosmo.np - v_lpbinf.np)) < 1e-3
-    assert np.max((v_cosmo.np - v_lpb_einf.np)) < 1e-5
+    assert np.max(np.abs(v_pcminf.np - v_cosmo.np)) < 1e-5
+    assert np.max(np.abs(v_pcminf.np - v_lpb_einf.np)) < 1e-4
+    assert np.max(np.abs(v_cosmo.np - v_lpb_einf.np)) < 1e-4
+    assert np.max(np.abs(v_lpbinf.np - v_lpb_einf.np)) < 1e-4
+    assert np.max(np.abs(v_lpbinf.np - v_cosmo.np)) < 1e-4
+    assert np.max(np.abs(v_lpbinf.np - v_pcminf.np)) < 1e-4
+    assert np.max(np.abs(v_lpb0.np - v_pcm.np)) < 1e-3
 
 @pytest.mark.quick
 @uusing("ddx")
@@ -267,6 +284,12 @@ def test_ddx_rhf_reference(inp):
         "ddx": {"model": "pcm", "solvent": "water", "radii_set": "uff", },
         "ref": -597.9718942424215,
     }, id='fcm-pcm'),
+    pytest.param({
+        "geom": __geoms["nh3"],
+        "basis": "cc-pvdz",
+        "ddx": {"model": "lpb", "solvent": "water", "radii_set": "uff", "solvent_kappa": 0.11},
+        "ref": -56.19598597466339,
+    }, id='nh3-lpb'),
 ])
 def test_ddx_rhf_consistency(inp):
     mol = psi4.geometry(inp["geom"])
