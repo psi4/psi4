@@ -50,8 +50,8 @@ class Wavefunction;
 void dx_write(std::shared_ptr<Wavefunction> wfn, Options& options, double** D);
 void dx_read(double** V_eff, double* phi_ao, double* phi_so, int nao, int nso, double** u);
 void fill_sym_matrix(double** A, int size);
-double combinations(int n, int k);
-double factorial(int n);
+uint64_t combinations(const uint64_t n, const uint64_t k);
+uint64_t factorial(const uint64_t n);
 void schmidt(double** A, int rows, int cols, std::string out_fname);
 PSI_DEPRECATED("The libqt schmidt_add function is deprecated and 1.7 will be the last release to have it.")
 PSI_API int schmidt_add(double** A, int rows, int cols, double* v);

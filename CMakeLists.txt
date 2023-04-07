@@ -98,6 +98,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 
 ############################  Options: Build What?  ############################
 option(ENABLE_ambit "Enables the ambit tensor library" OFF)
+option(ENABLE_bse "Enables the basis_set_exchange for requesting basis sets (requires jsonschema, regex; can also be added at runtime)" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_cppe "Enables CPPE for Polarizable Embedding" OFF)
 option(ENABLE_adcc "Enables adcc for algebraic-diagrammatic construction methods (requires libtensorlight; can also be added at runtime)" OFF)
@@ -220,6 +221,7 @@ ExternalProject_Add(psi4-core
    DEPENDS lapack_external
            hdf5_external
            ambit_external
+           bse_external
            chemps2_external
            cppe_external
            dkh_external
@@ -268,6 +270,7 @@ ExternalProject_Add(psi4-core
               -DPython_NumPy_INCLUDE_DIR=${Python_NumPy_INCLUDE_DIR}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DENABLE_ambit=${ENABLE_ambit}
+              -DENABLE_bse=${ENABLE_bse}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_ecpint=${ENABLE_ecpint}
@@ -284,6 +287,7 @@ ExternalProject_Add(psi4-core
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
               -DEigen3_DIR=${Eigen3_DIR}
               -Dambit_DIR=${ambit_DIR}
+              -Dbse_DIR=${bse_DIR}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
               -Decpint_DIR=${ecpint_DIR}

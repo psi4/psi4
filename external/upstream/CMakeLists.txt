@@ -2,6 +2,7 @@
 foreach(dir
   pybind11
   ambit
+  bse
   chemps2
   cppe
   dkh
