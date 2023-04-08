@@ -147,6 +147,7 @@ def test_ddx_fock_build(inp):
         assert compare_values(inp["ref"], E, atol=1e-16, rtol=1e-2)
 
 @pytest.mark.quick
+@uusing("ddx")
 def test_ddx_limiting_cases():
     """Test consistency of limiting cases in PCM / COSMO / LPB"""
     from psi4.driver.procrouting.solvent import ddx
