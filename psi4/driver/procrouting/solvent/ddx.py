@@ -173,8 +173,7 @@ class DdxInterface:
         try:
             self.model = pyddx.Model(**options["model"],
                                      solvent_epsilon=op_dielectric["solvent_epsilon"])
-            e_optical = op_dielectric["solvent_epsilon_optical"]
-            if e_optical:
+            if (e_optical := op_dielectric["solvent_epsilon_optical"]):
                 self.model_optical = pyddx.Model(**options["model"], solvent_epsilon=e_optical)
             else:
                 self.model_optical = None
