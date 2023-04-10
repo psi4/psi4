@@ -80,7 +80,23 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHel
 {
     Options& options = Process::environment.options;
 
-    if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
+    if (options.get_str("SCF_TYPE") == "COSX") {
+        DFJCOSKGrad* jk = new DFJCOSKGrad(deriv, mints, options);
+
+        if (options["INTS_TOLERANCE"].has_changed())
+            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
+      //jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+
+        return std::shared_ptr<JKGrad>(jk);
+    } else if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
         DFJKGrad* jk = new DFJKGrad(deriv, mints);
 
         if (options["INTS_TOLERANCE"].has_changed())

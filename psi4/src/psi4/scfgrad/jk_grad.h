@@ -40,6 +40,8 @@ class BasisSet;
 class PSIO;
 class TwoBodyAOInt;
 class MintsHelper;
+class DFTGrid;
+class Options;
 
 namespace scfgrad {
 
@@ -259,5 +261,50 @@ public:
 
 };
 
+class DFJCOSKGrad : public JKGrad {
+
+protected:
+    // Number of threads to use
+    int ints_num_threads_;
+    Options& options_;
+
+    std::shared_ptr<BasisSet> auxiliary_;
+    std::shared_ptr<MintsHelper> mints_;
+    double condition_;
+
+    void common_init();
+
+    void build_JGrad();
+    void build_KGrad();
+
+    // => Density Fitting Stuff <= //
+    /// Coulomb Metric
+    SharedMatrix J_metric_;
+    /// per-thread TwoBodyAOInt object (for computing three-center ERIs)
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri_computers_;
+
+    // => Semi-Numerical Stuff <= //
+    /// Large DFTGrid for the final SCF iteration
+    std::shared_ptr<DFTGrid> grid_final_;
+    /// Overlap fitting metric for grid_final_
+    SharedMatrix Q_final_;
+
+   public:
+    DFJCOSKGrad(int deriv, std::shared_ptr<MintsHelper> mints, Options& options);
+    ~DFJCOSKGrad() override;
+
+    void compute_gradient() override;
+    void compute_hessian() override;
+
+    void print_header() const override;
+
+    /**
+     * What number of threads to compute integrals on
+     * @param val a positive integer
+     */
+    void set_ints_num_threads(int val) { ints_num_threads_ = val; }
+
+
+};
 }} // Namespaces
 #endif
