@@ -74,19 +74,28 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         bf_computer.compute_functions(block);
         auto point_values = bf_computer.basis_values()["PHI"];
 
+        // lambda for returning sign of double
+	auto sign = [ ](double val) {
+            return (0.0 < val) - (val < 0.0);
+        };
+
         // resize the buffer of basis function values
-        Matrix X_block("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
-        auto X_blockp = X_block.pointer();
+        Matrix X_block_nosign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
+        Matrix X_block_sign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
+        
+	auto X_block_nosignp = X_block_nosign.pointer();
+        auto X_block_signp = X_block_sign.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
+                X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::fabs(w[p]));
+                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k]; 
             }
         }
 
         // significant basis functions at these grid points
         const auto &bf_map = block->functions_local_to_global();
 
-        auto S_num_block = linalg::doublet(X_block, X_block, true, false);
+        auto S_num_block = linalg::doublet(X_block_sign, X_block_nosign, true, false);
         auto S_num_blockp = S_num_block.pointer();
 
         for (size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
@@ -1419,12 +1428,21 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         bf_computers[rank]->compute_functions(block);
         auto point_values = bf_computers[rank]->basis_values()["PHI"];
 
+	// lambda for returning sign of double
+	auto sign = [ ](double val) {
+            return (0.0 < val) - (val < 0.0);
+        };
+
         // resize the buffer of basis function values
-        auto X_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
-        auto X_blockp = X_block->pointer();
+        auto X_block_nosign = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        auto X_block_sign = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        
+        auto X_block_nosignp = X_block_nosign->pointer();
+	auto X_block_signp = X_block_sign->pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
+                X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::fabs(w[p]));
+                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k]; 
             }
         }
 
@@ -1433,11 +1451,11 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         auto X_block_bfmaxp = X_block_bfmax.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_block_bfmaxp[p] = std::max(X_block_bfmaxp[p], std::abs(X_blockp[p][k]));
+                X_block_bfmaxp[p] = std::max(X_block_bfmaxp[p], std::abs(X_block_signp[p][k]));
             }
         }
 
-        double X_block_max = X_block->absmax();
+        double X_block_max = X_block_sign->absmax();
 
         // => F Matrix <= //
 
@@ -1446,7 +1464,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // contract density with basis functions values at these grid points
         std::vector<SharedMatrix> F_block(njk);
         for(size_t jki = 0; jki < njk; jki++) {
-            F_block[jki] = linalg::doublet(X_block, D_block[jki], false, true);
+            F_block[jki] = linalg::doublet(X_block_sign, D_block[jki], false, true);
         }
 
         // shell maxima of F_block
@@ -1487,7 +1505,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         }
 
         // now Q_block agrees with EQ. 18 (see note about Q_init_ and Q_final_ in common_init())
-        Q_block = linalg::doublet(X_block, Q_block, false, true);
+        Q_block = linalg::doublet(X_block_nosign, Q_block, false, true);
 
         // => G Matrix <= //
 
@@ -1583,7 +1601,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
             if (overlap_fitted) {
                 KT_block = linalg::doublet(Q_block, G_block[jki], true, true);
             } else {
-                KT_block = linalg::doublet(X_block, G_block[jki], true, true);
+                KT_block = linalg::doublet(X_block_nosign, G_block[jki], true, true);
             }
             auto KT_blockp = KT_block->pointer();
             auto KTp = KT[jki][rank]->pointer();
