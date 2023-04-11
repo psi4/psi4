@@ -55,6 +55,13 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
 
     // DOI 10.1063/1.3646921, EQ. 9
 
+    // note that the S_num matrix is defined slightly differently in our code
+    // due to the use of two X matrices
+    // here, we use S_num = X_sign*(X_nosign)^T
+    // where:
+    //   1. X_nosign uses sqrt(abs(w)) instead of sqrt(w) for the X matrix
+    //   2. X_sign uses sign(w) * sqrt(abs(w)), where sign returns the sign of w, instead of sqrt(w) for the X matrix
+
     int nbf = primary->nbf();
     BasisFunctions bf_computer(primary, grid.max_points(), grid.max_functions());
     Matrix S_num("Numerical Overlap", nbf, nbf);
@@ -75,20 +82,20 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         auto point_values = bf_computer.basis_values()["PHI"];
 
         // lambda for returning sign of double
-	auto sign = [ ](double val) {
+        auto sign = [ ](double val) {
             return (0.0 < val) - (val < 0.0);
         };
 
         // resize the buffer of basis function values
         Matrix X_block_nosign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
         Matrix X_block_sign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
-        
-	auto X_block_nosignp = X_block_nosign.pointer();
+
+        auto X_block_nosignp = X_block_nosign.pointer();
         auto X_block_signp = X_block_sign.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
                 X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::fabs(w[p]));
-                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k]; 
+                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
             }
         }
 
@@ -1424,25 +1431,31 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 4
 
-        // compute basis functions at these grid points
+        // note that the X matrix is defined slightly differently in our code
+        // to account for the possibility of negative grid weights
+        // here, two modified X matrices are used:
+        //   1. one (nosign) uses sqrt(abs(w)) instead of sqrt(w)
+        //   2. one (sign) uses sign(w) * sqrt(abs(w)), where sign returns the sign of w, instead of sqrt(w)
+
+	// compute basis functions at these grid points
         bf_computers[rank]->compute_functions(block);
         auto point_values = bf_computers[rank]->basis_values()["PHI"];
 
-	// lambda for returning sign of double
-	auto sign = [ ](double val) {
+        // lambda for returning sign of double
+        auto sign = [ ](double val) {
             return (0.0 < val) - (val < 0.0);
         };
 
         // resize the buffer of basis function values
         auto X_block_nosign = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
         auto X_block_sign = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
-        
+
         auto X_block_nosignp = X_block_nosign->pointer();
 	auto X_block_signp = X_block_sign->pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
                 X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::fabs(w[p]));
-                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k]; 
+                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
             }
         }
 
@@ -1460,6 +1473,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // => F Matrix <= //
 
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 6
+        // we use the sign X matrix for F formation
 
         // contract density with basis functions values at these grid points
         std::vector<SharedMatrix> F_block(njk);
@@ -1493,6 +1507,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // => Q Matrix <= //
 
         // DOI 10.1063/1.3646921, EQ. 18
+        // we use the nosign X matrix for Q formation
 
         // slice of overlap metric (Q) made up of significant basis functions at this grid point
         auto Q_block = std::make_shared<Matrix>(nbf_block, nbf_block);
@@ -1505,6 +1520,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         }
 
         // now Q_block agrees with EQ. 18 (see note about Q_init_ and Q_final_ in common_init())
+        // we use the nosign X matrix for Q formation
         Q_block = linalg::doublet(X_block_nosign, Q_block, false, true);
 
         // => G Matrix <= //
@@ -1596,6 +1612,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         if(rank == 0) timer_off("ESP Integrals");
 
         // Contract X (or Q if overlap fitting) with G to get contribution to K
+        // we use the nosign X matrix for K formation
         for(size_t jki = 0; jki < njk; jki++) {
             SharedMatrix KT_block;
             if (overlap_fitted) {
