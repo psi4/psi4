@@ -1848,10 +1848,11 @@ def scf_helper(name, post_scf=True, **kwargs):
         if not solvent._have_ddx:
             raise ModuleNotFoundError('Python module ddx not found. Solve by installing it: `pip install pyddx`')
         ddx_options = solvent.ddx.get_ddx_options(scf_molecule)
-        scf_wfn.ddx_state = solvent.ddx.DdxInterface(
+        scf_wfn.ddx = solvent.ddx.DdxInterface(
             molecule=scf_molecule, options=ddx_options,
             basisset=scf_wfn.basisset()
         )
+        scf_wfn.ddx_state = None
 
     # PE preparation
     if core.get_option('SCF', 'PE'):

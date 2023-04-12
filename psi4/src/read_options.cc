@@ -309,7 +309,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             the domain-decomposition paradigm. -*/
 
         /*- Switch available solvation models -*/
-        options.add_str("DDX_MODEL", "PCM", "PCM COSMO");
+        options.add_str("DDX_MODEL", "PCM", "PCM COSMO LPB");
 
         /*- Radius set for cavity spheres. Ignored if RADII is set. -*/
         options.add_str("DDX_RADII_SET", "UFF", "UFF BONDI");
@@ -326,6 +326,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Dielectric constant of the solvent to use -*/
         options.add_double("DDX_SOLVENT_EPSILON", 0);
+
+        /*- Optical dielectric constant of the solvent to use for non-equilibrium solvation -*/
+        options.add_double("DDX_SOLVENT_EPSILON_OPTICAL", 0);
+
+        /*- Debye-Hückel parameter of the solvent to use. Ignored if DDX_MODEL is not LPB;
+            mandatory for LPB. Uses the unit of the molecule (i.e. either ang^{-1} or bohr^{-1}). -*/
+        options.add_double("DDX_SOLVENT_KAPPA", 0);
 
         /*- Maximal degree of modelling spherical harmonics -*/
         options.add_int("DDX_LMAX", 9);
