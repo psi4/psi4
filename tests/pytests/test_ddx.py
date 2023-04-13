@@ -333,3 +333,106 @@ def test_ddx_eri_algorithms(scf_type):
     ref = -56.171546236617495
     scf_e = psi4.energy('SCF')
     assert compare_values(ref, scf_e, tol, "Total SCF energy with DDX versus reference data")
+
+@pytest.mark.quick
+@uusing("ddx")
+def test_ddx_tdscf_pcmsolver():
+    # PCMsolver reference values, same as in tests/pcmsolver/tdscf
+    exc_energies = np.array([  # Hartree
+        0.08972598844884663,
+        0.2719972189552112,
+        0.33525624703045037,
+        0.3713900898382711,
+        0.3762084431466903,
+    ])
+
+    osc_strengths = np.array([
+        0.00414272407997719,
+        4.590977316768732e-28,
+        0.005715258102198367,
+        0.018432750255865125,
+        0.006434117688452513,
+    ])
+
+    scf_ref = -55.5218518303635165
+
+    psi4.geometry("""
+        0, 2
+        N  0.000000000000     0.000000000000    -0.079859033927
+        H  0.000000000000    -0.803611003426     0.554794694632
+        H  0.000000000000     0.803611003426     0.554794694632
+        symmetry c1
+        units angstrom
+        """)
+
+    psi4.set_options({
+        "reference":      "uhf",
+        "scf_type":       "pk",
+        "basis":          "def2-SVP",
+        "e_convergence":  10,
+        "maxiter":        50,
+        "tdscf_states":   5,
+        #
+        "ddx":            True,
+        "ddx_model":      "pcm",
+        "ddx_solvent":    "water",
+        "ddx_radii_set":  "uff",   # Make it compatible with pcmsolver
+        'ddx_radii_scaling': 1.2,  # Make it compatible with pcmsolver
+    })
+
+    scf_e = psi4.energy("TD-SCF")
+    assert compare_values(scf_ref, scf_e, 4, "Total SCF energy with DDX versus reference data")
+
+    f_calc = []
+    e_calc = []
+    for i in range(5):
+        e_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
+        f_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A TRANSITION'))
+    compare_arrays(exc_energies, e_calc, 4, 'PCM EXCITATION ENERGY ')
+    compare_arrays(osc_strengths, f_calc, 4, 'PCM OSCILLATOR STRENGTH ')
+
+
+@pytest.mark.quick
+@uusing("ddx")
+def test_ddx_tdscf_gaussian():
+    # Reference test against Gaussian
+    exc_energies = np.array([  # eV
+        9.7131, 11.6679, 11.9693, 14.0604, 16.0886, 20.3350, 33.4852, 34.1673, 35.3953, 35.6058,
+    ])
+    psi4.geometry("""
+        O         0.00000000     0.00000000     0.11721877
+        H         0.00000000     1.48123757    -0.93017349
+        H         0.00000000    -1.48123757    -0.93017349
+        0 1
+        symmetry c1
+        no_reorient
+        no_com
+        units bohr
+    """)
+    psi4.set_options({
+        "basis": "3-21g",
+        "d_convergence": 1e-8,
+        "e_convergence": 1e-12,
+        "tdscf_r_convergence": 1e-6,
+        "scf_type": "direct",
+        "guess": "core",
+        "ddx": True,
+        "tdscf_states": 10,
+        "ddx_lmax": 10,
+        "ddx_n_lebedev": 590,
+        "ddx_model": "pcm",
+        "ddx_radii_set": "uff",
+        "ddx_radii_scaling": 1.1,
+        "ddx_eta": 0.0,
+        "ddx_solvation_convergence": 1e-10,
+        "ddx_solvent_epsilon": 2.0,
+        "ddx_solvent_epsilon_optical": 2.0,
+        "ddx_solute_spherical_points": 590,
+        "ddx_solute_radial_points": 1000,
+    })
+    psi4.energy('TD-HF')
+
+    e_calc = []
+    for i in range(5):
+        e_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
+    compare_arrays(exc_energies, e_calc, 4, 'PCM EXCITATION ENERGY ')

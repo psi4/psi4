@@ -223,19 +223,21 @@ class DdxInterface:
 
     def get_solvation_contributions(self, density_matrix, state=None,
                                     elec_only=False, nonequilibrium=False):
-        # TODO elec_only=True has not yet been tested. Will be properly integrated in a follow-up
-        # TODO nonequilibrium=True has not yet been tested. Will be properly integrated in a follow-up
-        #
+        # Symmetrise the density matrix
+        D = density_matrix.transpose()
+        D.add(density_matrix)
+        D.scale(0.5)
+
         # Compute electronic contributions
-        psi = self.numints.dd_density_integral(self.scaled_ylms, density_matrix).np.T
+        psi = self.numints.dd_density_integral(self.scaled_ylms, D).np.T
         dummy_charges = core.Vector.from_array(np.ones(self.model.n_cav))
         cavcoords = core.Matrix.from_array(self.model.cavity.T)
-        phi = self.mints.electrostatic_potential_value(dummy_charges, cavcoords, density_matrix).np
+        phi = self.mints.electrostatic_potential_value(dummy_charges, cavcoords, D).np
 
         elec_field = None
         derivative_order = self.model.required_phi_derivative_order(compute_forces=False)
         if derivative_order > 0:
-            elec_field = self.mints.electric_field_value(cavcoords, density_matrix).np.T
+            elec_field = self.mints.electric_field_value(cavcoords, D).np.T
 
         # elec_only = True
         if not elec_only:
