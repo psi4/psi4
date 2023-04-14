@@ -200,7 +200,9 @@ void DLPNOCCSD::estimate_memory() {
 
     int n_lmo_pairs = ij_to_i_j_.size();
 
+    size_t vvv = 0;
     size_t qvv = 0;
+
 #pragma omp parallel for schedule(dynamic) reduction(+ : qvv)
     for (int ij = 0; ij < n_lmo_pairs; ij++) {
         int i, j;
@@ -211,13 +213,19 @@ void DLPNOCCSD::estimate_memory() {
         const int naux_ij = lmopair_to_ribfs_[ij].size();
         const int npno_ij = n_pno_[ij];
 
-        qvv += naux_ij * npno_ij * npno_ij;
+        vvv += 3 * npno_ij * npno_ij * npno_ij;
+        if (i >= j) qvv += naux_ij * npno_ij * npno_ij;
     }
 
+    const size_t vvv_memory = vvv * sizeof(double);
     const size_t qvv_memory = qvv * sizeof(double);
-    outfile->Printf("    Memory Required to store Qvv integrals: %8.4f [GiB]\n", qvv_memory / (1024 * 1024 * 1024.0));
+    const size_t total_memory = vvv_memory + qvv_memory;
+
+    outfile->Printf("\n  ==> Estimating Memory for CC Integrals <==\n\n");
+    outfile->Printf("    Memory Required to store integrals of class (i e_ij | a_ij f_ij)  : %8.4f [GiB]\n", vvv_memory / (1024 * 1024 * 1024.0));
+    outfile->Printf("    Memory Required to store integrals of class (q_ij | a_ij b_ij) %8.4f [GiB]\n", qvv_memory / (1024 * 1024 * 1024.0));
     
-    if (qvv_memory < memory_) {
+    if (total_memory < memory_) {
         outfile->Printf("   Storing virtual/virtual integrals...\n\n");
         virtual_storage_ = CORE;
     } else {
@@ -1156,6 +1164,7 @@ double DLPNOCCSD::compute_energy() {
     timer_off("Sparsity");
 
     timer_on("DF Ints");
+    print_integral_sparsity();
     compute_qij();
     compute_qia();
     compute_qab();
@@ -1200,6 +1209,63 @@ double DLPNOCCSD::compute_energy() {
     set_scalar_variable("CURRENT ENERGY", e_ccsd_total);
 
     return e_ccsd_total;
+}
+
+void DLPNOCCSD::print_integral_sparsity() {
+    // statistics for number of (MN|K) shell triplets we need to compute
+
+    int nbf = basisset_->nbf();
+    int nshell = basisset_->nshell();
+    int naux = ribasis_->nbf();
+    int naocc = nalpha_ - nfrzc();
+
+    size_t triplets = 0;          // computed (MN|K) triplets with no screening
+    size_t triplets_lmo = 0;      // computed (MN|K) triplets with only LMO screening
+    size_t triplets_pao = 0;      // computed (MN|K) triplets with only PAO screening
+    size_t triplets_lmo_lmo = 0;  // computed (MN|K) triplets with LMO and LMO screening
+    size_t triplets_lmo_pao = 0;  // computed (MN|K) triplets with LMO and PAO screening
+    size_t triplets_pao_pao = 0;  // computed (MN|K) triplets with PAO and PAO screening
+
+    for (size_t atom = 0; atom < riatom_to_shells1_.size(); atom++) {
+        size_t nshellri_atom = atom_to_rishell_[atom].size();
+        triplets += nshell * nshell * nshellri_atom;
+        triplets_lmo += riatom_to_shells1_[atom].size() * nshell * nshellri_atom;
+        triplets_pao += nshell * riatom_to_shells2_[atom].size() * nshellri_atom;
+        triplets_lmo_lmo += riatom_to_shells1_[atom].size() * riatom_to_shells1_[atom].size() * nshellri_atom;
+        triplets_lmo_pao += riatom_to_shells1_[atom].size() * riatom_to_shells2_[atom].size() * nshellri_atom;
+        triplets_pao_pao += riatom_to_shells2_[atom].size() * riatom_to_shells2_[atom].size() * nshellri_atom;
+    }
+    size_t screened_total = 3 * triplets - triplets_lmo_lmo - triplets_lmo_pao - triplets_pao_pao;
+    size_t screened_lmo = triplets - triplets_lmo;
+    size_t screened_pao = triplets - triplets_pao;
+
+    // statistics for the number of (iu|Q) integrals we're left with after the transformation
+
+    size_t total_integrals = (size_t)naocc * nbf * naux + naocc * naocc * naux + nbf * nbf * naux;
+    size_t actual_integrals = 0;
+
+    for (size_t atom = 0; atom < riatom_to_shells1_.size(); atom++) {
+        actual_integrals +=
+            riatom_to_lmos_ext_[atom].size() * riatom_to_lmos_ext_[atom].size() * atom_to_ribf_[atom].size();
+        actual_integrals +=
+            riatom_to_lmos_ext_[atom].size() * riatom_to_paos_ext_[atom].size() * atom_to_ribf_[atom].size();
+        actual_integrals +=
+            riatom_to_paos_ext_[atom].size() * riatom_to_paos_ext_[atom].size() * atom_to_ribf_[atom].size();
+    }
+
+    // number of doubles * (2^3 bytes / double) * (1 GiB / 2^30 bytes)
+    double total_memory = total_integrals * pow(2.0, -27);
+    double actual_memory = actual_integrals * pow(2.0, -27);
+    double screened_memory = total_memory - actual_memory;
+
+    outfile->Printf("\n");
+    outfile->Printf("    Coefficient sparsity in AO -> LMO transform: %6.2f %% \n", screened_lmo * 100.0 / triplets);
+    outfile->Printf("    Coefficient sparsity in AO -> PAO transform: %6.2f %% \n", screened_pao * 100.0 / triplets);
+    outfile->Printf("    Coefficient sparsity in combined transforms: %6.2f %% \n", screened_total * 100.0 / (3.0 * triplets));
+    outfile->Printf("\n");
+    outfile->Printf("    Storing transformed LMO/LMO, LMO/PAO, and PAO/PAO integrals in sparse format.\n");
+    outfile->Printf("    Required memory: %.3f GiB (%.2f %% reduction from dense format) \n", actual_memory,
+                    screened_memory * 100.0 / total_memory);
 }
 
 void DLPNOCCSD::print_header() {

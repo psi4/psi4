@@ -205,7 +205,6 @@ class DLPNOBase : public Wavefunction {
       void print_lmo_domains();
       void print_aux_pair_domains();
       void print_pao_pair_domains();
-      void print_integral_sparsity();
 
     public:
       DLPNOBase(SharedWavefunction ref_wfn, Options& options);
@@ -235,6 +234,7 @@ class DLPNOMP2 : public DLPNOBase {
 
     void print_header();
     void print_results();
+    void print_integral_sparsity();
 
    public:
     DLPNOMP2(SharedWavefunction ref_wfn, Options& options);
@@ -255,7 +255,7 @@ class DLPNOCCSD : public DLPNOBase {
     std::vector<SharedMatrix> T_ia_; ///< singles amplitudes
 
     // => CCSD Integrals <= //
-    
+
     /// (4 occupied, 0 virtual)
     std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
     /// (3 occupied, 1 virtual)
@@ -291,9 +291,6 @@ class DLPNOCCSD : public DLPNOBase {
     /// Compute four-center integrals for CC computations
     void compute_cc_integrals();
 
-    void print_header();
-    void print_results();
-
     // => CCSD intermediates <= //
 
     /// compute Fmi intermediate (Madriaga Eq. 40)
@@ -311,6 +308,10 @@ class DLPNOCCSD : public DLPNOBase {
 
     /// iteratively solve local CCSD equations
     void lccsd_iterations();
+
+    void print_header();
+    void print_results();
+    void print_integral_sparsity();
     
    public:
     DLPNOCCSD(SharedWavefunction ref_wfn, Options& options);

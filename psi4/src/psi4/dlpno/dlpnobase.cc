@@ -785,8 +785,6 @@ void DLPNOBase::prep_sparsity() {
 void DLPNOBase::compute_qij() {
     timer_on("(mn|K)->(ij|K)");
 
-    outfile->Printf("   Computing qij...\n\n");
-
     int nbf = basisset_->nbf();
     int naux = ribasis_->nbf();
 
@@ -803,6 +801,8 @@ void DLPNOBase::compute_qij() {
     for (size_t thread = 1; thread < nthread; thread++) {
         eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
     }
+
+    outfile->Printf("\n  ==> Transforming 3-Index Integrals to LMO/LMO basis <==\n");
 
     auto SC_lmo = linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);
 
@@ -895,8 +895,6 @@ void DLPNOBase::compute_qia() {
     }
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to LMO/PAO basis <==\n");
-
-    print_integral_sparsity();
 
     auto SC_lmo =
         linalg::doublet(reference_wavefunction_->S(), C_lmo_, false, false);  // intermediate for coefficient fitting
@@ -1017,6 +1015,8 @@ void DLPNOBase::compute_qab() {
     for (size_t thread = 1; thread < nthread; thread++) {
         eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
     }
+
+    outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n");
 
     qab_.resize(naux);
 
@@ -1420,55 +1420,6 @@ void DLPNOBase::print_pao_pair_domains() {
                     total_domain_atom / n_lmo_pairs);
     outfile->Printf("      Min     = %4d PAOs (%d atoms)\n", min_domain_pao, min_domain_atom);
     outfile->Printf("      Max     = %4d PAOs (%d atoms)\n", max_domain_pao, max_domain_atom);
-}
-
-void DLPNOBase::print_integral_sparsity() {
-    // statistics for number of (MN|K) shell triplets we need to compute
-
-    int nbf = basisset_->nbf();
-    int nshell = basisset_->nshell();
-    int naux = ribasis_->nbf();
-    int naocc = nalpha_ - nfrzc();
-
-    size_t triplets = 0;       // computed (MN|K) triplets with no screening
-    size_t triplets_lmo = 0;   // computed (MN|K) triplets with only LMO screening
-    size_t triplets_pao = 0;   // computed (MN|K) triplets with only PAO screening
-    size_t triplets_both = 0;  // computed (MN|K) triplets with LMO and PAO screening
-
-    for (size_t atom = 0; atom < riatom_to_shells1_.size(); atom++) {
-        size_t nshellri_atom = atom_to_rishell_[atom].size();
-        triplets += nshell * nshell * nshellri_atom;
-        triplets_lmo += riatom_to_shells1_[atom].size() * nshell * nshellri_atom;
-        triplets_pao += nshell * riatom_to_shells2_[atom].size() * nshellri_atom;
-        triplets_both += riatom_to_shells1_[atom].size() * riatom_to_shells2_[atom].size() * nshellri_atom;
-    }
-    size_t screened_total = triplets - triplets_both;
-    size_t screened_lmo = triplets - triplets_lmo;
-    size_t screened_pao = triplets - triplets_pao;
-
-    // statistics for the number of (iu|Q) integrals we're left with after the transformation
-
-    size_t total_integrals = (size_t)naocc * nbf * naux;
-    size_t actual_integrals = 0;
-
-    for (size_t atom = 0; atom < riatom_to_shells1_.size(); atom++) {
-        actual_integrals +=
-            riatom_to_lmos_ext_[atom].size() * riatom_to_paos_ext_[atom].size() * atom_to_ribf_[atom].size();
-    }
-
-    // number of doubles * (2^3 bytes / double) * (1 GiB / 2^30 bytes)
-    double total_memory = total_integrals * pow(2.0, -27);
-    double actual_memory = actual_integrals * pow(2.0, -27);
-    double screened_memory = total_memory - actual_memory;
-
-    outfile->Printf("\n");
-    outfile->Printf("    Coefficient sparsity in AO -> LMO transform: %6.2f %% \n", screened_lmo * 100.0 / triplets);
-    outfile->Printf("    Coefficient sparsity in AO -> PAO transform: %6.2f %% \n", screened_pao * 100.0 / triplets);
-    outfile->Printf("    Coefficient sparsity in combined transforms: %6.2f %% \n", screened_total * 100.0 / triplets);
-    outfile->Printf("\n");
-    outfile->Printf("    Storing transformed LMO/PAO integrals in sparse format.\n");
-    outfile->Printf("    Required memory: %.3f GiB (%.2f %% reduction from dense format) \n", actual_memory,
-                    screened_memory * 100.0 / total_memory);
 }
 
 double DLPNOBase::compute_energy() { return 0.0; }
