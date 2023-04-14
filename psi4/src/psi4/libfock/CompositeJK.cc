@@ -1448,14 +1448,14 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // resize the buffer of basis function values
         auto X_block_nosign = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
-        auto X_block_sign = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        //auto X_block_sign = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
 
         auto X_block_nosignp = X_block_nosign->pointer();
-	auto X_block_signp = X_block_sign->pointer();
+	//auto X_block_signp = X_block_sign->pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
                 X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::fabs(w[p]));
-                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
+                //X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
             }
         }
 
@@ -1464,11 +1464,11 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         auto X_block_bfmaxp = X_block_bfmax.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_block_bfmaxp[p] = std::max(X_block_bfmaxp[p], std::abs(X_block_signp[p][k]));
+                X_block_bfmaxp[p] = std::max(X_block_bfmaxp[p], std::abs(X_block_nosignp[p][k]));
             }
         }
 
-        double X_block_max = X_block_sign->absmax();
+        double X_block_max = X_block_nosign->absmax();
 
         // => F Matrix <= //
 
@@ -1478,7 +1478,14 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // contract density with basis functions values at these grid points
         std::vector<SharedMatrix> F_block(njk);
         for(size_t jki = 0; jki < njk; jki++) {
-            F_block[jki] = linalg::doublet(X_block_sign, D_block[jki], false, true);
+            F_block[jki] = linalg::doublet(X_block_nosign, D_block[jki], false, true);
+        }
+
+        for (size_t p = 0; p < npoints_block; p++) {
+            for (size_t k = 0; k < nbf_block; k++) {
+                X_block_nosignp[p][k] *= sign(w[p]);
+                //X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
+            }
         }
 
         // shell maxima of F_block
