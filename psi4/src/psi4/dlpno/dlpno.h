@@ -254,14 +254,23 @@ class DLPNOCCSD : public DLPNOBase {
     /// Coupled-cluster amplitudes
     std::vector<SharedMatrix> T_ia_; ///< singles amplitudes
 
-    /// CCSD Integrals
-    std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
+    // => CCSD Integrals <= //
+    
+    /// (4 occupied, 0 virtual)
     std::vector<SharedMatrix> K_mnij_; /// (m i | n j)
-    std::vector<SharedMatrix> K_mbij_; /// (m i | b_ij j)
-    std::vector<SharedMatrix> K_maef_; /// (i e_ij | a_ij f_ij)
-    std::vector<std::vector<SharedMatrix>> Qab_ij_; // (q_ij | a_ij b_ij)
+    /// (3 occupied, 1 virtual)
+    std::vector<SharedMatrix> K_bar_; /// (m i | b_ij j) [aka K_bar]
+    std::vector<SharedMatrix> L_bar_; /// 2.0 * K_mbij - K_mbji
+    /// (2 occupied, 2 virtual)
+    std::vector<SharedMatrix> J_ijab_; /// (i j | a_ij b_ij)
     std::vector<SharedMatrix> L_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i b_ij | j a_ij)
-    std::vector<SharedMatrix> Lt_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
+    std::vector<SharedMatrix> M_iajb_; /// 2.0 * (i a_ij | j b_ij) - (i j | b_ij a_ij)
+    /// (1 occupied, 3 virtual)
+    std::vector<SharedMatrix> K_tilde_chem_; /// (i e_ij | a_ij f_ij) [aka K_tilde] (stored as (e, a*f)) [Chemist's Notation]
+    std::vector<SharedMatrix> K_tilde_phys_; /// (i e_ij | a_ij f_ij) [aka K_tilde] (stored as (a, e*f)) [Physicist's Notation]
+    std::vector<SharedMatrix> L_tilde_; /// 2.0 * K_tilde_chem - K_tilde_phys
+    /// (0 occupied, 4 virtual)
+    std::vector<std::vector<SharedMatrix>> Qab_ij_; // (q_ij | a_ij b_ij)
 
     double de_lmp2_; ///< SC-LMP2 correction for weak pairs
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy

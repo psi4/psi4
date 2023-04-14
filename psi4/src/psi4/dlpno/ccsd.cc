@@ -230,14 +230,21 @@ void DLPNOCCSD::compute_cc_integrals() {
     outfile->Printf("   Computing CC integrals...\n\n");
 
     int n_lmo_pairs = ij_to_i_j_.size();
-
+    // 0 virtual
     K_mnij_.resize(n_lmo_pairs);
-    K_mbij_.resize(n_lmo_pairs);
+    // 1 virtual
+    K_bar_.resize(n_lmo_pairs);
+    L_bar_.resize(n_lmo_pairs);
+    // 2 virtual
     J_ijab_.resize(n_lmo_pairs);
-    K_maef_.resize(n_lmo_pairs);
-    if (virtual_storage_ == CORE) Qab_ij_.resize(n_lmo_pairs);
     L_iajb_.resize(n_lmo_pairs);
-    Lt_iajb_.resize(n_lmo_pairs);
+    M_iajb_.resize(n_lmo_pairs);
+    // 3 virtual
+    K_tilde_chem_.resize(n_lmo_pairs);
+    K_tilde_phys_.resize(n_lmo_pairs);
+    L_tilde_.resize(n_lmo_pairs);
+    // 4 virtual
+    if (virtual_storage_ == CORE) Qab_ij_.resize(n_lmo_pairs);
 
     size_t qvv_memory = 0;
     size_t qvv_svd_memory = 0;
@@ -307,20 +314,24 @@ void DLPNOCCSD::compute_cc_integrals() {
         C_DGESV_wrapper(A_solve, q_vv);
 
         K_mnij_[ij] = linalg::doublet(q_io, q_jo, true, false);
-        K_mbij_[ij] = linalg::doublet(q_io, q_jv, true, false);
+        K_bar_[ij] = linalg::doublet(q_io, q_jv, true, false);
         J_ijab_[ij] = linalg::doublet(q_pair, q_vv, true, false);
         J_ijab_[ij]->reshape(npno_ij, npno_ij);
 
-        K_maef_[ji] = linalg::doublet(q_jv, q_vv, true, false);
-        const auto K_maef_tmp = K_maef_[ji]->clone();
+        K_tilde_chem_[ji] = linalg::doublet(q_jv, q_vv, true, false);
+        K_tilde_phys_[ji] = std::make_shared<Matrix>(npno_ij, npno_ij * npno_ij);
+
         for (int a_ij = 0; a_ij < npno_ij; a_ij++) {
             for (int e_ij = 0; e_ij < npno_ij; e_ij++) {
                 for (int f_ij = 0; f_ij < npno_ij; f_ij++) {
-                    (*K_maef_[ji])(a_ij, e_ij * npno_ij + f_ij) = 
-                                    (*K_maef_tmp)(e_ij, a_ij * npno_ij + f_ij);
+                    (*K_tilde_phys_[ji])(a_ij, e_ij * npno_ij + f_ij) = 
+                                    (*K_tilde_chem_[ji])(e_ij, a_ij * npno_ij + f_ij);
                 }
             }
         }
+        L_tilde_[ji] = K_tilde_chem_[ji]->clone();
+        L_tilde_[ji]->scale(2.0);
+        L_tilde_[ji]->subtract(K_tilde_phys_[ji]);
 
         if (virtual_storage_ == CORE && i <= j) {
             // SVD Decomposition of DF-ERIs
@@ -360,12 +371,29 @@ void DLPNOCCSD::compute_cc_integrals() {
         L_iajb_[ij]->subtract(K_iajb_[ij]->transpose());
 
         // Lt_iajb
-        Lt_iajb_[ij] = K_iajb_[ij]->clone();
-        Lt_iajb_[ij]->scale(2.0);
-        Lt_iajb_[ij]->subtract(J_ijab_[ij]);
+        M_iajb_[ij] = K_iajb_[ij]->clone();
+        M_iajb_[ij]->scale(2.0);
+        M_iajb_[ij]->subtract(J_ijab_[ij]);
+    }
+
+    // Antisymmetrize K_mbij integrals
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+        const int ji = ij_to_ji_[ij];
+
+        // number of PNOs in the pair domain
+        const int npno_ij = n_pno_[ij];
+        if (npno_ij == 0) continue;
+
+        L_bar_[ij] = K_bar_[ij]->clone();
+        L_bar_[ij]->scale(2.0);
+        L_bar_[ij]->subtract(K_bar_[ji]);
     }
 
     outfile->Printf("   SVD Memory/DF Memory : %8.4f \n\n", static_cast<double>(qvv_svd_memory) / qvv_memory);
+
 }
 
 SharedMatrix DLPNOCCSD::compute_Fmi(const std::vector<SharedMatrix>& tau_tilde) {
@@ -395,9 +423,7 @@ SharedMatrix DLPNOCCSD::compute_Fmi(const std::vector<SharedMatrix>& tau_tilde) 
 
             // Equation 40, Term 3
             std::vector<int> i_mn_slice(1, i_mn);
-            auto l_mn_temp = submatrix_rows(*K_mbij_[mn], i_mn_slice);
-            l_mn_temp->scale(2.0);
-            l_mn_temp->subtract(submatrix_rows(*K_mbij_[nm], i_mn_slice));
+            auto l_mn_temp = submatrix_rows(*L_bar_[mn], i_mn_slice);
             auto S_nn_mn = S_PNO(nn, mn);
             l_mn_temp = linalg::doublet(S_nn_mn, l_mn_temp, false, true);
             (*Fmi)(m,i) += l_mn_temp->vector_dot(T_ia_[n]);
@@ -445,20 +471,8 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_Fbe(const std::vector<SharedMatrix>
                 auto S_mm_mj = S_PNO(mm, mj);
                 auto T_m_temp = linalg::doublet(S_mm_mj, T_ia_[m], true, false);
 
-                auto Fbe_mj = std::make_shared<Matrix>("Fbe_mj", npno_mj, npno_mj);
-                Fbe_mj->zero();
-
-                for (int a_mj = 0; a_mj < npno_mj; ++a_mj) {
-                    std::vector<int> a_mj_slice(1, a_mj);
-                    auto K_maef_slice = submatrix_rows(*K_maef_[mj], a_mj_slice);
-                    K_maef_slice->reshape(npno_mj, npno_mj);
-
-                    auto Fbe_temp1 = linalg::doublet(K_maef_slice, T_m_temp, true, false);
-                    C_DAXPY(npno_mj, 2.0, &(*Fbe_temp1)(0,0), 1, &(*Fbe_mj)(a_mj, 0), 1);
-
-                    auto Fbe_temp2 = linalg::doublet(K_maef_slice, T_m_temp, false, false);
-                    C_DAXPY(npno_mj, -1.0, &(*Fbe_temp2)(0,0), 1, &(*Fbe_mj)(a_mj, 0), 1);
-                }
+                auto Fbe_mj = linalg::doublet(T_m_temp, L_tilde_[mj], true, false);
+                Fbe_mj->reshape(n_pno_[mj], n_pno_[mj]);
 
                 Fbe[ij]->add(linalg::triplet(S_ij_mj, Fbe_mj, S_ij_mj, false, false, true));
             }
@@ -559,8 +573,8 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_Wmnij(const std::vector<SharedMatri
             C_DCOPY(npno_mn, &(*T_temp)(0,0), 1, &(*T_i_mn)(i_mn, 0), 1);
         }
 
-        Wmnij[mn]->add(linalg::doublet(K_mbij_[mn], T_i_mn, false, true));
-        Wmnij[mn]->add(linalg::doublet(T_i_mn, K_mbij_[nm], false, true));
+        Wmnij[mn]->add(linalg::doublet(K_bar_[mn], T_i_mn, false, true));
+        Wmnij[mn]->add(linalg::doublet(T_i_mn, K_bar_[nm], false, true));
 
         for (int ij_mn = 0; ij_mn < nlmo_mn * nlmo_mn; ++ij_mn) {
             int i_mn = ij_mn / nlmo_mn, j_mn = ij_mn % nlmo_mn;
@@ -603,15 +617,14 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_Wmbej(const std::vector<SharedMatri
         auto tia_temp = linalg::doublet(S_mj_jj, T_ia_[j], false, false);
 
         auto K_temp1 = std::make_shared<Matrix>(npno_mj, npno_mj);
-        K_temp1->zero();
-
-        for (int b_mj = 0; b_mj < npno_mj; b_mj++) {
-            std::vector<int> b_mj_slice(1, b_mj);
-            auto K_vv = submatrix_rows(*K_maef_[mj], b_mj_slice);
-            K_vv->reshape(npno_mj, npno_mj);
-            auto K_temp2 = linalg::doublet(K_vv, tia_temp, false, false);
-            C_DAXPY(npno_mj, 1.0, &(*K_temp2)(0,0), 1, &(*K_temp1)(b_mj,0), 1);
-        }
+        K_temp1 = K_tilde_chem_[mj]->clone();
+        K_temp1->reshape(npno_mj * npno_mj, npno_mj);
+        K_temp1 = linalg::doublet(K_temp1, tia_temp, false, false);
+        K_temp1->reshape(npno_mj, npno_mj);
+        auto eye = std::make_shared<Matrix>(npno_mj, npno_mj);
+        eye->identity();
+        K_temp1 = linalg::doublet(eye, K_temp1, false, true);
+        
         Wmbej[mj]->add(K_temp1);
 
         for (int n_mj = 0; n_mj < lmopair_to_lmos_[mj].size(); n_mj++) {
@@ -621,7 +634,7 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_Wmbej(const std::vector<SharedMatri
 
             auto S_nn_mj = S_PNO(nn, mj);
             auto t_n_temp = linalg::doublet(S_nn_mj, T_ia_[n], true, false);
-            C_DGER(npno_mj, npno_mj, -1.0, &(*t_n_temp)(0, 0), 1, &(*K_mbij_[jm])(n_mj, 0), 1, &(*Wmbej[mj])(0, 0), npno_mj);
+            C_DGER(npno_mj, npno_mj, -1.0, &(*t_n_temp)(0, 0), 1, &(*K_bar_[jm])(n_mj, 0), 1, &(*Wmbej[mj])(0, 0), npno_mj);
 
             if (n_pno_[mn] == 0 || n_pno_[nj] == 0) continue;
 
@@ -670,16 +683,12 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_Wmbje(const std::vector<SharedMatri
         auto S_mj_jj = S_PNO(mj, jj);
         auto tia_temp = linalg::doublet(S_mj_jj, T_ia_[j], false, false);
 
-        auto K_temp1 = std::make_shared<Matrix>(npno_mj, npno_mj);
-        K_temp1->zero();
-
-        for (int b_mj = 0; b_mj < npno_mj; b_mj++) {
-            std::vector<int> b_mj_slice(1, b_mj);
-            auto K_vv = submatrix_rows(*K_maef_[mj], b_mj_slice);
-            K_vv->reshape(npno_mj, npno_mj);
-            auto K_temp2 = linalg::doublet(K_vv, tia_temp, true, false);
-            C_DAXPY(npno_mj, 1.0, &(*K_temp2)(0,0), 1, &(*K_temp1)(b_mj,0), 1);
-        }
+        auto K_temp1 = K_tilde_chem_[mj]->clone();
+        K_temp1 = linalg::doublet(tia_temp, K_temp1, true, false);
+        K_temp1->reshape(npno_mj, npno_mj);
+        auto eye = std::make_shared<Matrix>(npno_mj, npno_mj);
+        eye->identity();
+        K_temp1 = linalg::doublet(eye, K_temp1, false, false);
 
         Wmbje[mj]->subtract(K_temp1);
 
@@ -699,7 +708,7 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_Wmbje(const std::vector<SharedMatri
 
             int j_mn = lmopair_to_lmos_dense_[mn][j];
             std::vector<int> j_mn_slice(1, j_mn);
-            auto K_mn_temp = linalg::doublet(submatrix_rows(*K_mbij_[mn], j_mn_slice), S_mn_mj)->transpose();
+            auto K_mn_temp = linalg::doublet(submatrix_rows(*K_bar_[mn], j_mn_slice), S_mn_mj)->transpose();
             C_DGER(npno_mj, npno_mj, 1.0, &(*t_n_temp)(0,0), 1, &(*K_mn_temp)(0, 0), 1, &(*Wmbje[mj])(0, 0), npno_mj);
 
             auto tau_temp = linalg::triplet(S_mn_jn, tau_bar[jn], S_jn_jm, false, false, false);
@@ -802,7 +811,7 @@ void DLPNOCCSD::lccsd_iterations() {
                 auto S_mm_im = S_PNO(mm, im);
                 auto temp_t1 = linalg::doublet(S_mm_im, T_ia_[m], true, false);
                 auto S_im_ii = S_PNO(im, ii);
-                R_ia[i]->add(linalg::triplet(S_im_ii, Lt_iajb_[im], temp_t1, true, false, false));
+                R_ia[i]->add(linalg::triplet(S_im_ii, M_iajb_[im], temp_t1, true, false, false));
 
                 // Madriaga Eq. 34, Term 3
                 auto S_mm_ii = S_PNO(mm, ii);
@@ -820,7 +829,7 @@ void DLPNOCCSD::lccsd_iterations() {
                 auto T_mi_mm = Tt_iajb_[mi]->clone();
                 T_mi_mm->reshape(npno_mi * npno_mi, 1);
                 // (npno_ii, npno_mm) (npno_mm, npno_mm * npno_mm) (npno_mm * npno_mm, 1)
-                R_ia[i]->add(linalg::triplet(S_im_ii, K_maef_[mi], T_mi_mm, true, false, false));
+                R_ia[i]->add(linalg::triplet(S_im_ii, K_tilde_phys_[mi], T_mi_mm, true, false, false));
 
                 // Madriaga Eq. 34, Term 7
                 for (int n_im = 0; n_im < lmopair_to_lmos_[im].size(); n_im++) {
@@ -830,12 +839,10 @@ void DLPNOCCSD::lccsd_iterations() {
 
                     int i_mn = lmopair_to_lmos_dense_[mn][i];
                     std::vector<int> i_mn_slice(1, i_mn);
-                    auto K_temp = submatrix_rows(*K_mbij_[mn], i_mn_slice);
-                    K_temp->scale(2.0);
-                    K_temp->subtract(submatrix_rows(*K_mbij_[nm], i_mn_slice));
+                    auto L_temp = submatrix_rows(*L_bar_[mn], i_mn_slice);
 
                     auto S_ii_mn = S_PNO(ii, mn);
-                    R_ia[i]->subtract(linalg::triplet(S_ii_mn, T_iajb_[mn], K_temp, false, false, true));
+                    R_ia[i]->subtract(linalg::triplet(S_ii_mn, T_iajb_[mn], L_temp, false, false, true));
                 }
             }
             R_ia_rms[i] = R_ia[i]->rms();
@@ -907,7 +914,7 @@ void DLPNOCCSD::lccsd_iterations() {
             // Madriaga Eq. 35, Term 12
             auto S_ij_ii = S_PNO(ij, ii);
             r2_temp = linalg::doublet(S_ij_ii, T_ia_[i], false, false);
-            r2_temp = linalg::doublet(r2_temp, K_maef_[ji], true, false);
+            r2_temp = linalg::doublet(r2_temp, K_tilde_phys_[ji], true, false);
             r2_temp->reshape(npno_ij, npno_ij);
             auto eye = std::make_shared<Matrix>(npno_ij, npno_ij);
             eye->identity();
@@ -935,7 +942,7 @@ void DLPNOCCSD::lccsd_iterations() {
                     // Madriaga Eq. 35, Term 6 (Zmbij term)
                     r2_temp = linalg::triplet(S_ij_mj, tau[ij], S_ij_mj, true, false, false);
                     r2_temp->reshape(npno_mj * npno_mj, 1);
-                    r2_temp = linalg::doublet(K_maef_[mj], r2_temp, false, false);
+                    r2_temp = linalg::doublet(K_tilde_phys_[mj], r2_temp, false, false);
                     r2_temp = linalg::doublet(S_ij_mj, r2_temp, false, false);
                     C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
@@ -962,7 +969,7 @@ void DLPNOCCSD::lccsd_iterations() {
                 }
 
                 // Madriaga Eq. 35, Term 13
-                r2_temp = submatrix_rows(*K_mbij_[ij], m_ij_slice)->transpose();
+                r2_temp = submatrix_rows(*K_bar_[ij], m_ij_slice)->transpose();
                 C_DGER(npno_ij, npno_ij, -1.0, &(*temp_t1)(0,0), 1, &(*r2_temp)(0,0), 1, &(*Rn_iajb[ij])(0,0), npno_ij);
 
                 if (n_pno_[mi] != 0 && n_pno_[mj] != 0) {
