@@ -328,18 +328,21 @@ void DLPNOCCSD::compute_cc_integrals() {
 
         K_tilde_chem_[ji] = linalg::doublet(q_jv, q_vv, true, false);
         K_tilde_phys_[ji] = std::make_shared<Matrix>(npno_ij, npno_ij * npno_ij);
+        auto K_tilde_temp = std::make_shared<Matrix>(npno_ij, npno_ij * npno_ij);
 
         for (int a_ij = 0; a_ij < npno_ij; a_ij++) {
             for (int e_ij = 0; e_ij < npno_ij; e_ij++) {
                 for (int f_ij = 0; f_ij < npno_ij; f_ij++) {
                     (*K_tilde_phys_[ji])(a_ij, e_ij * npno_ij + f_ij) = 
                                     (*K_tilde_chem_[ji])(e_ij, a_ij * npno_ij + f_ij);
+                    (*K_tilde_temp)(a_ij, e_ij * npno_ij + f_ij) = 
+                                    (*K_tilde_chem_[ji])(f_ij, a_ij * npno_ij + e_ij);
                 }
             }
         }
         L_tilde_[ji] = K_tilde_chem_[ji]->clone();
         L_tilde_[ji]->scale(2.0);
-        L_tilde_[ji]->subtract(K_tilde_phys_[ji]);
+        L_tilde_[ji]->subtract(K_tilde_temp);
 
         if (virtual_storage_ == CORE && i <= j) {
             // SVD Decomposition of DF-ERIs
