@@ -711,6 +711,8 @@ void DFJCOSKGrad::build_KGrad() {
             }
         }
 
+        if (rank == 0) timer_on("Contract K Gradient");
+
         for (size_t jki = 0; jki < njk; jki++) {
         for (int center = 0; center < natom; center++) {
             //  mask X_dx matrices:
@@ -758,13 +760,14 @@ void DFJCOSKGrad::build_KGrad() {
             auto KTgradp = KTgrad[jki][rank]->pointer();
             for (size_t mu = 0; mu < nbf_block_all; mu++) {
                 for (size_t nu = 0; nu < nbf_block; nu++) {
-                    // FIXME: Help! for some reason x and z indices need to be permuted??
                     KTgradp[center][0] -= D_blockp[mu][nu] * KT_dx_blockp[nu][mu];
                     KTgradp[center][1] -= D_blockp[mu][nu] * KT_dy_blockp[nu][mu];
                     KTgradp[center][2] -= D_blockp[mu][nu] * KT_dz_blockp[nu][mu];
                 }
             }
         }}
+
+        if (rank == 0) timer_off("Contract K Gradient");
 
     }
 
