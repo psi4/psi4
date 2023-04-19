@@ -1550,12 +1550,6 @@ void Tensor2d::gemv(bool transa, const SharedTensor2d &a, const SharedTensor2d &
     }
 }  //
 
-void Tensor2d::davidson(int n_eigval, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
-                        int print) {
-    david(A2d_, dim1_, n_eigval, eigvalues->A1d_, eigvectors->A2d_, cutoff, print);
-
-}  //
-
 void Tensor2d::add(const SharedTensor2d &a) {
     size_t length = (size_t)dim1_ * (size_t)dim2_;
     C_DAXPY(length, 1.0, a->A2d_[0], 1, A2d_[0], 1);
@@ -1750,16 +1744,6 @@ void Tensor2d::diagonalize(int dim, const SharedTensor2d &eigvectors, const Shar
 
 }  //
 
-void Tensor2d::cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues) {
-    if (dim1_) {
-        int lwork = 3 * dim2_;
-        double **work = block_matrix(dim1_, lwork);
-        memset(work[0], 0.0, sizeof(double) * dim1_ * lwork);
-        C_DSYEV(jobz, uplo, dim1_, &(A2d_[0][0]), dim2_, eigvalues->A1d_, &(work[0][0]), lwork);
-        free_block(work);
-    }
-}  //
-
 void Tensor2d::cdgesv(const SharedTensor1d &Xvec) {
     if (dim1_) {
         int errcod;
@@ -1781,48 +1765,15 @@ void Tensor2d::cdgesv(const SharedTensor1d &Xvec, int errcod) {
     }
 }  //
 
-void Tensor2d::cdgesv(double *Xvec) {
-    if (dim1_) {
-        int errcod;
-        auto *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-        delete[] ipiv;
-    }
-}  //
-
-void Tensor2d::cdgesv(double *Xvec, int errcod) {
-    if (dim1_) {
-        auto *ipiv = new int[dim1_];
-        memset(ipiv, 0, sizeof(int) * dim1_);
-        errcod = 0;
-        errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
-        delete[] ipiv;
-    }
-}  //
-
 void Tensor2d::lineq_flin(const SharedTensor1d &Xvec, double *det) {
     if (dim1_) {
         flin(A2d_, Xvec->A1d_, dim1_, 1, det);
     }
 }  //
 
-void Tensor2d::lineq_flin(double *Xvec, double *det) {
-    if (dim1_) {
-        flin(A2d_, Xvec, dim1_, 1, det);
-    }
-}  //
-
 void Tensor2d::lineq_pople(const SharedTensor1d &Xvec, int num_vecs, double cutoff) {
     if (dim1_) {
         pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, "outfile", 0);
-    }
-}  //
-
-void Tensor2d::lineq_pople(double *Xvec, int num_vecs, double cutoff) {
-    if (dim1_) {
-        pople(A2d_, Xvec, dim1_, num_vecs, cutoff, "outfile", 0);
     }
 }  //
 
