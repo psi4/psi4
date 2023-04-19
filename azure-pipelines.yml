@@ -1,6 +1,6 @@
 trigger:
   - master
-  - gh-readonly-queue/master
+  - gh-readonly-queue/master/*
   - 1.8.x
   - 1.7.x
   - 1.6.x
