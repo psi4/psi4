@@ -5,6 +5,7 @@ on:
     branches:
       - master
   pull_request:
+  merge_group:
 
 permissions:
   contents: read  #  to fetch code (actions/checkout)
@@ -229,7 +230,7 @@ jobs:
           - geometric
           - openfermion>=1.0
           - openfermionpsi4
-          - pyddx
+          - pyddx=0.3.0
           - pymdi
           - qcengine
           - qcfractal
