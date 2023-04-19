@@ -8,6 +8,8 @@ from shutil import copytree
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
+# NOTE: all test_fchk_writer are expected to fail if psi4_SHGAUSS_ORDERING=standard
+
 # checks for
 # - correct HF density
 # - principal execution 

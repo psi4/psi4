@@ -443,7 +443,7 @@ final += """
        *  Make sure the Psi4 driver can find your new database.
           M %s.py into INSTALLED_DIRECTORY/share/psi4/databases .
           Alternatively, add the directory containing %s.py into PYTHONPATH .
-""" % (dbse, dbse, dbse)
+""" % (dbse, dbse)
 
 final += """
    **  To enhance the functionality/documentation of your database, do the following:
