@@ -1415,6 +1415,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             orbitals before switching to the use of exact integrals in
             a |globals__scf_type| ``DIRECT`` calculation -*/
         options.add_bool("DF_SCF_GUESS", true);
+        /*- For certain |globals__scf_type| algorithms that have internal sub-algorithms
+            depending on available memory or other hardware constraints, allow the best
+            sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
+            forcibly select a sub-algorithm (usually only for debugging or profiling).
+            Presently, ``SCF_TYPE=MEM_DF`` can have ``INCORE`` or ``OUT_OF_CORE`` selected.
+            (This also applies for ``SCF_TYPE=DF`` when ``MEM_DF`` active.) !expert -*/
+	options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
         /*- Memory safety factor for allocating JK -*/

@@ -1099,6 +1099,8 @@ class PSI_API CDJK : public DiskDFJK {
  */
 class PSI_API MemDFJK : public JK {
    protected:
+    /// Options object
+    Options& options_;
 
     // => DF-Specific stuff <= //
 
@@ -1138,7 +1140,7 @@ class PSI_API MemDFJK : public JK {
      * @param primary primary basis set for this system.
      * @param auxiliary auxiliary basis set for this system.
      */
-    MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
+    MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
 
     /// Destructor
     ~MemDFJK() override;

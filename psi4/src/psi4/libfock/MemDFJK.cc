@@ -53,8 +53,9 @@ using namespace psi;
 
 namespace psi {
 
-MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
-    : JK(primary), auxiliary_(auxiliary) {
+MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+    Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) {
+
     common_init();
 }
 

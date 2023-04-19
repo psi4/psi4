@@ -162,11 +162,12 @@ void export_fock(py::module &m) {
                                                      std::vector<size_t>);
 
     py::class_<DFHelper, std::shared_ptr<DFHelper>>(m, "DFHelper", "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >())
         .def("set_memory", &DFHelper::set_memory)
         .def("get_memory", &DFHelper::get_memory)
         .def("set_method", &DFHelper::set_method)
         .def("get_method", &DFHelper::get_method)
+        .def("set_subalgo", &DFHelper::set_subalgo)
         .def("get_AO_size", &DFHelper::get_AO_size)
         .def("set_nthreads", &DFHelper::set_nthreads)
         .def("hold_met", &DFHelper::hold_met)
