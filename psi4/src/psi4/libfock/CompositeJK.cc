@@ -320,7 +320,7 @@ void CompositeJK::common_init() {
             const auto w = init_block->w();
             for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-	              outfile->Printf("  WARNING: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL. ");
+	              outfile->Printf("  WARNING: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.\n");
 	              break;
 	        }
         }
@@ -329,7 +329,7 @@ void CompositeJK::common_init() {
             const auto w = final_block->w();
             for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-	                outfile->Printf("  WARNING: The definition of the current final grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL. ");
+	                outfile->Printf("  WARNING: The definition of the current final grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.\n");
 	                break;
 	        }
         }
