@@ -259,7 +259,7 @@ void CompositeJK::common_init() {
         } else {
             linK_ints_cutoff_ = cutoff_;
         }
-
+    
     // Chain-of-Spheres Exchange (COSX)
     } else if (k_type_ == "COSX") {
         timer_on("CompositeJK: COSX Grid Construction");
@@ -312,26 +312,26 @@ void CompositeJK::common_init() {
         };
         grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
 
-        // Sanity-check of grids to ensure no negative grid weights
-        // COSX crashes when grids with negative weights are used,
+        // Print out warning if grid with negative grid weights is used 
+        // Original Nesse COSX formulation does not support negative grid weights
         // which can happen with certain grid configurations
         // See https://github.com/psi4/psi4/issues/2890
         for (const auto &init_block : grid_init_->blocks()) {
             const auto w = init_block->w();
             for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-                    throw PSIEXCEPTION("The definition of the current initial grid includes negative weights. As these are not suitable for the COSX implementation, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.");
-                }
-            }
+	              outfile->Printf("  WARNING: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL. ");
+	              break;
+	        }
         }
-
+    
         for (const auto &final_block : grid_final_->blocks()) {
             const auto w = final_block->w();
             for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-                    throw PSIEXCEPTION("The definition of the current final grid includes negative weights. As these are not suitable for the COSX implementation, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.");
-                }
-            }
+	                outfile->Printf("  WARNING: The definition of the current final grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL. ");
+	                break;
+	        }
         }
 
         timer_off("CompositeJK: COSX Grid Construction");
