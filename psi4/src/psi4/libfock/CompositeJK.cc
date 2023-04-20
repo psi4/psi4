@@ -56,7 +56,7 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
     // DOI 10.1063/1.3646921, EQ. 9
 
     // note that the S_num matrix is defined slightly differently in our code
-    // due to the use of two X matrices
+    // to account for the possibility of negative grid weights
     // here, we use S_num = X_sign*(X_nosign)^T
     // where:
     //   1. X_nosign uses sqrt(abs(w)) instead of sqrt(w) for the X matrix
@@ -315,7 +315,8 @@ void CompositeJK::common_init() {
         // Print out warning if grid with negative grid weights is used 
         // Original Nesse COSX formulation does not support negative grid weights
         // which can happen with certain grid configurations
-        // See https://github.com/psi4/psi4/issues/2890
+        // the Psi4 COSX implementation is slightly modified to work with negative grid weights
+        // See https://github.com/psi4/psi4/issues/2890 for discussion
         auto warning_printed_init = false;
         for (const auto &init_block : grid_init_->blocks()) {
             const auto w = init_block->w();
@@ -1442,24 +1443,16 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // note that the X matrix is defined slightly differently in our code
         // to account for the possibility of negative grid weights
-        // here, two modified X matrices are used:
-        //   1. one (nosign) uses sqrt(abs(w)) instead of sqrt(w)
-        //   2. one (sign) uses sign(w) * sqrt(abs(w)), where sign returns the sign of w, instead of sqrt(w)
+        // here, we define X using sqrt(abs(w)) instead of sqrt(w)
 
 	// compute basis functions at these grid points
         bf_computers[rank]->compute_functions(block);
         auto point_values = bf_computers[rank]->basis_values()["PHI"];
 
-        // lambda for returning sign of double
-        auto sign = [ ](double val) {
-            return (0.0 < val) - (val < 0.0);
-        };
-
         // resize the buffer of basis function values
         auto X_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
 
         auto X_blockp = X_block->pointer();
-	//auto X_block_signp = X_block_sign->pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
                 X_blockp[p][k] = point_values->get(p, k) * std::sqrt(std::fabs(w[p]));
@@ -1480,7 +1473,6 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // => F Matrix <= //
 
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 6
-        // we use the sign X matrix for F formation
 
         // contract density with basis functions values at these grid points
         std::vector<SharedMatrix> F_block(njk);
@@ -1488,12 +1480,6 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
             F_block[jki] = linalg::doublet(X_block, D_block[jki], false, true);
         }
         
-        //for (size_t p = 0; p < npoints_block; p++) {
-        //    for (size_t k = 0; k < nbf_block; k++) {
-        //        X_blockp[p][k] *= sign(w[p]);
-        //    }
-        //}
-
         // shell maxima of F_block
         auto F_block_shell = std::make_shared<Matrix>(npoints_block, nshell);
         auto F_block_shellp = F_block_shell->pointer();
@@ -1546,6 +1532,12 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         if(rank == 0) timer_on("ESP Integrals");
 
         const auto & int_buff = int_computers[rank]->buffers()[0];
+
+        // lambda for returning sign of double
+        // needed for formation of G
+        auto sign = [ ](double val) {
+            return (0.0 < val) - (val < 0.0);
+        };
 
         // calculate A_NU_TAU at all grid points in this block
         // contract A_NU_TAU with F_TAU to get G_NU
@@ -1604,6 +1596,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
                     // contract A_nu_tau with F_tau to get contribution to G_nu
                     // symmetry permitting, also contract A_nu_tau with F_nu to get contribution to G_tau
+                    // we fold sign(w) into the formation of G to correct for the modified definition of X 
                     for(size_t jki = 0; jki < njk; jki++) {
                         auto F_blockp = F_block[jki]->pointer();
                         auto G_blockp = G_block[jki]->pointer();
@@ -1623,7 +1616,6 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         if(rank == 0) timer_off("ESP Integrals");
 
         // Contract X (or Q if overlap fitting) with G to get contribution to K
-        // we use the nosign X matrix for K formation
         for(size_t jki = 0; jki < njk; jki++) {
             SharedMatrix KT_block;
             if (overlap_fitted) {
