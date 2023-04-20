@@ -316,22 +316,30 @@ void CompositeJK::common_init() {
         // Original Nesse COSX formulation does not support negative grid weights
         // which can happen with certain grid configurations
         // See https://github.com/psi4/psi4/issues/2890
+        auto warning_printed_init = false;
         for (const auto &init_block : grid_init_->blocks()) {
             const auto w = init_block->w();
             for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-	              outfile->Printf("  WARNING: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.\n");
-	              break;
-	        }
+	                outfile->Printf("  WARNING: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.\n");
+	                warning_printed_init = true;
+		            break;
+	            }
+            }
+	        if (warning_printed_init) break;
         }
-    
+
+        auto warning_printed_final = false;
         for (const auto &final_block : grid_final_->blocks()) {
             const auto w = final_block->w();
             for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
 	                outfile->Printf("  WARNING: The definition of the current final grid includes negative weights, which the original COSX formulation does not support! If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.\n");
+                    warning_printed_final = true;
 	                break;
-	        }
+	            }
+            }
+	        if (warning_printed_final) break;
         }
 
         timer_off("CompositeJK: COSX Grid Construction");
@@ -383,6 +391,7 @@ void CompositeJK::common_init() {
         ;
     } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
+
     }
 }
 
