@@ -88,7 +88,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
                                                       size_t memory, Options& options, bool dowK, double omega_in) {
     std::string algo = options.get_str("PK_ALGO");
     std::string subalgo = options.get_str("SCF_SUBTYPE");
-    
+
     // We introduce another safety factor in the memory, otherwise
     // we are apparently prone to being killed by the OS.
     // TODO: Check for memory leaks ? Trace memory usage ?
@@ -106,13 +106,13 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
     if (dowK) {
         ncorebuf = 3;
     }
-  
-    // determine which sub-algorithm to use  
+
+    // determine which sub-algorithm to use
     bool do_reord = false;
     bool do_yosh = false;
     bool do_incore = false;
     if (subalgo != "INCORE") {
-        if (options["PK_ALGO"].has_changed()) { 
+        if (options["PK_ALGO"].has_changed()) {
             if (algo == "REORDER") {
                 do_reord = true;
             } else if (algo == "YOSHIMINE") {
@@ -126,11 +126,11 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
             }
         }
     }
-    
+
     // throw exception if INCORE requested without enough memory...
     if (ncorebuf * pk_size > memory && subalgo == "INCORE") {
         throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
-    
+
     // ..or do INCORE if OUT_OF_CORE not explicitly requested and enough memory 
     } else if (ncorebuf * pk_size < memory && subalgo != "OUT_OF_CORE")  {
 	do_incore = true;
