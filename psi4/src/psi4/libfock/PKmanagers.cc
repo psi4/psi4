@@ -131,7 +131,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
     if (ncorebuf * pk_size > memory && subalgo == "INCORE") {
         throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
 
-    // ..or do INCORE if OUT_OF_CORE not explicitly requested and enough memory 
+    // ..or do INCORE if OUT_OF_CORE not explicitly requested and enough memory
     } else if (ncorebuf * pk_size < memory && subalgo != "OUT_OF_CORE")  {
 	do_incore = true;
     }
