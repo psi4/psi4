@@ -207,7 +207,7 @@ def test_hf_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, reque
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -259,7 +259,7 @@ def test_hf_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, requ
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -309,8 +309,8 @@ def test_hf_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(2, id="hes2"),
-        pytest.param(1, id="hes1", marks=pytest.mark.nonroutine),
-        pytest.param(0, id="hes0", marks=pytest.mark.nonroutine),
+        pytest.param(1, id="hes1", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
+        pytest.param(0, id="hes0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -363,8 +363,8 @@ def test_hf_hessian_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
     "dertype",
     [
         pytest.param(2, id="hes2"),
-        pytest.param(1, id="hes1"),
-        pytest.param(0, id="hes0", marks=pytest.mark.nonroutine),
+        pytest.param(1, id="hes1", marks=pytest.mark.findif),
+        pytest.param(0, id="hes0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -616,7 +616,7 @@ def test_mp2_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -662,7 +662,7 @@ def test_mp2_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -720,7 +720,7 @@ def test_mp2_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -780,8 +780,8 @@ def test_mp2_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
 
 @pytest.mark.parametrize("dertype", [
     pytest.param(2, id="hes2"),  # no analytic Hessians available
-    pytest.param(1, id="hes1"),
-    pytest.param(0, id="hes0", marks=pytest.mark.long),
+    pytest.param(1, id="hes1", marks=pytest.mark.findif),
+    pytest.param(0, id="hes0", marks=[pytest.mark.long, pytest.mark.findif]),
 ])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -964,7 +964,7 @@ def test_mp2p5_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -1002,7 +1002,7 @@ def test_mp2p5_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, 
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -1040,7 +1040,7 @@ def test_mp2p5_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, r
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -1264,7 +1264,7 @@ def test_mp3_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -1303,7 +1303,7 @@ def test_mp3_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -1342,7 +1342,7 @@ def test_mp3_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -2247,7 +2247,7 @@ def test_lccd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -2286,7 +2286,7 @@ def test_lccd_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, r
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -2325,7 +2325,7 @@ def test_lccd_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -2911,7 +2911,7 @@ def test_ccd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -2945,7 +2945,7 @@ def test_ccd_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -3177,7 +3177,7 @@ def test_cc2_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3213,7 +3213,7 @@ def test_cc2_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -3464,7 +3464,7 @@ def test_ccsd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3508,7 +3508,7 @@ def test_ccsd_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -3707,7 +3707,7 @@ def test_ccsd_prt_pr_energy_default(inp, dertype, basis, subjects, clsd_open_pmo
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -3747,7 +3747,7 @@ def test_ccsd_prt_pr_gradient_module(inp, dertype, basis, subjects, clsd_open_pm
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -4204,7 +4204,7 @@ def test_omp2_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -4248,7 +4248,7 @@ def test_omp2_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -4414,7 +4414,7 @@ def test_omp2p5_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, r
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -4458,7 +4458,7 @@ def test_omp2p5_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, 
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -4624,7 +4624,7 @@ def test_omp3_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -4668,7 +4668,7 @@ def test_omp3_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -4833,7 +4833,7 @@ def test_oremp2_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, r
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -4877,7 +4877,7 @@ def test_oremp2_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, 
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -5077,7 +5077,7 @@ def test_olccd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -5121,7 +5121,7 @@ def test_olccd_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, r
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -5276,7 +5276,7 @@ def test_svwn_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -5328,7 +5328,7 @@ def test_svwn_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -5378,8 +5378,8 @@ def test_svwn_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, r
     "dertype",
     [
         pytest.param(2, id="hes2"),
-        pytest.param(1, id="hes1", marks=pytest.mark.nonroutine),
-        pytest.param(0, id="hes0", marks=pytest.mark.nonroutine),
+        pytest.param(1, id="hes1", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
+        pytest.param(0, id="hes0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -5432,8 +5432,8 @@ def test_svwn_hessian_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(2, id="hes2"),
-        pytest.param(1, id="hes1"),
-        pytest.param(0, id="hes0", marks=pytest.mark.nonroutine),
+        pytest.param(1, id="hes1", marks=pytest.mark.findif),
+        pytest.param(0, id="hes0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -5575,7 +5575,7 @@ def test_pbe_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -5627,7 +5627,7 @@ def test_pbe_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -5768,7 +5768,7 @@ def test_b3lyp_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -5820,7 +5820,7 @@ def test_b3lyp_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, r
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(
@@ -5962,7 +5962,7 @@ def test_wb97x_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, re
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0", marks=pytest.mark.nonroutine),
+        pytest.param(0, id="grd0", marks=[pytest.mark.nonroutine, pytest.mark.findif]),
     ],
 )
 @pytest.mark.parametrize(
@@ -6014,7 +6014,7 @@ def test_wb97x_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, r
     "dertype",
     [
         pytest.param(1, id="grd1"),
-        pytest.param(0, id="grd0"),
+        pytest.param(0, id="grd0", marks=pytest.mark.findif),
     ],
 )
 @pytest.mark.parametrize(

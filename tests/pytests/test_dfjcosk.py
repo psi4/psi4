@@ -67,6 +67,7 @@ units au
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       "ref" :  -0.040121884077},
+                      marks=pytest.mark.nbody,
                       id="h2o/na+ (rhf ie)"),
     ],
 )
@@ -118,6 +119,7 @@ def test_dfjcosk(inp, mols):
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       "ref" :  -0.040121884077},
+                      marks=pytest.mark.nbody,
                       id="h2o/na+ (rhf ie)"),
     ],
 )

@@ -95,6 +95,7 @@ def test_psi4_cas(datadir):
     assert psi4.compare_values(-76.073865006902, atres.return_result, 6, 'CASSCF Energy')
 
 
+@pytest.mark.nbody
 def test_psi4_dfmp2(datadir):
     """dfmp2-1"""
     #! Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy
