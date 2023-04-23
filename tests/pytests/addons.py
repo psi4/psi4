@@ -168,7 +168,7 @@ hardware_nvidia_gpu = pytest.mark.skipif(
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
 
 
-def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
+def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = None):
     """Called from a mock PyTest function, this takes a full path ``inputdatloc`` to an ``"input.dat"`` file set up for
     CTest and submits it to the ``psi4`` executable. Any auxiliary files with names listed in ``extra_infiles`` that reside
     alongside ``inputdatloc`` are placed in the Psi4 execution directory.
