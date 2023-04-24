@@ -1419,8 +1419,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             depending on available memory or other hardware constraints, allow the best
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
             forcibly select a sub-algorithm (usually only for debugging or profiling).
-            Presently, ``SCF_TYPE=MEM_DF`` can have ``INCORE`` or ``OUT_OF_CORE`` selected.
-            (This also applies for ``SCF_TYPE=DF`` when ``MEM_DF`` active.) !expert -*/
+            Presently, ``SCF_TYPE=MEM_DF`` and ``SCF_TYPE=DISK_DF`` can have ``INCORE`` 
+	    or ``OUT_OF_CORE`` selected. (This also applies for ``SCF_TYPE=DF``.) !expert -*/
 	options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
