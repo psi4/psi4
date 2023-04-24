@@ -226,12 +226,16 @@ int C_DGGQRF(int n, int m, int p, double* a, int lda, double* taua, double* b, i
              int lwork);
 int C_DGGRQF(int m, int p, int n, double* a, int lda, double* taua, double* b, int ldb, double* taub, double* work,
              int lwork);
+#ifdef BLAS_HAS_DGGSVD3
 int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
               int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
               double* work, int lwork, int* iwork);
+#endif
+#ifdef BLAS_HAS_DGGSVP3
 int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
               double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
               double* tau, double* work, int lwork);
+#endif
 int C_DGTCON(char norm, int n, double* dl, double* d, double* du, double* du2, int* ipiv, double anorm, double* rcond,
              double* work, int* iwork);
 int C_DGTRFS(char trans, int n, int nrhs, double* dl, double* d, double* du, double* dlf, double* df, double* duf,

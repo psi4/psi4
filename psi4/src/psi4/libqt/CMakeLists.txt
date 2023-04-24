@@ -27,18 +27,28 @@ list(APPEND sources
 include(CMakePushCheckState)
 include(CheckFunctionExists)
 cmake_push_check_state()
-list(APPEND CMAKE_REQUIRED_LIBRARIES tgt::blas)
+list(APPEND CMAKE_REQUIRED_LIBRARIES tgt::lapack)
 check_function_exists(daxpby _has_daxpby)
-cmake_pop_check_state()
-
 if(NOT _has_daxpby)
-  message(WARNING "${Yellow}Your BLAS library does not seem to be providing the DAXPBY subroutine. If you are seeing this message, and you are not building with Apple Accelerate, you may want to re-check that the correct BLAS/LAPACK libraries are being used by the build system.${ColourReset}")
+  message(WARNING "${Yellow}Your BLAS/LAPACK library does not seem to be providing the DAXPBY subroutine. DAXPBY calls will be re-routed through DSCAL and DAXPY. If you are seeing this message, and you are not building with Apple Accelerate, you may want to re-check that the correct BLAS/LAPACK libraries are being used by the build system. Redo CMake configuration for changes to register.${ColourReset}")
 endif()
+
+check_function_exists(dggsvd3 _has_dggsvd3)
+check_function_exists(dggsvp3 _has_dggsvp3)
+if(NOT (_has_dggsvd3 AND _has_dggsvp3))
+  message(WARNING "${Yellow}Your BLAS/LAPACK library does not seem to be providing the DGGSVD3 and DGGSVP3 subroutines. No re-routing is available. If you are seeing this message, and you are not building with Apple Accelerate, you may want to re-check that the correct BLAS/LAPACK libraries are being used by the build system. Redo CMake configuration for changes to register.${ColourReset}")
+endif()
+cmake_pop_check_state()
 
 psi4_add_module(lib qt sources)
 target_compile_definitions(qt
   PRIVATE
     $<$<BOOL:${_has_daxpby}>:BLAS_HAS_DAXPBY>
+    $<$<BOOL:${_has_dggsvd3}>:BLAS_HAS_DGGSVD3>
+    $<$<BOOL:${_has_dggsvp3}>:BLAS_HAS_DGGSVP3>
     FC_SYMBOL=${FC_SYMBOL}
   )
+
 unset(_has_daxpby)
+unset(_has_dggsvd3)
+unset(_has_dggsvp3)
