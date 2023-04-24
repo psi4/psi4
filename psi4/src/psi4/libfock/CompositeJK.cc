@@ -83,7 +83,7 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
 
         // lambda for returning sign of double
         auto sign = [ ](double val) {
-            return static_cast<double>( (0.0 < val) - (val < 0.0) );
+            return (val >= 0.0) ? 1.0 : -1.0;
         };
 
         // resize the buffer of basis function values
@@ -1536,7 +1536,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // lambda for returning sign of double
         // needed for formation of G
         auto sign = [ ](double val) {
-            return static_cast<double>( (0.0 < val) - (val < 0.0) );
+            return (val >= 0.0) ? 1.0 : -1.0;
         };
 
         // calculate A_NU_TAU at all grid points in this block
