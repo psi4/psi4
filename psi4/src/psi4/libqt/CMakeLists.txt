@@ -12,13 +12,11 @@ list(APPEND sources
   lapack_intfc.cc
   mat_print.cc
   newmm_rking.cc
-  normalize.cc
   pople.cc
   probabil.cc
   ras_set.cc
   reorder_qt.cc
   schmidt.cc
-  schmidt_add.cc
   solve_pep.cc
   timer.cc
   )
