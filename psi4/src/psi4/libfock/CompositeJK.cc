@@ -83,7 +83,7 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
 
         // lambda for returning sign of double
         auto sign = [ ](double val) {
-            return (0.0 < val) - (val < 0.0);
+            return static_cast<double>( (0.0 < val) - (val < 0.0) );
         };
 
         // resize the buffer of basis function values
@@ -249,7 +249,6 @@ void CompositeJK::common_init() {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     }
 
-<<<<<<< HEAD:psi4/src/psi4/libfock/CompositeJK.cc
     // => Set up separate K algorithm <= //
 
     // Linear Exchange (LinK)
@@ -266,7 +265,6 @@ void CompositeJK::common_init() {
     } else if (k_type_ == "COSX") {
         timer_on("CompositeJK: COSX Grid Construction");
 
-<<<<<<< HEAD:psi4/src/psi4/libfock/CompositeJK.cc
         // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
 
         // Create a small DFTGrid for the initial SCF iterations
@@ -325,20 +323,19 @@ void CompositeJK::common_init() {
             const auto w = init_block->w();
             for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-	                outfile->Printf("  WARNING: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.\n\n");
+	                outfile->Printf("  INFO: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.\n\n");
 	                warning_printed_init = true;
 		            break;
 	            }
             }
 	        if (warning_printed_init) break;
-        }
 
         auto warning_printed_final = false;
         for (const auto &final_block : grid_final_->blocks()) {
             const auto w = final_block->w();
             for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-	                outfile->Printf("  WARNING: The definition of the current final grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.\n\n");
+	                outfile->Printf("  INFO: The definition of the current final grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.\n\n");
                     warning_printed_final = true;
 	                break;
 	            }
@@ -1539,7 +1536,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // lambda for returning sign of double
         // needed for formation of G
         auto sign = [ ](double val) {
-            return (0.0 < val) - (val < 0.0);
+            return static_cast<double>( (0.0 < val) - (val < 0.0) );
         };
 
         // calculate A_NU_TAU at all grid points in this block
