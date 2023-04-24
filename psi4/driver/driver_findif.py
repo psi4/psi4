@@ -1459,7 +1459,11 @@ class FiniteDifferenceComputer(BaseComputer):
 
         return findif_model
 
-    def get_psi_results(self, return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+    def get_psi_results(
+        self,
+        client: Optional["qcportal.FractalClient"] = None,
+        *,
+        return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into FiniteDifference-flavored QCSchema,
         then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
 
@@ -1483,7 +1487,7 @@ class FiniteDifferenceComputer(BaseComputer):
             Wavefunction described above when *return_wfn* specified.
 
         """
-        findif_model = self.get_results()
+        findif_model = self.get_results(client=client)
 
         ret_ptype = core.Matrix.from_array(findif_model.return_result)
         wfn = _findif_schema_to_wfn(findif_model)

@@ -43,6 +43,7 @@ Also, many Python extensions to core classes:
 __all__ = [
     "basis_helper",
     "pcm_helper",
+    "plump_qcvar",
     "set_options",
     "set_module_options",
     "temp_circular_import_blocker",  # retire ASAP
@@ -52,6 +53,7 @@ __all__ = [
 import os
 import re
 import sys
+import math
 import uuid
 import warnings
 from collections import Counter
@@ -839,6 +841,64 @@ def _qcvar_warnings(key: str) -> str:
     return key
 
 
+def plump_qcvar(
+    key: str,
+    val: Union[float, str, List]) -> Union[float, np.ndarray]:
+    """Prepare serialized QCVariables for QCSchema AtomicResult.extras["qcvars"] by
+    converting flat arrays into numpy, shaped ones and floating strings.
+    Unlike _qcvar_reshape_get/set, multipoles aren't compressed or plumped, only reshaped.
+
+    Parameters
+    ----------
+    key
+        Shape clue (usually QCVariable key) that includes (case insensitive) an identifier like
+        'gradient' as a clue to the array's natural dimensions.
+    val
+        flat (?, ) list or scalar or string, probably from JSON storage.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Reshaped array of `val` with natural dimensions of `key`.
+
+    """
+    if isinstance(val, (np.ndarray, core.Matrix)):
+        raise TypeError
+    elif isinstance(val, list):
+        tgt = np.asarray(val)
+    else:
+        # presumably scalar. may be string
+        return float(val)
+
+    if key.upper().startswith("MBIS"):
+        if key.upper().endswith("CHARGES"):
+            reshaper = (-1, )
+        elif key.upper().endswith("DIPOLES"):
+            reshaper = (-1, 3)
+        elif key.upper().endswith("QUADRUPOLES"):
+            reshaper = (-1, 3, 3)
+        elif key.upper().endswith("OCTUPOLES"):
+            reshaper = (-1, 3, 3, 3)
+    elif key.upper().endswith("DIPOLE") or "DIPOLE -" in key.upper():
+        reshaper = (3, )
+    elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 3, 3)
+    elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
+        p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
+        reshaper = tuple([3] * _multipole_order.index(p[0]))
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
+        reshaper = (-1, )
+    elif "GRADIENT" in key.upper():
+        reshaper = (-1, 3)
+    elif "HESSIAN" in key.upper():
+        ndof = int(math.sqrt(len(tgt)))
+        reshaper = (ndof, ndof)
+    else:
+        raise ValidationError(f'Uncertain how to reshape array: {key}')
+
+    return tgt.reshape(reshaper)
+
+
 _multipole_order = ["dummy", "dummy", "QUADRUPOLE", "OCTUPOLE", "HEXADECAPOLE"]
 for order in range(5, 10):
     _multipole_order.append(f"{int(2**order)}-POLE")
@@ -881,7 +941,7 @@ def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
         return val
 
 
-def _qcvar_reshape_get(key: str, val: Union[core.Matrix, np.ndarray]) -> Union[core.Matrix, np.ndarray]:
+def _qcvar_reshape_get(key: str, val: core.Matrix) -> Union[core.Matrix, np.ndarray]:
     """For QCVariables where the 2D :py:class:`psi4.core.Matrix` shape is
     unnatural, convert to natural shape in :class:`numpy.ndarray`.
 
