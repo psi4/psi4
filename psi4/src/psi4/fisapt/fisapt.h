@@ -87,7 +87,7 @@ class FISAPT {
     /// Helper to extract columns from a matrix
     static std::shared_ptr<Matrix> extract_columns(const std::vector<int>& cols, std::shared_ptr<Matrix> A);
 
-    ///link types as strings, now reused throghout
+    /// Link types as strings, now reused throghout
     std::vector<std::string> typesL;
 
    public:

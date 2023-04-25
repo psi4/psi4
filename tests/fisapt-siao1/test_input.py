@@ -1,6 +1,10 @@
+from pathlib import Path
+import psi4
 from addons import *
-
 @ctest_labeler("sapt")
 def test_fisapt_siao1():
-    ctest_runner(__file__)
+    fsaptpy_installed = (Path(psi4.core.get_datadir()) / "fsapt" / "fsapt.py").resolve()
+    ctest_runner(__file__, [
+        fsaptpy_installed,
+    ])
 
