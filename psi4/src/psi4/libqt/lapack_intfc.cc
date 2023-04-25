@@ -6017,6 +6017,7 @@ int C_DGGRQF(int m, int p, int n, double* a, int lda, double* taua, double* b, i
  *
  *  DGGSVD3 replaces the deprecated subroutine DGGSVD.
  **/
+#ifdef BLAS_HAS_DGGSVD3
 int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
               int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
               double* work, int lwork, int* iwork) {
@@ -6025,6 +6026,7 @@ int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int*
                 &lwork, iwork, &info);
     return info;
 }
+#endif
 
 /**
  * \par Purpose:
@@ -6258,6 +6260,7 @@ int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int*
  *
  * DGGSVP3 replaces the deprecated subroutine DGGSVP.
  **/
+#ifdef BLAS_HAS_DGGSVP3
 int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
               double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
               double* tau, double* work, int lwork) {
@@ -6266,6 +6269,7 @@ int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, i
                 tau, work, &lwork, &info);
     return info;
 }
+#endif
 
 /**
  *  Purpose

@@ -35,7 +35,7 @@ from .metadata import __version__, version_formatter
 
 if "undef" in __version__:
     raise TypeError(
-        """Using custom build without tags. Please pull git tags with `git pull origin master --tags`. If building from source, `git fetch upstream "refs/tags/*:refs/tags/*"`."""
+        """Using custom build without tags. Please pull git tags with `git pull origin master --tags`. If building from source, `git fetch upstream "refs/tags/*:refs/tags/*"` and re-make."""
     )
 
 time_string = datetime.datetime.now().strftime('%A, %d %B %Y %I:%M%p')
