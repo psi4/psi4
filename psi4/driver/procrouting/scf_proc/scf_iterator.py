@@ -215,7 +215,7 @@ def scf_initialize(self):
         core.print_out("\n  ==> Pre-Iterations <==\n\n")
 
         # force SCF_SUBTYPE to AUTO during SCF guess
-        optstash = p4util.OptionsState(["SCF_SUBTYPE"])
+        optstash = p4util.OptionsState(["SCF", "SCF_SUBTYPE"])
         core.set_local_option("SCF", "SCF_SUBTYPE", "AUTO")
 
         core.timer_on("HF: Guess")
