@@ -298,7 +298,7 @@ bool DiskDFJK::is_core() {
             outfile->Printf("  SCF_SUBTYPE = OUT_OF_CORE selected. Out-of-core DISK_DF algorithm will be used.\n\n");
         }
 
-	do_core = false;
+        do_core = false;
 
    // .. or force do_core if user specifies
     } else if (subalgo_ == "INCORE") {
