@@ -117,7 +117,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
 
     // specify particular out-of-core subalgorithm...
     if (subalgo == "REORDER_OUT_OF_CORE") {
-	do_reord = true;
+        do_reord = true;
     } else if (subalgo == "YOSHIMINE_OUT_OF_CORE") {
         do_yosh = true;
 
@@ -131,23 +131,22 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
 
     // ...or force the in-core algorithm...
     } else if (subalgo == "INCORE") {
-	// throw an exception if in-core is forced, but not enough memory is allocated
+        // throw an exception if in-core is forced, but not enough memory is allocated
         if (ncorebuf * pk_size > memory) {
             throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
         } else {
             do_incore = true;
-	}
+        }
 
     // ...or just let psi4 pick any subalgorithm
     } else if (subalgo == "AUTO") {
-
         if (ncorebuf * pk_size < memory) {
             do_incore = true;
-	} else if (algo_factor * memory > pk_size) {
+        } else if (algo_factor * memory > pk_size) {
             do_reord = true;
-	} else {
+        } else {
             do_yosh = true;
-	}
+        }
 
     // throw an exception on an invalid SCF_SUBTYPE
     } else {
@@ -205,9 +204,9 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
 #ifdef _OPENMP
     nthreads_ = Process::environment.get_n_threads();
     if (nthreads_ > pk_size_) {
-	outfile->Printf("  WARNING! More threads than unique shell quartets to compute!\n");
-	outfile->Printf("  Decreasing thread count to %d.\n", pk_size_);	
-	nthreads_ = pk_size_;
+        outfile->Printf("  WARNING! More threads than unique shell quartets to compute!\n");
+        outfile->Printf("  Decreasing thread count to %d.\n", pk_size_);
+        nthreads_ = pk_size_;
     }
 #endif
 }
