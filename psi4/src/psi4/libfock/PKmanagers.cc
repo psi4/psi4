@@ -116,9 +116,9 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
     bool do_incore = false;
 
     // specify particular out-of-core subalgorithm...
-    if (subalgo == "OOC_REORDER") {
+    if (subalgo == "REORDER_OUT_OF_CORE") {
 	do_reord = true;
-    } else if (subalgo == "OOC_YOSHIMINE") {
+    } else if (subalgo == "YOSHIMINE_OUT_OF_CORE") {
         do_yosh = true;
 
     // ...or automatically select an out-of-core subalgorithm...
@@ -140,6 +140,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
 
     // ...or just let psi4 pick any subalgorithm
     } else if (subalgo == "AUTO") {
+
         if (ncorebuf * pk_size < memory) {
             do_incore = true;
 	} else if (algo_factor * memory > pk_size) {
@@ -150,7 +151,7 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
 
     // throw an exception on an invalid SCF_SUBTYPE
     } else {
-        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The valid choices of SCF_SUBTYPE for SCF_TYPE=PK are AUTO, INCORE, OUT_OF_CORE, OOC_YOSHIMINE, and OOC_REORDER.");
+        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The valid choices of SCF_SUBTYPE for SCF_TYPE=PK are AUTO, INCORE, OUT_OF_CORE, YOSHIMINE_OUT_OF_CORE, and REORDER_OUT_OF_CORE.");
     }
 
     std::shared_ptr<PKManager> pkmgr;
