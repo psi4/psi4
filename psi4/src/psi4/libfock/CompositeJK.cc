@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -291,7 +291,29 @@ void CompositeJK::common_init() {
         };
         grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
 
-        timer_off("CompositeJK: COSX Grid Construction");
+        // Sanity-check of grids to ensure no negative grid weights
+        // COSX crashes when grids with negative weights are used,
+        // which can happen with certain grid configurations
+        // See https://github.com/psi4/psi4/issues/2890
+        for (const auto &init_block : grid_init_->blocks()) {
+            const auto w = init_block->w();
+            for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
+                if (w[ipoint] < 0.0) {
+	            throw PSIEXCEPTION("The definition of the current initial grid includes negative weights. As these are not suitable for the COSX implementation, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.");
+	        }
+            }
+	}
+
+        for (const auto &final_block : grid_final_->blocks()) {
+            const auto w = final_block->w();
+            for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
+                if (w[ipoint] < 0.0) {
+	            throw PSIEXCEPTION("The definition of the current final grid includes negative weights. As these are not suitable for the COSX implementation, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.");
+	        }
+            }
+	}
+
+	timer_off("CompositeJK: COSX Grid Construction");
 
         // => Overlap Fitting Metric <= //
 
