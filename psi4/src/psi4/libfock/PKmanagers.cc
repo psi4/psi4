@@ -86,8 +86,11 @@ void ijklBasisIterator::next() {
 
 std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                                                       size_t memory, Options& options, bool dowK, double omega_in) {
-    std::string algo = options.get_str("PK_ALGO");
-    std::string subalgo = options.get_str("SCF_SUBTYPE");
+    // read in subalgorithm choice
+    std::string subalgo = "AUTO";
+    if(options["SCF_SUBTYPE"].has_changed()) {
+        subalgo = options.get_str("SCF_SUBTYPE");
+    }
 
     // We introduce another safety factor in the memory, otherwise
     // we are apparently prone to being killed by the OS.
@@ -111,29 +114,43 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
     bool do_reord = false;
     bool do_yosh = false;
     bool do_incore = false;
-    if (subalgo != "INCORE") {
-        if (options["PK_ALGO"].has_changed()) {
-            if (algo == "REORDER") {
-                do_reord = true;
-            } else if (algo == "YOSHIMINE") {
-                do_yosh = true;
-            }
+
+    // specify particular out-of-core subalgorithm...
+    if (subalgo == "OOC_REORDER") {
+	do_reord = true;
+    } else if (subalgo == "OOC_YOSHIMINE") {
+        do_yosh = true;
+
+    // ...or automatically select an out-of-core subalgorithm...
+    } else if (subalgo == "OUT_OF_CORE") {
+        if (algo_factor * memory > pk_size) {
+            do_reord = true;
         } else {
-            if (algo_factor * memory > pk_size) {
-                do_reord = true;
-            } else {
-                do_yosh = true;
-            }
+            do_yosh = true;
         }
-    }
 
-    // throw exception if INCORE requested without enough memory...
-    if (ncorebuf * pk_size > memory && subalgo == "INCORE") {
-        throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+    // ...or force the in-core algorithm...
+    } else if (subalgo == "INCORE") {
+	// throw an exception if in-core is forced, but not enough memory is allocated
+        if (ncorebuf * pk_size > memory) {
+            throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+        } else {
+            do_incore = true;
+	}
 
-    // ..or do INCORE if OUT_OF_CORE not explicitly requested and enough memory
-    } else if (ncorebuf * pk_size < memory && subalgo != "OUT_OF_CORE")  {
-	do_incore = true;
+    // ...or just let psi4 pick any subalgorithm
+    } else if (subalgo == "AUTO") {
+        if (ncorebuf * pk_size < memory) {
+            do_incore = true;
+	} else if (algo_factor * memory > pk_size) {
+            do_reord = true;
+	} else {
+            do_yosh = true;
+	}
+
+    // throw an exception on an invalid SCF_SUBTYPE
+    } else {
+        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The valid choices of SCF_SUBTYPE for SCF_TYPE=PK are AUTO, INCORE, OUT_OF_CORE, OOC_YOSHIMINE, and OOC_REORDER.");
     }
 
     std::shared_ptr<PKManager> pkmgr;

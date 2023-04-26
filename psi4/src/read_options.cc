@@ -1401,11 +1401,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DF_BASIS_SCF", "");
         /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
         options.add_int("PK_MAX_BUCKETS", 500);
-        /*- Select the out-of-core PK subalgorithm to use, given an
-	    out-of-core PK subalgorithm is utilized. The in-core PK subalgorithm
-	    can be forced by setting ``SCF_SUBTYPE=INCORE``.
-	    For debug purposes, selection will be automated later. !expert -*/
-        options.add_str("PK_ALGO", "REORDER", "REORDER YOSHIMINE");
         /*- All densities are considered non symmetric, debug only. !expert -*/
         options.add_bool("PK_ALL_NONSYM", false);
         /*- Max memory per buf for PK algo REORDER, for debug and tuning -*/
@@ -1420,10 +1415,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             depending on available memory or other hardware constraints, allow the best
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
             forcibly select a sub-algorithm (usually only for debugging or profiling).
-            Presently, ``SCF_TYPE=DF`` (including its constituents ``SCF_TYPE=MEM_DF`` 
-	    and ``SCF_TYPE=DISK_DF``) and ``SCF_TYPE=PK``  can have ``INCORE`` 
-	    or ``OUT_OF_CORE`` selected. !expert -*/
-	options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE");
+            Presently, ``SCF_TYPE=MEM_DF`` (including ``SCF_TYPE=DF`` using the in-core subalgorithm)
+	    can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
+	    ``OUT_OF_CORE``, ``OOC_YOSHIMINE``, and ``OOC_REORDER`` selected. !expert -*/
+	options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE OOC_YOSHIMINE OOC_REORDER");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
         /*- Memory safety factor for allocating JK -*/
