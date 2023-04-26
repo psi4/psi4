@@ -223,7 +223,7 @@ void CompositeJK::common_init() {
 
         computed_shells_per_iter_["Triplets"] = {};
         
-	timer_off("CompositeJK: DIRECTDFJ Coulomb Metric");
+        timer_off("CompositeJK: DIRECTDFJ Coulomb Metric");
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     }
@@ -299,21 +299,21 @@ void CompositeJK::common_init() {
             const auto w = init_block->w();
             for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-	            throw PSIEXCEPTION("The definition of the current initial grid includes negative weights. As these are not suitable for the COSX implementation, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.");
-	        }
+                    throw PSIEXCEPTION("The definition of the current initial grid includes negative weights. As these are not suitable for the COSX implementation, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.");
+                }
             }
-	}
+        }
 
         for (const auto &final_block : grid_final_->blocks()) {
             const auto w = final_block->w();
             for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-	            throw PSIEXCEPTION("The definition of the current final grid includes negative weights. As these are not suitable for the COSX implementation, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.");
-	        }
+                    throw PSIEXCEPTION("The definition of the current final grid includes negative weights. As these are not suitable for the COSX implementation, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.");
+                }
             }
-	}
+        }
 
-	timer_off("CompositeJK: COSX Grid Construction");
+        timer_off("CompositeJK: COSX Grid Construction");
 
         // => Overlap Fitting Metric <= //
 
@@ -477,7 +477,7 @@ void CompositeJK::compute_JK() {
 
         incfock_setup();
         
-	timer_off("CompositeJK: INCFOCK Preprocessing");
+        timer_off("CompositeJK: INCFOCK Preprocessing");
     } else {
         D_ref_ = D_ao_;
         zero();
@@ -487,7 +487,7 @@ void CompositeJK::compute_JK() {
     if (density_screening_) {
         for (auto eri_computer : eri_computers_["4-Center"]) {
             eri_computer->update_density(D_ref_);
-	}
+        }
     }
 
     // => Perform matrix calculations <= //
@@ -498,8 +498,8 @@ void CompositeJK::compute_JK() {
 
         // Direct DF-J
         if (j_type_ == "DIRECTDFJ") {
-	    build_DirectDFJ(D_ref_, J_ao_);
-	}
+            build_DirectDFJ(D_ref_, J_ao_);
+        }
 
         timer_off("CompositeJK: J");
     }
@@ -510,13 +510,13 @@ void CompositeJK::compute_JK() {
 
         // LinK
         if (k_type_ == "LINK") {
-	    build_linK(D_ref_, K_ao_);
+            build_linK(D_ref_, K_ao_);
         // COSX
         } else if (k_type_ == "COSX") {
-	    build_COSK(D_ref_, K_ao_);
+            build_COSK(D_ref_, K_ao_);
         }
 
-	timer_off("CompositeJK: K");
+        timer_off("CompositeJK: K");
     }
 
     // => Finalize Incremental Fock if required <= //
@@ -1370,7 +1370,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // significant TAU shells determined from sparsity of the density matrix
         // i.e. KAPPA -> TAU sparsity. Refered to by Neese as a "p-junction"
         // as discussed in section 3.1 of DOI 10.1016/j.chemphys.2008.10.036
-	std::vector<int> shell_map_tau;
+        std::vector<int> shell_map_tau;
 
         for(size_t TAU = 0; TAU < ns_block_all; TAU++) {
             for(size_t KAPPA_ind = 0; KAPPA_ind < ns_block; KAPPA_ind++) {
@@ -1463,7 +1463,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         // => G Matrix <= //
 
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 7
-	// algorithm can be found in Scheme 1 of DOI 10.1016/j.chemphys.2008.10.036
+        // algorithm can be found in Scheme 1 of DOI 10.1016/j.chemphys.2008.10.036
         std::vector<SharedMatrix> G_block(njk);
         for(size_t jki = 0; jki < njk; jki++) {
             G_block[jki] = std::make_shared<Matrix>(nbf_block_all, npoints_block);
