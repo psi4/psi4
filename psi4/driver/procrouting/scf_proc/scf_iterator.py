@@ -214,9 +214,17 @@ def scf_initialize(self):
 
         core.print_out("\n  ==> Pre-Iterations <==\n\n")
 
+        # disable scf_subtype for SAD guess
+        scf_subtype_cache = core.get_local_option("SCF", "SCF_SUBTYPE")
+        core.set_local_option("SCF", "SCF_SUBTYPE", "AUTO")
+
         core.timer_on("HF: Guess")
         self.guess()
         core.timer_off("HF: Guess")
+
+        # re-enable scf_subtype after SAD guess is done
+        core.set_local_option("SCF", "SCF_SUBTYPE", scf_subtype_cache)
+
         # Print out initial docc/socc/etc data
         if self.get_print():                    
             lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['SAD']
