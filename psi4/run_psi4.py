@@ -83,6 +83,8 @@ parser.add_argument("--mdi", default=None,
                     help="Sets MDI configuration options")
 parser.add_argument("--loglevel", default=20,
                     help="Sets logging level: WARN=30, INFO=20, DEBUG=10.")
+parser.add_argument("--inherit-loglevel", action='store_true',
+                    help="Takes no action on logging level, not even setting the default, thereby inheriting from existing logger.")
 
 # For plugins
 parser.add_argument("--plugin-name", help="""\
@@ -225,18 +227,23 @@ args["input"] = os.path.normpath(args["input"])
 # Setup scratch_messy
 _clean_functions = [psi4.core.clean, psi4.extras.clean_numpy_files]
 
-# Setup outfile
-if args["append"] is None:
-    args["append"] = False
-if (args["output"] != "stdout") and (args["qcschema"] is False):
-    psi4.set_output_file(args["output"], args["append"], loglevel=int(args["loglevel"]))
-
-# Set a few options
+# Set a few options (silently)
 psi4.core.set_num_threads(int(args["nthread"]), quiet=True)
 psi4.set_memory(args["memory"], quiet=True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
+
+# Setup outfile
+if args["append"] is None:
+    args["append"] = False
+if args["inherit-loglevel"] is None:
+    args["inherit-loglevel"] = False
 if args["qcschema"] is False:
-    psi4.print_header()
+    psi4.set_output_file(
+        args["output"],
+        args["append"],
+        loglevel=int(args["loglevel"]),
+        inherit_loglevel=args["inherit-loglevel"])
+
 start_time = datetime.datetime.now()
 
 # Initialize MDI

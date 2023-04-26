@@ -1325,13 +1325,21 @@ PYBIND11_MODULE(core, core) {
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
-        auto mode = std::ostream::trunc;
-        outfile = std::make_shared<PsiOutStream>(ofname, mode);
+        if (ofname == "stdout") {
+            outfile = std::make_shared<PsiOutStream>();
+        } else {
+            auto mode = std::ostream::trunc;
+            outfile = std::make_shared<PsiOutStream>(ofname, mode);
+        }
         outfile_name = ofname;
     });
     core.def("set_output_file", [](const std::string ofname, bool append) {
-        auto mode = append ? std::ostream::app : std::ostream::trunc;
-        outfile = std::make_shared<PsiOutStream>(ofname, mode);
+        if (ofname == "stdout") {
+            outfile = std::make_shared<PsiOutStream>();
+        } else {
+            auto mode = append ? std::ostream::app : std::ostream::trunc;
+            outfile = std::make_shared<PsiOutStream>(ofname, mode);
+        }
         outfile_name = ofname;
     }, "ofname"_a, "append"_a = false, "Set the name for output file; prefer :func:`~psi4.set_output_file`");
     core.def("get_output_file", []() { return outfile_name; }, "Returns output file name (stem + suffix, no directory). 'stdout'.");

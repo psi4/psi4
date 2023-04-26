@@ -30,12 +30,13 @@ import atexit
 import datetime
 import itertools
 import os
-from typing import List, Union
+from typing import List, Optional, Union
 from pathlib import Path
 
 from qcelemental.util import which, which_import
 
 from . import core
+from .header import print_header as _print_header
 
 # Numpy place holder for files and cleanup
 numpy_files = []
@@ -231,7 +232,14 @@ def test(extent: str = "full", extras: List = None) -> int:
     return retcode
 
 
-def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, execute: bool = True) -> Path:
+def set_output_file(
+    ofile: str,
+    append: bool = False,
+    *,
+    loglevel: int = 20,
+    execute: bool = True,
+    print_header: Optional[bool] = None,
+    inherit_loglevel: bool = False) -> Path:
     """Set the name for output and logging files.
 
     Parameters
@@ -244,6 +252,11 @@ def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, exe
         The criticality level at which to log. 30 for WARN (Python default), 20 for INFO, 10 for DEBUG
     execute
         Do set ``ofile`` via :py:func:`psi4.core.set_output_file` and add the logger, rather than just returning ``ofile`` path.
+    print_header
+        Whether to write the Psi4 header to the ASCII output file. (Only applicable if ``execute=True``.) By default,
+        writes if file is truncated (``append=False``) but not if appended.
+    inherit_loglevel
+        If true, do not set loglevel even to default value. Instead, allow level to be inherited from existing logger.
 
     Returns
     -------
@@ -262,7 +275,8 @@ def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, exe
     # Get the custom logger
     import logging
     from psi4 import logger
-    logger.setLevel(loglevel)
+    if not inherit_loglevel:
+        logger.setLevel(loglevel)
 
     # Create formatters
     # * detailed:  example: 2019-11-20:01:13:46,811 DEBUG    [psi4.driver.task_base:156]
@@ -278,6 +292,8 @@ def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, exe
 
     if execute:
         core.set_output_file(str(out), append)
+        if print_header is True or (print_header is None and not append):
+            _print_header()
         # Warning: baseFilename is not part of the documented API for the logging module and could change.
         filenames = [handle.baseFilename for handle in logger.handlers]
         if not f_handler.baseFilename in filenames:
