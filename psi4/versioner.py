@@ -183,7 +183,7 @@ def reconcile_and_compute_version_output(quiet=False):
         sys.exit()
 
     cwd = os.path.dirname(os.path.abspath(__file__))
-    if is_git_repo(cwd=cwd, extraneous_toplevel_patterns=["staged-recipes"]):
+    if is_git_repo(cwd=cwd, extraneous_toplevel_patterns=["staged-recipes", "feedstock_root"]):
         res.update(collect_version_input_from_git())
 
         # establish the default response
