@@ -352,8 +352,8 @@ void PKWorker::first_quartet(size_t i) {
     bufidx_ = i;
     offset_ = bufidx_ * buf_size_;
     initialize_task();
-    #pragma omp critical
-    outfile->Printf("thread %d, offset is %lu and max_idx is %lu\n",omp_get_thread_num(),offset_,max_idx_);
+    // DEBUG    #pragma omp critical
+    // DEBUG    outfile->Printf("thread %d, offset is %lu and max_idx is %lu\n",omp_get_thread_num(),offset_,max_idx_);
     // DEBUG    std::cout << "thread" << omp_get_thread_num() << ", offset is " << offset_ << " and max_idx is " <<
     // max_idx_ << std::endl;
     shells_left_ = false;
@@ -383,7 +383,7 @@ bool PKWorker::is_shell_relevant() {
     // indices are too high ?
 
     if (low_ijkl > max_idx_ && low_ikjl > max_idx_ && low_iljk > max_idx_) {
-        outfile->Printf("Rejecting1 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+        // DEBUG        outfile->Printf("Rejecting1 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
         return false;
     }
 
@@ -407,7 +407,7 @@ bool PKWorker::is_shell_relevant() {
     // indices are too low ?
 
     if (hi_ijkl < offset_ && hi_ikjl < offset_ && hi_iljk < offset_) {
-        outfile->Printf("Rejecting2 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+        // DEBUG        outfile->Printf("Accepting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
         return false;
     }
 
@@ -429,12 +429,11 @@ bool PKWorker::is_shell_relevant() {
 
         if (bJ || bK1 || bK2) {
             // This shell should be computed by the present thread.
-            outfile->Printf("Accepting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+            //outfile->Printf("Accepting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
             return true;
         }
     }
-
-    outfile->Printf("Rejecting shell3 <%d %d|%d %d>\n",P_,Q_,R_,S_);
+    // DEBUG    outfile->Printf("Rejecting shell3 <%d %d|%d %d>\n",P_,Q_,R_,S_);
     return false;
 }
 
