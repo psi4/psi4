@@ -48,7 +48,7 @@
 namespace psi {
 
 class AIOHandler;
-class ERISieve;
+class TwoBodyAOInt;
 class BasisSet;
 class GaussianShell;
 
@@ -59,10 +59,10 @@ class AOShellSieveIterator;
 class AOFctSieveIterator;
 
 typedef std::unique_ptr<AOShellSieveIterator> UniqueAOShellIt;
-typedef std::shared_ptr<ERISieve> SharedSieve;
+typedef std::shared_ptr<TwoBodyAOInt> SharedSieve;
 
 /** AOShellSieveIterator provides an iterator over significant shell
- * quartets using an ERISieve object.
+ * quartets using a TwoBodyAOInt object.
  */
 
 class AOShellSieveIterator {
@@ -105,13 +105,13 @@ class AOShellSieveIterator {
 };
 
 /** AOFctSieveIterator: provides an iterator over significant functions for
- * a specific shell quartet, using an ERISieve object.
+ * a specific shell quartet, using a TwoBodyAOInt object.
  */
 
 class AOFctSieveIterator {
    private:
     // Sieve
-    std::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<TwoBodyAOInt> sieve_;
     // Integral indices
     int i_, j_, k_, l_;
     // Relative integral indices within shells
@@ -145,7 +145,7 @@ class AOFctSieveIterator {
    public:
     /// Constructor
     AOFctSieveIterator(const GaussianShell& s1, const GaussianShell& s2, const GaussianShell& s3,
-                       const GaussianShell& s4, std::shared_ptr<ERISieve> siev);
+                       const GaussianShell& s4, std::shared_ptr<TwoBodyAOInt> siev);
 
     /// Iterator functions
     void first();

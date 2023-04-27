@@ -40,7 +40,6 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/aiohandler.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -185,15 +184,13 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
     pk_pairs_ = (size_t)nbf_ * ((size_t)nbf_ + 1) / 2;
     pk_size_ = pk_pairs_ * (pk_pairs_ + 1) / 2;
     cutoff_ = 1.0e-12;
-    do_csam_ = false;
     if (options["INTS_TOLERANCE"].has_changed()) {
         cutoff_ = options.get_double("INTS_TOLERANCE");
     }
-    if (options["SCREENING"].has_changed()) {
-        do_csam_ = (options.get_str("SCREENING") == "CSAM");
-    }
     ntasks_ = 0;
-    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, do_csam_);
+
+    auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+    sieve_ = std::shared_ptr<TwoBodyAOInt>(factory->eri());
 
     if (memory_ < pk_pairs_) {
         throw PSIEXCEPTION("Not enough memory for PK algorithm\n");
@@ -259,7 +256,7 @@ void PKManager::compute_integrals(bool wK) {
         thread = omp_get_thread_num();
 #endif
         SharedPKWrkr buf = get_buffer();
-        // DEBUG        outfile->Printf("Starting task %d\n", i);
+        outfile->Printf("Starting task %d\n", i);
         if (!wK) {  // Computing usual integrals
             for (buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
                 size_t P = buf->P();
@@ -278,15 +275,12 @@ void PKManager::compute_integrals(bool wK) {
                     std::swap(P, R);
                     std::swap(Q, S);
                 }
-                // DEBUG#    pragma omp critical
-                // DEBUG            outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);
+                #pragma omp critical
+                outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);
                 tb[thread]->compute_shell(P, Q, R, S);
                 integrals_buffering(tb[thread]->buffer(), P, Q, R, S);
-                // DEBUG#pragma omp critical
-                // DEBUG              {
-                // DEBUG                outfile->Printf("After buffering\n");
-                // DEBUG                debug_wrt();
-                // DEBUG              }
+                #pragma omp critical
+                outfile->Printf("After buffering\n");
                 ++nshqu;
             }
         } else {  // Computing range-separated integrals
@@ -1087,7 +1081,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
         }
     }
 
-    // Loop over significant shell pairs from ERISieve
+    // Loop over significant shell pairs from TwoBodyAOInt 
     const auto& sh_pairs = tb[0]->shell_pairs();
     size_t npairs = sh_pairs.size();
     // We avoid having one more branch in the loop by moving it outside
