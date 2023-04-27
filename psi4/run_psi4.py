@@ -235,14 +235,14 @@ psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 # Setup outfile
 if args["append"] is None:
     args["append"] = False
-if args["inherit-loglevel"] is None:
-    args["inherit-loglevel"] = False
+if args["inherit_loglevel"] is None:
+    args["inherit_loglevel"] = False
 if args["qcschema"] is False:
     psi4.set_output_file(
         args["output"],
         args["append"],
         loglevel=int(args["loglevel"]),
-        inherit_loglevel=args["inherit-loglevel"])
+        inherit_loglevel=args["inherit_loglevel"])
 
 start_time = datetime.datetime.now()
 
