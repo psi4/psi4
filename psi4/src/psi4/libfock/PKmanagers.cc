@@ -256,7 +256,7 @@ void PKManager::compute_integrals(bool wK) {
         thread = omp_get_thread_num();
 #endif
         SharedPKWrkr buf = get_buffer();
-        outfile->Printf("Starting task %d\n", i);
+        // DEBUG        outfile->Printf("Starting task %d\n", i);
         if (!wK) {  // Computing usual integrals
             for (buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
                 size_t P = buf->P();
@@ -275,12 +275,15 @@ void PKManager::compute_integrals(bool wK) {
                     std::swap(P, R);
                     std::swap(Q, S);
                 }
-                #pragma omp critical
-                outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);
+                // DEBUG#    pragma omp critical
+                // DEBUG            outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);        
                 tb[thread]->compute_shell(P, Q, R, S);
                 integrals_buffering(tb[thread]->buffer(), P, Q, R, S);
-                #pragma omp critical
-                outfile->Printf("After buffering\n");
+                // DEBUG#pragma omp critical
+                // DEBUG              {
+                // DEBUG                outfile->Printf("After buffering\n");
+                // DEBUG                debug_wrt();
+                // DEBUG              }                
                 ++nshqu;
             }
         } else {  // Computing range-separated integrals
