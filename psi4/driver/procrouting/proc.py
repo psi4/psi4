@@ -1623,7 +1623,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             c1_molecule.fix_com(True)
             c1_molecule.update_geometry()
         else:
-            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE on non-Cartesian molecules.")
+            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE or external potentials on non-Cartesian molecules.")
 
         scf_molecule = c1_molecule
         core.print_out("""  PE does not make use of molecular symmetry: """
