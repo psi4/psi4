@@ -276,14 +276,14 @@ void PKManager::compute_integrals(bool wK) {
                     std::swap(Q, S);
                 }
                 // DEBUG#    pragma omp critical
-                // DEBUG            outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);        
+                // DEBUG            outfile->Printf("Computing shell <%d %d|%d %d>\n",P,Q,R,S);
                 tb[thread]->compute_shell(P, Q, R, S);
                 integrals_buffering(tb[thread]->buffer(), P, Q, R, S);
                 // DEBUG#pragma omp critical
                 // DEBUG              {
                 // DEBUG                outfile->Printf("After buffering\n");
                 // DEBUG                debug_wrt();
-                // DEBUG              }                
+                // DEBUG              }
                 ++nshqu;
             }
         } else {  // Computing range-separated integrals
@@ -1084,7 +1084,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
         }
     }
 
-    // Loop over significant shell pairs from TwoBodyAOInt 
+    // Loop over significant shell pairs from TwoBodyAOInt
     const auto& sh_pairs = tb[0]->shell_pairs();
     size_t npairs = sh_pairs.size();
     // We avoid having one more branch in the loop by moving it outside
