@@ -102,6 +102,4 @@ if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
 
 # Create a custom logger
 import logging
-root = logging.getLogger()  # create root
-root.setLevel("ERROR")
 logger = logging.getLogger(__name__)  # create initial psi4 from root to be configured later in extras
