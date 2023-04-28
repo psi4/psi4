@@ -51,8 +51,8 @@ using namespace psi;
 
 namespace psi {
 
-CDJK::CDJK(std::shared_ptr<BasisSet> primary, double cholesky_tolerance)
-    : DiskDFJK(primary, primary), cholesky_tolerance_(cholesky_tolerance) {}
+CDJK::CDJK(std::shared_ptr<BasisSet> primary, Options& options, double cholesky_tolerance)
+    : DiskDFJK(primary, primary, options), cholesky_tolerance_(cholesky_tolerance) {}
 CDJK::~CDJK() {}
 void CDJK::initialize_JK_disk() { throw PsiException("Disk algorithm for CD JK not implemented.", __FILE__, __LINE__); }
 size_t CDJK::memory_estimate() {

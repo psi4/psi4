@@ -52,8 +52,8 @@ using namespace psi;
 
 namespace psi {
 
-DiskDFJK::DiskDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
-    : JK(primary), auxiliary_(auxiliary) {
+DiskDFJK::DiskDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
+    : JK(primary), auxiliary_(auxiliary), options_(options) {
     common_init();
 }
 DiskDFJK::~DiskDFJK() {}
@@ -65,6 +65,7 @@ void DiskDFJK::common_init() {
     df_ints_io_ = "NONE";
     condition_ = 1.0E-12;
     unit_ = PSIF_DFSCF_BJ;
+    if (options_["SCF_SUBTYPE"].has_changed()) set_subalgo(options_.get_str("SCF_SUBTYPE"));
     is_core_ = true;
     psio_ = PSIO::shared_object();
     // We need to make an integral object so we can figure out memory requirements from the sieve
@@ -285,8 +286,37 @@ void DiskDFJK::print_header() const {
     }
 }
 bool DiskDFJK::is_core() {
-    return memory_estimate() < memory_;
+    auto do_core = is_core_;
+
+    // determine do_core either automatically...
+    if (subalgo_ == "AUTO") {
+        do_core = memory_estimate() < memory_;
+
+    // .. or forcibly disable do_core if user specifies ...
+    } else if (subalgo_ == "OUT_OF_CORE") {
+        if (print_ > 0) {
+            outfile->Printf("  SCF_SUBTYPE = OUT_OF_CORE selected. Out-of-core DISK_DF algorithm will be used.\n\n");
+        }
+
+        do_core = false;
+
+   // .. or force do_core if user specifies
+    } else if (subalgo_ == "INCORE") {
+        if (memory_estimate() > memory_) {
+            throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+        } else {
+            if (print_ > 0) {
+                outfile->Printf("  SCF_SUBTYPE=INCORE selected. In-core DISK_DF algorithm will be used.\n\n");
+            }
+            do_core = true;
+        }
+    } else {
+        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
+    }
+
+    return do_core;
 }
+
 size_t DiskDFJK::memory_temp() const {
     size_t mem = 0L;
 
