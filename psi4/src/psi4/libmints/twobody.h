@@ -216,7 +216,7 @@ class PSI_API TwoBodyAOInt {
         return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
     }
     /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
-    inline bool function_pair_significant(int m, int n) {
+    inline bool function_pair_significant(const int m, const int n) {
         return function_pair_values_[m * nbf_ + n] * max_integral_ >= screening_threshold_squared_;
     }
     /// Is the integral (mn|rs) significant according to sieve? (no restriction on mnrs order)
