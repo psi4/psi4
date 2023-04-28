@@ -179,6 +179,10 @@ class PSI_API ERISieve {
 
    public:
     /// Constructor, basis set and first sieve cutoff
+    PSI_DEPRECATED(
+        "ERISieve is deprecated in favor of TwoBodyAOInt, and "
+         "will be fully be removed as of Psi4 v1.9. "
+    )
     ERISieve(std::shared_ptr<BasisSet> primary, double sieve = 0.0, bool do_csam = false);
     /// Destructor, frees memory
     virtual ~ERISieve();
@@ -207,6 +211,10 @@ class PSI_API ERISieve {
     /// Is the shell quartet (MN|RS) significant according to sieve? (no restriction on MNRS order)
 
     // inline bool shell_significant(int M, int N, int R, int S) {
+    PSI_DEPRECATED(
+        "ERISieve is deprecated in favor of TwoBodyAOInt, and "
+         "will be fully be removed as of Psi4 v1.9. "
+    )
     bool shell_significant(int M, int N, int R, int S) {
         bool schwarz_bound =
             shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] >= sieve2_;
