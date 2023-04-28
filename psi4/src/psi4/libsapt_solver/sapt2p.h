@@ -168,8 +168,8 @@ class SAPTDIIS {
     int curr_vec_;
     int num_vecs_;
 
-    char *get_err_label(int);
-    char *get_vec_label(int);
+    std::string get_err_label(const int64_t);
+    std::string get_vec_label(const int64_t);
 
    protected:
     std::shared_ptr<PSIO> psio_;
