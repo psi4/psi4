@@ -220,7 +220,7 @@ class PSI_API TwoBodyAOInt {
         return function_pair_values_[m * nbf_ + n] * max_integral_ >= screening_threshold_squared_;
     }
     /// Is the integral (mn|rs) significant according to sieve? (no restriction on mnrs order)
-    inline bool function_significant(int m, int n, int r, int s) {
+    inline bool function_significant(const int m, const int n, const int r, const int s) {
         return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s] >= screening_threshold_squared_;
     }
     /// Return max(PQ|PQ)
