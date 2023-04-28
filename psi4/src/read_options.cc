@@ -1415,10 +1415,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             depending on available memory or other hardware constraints, allow the best
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
             forcibly select a sub-algorithm (usually only for debugging or profiling).
-            Presently, ``SCF_TYPE=MEM_DF`` (including ``SCF_TYPE=DF`` using the in-core subalgorithm)
-	    can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
-	    ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected. !expert -*/
-	options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
+            Presently, ``SCF_SUBTYPE=DF``, ``SCF_SUBTYPE=MEM_DF``, and ``SCF_SUBTYPE=DISK_DF`` 
+	        can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
+	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected. !expert -*/
+	    options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
         /*- Memory safety factor for allocating JK -*/
