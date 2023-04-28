@@ -407,7 +407,7 @@ bool PKWorker::is_shell_relevant() {
     // indices are too low ?
 
     if (hi_ijkl < offset_ && hi_ikjl < offset_ && hi_iljk < offset_) {
-        // DEBUG        outfile->Printf("Accepting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+        // DEBUG        outfile->Printf("Rejecting2 shell <%d %d|%d %d>\n",P_,Q_,R_,S_);        
         return false;
     }
 
@@ -429,7 +429,7 @@ bool PKWorker::is_shell_relevant() {
 
         if (bJ || bK1 || bK2) {
             // This shell should be computed by the present thread.
-            //outfile->Printf("Accepting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);
+            // DEBUG        outfile->Printf("Accepting shell <%d %d|%d %d>\n",P_,Q_,R_,S_);            
             return true;
         }
     }
