@@ -93,9 +93,9 @@ class BasisSet;
  *
  */
 
-class __attribute__((visibility("default"))) __attribute((deprecated(
+class __attribute__((visibility("default"))) __attribute__((deprecated(
     "ERISieve is deprecated in favor of TwoBodyAOInt, and "
-    "will be fully be removed as of Psi4 v1.9. "
+    "will be fully be removed as soon as Psi4 v1.9 releases. "
 ))) ERISieve {
    protected:
     /// Debug flag (defaults to 0)
