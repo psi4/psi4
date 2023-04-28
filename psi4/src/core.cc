@@ -553,6 +553,12 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
     if (module == "SCF" && key == "DIIS_MIN_VECS") {
         py_psi_print_out("WARNING!\n\tRemove keyword DIIS_MIN_VECS! This keyword does nothing. Using it will raise an error in v1.7.\n");
     }
+    if (module == "SCF" && key == "PK_NO_INCORE") {
+        py_psi_print_out("WARNING!\n\tRemove keyword PK_NO_INCORE! PK_NO_INCORE has been replaced by the SCF_SUBTYPE=NO_INCORE option. Using PK_NO_INCORE will raise an error in v1.8.\n");
+    }
+    if (module == "SCF" && key == "PK_ALGO") {
+        py_psi_print_out("WARNING!\n\tRemove keyword PK_ALGO! PK_ALGO has been replaced by the SCF_SUBTYPE=YOSHIMINE_OUT_OF_CORE and REORDER_OUT_OF_CORE options. Using PK_ALGO will raise an error in v1.8.\n");
+    }
 }
 
 Options& py_psi_get_options() { return Process::environment.options; }

@@ -214,9 +214,16 @@ def scf_initialize(self):
 
         core.print_out("\n  ==> Pre-Iterations <==\n\n")
 
+        # force SCF_SUBTYPE to AUTO during SCF guess
+        optstash = p4util.OptionsState(["SCF", "SCF_SUBTYPE"])
+        core.set_local_option("SCF", "SCF_SUBTYPE", "AUTO")
+
         core.timer_on("HF: Guess")
         self.guess()
         core.timer_off("HF: Guess")
+
+        optstash.restore()
+
         # Print out initial docc/socc/etc data
         if self.get_print():                    
             lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['SAD']
