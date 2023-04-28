@@ -37,7 +37,7 @@ Also, many Python extensions to core classes:
  - JK (constructor)
  - VBase (grid)
  - OEProp (avail prop)
-
+ - ERISieve (constructor, shell_significant)
 """
 
 __all__ = [
@@ -1553,3 +1553,41 @@ def _core_triplet(A, B, C, transA, transB, transC):
 
 core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
+
+@staticmethod
+def _core_erisieve_build(
+        orbital_basis: core.BasisSet,
+        cutoff: float,
+        do_csam: bool
+    ) -> core.ERISieve:
+    """
+    Constructs a Psi4 ERISieve object from an input basis.
+
+    Parameters
+    ----------
+    orbital_basis
+        Orbital basis to use in the ERISieve object.
+    cutoff
+        Integral cutoff threshold to use for sieve screening.
+    do_csam
+        Use CSAM screening? If True, CSAM screening is used;
+        else, Schwarz screening is used.
+
+    Returns
+    -------
+    ERISieve
+        Initialized ERISieve object.
+
+    Example
+    -------
+    >>> sieve = psi4.core.ERISieve.build(bas, cutoff, csam)
+
+    """
+    warnings.warn(
+        "`ERISieve` is deprecated in favor of `TwoBodyAOInt`, and will be removed as soon as Psi4 v1.9 is released.\n",
+        category=FutureWarning,
+        stacklevel=2)
+
+    return core.ERISieve(orbital_basis, cutoff, do_csam)
+
+core.ERISieve.build = _core_erisieve_build
