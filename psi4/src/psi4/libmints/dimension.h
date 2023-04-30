@@ -81,12 +81,23 @@ class PSI_API Dimension {
 
     /// @brief Access a block number at a partcular index. Not bounds-checked.
     int& operator[](const size_t i) { return blocks_[i]; }
+
+    /// @brief Access a block number at a partcular index. Not bounds-checked.
     const int& operator[](const size_t i) const { return blocks_[i]; }
+    
+    /// @brief Access a block number at a partcular index. Not bounds-checked.
     const std::vector<int>& blocks() const { return blocks_; }
 
-    /// Casting operator to int*
+    /// @brief Casting operator to int*
+    PSI_DEPRECATED(
+        "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.8 will be the "
+        "last release to have them.")
     operator int*() { return blocks_.data(); }
-    /// Casting operator to const int*
+
+    /// @brief Casting operator to const int*
+    PSI_DEPRECATED(
+        "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.8 will be the "
+        "last release to have them.")
     operator const int*() const { return blocks_.data(); }
 
     /// Return the sum of constituent dimensions
