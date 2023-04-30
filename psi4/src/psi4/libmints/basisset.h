@@ -42,6 +42,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <type_traits>
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
@@ -416,15 +417,21 @@ class PSI_API BasisSet {
         }
     }
 
-    /// @brief
-    /// @tparam T
-    /// @param container
-    /// @param value
-    /// @return
+    /// @brief Determine if a particular value is abscent from an std::vector. If the type is floating-point, make sure
+    /// it is a double and use a fuzzy equality to account for numerical noise.
+    /// @tparam T : Type of the value. If floating-point, it must be a double.
+    /// @param container : Containter to search in
+    /// @param value : Value to look for
+    /// @return : true if none of the elements of container are equal to value
     template <typename T>
     bool none_of_equal(const std::vector<T> &container, const T value) const {
+        // The equality threshold in fpeq is set for the expected precision of double. Other FP types could be
+        // implemented in the future if needed, but this function should refuse to process them until then.
+        // Without this check implicit conversion rules could silently promote eg. a float to double when calling fpeq.
+        static_assert(false == (std::is_floating_point<T>::value && !std::is_same<T, double>::value),
+                      "Support for FP types other than double is not implemented in none_of_equal");
         return std::none_of(container.cbegin(), container.cend(), [value](const T X) {
-            if constexpr (std::is_floating_point_v(T)) {
+            if constexpr (std::is_floating_point<T>::value) {
                 return fpeq(X, value);
             } else {
                 return X == value;
