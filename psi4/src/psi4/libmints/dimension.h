@@ -43,29 +43,40 @@ class PSI_API Dimension {
     std::vector<int> blocks_;
 
    public:
+    /// @brief Constructs an empty Dimension object, with the name initialized to "(empty)"
     Dimension();
+
+    /// @brief Constructs a Dimension object with a specified number of block numbers and optionally a name. If no name
+    /// is given it will be a zero-length string.
+    /// @param n : number of blocks
+    /// @param name : (optional) name associated with this Dimension object
     Dimension(int n, const std::string& name = "");
+
+    /// @brief Constructs a Dimension object from an std::vector<int> object, leaving the name a zero-length string.
+    /// @param other : object to copy the block numbers from
     Dimension(const std::vector<int>& other);
 
-    /// Assignment operator, this one can be very dangerous
+    /// @brief Assignment operator, this one can be very dangerous
     Dimension& operator=(const int* other);
 
     Dimension& operator+=(const Dimension& b);
     Dimension& operator-=(const Dimension& b);
 
-    /// Re-initializes the object
+    /// @brief Re-initializes the object. If no name is given it will be a zero-length string.
+    /// @param n : number of blocks
+    /// @param name : (optional) name associated with this Dimension object
     void init(int n, const std::string& name = "");
 
-    /// Return the rank
+    /// @brief Return the rank (number of block numbers)
     int n() const { return static_cast<int>(blocks_.size()); }
 
-    /// Return the name of the dimension
+    /// @brief Return the name of the Dimension object
     const std::string& name() const { return name_; }
 
-    /// Set the name of the dimension
+    /// @brief Set the name of the Dimension object
     void set_name(const std::string& name) { name_ = name; }
 
-    /// Blocks access
+    /// @brief Access a block number at a partcular index. Not bounds-checked.
     int& operator[](int i) { return blocks_[i]; }
     const int& operator[](int i) const { return blocks_[i]; }
     const std::vector<int>& blocks() const { return blocks_; }
