@@ -430,7 +430,7 @@ class PSI_API BasisSet {
         // Without this check implicit conversion rules could silently promote eg. a float to double when calling fpeq.
         static_assert(false == (std::is_floating_point<T>::value && !std::is_same<T, double>::value),
                       "Support for FP types other than double is not implemented in none_of_equal");
-        return std::none_of(container.cbegin(), container.cend(), [value](const T X) {
+        return std::none_of(container.cbegin(), container.cend(), [value, this](const T X) {
             if constexpr (std::is_floating_point<T>::value) {
                 return fpeq(X, value);
             } else {
