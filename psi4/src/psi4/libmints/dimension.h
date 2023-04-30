@@ -37,6 +37,8 @@
 
 namespace psi {
 
+/// @brief Dimension object
+/// \ingroup MINTS
 class PSI_API Dimension {
    private:
     std::string name_;
