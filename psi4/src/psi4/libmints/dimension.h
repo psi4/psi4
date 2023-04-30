@@ -50,7 +50,7 @@ class PSI_API Dimension {
     /// is given it will be a zero-length string.
     /// @param n : number of blocks
     /// @param name : (optional) name associated with this Dimension object
-    Dimension(int n, const std::string& name = "");
+    Dimension(const size_t n, const std::string& name = "");
 
     /// @brief Constructs a Dimension object from an std::vector<int> object, leaving the name a zero-length string.
     /// @param other : object to copy the block numbers from
@@ -68,7 +68,7 @@ class PSI_API Dimension {
     /// @brief Re-initializes the object. If no name is given it will be a zero-length string.
     /// @param n : number of blocks
     /// @param name : (optional) name associated with this Dimension object
-    void init(int n, const std::string& name = "");
+    void init(const size_t n, const std::string& name = "");
 
     /// @brief Return the rank (number of block numbers)
     int n() const { return static_cast<int>(blocks_.size()); }
@@ -80,8 +80,8 @@ class PSI_API Dimension {
     void set_name(const std::string& name) { name_ = name; }
 
     /// @brief Access a block number at a partcular index. Not bounds-checked.
-    int& operator[](int i) { return blocks_[i]; }
-    const int& operator[](int i) const { return blocks_[i]; }
+    int& operator[](const size_t i) { return blocks_[i]; }
+    const int& operator[](const size_t i) const { return blocks_[i]; }
     const std::vector<int>& blocks() const { return blocks_; }
 
     /// Casting operator to int*
@@ -102,8 +102,8 @@ class PSI_API Dimension {
     void print() const;
 
     // Only used for python
-    const int& get(int i) const { return blocks_[i]; }
-    void set(int i, int val) { blocks_[i] = val; }
+    const int& get(const size_t i) const { return blocks_[i]; }
+    void set(const size_t i, int val) { blocks_[i] = val; }
 
     PSI_API friend bool operator==(const Dimension& a, const Dimension& b);
     PSI_API friend bool operator!=(const Dimension& a, const Dimension& b);
