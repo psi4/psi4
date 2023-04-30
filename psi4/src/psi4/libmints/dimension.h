@@ -71,7 +71,7 @@ class PSI_API Dimension {
     void init(const size_t n, const std::string& name = "");
 
     /// @brief Return the rank (number of block numbers)
-    int n() const { return static_cast<int>(blocks_.size()); }
+    int n() const { return blocks_.size(); }
 
     /// @brief Return the name of the Dimension object
     const std::string& name() const { return name_; }
