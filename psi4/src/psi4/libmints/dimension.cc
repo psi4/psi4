@@ -50,7 +50,7 @@ int Dimension::sum() const { return std::accumulate(blocks_.begin(), blocks_.end
 int Dimension::max() const { return *(std::max_element(blocks_.begin(), blocks_.end())); }
 
 void Dimension::zero() { std::fill(blocks_.begin(), blocks_.end(), 0); }
-void Dimension::fill(int v) { std::fill(blocks_.begin(), blocks_.end(), v); }
+void Dimension::fill(const int v) { std::fill(blocks_.begin(), blocks_.end(), v); }
 
 void Dimension::print() const {
     outfile->Printf("  %s (n = %d): ", name_.c_str(), n());

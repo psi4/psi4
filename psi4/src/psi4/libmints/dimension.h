@@ -84,7 +84,7 @@ class PSI_API Dimension {
 
     /// @brief Access a block number at a partcular index. Not bounds-checked.
     const int& operator[](const size_t i) const { return blocks_[i]; }
-    
+
     /// @brief Access a block number at a partcular index. Not bounds-checked.
     const std::vector<int>& blocks() const { return blocks_; }
 
@@ -100,21 +100,23 @@ class PSI_API Dimension {
         "last release to have them.")
     operator const int*() const { return blocks_.data(); }
 
-    /// Return the sum of constituent dimensions
+    /// @brief Return the sum of constituent dimensions (block numbers)
     int sum() const;
+
+    /// @brief Return the maximum of constituent dimensions (block numbers)
     int max() const;
 
-    /// Zero all the elements
+    /// @brief Zero all the dimensions (block numbers)
     void zero();
 
-    /// Fill all elements in blocks_ with given value
-    void fill(int v);
+    /// @brief Fill all elements in blocks_ with given value
+    void fill(const int v);
 
     void print() const;
 
     // Only used for python
     const int& get(const size_t i) const { return blocks_[i]; }
-    void set(const size_t i, int val) { blocks_[i] = val; }
+    void set(const size_t i, const int val) { blocks_[i] = val; }
 
     PSI_API friend bool operator==(const Dimension& a, const Dimension& b);
     PSI_API friend bool operator!=(const Dimension& a, const Dimension& b);
