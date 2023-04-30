@@ -57,6 +57,9 @@ class PSI_API Dimension {
     Dimension(const std::vector<int>& other);
 
     /// @brief Assignment operator, this one can be very dangerous
+    PSI_DEPRECATED(
+        "The assignment operator for psi::Dimension is being deprecated. Unless someone speaks up, 1.8 will be the "
+        "last release to have it.")
     Dimension& operator=(const int* other);
 
     Dimension& operator+=(const Dimension& b);
