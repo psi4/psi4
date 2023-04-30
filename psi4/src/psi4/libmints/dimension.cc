@@ -37,11 +37,8 @@
 #include "psi4/libpsi4util/exception.h"
 
 namespace psi {
-
 Dimension::Dimension() : name_("(empty)") {}
-
 Dimension::Dimension(const size_t n, const std::string& name) : name_(name), blocks_(n, 0) {}
-
 Dimension::Dimension(const std::vector<int>& v) : blocks_(v) {}
 
 void Dimension::init(const size_t n, const std::string& name) {
@@ -50,11 +47,9 @@ void Dimension::init(const size_t n, const std::string& name) {
 }
 
 int Dimension::sum() const { return std::accumulate(blocks_.begin(), blocks_.end(), 0); }
-
 int Dimension::max() const { return *(std::max_element(blocks_.begin(), blocks_.end())); }
 
 void Dimension::zero() { std::fill(blocks_.begin(), blocks_.end(), 0); }
-
 void Dimension::fill(int v) { std::fill(blocks_.begin(), blocks_.end(), v); }
 
 void Dimension::print() const {
@@ -96,7 +91,6 @@ Dimension& Dimension::operator-=(const Dimension& b) {
 }
 
 PSI_API bool operator==(const Dimension& a, const Dimension& b) { return (a.blocks_ == b.blocks_); }
-
 PSI_API bool operator!=(const Dimension& a, const Dimension& b) { return !operator==(a, b); }
 
 PSI_API Dimension operator+(const Dimension& a, const Dimension& b) {
@@ -125,7 +119,6 @@ PSI_API Dimension operator-(const Dimension& a, const Dimension& b) {
 }
 
 Slice::Slice(const Dimension& begin, const Dimension& end) : begin_(begin), end_(end) { validate_slice(); }
-
 Slice::Slice(const Slice& other) : begin_(other.begin()), end_(other.end()) { validate_slice(); }
 
 Slice& Slice::operator+=(const Dimension& increment) {
