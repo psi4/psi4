@@ -403,47 +403,40 @@ class PSI_API BasisSet {
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
 
-   private:
-    /// @brief Determine if two floating-point numbers are practically equal. Simply comparing two FP numbers is usually
-    /// a bad idea due to numerical noise. They *can* be equal, but only in fairly specific circumstances.
-    /// @param a : first number
-    /// @param b : second number
-    /// @param THR : (optional) equality threshold
-    /// @return True if their absolute difference is smaller than THR, false otherwise.
-    bool fpeq(const double a, const double b, const double THR = 1.0E-14) {
-        if (std::abs(a - b) < THR) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /// @brief Determine if a particular value is abscent from an std::vector. If the type is floating-point, make sure
-    /// it is a double and use a fuzzy equality to account for numerical noise.
-    /// @tparam T : Type of the value. If floating-point, it must be a double.
-    /// @param container : Containter to search in
-    /// @param value : Value to look for
-    /// @return : true if none of the elements of container are equal to value
-    template <typename T>
-    bool none_of_equal(const std::vector<T> &container, const T value) const {
-        // The equality threshold in fpeq is set for the expected precision of double. Other FP types could be
-        // implemented in the future if needed, but this function should refuse to process them until then.
-        // Without this check implicit conversion rules could silently promote eg. a float to double when calling fpeq.
-        static_assert(false == (std::is_floating_point<T>::value && !std::is_same<T, double>::value),
-                      "Support for FP types other than double is not implemented in none_of_equal");
-        return std::none_of(container.cbegin(), container.cend(), [value, this](const T X) {
-            if constexpr (std::is_floating_point<T>::value) {
-                return fpeq(X, value);
-            } else {
-                return X == value;
-            }
-        });
-    }
-
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);
 };
+
+/// @brief Determine if two floating-point numbers are practically equal. Simply comparing two FP numbers is usually
+/// a bad idea due to numerical noise. They *can* be equal, but only in fairly specific circumstances.
+/// @param a : first number
+/// @param b : second number
+/// @param THR : (optional) equality threshold
+/// @return True if their absolute difference is smaller than THR, false otherwise.
+bool fpeq(const double a, const double b, const double THR = 1.0E-14);
+
+/// @brief Determine if a particular value is abscent from an std::vector. If the type is floating-point, make sure
+/// it is a double and use a fuzzy equality to account for numerical noise.
+/// @tparam T : Type of the value. If floating-point, it must be a double.
+/// @param container : Containter to search in
+/// @param value : Value to look for
+/// @return : true if none of the elements of container are equal to value
+template <typename T>
+bool none_of_equal(const std::vector<T> &container, const T value) {
+    // The equality threshold in fpeq is set for the expected precision of double. Other FP types could be
+    // implemented in the future if needed, but this function should refuse to process them until then.
+    // Without this check implicit conversion rules could silently promote eg. a float to double when calling fpeq.
+    static_assert(false == (std::is_floating_point<T>::value && !std::is_same<T, double>::value),
+                  "Support for FP types other than double is not implemented in none_of_equal");
+    return std::none_of(container.cbegin(), container.cend(), [value](const T X) {
+        if constexpr (std::is_floating_point<T>::value) {
+            return fpeq(X, value);
+        } else {
+            return X == value;
+        }
+    });
+}
 
 }  // namespace psi
 

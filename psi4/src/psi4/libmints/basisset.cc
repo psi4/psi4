@@ -1239,3 +1239,11 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
         ao += INT_NFUNC(puream_, am);
     }  // nshell
 }
+
+bool psi::fpeq(const double a, const double b, const double THR/* = 1.0E-14*/) {
+    if (std::abs(a - b) < THR) {
+        return true;
+    } else {
+        return false;
+    }
+}
