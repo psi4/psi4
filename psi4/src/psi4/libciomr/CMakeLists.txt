@@ -13,7 +13,6 @@ list(APPEND sources
   ludcmp.cc
   print_array.cc
   print_mat.cc
-  sq_rsp.cc
   sq_to_tri.cc
   tri_to_sq.cc
   tstart.cc
