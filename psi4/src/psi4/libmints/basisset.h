@@ -43,6 +43,7 @@
 #include <vector>
 #include <map>
 #include <type_traits>
+#include <algorithm>
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
