@@ -183,7 +183,7 @@ class __attribute__((visibility("default"))) __attribute__((deprecated(
 
    public:
     /// Constructor, basis set and first sieve cutoff
-   ERISieve(std::shared_ptr<BasisSet> primary, double sieve = 0.0, bool do_csam = false);
+    ERISieve(std::shared_ptr<BasisSet> primary, double sieve = 0.0, bool do_csam = false);
     /// Destructor, frees memory
     virtual ~ERISieve();
 
