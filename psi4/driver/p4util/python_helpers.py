@@ -1502,8 +1502,8 @@ def _core_wavefunction_frequencies(self):
     """Returns the results of a frequency analysis.
 
     Parameters
-    ------G----
-    selfG
+    ----------
+    self
         Wavefunction instance.
 
     Returns
@@ -1554,6 +1554,7 @@ def _core_triplet(A, B, C, transA, transB, transC):
 core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
 
+
 @staticmethod
 def _core_erisieve_build(
         orbital_basis: core.BasisSet,
@@ -1583,18 +1584,18 @@ def _core_erisieve_build(
     -------
     >>> sieve = psi4.core.ERISieve.build(bas, cutoff, csam)
     """
-    
+
     warnings.warn(
         "`ERISieve` is deprecated in favor of `TwoBodyAOInt`, and will be removed as soon as Psi4 v1.9 is released.\n",
         category=FutureWarning,
         stacklevel=2)
 
     factory = core.IntegralFactory(orbital_basis)
-    
-    global erisieve_twobody 
+
+    global erisieve_twobody
     erisieve_twobody = factory.eri(0)
 
-    return core.ERISieve(orbital_basis, cutoff, do_csam) 
+    return core.ERISieve(orbital_basis, cutoff, do_csam)
 
 def _core_erisieve_shell_significant(self, M, N, R, S):
     """
@@ -1605,8 +1606,9 @@ def _core_erisieve_shell_significant(self, M, N, R, S):
         "`ERISieve` is deprecated in favor of `TwoBodyAOInt`, and will be removed as soon as Psi4 v1.9 is released.\n",
         category=FutureWarning,
         stacklevel=2)
-   
+
     return erisieve_twobody.shell_significant(M, N, R, S)
+
 
 core.ERISieve.build = _core_erisieve_build
 core.ERISieve.shell_significant = _core_erisieve_shell_significant
