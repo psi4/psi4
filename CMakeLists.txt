@@ -122,6 +122,7 @@ option(ENABLE_Libint1t "Enables Libint1 in special _t variety" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
+option(psi4_SKIP_ENABLE_Fortran "Suppress enabling Fortran language even when Fortran addons enabled. Use when only linking pre-built, not compiling addon code." OFF)
 
 # Append modules added to pasture as needed
 if(ENABLE_ccsort OR ENABLE_transqt2)
@@ -130,9 +131,13 @@ if(ENABLE_ccsort OR ENABLE_transqt2)
 endif()
 
 if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
+  if(psi4_SKIP_ENABLE_Fortran)
+    message(STATUS "NOT Enabling Fortran")
+  else()
     enable_language(Fortran)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
+  endif()
 endif()
 
 if(ENABLE_erd)
@@ -167,6 +172,9 @@ option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
 option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
+option_with_default(psi4_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/psi4)
+option_with_default(TargetLAPACK_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetLAPACK)
+option_with_default(TargetHDF5_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetHDF5)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 17)
@@ -262,6 +270,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
               -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
               -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+              -Dpsi4_INSTALL_CMAKEDIR=${psi4_INSTALL_CMAKEDIR}
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
