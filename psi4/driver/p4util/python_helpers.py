@@ -1502,8 +1502,8 @@ def _core_wavefunction_frequencies(self):
     """Returns the results of a frequency analysis.
 
     Parameters
-    ----------
-    self
+    ------G----
+    selfG
         Wavefunction instance.
 
     Returns
@@ -1590,4 +1590,17 @@ def _core_erisieve_build(
 
     return core.ERISieve(orbital_basis, cutoff, do_csam)
 
+def _core_erisieve_shell_significant(self, M, N, R, S):
+    """
+    Determine if a given shell quartet (MN | RS) is sigificant or not. Return True if it is, and False if it is not.
+    """
+
+    warnings.warn(
+        "`ERISieve` is deprecated in favor of `TwoBodyAOInt`, and will be removed as soon as Psi4 v1.9 is released.\n",
+        category=FutureWarning,
+        stacklevel=2)
+
+    return core.ERISieve.shell_significant(M, N, R, S)
+
 core.ERISieve.build = _core_erisieve_build
+core.ERISieve.shell_significant = _core_erisieve_shell_significant
