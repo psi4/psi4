@@ -14,6 +14,7 @@ set {
    r_convergence 14
    e_convergence 14
    d_convergence 14
+   qc_module ccenergy
 }
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)

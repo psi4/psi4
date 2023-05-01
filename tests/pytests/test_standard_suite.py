@@ -82,7 +82,7 @@ _p31 = (Exception, r"SCF_TYPE \(CD\) not supported for range-separated functiona
 _p32 = (psi4.MissingMethodError, r"Method=(mp2.5|mp3|remp2|lccd) is not available for any derivative level under conditions (MP|CC)_TYPE=(CONV|DF|CD), REFERENCE=ROHF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=\(auto\)", "no rohf mp2.5/mp3/remp2/lccd by occ")
 _p33 = (psi4.MissingMethodError, r"Method=(mp2.5|mp3|lccd|ccd|ccsd|ccsd\(t\)|omp2|omp2.5|omp3|olccd|oremp2) is not available for requested derivative level \(reqd=1 > avail=0\) under conditions (MP2|MP|CC)_TYPE=CD, REFERENCE=(R|U|RO)HF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=\(auto\)", "no cd gradients by occ")
 _p34 = (psi4.MissingMethodError, r"Method=(ccd|ccsd|ccsd\(t\)|a-ccsd\(t\)) is not available for any derivative level under conditions CC_TYPE=(DF|CD), REFERENCE=ROHF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=\(auto\)", "no df/cd rohf ccd/ccsd/ccsd(t)/a-ccsd(t) by occ")
-_p35 = (psi4.MissingMethodError, r"Method=ccsd\(t\) is not available for requested derivative level \(reqd=1 > avail=0\) under conditions CC_TYPE=CONV, REFERENCE=ROHF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=(CCENERGY|\(auto\))", "no conv gradients for ccsd(t) by ccenergy")
+_p35 = (psi4.MissingMethodError, r"Method=ccsd\(t\) is not available for requested derivative level \(reqd=1 > avail=0\) under conditions CC_TYPE=CONV, REFERENCE=ROHF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=(CCENERGY|\(auto\))", "no conv rohf gradients for ccsd(t) by ccenergy")
 _p36 = (psi4.ValidationError, r"Invalid type (DF|CD) for CCENERGY", "no df/cd cc2/cc3/bccd/bccd(t) by psi4")
 _p37 = (psi4.MissingMethodError, r"Method=(cc2|cc3) is not available for any derivative level under conditions CC_TYPE=(DF|CD), REFERENCE=(R|U|RO)HF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=\(auto\)", "no df/cd cc2/cc3 by psi4")
 _p38 = (_MethodError, r"Method=(a-ccsd\(t\)) is not available for any derivative level under conditions CC_TYPE=CONV, REFERENCE=(U|RO)HF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=\(auto\)", "no conv open-shell a-ccsd(t) by ccenergy")
@@ -97,6 +97,7 @@ _p46 = (psi4.ValidationError, r"Invalid type (DF|CD) for DETCI energy through `r
 _p47 = (psi4.UpgradeHelper, r"Replace method ZAPT with method MP for RHF reference", "retire rhf zapt by detci")
 _p48 = (psi4.MissingMethodError, r"Method=cisd is not available for any derivative level under conditions CI_TYPE=CONV, REFERENCE=UHF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=\(auto\)", "no uhf cisd by psi4")
 
+_p98 = (psi4.MissingMethodError, r"Method=ccsd\(t\) is not available for requested derivative level \(reqd=1 > avail=0\) under conditions CC_TYPE=CONV, REFERENCE=(R|U)HF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=\(auto\)", "temporary: cc(t) disabled w/o qc_module=ccenergy for conv rhf/uhf gradients for ccsd(t) by ccenergy until scaling reworked")
 _p99 = (psi4.MissingMethodError, r"Method=(ccsd\(t\)|a-ccsd\(t\)) is not available for any derivative level under conditions CC_TYPE=(DF|CD), REFERENCE=UHF, FREEZE_CORE=(TRUE|FALSE), QC_MODULE=\(auto\)", "temporary: cc(t) disabled w/o qc_module=occ in dfocc until further optimization ")
 
 _w1 = ("CCSD TOTAL GRADIENT",  "wrong semicanonical ae rohf ccsd gradients by ccenergy")
@@ -3759,11 +3760,11 @@ def test_ccsd_prt_pr_gradient_module(inp, dertype, basis, subjects, clsd_open_pm
         # yapf: disable
 
         ###### default qc_module
-        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "true",                     }, "error": {1: _p16},        }, id="ccsd_t_  rhf    conv fc: dd     "),
-        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "true",                     }, "error": {1: _p16},        }, id="ccsd_t_  uhf    conv fc: dd     "),
+        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "true",                     }, "error": {1: _p98},        }, id="ccsd_t_  rhf    conv fc: dd     "),  # FORMERLY  {1: _p16}
+        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "true",                     }, "error": {1: _p98},        }, id="ccsd_t_  uhf    conv fc: dd     "),  # FORMERLY  {1: _p16}
         pytest.param({"sdsc": "sc", "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "true",                     }, "error": {1: _p35},        }, id="ccsd_t_ rohf    conv fc: dd     "),
-        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "false",                    },                            }, id="ccsd_t_  rhf    conv ae: dd     "),
-        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "false",                    },                            }, id="ccsd_t_  uhf    conv ae: dd     "),
+        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "false",                    }, "error": {1: _p98},        }, id="ccsd_t_  rhf    conv ae: dd     "),  # FORMERLY {}
+        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "false",                    }, "error": {1: _p98},        }, id="ccsd_t_  uhf    conv ae: dd     "),  # FORMERLY {}
         pytest.param({"sdsc": "sc", "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "false",                    }, "error": {1: _p35},        }, id="ccsd_t_ rohf    conv ae: dd     "),
         ####
         pytest.param({"xptd": {"qc_module": {1: "occ", 0: "fnocc"}},   "keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "true",                     },                            }, id="ccsd_t_  rhf    df   fc: dd     "),
@@ -3781,11 +3782,11 @@ def test_ccsd_prt_pr_gradient_module(inp, dertype, basis, subjects, clsd_open_pm
         pytest.param({"xptd": {},                                      "keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "false",                    }, "error": {1: _p34, 0: _p34}}, id="ccsd_t_ rohf    cd   ae: dd     "),
 
         ###### default qc_module, cc_type
-        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rhf",                                          "freeze_core": "true",                    }, "error": {1: _p16},        }, id="ccsd_t_  rhf         fc: dd     "),
-        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "uhf",                                          "freeze_core": "true",                    }, "error": {1: _p16},        }, id="ccsd_t_  uhf         fc: dd     "),
+        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rhf",                                          "freeze_core": "true",                    }, "error": {1: _p98},        }, id="ccsd_t_  rhf         fc: dd     "),  # FORMERLY {1: _p16}
+        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "uhf",                                          "freeze_core": "true",                    }, "error": {1: _p98},        }, id="ccsd_t_  uhf         fc: dd     "),  # FORMERLY {1: _p16}
         pytest.param({"sdsc": "sc", "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rohf",                                         "freeze_core": "true",                    }, "error": {1: _p35},        }, id="ccsd_t_ rohf         fc: dd     "),
-        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rhf",                                          "freeze_core": "false",                   },                            }, id="ccsd_t_  rhf         ae: dd     "),
-        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "uhf",                                          "freeze_core": "false",                   },                            }, id="ccsd_t_  uhf         ae: dd     "),
+        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rhf",                                          "freeze_core": "false",                   }, "error": {1: _p98},        }, id="ccsd_t_  rhf         ae: dd     "),  # FORMERLY {}
+        pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "uhf",                                          "freeze_core": "false",                   }, "error": {1: _p98},        }, id="ccsd_t_  uhf         ae: dd     "),  # FORMERLY {}
         pytest.param({              "xptd": {"qc_module": "ccenergy"}, "keywords": {"reference": "rohf",                                         "freeze_core": "false",                   }, "error": {1: _p35},        }, id="ccsd_t_ rohf         ae: dd     "),
         # yapf: enable
     ],
