@@ -258,9 +258,9 @@ class AtomicComputer(BaseComputer):
 def _singlepointrecord_to_atomicresult(spr: "qcportal.singlepoint.SinglepointRecord") -> AtomicResult:
     atres = spr.to_qcschema_result()
 
-    # QCFractal `next` database stores return_result, properties, and extras["qcvars"] merged merged
-    #   together and with lowercase keys. `to_qcschema_result` partitions properties back out, but we
-    #   need to restore qcvars keys, types, and dimensions.
+    # QCFractal `next` database stores return_result, properties, and extras["qcvars"] merged
+    #   together and with lowercase keys. `to_qcschema_result` partitions properties back out,
+    #   but we need to restore qcvars keys, types, and dimensions.
     qcvars = atres.extras.pop("extra_properties")
     qcvars.pop("return_result")
     qcvars = {k.upper(): p4util.plump_qcvar(k, v) for k, v in qcvars.items()}
