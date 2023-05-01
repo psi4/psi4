@@ -464,6 +464,8 @@ void export_wavefunction(py::module& m) {
         .def("scf", &fisapt::FISAPT::scf, "Solve the relaxed SCF equations for A0 and B0.")
         .def("freeze_core", &fisapt::FISAPT::freeze_core, "Freeze the core orbitals.")
         .def("unify", &fisapt::FISAPT::unify, "Produce unified matrices for A', B', and C'.")
+        .def("unify_part2", &fisapt::FISAPT::unify_part2, "Finish producing unified matrices for A', B', and C'.")
+        .def("do_cubes", &fisapt::FISAPT::do_cubes, "Prepare cube files for orbital/density pictures.")
         .def("dHF", &fisapt::FISAPT::dHF, "SAPT0 delta HF.")
         .def("elst", &fisapt::FISAPT::elst, "SAPT0 electrostatics.")
         .def("exch", &fisapt::FISAPT::exch, "SAPT0 exchange.")

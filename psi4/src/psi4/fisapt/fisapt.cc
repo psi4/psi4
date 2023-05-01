@@ -54,6 +54,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libmints/mintshelper.h"
 
 #include "local2.h"
 
@@ -125,6 +126,7 @@ void FISAPT::localize() {
 
     matrices_["Locc"] = ret["L"];
     matrices_["Qocc"] = ret["Q"];
+    matrices_["IAO"] = ret["A"];
 }
 
 void FISAPT::partition() {
@@ -158,6 +160,21 @@ void FISAPT::partition() {
             indC.push_back(ind);
         }
     }
+
+    // => Lookup table for atoms (1-A, 2-B, 3-C) <= //
+    vectors_["FRAG"] = std::make_shared<Vector>("FRAG", nA);
+    double* FRAGp = vectors_["FRAG"]->pointer();
+    for (int ind = 0; ind < indA.size(); ind++) {
+        FRAGp[indA[ind]] = 1;
+    }
+    for (int ind = 0; ind < indB.size(); ind++) {
+        FRAGp[indB[ind]] = 2;
+    }
+    for (int ind = 0; ind < indC.size(); ind++) {
+        FRAGp[indC[ind]] = 3;
+    }
+    outfile->Printf(" Fragment lookup table:\n");
+    vectors_["FRAG"]->print();
 
     outfile->Printf("   => Atomic Partitioning <= \n\n");
     outfile->Printf("    Monomer A: %3zu atoms\n", indA.size());
@@ -293,10 +310,16 @@ void FISAPT::partition() {
     vectors_["ZA"] = std::make_shared<Vector>("ZA", nA);
     vectors_["ZB"] = std::make_shared<Vector>("ZB", nA);
     vectors_["ZC"] = std::make_shared<Vector>("ZC", nA);
+    vectors_["ZA_orig"] = std::make_shared<Vector>("ZA_orig", nA);
+    vectors_["ZB_orig"] = std::make_shared<Vector>("ZB_orig", nA);
+    vectors_["ZC_orig"] = std::make_shared<Vector>("ZC_orig", nA);
 
     double* ZAp = vectors_["ZA"]->pointer();
     double* ZBp = vectors_["ZB"]->pointer();
     double* ZCp = vectors_["ZC"]->pointer();
+    double* ZA_origp = vectors_["ZA_orig"]->pointer();
+    double* ZB_origp = vectors_["ZB_orig"]->pointer();
+    double* ZC_origp = vectors_["ZC_orig"]->pointer();
 
     for (int ind = 0; ind < indA.size(); ind++) {
         ZAp[indA[ind]] = mol->Z(indA[ind]);
@@ -308,16 +331,21 @@ void FISAPT::partition() {
         ZCp[indC[ind]] = mol->Z(indC[ind]);
     }
 
+    vectors_["ZA_orig"]->copy(*vectors_["ZA"]);
+    vectors_["ZB_orig"]->copy(*vectors_["ZB"]);
+    vectors_["ZC_orig"]->copy(*vectors_["ZC"]);
+
     // => Local Orbital Targets <= //
 
     std::vector<int> orbsA;
     std::vector<int> orbsB;
     std::vector<int> orbsC;
+    std::vector<int> orbsL;
 
     // => Assign Links <= //
 
     std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
-    if (!(link_assignment == "AB" || link_assignment == "C")) {
+    if (!(link_assignment == "AB" || link_assignment == "C" || link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" )) {
         throw PSIEXCEPTION("FISAPT: FISAPT_LINK_ASSIGNMENT not recognized");
     }
 
@@ -325,27 +353,31 @@ void FISAPT::partition() {
     outfile->Printf("    Link Bond Assignment      = %s\n", link_assignment.c_str());
     outfile->Printf("\n");
 
-    if (link_assignment == "C") {
+    if (link_assignment == "C" || link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
         for (int ind = 0; ind < link_orbs.size(); ind++) {
             int a = link_orbs[ind];
             int A1 = link_atoms[ind].first;
             int A2 = link_atoms[ind].second;
             std::string type = link_types[ind];
 
+            typesL.push_back(type);
             if (type == "AC") {
                 ZAp[A1] -= 1.0;
                 ZCp[A1] += 1.0;
                 orbsC.push_back(a);
+                orbsL.push_back(a);
             } else if (type == "BC") {
                 ZBp[A1] -= 1.0;
                 ZCp[A1] += 1.0;
                 orbsC.push_back(a);
+                orbsL.push_back(a);
             } else if (type == "AB") {
                 ZAp[A1] -= 1.0;
                 ZCp[A1] += 1.0;
                 ZBp[A2] -= 1.0;
                 ZCp[A2] += 1.0;
                 orbsC.push_back(a);
+                orbsL.push_back(a);
             }
         }
 
@@ -369,6 +401,8 @@ void FISAPT::partition() {
             }
         }
     }
+//We altered the nuclear charges for the C algorithm in vectors_["ZA"]-vectors_["ZC"].
+//We keep the unaltered charges for the SAOn/SIAOn algorithms in vectors_["ZA_orig"]-vectors_["ZC_orig"].
 
     // => Remaining Orbitals <= //
 
@@ -451,14 +485,28 @@ void FISAPT::partition() {
     std::sort(orbsA.begin(), orbsA.end());
     std::sort(orbsB.begin(), orbsB.end());
     std::sort(orbsC.begin(), orbsC.end());
+    if (link_orbs.size() > 1) {
+        if (orbsL[0] > orbsL[1]) {
+            int orbswap = orbsL[1];
+            orbsL[1] = orbsL[0];
+            orbsL[0] = orbswap;
+            std::string typeswap = typesL[1];
+            typesL[1] = typesL[0];
+            typesL[0] = typeswap;
+        }
+    }
 
+    // We save matrices with the localized orbital (IBO) coefficients for A, B, C, and the two link orbitals only.
+    // We need the latter for later link reassignment in the SAOn/SIAOn methods.
     matrices_["LoccA"] = FISAPT::extract_columns(orbsA, matrices_["Locc"]);
     matrices_["LoccB"] = FISAPT::extract_columns(orbsB, matrices_["Locc"]);
     matrices_["LoccC"] = FISAPT::extract_columns(orbsC, matrices_["Locc"]);
+    matrices_["LoccL"] = FISAPT::extract_columns(orbsL, matrices_["Locc"]);
 
     matrices_["LoccA"]->set_name("LoccA");
     matrices_["LoccB"]->set_name("LoccB");
     matrices_["LoccC"]->set_name("LoccC");
+    matrices_["LoccL"]->set_name("LoccL");
 
     // matrices_["LoccA"]->print();
     // matrices_["LoccB"]->print();
@@ -527,6 +575,24 @@ void FISAPT::nuclear() {
     std::shared_ptr<PotentialInt> Vint;
     Vint = std::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential().release()));
 
+    // => Dipole Integrals, Needed for Testing the Dipole Magnitude <= //
+
+    std::shared_ptr<OneBodyAOInt> dipole(Vfact->ao_dipole());
+    std::vector<SharedMatrix> dipole_ints;
+    dipole_ints.push_back(std::make_shared<Matrix>("Dipole X", nm, nm));
+    dipole_ints.push_back(std::make_shared<Matrix>("Dipole Y", nm, nm));
+    dipole_ints.push_back(std::make_shared<Matrix>("Dipole Z", nm, nm));
+    dipole->compute(dipole_ints);
+    matrices_["X DIP"] = dipole_ints[0];
+    matrices_["Y DIP"] = dipole_ints[1];
+    matrices_["Z DIP"] = dipole_ints[2];
+    auto dip_nuca = std::make_shared<Vector>("DIP NUCA", 3);
+    auto dip_nucb = std::make_shared<Vector>("DIP NUCB", 3);
+    auto dip_nucc = std::make_shared<Vector>("DIP NUCC", 3);
+    double* dip_nucap = dip_nuca->pointer();
+    double* dip_nucbp = dip_nucb->pointer();
+    double* dip_nuccp = dip_nucc->pointer();
+
     // > Molecular Centers < //
 
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
@@ -575,7 +641,20 @@ void FISAPT::nuclear() {
         Zsp[A][0] = ZAp[A];
         Zsp[A][1] = ZBp[A];
         Zsp[A][2] = ZCp[A];
+        dip_nucap[0] += ZAp[A]*(mol->x(A));
+        dip_nucap[1] += ZAp[A]*(mol->y(A));
+        dip_nucap[2] += ZAp[A]*(mol->z(A));
+        dip_nucbp[0] += ZBp[A]*(mol->x(A));
+        dip_nucbp[1] += ZBp[A]*(mol->y(A));
+        dip_nucbp[2] += ZBp[A]*(mol->z(A));
+        dip_nuccp[0] += ZCp[A]*(mol->x(A));
+        dip_nuccp[1] += ZCp[A]*(mol->y(A));
+        dip_nuccp[2] += ZCp[A]*(mol->z(A));
     }
+
+    vectors_["DIP NUCA"] = dip_nuca;
+    vectors_["DIP NUCB"] = dip_nucb;
+    vectors_["DIP NUCC"] = dip_nucc;
 
     for (int A = 0; A < nA; A++) {
         for (int B = 0; B < nA; B++) {
@@ -960,9 +1039,310 @@ void FISAPT::freeze_core() {
 void FISAPT::unify() {
     outfile->Printf("  ==> Unification <==\n\n");
 
+    // Matrices Cocc0A, Cocc0B come from the SCF calculation for noninteracting fragments A,B embedded in C
+    // Matrices LoccA,LoccB,LoccC,LoccL come from the SCF calculation for entire molecule, and then localization.
     std::shared_ptr<Matrix> Cocc_A = matrices_["Cocc0A"];
     std::shared_ptr<Matrix> Cocc_B = matrices_["Cocc0B"];
     std::shared_ptr<Matrix> Cocc_C = matrices_["LoccC"];
+    std::shared_ptr<Matrix> Cocc_L = matrices_["LoccL"];
+    std::shared_ptr<Matrix> Cvir = matrices_["Cvir"];
+    std::shared_ptr<Matrix> Sao = matrices_["S"];
+    std::shared_ptr<Matrix> LinkA(Cocc_L->clone());
+    std::shared_ptr<Matrix> LinkB(Cocc_L->clone());
+    std::shared_ptr<Matrix> LinkC(Cocc_L->clone());
+    std::shared_ptr<Matrix> DC_A(Sao->clone());  
+    std::shared_ptr<Matrix> DC_B(Sao->clone());  
+    std::shared_ptr<Matrix> DC_C(Sao->clone());  
+    LinkA->copy(Cocc_L);
+    LinkB->copy(Cocc_L);
+    LinkC->copy(Cocc_L);
+    double* FRAGp = vectors_["FRAG"]->pointer();
+    double** LinkAp = LinkA->pointer();
+    double** LinkBp = LinkB->pointer();
+    double** LinkCp = LinkC->pointer();
+    std::shared_ptr<Molecule> mol = primary_->molecule();
+    int nA = mol->natom();
+    std::shared_ptr<Vector> ZA = std::make_shared<Vector>("ZA", nA);
+    std::shared_ptr<Vector> ZB = std::make_shared<Vector>("ZB", nA);
+    std::shared_ptr<Vector> ZC = std::make_shared<Vector>("ZC", nA);
+
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    std::string link_ortho = options_.get_str("FISAPT_LINK_ORTHO");
+
+    // For the SAOn/SIAOn link assignments, the nuclear charge assignment to fragments is altered (one proton from the connecting atoms on A,B is no longer counted as part of C). Therefore, we need to revert to the unmodified nuclear charges saved earlier.
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+        ZA->copy(*vectors_["ZA_orig"]);
+        ZB->copy(*vectors_["ZB_orig"]);
+        ZC->copy(*vectors_["ZC_orig"]);
+    }
+    else {
+        ZA->copy(*vectors_["ZA"]);
+        ZB->copy(*vectors_["ZB"]);
+        ZC->copy(*vectors_["ZC"]);
+    }
+    double* ZAp = ZA->pointer();
+    double* ZBp = ZB->pointer();
+    double* ZCp = ZC->pointer();
+    // Now we will identify the link intrinsic hybrid orbitals that will be reassigned (with one electron each) from C to A,B.
+    // These link IHOs will be kept in matrices thislinkA/thislinkB.
+
+    std::vector<int> link_orbs;
+    int nm = primary_->nbf();
+    Dimension zero(1);
+    Dimension dimnm(1);
+    Dimension di(1);
+    Dimension dj(1);
+    dimnm[0] = nm;
+    auto thislinkA = std::make_shared<Matrix>("thislinkA", nm, 1);
+    auto thislinkB = std::make_shared<Matrix>("thislinkB", nm, 1);
+    std::shared_ptr<Matrix> thislinkA0(thislinkA->clone());
+    std::shared_ptr<Matrix> thislinkB0(thislinkB->clone());
+    thislinkA->zero();
+    thislinkB->zero();
+    Slice rowslice(zero,dimnm);
+    int na = matrices_["Locc"]->colspi()[0];
+    int norbA = matrices_["Cocc0A"]->colspi()[0];
+    int norbB = matrices_["Cocc0B"]->colspi()[0];
+    int norbC = matrices_["LoccC"]->colspi()[0];
+    int nlink = matrices_["LoccL"]->colspi()[0];
+    int nvir = matrices_["Call"]->colspi()[0] - na;
+
+    if (link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+//In the SIAO algorithms, we project the link IBOs onto IAOs of the respective fragment.
+//IAOs have tails, but every IAO has a primary, dominant  center so we can easily assign them to fragments A/B/C.
+        outfile->Printf("  ==> Link bond redistribution (SIAOn) <==\n\n");
+        int natoms = primary_->molecule()->natom();  
+        std::shared_ptr<Matrix> Iao(matrices_["IAO"]->clone());
+        double** Iaop = Iao->pointer();
+        std::shared_ptr<BasisSet> minao = reference_->get_basisset("MINAO");
+        int nminao = minao->nbf();
+        outfile->Printf("\n Number of MINAO functions: %d Number of IBOs: %d",nminao,na);
+        auto Sminao = reference_->mintshelper()->ao_overlap(minao,minao);
+//IAOs themselves are localized on atoms - find out which atoms and how well localized. The matrix atiao will have the weight of atom k in the IAO number l.
+        auto atiao = std::make_shared<Matrix>("ATIAO", nminao, natoms);
+        double** atiaop = atiao->pointer();
+        atiao->zero();
+        for (int k = 0; k < nminao; k++) {
+            for (int l = 0; l < nm; l++) {
+                int atind = primary_->function_to_center(l);
+                atiaop[k][atind] += Iaop[l][k] * Iaop[l][k];
+            }
+        }
+//      atiao->print();
+//it seems that IAOs are ordered and localized in the same way as the MINAO basis functions, so 
+//minao->function_to_center(k) returns the center for IAO number k.
+//We can now express the two link IBOs as linear combinations of IAOs.
+        std::shared_ptr<Matrix> CLiao = linalg::triplet(matrices_["IAO"], Sao, matrices_["LoccL"], true, false, false);
+        double** CLiaop = CLiao->pointer();
+        std::shared_ptr<Matrix> CLiaoA(CLiao->clone());
+        std::shared_ptr<Matrix> CLiaoB(CLiao->clone());
+        std::shared_ptr<Matrix> CLiaoC(CLiao->clone());
+        double** CLiaoAp = CLiaoA->pointer();
+        double** CLiaoBp = CLiaoB->pointer();
+        double** CLiaoCp = CLiaoC->pointer();
+//The FRAG matrix has 1/2/3 when the atom belongs to A/B/C, respectively.
+        for (int k = 0; k < nminao; k++) {
+          if (FRAGp[minao->function_to_center(k)] == 1.0) {
+            for (int l = 0; l < 2; l++) {
+              CLiaoBp[k][l] = 0.0 ;
+              CLiaoCp[k][l] = 0.0 ;
+            }
+          } else
+          if (FRAGp[minao->function_to_center(k)] == 2.0) {
+            for (int l = 0; l < 2; l++) {
+              CLiaoAp[k][l] = 0.0 ;
+              CLiaoCp[k][l] = 0.0 ;
+            }
+          } else
+          if (FRAGp[minao->function_to_center(k)] == 3.0) {
+            for (int l = 0; l < 2; l++) {
+              CLiaoAp[k][l] = 0.0 ;
+              CLiaoBp[k][l] = 0.0 ;
+            }
+          } else
+          {
+          outfile->Printf(" Fragmentation problem! %3d %5.1f\n",k,FRAGp[minao->function_to_center(k)]);
+          }
+        }
+// We no longer need ISAPT(C) nuclear charges and can overwrite them.
+        vectors_["ZA"] = ZA;
+        vectors_["ZB"] = ZB;
+        vectors_["ZC"] = ZC;
+        std::shared_ptr<Matrix> ortho_targetA = matrices_["LoccA"];
+        std::shared_ptr<Matrix> ortho_targetB = matrices_["LoccB"];
+        if (link_ortho == "FRAGMENT") {
+            ortho_targetA = matrices_["Cocc0A"];
+            ortho_targetB = matrices_["Cocc0B"];
+            }
+// At this point, the matrices CLiaoA,CLiaoB,CLiaoC have the 2 link orbitals expanded in IAOs of one fragment only, the rest are zeroed out.
+// We now recast the projected vectors back to the AO basis, identify which one is A and which is B, 
+// and orthogonalize to the occupied orbitals of a given fragment.
+// Orthogonalization options:
+//     FRAGMENT (default): orthogonalize to occupied orbitals of the noninteracting fragment A/B embedded in C
+//     WHOLE: orthogonalize to occupied IBOs of the whole molecule localized on A/B
+//     NONE: do not orthogonalize
+        std::shared_ptr<Matrix> CLiaoA_AO = linalg::doublet(matrices_["IAO"], CLiaoA, false, false);
+        std::shared_ptr<Matrix> CLiaoB_AO = linalg::doublet(matrices_["IAO"], CLiaoB, false, false);
+        for (int l = 0; l < 2; l++) {
+            if (typesL[l] == "AC") {
+                outfile->Printf("\n Link orbital %3d belongs to A.\n",l);
+                di[0] = l;
+                dj[0] = l + 1;
+                Slice colslice(di,dj);
+                thislinkA = CLiaoA_AO->get_block(rowslice,colslice);
+                thislinkA0->copy(thislinkA);
+                if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
+                    std::shared_ptr<Matrix> CoccLA_ortho = linalg::triplet(ortho_targetA, Sao, thislinkA, true, false, false);
+                    // CoccLA_ortho->print();
+                    double** CoccLA_orthop = CoccLA_ortho->pointer();
+                    for (int j = 0; j < norbA; j++) {
+                        di[0] = j;
+                        dj[0] = j + 1;
+                        Slice colslice(di,dj);
+                        thislinkA->axpy(-CoccLA_orthop[j][0],ortho_targetA->get_block(rowslice,colslice));
+                    }
+                }
+                std::shared_ptr<Matrix> thisnormA = linalg::triplet(thislinkA, Sao, thislinkA, true, false, false);
+                double** thisnormAp = thisnormA->pointer();
+                thislinkA->scale(1.0/std::sqrt(thisnormAp[0][0]));
+                matrices_["thislinkAbak"] = thislinkA->clone();
+            }
+            else if (typesL[l] == "BC") {
+                outfile->Printf("\n Link orbital %3d belongs to B.\n",l);
+                di[0] = l;
+                dj[0] = l + 1;
+                Slice colslice(di,dj);
+                thislinkB = CLiaoB_AO->get_block(rowslice,colslice);
+                thislinkB0->copy(thislinkB);
+                if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
+                    std::shared_ptr<Matrix> CoccLB_ortho = linalg::triplet(ortho_targetB, Sao, thislinkB, true, false, false);
+                    // CoccLB_ortho->print();
+                    double** CoccLB_orthop = CoccLB_ortho->pointer();
+                    for (int j = 0; j < norbB; j++) {
+                        di[0] = j;
+                        dj[0] = j + 1;
+                        Slice colslice(di,dj);
+                        thislinkB->axpy(-CoccLB_orthop[j][0],ortho_targetB->get_block(rowslice,colslice));
+                    }
+                }
+                std::shared_ptr<Matrix> thisnormB = linalg::triplet(thislinkB, Sao, thislinkB, true, false, false);
+                double** thisnormBp = thisnormB->pointer();
+                thislinkB->scale(1.0/std::sqrt(thisnormBp[0][0]));
+                matrices_["thislinkBbak"] = thislinkB->clone();
+            }
+            else {
+                outfile->Printf("PROBLEM assigning link orbital %3d.",l);
+            }
+        } 
+    }
+    else if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" ) {
+//In the SAO algorithms, we project the link IBOs onto AO basis functions of the respective fragment.
+        outfile->Printf("  ==> Link bond redistribution (SAOn) <==\n\n");
+// We no longer need ISAPT(C) nuclear charges and can overwrite them.
+        vectors_["ZA"] = ZA;
+        vectors_["ZB"] = ZB;
+        vectors_["ZC"] = ZC;
+        vectors_["ZA"]->print();
+        vectors_["ZB"]->print();
+        vectors_["ZC"]->print();
+        for (int i = 0; i < nlink; i++) {
+          link_orbs.push_back(0);
+          for (int k = 0; k < nm; k++) {
+            if (FRAGp[primary_->function_to_center(k)] == 1.0) {
+              LinkBp[k][i] = 0.0 ;
+              LinkCp[k][i] = 0.0 ;
+            } else
+            if (FRAGp[primary_->function_to_center(k)] == 2.0) {
+              LinkAp[k][i] = 0.0 ;
+              LinkCp[k][i] = 0.0 ;
+            } else
+            if (FRAGp[primary_->function_to_center(k)] == 3.0) {
+              LinkAp[k][i] = 0.0 ;
+              LinkBp[k][i] = 0.0 ;
+            } else
+            {
+            outfile->Printf(" Fragmentation problem! %3d %5.1f\n",k,FRAGp[primary_->function_to_center(k)]);
+            }
+          }
+        }
+        std::shared_ptr<Matrix> LinkAnorm = linalg::triplet(LinkA, Sao, LinkA, true, false, false);
+        outfile->Printf("\n Norm of link vectors truncated to A: \n");
+        LinkAnorm->print();
+        std::shared_ptr<Matrix> LinkBnorm = linalg::triplet(LinkB, Sao, LinkB, true, false, false);
+        outfile->Printf("\n Norm of link vectors truncated to B: \n");
+        LinkBnorm->print();
+        std::shared_ptr<Matrix> LinkCnorm = linalg::triplet(LinkC, Sao, LinkC, true, false, false);
+        outfile->Printf("\n Norm of link vectors truncated to C: \n");
+        LinkCnorm->print();
+        std::shared_ptr<Matrix> LinkAllnorm = linalg::triplet(Cocc_L, Sao, Cocc_L, true, false, false);
+        outfile->Printf("\n Norm of link vectors untruncated: \n");
+        LinkAllnorm->print();
+
+// At this point, the matrices LinkA,LinkB,LinkC have the 2 link orbitals expanded in AOs of one fragment only, the rest are zeroed out.
+// We now identify which one is A and which is B, and orthogonalize to the occupied orbitals of a given fragment.
+// Orthogonalization options:
+//     FRAGMENT (default): orthogonalize to occupied orbitals of the noninteracting fragment A/B embedded in C
+//     WHOLE: orthogonalize to occupied IBOs of the whole molecule localized on A/B
+//     NONE: do not orthogonalize
+        std::shared_ptr<Matrix> ortho_targetA = matrices_["LoccA"];
+        std::shared_ptr<Matrix> ortho_targetB = matrices_["LoccB"];
+        if (link_ortho == "FRAGMENT") {
+            ortho_targetA = matrices_["Cocc0A"];
+            ortho_targetB = matrices_["Cocc0B"];
+            }
+        for (int i = 0; i < nlink; i++) {
+            if (typesL[i] == "AC") {
+                outfile->Printf("\n Link orbital %3d belongs to A.\n",i);
+                di[0] = i;
+                dj[0] = i + 1;
+                Slice colslice(di,dj);
+                thislinkA = LinkA->get_block(rowslice,colslice);
+                thislinkA0->copy(thislinkA);
+                if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
+                    std::shared_ptr<Matrix> CoccLA_ortho = linalg::triplet(ortho_targetA, Sao, thislinkA, true, false, false);
+                    // CoccLA_ortho->print();
+                    double** CoccLA_orthop = CoccLA_ortho->pointer();
+                    for (int j = 0; j < norbA; j++) {
+                        di[0] = j;
+                        dj[0] = j + 1;
+                        Slice colslice(di,dj);
+                        thislinkA->axpy(-CoccLA_orthop[j][0],ortho_targetA->get_block(rowslice,colslice));
+                    }
+                }
+                std::shared_ptr<Matrix> thisnormA = linalg::triplet(thislinkA, Sao, thislinkA, true, false, false);
+                double** thisnormAp = thisnormA->pointer();
+                thislinkA->scale(1.0/std::sqrt(thisnormAp[0][0]));
+                matrices_["thislinkAbak"] = thislinkA->clone();
+            }
+            else if (typesL[i] == "BC") {
+                outfile->Printf("\n Link orbital %3d belongs to B.\n",i);
+                di[0] = i;
+                dj[0] = i + 1;
+                Slice colslice(di,dj);
+                Slice rowslice(zero,dimnm);
+                thislinkB = LinkB->get_block(rowslice,colslice);
+                thislinkB0->copy(thislinkB);
+                if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
+                    std::shared_ptr<Matrix> CoccLB_ortho = linalg::triplet(ortho_targetB, Sao, thislinkB, true, false, false);
+                    // CoccLB_ortho->print();
+                    double** CoccLB_orthop = CoccLB_ortho->pointer();
+                    for (int j = 0; j < norbB; j++) {
+                        di[0] = j;
+                        dj[0] = j + 1;
+                        Slice colslice(di,dj);
+                        thislinkB->axpy(-CoccLB_orthop[j][0],ortho_targetB->get_block(rowslice,colslice));
+                    }
+                }
+                std::shared_ptr<Matrix> thisnormB = linalg::triplet(thislinkB, Sao, thislinkB, true, false, false);
+                double** thisnormBp = thisnormB->pointer();
+                thislinkB->scale(1.0/std::sqrt(thisnormBp[0][0]));
+                matrices_["thislinkBbak"] = thislinkB->clone();
+            }
+            else {
+                outfile->Printf("PROBLEM assigning link orbital %3d.",i);
+            }
+        }
+    }
 
     std::shared_ptr<Matrix> D_A = linalg::doublet(Cocc_A, Cocc_A, false, true);
     std::shared_ptr<Matrix> D_B = linalg::doublet(Cocc_B, Cocc_B, false, true);
@@ -970,6 +1350,29 @@ void FISAPT::unify() {
     D_C->zero();
     if (Cocc_C->colspi()[0] > 0) {
         D_C = linalg::doublet(Cocc_C, Cocc_C, false, true);
+    }
+    matrices_["D_A0"] = D_A->clone();
+    matrices_["D_B0"] = D_B->clone();
+    matrices_["D_C0"] = D_C->clone();
+
+// At this point, for all SAOn/SIAOn variants, matrices thislinkA and thislinkB contain the link hybrid orbitals that are being reassigned from C to A/B.
+// We can now introduce this reassignment to the fragment density matrices D_A, D_B, D_C.
+// Note the multiplication by 1/sqrt{2} which correspond to multiplying the density matrix contribution by 1/2 (the orbital is singly occupied).
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+        outfile->Printf("\n Trace of D_A before link reassignment: %10.6f \n",D_A->vector_dot(Sao));
+        outfile->Printf("\n Trace of D_B before link reassignment: %10.6f \n",D_B->vector_dot(Sao));
+        outfile->Printf("\n Trace of D_C before link reassignment: %10.6f \n",D_C->vector_dot(Sao));
+        thislinkA->scale(0.7071067811865475244);
+        thislinkB->scale(0.7071067811865475244);
+        D_A->axpy(1.0,linalg::doublet(thislinkA, thislinkA, false, true)); 
+        D_B->axpy(1.0,linalg::doublet(thislinkB, thislinkB, false, true)); 
+        if (Cocc_C->colspi()[0] > 0) {
+            D_C->axpy(-1.0,linalg::doublet(thislinkA, thislinkA, false, true)); 
+            D_C->axpy(-1.0,linalg::doublet(thislinkB, thislinkB, false, true)); 
+        }
+        outfile->Printf("\n Trace of D_A after link reassignment: %10.6f \n",D_A->vector_dot(Sao));
+        outfile->Printf("\n Trace of D_B after link reassignment: %10.6f \n",D_B->vector_dot(Sao));
+        outfile->Printf("\n Trace of D_C after link reassignment: %10.6f \n",D_C->vector_dot(Sao));
     }
 
     matrices_["D_A"] = D_A;
@@ -999,12 +1402,582 @@ void FISAPT::unify() {
     matrices_["V_A"] = matrices_["VA"];
     matrices_["V_B"] = matrices_["VB"];
     matrices_["V_C"] = matrices_["VC"];
-    matrices_["J_A"] = matrices_["J0A"];
-    matrices_["J_B"] = matrices_["J0B"];
-    matrices_["J_C"] = matrices_["JC"];
-    matrices_["K_A"] = matrices_["K0A"];
-    matrices_["K_B"] = matrices_["K0B"];
-    matrices_["K_C"] = matrices_["KC"];
+
+    std::shared_ptr<Matrix> J_A(matrices_["J0A"]->clone());
+    std::shared_ptr<Matrix> K_A(matrices_["K0A"]->clone());
+    std::shared_ptr<Matrix> J_B(matrices_["J0B"]->clone());
+    std::shared_ptr<Matrix> K_B(matrices_["K0B"]->clone());
+    std::shared_ptr<Matrix> J_C(matrices_["JC"]->clone());
+    std::shared_ptr<Matrix> K_C(matrices_["KC"]->clone());
+
+// If density has been reassigned between fragments (the SAOn/SIAOn variants), we need to redo the Coulomb and exchange operators now.
+    SharedMatrix AlloccA(Cocc_A->clone());
+    SharedMatrix AlloccB(Cocc_B->clone());
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+        AlloccA = linalg::horzcat({Cocc_A,thislinkA});
+        AlloccB = linalg::horzcat({Cocc_B,thislinkB});
+
+        std::vector<SharedMatrix>& Cl = jk_->C_left();
+        std::vector<SharedMatrix>& Cr = jk_->C_right();
+        const std::vector<SharedMatrix>& J = jk_->J();
+        const std::vector<SharedMatrix>& K = jk_->K();
+
+        Cl.clear();
+        Cr.clear();
+        Cl.push_back(thislinkA);
+        Cr.push_back(thislinkA);
+        Cl.push_back(thislinkB);
+        Cr.push_back(thislinkB);
+
+        jk_->compute();
+
+        J_A->add(J[0]);
+        K_A->add(K[0]);
+        J_B->add(J[1]);
+        K_B->add(K[1]);
+        J_C->subtract(J[0]);
+        K_C->subtract(K[0]);
+        J_C->subtract(J[1]);
+        K_C->subtract(K[1]);
+        matrices_["JLA"] = J[0]->clone(); 
+        matrices_["KLA"] = K[0]->clone(); 
+        matrices_["JLB"] = J[1]->clone(); 
+        matrices_["KLB"] = K[1]->clone(); 
+    }
+    else {
+// dummy zero matrices for other link assignments
+        matrices_["JLA"] = matrices_["VC"]->clone();
+        matrices_["KLA"] = matrices_["VC"]->clone();
+        matrices_["JLB"] = matrices_["VC"]->clone();
+        matrices_["KLB"] = matrices_["VC"]->clone();
+        matrices_["JLA"]->zero();
+        matrices_["JLB"]->zero();
+        matrices_["KLA"]->zero();
+        matrices_["KLB"]->zero();
+    }
+
+    matrices_["AlloccA"] = AlloccA;
+    matrices_["AlloccB"] = AlloccB;
+    matrices_["thislinkA"] = thislinkA;
+    matrices_["thislinkB"] = thislinkB;
+    matrices_["thislinkA0"] = thislinkA0;
+    matrices_["thislinkB0"] = thislinkB0;
+    matrices_["E NUC0"] = matrices_["E NUC"];
+    matrices_["J_A"] = J_A;
+    matrices_["J_B"] = J_B;
+    matrices_["K_A"] = K_A;
+    matrices_["K_B"] = K_B;
+    matrices_["J_C"] = J_C;
+    matrices_["K_C"] = K_C;
+    vectors_["DIP NUCA0"] = vectors_["DIP NUCA"];
+    vectors_["DIP NUCB0"] = vectors_["DIP NUCB"];
+    vectors_["DIP NUCC0"] = vectors_["DIP NUCC"];
+}
+
+void FISAPT::unify_part2() {
+// What must happen between unify() and unify_part2() is a recalculation of one-electron integrals with updated nuclear charges,
+// that is, another call to nuclear().
+    outfile->Printf("  ==> Unification (part 2) <==\n\n");
+
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    std::string link_ortho = options_.get_str("FISAPT_LINK_ORTHO");
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+
+//Now redo monomer SCF calculations with the hybrid orbital on B removed from the embedding potential for A
+//and vice versa.
+//This is the FIRST iteration towards self-consistency.
+//If zero iterations requested (SAO0/SIAO0), we still come in here but do not save the SCF vectors. MAybe that is unnecessary? 
+//Anyway, SAO0/SIAO0 is bad, you should always do at least one iteration.
+//old nuclear potential, with +1 charges on the connecting atoms of A/B belonging to C
+    matrices_["V_A0"] = matrices_["V_A"];
+    matrices_["V_B0"] = matrices_["V_B"];
+    matrices_["V_C0"] = matrices_["V_C"];
+//new, updated nuclear potential, with full charges on A/B belonging to A/B
+    matrices_["V_A"] = matrices_["VA"];
+    matrices_["V_B"] = matrices_["VB"];
+    matrices_["V_C"] = matrices_["VC"];
+
+    outfile->Printf("  ==> Redo Relaxed SCF Equations <==\n\n");
+
+    // => Restricted Basis Sets with C Projected <= //
+
+    std::vector<std::shared_ptr<Matrix> > Xs;
+    Xs.push_back(matrices_["LoccA"]);
+    Xs.push_back(matrices_["LoccB"]);
+    Xs.push_back(matrices_["Cvir"]);
+    matrices_["XC"] = linalg::horzcat(Xs);
+    matrices_["XC"]->set_name("XC");
+
+    // => Embedding Potential for C <= //
+
+    std::shared_ptr<Matrix> WC(matrices_["V_C"]->clone());
+    WC->copy(matrices_["V_C"]);
+    WC->add(matrices_["J_C"]);
+    WC->add(matrices_["J_C"]);
+    WC->subtract(matrices_["K_C"]);
+    std::shared_ptr<Matrix> WCA(WC->clone());
+    WCA->copy(WC);
+    WCA->add(matrices_["JLA"]) ;
+    WCA->add(matrices_["JLA"]) ;
+    WCA->subtract(matrices_["KLA"]) ;
+    std::shared_ptr<Matrix> WCB(WC->clone());
+    WCB->copy(WC);
+    WCB->add(matrices_["JLB"]) ;
+    WCB->add(matrices_["JLB"]) ;
+    WCB->subtract(matrices_["KLB"]) ;
+    matrices_["WCA"] = WCA;
+    matrices_["WCB"] = WCB;
+
+    // => A <= //
+
+    outfile->Printf("  ==> SCF A: <==\n\n");
+    outfile->Printf("  Nuclear repulsion: %10.6f\n",matrices_["E NUC"]->get(0, 0));
+    std::shared_ptr<Matrix> VA_SCF(matrices_["V_A"]->clone());
+    VA_SCF->copy(matrices_["V_A"]);
+    if (reference_->has_potential_variable("C")) VA_SCF->add(matrices_["VE"]);
+    double nucrep = matrices_["E NUC"]->get(0, 0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["T"], matrices_["thislinkA"], true, false, false)->get(0,0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], VA_SCF, matrices_["thislinkA"], true, false, false)->get(0,0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["V_C"], matrices_["thislinkA"], true, false, false)->get(0,0);
+    nucrep += 4.0*matrices_["D_C"]->vector_dot(matrices_["JLA"]) - 2.0*matrices_["D_C"]->vector_dot(matrices_["KLA"] );
+    // Seems ultra-weird but apparently these "self-interaction" terms need to be included.
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["JLA"], matrices_["thislinkA"], true, false, false)->get(0,0);
+    nucrep -= linalg::triplet(matrices_["thislinkA"], matrices_["KLA"], matrices_["thislinkA"], true, false, false)->get(0,0);
+    std::shared_ptr<FISAPTSCF> scfA =
+        std::make_shared<FISAPTSCF>(jk_, nucrep, matrices_["S"], matrices_["XC"], matrices_["T"],
+                                    VA_SCF, matrices_["WCA"], matrices_["LoccA"], options_);
+    scfA->compute_energy();
+
+    scalars_["E0 A"] = scfA->scalars()["E SCF"];
+    if (link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+        matrices_["Cocc0A"] = scfA->matrices()["Cocc"];
+        matrices_["Cvir0A"] = scfA->matrices()["Cvir"];
+        matrices_["J0A"] = scfA->matrices()["J"];
+        matrices_["K0A"] = scfA->matrices()["K"];
+        vectors_["eps_occ0A"] = scfA->vectors()["eps_occ"];
+        vectors_["eps_vir0A"] = scfA->vectors()["eps_vir"];
+    }
+
+    // => B <= //
+
+    outfile->Printf("  ==> SCF B: <==\n\n");
+    outfile->Printf("  Nuclear repulsion: %10.6f\n",matrices_["E NUC"]->get(1, 1));
+    std::shared_ptr<Matrix> VB_SCF(matrices_["V_B"]->clone());
+    VB_SCF->copy(matrices_["V_B"]);
+    if (reference_->has_potential_variable("C")) VB_SCF->add(matrices_["VE"]);
+    nucrep = matrices_["E NUC"]->get(1, 1);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["T"], matrices_["thislinkB"], true, false, false)->get(0,0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], VB_SCF, matrices_["thislinkB"], true, false, false)->get(0,0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["V_C"], matrices_["thislinkB"], true, false, false)->get(0,0);
+    nucrep += 4.0*matrices_["D_C"]->vector_dot(matrices_["JLB"]) - 2.0*matrices_["D_C"]->vector_dot(matrices_["KLB"] );
+    // Seems ultra-weird but apparently these "self-interaction" terms need to be included.
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["JLB"], matrices_["thislinkB"], true, false, false)->get(0,0);
+    nucrep -= linalg::triplet(matrices_["thislinkB"], matrices_["KLB"], matrices_["thislinkB"], true, false, false)->get(0,0);
+    std::shared_ptr<FISAPTSCF> scfB =
+        std::make_shared<FISAPTSCF>(jk_, nucrep, matrices_["S"], matrices_["XC"], matrices_["T"],
+                                    VB_SCF, matrices_["WCB"], matrices_["LoccB"], options_);
+    scfB->compute_energy();
+
+    scalars_["E0 B"] = scfB->scalars()["E SCF"];
+    if (link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+        matrices_["Cocc0B"] = scfB->matrices()["Cocc"];
+        matrices_["Cvir0B"] = scfB->matrices()["Cvir"];
+        matrices_["J0B"] = scfB->matrices()["J"];
+        matrices_["K0B"] = scfB->matrices()["K"];
+        vectors_["eps_occ0B"] = scfB->vectors()["eps_occ"];
+        vectors_["eps_vir0B"] = scfB->vectors()["eps_vir"];
+    }
+
+//Now reorthogonalize the truncated link orbital to the new A/B SCF space, completing the FIRST iteration to self-consistency.
+//thislinkA0/thislinkB0 are the original unorthogonalized link IHOs computed before.
+    if (link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+        std::shared_ptr<Matrix> thislinkA(matrices_["thislinkA0"]->clone());
+        std::shared_ptr<Matrix> thislinkB(matrices_["thislinkB0"]->clone());
+        int norbA = matrices_["Cocc0A"]->colspi()[0];
+        int norbB = matrices_["Cocc0B"]->colspi()[0];
+        int nm = primary_->nbf();
+        Dimension zero(1);
+        Dimension dimnm(1);
+        Dimension di(1);
+        Dimension dj(1);
+        dimnm[0] = nm;
+        Slice rowslice(zero,dimnm);
+        std::shared_ptr<Matrix> ortho_targetA = matrices_["LoccA"];
+        std::shared_ptr<Matrix> ortho_targetB = matrices_["LoccB"];
+        if (link_ortho == "FRAGMENT") {
+            ortho_targetA = matrices_["Cocc0A"];
+            ortho_targetB = matrices_["Cocc0B"];
+            }
+        if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
+            std::shared_ptr<Matrix> CoccLA_ortho = linalg::triplet(ortho_targetA, matrices_["S"], thislinkA, true, false, false);
+            // CoccLA_ortho->print();
+            double** CoccLA_orthop = CoccLA_ortho->pointer();
+            for (int j = 0; j < norbA; j++) {
+                di[0] = j;
+                dj[0] = j + 1;
+                Slice colslice(di,dj);
+                thislinkA->axpy(-CoccLA_orthop[j][0],ortho_targetA->get_block(rowslice,colslice));
+            }
+        }
+        std::shared_ptr<Matrix> thisnormA = linalg::triplet(thislinkA, matrices_["S"], thislinkA, true, false, false);
+        double** thisnormAp = thisnormA->pointer();
+        thislinkA->scale(1.0/std::sqrt(thisnormAp[0][0]));
+        if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
+            std::shared_ptr<Matrix> CoccLB_ortho = linalg::triplet(ortho_targetB, matrices_["S"], thislinkB, true, false, false);
+            // CoccLB_ortho->print();
+            double** CoccLB_orthop = CoccLB_ortho->pointer();
+            for (int j = 0; j < norbB; j++) {
+                di[0] = j;
+                dj[0] = j + 1;
+                Slice colslice(di,dj);
+                thislinkB->axpy(-CoccLB_orthop[j][0],ortho_targetB->get_block(rowslice,colslice));
+            }
+        }
+        std::shared_ptr<Matrix> thisnormB = linalg::triplet(thislinkB, matrices_["S"], thislinkB, true, false, false);
+        double** thisnormBp = thisnormB->pointer();
+        thislinkB->scale(1.0/std::sqrt(thisnormBp[0][0]));
+
+// We can now use the link IHOs from the first iteration to update the fragment density matrices D_A, D_B, D_C.
+// Note the multiplication by 1/sqrt{2} which correspond to multiplying the density matrix contribution by 1/2 (the orbital is singly occupied).
+        std::shared_ptr<Matrix> Cocc_C = matrices_["LoccC"];
+        std::shared_ptr<Matrix> D_A = linalg::doublet(matrices_["Cocc0A"], matrices_["Cocc0A"], false, true);
+        std::shared_ptr<Matrix> D_B = linalg::doublet(matrices_["Cocc0B"], matrices_["Cocc0B"], false, true);
+        std::shared_ptr<Matrix> D_C(D_A->clone());
+        D_C->zero();
+        if (Cocc_C->colspi()[0] > 0) {
+            D_C = linalg::doublet(Cocc_C, Cocc_C, false, true);
+        }
+ 
+        thislinkA->scale(0.7071067811865475244);
+        thislinkB->scale(0.7071067811865475244);
+        D_A->axpy(1.0,linalg::doublet(thislinkA, thislinkA, false, true)); 
+        D_B->axpy(1.0,linalg::doublet(thislinkB, thislinkB, false, true)); 
+        if (Cocc_C->colspi()[0] > 0) {
+            D_C->axpy(-1.0,linalg::doublet(thislinkA, thislinkA, false, true)); 
+            D_C->axpy(-1.0,linalg::doublet(thislinkB, thislinkB, false, true)); 
+        }
+ 
+        matrices_["D_A"] = D_A;
+        matrices_["D_B"] = D_B;
+        matrices_["D_C"] = D_C;
+ 
+        // PA and PB are used only to define the complement of DA and DB in the DCBS
+        std::shared_ptr<Matrix> P_A =
+            linalg::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
+        P_A->subtract(D_A);
+ 
+        std::shared_ptr<Matrix> P_B =
+            linalg::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
+        P_B->subtract(D_B);
+ 
+        matrices_["P_A"] = P_A;
+        matrices_["P_B"] = P_B;
+ 
+        matrices_["Cocc_A"] = matrices_["Cocc0A"];
+        matrices_["Cocc_B"] = matrices_["Cocc0B"];
+
+        std::shared_ptr<Matrix> J_A(matrices_["J0A"]->clone());
+        std::shared_ptr<Matrix> K_A(matrices_["K0A"]->clone());
+        std::shared_ptr<Matrix> J_B(matrices_["J0B"]->clone());
+        std::shared_ptr<Matrix> K_B(matrices_["K0B"]->clone());
+        std::shared_ptr<Matrix> J_C(matrices_["JC"]->clone());
+        std::shared_ptr<Matrix> K_C(matrices_["KC"]->clone());
+
+// Now redo the Coulomb and exchange operators with the new densities. We do just the link part and save it separately as well.
+        SharedMatrix AlloccA(matrices_["Cocc0A"]->clone());
+        SharedMatrix AlloccB(matrices_["Cocc0B"]->clone());
+        AlloccA = linalg::horzcat({matrices_["Cocc0A"],thislinkA});
+        AlloccB = linalg::horzcat({matrices_["Cocc0B"],thislinkB});
+ 
+        std::vector<SharedMatrix>& Cl = jk_->C_left();
+        std::vector<SharedMatrix>& Cr = jk_->C_right();
+ 
+        const std::vector<SharedMatrix>& J = jk_->J();
+        const std::vector<SharedMatrix>& K = jk_->K();
+ 
+        Cl.clear();
+        Cr.clear();
+ 
+        Cl.push_back(thislinkA);
+        Cr.push_back(thislinkA);
+        Cl.push_back(thislinkB);
+        Cr.push_back(thislinkB);
+ 
+        jk_->compute();
+ 
+        J_A->add(J[0]);
+        K_A->add(K[0]);
+        J_B->add(J[1]);
+        K_B->add(K[1]);
+        J_C->subtract(J[0]);
+        K_C->subtract(K[0]);
+        J_C->subtract(J[1]);
+        K_C->subtract(K[1]);
+        matrices_["JLA"] = J[0]->clone(); 
+        matrices_["KLA"] = K[0]->clone(); 
+        matrices_["JLB"] = J[1]->clone(); 
+        matrices_["KLB"] = K[1]->clone();
+ 
+        matrices_["AlloccA"] = AlloccA;
+        matrices_["AlloccB"] = AlloccB;
+        matrices_["thislinkA"] = thislinkA;
+        matrices_["thislinkB"] = thislinkB;
+        matrices_["J_A"] = J_A;
+        matrices_["J_B"] = J_B;
+        matrices_["K_A"] = K_A;
+        matrices_["K_B"] = K_B;
+        matrices_["J_C"] = J_C;
+        matrices_["K_C"] = K_C;
+     
+    if (link_assignment == "SAO2" || link_assignment == "SIAO2" ) {
+
+//Now redo monomer SCF calculations with the hybrid orbital on B removed from the embedding potential for A
+//and vice versa.
+//This is the SECOND iteration towards self-consistency, performed only when SAO2/SIAO2 is requested.
+    outfile->Printf("  ==> Redo Relaxed SCF Equations (SAO2/SIAO2) <==\n\n");
+
+    // => Embedding Potential for C <= //
+
+    WC->copy(matrices_["VC"]);
+    WC->add(matrices_["J_C"]);
+    WC->add(matrices_["J_C"]);
+    WC->subtract(matrices_["K_C"]);
+    WCA->copy(WC);
+    WCA->add(matrices_["JLA"]) ;
+    WCA->add(matrices_["JLA"]) ;
+    WCA->subtract(matrices_["KLA"]) ;
+    WCB->copy(WC);
+    WCB->add(matrices_["JLB"]) ;
+    WCB->add(matrices_["JLB"]) ;
+    WCB->subtract(matrices_["KLB"]) ;
+    matrices_["WCA"] = WCA;
+    matrices_["WCB"] = WCB;
+
+    // => A <= //
+
+    outfile->Printf("  ==> SCF A: <==\n\n");
+    outfile->Printf("  Nuclear repulsion: %10.6f\n",matrices_["E NUC"]->get(0, 0));
+    nucrep = matrices_["E NUC"]->get(0, 0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["T"], matrices_["thislinkA"], true, false, false)->get(0,0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], VA_SCF, matrices_["thislinkA"], true, false, false)->get(0,0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["VC"], matrices_["thislinkA"], true, false, false)->get(0,0);
+    nucrep += 4.0*matrices_["D_C"]->vector_dot(matrices_["JLA"]) - 2.0*matrices_["D_C"]->vector_dot(matrices_["KLA"] );
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkA"], matrices_["JLA"], matrices_["thislinkA"], true, false, false)->get(0,0);
+    nucrep -= linalg::triplet(matrices_["thislinkA"], matrices_["KLA"], matrices_["thislinkA"], true, false, false)->get(0,0);
+    std::shared_ptr<FISAPTSCF> scfA2 =
+        std::make_shared<FISAPTSCF>(jk_, nucrep, matrices_["S"], matrices_["XC"], matrices_["T"],
+                                    VA_SCF, matrices_["WCA"], matrices_["LoccA"], options_);
+    scfA2->compute_energy();
+
+    scalars_["E0 A"] = scfA2->scalars()["E SCF"];
+    matrices_["Cocc0A"] = scfA2->matrices()["Cocc"];
+    matrices_["Cvir0A"] = scfA2->matrices()["Cvir"];
+    matrices_["J0A"] = scfA2->matrices()["J"];
+    matrices_["K0A"] = scfA2->matrices()["K"];
+    vectors_["eps_occ0A"] = scfA2->vectors()["eps_occ"];
+    vectors_["eps_vir0A"] = scfA2->vectors()["eps_vir"];
+
+    // => B <= //
+
+    outfile->Printf("  ==> SCF B: <==\n\n");
+    outfile->Printf("  Nuclear repulsion: %10.6f\n",matrices_["E NUC"]->get(1, 1));
+    nucrep = matrices_["E NUC"]->get(1, 1);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["T"], matrices_["thislinkB"], true, false, false)->get(0,0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], VB_SCF, matrices_["thislinkB"], true, false, false)->get(0,0);
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["VC"], matrices_["thislinkB"], true, false, false)->get(0,0);
+    nucrep += 4.0*matrices_["D_C"]->vector_dot(matrices_["JLB"]) - 2.0*matrices_["D_C"]->vector_dot(matrices_["KLB"] );
+    nucrep += 2.0*linalg::triplet(matrices_["thislinkB"], matrices_["JLB"], matrices_["thislinkB"], true, false, false)->get(0,0);
+    nucrep -= linalg::triplet(matrices_["thislinkB"], matrices_["KLB"], matrices_["thislinkB"], true, false, false)->get(0,0);
+    std::shared_ptr<FISAPTSCF> scfB2 =
+        std::make_shared<FISAPTSCF>(jk_, nucrep, matrices_["S"], matrices_["XC"], matrices_["T"],
+                                    VB_SCF, matrices_["WCB"], matrices_["LoccB"], options_);
+    scfB2->compute_energy();
+
+    scalars_["E0 B"] = scfB2->scalars()["E SCF"];
+    matrices_["Cocc0B"] = scfB2->matrices()["Cocc"];
+    matrices_["Cvir0B"] = scfB2->matrices()["Cvir"];
+    matrices_["J0B"] = scfB2->matrices()["J"];
+    matrices_["K0B"] = scfB2->matrices()["K"];
+    vectors_["eps_occ0B"] = scfB2->vectors()["eps_occ"];
+    vectors_["eps_vir0B"] = scfB2->vectors()["eps_vir"];
+
+//Now reorthogonalize the truncated link orbital to the new A/B SCF space, completing the SECOND iteration to self-consistency.
+//thislinkA0/thislinkB0 are the original unorthogonalized link IHOs computed before.
+    thislinkA->copy(matrices_["thislinkA0"]);
+    thislinkB->copy(matrices_["thislinkB0"]);
+    if (link_ortho == "FRAGMENT") {
+        ortho_targetA = matrices_["Cocc0A"];
+        ortho_targetB = matrices_["Cocc0B"];
+        }
+    else {
+        ortho_targetA = matrices_["LoccA"];
+        ortho_targetB = matrices_["LoccB"];
+        } 
+    if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
+        std::shared_ptr<Matrix> CoccLA_ortho = linalg::triplet(ortho_targetA, matrices_["S"], thislinkA, true, false, false);
+        // CoccLA_ortho->print();
+        double** CoccLA_orthop = CoccLA_ortho->pointer();
+        for (int j = 0; j < norbA; j++) {
+            di[0] = j;
+            dj[0] = j + 1;
+            Slice colslice(di,dj);
+            thislinkA->axpy(-CoccLA_orthop[j][0],ortho_targetA->get_block(rowslice,colslice));
+        }
+    }
+    thisnormA = linalg::triplet(thislinkA, matrices_["S"], thislinkA, true, false, false);
+    double** thisnormAp = thisnormA->pointer();
+    thislinkA->scale(1.0/std::sqrt(thisnormAp[0][0]));
+
+    if (link_ortho == "FRAGMENT" || link_ortho == "WHOLE") {
+        std::shared_ptr<Matrix> CoccLB_ortho = linalg::triplet(ortho_targetB, matrices_["S"], thislinkB, true, false, false);
+        // CoccLB_ortho->print();
+        double** CoccLB_orthop = CoccLB_ortho->pointer();
+        for (int j = 0; j < norbB; j++) {
+            di[0] = j;
+            dj[0] = j + 1;
+            Slice colslice(di,dj);
+            thislinkB->axpy(-CoccLB_orthop[j][0],ortho_targetB->get_block(rowslice,colslice));
+        }
+    }
+    thisnormB = linalg::triplet(thislinkB, matrices_["S"], thislinkB, true, false, false);
+    double** thisnormBp = thisnormB->pointer();
+    thislinkB->scale(1.0/std::sqrt(thisnormBp[0][0]));
+
+// We can now use the link IHOs from the second iteration to update the fragment density matrices D_A, D_B, D_C.
+// Note the multiplication by 1/sqrt{2} which correspond to multiplying the density matrix contribution by 1/2 (the orbital is singly occupied).
+    D_A = linalg::doublet(matrices_["Cocc0A"], matrices_["Cocc0A"], false, true);
+    D_B = linalg::doublet(matrices_["Cocc0B"], matrices_["Cocc0B"], false, true);
+    D_C->zero();
+    if (Cocc_C->colspi()[0] > 0) {
+        D_C = linalg::doublet(Cocc_C, Cocc_C, false, true);
+    }
+ 
+    thislinkA->scale(0.7071067811865475244);
+    thislinkB->scale(0.7071067811865475244);
+    D_A->axpy(1.0,linalg::doublet(thislinkA, thislinkA, false, true)); 
+    D_B->axpy(1.0,linalg::doublet(thislinkB, thislinkB, false, true)); 
+    if (Cocc_C->colspi()[0] > 0) {
+        D_C->axpy(-1.0,linalg::doublet(thislinkA, thislinkA, false, true)); 
+        D_C->axpy(-1.0,linalg::doublet(thislinkB, thislinkB, false, true)); 
+    }
+ 
+    matrices_["D_A"] = D_A;
+    matrices_["D_B"] = D_B;
+    matrices_["D_C"] = D_C;
+ 
+    // PA and PB are used only to define the complement of DA and DB in the DCBS
+    P_A =
+        linalg::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
+    P_A->subtract(D_A);
+ 
+    P_B =
+        linalg::doublet(reference_->Ca_subset("AO", "ALL"), reference_->Ca_subset("AO", "ALL"), false, true);
+    P_B->subtract(D_B);
+ 
+    matrices_["P_A"] = P_A;
+    matrices_["P_B"] = P_B;
+ 
+    matrices_["Cocc_A"] = matrices_["Cocc0A"];
+    matrices_["Cocc_B"] = matrices_["Cocc0B"];
+
+    J_A->copy(matrices_["J0A"]);
+    K_A->copy(matrices_["K0A"]);
+    J_B->copy(matrices_["J0B"]);
+    K_B->copy(matrices_["K0B"]);
+    J_C->copy(matrices_["JC"]);
+    K_C->copy(matrices_["KC"]);
+
+// Finally, redo the Coulomb and exchange operators one last time.
+    AlloccA = linalg::horzcat({matrices_["Cocc0A"],thislinkA});
+    AlloccB = linalg::horzcat({matrices_["Cocc0B"],thislinkB});
+ 
+    Cl = jk_->C_left();
+    Cr = jk_->C_right();
+ 
+    Cl.clear();
+    Cr.clear();
+ 
+    Cl.push_back(thislinkA);
+    Cr.push_back(thislinkA);
+    Cl.push_back(thislinkB);
+    Cr.push_back(thislinkB);
+ 
+    jk_->compute();
+ 
+    J_A->add(J[0]);
+    K_A->add(K[0]);
+    J_B->add(J[1]);
+    K_B->add(K[1]);
+    J_C->subtract(J[0]);
+    K_C->subtract(K[0]);
+    J_C->subtract(J[1]);
+    K_C->subtract(K[1]);
+    matrices_["JLA"] = J[0]->clone(); 
+    matrices_["KLA"] = K[0]->clone(); 
+    matrices_["JLB"] = J[1]->clone(); 
+    matrices_["KLB"] = K[1]->clone(); 
+ 
+    matrices_["AlloccA"] = AlloccA;
+    matrices_["AlloccB"] = AlloccB;
+    matrices_["thislinkA"] = thislinkA;
+    matrices_["thislinkB"] = thislinkB;
+    matrices_["J_A"] = J_A;
+    matrices_["J_B"] = J_B;
+    matrices_["K_A"] = K_A;
+    matrices_["K_B"] = K_B;
+    matrices_["J_C"] = J_C;
+    matrices_["K_C"] = K_C;
+    }
+    }
+    }
+// Now we are done even for SAO2/SIAO2.
+}
+
+// Create cube files for displaying link orbitals and densities.
+// Three kinds of cubes are supported: 
+// FISAPT_CUBE_LINKIBOS==true - compute the two link IBOs
+// FISAPT_CUBE_LINKIHOS==true - compute the two link IHOs obtained by projecting link IBOs onto a suitable fragment space
+// FISAPT_CUBE_DENSMAT==true - compute the three densities for fragments A/B/C
+void FISAPT::do_cubes() {
+
+    if ((!(options_.get_bool("FISAPT_CUBE_LINKIHOS"))) && (!(options_.get_bool("FISAPT_CUBE_LINKIBOS"))) && (!(options_.get_bool("FISAPT_CUBE_DENSMAT")))) {
+    return;
+    }
+    std::shared_ptr<BasisSet> auxiliary = reference_->get_basisset("DF_BASIS_SAPT");
+    std::shared_ptr<CubicScalarGrid> grid_ = std::make_shared<CubicScalarGrid>(primary_, options_);
+    grid_->set_filepath(options_.get_str("CUBEPROP_FILEPATH"));
+    grid_->set_auxiliary_basis(auxiliary);
+
+    if (options_.get_bool("FISAPT_CUBE_LINKIHOS")) {
+        std::vector<int> indices;
+        indices.push_back(0);
+        std::vector<std::string> labels1;
+        labels1.push_back("LinkA");
+        std::vector<std::string> labels2;
+        labels2.push_back("LinkB");
+        grid_->compute_orbitals(matrices_["thislinkA"], indices, labels1, "LinkA");
+        grid_->compute_orbitals(matrices_["thislinkB"], indices, labels2, "LinkB");
+    }
+
+    if (options_.get_bool("FISAPT_CUBE_LINKIBOS")) {
+        std::vector<std::string> labels3;
+        std::vector<int> indices2;
+        for (int k = 0; k < matrices_["LoccL"]->colspi()[0]; k++) {
+            labels3.push_back("LoccL");
+            indices2.push_back(k);
+        }
+        grid_->compute_orbitals(matrices_["LoccL"], indices2, labels3, "LoccL");
+    }
+
+    if (options_.get_bool("FISAPT_CUBE_DENSMAT")) {    
+        std::shared_ptr<Matrix> D_A = matrices_["D_A"];
+        std::shared_ptr<Matrix> D_B = matrices_["D_B"];
+        std::shared_ptr<Matrix> D_C = matrices_["D_C"];
+        grid_->compute_density(D_A, "DA");
+        grid_->compute_density(D_B, "DB");
+        grid_->compute_density(D_C, "DC");
+    }
+
 }
 
 // Compute deltaHF contribution (counted as induction)
@@ -1060,6 +2033,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> D_AC(D_A->clone());
     D_AC->copy(D_A);
     D_AC->add(D_C);
+    outfile->Printf("\n Trace of D_AC: %10.6f \n",D_AC->vector_dot(matrices_["S"]));
 
     EAC += D_AC->vector_dot(H_AC) + D_AC->vector_dot(F_AC);
 
@@ -1093,6 +2067,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> D_BC(D_B->clone());
     D_BC->copy(D_B);
     D_BC->add(D_C);
+    outfile->Printf("\n Trace of D_BC: %10.6f \n",D_BC->vector_dot(matrices_["S"]));
 
     EBC += D_BC->vector_dot(H_BC) + D_BC->vector_dot(F_BC);
 
@@ -1119,6 +2094,7 @@ void FISAPT::dHF() {
     F_A->add(J_A);
     F_A->subtract(K_A);
 
+    outfile->Printf("\n Trace of D_A: %10.6f \n",D_A->vector_dot(matrices_["S"]));
     EA += D_A->vector_dot(H_A) + D_A->vector_dot(F_A);
 
     // => Monomer B Energy <= //
@@ -1137,6 +2113,7 @@ void FISAPT::dHF() {
     F_B->add(J_B);
     F_B->subtract(K_B);
 
+    outfile->Printf("\n Trace of D_B: %10.6f \n",D_B->vector_dot(matrices_["S"]));
     EB += D_B->vector_dot(H_B) + D_B->vector_dot(F_B);
 
     // => Monomer C Energy <= //
@@ -1155,11 +2132,48 @@ void FISAPT::dHF() {
     F_C->add(J_C);
     F_C->subtract(K_C);
 
+    outfile->Printf("\n Trace of D_C: %10.6f \n",D_C->vector_dot(matrices_["S"]));
     EC += D_C->vector_dot(H_C) + D_C->vector_dot(F_C);
 
     // => Delta HF <= //
 
     double EHF = EABC - EAC - EBC + EC;
+ 
+    // => Now do analysis of dipole moment contributions <= //
+    
+    std::shared_ptr<Matrix> D_ABC(D_A->clone());
+    std::shared_ptr<Matrix> D_ABCA(D_A->clone());
+    std::shared_ptr<Matrix> D_ABCB(D_A->clone());
+    std::shared_ptr<Matrix> D_ABCLA(D_A->clone());
+    std::shared_ptr<Matrix> D_ABCLB(D_A->clone());
+    D_ABC = linalg::doublet(matrices_["Locc"], matrices_["Locc"], false, true);
+    D_ABCA = linalg::doublet(matrices_["LoccA"], matrices_["LoccA"], false, true);
+    D_ABCB = linalg::doublet(matrices_["LoccB"], matrices_["LoccB"], false, true);
+    D_ABCLA = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
+    D_ABCLB = linalg::doublet(matrices_["thislinkB"], matrices_["thislinkB"], false, true);
+    std::shared_ptr<Matrix> D0A = linalg::doublet(matrices_["Cocc0A"], matrices_["Cocc0A"], false, true);
+    std::shared_ptr<Matrix> D0B = linalg::doublet(matrices_["Cocc0B"], matrices_["Cocc0B"], false, true);
+
+    double dipabc_x = 2.0*D_ABC->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA"]->get(0) + vectors_["DIP NUCB"]->get(0) + vectors_["DIP NUCC"]->get(0);
+    double dipabc_y = 2.0*D_ABC->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA"]->get(1) + vectors_["DIP NUCB"]->get(1) + vectors_["DIP NUCC"]->get(1);
+    double dipabc_z = 2.0*D_ABC->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA"]->get(2) + vectors_["DIP NUCB"]->get(2) + vectors_["DIP NUCC"]->get(2);
+    outfile->Printf("\n HF dipole moment for ABC: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+    dipabc_x = 2.0*D_ABCA->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA0"]->get(0);
+    dipabc_y = 2.0*D_ABCA->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA0"]->get(1);
+    dipabc_z = 2.0*D_ABCA->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA0"]->get(2);
+    outfile->Printf("\n HF dipole moment for A before link reassignment: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+    dipabc_x = 2.0*D_ABCB->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCB0"]->get(0);
+    dipabc_y = 2.0*D_ABCB->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCB0"]->get(1);
+    dipabc_z = 2.0*D_ABCB->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCB0"]->get(2);
+    outfile->Printf("\n HF dipole moment for B before link reassignment: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+    dipabc_x = 2.0*D0A->vector_dot(matrices_["X DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA"]->get(0);
+    dipabc_y = 2.0*D0A->vector_dot(matrices_["Y DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA"]->get(1);
+    dipabc_z = 2.0*D0A->vector_dot(matrices_["Z DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA"]->get(2);
+    outfile->Printf("\n HF dipole moment for A after link reassignment:  (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+    dipabc_x = 2.0*D0B->vector_dot(matrices_["X DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCB"]->get(0);
+    dipabc_y = 2.0*D0B->vector_dot(matrices_["Y DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCB"]->get(1);
+    dipabc_z = 2.0*D0B->vector_dot(matrices_["Z DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCB"]->get(2);
+    outfile->Printf("\n HF dipole moment for B after link reassignment:  (%12.8f, %12.8f, %12.8f) length: %12.8f\n\n", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
 
     // => Monomer and dimer energies in the original ABC full system <= //
 
@@ -1344,6 +2358,7 @@ void FISAPT::dHF() {
 }
 
 // Compute total electrostatics contribution
+// This definition works just as well for the SAOn/SIAOn methods because the densities and Coulomb operators have been adjusted.
 void FISAPT::elst() {
     outfile->Printf("  ==> Electrostatics <==\n\n");
 
@@ -1388,6 +2403,7 @@ void FISAPT::elst() {
 }
 
 // Compute total exchange contribution
+// Special code (https://doi.org/10.1021/acs.jpca.2c06465) is used for the SAOn/SIAOn variants - see below.
 void FISAPT::exch() {
     outfile->Printf("  ==> Exchange <==\n\n");
 
@@ -1406,16 +2422,20 @@ void FISAPT::exch() {
     std::shared_ptr<Matrix> K_A = matrices_["K_A"];
     std::shared_ptr<Matrix> K_B = matrices_["K_B"];
 
-    std::shared_ptr<Matrix> Cocc_A = matrices_["Cocc_A"];
-    std::shared_ptr<Matrix> Cocc_B = matrices_["Cocc_B"];
-
-    // ==> Exchange Terms (S^2, MCBS or DCBS) <== //
-
-    std::shared_ptr<Matrix> C_O = linalg::triplet(D_B, S, Cocc_A);
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
+
+    // ==> Exchange Terms (S^2, MCBS or DCBS) <== //
+
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    if (link_assignment == "C" || link_assignment == "AB" ) {
+
+    std::shared_ptr<Matrix> Cocc_A = matrices_["Cocc_A"];   
+    std::shared_ptr<Matrix> Cocc_B = matrices_["Cocc_B"];
+
+    std::shared_ptr<Matrix> C_O = linalg::triplet(D_B, S, Cocc_A);
     Cl.clear();
     Cr.clear();
     Cl.push_back(Cocc_A);
@@ -1442,10 +2462,10 @@ void FISAPT::exch() {
         Exch10_2M += Exch10_2M_terms[k];
     }
     // for (int k = 0; k < Exch10_2M_terms.size(); k++) {
-    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2M_terms[k]);
-    //}
+    //     outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2M_terms[k]);
+    // }
     // scalars_["Exch10(S^2)"] = Exch10_2;
-    // outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf [Eh]\n",Exch10_2M);
+    outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf [Eh]\n",Exch10_2M);
     // outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2M);
     // fflush(outfile);
 
@@ -1474,11 +2494,11 @@ void FISAPT::exch() {
     for (int k = 0; k < Exch10_2_terms.size(); k++) {
         Exch10_2 += Exch10_2_terms[k];
     }
-    // for (int k = 0; k < Exch10_2_terms.size(); k++) {
-    //    outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2_terms[k]);
-    //}
+    for (int k = 0; k < Exch10_2_terms.size(); k++) {
+       outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2_terms[k]);
+    }
     scalars_["Exch10(S^2)"] = Exch10_2;
-    // outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf [Eh]\n",Exch10_2);
+    outfile->Printf("    Exch10(S^2) [DCBS]  = %18.12lf [Eh]\n",Exch10_2);
     outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n", Exch10_2);
     // fflush(outfile);
 
@@ -1580,12 +2600,460 @@ void FISAPT::exch() {
     outfile->Printf("    Exch10              = %18.12lf [Eh]\n", Exch10_n);
     outfile->Printf("\n");
     // fflush(outfile);
+    } // (link_assignment == "C" || link_assignment == "AB" )
+
+// Now come the first-order exchange energy expressions appropriate for the SAOn/SIAOn link assignments.
+// The expressions depend on the (parallel, perpendicular, or averaged) spin coupling between the two singly occupied link orbitals.
+// If FISAPT_EXCH_PARPERP == true, all 3 spin couplings are calculated.
+// If FISAPT_EXCH_PARPERP == false, only the averaged spin coupling is computed, avoiding the computation of a bunch of terms that cancel out in that case.
+// See https://doi.org/10.1021/acs.jpca.2c06465 for details - equation numbers below refer to this paper and its SI.
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+
+// first let's do E(10)exch(S^2) for the parallel and perpendicular spin coupling of link orbitals - Eq. (5)
+    std::shared_ptr<Matrix> Cocc_A = matrices_["AlloccA"];
+    std::shared_ptr<Matrix> Cocc_B = matrices_["AlloccB"];
+    std::shared_ptr<Matrix> Sab = linalg::triplet(matrices_["AlloccA"], S, matrices_["AlloccB"], true, false, false);
+    double** Sabp = Sab->pointer();
+    std::shared_ptr<Matrix> D_X(D_A->clone());
+    std::shared_ptr<Matrix> D_Y(D_A->clone());
+// here we need the link-only parts of density matrices D_X,D_Y and their corresponding Coulomb and exchange matrices (computed earlier)
+    D_X = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
+    D_Y = linalg::doublet(matrices_["thislinkB"], matrices_["thislinkB"], false, true);
+    std::shared_ptr<Matrix> J_X = matrices_["JLA"];
+    std::shared_ptr<Matrix> K_X = matrices_["KLA"];
+    std::shared_ptr<Matrix> J_Y = matrices_["JLB"];
+    std::shared_ptr<Matrix> K_Y = matrices_["KLB"];
+// a few extra J/K matrices still need to be computed here
+    std::shared_ptr<Matrix> C_AOB = linalg::triplet(D_B, S, Cocc_A);
+    std::shared_ptr<Matrix> C_XOB = linalg::triplet(D_B, S, matrices_["thislinkA"]);
+    std::shared_ptr<Matrix> C_AOY = linalg::triplet(D_Y, S, Cocc_A);
+    std::shared_ptr<Matrix> C_XOY = linalg::triplet(D_Y, S, matrices_["thislinkA"]);
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(Cocc_A);
+    Cl.push_back(matrices_["thislinkA"]);
+    Cl.push_back(Cocc_A);
+    Cl.push_back(matrices_["thislinkA"]);
+    Cr.push_back(C_AOB);
+    Cr.push_back(C_XOB);
+    Cr.push_back(C_AOY);
+    Cr.push_back(C_XOY);
+    jk_->compute();
+    std::shared_ptr<Matrix> K_AOB = K[0];
+    std::shared_ptr<Matrix> K_XOB = K[1];
+    std::shared_ptr<Matrix> K_AOY = K[2];
+    std::shared_ptr<Matrix> K_XOY = K[3];
+
+    if (options_.get_bool("FISAPT_EXCH_PARPERP")) {
+// we calculate the parallel and perpendicular results separately - Eq. (5) with the upper and lower signs
+        double Exch10_S2PAR = 0.0;
+        std::vector<double> Exch10_S2PAR_terms;
+        Exch10_S2PAR_terms.resize(6);
+        double Exch10_S2PERP = 0.0;
+        std::vector<double> Exch10_S2PERP_terms;
+        Exch10_S2PERP_terms.resize(6);
+ 
+        Exch10_S2PAR_terms[0] -= 2.0 * D_A->vector_dot(K_B);
+        Exch10_S2PAR_terms[0] -= 2.0 * D_X->vector_dot(K_Y);
+ 
+        Exch10_S2PAR_terms[1] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(V_A);
+        Exch10_S2PAR_terms[1] -= 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(V_A);
+        Exch10_S2PAR_terms[1] -= 4.0 * linalg::triplet(D_A, S, D_B)->vector_dot(J_A);
+        Exch10_S2PAR_terms[1] -= 4.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(J_A);
+        Exch10_S2PAR_terms[1] += 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_A);
+        Exch10_S2PAR_terms[1] += 2.0 * linalg::triplet(D_X, S, D_B)->vector_dot(K_X);
+        Exch10_S2PAR_terms[1] += 2.0 * linalg::triplet(D_A, S, D_Y)->vector_dot(K_X);
+        Exch10_S2PAR_terms[1] += 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(K_A);
+ 
+        Exch10_S2PAR_terms[2] -= 2.0 * linalg::triplet(D_B, S, D_A)->vector_dot(V_B);
+        Exch10_S2PAR_terms[2] -= 2.0 * linalg::triplet(D_Y, S, D_X)->vector_dot(V_B);
+        Exch10_S2PAR_terms[2] -= 4.0 * linalg::triplet(D_B, S, D_A)->vector_dot(J_B);
+        Exch10_S2PAR_terms[2] -= 4.0 * linalg::triplet(D_Y, S, D_X)->vector_dot(J_B);
+        Exch10_S2PAR_terms[2] += 2.0 * linalg::triplet(D_B, S, D_A)->vector_dot(K_B);
+        Exch10_S2PAR_terms[2] += 2.0 * linalg::triplet(D_B, S, D_X)->vector_dot(K_Y);
+        Exch10_S2PAR_terms[2] += 2.0 * linalg::triplet(D_Y, S, D_A)->vector_dot(K_Y);
+        Exch10_S2PAR_terms[2] += 2.0 * linalg::triplet(D_Y, S, D_X)->vector_dot(K_B);
+
+        Exch10_S2PAR_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, D_B)->vector_dot(V_A);
+        Exch10_S2PAR_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_X), S, D_Y)->vector_dot(V_A);
+        Exch10_S2PAR_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_Y, S, D_X), S, D_B)->vector_dot(V_A);
+        Exch10_S2PAR_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_Y, S, D_A), S, D_Y)->vector_dot(V_A);
+        Exch10_S2PAR_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, D_B)->vector_dot(J_A);
+        Exch10_S2PAR_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_Y, S, D_X), S, D_B)->vector_dot(J_A);
+        Exch10_S2PAR_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_X), S, D_Y)->vector_dot(J_A);
+        Exch10_S2PAR_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_Y, S, D_A), S, D_Y)->vector_dot(J_A);
+      
+        Exch10_S2PAR_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, D_A)->vector_dot(V_B);
+        Exch10_S2PAR_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_X, S, D_Y), S, D_A)->vector_dot(V_B);
+        Exch10_S2PAR_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_Y), S, D_X)->vector_dot(V_B);
+        Exch10_S2PAR_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_X, S, D_B), S, D_X)->vector_dot(V_B);
+        Exch10_S2PAR_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, D_A)->vector_dot(J_B);
+        Exch10_S2PAR_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_X, S, D_Y), S, D_A)->vector_dot(J_B);
+        Exch10_S2PAR_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_Y), S, D_X)->vector_dot(J_B);
+        Exch10_S2PAR_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_X, S, D_B), S, D_X)->vector_dot(J_B);
+      
+        Exch10_S2PAR_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_AOB);
+        Exch10_S2PAR_terms[5] -= 2.0 * linalg::triplet(D_X, S, D_B)->vector_dot(K_XOB);
+        Exch10_S2PAR_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_Y)->vector_dot(K_XOB);
+        Exch10_S2PAR_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_XOY);
+        Exch10_S2PAR_terms[5] -= 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(K_AOB);
+        Exch10_S2PAR_terms[5] -= 2.0 * linalg::triplet(D_X, S, D_B)->vector_dot(K_AOY);
+        Exch10_S2PAR_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_Y)->vector_dot(K_AOY);
+        Exch10_S2PAR_terms[5] -= 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(K_XOY);
+       
+        Exch10_S2PERP_terms[0] -= 2.0 * D_A->vector_dot(K_B);
+        Exch10_S2PERP_terms[0] += 2.0 * D_X->vector_dot(K_Y);
+       
+        Exch10_S2PERP_terms[1] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(V_A);
+        Exch10_S2PERP_terms[1] += 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(V_A);
+        Exch10_S2PERP_terms[1] -= 4.0 * linalg::triplet(D_A, S, D_B)->vector_dot(J_A);
+        Exch10_S2PERP_terms[1] += 4.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(J_A);
+        Exch10_S2PERP_terms[1] += 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_A);
+        Exch10_S2PERP_terms[1] += 2.0 * linalg::triplet(D_X, S, D_B)->vector_dot(K_X);
+        Exch10_S2PERP_terms[1] -= 2.0 * linalg::triplet(D_A, S, D_Y)->vector_dot(K_X);
+        Exch10_S2PERP_terms[1] -= 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(K_A);
+       
+        Exch10_S2PERP_terms[2] -= 2.0 * linalg::triplet(D_B, S, D_A)->vector_dot(V_B);
+        Exch10_S2PERP_terms[2] += 2.0 * linalg::triplet(D_Y, S, D_X)->vector_dot(V_B);
+        Exch10_S2PERP_terms[2] -= 4.0 * linalg::triplet(D_B, S, D_A)->vector_dot(J_B);
+        Exch10_S2PERP_terms[2] += 4.0 * linalg::triplet(D_Y, S, D_X)->vector_dot(J_B);
+        Exch10_S2PERP_terms[2] += 2.0 * linalg::triplet(D_B, S, D_A)->vector_dot(K_B);
+        Exch10_S2PERP_terms[2] -= 2.0 * linalg::triplet(D_B, S, D_X)->vector_dot(K_Y);
+        Exch10_S2PERP_terms[2] += 2.0 * linalg::triplet(D_Y, S, D_A)->vector_dot(K_Y);
+        Exch10_S2PERP_terms[2] -= 2.0 * linalg::triplet(D_Y, S, D_X)->vector_dot(K_B);
+       
+        Exch10_S2PERP_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, D_B)->vector_dot(V_A);
+        Exch10_S2PERP_terms[3] -= 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_X), S, D_Y)->vector_dot(V_A);
+        Exch10_S2PERP_terms[3] -= 2.0 * linalg::triplet(linalg::triplet(D_Y, S, D_X), S, D_B)->vector_dot(V_A);
+        Exch10_S2PERP_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_Y, S, D_A), S, D_Y)->vector_dot(V_A);
+        Exch10_S2PERP_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, D_B)->vector_dot(J_A);
+        Exch10_S2PERP_terms[3] -= 4.0 * linalg::triplet(linalg::triplet(D_Y, S, D_X), S, D_B)->vector_dot(J_A);
+        Exch10_S2PERP_terms[3] -= 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_X), S, D_Y)->vector_dot(J_A);
+        Exch10_S2PERP_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_Y, S, D_A), S, D_Y)->vector_dot(J_A);
+       
+        Exch10_S2PERP_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, D_A)->vector_dot(V_B);
+        Exch10_S2PERP_terms[4] -= 2.0 * linalg::triplet(linalg::triplet(D_X, S, D_Y), S, D_A)->vector_dot(V_B);
+        Exch10_S2PERP_terms[4] -= 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_Y), S, D_X)->vector_dot(V_B);
+        Exch10_S2PERP_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_X, S, D_B), S, D_X)->vector_dot(V_B);
+        Exch10_S2PERP_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, D_A)->vector_dot(J_B);
+        Exch10_S2PERP_terms[4] -= 4.0 * linalg::triplet(linalg::triplet(D_X, S, D_Y), S, D_A)->vector_dot(J_B);
+        Exch10_S2PERP_terms[4] -= 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_Y), S, D_X)->vector_dot(J_B);
+        Exch10_S2PERP_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_X, S, D_B), S, D_X)->vector_dot(J_B);
+       
+        Exch10_S2PERP_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_AOB);
+        Exch10_S2PERP_terms[5] -= 2.0 * linalg::triplet(D_X, S, D_B)->vector_dot(K_XOB);
+        Exch10_S2PERP_terms[5] += 2.0 * linalg::triplet(D_A, S, D_Y)->vector_dot(K_XOB);
+        Exch10_S2PERP_terms[5] += 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_XOY);
+        Exch10_S2PERP_terms[5] += 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(K_AOB);
+        Exch10_S2PERP_terms[5] += 2.0 * linalg::triplet(D_X, S, D_B)->vector_dot(K_AOY);
+        Exch10_S2PERP_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_Y)->vector_dot(K_AOY);
+        Exch10_S2PERP_terms[5] -= 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(K_XOY);
+   
+        for (int k = 0; k < Exch10_S2PAR_terms.size(); k++) {
+            Exch10_S2PAR += Exch10_S2PAR_terms[k];
+        }
+        for (int k = 0; k < Exch10_S2PAR_terms.size(); k++) {
+            outfile->Printf("    Exch10(S2PAR %1d)     = %18.12lf [Eh]\n",k+1,Exch10_S2PAR_terms[k]);
+        }
+        outfile->Printf("    Exch10(S^2) [PAR]   = %18.12lf [Eh]\n",Exch10_S2PAR);
+       
+        for (int k = 0; k < Exch10_S2PERP_terms.size(); k++) {
+            Exch10_S2PERP += Exch10_S2PERP_terms[k];
+        }
+        for (int k = 0; k < Exch10_S2PERP_terms.size(); k++) {
+            outfile->Printf("    Exch10(S2PERP %1d)    = %18.12lf [Eh]\n",k+1,Exch10_S2PERP_terms[k]);
+        }
+        outfile->Printf("    Exch10(S^2) [PERP]  = %18.12lf [Eh]\n",Exch10_S2PERP);
+        outfile->Printf("    Exch10(S^2) [avg]   = %18.12lf [Eh]\n",0.5*(Exch10_S2PAR+Exch10_S2PERP));
+        scalars_["Exch10(S^2)"] = 0.5*(Exch10_S2PAR+Exch10_S2PERP);
+    }
+    else {
+// we only calculate the average of parallel and perpendicular results, so some terms are not needed at all
+// this means we compute Eq. (5) but skip all the terms with a +- or -+ in front of them - these terms cancel out
+        double Exch10_S2AVG = 0.0;
+        std::vector<double> Exch10_S2AVG_terms;
+        Exch10_S2AVG_terms.resize(6);
+ 
+        Exch10_S2AVG_terms[0] -= 2.0 * D_A->vector_dot(K_B);
+ 
+        Exch10_S2AVG_terms[1] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(V_A);
+        Exch10_S2AVG_terms[1] -= 4.0 * linalg::triplet(D_A, S, D_B)->vector_dot(J_A);
+        Exch10_S2AVG_terms[1] += 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_A);
+        Exch10_S2AVG_terms[1] += 2.0 * linalg::triplet(D_X, S, D_B)->vector_dot(K_X);
+
+        Exch10_S2AVG_terms[2] -= 2.0 * linalg::triplet(D_B, S, D_A)->vector_dot(V_B);
+        Exch10_S2AVG_terms[2] -= 4.0 * linalg::triplet(D_B, S, D_A)->vector_dot(J_B);
+        Exch10_S2AVG_terms[2] += 2.0 * linalg::triplet(D_B, S, D_A)->vector_dot(K_B);
+        Exch10_S2AVG_terms[2] += 2.0 * linalg::triplet(D_Y, S, D_A)->vector_dot(K_Y);
+
+        Exch10_S2AVG_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, D_B)->vector_dot(V_A);
+        Exch10_S2AVG_terms[3] += 2.0 * linalg::triplet(linalg::triplet(D_Y, S, D_A), S, D_Y)->vector_dot(V_A);
+        Exch10_S2AVG_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_B, S, D_A), S, D_B)->vector_dot(J_A);
+        Exch10_S2AVG_terms[3] += 4.0 * linalg::triplet(linalg::triplet(D_Y, S, D_A), S, D_Y)->vector_dot(J_A);
+     
+        Exch10_S2AVG_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, D_A)->vector_dot(V_B);
+        Exch10_S2AVG_terms[4] += 2.0 * linalg::triplet(linalg::triplet(D_X, S, D_B), S, D_X)->vector_dot(V_B);
+        Exch10_S2AVG_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_A, S, D_B), S, D_A)->vector_dot(J_B);
+        Exch10_S2AVG_terms[4] += 4.0 * linalg::triplet(linalg::triplet(D_X, S, D_B), S, D_X)->vector_dot(J_B);
+      
+        Exch10_S2AVG_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_B)->vector_dot(K_AOB);
+        Exch10_S2AVG_terms[5] -= 2.0 * linalg::triplet(D_X, S, D_B)->vector_dot(K_XOB);
+        Exch10_S2AVG_terms[5] -= 2.0 * linalg::triplet(D_A, S, D_Y)->vector_dot(K_AOY);
+        Exch10_S2AVG_terms[5] -= 2.0 * linalg::triplet(D_X, S, D_Y)->vector_dot(K_XOY);
+   
+        for (int k = 0; k < Exch10_S2AVG_terms.size(); k++) {
+            Exch10_S2AVG += Exch10_S2AVG_terms[k];
+        }
+        for (int k = 0; k < Exch10_S2AVG_terms.size(); k++) {
+            outfile->Printf("    Exch10(S2AVG %1d)     = %18.12lf [Eh]\n",k+1,Exch10_S2AVG_terms[k]);
+        }
+        outfile->Printf("    Exch10(S^2) [AVG]   = %18.12lf [Eh]\n",Exch10_S2AVG);
+        scalars_["Exch10(S^2)"] = Exch10_S2AVG;
+    }
+// end of parallel- and perpendicular-link-coupling E(10)exch(S^2)
+
+// Now, for the nonapproximated E(10)exch with the SAOn/SIAOn link assignments, there is no shortcut.
+// We have to calculate both spin couplings and only average the final number regardless of the 
+// FISAPT_EXCH_PARPERP value (we tried averaging out the matrices and the results were very bad).
+// First comes the parallel spin coupling between singly occupied link orbitals
+    int na = matrices_["AlloccA"]->colspi()[0] - 1;
+    int nb = matrices_["AlloccB"]->colspi()[0] - 1;
+    std::shared_ptr<Matrix> Saa = linalg::triplet(matrices_["AlloccA"], S, matrices_["AlloccA"], true, false, false);
+    std::shared_ptr<Matrix> Sbb = linalg::triplet(matrices_["AlloccB"], S, matrices_["AlloccB"], true, false, false);
+// We now construct and invert the extended overlap matrix - Eq. (12)
+    auto Tbig = std::make_shared<Matrix>("T", 2*na + 2*nb + 2, 2*na + 2*nb + 2);
+    Tbig->identity();
+    double** Tbigp = Tbig->pointer();
+    for (int a = 0; a < na; a++) {
+        for (int b = 0; b < nb; b++) {
+            Tbigp[a][b + 2*na + 1] = Tbigp[b + 2*na + 1][a] = Sabp[a][b];
+            Tbigp[a + na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][a + na] = Sabp[a][b];
+        }
+// The 0.70710678118655 factor already sits in Sabp
+        Tbigp[a][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a] = Sabp[a][nb];
+        Tbigp[a + na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a + na] = Sabp[a][nb];
+    }
+    for (int b = 0; b < nb; b++) {
+        Tbigp[2*na][b + 2*na + 1] = Tbigp[b + 2*na + 1][2*na] = Sabp[na][b];
+        Tbigp[2*na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][2*na] = Sabp[na][b];
+    }
+// Now we need to offset the 1/2 factor in Sabp
+    Tbigp[2*na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][2*na] = 2 * Sabp[na][nb];
+    outfile->Printf("\n Sxy: %12.8f\n",2 * Sabp[na][nb]);
+//now let's slice out the relevant pieces of this monster
+    Dimension zero(1);
+    Dimension nadim(1);
+    Dimension naadim(1);
+    Dimension naaxdim(1);
+    Dimension naaxbdim(1);
+    Dimension naaxbbdim(1);
+    Dimension naaxbbydim(1);
+    zero[0] = 0;
+    nadim[0] = na;
+    naadim[0] = 2 * na;
+    naaxdim[0] = 2 * na + 1;
+    naaxbdim[0] = 2 * na + 1 + nb;
+    naaxbbdim[0] = 2 * na + 1 + 2*nb;
+    naaxbbydim[0] = 2 * na + 2 + 2*nb;
+    Tbig->power(-1.0, 1.0E-14);
+    Tbigp = Tbig->pointer();
+//note that the slices should contain x and y as well
+    auto Dii_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(nadim, naaxdim));
+    auto Dij_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(naaxbdim, naaxbbydim));
+    auto Dji_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(nadim, naaxdim));
+    auto Djj_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim));
+//for the opposite-spin case, we have to pick a spin-up slice that is noncontiguous with x/y
+    std::vector<SharedMatrix> hold_temp;
+    
+    hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(nadim, naaxdim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(nadim, naaxdim)));
+    auto Dii_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
+    
+    hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(naaxbdim, naaxbbydim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(naaxbdim, naaxbbydim)));
+    auto Dij_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
+    
+    hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(nadim, naaxdim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(nadim, naaxdim)));
+    auto Dji_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
+
+    hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(naaxbdim, naaxbbydim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim)));
+    auto Djj_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
+
+//half-transformed matrices for the JK operators
+    auto Dsj_ssh = linalg::doublet(matrices_["AlloccA"], Dij_ss, false, false);
+    Dsj_ssh->add(linalg::doublet(matrices_["AlloccB"], Djj_ss, false, false));
+    auto Dsj_osh = linalg::doublet(matrices_["AlloccA"], Dij_os, false, false);
+    Dsj_osh->add(linalg::doublet(matrices_["AlloccB"], Djj_os, false, false));
+
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(Dsj_ssh);
+    Cr.push_back(matrices_["AlloccB"]);
+    Cl.push_back(Dsj_osh);
+    Cr.push_back(matrices_["AlloccB"]);
+    
+    jk_->compute();
+
+    std::shared_ptr<Matrix> J_ss = J[0];
+    std::shared_ptr<Matrix> K_ss = K[0];
+    std::shared_ptr<Matrix> J_os = J[1];
+    std::shared_ptr<Matrix> K_os = K[1];
+
+    K_ss->transpose_this();
+    K_os->transpose_this();
+
+//finish the transformation of the D matrices
+    auto Dsj_ss = linalg::doublet(Dsj_ssh, matrices_["AlloccB"], false, true);
+    auto Dsj_os = linalg::doublet(Dsj_osh, matrices_["AlloccB"], false, true);
+    auto Dri_ss = linalg::triplet(matrices_["AlloccA"], Dii_ss, matrices_["AlloccA"], false, false, true);
+    Dri_ss->add(linalg::triplet(matrices_["AlloccB"], Dji_ss, matrices_["AlloccA"], false, false, true));
+    auto Dri_os = linalg::triplet(matrices_["AlloccA"], Dii_os, matrices_["AlloccA"], false, false, true);
+    Dri_os->add(linalg::triplet(matrices_["AlloccB"], Dji_os, matrices_["AlloccA"], false, false, true));
+    
+    double Enuc = 0.0;
+    double** Enuc2p = matrices_["E NUC"]->pointer();
+    Enuc += 2.0 * Enuc2p[0][1];  // A - B
+
+//The full first-order energy (elst+exch) is given by Eq. (21)
+    double E10_full_ss = Enuc;
+    E10_full_ss += 2.0 * Dri_ss->vector_dot(V_B);
+    E10_full_ss += 2.0 * Dsj_ss->vector_dot(V_A);
+    E10_full_ss += 4.0 * Dri_ss->vector_dot(J_ss);
+    E10_full_ss -= 2.0 * Dri_ss->vector_dot(K_ss);
+    double E10_full_os = -2.0 * Dri_os->vector_dot(K_os);
+    double E10_full_par = E10_full_ss + E10_full_os;
+    
+    double E10_elst = Enuc;
+    E10_elst += 2.0 * D_A->vector_dot(V_B);
+    E10_elst += 2.0 * D_B->vector_dot(V_A);
+    E10_elst += 4.0 * D_A->vector_dot(J_B);
+
+    outfile->Printf("\n E(10)(full) value (PAR)  : %16.12f ",E10_full_par);
+    outfile->Printf("\n SS/OS parts:           %16.12f %16.12f",E10_full_ss,E10_full_os);
+    outfile->Printf("\n E(10)(elst) part (PAR)  : %16.12f ",E10_elst);
+    outfile->Printf("\n E(10)(exch) part (PAR)  : %16.12f \n\n",E10_full_par-E10_elst);
+
+//Now we do the same but with the perpendicular spin coupling between singly occupied link orbitals
+//We now construct and invert the extended overlap matrix - Eq. (13)
+    Tbig->identity();
+    for (int a = 0; a < na; a++) {
+        for (int b = 0; b < nb; b++) {
+            Tbigp[a][b + 2*na + 1] = Tbigp[b + 2*na + 1][a] = Sabp[a][b];
+            Tbigp[a + na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][a + na] = Sabp[a][b];
+        }
+// The 0.70710678118655 factor already sits in Sabp
+        Tbigp[a][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a] = -Sabp[a][nb];
+        Tbigp[a + na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a + na] = Sabp[a][nb];
+// We reversed the signs above (reversed the beta/alpha order) to have contiguous slices below
+    }
+    for (int b = 0; b < nb; b++) {
+        Tbigp[2*na][b + 2*na + 1] = Tbigp[b + 2*na + 1][2*na] = Sabp[na][b];
+        Tbigp[2*na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][2*na] = Sabp[na][b];
+    }
+    Tbigp[2*na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][2*na] = 0.0;
+//now let's slice out the relevant pieces of this monster
+    Tbig->power(-1.0, 1.0E-14);
+    Tbigp = Tbig->pointer();
+//note that the slices should contain x and y as well
+    Dii_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(nadim, naaxdim));
+    Dij_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(naaxbdim, naaxbbydim));
+    Dji_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(nadim, naaxdim));
+    Djj_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim));
+//for the opposite-spin case, we have to pick a spin-up slice that is noncontiguous with x/y
+    hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(nadim, naaxdim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(nadim, naaxdim)));
+    Dii_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
+
+    hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(naaxbdim, naaxbbydim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(naaxbdim, naaxbbydim)));
+    Dij_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
+
+    hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(nadim, naaxdim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(nadim, naaxdim)));
+    Dji_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
+
+    hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(naaxbdim, naaxbbydim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim)));
+    Djj_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
+
+// now we have some signs to adjust in D_os terms containing y
+    double** Dij_osp = Dij_os->pointer();
+    double** Dji_osp = Dji_os->pointer();
+    double** Djj_osp = Djj_os->pointer();
+    for (int a = 0; a < na; a++) {
+        Dji_osp [nb][a] *= -1;
+    }
+    for (int b = 0; b < nb; b++) {
+        Djj_osp [nb][b] *= -1;  
+    }
+    Djj_osp [nb][nb] *= -1;
+
+// half-transformed matrices for the JK operators
+    Dsj_ssh = linalg::doublet(matrices_["AlloccA"], Dij_ss, false, false);
+    Dsj_ssh->add(linalg::doublet(matrices_["AlloccB"], Djj_ss, false, false));
+    Dsj_osh = linalg::doublet(matrices_["AlloccA"], Dij_os, false, false);
+    Dsj_osh->add(linalg::doublet(matrices_["AlloccB"], Djj_os, false, false));
+
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(Dsj_ssh);
+    Cr.push_back(matrices_["AlloccB"]);
+    Cl.push_back(Dsj_osh);
+    Cr.push_back(matrices_["AlloccB"]);
+    
+    jk_->compute();
+
+    std::shared_ptr<Matrix> J2_ss = J[0];
+    std::shared_ptr<Matrix> K2_ss = K[0];
+    std::shared_ptr<Matrix> J2_os = J[1];
+    std::shared_ptr<Matrix> K2_os = K[1];
+
+    K2_ss->transpose_this();
+    K2_os->transpose_this();
+
+// finish the transformation of the D matrices
+    Dsj_ss = linalg::doublet(Dsj_ssh, matrices_["AlloccB"], false, true);
+    Dsj_os = linalg::doublet(Dsj_osh, matrices_["AlloccB"], false, true);
+    Dri_ss = linalg::triplet(matrices_["AlloccA"], Dii_ss, matrices_["AlloccA"], false, false, true);
+    Dri_ss->add(linalg::triplet(matrices_["AlloccB"], Dji_ss, matrices_["AlloccA"], false, false, true));
+    Dri_os = linalg::triplet(matrices_["AlloccA"], Dii_os, matrices_["AlloccA"], false, false, true);
+    Dri_os->add(linalg::triplet(matrices_["AlloccB"], Dji_os, matrices_["AlloccA"], false, false, true));
+
+// The full first-order energy (elst+exch) is given by Eq. (21)
+    E10_full_ss = Enuc;
+    E10_full_ss += 2.0 * Dri_ss->vector_dot(V_B);
+    E10_full_ss += 2.0 * Dsj_ss->vector_dot(V_A);
+    E10_full_ss += 4.0 * Dri_ss->vector_dot(J2_ss);
+    E10_full_ss -= 2.0 * Dri_ss->vector_dot(K2_ss);
+    E10_full_os = -2.0 * Dri_os->vector_dot(K2_os);
+    double E10_full_perp = E10_full_ss + E10_full_os;
+    
+    outfile->Printf("\n E(10)(full) value (PERP) : %16.12f ",E10_full_perp);
+    outfile->Printf("\n SS/OS parts:            %16.12f %16.12f",E10_full_ss,E10_full_os);
+    outfile->Printf("\n E(10)(exch) part (PERP): : %16.12f \n\n",E10_full_perp-E10_elst);
+    scalars_["Exch10"] = 0.5*(E10_full_par+E10_full_perp)-E10_elst;
+//  The algorithm which only calculates the average of parallel and perpendicular matrices proved to be
+//  inaccurate (and not invariant with respect to the A<->B interchange) so the code has been removed.
+
+//end of the new E(10)exch(full) code
+    } // new link assignments
 
     if (options_.get_bool("SSAPT0_SCALE")) {
         sSAPT0_scale_ = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
         sSAPT0_scale_ = pow(sSAPT0_scale_, 3.0);
         outfile->Printf("    Scaling F-SAPT Exch-Ind and Exch-Disp by %11.3E \n\n", sSAPT0_scale_);
     }
+
 }
 
 // Compute the total induction contribution
@@ -1617,87 +3085,309 @@ void FISAPT::ind() {
     std::shared_ptr<Vector> eps_vir0A = vectors_["eps_vir0A"];
     std::shared_ptr<Vector> eps_vir0B = vectors_["eps_vir0B"];
 
-    // => ExchInd perturbations <= //
-
-    std::shared_ptr<Matrix> C_O_A = linalg::triplet(D_B, S, matrices_["Cocc_A"]);
-    std::shared_ptr<Matrix> C_P_A = linalg::triplet(linalg::triplet(D_B, S, D_A), S, matrices_["Cocc_B"]);
-    std::shared_ptr<Matrix> C_P_B = linalg::triplet(linalg::triplet(D_A, S, D_B), S, matrices_["Cocc_A"]);
-
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
 
-    Cl.clear();
-    Cr.clear();
+    int na = eps_occ0A->dimpi()[0];
+    int nb = eps_occ0B->dimpi()[0];
+    int nr = eps_vir0A->dimpi()[0];
+    int ns = eps_vir0B->dimpi()[0];
 
-    // J/K[O]
-    Cl.push_back(matrices_["Cocc_A"]);
-    Cr.push_back(C_O_A);
-    // J/K[P_B]
-    Cl.push_back(matrices_["Cocc_A"]);
-    Cr.push_back(C_P_B);
-    // J/K[P_B]
-    Cl.push_back(matrices_["Cocc_B"]);
-    Cr.push_back(C_P_A);
+    auto uA = std::make_shared<Matrix>("uA", nb, ns);
+    auto wA = std::make_shared<Matrix>("wA", nb, ns);
+    auto uApar = std::make_shared<Matrix>("uApar", nb, ns);
+    auto uAperp = std::make_shared<Matrix>("uAperp", nb, ns);
+    auto uB = std::make_shared<Matrix>("uB", na, nr);
+    auto wB = std::make_shared<Matrix>("wB", na, nr);
+    auto uBpar = std::make_shared<Matrix>("uBpar", na, nr);
+    auto uBperp = std::make_shared<Matrix>("uBperp", na, nr);
 
-    // => Compute the JK matrices <= //
+// Now come the second-order exchange-induction energy expressions appropriate for the SAOn/SIAOn link assignments.
+// The expressions depend on the (parallel, perpendicular, or averaged) spin coupling between the two singly occupied link orbitals.
+// If FISAPT_EXCH_PARPERP == true, all 3 spin couplings are calculated.
+// If FISAPT_EXCH_PARPERP == false, only the averaged spin coupling is computed, avoiding the computation of a bunch of terms that cancel out in that case.
+// See https://doi.org/10.1021/acs.jpca.2c06465 for details - equation numbers below refer to this paper and its SI.
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
 
-    jk_->compute();
+//here we need the link-only parts of density matrices D_X,D_Y and their corresponding Coulomb and exchange matrices (computed earlier)
+        std::shared_ptr<Matrix> D_X(D_A->clone());
+        std::shared_ptr<Matrix> D_Y(D_A->clone());
+        D_X = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
+        D_Y = linalg::doublet(matrices_["thislinkB"], matrices_["thislinkB"], false, true);
+        auto J_X(matrices_["JLA"]->clone());
+        auto K_X(matrices_["KLA"]->clone());
+        auto J_Y(matrices_["JLB"]->clone());
+        auto K_Y(matrices_["KLB"]->clone());
+//we need a couple extra J/K matrices as well
+        std::shared_ptr<Matrix> C_AOB = linalg::triplet(D_B, S, matrices_["AlloccA"]);
+        std::shared_ptr<Matrix> C_XOB = linalg::triplet(D_B, S, matrices_["thislinkA"]);
+        std::shared_ptr<Matrix> C_AOY = linalg::triplet(D_Y, S, matrices_["AlloccA"]);
+        std::shared_ptr<Matrix> C_XOY = linalg::triplet(D_Y, S, matrices_["thislinkA"]);
+        Cl.clear();
+        Cr.clear();
+        Cl.push_back(matrices_["AlloccA"]);
+        Cl.push_back(matrices_["thislinkA"]);
+        Cl.push_back(matrices_["AlloccA"]);
+        Cl.push_back(matrices_["thislinkA"]);
+        Cr.push_back(C_AOB);
+        Cr.push_back(C_XOB);
+        Cr.push_back(C_AOY);
+        Cr.push_back(C_XOY);
+        jk_->compute();
+        std::shared_ptr<Matrix> K_AOB = K[0];
+        std::shared_ptr<Matrix> K_XOB = K[1];
+        std::shared_ptr<Matrix> K_AOY = K[2];
+        std::shared_ptr<Matrix> K_XOY = K[3];
+        std::shared_ptr<Matrix> J_XOY = J[3];
 
-    // => Unload the JK Object <= //
+    // => ExchInd perturbations <= //
 
-    std::shared_ptr<Matrix> J_O = J[0];
-    std::shared_ptr<Matrix> J_P_B = J[1];
-    std::shared_ptr<Matrix> J_P_A = J[2];
+        std::shared_ptr<Matrix> C_O_A = linalg::triplet(D_B, S, matrices_["AlloccA"]);
+        std::shared_ptr<Matrix> C_P_A = linalg::triplet(linalg::triplet(D_B, S, D_A), S, matrices_["AlloccB"]);
+        std::shared_ptr<Matrix> C_P_BXY = linalg::triplet(linalg::triplet(D_B, S, D_X), S, matrices_["thislinkB"]);
+        std::shared_ptr<Matrix> C_P_YXB = linalg::triplet(linalg::triplet(D_Y, S, D_X), S, matrices_["AlloccB"]);
+        std::shared_ptr<Matrix> C_P_YAY = linalg::triplet(linalg::triplet(D_Y, S, D_A), S, matrices_["thislinkB"]);
+        std::shared_ptr<Matrix> C_P_B = linalg::triplet(linalg::triplet(D_A, S, D_B), S, matrices_["AlloccA"]);
+        std::shared_ptr<Matrix> C_P_AYX = linalg::triplet(linalg::triplet(D_A, S, D_Y), S, matrices_["thislinkA"]);
+        std::shared_ptr<Matrix> C_P_XYA = linalg::triplet(linalg::triplet(D_X, S, D_Y), S, matrices_["AlloccA"]);
+        std::shared_ptr<Matrix> C_P_XBX = linalg::triplet(linalg::triplet(D_X, S, D_B), S, matrices_["thislinkA"]);
+       
+        Cl.clear();
+        Cr.clear();
 
-    std::shared_ptr<Matrix> K_O = K[0];
-    std::shared_ptr<Matrix> K_P_B = K[1];
-    std::shared_ptr<Matrix> K_P_A = K[2];
+        // J/K[O]
+        Cl.push_back(matrices_["AlloccA"]);
+        Cr.push_back(C_O_A);
+        // J/K[P_B]
+        Cl.push_back(matrices_["AlloccA"]);
+        Cr.push_back(C_P_B);
+        // J/K[P_B]
+        Cl.push_back(matrices_["AlloccB"]);
+        Cr.push_back(C_P_A);
+        Cl.push_back(matrices_["thislinkB"]);
+        Cr.push_back(C_P_BXY);
+        Cl.push_back(matrices_["AlloccB"]);
+        Cr.push_back(C_P_YXB);
+        Cl.push_back(matrices_["thislinkB"]);
+        Cr.push_back(C_P_YAY);
+        Cl.push_back(matrices_["thislinkA"]);
+        Cr.push_back(C_P_AYX);
+        Cl.push_back(matrices_["AlloccA"]);
+        Cr.push_back(C_P_XYA);
+        Cl.push_back(matrices_["thislinkA"]);
+        Cr.push_back(C_P_XBX);
+      
+        // => Compute the JK matrices <= //
+      
+        jk_->compute();
+      
+        // => Unload the JK Object <= //
+      
+        std::shared_ptr<Matrix> J_O = J[0];
+        std::shared_ptr<Matrix> J_P_B = J[1];
+        std::shared_ptr<Matrix> J_P_A = J[2];
+        std::shared_ptr<Matrix> J_P_BXY = J[3];
+        std::shared_ptr<Matrix> J_P_YXB = J[4];
+        std::shared_ptr<Matrix> J_P_YAY = J[5];
+        std::shared_ptr<Matrix> J_P_AYX = J[6];
+        std::shared_ptr<Matrix> J_P_XYA = J[7];
+        std::shared_ptr<Matrix> J_P_XBX = J[8];
+      
+        std::shared_ptr<Matrix> K_O = K[0];
+        std::shared_ptr<Matrix> K_P_B = K[1];
+        std::shared_ptr<Matrix> K_P_A = K[2];
+       
+        // ==> Generalized ESP (Flat and Exchange) <== //
+       
+        std::map<std::string, std::shared_ptr<Matrix> > mapA;
+        mapA["Cocc_A"] = Cocc0A;
+        mapA["Cvir_A"] = Cvir0A;
+        mapA["S"] = S;
+        mapA["D_A"] = D_A;
+        mapA["V_A"] = V_A;
+        mapA["J_A"] = J_A;
+        mapA["K_A"] = K_A;
+        mapA["D_B"] = D_B;
+        mapA["V_B"] = V_B;
+        mapA["J_B"] = J_B;
+        mapA["K_B"] = K_B;
+        mapA["D_X"] = D_X;
+        mapA["J_X"] = J_X;
+        mapA["K_X"] = K_X;
+        mapA["D_Y"] = D_Y;
+        mapA["J_Y"] = J_Y;
+        mapA["K_Y"] = K_Y;
+        mapA["J_O"] = J_O;
+        mapA["K_O"] = K_O;
+        mapA["J_XOY"] = J_XOY;
+        mapA["K_XOB"] = K_XOB;
+        mapA["K_AOY"] = K_AOY;
+        mapA["K_XOY"] = K_XOY;
+        mapA["J_P"] = J_P_A;
+        mapA["J_PBXY"] = J_P_BXY;
+        mapA["J_PYXB"] = J_P_YXB;
+        mapA["J_PYAY"] = J_P_YAY;
 
-    // ==> Generalized ESP (Flat and Exchange) <== //
+        wB = build_ind_pot(mapA);
+        if (options_.get_bool("FISAPT_EXCH_PARPERP")) {
+            uBpar = build_exch_ind_pot_par(mapA);
+            uBperp = build_exch_ind_pot_perp(mapA);
+        }
+        else {
+            uB = build_exch_ind_pot_avg(mapA);
+        }
 
-    std::map<std::string, std::shared_ptr<Matrix> > mapA;
-    mapA["Cocc_A"] = Cocc0A;
-    mapA["Cvir_A"] = Cvir0A;
-    mapA["S"] = S;
-    mapA["D_A"] = D_A;
-    mapA["V_A"] = V_A;
-    mapA["J_A"] = J_A;
-    mapA["K_A"] = K_A;
-    mapA["D_B"] = D_B;
-    mapA["V_B"] = V_B;
-    mapA["J_B"] = J_B;
-    mapA["K_B"] = K_B;
-    mapA["J_O"] = J_O;
-    mapA["K_O"] = K_O;
-    mapA["J_P"] = J_P_A;
+        K_O->transpose_this();
+        K_AOY->transpose_this();
+        K_XOB->transpose_this();
+        K_XOY->transpose_this();
 
-    std::shared_ptr<Matrix> wB = build_ind_pot(mapA);
-    std::shared_ptr<Matrix> uB = build_exch_ind_pot(mapA);
+        std::map<std::string, std::shared_ptr<Matrix> > mapB;
+        mapB["Cocc_A"] = Cocc0B;
+        mapB["Cvir_A"] = Cvir0B;
+        mapB["S"] = S;
+        mapB["D_A"] = D_B;
+        mapB["V_A"] = V_B;
+        mapB["J_A"] = J_B;
+        mapB["K_A"] = K_B;
+        mapB["D_B"] = D_A;
+        mapB["V_B"] = V_A;
+        mapB["J_B"] = J_A;
+        mapB["K_B"] = K_A;
+        mapB["D_X"] = D_Y;
+        mapB["J_X"] = J_Y;
+        mapB["K_X"] = K_Y;
+        mapB["D_Y"] = D_X;
+        mapB["J_Y"] = J_X;
+        mapB["K_Y"] = K_X;
+        mapB["J_O"] = J_O;
+        mapB["K_O"] = K_O;
+        mapB["J_XOY"] = J_XOY;
+        mapB["K_XOB"] = K_AOY;
+        mapB["K_AOY"] = K_XOB;
+        mapB["K_XOY"] = K_XOY;
+        mapB["J_P"] = J_P_B;
+        mapB["J_PBXY"] = J_P_AYX;
+        mapB["J_PYXB"] = J_P_XYA;
+        mapB["J_PYAY"] = J_P_XBX;
 
-    K_O->transpose_this();
+        wA = build_ind_pot(mapB);
+        if (options_.get_bool("FISAPT_EXCH_PARPERP")) {
+            uApar = build_exch_ind_pot_par(mapB);
+            uAperp = build_exch_ind_pot_perp(mapB);
+        }
+        else {
+            uA = build_exch_ind_pot_avg(mapB);
+        }
 
-    std::map<std::string, std::shared_ptr<Matrix> > mapB;
-    mapB["Cocc_A"] = Cocc0B;
-    mapB["Cvir_A"] = Cvir0B;
-    mapB["S"] = S;
-    mapB["D_A"] = D_B;
-    mapB["V_A"] = V_B;
-    mapB["J_A"] = J_B;
-    mapB["K_A"] = K_B;
-    mapB["D_B"] = D_A;
-    mapB["V_B"] = V_A;
-    mapB["J_B"] = J_A;
-    mapB["K_B"] = K_A;
-    mapB["J_O"] = J_O;
-    mapB["K_O"] = K_O;
-    mapB["J_P"] = J_P_B;
+        K_O->transpose_this();
+        K_AOY->transpose_this();
+        K_XOB->transpose_this();
+        K_XOY->transpose_this();
 
-    std::shared_ptr<Matrix> wA = build_ind_pot(mapB);
-    std::shared_ptr<Matrix> uA = build_exch_ind_pot(mapB);
+        // => Stash for ExchDisp <= //
 
-    K_O->transpose_this();
+        matrices_["J_O"] = J_O;
+        matrices_["K_O"] = K_O;
+        matrices_["J_P_A"] = J_P_A;
+        matrices_["J_P_B"] = J_P_B;
+        matrices_["J_P_YAY"] = J_P_YAY;
+        matrices_["J_P_XBX"] = J_P_XBX;
+        matrices_["K_XOB"] = K_XOB;
+        matrices_["K_AOY"] = K_AOY;
+        matrices_["K_XOY"] = K_XOY;
+        matrices_["D_X"] = D_X;
+        matrices_["D_Y"] = D_Y;
+    }
+    else {
+
+    // => ExchInd perturbations <= //
+
+        std::shared_ptr<Matrix> C_O_A = linalg::triplet(D_B, S, matrices_["Cocc_A"]);
+        std::shared_ptr<Matrix> C_P_A = linalg::triplet(linalg::triplet(D_B, S, D_A), S, matrices_["Cocc_B"]);
+        std::shared_ptr<Matrix> C_P_B = linalg::triplet(linalg::triplet(D_A, S, D_B), S, matrices_["Cocc_A"]);
+       
+        Cl.clear();
+        Cr.clear();
+
+        // J/K[O]
+        Cl.push_back(matrices_["Cocc_A"]);
+        Cr.push_back(C_O_A);
+        // J/K[P_B]
+        Cl.push_back(matrices_["Cocc_A"]);
+        Cr.push_back(C_P_B);
+        // J/K[P_B]
+        Cl.push_back(matrices_["Cocc_B"]);
+        Cr.push_back(C_P_A);
+      
+        // => Compute the JK matrices <= //
+      
+        jk_->compute();
+      
+        // => Unload the JK Object <= //
+      
+        std::shared_ptr<Matrix> J_O = J[0];
+        std::shared_ptr<Matrix> J_P_B = J[1];
+        std::shared_ptr<Matrix> J_P_A = J[2];
+      
+        std::shared_ptr<Matrix> K_O = K[0];
+        std::shared_ptr<Matrix> K_P_B = K[1];
+        std::shared_ptr<Matrix> K_P_A = K[2];
+       
+        // ==> Generalized ESP (Flat and Exchange) <== //
+       
+        std::map<std::string, std::shared_ptr<Matrix> > mapA;
+        mapA["Cocc_A"] = Cocc0A;
+        mapA["Cvir_A"] = Cvir0A;
+        mapA["S"] = S;
+        mapA["D_A"] = D_A;
+        mapA["V_A"] = V_A;
+        mapA["J_A"] = J_A;
+        mapA["K_A"] = K_A;
+        mapA["D_B"] = D_B;
+        mapA["V_B"] = V_B;
+        mapA["J_B"] = J_B;
+        mapA["K_B"] = K_B;
+        mapA["J_O"] = J_O;
+        mapA["K_O"] = K_O;
+        mapA["J_P"] = J_P_A;
+
+        wB = build_ind_pot(mapA);
+        uB = build_exch_ind_pot(mapA);
+
+        K_O->transpose_this();
+
+        std::map<std::string, std::shared_ptr<Matrix> > mapB;
+        mapB["Cocc_A"] = Cocc0B;
+        mapB["Cvir_A"] = Cvir0B;
+        mapB["S"] = S;
+        mapB["D_A"] = D_B;
+        mapB["V_A"] = V_B;
+        mapB["J_A"] = J_B;
+        mapB["K_A"] = K_B;
+        mapB["D_B"] = D_A;
+        mapB["V_B"] = V_A;
+        mapB["J_B"] = J_A;
+        mapB["K_B"] = K_A;
+        mapB["J_O"] = J_O;
+        mapB["K_O"] = K_O;
+        mapB["J_P"] = J_P_B;
+
+        wA = build_ind_pot(mapB);
+        uA = build_exch_ind_pot(mapB);
+
+        K_O->transpose_this();
+    
+        // => Stash for ExchDisp <= //
+
+        matrices_["J_O"] = J_O;
+        matrices_["K_O"] = K_O;
+        matrices_["J_P_A"] = J_P_A;
+        matrices_["J_P_B"] = J_P_B;
+    }
 
     // ==> Uncoupled Induction <== //
 
@@ -1705,11 +3395,6 @@ void FISAPT::ind() {
     std::shared_ptr<Matrix> xuB(wA->clone());
 
     {
-        int na = eps_occ0A->dimpi()[0];
-        int nb = eps_occ0B->dimpi()[0];
-        int nr = eps_vir0A->dimpi()[0];
-        int ns = eps_vir0B->dimpi()[0];
-
         double** xuAp = xuA->pointer();
         double** xuBp = xuB->pointer();
         double** wAp = wA->pointer();
@@ -1746,19 +3431,70 @@ void FISAPT::ind() {
     // fflush(outfile);
 
     // => Exchange-Induction <= //
+    double ExchInd20u_ABpar;
+    double ExchInd20u_BApar;
+    double ExchInd20upar;
+    double ExchInd20u_ABperp;
+    double ExchInd20u_BAperp;
+    double ExchInd20uperp;
+    double ExchInd20u_AB;
+    double ExchInd20u_BA;
+    double ExchInd20u;
+    double ExchInd20r_ABpar;
+    double ExchInd20r_BApar;
+    double ExchInd20rpar;
+    double ExchInd20r_ABperp;
+    double ExchInd20r_BAperp;
+    double ExchInd20rperp;
+    double ExchInd20r_AB;
+    double ExchInd20r_BA;
+    double ExchInd20r;
 
-    double ExchInd20u_AB = 2.0 * xuA->vector_dot(uB);
-    double ExchInd20u_BA = 2.0 * xuB->vector_dot(uA);
-    double ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
-    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf [Eh]\n", ExchInd20u_AB);
-    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf [Eh]\n", ExchInd20u_BA);
-    outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n", ExchInd20u);
-    outfile->Printf("\n");
-    // fflush(outfile);
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+        if (options_.get_bool("FISAPT_EXCH_PARPERP")) {
+            ExchInd20u_ABpar = 2.0 * xuA->vector_dot(uBpar);
+            ExchInd20u_BApar = 2.0 * xuB->vector_dot(uApar);
+            ExchInd20upar = ExchInd20u_ABpar + ExchInd20u_BApar;
+            outfile->Printf("    Exch-Ind20,u (A<-B) PAR  = %18.12lf [Eh]\n", ExchInd20u_ABpar);
+            outfile->Printf("    Exch-Ind20,u (B<-A) PAR  = %18.12lf [Eh]\n", ExchInd20u_BApar);
+            outfile->Printf("    Exch-Ind20,u        PAR  = %18.12lf [Eh]\n", ExchInd20upar);
+            outfile->Printf("\n");
+            ExchInd20u_ABperp = 2.0 * xuA->vector_dot(uBperp);
+            ExchInd20u_BAperp = 2.0 * xuB->vector_dot(uAperp);
+            ExchInd20uperp = ExchInd20u_ABperp + ExchInd20u_BAperp;
+            outfile->Printf("    Exch-Ind20,u (A<-B) PERP = %18.12lf [Eh]\n", ExchInd20u_ABperp);
+            outfile->Printf("    Exch-Ind20,u (B<-A) PERP = %18.12lf [Eh]\n", ExchInd20u_BAperp);
+            outfile->Printf("    Exch-Ind20,u        PERP = %18.12lf [Eh]\n", ExchInd20uperp);
+            outfile->Printf("\n");
+            ExchInd20u_AB = 0.5*(ExchInd20u_ABpar+ExchInd20u_ABperp);
+            ExchInd20u_BA = 0.5*(ExchInd20u_BApar+ExchInd20u_BAperp);
+            ExchInd20u = 0.5*(ExchInd20upar+ExchInd20uperp);
+            outfile->Printf("    Exch-Ind20,u        AVG  = %18.12lf [Eh]\n", ExchInd20u);
+            outfile->Printf("\n");
+        }
+        else { 
+            ExchInd20u_AB = 2.0 * xuA->vector_dot(uB);
+            ExchInd20u_BA = 2.0 * xuB->vector_dot(uA);
+            ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
+            outfile->Printf("    Exch-Ind20,u (A<-B) AVG  = %18.12lf [Eh]\n", ExchInd20u_AB);
+            outfile->Printf("    Exch-Ind20,u (B<-A) AVG  = %18.12lf [Eh]\n", ExchInd20u_BA);
+            outfile->Printf("    Exch-Ind20,u        AVG  = %18.12lf [Eh]\n", ExchInd20u);
+            outfile->Printf("\n");
+        }
+    }
+    else { 
+        ExchInd20u_AB = 2.0 * xuA->vector_dot(uB);
+        ExchInd20u_BA = 2.0 * xuB->vector_dot(uA);
+        ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
+        outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf [Eh]\n", ExchInd20u_AB);
+        outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf [Eh]\n", ExchInd20u_BA);
+        outfile->Printf("    Exch-Ind20,u        = %18.12lf [Eh]\n", ExchInd20u);
+        outfile->Printf("\n");
+    }
     if (options_.get_bool("SSAPT0_SCALE")) {
         double scale = sSAPT0_scale_;
-        double sExchInd20u_AB = 2.0 * scale * xuA->vector_dot(uB);
-        double sExchInd20u_BA = 2.0 * scale * xuB->vector_dot(uA);
+        double sExchInd20u_AB = scale * ExchInd20u_AB;
+        double sExchInd20u_BA = scale * ExchInd20u_BA;
         double sExchInd20u = sExchInd20u_AB + sExchInd20u_BA;
         outfile->Printf("    sExch-Ind20,u (A<-B) = %18.12lf [Eh]\n", sExchInd20u_AB);
         outfile->Printf("    sExch-Ind20,u (B<-A) = %18.12lf [Eh]\n", sExchInd20u_BA);
@@ -1771,7 +3507,7 @@ void FISAPT::ind() {
 
     scalars_["Exch-Ind20,u (A<-B)"] = ExchInd20u_AB;
     scalars_["Exch-Ind20,u (B<-A)"] = ExchInd20u_BA;
-    scalars_["Exch-Ind20,u"] = ExchInd20u_AB + ExchInd20u_BA;
+    scalars_["Exch-Ind20,u"] = ExchInd20u;
 
     // => Coupled Induction <= //
 
@@ -1819,19 +3555,47 @@ void FISAPT::ind() {
 
     // => Exchange-Induction <= //
 
-    double ExchInd20r_AB = 2.0 * xA->vector_dot(uB);
-    double ExchInd20r_BA = 2.0 * xB->vector_dot(uA);
-    double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-    outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf [Eh]\n", ExchInd20r_AB);
-    outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf [Eh]\n", ExchInd20r_BA);
-    outfile->Printf("    Exch-Ind20,r        = %18.12lf [Eh]\n", ExchInd20r);
-    outfile->Printf("\n");
-    // fflush(outfile);
-
-    scalars_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
-    scalars_["Exch-Ind20,r (B<-A)"] = ExchInd20r_BA;
-    scalars_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
-
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+        if (options_.get_bool("FISAPT_EXCH_PARPERP")) {
+            ExchInd20r_ABpar = 2.0 * xA->vector_dot(uBpar);
+            ExchInd20r_BApar = 2.0 * xB->vector_dot(uApar);
+            ExchInd20rpar = ExchInd20r_ABpar + ExchInd20r_BApar;
+            outfile->Printf("    Exch-Ind20,r (A<-B) PAR  = %18.12lf [Eh]\n", ExchInd20r_ABpar);
+            outfile->Printf("    Exch-Ind20,r (B<-A) PAR  = %18.12lf [Eh]\n", ExchInd20r_BApar);
+            outfile->Printf("    Exch-Ind20,r        PAR  = %18.12lf [Eh]\n", ExchInd20rpar);
+            outfile->Printf("\n");
+            ExchInd20r_ABperp = 2.0 * xA->vector_dot(uBperp);
+            ExchInd20r_BAperp = 2.0 * xB->vector_dot(uAperp);
+            ExchInd20rperp = ExchInd20r_ABperp + ExchInd20r_BAperp;
+            outfile->Printf("    Exch-Ind20,r (A<-B) PERP = %18.12lf [Eh]\n", ExchInd20r_ABperp);
+            outfile->Printf("    Exch-Ind20,r (B<-A) PERP = %18.12lf [Eh]\n", ExchInd20r_BAperp);
+            outfile->Printf("    Exch-Ind20,r        PERP = %18.12lf [Eh]\n", ExchInd20rperp);
+            outfile->Printf("\n");
+            ExchInd20r_AB = 0.5*(ExchInd20r_ABpar+ExchInd20r_ABperp);
+            ExchInd20r_BA = 0.5*(ExchInd20r_BApar+ExchInd20r_BAperp);
+            ExchInd20r = 0.5*(ExchInd20rpar+ExchInd20rperp);
+            outfile->Printf("    Exch-Ind20,r        AVG  = %18.12lf [Eh]\n", ExchInd20r);
+            outfile->Printf("\n");
+        }
+        else { 
+            ExchInd20r_AB = 2.0 * xA->vector_dot(uB);
+            ExchInd20r_BA = 2.0 * xB->vector_dot(uA);
+            ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
+            outfile->Printf("    Exch-Ind20,r (A<-B) AVG  = %18.12lf [Eh]\n", ExchInd20r_AB);
+            outfile->Printf("    Exch-Ind20,r (B<-A) AVG  = %18.12lf [Eh]\n", ExchInd20r_BA);
+            outfile->Printf("    Exch-Ind20,r        AVG  = %18.12lf [Eh]\n", ExchInd20r);
+            outfile->Printf("\n");
+        }
+    }
+    else { 
+        ExchInd20r_AB = 2.0 * xA->vector_dot(uB);
+        ExchInd20r_BA = 2.0 * xB->vector_dot(uA);
+        ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
+        outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf [Eh]\n", ExchInd20r_AB);
+        outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf [Eh]\n", ExchInd20r_BA);
+        outfile->Printf("    Exch-Ind20,r        = %18.12lf [Eh]\n", ExchInd20r);
+        outfile->Printf("\n");
+    }
     if (options_.get_bool("SSAPT0_SCALE")) {
         double scale = sSAPT0_scale_;
         double sExchInd20r_AB = scale * ExchInd20r_AB;
@@ -1846,18 +3610,15 @@ void FISAPT::ind() {
         scalars_["sExch-Ind20,r"] = sExchInd20r_AB + sExchInd20r_BA;
     }
 
+    scalars_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
+    scalars_["Exch-Ind20,r (B<-A)"] = ExchInd20r_BA;
+    scalars_["Exch-Ind20,r"] = ExchInd20r;
+
     scalars_["delta HF,r (2)"] = 0.0;
     if (scalars_["HF"] != 0.0) {
         scalars_["delta HF,r (2)"] =
             scalars_["HF"] - scalars_["Elst10,r"] - scalars_["Exch10"] - scalars_["Ind20,r"] - scalars_["Exch-Ind20,r"];
     }
-
-    // => Stash for ExchDisp <= //
-
-    matrices_["J_O"] = J_O;
-    matrices_["K_O"] = K_O;
-    matrices_["J_P_A"] = J_P_A;
-    matrices_["J_P_B"] = J_P_B;
 
     // => Kill the JK Object <= //
 
@@ -1994,7 +3755,529 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::sh
     return linalg::triplet(Ca, W, Cr, true, false, false);
 }
 
+// Build the exchange-induction potential - SAOn/SIAOn variants, parallel spin coupling
+// This is Eq. (9) in https://doi.org/10.1021/acs.jpca.2c06465 with upper signs picked for all +- and -+
+std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_par(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
+    std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
+    std::shared_ptr<Matrix> Cr = vars["Cvir_A"];
+
+    std::shared_ptr<Matrix> S = vars["S"];
+
+    std::shared_ptr<Matrix> D_A = vars["D_A"];
+    std::shared_ptr<Matrix> J_A = vars["J_A"];
+    std::shared_ptr<Matrix> K_A = vars["K_A"];
+    std::shared_ptr<Matrix> V_A = vars["V_A"];
+    std::shared_ptr<Matrix> D_B = vars["D_B"];
+    std::shared_ptr<Matrix> J_B = vars["J_B"];
+    std::shared_ptr<Matrix> K_B = vars["K_B"];
+    std::shared_ptr<Matrix> V_B = vars["V_B"];
+    std::shared_ptr<Matrix> D_X = vars["D_X"];
+    std::shared_ptr<Matrix> J_X = vars["J_X"];
+    std::shared_ptr<Matrix> K_X = vars["K_X"];
+    std::shared_ptr<Matrix> D_Y = vars["D_Y"];
+    std::shared_ptr<Matrix> J_Y = vars["J_Y"];
+    std::shared_ptr<Matrix> K_Y = vars["K_Y"];
+
+    std::shared_ptr<Matrix> J_O = vars["J_O"];  // J[D^A S D^B]
+    std::shared_ptr<Matrix> K_O = vars["K_O"];  // K[D^A S D^B]
+    std::shared_ptr<Matrix> J_XOB = vars["J_XOB"];  // J[D^X S D^B]
+    std::shared_ptr<Matrix> J_AOY = vars["J_AOY"];  // J[D^A S D^Y]
+    std::shared_ptr<Matrix> J_XOY = vars["J_XOY"];  // J[D^X S D^Y]
+    std::shared_ptr<Matrix> K_XOB = vars["K_XOB"];  // K[D^X S D^B]
+    std::shared_ptr<Matrix> K_AOY = vars["K_AOY"];  // K[D^A S D^Y]
+    std::shared_ptr<Matrix> K_XOY = vars["K_XOY"];  // K[D^X S D^Y]
+
+    std::shared_ptr<Matrix> J_P = vars["J_P"];  // J[D^B S D^A S D^B]
+    std::shared_ptr<Matrix> J_PYXB = vars["J_PYXB"];  // J[D^Y S D^X S D^B]
+    std::shared_ptr<Matrix> J_PBXY = vars["J_PBXY"];  // J[D^B S D^X S D^Y]
+    std::shared_ptr<Matrix> J_PYAY = vars["J_PYAY"];  // J[D^Y S D^A S D^Y]
+
+    std::shared_ptr<Matrix> W(K_B->clone());
+    std::shared_ptr<Matrix> T;
+
+    // 1
+    W->copy(K_B);
+    W->scale(-1.0);
+
+    // 2
+    T = linalg::triplet(S, D_B, J_A);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 3
+    T->copy(K_O);
+    T->scale(1.0);
+    W->add(T);
+    T->copy(K_XOY);
+    T->scale(1.0);
+    W->add(T);
+
+    // 4
+    T->copy(J_O);
+    T->scale(-2.0);
+    W->add(T);
+    T->copy(J_XOY);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 5
+    T = linalg::triplet(S, D_B, K_A);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_Y, K_X);
+    T->scale(1.0);
+    W->add(T);
+
+    // 6
+    T = linalg::triplet(J_B, D_B, S);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 7
+    T = linalg::triplet(K_B, D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(K_Y, D_Y, S);
+    T->scale(1.0);
+    W->add(T);
+
+    // 8
+    T = linalg::triplet(linalg::triplet(S, D_B, J_A), D_B, S);
+    T->scale(2.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, J_A), D_Y, S);
+    T->scale(2.0);
+    W->add(T);
+
+    // 9
+    T = linalg::triplet(linalg::triplet(J_B, D_A, S), D_B, S);
+    T->scale(2.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(J_B, D_X, S), D_Y, S);
+    T->scale(2.0);
+    W->add(T);
+
+    // 10
+    T = linalg::triplet(K_O, D_B, S);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(K_XOB, D_Y, S);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(K_XOY, D_B, S);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(K_AOY, D_Y, S);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 11
+    T->copy(J_P);
+    T->scale(2.0);
+    W->add(T);
+    T->copy(J_PYXB);
+    T->scale(2.0);
+    W->add(T);
+    T->copy(J_PBXY);
+    T->scale(2.0);
+    W->add(T);
+    T->copy(J_PYAY);
+    T->scale(2.0);
+    W->add(T);
+
+    // 12
+    T = linalg::triplet(linalg::triplet(S, D_B, S), D_A, J_B);
+    T->scale(2.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, S), D_X, J_B);
+    T->scale(2.0);
+    W->add(T);
+
+    // 13
+    T = linalg::triplet(S, D_B, K_O, false, false, true);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_B, K_XOY, false, false, true);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_Y, K_XOB, false, false, true);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_Y, K_AOY, false, false, true);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 14
+    T = linalg::triplet(S, D_B, V_A);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 15
+    T = linalg::triplet(V_B, D_B, S);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 16
+    T = linalg::triplet(linalg::triplet(S, D_B, V_A), D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, V_A), D_Y, S);
+    T->scale(1.0);
+    W->add(T);
+
+    // 17
+    T = linalg::triplet(linalg::triplet(V_B, D_A, S), D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(V_B, D_X, S), D_Y, S);
+    T->scale(1.0);
+    W->add(T);
+
+    // 18
+    T = linalg::triplet(linalg::triplet(S, D_B, S), D_A, V_B);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, S), D_X, V_B);
+    T->scale(1.0);
+    W->add(T);
+
+    return linalg::triplet(Ca, W, Cr, true, false, false);
+}
+
+// Build the exchange-induction potential - SAOn/SIAOn variants, perpendicular spin coupling
+// This is Eq. (9) in https://doi.org/10.1021/acs.jpca.2c06465 with lower signs picked for all +- and -+
+std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_perp(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
+    std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
+    std::shared_ptr<Matrix> Cr = vars["Cvir_A"];
+
+    std::shared_ptr<Matrix> S = vars["S"];
+
+    std::shared_ptr<Matrix> D_A = vars["D_A"];
+    std::shared_ptr<Matrix> J_A = vars["J_A"];
+    std::shared_ptr<Matrix> K_A = vars["K_A"];
+    std::shared_ptr<Matrix> V_A = vars["V_A"];
+    std::shared_ptr<Matrix> D_B = vars["D_B"];
+    std::shared_ptr<Matrix> J_B = vars["J_B"];
+    std::shared_ptr<Matrix> K_B = vars["K_B"];
+    std::shared_ptr<Matrix> V_B = vars["V_B"];
+    std::shared_ptr<Matrix> D_X = vars["D_X"];
+    std::shared_ptr<Matrix> J_X = vars["J_X"];
+    std::shared_ptr<Matrix> K_X = vars["K_X"];
+    std::shared_ptr<Matrix> D_Y = vars["D_Y"];
+    std::shared_ptr<Matrix> J_Y = vars["J_Y"];
+    std::shared_ptr<Matrix> K_Y = vars["K_Y"];
+
+    std::shared_ptr<Matrix> J_O = vars["J_O"];  // J[D^A S D^B]
+    std::shared_ptr<Matrix> K_O = vars["K_O"];  // K[D^A S D^B]
+    std::shared_ptr<Matrix> J_XOB = vars["J_XOB"];  // J[D^X S D^B]
+    std::shared_ptr<Matrix> J_AOY = vars["J_AOY"];  // J[D^A S D^Y]
+    std::shared_ptr<Matrix> J_XOY = vars["J_XOY"];  // J[D^X S D^Y]
+    std::shared_ptr<Matrix> K_XOB = vars["K_XOB"];  // K[D^X S D^B]
+    std::shared_ptr<Matrix> K_AOY = vars["K_AOY"];  // K[D^A S D^Y]
+    std::shared_ptr<Matrix> K_XOY = vars["K_XOY"];  // K[D^X S D^Y]
+
+    std::shared_ptr<Matrix> J_P = vars["J_P"];  // J[D^B S D^A S D^B]
+    std::shared_ptr<Matrix> J_PYXB = vars["J_PYXB"];  // J[D^Y S D^X S D^B]
+    std::shared_ptr<Matrix> J_PBXY = vars["J_PBXY"];  // J[D^B S D^X S D^Y]
+    std::shared_ptr<Matrix> J_PYAY = vars["J_PYAY"];  // J[D^Y S D^A S D^Y]
+
+    std::shared_ptr<Matrix> W(K_B->clone());
+    std::shared_ptr<Matrix> T;
+
+    // 1
+    W->copy(K_B);
+    W->scale(-1.0);
+
+    // 2
+    T = linalg::triplet(S, D_B, J_A);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 3
+    T->copy(K_O);
+    T->scale(1.0);
+    W->add(T);
+    T->copy(K_XOY);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 4
+    T->copy(J_O);
+    T->scale(-2.0);
+    W->add(T);
+    T->copy(J_XOY);
+    T->scale(2.0);
+    W->add(T);
+
+    // 5
+    T = linalg::triplet(S, D_B, K_A);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_Y, K_X);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 6
+    T = linalg::triplet(J_B, D_B, S);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 7
+    T = linalg::triplet(K_B, D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(K_Y, D_Y, S);
+    T->scale(1.0);
+    W->add(T);
+
+    // 8
+    T = linalg::triplet(linalg::triplet(S, D_B, J_A), D_B, S);
+    T->scale(2.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, J_A), D_Y, S);
+    T->scale(2.0);
+    W->add(T);
+
+    // 9
+    T = linalg::triplet(linalg::triplet(J_B, D_A, S), D_B, S);
+    T->scale(2.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(J_B, D_X, S), D_Y, S);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 10
+    T = linalg::triplet(K_O, D_B, S);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(K_XOB, D_Y, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(K_XOY, D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(K_AOY, D_Y, S);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 11
+    T->copy(J_P);
+    T->scale(2.0);
+    W->add(T);
+    T->copy(J_PYXB);
+    T->scale(-2.0);
+    W->add(T);
+    T->copy(J_PBXY);
+    T->scale(-2.0);
+    W->add(T);
+    T->copy(J_PYAY);
+    T->scale(2.0);
+    W->add(T);
+
+    // 12
+    T = linalg::triplet(linalg::triplet(S, D_B, S), D_A, J_B);
+    T->scale(2.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, S), D_X, J_B);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 13
+    T = linalg::triplet(S, D_B, K_O, false, false, true);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_B, K_XOY, false, false, true);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_Y, K_XOB, false, false, true);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_Y, K_AOY, false, false, true);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 14
+    T = linalg::triplet(S, D_B, V_A);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 15
+    T = linalg::triplet(V_B, D_B, S);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 16
+    T = linalg::triplet(linalg::triplet(S, D_B, V_A), D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, V_A), D_Y, S);
+    T->scale(1.0);
+    W->add(T);
+
+    // 17
+    T = linalg::triplet(linalg::triplet(V_B, D_A, S), D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(V_B, D_X, S), D_Y, S);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 18
+    T = linalg::triplet(linalg::triplet(S, D_B, S), D_A, V_B);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, S), D_X, V_B);
+    T->scale(-1.0);
+    W->add(T);
+
+    return linalg::triplet(Ca, W, Cr, true, false, false);
+}
+
+// Build the exchange-induction potential - SAOn/SIAOn variants, averaged spin coupling
+// This is Eq. (9) in https://doi.org/10.1021/acs.jpca.2c06465 with all the +- and -+ omitted as they cancel out when averaging
+std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot_avg(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
+    std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
+    std::shared_ptr<Matrix> Cr = vars["Cvir_A"];
+
+    std::shared_ptr<Matrix> S = vars["S"];
+
+    std::shared_ptr<Matrix> D_A = vars["D_A"];
+    std::shared_ptr<Matrix> J_A = vars["J_A"];
+    std::shared_ptr<Matrix> K_A = vars["K_A"];
+    std::shared_ptr<Matrix> V_A = vars["V_A"];
+    std::shared_ptr<Matrix> D_B = vars["D_B"];
+    std::shared_ptr<Matrix> J_B = vars["J_B"];
+    std::shared_ptr<Matrix> K_B = vars["K_B"];
+    std::shared_ptr<Matrix> V_B = vars["V_B"];
+    std::shared_ptr<Matrix> D_X = vars["D_X"];
+    std::shared_ptr<Matrix> J_X = vars["J_X"];
+    std::shared_ptr<Matrix> K_X = vars["K_X"];
+    std::shared_ptr<Matrix> D_Y = vars["D_Y"];
+    std::shared_ptr<Matrix> J_Y = vars["J_Y"];
+    std::shared_ptr<Matrix> K_Y = vars["K_Y"];
+
+    std::shared_ptr<Matrix> J_O = vars["J_O"];  // J[D^A S D^B]
+    std::shared_ptr<Matrix> K_O = vars["K_O"];  // K[D^A S D^B]
+    std::shared_ptr<Matrix> K_AOY = vars["K_AOY"];  // K[D^A S D^Y]
+
+    std::shared_ptr<Matrix> J_P = vars["J_P"];  // J[D^B S D^A S D^B]
+    std::shared_ptr<Matrix> J_PYAY = vars["J_PYAY"];  // J[D^Y S D^A S D^Y]
+
+    std::shared_ptr<Matrix> W(K_B->clone());
+    std::shared_ptr<Matrix> T;
+
+    // 1
+    W->copy(K_B);
+    W->scale(-1.0);
+
+    // 2
+    T = linalg::triplet(S, D_B, J_A);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 3
+    T->copy(K_O);
+    T->scale(1.0);
+    W->add(T);
+
+    // 4
+    T->copy(J_O);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 5
+    T = linalg::triplet(S, D_B, K_A);
+    T->scale(1.0);
+    W->add(T);
+
+    // 6
+    T = linalg::triplet(J_B, D_B, S);
+    T->scale(-2.0);
+    W->add(T);
+
+    // 7
+    T = linalg::triplet(K_B, D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(K_Y, D_Y, S);
+    T->scale(1.0);
+    W->add(T);
+
+    // 8
+    T = linalg::triplet(linalg::triplet(S, D_B, J_A), D_B, S);
+    T->scale(2.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, J_A), D_Y, S);
+    T->scale(2.0);
+    W->add(T);
+
+    // 9
+    T = linalg::triplet(linalg::triplet(J_B, D_A, S), D_B, S);
+    T->scale(2.0);
+    W->add(T);
+
+    // 10
+    T = linalg::triplet(K_O, D_B, S);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(K_AOY, D_Y, S);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 11
+    T->copy(J_P);
+    T->scale(2.0);
+    W->add(T);
+    T->copy(J_PYAY);
+    T->scale(2.0);
+    W->add(T);
+
+    // 12
+    T = linalg::triplet(linalg::triplet(S, D_B, S), D_A, J_B);
+    T->scale(2.0);
+    W->add(T);
+
+    // 13
+    T = linalg::triplet(S, D_B, K_O, false, false, true);
+    T->scale(-1.0);
+    W->add(T);
+    T = linalg::triplet(S, D_Y, K_AOY, false, false, true);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 14
+    T = linalg::triplet(S, D_B, V_A);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 15
+    T = linalg::triplet(V_B, D_B, S);
+    T->scale(-1.0);
+    W->add(T);
+
+    // 16
+    T = linalg::triplet(linalg::triplet(S, D_B, V_A), D_B, S);
+    T->scale(1.0);
+    W->add(T);
+    T = linalg::triplet(linalg::triplet(S, D_Y, V_A), D_Y, S);
+    T->scale(1.0);
+    W->add(T);
+
+    // 17
+    T = linalg::triplet(linalg::triplet(V_B, D_A, S), D_B, S);
+    T->scale(1.0);
+    W->add(T);
+
+    // 18
+    T = linalg::triplet(linalg::triplet(S, D_B, S), D_A, V_B);
+    T->scale(1.0);
+    W->add(T);
+
+    return linalg::triplet(Ca, W, Cr, true, false, false);
+}
+
 // Compute total dispersion contribution
+// This definition is NOT appropriate for the SAOn/SIAOn ISAPT variants, but it is not called in an ISAPT workflow (FISAPT::fdisp is).
 void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
                   bool do_print) {
     if (do_print) {
@@ -2015,6 +4298,16 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     std::shared_ptr<Vector> eps_occ0B = vector_cache["eps_aocc0B"];
     std::shared_ptr<Vector> eps_vir0A = vector_cache["eps_vir0A"];
     std::shared_ptr<Vector> eps_vir0B = vector_cache["eps_vir0B"];
+
+    //For the SAOn/SIAOn variants, we are NOT calling freeze_core() to regenerate the matrices Caocc0A, Caocc0B after
+    //redoing the orbitals, so we should not be loading old orbital coefficients.
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+        Cocc0A = matrix_cache["Cocc0A"];
+        Cocc0B = matrix_cache["Cocc0B"];
+        eps_occ0A = vector_cache["eps_occ0A"];
+        eps_occ0B = vector_cache["eps_occ0B"];
+    }
 
     // => Sizing <= //
 
@@ -2436,6 +4729,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 }
 
 // Compute total dispersion energy and S-infinity version of total exchange-dispersion
+// This code applies to regular SAPT, not FISAPT, and is called from the SAPT workflow when DO_DISP_EXCH_SINF == true.
 void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std::string, SharedVector> vector_cache,
                         bool do_print) {
     if (do_print) {
@@ -2479,7 +4773,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
     std::shared_ptr<Matrix> V_A = matrix_cache["V_A"];
     std::shared_ptr<Matrix> V_B = matrix_cache["V_B"];
 
-    // => Intermolelcular overlap matrix and inverse <= //
+    // => Intermolecular overlap matrix and inverse <= //
     std::shared_ptr<Matrix> Sab = linalg::triplet(Cocc0A, S, Cocc0B, true, false, false);
     double** Sabp = Sab->pointer();
     auto D = std::make_shared<Matrix>("D", na + nb, na + nb);
@@ -3009,6 +5303,7 @@ void FISAPT::print_trailer() {
 }
 
 void FISAPT::raw_plot(const std::string& filepath) {
+// Konrad: there is at the moment some redundancy between do_cubes and raw_plot that should be eliminated. My bad.
     outfile->Printf("  ==> Scalar Field Plots <==\n\n");
 
     outfile->Printf("    F-SAPT Plot Filepath = %s\n\n", filepath.c_str());
@@ -3078,6 +5373,7 @@ void FISAPT::flocalize() {
     outfile->Printf("  ==> F-SAPT Localization (IBO) <==\n\n");
 
     // Currently always separating core and valence
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     {
         outfile->Printf("  Local Orbitals for Monomer A:\n\n");
 
@@ -3144,6 +5440,21 @@ void FISAPT::flocalize() {
         matrices_["Ufocc0A"]->set_name("Ufocc0A");
         matrices_["Uaocc0A"]->set_name("Uaocc0A");
         matrices_["Qocc0A"]->set_name("Qocc0A");
+
+        if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+// Extra matrices of localized orbitals augmented by the link orbital (normalized to 1/2, not 1)
+            matrices_["LLocc0A"] = std::make_shared<Matrix>("LLocc0A", nn, nm+1);
+            double** LLp = matrices_["LLocc0A"]->pointer();
+            for (int n = 0; n < nn; n++) {
+                for (int i = 0; i < nm; i++) {
+                    LLp[n][i] = Lp[n][i];
+                }
+            }
+            double** thislinkAp = matrices_["thislinkA"]->pointer();
+            for (int n = 0; n < nn; n++) {
+                LLp[n][nm] = thislinkAp[n][0];
+            }
+        }
     }
 
     {
@@ -3212,6 +5523,21 @@ void FISAPT::flocalize() {
         matrices_["Ufocc0B"]->set_name("Ufocc0B");
         matrices_["Uaocc0B"]->set_name("Uaocc0B");
         matrices_["Qocc0B"]->set_name("Qocc0B");
+
+        if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+// Extra matrices of localized orbitals augmented by the link orbital (normalized to 1/2, not 1)
+            matrices_["LLocc0B"] = std::make_shared<Matrix>("LLocc0B", nn, nm+1);
+            double** LLp = matrices_["LLocc0B"]->pointer();
+            for (int n = 0; n < nn; n++) {
+                for (int i = 0; i < nm; i++) {
+                    LLp[n][i] = Lp[n][i];
+                }
+            }
+            double** thislinkBp = matrices_["thislinkB"]->pointer();
+            for (int n = 0; n < nn; n++) {
+                LLp[n][nm] = thislinkBp[n][0];
+            }
+        }
     }
 }
 
@@ -3221,12 +5547,31 @@ void FISAPT::felst() {
 
     // => Sizing <= //
 
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     std::shared_ptr<Molecule> mol = primary_->molecule();
     int nn = primary_->nbf();
     int nA = mol->natom();
     int nB = mol->natom();
+
+// Some special considerations for the SAOn/SIAOn variants of ISAPT below
     int na = matrices_["Locc0A"]->colspi()[0];
     int nb = matrices_["Locc0B"]->colspi()[0];
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+        na = matrices_["LLocc0A"]->colspi()[0];
+        nb = matrices_["LLocc0B"]->colspi()[0];
+    }
+    std::shared_ptr<Matrix> L0A = std::make_shared<Matrix>("L0A", nn, na);
+    std::shared_ptr<Matrix> L0B = std::make_shared<Matrix>("L0B", nn, nb);
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+        L0A->copy(matrices_["LLocc0A"]);
+        L0B->copy(matrices_["LLocc0B"]);
+    }
+    else {
+        L0A->copy(matrices_["Locc0A"]);
+        L0B->copy(matrices_["Locc0B"]);
+    }
+// for the SAOn/SIAOn variants, we need to do the same things but with the Locc0A, Locc0B matrices augmented by the link orbital. 
+// The local matrices L0A/L0B hold the correct form, augmented or not, as needed.
 
     // => Targets <= //
 
@@ -3234,7 +5579,7 @@ void FISAPT::felst() {
     std::vector<double> Elst10_terms;
     Elst10_terms.resize(4);
 
-    // This matrix contains the deomposition of the F-SAPT electrostatics energy to nuclear, orbital, and external
+    // This matrix contains the decomposition of the F-SAPT electrostatics energy to nuclear, orbital, and external
     // point charges contributions. nA and nB are the total number of atoms in subsystems A and B. na(nb) is the number
     // of occupied oritals for subsystem A(B). One additional entry is added to include the effect of external 
     // point charges in A and B (if present; otherwise it will be zero columns/rows). This matrix is saved
@@ -3320,8 +5665,8 @@ void FISAPT::felst() {
     dfh_->initialize();
     dfh_->print_header();
 
-    dfh_->add_space("a", matrices_["Locc0A"]);
-    dfh_->add_space("b", matrices_["Locc0B"]);
+    dfh_->add_space("a", L0A);
+    dfh_->add_space("b", L0B);
 
     dfh_->add_transformation("Aaa", "a", "a");
     dfh_->add_transformation("Abb", "b", "b");
@@ -3368,7 +5713,7 @@ void FISAPT::felst() {
         Vint2->set_charge_field({{ZAp[A], {mol->x(A), mol->y(A), mol->z(A)}}});
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbb =
-            linalg::triplet(matrices_["Locc0B"], Vtemp2, matrices_["Locc0B"], true, false, false);
+            linalg::triplet(L0B, Vtemp2, L0B, true, false, false);
         double** Vbbp = Vbb->pointer();
         for (int b = 0; b < nb; b++) {
             double E = 2.0 * Vbbp[b][b];
@@ -3380,7 +5725,7 @@ void FISAPT::felst() {
     // Add Extern-A - Orbital b interaction
     if (reference_->has_potential_variable("A")) {
         std::shared_ptr<Matrix> Vbb =
-            linalg::triplet(matrices_["Locc0B"], matrices_["VA_extern"], matrices_["Locc0B"], true, false, false);
+            linalg::triplet(L0B, matrices_["VA_extern"], L0B, true, false, false);
         double** Vbbp = Vbb->pointer();
         for (int b = 0; b < nb; b++) {
             double E = 2.0 * Vbbp[b][b];
@@ -3397,7 +5742,7 @@ void FISAPT::felst() {
         Vint2->set_charge_field({{ZBp[B], {mol->x(B), mol->y(B), mol->z(B)}}});
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vaa =
-            linalg::triplet(matrices_["Locc0A"], Vtemp2, matrices_["Locc0A"], true, false, false);
+            linalg::triplet(L0A, Vtemp2, L0A, true, false, false);
         double** Vaap = Vaa->pointer();
         for (int a = 0; a < na; a++) {
             double E = 2.0 * Vaap[a][a];
@@ -3409,7 +5754,7 @@ void FISAPT::felst() {
     // Add Extern-B - Orbital a interaction
     if (reference_->has_potential_variable("B")) {
         std::shared_ptr<Matrix> Vaa =
-            linalg::triplet(matrices_["Locc0A"], matrices_["VB_extern"], matrices_["Locc0A"], true, false, false);
+            linalg::triplet(L0A, matrices_["VB_extern"], L0A, true, false, false);
         double** Vaap = Vaa->pointer();
         for (int a = 0; a < na; a++) {
             double E = 2.0 * Vaap[a][a];
@@ -3462,13 +5807,22 @@ void FISAPT::fexch() {
     int nr = matrices_["Cvir0A"]->colspi()[0];
     int ns = matrices_["Cvir0B"]->colspi()[0];
 
+//for the SAOn/SIAOn variants, we sometimes need na1 = na+1 (with link orbital) and sometimes na (without) - be careful with this!
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    int na1 = na;
+    int nb1 = nb;
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+        na1 = na + 1;
+        nb1 = nb + 1;
+    }
+
     // => Targets <= //
 
     double Exch10_2 = 0.0;
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(3);
 
-    matrices_["Exch_AB"] = std::make_shared<Matrix>("Exch_AB", nA + na + 1, nB + nb + 1); // Add one entry for external
+    matrices_["Exch_AB"] = std::make_shared<Matrix>("Exch_AB", nA + na1 + 1, nB + nb1 + 1); // Add one entry for external
                                                                                           // potentials in A and B
     double** Ep = matrices_["Exch_AB"]->pointer();
 
@@ -3629,7 +5983,15 @@ void FISAPT::fexch() {
     // => Exchange scaling <= //
 
     if (options_.get_bool("FISAPT_FSAPT_EXCH_SCALE")) {
-        double scale = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
+    // KP: the following change in the scaling (see the commented out line) is essential for ISAPT(SAOn) and ISAPT(SIAOn),
+    // and should not mess up the other variants. The problem is that exch() calculates E(10)exch(S^2) in the DM formalism
+    // (good for SAO/SIAO because no virtual orbitals in formulas, bad for FSAPT), while fexch() calculates this term
+    // in the second quantization formalism (good for FSAPT, bad for SAO/SIAO). In effect, the scaling for SAO/SIAO accounts
+    // for two effects at once: terms beyond S^2 and linking terms computed by exch() but not here.
+    //
+    // Not changing the scaling for sSAPT0 - if you try using sSAPT0 with ISAPT(SAO/SIAO), you've only got yourself to blame.
+    //  double scale = scalars_["Exch10"] / scalars_["Exch10(S^2)"];
+        double scale = scalars_["Exch10"] / Exch10_2;
         matrices_["Exch_AB"]->scale(scale);
         outfile->Printf("    Scaling F-SAPT Exch10(S^2) by %11.3E to match Exch10\n\n", scale);
     }
@@ -3651,6 +6013,7 @@ void FISAPT::find() {
 
     bool ind_resp = options_.get_bool("FISAPT_FSAPT_IND_RESPONSE");
     bool ind_scale = options_.get_bool("FISAPT_FSAPT_IND_SCALE");
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
 
     // => Sizing <= //
 
@@ -3662,6 +6025,14 @@ void FISAPT::find() {
     int nb = matrices_["Locc0B"]->colspi()[0];
     int nr = matrices_["Cvir0A"]->colspi()[0];
     int ns = matrices_["Cvir0B"]->colspi()[0];
+
+//for the SAOn/SIAOn variants, we sometimes need na1 = na+1 (with link orbital) and sometimes na (without) - be careful with this!
+    int na1 = na;
+    int nb1 = nb;
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+        na1 = na + 1;
+        nb1 = nb + 1;
+    }
 
     // => Pointers <= //
 
@@ -3692,8 +6063,8 @@ void FISAPT::find() {
 
     // => ESPs <= //
 
-    dfh_->add_disk_tensor("WBar", std::make_tuple(nB + nb + 1, na, nr)); // add entry for external potentials
-    dfh_->add_disk_tensor("WAbs", std::make_tuple(nA + na + 1, nb, ns)); // add entry for external potentials
+    dfh_->add_disk_tensor("WBar", std::make_tuple(nB + nb1 + 1, na, nr)); // add entry for external potentials
+    dfh_->add_disk_tensor("WAbs", std::make_tuple(nA + na1 + 1, nb, ns)); // add entry for external potentials
 
     // => Nuclear Part (PITA) <= //
 
@@ -3744,27 +6115,28 @@ void FISAPT::find() {
 
     double** RaCp = matrices_["Vlocc0A"]->pointer();
     double** RbDp = matrices_["Vlocc0B"]->pointer();
+    // for SAOn/SIAOn, the above two matrices contain the link orbital contribution
 
     auto TsQ = std::make_shared<Matrix>("TsQ", ns, nQ);
-    auto T1As = std::make_shared<Matrix>("T1As", na, ns);
+    auto T1As = std::make_shared<Matrix>("T1As", na1, ns);
     double** TsQp = TsQ->pointer();
     double** T1Asp = T1As->pointer();
     for (size_t b = 0; b < nb; b++) {
         dfh_->fill_tensor("Abs", TsQ, {b, b + 1});
-        C_DGEMM('N', 'T', na, ns, nQ, 2.0, RaCp[0], nQ, TsQp[0], nQ, 0.0, T1Asp[0], ns);
-        for (size_t a = 0; a < na; a++) {
+        C_DGEMM('N', 'T', na1, ns, nQ, 2.0, RaCp[0], nQ, TsQp[0], nQ, 0.0, T1Asp[0], ns);
+        for (size_t a = 0; a < na1; a++) {
             dfh_->write_disk_tensor("WAbs", T1Asp[a], {nA + a, nA + a + 1}, {b, b + 1});
         }
     }
 
     auto TrQ = std::make_shared<Matrix>("TrQ", nr, nQ);
-    auto T1Br = std::make_shared<Matrix>("T1Br", nb, nr);
+    auto T1Br = std::make_shared<Matrix>("T1Br", nb1, nr);
     double** TrQp = TrQ->pointer();
     double** T1Brp = T1Br->pointer();
     for (size_t a = 0; a < na; a++) {
         dfh_->fill_tensor("Aar", TrQ, {a, a + 1});
-        C_DGEMM('N', 'T', nb, nr, nQ, 2.0, RbDp[0], nQ, TrQp[0], nQ, 0.0, T1Brp[0], nr);
-        for (size_t b = 0; b < nb; b++) {
+        C_DGEMM('N', 'T', nb1, nr, nQ, 2.0, RbDp[0], nQ, TrQp[0], nQ, 0.0, T1Brp[0], nr);
+        for (size_t b = 0; b < nb1; b++) {
             dfh_->write_disk_tensor("WBar", T1Brp[b], {nB + b, nB + b + 1}, {a, a + 1});
         }
     }
@@ -3802,70 +6174,159 @@ void FISAPT::find() {
     double** wBp = wB->pointer();
     double** wAp = wA->pointer();
 
+    auto uAT = std::make_shared<Matrix>("uAT", nb, ns);
+    auto wAT = std::make_shared<Matrix>("wAT", nb, ns);
+    auto uBT = std::make_shared<Matrix>("uBT", na, nr);
+    auto wBT = std::make_shared<Matrix>("wBT", na, nr);
+
+// Now come the second-order exchange-induction energy expressions appropriate for the SAOn/SIAOn link assignments.
+// Here, we compute only the averaged spin coupling, like when FISAPT_EXCH_PARPERP == false.
+// See https://doi.org/10.1021/acs.jpca.2c06465 for details - equation numbers below refer to this paper and its SI.
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
+
+//here we need the link-only parts of density matrices D_X,D_Y and their corresponding Coulomb and exchange matrices (computed earlier)
+        std::shared_ptr<Matrix> D_X(D_A->clone());
+        std::shared_ptr<Matrix> D_Y(D_A->clone());
+        D_X = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
+        D_Y = linalg::doublet(matrices_["thislinkB"], matrices_["thislinkB"], false, true);
+        auto J_X(matrices_["JLA"]->clone());
+        auto K_X(matrices_["KLA"]->clone());
+        auto J_Y(matrices_["JLB"]->clone());
+        auto K_Y(matrices_["KLB"]->clone());
+       
+        // ==> Generalized ESP (Flat and Exchange) <== //
+        std::shared_ptr<Matrix> K_AOY = matrices_["K_AOY"];
+        std::shared_ptr<Matrix> K_XOB = matrices_["K_XOB"];
+        K_XOB->transpose_this();
+        std::shared_ptr<Matrix> J_P_YAY = matrices_["J_P_YAY"];
+        std::shared_ptr<Matrix> J_P_XBX = matrices_["J_P_XBX"];
+       
+        std::map<std::string, std::shared_ptr<Matrix> > mapA;
+        mapA["Cocc_A"] = Locc_A;
+        mapA["Cvir_A"] = Cvir_A;
+        mapA["S"] = S;
+        mapA["D_A"] = D_A;
+        mapA["V_A"] = V_A;
+        mapA["J_A"] = J_A;
+        mapA["K_A"] = K_A;
+        mapA["D_B"] = D_B;
+        mapA["V_B"] = V_B;
+        mapA["J_B"] = J_B;
+        mapA["K_B"] = K_B;
+        mapA["D_X"] = D_X;
+        mapA["J_X"] = J_X;
+        mapA["K_X"] = K_X;
+        mapA["D_Y"] = D_Y;
+        mapA["J_Y"] = J_Y;
+        mapA["K_Y"] = K_Y;
+        mapA["J_O"] = J_O;
+        mapA["K_O"] = K_O;
+        mapA["K_AOY"] = K_AOY;
+        mapA["J_P"] = J_P_A;
+        mapA["J_PYAY"] = J_P_YAY;
+
+        wBT = build_ind_pot(mapA);
+        uBT = build_exch_ind_pot_avg(mapA);
+
+        K_O->transpose_this();
+
+        std::map<std::string, std::shared_ptr<Matrix> > mapB;
+        mapB["Cocc_A"] = Locc_B;
+        mapB["Cvir_A"] = Cvir_B;
+        mapB["S"] = S;
+        mapB["D_A"] = D_B;
+        mapB["V_A"] = V_B;
+        mapB["J_A"] = J_B;
+        mapB["K_A"] = K_B;
+        mapB["D_B"] = D_A;
+        mapB["V_B"] = V_A;
+        mapB["J_B"] = J_A;
+        mapB["K_B"] = K_A;
+        mapB["D_X"] = D_Y;
+        mapB["J_X"] = J_Y;
+        mapB["K_X"] = K_Y;
+        mapB["D_Y"] = D_X;
+        mapB["J_Y"] = J_X;
+        mapB["K_Y"] = K_X;
+        mapB["J_O"] = J_O;
+        mapB["K_O"] = K_O;
+        mapB["K_AOY"] = K_XOB;
+        mapB["J_P"] = J_P_B;
+        mapB["J_PYAY"] = J_P_XBX;
+
+        wAT = build_ind_pot(mapB);
+        uAT = build_exch_ind_pot_avg(mapB);
+
+        K_O->transpose_this();
+
+    }
+    else {
+
     // ==> Generalized ESP (Flat and Exchange) <== //
 
-    std::map<std::string, std::shared_ptr<Matrix> > mapA;
-    mapA["Cocc_A"] = Locc_A;
-    mapA["Cvir_A"] = Cvir_A;
-    mapA["Cocc_B"] = Locc_B;
-    mapA["Cvir_B"] = Cvir_B;
-    mapA["S"] = S;
-    mapA["D_A"] = D_A;
-    mapA["V_A"] = V_A;
-    mapA["J_A"] = J_A;
-    mapA["K_A"] = K_A;
-    mapA["D_B"] = D_B;
-    mapA["V_B"] = V_B;
-    mapA["J_B"] = J_B;
-    mapA["K_B"] = K_B;
-    mapA["J_O"] = J_O;
-    mapA["K_O"] = K_O;
-    mapA["J_P"] = J_P_A;
+        std::map<std::string, std::shared_ptr<Matrix> > mapA;
+        mapA["Cocc_A"] = Locc_A;
+        mapA["Cvir_A"] = Cvir_A;
+        mapA["Cocc_B"] = Locc_B;
+        mapA["Cvir_B"] = Cvir_B;
+        mapA["S"] = S;
+        mapA["D_A"] = D_A;
+        mapA["V_A"] = V_A;
+        mapA["J_A"] = J_A;
+        mapA["K_A"] = K_A;
+        mapA["D_B"] = D_B;
+        mapA["V_B"] = V_B;
+        mapA["J_B"] = J_B;
+        mapA["K_B"] = K_B;
+        mapA["J_O"] = J_O;
+        mapA["K_O"] = K_O;
+        mapA["J_P"] = J_P_A;
 
-    std::shared_ptr<Matrix> wBT = build_ind_pot(mapA);
-    std::shared_ptr<Matrix> uBT = build_exch_ind_pot(mapA);
+        wBT = build_ind_pot(mapA);
+        uBT = build_exch_ind_pot(mapA);
+
+        K_O->transpose_this();
+
+        std::map<std::string, std::shared_ptr<Matrix> > mapB;
+        mapB["Cocc_A"] = Locc_B;
+        mapB["Cvir_A"] = Cvir_B;
+        mapB["Cocc_B"] = Locc_A;
+        mapB["Cvir_B"] = Cvir_A;
+        mapB["S"] = S;
+        mapB["D_A"] = D_B;
+        mapB["V_A"] = V_B;
+        mapB["J_A"] = J_B;
+        mapB["K_A"] = K_B;
+        mapB["D_B"] = D_A;
+        mapB["V_B"] = V_A;
+        mapB["J_B"] = J_A;
+        mapB["K_B"] = K_A;
+        mapB["J_O"] = J_O;
+        mapB["K_O"] = K_O;
+        mapB["J_P"] = J_P_B;
+
+        wAT = build_ind_pot(mapB);
+        uAT = build_exch_ind_pot(mapB);
+
+        K_O->transpose_this();
+    }
+    double** wATp = wAT->pointer();
+    double** uATp = uAT->pointer();
     double** wBTp = wBT->pointer();
     double** uBTp = uBT->pointer();
 
-    K_O->transpose_this();
-
-    std::map<std::string, std::shared_ptr<Matrix> > mapB;
-    mapB["Cocc_A"] = Locc_B;
-    mapB["Cvir_A"] = Cvir_B;
-    mapB["Cocc_B"] = Locc_A;
-    mapB["Cvir_B"] = Cvir_A;
-    mapB["S"] = S;
-    mapB["D_A"] = D_B;
-    mapB["V_A"] = V_B;
-    mapB["J_A"] = J_B;
-    mapB["K_A"] = K_B;
-    mapB["D_B"] = D_A;
-    mapB["V_B"] = V_A;
-    mapB["J_B"] = J_A;
-    mapB["K_B"] = K_A;
-    mapB["J_O"] = J_O;
-    mapB["K_O"] = K_O;
-    mapB["J_P"] = J_P_B;
-
-    std::shared_ptr<Matrix> wAT = build_ind_pot(mapB);
-    std::shared_ptr<Matrix> uAT = build_exch_ind_pot(mapB);
-    double** wATp = wAT->pointer();
-    double** uATp = uAT->pointer();
-
-    K_O->transpose_this();
-
     // ==> Uncoupled Targets <== //
 
-    auto Ind20u_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb + 1); // add one entry for external potential 
-    auto Ind20u_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na + 1, nb); // add one entry for external potential
+    auto Ind20u_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb1 + 1); // add one entry for external potential 
+    auto Ind20u_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na1 + 1, nb); // add one entry for external potential
     double** Ind20u_AB_termsp = Ind20u_AB_terms->pointer();
     double** Ind20u_BA_termsp = Ind20u_BA_terms->pointer();
 
     double Ind20u_AB = 0.0;
     double Ind20u_BA = 0.0;
 
-    auto ExchInd20u_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb + 1); // add one for external potential 
-    auto ExchInd20u_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na + 1, nb); // add one for external potential
+    auto ExchInd20u_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb1 + 1); // add one for external potential 
+    auto ExchInd20u_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na1 + 1, nb); // add one for external potential
     double** ExchInd20u_AB_termsp = ExchInd20u_AB_terms->pointer();
     double** ExchInd20u_BA_termsp = ExchInd20u_BA_terms->pointer();
 
@@ -3878,6 +6339,7 @@ void FISAPT::find() {
     int snA = 0;
 
     if (options_.get_bool("SSAPT0_SCALE")) {
+    // This will NOT work with ISAPT(SAOn/SIAOn) and I (Konrad) think that's OK.
         sna = na;
         snB = nB;
         snb = nb;
@@ -3894,8 +6356,8 @@ void FISAPT::find() {
     double sExchInd20u_AB = 0.0;
     double sExchInd20u_BA = 0.0;
 
-    auto Indu_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb + 1); // add one entry for external potential
-    auto Indu_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na + 1, nb); // add one entry for external potential
+    auto Indu_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb1 + 1); // add one entry for external potential
+    auto Indu_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na1 + 1, nb); // add one entry for external potential
     double** Indu_AB_termsp = Indu_AB_terms->pointer();
     double** Indu_BA_termsp = Indu_BA_terms->pointer();
 
@@ -3915,16 +6377,16 @@ void FISAPT::find() {
     // Add the external potential
     if (reference_->has_potential_variable("B")) {
         std::shared_ptr<Matrix> Var = linalg::triplet(Cocc_A, matrices_["VB_extern"], Cvir_A, true, false, false);
-        dfh_->write_disk_tensor("WBar", Var, {(size_t) nB + nb, (size_t) nB + nb + 1});
+        dfh_->write_disk_tensor("WBar", Var, {(size_t) nB + nb1, (size_t) nB + nb1 + 1});
     }
 
     else { // Add empty matrix
         std::shared_ptr<Matrix> Var = std::make_shared<Matrix>("zero", na, nr);
         Var->zero();
-        dfh_->write_disk_tensor("WBar", Var, {(size_t) nB + nb, (size_t) nB + nb + 1});
+        dfh_->write_disk_tensor("WBar", Var, {(size_t) nB + nb1, (size_t) nB + nb1 + 1});
     }
 
-    for (size_t B = 0; B < nB + nb + 1; B++) { // add one for external potential
+    for (size_t B = 0; B < nB + nb1 + 1; B++) { // add one for external potential
         // ESP
         dfh_->fill_tensor("WBar", wB, {B, B + 1});
 
@@ -3964,17 +6426,17 @@ void FISAPT::find() {
     // Add the external potential
     if (reference_->has_potential_variable("A")) {
         std::shared_ptr<Matrix> Vbs = linalg::triplet(Cocc_B, matrices_["VA_extern"], Cvir_B, true, false, false);
-        dfh_->write_disk_tensor("WAbs", Vbs, {(size_t) nA + na, (size_t) nA + na + 1});
+        dfh_->write_disk_tensor("WAbs", Vbs, {(size_t) nA + na1, (size_t) nA + na1 + 1});
     }
 
     else { // add empty matrix
         std::shared_ptr<Matrix> Vbs = std::make_shared<Matrix>("zero", nb, ns);
         Vbs->zero();
-        dfh_->write_disk_tensor("WAbs", Vbs, {(size_t) nA + na, (size_t) nA + na + 1});
+        dfh_->write_disk_tensor("WAbs", Vbs, {(size_t) nA + na1, (size_t) nA + na1 + 1});
     }
 
 
-    for (size_t A = 0; A < nA + na + 1; A++) { // add one for extenral potential
+    for (size_t A = 0; A < nA + na1 + 1; A++) { // add one for extenral potential
         // ESP
         dfh_->fill_tensor("WAbs", wA, {A, A + 1});
 
@@ -4039,17 +6501,17 @@ void FISAPT::find() {
 
         // ==> Coupled Targets <== //
 
-        auto Ind20r_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb + 1); // add one for external potential 
-        auto Ind20r_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na + 1, nb); // add one for external potential
+        auto Ind20r_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb1 + 1); // add one for external potential 
+        auto Ind20r_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na1 + 1, nb); // add one for external potential
         double** Ind20r_AB_termsp = Ind20r_AB_terms->pointer();
         double** Ind20r_BA_termsp = Ind20r_BA_terms->pointer();
 
         double Ind20r_AB = 0.0;
         double Ind20r_BA = 0.0;
 
-        auto ExchInd20r_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb + 1); // add one for external
+        auto ExchInd20r_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb1 + 1); // add one for external
                                                                                                           // potential
-        auto ExchInd20r_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na + 1, nb); // add one for external
+        auto ExchInd20r_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na1 + 1, nb); // add one for external
                                                                                                           // potential
         double** ExchInd20r_AB_termsp = ExchInd20r_AB_terms->pointer();
         double** ExchInd20r_BA_termsp = ExchInd20r_BA_terms->pointer();
@@ -4057,8 +6519,8 @@ void FISAPT::find() {
         double ExchInd20r_AB = 0.0;
         double ExchInd20r_BA = 0.0;
 
-        auto Indr_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb + 1); // add one entry for external potential 
-        auto Indr_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na + 1, nb); // add one entry for external potential
+        auto Indr_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb1 + 1); // add one entry for external potential 
+        auto Indr_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na1 + 1, nb); // add one entry for external potential
         double** Indr_AB_termsp = Indr_AB_terms->pointer();
         double** Indr_BA_termsp = Indr_BA_terms->pointer();
 
@@ -4088,14 +6550,14 @@ void FISAPT::find() {
 
         // ==> Master Loop over perturbing atoms <== //
 
-        int nC = std::max(nA + na + 1, nB + nb + 1); // add one for external potential
+        int nC = std::max(nA + na1 + 1, nB + nb1 + 1); // add one for external potential
 
         for (size_t C = 0; C < nC; C++) {
-            if (C < nB + nb) dfh_->fill_tensor("WBar", wB, {C, C + 1});
-            if (C < nA + na) dfh_->fill_tensor("WAbs", wB, {C, C + 1});
+            if (C < nB + nb1) dfh_->fill_tensor("WBar", wB, {C, C + 1});
+            if (C < nA + na1) dfh_->fill_tensor("WAbs", wB, {C, C + 1});
 
             outfile->Printf("    Responses for (A <- Source B = %3zu) and (B <- Source A = %3zu)\n\n",
-                            (C < nB + nb ? C : nB + nb), (C < nA + na ? C : nA + na));
+                            (C < nB + nb1 ? C : nB + nb1), (C < nA + na1 ? C : nA + na1));
 
             auto cphf = std::make_shared<CPHF_FISAPT>();
 
@@ -4125,7 +6587,7 @@ void FISAPT::find() {
             xA->scale(-1.0);
             xB->scale(-1.0);
 
-            if (C < nB + nb + 1) {
+            if (C < nB + nb1 + 1) {
                 // Backtransform the amplitude to LO
                 std::shared_ptr<Matrix> x2A = linalg::doublet(Uocc_A, xA, true, false);
                 double** x2Ap = x2A->pointer();
@@ -4143,7 +6605,7 @@ void FISAPT::find() {
                 }
             }
 
-            if (C < nA + na + 1) {
+            if (C < nA + na1 + 1) {
                 // Backtransform the amplitude to LO
                 std::shared_ptr<Matrix> x2B = linalg::doublet(Uocc_B, xB, true, false);
                 double** x2Bp = x2B->pointer();
@@ -4228,14 +6690,14 @@ void FISAPT::find() {
         sInd_BA_terms->scale(sSdelta * SrBA);
     }
 
-    matrices_["IndAB_AB"] = std::make_shared<Matrix>("IndAB_AB", nA + na + 1, nB + nb + 1); // add one entry for external
+    matrices_["IndAB_AB"] = std::make_shared<Matrix>("IndAB_AB", nA + na1 + 1, nB + nb1 + 1); // add one entry for external
                                                                                             // potentials in A and B
-    matrices_["IndBA_AB"] = std::make_shared<Matrix>("IndBA_AB", nA + na + 1, nB + nb + 1); // add one entry for external
+    matrices_["IndBA_AB"] = std::make_shared<Matrix>("IndBA_AB", nA + na1 + 1, nB + nb1 + 1); // add one entry for external
                                                                                             // potentials in A and B
-    matrices_["Ind20u_AB_terms"] = std::make_shared<Matrix>("Ind20uAB_AB", nA + na + 1, nB + nb + 1); // add one for external pot
-    matrices_["ExchInd20u_AB_terms"] = std::make_shared<Matrix>("ExchInd20uAB_AB", nA + na + 1, nB + nb + 1); // add one for external
-    matrices_["Ind20u_BA_terms"] = std::make_shared<Matrix>("Ind20uBA_AB", nA + na + 1, nB + nb + 1); // add one for external
-    matrices_["ExchInd20u_BA_terms"] = std::make_shared<Matrix>("ExchInd20uBA_AB", nA + na + 1, nB + nb + 1); // add one for external
+    matrices_["Ind20u_AB_terms"] = std::make_shared<Matrix>("Ind20uAB_AB", nA + na1 + 1, nB + nb1 + 1); // add one for external pot
+    matrices_["ExchInd20u_AB_terms"] = std::make_shared<Matrix>("ExchInd20uAB_AB", nA + na1 + 1, nB + nb1 + 1); // add one for external
+    matrices_["Ind20u_BA_terms"] = std::make_shared<Matrix>("Ind20uBA_AB", nA + na1 + 1, nB + nb1 + 1); // add one for external
+    matrices_["ExchInd20u_BA_terms"] = std::make_shared<Matrix>("ExchInd20uBA_AB", nA + na1 + 1, nB + nb1 + 1); // add one for external
     double** EABp = matrices_["IndAB_AB"]->pointer();
     double** EBAp = matrices_["IndBA_AB"]->pointer();
     double** Ind20ABp = matrices_["Ind20u_AB_terms"]->pointer();
@@ -4250,14 +6712,14 @@ void FISAPT::find() {
     double** ExchInd20BA2p = ExchInd20u_BA_terms->pointer();
 
     for (int a = 0; a < na; a++) {
-        for (int B = 0; B < nB + nb + 1; B++) { // add one for external potential
+        for (int B = 0; B < nB + nb1 + 1; B++) { // add one for external potential
             EABp[a + nA][B] = EAB2p[a][B];
             Ind20ABp[a + nA][B] = Ind20AB2p[a][B];
             ExchInd20ABp[a + nA][B] = ExchInd20AB2p[a][B];
         }
     }
 
-    for (int A = 0; A < nA + na + 1; A++) { // add one for external potential
+    for (int A = 0; A < nA + na1 + 1; A++) { // add one for external potential
         for (int b = 0; b < nb; b++) {
             EBAp[A][b + nB] = EBA2p[A][b];
             Ind20BAp[A][b + nB] = Ind20BA2p[A][b];
@@ -4290,6 +6752,7 @@ void FISAPT::find() {
 }
 
 // Compute fragment-fragment partitioning of dispersion contribution
+// This is also where the modified exchange-dispersion expressions for the SAOn/SIAOn ISAPT algorithms are coded.
 void FISAPT::fdisp() {
     outfile->Printf("  ==> F-SAPT Dispersion <==\n\n");
 
@@ -4311,6 +6774,15 @@ void FISAPT::fdisp() {
     size_t naQ = na * (size_t)nQ;
     size_t nbQ = nb * (size_t)nQ;
 
+//for the SAOn/SIAOn variants, we sometimes need na1 = na+1 (with link orbital) and sometimes na (without) - be careful with this!
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
+    int na1 = na;
+    int nb1 = nb;
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
+        na1 = na + 1;
+        nb1 = nb + 1;
+    }
+
     int nfa = matrices_["Lfocc0A"]->colspi()[0];
     int nfb = matrices_["Lfocc0B"]->colspi()[0];
 
@@ -4321,7 +6793,7 @@ void FISAPT::fdisp() {
 
     // => Targets <= //
 
-    matrices_["Disp_AB"] = std::make_shared<Matrix>("Disp_AB", nA + nfa + na + 1, nB + nfb + nb + 1); // add one entry for external
+    matrices_["Disp_AB"] = std::make_shared<Matrix>("Disp_AB", nA + nfa + na1 + 1, nB + nfb + nb1 + 1); // add one entry for external
                                                                                                       // potentials in A and B
     double** Ep = matrices_["Disp_AB"]->pointer();
 
@@ -4361,6 +6833,8 @@ void FISAPT::fdisp() {
     std::shared_ptr<Matrix> K_B = matrices_["K_B"];
     std::shared_ptr<Matrix> K_O = matrices_["K_O"];
 
+    bool parperp = options_.get_bool("FISAPT_EXCH_PARPERP");
+
     std::shared_ptr<Matrix> Caocc_A = matrices_["Caocc0A"];
     std::shared_ptr<Matrix> Caocc_B = matrices_["Caocc0B"];
     std::shared_ptr<Matrix> Cavir_A = matrices_["Cvir0A"];
@@ -4384,6 +6858,7 @@ void FISAPT::fdisp() {
     Cs1->add(Cavir_B);
     std::shared_ptr<Matrix> Ca2 = linalg::triplet(D_B, S, Caocc_A);
     std::shared_ptr<Matrix> Cb2 = linalg::triplet(D_A, S, Caocc_B);
+
     std::shared_ptr<Matrix> Cr3 = linalg::triplet(D_B, S, Cavir_A);
     std::shared_ptr<Matrix> CrX = linalg::triplet(linalg::triplet(D_A, S, D_B), S, Cavir_A);
     Cr3->subtract(CrX);
@@ -4392,6 +6867,7 @@ void FISAPT::fdisp() {
     std::shared_ptr<Matrix> CsX = linalg::triplet(linalg::triplet(D_B, S, D_A), S, Cavir_B);
     Cs3->subtract(CsX);
     Cs3->scale(2.0);
+
     std::shared_ptr<Matrix> Ca4 = linalg::triplet(linalg::triplet(D_A, S, D_B), S, Caocc_A);
     Ca4->scale(-2.0);
     std::shared_ptr<Matrix> Cb4 = linalg::triplet(linalg::triplet(D_B, S, D_A), S, Caocc_B);
@@ -4479,6 +6955,11 @@ void FISAPT::fdisp() {
     Qbs->add(Jbs);
     Qbs->add(Vbs);
 
+    std::shared_ptr<Matrix> KXOYas(Jas->clone());
+    std::shared_ptr<Matrix> KXOYbr(Jbr->clone());
+    double** KXOYasp = KXOYas->pointer();
+    double** KXOYbrp = KXOYbr->pointer();
+
     Jbr.reset();
     Kbr.reset();
     Jas.reset();
@@ -4551,7 +7032,81 @@ void FISAPT::fdisp() {
     dfh->add_transformation("Ear", "r", "a4");
     dfh->add_transformation("Ebs", "s", "b4");
 
-    dfh->transform();
+    // => Additional quantities needed for parallel/perpendicular link orbital spin coupling (but not for their average)  <= //
+
+    if ((link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") && parperp) {
+        std::shared_ptr<Matrix> K_XOY = matrices_["K_XOY"];
+        std::shared_ptr<Matrix> D_X = matrices_["D_X"];
+        std::shared_ptr<Matrix> J_X = matrices_["J_X"];
+        std::shared_ptr<Matrix> K_X = matrices_["K_X"];
+        std::shared_ptr<Matrix> D_Y = matrices_["D_Y"];
+        std::shared_ptr<Matrix> J_Y = matrices_["J_Y"];
+        std::shared_ptr<Matrix> K_Y = matrices_["K_Y"];
+        std::shared_ptr<Matrix> Cx = matrices_["thislinkA"];
+        std::shared_ptr<Matrix> Cy = matrices_["thislinkB"];
+        std::shared_ptr<Matrix> Cx1 = linalg::triplet(D_Y, S, Cavir_A);
+        Cx1->scale(-1.0);
+        std::shared_ptr<Matrix> Cy1 = linalg::triplet(D_X, S, Cavir_B);
+        Cy1->scale(-1.0);
+        std::shared_ptr<Matrix> Cx2 = linalg::triplet(D_Y, S, Caocc_A);
+        std::shared_ptr<Matrix> Cy2 = linalg::triplet(D_X, S, Caocc_B);
+        std::shared_ptr<Matrix> Cx3 = linalg::triplet(linalg::triplet(D_X, S, D_Y), S, Cavir_A);
+        Cx3->scale(-2.0);
+        std::shared_ptr<Matrix> Cy3 = linalg::triplet(linalg::triplet(D_Y, S, D_X), S, Cavir_B);
+        Cy3->scale(-2.0);
+        std::shared_ptr<Matrix> Cx4 = linalg::triplet(linalg::triplet(D_X, S, D_Y), S, Caocc_A);
+        Cx4->scale(-2.0);
+        std::shared_ptr<Matrix> Cy4 = linalg::triplet(linalg::triplet(D_Y, S, D_X), S, Caocc_B);
+        Cy4->scale(-2.0);
+        KXOYas = linalg::triplet(Caocc_A, K_XOY, Cavir_B, true, false, false);
+        KXOYas->scale(1.0);
+        KXOYbr = linalg::triplet(Caocc_B, K_XOY, Cavir_A, true, true, false);
+        KXOYbr->scale(1.0);
+
+        Cs.push_back(Cx1);
+        Cs.push_back(Cy1);
+        Cs.push_back(Cx2);
+        Cs.push_back(Cy2);
+        Cs.push_back(Cx3);
+        Cs.push_back(Cy3);
+        Cs.push_back(Cx4);
+        Cs.push_back(Cy4);
+
+        dfh->add_space("x1", Cs[12]);
+        dfh->add_space("y1", Cs[13]);
+        dfh->add_space("x2", Cs[14]);
+        dfh->add_space("y2", Cs[15]);
+        dfh->add_space("x3", Cs[16]);
+        dfh->add_space("y3", Cs[17]);
+        dfh->add_space("x4", Cs[18]);
+        dfh->add_space("y4", Cs[19]);
+
+        dfh->add_transformation("BYas", "y1", "a");
+        dfh->add_transformation("BXbr", "x1", "b");
+        dfh->add_transformation("CXas", "s", "x2");
+        dfh->add_transformation("CYbr", "r", "y2");
+        dfh->add_transformation("DXar", "x3", "a");
+        dfh->add_transformation("DYbs", "y3", "b");
+        dfh->add_transformation("EXar", "r", "x4");
+        dfh->add_transformation("EYbs", "s", "y4");
+
+// now ready for DF transformation in both cases
+        dfh->transform();
+
+        Cx1.reset();
+        Cy1.reset();
+        Cx2.reset();
+        Cy2.reset();
+        Cx3.reset();
+        Cy3.reset();
+        Cx4.reset();
+        Cy4.reset();
+
+    }
+    else {
+        dfh->transform();
+ 
+    }
 
     Cr1.reset();
     Cs1.reset();
@@ -4568,7 +7123,12 @@ void FISAPT::fdisp() {
 
     long int overhead = 0L;
     overhead += 5L * nT * na * nb; // Tab, Vab, T2ab, V2ab, and Iab work arrays below
-    overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
+    if ((link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") && parperp) {
+        overhead += 4L * na * ns + 4L * nb * nr + 4L * na * nr + 4L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
+    }
+    else {
+        overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns; // Sas, Sbr, sBar, sAbs, Qas, Qbr, Qar, Qbs
+    }
     // the next few matrices allocated here don't take too much room (but might if large numbers of threads)
     overhead += 2L * na * nb * (nT + 1); // E_disp20 and E_exch_disp20 thread work and final matrices
     overhead += 1L * sna * snb * (nT + 1); // sE_exch_disp20 thread work and final matrices
@@ -4586,7 +7146,13 @@ void FISAPT::fdisp() {
 
     // cost_r is how much mem for Aar, Bbr, Cbr, Dar for a single r
     // cost_s would be the same value, and is the mem requirement for Abs, Bas, Cas, and Dbs for single s
-    long int cost_r = 2L * na * nQ + 2L * nb * nQ; 
+    long int cost_r = 0L;
+    if ((link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") && parperp) {
+        cost_r = 4L * na * nQ + 4L * nb * nQ; 
+    }
+    else {
+        cost_r = 2L * na * nQ + 2L * nb * nQ;
+    } 
     long int max_r_l = rem / (2L * cost_r); // 2 b/c need to hold both an r and an s
     long int max_s_l = max_r_l;
     int max_r = (max_r_l > nr ? nr : (int) max_r_l);
@@ -4693,16 +7259,19 @@ void FISAPT::fdisp() {
     double Disp20 = 0.0;
     double ExchDisp20 = 0.0;
     double sExchDisp20 = 0.0;
+    double par_ExchDisp20 = 0.0;
 
     // => Local Targets <= //
 
     std::vector<std::shared_ptr<Matrix> > E_disp20_threads;
     std::vector<std::shared_ptr<Matrix> > E_exch_disp20_threads;
     std::vector<std::shared_ptr<Matrix> > sE_exch_disp20_threads;
+    std::vector<std::shared_ptr<Matrix> > par_E_exch_disp20_threads;
     for (int t = 0; t < nT; t++) {
         E_disp20_threads.push_back(std::make_shared<Matrix>("E_disp20", na, nb));
         E_exch_disp20_threads.push_back(std::make_shared<Matrix>("E_exch_disp20", na, nb));
         sE_exch_disp20_threads.push_back(std::make_shared<Matrix>("sE_exch_disp20", sna, snb));
+        par_E_exch_disp20_threads.push_back(std::make_shared<Matrix>("par_E_exch_disp20", na, nb));
     }
 
     // => MO => LO Transform <= //
@@ -4710,98 +7279,274 @@ void FISAPT::fdisp() {
     double** UAp = Uaocc_A->pointer();
     double** UBp = Uaocc_B->pointer();
 
-    // ==> Master Loop <== //
-
     double scale = 1.0;
     if (options_.get_bool("SSAPT0_SCALE")) {
         scale = sSAPT0_scale_;
     }
 
-    for (size_t rstart = 0; rstart < nr; rstart += max_r) {
-        size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
+    // ==> Master Loop <== //
 
-        dfh->fill_tensor("Aar", Aar, {rstart, rstart + nrblock});
-        dfh->fill_tensor("Far", Dar, {rstart, rstart + nrblock});
-        dfh->fill_tensor("Bbr", Bbr, {rstart, rstart + nrblock});
-        dfh->fill_tensor("Cbr", Cbr, {rstart, rstart + nrblock});
+// For the SAOn/SIAOn algorithms if parallel and perpendicular spin couplings are requested for E(20)exch-disp, 
+// we need to compute the expression from https://doi.org/10.1021/acs.jpca.2c06465, Eq. (8) in the SI.
+// If only averaged spin coupling is requested, the standard SAPT0 formula works and we don't do anything extra.
+    if ((link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") && parperp) {
+
+        auto BYas = std::make_shared<Matrix>("BYas", max_s * na, nQ);
+        auto BXbr = std::make_shared<Matrix>("BXbr", max_r * nb, nQ);
+        auto CXas = std::make_shared<Matrix>("CXas", max_s * na, nQ);
+        auto CYbr = std::make_shared<Matrix>("CYbr", max_r * nb, nQ);
+        auto DXar = std::make_shared<Matrix>("DXar", max_r * na, nQ);
+        auto DYbs = std::make_shared<Matrix>("DYbs", max_s * nb, nQ);
+        double** BYasp = BYas->pointer();
+        double** BXbrp = BXbr->pointer();
+        double** CXasp = CXas->pointer();
+        double** CYbrp = CYbr->pointer();
+        double** DXarp = DXar->pointer();
+        double** DYbsp = DYbs->pointer();
+        double** KXOYasp = KXOYas->pointer();
+        double** KXOYbrp = KXOYbr->pointer();
+
+        dfh->add_disk_tensor("FXar", std::make_tuple(nr, na, nQ));
+
+        for (size_t rstart = 0; rstart < nr; rstart += max_r) {
+            size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
+
+            dfh->fill_tensor("DXar", DXar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("EXar", Aar, {rstart, rstart + nrblock});
+
+            double* DX2p = DXarp[0];
+            double* A2p = Aarp[0];
+            for (long int arQ = 0L; arQ < nrblock * naQ; arQ++) {
+                (*DX2p++) += (*A2p++);
+            }
+            dfh->write_disk_tensor("FXar", DXar, {rstart, rstart + nrblock});
+        }
+
+        dfh->add_disk_tensor("FYbs", std::make_tuple(ns, nb, nQ));
 
         for (size_t sstart = 0; sstart < ns; sstart += max_s) {
             size_t nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
 
-            dfh->fill_tensor("Abs", Abs, {sstart, sstart + nsblock});
-            dfh->fill_tensor("Fbs", Dbs, {sstart, sstart + nsblock});
-            dfh->fill_tensor("Bas", Bas, {sstart, sstart + nsblock});
-            dfh->fill_tensor("Cas", Cas, {sstart, sstart + nsblock});
+            dfh->fill_tensor("DYbs", DYbs, {sstart, sstart + nsblock});
+            dfh->fill_tensor("EYbs", Abs, {sstart, sstart + nsblock});
 
-            long int nrs = nrblock * nsblock;
+            double* DY2p = DYbsp[0];
+            double* A2p = Absp[0];
+            for (long int bsQ = 0L; bsQ < nsblock * nbQ; bsQ++) {
+                (*DY2p++) += (*A2p++);
+            }
+            dfh->write_disk_tensor("FYbs", DYbs, {sstart, sstart + nsblock});
+        }
+    
+        for (size_t rstart = 0; rstart < nr; rstart += max_r) {
+            size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
+    
+            dfh->fill_tensor("Aar", Aar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Far", Dar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Bbr", Bbr, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Cbr", Cbr, {rstart, rstart + nrblock});
+            dfh->fill_tensor("FXar", DXar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("BXbr", BXbr, {rstart, rstart + nrblock});
+            dfh->fill_tensor("CYbr", CYbr, {rstart, rstart + nrblock});
+    
+            for (size_t sstart = 0; sstart < ns; sstart += max_s) {
+                size_t nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
+    
+                dfh->fill_tensor("Abs", Abs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Fbs", Dbs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Bas", Bas, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Cas", Cas, {sstart, sstart + nsblock});
+                dfh->fill_tensor("FYbs", DYbs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("BYas", BYas, {sstart, sstart + nsblock});
+                dfh->fill_tensor("CXas", CXas, {sstart, sstart + nsblock});
 
-#pragma omp parallel for schedule(dynamic) reduction(+ : Disp20, ExchDisp20, sExchDisp20)
-            for (long int rs = 0L; rs < nrs; rs++) {
-                int r = rs / nsblock;
-                int s = rs % nsblock;
+                long int nrs = nrblock * nsblock;
 
-                int thread = 0;
+#pragma omp parallel for schedule(dynamic) reduction(+ : Disp20, ExchDisp20, sExchDisp20, par_ExchDisp20)
+                for (long int rs = 0L; rs < nrs; rs++) {
+                    int r = rs / nsblock;
+                    int s = rs % nsblock;
+
+                    int thread = 0;
 #ifdef _OPENMP
-                thread = omp_get_thread_num();
+                    thread = omp_get_thread_num();
 #endif
 
-                double** E_disp20Tp = E_disp20_threads[thread]->pointer();
-                double** E_exch_disp20Tp = E_exch_disp20_threads[thread]->pointer();
-                double** sE_exch_disp20Tp = sE_exch_disp20_threads[thread]->pointer();
+                    double** E_disp20Tp = E_disp20_threads[thread]->pointer();
+                    double** E_exch_disp20Tp = E_exch_disp20_threads[thread]->pointer();
+                    double** sE_exch_disp20Tp = sE_exch_disp20_threads[thread]->pointer();
+                    double** par_E_exch_disp20Tp = par_E_exch_disp20_threads[thread]->pointer();
+ 
+                    double** Tabp = Tab[thread]->pointer();
+                    double** Vabp = Vab[thread]->pointer();
+                    double** T2abp = T2ab[thread]->pointer();
+                    double** V2abp = V2ab[thread]->pointer();
+                    double** Iabp = Iab[thread]->pointer();
+ 
+                    // => Amplitudes, Disp20 <= //
+ 
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Aarp[(r)*na], nQ, Absp[(s)*nb], nQ, 0.0, Vabp[0], nb);
+                    for (int a = 0; a < na; a++) {
+                        for (int b = 0; b < nb; b++) {
+                            Tabp[a][b] = Vabp[a][b] / (eap[a] + ebp[b] - erp[r + rstart] - esp[s + sstart]);
+                        }
+                    }
+ 
+                    C_DGEMM('N', 'N', na, nb, nb, 1.0, Tabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
+                    C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, T2abp[0], nb);
+                    C_DGEMM('N', 'N', na, nb, nb, 1.0, Vabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
+                    C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, V2abp[0], nb);
+ 
+                    for (int a = 0; a < na; a++) {
+                        for (int b = 0; b < nb; b++) {
+                            E_disp20Tp[a][b] += 4.0 * T2abp[a][b] * V2abp[a][b];
+                            Disp20 += 4.0 * T2abp[a][b] * V2abp[a][b];
+                        }
+                    }
 
-                double** Tabp = Tab[thread]->pointer();
-                double** Vabp = Vab[thread]->pointer();
-                double** T2abp = T2ab[thread]->pointer();
-                double** V2abp = V2ab[thread]->pointer();
-                double** Iabp = Iab[thread]->pointer();
+                    // => Exch-Disp20 <= //
 
-                // => Amplitudes, Disp20 <= //
+                    // > Q1-Q3 < //
 
-                C_DGEMM('N', 'T', na, nb, nQ, 1.0, Aarp[(r)*na], nQ, Absp[(s)*nb], nQ, 0.0, Vabp[0], nb);
-                for (int a = 0; a < na; a++) {
-                    for (int b = 0; b < nb; b++) {
-                        Tabp[a][b] = Vabp[a][b] / (eap[a] + ebp[b] - erp[r + rstart] - esp[s + sstart]);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Basp[(s)*na], nQ, Bbrp[(r)*nb], nQ, 0.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Casp[(s)*na], nQ, Cbrp[(r)*nb], nQ, 1.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Aarp[(r)*na], nQ, Dbsp[(s)*nb], nQ, 1.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Darp[(r)*na], nQ, Absp[(s)*nb], nQ, 1.0, Vabp[0], nb);
+
+                    // > V,J,K < //
+
+                    C_DGER(na, nb, 1.0, &Sasp[0][s + sstart], ns, &Qbrp[0][r + rstart], nr, Vabp[0], nb);
+                    C_DGER(na, nb, 1.0, &Qasp[0][s + sstart], ns, &Sbrp[0][r + rstart], nr, Vabp[0], nb);
+                    C_DGER(na, nb, 1.0, &Qarp[0][r + rstart], nr, &SAbsp[0][s + sstart], ns, Vabp[0], nb);
+                    C_DGER(na, nb, 1.0, &SBarp[0][r + rstart], nr, &Qbsp[0][s + sstart], ns, Vabp[0], nb);
+
+                    C_DGEMM('N', 'N', na, nb, nb, 1.0, Vabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
+                    C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, V2abp[0], nb);
+
+                    for (int a = 0; a < na; a++) {
+                        for (int b = 0; b < nb; b++) {
+                            E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                            if (options_.get_bool("SSAPT0_SCALE"))
+                                sE_exch_disp20Tp[a][b] -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
+                            ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                            sExchDisp20 -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
+                        }
+                    }
+
+                    // now, additional term for parallel/perpendicular spin coupling
+                    // > Q1-Q3 < //
+
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, BYasp[(s)*na], nQ, BXbrp[(r)*nb], nQ, 0.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, CXasp[(s)*na], nQ, CYbrp[(r)*nb], nQ, 1.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Aarp[(r)*na], nQ, DYbsp[(s)*nb], nQ, 1.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, DXarp[(r)*na], nQ, Absp[(s)*nb], nQ, 1.0, Vabp[0], nb);
+
+                    // > V,J,K < //
+
+                    C_DGER(na, nb, 1.0, &Sasp[0][s + sstart], ns, &KXOYbrp[0][r + rstart], nr, Vabp[0], nb);
+                    C_DGER(na, nb, 1.0, &KXOYasp[0][s + sstart], ns, &Sbrp[0][r + rstart], nr, Vabp[0], nb);
+
+                    C_DGEMM('N', 'N', na, nb, nb, 1.0, Vabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
+                    C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, V2abp[0], nb);
+
+                    for (int a = 0; a < na; a++) {
+                        for (int b = 0; b < nb; b++) {
+                            par_E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                            par_ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                        }
                     }
                 }
+            }
+        }
+    }
+    else {
+        for (size_t rstart = 0; rstart < nr; rstart += max_r) {
+            size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
 
-                C_DGEMM('N', 'N', na, nb, nb, 1.0, Tabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
-                C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, T2abp[0], nb);
-                C_DGEMM('N', 'N', na, nb, nb, 1.0, Vabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
-                C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, V2abp[0], nb);
+            dfh->fill_tensor("Aar", Aar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Far", Dar, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Bbr", Bbr, {rstart, rstart + nrblock});
+            dfh->fill_tensor("Cbr", Cbr, {rstart, rstart + nrblock});
 
-                for (int a = 0; a < na; a++) {
-                    for (int b = 0; b < nb; b++) {
-                        E_disp20Tp[a][b] += 4.0 * T2abp[a][b] * V2abp[a][b];
-                        Disp20 += 4.0 * T2abp[a][b] * V2abp[a][b];
+            for (size_t sstart = 0; sstart < ns; sstart += max_s) {
+                size_t nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
+
+                dfh->fill_tensor("Abs", Abs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Fbs", Dbs, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Bas", Bas, {sstart, sstart + nsblock});
+                dfh->fill_tensor("Cas", Cas, {sstart, sstart + nsblock});
+
+                long int nrs = nrblock * nsblock;
+
+#pragma omp parallel for schedule(dynamic) reduction(+ : Disp20, ExchDisp20, sExchDisp20, par_ExchDisp20)
+                for (long int rs = 0L; rs < nrs; rs++) {
+                    int r = rs / nsblock;
+                    int s = rs % nsblock;
+
+                    int thread = 0;
+#ifdef _OPENMP
+                    thread = omp_get_thread_num();
+#endif
+
+                    double** E_disp20Tp = E_disp20_threads[thread]->pointer();
+                    double** E_exch_disp20Tp = E_exch_disp20_threads[thread]->pointer();
+                    double** sE_exch_disp20Tp = sE_exch_disp20_threads[thread]->pointer();
+                    double** par_E_exch_disp20Tp = par_E_exch_disp20_threads[thread]->pointer();
+
+                    double** Tabp = Tab[thread]->pointer();
+                    double** Vabp = Vab[thread]->pointer();
+                    double** T2abp = T2ab[thread]->pointer();
+                    double** V2abp = V2ab[thread]->pointer();
+                    double** Iabp = Iab[thread]->pointer();
+
+                    // => Amplitudes, Disp20 <= //
+
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Aarp[(r)*na], nQ, Absp[(s)*nb], nQ, 0.0, Vabp[0], nb);
+                    for (int a = 0; a < na; a++) {
+                        for (int b = 0; b < nb; b++) {
+                            Tabp[a][b] = Vabp[a][b] / (eap[a] + ebp[b] - erp[r + rstart] - esp[s + sstart]);
+                        }
                     }
-                }
 
-                // => Exch-Disp20 <= //
+                    C_DGEMM('N', 'N', na, nb, nb, 1.0, Tabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
+                    C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, T2abp[0], nb);
+                    C_DGEMM('N', 'N', na, nb, nb, 1.0, Vabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
+                    C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, V2abp[0], nb);
 
-                // > Q1-Q3 < //
+                    for (int a = 0; a < na; a++) {
+                        for (int b = 0; b < nb; b++) {
+                            E_disp20Tp[a][b] += 4.0 * T2abp[a][b] * V2abp[a][b];
+                            Disp20 += 4.0 * T2abp[a][b] * V2abp[a][b];
+                        }
+                    }
 
-                C_DGEMM('N', 'T', na, nb, nQ, 1.0, Basp[(s)*na], nQ, Bbrp[(r)*nb], nQ, 0.0, Vabp[0], nb);
-                C_DGEMM('N', 'T', na, nb, nQ, 1.0, Casp[(s)*na], nQ, Cbrp[(r)*nb], nQ, 1.0, Vabp[0], nb);
-                C_DGEMM('N', 'T', na, nb, nQ, 1.0, Aarp[(r)*na], nQ, Dbsp[(s)*nb], nQ, 1.0, Vabp[0], nb);
-                C_DGEMM('N', 'T', na, nb, nQ, 1.0, Darp[(r)*na], nQ, Absp[(s)*nb], nQ, 1.0, Vabp[0], nb);
+                    // => Exch-Disp20 <= //
 
-                // > V,J,K < //
+                    // > Q1-Q3 < //
 
-                C_DGER(na, nb, 1.0, &Sasp[0][s + sstart], ns, &Qbrp[0][r + rstart], nr, Vabp[0], nb);
-                C_DGER(na, nb, 1.0, &Qasp[0][s + sstart], ns, &Sbrp[0][r + rstart], nr, Vabp[0], nb);
-                C_DGER(na, nb, 1.0, &Qarp[0][r + rstart], nr, &SAbsp[0][s + sstart], ns, Vabp[0], nb);
-                C_DGER(na, nb, 1.0, &SBarp[0][r + rstart], nr, &Qbsp[0][s + sstart], ns, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Basp[(s)*na], nQ, Bbrp[(r)*nb], nQ, 0.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Casp[(s)*na], nQ, Cbrp[(r)*nb], nQ, 1.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Aarp[(r)*na], nQ, Dbsp[(s)*nb], nQ, 1.0, Vabp[0], nb);
+                    C_DGEMM('N', 'T', na, nb, nQ, 1.0, Darp[(r)*na], nQ, Absp[(s)*nb], nQ, 1.0, Vabp[0], nb);
 
-                C_DGEMM('N', 'N', na, nb, nb, 1.0, Vabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
-                C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, V2abp[0], nb);
+                    // > V,J,K < //
 
-                for (int a = 0; a < na; a++) {
-                    for (int b = 0; b < nb; b++) {
-                        E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
-                        if (options_.get_bool("SSAPT0_SCALE"))
-                            sE_exch_disp20Tp[a][b] -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
-                        ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
-                        sExchDisp20 -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
+                    C_DGER(na, nb, 1.0, &Sasp[0][s + sstart], ns, &Qbrp[0][r + rstart], nr, Vabp[0], nb);
+                    C_DGER(na, nb, 1.0, &Qasp[0][s + sstart], ns, &Sbrp[0][r + rstart], nr, Vabp[0], nb);
+                    C_DGER(na, nb, 1.0, &Qarp[0][r + rstart], nr, &SAbsp[0][s + sstart], ns, Vabp[0], nb);
+                    C_DGER(na, nb, 1.0, &SBarp[0][r + rstart], nr, &Qbsp[0][s + sstart], ns, Vabp[0], nb);
+
+                    C_DGEMM('N', 'N', na, nb, nb, 1.0, Vabp[0], nb, UBp[0], nb, 0.0, Iabp[0], nb);
+                    C_DGEMM('T', 'N', na, nb, na, 1.0, UAp[0], na, Iabp[0], nb, 0.0, V2abp[0], nb);
+
+                    for (int a = 0; a < na; a++) {
+                        for (int b = 0; b < nb; b++) {
+                            E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                            if (options_.get_bool("SSAPT0_SCALE"))
+                                sE_exch_disp20Tp[a][b] -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
+                            ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                            sExchDisp20 -= scale * 2.0 * T2abp[a][b] * V2abp[a][b];
+                        }
                     }
                 }
             }
@@ -4845,6 +7590,10 @@ void FISAPT::fdisp() {
     if (options_.get_bool("SSAPT0_SCALE")) scalars_["sExch-Disp20"] = sExchDisp20;
     outfile->Printf("    Disp20              = %18.12lf [Eh]\n", Disp20);
     outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n", ExchDisp20);
+    if ((link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") && parperp) {
+        outfile->Printf("    Exch-Disp20 (PAR)   = %18.12lf [Eh]\n", ExchDisp20 + par_ExchDisp20);
+        outfile->Printf("    Exch-Disp20 (PERP)  = %18.12lf [Eh]\n", ExchDisp20 - par_ExchDisp20);
+    }
     if (options_.get_bool("SSAPT0_SCALE")) outfile->Printf("    sExch-Disp20         = %18.12lf [Eh]\n", sExchDisp20);
     outfile->Printf("\n");
     // fflush(outfile);
