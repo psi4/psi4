@@ -845,7 +845,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
     if os.path.exists("%s/link_siao.dat" % dirname):
         (fragsiao,keyssiao) = read_fragments("%s/link_siao.dat" % dirname)
         if ("A" not in keyssiao) or ("B" not in keyssiao):
-            print("\n Invalid syntax of the link_siao.dat file\n")
+            raise Exception('Invalid syntax of the link_siao.dat file')
         linkAC = fragsiao["A"][0]
         linkBC = fragsiao["B"][0]
         print("\n Extra SAOn/SIAOn link orbitals assigned to atoms",linkAC,"and",linkBC,"\n")

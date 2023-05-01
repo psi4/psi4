@@ -628,7 +628,7 @@ void FISAPT::nuclear() {
 
     matrices_["VC"] = std::make_shared<Matrix>("VC", nm, nm);
     Vint->compute(matrices_["VC"]);
- 
+
     // => Nuclear Repulsions <= //
 
     auto Zs = std::make_shared<Matrix>("Zs", nA, 3);
@@ -2461,9 +2461,9 @@ void FISAPT::exch() {
     for (int k = 0; k < Exch10_2M_terms.size(); k++) {
         Exch10_2M += Exch10_2M_terms[k];
     }
-    for (int k = 0; k < Exch10_2M_terms.size(); k++) {
-        outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2M_terms[k]);
-    }
+    // for (int k = 0; k < Exch10_2M_terms.size(); k++) {
+    //     outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf [Eh]\n",k+1,Exch10_2M_terms[k]);
+    // }
     // scalars_["Exch10(S^2)"] = Exch10_2;
     outfile->Printf("    Exch10(S^2) [MCBS]  = %18.12lf [Eh]\n",Exch10_2M);
     // outfile->Printf("    Exch10(S^2)         = %18.12lf [Eh]\n",Exch10_2M);
@@ -2609,21 +2609,21 @@ void FISAPT::exch() {
 // See https://doi.org/10.1021/acs.jpca.2c06465 for details - equation numbers below refer to this paper and its SI.
     if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2" ) {
 
-//first let's do E(10)exch(S^2) for the parallel and perpendicular spin coupling of link orbitals - Eq. (5)
+// first let's do E(10)exch(S^2) for the parallel and perpendicular spin coupling of link orbitals - Eq. (5)
     std::shared_ptr<Matrix> Cocc_A = matrices_["AlloccA"];
     std::shared_ptr<Matrix> Cocc_B = matrices_["AlloccB"];
     std::shared_ptr<Matrix> Sab = linalg::triplet(matrices_["AlloccA"], S, matrices_["AlloccB"], true, false, false);
     double** Sabp = Sab->pointer();
     std::shared_ptr<Matrix> D_X(D_A->clone());
     std::shared_ptr<Matrix> D_Y(D_A->clone());
-//here we need the link-only parts of density matrices D_X,D_Y and their corresponding Coulomb and exchange matrices (computed earlier)
+// here we need the link-only parts of density matrices D_X,D_Y and their corresponding Coulomb and exchange matrices (computed earlier)
     D_X = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
     D_Y = linalg::doublet(matrices_["thislinkB"], matrices_["thislinkB"], false, true);
     std::shared_ptr<Matrix> J_X = matrices_["JLA"];
     std::shared_ptr<Matrix> K_X = matrices_["KLA"];
     std::shared_ptr<Matrix> J_Y = matrices_["JLB"];
     std::shared_ptr<Matrix> K_Y = matrices_["KLB"];
-//a few extra J/K matrices still need to be computed here
+// a few extra J/K matrices still need to be computed here
     std::shared_ptr<Matrix> C_AOB = linalg::triplet(D_B, S, Cocc_A);
     std::shared_ptr<Matrix> C_XOB = linalg::triplet(D_B, S, matrices_["thislinkA"]);
     std::shared_ptr<Matrix> C_AOY = linalg::triplet(D_Y, S, Cocc_A);
@@ -2645,7 +2645,7 @@ void FISAPT::exch() {
     std::shared_ptr<Matrix> K_XOY = K[3];
 
     if (options_.get_bool("FISAPT_EXCH_PARPERP")) {
-//we calculate the parallel and perpendicular results separately - Eq. (5) with the upper and lower signs
+// we calculate the parallel and perpendicular results separately - Eq. (5) with the upper and lower signs
         double Exch10_S2PAR = 0.0;
         std::vector<double> Exch10_S2PAR_terms;
         Exch10_S2PAR_terms.resize(6);
@@ -2768,8 +2768,8 @@ void FISAPT::exch() {
         scalars_["Exch10(S^2)"] = 0.5*(Exch10_S2PAR+Exch10_S2PERP);
     }
     else {
-//we only calculate the average of parallel and perpendicular results, so some terms are not needed at all
-//this means we compute Eq. (5) but skip all the terms with a +- or -+ in front of them - these terms cancel out
+// we only calculate the average of parallel and perpendicular results, so some terms are not needed at all
+// this means we compute Eq. (5) but skip all the terms with a +- or -+ in front of them - these terms cancel out
         double Exch10_S2AVG = 0.0;
         std::vector<double> Exch10_S2AVG_terms;
         Exch10_S2AVG_terms.resize(6);
@@ -2810,238 +2810,241 @@ void FISAPT::exch() {
         outfile->Printf("    Exch10(S^2) [AVG]   = %18.12lf [Eh]\n",Exch10_S2AVG);
         scalars_["Exch10(S^2)"] = Exch10_S2AVG;
     }
-//end of parallel- and perpendicular-link-coupling E(10)exch(S^2)
+// end of parallel- and perpendicular-link-coupling E(10)exch(S^2)
 
-//Now, for the nonapproximated E(10)exch with the SAOn/SIAOn link assignments, there is no shortcut - we have to calculate both spin couplings and only average the final number regardless of the FISAPT_EXCH_PARPERP value (we tried averaging out the matrices and the results were very bad).
-//First comes the parallel spin coupling between singly occupied link orbitals
+// Now, for the nonapproximated E(10)exch with the SAOn/SIAOn link assignments, there is no shortcut.
+// We have to calculate both spin couplings and only average the final number regardless of the 
+// FISAPT_EXCH_PARPERP value (we tried averaging out the matrices and the results were very bad).
+// First comes the parallel spin coupling between singly occupied link orbitals
     int na = matrices_["AlloccA"]->colspi()[0] - 1;
     int nb = matrices_["AlloccB"]->colspi()[0] - 1;
     std::shared_ptr<Matrix> Saa = linalg::triplet(matrices_["AlloccA"], S, matrices_["AlloccA"], true, false, false);
     std::shared_ptr<Matrix> Sbb = linalg::triplet(matrices_["AlloccB"], S, matrices_["AlloccB"], true, false, false);
-//We now construct and invert the extended overlap matrix - Eq. (12)
+// We now construct and invert the extended overlap matrix - Eq. (12)
     auto Tbig = std::make_shared<Matrix>("T", 2*na + 2*nb + 2, 2*na + 2*nb + 2);
     Tbig->identity();
     double** Tbigp = Tbig->pointer();
-        for (int a = 0; a < na; a++) {
-            for (int b = 0; b < nb; b++) {
-                Tbigp[a][b + 2*na + 1] = Tbigp[b + 2*na + 1][a] = Sabp[a][b];
-                Tbigp[a + na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][a + na] = Sabp[a][b];
-            }
-// The 0.70710678118655 factor already sits in Sabp
-            Tbigp[a][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a] = Sabp[a][nb];
-            Tbigp[a + na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a + na] = Sabp[a][nb];
-        }
+    for (int a = 0; a < na; a++) {
         for (int b = 0; b < nb; b++) {
-            Tbigp[2*na][b + 2*na + 1] = Tbigp[b + 2*na + 1][2*na] = Sabp[na][b];
-            Tbigp[2*na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][2*na] = Sabp[na][b];
+            Tbigp[a][b + 2*na + 1] = Tbigp[b + 2*na + 1][a] = Sabp[a][b];
+            Tbigp[a + na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][a + na] = Sabp[a][b];
         }
+// The 0.70710678118655 factor already sits in Sabp
+        Tbigp[a][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a] = Sabp[a][nb];
+        Tbigp[a + na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a + na] = Sabp[a][nb];
+    }
+    for (int b = 0; b < nb; b++) {
+        Tbigp[2*na][b + 2*na + 1] = Tbigp[b + 2*na + 1][2*na] = Sabp[na][b];
+        Tbigp[2*na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][2*na] = Sabp[na][b];
+    }
 // Now we need to offset the 1/2 factor in Sabp
-        Tbigp[2*na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][2*na] = 2 * Sabp[na][nb];
-        outfile->Printf("\n Sxy: %12.8f\n",2 * Sabp[na][nb]);
+    Tbigp[2*na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][2*na] = 2 * Sabp[na][nb];
+    outfile->Printf("\n Sxy: %12.8f\n",2 * Sabp[na][nb]);
 //now let's slice out the relevant pieces of this monster
-        Dimension zero(1);
-        Dimension nadim(1);
-        Dimension naadim(1);
-        Dimension naaxdim(1);
-        Dimension naaxbdim(1);
-        Dimension naaxbbdim(1);
-        Dimension naaxbbydim(1);
-        zero[0] = 0;
-        nadim[0] = na;
-        naadim[0] = 2 * na;
-        naaxdim[0] = 2 * na + 1;
-        naaxbdim[0] = 2 * na + 1 + nb;
-        naaxbbdim[0] = 2 * na + 1 + 2*nb;
-        naaxbbydim[0] = 2 * na + 2 + 2*nb;
-        Tbig->power(-1.0, 1.0E-14);
-        Tbigp = Tbig->pointer();
+    Dimension zero(1);
+    Dimension nadim(1);
+    Dimension naadim(1);
+    Dimension naaxdim(1);
+    Dimension naaxbdim(1);
+    Dimension naaxbbdim(1);
+    Dimension naaxbbydim(1);
+    zero[0] = 0;
+    nadim[0] = na;
+    naadim[0] = 2 * na;
+    naaxdim[0] = 2 * na + 1;
+    naaxbdim[0] = 2 * na + 1 + nb;
+    naaxbbdim[0] = 2 * na + 1 + 2*nb;
+    naaxbbydim[0] = 2 * na + 2 + 2*nb;
+    Tbig->power(-1.0, 1.0E-14);
+    Tbigp = Tbig->pointer();
 //note that the slices should contain x and y as well
-        auto Dii_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(nadim, naaxdim));
-        auto Dij_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(naaxbdim, naaxbbydim));
-        auto Dji_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(nadim, naaxdim));
-        auto Djj_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim));
+    auto Dii_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(nadim, naaxdim));
+    auto Dij_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(naaxbdim, naaxbbydim));
+    auto Dji_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(nadim, naaxdim));
+    auto Djj_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim));
 //for the opposite-spin case, we have to pick a spin-up slice that is noncontiguous with x/y
-        std::vector<SharedMatrix> hold_temp;
+    std::vector<SharedMatrix> hold_temp;
     
-        hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(nadim, naaxdim)));
-        hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(nadim, naaxdim)));
-        auto Dii_os = linalg::vertcat(hold_temp);
-        hold_temp.clear();
+    hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(nadim, naaxdim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(nadim, naaxdim)));
+    auto Dii_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
     
-        hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(naaxbdim, naaxbbydim)));
-        hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(naaxbdim, naaxbbydim)));
-        auto Dij_os = linalg::vertcat(hold_temp);
-        hold_temp.clear();
+    hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(naaxbdim, naaxbbydim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(naaxbdim, naaxbbydim)));
+    auto Dij_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
     
-        hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(nadim, naaxdim)));
-        hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(nadim, naaxdim)));
-        auto Dji_os = linalg::vertcat(hold_temp);
-        hold_temp.clear();
+    hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(nadim, naaxdim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(nadim, naaxdim)));
+    auto Dji_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
 
-        hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(naaxbdim, naaxbbydim)));
-        hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim)));
-        auto Djj_os = linalg::vertcat(hold_temp);
-        hold_temp.clear();
+    hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(naaxbdim, naaxbbydim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim)));
+    auto Djj_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
 
 //half-transformed matrices for the JK operators
-        auto Dsj_ssh = linalg::doublet(matrices_["AlloccA"], Dij_ss, false, false);
-        Dsj_ssh->add(linalg::doublet(matrices_["AlloccB"], Djj_ss, false, false));
-        auto Dsj_osh = linalg::doublet(matrices_["AlloccA"], Dij_os, false, false);
-        Dsj_osh->add(linalg::doublet(matrices_["AlloccB"], Djj_os, false, false));
+    auto Dsj_ssh = linalg::doublet(matrices_["AlloccA"], Dij_ss, false, false);
+    Dsj_ssh->add(linalg::doublet(matrices_["AlloccB"], Djj_ss, false, false));
+    auto Dsj_osh = linalg::doublet(matrices_["AlloccA"], Dij_os, false, false);
+    Dsj_osh->add(linalg::doublet(matrices_["AlloccB"], Djj_os, false, false));
 
-        Cl.clear();
-        Cr.clear();
-        Cl.push_back(Dsj_ssh);
-        Cr.push_back(matrices_["AlloccB"]);
-        Cl.push_back(Dsj_osh);
-        Cr.push_back(matrices_["AlloccB"]);
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(Dsj_ssh);
+    Cr.push_back(matrices_["AlloccB"]);
+    Cl.push_back(Dsj_osh);
+    Cr.push_back(matrices_["AlloccB"]);
     
-        jk_->compute();
+    jk_->compute();
 
-        std::shared_ptr<Matrix> J_ss = J[0];
-        std::shared_ptr<Matrix> K_ss = K[0];
-        std::shared_ptr<Matrix> J_os = J[1];
-        std::shared_ptr<Matrix> K_os = K[1];
+    std::shared_ptr<Matrix> J_ss = J[0];
+    std::shared_ptr<Matrix> K_ss = K[0];
+    std::shared_ptr<Matrix> J_os = J[1];
+    std::shared_ptr<Matrix> K_os = K[1];
 
-        K_ss->transpose_this();
-        K_os->transpose_this();
+    K_ss->transpose_this();
+    K_os->transpose_this();
 
 //finish the transformation of the D matrices
-        auto Dsj_ss = linalg::doublet(Dsj_ssh, matrices_["AlloccB"], false, true);
-        auto Dsj_os = linalg::doublet(Dsj_osh, matrices_["AlloccB"], false, true);
-        auto Dri_ss = linalg::triplet(matrices_["AlloccA"], Dii_ss, matrices_["AlloccA"], false, false, true);
-        Dri_ss->add(linalg::triplet(matrices_["AlloccB"], Dji_ss, matrices_["AlloccA"], false, false, true));
-        auto Dri_os = linalg::triplet(matrices_["AlloccA"], Dii_os, matrices_["AlloccA"], false, false, true);
-        Dri_os->add(linalg::triplet(matrices_["AlloccB"], Dji_os, matrices_["AlloccA"], false, false, true));
+    auto Dsj_ss = linalg::doublet(Dsj_ssh, matrices_["AlloccB"], false, true);
+    auto Dsj_os = linalg::doublet(Dsj_osh, matrices_["AlloccB"], false, true);
+    auto Dri_ss = linalg::triplet(matrices_["AlloccA"], Dii_ss, matrices_["AlloccA"], false, false, true);
+    Dri_ss->add(linalg::triplet(matrices_["AlloccB"], Dji_ss, matrices_["AlloccA"], false, false, true));
+    auto Dri_os = linalg::triplet(matrices_["AlloccA"], Dii_os, matrices_["AlloccA"], false, false, true);
+    Dri_os->add(linalg::triplet(matrices_["AlloccB"], Dji_os, matrices_["AlloccA"], false, false, true));
     
-        double Enuc = 0.0;
-        double** Enuc2p = matrices_["E NUC"]->pointer();
-        Enuc += 2.0 * Enuc2p[0][1];  // A - B
+    double Enuc = 0.0;
+    double** Enuc2p = matrices_["E NUC"]->pointer();
+    Enuc += 2.0 * Enuc2p[0][1];  // A - B
 
 //The full first-order energy (elst+exch) is given by Eq. (21)
-        double E10_full_ss = Enuc;
-        E10_full_ss += 2.0 * Dri_ss->vector_dot(V_B);
-        E10_full_ss += 2.0 * Dsj_ss->vector_dot(V_A);
-        E10_full_ss += 4.0 * Dri_ss->vector_dot(J_ss);
-        E10_full_ss -= 2.0 * Dri_ss->vector_dot(K_ss);
-        double E10_full_os = -2.0 * Dri_os->vector_dot(K_os);
-        double E10_full_par = E10_full_ss + E10_full_os;
+    double E10_full_ss = Enuc;
+    E10_full_ss += 2.0 * Dri_ss->vector_dot(V_B);
+    E10_full_ss += 2.0 * Dsj_ss->vector_dot(V_A);
+    E10_full_ss += 4.0 * Dri_ss->vector_dot(J_ss);
+    E10_full_ss -= 2.0 * Dri_ss->vector_dot(K_ss);
+    double E10_full_os = -2.0 * Dri_os->vector_dot(K_os);
+    double E10_full_par = E10_full_ss + E10_full_os;
     
-        double E10_elst = Enuc;
-        E10_elst += 2.0 * D_A->vector_dot(V_B);
-        E10_elst += 2.0 * D_B->vector_dot(V_A);
-        E10_elst += 4.0 * D_A->vector_dot(J_B);
+    double E10_elst = Enuc;
+    E10_elst += 2.0 * D_A->vector_dot(V_B);
+    E10_elst += 2.0 * D_B->vector_dot(V_A);
+    E10_elst += 4.0 * D_A->vector_dot(J_B);
 
-        outfile->Printf("\n E(10)(full) value (PAR)  : %16.12f ",E10_full_par);
-        outfile->Printf("\n SS/OS parts:           %16.12f %16.12f",E10_full_ss,E10_full_os);
-        outfile->Printf("\n E(10)(elst) part (PAR)  : %16.12f ",E10_elst);
-        outfile->Printf("\n E(10)(exch) part (PAR)  : %16.12f \n\n",E10_full_par-E10_elst);
+    outfile->Printf("\n E(10)(full) value (PAR)  : %16.12f ",E10_full_par);
+    outfile->Printf("\n SS/OS parts:           %16.12f %16.12f",E10_full_ss,E10_full_os);
+    outfile->Printf("\n E(10)(elst) part (PAR)  : %16.12f ",E10_elst);
+    outfile->Printf("\n E(10)(exch) part (PAR)  : %16.12f \n\n",E10_full_par-E10_elst);
 
 //Now we do the same but with the perpendicular spin coupling between singly occupied link orbitals
 //We now construct and invert the extended overlap matrix - Eq. (13)
-        Tbig->identity();
-        for (int a = 0; a < na; a++) {
-            for (int b = 0; b < nb; b++) {
-                Tbigp[a][b + 2*na + 1] = Tbigp[b + 2*na + 1][a] = Sabp[a][b];
-                Tbigp[a + na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][a + na] = Sabp[a][b];
-            }
-// The 0.70710678118655 factor already sits in Sabp
-            Tbigp[a][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a] = -Sabp[a][nb];
-            Tbigp[a + na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a + na] = Sabp[a][nb];
-// We reversed the signs above (reversed the beta/alpha order) to have contiguous slices below
-        }
+    Tbig->identity();
+    for (int a = 0; a < na; a++) {
         for (int b = 0; b < nb; b++) {
-            Tbigp[2*na][b + 2*na + 1] = Tbigp[b + 2*na + 1][2*na] = Sabp[na][b];
-            Tbigp[2*na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][2*na] = Sabp[na][b];
+            Tbigp[a][b + 2*na + 1] = Tbigp[b + 2*na + 1][a] = Sabp[a][b];
+            Tbigp[a + na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][a + na] = Sabp[a][b];
         }
-        Tbigp[2*na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][2*na] = 0.0;
+// The 0.70710678118655 factor already sits in Sabp
+        Tbigp[a][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a] = -Sabp[a][nb];
+        Tbigp[a + na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][a + na] = Sabp[a][nb];
+// We reversed the signs above (reversed the beta/alpha order) to have contiguous slices below
+    }
+    for (int b = 0; b < nb; b++) {
+        Tbigp[2*na][b + 2*na + 1] = Tbigp[b + 2*na + 1][2*na] = Sabp[na][b];
+        Tbigp[2*na][b + 2*na + nb + 1] = Tbigp[b + 2*na + nb + 1][2*na] = Sabp[na][b];
+    }
+    Tbigp[2*na][2*na + 2*nb + 1] = Tbigp[2*na + 2*nb + 1][2*na] = 0.0;
 //now let's slice out the relevant pieces of this monster
-        Tbig->power(-1.0, 1.0E-14);
-        Tbigp = Tbig->pointer();
+    Tbig->power(-1.0, 1.0E-14);
+    Tbigp = Tbig->pointer();
 //note that the slices should contain x and y as well
-        Dii_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(nadim, naaxdim));
-        Dij_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(naaxbdim, naaxbbydim));
-        Dji_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(nadim, naaxdim));
-        Djj_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim));
+    Dii_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(nadim, naaxdim));
+    Dij_ss = Tbig->get_block(Slice(nadim, naaxdim), Slice(naaxbdim, naaxbbydim));
+    Dji_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(nadim, naaxdim));
+    Djj_ss = Tbig->get_block(Slice(naaxbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim));
 //for the opposite-spin case, we have to pick a spin-up slice that is noncontiguous with x/y
-        hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(nadim, naaxdim)));
-        hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(nadim, naaxdim)));
-        Dii_os = linalg::vertcat(hold_temp);
-        hold_temp.clear();
+    hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(nadim, naaxdim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(nadim, naaxdim)));
+    Dii_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
 
-        hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(naaxbdim, naaxbbydim)));
-        hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(naaxbdim, naaxbbydim)));
-        Dij_os = linalg::vertcat(hold_temp);
-        hold_temp.clear();
+    hold_temp.push_back(Tbig->get_block(Slice(zero, nadim), Slice(naaxbdim, naaxbbydim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naadim, naaxdim), Slice(naaxbdim, naaxbbydim)));
+    Dij_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
 
-        hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(nadim, naaxdim)));
-        hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(nadim, naaxdim)));
-        Dji_os = linalg::vertcat(hold_temp);
-        hold_temp.clear();
+    hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(nadim, naaxdim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(nadim, naaxdim)));
+    Dji_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
 
-        hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(naaxbdim, naaxbbydim)));
-        hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim)));
-        Djj_os = linalg::vertcat(hold_temp);
-        hold_temp.clear();
+    hold_temp.push_back(Tbig->get_block(Slice(naaxdim, naaxbdim), Slice(naaxbdim, naaxbbydim)));
+    hold_temp.push_back(Tbig->get_block(Slice(naaxbbdim, naaxbbydim), Slice(naaxbdim, naaxbbydim)));
+    Djj_os = linalg::vertcat(hold_temp);
+    hold_temp.clear();
 
 // now we have some signs to adjust in D_os terms containing y
-        double** Dij_osp = Dij_os->pointer();
-        double** Dji_osp = Dji_os->pointer();
-        double** Djj_osp = Djj_os->pointer();
-        for (int a = 0; a < na; a++) {
-            Dji_osp [nb][a] *= -1;
-        }
-        for (int b = 0; b < nb; b++) {
-            Djj_osp [nb][b] *= -1;  
-        }
-        Djj_osp [nb][nb] *= -1;
+    double** Dij_osp = Dij_os->pointer();
+    double** Dji_osp = Dji_os->pointer();
+    double** Djj_osp = Djj_os->pointer();
+    for (int a = 0; a < na; a++) {
+        Dji_osp [nb][a] *= -1;
+    }
+    for (int b = 0; b < nb; b++) {
+        Djj_osp [nb][b] *= -1;  
+    }
+    Djj_osp [nb][nb] *= -1;
 
-//half-transformed matrices for the JK operators
-        Dsj_ssh = linalg::doublet(matrices_["AlloccA"], Dij_ss, false, false);
-        Dsj_ssh->add(linalg::doublet(matrices_["AlloccB"], Djj_ss, false, false));
-        Dsj_osh = linalg::doublet(matrices_["AlloccA"], Dij_os, false, false);
-        Dsj_osh->add(linalg::doublet(matrices_["AlloccB"], Djj_os, false, false));
+// half-transformed matrices for the JK operators
+    Dsj_ssh = linalg::doublet(matrices_["AlloccA"], Dij_ss, false, false);
+    Dsj_ssh->add(linalg::doublet(matrices_["AlloccB"], Djj_ss, false, false));
+    Dsj_osh = linalg::doublet(matrices_["AlloccA"], Dij_os, false, false);
+    Dsj_osh->add(linalg::doublet(matrices_["AlloccB"], Djj_os, false, false));
 
-        Cl.clear();
-        Cr.clear();
-        Cl.push_back(Dsj_ssh);
-        Cr.push_back(matrices_["AlloccB"]);
-        Cl.push_back(Dsj_osh);
-        Cr.push_back(matrices_["AlloccB"]);
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(Dsj_ssh);
+    Cr.push_back(matrices_["AlloccB"]);
+    Cl.push_back(Dsj_osh);
+    Cr.push_back(matrices_["AlloccB"]);
     
-        jk_->compute();
+    jk_->compute();
 
-        std::shared_ptr<Matrix> J2_ss = J[0];
-        std::shared_ptr<Matrix> K2_ss = K[0];
-        std::shared_ptr<Matrix> J2_os = J[1];
-        std::shared_ptr<Matrix> K2_os = K[1];
+    std::shared_ptr<Matrix> J2_ss = J[0];
+    std::shared_ptr<Matrix> K2_ss = K[0];
+    std::shared_ptr<Matrix> J2_os = J[1];
+    std::shared_ptr<Matrix> K2_os = K[1];
 
-        K2_ss->transpose_this();
-        K2_os->transpose_this();
+    K2_ss->transpose_this();
+    K2_os->transpose_this();
 
-//finish the transformation of the D matrices
-        Dsj_ss = linalg::doublet(Dsj_ssh, matrices_["AlloccB"], false, true);
-        Dsj_os = linalg::doublet(Dsj_osh, matrices_["AlloccB"], false, true);
-        Dri_ss = linalg::triplet(matrices_["AlloccA"], Dii_ss, matrices_["AlloccA"], false, false, true);
-        Dri_ss->add(linalg::triplet(matrices_["AlloccB"], Dji_ss, matrices_["AlloccA"], false, false, true));
-        Dri_os = linalg::triplet(matrices_["AlloccA"], Dii_os, matrices_["AlloccA"], false, false, true);
-        Dri_os->add(linalg::triplet(matrices_["AlloccB"], Dji_os, matrices_["AlloccA"], false, false, true));
+// finish the transformation of the D matrices
+    Dsj_ss = linalg::doublet(Dsj_ssh, matrices_["AlloccB"], false, true);
+    Dsj_os = linalg::doublet(Dsj_osh, matrices_["AlloccB"], false, true);
+    Dri_ss = linalg::triplet(matrices_["AlloccA"], Dii_ss, matrices_["AlloccA"], false, false, true);
+    Dri_ss->add(linalg::triplet(matrices_["AlloccB"], Dji_ss, matrices_["AlloccA"], false, false, true));
+    Dri_os = linalg::triplet(matrices_["AlloccA"], Dii_os, matrices_["AlloccA"], false, false, true);
+    Dri_os->add(linalg::triplet(matrices_["AlloccB"], Dji_os, matrices_["AlloccA"], false, false, true));
 
-//The full first-order energy (elst+exch) is given by Eq. (21)
-        E10_full_ss = Enuc;
-        E10_full_ss += 2.0 * Dri_ss->vector_dot(V_B);
-        E10_full_ss += 2.0 * Dsj_ss->vector_dot(V_A);
-        E10_full_ss += 4.0 * Dri_ss->vector_dot(J2_ss);
-        E10_full_ss -= 2.0 * Dri_ss->vector_dot(K2_ss);
-        E10_full_os = -2.0 * Dri_os->vector_dot(K2_os);
-        double E10_full_perp = E10_full_ss + E10_full_os;
+// The full first-order energy (elst+exch) is given by Eq. (21)
+    E10_full_ss = Enuc;
+    E10_full_ss += 2.0 * Dri_ss->vector_dot(V_B);
+    E10_full_ss += 2.0 * Dsj_ss->vector_dot(V_A);
+    E10_full_ss += 4.0 * Dri_ss->vector_dot(J2_ss);
+    E10_full_ss -= 2.0 * Dri_ss->vector_dot(K2_ss);
+    E10_full_os = -2.0 * Dri_os->vector_dot(K2_os);
+    double E10_full_perp = E10_full_ss + E10_full_os;
     
-        outfile->Printf("\n E(10)(full) value (PERP) : %16.12f ",E10_full_perp);
-        outfile->Printf("\n SS/OS parts:            %16.12f %16.12f",E10_full_ss,E10_full_os);
-        outfile->Printf("\n E(10)(exch) part (PERP): : %16.12f \n\n",E10_full_perp-E10_elst);
-        scalars_["Exch10"] = 0.5*(E10_full_par+E10_full_perp)-E10_elst;
+    outfile->Printf("\n E(10)(full) value (PERP) : %16.12f ",E10_full_perp);
+    outfile->Printf("\n SS/OS parts:            %16.12f %16.12f",E10_full_ss,E10_full_os);
+    outfile->Printf("\n E(10)(exch) part (PERP): : %16.12f \n\n",E10_full_perp-E10_elst);
+    scalars_["Exch10"] = 0.5*(E10_full_par+E10_full_perp)-E10_elst;
 //  The algorithm which only calculates the average of parallel and perpendicular matrices proved to be
 //  inaccurate (and not invariant with respect to the A<->B interchange) so the code has been removed.
+
 //end of the new E(10)exch(full) code
     } // new link assignments
 
