@@ -988,8 +988,8 @@ def test_harmonic_analysis_vs_cfour(subject, request):
 @pytest.mark.parametrize(
     "dertype", [
         2,
-        1,
-        pytest.param(0, marks=pytest.mark.long),
+        pytest.param(1, marks=pytest.mark.findif),
+        pytest.param(0, marks=[pytest.mark.findif, pytest.mark.long]),
     ], ids=['H_analytic', 'H_by_grad', 'H_by_ene'])
 @pytest.mark.parametrize(
     "subject", [
@@ -1052,6 +1052,7 @@ def test_hessian_vs_cfour(scf_type, subject, dertype, request):
 
 
 @pytest.mark.quick
+@pytest.mark.findif
 def test_thermochemistry():
     modelchem = 'hf/3-21g'
 
@@ -1266,6 +1267,7 @@ _cfour_ref['neqh2o'] = {
 #   cfour_FD_PROJECT on         # TOGGLE Hess by findif G, project_rot=True --> V-space (findifproj)
 
 
+@pytest.mark.findif
 def test_nonequilibrium_harmonic_analysis():
     w_right = 3448.7842  # value when rotations allowed to mix in at non-eq geom
     w_wrong = 3446.9559  # value when rotations not computed (findif) or rashly projected out (analysis)

@@ -847,7 +847,7 @@ def optimize_geometric(name, **kwargs):
         step_coordinates = []
 
     # Make sure the molecule the user provided is the active one
-    molecule = kwargs.get('molecule', core.get_active_molecule())
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
 
     # Do not change orientation or COM
     molecule.fix_orientation(True)

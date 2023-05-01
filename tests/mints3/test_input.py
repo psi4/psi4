@@ -2,7 +2,7 @@ from addons import *
 
 @ctest_labeler("mints;noc1")
 def test_mints3():
-    ctest_runner(__file__, [
+    ctest_runner(__file__, extra_infiles=[
         "Lx-STO-3G.dat",
         "Ly-STO-3G.dat",
         "Lz-STO-3G.dat",

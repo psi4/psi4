@@ -1,6 +1,6 @@
 from addons import *
 
-@ctest_labeler("cc")
+@ctest_labeler("cc;findif")
 def test_cc13d():
     ctest_runner(__file__)
 
