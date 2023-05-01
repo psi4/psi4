@@ -3686,6 +3686,13 @@ def run_adcc(name, **kwargs):
         raise ValidationError("adcc extras qc_module not available. Try installing "
             "via 'pip install adcc' or 'conda install -c adcc adcc'.")
 
+    from pkg_resources import parse_version
+    min_version = "0.15.16"
+    if parse_version(adcc.__version__) < parse_version(min_version):
+        raise ModuleNotFoundError("adcc version {} is required at least. "
+                                    "Version {}"
+                                    " was found.".format(min_version,
+                                                        adcc.__version__))
 
     if core.get_option('ADC', 'REFERENCE') not in ["RHF", "UHF"]:
         raise ValidationError('adcc requires reference RHF or UHF')
