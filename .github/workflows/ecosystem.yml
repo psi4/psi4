@@ -221,7 +221,7 @@ jobs:
           - python=${{ matrix.cfg.python-version }}
           - toml
             # qc opt'l
-          - adcc
+          - adcc=0.15.14
           - basis_set_exchange
           - cppe
           - dftd3-python
@@ -230,7 +230,7 @@ jobs:
           - geometric
           - openfermion>=1.0
           - openfermionpsi4
-          - pyddx=0.3.0
+          - pyddx=0.3.*
           - pymdi
           - qcengine
           - qcfractal
