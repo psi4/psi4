@@ -1557,21 +1557,22 @@ core.Matrix.triplet = staticmethod(_core_triplet)
 @staticmethod
 def _core_erisieve_build(
         orbital_basis: core.BasisSet,
-        cutoff: float,
-        do_csam: bool
+        cutoff: float = 0.0,
+        do_csam: bool = False
     ) -> core.ERISieve:
     """
-    Constructs a Psi4 ERISieve object from an input basis.
+    Constructs a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
+    ERI screening and an optional input to enable CSAM screening (over Schwarz screening).
 
     Parameters
     ----------
     orbital_basis
-        Orbital basis to use in the ERISieve object.
+        Basis set to use in the ERISieve object.
     cutoff
-        Integral cutoff threshold to use for sieve screening.
+        Integral cutoff threshold to use for Schwarz/CSAM screening. Defaults to 0.0, disabling screening entirely.
     do_csam
-        Use CSAM screening? If True, CSAM screening is used;
-        else, Schwarz screening is used.
+        Use CSAM screening? If True, CSAM screening is used; else, Schwarz screening is used. By default,
+        Schwarz screening is utilized.
 
     Returns
     -------
@@ -1581,8 +1582,8 @@ def _core_erisieve_build(
     Example
     -------
     >>> sieve = psi4.core.ERISieve.build(bas, cutoff, csam)
-
     """
+    
     warnings.warn(
         "`ERISieve` is deprecated in favor of `TwoBodyAOInt`, and will be removed as soon as Psi4 v1.9 is released.\n",
         category=FutureWarning,
