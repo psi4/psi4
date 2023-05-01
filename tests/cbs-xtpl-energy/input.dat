@@ -15,7 +15,10 @@ scf_zapa_ref  = -76.063049097037    #TEST
 
 distributed = os.environ.get("_PSI4_USE_QCF", False)
 if distributed:
-    from qcfractal.snowflake import FractalSnowflake
+    try:
+        from qcfractal import FractalSnowflake
+    except ImportError:
+        from qcfractal.snowflake import FractalSnowflake
     snowflake = FractalSnowflake()
     client = snowflake.client()
 
