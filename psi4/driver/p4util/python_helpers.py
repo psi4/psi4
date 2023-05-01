@@ -1588,7 +1588,12 @@ def _core_erisieve_build(
         category=FutureWarning,
         stacklevel=2)
 
-    return core.ERISieve(orbital_basis, cutoff, do_csam)
+    factory = core.IntegralFactory(orbital_basis)
+    
+    global erisieve_twobody 
+    erisieve_twobody = factory.eri(0)
+
+    return core.ERISieve(orbital_basis, cutoff, do_csam) 
 
 def _core_erisieve_shell_significant(self, M, N, R, S):
     """
@@ -1599,8 +1604,8 @@ def _core_erisieve_shell_significant(self, M, N, R, S):
         "`ERISieve` is deprecated in favor of `TwoBodyAOInt`, and will be removed as soon as Psi4 v1.9 is released.\n",
         category=FutureWarning,
         stacklevel=2)
-
-    return core.ERISieve.shell_significant(M, N, R, S)
+   
+    return erisieve_twobody.shell_significant(M, N, R, S)
 
 core.ERISieve.build = _core_erisieve_build
 core.ERISieve.shell_significant = _core_erisieve_shell_significant
