@@ -1613,7 +1613,7 @@ def scf_helper(name, post_scf=True, **kwargs):
                        """further calculations in C1 point group.\n""")
 
     # PE needs to use exactly input orientation to correspond to potfile
-    if core.get_option("SCF", "PE"):
+    if core.get_option("SCF", "PE") or "external_potentials" in kwargs:
         c1_molecule = scf_molecule.clone()
         if getattr(scf_molecule, "_initial_cartesian", None) is not None:
             c1_molecule._initial_cartesian = scf_molecule._initial_cartesian.clone()
@@ -1623,7 +1623,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             c1_molecule.fix_com(True)
             c1_molecule.update_geometry()
         else:
-            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE on non-Cartesian molecules.")
+            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE or external potentials on non-Cartesian molecules.")
 
         scf_molecule = c1_molecule
         core.print_out("""  PE does not make use of molecular symmetry: """
@@ -4846,11 +4846,14 @@ def run_fisapt(name, **kwargs):
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         core.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        _ini_cart = getattr(sapt_dimer, "_initial_cartesian", None)
         sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
+        if _ini_cart:
+            sapt_dimer._initial_cartesian = _ini_cart
 
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('FISAPT requires requires \"reference rhf\".')

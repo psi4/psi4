@@ -81,7 +81,10 @@ class MDIEngine():
 
         # Molecule all MDI operations are performed on
         input_molecule = kwargs.pop('molecule', psi4.core.get_active_molecule())
+        _ini_cart = getattr(input_molecule, "_initial_cartesian", None)
         self.molecule = input_molecule.clone()
+        if _ini_cart:
+            self.molecule._initial_cartesian = _ini_cart
         psi4.core.set_active_molecule(self.molecule)
 
         # Most recent SCF energy
@@ -270,6 +273,7 @@ class MDIEngine():
             coords = MDI_Recv(3 * natom, MDI_DOUBLE, self.comm)
         matrix = psi4.core.Matrix.from_array(np.array(coords).reshape(-1, 3))
         self.molecule.set_geometry(matrix)
+        self.molecule._initial_cartesian = matrix
 
     # Respond to the >MASSES command
     def recv_masses(self, masses=None):
