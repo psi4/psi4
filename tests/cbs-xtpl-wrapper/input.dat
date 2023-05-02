@@ -17,10 +17,7 @@ mp2_atqz_ref =  -76.4038500042      #TEST
 
 distributed = os.environ.get("_PSI4_USE_QCF", False)
 if distributed:
-    try:
-        from qcfractal import FractalSnowflake
-    except ImportError:
-        from qcfractal.snowflake import FractalSnowflake
+    from qcfractal.snowflake import FractalSnowflake
     snowflake = FractalSnowflake()
     client = snowflake.client()
 
