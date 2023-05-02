@@ -574,6 +574,8 @@ def _validate_cbs_inputs(cbs_metadata: CBSMetadata, molecule: Union["qcdb.Molecu
         stage. All validation takes place here.
     """
 
+    # TODO: split options into mixable (qc_module=ccenergy/"") or non-mixable (freeze_core=true/false)
+
     metadata = []
     for iitem, item in enumerate(cbs_metadata):
         # 1a) all items must have wfn

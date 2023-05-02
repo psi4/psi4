@@ -62,9 +62,9 @@ jobs:
         conda list
         which conda python cmake $CXX
 
-    - name: Patch Sphinx for Pybind11
-      if: ${{ github.repository == 'psi4/psi4' }}
-      run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.10/site-packages/sphinx_automodapi/autodoc_enhancements.py
+    #- name: Patch Sphinx for Pybind11
+    #  if: ${{ github.repository == 'psi4/psi4' }}
+    #  run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.10/site-packages/sphinx_automodapi/autodoc_enhancements.py
 
     # docs are not Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
