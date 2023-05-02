@@ -63,7 +63,7 @@ install(TARGETS blas lapk lapack
 
 include(CMakePackageConfigHelpers)
 
-set(CMAKECONFIG_INSTALL_DIR "share/cmake/${PN}")
+set(CMAKECONFIG_INSTALL_DIR "${TargetLAPACK_INSTALL_CMAKEDIR}")
 configure_package_config_file(${PN}Config.cmake.in
                               "${CMAKE_CURRENT_BINARY_DIR}/${PN}Config.cmake"
                               INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
@@ -79,4 +79,4 @@ add_custom_target(lapack_external
     ${CMAKE_COMMAND} "-DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}" -P "${PROJECT_BINARY_DIR}/cmake_install.cmake"
     COMMENT "Installing Psi4-detected BLAS/LAPACK")
 
-set(${PN}_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/${PN} CACHE PATH "path to externally detected ${PN}Config.cmake" FORCE)
+set(${PN}_DIR ${STAGED_INSTALL_PREFIX}/${TargetLAPACK_INSTALL_CMAKEDIR} CACHE PATH "path to externally detected ${PN}Config.cmake" FORCE)

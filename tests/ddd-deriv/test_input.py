@@ -4,7 +4,7 @@ from addons import *
 @ctest_labeler("findif;quick;smoke")
 @pytest.mark.parametrize("distributed", [
     pytest.param(False, id="internal"),
-    pytest.param(True,  id="snowflake", marks=using("qcfractal")),
+    pytest.param(True,  id="snowflake", marks=using("qcfractal_next")),
 ])
 def test_ddd_deriv(distributed):
     setenv = ["_PSI4_USE_QCF"] if distributed else None

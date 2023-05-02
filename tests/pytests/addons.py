@@ -26,6 +26,13 @@ def is_psi4_new_enough(version_feature_introduced):
     return parse_version(psi4.__version__) >= parse_version(version_feature_introduced)
 
 
+def is_qcfractal_new_enough(version_feature_introduced):
+    if not which_import('qcfractal', return_bool=True):
+        return False
+    import qcfractal
+    return parse_version(qcfractal.__version__) >= parse_version(version_feature_introduced)
+
+
 def is_nvidia_gpu_present():
     try:
         import GPUtil
@@ -81,6 +88,7 @@ _programs = {
     "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
     "qcdb": False,  # capabilities of in-psi and out-of-psi qcdb not aligned
     "qcfractal": which_import("qcfractal", return_bool=True),
+    "qcfractal_next": is_qcfractal_new_enough("0.49"),
     "qcportal": which_import("qcportal", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
 }
