@@ -1973,7 +1973,6 @@ SharedMatrix RV::compute_gradient() {
     }
 
     // => Setup <= //
-    // How many atoms?
     int natom = primary_->molecule()->natom();
 
     // Set Hessian derivative level in properties
@@ -3427,13 +3426,11 @@ SharedMatrix UV::compute_gradient() {
     }
 
     // => Setup <= //
-    int rank = 0;
 
     // Build the target gradient Matrix
     auto natom = primary_->molecule()->natom();
-    auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
-    auto Gp = G->pointer();
 
+    int rank = 0;
     // What local XC ansatz are we in?
     auto ansatz = functional_->ansatz();
 
@@ -3452,8 +3449,10 @@ SharedMatrix UV::compute_gradient() {
 
     // Thread scratch
     std::vector<std::shared_ptr<Vector>> Q_temp;
+    std::vector<SharedMatrix> G_local;
     for (size_t i = 0; i < num_threads_; i++) {
         Q_temp.push_back(std::make_shared<Vector>("Quadrature Temp", max_points));
+        G_local.push_back(std::make_shared<Matrix>("G Temp", natom, 3));
     }
 
     std::vector<double> functionalq(num_threads_);
@@ -3488,6 +3487,7 @@ SharedMatrix UV::compute_gradient() {
         auto Uap = Ua_local->pointer();
         auto Ub_local = pworker->scratch()[1]->clone();
         auto Ubp = Ub_local->pointer();
+        auto Gp = G_local[rank]->pointer();
 
         // ==> Per-block setup <== //
         auto block = grid_->blocks()[Q];
@@ -3553,15 +3553,15 @@ SharedMatrix UV::compute_gradient() {
 
         // ===> GGA Contribution (Term 1) <=== //
         if (fworker->is_gga()) {
-            double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-            double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-            double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-            double* rho_bx = pworker->point_value("RHO_BX")->pointer();
-            double* rho_by = pworker->point_value("RHO_BY")->pointer();
-            double* rho_bz = pworker->point_value("RHO_BZ")->pointer();
-            double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-            double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
-            double* v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
+            auto rho_ax = pworker->point_value("RHO_AX")->pointer();
+            auto rho_ay = pworker->point_value("RHO_AY")->pointer();
+            auto rho_az = pworker->point_value("RHO_AZ")->pointer();
+            auto rho_bx = pworker->point_value("RHO_BX")->pointer();
+            auto rho_by = pworker->point_value("RHO_BY")->pointer();
+            auto rho_bz = pworker->point_value("RHO_BZ")->pointer();
+            auto v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
+            auto v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
+            auto v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_bx[P]), phi_x[P],
@@ -3739,6 +3739,11 @@ SharedMatrix UV::compute_gradient() {
         parallel_timer_off("V_xc gradient", rank);
     }
     // timer_off("V: V_XC");
+
+    auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
+    for (auto const& val : G_local) {
+        G->add(val);
+    }
 
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
     quad_values_["RHO_A"] = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);
