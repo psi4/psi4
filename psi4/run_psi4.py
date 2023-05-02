@@ -65,7 +65,7 @@ parser.add_argument("--psiapi-path", action='store_true',
                     help="""Generates a bash command to source correct Python """
                          """interpreter and path for ``python -c "import psi4"``""")
 parser.add_argument("--module", action='store_true',
-                    help="""Generates the path to PsiAPI loading.""")
+                    help="""Generates the path to PsiAPI loading. That is, the following file exists: `psi4 --module`/psi4/__init__.py . Also, adding `psi4 --module` to PYTHONPATH allows "import psi4".""")
 parser.add_argument("-v", "--verbose", action='store_true', help="Prints Psithon to Python translation.")
 parser.add_argument("--inplace", action='store_true',
                     help="Runs Psi4 from the source directory. !Warning! expert option.")
@@ -78,7 +78,7 @@ parser.add_argument("--qcschema", "--schema", action='store_true',
 parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
-                    help="Runs pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
+                    help="Runs pytest tests (requires pytest installed). If `pytest-xdist` installed, parallel with `--nthread`.")
 parser.add_argument("--mdi", default=None,
                     help="Sets MDI configuration options")
 parser.add_argument("--loglevel", default=20,
@@ -112,11 +112,36 @@ Generates a CMake command for building a plugin against this Psi4 installation.
 args, unknown = parser.parse_known_args()
 args = args.__dict__  # Namespace object seems silly
 
-# Figure out pythonpath
-cmake_install_prefix = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..')
-lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@", "@PYMOD_INSTALL_LIBDIR@"])
+# Figure out paths
+# * some full paths are computed here using the prefix, but all outputs are relative to __file__, so relocatability preserved
+# * note that all path entities are directories except for "executable" that is a file
+executable = Path(__file__).resolve()
+psi4_exe_loc = executable.parent
+
+prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
+cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
+cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
+pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/")
+psi4_install_cmakedir = "@psi4_INSTALL_CMAKEDIR@".replace("\\", "/")
+full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
+full_data = prefix / cmake_install_datadir / "psi4"
+full_bin = prefix / cmake_install_bindir
+full_cmake = prefix / psi4_install_cmakedir
+rel_pymod = os.path.relpath(full_pymod, start=full_bin)
+rel_data = os.path.relpath(full_data, start=full_bin)
+rel_cmake = os.path.relpath(full_cmake, start=full_bin)
+
+data_dir = psi4_exe_loc.joinpath(rel_data).resolve()
+psi4_module_loc = psi4_exe_loc.joinpath(rel_pymod).resolve()
+cmake_dir = psi4_exe_loc.joinpath(rel_cmake).resolve()
+cmake_install_prefix = os.path.commonpath([data_dir, psi4_module_loc, psi4_exe_loc, cmake_dir])
+lib_dir = str(psi4_module_loc.parent)
+bin_dir = str(psi4_exe_loc)
+share_cmake_dir = str(cmake_dir)
 
 if args["inplace"]:
+    # not tested after pathlib adjustments
     if "CMAKE_INSTALL_LIBDIR" not in lib_dir:
         raise ImportError("Cannot run inplace from an installed directory.")
 
@@ -153,8 +178,6 @@ if (args["output"] is None) and (args["qcschema"] is False):
 
 # Plugin compile line
 if args['plugin_compile']:
-    share_cmake_dir = os.path.sep.join([cmake_install_prefix, 'share', 'cmake', 'psi4'])
-
     plugincachealongside = os.path.isfile(share_cmake_dir + os.path.sep + 'psi4PluginCache.cmake')
     if plugincachealongside:
         print(f"""cmake -C {share_cmake_dir}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={cmake_install_prefix} .""")
@@ -164,8 +187,8 @@ if args['plugin_compile']:
 
 if args['psiapi_path']:
     pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
-    bin_dir = Path(cmake_install_prefix) / 'bin'
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
+    # TODO Py not quite right on conda Windows and Psi include %PREFIX$. but maybe not appropriate for Win anyways
     sys.exit()
 
 if args["module"]:
