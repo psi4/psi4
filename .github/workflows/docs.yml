@@ -62,6 +62,7 @@ jobs:
         conda list
         which conda python cmake $CXX
 
+    # This patch and the jinja2<3 restriction were needed as recently as March 2023, but when I try a py311 env with newest everything, both can be released.
     #- name: Patch Sphinx for Pybind11
     #  if: ${{ github.repository == 'psi4/psi4' }}
     #  run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.10/site-packages/sphinx_automodapi/autodoc_enhancements.py

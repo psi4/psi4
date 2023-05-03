@@ -93,13 +93,13 @@
    |                          | MRCC                     | ✓   ✓                 |                       | ✓   ✓                 |                       | ✓   ✓                 |                       |
    |                          | OCC                      |         ✓   ✓   ✓   ✓ |         ✓̲   ✓̲         |         ✓̲   ✓̲   ✓̲   ✓̲ |         ✓̲   ✓̲         |                       |                       |
    +--------------------------+--------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   | ccsd(t)                  | .. _dd_ccsd_prt_pr:      | ✓̳   ✓̳   ✓   ✓   ✓   ✓ | ✓̳   ∷̳   ✓   ✓   ∷   ∷ | ✓̳   ✓̳                 | ✓̳   ∷̳                 | ✓̳   ✓̳                 | ∷̳   ∷̳                 |
-   | |globals__cc_type|       | CCENERGY                 | ✓̳   ✓̳                 | ✓̳                     | ✓̳   ✓̳                 | ✓̳                     | ✓̳   ✓̳                 |                       |
+   | ccsd(t)                  | .. _dd_ccsd_prt_pr:      | ✓̳   ✓̳   ✓   ✓   ✓   ✓ | ∷̳   ∷̳   ✓   ✓   ∷   ∷ | ✓̳   ✓̳                 | ∷̳   ∷̳                 | ✓̳   ✓̳                 | ∷̳   ∷̳                 |
+   | |globals__cc_type|       | CCENERGY\ [#d12]_        | ✓̳   ✓̳                 |                       | ✓̳   ✓̳                 |                       | ✓̳   ✓̳                 |                       |
    |                          | FNOCC                    | ✓   ✓   ✓̲   ✓̲   ✓̲   ✓̲ |                       |                       |                       |                       |                       |
    |                          | MRCC                     | ✓   ✓                 |                       | ✓   ✓                 |                       | ✓   ✓                 |                       |
    |                          | OCC                      |         ✓   ✓   ✓   ✓ |         ✓̲   ✓̲         |                       |                       |                       |                       |
    +--------------------------+--------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   | a-ccsd(t)\ [#d12]_       | .. _dd_accsd_prt_pr:     | ✓̳   ✓̳   ✓   ✓   ✓   ✓ |                       |                       |                       |                       |                       |
+   | a-ccsd(t)\ [#d13]_       | .. _dd_accsd_prt_pr:     | ✓̳   ✓̳   ✓   ✓   ✓   ✓ |                       |                       |                       |                       |                       |
    | |globals__cc_type|       | CCENERGY                 | ✓̳   ✓̳                 |                       |                       |                       |                       |                       |
    |                          | MRCC                     | ✓   ✓                 |                       | ✓   ✓                 |                       | ✓   ✓                 |                       |
    |                          | OCC                      |         ✓̲   ✓̲   ✓̲   ✓̲ |                       |                       |                       |                       |                       |
@@ -138,7 +138,7 @@
    | wb97x, LRC DFT           | .. _dd_wb97x:            | ✓       ✓̳             | ✓       ✓̳             | ✓       ✓̳             | ✓       ✓̳             |                       |                       |
    | |globals__scf_type|      | SCF                      | ✓̲       ✓̳             | ✓̲       ✓̳             | ✓̲       ✓̳             | ✓̲       ✓̳             |                       |                       |
    +--------------------------+--------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   | b2plyp, DH DFT\ [#d13]_  | .. _dd_b2plyp:           | ✓   ✓   ✓̳   ✓̳   ✓   ✓ |                       | ✓   ✓   ✓̳   ✓̳   ✓   ✓ |                       |                       |                       |
+   | b2plyp, DH DFT\ [#d14]_  | .. _dd_b2plyp:           | ✓   ✓   ✓̳   ✓̳   ✓   ✓ |                       | ✓   ✓   ✓̳   ✓̳   ✓   ✓ |                       |                       |                       |
    | |globals__scf_type|      | SCF                      | ✓̲   ✓̲   ✓̳   ✓̳   ✓̲   ✓̲ |                       | ✓̲   ✓̲   ✓̳   ✓̳   ✓̲   ✓̲ |                       |                       |                       |
    +--------------------------+--------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
@@ -147,5 +147,6 @@
 .. [#d3] Finite difference gradients are only marked explicitly by "∷" for overall (not per-method) lines and when at least one case has analytic gradients implemented, but the capability can be gleaned from the energy availability.
 .. [#d10] Also available for DFT references RKS/UKS
 .. [#d11] Arbitrary-order *n* through DETCI is inefficient byproduct of CI
-.. [#d12] a-CCSD(T) also known as CCSD(aT), Lambda-CCSD(T), and CCSD(T)_L
-.. [#d13] DH-DFT only available with DF-MP2
+.. [#d12] Analytic gradients for conventional all-electron RHF/UHF computations can be requested through |globals__qc_module|\ ``=ccenergy``, but their scaling is best suited to small molecules.
+.. [#d13] a-CCSD(T) also known as CCSD(aT), Lambda-CCSD(T), and CCSD(T)_L
+.. [#d14] DH-DFT only available with DF-MP2
