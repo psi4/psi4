@@ -94,7 +94,7 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         auto X_block_signp = X_block_sign.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::fabs(w[p]));
+                X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::abs(w[p]));
                 X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
             }
         }
