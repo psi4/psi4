@@ -690,14 +690,12 @@ CD
 
 |PSIfour| also features the capability to use arbitrary combinations 
 of specialized algorithms that construct either the Coulomb
-or the Exchange matrix separately. These algorithms can be mixed and
-matched arbitrarily to optimize performance based on the calculation
-in question. In general, such combinations of algorithms display lower
-scaling then their combined counterparts, and thus perform better 
-with larger systems. Such combinations of algorithms can be utilized 
-by setting the |globals__scf_type| keyword to ``J_alg+K_alg``, 
-where *J_alg* is the name of the separate Coulomb construction algoritm to use, 
-and *K_alg* is the name of the separate Exchange construction algorithm to use.
+or the Exchange matrix separately. In general, such combinations of algorithms display lower
+scaling than their combined counterparts and thus perform better 
+for larger systems. Such combinations can be accessed 
+by setting |globals__scf_type| to ``J_alg+K_alg``, 
+where *J_alg* and *K_alg* are the names of the separate Coulomb
+and Exchange construction algorithms, respectively.
 More information about the machinery of separate Coulomb and Exchange matrix
 construction algorithms in Psi4 can be found in the :ref:`sec:compositejk` section.
 
