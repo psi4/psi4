@@ -688,19 +688,20 @@ CD
     vectors is not designed for computations with thousands of basis
     functions.
 
-|PSIfour| also features the capability to use arbitrary combinations 
-of specialized algorithms that construct either the Coulomb
-or the Exchange matrix separately. In general, such combinations of algorithms display lower
-scaling than their combined counterparts and thus perform better 
-for larger systems. Such combinations can be accessed 
-by setting |globals__scf_type| to ``J_alg+K_alg``, 
+|PSIfour| also features the capability to use "composite" Fock matrix build 
+algorithms - arbitrary combinations of specialized algorithms that construct 
+either the Coulomb or the Exchange matrix separately. In general, since 
+separate Coulomb and Exchange matrix build algorithms exploit properties specific to 
+their respective matrix, composite algorithms display lower
+scaling factors than their combined Fock build counterparts. However, composite algorithms also 
+introduce redundant ERI computations into the calculation. Therefore, composite Fock build
+algorithms tend to perform better for larger systems, but worse for smaller systems. Arbitrary 
+composite algorithms can be accessed by setting |globals__scf_type| to ``J_alg+K_alg``, 
 where *J_alg* and *K_alg* are the names of the separate Coulomb
-and Exchange construction algorithms, respectively.
-More information about the machinery of separate Coulomb and Exchange matrix
-construction algorithms in Psi4 can be found in the :ref:`sec:compositejk` section.
+and Exchange construction algorithms to use, respectively.
 
-Specialized algorithms available to construct the Coulomb term
-separately are as follows:
+Specialized algorithms available to construct the Coulomb term within a composite framework 
+are as follows:
 
 DFDIRJ
     An integral-direct algorithm constructing the Coulomb term based on [Weigend:2002:4285]_
@@ -710,8 +711,8 @@ DFDIRJ
     effective parallelization and utilization of density-fitting to minimize 
     ERI computational cost. See the :ref:`sec:scfddfj` section for more information.
 
-Specialized algorithms available to construct the Exchange term
-separately are as follows:
+Specialized algorithms available to construct the Exchange term within a composite framework
+are as follows:
 
 COSX
     An algorithm based on the semi-numerical "chain of spheres exchange" (COSX)
@@ -794,35 +795,6 @@ resort will be used.
 To avoid this, either set |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
-
-.. _`sec:compositejk`:
-
-"Composite" Coulomb and Exchange Matrix Construction Algorithms
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Alongside the more traditional SCF algorithms in Psi4, in which both the Coulomb (J) and the Exchange (K) contributions to the Fock matrix are computed
-simultaneously using a single algorithm, "composite" algorithms also exist for the construction of the Fock matrix. These "composite" algorithms
-consist of a collection of SCF algorithms that construct one of J or K, but not both. Two such algorithms, one to construct J and one 
-to construct K, can then be combined to form the full Fock matrix during the SCF procedure. 
-
-Generally, algorithms that are specifically designed to construct one of J or K exploit properties specific to J or K to improve performance.
-Exploitation of these properties can lead to either a reduced prefactor or a reduced algorithmic scaling for computing that specific
-matrix. Since composite J+K algorithm combinations often involve algorithms which reduce the algorithmic scaling of either J or K (or both), 
-composite algorithm combinations tend to display better scaling properties than single algorithms which compute J and K simultaneously. 
-However, building J and K separately via a composite algorithm combination requires the redundant recomputation of ERIs, a facet which is not 
-necessary for combined Fock build algorithms. The overall consequence, then, is that composite combinations of separate J and K construction 
-algorithms tend to perform better than combined Fock build algorithms for sufficiently large system sizes, while performing worse for smaller systems. 
-
-Multiple separate J and K construction algorithms to construct the Fock matrix in a composite fashion are available for use in Psi4, and they can be 
-mixed and matched with each other freely. The algorithms availble for use in a composite fashion are as follows:
-
-Separate J Construction: DFDIRJ 
-
-Separate K Construction: COSX, LINK
-
-Two composite algorithms can be combined with each other by setting the |globals__scf_type| keyword to ``J_alg+K_alg``, where *J_alg* is an available
-algorithm for the separate construction of J, and *K_alg* is an available algorithm for the separate construction of K. For example, if one wanted
-to run an integral-direct density-fitted algorithm for Coulomb construction (i.e., DFDIRJ) in conjunction with the Linear Exchange algorithm
-for Exchange construction (i.e., LINK), one would use the |globals__scf_type| keyword ``DFDIRJ+LINK``.  
 
 .. _`sec:scfddfj`:
 
