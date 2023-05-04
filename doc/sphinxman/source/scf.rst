@@ -648,9 +648,9 @@ ERI Algorithms
 The key difficulty in the SCF procedure is treatment of the four-index ERI
 contributions to the Fock Matrix. A number of algorithms are available in
 |PSIfour| for these terms. The algorithm is selected by the |globals__scf_type|
-keyword. Some such algorithms consist of a single algorithm applied to
-the consutruction of both the Coulomb and Exchange constructions
-to the Fock Matrix, such as follows:
+keyword. Most consist of a single algorithm applied to
+the construction of both the Coulomb and Exchange parts
+of the Fock Matrix:
 
 PK [:ref:`Default <table:conv_scf>`]
     An out-of-core, presorted algorithm using exact ERIs. Quite fast for a
