@@ -213,9 +213,9 @@ void CompositeJK::common_init() {
     // => Set up separate J algorithm <= //
 
     // Direct DF-J
-    if (j_type_ == "DIRECTDFJ") {
+    if (j_type_ == "DFDIRJ") {
         // pre-compute coulomb fitting metric
-        timer_on("CompositeJK: DIRECTDFJ Coulomb Metric");
+        timer_on("CompositeJK: DFDIRJ Coulomb Metric");
 
         FittingMetric J_metric_obj(auxiliary_, true);
         J_metric_obj.form_fitting_metric();
@@ -223,7 +223,7 @@ void CompositeJK::common_init() {
 
         computed_shells_per_iter_["Triplets"] = {};
         
-        timer_off("CompositeJK: DIRECTDFJ Coulomb Metric");
+        timer_off("CompositeJK: DFDIRJ Coulomb Metric");
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
     }
@@ -386,7 +386,7 @@ void CompositeJK::print_header() const {
         outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
 
         if (do_J_) {
-            if (j_type_ == "DIRECTDFJ") { print_DirectDFJ_header(); }
+            if (j_type_ == "DFDIRJ") { print_DirectDFJ_header(); }
         }
         if (do_K_) {
             if (k_type_ == "LINK") { print_linK_header(); }
@@ -399,7 +399,7 @@ void CompositeJK::print_header() const {
 void CompositeJK::print_DirectDFJ_header() const {
     if (print_) {
         outfile->Printf("\n");
-        outfile->Printf("  ==> DirectDFJ: Integral-Direct Density-Fitted J <==\n\n");
+        outfile->Printf("  ==> DF-DirJ: Integral-Direct Density-Fitted J <==\n\n");
 
         outfile->Printf("    J Screening Cutoff:%11.0E\n", cutoff_);
     }
@@ -497,7 +497,7 @@ void CompositeJK::compute_JK() {
         timer_on("CompositeJK: J");
 
         // Direct DF-J
-        if (j_type_ == "DIRECTDFJ") {
+        if (j_type_ == "DFDIRJ") {
             build_DirectDFJ(D_ref_, J_ao_);
         }
 

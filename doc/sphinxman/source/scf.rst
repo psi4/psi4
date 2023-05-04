@@ -702,9 +702,9 @@ construction algorithms in Psi4 can be found in the :ref:`sec:compositejk` secti
 Specialized algorithms available to construct the Coulomb term
 separately are as follows:
 
-DIRECTDFJ
+DFDIRJ
     An integral-direct algorithm constructing the Coulomb term based on [Weigend:2002:4285]_
-    The DIRECTDFJ algorithm combines the benefits of integral-direct SCF approaches 
+    The DFDIRJ algorithm combines the benefits of integral-direct SCF approaches 
     with that of density-fitting. Specifically, DFJ utilizes no I/O and displays 
     strong performance with large system size through a combination of 
     effective parallelization and utilization of density-fitting to minimize 
@@ -815,14 +815,14 @@ algorithms tend to perform better than combined Fock build algorithms for suffic
 Multiple separate J and K construction algorithms to construct the Fock matrix in a composite fashion are available for use in Psi4, and they can be 
 mixed and matched with each other freely. The algorithms availble for use in a composite fashion are as follows:
 
-Separate J Construction: DIRECTDFJ 
+Separate J Construction: DFDIRJ 
 
 Separate K Construction: COSX, LINK
 
 Two composite algorithms can be combined with each other by setting the |globals__scf_type| keyword to ``J_alg+K_alg``, where *J_alg* is an available
 algorithm for the separate construction of J, and *K_alg* is an available algorithm for the separate construction of K. For example, if one wanted
-to run an integral-direct density-fitted algorithm for Coulomb construction (i.e., DIRECTDFJ) in conjunction with the Linear Exchange algorithm
-for Exchange construction (i.e., LINK), one would use the |globals__scf_type| keyword ``DIRECTDFJ+LINK``.  
+to run an integral-direct density-fitted algorithm for Coulomb construction (i.e., DFDIRJ) in conjunction with the Linear Exchange algorithm
+for Exchange construction (i.e., LINK), one would use the |globals__scf_type| keyword ``DFDIRJ+LINK``.  
 
 .. _`sec:scfddfj`:
 
@@ -836,10 +836,10 @@ in core or on disk. However, even when using DF, I/O becomes a significant bottl
 calculations. In principle, though, DF approaches can be utilized in an integral-direct context, gaining the benefits of DF methods without suffering the
 I/O bottlenecks that conventional DF methods will eventually run into. One such approach, outlined by Weigend in [Weigend:2002:4285]_,
 is available for use in Psi4 for the separate construction of the Coulomb contribution to the Fock matrix.  This implementation can be used alongside 
-Psi4's separate Exchange construction algorithms for composite Fock matrix construction by using the keyword DIRECTDFJ as the Coulomb construction 
-algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DIRECTDFJ+K_alg``). 
+Psi4's separate Exchange construction algorithms for composite Fock matrix construction by using the keyword DFDIRJ as the Coulomb construction 
+algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DFDIRJ+K_alg``). 
 
-DIRECTDFJ supports multiple capabilities to improve performance. Specifically, DIRECTDFJ allows for a combination of density-matrix based ERI 
+DFDIRJ supports multiple capabilities to improve performance. Specifically, DFDIRJ allows for a combination of density-matrix based ERI 
 screening (set |globals__screening| to ``DENSITY``) and incremental Fock matrix construction (set |scf__incfock| to ``TRUE``). These two, when combined,
 enable more aggressive screening of ERI contributions to the Coulomb matrix and thus greatly improve performance.
 
