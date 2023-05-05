@@ -156,7 +156,7 @@ class DdxInterface:
     def __init__(self, molecule, options, basisset):
         # verify that the minimal version is used if pyddx is provided
         # from outside the Psi4 ecosystem
-        min_version = "0.3.0"
+        min_version = "0.4.0"
         if parse_version(pyddx.__version__) < parse_version(min_version):
             raise ModuleNotFoundError("pyddx version {} is required at least. "
                                       "Version {}"
