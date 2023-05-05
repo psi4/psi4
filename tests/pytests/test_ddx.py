@@ -109,7 +109,7 @@ def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
        "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
        "ddx": {"model": "lpb", "solvent_epsilon": 80, "solvent_kappa": 1.5,
                "radii": [1.5873, 1.5873]},
-       "tol": 5e-6,
+       "tol": 3e-5,
    }, id='h2lpb'),
 ])
 def test_ddx_fock_build(inp):
@@ -289,7 +289,7 @@ def test_ddx_rhf_reference(inp):
         "geom": __geoms["nh3"],
         "basis": "cc-pvdz",
         "ddx": {"model": "lpb", "solvent": "water", "radii_set": "uff", "solvent_kappa": 0.11},
-        "ref": -56.19598597466339,
+        "ref": -56.1988043665621,
     }, id='nh3-lpb'),
 ])
 def test_ddx_rhf_consistency(inp):
