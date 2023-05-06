@@ -1334,7 +1334,7 @@ class BasisSet(object):
 
     def print_detail_cfour(self, out=None):
         """Returns a string in CFOUR-style of the basis (per-atom)
-        *  Format from http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.OldFormatOfAnEntryInTheGENBASFile
+        *  Format from https://web.archive.org/web/20221130013041/http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.OldFormatOfAnEntryInTheGENBASFile
 
         """
         text = ''
