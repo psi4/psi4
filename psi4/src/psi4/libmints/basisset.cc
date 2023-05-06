@@ -494,7 +494,8 @@ std::string BasisSet::print_detail_cfour() const {
         const auto n_shell = center_to_nshell_[A];
         using nshell_type = decltype(center_to_nshell_)::value_type;
         using max_am_center_type = decltype(shells_[first_shell].am());
-        // Use an immediately evaluated lambda to find the maximum
+
+        // Use immediately evaluated lambdas for complicated initialiation of const objects
         const auto max_am_center = [&] {
             max_am_center_type max = 0;
             for (nshell_type Q = 0; Q < n_shell; Q++) {
@@ -502,9 +503,11 @@ std::string BasisSet::print_detail_cfour() const {
             }
             return max;
         }();
-
-        std::vector<std::vector<nshell_type>> shell_per_am(max_am_center + 1);
-        for (nshell_type Q = 0; Q < n_shell; Q++) shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
+        const auto shell_per_am = [&] {
+            std::vector<std::vector<nshell_type>> tmpvec(max_am_center + 1);
+            for (nshell_type Q = 0; Q < n_shell; Q++) tmpvec[shells_[Q + first_shell].am()].push_back(Q);
+            return tmpvec;
+        }();
 
         // Write number of shells in the basis set
         ss << to_str_width(max_am_center + 1, 3) << '\n';
