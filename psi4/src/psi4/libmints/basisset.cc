@@ -485,46 +485,42 @@ std::string BasisSet::print_detail_cfour() const {
     ss << std::fixed << std::showpoint;
     const std::string nameUpperCase = to_upper_copy(name_);
 
-    for (decltype(molecule_->nunique()) uA = 0; uA < molecule_->nunique(); uA++) {
+    for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const auto A = molecule_->unique(uA);
         ss << molecule_->symbol(A) << ":P4_" << A + 1 << '\n';
         ss << "Psi4 basis " << nameUpperCase << " for element " << molecule_->symbol(A) << " atom " << A + 1 << "\n\n";
 
         const auto first_shell = center_to_shell_[A];
         const auto n_shell = center_to_nshell_[A];
-        using nshell_type = decltype(center_to_nshell_)::value_type;
-        using max_am_center_type = decltype(shells_[first_shell].am());
-
         // Use immediately evaluated lambdas for complicated initialiation of const objects
         const auto max_am_center = [&] {
-            max_am_center_type max = 0;
-            for (nshell_type Q = 0; Q < n_shell; Q++) {
+            int max = 0;
+            for (int Q = 0; Q < n_shell; Q++) {
                 if (shells_[Q + first_shell].am() > max) max = shells_[Q + first_shell].am();
             }
             return max;
         }();
         const auto shell_per_am = [&] {
-            std::vector<std::vector<nshell_type>> tmpvec(max_am_center + 1);
-            for (nshell_type Q = 0; Q < n_shell; Q++) tmpvec[shells_[Q + first_shell].am()].push_back(Q);
+            std::vector<std::vector<int>> tmpvec(max_am_center + 1);
+            for (int Q = 0; Q < n_shell; Q++) tmpvec[shells_[Q + first_shell].am()].push_back(Q);
             return tmpvec;
         }();
 
         // Write number of shells in the basis set
         ss << to_str_width(max_am_center + 1, 3) << '\n';
         // Write angular momentum for each shell
-        for (max_am_center_type am = 0; am <= max_am_center; am++) ss << to_str_width(am, 5);
+        for (int am = 0; am <= max_am_center; am++) ss << to_str_width(am, 5);
         ss << '\n';
         // Write number of contracted basis functions for each shell
-        for (max_am_center_type am = 0; am <= max_am_center; am++) ss << to_str_width(shell_per_am[am].size(), 5);
+        for (int am = 0; am <= max_am_center; am++) ss << to_str_width(shell_per_am[am].size(), 5);
         ss << '\n';
 
         std::vector<std::vector<double>> exp_per_am(max_am_center + 1);
         std::vector<std::vector<double>> coef_per_am(max_am_center + 1);
-        for (max_am_center_type am = 0; am <= max_am_center; am++) {
+        for (int am = 0; am <= max_am_center; am++) {
             // Collect unique exponents among all functions
             for (size_t Q = 0; Q < shell_per_am[am].size(); Q++) {
-                using nprim_t = decltype(shells_[0].nprimitive());
-                for (nprim_t K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
+                for (int K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
                     if (none_of_equal(exp_per_am[am], shells_[shell_per_am[am][Q] + first_shell].exp(K))) {
                         exp_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].exp(K));
                     }
@@ -546,10 +542,10 @@ std::string BasisSet::print_detail_cfour() const {
         }
 
         // Write number of exponents for each shell
-        for (max_am_center_type am = 0; am <= max_am_center; am++) ss << to_str_width(exp_per_am[am].size(), 5);
+        for (int am = 0; am <= max_am_center; am++) ss << to_str_width(exp_per_am[am].size(), 5);
         ss << "\n\n";
 
-        for (max_am_center_type am = 0; am <= max_am_center; am++) {
+        for (int am = 0; am <= max_am_center; am++) {
             // Write exponents for each shell
             for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
                 if (exp_per_am[am][ep] >= 10000000.0) {
