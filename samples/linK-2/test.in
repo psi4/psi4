@@ -22,7 +22,7 @@ molecule mol {
 }
 
 set {
-    scf_type link 
+    scf_type directdfj+link
     df_scf_guess false
     basis cc-pVTZ
     e_convergence 1.0e-10
