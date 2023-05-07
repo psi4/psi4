@@ -57,7 +57,7 @@ foreach(test_name aediis-1
                   dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnomp2-1 dlpnomp2-2 dlpnomp2-3
                   docs-bases docs-dft explicit-am-basis extern1 extern2 extern3
                   fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext fsapt-ext-abc fsapt-ext-abc2
-                  fsapt-ext-abc-au isapt1 isapt2 isapt-siao1 fisapt-siao1
+                  fsapt-ext-abc-au isapt1 isapt2 isapt-siao1 fisapt-siao1 isapt-charged
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2
                   fci-coverage
                   fcidump
