@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.8a1.dev17 
+                               Psi4 1.8a1.dev68 
 
-                         Git: Rev {dpoole34/compositejk-pilot} e4f6b14 dirty
+                         Git: Rev {dpoole34/compositejk-pilot-ref} 78ba1c2 
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -31,11 +31,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 08 December 2022 03:47PM
+    Psi4 started on: Monday, 08 May 2023 09:20AM
 
-    Process ID: 26460
+    Process ID: 816564
     Host:       ds6
-    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4
+    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -66,7 +66,7 @@ molecule mol {
 }
 
 set {
-    scf_type directdfj+link 
+    scf_type dfdirj+link
     df_scf_guess false
     basis cc-pVTZ
     e_convergence 1.0e-10
@@ -84,15 +84,15 @@ compare(1, variable("SCF ITERATIONS") < 13.0, "LinK Incfock Efficient")
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:47:10 2022
+*** at Mon May  8 09:20:22 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   186 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
-    atoms 7-12 entry H          line    23 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-6  entry C          line   186 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 7-12 entry H          line    23 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -139,7 +139,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -218,25 +218,24 @@ Scratch directory: /scratch/dpoole34/
     Name: (CC-PVTZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-6  entry C          line   125 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
-    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-6  entry C          line   125 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:                0
     Incremental Fock:          Yes
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -247,7 +246,7 @@ k_type_: LINK
   Cached 20.0% of DFT collocation blocks in 0.306 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 3.7592595819E-05.
-  Reciprocal condition number of the overlap matrix is 4.6398212529E-06.
+  Reciprocal condition number of the overlap matrix is 4.6398212530E-06.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -267,20 +266,20 @@ k_type_: LINK
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RKS iter SAD:  -231.83029426915795   -2.31830e+02   0.00000e+00 
-   @RKS iter   1:  -231.83555581126606   -5.26154e-03   3.65101e-03 ADIIS/DIIS
-   @RKS iter   2:  -231.53471074547025    3.00845e-01   4.63419e-03 ADIIS/DIIS/INCFOCK
-   @RKS iter   3:  -232.32939413751313   -7.94683e-01   3.59964e-04 ADIIS/DIIS/INCFOCK
-   @RKS iter   4:  -232.33321033193747   -3.81619e-03   7.46497e-05 DIIS/INCFOCK
-   @RKS iter   5:  -232.33338551709221   -1.75185e-04   7.55361e-06 DIIS/INCFOCK
-   @RKS iter   6:  -232.33338587751265   -3.60420e-07   6.94038e-06 DIIS
-   @RKS iter   7:  -232.33338777965491   -1.90214e-06   6.76768e-07 DIIS
-   @RKS iter   8:  -232.33338779468380   -1.50289e-08   3.09013e-07 DIIS
-   @RKS iter   9:  -232.33338779778938   -3.10558e-09   1.70372e-08 DIIS
-   @RKS iter  10:  -232.33338779779777   -8.38440e-12   6.56351e-09 DIIS
+   @RKS iter   1:  -231.83555581126677   -5.26154e-03   3.65101e-03 ADIIS/DIIS
+   @RKS iter   2:  -231.53471074547130    3.00845e-01   4.63419e-03 ADIIS/DIIS/INCFOCK
+   @RKS iter   3:  -232.32939413751362   -7.94683e-01   3.59964e-04 ADIIS/DIIS/INCFOCK
+   @RKS iter   4:  -232.33321033193775   -3.81619e-03   7.46497e-05 DIIS/INCFOCK
+   @RKS iter   5:  -232.33338551709267   -1.75185e-04   7.55361e-06 DIIS/INCFOCK
+   @RKS iter   6:  -232.33338587751268   -3.60420e-07   6.94038e-06 DIIS
+   @RKS iter   7:  -232.33338777965605   -1.90214e-06   6.76768e-07 DIIS
+   @RKS iter   8:  -232.33338779468338   -1.50273e-08   3.09013e-07 DIIS
+   @RKS iter   9:  -232.33338779778876   -3.10538e-09   1.70372e-08 DIIS
+   @RKS iter  10:  -232.33338779779734   -8.58336e-12   6.56351e-09 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @RKS iter  11:  -232.33338779779785   -8.52651e-14   1.36726e-09 DIIS
+   @RKS iter  11:  -232.33338779779697    3.69482e-13   1.36726e-09 DIIS
   Energy and wave function converged.
 
 
@@ -392,17 +391,17 @@ k_type_: LINK
     NA   [    21 ]
     NB   [    21 ]
 
-  @RKS Final Energy:  -232.33338779779785
+  @RKS Final Energy:  -232.33338779779697
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993539993815375
-    Two-Electron Energy =                 306.9305826533805543
-    DFT Exchange-Correlation Energy =     -28.1755478120757310
+    One-Electron Energy =                -714.7993539993822196
+    Two-Electron Energy =                 306.9305826533820891
+    DFT Exchange-Correlation Energy =     -28.1755478120757381
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333877977978261
+    Total Energy =                       -232.3333877977969735
 
 Computation Completed
 
@@ -421,24 +420,24 @@ Properties computed using the SCF density matrix
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
  Dipole X            :        147.6174493         -147.6125312            0.0049182
  Dipole Y            :         22.9056464          -22.9024868            0.0031596
- Dipole Z            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.0000000            0.0000000           -0.0000000
  Magnitude           :                                                    0.0058456
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:53:58 2022
+*** tstop() called on ds6 at Mon May  8 09:26:58 2023
 Module time:
-	user time   =     406.99 seconds =       6.78 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =        408 seconds =       6.80 minutes
+	user time   =     396.33 seconds =       6.61 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =        396 seconds =       6.60 minutes
 Total time:
-	user time   =     406.99 seconds =       6.78 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =        408 seconds =       6.80 minutes
+	user time   =     396.33 seconds =       6.61 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =        396 seconds =       6.60 minutes
     B3LYP Energy (using LinK algo)........................................................PASSED
     LinK Incfock Efficient................................................................PASSED
 
-    Psi4 stopped on: Thursday, 08 December 2022 03:53PM
-    Psi4 wall time for execution: 0:06:48.13
+    Psi4 stopped on: Monday, 08 May 2023 09:26AM
+    Psi4 wall time for execution: 0:06:36.69
 
 *** Psi4 exiting successfully. Buy a developer a beer!
