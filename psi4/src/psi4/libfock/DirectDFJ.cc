@@ -47,15 +47,8 @@ using namespace psi;
 
 namespace psi {
 
-DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) {
+DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : SplitJK(primary, auxiliary, options) { 
     timer_on("DirectDFJ: Setup");
-    common_init(); 
-    timer_off("DirectDFJ: Setup");
-}
-
-DirectDFJ::~DirectDFJ() {}
-
-void DirectDFJ::common_init() {
 
     // => General Setup <= //
 
@@ -73,15 +66,14 @@ void DirectDFJ::common_init() {
     J_metric_ = J_metric_obj.get_metric();
 
     timer_off("DirectDFJ: DIRECTDFJ Coulomb Metric");
+    
+    timer_off("DirectDFJ: Setup");
 }
+
+DirectDFJ::~DirectDFJ() {}
 
 size_t DirectDFJ::num_computed_shells() {
-    //no bench data returned - to come in a future update
     return num_computed_shells_; 
-}
-
-size_t DirectDFJ::memory_estimate() {
-    return 0;  // Memory is O(N^2), which psi4 counts as effectively 0
 }
 
 void DirectDFJ::print_header() const {
@@ -95,8 +87,8 @@ void DirectDFJ::print_header() const {
 
 // build the J matrix using Weigend's integral-direct density fitting algorithm
 // algorithm is in Figure 1 of https://doi.org/10.1039/B204199P
-void DirectDFJ::build_G_comp(onentstd::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& G_comp,
-    std::vector<std::shared_ptr<TwoBodyAOInt> eri_computers) {
+void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J,
+    std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
     
     timer_on("Setup");
 

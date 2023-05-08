@@ -1227,6 +1227,10 @@ class PSI_API CompositeJK : public JK {
     std::shared_ptr<SplitJK> k_algo_;
     std::string k_type_;
 
+    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
+    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 

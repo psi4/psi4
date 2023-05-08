@@ -69,7 +69,8 @@ class PKManager;
  * K: COSX, LinK
  *
  */
-class PSI_API SplitJK : public JK {
+//class PSI_API SplitJK : public JK {
+class PSI_API SplitJK { 
    protected:
 
     /// The number of threads to be used for integral computation
@@ -80,6 +81,11 @@ class PSI_API SplitJK : public JK {
     /// SplitJK algorithm info
     std::string algo_; 
 
+    /// Primary basis set
+    std::shared_ptr<BasisSet> primary_;
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+ 
     /// general options    
     int print_;
     bool bench_;
@@ -97,22 +103,18 @@ class PSI_API SplitJK : public JK {
     size_t num_computed_shells_;
    public:
     // => Constructors < = //
-
-    /**
-     * @param primary primary basis set for this system.
-     *        AO2USO transforms will be built with the molecule
-     *        contained in this basis object, so the incoming
-     *        C matrices must have the same spatial symmetry
-     *        structure as this molecule
-     */
+    SplitJK(std::shared_ptr<BasisSet> primary, Options& options);
+    
     SplitJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
+    
     /// Destructor
-    ~SplitJK() override;
+    virtual ~SplitJK();
 
     /// Build either the coulomb (J) matrix or the exchange (K) matrix
     /// using a given algorithm 
-    void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp) = 0;
+    virtual void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& G_comp, 
+		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) = 0; 
 
     // => Knobs <= //
    
@@ -126,13 +128,18 @@ class PSI_API SplitJK : public JK {
     * Print header information regarding JK
     * type on output file
     */
-    void print_header() = 0; 
+    virtual void print_header() const = 0; 
  
+    /**
+    * Return number of ERI shell quartets computed during the SplitJK build process.
+    */
+    virtual size_t num_computed_shells(); 
+
     /**
     * print name of method
     */ 
-    std::string name() = 0; 
-}
+    virtual std::string name() = 0; 
+};
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <==
 
@@ -176,12 +183,7 @@ class PSI_API DirectDFJ : public SplitJK {
     */
     void print_header() const override;
 
-    size_t num_computed_shells() {
-        outfile->Printf("WARNING: JK::num_computed_shells() was called, but benchmarking is disabled for the chosen JK algorithm.");
-        outfile->Printf(" Returning 0 as computed shells count.\n");
-
-        return 0;
-    }
+    size_t num_computed_shells() override; 
 
     /**
     * print name of method

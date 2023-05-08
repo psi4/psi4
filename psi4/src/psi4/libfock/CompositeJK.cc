@@ -83,7 +83,7 @@ void CompositeJK::common_init() {
     // derive separate J+K algorithms from scf_type
     auto jk_type = options_.get_str("SCF_TYPE");
     auto j_type = jk_type.substr(0, jk_type.find("+"));
-    k_type_ = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
+    auto k_type = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
 
     // occurs if no composite K algorithm was specified; useful for LDA/GGA DFT runs
     if (k_type_ == j_type_) {
@@ -117,9 +117,9 @@ void CompositeJK::common_init() {
     // => Set up separate J algorithm <= //
 
     // Direct DF-J
-    if (j_type_ == "DFDIRJ") {
+    if (j_type == "DFDIRJ") {
 	    // initialize SplitJK algo
-	    j_algo_ = std::make_shared<DirectDFJ>();
+	    j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
 
     	// create 3-center ERIs
         eri_computers_["3-Center"].emplace({});
@@ -140,11 +140,11 @@ void CompositeJK::common_init() {
     // => Set up separate K algorithm <= //
     
     // LinK
-    if (k_type_ == "LINK") {
+    if (k_type == "LINK") {
 	    k_algo_ = std::make_shared<LinK>(primary_, options_);
     
     // COSX
-    } else if (k_type_ == "COSX") {
+    } else if (k_type == "COSX") {
 	    // initialize SplitJK algo
 	    k_algo_ = std::make_shared<COSK>(primary_, options_);
     
