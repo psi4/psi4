@@ -303,8 +303,6 @@ void CompositeJK::compute_JK() {
 
     	k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
 
-        timer_off("CompositeJK: K");
-	
         if (get_bench()) {
             computed_shells_per_iter_["Quartets"].push_back(k_algo_->num_computed_shells());
         }

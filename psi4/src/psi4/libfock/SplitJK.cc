@@ -44,15 +44,7 @@ using namespace psi;
 
 namespace psi {
 
-SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_(primary), auxiliary_(nullptr), options_(options) {
-    common_init();
-};
-
-SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : primary_(primary), auxiliary_(auxiliary), options(options_) {
-    common_init();
-};
-
-void common_init() {
+SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_(primary), options_(options) {
     // set defaults
     print_ = 1;
     bench_ = 0;

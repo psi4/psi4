@@ -12,6 +12,7 @@ list(APPEND sources
   PKJK.cc
   PK_workers.cc
   PKmanagers.cc
+  SplitJK.cc
   apps.cc
   cubature.cc
   hamiltonian.cc

@@ -83,8 +83,6 @@ class PSI_API SplitJK {
 
     /// Primary basis set
     std::shared_ptr<BasisSet> primary_;
-    /// Auxiliary basis set
-    std::shared_ptr<BasisSet> auxiliary_;
  
     /// general options    
     int print_;
@@ -104,8 +102,6 @@ class PSI_API SplitJK {
    public:
     // => Constructors < = //
     SplitJK(std::shared_ptr<BasisSet> primary, Options& options);
-    
-    SplitJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options);
     
     /// Destructor
     virtual ~SplitJK();

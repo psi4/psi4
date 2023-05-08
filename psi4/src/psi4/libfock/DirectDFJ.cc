@@ -47,7 +47,7 @@ using namespace psi;
 
 namespace psi {
 
-DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : SplitJK(primary, auxiliary, options) { 
+DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : SplitJK(primary, options), auxiliary_(auxiliary) { 
     timer_on("DirectDFJ: Setup");
 
     // => General Setup <= //
