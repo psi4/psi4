@@ -110,7 +110,7 @@ class PSI_API SplitJK {
     /// using a given algorithm 
     virtual void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp, 
-		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) = 0; 
+         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) = 0; 
 
     // => Knobs <= //
    
@@ -170,7 +170,7 @@ class PSI_API DirectDFJ : public SplitJK {
 
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp,
-		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
     /**
@@ -223,7 +223,7 @@ class PSI_API LinK : public SplitJK {
     /// Build the exchange (K) matrix using LinK 
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp,
-		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
 
@@ -281,7 +281,7 @@ class PSI_API COSK : public SplitJK {
     // overlap fitting is discussed in https://doi.org/10.1063/1.3646921
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp,
-		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
+         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
     
     // => Knobs <= //
     /**

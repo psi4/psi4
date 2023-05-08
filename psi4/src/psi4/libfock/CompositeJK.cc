@@ -118,10 +118,10 @@ void CompositeJK::common_init() {
 
     // Direct DF-J
     if (j_type == "DFDIRJ") {
-	    // initialize SplitJK algo
-	    j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
+        // initialize SplitJK algo
+        j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
 
-    	// create 3-center ERIs
+        // create 3-center ERIs
         eri_computers_["3-Center"].emplace({});
         eri_computers_["3-Center"].resize(nthreads_);
 
@@ -141,15 +141,15 @@ void CompositeJK::common_init() {
     
     // LinK
     if (k_type == "LINK") {
-	    k_algo_ = std::make_shared<LinK>(primary_, options_);
+        k_algo_ = std::make_shared<LinK>(primary_, options_);
     
     // COSX
     } else if (k_type == "COSX") {
-	    // initialize SplitJK algo
-	    k_algo_ = std::make_shared<COSK>(primary_, options_);
-    
+        // initialize SplitJK algo
+        k_algo_ = std::make_shared<COSK>(primary_, options_);
+
         // set up other options
-	    k_algo_->set_early_screening(early_screening_);
+        k_algo_->set_early_screening(early_screening_);
     } else if (k_type_ == "NONE") {
         ;
     } else {
@@ -203,7 +203,7 @@ void CompositeJK::print_header() const {
 
         if (do_J_) {
             j_algo_->print_header();
-	    }
+        }
         if (do_K_) {
             k_algo_->print_header(); 
         }
@@ -288,9 +288,9 @@ void CompositeJK::compute_JK() {
     if (do_J_) {
         timer_on("CompositeJK: J");
 
-	    j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
+        j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
         
-	    if (get_bench()) {
+        if (get_bench()) {
             computed_shells_per_iter_["Triplets"].push_back(j_algo_->num_computed_shells());
         }
 
@@ -301,13 +301,13 @@ void CompositeJK::compute_JK() {
     if (do_K_) {
         timer_on("CompositeJK: K");
 
-    	k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
+        k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
 
         if (get_bench()) {
             computed_shells_per_iter_["Quartets"].push_back(k_algo_->num_computed_shells());
         }
 
-	    timer_off("CompositeJK: K");
+        timer_off("CompositeJK: K");
     }
 
     // => Finalize Incremental Fock if required <= //

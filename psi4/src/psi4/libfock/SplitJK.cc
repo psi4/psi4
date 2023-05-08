@@ -50,7 +50,7 @@ SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_
     bench_ = 0;
     debug_ = 0;
     cutoff_ = 1.0E-12;
-	
+    
     // change defaults based on options
     if (options["PRINT"].has_changed()) bench_ = options.get_int("PRINT");
     if (options["BENCH"].has_changed()) bench_ = options.get_int("BENCH");
