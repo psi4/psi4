@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.8a1.dev17 
+                               Psi4 1.8a1.dev68 
 
-                         Git: Rev {dpoole34/compositejk-pilot} e4f6b14 dirty
+                         Git: Rev {dpoole34/compositejk-pilot-ref} 78ba1c2 
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -31,11 +31,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 08 December 2022 03:54PM
+    Psi4 started on: Monday, 08 May 2023 09:31AM
 
-    Process ID: 26541
+    Process ID: 817499
     Host:       ds6
-    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4
+    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -68,7 +68,7 @@ molecule mol {
 
 set {
     reference uhf
-    scf_type directdfj+link 
+    scf_type dfdirj+link
     df_scf_guess false
     basis 6-31G*
     e_convergence 1.0e-10
@@ -91,15 +91,15 @@ compare(1, variable("SCF ITERATIONS") < 19.0, "ROHF LinK Incfock Efficient")
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:54:41 2022
+*** at Mon May  8 09:31:57 2023
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   111 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/6-31gs.gbs 
-    atoms 7-12 entry H          line    44 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/6-31gs.gbs 
+    atoms 1-6  entry C          line   111 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/6-31gs.gbs 
+    atoms 7-12 entry H          line    44 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -146,7 +146,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -170,25 +170,24 @@ Scratch directory: /scratch/dpoole34/
     Name: (6-31G* AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:          Yes
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -217,26 +216,26 @@ k_type_: LINK
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:  -229.97628349801798   -2.29976e+02   0.00000e+00 
-   @UHF iter   1:  -230.34049812990128   -3.64215e-01   2.84897e-03 DIIS/ADIIS
-   @UHF iter   2:  -230.40556115546840   -6.50630e-02   9.10573e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   1:  -230.34049812990119   -3.64215e-01   2.84897e-03 DIIS/ADIIS
+   @UHF iter   2:  -230.40556115546877   -6.50630e-02   9.10573e-04 DIIS/ADIIS/INCFOCK
    @UHF iter   3:  -230.41345636158763   -7.89521e-03   4.49251e-04 DIIS/ADIIS/INCFOCK
-   @UHF iter   4:  -230.41572974153320   -2.27338e-03   1.91643e-04 DIIS/ADIIS/INCFOCK
-   @UHF iter   5:  -230.41688607751922   -1.15634e-03   1.04622e-04 DIIS/ADIIS/INCFOCK
-   @UHF iter   6:  -230.41726728449041   -3.81207e-04   3.44251e-05 DIIS
-   @UHF iter   7:  -230.41729518028322   -2.78958e-05   8.95035e-06 DIIS/INCFOCK
-   @UHF iter   8:  -230.41729655766784   -1.37738e-06   3.00576e-06 DIIS
-   @UHF iter   9:  -230.41729673019302   -1.72525e-07   7.62041e-07 DIIS
-   @UHF iter  10:  -230.41729674144131   -1.12483e-08   3.40281e-07 DIIS
-   @UHF iter  11:  -230.41729674488266   -3.44136e-09   2.27475e-07 DIIS
-   @UHF iter  12:  -230.41729674660334   -1.72068e-09   1.91708e-07 DIIS
-   @UHF iter  13:  -230.41729674887165   -2.26831e-09   1.56673e-07 DIIS
-   @UHF iter  14:  -230.41729675274470   -3.87305e-09   6.68673e-08 DIIS
-   @UHF iter  15:  -230.41729675337797   -6.33264e-10   1.79330e-08 DIIS
-   @UHF iter  16:  -230.41729675339241   -1.44382e-11   6.35053e-09 DIIS
+   @UHF iter   4:  -230.41572974153326   -2.27338e-03   1.91643e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   5:  -230.41688607751891   -1.15634e-03   1.04622e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   6:  -230.41726728449024   -3.81207e-04   3.44251e-05 DIIS
+   @UHF iter   7:  -230.41729518028293   -2.78958e-05   8.95035e-06 DIIS/INCFOCK
+   @UHF iter   8:  -230.41729655766835   -1.37739e-06   3.00576e-06 DIIS
+   @UHF iter   9:  -230.41729673019270   -1.72524e-07   7.62041e-07 DIIS
+   @UHF iter  10:  -230.41729674144077   -1.12481e-08   3.40281e-07 DIIS
+   @UHF iter  11:  -230.41729674488272   -3.44195e-09   2.27475e-07 DIIS
+   @UHF iter  12:  -230.41729674660309   -1.72037e-09   1.91708e-07 DIIS
+   @UHF iter  13:  -230.41729674887114   -2.26805e-09   1.56673e-07 DIIS
+   @UHF iter  14:  -230.41729675274394   -3.87280e-09   6.68673e-08 DIIS
+   @UHF iter  15:  -230.41729675337768   -6.33747e-10   1.79330e-08 DIIS
+   @UHF iter  16:  -230.41729675339184   -1.41540e-11   6.35052e-09 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @UHF iter  17:  -230.41729675339326   -8.52651e-13   3.00872e-09 DIIS
+   @UHF iter  17:  -230.41729675339334   -1.50635e-12   3.00871e-09 DIIS
   Energy and wave function converged.
 
 
@@ -339,14 +338,14 @@ k_type_: LINK
     NA   [    21 ]
     NB   [    20 ]
 
-  @UHF Final Energy:  -230.41729675339326
+  @UHF Final Energy:  -230.41729675339334
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9941117519565523
-    Two-Electron Energy =                 269.8658836382844015
-    Total Energy =                       -230.4172967533932592
+    One-Electron Energy =                -703.9941117519526870
+    Two-Electron Energy =                 269.8658836382804793
+    Total Energy =                       -230.4172967533933161
 
   UHF NO Occupations:
   HONO-2 :   19  A 1.9835690
@@ -380,30 +379,30 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:55:20 2022
+*** tstop() called on ds6 at Mon May  8 09:32:33 2023
 Module time:
-	user time   =      38.10 seconds =       0.64 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         39 seconds =       0.65 minutes
+	user time   =      35.81 seconds =       0.60 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         36 seconds =       0.60 minutes
 Total time:
-	user time   =      38.10 seconds =       0.64 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         39 seconds =       0.65 minutes
+	user time   =      35.81 seconds =       0.60 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         36 seconds =       0.60 minutes
     UHF Energy (using LinK algo)..........................................................PASSED
     UHF LinK Incfock Efficient............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:55:20 2022
+*** at Mon May  8 09:32:33 2023
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   111 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/6-31gs.gbs 
-    atoms 7-12 entry H          line    44 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/6-31gs.gbs 
+    atoms 1-6  entry C          line   111 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/6-31gs.gbs 
+    atoms 7-12 entry H          line    44 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -450,7 +449,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -474,25 +473,24 @@ Scratch directory: /scratch/dpoole34/
     Name: (6-31G* AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:          Yes
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -521,20 +519,20 @@ k_type_: LINK
                         Total Energy        Delta E     RMS |[F,P]|
 
    @ROHF iter SAD:  -229.97628349801801   -2.29976e+02   0.00000e+00 
-   @ROHF iter   1:  -230.34049812990156   -3.64215e-01   1.97150e-03 DIIS
+   @ROHF iter   1:  -230.34049812990099   -3.64215e-01   1.97150e-03 DIIS
    @ROHF iter   2:  -230.39754842942534   -5.70503e-02   5.92347e-04 DIIS/INCFOCK
-   @ROHF iter   3:  -230.40213224295394   -4.58381e-03   2.54181e-04 DIIS/INCFOCK
-   @ROHF iter   4:  -230.40285594951087   -7.23707e-04   2.60662e-05 DIIS/INCFOCK
-   @ROHF iter   5:  -230.40286971684054   -1.37673e-05   1.09670e-05 DIIS/INCFOCK
-   @ROHF iter   6:  -230.40287161530756   -1.89847e-06   2.55354e-06 DIIS
-   @ROHF iter   7:  -230.40287183399215   -2.18685e-07   5.54114e-07 DIIS
-   @ROHF iter   8:  -230.40287184255357   -8.56141e-09   6.63256e-08 DIIS
-   @ROHF iter   9:  -230.40287184266970   -1.16131e-10   2.77789e-08 DIIS
-   @ROHF iter  10:  -230.40287184268720   -1.75078e-11   1.23581e-08 DIIS
+   @ROHF iter   3:  -230.40213224295314   -4.58381e-03   2.54181e-04 DIIS/INCFOCK
+   @ROHF iter   4:  -230.40285594951104   -7.23707e-04   2.60662e-05 DIIS/INCFOCK
+   @ROHF iter   5:  -230.40286971684026   -1.37673e-05   1.09670e-05 DIIS/INCFOCK
+   @ROHF iter   6:  -230.40287161530773   -1.89847e-06   2.55354e-06 DIIS
+   @ROHF iter   7:  -230.40287183399255   -2.18685e-07   5.54114e-07 DIIS
+   @ROHF iter   8:  -230.40287184255305   -8.56051e-09   6.63256e-08 DIIS
+   @ROHF iter   9:  -230.40287184266913   -1.16074e-10   2.77789e-08 DIIS
+   @ROHF iter  10:  -230.40287184268681   -1.76783e-11   1.23581e-08 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @ROHF iter  11:  -230.40287184269278   -5.57066e-12   3.69592e-09 DIIS
+   @ROHF iter  11:  -230.40287184269221   -5.40012e-12   3.69592e-09 DIIS
   Energy and wave function converged.
 
 
@@ -594,14 +592,14 @@ k_type_: LINK
     NA   [    21 ]
     NB   [    20 ]
 
-  @ROHF Final Energy:  -230.40287184269278
+  @ROHF Final Energy:  -230.40287184269221
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9664612139116571
-    Two-Electron Energy =                 269.8526580109399902
-    Total Energy =                       -230.4028718426927753
+    One-Electron Energy =                -703.9664612139101791
+    Two-Electron Energy =                 269.8526580109390807
+    Total Energy =                       -230.4028718426922069
 
 Computation Completed
 
@@ -625,19 +623,19 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:55:44 2022
+*** tstop() called on ds6 at Mon May  8 09:32:56 2023
 Module time:
-	user time   =      24.64 seconds =       0.41 minutes
+	user time   =      23.39 seconds =       0.39 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =         24 seconds =       0.40 minutes
+	total time  =         23 seconds =       0.38 minutes
 Total time:
-	user time   =      62.77 seconds =       1.05 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =         63 seconds =       1.05 minutes
+	user time   =      59.23 seconds =       0.99 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =         59 seconds =       0.98 minutes
     ROHF Energy (using LinK algo).........................................................PASSED
     ROHF LinK Incfock Efficient...........................................................PASSED
 
-    Psi4 stopped on: Thursday, 08 December 2022 03:55PM
-    Psi4 wall time for execution: 0:01:03.25
+    Psi4 stopped on: Monday, 08 May 2023 09:32AM
+    Psi4 wall time for execution: 0:00:59.55
 
 *** Psi4 exiting successfully. Buy a developer a beer!

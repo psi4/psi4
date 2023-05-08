@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.8a1.dev17 
+                               Psi4 1.8a1.dev68 
 
-                         Git: Rev {dpoole34/compositejk-pilot} e4f6b14 dirty
+                         Git: Rev {dpoole34/compositejk-pilot-ref} 78ba1c2 
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -31,11 +31,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 08 December 2022 03:56PM
+    Psi4 started on: Monday, 08 May 2023 09:18AM
 
-    Process ID: 26703
+    Process ID: 816085
     Host:       ds6
-    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4
+    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -55,24 +55,24 @@ Eref = {
         "Canonical" : -149.58723684929720, #TEST
         "DF"        : -149.58715054487624, #TEST
         "Composite": {
-          "DirectDFJ+COSX"    : -149.58722317236171, #TEST
-          "DirectDFJ+LinK"    : -149.58726772171027  #TEST
+          "DFDirJ+COSX"    : -149.58722317236171, #TEST
+          "DFDirJ+LinK"    : -149.58726772171027  #TEST
         } 
     },
     "Triplet UHF": {
         "Canonical" : -149.67135517240553, #TEST
         "DF"        : -149.67125624291961, #TEST
         "Composite": {
-          "DirectDFJ+COSX"    : -149.67132922581225, #TEST
-          "DirectDFJ+LinK"    : -149.67137328005577  #TEST
+          "DFDirJ+COSX"    : -149.67132922581225, #TEST
+          "DFDirJ+LinK"    : -149.67137328005577  #TEST
         }
     },
     "Triplet ROHF": {
         "Canonical" : -149.65170765757173, #TEST
         "DF"        : -149.65160796208073, #TEST
         "Composite": {
-          "DirectDFJ+COSX"    : -149.65168894156605, #TEST
-          "DirectDFJ+LinK"    : -149.65172557470324  #TEST
+          "DFDirJ+COSX"    : -149.65168894156605, #TEST
+          "DFDirJ+LinK"    : -149.65172557470324  #TEST
         }
     }
 }
@@ -130,7 +130,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF RHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -164,7 +164,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF UHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -198,7 +198,7 @@ compare_values(Eref["Singlet"]["DF"], E, 6, 'Singlet MemDF CUHF energy') #TEST
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -240,7 +240,7 @@ compare_values(Eref["Triplet UHF"]["DF"], E, 6, 'Triplet MemDF UHF energy') #TES
 
 for method in Eref["Triplet UHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -279,7 +279,7 @@ compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF ROHF energy') #T
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -318,7 +318,7 @@ compare_values(Eref["Triplet ROHF"]["DF"], E, 6, 'Triplet MemDF CUHF energy') #T
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX": 
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -332,14 +332,14 @@ for method in Eref["Triplet ROHF"]["Composite"].keys():
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:27 2022
+*** at Mon May  8 09:18:32 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -538,28 +538,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:28 2022
+*** tstop() called on ds6 at Mon May  8 09:18:33 2023
 Module time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     Singlet PK RHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:28 2022
+*** at Mon May  8 09:18:33 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -628,13 +628,14 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -790,28 +791,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:29 2022
+*** tstop() called on ds6 at Mon May  8 09:18:34 2023
 Module time:
-	user time   =       0.80 seconds =       0.01 minutes
+	user time   =       0.77 seconds =       0.01 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.31 seconds =       0.02 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       1.29 seconds =       0.02 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
     Singlet Direct RHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:29 2022
+*** at Mon May  8 09:18:34 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -992,28 +993,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:29 2022
+*** tstop() called on ds6 at Mon May  8 09:18:34 2023
 Module time:
-	user time   =       0.33 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.66 seconds =       0.03 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       1.71 seconds =       0.03 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
     Singlet Disk RHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:29 2022
+*** at Mon May  8 09:18:34 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -1082,7 +1083,7 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -1224,28 +1225,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:29 2022
+*** tstop() called on ds6 at Mon May  8 09:18:34 2023
 Module time:
-	user time   =       0.22 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.90 seconds =       0.03 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       1.95 seconds =       0.03 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
     Singlet DiskDF RHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:29 2022
+*** at Mon May  8 09:18:34 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -1314,11 +1315,12 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -1457,28 +1459,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:29 2022
+*** tstop() called on ds6 at Mon May  8 09:18:35 2023
 Module time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.14 seconds =       0.04 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.19 seconds =       0.04 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
     Singlet MemDF RHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:29 2022
+*** at Mon May  8 09:18:35 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -1515,7 +1517,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+COSX.
+  SCF Algorithm Type is DFDIRJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1547,24 +1549,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+COSX 
-j_type_: DIRECTDFJ 
-k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              COSX
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -1605,15 +1606,15 @@ k_type_: COSX
    @RHF iter SAD:  -149.27713328631933   -1.49277e+02   0.00000e+00 
    @RHF iter   1:  -149.56382697604778   -2.86694e-01   1.10975e-02 DIIS/ADIIS
    @RHF iter   2:  -149.58629558037484   -2.24686e-02   2.92559e-03 DIIS/ADIIS
-   @RHF iter   3:  -149.58760428588195   -1.30871e-03   6.47395e-04 DIIS/ADIIS
+   @RHF iter   3:  -149.58760428588198   -1.30871e-03   6.47395e-04 DIIS/ADIIS
    @RHF iter   4:  -149.58772283023291   -1.18544e-04   1.38075e-04 DIIS/ADIIS
-   @RHF iter   5:  -149.58772855372339   -5.72349e-06   1.83160e-05 DIIS
-   @RHF iter   6:  -149.58772885952462   -3.05801e-07   2.47041e-06 DIIS
-   @RHF iter   7:  -149.58772885956984   -4.52189e-11   2.44347e-07 DIIS
+   @RHF iter   5:  -149.58772855372317   -5.72349e-06   1.83160e-05 DIIS
+   @RHF iter   6:  -149.58772885952447   -3.05801e-07   2.47041e-06 DIIS
+   @RHF iter   7:  -149.58772885956975   -4.52758e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @RHF iter   8:  -149.58722317116360    5.05688e-04   9.91149e-04 DIIS/ADIIS
+   @RHF iter   8:  -149.58722317116377    5.05688e-04   9.91149e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -1655,14 +1656,14 @@ k_type_: COSX
     NA   [     3,    0,    0,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    1,    0,    2,    1,    1 ]
 
-  @RHF Final Energy:  -149.58722317116360
+  @RHF Final Energy:  -149.58722317116377
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.8059033672358851
-    Two-Electron Energy =                  86.4301879389086025
-    Total Energy =                       -149.5872231711636289
+    One-Electron Energy =                -266.8059033672361693
+    Two-Electron Energy =                  86.4301879389087446
+    Total Energy =                       -149.5872231711637710
 
 Computation Completed
 
@@ -1686,28 +1687,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:32 2022
+*** tstop() called on ds6 at Mon May  8 09:18:37 2023
 Module time:
-	user time   =       2.66 seconds =       0.04 minutes
+	user time   =       2.48 seconds =       0.04 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       4.83 seconds =       0.08 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       4.69 seconds =       0.08 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
-    Singlet DirectDFJ+COSX RHF energy.....................................................PASSED
+    Singlet DFDirJ+COSX RHF energy........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:32 2022
+*** at Mon May  8 09:18:37 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -1744,7 +1745,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -1776,24 +1777,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -1912,28 +1912,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:34 2022
+*** tstop() called on ds6 at Mon May  8 09:18:39 2023
 Module time:
-	user time   =       1.56 seconds =       0.03 minutes
+	user time   =       1.50 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       6.41 seconds =       0.11 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       6.22 seconds =       0.10 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          7 seconds =       0.12 minutes
-    Singlet DirectDFJ+LinK RHF energy.....................................................PASSED
+    Singlet DFDirJ+LinK RHF energy........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:34 2022
+*** at Mon May  8 09:18:39 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -2176,28 +2176,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:34 2022
+*** tstop() called on ds6 at Mon May  8 09:18:39 2023
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       6.86 seconds =       0.11 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       6.67 seconds =       0.11 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          7 seconds =       0.12 minutes
     Singlet PK UHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:34 2022
+*** at Mon May  8 09:18:39 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -2266,13 +2266,14 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -2472,28 +2473,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:35 2022
+*** tstop() called on ds6 at Mon May  8 09:18:40 2023
 Module time:
-	user time   =       0.91 seconds =       0.02 minutes
+	user time   =       0.88 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       7.79 seconds =       0.13 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       7.58 seconds =       0.13 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          8 seconds =       0.13 minutes
     Singlet Direct UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:35 2022
+*** at Mon May  8 09:18:40 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -2718,28 +2719,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:36 2022
+*** tstop() called on ds6 at Mon May  8 09:18:41 2023
 Module time:
-	user time   =       0.32 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.14 seconds =       0.14 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       7.99 seconds =       0.13 minutes
+	system time =       0.18 seconds =       0.00 minutes
 	total time  =          9 seconds =       0.15 minutes
     Singlet Disk UHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:36 2022
+*** at Mon May  8 09:18:41 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -2808,7 +2809,7 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -2994,28 +2995,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:36 2022
+*** tstop() called on ds6 at Mon May  8 09:18:41 2023
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
+	user time   =       0.25 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.40 seconds =       0.14 minutes
-	system time =       0.13 seconds =       0.00 minutes
+	user time   =       8.26 seconds =       0.14 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          9 seconds =       0.15 minutes
     Singlet DiskDF UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:36 2022
+*** at Mon May  8 09:18:41 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -3084,11 +3085,12 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -3271,28 +3273,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:36 2022
+*** tstop() called on ds6 at Mon May  8 09:18:41 2023
 Module time:
 	user time   =       0.23 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.66 seconds =       0.14 minutes
-	system time =       0.13 seconds =       0.00 minutes
+	user time   =       8.52 seconds =       0.14 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          9 seconds =       0.15 minutes
     Singlet MemDF UHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:36 2022
+*** at Mon May  8 09:18:41 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -3329,7 +3331,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+COSX.
+  SCF Algorithm Type is DFDIRJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -3361,24 +3363,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+COSX 
-j_type_: DIRECTDFJ 
-k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              COSX
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -3418,24 +3419,24 @@ k_type_: COSX
 
    @UHF iter SAD:  -149.27713328631933   -1.49277e+02   0.00000e+00 
    @UHF iter   1:  -149.56382697604778   -2.86694e-01   1.10975e-02 DIIS/ADIIS
-   @UHF iter   2:  -149.58629558037470   -2.24686e-02   2.92559e-03 DIIS/ADIIS
-   @UHF iter   3:  -149.58760428588192   -1.30871e-03   6.47395e-04 DIIS/ADIIS
-   @UHF iter   4:  -149.58772283023299   -1.18544e-04   1.38075e-04 DIIS/ADIIS
-   @UHF iter   5:  -149.58772855372328   -5.72349e-06   1.83160e-05 DIIS
-   @UHF iter   6:  -149.58772885952459   -3.05801e-07   2.47041e-06 DIIS
-   @UHF iter   7:  -149.58772885956975   -4.51621e-11   2.44347e-07 DIIS
+   @UHF iter   2:  -149.58629558037484   -2.24686e-02   2.92559e-03 DIIS/ADIIS
+   @UHF iter   3:  -149.58760428588207   -1.30871e-03   6.47395e-04 DIIS/ADIIS
+   @UHF iter   4:  -149.58772283023285   -1.18544e-04   1.38075e-04 DIIS/ADIIS
+   @UHF iter   5:  -149.58772855372337   -5.72349e-06   1.83160e-05 DIIS
+   @UHF iter   6:  -149.58772885952450   -3.05801e-07   2.47041e-06 DIIS
+   @UHF iter   7:  -149.58772885956972   -4.52189e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @UHF iter   8:  -149.58722317116371    5.05688e-04   9.91149e-04 DIIS/ADIIS
+   @UHF iter   8:  -149.58722322604331    5.05634e-04   9.91148e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:  -8.881784197E-15
+   @Spin Contamination Metric:  -1.776356839E-14
    @S^2 Expected:                0.000000000E+00
-   @S^2 Observed:               -8.881784197E-15
+   @S^2 Observed:               -1.776356839E-14
    @S   Expected:                0.000000000E+00
    @S   Observed:                0.000000000E+00
 
@@ -3445,81 +3446,81 @@ k_type_: COSX
     Alpha Occupied:                                                       
 
        1Ag   -20.718186     1B1u  -20.716591     2Ag    -1.762756  
-       2B1u   -1.064574     1B2u   -0.812724     3Ag    -0.770577  
-       1B3u   -0.707523     1B3g   -0.420229  
+       2B1u   -1.064574     1B3u   -0.812724     3Ag    -0.770577  
+       1B2u   -0.707523     1B2g   -0.420229  
 
     Alpha Virtual:                                                        
 
-       1B2g    0.078702     3B1u    0.460336     2B3u    0.693920  
-       2B2u    0.696563     4Ag     0.713064     2B3g    0.825214  
-       2B2g    0.852636     5Ag     0.879262     4B1u    0.889111  
+       1B3g    0.078702     3B1u    0.460336     2B2u    0.693920  
+       2B3u    0.696563     4Ag     0.713064     2B2g    0.825214  
+       2B3g    0.852636     5Ag     0.879262     4B1u    0.889111  
        5B1u    1.413064     1B1g    1.442922     6Ag     1.443938  
-       3B3u    1.637673     3B2u    1.642235     6B1u    1.953272  
-       1Au     1.954322     7Ag     2.483527     3B2g    2.530348  
-       7B1u    2.536977     3B3g    2.548923     4B3u    3.927463  
-       4B2u    3.928699     8Ag     4.116806     4B2g    4.259266  
-       4B3g    4.274563     2B1g    4.934640     9Ag     4.966106  
-       5B3u    5.111788     8B1u    5.123534     5B2u    5.157197  
-       6B2u    5.264086     6B3u    5.272739    10Ag     5.546638  
-       5B3g    5.659533     5B2g    5.666050     9B1u    6.117812  
+       3B2u    1.637673     3B3u    1.642235     6B1u    1.953272  
+       1Au     1.954322     7Ag     2.483527     3B3g    2.530348  
+       7B1u    2.536977     3B2g    2.548923     4B2u    3.927463  
+       4B3u    3.928699     8Ag     4.116806     4B3g    4.259266  
+       4B2g    4.274563     2B1g    4.934640     9Ag     4.966106  
+       5B2u    5.111788     8B1u    5.123534     5B3u    5.157197  
+       6B3u    5.264086     6B2u    5.272739    10Ag     5.546638  
+       5B2g    5.659533     5B3g    5.666050     9B1u    6.117812  
        2Au     6.397139    10B1u    6.421963     3B1g    6.546782  
       11Ag     6.548540     3Au     6.775088    11B1u    6.791609  
-       6B2g    6.817736     6B3g    6.862237     7B3u    7.040086  
-       7B2u    7.090378    12B1u    7.574534    12Ag     7.686631  
-       7B2g    8.073746     7B3g    8.120090    13Ag     8.184818  
+       6B3g    6.817736     6B2g    6.862237     7B2u    7.040086  
+       7B3u    7.090378    12B1u    7.574534    12Ag     7.686631  
+       7B3g    8.073746     7B2g    8.120090    13Ag     8.184818  
       13B1u   15.899399  
 
     Beta Occupied:                                                        
 
        1Ag   -20.718186     1B1u  -20.716591     2Ag    -1.762756  
-       2B1u   -1.064574     1B2u   -0.812724     3Ag    -0.770577  
-       1B3u   -0.707523     1B3g   -0.420229  
+       2B1u   -1.064574     1B3u   -0.812724     3Ag    -0.770577  
+       1B2u   -0.707523     1B2g   -0.420229  
 
     Beta Virtual:                                                         
 
-       1B2g    0.078702     3B1u    0.460336     2B3u    0.693920  
-       2B2u    0.696563     4Ag     0.713064     2B3g    0.825214  
-       2B2g    0.852636     5Ag     0.879262     4B1u    0.889111  
+       1B3g    0.078702     3B1u    0.460336     2B2u    0.693920  
+       2B3u    0.696563     4Ag     0.713064     2B2g    0.825214  
+       2B3g    0.852636     5Ag     0.879262     4B1u    0.889111  
        5B1u    1.413064     1B1g    1.442922     6Ag     1.443938  
-       3B3u    1.637673     3B2u    1.642235     6B1u    1.953272  
-       1Au     1.954322     7Ag     2.483527     3B2g    2.530348  
-       7B1u    2.536977     3B3g    2.548923     4B3u    3.927463  
-       4B2u    3.928699     8Ag     4.116806     4B2g    4.259266  
-       4B3g    4.274563     2B1g    4.934640     9Ag     4.966106  
-       5B3u    5.111788     8B1u    5.123534     5B2u    5.157197  
-       6B2u    5.264086     6B3u    5.272739    10Ag     5.546638  
-       5B3g    5.659533     5B2g    5.666050     9B1u    6.117812  
+       3B2u    1.637673     3B3u    1.642235     6B1u    1.953272  
+       1Au     1.954322     7Ag     2.483527     3B3g    2.530348  
+       7B1u    2.536977     3B2g    2.548923     4B2u    3.927463  
+       4B3u    3.928699     8Ag     4.116806     4B3g    4.259266  
+       4B2g    4.274563     2B1g    4.934640     9Ag     4.966106  
+       5B2u    5.111788     8B1u    5.123534     5B3u    5.157197  
+       6B3u    5.264086     6B2u    5.272739    10Ag     5.546638  
+       5B2g    5.659533     5B3g    5.666050     9B1u    6.117812  
        2Au     6.397139    10B1u    6.421963     3B1g    6.546782  
       11Ag     6.548540     3Au     6.775088    11B1u    6.791609  
-       6B2g    6.817736     6B3g    6.862237     7B3u    7.040086  
-       7B2u    7.090378    12B1u    7.574534    12Ag     7.686631  
-       7B2g    8.073746     7B3g    8.120090    13Ag     8.184818  
+       6B3g    6.817736     6B2g    6.862237     7B2u    7.040086  
+       7B3u    7.090378    12B1u    7.574534    12Ag     7.686631  
+       7B3g    8.073746     7B2g    8.120090    13Ag     8.184818  
       13B1u   15.899399  
 
     Final Occupation by Irrep:
              Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
-    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
     SOCC [     0,    0,    0,    0,    0,    0,    0,    0 ]
-    NA   [     3,    0,    0,    1,    0,    2,    1,    1 ]
-    NB   [     3,    0,    0,    1,    0,    2,    1,    1 ]
+    NA   [     3,    0,    1,    0,    0,    2,    1,    1 ]
+    NB   [     3,    0,    1,    0,    0,    2,    1,    1 ]
 
-  @UHF Final Energy:  -149.58722317116371
+  @UHF Final Energy:  -149.58722322604331
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.8059033672361124
-    Two-Electron Energy =                  86.4301879389087446
-    Total Energy =                       -149.5872231711637141
+    One-Electron Energy =                -266.8059033672358851
+    Two-Electron Energy =                  86.4301878840289532
+    Total Energy =                       -149.5872232260432781
 
   UHF NO Occupations:
-  HONO-2 :    1B3g 2.0000000
+  HONO-2 :    2 Ag 2.0000000
   HONO-1 :    3 Ag 2.0000000
   HONO-0 :    1B2u 2.0000000
-  LUNO+0 :    2B2u 0.0000000
-  LUNO+1 :    3B1u 0.0000000
-  LUNO+2 :    4B1u 0.0000000
-  LUNO+3 :    2B3g 0.0000000
+  LUNO+0 :    3B1u 0.0000000
+  LUNO+1 :    2B2u 0.0000000
+  LUNO+2 :    3B2u 0.0000000
+  LUNO+3 :    4B1u 0.0000000
 
 
 Computation Completed
@@ -3544,28 +3545,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:39 2022
+*** tstop() called on ds6 at Mon May  8 09:18:44 2023
 Module time:
-	user time   =       2.75 seconds =       0.05 minutes
+	user time   =       2.61 seconds =       0.04 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      11.44 seconds =       0.19 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =      11.16 seconds =       0.19 minutes
+	system time =       0.20 seconds =       0.00 minutes
 	total time  =         12 seconds =       0.20 minutes
-    Singlet DirectDFJ+COSX UHF energy.....................................................PASSED
+    Singlet DFDirJ+COSX UHF energy........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:39 2022
+*** at Mon May  8 09:18:44 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -3602,7 +3603,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -3634,24 +3635,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -3814,28 +3814,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:41 2022
+*** tstop() called on ds6 at Mon May  8 09:18:45 2023
 Module time:
-	user time   =       1.64 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.61 seconds =       0.03 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      13.11 seconds =       0.22 minutes
-	system time =       0.16 seconds =       0.00 minutes
-	total time  =         14 seconds =       0.23 minutes
-    Singlet DirectDFJ+LinK UHF energy.....................................................PASSED
+	user time   =      12.79 seconds =       0.21 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =         13 seconds =       0.22 minutes
+    Singlet DFDirJ+LinK UHF energy........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:41 2022
+*** at Mon May  8 09:18:45 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -4066,28 +4066,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:41 2022
+*** tstop() called on ds6 at Mon May  8 09:18:46 2023
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      13.56 seconds =       0.23 minutes
-	system time =       0.17 seconds =       0.00 minutes
+	user time   =      13.24 seconds =       0.22 minutes
+	system time =       0.25 seconds =       0.00 minutes
 	total time  =         14 seconds =       0.23 minutes
     Singlet PK CUHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:41 2022
+*** at Mon May  8 09:18:46 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -4156,13 +4156,14 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -4350,28 +4351,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:42 2022
+*** tstop() called on ds6 at Mon May  8 09:18:47 2023
 Module time:
-	user time   =       0.90 seconds =       0.02 minutes
+	user time   =       0.89 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      14.48 seconds =       0.24 minutes
-	system time =       0.18 seconds =       0.00 minutes
+	user time   =      14.16 seconds =       0.24 minutes
+	system time =       0.26 seconds =       0.00 minutes
 	total time  =         15 seconds =       0.25 minutes
     Singlet Direct CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:42 2022
+*** at Mon May  8 09:18:47 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -4584,28 +4585,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:43 2022
+*** tstop() called on ds6 at Mon May  8 09:18:47 2023
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      14.84 seconds =       0.25 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      14.58 seconds =       0.24 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =         15 seconds =       0.25 minutes
     Singlet Disk CUHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:43 2022
+*** at Mon May  8 09:18:47 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -4674,7 +4675,7 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -4848,28 +4849,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:43 2022
+*** tstop() called on ds6 at Mon May  8 09:18:48 2023
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      15.10 seconds =       0.25 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =      14.84 seconds =       0.25 minutes
+	system time =       0.30 seconds =       0.01 minutes
 	total time  =         16 seconds =       0.27 minutes
     Singlet DiskDF CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:43 2022
+*** at Mon May  8 09:18:48 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -4938,11 +4939,12 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -5113,28 +5115,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:43 2022
+*** tstop() called on ds6 at Mon May  8 09:18:48 2023
 Module time:
-	user time   =       0.28 seconds =       0.00 minutes
+	user time   =       0.25 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      15.41 seconds =       0.26 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =      15.12 seconds =       0.25 minutes
+	system time =       0.30 seconds =       0.01 minutes
 	total time  =         16 seconds =       0.27 minutes
     Singlet MemDF CUHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:43 2022
+*** at Mon May  8 09:18:48 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -5171,7 +5173,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+COSX.
+  SCF Algorithm Type is DFDIRJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -5203,24 +5205,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+COSX 
-j_type_: DIRECTDFJ 
-k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              COSX
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -5261,15 +5262,15 @@ k_type_: COSX
    @CUHF iter SAD:  -149.27713328631935   -1.49277e+02   0.00000e+00 
    @CUHF iter   1:  -149.56382697604778   -2.86694e-01   1.10975e-02 DIIS/ADIIS
    @CUHF iter   2:  -149.58629558037475   -2.24686e-02   2.92559e-03 DIIS/ADIIS
-   @CUHF iter   3:  -149.58760428588184   -1.30871e-03   6.47395e-04 DIIS/ADIIS
+   @CUHF iter   3:  -149.58760428588189   -1.30871e-03   6.47395e-04 DIIS/ADIIS
    @CUHF iter   4:  -149.58772283023282   -1.18544e-04   1.38075e-04 DIIS/ADIIS
-   @CUHF iter   5:  -149.58772855372334   -5.72349e-06   1.83160e-05 DIIS
-   @CUHF iter   6:  -149.58772885952450   -3.05801e-07   2.47041e-06 DIIS
-   @CUHF iter   7:  -149.58772885956984   -4.53326e-11   2.44347e-07 DIIS
+   @CUHF iter   5:  -149.58772855372339   -5.72349e-06   1.83160e-05 DIIS
+   @CUHF iter   6:  -149.58772885952456   -3.05801e-07   2.47041e-06 DIIS
+   @CUHF iter   7:  -149.58772885956969   -4.51337e-11   2.44347e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @CUHF iter   8:  -149.58722317116369    5.05688e-04   9.91149e-04 DIIS/ADIIS
+   @CUHF iter   8:  -149.58722317116377    5.05688e-04   9.91149e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -5343,14 +5344,14 @@ k_type_: COSX
     NA   [     3,    0,    0,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    1,    0,    2,    1,    1 ]
 
-  @CUHF Final Energy:  -149.58722317116369
+  @CUHF Final Energy:  -149.58722317116377
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.8059033672361693
-    Two-Electron Energy =                  86.4301879389088441
-    Total Energy =                       -149.5872231711636573
+    One-Electron Energy =                -266.8059033672364535
+    Two-Electron Energy =                  86.4301879389090288
+    Total Energy =                       -149.5872231711637710
 
 Computation Completed
 
@@ -5374,28 +5375,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:46 2022
+*** tstop() called on ds6 at Mon May  8 09:18:51 2023
 Module time:
-	user time   =       2.80 seconds =       0.05 minutes
+	user time   =       2.67 seconds =       0.04 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      18.24 seconds =       0.30 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =      17.81 seconds =       0.30 minutes
+	system time =       0.31 seconds =       0.01 minutes
 	total time  =         19 seconds =       0.32 minutes
-    Singlet DirectDFJ+COSX CUHF energy....................................................PASSED
+    Singlet DFDirJ+COSX CUHF energy.......................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:46 2022
+*** at Mon May  8 09:18:51 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -5432,7 +5433,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -5464,24 +5465,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -5632,28 +5632,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:48 2022
+*** tstop() called on ds6 at Mon May  8 09:18:52 2023
 Module time:
-	user time   =       1.64 seconds =       0.03 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.60 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      19.91 seconds =       0.33 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =         21 seconds =       0.35 minutes
-    Singlet DirectDFJ+LinK CUHF energy....................................................PASSED
+	user time   =      19.44 seconds =       0.32 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =         20 seconds =       0.33 minutes
+    Singlet DFDirJ+LinK CUHF energy.......................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:48 2022
+*** at Mon May  8 09:18:52 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -5903,28 +5903,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:48 2022
+*** tstop() called on ds6 at Mon May  8 09:18:53 2023
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      20.31 seconds =       0.34 minutes
-	system time =       0.23 seconds =       0.00 minutes
+	user time   =      19.89 seconds =       0.33 minutes
+	system time =       0.36 seconds =       0.01 minutes
 	total time  =         21 seconds =       0.35 minutes
     Triplet PK UHF energy.................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:48 2022
+*** at Mon May  8 09:18:53 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -5993,13 +5993,14 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -6205,28 +6206,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:49 2022
+*** tstop() called on ds6 at Mon May  8 09:18:54 2023
 Module time:
-	user time   =       0.67 seconds =       0.01 minutes
+	user time   =       0.66 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      21.01 seconds =       0.35 minutes
-	system time =       0.24 seconds =       0.00 minutes
+	user time   =      20.58 seconds =       0.34 minutes
+	system time =       0.37 seconds =       0.01 minutes
 	total time  =         22 seconds =       0.37 minutes
     Triplet Direct UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:49 2022
+*** at Mon May  8 09:18:54 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -6458,28 +6459,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:49 2022
+*** tstop() called on ds6 at Mon May  8 09:18:54 2023
 Module time:
-	user time   =       0.27 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      21.31 seconds =       0.36 minutes
-	system time =       0.26 seconds =       0.00 minutes
+	user time   =      20.97 seconds =       0.35 minutes
+	system time =       0.40 seconds =       0.01 minutes
 	total time  =         22 seconds =       0.37 minutes
     Triplet Disk UHF energy...............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:49 2022
+*** at Mon May  8 09:18:54 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -6548,7 +6549,7 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -6741,28 +6742,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:49 2022
+*** tstop() called on ds6 at Mon May  8 09:18:54 2023
 Module time:
 	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      21.52 seconds =       0.36 minutes
-	system time =       0.26 seconds =       0.00 minutes
+	user time   =      21.17 seconds =       0.35 minutes
+	system time =       0.41 seconds =       0.01 minutes
 	total time  =         22 seconds =       0.37 minutes
     Triplet DiskDF UHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:49 2022
+*** at Mon May  8 09:18:54 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -6831,11 +6832,12 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -7025,28 +7027,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:50 2022
+*** tstop() called on ds6 at Mon May  8 09:18:55 2023
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      21.74 seconds =       0.36 minutes
-	system time =       0.27 seconds =       0.00 minutes
+	user time   =      21.36 seconds =       0.36 minutes
+	system time =       0.42 seconds =       0.01 minutes
 	total time  =         23 seconds =       0.38 minutes
     Triplet MemDF UHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:50 2022
+*** at Mon May  8 09:18:55 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -7083,7 +7085,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+COSX.
+  SCF Algorithm Type is DFDIRJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -7115,24 +7117,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+COSX 
-j_type_: DIRECTDFJ 
-k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              COSX
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -7178,18 +7179,18 @@ k_type_: COSX
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
    @UHF iter   1:  -131.02266731942422   -1.31023e+02   3.53990e-01 ADIIS
-   @UHF iter   2:  -140.14034734140540   -9.11768e+00   1.85365e-01 ADIIS
-   @UHF iter   3:  -149.07920849522236   -8.93886e+00   6.20863e-02 DIIS/ADIIS
-   @UHF iter   4:  -149.65391531645002   -5.74707e-01   1.05356e-02 DIIS/ADIIS
-   @UHF iter   5:  -149.67061947228331   -1.67042e-02   1.87593e-03 DIIS/ADIIS
-   @UHF iter   6:  -149.67160507761122   -9.85605e-04   4.33948e-04 DIIS/ADIIS
-   @UHF iter   7:  -149.67166177628388   -5.66987e-05   6.80300e-05 DIIS
-   @UHF iter   8:  -149.67166378928812   -2.01300e-06   9.42637e-06 DIIS
-   @UHF iter   9:  -149.67166383531969   -4.60316e-08   8.91526e-07 DIIS
+   @UHF iter   2:  -140.14034734140543   -9.11768e+00   1.85365e-01 ADIIS
+   @UHF iter   3:  -149.07920849522247   -8.93886e+00   6.20863e-02 DIIS/ADIIS
+   @UHF iter   4:  -149.65391531645000   -5.74707e-01   1.05356e-02 DIIS/ADIIS
+   @UHF iter   5:  -149.67061947228319   -1.67042e-02   1.87593e-03 DIIS/ADIIS
+   @UHF iter   6:  -149.67160507761133   -9.85605e-04   4.33948e-04 DIIS/ADIIS
+   @UHF iter   7:  -149.67166177628397   -5.66987e-05   6.80300e-05 DIIS
+   @UHF iter   8:  -149.67166378928820   -2.01300e-06   9.42637e-06 DIIS
+   @UHF iter   9:  -149.67166383531966   -4.60315e-08   8.91526e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @UHF iter  10:  -149.67132922569741    3.34610e-04   9.51899e-04 DIIS/ADIIS
+   @UHF iter  10:  -149.67132922569743    3.34610e-04   9.51899e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -7264,14 +7265,14 @@ k_type_: COSX
     NA   [     3,    0,    1,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
-  @UHF Final Energy:  -149.67132922569741
+  @UHF Final Energy:  -149.67132922569743
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9129345756498424
-    Two-Electron Energy =                  86.4531130927887830
-    Total Energy =                       -149.6713292256974057
+    One-Electron Energy =                -266.9129345756501266
+    Two-Electron Energy =                  86.4531130927890388
+    Total Energy =                       -149.6713292256974341
 
   UHF NO Occupations:
   HONO-2 :    1B2u 1.9937328
@@ -7305,28 +7306,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:53 2022
+*** tstop() called on ds6 at Mon May  8 09:18:58 2023
 Module time:
-	user time   =       3.02 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       2.81 seconds =       0.05 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      24.79 seconds =       0.41 minutes
-	system time =       0.28 seconds =       0.00 minutes
+	user time   =      24.20 seconds =       0.40 minutes
+	system time =       0.44 seconds =       0.01 minutes
 	total time  =         26 seconds =       0.43 minutes
-    Triplet DirectDFJ+COSX UHF energy.....................................................PASSED
+    Triplet DFDirJ+COSX UHF energy........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:53 2022
+*** at Mon May  8 09:18:58 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -7363,7 +7364,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -7395,24 +7396,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -7582,28 +7582,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:55 2022
+*** tstop() called on ds6 at Mon May  8 09:18:59 2023
 Module time:
-	user time   =       1.86 seconds =       0.03 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.80 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      26.68 seconds =       0.44 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =         28 seconds =       0.47 minutes
-    Triplet DirectDFJ+LinK UHF energy.....................................................PASSED
+	user time   =      26.02 seconds =       0.43 minutes
+	system time =       0.46 seconds =       0.01 minutes
+	total time  =         27 seconds =       0.45 minutes
+    Triplet DFDirJ+LinK UHF energy........................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:55 2022
+*** at Mon May  8 09:18:59 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -7814,28 +7814,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:55 2022
+*** tstop() called on ds6 at Mon May  8 09:19:00 2023
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      27.07 seconds =       0.45 minutes
-	system time =       0.29 seconds =       0.00 minutes
+	user time   =      26.41 seconds =       0.44 minutes
+	system time =       0.47 seconds =       0.01 minutes
 	total time  =         28 seconds =       0.47 minutes
     Triplet PK ROHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:55 2022
+*** at Mon May  8 09:19:00 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -7904,13 +7904,14 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -8077,28 +8078,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:56 2022
+*** tstop() called on ds6 at Mon May  8 09:19:00 2023
 Module time:
-	user time   =       0.68 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.65 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      27.77 seconds =       0.46 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =      27.08 seconds =       0.45 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =         28 seconds =       0.47 minutes
     Triplet Direct ROHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:56 2022
+*** at Mon May  8 09:19:01 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -8291,28 +8292,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:56 2022
+*** tstop() called on ds6 at Mon May  8 09:19:01 2023
 Module time:
-	user time   =       0.27 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      28.06 seconds =       0.47 minutes
-	system time =       0.31 seconds =       0.01 minutes
+	user time   =      27.40 seconds =       0.46 minutes
+	system time =       0.50 seconds =       0.01 minutes
 	total time  =         29 seconds =       0.48 minutes
     Triplet Disk ROHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:56 2022
+*** at Mon May  8 09:19:01 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -8381,7 +8382,7 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -8535,28 +8536,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:56 2022
+*** tstop() called on ds6 at Mon May  8 09:19:01 2023
 Module time:
-	user time   =       0.15 seconds =       0.00 minutes
+	user time   =       0.14 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      28.24 seconds =       0.47 minutes
-	system time =       0.32 seconds =       0.01 minutes
+	user time   =      27.57 seconds =       0.46 minutes
+	system time =       0.51 seconds =       0.01 minutes
 	total time  =         29 seconds =       0.48 minutes
     Triplet DiskDF ROHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:56 2022
+*** at Mon May  8 09:19:01 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -8625,11 +8626,12 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -8780,28 +8782,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:56:57 2022
+*** tstop() called on ds6 at Mon May  8 09:19:01 2023
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      28.44 seconds =       0.47 minutes
-	system time =       0.32 seconds =       0.01 minutes
-	total time  =         30 seconds =       0.50 minutes
+	user time   =      27.76 seconds =       0.46 minutes
+	system time =       0.51 seconds =       0.01 minutes
+	total time  =         29 seconds =       0.48 minutes
     Triplet MemDF ROHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:56:57 2022
+*** at Mon May  8 09:19:01 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -8838,7 +8840,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+COSX.
+  SCF Algorithm Type is DFDIRJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -8870,24 +8872,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+COSX 
-j_type_: DIRECTDFJ 
-k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              COSX
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -8934,17 +8935,17 @@ k_type_: COSX
 
    @ROHF iter   1:  -131.02266731942385   -1.31023e+02   2.71851e-01 DIIS
    @ROHF iter   2:  -139.64070004271142   -8.61803e+00   1.37369e-01 DIIS
-   @ROHF iter   3:  -148.99660951088305   -9.35591e+00   5.06619e-02 DIIS
+   @ROHF iter   3:  -148.99660951088308   -9.35591e+00   5.06619e-02 DIIS
    @ROHF iter   4:  -149.63963700749702   -6.43027e-01   6.07525e-03 DIIS
-   @ROHF iter   5:  -149.65187157255193   -1.22346e-02   4.84799e-04 DIIS
-   @ROHF iter   6:  -149.65198834090882   -1.16768e-04   1.12106e-04 DIIS
-   @ROHF iter   7:  -149.65199670359937   -8.36269e-06   1.71152e-05 DIIS
-   @ROHF iter   8:  -149.65199683539876   -1.31799e-07   2.91717e-06 DIIS
-   @ROHF iter   9:  -149.65199681028324    2.51155e-08   3.52335e-07 DIIS
+   @ROHF iter   5:  -149.65187157255204   -1.22346e-02   4.84799e-04 DIIS
+   @ROHF iter   6:  -149.65198834090884   -1.16768e-04   1.12106e-04 DIIS
+   @ROHF iter   7:  -149.65199670359951   -8.36269e-06   1.71152e-05 DIIS
+   @ROHF iter   8:  -149.65199683539862   -1.31799e-07   2.91717e-06 DIIS
+   @ROHF iter   9:  -149.65199681028344    2.51152e-08   3.52335e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @ROHF iter  10:  -149.65168894022727    3.07870e-04   6.55828e-04 DIIS
+   @ROHF iter  10:  -149.65168894022716    3.07870e-04   6.55828e-04 DIIS
   Energy and wave function converged.
 
 
@@ -8990,14 +8991,14 @@ k_type_: COSX
     NA   [     3,    0,    1,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
-  @ROHF Final Energy:  -149.65168894022727
+  @ROHF Final Energy:  -149.65168894022716
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9107678299204736
-    Two-Electron Energy =                  86.4705866325295460
-    Total Energy =                       -149.6516889402272739
+    One-Electron Energy =                -266.9107678299206441
+    Two-Electron Energy =                  86.4705866325298302
+    Total Energy =                       -149.6516889402271602
 
 Computation Completed
 
@@ -9021,28 +9022,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:00 2022
+*** tstop() called on ds6 at Mon May  8 09:19:04 2023
 Module time:
-	user time   =       2.96 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       2.76 seconds =       0.05 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      31.43 seconds =       0.52 minutes
-	system time =       0.33 seconds =       0.01 minutes
-	total time  =         33 seconds =       0.55 minutes
-    Triplet DirectDFJ+COSX ROHF energy....................................................PASSED
+	user time   =      30.54 seconds =       0.51 minutes
+	system time =       0.51 seconds =       0.01 minutes
+	total time  =         32 seconds =       0.53 minutes
+    Triplet DFDirJ+COSX ROHF energy.......................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:57:00 2022
+*** at Mon May  8 09:19:04 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -9079,7 +9080,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -9111,24 +9112,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -9259,28 +9259,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:02 2022
+*** tstop() called on ds6 at Mon May  8 09:19:06 2023
 Module time:
-	user time   =       1.86 seconds =       0.03 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       1.76 seconds =       0.03 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      33.31 seconds =       0.56 minutes
-	system time =       0.33 seconds =       0.01 minutes
-	total time  =         35 seconds =       0.58 minutes
-    Triplet DirectDFJ+LinK ROHF energy....................................................PASSED
+	user time   =      32.32 seconds =       0.54 minutes
+	system time =       0.52 seconds =       0.01 minutes
+	total time  =         34 seconds =       0.57 minutes
+    Triplet DFDirJ+LinK ROHF energy.......................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:57:02 2022
+*** at Mon May  8 09:19:06 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -9518,28 +9518,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:02 2022
+*** tstop() called on ds6 at Mon May  8 09:19:06 2023
 Module time:
-	user time   =       0.37 seconds =       0.01 minutes
+	user time   =       0.35 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      33.70 seconds =       0.56 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =         35 seconds =       0.58 minutes
+	user time   =      32.70 seconds =       0.55 minutes
+	system time =       0.54 seconds =       0.01 minutes
+	total time  =         34 seconds =       0.57 minutes
     Triplet PK CUHF energy................................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:57:02 2022
+*** at Mon May  8 09:19:06 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -9608,13 +9608,14 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   Starting with a DF guess...
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -9808,28 +9809,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:03 2022
+*** tstop() called on ds6 at Mon May  8 09:19:07 2023
 Module time:
-	user time   =       0.66 seconds =       0.01 minutes
+	user time   =       0.65 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      34.39 seconds =       0.57 minutes
-	system time =       0.36 seconds =       0.01 minutes
-	total time  =         36 seconds =       0.60 minutes
+	user time   =      33.39 seconds =       0.56 minutes
+	system time =       0.56 seconds =       0.01 minutes
+	total time  =         35 seconds =       0.58 minutes
     Triplet Direct CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:57:03 2022
+*** at Mon May  8 09:19:07 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -10049,28 +10050,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:03 2022
+*** tstop() called on ds6 at Mon May  8 09:19:07 2023
 Module time:
-	user time   =       0.29 seconds =       0.00 minutes
+	user time   =       0.32 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      34.71 seconds =       0.58 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =         36 seconds =       0.60 minutes
+	user time   =      33.74 seconds =       0.56 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =         35 seconds =       0.58 minutes
     Triplet Disk CUHF energy..............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:57:03 2022
+*** at Mon May  8 09:19:08 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -10139,7 +10140,7 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -10320,28 +10321,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:03 2022
+*** tstop() called on ds6 at Mon May  8 09:19:08 2023
 Module time:
 	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      34.92 seconds =       0.58 minutes
-	system time =       0.38 seconds =       0.01 minutes
+	user time   =      33.96 seconds =       0.57 minutes
+	system time =       0.59 seconds =       0.01 minutes
 	total time  =         36 seconds =       0.60 minutes
     Triplet DiskDF CUHF energy............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:57:03 2022
+*** at Mon May  8 09:19:08 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -10410,11 +10411,12 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. Using in-core AOs.
+  DFHelper Memory: AOs need 0.005 GiB; user supplied 0.366 GiB. 
+  Using in-core AOs.
 
   ==> MemDFJK: Density-Fitted J/K Matrices <==
 
@@ -10592,28 +10594,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:04 2022
+*** tstop() called on ds6 at Mon May  8 09:19:08 2023
 Module time:
 	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      35.13 seconds =       0.59 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =         37 seconds =       0.62 minutes
+	user time   =      34.16 seconds =       0.57 minutes
+	system time =       0.60 seconds =       0.01 minutes
+	total time  =         36 seconds =       0.60 minutes
     Triplet MemDF CUHF energy.............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:57:04 2022
+*** at Mon May  8 09:19:08 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -10650,7 +10652,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+COSX.
+  SCF Algorithm Type is DFDIRJ+COSX.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -10682,24 +10684,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+COSX 
-j_type_: DIRECTDFJ 
-k_type_: COSX 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              COSX
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:           CSAM
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -10746,17 +10747,17 @@ k_type_: COSX
 
    @CUHF iter   1:  -131.02266731942410   -1.31023e+02   3.53890e-01 ADIIS
    @CUHF iter   2:  -140.10621696114637   -9.08355e+00   1.85157e-01 ADIIS
-   @CUHF iter   3:  -149.07283195574368   -8.96661e+00   6.18535e-02 DIIS/ADIIS
-   @CUHF iter   4:  -149.63845093676028   -5.65619e-01   1.00842e-02 DIIS/ADIIS
+   @CUHF iter   3:  -149.07283195574365   -8.96661e+00   6.18535e-02 DIIS/ADIIS
+   @CUHF iter   4:  -149.63845093676022   -5.65619e-01   1.00842e-02 DIIS/ADIIS
    @CUHF iter   5:  -149.65151108189110   -1.30601e-02   1.51377e-03 DIIS/ADIIS
-   @CUHF iter   6:  -149.65197130478217   -4.60223e-04   2.18032e-04 DIIS/ADIIS
+   @CUHF iter   6:  -149.65197130478231   -4.60223e-04   2.18032e-04 DIIS/ADIIS
    @CUHF iter   7:  -149.65199790962754   -2.66048e-05   1.85204e-05 DIIS
-   @CUHF iter   8:  -149.65199703995134    8.69676e-07   2.10529e-06 DIIS
-   @CUHF iter   9:  -149.65199679272942    2.47222e-07   3.47492e-07 DIIS
+   @CUHF iter   8:  -149.65199703995128    8.69676e-07   2.10529e-06 DIIS
+   @CUHF iter   9:  -149.65199679272934    2.47222e-07   3.47492e-07 DIIS
   Energy and wave function converged with early screening.
   Performing final iteration with tighter screening.
 
-   @CUHF iter  10:  -149.65168894016250    3.07853e-04   9.18132e-04 DIIS/ADIIS
+   @CUHF iter  10:  -149.65168894016264    3.07853e-04   9.18132e-04 DIIS/ADIIS
   Energy and wave function converged.
 
 
@@ -10829,14 +10830,14 @@ k_type_: COSX
     NA   [     3,    0,    1,    1,    0,    2,    1,    1 ]
     NB   [     3,    0,    0,    0,    0,    2,    1,    1 ]
 
-  @CUHF Final Energy:  -149.65168894016250
+  @CUHF Final Energy:  -149.65168894016264
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             30.7884922571636537
-    One-Electron Energy =                -266.9107736954305210
-    Two-Electron Energy =                  86.4705924981043665
-    Total Energy =                       -149.6516889401625008
+    One-Electron Energy =                -266.9107736954304642
+    Two-Electron Energy =                  86.4705924981041676
+    Total Energy =                       -149.6516889401626429
 
 Computation Completed
 
@@ -10860,28 +10861,28 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:07 2022
+*** tstop() called on ds6 at Mon May  8 09:19:11 2023
 Module time:
-	user time   =       3.01 seconds =       0.05 minutes
+	user time   =       2.79 seconds =       0.05 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      38.16 seconds =       0.64 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =         40 seconds =       0.67 minutes
-    Triplet DirectDFJ+COSX CUHF energy....................................................PASSED
+	user time   =      36.98 seconds =       0.62 minutes
+	system time =       0.60 seconds =       0.01 minutes
+	total time  =         39 seconds =       0.65 minutes
+    Triplet DFDirJ+COSX CUHF energy.......................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Dec  8 15:57:07 2022
+*** at Mon May  8 09:19:11 2023
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-2 entry O          line   262 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -10918,7 +10919,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DIRECTDFJ+LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -10950,24 +10951,23 @@ Scratch directory: /scratch/dpoole34/
     Name: CC-PVTZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-2 entry O          line   229 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
-jk_type: DIRECTDFJ+LINK 
-j_type_: DIRECTDFJ 
-k_type_: LINK 
   ==> Integral Setup <==
 
   ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:           No
     Screening Type:        DENSITY
 
-  ==> DirectDFJ: Integral-Direct Density-Fitted J <==
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
 
     J Screening Cutoff:      1E-12
 
@@ -11125,18 +11125,18 @@ Properties computed using the SCF density matrix
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Dec  8 15:57:09 2022
+*** tstop() called on ds6 at Mon May  8 09:19:13 2023
 Module time:
-	user time   =       1.87 seconds =       0.03 minutes
+	user time   =       1.79 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      40.06 seconds =       0.67 minutes
-	system time =       0.40 seconds =       0.01 minutes
-	total time  =         42 seconds =       0.70 minutes
-    Triplet DirectDFJ+LinK CUHF energy....................................................PASSED
+	user time   =      38.80 seconds =       0.65 minutes
+	system time =       0.61 seconds =       0.01 minutes
+	total time  =         41 seconds =       0.68 minutes
+    Triplet DFDirJ+LinK CUHF energy.......................................................PASSED
 
-    Psi4 stopped on: Thursday, 08 December 2022 03:57PM
-    Psi4 wall time for execution: 0:00:41.59
+    Psi4 stopped on: Monday, 08 May 2023 09:19AM
+    Psi4 wall time for execution: 0:00:40.59
 
 *** Psi4 exiting successfully. Buy a developer a beer!
