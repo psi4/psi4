@@ -570,7 +570,7 @@ def test_pcmsolver(how, request):
 
     nucenergy   =  12.0367196636183458
     polenergy   =  -0.0053060443528559
-    totalenergy = -55.4559426361734040
+    totalenergy = -55.455942603983  # adjusted after PEDRA pruning in v1.2.3  -55.4559426361734040
 
     NH3 = psi4.geometry("""
     symmetry c1

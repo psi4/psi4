@@ -129,7 +129,7 @@ jobs:
           - psi4/label/dev::libecpint
           - psi4/label/dev::dkh
           - psi4/label/dev::gdma
-          - psi4/label/dev::pcmsolver
+          #- psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
             # runtime
         EOF
@@ -159,7 +159,7 @@ jobs:
           sed -i "s;- psi4/label/dev::libecpint;;g" build.yaml
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
-          sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
+          #sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;;g" build.yaml
         fi
         #
@@ -193,7 +193,7 @@ jobs:
           - psi4/label/dev::dkh
           - psi4/label/dev::libecpint
           - psi4/label/dev::gdma
-          - psi4/label/dev::pcmsolver
+          #- psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
             # qc opt'l
           #- psi4/label/dev::dftd3
@@ -374,8 +374,8 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_PCMSolver=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
+          -D ENABLE_PCMSolver=OFF \
+          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
           -D ENABLE_simint=ON \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
@@ -415,8 +415,8 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_PCMSolver=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
+          -D ENABLE_PCMSolver=OFF \
+          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
           -D ENABLE_simint=ON \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
