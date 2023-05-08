@@ -242,6 +242,7 @@ notes_holder = {
     ("cisd", None): (", ci\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
     ("zapt2", None): (", zapt\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", None),
     ("mp4", None): (", mp\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
+    ("ccsd(t)", "CCENERGY"): ("FN", "Analytic gradients for conventional all-electron RHF/UHF computations can be requested through |globals__qc_module|\ ``=ccenergy``, but their scaling is best suited to small molecules.", None),
 }
 
 

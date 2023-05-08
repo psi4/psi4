@@ -1001,14 +1001,14 @@ def select_ccsd_t__gradient(name, **kwargs):
     func = None
     if reference in ['RHF']:
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module in ['CCENERGY']:  # FORMERLY ""
                 func = run_ccenergy_gradient
         elif mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_gradient
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module in ['CCENERGY']:  # FORMERLY ""
                 func = run_ccenergy_gradient
         elif mtd_type == 'DF':
             if module in ['OCC']:  # SOON "",
