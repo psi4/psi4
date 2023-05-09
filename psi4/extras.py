@@ -148,10 +148,10 @@ _addons_ = {
     "cppe": which_import("cppe", return_bool=True),
     "ddx": which_import("pyddx", return_bool=True),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
-    "dftd3": psi4_which("dftd3", return_bool=True),
+    "dftd3": which_import("dftd3", return_bool=True),
     "cfour": psi4_which("xcfour", return_bool=True),
     "mrcc": psi4_which("dmrcc", return_bool=True),
-    "gcp": psi4_which("gcp", return_bool=True),
+    "gcp": psi4_which("mctc-gcp", return_bool=True),
     "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
     "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
     "forte": which_import("forte", return_bool=True),
@@ -179,7 +179,12 @@ def addons(request: str = None) -> Union[bool, List[str]]:
 
     """
     def strike(text):
-        return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
+        if os.name == "nt":
+            # Windows has a probably correctable problem with unicode, but I can't iterate it quickly, so use tilde for strike.
+            #   UnicodeEncodeError: 'charmap' codec can't encode character '\u0336' in position 3: character maps to <undefined>
+            return "~" + text + "~"
+        else:
+            return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
 
     if request is None:
         return [(k if v else strike(k)) for k, v in sorted(_addons_.items())]
