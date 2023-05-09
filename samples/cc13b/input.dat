@@ -16,6 +16,7 @@ set {
    r_convergence 13
    e_convergence 13
    d_convergence 13
+   qc_module ccenergy  # signals to use the analytic ccsd(t) gradients
 }
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)

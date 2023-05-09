@@ -63,7 +63,7 @@ E = energy('scf')
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX":
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -90,7 +90,7 @@ E = energy('scf')
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX":
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -117,7 +117,7 @@ E = energy('scf')
 
 for method in Eref["Singlet"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX":
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -152,7 +152,7 @@ E = energy('scf')
 
 for method in Eref["Triplet UHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX":
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -184,7 +184,7 @@ E = energy('scf')
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX":
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density
@@ -216,7 +216,7 @@ E = energy('scf')
 
 for method in Eref["Triplet ROHF"]["Composite"].keys():
     set scf_type $method 
-    if method == "DirectDFJ+COSX":
+    if method == "DFDirJ+COSX":
       set screening csam
     else:
       set screening density

@@ -1,5 +1,11 @@
 #! Computation of VMFC-corrected water trimer Hessian (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
 
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
 import numpy as np
 
 molecule water_trimer {
@@ -20,7 +26,14 @@ symmetry c1
 units bohr
 }
 
-h, wfn = psi4.hessian('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc', max_nbody=2,
+if distributed:
+    plan = psi4.hessian('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc', max_nbody=2,
+                                      return_total_data=True, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    h, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    h, wfn = psi4.hessian('SCF/STO-3G', molecule=water_trimer, bsse_type='vmfc', max_nbody=2,
                                       return_total_data=True, return_wfn=True)
 core.clean()
 
@@ -59,5 +72,8 @@ for key in vmfc_scheme: #TEST
         index.append(j*3*3+ind) #TEST
 
     hess[np.ix_(index, index)] += vmfc_scheme[key] * np.array(hessian_dict[key]) #TEST
- 
+
 compare_arrays(hess, wfn.variables()['HESSIAN 2'], 2.e-8, 'VMFC-Corrected Hessian') #TEST
+
+if distributed:
+    snowflake.stop()

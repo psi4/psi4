@@ -22,7 +22,7 @@ set {
   reference uhf
 }
 
-psi4_hess, wfn = hessian('scf', return_wfn=True)
+psi4_hess, wfn = hessian('hf', return_wfn=True)
 
 
 # Clean out scratch files and go again with cc-pVDZ

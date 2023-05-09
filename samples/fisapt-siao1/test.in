@@ -1,0 +1,87 @@
+#! This test case shows an example of running the
+#! I-SAPT0/jun-cc-pVDZ computation for 2,4-pentanediol (targeting the
+#! intramolecular hydrogen bond between the two hydroxyl groups)
+#! The SIAO1 link partitioning algorithm is used.
+#! An F-SAPT partitioning follows I-SAPT.
+
+memory 8 GB
+
+mol = psi4.core.Molecule.from_arrays(
+elez=[6, 6, 1, 1, 1, 8, 1, 1, 6, 6, 1, 1, 1, 8, 1, 1, 6, 1, 1],
+fragment_separators=[8, 16],
+fix_com=True,
+fix_orientation=True,
+fix_symmetry='c1',
+fragment_multiplicities=[2, 2, 1],
+molecular_charge=0,
+molecular_multiplicity=1,
+geom=[
+             2.51268 ,       -0.79503 ,       -0.22006 ,
+             1.23732 ,        0.03963 ,       -0.27676 ,
+             2.46159 ,       -1.62117 ,       -0.94759 ,
+             2.64341 ,       -1.21642 ,        0.78902 ,
+             3.39794 ,       -0.18468 ,       -0.46590 ,
+             1.26614 ,        1.11169 ,        0.70005 ,
+             2.10603 ,        1.58188 ,        0.59592 ,
+             1.13110 ,        0.48209 ,       -1.28412 ,
+
+            -1.26007 ,        0.07291 ,        0.27398 ,
+            -2.53390 ,       -0.75742 ,        0.20501 ,
+            -2.48461 ,       -1.59766 ,        0.91610 ,
+            -2.65872 ,       -1.16154 ,       -0.81233 ,
+            -3.41092 ,       -0.13922 ,        0.44665 ,
+            -1.38660 ,        1.11180 ,       -0.71748 ,
+            -1.17281 ,        0.53753 ,        1.27129 ,
+            -0.70002 ,        1.76332 ,       -0.50799 ,
+
+            -0.01090 ,       -0.78649 ,        0.02607 ,
+             0.17071 ,       -1.41225 ,        0.91863 ,
+            -0.19077 ,       -1.46135 ,       -0.82966 ])
+activate(mol)
+
+# => Standard Options <= #
+
+set {
+basis jun-cc-pVDZ
+scf_type disk_df
+guess sad
+freeze_core true
+fisapt_link_assignment SIAO1
+fisapt_link_ortho fragment
+}
+
+energy('fisapt0') 
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT0 TOTAL ENERGY")
+ 
+Eref = [ -0.00722141082,        #TEST
+          0.00862076608,        #TEST
+         -0.00610725662,        #TEST
+         -0.00474324859,        #TEST
+         -0.00945114995 ]       #TEST
+       
+compare_values(Eref[0], Eelst, 6, "SAPT0 Eelst")   #TEST
+compare_values(Eref[1], Eexch, 6, "SAPT0 Eexch")   #TEST
+compare_values(Eref[2], Eind, 6, "SAPT0 Eind")     #TEST
+compare_values(Eref[3], Edisp, 6, "SAPT0 Edisp")   #TEST
+compare_values(Eref[4], ET, 6, "SAPT0 Etotal")     #TEST
+
+import os                                                 
+import sys
+import subprocess
+
+os.chdir('fsapt')                                        
+with open('fA.dat', 'w') as fA:                         
+    fA.write("OH_A 6 7\n")                             
+    fA.write("Rest_A 1 2 3 4 5 8")                      
+with open('fB.dat', 'w') as fB:                        
+    fB.write("OH_B  14 16\n")            
+    fB.write("Rest_B  9 10 11 12 13 15")  
+with open('link_siao.dat', 'w') as fX:                         
+    fX.write("A 2\n")                             
+    fX.write("B 9")                      
+subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True) 

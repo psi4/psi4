@@ -1,5 +1,11 @@
 #! Multilevel computation of water trimer energy (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
 
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
 molecule h2o_trimer {
 O      -2.76373224  -1.24377706  -0.15444566 
 H      -1.12357791  -2.06227970  -0.05243799 
@@ -21,8 +27,15 @@ set df_basis_mp2 def2-qzvpp-ri  # not a recommendation. present to compensate fo
 
 # Compute 1-body contribution with ccsd(t) and 2-body contribution with mp2
 levels = {2: 'scf/sto-3g', 1: 'mp2/sto-3g'}
-e, wfn = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], return_total_data=True, return_wfn=True, levels=levels)
+if distributed:
+    plan = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('', molecule=h2o_trimer, bsse_type=['nocp', 'cp', 'vmfc'], return_total_data=True, return_wfn=True, levels=levels)
 clean()
+
 
 comparison_dict_grad = {
     "nocp": np.array([
@@ -61,22 +74,56 @@ for k, v in wfn.variables().items():
         print(k, v.np)
     else:
         print(k, v)
-g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['nocp'], return_total_data=True, return_wfn=True, levels=levels)
+
+if distributed:
+    plan = gradient('', molecule=h2o_trimer, bsse_type=['nocp'], return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['nocp'], return_total_data=True, return_wfn=True, levels=levels)
 clean()
-g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['cp','nocp'], return_total_data=True, return_wfn=True, levels=levels)
+
+if distributed:
+    plan = gradient('', molecule=h2o_trimer, bsse_type=['cp','nocp'], return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['cp','nocp'], return_total_data=True, return_wfn=True, levels=levels)
 clean()
-g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['vmfc'], return_total_data=True, return_wfn=True, levels=levels)
+
+if distributed:
+    plan = gradient('', molecule=h2o_trimer, bsse_type=['vmfc'], return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('', molecule=h2o_trimer, bsse_type=['vmfc'], return_total_data=True, return_wfn=True, levels=levels)
 clean()
 
 # Compute 1-body contribution with ccsd(t) and estimate all higher order contributions with scf
 levels = {1: 'mp2/sto-3g', 'supersystem': 'scf/sto-3g'}
-e, wfn = gradient('', molecule=h2o_trimer, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
+if distributed:
+    plan = gradient('', molecule=h2o_trimer, bsse_type='nocp', return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = gradient('', molecule=h2o_trimer, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
 clean()
 
 # Compute electrostatically embedded  many-body expansion energy.with TIP3P charges
 tip3p_charges = [-0.834, 0.417, 0.417]
 embedding_charges = {i: [j for j in tip3p_charges] for i in range(1, 4)}
-e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
+if distributed:
+    plan = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_plan=True,
+                max_nbody=2, embedding_charges=embedding_charges)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('scf/sto-3g', molecule=h2o_trimer, bsse_type='vmfc', return_total_data=True, return_wfn=True,
                 max_nbody=2, embedding_charges=embedding_charges)
 clean()
 
@@ -98,9 +145,25 @@ h2o_trimer_ang = psi4.core.Molecule.from_arrays(
     units="Angstrom")
 
 levels = {'supersystem': 'scf/sto-3g', 1: 'mp2/sto-3g'}
-e, wfn = energy('', molecule=h2o_trimer_ang, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
+if distributed:
+    plan = energy('', molecule=h2o_trimer_ang, bsse_type='nocp', return_total_data=True, return_plan=True, levels=levels)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('', molecule=h2o_trimer_ang, bsse_type='nocp', return_total_data=True, return_wfn=True, levels=levels)
 clean()
 
-e, wfn = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_wfn=True,
+if distributed:
+    plan = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_plan=True,
+                max_nbody=2, embedding_charges=embedding_charges)
+    plan.compute(client)
+    snowflake.await_results()
+    e, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    e, wfn = energy('scf/sto-3g', molecule=h2o_trimer_ang, bsse_type='vmfc', return_total_data=True, return_wfn=True,
                 max_nbody=2, embedding_charges=embedding_charges)
 clean()
+
+if distributed:
+    snowflake.stop()
