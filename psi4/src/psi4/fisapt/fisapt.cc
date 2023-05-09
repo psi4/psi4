@@ -2001,6 +2001,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> K_B = matrices_["K_B"];
     std::shared_ptr<Matrix> K_C = matrices_["K_C"];
 
+    std::string link_assignment = options_.get_str("FISAPT_LINK_ASSIGNMENT");
     double** Enuc2p = matrices_["E NUC"]->pointer();
 
     // => Dimer HF (Already done) <= //
@@ -2139,41 +2140,43 @@ void FISAPT::dHF() {
 
     double EHF = EABC - EAC - EBC + EC;
  
-    // => Now do analysis of dipole moment contributions <= //
-    
-    std::shared_ptr<Matrix> D_ABC(D_A->clone());
-    std::shared_ptr<Matrix> D_ABCA(D_A->clone());
-    std::shared_ptr<Matrix> D_ABCB(D_A->clone());
-    std::shared_ptr<Matrix> D_ABCLA(D_A->clone());
-    std::shared_ptr<Matrix> D_ABCLB(D_A->clone());
-    D_ABC = linalg::doublet(matrices_["Locc"], matrices_["Locc"], false, true);
-    D_ABCA = linalg::doublet(matrices_["LoccA"], matrices_["LoccA"], false, true);
-    D_ABCB = linalg::doublet(matrices_["LoccB"], matrices_["LoccB"], false, true);
-    D_ABCLA = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
-    D_ABCLB = linalg::doublet(matrices_["thislinkB"], matrices_["thislinkB"], false, true);
-    std::shared_ptr<Matrix> D0A = linalg::doublet(matrices_["Cocc0A"], matrices_["Cocc0A"], false, true);
-    std::shared_ptr<Matrix> D0B = linalg::doublet(matrices_["Cocc0B"], matrices_["Cocc0B"], false, true);
+    if (link_assignment == "SAO0" || link_assignment == "SAO1" || link_assignment == "SAO2" || link_assignment == "SIAO0" || link_assignment == "SIAO1" || link_assignment == "SIAO2") {
 
-    double dipabc_x = 2.0*D_ABC->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA"]->get(0) + vectors_["DIP NUCB"]->get(0) + vectors_["DIP NUCC"]->get(0);
-    double dipabc_y = 2.0*D_ABC->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA"]->get(1) + vectors_["DIP NUCB"]->get(1) + vectors_["DIP NUCC"]->get(1);
-    double dipabc_z = 2.0*D_ABC->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA"]->get(2) + vectors_["DIP NUCB"]->get(2) + vectors_["DIP NUCC"]->get(2);
-    outfile->Printf("\n HF dipole moment for ABC: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
-    dipabc_x = 2.0*D_ABCA->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA0"]->get(0);
-    dipabc_y = 2.0*D_ABCA->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA0"]->get(1);
-    dipabc_z = 2.0*D_ABCA->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA0"]->get(2);
-    outfile->Printf("\n HF dipole moment for A before link reassignment: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
-    dipabc_x = 2.0*D_ABCB->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCB0"]->get(0);
-    dipabc_y = 2.0*D_ABCB->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCB0"]->get(1);
-    dipabc_z = 2.0*D_ABCB->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCB0"]->get(2);
-    outfile->Printf("\n HF dipole moment for B before link reassignment: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
-    dipabc_x = 2.0*D0A->vector_dot(matrices_["X DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA"]->get(0);
-    dipabc_y = 2.0*D0A->vector_dot(matrices_["Y DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA"]->get(1);
-    dipabc_z = 2.0*D0A->vector_dot(matrices_["Z DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA"]->get(2);
-    outfile->Printf("\n HF dipole moment for A after link reassignment:  (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
-    dipabc_x = 2.0*D0B->vector_dot(matrices_["X DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCB"]->get(0);
-    dipabc_y = 2.0*D0B->vector_dot(matrices_["Y DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCB"]->get(1);
-    dipabc_z = 2.0*D0B->vector_dot(matrices_["Z DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCB"]->get(2);
-    outfile->Printf("\n HF dipole moment for B after link reassignment:  (%12.8f, %12.8f, %12.8f) length: %12.8f\n\n", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+        // => Now do analysis of dipole moment contributions <= //
+        std::shared_ptr<Matrix> D_ABC(D_A->clone());
+        std::shared_ptr<Matrix> D_ABCA(D_A->clone());
+        std::shared_ptr<Matrix> D_ABCB(D_A->clone());
+        std::shared_ptr<Matrix> D_ABCLA(D_A->clone());
+        std::shared_ptr<Matrix> D_ABCLB(D_A->clone());
+        D_ABC = linalg::doublet(matrices_["Locc"], matrices_["Locc"], false, true);
+        D_ABCA = linalg::doublet(matrices_["LoccA"], matrices_["LoccA"], false, true);
+        D_ABCB = linalg::doublet(matrices_["LoccB"], matrices_["LoccB"], false, true);
+        D_ABCLA = linalg::doublet(matrices_["thislinkA"], matrices_["thislinkA"], false, true);
+        D_ABCLB = linalg::doublet(matrices_["thislinkB"], matrices_["thislinkB"], false, true);
+        std::shared_ptr<Matrix> D0A = linalg::doublet(matrices_["Cocc0A"], matrices_["Cocc0A"], false, true);
+        std::shared_ptr<Matrix> D0B = linalg::doublet(matrices_["Cocc0B"], matrices_["Cocc0B"], false, true);
+
+        double dipabc_x = 2.0*D_ABC->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA"]->get(0) + vectors_["DIP NUCB"]->get(0) + vectors_["DIP NUCC"]->get(0);
+        double dipabc_y = 2.0*D_ABC->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA"]->get(1) + vectors_["DIP NUCB"]->get(1) + vectors_["DIP NUCC"]->get(1);
+        double dipabc_z = 2.0*D_ABC->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA"]->get(2) + vectors_["DIP NUCB"]->get(2) + vectors_["DIP NUCC"]->get(2);
+        outfile->Printf("\n HF dipole moment for ABC: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+        dipabc_x = 2.0*D_ABCA->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA0"]->get(0);
+        dipabc_y = 2.0*D_ABCA->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA0"]->get(1);
+        dipabc_z = 2.0*D_ABCA->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA0"]->get(2);
+        outfile->Printf("\n HF dipole moment for A before link reassignment: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+        dipabc_x = 2.0*D_ABCB->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCB0"]->get(0);
+        dipabc_y = 2.0*D_ABCB->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCB0"]->get(1);
+        dipabc_z = 2.0*D_ABCB->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCB0"]->get(2);
+        outfile->Printf("\n HF dipole moment for B before link reassignment: (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+        dipabc_x = 2.0*D0A->vector_dot(matrices_["X DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCA"]->get(0);
+        dipabc_y = 2.0*D0A->vector_dot(matrices_["Y DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCA"]->get(1);
+        dipabc_z = 2.0*D0A->vector_dot(matrices_["Z DIP"]) + 2.0*D_ABCLA->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCA"]->get(2);
+        outfile->Printf("\n HF dipole moment for A after link reassignment:  (%12.8f, %12.8f, %12.8f) length: %12.8f", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+        dipabc_x = 2.0*D0B->vector_dot(matrices_["X DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["X DIP"]) + vectors_["DIP NUCB"]->get(0);
+        dipabc_y = 2.0*D0B->vector_dot(matrices_["Y DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["Y DIP"]) + vectors_["DIP NUCB"]->get(1);
+        dipabc_z = 2.0*D0B->vector_dot(matrices_["Z DIP"]) + 2.0*D_ABCLB->vector_dot(matrices_["Z DIP"]) + vectors_["DIP NUCB"]->get(2);
+        outfile->Printf("\n HF dipole moment for B after link reassignment:  (%12.8f, %12.8f, %12.8f) length: %12.8f\n\n", dipabc_x, dipabc_y, dipabc_z, std::sqrt(dipabc_x*dipabc_x+dipabc_y*dipabc_y+dipabc_z*dipabc_z));
+    }
 
     // => Monomer and dimer energies in the original ABC full system <= //
 
