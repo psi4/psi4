@@ -5,7 +5,7 @@ import psi4
 
 from utils import compare_arrays
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 def test_fock_subset_mo():
     h2o = psi4.geometry("""
@@ -20,5 +20,5 @@ def test_fock_subset_mo():
     for h in wfn.epsilon_a().nph:
         F_diagonals.append(np.diag(h))
     F_expected = psi4.core.Matrix.from_array(F_diagonals)
-    assert psi4.compare_matrices(wfn.Fa_subset("MO"), F_expected, 8, "Alpha Fock Matrix")  # TEST
-    assert psi4.compare_matrices(wfn.Fb_subset("MO"), F_expected, 8, "Beta Fock Matrix")  # TEST
+    assert psi4.compare_matrices(F_expected, wfn.Fa_subset("MO"), 8, "Alpha Fock Matrix")
+    assert psi4.compare_matrices(F_expected, wfn.Fb_subset("MO"), 8, "Beta Fock Matrix")
