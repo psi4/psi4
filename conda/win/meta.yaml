@@ -20,7 +20,7 @@ requirements:
     - msgpack-python
     - optking
     - gau2grid
-    - libint2 2.6.0 h2e52968_4
+    - libint 2.7.3dev1
     - libxc
     - dftd3-python
     - gcp-correction

@@ -1744,7 +1744,7 @@ class CompositeComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('CBS QCSchema\n' + pp.pformat(cbs_model.dict()))
+        logger.debug('CBS QCSchema:\n' + pp.pformat(cbs_model.dict()))
 
         return cbs_model
 

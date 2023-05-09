@@ -67,7 +67,7 @@ _programs = {
     "ambit": psi4.addons("ambit"),
     "cct3": which_import("cct3", return_bool=True),
     "chemps2": psi4.addons("chemps2"),
-    "cppe": which_import("cppe", return_bool=True),  # package pycppe, import cppe
+    "cppe": which_import("cppe", return_bool=True),  # package psi4::pycppe or conda-forge::cppe, import cppe
     "ddx": which_import("pyddx", return_bool=True),
     "dkh": psi4.addons("dkh"),
     "ecpint": psi4.addons("ecpint"),

@@ -8,7 +8,7 @@ jobs:
     timeoutInMinutes: 360
     variables:
       llvm.version: '14.0.0'
-      mkl.version: '2019.1'
+      mkl.version: '2022.1.0'
       cmake.build_type: 'Release'
       conda.build: false
       ctest.type: 'smoke'
@@ -117,7 +117,7 @@ jobs:
           conda install cmake ^
                         anaconda-project ^
                         conda-build ^
-                        conda-forge::eigen ^
+                        eigen ^
                         boost-cpp ^
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
@@ -128,18 +128,18 @@ jobs:
                         ninja ^
                         numpy ^
                         pint ^
-                        pybind11=2.7.0 ^
+                        pybind11 ^
                         pytest>=7.0.1 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        psi4/label/dev::dftd3 ^
-                        psi4/label/dev::gcp ^
-                        conda-forge::gau2grid ^
-                        conda-forge::libxc ^
-                        psi4/label/testing::libint2=2.7.2 ^
-                        conda-forge::qcelemental ^
-                        conda-forge::qcengine=0.26.0 ^
-                        conda-forge::optking ^
+                        dftd3-python ^
+                        gcp-correction ^
+                        gau2grid ^
+                        libxc-c ^
+                        conda-forge/label/libint_dev::libint=2.7.3dev1 ^
+                        qcelemental ^
+                        qcengine ^
+                        optking ^
                         scipy
           conda install --only-deps anaconda-client
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
@@ -159,10 +159,11 @@ jobs:
       # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
       #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
+      #    set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
       - script: |
           cd
           git clone https://github.com/psi4/iomp5md.git
-          set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
+          set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
           echo '##vso[task.setvariable variable=LIB]%LIB%'
         displayName: "Install Intel OpenMP import library"
 
@@ -263,7 +264,7 @@ jobs:
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
           conda config --append channels conda-forge
-          conda config --append channels psi4/label/dev
+          conda config --append channels conda-forge/label/libint_dev
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
