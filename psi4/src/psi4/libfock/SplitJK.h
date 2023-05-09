@@ -46,7 +46,6 @@ class BasisSet;
 class Matrix;
 class TwoBodyAOInt;
 class Options;
-//class PSIO;
 class PsiOutStream;
 class DFTGrid;
 
@@ -71,27 +70,28 @@ class PSI_API SplitJK {
     /// Options object
     Options& options_;
 
-    /// SplitJK algorithm info
-    std::string algo_; 
-
     /// Primary basis set
     std::shared_ptr<BasisSet> primary_;
  
-    /// general options    
+    /// Print flag, defaults to 1
     int print_;
-    bool bench_;
+    /// Debug flag, defaults to 0
     int debug_;
+    /// Bench flag, defaults to 0
+    bool bench_;
+    /// Integral cutoff (defaults to 0.0)
     double cutoff_;
 
     // Perform Density matrix-based integral screening?
     bool density_screening_;
     /// Use severe screening techniques? Useful in early SCF iterations 
     bool early_screening_;
-    /// Left-right symmetric? Determined in each call of compute()
+    /// Left-right symmetric? 
     bool lr_symmetric_;
 
     /// Number of ERI shell quartets computed, i.e., not screened out
     size_t num_computed_shells_;
+
    public:
     // => Constructors < = //
     SplitJK(std::shared_ptr<BasisSet> primary, Options& options);
@@ -109,7 +109,7 @@ class PSI_API SplitJK {
    
     void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
     void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric_; } 
-    /// Bench flag (defaults to 0)
+    /// Bench accessors 
     void set_bench(int bench) { bench_ = bench; }
     int get_bench() const { return bench_; }
 

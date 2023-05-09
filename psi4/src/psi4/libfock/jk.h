@@ -1208,8 +1208,8 @@ class PSI_API MemDFJK : public JK {
  *
  * JK implementation framework enabling arbitrary mixing and matching
  * of separate J and K construction algorithms.
- * Current algorithms in place:
- * J: Direct DF-J
+ * Current algorithms in place (via SplitJK):
+ * J: DF-DirJ
  * K: COSX, LinK
  *
  */
@@ -1224,7 +1224,6 @@ class PSI_API CompositeJK : public JK {
     /// CompositeJK algorithm info
     std::shared_ptr<SplitJK> j_algo_;
     std::shared_ptr<SplitJK> k_algo_;
-    std::string k_type_;
 
     /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
     std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
@@ -1250,18 +1249,6 @@ class PSI_API CompositeJK : public JK {
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
   
-    // => Semi-Numerical Stuff, for COSX <= //
-
-    /// Small DFTGrid for initial SCF iterations
-    std::shared_ptr<DFTGrid> grid_init_;
-    /// Large DFTGrid for the final SCF iteration
-    std::shared_ptr<DFTGrid> grid_final_;
-    /// Overlap fitting metric for grid_initial_
-    SharedMatrix Q_init_;
-    /// Overlap fitting metric for grid_final_
-    SharedMatrix Q_final_;
- 
-    std::string name() override { return "CompositeJK"; }
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Methods <= //
@@ -1310,6 +1297,8 @@ class PSI_API CompositeJK : public JK {
     void clear_D_prev() { D_prev_.clear();}
 
     // => Knobs <= //
+    std::string name() override { return "CompositeJK"; }
+
     /**
     * Set to do K tasks
     * @param do_K do K matrices or not,

@@ -116,7 +116,7 @@ void CompositeJK::common_init() {
 
     // => Set up separate J algorithm <= //
 
-    // Direct DF-J
+    // DF-DirJ 
     if (j_type == "DFDIRJ") {
         // initialize SplitJK algo
         j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
@@ -145,7 +145,6 @@ void CompositeJK::common_init() {
     
     // COSX
     } else if (k_type == "COSX") {
-        // initialize SplitJK algo
         k_algo_ = std::make_shared<COSK>(primary_, options_);
 
         // set up other options
