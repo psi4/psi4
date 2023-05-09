@@ -1,0 +1,24 @@
+import pytest
+
+import numpy as np
+import psi4
+
+from utils import compare_arrays
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
+def test_export_ao_elec_dip_deriv():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+    """)
+
+    rhf_e, wfn = psi4.energy('SCF/cc-pVDZ', molecule=h2o, return_wfn=True)
+
+    F_diagonals = []
+    for h in wfn.epsilon_a().nph:
+        F_diagonals.append(np.diag(h))
+    F_expected = psi4.core.Matrix.from_array(F_diagonals)
+    assert psi4.compare_matrices(wfn.Fa_subset("MO"), F_expected, 8, "Alpha Fock Matrix")  # TEST
+    assert psi4.compare_matrices(wfn.Fb_subset("MO"), F_expected, 8, "Beta Fock Matrix")  # TEST
