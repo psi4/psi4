@@ -39,22 +39,16 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
-//#include "jk.h"
 
 namespace psi {
 class MinimalInterface;
 class BasisSet;
 class Matrix;
-class ERISieve;
 class TwoBodyAOInt;
 class Options;
-class PSIO;
-class DFHelper;
+//class PSIO;
+class PsiOutStream;
 class DFTGrid;
-
-namespace pk {
-class PKManager;
-}
 
 /**
  * Class SplitJK 
@@ -136,9 +130,9 @@ class PSI_API SplitJK {
     virtual std::string name() = 0; 
 };
 
-// ==> Start SplitJK Coulomb (J) Algorithms here <==
+// ==> Start SplitJK Coulomb (J) Algorithms here <== //
 
-/// Build the coulomb (J) matrix using Direct DF-J
+/// Build the coulomb (J) matrix using DF-DirJ
 /// Reference is https://doi.org/10.1039/B204199P
 class PSI_API DirectDFJ : public SplitJK {
     // => Density Fitting Stuff <= //
@@ -147,11 +141,6 @@ class PSI_API DirectDFJ : public SplitJK {
     std::shared_ptr<BasisSet> auxiliary_;
     /// Coulomb Metric
     SharedMatrix J_metric_;
-    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
-    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
-
-    /// Common initialization
-    void common_init();
 
    public:
     // => Constructors < = //
@@ -178,15 +167,18 @@ class PSI_API DirectDFJ : public SplitJK {
     */
     void print_header() const override;
 
+    /**
+    * Return number of ERI shell quartets computed during the SplitJK build process.
+    */
     size_t num_computed_shells() override; 
 
     /**
     * print name of method
     */ 
-    std::string name() override { return "DirectDFJ"; }
+    std::string name() override { return "DF-DirJ"; }
 };
 
-// ==> Start SplitJK Exchange (K) Algorithms here <==
+// ==> Start SplitJK Exchange (K) Algorithms here <== //
 
 /**
  * @author Andy Jiang, Georgia Tech, December 2021
@@ -227,6 +219,9 @@ class PSI_API LinK : public SplitJK {
     */
     void print_header() const override;
 
+    /**
+    * Return number of ERI shell quartets computed during the SplitJK build process.
+    */
     size_t num_computed_shells() override;
 
     /**
@@ -289,6 +284,9 @@ class PSI_API COSK : public SplitJK {
     */
     void print_header() const override;
 
+    /**
+    * Return number of ERI shell quartets computed during the SplitJK build process.
+    */
     size_t num_computed_shells() override;
 
     /**

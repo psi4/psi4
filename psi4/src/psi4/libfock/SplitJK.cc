@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -26,19 +26,14 @@
  * @END LICENSE
  */
 
-#include "psi4/libqt/qt.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/mintshelper.h"
-#include "jk.h"
 #include "SplitJK.h"
 
-#include <unordered_set>
-#include <vector>
-#include <map>
-#include <algorithm>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+#include "psi4/libqt/qt.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+//#include "psi4/libqt/qt.h"
+//#include "psi4/libmints/basisset.h"
+//#include "psi4/libmints/mintshelper.h"
 
 using namespace psi;
 
@@ -52,16 +47,16 @@ SplitJK::SplitJK(std::shared_ptr<BasisSet> primary, Options& options) : primary_
     cutoff_ = 1.0E-12;
     
     // change defaults based on options
-    if (options["PRINT"].has_changed()) bench_ = options.get_int("PRINT");
-    if (options["BENCH"].has_changed()) bench_ = options.get_int("BENCH");
-    if (options["DEBUG"].has_changed()) debug_ = options.get_int("DEBUG");
-    if (options["INTS_TOLERANCE"].has_changed()) cutoff_ = options.get_double("INTS_TOLERANCE");
+    if (options["PRINT"].has_changed()) bench_ = options_.get_int("PRINT");
+    if (options["BENCH"].has_changed()) bench_ = options_.get_int("BENCH");
+    if (options["DEBUG"].has_changed()) debug_ = options_.get_int("DEBUG");
+    if (options["INTS_TOLERANCE"].has_changed()) cutoff_ = options_.get_double("INTS_TOLERANCE");
 };
 
 SplitJK::~SplitJK() {};
 
 size_t SplitJK::num_computed_shells() {
-    outfile->Printf("WARNING: JK::num_computed_shells() was called, but benchmarking is disabled for the chosen JK algorithm.");
+    outfile->Printf("WARNING: SplitJK::num_computed_shells() was called, but benchmarking is disabled for the chosen SplitJK algorithm.");
     outfile->Printf(" Returning 0 as computed shells count.\n");
 
     return 0;
