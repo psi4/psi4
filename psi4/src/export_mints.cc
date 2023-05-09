@@ -1717,4 +1717,11 @@ void export_mints(py::module& m) {
         .def("shell_significant", &ERISieve::shell_significant);
 
     m.def("test_matrix_dpd_interface", &psi::test_matrix_dpd_interface);
+
+    m.def("_libint2_configuration", []() { return libint2::configuration_accessor(); },
+        "Returns string with codes detailing the integral classes, angular momenta, and ordering \
+        characteristics of the linked Libint2. Prefer the processed libint2_configuration function.");
+
+    m.def("_libint2_solid_harmonics_ordering", []() { return int(libint2::solid_harmonics_ordering()); },
+        "Libint2 SH setting");
 }

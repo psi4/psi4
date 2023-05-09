@@ -1,9 +1,5 @@
-if(DEFINED ENV{LGTM_SRC})
-    cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-else()
-    cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
-    cmake_policy(SET CMP0094 NEW)
-endif()
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_policy(SET CMP0094 NEW)
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -61,11 +57,7 @@ else()
 endif()
 
 #  <<  Pybind11 & Python  >>
-if(DEFINED ENV{LGTM_SRC})
-    find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
-else()
-    find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
-endif()
+find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 find_package(pybind11 2.6.2 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
 message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
@@ -155,18 +147,24 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
 endif()
 
-# CHOOSE! this one for `make export` libint2 library (bad caps)
-#find_package(libint2 2.6 CONFIG REQUIRED) # COMPONENTS ${MAX_AM_ERI})
-#get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
-
-# CHOOSE! this one for pure cmake libint2 library
-if(DEFINED ENV{LGTM_SRC})
-    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "eri_c4_d0_l${MAX_AM_ERI}")
-else()
-    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
-endif()
+find_package(
+  Libint2
+  2.7.2
+  CONFIG
+  REQUIRED
+  COMPONENTS
+    sss
+    CXX_ho
+    impure_sh
+    "eri_c4_d0_l${MAX_AM_ERI}" eri_c3_d0_l4 eri_c2_d0_l4 onebody_d0_l4
+     eri_c4_d1_l2              eri_c3_d1_l3 eri_c2_d1_l3 onebody_d1_l3
+                                                         onebody_d2_l3
+  OPTIONAL_COMPONENTS
+     eri_c4_d2_l2              eri_c3_d2_l3 eri_c2_d2_l3
+  )
 get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
-
+get_property(Libint2_VERSION_ver TARGET Libint2::int2 PROPERTY Libint2_VERSION)
+get_property(Libint2_MAX_AM_ERI TARGET Libint2::int2 PROPERTY Libint2_MAX_AM_ERI)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
 
@@ -206,7 +204,7 @@ else()
     message(STATUS "Disabled BrianQC")
 endif()
 
-find_package(Libxc 6.0.0 CONFIG COMPONENTS C)
+find_package(Libxc 6.0.0 CONFIG QUIET COMPONENTS C)
 if(NOT ${Libxc_FOUND})
     find_package(Libxc 5.1.2 CONFIG REQUIRED COMPONENTS C)
 endif()

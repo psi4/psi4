@@ -86,7 +86,7 @@ jobs:
         -n p4env \
         python=$PYTHON_VER \
         psi4/label/dev::gau2grid \
-        psi4/label/dev::libint2=*=h2fe1556_15 \
+        psi4/label/testing::libint2=2.7.2=h2fe1556_0 \
         psi4/label/dev::libxc=5 \
         psi4/label/dev::dftd3 \
         psi4/label/dev::gcp \
@@ -96,6 +96,7 @@ jobs:
         networkx \
         pytest>=7.0.1 \
         eigen \
+        boost-cpp \
         pytest-xdist \
         msgpack-python \
         conda-forge::qcelemental \

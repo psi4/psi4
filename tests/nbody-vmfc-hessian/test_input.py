@@ -1,7 +1,7 @@
 import pytest
 from addons import *
 
-@ctest_labeler("nbody;hessian")
+@ctest_labeler("nbody;hessian;d2ints")
 
 @pytest.mark.parametrize("distributed", [
     pytest.param(False, id="internal"),

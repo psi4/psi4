@@ -107,7 +107,7 @@ jobs:
           - blas=*=mkl
           - python=${{ matrix.cfg.python-version }}
             # build
-          #- boost-cpp
+          - boost-cpp
           - cmake
           - c-compiler
           - cxx-compiler
@@ -118,7 +118,7 @@ jobs:
           - pybind11
             # qc req'd
           - psi4/label/dev::gau2grid
-          - psi4/label/dev::libint2
+          - psi4/label/testing::libint2
           - psi4/label/dev::optking
           - psi4/label/dev::qcelemental
           - psi4/label/dev::qcengine
@@ -182,7 +182,7 @@ jobs:
           - memory_profiler
             # qc req'd
           - psi4/label/dev::gau2grid
-          - psi4/label/dev::libint2
+          - psi4/label/testing::libint2
           - psi4/label/dev::optking
           - psi4/label/dev::qcelemental
           - psi4/label/dev::qcengine
@@ -272,7 +272,7 @@ jobs:
           #- memory_profiler # tests fail
             # qc req'd
           - gau2grid
-          - psi4/label/dev::libint2
+          - psi4/label/testing::libint2
           - optking
           - qcelemental
           - qcengine
@@ -520,8 +520,9 @@ jobs:
     - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (W)"
       if: matrix.cfg.base-channel == 'conda-forge'
       working-directory: ./objdir
+      # "not d2ints" allows Windows accessing c-f L2 to pass
       # (1st entry PYTHONPATH) need to find the Psi4 module
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long and not d2ints" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest, base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge` (L, M)"
       if: matrix.cfg.base-channel != 'conda-forge'

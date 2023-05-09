@@ -118,6 +118,7 @@ jobs:
                         anaconda-project ^
                         conda-build ^
                         conda-forge::eigen ^
+                        boost-cpp ^
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
@@ -135,7 +136,7 @@ jobs:
                         psi4/label/dev::gcp ^
                         conda-forge::gau2grid ^
                         conda-forge::libxc ^
-                        psi4/label/dev::libint2=*=h2e52968_4 ^
+                        psi4/label/testing::libint2=2.7.2 ^
                         conda-forge::qcelemental ^
                         conda-forge::qcengine=0.26.0 ^
                         conda-forge::optking ^
@@ -243,6 +244,7 @@ jobs:
           if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
           ctest --build-config %CMAKE_BUILD_TYPE% ^
                 --label-regex !CTEST_TYPE! ^
+                --label-exclude d2ints ^
                 --output-on-failure ^
                 --parallel %NUMBER_OF_PROCESSORS% ^
                 --timeout 3000
@@ -253,7 +255,7 @@ jobs:
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          psi4 --test %PYTEST_TYPE% -n %NUMBER_OF_PROCESSORS%
+          psi4 --test %PYTEST_TYPE%_not_d2ints -n %NUMBER_OF_PROCESSORS%
         displayName: "Test Psi4 (pytest $(pytest.type))"
         workingDirectory: $(Build.BinariesDirectory)
 

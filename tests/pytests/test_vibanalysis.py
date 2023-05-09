@@ -987,7 +987,7 @@ def test_harmonic_analysis_vs_cfour(subject, request):
 
 @pytest.mark.parametrize(
     "dertype", [
-        2,
+        pytest.param(2, marks=pytest.mark.d2ints),
         pytest.param(1, marks=pytest.mark.findif),
         pytest.param(0, marks=[pytest.mark.findif, pytest.mark.long]),
     ], ids=['H_analytic', 'H_by_grad', 'H_by_ene'])
@@ -1268,6 +1268,7 @@ _cfour_ref['neqh2o'] = {
 
 
 @pytest.mark.findif
+@pytest.mark.d2ints
 def test_nonequilibrium_harmonic_analysis():
     w_right = 3448.7842  # value when rotations allowed to mix in at non-eq geom
     w_wrong = 3446.9559  # value when rotations not computed (findif) or rashly projected out (analysis)
