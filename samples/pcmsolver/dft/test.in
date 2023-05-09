@@ -3,7 +3,7 @@
 
 nucenergy   =  12.0367196636183458 # TEST
 polenergy   =  -0.0060921680888660 # TEST
-totalenergy = -56.55724707152022   # TEST
+totalenergy = -56.55724704841      # TEST  # adjusted after PEDRA pruning in v1.2.3  -56.55724707152022
 
 molecule NH3 {
 N     -0.0000000001    -0.1040380466      0.0000000000

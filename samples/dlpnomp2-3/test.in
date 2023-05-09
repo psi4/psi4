@@ -1,0 +1,55 @@
+#! comparison of DF-MP2 and DLPNO-MP2 with a cartesian basis set
+
+ref_scf                  =    -76.017451914              #TEST
+                              
+ref_dfmp2_corl           =     -0.191881076              #TEST
+ref_dfmp2_os_corl        =     -0.142443579              #TEST
+ref_dfmp2_ss_corl        =     -0.049437497              #TEST
+ref_dfmp2_tot            =    -76.209332990              #TEST
+                                               
+ref_dlpnomp2_corl        =     -0.191878431              #TEST
+ref_dlpnomp2_os_corl     =     -0.142441355              #TEST
+ref_dlpnomp2_ss_corl     =     -0.049437017              #TEST
+ref_dlpnomp2_tot         =    -76.209330345              #TEST
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis 6-31+G*
+set puream False
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+print('   Testing DF-MP2 ...')
+val = energy('mp2')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
+compare_values(ref_dfmp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')    #TEST
+compare_values(ref_dfmp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dfmp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')      #TEST
+compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                    #TEST
+compare_values(ref_dfmp2_tot, val, 7, 'mp2 return')                                        #TEST
+clean()
+
+print('   Testing DLPNO-MP2 ...')
+val = energy('dlpno-mp2')
+
+# The DLPNO-MP2 energy is close to the DF-MP2 energy, but not exactly the same
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')       #TEST
+compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')               #TEST
+compare_values(ref_dlpnomp2_os_corl, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, 'mp2 os-corl')    #TEST
+compare_values(ref_dlpnomp2_ss_corl, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 7, 'mp2 ss-corl')        #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')   #TEST
+compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                 #TEST
+compare_values(ref_dlpnomp2_tot, val, 7, 'mp2 return')                                     #TEST
+clean()

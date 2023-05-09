@@ -2,12 +2,12 @@
 
 nucenergy   =  12.0367196636183458 #TEST
 polenergy   =  -0.0053060443528559 #TEST
-totalenergy = -55.4559426361734040 #TEST
+totalenergy = -55.455942603983     #TEST  # adjusted after PEDRA pruning in v1.2.3  -55.4559426361734040
 
 df_polenergy   =  -0.0053052777747797 #TEST
-df_totalenergy = -55.4560830407201300 #TEST
+df_totalenergy = -55.456083008532     #TEST  # ditto v1.2.3  -55.4560830407201300
 cd_polenergy   =  -0.0053065685148796 #TEST
-cd_totalenergy = -55.4559161829875300 #TEST
+cd_totalenergy = -55.455916150789     #TEST  # ditto v1.2.3  -55.4559161829875300
 
 molecule NH3 {
 N     -0.0000000001    -0.1040380466      0.0000000000

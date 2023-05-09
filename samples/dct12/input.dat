@@ -1,0 +1,15 @@
+#! Spin-restricted DC-06 counterpart of dct1.
+
+
+molecule he2 {
+    He
+    He 1 3.2
+}
+
+set {
+    r_convergence 12
+    basis       6-31G**
+}
+
+set dct_functional dc-06
+energy('dct')

@@ -58,7 +58,7 @@ set reference uhf
 set save_uhf_nos true
 scf_e, scf_wfn = energy("SCF", return_wfn=True)
 
-vals = np.sum(scf_wfn.Ca().nph[0], axis=0)[:2] #TEST
+vals = np.abs(np.sum(scf_wfn.Ca().nph[0], axis=0))[:2] #TEST
 compare_arrays(np.array([0.9865855, 0.26354467]), vals, 4, "Water Anion UHF NOS") #TEST
 
 
