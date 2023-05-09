@@ -10,6 +10,7 @@ dependencies:
   - doxygen
   - cxx-compiler
     # core
+  - boost-cpp
   - eigen
   - networkx
   - pybind11
