@@ -230,7 +230,7 @@ jobs:
           - geometric
           - openfermion>=1.0
           - openfermionpsi4
-          - pyddx=0.3.0
+          - pyddx>=0.4
           - pymdi
           - qcengine
           - qcfractal
