@@ -1212,7 +1212,6 @@ class PSI_API MemDFJK : public JK {
  * J: Direct DF-J
  * K: COSX, LinK
  *
- * TODO: Implement SplitJK companion framework for truly arbitrary mixing and matching
  */
 class PSI_API CompositeJK : public JK {
    protected:

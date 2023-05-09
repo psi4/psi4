@@ -61,15 +61,14 @@ class PKManager;
  *
  * The base class defining the backend to CompositeJK. 
  * Each derived class for SplitJK contains one of the
- * subalgorithms that can be used within the SplitJK
+ * subalgorithms that can be used within the CompositeJK 
  * framework. 
  * 
  * Current algorithms in place:
- * J: Direct DF-J
+ * J: DF-DirJ 
  * K: COSX, LinK
  *
  */
-//class PSI_API SplitJK : public JK {
 class PSI_API SplitJK { 
    protected:
 
@@ -94,7 +93,7 @@ class PSI_API SplitJK {
     bool density_screening_;
     /// Use severe screening techniques? Useful in early SCF iterations 
     bool early_screening_;
-     /// Left-right symmetric? Determined in each call of compute()
+    /// Left-right symmetric? Determined in each call of compute()
     bool lr_symmetric_;
 
     /// Number of ERI shell quartets computed, i.e., not screened out
@@ -194,11 +193,6 @@ class PSI_API DirectDFJ : public SplitJK {
  * 
  * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
  * doi: 10.1063/1.476741
- * 
- * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
- * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
- * @param K The list of AO K matrices to build (Same size as D)
- * 
  */
 class PSI_API LinK : public SplitJK {
     // => LinK variables <= //
@@ -228,7 +222,7 @@ class PSI_API LinK : public SplitJK {
     // => Knobs <= //
 
     /**
-    * Print header information regarding JK
+    * Print header information regarding SplitJK
     * type on output file
     */
     void print_header() const override;
@@ -241,6 +235,11 @@ class PSI_API LinK : public SplitJK {
     std::string name() override { return "LinK"; }
 };
 
+/**
+ * @brief constructs the K matrix using the Chain-of-Spheres Exchange (COSX) 
+ * algorithm, described in [Neese:2009:98]_
+ * doi: 10.1016/j.chemphys.2008.10.036 
+ */
 class PSI_API COSK : public SplitJK {
     // => Semi-Numerical Stuff <= //
 
@@ -259,7 +258,7 @@ class PSI_API COSK : public SplitJK {
     double dscreen_; 
     // basis cutoff
     double basis_tol_; 
-    /// use overlap-fitted COSX algo?
+    /// use overlap-fitted COSX algo? 
     bool overlap_fitted_; 
    
    public:
@@ -277,8 +276,8 @@ class PSI_API COSK : public SplitJK {
     ~COSK() override;
 
     /// Build the exchange (K) matrix using COSX
-    // primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036 
-    // overlap fitting is discussed in https://doi.org/10.1063/1.3646921
+    /// primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036 
+    /// overlap fitting is discussed in https://doi.org/10.1063/1.3646921
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp,
          std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
