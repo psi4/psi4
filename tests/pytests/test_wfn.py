@@ -7,7 +7,7 @@ from utils import compare_arrays
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
-def test_export_ao_elec_dip_deriv():
+def test_fock_subset_mo():
     h2o = psi4.geometry("""
         O
         H 1 1.0
