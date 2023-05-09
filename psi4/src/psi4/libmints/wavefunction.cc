@@ -945,7 +945,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
 }
 
 SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, const std::string &basis,
-                                                const std::string matrix_basename) const {
+                                                const std::string matrix_basename, bool MO_as_overlap) const {
     if (basis == "AO") {
         auto temp = std::vector<double>(AO2SO_->max_ncol() * AO2SO_->max_nrow());
         std::string m2_name = matrix_basename + " (AO basis)";
@@ -998,30 +998,37 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, 
         return M2;
     } else if (basis == "MO") {
         std::string m2_name = matrix_basename + " (MO basis)";
-        auto M2 = std::make_shared<Matrix>(m2_name, C->colspi(), C->colspi());
+        SharedMatrix M2;
+        if (MO_as_overlap) {
+            M2 = std::make_shared<Matrix>(m2_name, C->colspi(), C->colspi());
 
-        int symm = M->symmetry();
-        int nirrep = M->nirrep();
+            int symm = M->symmetry();
+            int nirrep = M->nirrep();
 
-        auto SC = std::vector<double>(C->max_ncol() * C->max_nrow());
-        auto temp = std::vector<double>(C->max_ncol() * C->max_nrow());
-        for (int h = 0; h < nirrep; h++) {
-            int nmol = C->colspi()[h];
-            int nmor = C->colspi()[h ^ symm];
-            int nsol = C->rowspi()[h];
-            int nsor = C->rowspi()[h ^ symm];
-            if (!nmol || !nmor || !nsol || !nsor) continue;
-            double **Slp = S_->pointer(h);
-            double **Srp = S_->pointer(h ^ symm);
-            double **Clp = C->pointer(h);
-            double **Crp = C->pointer(h ^ symm);
-            double **Mmop = M2->pointer(h);
-            double **Msop = M->pointer(h);
+            auto SC = std::vector<double>(C->max_ncol() * C->max_nrow());
+            auto temp = std::vector<double>(C->max_ncol() * C->max_nrow());
+            for (int h = 0; h < nirrep; h++) {
+                int nmol = C->colspi()[h];
+                int nmor = C->colspi()[h ^ symm];
+                int nsol = C->rowspi()[h];
+                int nsor = C->rowspi()[h ^ symm];
+                if (!nmol || !nmor || !nsol || !nsor) continue;
+                double **Slp = S_->pointer(h);
+                double **Srp = S_->pointer(h ^ symm);
+                double **Clp = C->pointer(h);
+                double **Crp = C->pointer(h ^ symm);
+                double **Mmop = M2->pointer(h);
+                double **Msop = M->pointer(h);
 
-            C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC.data(), nmor);
-            C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Msop[0], nsor, SC.data(), nmor, 0.0, temp.data(), nmor);
-            C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC.data(), nmol);
-            C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC.data(), nmol, temp.data(), nmor, 0.0, Mmop[0], nmor);
+                C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC.data(), nmor);
+                C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Msop[0], nsor, SC.data(), nmor, 0.0, temp.data(), nmor);
+                C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC.data(), nmol);
+                C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC.data(), nmol, temp.data(), nmor, 0.0, Mmop[0], nmor);
+            }
+        } else {
+            M2 = M->clone();
+            M2->transform(C);
+            M2->set_name(m2_name);
         }
         return M2;
     } else {
@@ -1188,11 +1195,11 @@ SharedMatrix Wavefunction::Db_subset(const std::string &basis) const {
 }
 
 SharedMatrix Wavefunction::Fa_subset(const std::string &basis) const {
-    return matrix_subset_helper(Fa_, Ca_, basis, "Fock");
+    return matrix_subset_helper(Fa_, Ca_, basis, "Fock", false);
 }
 
 SharedMatrix Wavefunction::Fb_subset(const std::string &basis) const {
-    return matrix_subset_helper(Fb_, Cb_, basis, "Fock");
+    return matrix_subset_helper(Fb_, Cb_, basis, "Fock", false);
 }
 
 SharedVector Wavefunction::epsilon_a_subset(const std::string &basis, const std::string &subset) const {
