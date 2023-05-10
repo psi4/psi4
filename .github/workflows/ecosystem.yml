@@ -228,12 +228,12 @@ jobs:
           sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" run.yaml  # >=0.50b10
-          sed -i "s;- qcportal;- postgresql;g" run.yaml
           # nyi
           sed -i "s;- adcc;;g" run.yaml
           sed -i "s;- pyddx;;g" run.yaml
           sed -i "s;- cppe;;g" run.yaml
+          sed -i "s;- qcfractal;;g" run.yaml
+          sed -i "s;- qcportal;;g" run.yaml
           # prob openfermion
           #- memory_profiler # tests fail
         fi
@@ -417,9 +417,9 @@ jobs:
     - name: Patch QCFractal for Python
       if: runner.os == 'macOS'
       run: |
-        cat  /usr/local/miniconda/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /usr/local/miniconda/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        cat  /usr/local/miniconda/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
     - name: Test OpenMP
       working-directory: ./install/lib
@@ -442,7 +442,7 @@ jobs:
       if: matrix.cfg.base-channel == 'conda-forge'
       working-directory: ./objdir
       # (1st entry PYTHONPATH) need to find the Psi4 module
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "{{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
       #run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long and not d2ints" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest, base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge` (L, M)"
