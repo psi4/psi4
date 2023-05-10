@@ -1455,7 +1455,7 @@ class FiniteDifferenceComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model))
+        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model.dict()))
 
         return findif_model
 

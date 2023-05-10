@@ -1415,6 +1415,8 @@ class ManyBodyComputer(BaseComputer):
                 'success': True,
             })
 
+        logger.debug('\nNBODY QCSchema:\n' + pp.pformat(nbody_model.dict()))
+
         return nbody_model
 
     def get_psi_results(
