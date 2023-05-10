@@ -220,20 +220,20 @@ jobs:
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" build.yaml  # >=0.50b10
-          sed -i "s;- qcportal;- postgresql;g" build.yaml
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" run.yaml  # >=0.50b10
+          sed -i "s;- qcportal;- postgresql;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" build.yaml
-          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" build.yaml
+          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" run.yaml
+          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" build.yaml  # >=0.50b10
-          sed -i "s;- qcportal;- postgresql;g" build.yaml
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" run.yaml  # >=0.50b10
+          sed -i "s;- qcportal;- postgresql;g" run.yaml
           # nyi
-          sed -i "s;- adcc;;g" build.yaml
-          sed -i "s;- pyddx;;g" build.yaml
-          sed -i "s;- cppe;;g" build.yaml
+          sed -i "s;- adcc;;g" run.yaml
+          sed -i "s;- pyddx;;g" run.yaml
+          sed -i "s;- cppe;;g" run.yaml
           # prob openfermion
           #- memory_profiler # tests fail
         fi
@@ -417,9 +417,9 @@ jobs:
     - name: Patch QCFractal for Python
       if: runner.os == 'macOS'
       run: |
-        cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        cat  /usr/local/miniconda/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /usr/local/miniconda/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        cat  /usr/local/miniconda/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
     - name: Test OpenMP
       working-directory: ./install/lib
