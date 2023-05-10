@@ -411,8 +411,9 @@ jobs:
         mamba list -n baseenv
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda list -n auxenv
-        qcengine info
-        #fi
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
+          qcengine info
+        fi
 
     - name: Patch QCFractal for Python
       if: runner.os == 'macOS'
@@ -445,26 +446,25 @@ jobs:
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
       #run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long and not d2ints" stage/lib/psi4/tests/
 
-    - name: "Test Addons with Pytest, base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge` (L, M)"
-      if: false
-      #if: matrix.cfg.base-channel != 'conda-forge'
-      working-directory: ./objdir
-      run: |
-        conda activate --stack auxenv
-        printenv | grep CONDA_PREFIX
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-            # (1st entry) need to find the Psi4 module
-            # (2nd entry) Linux needs the baseenv (CONDA_PREFIX_1) to avoid dual OpenMP init since defaults mkl are intel/iomp5 and c-f mkl is llvm/omp
-            # (3rd entry) need to find the new addon modules in the auxenv (CONDA_PREFIX; stack activation only merges bin/)
-            export PYTHONPATH=stage/lib/:$CONDA_PREFIX_1/lib/python${{ matrix.cfg.python-version }}/site-packages:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
-        fi
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-            # (1st entry) need to find the Psi4 module
-            # (2nd entry) need to find the new addon modules in the auxenv (CONDA_PREFIX; stack activation only merges bin/)
-            export PYTHONPATH=stage/lib/:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
-        fi
-        echo $PYTHONPATH
-        pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
+    #- name: "Test Addons with Pytest, base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge` (L, M)"
+    #  if: matrix.cfg.base-channel != 'conda-forge'
+    #  working-directory: ./objdir
+    #  run: |
+    #    conda activate --stack auxenv
+    #    printenv | grep CONDA_PREFIX
+    #    if [[ "${{ runner.os }}" == "Linux" ]]; then
+    #        # (1st entry) need to find the Psi4 module
+    #        # (2nd entry) Linux needs the baseenv (CONDA_PREFIX_1) to avoid dual OpenMP init since defaults mkl are intel/iomp5 and c-f mkl is llvm/omp
+    #        # (3rd entry) need to find the new addon modules in the auxenv (CONDA_PREFIX; stack activation only merges bin/)
+    #        export PYTHONPATH=stage/lib/:$CONDA_PREFIX_1/lib/python${{ matrix.cfg.python-version }}/site-packages:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
+    #    fi
+    #    if [[ "${{ runner.os }}" == "macOS" ]]; then
+    #        # (1st entry) need to find the Psi4 module
+    #        # (2nd entry) need to find the new addon modules in the auxenv (CONDA_PREFIX; stack activation only merges bin/)
+    #        export PYTHONPATH=stage/lib/:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
+    #    fi
+    #    echo $PYTHONPATH
+    #    pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
       run: |
