@@ -220,20 +220,20 @@ jobs:
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" aux.yaml  # >=0.50b10
-          sed -i "s;- qcportal;- postgresql;g" aux.yaml
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" build.yaml  # >=0.50b10
+          sed -i "s;- qcportal;- postgresql;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" aux.yaml
-          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" aux.yaml
+          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" build.yaml
+          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" aux.yaml  # >=0.50b10
-          sed -i "s;- qcportal;- postgresql;g" aux.yaml
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" build.yaml  # >=0.50b10
+          sed -i "s;- qcportal;- postgresql;g" build.yaml
           # nyi
-          sed -i "s;- adcc;;g" aux.yaml
-          sed -i "s;- pyddx;;g" aux.yaml
-          sed -i "s;- cppe;;g" aux.yaml
+          sed -i "s;- adcc;;g" build.yaml
+          sed -i "s;- pyddx;;g" build.yaml
+          sed -i "s;- cppe;;g" build.yaml
           # prob openfermion
           #- memory_profiler # tests fail
         fi
@@ -257,8 +257,8 @@ jobs:
 
     - name: Buildtime Conda environment
       run: |
-        conda info
-        conda list
+        mamba info
+        mamba list
 
     #- name: Switch to Mamba solver (L, M)
     #  if: matrix.cfg.base-channel != 'conda-forge'
@@ -399,27 +399,27 @@ jobs:
     - name: Runtime Conda environment(s)
       run: |
         echo "::group::Prepare Environment"
-        conda deactivate
-        conda remove -n baseenv --all
-        conda env create --file run.yaml
+        mamba deactivate
+        mamba remove -n baseenv --all
+        mamba env create --file run.yaml
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda env create --file aux.yaml
         #fi
-        conda activate baseenv
+        mamba activate baseenv
         echo "::endgroup::"
-        conda info
-        conda list -n baseenv
+        mamba info
+        mamba list -n baseenv
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda list -n auxenv
         qcengine info
         #fi
 
-    #- name: Patch QCFractal for Python
-    #  if: runner.os == 'macOS'
-    #  run: |
-    #    cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-    #    sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-    #    cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+    - name: Patch QCFractal for Python
+      if: runner.os == 'macOS'
+      run: |
+        cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
     - name: Test OpenMP
       working-directory: ./install/lib
@@ -469,7 +469,7 @@ jobs:
     - name: Write user Conda environment files
       run: |
         echo "::group::Prepare Environment"
-        conda install ruamel_yaml -c ${{ matrix.cfg.base-channel }}
+        mamba install ruamel_yaml -c ${{ matrix.cfg.base-channel }}
         echo "::endgroup::"
         cat > userenvs.py <<EOF
         from pathlib import Path
