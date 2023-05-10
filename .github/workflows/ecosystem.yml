@@ -399,13 +399,13 @@ jobs:
     - name: Runtime Conda environment(s)
       run: |
         echo "::group::Prepare Environment"
-        mamba deactivate
+        conda deactivate
         mamba remove -n baseenv --all
         mamba env create --file run.yaml
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda env create --file aux.yaml
         #fi
-        mamba activate baseenv
+        conda activate baseenv
         echo "::endgroup::"
         mamba info
         mamba list -n baseenv
