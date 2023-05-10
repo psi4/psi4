@@ -20,7 +20,7 @@ jobs:
 
           - runs-on: ubuntu-latest
             python-version: "3.10"
-            mkl-version: "2023.1"
+            mkl-version: ""
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long"
             cmargs: >
@@ -29,7 +29,7 @@ jobs:
 
           - runs-on: macos-latest
             python-version: "3.9"
-            mkl-version: "2023.1"
+            mkl-version: ""
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long"
             target-sdk: "10.10"
@@ -43,7 +43,7 @@ jobs:
 
           - runs-on: windows-latest
             python-version: "3.9"
-            mkl-version: "2022.1"
+            mkl-version: "=2022.1"
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long and not d2ints"
             cmargs: >
@@ -120,7 +120,7 @@ jobs:
           - eigen
           - fortran-compiler
           - llvm-openmp
-          - mkl-devel=${{ matrix.cfg.mkl-version }}
+          - mkl-devel${{ matrix.cfg.mkl-version }}
           - ninja
           - numpy
           - pybind11
@@ -164,7 +164,7 @@ jobs:
         dependencies:
             # non-qc req'd
           - libblas=*=*mkl
-          - mkl=${{ matrix.cfg.mkl-version }}
+          - mkl${{ matrix.cfg.mkl-version }}
           - msgpack-python
           - networkx
           - numpy
