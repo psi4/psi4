@@ -234,8 +234,9 @@ jobs:
           sed -i "s;- cppe;;g" run.yaml
           sed -i "s;- qcfractal;;g" run.yaml
           sed -i "s;- qcportal;;g" run.yaml
-          # prob openfermion
-          #- memory_profiler # tests fail
+          sed -i "s;- openfermion>=1.0;;g" run.yaml
+          sed -i "s;- openfermionpsi4;;g" run.yaml
+          sed -i "s;- memory_profiler;;g" run.yaml
         fi
         printf "\n<<<  build.yaml  >>>\n"
         cat build.yaml

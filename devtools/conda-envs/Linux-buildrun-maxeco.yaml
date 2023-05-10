@@ -1,48 +1,64 @@
 name: baseenv
 channels:
-  - defaults
+  - conda-forge
+  - nodefaults
 dependencies:
-  - blas=*=mkl
+  - libblas=*=*mkl
   - python=3.10
     # build
-  #- boost-cpp
+  - boost-cpp
   - cmake
-  - gcc_linux-64
-  - gxx_linux-64
+  - c-compiler
+  - cxx-compiler
   - eigen
-  - gfortran_linux-64
-  - mkl-devel=2021.4
+  - fortran-compiler
+  - llvm-openmp
+  - mkl-devel
   - ninja
+  - numpy
   - pybind11
     # qc req'd
-  - psi4/label/dev::gau2grid
-  - psi4/label/dev::libint2
-  - psi4/label/dev::optking
-  - psi4/label/dev::qcelemental
-  - psi4/label/dev::qcengine
-  - psi4/label/dev::libxc
+  - gau2grid
+  - conda-forge/label/libint_dev::libint=2.7.3dev1
+  - optking
+  - qcelemental
+  - qcengine
+  - libxc-c
     # qc opt'l
-  - psi4/label/dev::ambit
-  - psi4/label/dev::chemps2
-  - psi4/label/dev::libecpint
-  - psi4/label/dev::dkh
-  - psi4/label/dev::gdma
-  - psi4/label/dev::pcmsolver
-  - psi4/label/dev::simint
+  # - psi4/label/dev::ambit
+  # - psi4/label/dev::chemps2
+  # - psi4/label/dev::libecpint
+  - dkh
+  # - psi4/label/dev::gdma
+  # - psi4/label/dev::pcmsolver
+  # - psi4/label/dev::simint
     # runtime
+  - mkl
   - msgpack-python
   - networkx
-  - numpy
   - scipy
+  - toml
   - memory_profiler
-  - psi4/label/dev::pylibefp
-  - psi4/label/dev::fockci
-  - psi4/label/dev::mp2d
-  - psi4/label/dev::resp
-  - psi4/label/dev::snsmp2
+  - adcc
+  - basis_set_exchange
+  - cppe
+  - dftd3-python
+  - dftd4-python
+  - pylibefp
+  - gcp-correction
+  - geometric
+  - openfermion>=1.0
+  - openfermionpsi4
+  - pyddx
+  - pymdi
+  - qcarchive/label/next::qcfractal
+  - postgresql
+  - tomli
   - pytest
   - pytest-xdist
-  - tomli
   - pip
   - pip:
       - git+https://github.com/i-pi/i-pi.git@master-py3
+
+# toml needed for psi4 to load parameters from dftd4-python
+# one of mkl= or mkl-devel= needed to avoid DLL runtime error
