@@ -116,7 +116,7 @@ void CompositeJK::common_init() {
 
     // => Set up separate J algorithm <= //
 
-    // DF-DirJ 
+    // DF-DirJ
     if (j_type == "DFDIRJ") {
         // initialize SplitJK algo
         j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
@@ -138,11 +138,11 @@ void CompositeJK::common_init() {
     }
 
     // => Set up separate K algorithm <= //
-    
+
     // LinK
     if (k_type == "LINK") {
         k_algo_ = std::make_shared<LinK>(primary_, options_);
-    
+
     // COSX
     } else if (k_type == "COSX") {
         k_algo_ = std::make_shared<COSK>(primary_, options_);
@@ -204,7 +204,7 @@ void CompositeJK::print_header() const {
             j_algo_->print_header();
         }
         if (do_K_) {
-            k_algo_->print_header(); 
+            k_algo_->print_header();
         }
         outfile->Printf("\n");
     }
@@ -247,10 +247,10 @@ void CompositeJK::compute_JK() {
     // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
     if (do_wK_) throw PSIEXCEPTION("CompositeJK algorithms do not support wK integrals yet!");
 
-    // set compute()-specific parameters 
+    // set compute()-specific parameters
     j_algo_->set_early_screening(early_screening_);
     k_algo_->set_early_screening(early_screening_);
-    
+
     j_algo_->set_lr_symmetric(lr_symmetric_);
     k_algo_->set_lr_symmetric(lr_symmetric_);
 
@@ -288,7 +288,7 @@ void CompositeJK::compute_JK() {
         timer_on("CompositeJK: J");
 
         j_algo_->build_G_component(D_ref_, J_ao_, eri_computers_["3-Center"]);
-        
+
         if (get_bench()) {
             computed_shells_per_iter_["Triplets"].push_back(j_algo_->num_computed_shells());
         }
