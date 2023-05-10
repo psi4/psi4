@@ -87,6 +87,7 @@ def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
     assert abs(delta - delta_ref) < tol
 
 
+@pytest.mark.smoke
 @pytest.mark.quick
 @uusing("ddx")
 @pytest.mark.parametrize("inp", [

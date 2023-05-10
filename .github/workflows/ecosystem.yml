@@ -14,22 +14,24 @@ jobs:
 
   ecosystem:
     strategy:
-      fail-fast: true
+      fail-fast: false #true
       matrix:
         cfg:
 
           - runs-on: ubuntu-latest
             python-version: "3.10"
-            mkl-version: "2021.4"
-            base-channel: "defaults"
+            mkl-version: "2023.1"
+            base-channel: "conda-forge"
+            pytest-marker-expr: "addon and not long"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
             python-version: "3.9"
-            mkl-version: "2021.4"
-            base-channel: "defaults"
+            mkl-version: "2023.1"
+            base-channel: "conda-forge"
+            pytest-marker-expr: "addon and not long"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -41,15 +43,18 @@ jobs:
 
           - runs-on: windows-latest
             python-version: "3.9"
-            mkl-version: "2021.4"
+            mkl-version: "2022.1"
             base-channel: "conda-forge"
+            pytest-marker-expr: "addon and not long and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=OFF
               -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
               -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
+              -D psi4_SKIP_ENABLE_Fortran=ON
             # Notes:
             # * See mkl-version notes at end
+            # * "not d2ints" allows Windows accessing c-f L2 to pass
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -103,8 +108,9 @@ jobs:
         name: baseenv
         channels:
           - ${{ matrix.cfg.base-channel }}
+          - nodefaults
         dependencies:
-          - blas=*=mkl
+          - libblas=*=*mkl
           - python=${{ matrix.cfg.python-version }}
             # build
           - boost-cpp
@@ -113,154 +119,51 @@ jobs:
           - cxx-compiler
           - eigen
           - fortran-compiler
+          - llvm-openmp
           - mkl-devel=${{ matrix.cfg.mkl-version }}
           - ninja
+          - numpy
           - pybind11
             # qc req'd
-          - psi4/label/dev::gau2grid
-          - psi4/label/testing::libint2
-          - psi4/label/dev::optking
-          - psi4/label/dev::qcelemental
-          - psi4/label/dev::qcengine
-          - psi4/label/dev::libxc
+          - gau2grid
+          - conda-forge/label/libint_dev::libint=2.7.3dev1
+          - optking
+          - qcelemental
+          - qcengine
+          - libxc-c
             # qc opt'l
-          - psi4/label/dev::ambit
-          - psi4/label/dev::chemps2
-          - psi4/label/dev::libecpint
-          - psi4/label/dev::dkh
-          - psi4/label/dev::gdma
-          #- psi4/label/dev::pcmsolver
-          - psi4/label/dev::simint
+          # - psi4/label/dev::ambit
+          # - psi4/label/dev::chemps2
+          # - psi4/label/dev::libecpint
+          - dkh
+          # - psi4/label/dev::gdma
+          # - psi4/label/dev::pcmsolver
+          # - psi4/label/dev::simint
             # runtime
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          # <lang>-compiler is a metapackage on c-f but not on defaults
-          sed -i "s;- c-compiler;- gcc_linux-64;g" build.yaml
-          sed -i "s;- cxx-compiler;- gxx_linux-64;g" build.yaml
-          sed -i "s;- fortran-compiler;- gfortran_linux-64;g" build.yaml
+          :
+          # sed -i "s;;;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-          # <lang>-compiler is a metapackage on c-f but not on defaults
-          sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
-          sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
-          sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
+          :
+          # sed -E -i.bak "s;;;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          # permanent, as we use clang-cl, not c-f compiler
-          sed -i "s;- c-compiler;;g" build.yaml
-          sed -i "s;- cxx-compiler;;g" build.yaml
           sed -i "s;- fortran-compiler;;g" build.yaml
-          # semi-permanent, as c-f supplies some QC deps
-          sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" build.yaml
-          sed -i "s;- psi4/label/dev::libxc;- libxc;g" build.yaml
-          # nyi
-          sed -i "s;- psi4/label/dev::ambit;;g" build.yaml
-          sed -i "s;- psi4/label/dev::chemps2;;g" build.yaml
-          sed -i "s;- psi4/label/dev::libecpint;;g" build.yaml
-          sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
-          sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
-          #sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
-          sed -i "s;- psi4/label/dev::simint;;g" build.yaml
+          sed -i "s;- llvm-openmp;- intel-openmp;g" build.yaml
         fi
         #
-        # Runtime for split-channel (L, M)
+        # Runtime for single-channel (L, M, W)
         #
-        if [[ "${{ runner.os }}" != "Windows" ]]; then
         cat > run.yaml <<EOF
         name: baseenv
         channels:
           - ${{ matrix.cfg.base-channel }}
+          - nodefaults
         dependencies:
             # non-qc req'd
-          - blas=*=mkl
-          - msgpack-python
-          - networkx
-          - numpy
-          - python=${{ matrix.cfg.python-version }}
-          - scipy
-            # non-qc opt'l
-          - memory_profiler
-            # qc req'd
-          - psi4/label/dev::gau2grid
-          - psi4/label/testing::libint2
-          - psi4/label/dev::optking
-          - psi4/label/dev::qcelemental
-          - psi4/label/dev::qcengine
-          - psi4/label/dev::libxc
-            # qc req'd from buildtime
-          - psi4/label/dev::ambit
-          - psi4/label/dev::chemps2
-          - psi4/label/dev::dkh
-          - psi4/label/dev::libecpint
-          - psi4/label/dev::gdma
-          #- psi4/label/dev::pcmsolver
-          - psi4/label/dev::simint
-            # qc opt'l
-          #- psi4/label/dev::dftd3
-          - psi4/label/dev::pylibefp
-          - psi4/label/dev::fockci
-          #- psi4/label/dev::gcp
-          - psi4/label/dev::mp2d
-          - psi4/label/dev::resp
-          - psi4/label/dev::snsmp2
-            # test
-          - pytest
-          - pytest-xdist
-          - tomli
-            # pip
-          - pip
-          - pip:
-             - git+https://github.com/i-pi/i-pi.git@master-py3
-        EOF
-        cat > aux.yaml <<EOF
-        name: auxenv
-        channels:
-          - conda-forge
-        dependencies:
-          - blas=*=mkl
-          - python=${{ matrix.cfg.python-version }}
-          - toml
-            # qc opt'l
-          - adcc
-          - basis_set_exchange
-          - cppe
-          - dftd3-python
-          - dftd4-python
-          - gcp-correction
-          - geometric
-          - openfermion>=1.0
-          - openfermionpsi4
-          - pyddx>=0.4
-          - pymdi
-          - qcengine
-          - qcfractal
-          - qcportal
-
-        # toml needed for psi4 to load parameters from dftd4-python
-        EOF
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          # "next" packages aren't self-contained, and "0.15.8" not available fro py310. try again someday
-          # sed -i "s;- qcfractal;;g" aux.yaml
-          # sed -i "s;- qcportal;;g" aux.yaml
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" aux.yaml  # >=0.50b10
-          sed -i "s;- qcportal;- postgresql;g" aux.yaml
-        fi
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" aux.yaml
-          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" aux.yaml
-        fi
-        fi
-        #
-        # Runtime for single-channel (W)
-        #
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-        cat > run.yaml <<EOF
-        name: baseenv
-        channels:
-          - ${{ matrix.cfg.base-channel }}
-        dependencies:
-            # non-qc req'd
-          - blas=*=mkl
+          - libblas=*=*mkl
           - mkl=${{ matrix.cfg.mkl-version }}
           - msgpack-python
           - networkx
@@ -269,40 +172,42 @@ jobs:
           - scipy
           - toml
             # non-qc opt'l
-          #- memory_profiler # tests fail
+          - memory_profiler
             # qc req'd
           - gau2grid
-          - psi4/label/testing::libint2
+          - conda-forge/label/libint_dev::libint=2.7.3dev1
           - optking
           - qcelemental
           - qcengine
-          - libxc
+          - libxc-c
             # qc req'd from buildtime
           #- psi4/label/dev::ambit
-          #- conda-forge::libecpint
           #- psi4/label/dev::chemps2
-          #- psi4/label/dev::dkh
+          - dkh
+          #- psi4/label/dev::libecpint
           #- psi4/label/dev::gdma
           #- psi4/label/dev::pcmsolver
           #- psi4/label/dev::simint
             # qc opt'l
-          #- adcc
+          - adcc
           - basis_set_exchange
-          #- cppe
-          #- psi4/label/dev::dftd3
+          - cppe
           - dftd3-python
           - dftd4-python
-          #- psi4/label/dev::pylibefp
+          - pylibefp
           #- psi4/label/dev::fockci
-          #- psi4/label/dev::gcp
           - gcp-correction
           - geometric
           #- psi4/label/dev::mp2d
-          #- openfermionpsi4
-          #- pyddx
+          - openfermion>=1.0
+          - openfermionpsi4
+          - pyddx
           - pymdi
-          - psi4/label/dev::resp
-          - psi4/label/dev::snsmp2
+          - qcfractal
+          - qcportal
+          #- psi4/label/dev::resp
+          #- psi4/label/dev::snsmp2
+          - tomli
             # test
           - pytest
           - pytest-xdist
@@ -314,15 +219,28 @@ jobs:
         # toml needed for psi4 to load parameters from dftd4-python
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
-        cat > aux.yaml <<EOF
-        EOF
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" aux.yaml  # >=0.50b10
+          sed -i "s;- qcportal;- postgresql;g" aux.yaml
+        fi
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" aux.yaml
+          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" aux.yaml
+        fi
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" aux.yaml  # >=0.50b10
+          sed -i "s;- qcportal;- postgresql;g" aux.yaml
+          # nyi
+          sed -i "s;- adcc;;g" aux.yaml
+          sed -i "s;- pyddx;;g" aux.yaml
+          sed -i "s;- cppe;;g" aux.yaml
+          # prob openfermion
+          #- memory_profiler # tests fail
         fi
         printf "\n<<<  build.yaml  >>>\n"
         cat build.yaml
         printf "\n<<<  run.yaml  >>>\n"
         cat run.yaml
-        printf "\n<<<  aux.yaml  >>>\n"
-        cat aux.yaml
 
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
@@ -332,17 +250,21 @@ jobs:
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
+        miniforge-variant: Mambaforge
+        use-mamba: true
+        add-pip-as-python-dependency: true
+        channels: conda-forge
 
     - name: Buildtime Conda environment
       run: |
         conda info
         conda list
 
-    - name: Switch to Mamba solver (L, M)
-      if: matrix.cfg.base-channel != 'conda-forge'
-      run: |
-        conda install -n base conda-libmamba-solver
-        conda config --set solver libmamba
+    #- name: Switch to Mamba solver (L, M)
+    #  if: matrix.cfg.base-channel != 'conda-forge'
+    #  run: |
+    #    conda install -n base conda-libmamba-solver
+    #    conda config --set solver libmamba
 
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'
@@ -364,19 +286,19 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_ambit=ON \
+          -D ENABLE_ambit=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
-          -D ENABLE_CheMPS2=ON \
+          -D ENABLE_CheMPS2=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_ecpint=ON \
+          -D ENABLE_ecpint=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -D ENABLE_gdma=ON \
+          -D ENABLE_gdma=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
           -D ENABLE_PCMSolver=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
-          -D ENABLE_simint=ON \
+          -D ENABLE_simint=OFF \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
           -D ENABLE_v2rdm_casscf=ON \
@@ -405,19 +327,19 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_ambit=ON \
+          -D ENABLE_ambit=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
-          -D ENABLE_CheMPS2=ON \
+          -D ENABLE_CheMPS2=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_ecpint=ON \
+          -D ENABLE_ecpint=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -D ENABLE_gdma=ON \
+          -D ENABLE_gdma=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
           -D ENABLE_PCMSolver=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
-          -D ENABLE_simint=ON \
+          -D ENABLE_simint=OFF \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
           -D ENABLE_v2rdm_casscf=ON \
@@ -448,6 +370,8 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -D ENABLE_dkh=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.cmargs }}
@@ -471,33 +395,31 @@ jobs:
       # Notes: This is clearing away the whole build environment (to make explicit the build and
       #   runtime dependencies and addons). Then it's creating a new runtime environment based on
       #   psi4 and base channel dependencies and addons. This is created at the same environment
-      #   name (so same location on disk as the build env) for non-relocatability reasons. Also
-      #   creating another runtime environment based on conda-forge channel addons. This is held in
-      #   reserve for later.
+      #   name (so same location on disk as the build env) for non-relocatability reasons.
     - name: Runtime Conda environment(s)
       run: |
         echo "::group::Prepare Environment"
         conda deactivate
         conda remove -n baseenv --all
         conda env create --file run.yaml
-        if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        conda env create --file aux.yaml
-        fi
+        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
+        #conda env create --file aux.yaml
+        #fi
         conda activate baseenv
         echo "::endgroup::"
         conda info
         conda list -n baseenv
-        if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        conda list -n auxenv
+        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
+        #conda list -n auxenv
         qcengine info
-        fi
+        #fi
 
-    - name: Patch QCFractal for Python
-      if: runner.os == 'macOS'
-      run: |
-        cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+    #- name: Patch QCFractal for Python
+    #  if: runner.os == 'macOS'
+    #  run: |
+    #    cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+    #    sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+    #    cat  /usr/local/miniconda/envs/auxenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
     - name: Test OpenMP
       working-directory: ./install/lib
@@ -516,16 +438,16 @@ jobs:
       working-directory: ./objdir
       run: ctest -L addon -j2 --output-on-failure
 
-      # step works but is redundant with next for Linux and macOS
-    - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (W)"
+    - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (L, M, W)"
       if: matrix.cfg.base-channel == 'conda-forge'
       working-directory: ./objdir
-      # "not d2ints" allows Windows accessing c-f L2 to pass
       # (1st entry PYTHONPATH) need to find the Psi4 module
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long and not d2ints" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "{{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
+      #run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long and not d2ints" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest, base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge` (L, M)"
-      if: matrix.cfg.base-channel != 'conda-forge'
+      if: false
+      #if: matrix.cfg.base-channel != 'conda-forge'
       working-directory: ./objdir
       run: |
         conda activate --stack auxenv
@@ -572,9 +494,9 @@ jobs:
 
         python userenvs.py
         cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
-        if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        cp aux.yaml devtools/conda-envs/${{ runner.os }}-aux-maxeco.yaml
-        fi
+        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
+        #cp aux.yaml devtools/conda-envs/${{ runner.os }}-aux-maxeco.yaml
+        #fi
         git diff --color-words
 
 # Notes
