@@ -13,7 +13,6 @@ requirements:
     - mkl={{ MKL_VERSION }}
     - networkx
     - numpy
-    - pytest>=7.0.1
     - python={{ PY_VER }}
     - qcelemental=0.25.1
     - qcengine=0.26.0
@@ -21,9 +20,7 @@ requirements:
     - optking
     - gau2grid
     - libint 2.7.3dev1
-    - libxc
-    - dftd3-python
-    - gcp-correction
+    - libxc-c
     - scipy
 
 build:
@@ -47,6 +44,10 @@ build:
     {% endif %}
 
 test:
+  requires:
+    - pytest>=7.0.1
+    - dftd3-python
+    - gcp-correction
   commands:
     - python -c "import psi4; assert psi4.test('quick') == 0"
     - psi4 --test quick
