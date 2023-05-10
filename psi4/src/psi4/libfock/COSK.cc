@@ -178,10 +178,6 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     early_screening_ = false;
     lr_symmetric_ = true;
 
-    //if (options["COSX_INTS_TOLERANCE"].has_changed()) kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
-    //if (options["COSX_DENSITY_TOLERANCE"].has_changed()) dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
-    //if (options["COSX_BASIS_TOLERANCE"].has_changed()) basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
-    //if (options["COSX_OVERLAP_FITTING"].has_changed()) overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
     kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
     dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
@@ -327,7 +323,7 @@ void COSK::print_header() const {
         outfile->Printf("  ==> COSX: Chain-of-Spheres Semi-Numerical K <==\n\n");
 
         outfile->Printf("    K Screening Cutoff: %11.0E\n", kscreen_);
-        outfile->Printf("    K Density Cutoff:   %11.0E\n", dscreen_); 
+        outfile->Printf("    K Density Cutoff:   %11.0E\n", dscreen_);
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
         outfile->Printf("    K Overlap Fitting:  %11s\n", (overlap_fitted_ ? "Yes" : "No"));
     }
@@ -344,10 +340,10 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     outfile->Printf("    COSX dscreen_: %11.0E\n", dscreen_);
     outfile->Printf("    COSX basis_tol_: %11.0E\n", basis_tol_);
     outfile->Printf("    COSX Overlap Fitting:  %11s\n\n", (overlap_fitted_ ? "Yes" : "No"));
-   
+
     outfile->Printf("    COSX early_screening_: %11s\n", (early_screening_ ? "Yes" : "No"));
     outfile->Printf("    COSX LR Symmetric?:  %11s\n\n", (lr_symmetric_ ? "Yes" : "No"));
-    
+
     // => Sizing <= //
     int njk = D.size();
     int nbf = primary_->nbf();
