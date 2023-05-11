@@ -141,7 +141,7 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        conda-forge/label/libint_dev::libint=2.7.3dev1 ^
+                        libint=2.7.3dev1 ^
                         qcelemental ^
                         qcengine ^
                         optking ^
