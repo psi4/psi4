@@ -107,6 +107,8 @@ jobs:
       #    conda config --append channels conda-forge
       - script: |
           conda config --set always_yes yes
+          conda install -n base conda-libmamba-solver
+          conda config --set solver libmamba
           conda config --add channels conda-forge
           conda config --set channel_priority strict
           conda info
@@ -265,8 +267,9 @@ jobs:
       # Build package
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
-          conda config --append channels conda-forge
-          conda config --append channels conda-forge/label/libint_dev
+          conda config --add channels conda-forge
+          conda config --add channels conda-forge/label/libint_dev
+          conda info
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
