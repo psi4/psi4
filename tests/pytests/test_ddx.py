@@ -106,8 +106,7 @@ def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-8):
    pytest.param({
        "geom": __geoms["h2"],
        "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
-       "ddx": {"model": "pcm", "solvent_epsilon": 80, "solvent_kappa": 1.5,
-               "radii": [1.5873, 1.5873]},
+       "ddx": {"model": "pcm", "solvent_epsilon": 80, "radii": [1.5873, 1.5873]},
    }, id='h2pcm'),
    pytest.param({
        "geom": __geoms["h2"],
