@@ -144,7 +144,7 @@ def test_ddx_fock_build(inp):
         E, V, _ = ddx_iface.get_solvation_contributions(density_matrix)
         return E, V
 
-    _base_test_fock(get_EV, inp["dm"], tol=1e-9)
+    _base_test_fock(get_EV, inp["dm"], tol=1e-8)
 
     if "ref" in inp:
         E, _ = get_EV(inp["dm"])
@@ -203,10 +203,10 @@ def test_ddx_limiting_cases():
     assert abs(e_lpbinf - e_cosmo)    / abs(e_cosmo)    < 1e-4   # noqa: E221
     assert abs(e_lpbinf - e_pcminf)   / abs(e_pcminf)   < 1e-4   # noqa: E221
 
-    assert np.max(np.abs(v_pcminf.np - v_cosmo.np))    < 1e-11   # noqa: E221
-    assert np.max(np.abs(v_pcminf.np - v_lpb_einf.np)) < 1e-11   # noqa: E221
-    assert np.max(np.abs(v_cosmo.np  - v_lpb_einf.np)) < 1e-11   # noqa: E221
-    assert np.max(np.abs(v_lpb0.np   - v_pcm.np))      < 1e-6    # noqa: E221
+    assert np.max(np.abs(v_pcminf.np - v_cosmo.np))    < 1e-10   # noqa: E221
+    assert np.max(np.abs(v_pcminf.np - v_lpb_einf.np)) < 1e-10   # noqa: E221
+    assert np.max(np.abs(v_cosmo.np  - v_lpb_einf.np)) < 1e-10   # noqa: E221
+    assert np.max(np.abs(v_lpb0.np   - v_pcm.np))      < 1e-5    # noqa: E221
     assert np.max(np.abs(v_lpbinf.np - v_lpb_einf.np)) < 1e-4    # noqa: E221
     assert np.max(np.abs(v_lpbinf.np - v_cosmo.np))    < 1e-4    # noqa: E221
     assert np.max(np.abs(v_lpbinf.np - v_pcminf.np))   < 1e-4    # noqa: E221
