@@ -73,7 +73,7 @@ __geoms = {
 }
 
 
-def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
+def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-8):
     E, V = fock_term(density_matrix)
 
     perturbation = np.random.random(density_matrix.np.shape)
@@ -96,21 +96,24 @@ def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
        "dm": core.Matrix.from_array(np.array([[0.]])),
        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "radii": [1.0]},
        "ref": -0.2645886054599999,  # from Gaussian
-       "tol": 1e-6,
    }, id='h'),
    pytest.param({
        "geom": __geoms["h2"],
        "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "radii": [1.5873, 1.5873]},
        "ref": -0.0002016948,  # from Gaussian
-       "tol": 1e-6,
-   }, id='h2'),
+   }, id='h2cosmo'),
    pytest.param({
        "geom": __geoms["h2"],
        "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
        "ddx": {"model": "lpb", "solvent_epsilon": 80, "solvent_kappa": 1.5,
                "radii": [1.5873, 1.5873]},
-       "tol": 3e-5,
+   }, id='h2pcm'),
+   pytest.param({
+       "geom": __geoms["h2"],
+       "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
+       "ddx": {"model": "lpb", "solvent_epsilon": 80, "solvent_kappa": 1.5,
+               "radii": [1.5873, 1.5873]},
    }, id='h2lpb'),
 ])
 def test_ddx_fock_build(inp):
@@ -141,7 +144,7 @@ def test_ddx_fock_build(inp):
         E, V, _ = ddx_iface.get_solvation_contributions(density_matrix)
         return E, V
 
-    _base_test_fock(get_EV, inp["dm"], tol=inp["tol"])
+    _base_test_fock(get_EV, inp["dm"], tol=1e-9)
 
     if "ref" in inp:
         E, _ = get_EV(inp["dm"])
@@ -189,24 +192,25 @@ def test_ddx_limiting_cases():
     e_cosmo, v_cosmo = ddenergy("cosmo", solvent_epsilon=1e12)
 
     e_lpb_einf, v_lpb_einf = ddenergy("lpb", solvent_kappa=0.1, solvent_epsilon=1e12)
-    e_lpb0, v_lpb0 = ddenergy("lpb", solvent_kappa=1e-3, solvent_epsilon=80.0)
-    e_lpbinf, v_lpbinf = ddenergy("lpb", solvent_kappa=8, solvent_epsilon=80.0)
+    e_lpb0, v_lpb0 = ddenergy("lpb", solvent_kappa=1e-5, solvent_epsilon=80.0)
+    e_lpbinf, v_lpbinf = ddenergy("lpb", solvent_kappa=10, solvent_epsilon=80.0)
 
-    assert abs(e_pcminf - e_cosmo) / abs(e_cosmo) < 1e-5
-    assert abs(e_pcminf - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
-    assert abs(e_cosmo - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
-    assert abs(e_lpbinf - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
-    assert abs(e_lpbinf - e_cosmo) / abs(e_cosmo) < 1e-4
-    assert abs(e_lpbinf - e_pcminf) / abs(e_pcminf) < 1e-4
-    assert abs(e_lpb0 - e_pcm) / abs(e_pcm) < 1e-3
+    assert abs(e_pcminf - e_cosmo)    / abs(e_cosmo)    < 1e-10  # noqa: E221
+    assert abs(e_pcminf - e_lpb_einf) / abs(e_lpb_einf) < 1e-10  # noqa: E221
+    assert abs(e_cosmo  - e_lpb_einf) / abs(e_lpb_einf) < 1e-10  # noqa: E221
+    assert abs(e_lpb0   - e_pcm)      / abs(e_pcm)      < 1e-5   # noqa: E221
+    assert abs(e_lpbinf - e_lpb_einf) / abs(e_lpb_einf) < 1e-4   # noqa: E221
+    assert abs(e_lpbinf - e_cosmo)    / abs(e_cosmo)    < 1e-4   # noqa: E221
+    assert abs(e_lpbinf - e_pcminf)   / abs(e_pcminf)   < 1e-4   # noqa: E221
 
-    assert np.max(np.abs(v_pcminf.np - v_cosmo.np)) < 1e-5
-    assert np.max(np.abs(v_pcminf.np - v_lpb_einf.np)) < 1e-4
-    assert np.max(np.abs(v_cosmo.np - v_lpb_einf.np)) < 1e-4
-    assert np.max(np.abs(v_lpbinf.np - v_lpb_einf.np)) < 1e-4
-    assert np.max(np.abs(v_lpbinf.np - v_cosmo.np)) < 1e-4
-    assert np.max(np.abs(v_lpbinf.np - v_pcminf.np)) < 1e-4
-    assert np.max(np.abs(v_lpb0.np - v_pcm.np)) < 1e-3
+    assert np.max(np.abs(v_pcminf.np - v_cosmo.np))    < 1e-11   # noqa: E221
+    assert np.max(np.abs(v_pcminf.np - v_lpb_einf.np)) < 1e-11   # noqa: E221
+    assert np.max(np.abs(v_cosmo.np  - v_lpb_einf.np)) < 1e-11   # noqa: E221
+    assert np.max(np.abs(v_lpb0.np   - v_pcm.np))      < 1e-6    # noqa: E221
+    assert np.max(np.abs(v_lpbinf.np - v_lpb_einf.np)) < 1e-4    # noqa: E221
+    assert np.max(np.abs(v_lpbinf.np - v_cosmo.np))    < 1e-4    # noqa: E221
+    assert np.max(np.abs(v_lpbinf.np - v_pcminf.np))   < 1e-4    # noqa: E221
+
 
 @pytest.mark.quick
 @uusing("ddx")
@@ -284,13 +288,13 @@ def test_ddx_rhf_reference(inp):
         "geom": __geoms["fcm"],
         "basis": "cc-pvdz",
         "ddx": {"model": "pcm", "solvent": "water", "radii_set": "uff", },
-        "ref": -597.9718942424215,
+        "ref": -597.9718943192062,
     }, id='fcm-pcm'),
     pytest.param({
         "geom": __geoms["nh3"],
         "basis": "cc-pvdz",
         "ddx": {"model": "lpb", "solvent": "water", "radii_set": "uff", "solvent_kappa": 0.11},
-        "ref": -56.1988043665621,
+        "ref": -56.1988043810054,
     }, id='nh3-lpb'),
 ])
 def test_ddx_rhf_consistency(inp):
@@ -322,6 +326,11 @@ def test_ddx_eri_algorithms(scf_type):
         "ddx_solvent": "water",
         "ddx_radii_set": "uff",
     })
-    ref = -56.1715394
+    if scf_type in ("df", "cd"):
+        tol = 4
+    else:
+        tol = 9
+
+    ref = -56.171546236617495
     scf_e = psi4.energy('SCF')
-    assert compare_values(ref, scf_e, 4, "Total SCF energy with DDX versus reference data")
+    assert compare_values(ref, scf_e, tol, "Total SCF energy with DDX versus reference data")

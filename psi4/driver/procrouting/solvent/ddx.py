@@ -156,7 +156,7 @@ class DdxInterface:
     def __init__(self, molecule, options, basisset):
         # verify that the minimal version is used if pyddx is provided
         # from outside the Psi4 ecosystem
-        min_version = "0.4.0"
+        min_version = "0.4.2"
         if parse_version(pyddx.__version__) < parse_version(min_version):
             raise ModuleNotFoundError("pyddx version {} is required at least. "
                                       "Version {}"
@@ -229,13 +229,13 @@ class DdxInterface:
         # Compute electronic contributions
         psi = self.numints.dd_density_integral(self.scaled_ylms, density_matrix).np.T
         dummy_charges = core.Vector.from_array(np.ones(self.model.n_cav))
-        coords = core.Matrix.from_array(self.model.cavity.T)
-        phi = self.mints.electrostatic_potential_value(dummy_charges, coords, density_matrix).np
+        cavcoords = core.Matrix.from_array(self.model.cavity.T)
+        phi = self.mints.electrostatic_potential_value(dummy_charges, cavcoords, density_matrix).np
 
         elec_field = None
         derivative_order = self.model.required_phi_derivative_order(compute_forces=False)
         if derivative_order > 0:
-            elec_field = self.mints.electric_field_value(coords, density_matrix).np.T
+            elec_field = self.mints.electric_field_value(cavcoords, density_matrix).np.T
 
         # elec_only = True
         if not elec_only:
@@ -278,6 +278,10 @@ class DdxInterface:
         eta = [core.Vector.from_array(ylm.np.T @ state.x[:, block.parent_atom()])
                for (block, ylm) in zip(self.dftgrid.blocks(), self.scaled_ylms)]
         V_ddx = self.numints.potential_integral(eta)
+
+        if model.model in ("lpb", ):
+            V_ind = self.mints.induction_operator(cavcoords, core.Matrix.from_array(state.zeta_dip.T))
+            V_ddx.add(V_ind)
 
         extern = core.ExternalPotential()
         for xi_nj, pos_nj in zip(state.xi, model.cavity.T):
