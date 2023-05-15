@@ -50,19 +50,19 @@ class PsiOutStream;
 class DFTGrid;
 
 /**
- * Class SplitJK 
+ * Class SplitJK
  *
- * The base class defining the backend to CompositeJK. 
+ * The base class defining the backend to CompositeJK.
  * Each derived class for SplitJK contains one of the
- * subalgorithms that can be used within the CompositeJK 
- * framework. 
- * 
+ * subalgorithms that can be used within the CompositeJK
+ * framework.
+ *
  * Current algorithms in place:
- * J: DF-DirJ 
+ * J: DF-DirJ
  * K: COSX, LinK
  *
  */
-class PSI_API SplitJK { 
+class PSI_API SplitJK {
    protected:
 
     /// The number of threads to be used for integral computation
@@ -72,7 +72,7 @@ class PSI_API SplitJK {
 
     /// Primary basis set
     std::shared_ptr<BasisSet> primary_;
- 
+
     /// Print flag, defaults to 1
     int print_;
     /// Debug flag, defaults to 0
@@ -84,9 +84,9 @@ class PSI_API SplitJK {
 
     // Perform Density matrix-based integral screening?
     bool density_screening_;
-    /// Use severe screening techniques? Useful in early SCF iterations 
+    /// Use severe screening techniques? Useful in early SCF iterations
     bool early_screening_;
-    /// Left-right symmetric? 
+    /// Left-right symmetric?
     bool lr_symmetric_;
 
     /// Number of ERI shell quartets computed, i.e., not screened out
@@ -95,21 +95,21 @@ class PSI_API SplitJK {
    public:
     // => Constructors < = //
     SplitJK(std::shared_ptr<BasisSet> primary, Options& options);
-    
+
     /// Destructor
     virtual ~SplitJK();
 
     /// Build either the coulomb (J) matrix or the exchange (K) matrix
-    /// using a given algorithm 
+    /// using a given algorithm
     virtual void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
-                 std::vector<std::shared_ptr<Matrix> >& G_comp, 
-         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) = 0; 
+                 std::vector<std::shared_ptr<Matrix> >& G_comp,
+         std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) = 0;
 
     // => Knobs <= //
-   
+
     void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
     void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric_; } 
-    /// Bench accessors 
+    /// Bench accessors
     void set_bench(int bench) { bench_ = bench; }
     int get_bench() const { return bench_; }
 
@@ -117,17 +117,17 @@ class PSI_API SplitJK {
     * Print header information regarding JK
     * type on output file
     */
-    virtual void print_header() const = 0; 
- 
+    virtual void print_header() const = 0;
+
     /**
     * Return number of ERI shell quartets computed during the SplitJK build process.
     */
-    virtual size_t num_computed_shells(); 
+    virtual size_t num_computed_shells();
 
     /**
     * print name of method
-    */ 
-    virtual std::string name() = 0; 
+    */
+    virtual std::string name() = 0;
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -170,11 +170,11 @@ class PSI_API DirectDFJ : public SplitJK {
     /**
     * Return number of ERI shell quartets computed during the SplitJK build process.
     */
-    size_t num_computed_shells() override; 
+    size_t num_computed_shells() override;
 
     /**
     * print name of method
-    */ 
+    */
     std::string name() override { return "DF-DirJ"; }
 };
 
@@ -182,7 +182,7 @@ class PSI_API DirectDFJ : public SplitJK {
 
 /**
  * @author Andy Jiang, Georgia Tech, December 2021
- * 
+ *
  * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
  * doi: 10.1063/1.476741
  */
@@ -206,7 +206,7 @@ class PSI_API LinK : public SplitJK {
     /// Destructor
     ~LinK() override;
 
-    /// Build the exchange (K) matrix using LinK 
+    /// Build the exchange (K) matrix using LinK
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp,
          std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
@@ -226,14 +226,14 @@ class PSI_API LinK : public SplitJK {
 
     /**
     * print name of method
-    */ 
+    */
     std::string name() override { return "LinK"; }
 };
 
 /**
- * @brief constructs the K matrix using the Chain-of-Spheres Exchange (COSX) 
+ * @brief constructs the K matrix using the Chain-of-Spheres Exchange (COSX)
  * algorithm, described in [Neese:2009:98]_
- * doi: 10.1016/j.chemphys.2008.10.036 
+ * doi: 10.1016/j.chemphys.2008.10.036
  */
 class PSI_API COSK : public SplitJK {
     // => Semi-Numerical Stuff <= //
@@ -248,14 +248,14 @@ class PSI_API COSK : public SplitJK {
     SharedMatrix Q_final_;
 
     // integral cutoff
-    double kscreen_; 
+    double kscreen_;
     // density element cutoff
-    double dscreen_; 
+    double dscreen_;
     // basis cutoff
-    double basis_tol_; 
-    /// use overlap-fitted COSX algo? 
-    bool overlap_fitted_; 
-   
+    double basis_tol_;
+    /// use overlap-fitted COSX algo?
+    bool overlap_fitted_;
+
    public:
     // => Constructors < = //
 
@@ -271,12 +271,12 @@ class PSI_API COSK : public SplitJK {
     ~COSK() override;
 
     /// Build the exchange (K) matrix using COSX
-    /// primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036 
+    /// primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036
     /// overlap fitting is discussed in https://doi.org/10.1063/1.3646921
     void build_G_component(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& G_comp,
          std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
-    
+
     // => Knobs <= //
     /**
     * Print header information regarding JK
@@ -291,7 +291,7 @@ class PSI_API COSK : public SplitJK {
 
     /**
     * print name of method
-    */ 
+    */
     std::string name() override { return "COSX"; }
 };
 
