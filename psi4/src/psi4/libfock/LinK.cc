@@ -66,21 +66,21 @@ LinK::LinK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
 
     // set default lr_symmetric_ value
     lr_symmetric_ = true;
-    
+
     // set up LinK integral tolerance
     if (options["LINK_INTS_TOLERANCE"].has_changed()) {
         linK_ints_cutoff_ = options.get_double("LINK_INTS_TOLERANCE");
     } else {
         linK_ints_cutoff_ = cutoff_;
     }
-    
+
     timer_off("LinK: Setup");
 }
 
 LinK::~LinK() {}
 
 size_t LinK::num_computed_shells() {
-    return num_computed_shells_; 
+    return num_computed_shells_;
 }
 
 void LinK::print_header() const {
@@ -90,16 +90,16 @@ void LinK::print_header() const {
     outfile->Printf("    K Screening Cutoff:%11.0E\n", linK_ints_cutoff_);
 }
 
-// build the K matrix using Ochsenfelds's Linear Exchange (LinK) algorithm 
+// build the K matrix using Ochsenfelds's Linear Exchange (LinK) algorithm
 // To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
 void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& K,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
-    
+
     // LinK does not support non-symmetric matrices
-    if (!lr_symmetric_) { 
+    if (!lr_symmetric_) {
         throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
     }
- 
+
     // ==> Prep Auxiliary Quantities <== //
 
     // => Sizing <= //
@@ -171,7 +171,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     }
 
     // ==> Start "Pre-ordering and pre-selection to find significant elements in P_uv" in Fig. 1 of paper <== //
-    
+
     // ==> Prep Bra-Bra Shell Pairs <== //
 
     // A comparator used for sorting integral screening values
@@ -237,7 +237,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     size_t natom_pair = atom_pairs.size();
 
     // ==> End "Pre-ordering and pre-selection to find significant elements in P_uv" in Fig. 1 of paper <== //
-    
+
     // ==> Intermediate Buffers <== //
 
     // Temporary buffers used during the K contraction process to
@@ -254,7 +254,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         KT.push_back(K2);
     }
 
-    // ==> Start "Loop over significant 'bra'-shell pairs uh" in Fig. 1 of paper <== // 
+    // ==> Start "Loop over significant 'bra'-shell pairs uh" in Fig. 1 of paper <== //
     // Number of computed shell quartets is tracked for benchmarking purposes
     num_computed_shells_ = 0L;
     size_t computed_shells = 0L;
