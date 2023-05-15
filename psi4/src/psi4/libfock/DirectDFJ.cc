@@ -47,7 +47,7 @@ using namespace psi;
 
 namespace psi {
 
-DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : SplitJK(primary, options), auxiliary_(auxiliary) { 
+DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options) : SplitJK(primary, options), auxiliary_(auxiliary) {
     timer_on("DirectDFJ: Setup");
 
     // => General Setup <= //
@@ -66,14 +66,14 @@ DirectDFJ::DirectDFJ(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet
     J_metric_ = J_metric_obj.get_metric();
 
     timer_off("DirectDFJ: DIRECTDFJ Coulomb Metric");
-    
+
     timer_off("DirectDFJ: Setup");
 }
 
 DirectDFJ::~DirectDFJ() {}
 
 size_t DirectDFJ::num_computed_shells() {
-    return num_computed_shells_; 
+    return num_computed_shells_;
 }
 
 void DirectDFJ::print_header() const {
@@ -89,7 +89,7 @@ void DirectDFJ::print_header() const {
 // algorithm is in Figure 1 of https://doi.org/10.1039/B204199P
 void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vector<std::shared_ptr<Matrix>>& J,
     std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) {
-    
+
     timer_on("Setup");
 
     // => Sizing <= //
@@ -99,7 +99,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
     int nbf_aux = auxiliary_->nbf();
     int nshell_aux = auxiliary_->nshell();
 
-    // benchmarking 
+    // benchmarking
     size_t nshellpair = eri_computers[0]->shell_pairs().size();
     size_t nshelltriplet = nshell_aux * nshellpair;
     size_t computed_triplets1 = 0, computed_triplets2 = 0;
@@ -311,7 +311,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
     timer_off("ERI2");
 
     num_computed_shells_ = computed_triplets1 + computed_triplets2;
-    
+ 
     for(size_t jki = 0; jki < njk; jki++) {
         for (size_t thread = 0; thread < nthreads_; thread++) {
             J[jki]->add(JT[jki][thread]);
