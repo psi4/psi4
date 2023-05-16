@@ -1237,17 +1237,17 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
     outfile->Printf("    T_CUT_DO     = %6.3e \n", T_CUT_DO_);
     outfile->Printf("    T_CUT_PNO    = %6.3e \n", T_CUT_PNO_);
+    outfile->Printf("    T_CUT_PAIRS  = %6.3e \n", T_CUT_PAIRS_);
+    outfile->Printf("    T_CUT_MKN    = %6.3e \n", T_CUT_MKN_);
+    outfile->Printf("    T_CUT_SVD    = %6.3e \n", options_.get_double("T_CUT_SVD"));
     outfile->Printf("    DIAG_SCALE   = %6.3e \n", T_CUT_PNO_DIAG_SCALE_);
     outfile->Printf("    T_CUT_DO_ij  = %6.3e \n", options_.get_double("T_CUT_DO_ij"));
     outfile->Printf("    T_CUT_PRE    = %6.3e \n", options_.get_double("T_CUT_PRE"));
     outfile->Printf("    T_CUT_DO_PRE = %6.3e \n", options_.get_double("T_CUT_DO_PRE"));
-    outfile->Printf("    T_CUT_MKN    = %6.3e \n", options_.get_double("T_CUT_MKN"));
-    outfile->Printf("    T_CUT_SVD    = %6.3e \n", options_.get_double("T_CUT_SVD"));
     outfile->Printf("    T_CUT_CLMO   = %6.3e \n", options_.get_double("T_CUT_CLMO"));
     outfile->Printf("    T_CUT_CPAO   = %6.3e \n", options_.get_double("T_CUT_CPAO"));
     outfile->Printf("    S_CUT        = %6.3e \n", options_.get_double("S_CUT"));
     outfile->Printf("    F_CUT        = %6.3e \n", options_.get_double("F_CUT"));
-    outfile->Printf("    T_CUT_PAIRS  = %6.3e \n", options_.get_double("T_CUT_PAIRS"));
     outfile->Printf("\n");
 }
 

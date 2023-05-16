@@ -70,27 +70,47 @@ void DLPNOBase::common_init() {
     T_CUT_PNO_DIAG_SCALE_ = options_.get_double("T_CUT_PNO_DIAG_SCALE");
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
     T_CUT_PAIRS_ = options_.get_double("T_CUT_PAIRS");
+    T_CUT_MKN_ = options_.get_double("T_CUT_MKN");
+
+    if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
+        algorithm_ = MP2;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD") {
+        algorithm_ = CCSD;
+    }
 
     // did the user manually change expert level options?
     const bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
     const bool T_CUT_DO_changed = options_["T_CUT_DO"].has_changed();
 
-    // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
-    if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
-        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
-        if (!T_CUT_DO_changed) T_CUT_DO_ = 2e-2;
-    } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
-        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
-        if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-2;
-    } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
-        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-9;
-        if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
-    }
+    const bool T_CUT_PAIRS_changed = options_["T_CUT_PAIRS"].has_changed();
+    const bool T_CUT_MKN_changed = options_["T_CUT_MKN"].has_changed();
 
-    if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
-        algorithm_ = MP2;
-    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD") {
-        algorithm_ == CCSD;
+    // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
+    if (algorithm_ == MP2) {
+        if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 2e-2;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-2;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-9;
+            if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+        }
+    } else if (algorithm_ == CCSD) { // parameters derived from Liakos 2015
+        if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-6;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-3;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 3.33e-7;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-4;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
+        } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
+            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
+            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
+            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
+        }
     }
 
     name_ = "DLPNO";
@@ -532,7 +552,7 @@ void DLPNOBase::prep_sparsity() {
 
         // if non-zero mulliken pop on atom, include atom in the LMO's fitting domain
         for (size_t a = 0; a < natom; a++) {
-            if (fabs(mkn_pop[a]) > options_.get_double("T_CUT_MKN")) {
+            if (fabs(mkn_pop[a]) > T_CUT_MKN_) {
                 lmo_to_riatoms_[i].push_back(a);
 
                 // each atom's aux orbitals are all-or-nothing for each LMO

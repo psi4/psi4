@@ -61,11 +61,16 @@ class DLPNOBase : public Wavefunction {
       /// threshold for PNO truncation
       double T_CUT_PNO_;
 
+      /// tolerance to separate pairs into CCSD and MP2 pairs
+      double T_CUT_PAIRS_;
+
+      /// tolerance for local density fitting (by Mulliken population)
+      double T_CUT_MKN_;
+
       /// T_CUT_PNO scaling factor for diagonal PNOs
       double T_CUT_PNO_DIAG_SCALE_;
 
-      /// tolerance to separate pairs into CCSD and MP2 pairs
-      double T_CUT_PAIRS_;
+      
 
       /// auxiliary basis
       std::shared_ptr<BasisSet> ribasis_;
