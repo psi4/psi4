@@ -2524,15 +2524,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SVD Tolerance for factoring (Q_ij|a_ij b_ij) two electron integrals */
         options.add_double("T_CUT_SVD", 1e-3);
         /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
-        options.add_double("T_CUT_CLMO", 1e-2);
+        options.add_double("T_CUT_CLMO", 1e-4);
         /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/
-        options.add_double("T_CUT_CPAO", 1e-3);
+        options.add_double("T_CUT_CPAO", 1e-4);
         /*- Overlap matrix threshold for removing linear dependencies !expert -*/
         options.add_double("S_CUT", 1e-8);
         /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
         options.add_double("F_CUT", 1e-5);
-        /*- Occupation number threshold for removing TNOs !expert -*/
-        options.add_double("T_CUT_TNO", 1e-8);
+        /*- The tolerance to decide between "MP2 Pairs" and "CCSD Pairs" after the initial pair prescreening -*/
+        options.add_double("T_CUT_PAIRS", 1e-5);
     }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory

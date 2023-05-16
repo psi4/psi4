@@ -46,10 +46,15 @@ namespace dlpno {
 
 enum VirtualStorage { CORE, DIRECT };
 
+enum AlgorithmType { MP2, CCSD };
+
 // Equations refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879)
 
 class DLPNOBase : public Wavefunction {
     protected:
+      /// what quantum chemistry module are we running
+      AlgorithmType algorithm_;
+
       /// threshold for PAO domain size
       double T_CUT_DO_;
 
@@ -58,6 +63,9 @@ class DLPNOBase : public Wavefunction {
 
       /// T_CUT_PNO scaling factor for diagonal PNOs
       double T_CUT_PNO_DIAG_SCALE_;
+
+      /// tolerance to separate pairs into CCSD and MP2 pairs
+      double T_CUT_PAIRS_;
 
       /// auxiliary basis
       std::shared_ptr<BasisSet> ribasis_;
@@ -101,6 +109,7 @@ class DLPNOBase : public Wavefunction {
 
       /// pre-screening energies
       double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs
+      double de_lmp2_; ///< SC-LMP2 correction for weak pairs (only for CC)
       double de_pno_total_; ///< energy correction for PNO truncation
       double de_pno_total_os_; ///< energy correction for PNO truncation
       double de_pno_total_ss_; ///< energy correction for PNO truncation
@@ -127,8 +136,6 @@ class DLPNOBase : public Wavefunction {
       std::vector<std::vector<int>> i_j_to_ij_; ///< LMO indices (i, j) to significant LMO pair index (ij); insignificant (i, j) maps to -1
       std::vector<std::pair<int,int>> ij_to_i_j_; ///< LMO pair index (ij) to both LMO indices (i, j)
       std::vector<int> ij_to_ji_; ///< LMO pair index (ij) to LMO pair index (ji)
-
-      std::vector<std::pair<int, int>> weak_pairs_; ///< Weak Pairs (as defined for that level of theory)
 
       // LMO Pair Domains
       SparseMap lmopair_to_ribfs_; ///< which aux BFs are needed for density-fitting a pair of LMOs?
@@ -272,7 +279,6 @@ class DLPNOCCSD : public DLPNOBase {
     /// (0 occupied, 4 virtual)
     std::vector<std::vector<SharedMatrix>> Qab_ij_; // (q_ij | a_ij b_ij)
 
-    double de_lmp2_; ///< SC-LMP2 correction for weak pairs
     double e_lccsd_; ///< raw (uncorrected) local CCSD correlation energy
 
     /// Returns the appropriate overlap matrix given two LMO pairs

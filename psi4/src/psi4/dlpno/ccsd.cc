@@ -87,85 +87,6 @@ inline SharedMatrix DLPNOCCSD::S_PNO(const int ij, const int mn) {
     }
 }
 
-void DLPNOCCSD::compute_de_lmp2() {
-
-    outfile->Printf("\n   => SC-LMP2 Weak Pair Correction <=\n\n");
-    outfile->Printf("   Number of Weak Pairs: %d\n\n", weak_pairs_.size());
-
-    double de_lmp2 = 0.0;
-
-#pragma omp parallel for schedule(dynamic, 1) reduction(+ : de_lmp2)
-    for (int ij = 0; ij < weak_pairs_.size(); ij++) {
-        int i, j;
-        std::tie(i, j) = weak_pairs_[ij];
-
-        if (i > j) continue;
-
-        auto weak_pair_paos = merge_lists(lmo_to_paos_[i], lmo_to_paos_[j]);
-        int npao_ij = weak_pair_paos.size();
-
-        // number of auxiliary basis in the domain
-        auto weak_pair_ribfs = merge_lists(lmo_to_ribfs_[i], lmo_to_ribfs_[j]);
-        int naux_ij = weak_pair_ribfs.size();
-
-        auto i_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
-        i_qa->zero();
-        auto j_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
-        j_qa->zero();
-
-        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
-            int q = weak_pair_ribfs[q_ij];
-            int centerq = ribasis_->function_to_center(q);
-            for (int a_ij = 0; a_ij < npao_ij; a_ij++) {
-                int a = weak_pair_paos[a_ij];
-                i_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][a]));
-                j_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][j], riatom_to_paos_ext_dense_[centerq][a]));
-            }
-        }
-
-        auto A_solve = submatrix_rows_and_cols(*full_metric_, weak_pair_ribfs, weak_pair_ribfs);
-        C_DGESV_wrapper(A_solve, i_qa);
-
-        auto K_pao_ij = linalg::doublet(i_qa, j_qa, true, false);
-
-        //                                      //
-        // ==> Canonicalize PAOs of pair ij <== //
-        //                                      //
-
-        auto S_pao_ij = submatrix_rows_and_cols(*S_pao_, weak_pair_paos, weak_pair_paos);
-        auto F_pao_ij = submatrix_rows_and_cols(*F_pao_, weak_pair_paos, weak_pair_paos);
-
-        SharedMatrix X_pao_ij;  // canonical transformation of this domain's PAOs to
-        SharedVector e_pao_ij;  // energies of the canonical PAOs
-        std::tie(X_pao_ij, e_pao_ij) = orthocanonicalizer(S_pao_ij, F_pao_ij);
-
-        // S_pao_ij = linalg::triplet(X_pao_ij, S_pao_ij, X_pao_ij, true, false, false);
-        F_pao_ij = linalg::triplet(X_pao_ij, F_pao_ij, X_pao_ij, true, false, false);
-        K_pao_ij = linalg::triplet(X_pao_ij, K_pao_ij, X_pao_ij, true, false, false);
-
-        // number of PAOs in the domain after removing linear dependencies
-        int npao_can_ij = X_pao_ij->colspi(0);
-        auto T_pao_ij = K_pao_ij->clone();
-        for (int a = 0; a < npao_can_ij; ++a) {
-            for (int b = 0; b < npao_can_ij; ++b) {
-                T_pao_ij->set(a, b, T_pao_ij->get(a, b) /
-                                        (-e_pao_ij->get(b) + -e_pao_ij->get(a) + F_lmo_->get(i, i) + F_lmo_->get(j, j)));
-            }
-        }
-
-        auto Tt_pao_ij = T_pao_ij->clone();
-        Tt_pao_ij->scale(2.0);
-        Tt_pao_ij->subtract(T_pao_ij->transpose());
-
-        double prefactor = (i == j) ? 1.0 : 2.0;
-        de_lmp2 += prefactor * Tt_pao_ij->vector_dot(K_pao_ij);
-    }
-
-    de_lmp2_ = de_lmp2;
-
-    outfile->Printf("   SC-LMP2 Weak Pair Correction:        %16.12f\n\n", de_lmp2_);
-}
-
 void DLPNOCCSD::compute_pno_overlaps() {
     const int n_lmo_pairs = ij_to_i_j_.size();
     S_pno_ij_mn_.resize(n_lmo_pairs);
@@ -1178,10 +1099,6 @@ double DLPNOCCSD::compute_energy() {
     pno_transform();
     timer_off("PNO Transform");
 
-    timer_on("Weak Pair LMP2 Correction");
-    compute_de_lmp2();
-    timer_off("Weak Pair LMP2 Correction");
-
     timer_on("PNO Overlaps");
     compute_pno_overlaps();
     timer_off("PNO Overlaps");
@@ -1290,6 +1207,7 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("    T_CUT_CPAO   = %6.3e \n", options_.get_double("T_CUT_CPAO"));
     outfile->Printf("    S_CUT        = %6.3e \n", options_.get_double("S_CUT"));
     outfile->Printf("    F_CUT        = %6.3e \n", options_.get_double("F_CUT"));
+    outfile->Printf("    T_CUT_PAIRS  = %6.3e \n", options_.get_double("T_CUT_PAIRS"));
     outfile->Printf("\n");
 }
 

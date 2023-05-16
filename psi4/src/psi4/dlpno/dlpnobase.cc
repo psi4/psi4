@@ -69,6 +69,7 @@ void DLPNOBase::common_init() {
     T_CUT_PNO_ = options_.get_double("T_CUT_PNO");
     T_CUT_PNO_DIAG_SCALE_ = options_.get_double("T_CUT_PNO_DIAG_SCALE");
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
+    T_CUT_PAIRS_ = options_.get_double("T_CUT_PAIRS");
 
     // did the user manually change expert level options?
     const bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
@@ -84,6 +85,12 @@ void DLPNOBase::common_init() {
     } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
         if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-9;
         if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+    }
+
+    if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
+        algorithm_ = MP2;
+    } else if (options_.get_str("DLPNO_ALGORITHM") == "CCSD") {
+        algorithm_ == CCSD;
     }
 
     name_ = "DLPNO";
@@ -564,40 +571,18 @@ void DLPNOBase::prep_sparsity() {
     i_j_to_ij_.resize(naocc);
     de_dipole_ = 0.0;
 
-    if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
-        for (size_t i = 0, ij = 0; i < naocc; i++) {
-            for (size_t j = 0; j < naocc; j++) {
-                bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
-                bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > options_.get_double("T_CUT_PRE"));
+    for (size_t i = 0, ij = 0; i < naocc; i++) {
+        for (size_t j = 0; j < naocc; j++) {
+            bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
+            bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > options_.get_double("T_CUT_PRE"));
 
-                if (overlap_big || energy_big) {
-                    i_j_to_ij_[i].push_back(ij);
-                    ij_to_i_j_.push_back(std::make_pair(i, j));
-                    ij++;
-                } else {
-                    de_dipole_ += dipole_pair_e_->get(i, j);
-                    i_j_to_ij_[i].push_back(-1);
-                }
-            }
-        }
-    } else {
-        for (size_t i = 0, ij = 0; i < naocc; i++) {
-            for (size_t j = 0; j < naocc; j++) {
-                bool overlap_big = (DOI_ij_->get(i, j) > options_.get_double("T_CUT_DO_ij"));
-                bool energy_big = (fabs(dipole_pair_e_bound_->get(i, j)) > options_.get_double("T_CUT_PRE"));
-
-                if ((i == j) || (overlap_big && energy_big)) {
-                    i_j_to_ij_[i].push_back(ij);
-                    ij_to_i_j_.push_back(std::make_pair(i, j));
-                    ij++;
-                } else {
-                    if (overlap_big || energy_big)
-                        weak_pairs_.push_back(std::make_pair(i,j));
-                    else
-                        de_dipole_ += dipole_pair_e_->get(i, j);
-
-                    i_j_to_ij_[i].push_back(-1);
-                }
+            if (overlap_big || energy_big) {
+                i_j_to_ij_[i].push_back(ij);
+                ij_to_i_j_.push_back(std::make_pair(i, j));
+                ij++;
+            } else {
+                de_dipole_ += dipole_pair_e_->get(i, j);
+                i_j_to_ij_[i].push_back(-1);
             }
         }
     }
@@ -692,12 +677,7 @@ void DLPNOBase::prep_sparsity() {
 
     // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
     //   of all interacting LMOs
-    auto lmo_to_riatoms_ext1 = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
-    auto lmo_to_riatoms_ext2 = extend_maps(lmo_to_riatoms_, weak_pairs_);
-    lmo_to_riatoms_ext_.resize(naocc);
-    for (int i = 0; i < naocc; i++) {
-        lmo_to_riatoms_ext_[i] = merge_lists(lmo_to_riatoms_ext1[i], lmo_to_riatoms_ext2[i]);
-    }
+    lmo_to_riatoms_ext_ = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
 
     riatom_to_lmos_ext_ = invert_map(lmo_to_riatoms_ext_, natom);
     riatom_to_paos_ext_ = chain_maps(riatom_to_lmos_ext_, lmo_to_paos_);
@@ -997,8 +977,6 @@ void DLPNOBase::compute_qia() {
 void DLPNOBase::compute_qab() {
     timer_on("(mn|K)->(ab|K)");
 
-    outfile->Printf("   Computing qab...\n\n");
-
     int nbf = basisset_->nbf();
     int naux = ribasis_->nbf();
 
@@ -1097,6 +1075,7 @@ void DLPNOBase::compute_metric() {
 
 void DLPNOBase::pno_transform() {
     int nbf = basisset_->nbf();
+    int naocc = i_j_to_ij_.size();
     int n_lmo_pairs = ij_to_i_j_.size();
 
     outfile->Printf("\n  ==> Forming Pair Natural Orbitals <==\n");
@@ -1112,7 +1091,10 @@ void DLPNOBase::pno_transform() {
     de_pno_os_.resize(n_lmo_pairs);  // opposite-spin contributions to de_pno_
     de_pno_ss_.resize(n_lmo_pairs);  // same-spin contributions to de_pno_
 
-#pragma omp parallel for schedule(dynamic, 1)
+    int n_weak_pairs = 0;
+    double de_lmp2 = 0.0;
+
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : de_lmp2) reduction(+ : n_weak_pairs)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -1190,6 +1172,9 @@ void DLPNOBase::pno_transform() {
         double e_ij_os_initial = K_pao_ij->vector_dot(T_pao_ij);
         double e_ij_ss_initial = e_ij_initial - e_ij_os_initial;
 
+        // Determine if pair is a weak pair
+        bool weak_pair = (algorithm_ != MP2 && i != j && std::fabs(e_ij_initial) < T_CUT_PAIRS_);
+
         // Construct pair density from amplitudes
         auto D_ij = linalg::doublet(Tt_pao_ij, T_pao_ij, false, true);
         D_ij->add(linalg::doublet(Tt_pao_ij, T_pao_ij, true, false));
@@ -1202,10 +1187,15 @@ void DLPNOBase::pno_transform() {
         double t_cut_scale = (i == j) ? T_CUT_PNO_DIAG_SCALE_ : 1.0;
 
         int nvir_ij_final = 0;
-        for (size_t a = 0; a < nvir_ij; ++a) {
-            if (fabs(pno_occ.get(a)) >= t_cut_scale * T_CUT_PNO_) {
-                nvir_ij_final++;
+        if (!weak_pair) {
+            for (size_t a = 0; a < nvir_ij; ++a) {
+                if (fabs(pno_occ.get(a)) >= t_cut_scale * T_CUT_PNO_) {
+                    nvir_ij_final++;
+                }
             }
+        } else {
+            // TODO: Make this process more robust in the future for weak pairs
+            nvir_ij_final = 0;
         }
 
         Dimension zero(1);
@@ -1233,9 +1223,15 @@ void DLPNOBase::pno_transform() {
         double e_ij_ss_trunc = e_ij_trunc - e_ij_os_trunc;
 
         // truncation error
-        double de_pno_ij = e_ij_initial - e_ij_trunc;
-        double de_pno_ij_os = e_ij_os_initial - e_ij_os_trunc;
-        double de_pno_ij_ss = e_ij_ss_initial - e_ij_ss_trunc;
+        double de_pno_ij = (weak_pair) ? 0.0 : e_ij_initial - e_ij_trunc;
+        double de_pno_ij_os = (weak_pair) ? 0.0 : e_ij_os_initial - e_ij_os_trunc;
+        double de_pno_ij_ss =(weak_pair) ? 0.0 : e_ij_ss_initial - e_ij_ss_trunc;
+
+        if (weak_pair) {
+            int prefactor = (i == j) ? 1 : 2;
+            de_lmp2 += prefactor * e_ij_initial;
+            n_weak_pairs += prefactor;
+        }
 
         X_pno_ij = linalg::doublet(X_pao_ij, X_pno_ij, false, false);
 
@@ -1280,12 +1276,24 @@ void DLPNOBase::pno_transform() {
     outfile->Printf("  \n");
     outfile->Printf("    PNO truncation energy = %.12f\n", de_pno_total_);
 
+    // Done for OpenMP/Intel Compatibility Issues
+    de_lmp2_ = de_lmp2;
+
+    if (algorithm_ != MP2) {
+        int n_strong_pairs = ij_to_i_j_.size() - n_weak_pairs;
+        outfile->Printf("    Number of Eliminated Pairs   = %d\n", n_weak_pairs);
+        outfile->Printf("    Number of Remaining Pairs    = %d\n", n_strong_pairs);
+        outfile->Printf("    Strong Pairs / Total Pairs   = (%.2f %%)\n", (100.0 * n_strong_pairs) / (naocc * naocc));
+        outfile->Printf("    SC-LMP2 Weak Pair Correction = %.12f\n\n", de_lmp2_);
+    }
+
 #pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         Tt_iajb_[ij] = T_iajb_[ij]->clone();
         Tt_iajb_[ij]->scale(2.0);
         Tt_iajb_[ij]->subtract(T_iajb_[ij]->transpose());
     }
+    
 }
 
 void DLPNOBase::print_aux_domains() {
