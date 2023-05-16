@@ -117,46 +117,80 @@ void DLPNOCCSD::compute_pno_overlaps() {
 }
 
 void DLPNOCCSD::estimate_memory() {
-    outfile->Printf("   => DLPNO-CCSD Memory Estimate <= \n\n");
+    outfile->Printf("  ==> DLPNO-CCSD Memory Estimate <== \n\n");
 
     int n_lmo_pairs = ij_to_i_j_.size();
 
-    size_t vvv = 0;
+    size_t pno_overlap_memory = 0;
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+
+        const int npno_ij = n_pno_[ij];
+        const int nlmo_ij = lmopair_to_lmos_[ij].size();
+        if (npno_ij == 0 || i < j) continue;
+
+        for (int mn_ij = 0; mn_ij < nlmo_ij * nlmo_ij; mn_ij++) {
+            const int m_ij = mn_ij / nlmo_ij, n_ij = mn_ij % nlmo_ij;
+            const int m = lmopair_to_lmos_[ij][m_ij], n = lmopair_to_lmos_[ij][n_ij];
+            const int mn = i_j_to_ij_[m][n];
+            if (mn == -1 || n_pno_[mn] == 0 || m_ij < n_ij) continue;
+
+            pno_overlap_memory += n_pno_[ij] * n_pno_[mn];
+        }
+    }
+
+    size_t oooo = 0;
+    size_t ooov = 0;
+    size_t oovv = 0;
+    size_t ovvv = 0;
     size_t qvv = 0;
 
-#pragma omp parallel for schedule(dynamic) reduction(+ : qvv)
+#pragma omp parallel for schedule(dynamic) reduction(+ : oooo, ooov, oovv, ovvv, qvv)
     for (int ij = 0; ij < n_lmo_pairs; ij++) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
 
-        if (i > j) continue;
-
         const int naux_ij = lmopair_to_ribfs_[ij].size();
+        const int nlmo_ij = lmopair_to_lmos_[ij].size();
         const int npno_ij = n_pno_[ij];
 
-        vvv += 3 * npno_ij * npno_ij * npno_ij;
+        oooo += nlmo_ij * nlmo_ij;
+        ooov += 2 * nlmo_ij * npno_ij;
+        oovv += 4 * npno_ij * npno_ij;
+        ovvv += 3 * npno_ij * npno_ij * npno_ij;
         if (i >= j) qvv += naux_ij * npno_ij * npno_ij;
     }
 
-    const size_t vvv_memory = vvv * sizeof(double);
-    const size_t qvv_memory = qvv * sizeof(double);
-    const size_t total_memory = vvv_memory + qvv_memory;
+    const size_t total_df_memory = qij_memory_ + qia_memory_ + qab_memory_;
+    const size_t total_pno_int_memory = oooo + ooov + oovv + ovvv + qvv;
+    const size_t total_memory = total_df_memory + pno_overlap_memory + total_pno_int_memory;
 
-    outfile->Printf("\n  ==> Estimating Memory for CC Integrals <==\n\n");
-    outfile->Printf("    Memory Required to store integrals of class (i e_ij | a_ij f_ij)  : %8.4f [GiB]\n", vvv_memory / (1024 * 1024 * 1024.0));
-    outfile->Printf("    Memory Required to store integrals of class (q_ij | a_ij b_ij) %8.4f [GiB]\n", qvv_memory / (1024 * 1024 * 1024.0));
+    // 2^30 bytes per GiB
+    outfile->Printf("    (q | i j) integrals    : %.3f [GiB]\n", qij_memory_ * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (q | i a) integrals    : %.3f [GiB]\n", qia_memory_ * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (q | a b) integrals    : %.3f [GiB]\n", qab_memory_ * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    (m i | n j) integrals  : %.3f [GiB]\n", oooo * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    1-virtual PNO integrals: %.3f [GiB]\n", ooov * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    2-virtual PNO integrals: %.3f [GiB]\n", oovv * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    3-virtual PNO integrals: %.3f [GiB]\n", ovvv * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    4-virtual PNO integrals: %.3f [GiB]\n", qvv * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    PNO/PNO overlaps       : %.3f [GiB]\n\n", pno_overlap_memory * pow(2.0, -30) * sizeof(double));
+    outfile->Printf("    Total Memory Given     : %.3f [GiB]\n", memory_ * pow(2.0, -30));
+    outfile->Printf("    Total Memory Required  : %.3f [GiB]\n\n", total_memory * pow(2.0, -30) * sizeof(double));
     
-    if (total_memory < memory_) {
-        outfile->Printf("   Storing virtual/virtual integrals...\n\n");
+    if (total_memory * sizeof(double) < memory_) {
+        outfile->Printf("    Storing virtual/virtual integrals...\n\n");
         virtual_storage_ = CORE;
     } else {
-        outfile->Printf("   Computing virtual/virtual integrals as needed...\n\n");
+        outfile->Printf("    Computing virtual/virtual integrals as needed...\n\n");
         virtual_storage_ = DIRECT;
     }
 }
 
 void DLPNOCCSD::compute_cc_integrals() {
-    outfile->Printf("   Computing CC integrals...\n\n");
+    outfile->Printf("    Computing CC integrals...\n\n");
 
     int n_lmo_pairs = ij_to_i_j_.size();
     // 0 virtual
@@ -324,7 +358,7 @@ void DLPNOCCSD::compute_cc_integrals() {
         L_bar_[ij]->subtract(K_bar_[ji]);
     }
 
-    outfile->Printf("   SVD Memory/DF Memory : %8.4f \n\n", static_cast<double>(qvv_svd_memory) / qvv_memory);
+    outfile->Printf("    SVD Memory/DF Memory : %8.4f \n\n", static_cast<double>(qvv_svd_memory) / qvv_memory);
 
 }
 
@@ -1164,14 +1198,20 @@ void DLPNOCCSD::print_integral_sparsity() {
     size_t total_integrals = (size_t)naocc * nbf * naux + naocc * naocc * naux + nbf * nbf * naux;
     size_t actual_integrals = 0;
 
+    qij_memory_ = 0;
+    qia_memory_ = 0;
+    qab_memory_ = 0;
+
     for (size_t atom = 0; atom < riatom_to_shells1_.size(); atom++) {
-        actual_integrals +=
+        qij_memory_ +=
             riatom_to_lmos_ext_[atom].size() * riatom_to_lmos_ext_[atom].size() * atom_to_ribf_[atom].size();
-        actual_integrals +=
+        qia_memory_ +=
             riatom_to_lmos_ext_[atom].size() * riatom_to_paos_ext_[atom].size() * atom_to_ribf_[atom].size();
-        actual_integrals +=
+        qab_memory_ +=
             riatom_to_paos_ext_[atom].size() * riatom_to_paos_ext_[atom].size() * atom_to_ribf_[atom].size();
     }
+
+    actual_integrals = qij_memory_ + qia_memory_ + qab_memory_;
 
     // number of doubles * (2^3 bytes / double) * (1 GiB / 2^30 bytes)
     double total_memory = total_integrals * pow(2.0, -27);
@@ -1215,10 +1255,10 @@ void DLPNOCCSD::print_results() {
     outfile->Printf("  \n");
     outfile->Printf("  Total DLPNO-CCSD Correlation Energy: %16.12f \n", e_lccsd_ + de_lmp2_ + de_pno_total_ + de_dipole_);
     outfile->Printf("    CCSD Correlation Energy:           %16.12f \n", e_lccsd_);
-    outfile->Printf("    SC-LMP2 Energy Correction:         %16.12f \n", de_lmp2_);
+    outfile->Printf("    Weak Pair MP2 Correction:          %16.12f \n", de_lmp2_);
     outfile->Printf("    LMO Truncation Correction:         %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:         %16.12f \n", de_pno_total_);
-    outfile->Printf("  @Total DLPNO-CCSD Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_lccsd_ + de_pno_total_ + de_dipole_);
+    outfile->Printf("\n\n  @Total DLPNO-CCSD Energy: %16.12f \n", variables_["SCF TOTAL ENERGY"] + e_lccsd_ + de_lmp2_ + de_pno_total_ + de_dipole_);
 }
 
 }  // namespace dlpno

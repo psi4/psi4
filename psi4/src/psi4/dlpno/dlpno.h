@@ -255,6 +255,11 @@ class DLPNOCCSD : public DLPNOBase {
     /// How to compute CC integrals
     VirtualStorage virtual_storage_;
 
+    /// How much memory is used by storing each of the DF integral types
+    size_t qij_memory_;
+    size_t qia_memory_;
+    size_t qab_memory_;
+
     /// PNO overlap integrals
     std::vector<std::vector<SharedMatrix>> S_pno_ij_mn_; ///< pno overlaps
 
@@ -286,9 +291,6 @@ class DLPNOCCSD : public DLPNOBase {
 
     /// compute PNO/PNO overlap matrices for DLPNO-CCSD
     void compute_pno_overlaps();
-
-    /// compute SC-LMP2 guess for weak pairs
-    void compute_de_lmp2();
 
     // => Computing integrals <= //
 
