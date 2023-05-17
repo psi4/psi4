@@ -237,7 +237,7 @@ if args["test"] is not None:
 
     nthread = int(args["nthread"])
     if nthread == 1:
-        extras = None
+        extras = []
     else:
         extras = ['-n', str(nthread)]
     if args["test"] == "smoke_not_d2ints":
