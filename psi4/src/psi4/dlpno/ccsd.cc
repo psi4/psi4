@@ -189,6 +189,284 @@ void DLPNOCCSD::estimate_memory() {
     }
 }
 
+void DLPNOCCSD::determine_strong_and_weak_pairs() {
+    int natom = molecule_->natom();
+    int nbf = basisset_->nbf();
+    int naocc = i_j_to_ij_.size();
+    int n_lmo_pairs = ij_to_i_j_.size();
+    int naux = ribasis_->nbf();
+    int npao = C_pao_->colspi(0);  // same as nbf
+
+    std::vector<double> e_ijs(n_lmo_pairs);
+
+    outfile->Printf("\n  ==> Determining Strong and Weak Pairs <==\n");
+
+    // Step 1: compute SC-LMP2 pair energies
+#pragma omp parallel for schedule(dynamic, 1)
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+        int ji = ij_to_ji_[ij];
+
+        if (i > j) continue;
+
+        //                                                   //
+        // ==> Assemble (ia|jb) for pair ij in PAO basis <== //
+        //                                                   //
+
+        // number of PAOs in the pair domain (before removing linear dependencies)
+        int npao_ij = lmopair_to_paos_[ij].size();  // X_pao_ij->rowspi(0);
+
+        // number of auxiliary basis in the domain
+        int naux_ij = lmopair_to_ribfs_[ij].size();
+
+        auto i_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
+        auto j_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
+
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            int q = lmopair_to_ribfs_[ij][q_ij];
+            int centerq = ribasis_->function_to_center(q);
+            for (int a_ij = 0; a_ij < npao_ij; a_ij++) {
+                int a = lmopair_to_paos_[ij][a_ij];
+                i_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][a]));
+                j_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][j], riatom_to_paos_ext_dense_[centerq][a]));
+            }
+        }
+
+        auto A_solve = submatrix_rows_and_cols(*full_metric_, lmopair_to_ribfs_[ij], lmopair_to_ribfs_[ij]);
+        C_DGESV_wrapper(A_solve, i_qa);
+
+        auto K_pao_ij = linalg::doublet(i_qa, j_qa, true, false);
+
+        //                                      //
+        // ==> Canonicalize PAOs of pair ij <== //
+        //                                      //
+
+        auto S_pao_ij = submatrix_rows_and_cols(*S_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[ij]);
+        auto F_pao_ij = submatrix_rows_and_cols(*F_pao_, lmopair_to_paos_[ij], lmopair_to_paos_[ij]);
+
+        SharedMatrix X_pao_ij;  // canonical transformation of this domain's PAOs to
+        SharedVector e_pao_ij;  // energies of the canonical PAOs
+        std::tie(X_pao_ij, e_pao_ij) = orthocanonicalizer(S_pao_ij, F_pao_ij);
+
+        // S_pao_ij = linalg::triplet(X_pao_ij, S_pao_ij, X_pao_ij, true, false, false);
+        F_pao_ij = linalg::triplet(X_pao_ij, F_pao_ij, X_pao_ij, true, false, false);
+        K_pao_ij = linalg::triplet(X_pao_ij, K_pao_ij, X_pao_ij, true, false, false);
+
+        // number of PAOs in the domain after removing linear dependencies
+        int npao_can_ij = X_pao_ij->colspi(0);
+        auto T_pao_ij = K_pao_ij->clone();
+        for (int a = 0; a < npao_can_ij; ++a) {
+            for (int b = 0; b < npao_can_ij; ++b) {
+                T_pao_ij->set(a, b, T_pao_ij->get(a, b) /
+                                        (-e_pao_ij->get(b) + -e_pao_ij->get(a) + F_lmo_->get(i, i) + F_lmo_->get(j, j)));
+            }
+        }
+
+        size_t nvir_ij = K_pao_ij->rowspi(0);
+
+        auto Tt_pao_ij = T_pao_ij->clone();
+        Tt_pao_ij->scale(2.0);
+        Tt_pao_ij->subtract(T_pao_ij->transpose());
+
+        // mp2 energy of this LMO pair before transformation to PNOs
+        double e_ij = K_pao_ij->vector_dot(Tt_pao_ij);
+
+        e_ijs[ij] = e_ij;
+        if (i != j) e_ijs[ji] = e_ij;
+    }
+
+    // Step 2. Split up strong and weak pairs based on e_ijs
+    int strong_pair_count = 0, weak_pair_count = 0;
+    de_lmp2_ = 0.0;
+
+    i_j_to_ij_strong_.resize(naocc);
+    i_j_to_ij_weak_.resize(naocc);
+
+    for (size_t i = 0; i < naocc; i++) {
+        i_j_to_ij_strong_[i].resize(naocc, -1);
+        i_j_to_ij_weak_[i].resize(naocc, -1);
+
+        for (size_t j = 0; j < naocc; j++) {
+            int ij = i_j_to_ij_[i][j];
+            if (ij == -1) continue;
+
+            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_) { // Strong Pair
+                i_j_to_ij_strong_[i][j] = strong_pair_count;
+                ij_to_i_j_strong_.push_back(std::make_pair(i,j));
+                ++strong_pair_count;
+            } else { // Weak Pair
+                i_j_to_ij_weak_[i][j] = weak_pair_count;
+                ij_to_i_j_weak_.push_back(std::make_pair(i,j));
+                de_lmp2_ += e_ijs[ij];
+                ++weak_pair_count;
+            }
+        }
+    }
+
+    int n_strong_pairs = ij_to_i_j_strong_.size();
+    int n_weak_pairs = ij_to_i_j_weak_.size();
+
+    for (size_t ij = 0; ij < n_strong_pairs; ++ij) {
+        size_t i, j;
+        std::tie(i, j) = ij_to_i_j_strong_[ij];
+        ij_to_ji_strong_.push_back(i_j_to_ij_strong_[j][i]);
+    }
+    
+    for (size_t ij = 0; ij < n_weak_pairs; ++ij) {
+        size_t i, j;
+        std::tie(i, j) = ij_to_i_j_weak_[ij];
+        ij_to_ji_weak_.push_back(i_j_to_ij_weak_[j][i]);
+    }
+
+    outfile->Printf("    Number of Eliminated Pairs   = %d\n", n_weak_pairs);
+    outfile->Printf("    Number of Remaining Pairs    = %d\n", n_strong_pairs);
+    outfile->Printf("    Strong Pairs / Total Pairs   = (%.2f %%)\n", (100.0 * n_strong_pairs) / (naocc * naocc));
+    outfile->Printf("    SC-LMP2 Weak Pair Correction = %.12f\n\n", de_lmp2_);
+
+    // Step 3. Recompute Sparse Maps based on new info
+    ij_to_i_j_ = ij_to_i_j_strong_;
+    i_j_to_ij_ = i_j_to_ij_strong_;
+    ij_to_ji_ = ij_to_ji_strong_;
+
+    outfile->Printf("\n  ==> Merging Strong LMO Domains into LMO Pair Domains <==\n");
+
+    n_lmo_pairs = ij_to_i_j_.size();
+
+    // map from (LMO, LMO) pair to local auxiliary and virtual domains
+    // LMO pair domains are the union of LMO domains
+
+    lmopair_to_paos_.resize(n_lmo_pairs);
+    lmopair_to_paoatoms_.resize(n_lmo_pairs);
+    lmopair_to_ribfs_.resize(n_lmo_pairs);
+    lmopair_to_riatoms_.resize(n_lmo_pairs);
+
+#pragma omp parallel for
+    for (size_t ij = 0; ij < n_lmo_pairs; ++ij) {
+        size_t i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+
+        lmopair_to_paos_[ij] = merge_lists(lmo_to_paos_[i], lmo_to_paos_[j]);
+        lmopair_to_paoatoms_[ij] = merge_lists(lmo_to_paoatoms_[i], lmo_to_paoatoms_[j]);
+
+        lmopair_to_ribfs_[ij] = merge_lists(lmo_to_ribfs_[i], lmo_to_ribfs_[j]);
+        lmopair_to_riatoms_[ij] = merge_lists(lmo_to_riatoms_[i], lmo_to_riatoms_[j]);
+    }
+
+    // Create a list of lmos that "interact" with a lmo_pair by differential overlap
+    lmopair_to_lmos_.resize(n_lmo_pairs);
+    lmopair_to_lmos_dense_.resize(n_lmo_pairs);
+
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        int i, j;
+        std::tie(i, j) = ij_to_i_j_[ij];
+        lmopair_to_lmos_[ij].clear();
+        lmopair_to_lmos_dense_[ij] = std::vector<int>(naocc, -1);
+
+        int m_ij = 0;
+        for (int m = 0; m < naocc; ++m) {
+            int im = i_j_to_ij_[i][m];
+            int jm = i_j_to_ij_[j][m];
+
+            if (im != -1 && jm != -1) {
+                lmopair_to_lmos_[ij].push_back(m);
+                lmopair_to_lmos_dense_[ij][m] = m_ij;
+                m_ij++;
+            }
+        }
+    }
+
+    print_aux_pair_domains();
+    print_pao_pair_domains();
+
+    // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
+    //   of all interacting LMOs
+    lmo_to_riatoms_ext_ = extend_maps(lmo_to_riatoms_, ij_to_i_j_);
+
+    riatom_to_lmos_ext_ = invert_map(lmo_to_riatoms_ext_, natom);
+    riatom_to_paos_ext_ = chain_maps(riatom_to_lmos_ext_, lmo_to_paos_);
+
+    // We'll use these maps to screen the the local MO transform (first index):
+    //   (mn|Q) * C_mi -> (in|Q)
+    riatom_to_atoms1_ = chain_maps(riatom_to_lmos_ext_, lmo_to_atoms_);
+    riatom_to_shells1_ = chain_maps(riatom_to_atoms1_, atom_to_shell_);
+    riatom_to_bfs1_ = chain_maps(riatom_to_atoms1_, atom_to_bf_);
+
+    // We'll use these maps to screen the projected AO transform (second index):
+    //   (mn|Q) * C_nu -> (mu|Q)
+    riatom_to_atoms2_ = chain_maps(riatom_to_lmos_ext_, chain_maps(lmo_to_paos_, pao_to_atoms_));
+    riatom_to_shells2_ = chain_maps(riatom_to_atoms2_, atom_to_shell_);
+    riatom_to_bfs2_ = chain_maps(riatom_to_atoms2_, atom_to_bf_);
+
+    // Need dense versions of previous maps for quick lookup
+
+    // riatom_to_lmos_ext_dense_[riatom][lmo] is the index of lmo in riatom_to_lmos_ext_[riatom]
+    //   (if present), else -1
+    riatom_to_lmos_ext_dense_.resize(natom);
+    // riatom_to_paos_ext_dense_[riatom][pao] is the index of pao in riatom_to_paos_ext_[riatom]
+    //   (if present), else -1
+    riatom_to_paos_ext_dense_.resize(natom);
+
+    // riatom_to_atoms1_dense_(1,2)[riatom][a] is true if the orbitals basis functions of atom A
+    //   are needed for the (LMO,PAO) transform
+    riatom_to_atoms1_dense_.resize(natom);
+    riatom_to_atoms2_dense_.resize(natom);
+
+    for (int a_ri = 0; a_ri < natom; a_ri++) {
+        riatom_to_lmos_ext_dense_[a_ri] = std::vector<int>(naocc, -1);
+        riatom_to_paos_ext_dense_[a_ri] = std::vector<int>(npao, -1);
+        riatom_to_atoms1_dense_[a_ri] = std::vector<bool>(natom, false);
+        riatom_to_atoms2_dense_[a_ri] = std::vector<bool>(natom, false);
+
+        for (int i_ind = 0; i_ind < riatom_to_lmos_ext_[a_ri].size(); i_ind++) {
+            int i = riatom_to_lmos_ext_[a_ri][i_ind];
+            riatom_to_lmos_ext_dense_[a_ri][i] = i_ind;
+        }
+        for (int u_ind = 0; u_ind < riatom_to_paos_ext_[a_ri].size(); u_ind++) {
+            int u = riatom_to_paos_ext_[a_ri][u_ind];
+            riatom_to_paos_ext_dense_[a_ri][u] = u_ind;
+        }
+        for (int a_bf : riatom_to_atoms1_[a_ri]) {
+            riatom_to_atoms1_dense_[a_ri][a_bf] = true;
+        }
+        for (int a_bf : riatom_to_atoms2_[a_ri]) {
+            riatom_to_atoms2_dense_[a_ri][a_bf] = true;
+        }
+    }
+
+    lmopair_lmo_to_riatom_lmo_.resize(n_lmo_pairs);
+    lmopair_pao_to_riatom_pao_.resize(n_lmo_pairs);
+#pragma omp parallel for
+    for (int ij = 0; ij < n_lmo_pairs; ++ij) {
+        int naux_ij = lmopair_to_ribfs_[ij].size();
+        lmopair_lmo_to_riatom_lmo_[ij].resize(naux_ij);
+        lmopair_pao_to_riatom_pao_[ij].resize(naux_ij);
+
+        for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+            int q = lmopair_to_ribfs_[ij][q_ij];
+            int centerq = ribasis_->function_to_center(q);
+
+            int nlmo_ij = lmopair_to_lmos_[ij].size();
+            int npao_ij = lmopair_to_paos_[ij].size();
+            lmopair_lmo_to_riatom_lmo_[ij][q_ij].resize(nlmo_ij);
+            lmopair_pao_to_riatom_pao_[ij][q_ij].resize(npao_ij);
+
+            for (int m_ij = 0; m_ij < nlmo_ij; m_ij++) {
+                int m = lmopair_to_lmos_[ij][m_ij];
+                int m_sparse = riatom_to_lmos_ext_dense_[centerq][m];
+                lmopair_lmo_to_riatom_lmo_[ij][q_ij][m_ij] = m_sparse;
+            }
+
+            for (int a_ij = 0; a_ij < npao_ij; a_ij++) {
+                int a = lmopair_to_paos_[ij][a_ij];
+                int a_sparse = riatom_to_paos_ext_dense_[centerq][a];
+                lmopair_pao_to_riatom_pao_[ij][q_ij][a_ij] = a_sparse;
+            }
+        }
+    }
+}
+
 void DLPNOCCSD::compute_cc_integrals() {
     outfile->Printf("    Computing CC integrals...\n\n");
 
@@ -1121,12 +1399,17 @@ double DLPNOCCSD::compute_energy() {
     prep_sparsity();
     timer_off("Sparsity");
 
+    timer_on("Determine Strong/Weak Pairs");
+    compute_qia();
+    compute_metric();
+    determine_strong_and_weak_pairs();
+    timer_off("Determine Strong/Weak Pairs");
+
     timer_on("DF Ints");
     print_integral_sparsity();
     compute_qij();
     compute_qia();
     compute_qab();
-    compute_metric();
     timer_off("DF Ints");
 
     timer_on("PNO Transform");

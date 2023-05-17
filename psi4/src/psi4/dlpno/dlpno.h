@@ -271,6 +271,16 @@ class DLPNOCCSD : public DLPNOBase {
     /// Coupled-cluster amplitudes
     std::vector<SharedMatrix> T_ia_; ///< singles amplitudes
 
+    // => Strong and Weak Pair Info <=//
+
+    std::vector<std::vector<int>> i_j_to_ij_strong_;
+    std::vector<std::pair<int,int>> ij_to_i_j_strong_;
+    std::vector<int> ij_to_ji_strong_;
+
+    std::vector<std::vector<int>> i_j_to_ij_weak_;
+    std::vector<std::pair<int,int>> ij_to_i_j_weak_;
+    std::vector<int> ij_to_ji_weak_;
+
     // => CCSD Integrals <= //
 
     /// (4 occupied, 0 virtual)
@@ -293,6 +303,9 @@ class DLPNOCCSD : public DLPNOBase {
 
     /// Returns the appropriate overlap matrix given two LMO pairs
     inline SharedMatrix S_PNO(const int ij, const int mn);
+
+    /// Determine which pairs are strong and weak pairs
+    void determine_strong_and_weak_pairs();
 
     /// compute PNO/PNO overlap matrices for DLPNO-CCSD
     void compute_pno_overlaps();

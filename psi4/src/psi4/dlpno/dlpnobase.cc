@@ -1111,10 +1111,7 @@ void DLPNOBase::pno_transform() {
     de_pno_os_.resize(n_lmo_pairs);  // opposite-spin contributions to de_pno_
     de_pno_ss_.resize(n_lmo_pairs);  // same-spin contributions to de_pno_
 
-    int n_weak_pairs = 0;
-    double de_lmp2 = 0.0;
-
-#pragma omp parallel for schedule(dynamic, 1) reduction(+ : de_lmp2) reduction(+ : n_weak_pairs)
+#pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -1192,9 +1189,6 @@ void DLPNOBase::pno_transform() {
         double e_ij_os_initial = K_pao_ij->vector_dot(T_pao_ij);
         double e_ij_ss_initial = e_ij_initial - e_ij_os_initial;
 
-        // Determine if pair is a weak pair
-        bool weak_pair = (algorithm_ != MP2 && i != j && std::fabs(e_ij_initial) < T_CUT_PAIRS_);
-
         // Construct pair density from amplitudes
         auto D_ij = linalg::doublet(Tt_pao_ij, T_pao_ij, false, true);
         D_ij->add(linalg::doublet(Tt_pao_ij, T_pao_ij, true, false));
@@ -1207,15 +1201,10 @@ void DLPNOBase::pno_transform() {
         double t_cut_scale = (i == j) ? T_CUT_PNO_DIAG_SCALE_ : 1.0;
 
         int nvir_ij_final = 0;
-        if (!weak_pair) {
-            for (size_t a = 0; a < nvir_ij; ++a) {
-                if (fabs(pno_occ.get(a)) >= t_cut_scale * T_CUT_PNO_) {
-                    nvir_ij_final++;
-                }
+        for (size_t a = 0; a < nvir_ij; ++a) {
+            if (fabs(pno_occ.get(a)) >= t_cut_scale * T_CUT_PNO_) {
+                nvir_ij_final++;
             }
-        } else {
-            // TODO: Make this process more robust in the future for weak pairs
-            nvir_ij_final = 0;
         }
 
         Dimension zero(1);
@@ -1243,15 +1232,9 @@ void DLPNOBase::pno_transform() {
         double e_ij_ss_trunc = e_ij_trunc - e_ij_os_trunc;
 
         // truncation error
-        double de_pno_ij = (weak_pair) ? 0.0 : e_ij_initial - e_ij_trunc;
-        double de_pno_ij_os = (weak_pair) ? 0.0 : e_ij_os_initial - e_ij_os_trunc;
-        double de_pno_ij_ss =(weak_pair) ? 0.0 : e_ij_ss_initial - e_ij_ss_trunc;
-
-        if (weak_pair) {
-            int prefactor = (i == j) ? 1 : 2;
-            de_lmp2 += prefactor * e_ij_initial;
-            n_weak_pairs += prefactor;
-        }
+        double de_pno_ij = e_ij_initial - e_ij_trunc;
+        double de_pno_ij_os = e_ij_os_initial - e_ij_os_trunc;
+        double de_pno_ij_ss = e_ij_ss_initial - e_ij_ss_trunc;
 
         X_pno_ij = linalg::doublet(X_pao_ij, X_pno_ij, false, false);
 
@@ -1295,17 +1278,6 @@ void DLPNOBase::pno_transform() {
     outfile->Printf("      Max: %3d NOs \n", pno_count_max);
     outfile->Printf("  \n");
     outfile->Printf("    PNO truncation energy = %.12f\n", de_pno_total_);
-
-    // Done for OpenMP/Intel Compatibility Issues
-    de_lmp2_ = de_lmp2;
-
-    if (algorithm_ != MP2) {
-        int n_strong_pairs = ij_to_i_j_.size() - n_weak_pairs;
-        outfile->Printf("    Number of Eliminated Pairs   = %d\n", n_weak_pairs);
-        outfile->Printf("    Number of Remaining Pairs    = %d\n", n_strong_pairs);
-        outfile->Printf("    Strong Pairs / Total Pairs   = (%.2f %%)\n", (100.0 * n_strong_pairs) / (naocc * naocc));
-        outfile->Printf("    SC-LMP2 Weak Pair Correction = %.12f\n\n", de_lmp2_);
-    }
 
 #pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
