@@ -63,6 +63,9 @@ class DLPNOBase : public Wavefunction {
 
       /// tolerance to separate pairs into CCSD and MP2 pairs
       double T_CUT_PAIRS_;
+      
+      /// tolerance to separate MP2 pairs in between crude and refined prescreening
+      double T_CUT_PAIRS_MP2_;
 
       /// tolerance for local density fitting (by Mulliken population)
       double T_CUT_MKN_;
@@ -305,7 +308,16 @@ class DLPNOCCSD : public DLPNOBase {
     inline SharedMatrix S_PNO(const int ij, const int mn);
 
     /// Determine which pairs are strong and weak pairs
-    void determine_strong_and_weak_pairs();
+    void ccsd_pair_prescreening(); // Encapsulates strong and weak pair screening
+    std::vector<double> compute_pair_energies();
+    double filter_pairs(const std::vector<double>& e_ijs, const std::vector<std::vector<int>>& strong_pairs,
+                        double tolerance);
+    
+    /// Regenerate i->u_A, and i->K_A maps after initial prescreening 
+    /// (Riplinger 2016 Algo 1 line 26-27)
+    void reset_sparsity();
+    /// Recompute pair domains using only strong pairs (Riplinger 2016 Algo 1 line 28)
+    void recompute_pair_domains();
 
     /// compute PNO/PNO overlap matrices for DLPNO-CCSD
     void compute_pno_overlaps();

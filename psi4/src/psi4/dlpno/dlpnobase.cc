@@ -111,6 +111,8 @@ void DLPNOBase::common_init() {
             if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
             if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
         }
+        // TODO: Is this reasonable?
+        T_CUT_PAIRS_MP2_ = T_CUT_PAIRS_ * 1e-2;
     }
 
     name_ = "DLPNO";

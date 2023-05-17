@@ -189,17 +189,9 @@ void DLPNOCCSD::estimate_memory() {
     }
 }
 
-void DLPNOCCSD::determine_strong_and_weak_pairs() {
-    int natom = molecule_->natom();
-    int nbf = basisset_->nbf();
-    int naocc = i_j_to_ij_.size();
+std::vector<double> DLPNOCCSD::compute_pair_energies() {
     int n_lmo_pairs = ij_to_i_j_.size();
-    int naux = ribasis_->nbf();
-    int npao = C_pao_->colspi(0);  // same as nbf
-
     std::vector<double> e_ijs(n_lmo_pairs);
-
-    outfile->Printf("\n  ==> Determining Strong and Weak Pairs <==\n");
 
     // Step 1: compute SC-LMP2 pair energies
 #pragma omp parallel for schedule(dynamic, 1)
@@ -276,9 +268,27 @@ void DLPNOCCSD::determine_strong_and_weak_pairs() {
         if (i != j) e_ijs[ji] = e_ij;
     }
 
+    return e_ijs;
+}
+
+double DLPNOCCSD::filter_pairs(const std::vector<double>& e_ijs, const std::vector<std::vector<int>>& strong_pairs,
+                                double tolerance) {
+    int natom = molecule_->natom();
+    int nbf = basisset_->nbf();
+    int naocc = i_j_to_ij_.size();
+    int n_lmo_pairs = ij_to_i_j_.size();
+    int naux = ribasis_->nbf();
+    int npao = C_pao_->colspi(0);  // same as nbf
+
     // Step 2. Split up strong and weak pairs based on e_ijs
     int strong_pair_count = 0, weak_pair_count = 0;
-    de_lmp2_ = 0.0;
+    double delta_e = 0.0;
+
+    ij_to_i_j_strong_.clear();
+    ij_to_i_j_weak_.clear();
+
+    i_j_to_ij_strong_.clear();
+    i_j_to_ij_weak_.clear();
 
     i_j_to_ij_strong_.resize(naocc);
     i_j_to_ij_weak_.resize(naocc);
@@ -291,45 +301,138 @@ void DLPNOCCSD::determine_strong_and_weak_pairs() {
             int ij = i_j_to_ij_[i][j];
             if (ij == -1) continue;
 
-            if (std::fabs(e_ijs[ij]) >= T_CUT_PAIRS_) { // Strong Pair
+            if (std::fabs(e_ijs[ij]) >= tolerance && strong_pairs[i][j] != -1) { // Strong Pair
                 i_j_to_ij_strong_[i][j] = strong_pair_count;
                 ij_to_i_j_strong_.push_back(std::make_pair(i,j));
                 ++strong_pair_count;
             } else { // Weak Pair
                 i_j_to_ij_weak_[i][j] = weak_pair_count;
                 ij_to_i_j_weak_.push_back(std::make_pair(i,j));
-                de_lmp2_ += e_ijs[ij];
+                delta_e += e_ijs[ij];
                 ++weak_pair_count;
             }
         }
     }
 
-    int n_strong_pairs = ij_to_i_j_strong_.size();
-    int n_weak_pairs = ij_to_i_j_weak_.size();
+    ij_to_ji_strong_.clear();
+    ij_to_ji_weak_.clear();
 
-    for (size_t ij = 0; ij < n_strong_pairs; ++ij) {
+    for (size_t ij = 0; ij < ij_to_i_j_strong_.size(); ++ij) {
         size_t i, j;
         std::tie(i, j) = ij_to_i_j_strong_[ij];
         ij_to_ji_strong_.push_back(i_j_to_ij_strong_[j][i]);
     }
     
-    for (size_t ij = 0; ij < n_weak_pairs; ++ij) {
+    for (size_t ij = 0; ij < ij_to_i_j_weak_.size(); ++ij) {
         size_t i, j;
         std::tie(i, j) = ij_to_i_j_weak_[ij];
         ij_to_ji_weak_.push_back(i_j_to_ij_weak_[j][i]);
     }
 
-    outfile->Printf("    Number of Eliminated Pairs   = %d\n", n_weak_pairs);
-    outfile->Printf("    Number of Remaining Pairs    = %d\n", n_strong_pairs);
-    outfile->Printf("    Strong Pairs / Total Pairs   = (%.2f %%)\n", (100.0 * n_strong_pairs) / (naocc * naocc));
-    outfile->Printf("    SC-LMP2 Weak Pair Correction = %.12f\n\n", de_lmp2_);
+    return delta_e;
+}
+
+void DLPNOCCSD::reset_sparsity() {
+    int natom = molecule_->natom();
+    int nbf = basisset_->nbf();
+    int nshell = basisset_->nshell();
+    int naux = ribasis_->nbf();
+    int naocc = nalpha_ - nfrzc();
+    int npao = C_pao_->colspi(0);  // same as nbf
+
+    auto bf_to_atom = std::vector<int>(nbf);
+    auto ribf_to_atom = std::vector<int>(naux);
+
+    for (size_t i = 0; i < nbf; ++i) {
+        bf_to_atom[i] = basisset_->function_to_center(i);
+    }
+
+    for (size_t i = 0; i < naux; ++i) {
+        ribf_to_atom[i] = ribasis_->function_to_center(i);
+    }
+
+    // map from LMO to local DF domain (aux basis functions)
+    // locality determined via mulliken charges
+
+    lmo_to_ribfs_.clear();
+    lmo_to_riatoms_.clear();
+
+    lmo_to_ribfs_.resize(naocc);
+    lmo_to_riatoms_.resize(naocc);
+
+    for (size_t i = 0; i < naocc; ++i) {
+        // atomic mulliken populations for this orbital
+        std::vector<double> mkn_pop(natom, 0.0);
+
+        auto P_i = reference_wavefunction_->S()->clone();
+
+        for (size_t u = 0; u < nbf; u++) {
+            P_i->scale_row(0, u, C_lmo_->get(u, i));
+            P_i->scale_column(0, u, C_lmo_->get(u, i));
+        }
+
+        for (size_t u = 0; u < nbf; u++) {
+            int centerU = basisset_->function_to_center(u);
+            double p_uu = P_i->get(u, u);
+
+            for (size_t v = 0; v < nbf; v++) {
+                int centerV = basisset_->function_to_center(v);
+                double p_vv = P_i->get(v, v);
+
+                // off-diag pops (p_uv) split between u and v prop to diag pops
+                double p_uv = P_i->get(u, v);
+                mkn_pop[centerU] += p_uv * ((p_uu) / (p_uu + p_vv));
+                mkn_pop[centerV] += p_uv * ((p_vv) / (p_uu + p_vv));
+            }
+        }
+
+        // if non-zero mulliken pop on atom, include atom in the LMO's fitting domain
+        for (size_t a = 0; a < natom; a++) {
+            if (fabs(mkn_pop[a]) > T_CUT_MKN_) {
+                lmo_to_riatoms_[i].push_back(a);
+
+                // each atom's aux orbitals are all-or-nothing for each LMO
+                for (int u : atom_to_ribf_[a]) {
+                    lmo_to_ribfs_[i].push_back(u);
+                }
+            }
+        }
+    }
+
+    // map from LMO to local virtual domain (PAOs)
+    // locality determined via differential overlap integrals
+
+    lmo_to_paos_.resize(naocc);
+    lmo_to_paoatoms_.resize(naocc);
+    for (size_t i = 0; i < naocc; ++i) {
+        // PAO domains determined by differential overlap integral
+        std::vector<int> lmo_to_paos_temp;
+        for (size_t u = 0; u < nbf; ++u) {
+            if (fabs(DOI_iu_->get(i, u)) > T_CUT_DO_) {
+                lmo_to_paos_temp.push_back(u);
+            }
+        }
+
+        // if any PAO on an atom is in the list, we take all of the PAOs on that atom
+        lmo_to_paos_[i] = contract_lists(lmo_to_paos_temp, atom_to_bf_);
+
+        // contains the same information as previous map
+        lmo_to_paoatoms_[i] = block_list(lmo_to_paos_[i], bf_to_atom);
+    }
+}
+
+void DLPNOCCSD::recompute_pair_domains() {
+    int natom = molecule_->natom();
+    int nbf = basisset_->nbf();
+    int naocc = i_j_to_ij_.size();
+    int n_lmo_pairs = ij_to_i_j_.size();
+    int naux = ribasis_->nbf();
+    int npao = C_pao_->colspi(0);  // same as nbf
 
     // Step 3. Recompute Sparse Maps based on new info
     ij_to_i_j_ = ij_to_i_j_strong_;
     i_j_to_ij_ = i_j_to_ij_strong_;
     ij_to_ji_ = ij_to_ji_strong_;
-
-    outfile->Printf("\n  ==> Merging Strong LMO Domains into LMO Pair Domains <==\n");
 
     n_lmo_pairs = ij_to_i_j_.size();
 
@@ -354,6 +457,7 @@ void DLPNOCCSD::determine_strong_and_weak_pairs() {
     }
 
     // Create a list of lmos that "interact" with a lmo_pair by differential overlap
+    lmopair_to_lmos_.clear();
     lmopair_to_lmos_.resize(n_lmo_pairs);
     lmopair_to_lmos_dense_.resize(n_lmo_pairs);
 
@@ -435,6 +539,9 @@ void DLPNOCCSD::determine_strong_and_weak_pairs() {
         }
     }
 
+    lmopair_lmo_to_riatom_lmo_.clear();
+    lmopair_pao_to_riatom_pao_.clear();
+
     lmopair_lmo_to_riatom_lmo_.resize(n_lmo_pairs);
     lmopair_pao_to_riatom_pao_.resize(n_lmo_pairs);
 #pragma omp parallel for
@@ -465,6 +572,52 @@ void DLPNOCCSD::determine_strong_and_weak_pairs() {
             }
         }
     }
+}
+
+void DLPNOCCSD::ccsd_pair_prescreening() {
+    int natom = molecule_->natom();
+    int nbf = basisset_->nbf();
+    int naocc = i_j_to_ij_.size();
+    int n_lmo_pairs = ij_to_i_j_.size();
+    int naux = ribasis_->nbf();
+    int npao = C_pao_->colspi(0);  // same as nbf
+
+    outfile->Printf("\n  ==> Determining Strong and Weak Pairs (Crude Prescreening Step) <==\n\n");
+    const std::vector<double>& e_ijs_crude = compute_pair_energies();
+    de_lmp2_ = filter_pairs(e_ijs_crude, i_j_to_ij_, T_CUT_PAIRS_MP2_);
+
+    int n_strong_pairs = ij_to_i_j_strong_.size();
+    int n_weak_pairs = ij_to_i_j_weak_.size();
+
+    outfile->Printf("    Number of Eliminated Pairs   = %d\n", n_weak_pairs);
+    outfile->Printf("    Number of Remaining Pairs    = %d\n", n_strong_pairs);
+    outfile->Printf("    Strong Pairs / Total Pairs   = (%.2f %%)\n", (100.0 * n_strong_pairs) / (naocc * naocc));
+    outfile->Printf("    SC-LMP2 Weak Pair Correction = %.12f\n\n", de_lmp2_);
+
+    // Reset Sparsity After 
+    T_CUT_MKN_ *= 0.01;
+    T_CUT_DO_ *= 0.5;
+
+    reset_sparsity();
+    recompute_pair_domains();
+
+    // Recompute 3-center integrals (with refined pair domains)
+    compute_qia();
+
+    outfile->Printf("\n  ==> Determining Strong and Weak Pairs (Refined Prescreening Step) <==\n\n");
+    const std::vector<double>& e_ijs = compute_pair_energies();
+    const auto i_j_to_ij_strong_copy = i_j_to_ij_strong_;
+    de_lmp2_ += filter_pairs(e_ijs, i_j_to_ij_strong_copy, T_CUT_PAIRS_);
+
+    n_strong_pairs = ij_to_i_j_strong_.size();
+    n_weak_pairs = ij_to_i_j_weak_.size();
+
+    outfile->Printf("    Number of Eliminated Pairs   = %d\n", n_weak_pairs);
+    outfile->Printf("    Number of Remaining Pairs    = %d\n", n_strong_pairs);
+    outfile->Printf("    Strong Pairs / Total Pairs   = (%.2f %%)\n", (100.0 * n_strong_pairs) / (naocc * naocc));
+    outfile->Printf("    SC-LMP2 Weak Pair Correction = %.12f\n\n", de_lmp2_);
+
+    recompute_pair_domains();
 }
 
 void DLPNOCCSD::compute_cc_integrals() {
@@ -1395,6 +1548,10 @@ double DLPNOCCSD::compute_energy() {
     compute_dipole_ints();
     timer_off("Dipole Ints");
 
+    // Adjust parameters for "crude" prescreening
+    T_CUT_MKN_ *= 100;
+    T_CUT_DO_ *= 2;
+
     timer_on("Sparsity");
     prep_sparsity();
     timer_off("Sparsity");
@@ -1402,7 +1559,7 @@ double DLPNOCCSD::compute_energy() {
     timer_on("Determine Strong/Weak Pairs");
     compute_qia();
     compute_metric();
-    determine_strong_and_weak_pairs();
+    ccsd_pair_prescreening();
     timer_off("Determine Strong/Weak Pairs");
 
     timer_on("DF Ints");
