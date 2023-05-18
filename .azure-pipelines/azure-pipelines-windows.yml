@@ -10,7 +10,7 @@ jobs:
       llvm.version: '14.0.0'
       mkl.version: '2022.1.0'
       cmake.build_type: 'Release'
-      conda.build: true
+      conda.build: false
       ctest.type: 'smoke'
       pytest.type: 'quick'
       MKL_CBWR: AVX
