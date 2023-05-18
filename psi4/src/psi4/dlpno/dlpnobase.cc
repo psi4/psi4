@@ -71,6 +71,7 @@ void DLPNOBase::common_init() {
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
     T_CUT_PAIRS_ = options_.get_double("T_CUT_PAIRS");
     T_CUT_MKN_ = options_.get_double("T_CUT_MKN");
+    T_CUT_SVD_ = options_.get_double("T_CUT_SVD");
 
     if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
         algorithm_ = MP2;
@@ -81,39 +82,29 @@ void DLPNOBase::common_init() {
     // did the user manually change expert level options?
     const bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
     const bool T_CUT_DO_changed = options_["T_CUT_DO"].has_changed();
-
     const bool T_CUT_PAIRS_changed = options_["T_CUT_PAIRS"].has_changed();
-    const bool T_CUT_MKN_changed = options_["T_CUT_MKN"].has_changed();
 
     // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
-    if (algorithm_ == MP2) {
-        if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
-            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
-            if (!T_CUT_DO_changed) T_CUT_DO_ = 2e-2;
-        } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
-            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
-            if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-2;
-        } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
-            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-9;
-            if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
-        }
-    } else if (algorithm_ == CCSD) { // parameters derived from Liakos 2015
-        if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
-            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-6;
-            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-3;
-            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
-        } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
-            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 3.33e-7;
-            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-4;
-            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-3;
-        } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
-            if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
-            if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
-            if (!T_CUT_MKN_changed) T_CUT_MKN_ = 1e-4;
-        }
-        // TODO: Is this reasonable?
-        T_CUT_PAIRS_MP2_ = T_CUT_PAIRS_ * 1e-2;
+    if (options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
+        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-7;
+        if (!T_CUT_DO_changed) T_CUT_DO_ = 2e-2;
+        if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-4;
+    } else if (options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
+        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-8;
+        if (!T_CUT_DO_changed) T_CUT_DO_ = 1e-2;
+        if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
+    } else if (options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
+        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-9;
+        if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+        if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
+    } else if (options_.get_str("PNO_CONVERGENCE") == "VERY_TIGHT") {
+        if (!T_CUT_PNO_changed) T_CUT_PNO_ = 1e-10;
+        if (!T_CUT_DO_changed) T_CUT_DO_ = 5e-3;
+        if (!T_CUT_PAIRS_changed) T_CUT_PAIRS_ = 1e-5;
     }
+
+    // TODO: Is this reasonable?
+    T_CUT_PAIRS_MP2_ = T_CUT_PAIRS_ * 0.1;
 
     name_ = "DLPNO";
     module_ = "dlpno";
@@ -1019,9 +1010,13 @@ void DLPNOBase::compute_qab() {
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n");
 
     qab_.resize(naux);
+    qab_svd_.resize(naux);
+
+    size_t svd_mem = 0;
+    size_t non_svd_mem = 0;
 
     // PAO-PAO DF ints
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : svd_mem, non_svd_mem)
     for (int Q = 0; Q < ribasis_->nshell(); Q++) {
         int nq = ribasis_->shell(Q).nfunction();
         int qstart = ribasis_->shell(Q).function_index();
@@ -1077,9 +1072,40 @@ void DLPNOBase::compute_qab() {
 
         // (mn|Q) C_mi C_nj ->(ij|Q)
         for (size_t q = 0; q < nq; q++) {
-            qab_[qstart + q] = linalg::triplet(C_pao_slice, qab_[qstart + q], C_pao_slice, true, false, false);
+            auto qab_pao = linalg::triplet(C_pao_slice, qab_[qstart + q], C_pao_slice, true, false, false);
+            non_svd_mem += qab_pao->size();
+            if (T_CUT_SVD_ > 0.0) {
+                
+                SharedMatrix P = std::make_shared<Matrix>("eigenvectors", qab_pao->nrow(), qab_pao->ncol());
+                SharedVector D = std::make_shared<Vector>("eigenvalues", qab_pao->nrow());
+                qab_pao->diagonalize(P, D, ascending);
+
+                std::vector<int> keep_indices;
+                for (int idx = 0; idx < D->dim(); idx++) {
+                    if (std::fabs(D->get(idx)) > T_CUT_SVD_) keep_indices.push_back(idx); 
+                }
+                P = submatrix_cols(*P, keep_indices);
+
+                SharedVector Dnew = std::make_shared<Vector>("new_eigvals", keep_indices.size());
+                for (int idx = 0; idx < keep_indices.size(); idx++) {
+                    Dnew->set(idx, D->get(keep_indices[idx]));
+                }
+
+                qab_svd_[qstart + q] = std::make_tuple(P, Dnew);
+                svd_mem += P->size() + Dnew->dim();
+
+            } else {
+                qab_[qstart + q] = qab_pao;
+            }
         }
     }
+
+    // qab_memory_ gets updated if SVD/eigen decomp is done
+    if (T_CUT_SVD_ > 0.0) {
+        qab_memory_ = svd_mem;
+    }
+
+    outfile->Printf("\n    SVD Memory Ratio for Qab: %2.4f\n\n", (double) svd_mem / non_svd_mem);
 
     timer_off("(mn|K)->(ab|K)");
 }

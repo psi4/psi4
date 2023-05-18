@@ -54,26 +54,20 @@ class DLPNOBase : public Wavefunction {
     protected:
       /// what quantum chemistry module are we running
       AlgorithmType algorithm_;
-
       /// threshold for PAO domain size
       double T_CUT_DO_;
-
       /// threshold for PNO truncation
       double T_CUT_PNO_;
-
       /// tolerance to separate pairs into CCSD and MP2 pairs
       double T_CUT_PAIRS_;
-      
       /// tolerance to separate MP2 pairs in between crude and refined prescreening
       double T_CUT_PAIRS_MP2_;
-
       /// tolerance for local density fitting (by Mulliken population)
       double T_CUT_MKN_;
-
+      /// tolerance for singular value decomposition of ERI quantities
+      double T_CUT_SVD_;
       /// T_CUT_PNO scaling factor for diagonal PNOs
       double T_CUT_PNO_DIAG_SCALE_;
-
-      
 
       /// auxiliary basis
       std::shared_ptr<BasisSet> ribasis_;
@@ -97,12 +91,19 @@ class DLPNOBase : public Wavefunction {
       SharedMatrix dipole_pair_e_; ///< actual approximate pair energy (used in final energy calculation)
       SharedMatrix dipole_pair_e_bound_; ///< upper bound to approximate pair energies (used for screening)
 
+      /// How much memory is used by storing each of the DF integral types
+      size_t qij_memory_;
+      size_t qia_memory_;
+      size_t qab_memory_;
+
       /// LMO/LMO three-index integrals
       std::vector<SharedMatrix> qij_;
       /// LMO/PAO three-index integrals
       std::vector<SharedMatrix> qia_;
       /// PAO/PAO three-index integrals
       std::vector<SharedMatrix> qab_;
+      /// Cheaper storage of qab_through SVD
+      std::vector<std::tuple<SharedMatrix, SharedVector>> qab_svd_;
 
       /// pair natural orbitals (PNOs)
       std::vector<SharedMatrix> K_iajb_;  ///< exchange operators (i.e. (ia|jb) integrals)
@@ -262,11 +263,6 @@ class DLPNOCCSD : public DLPNOBase {
    protected:
     /// How to compute CC integrals
     VirtualStorage virtual_storage_;
-
-    /// How much memory is used by storing each of the DF integral types
-    size_t qij_memory_;
-    size_t qia_memory_;
-    size_t qab_memory_;
 
     /// PNO overlap integrals
     std::vector<std::vector<SharedMatrix>> S_pno_ij_mn_; ///< pno overlaps

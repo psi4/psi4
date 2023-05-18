@@ -692,9 +692,23 @@ void DLPNOCCSD::compute_cc_integrals() {
             q_jv_tmp = linalg::doublet(q_jv_tmp, X_pno_[ij], false, false);
             C_DCOPY(npno_ij, &(*q_jv_tmp)(0,0), 1, &(*q_jv)(q_ij, 0), 1);
 
-            auto q_vv_tmp = submatrix_rows_and_cols(*qab_[q], lmopair_pao_to_riatom_pao_[ij][q_ij],
+            SharedMatrix q_vv_tmp;
+            if (T_CUT_SVD_ > 0.0) {
+                SharedMatrix P;
+                SharedVector D;
+                std::tie(P, D) = qab_svd_[q];
+                auto qab_temp1 = P->clone();
+                for (int i = 0; i < D->dim(); i++) {
+                    qab_temp1->scale_column(0, i, D->get(i));
+                }
+                qab_temp1 = linalg::doublet(X_pno_[ij], submatrix_rows(*qab_temp1, lmopair_pao_to_riatom_pao_[ij][q_ij]), true, false);
+                auto qab_temp2 = linalg::doublet(X_pno_[ij], submatrix_rows(*P, lmopair_pao_to_riatom_pao_[ij][q_ij]), true, false);
+                q_vv_tmp = linalg::doublet(qab_temp1, qab_temp2, false, true);
+            } else {
+                q_vv_tmp = submatrix_rows_and_cols(*qab_[q], lmopair_pao_to_riatom_pao_[ij][q_ij],
                                 lmopair_pao_to_riatom_pao_[ij][q_ij]);
-            q_vv_tmp = linalg::triplet(X_pno_[ij], q_vv_tmp, X_pno_[ij], true, false, false);
+                q_vv_tmp = linalg::triplet(X_pno_[ij], q_vv_tmp, X_pno_[ij], true, false, false);
+            }
             C_DCOPY(npno_ij * npno_ij, &(*q_vv_tmp)(0,0), 1, &(*q_vv)(q_ij, 0), 1);
         }
 
@@ -738,7 +752,7 @@ void DLPNOCCSD::compute_cc_integrals() {
 
             int nsvd_ij = 0;
             std::vector<int> slice_indices;
-            while (nsvd_ij < S->dim() && S->get(nsvd_ij) >= options_.get_double("T_CUT_SVD")) {
+            while (nsvd_ij < S->dim() && S->get(nsvd_ij) >= T_CUT_SVD_) {
                 U->scale_column(0, nsvd_ij, S->get(nsvd_ij));
                 slice_indices.push_back(nsvd_ij);
                 nsvd_ij += 1;
