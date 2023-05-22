@@ -64,6 +64,8 @@ class DLPNOBase : public Wavefunction {
       double T_CUT_PAIRS_MP2_;
       /// tolerance for local density fitting (by Mulliken population)
       double T_CUT_MKN_;
+      /// tolerance for eigenvalue decomposition of (Q|u_t v_t) integrals
+      double T_CUT_EIG_;
       /// tolerance for singular value decomposition of ERI quantities
       double T_CUT_SVD_;
       /// T_CUT_PNO scaling factor for diagonal PNOs

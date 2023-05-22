@@ -71,6 +71,7 @@ void DLPNOBase::common_init() {
     T_CUT_DO_ = options_.get_double("T_CUT_DO");
     T_CUT_PAIRS_ = options_.get_double("T_CUT_PAIRS");
     T_CUT_MKN_ = options_.get_double("T_CUT_MKN");
+    T_CUT_EIG_ = options_.get_double("T_CUT_EIG");
     T_CUT_SVD_ = options_.get_double("T_CUT_SVD");
 
     if (options_.get_str("DLPNO_ALGORITHM") == "MP2") {
@@ -1074,7 +1075,7 @@ void DLPNOBase::compute_qab() {
         for (size_t q = 0; q < nq; q++) {
             auto qab_pao = linalg::triplet(C_pao_slice, qab_[qstart + q], C_pao_slice, true, false, false);
             non_svd_mem += qab_pao->size();
-            if (T_CUT_SVD_ > 0.0) {
+            if (T_CUT_EIG_ > 0.0) {
                 
                 SharedMatrix P = std::make_shared<Matrix>("eigenvectors", qab_pao->nrow(), qab_pao->ncol());
                 SharedVector D = std::make_shared<Vector>("eigenvalues", qab_pao->nrow());
@@ -1082,7 +1083,7 @@ void DLPNOBase::compute_qab() {
 
                 std::vector<int> keep_indices;
                 for (int idx = 0; idx < D->dim(); idx++) {
-                    if (std::fabs(D->get(idx)) > T_CUT_SVD_) keep_indices.push_back(idx); 
+                    if (std::fabs(D->get(idx)) > T_CUT_EIG_) keep_indices.push_back(idx); 
                 }
                 P = submatrix_cols(*P, keep_indices);
 
@@ -1101,11 +1102,11 @@ void DLPNOBase::compute_qab() {
     }
 
     // qab_memory_ gets updated if SVD/eigen decomp is done
-    if (T_CUT_SVD_ > 0.0) {
+    if (T_CUT_EIG_ > 0.0) {
         qab_memory_ = svd_mem;
     }
 
-    outfile->Printf("\n    SVD Memory Ratio for Qab: %2.4f\n\n", (double) svd_mem / non_svd_mem);
+    outfile->Printf("\n    Memory Savings from eigendecomposition of Qab: %6.2f %% \n\n", 100.0 * svd_mem / non_svd_mem);
 
     timer_off("(mn|K)->(ab|K)");
 }

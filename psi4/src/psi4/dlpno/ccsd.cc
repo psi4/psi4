@@ -1696,7 +1696,8 @@ void DLPNOCCSD::print_header() {
     outfile->Printf("    T_CUT_PNO    = %6.3e \n", T_CUT_PNO_);
     outfile->Printf("    T_CUT_PAIRS  = %6.3e \n", T_CUT_PAIRS_);
     outfile->Printf("    T_CUT_MKN    = %6.3e \n", T_CUT_MKN_);
-    outfile->Printf("    T_CUT_SVD    = %6.3e \n", options_.get_double("T_CUT_SVD"));
+    outfile->Printf("    T_CUT_EIG    = %6.3e \n", T_CUT_EIG_);
+    outfile->Printf("    T_CUT_SVD    = %6.3e \n", T_CUT_SVD_);
     outfile->Printf("    DIAG_SCALE   = %6.3e \n", T_CUT_PNO_DIAG_SCALE_);
     outfile->Printf("    T_CUT_DO_ij  = %6.3e \n", options_.get_double("T_CUT_DO_ij"));
     outfile->Printf("    T_CUT_PRE    = %6.3e \n", options_.get_double("T_CUT_PRE"));
