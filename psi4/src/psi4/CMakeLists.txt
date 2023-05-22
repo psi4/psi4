@@ -37,7 +37,6 @@ foreach(dir_name
   dmrg
   fisapt
   fnocc
-  gdma_interface
   mcscf
   mrcc
   occ

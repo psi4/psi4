@@ -1848,7 +1848,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     # DDPCM preparation
     if core.get_option('SCF', 'DDX'):
         if not solvent._have_ddx:
-            raise ModuleNotFoundError('Python module ddx not found. Solve by installing it: `pip install pyddx`')
+            raise ModuleNotFoundError('Python module ddx not found. Solve by installing it: `conda install -c conda-forge pyddx` or `pip install pyddx`')
         ddx_options = solvent.ddx.get_ddx_options(scf_molecule)
         scf_wfn.ddx = solvent.ddx.DdxInterface(
             molecule=scf_molecule, options=ddx_options,
@@ -1859,7 +1859,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     # PE preparation
     if core.get_option('SCF', 'PE'):
         if not solvent._have_pe:
-            raise ModuleNotFoundError('Python module cppe not found. Solve by installing it: `conda install -c psi4 pycppe`')
+            raise ModuleNotFoundError('Python module cppe not found. Solve by installing it: `conda install -c conda-forge cppe`')
         # PE needs information about molecule and basis set
         pol_embed_options = solvent.pol_embed.get_pe_options()
         core.print_out(f""" Using potential file
@@ -3686,7 +3686,7 @@ def run_adcc(name, **kwargs):
         from adcc.exceptions import InvalidReference
     except ModuleNotFoundError:
         raise ValidationError("adcc extras qc_module not available. Try installing "
-            "via 'pip install adcc' or 'conda install -c adcc adcc'.")
+            "via 'pip install adcc' or 'conda install -c conda-forge adcc'.")
 
     from pkg_resources import parse_version
     min_version = "0.15.16"

@@ -1,5 +1,5 @@
 if(${ENABLE_gdma})
-    find_package(gdma 2.2.6 CONFIG QUIET)
+    find_package(gdma 2.3.3 CONFIG QUIET)
 
     if(${gdma_FOUND})
         get_property(_loc TARGET gdma::gdma PROPERTY LOCATION)
