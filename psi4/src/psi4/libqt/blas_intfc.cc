@@ -61,6 +61,7 @@ extern "C" {
 
 extern void F_DSWAP(int *length, double *x, int *incx, double *y, int *inc_y);
 extern void F_DAXPY(int *length, double *a, const double *x, int *inc_x, double *y, int *inc_y);
+extern void F_DAXPBY(int *length, double *a, const double *x, int *inc_x, double *b, double *y, int *inc_y);
 extern void F_DCOPY(int *length, double *x, int *inc_x, double *y, int *inc_y);
 extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *A, int *lda, double *B,
                     int *ldb, double *beta, double *C, int *ldc);
@@ -127,6 +128,46 @@ void PSI_API C_DAXPY(size_t length, double a, const double *x, int inc_x, double
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
     }
+}
+
+/*!
+ * This function performs y = a * x + b * y.
+ *
+ * Steps every inc_x in x and every inc_y in y (normally both 1).
+ *
+ * \param length   length of arrays
+ * \param a        scalar a to multiply vector x
+ * \param x        vector x
+ * \param inc_x    how many places to skip to get to next element in x
+ * \param b        scalar b to multiply vector x
+ * \param y        vector y
+ * \param inc_y    how many places to skip to get to next element in y
+ *
+ * \ingroup QT
+ */
+void PSI_API C_DAXPBY(size_t length, double a, const double *x, int inc_x, double b, double *y, int inc_y) {
+    int big_blocks = (int)(length / INT_MAX);
+    int small_size = (int)(length % INT_MAX);
+#ifdef BLAS_HAS_DAXPBY
+    for (int block = 0; block <= big_blocks; block++) {
+        const double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DAXPBY(&length_s, &a, x_s, &inc_x, &b, y_s, &inc_y);
+    }
+#else
+    for (int block = 0; block <= big_blocks; block++) {
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DSCAL(&length_s, &b, y_s, &inc_y);
+    }
+    for (int block = 0; block <= big_blocks; block++) {
+        const double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
+        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        ::F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
+    }
+#endif
 }
 
 /*!

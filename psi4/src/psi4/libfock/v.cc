@@ -1672,7 +1672,7 @@ std::vector<SharedMatrix> RV::compute_fock_derivatives() {
     return Vx;
 }
 
-void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
+void RV::compute_Vx_full(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret, bool singlet) {
     timer_on("RV: Form Vx");
 
     // => Validate object / inputs <=
@@ -1778,7 +1778,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
         // ==> Compute functional values for block <==
         parallel_timer_on("Functional", rank);
-        auto& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        auto& vals = fworker->compute_functional(pworker->point_values(), npoints, singlet);
         parallel_timer_off("Functional", rank);
 
         // ==> Define pointers to intermediates <==
@@ -1973,7 +1973,6 @@ SharedMatrix RV::compute_gradient() {
     }
 
     // => Setup <= //
-    // How many atoms?
     int natom = primary_->molecule()->natom();
 
     // Set Hessian derivative level in properties
@@ -2452,10 +2451,7 @@ SharedMatrix RV::compute_hessian() {
 // The triplet spin-adaptation of ∂^2/∂D^2 is needed when describing spin-symmetry breaking
 //    phenomena, e.g., excitation to a triplet or symmetry-breaking orbital rotations.
 //    This is derived by taking ∂^2/∂D^2[same-spin] - ∂^2/∂D^2[opposite-spin].
-//    In practice, this should look like taking the corresponding difference of f-derivatives
-//    and then ignoring all spin indices. Incidentally, the + combination provides the
-//    singlet spin-adpatation without redefining intermediates.
-//    WARNING! Treat this paragraph skeptically untl Psi4 actually has triplet TDDFT.
+//    Incidentally, the + combination provides the singlet spin-adaptation without redefining intermediates.
 // Geometric derivative equations assume D is a density that satisfies the SCF equations.
 //    Therefore, densities are assumed hermitian and ∂E/∂D = 0 means ∂E/∂D ∂D/∂x terms may be neglected.
 // Geometric derivative equations use a compound index (i, x) to refer to displacing atom i in the x
@@ -3430,13 +3426,11 @@ SharedMatrix UV::compute_gradient() {
     }
 
     // => Setup <= //
-    int rank = 0;
 
     // Build the target gradient Matrix
     auto natom = primary_->molecule()->natom();
-    auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
-    auto Gp = G->pointer();
 
+    int rank = 0;
     // What local XC ansatz are we in?
     auto ansatz = functional_->ansatz();
 
@@ -3455,8 +3449,10 @@ SharedMatrix UV::compute_gradient() {
 
     // Thread scratch
     std::vector<std::shared_ptr<Vector>> Q_temp;
+    std::vector<SharedMatrix> G_local;
     for (size_t i = 0; i < num_threads_; i++) {
         Q_temp.push_back(std::make_shared<Vector>("Quadrature Temp", max_points));
+        G_local.push_back(std::make_shared<Matrix>("G Temp", natom, 3));
     }
 
     std::vector<double> functionalq(num_threads_);
@@ -3491,6 +3487,7 @@ SharedMatrix UV::compute_gradient() {
         auto Uap = Ua_local->pointer();
         auto Ub_local = pworker->scratch()[1]->clone();
         auto Ubp = Ub_local->pointer();
+        auto Gp = G_local[rank]->pointer();
 
         // ==> Per-block setup <== //
         auto block = grid_->blocks()[Q];
@@ -3556,15 +3553,15 @@ SharedMatrix UV::compute_gradient() {
 
         // ===> GGA Contribution (Term 1) <=== //
         if (fworker->is_gga()) {
-            double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-            double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-            double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-            double* rho_bx = pworker->point_value("RHO_BX")->pointer();
-            double* rho_by = pworker->point_value("RHO_BY")->pointer();
-            double* rho_bz = pworker->point_value("RHO_BZ")->pointer();
-            double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-            double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
-            double* v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
+            auto rho_ax = pworker->point_value("RHO_AX")->pointer();
+            auto rho_ay = pworker->point_value("RHO_AY")->pointer();
+            auto rho_az = pworker->point_value("RHO_AZ")->pointer();
+            auto rho_bx = pworker->point_value("RHO_BX")->pointer();
+            auto rho_by = pworker->point_value("RHO_BY")->pointer();
+            auto rho_bz = pworker->point_value("RHO_BZ")->pointer();
+            auto v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
+            auto v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
+            auto v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_bx[P]), phi_x[P],
@@ -3742,6 +3739,11 @@ SharedMatrix UV::compute_gradient() {
         parallel_timer_off("V_xc gradient", rank);
     }
     // timer_off("V: V_XC");
+
+    auto G = std::make_shared<Matrix>("XC Gradient", natom, 3);
+    for (auto const& val : G_local) {
+        G->add(val);
+    }
 
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
     quad_values_["RHO_A"] = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);

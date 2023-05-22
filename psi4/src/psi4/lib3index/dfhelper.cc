@@ -53,6 +53,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
@@ -61,10 +62,12 @@
 
 namespace psi {
 
-DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
-    primary_ = primary;
-    aux_ = aux;
-
+DFHelper::DFHelper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux)
+    : primary_(primary), aux_(aux) {
+    if(Process::environment.options["SCF_SUBTYPE"].has_changed()) {
+        subalgo_ = Process::environment.options.get_str("SCF_SUBTYPE");
+    }
+    
     nbf_ = primary_->nbf();
     naux_ = aux_->nbf();
     prepare_blocking();
@@ -174,12 +177,7 @@ void DFHelper::initialize() {
     prepare_sparsity();
 
     // figure out AO_core
-    AO_core();
-    if (print_lvl_ > 0) {
-        outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. ",
-                        (required_core_size_ * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
-        outfile->Printf("%s in-core AOs.\n\n", AO_core_ ? "Using" : "Turning off");
-    }
+    AO_core(true);
 
     // prepare AOs for STORE method
     if (AO_core_) {
@@ -207,7 +205,7 @@ void DFHelper::initialize() {
         outfile->Printf("Exiting DFHelper::initialize\n");
     }
 }
-void DFHelper::AO_core() {
+void DFHelper::AO_core(bool set_AO_core=true) {
     prepare_sparsity();
 
     if (direct_iaQ_) {
@@ -229,9 +227,45 @@ void DFHelper::AO_core() {
     // Tmp buffers
     required_core_size_ += 3 * nbf_ * nbf_ * Qshell_max_;
 
-    // a fraction of memory to use, do we want it as an option?
-    AO_core_ = true;
-    if (memory_ < required_core_size_) AO_core_ = false;
+    // set AO_core_ if requested
+    if (set_AO_core) {
+        if (print_lvl_ > 0) {
+            outfile->Printf("  DFHelper Memory: AOs need %.3f GiB; user supplied %.3f GiB. \n",
+                            (required_core_size_ * 8 / (1024 * 1024 * 1024.0)), (memory_ * 8 / (1024 * 1024 * 1024.0)));
+        }
+
+        // determine AO_core_ either automatically...
+        if (subalgo_ == "AUTO") {
+            // a fraction of memory to use, do we want it as an option?
+            AO_core_ = true;
+            if (memory_ < required_core_size_) AO_core_ = false;
+
+        // .. or forcibly disable AO_core_ if user specifies ...
+        } else if (subalgo_ == "OUT_OF_CORE") {
+            AO_core_ = false;
+
+            if (print_lvl_ > 0) {
+                outfile->Printf("  SCF_SUBTYPE = OUT_OF_CORE selected. Out-of-core MEM_DF algorithm will be used.\n");
+            }
+        // .. or force AO_core_ if user specifies
+        } else if (subalgo_ == "INCORE") {
+            if (memory_ < required_core_size_) {
+                throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+	        } else {
+                AO_core_ = true;
+
+	        if (print_lvl_ > 0) {
+                    outfile->Printf("  SCF_SUBTYPE=INCORE selected. In-core MEM_DF algorithm will be used.\n");
+                }
+	    }
+        } else {
+            throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The choices for SCF_SUBTYPE are AUTO, INCORE, and OUT_OF_CORE.");
+        }
+
+        if (print_lvl_ > 0) {
+            outfile->Printf("  %s in-core AOs.\n\n", AO_core_ ? "Using" : "Turning off");
+        }
+    }
 }
 void DFHelper::print_header() {
     // Preps any required metadata, safe to call multiple times
@@ -380,13 +414,8 @@ void DFHelper::prepare_AO() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-#pragma omp parallel num_threads(nthreads_)
-    {
-        int rank = 0;
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+    for(int rank = 1; rank < nthreads_; rank++) {
+	eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     // gather blocking info

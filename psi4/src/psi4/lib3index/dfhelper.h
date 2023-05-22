@@ -42,7 +42,6 @@
 namespace psi {
 
 class BasisSet;
-class Options;
 class Matrix;
 class TwoBodyAOInt;
 
@@ -81,12 +80,20 @@ class PSI_API DFHelper {
     void set_memory(size_t doubles) { memory_ = doubles; }
     size_t get_memory() { return memory_; }
 
+    ///
+    /// Indicates whether to use the in-core or out-of-core
+    //  subalgorithm available in MemDFJK, or to let
+    //  Psi4 select automatically based on allocated memory
+    /// defaults to AUTO (Psi4 selects by default)
+    ///
+    void set_subalgo(std::string subalgo) { subalgo_ = subalgo; }
+
     /// Returns the number of doubles in the *screened* AO integrals
     size_t get_AO_size() { return big_skips_[nbf_]; }
 
     /// Returns the size of the in-core version in doubles
     size_t get_core_size() {
-        AO_core();
+        AO_core(false);
         return required_core_size_;
     }
 
@@ -339,6 +346,7 @@ class PSI_API DFHelper {
     bool direct_ = false;
     bool direct_iaQ_ = false;
     bool symm_compute_;
+    // Use in-core subalgorithm?
     bool AO_core_ = true;
     bool MO_core_ = false;
     bool release_core_AO_before_metric_ = false;
@@ -361,9 +369,14 @@ class PSI_API DFHelper {
     // Can we early-exit prepare_sparsity?
     bool sparsity_prepared_ = false;
     int print_lvl_ = 1;
+    // Which subalgorithm (in-core or out-of-core) do we use?
+    // AUTO lets DFHelper decide based on memory allocated
+    // INCORE forces the in-core subalgorithm (AO_core_ = true)
+    // OUT_OF_CORE forces the out-of-core subalgorithm (AO_core_ = false)
+    std::string subalgo_ = "AUTO";
 
     // => in-core machinery <=
-    void AO_core();
+    void AO_core(bool set_AO_core);
     std::unique_ptr<double[]> Ppq_;
     // Maps x -> (P|Q) ^ x.
     std::map<double, SharedMatrix> metrics_;

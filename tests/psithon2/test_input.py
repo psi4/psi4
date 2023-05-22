@@ -2,7 +2,7 @@ from addons import *
 
 @ctest_labeler("misc")
 def test_psithon2():
-    ctest_runner(__file__, [
+    ctest_runner(__file__, extra_infiles=[
         "psiaux1/myccpvdzri.gbs",
         "psiaux1/S33.py",
         "psiaux1/myplugin1/doc.rst",

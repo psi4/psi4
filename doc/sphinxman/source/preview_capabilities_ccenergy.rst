@@ -22,9 +22,9 @@
    +--------------------------+-------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
    | ccsd                     | |globals__cc_type|      | ✓̳   ✓̳                 | ✓̳                     | ✓̳   ✓̳                 | ✓̳                     | ✓̳   ✓̳                 | ✓̳                     |
    +--------------------------+-------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   | ccsd(t)                  | |globals__cc_type|      | ✓̳   ✓̳                 | ✓̳                     | ✓̳   ✓̳                 | ✓̳                     | ✓̳   ✓̳                 |                       |
+   | ccsd(t)\ [#e10]_         | |globals__cc_type|      | ✓̳   ✓̳                 |                       | ✓̳   ✓̳                 |                       | ✓̳   ✓̳                 |                       |
    +--------------------------+-------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   | a-ccsd(t)\ [#e10]_       | |globals__cc_type|      | ✓̳   ✓̳                 |                       |                       |                       |                       |                       |
+   | a-ccsd(t)\ [#e11]_       | |globals__cc_type|      | ✓̳   ✓̳                 |                       |                       |                       |                       |                       |
    +--------------------------+-------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
    | bccd(t)                  | |globals__cc_type|      | ✓̳   ✓̳                 |                       | ✓̳   ✓̳                 |                       | ✓̳   ✓̳                 |                       |
    +--------------------------+-------------------------+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -34,4 +34,5 @@
 .. [#e1] Algorithm type selection keyword below. Values to the right: conventional ``CV``, density-fitted ``DF``, and Cholesky-decomposed ``CD``.
 .. [#e2] Active orbital values to the right: all-electron ``A`` and frozen-core ``F``.
 .. [#e3] Finite difference gradients are not marked explicitly by "∷", but the capability can be gleaned from the energy availability.
-.. [#e10] a-CCSD(T) also known as CCSD(aT), Lambda-CCSD(T), and CCSD(T)_L
+.. [#e10] Analytic gradients for conventional all-electron RHF/UHF computations can be requested through |globals__qc_module|\ ``=ccenergy``, but their scaling is best suited to small molecules.
+.. [#e11] a-CCSD(T) also known as CCSD(aT), Lambda-CCSD(T), and CCSD(T)_L

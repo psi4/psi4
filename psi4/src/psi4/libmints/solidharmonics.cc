@@ -31,6 +31,8 @@
 #include <cmath>
 #include <cstdint>
 
+#include <libint2/config.h>
+
 #include "matrix.h"
 #include "integral.h"
 
@@ -113,7 +115,16 @@ uint64_t powll(uint64_t n, size_t p) {
 // basis set ordering
 static inline int npure(int l) { return 2 * l + 1; }
 static inline int icart(int a, int b, int c) { return (((((a + b + c + 1) << 1) - a) * (a + 1)) >> 1) - b - 1; }
-static inline int ipure(int, int m) { return m < 0 ? 2 * -m : (m == 0 ? 0 : 2 * m - 1); }
+static inline int ipure_gaussian(int, int m) { return m < 0 ? 2 * -m : (m == 0 ? 0 : 2 * m - 1); }
+static inline int ipure_standard(int l, int m) { return m + l; }
+
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+static inline int ipure(int l, int m) { return ipure_standard(l, m); }
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+static inline int ipure(int l, int m) { return ipure_gaussian(l, m); }
+#else
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
 
 void solidharmcontrib(int sign, const uint64_t &bin, const uint64_t &den, uint64_t norm2num, uint64_t norm2den, int r2,
                       int x, int y, int z, Matrix &coefmat, int pureindex) {
@@ -179,7 +190,8 @@ void solidharm(size_t l, int m, size_t r2, Matrix &coefmat) {
     }
 }
 
-void solidharmonic(int l, Matrix &coefmat) {
+// gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l)
+void solidharmonic_gaussian(int l, Matrix &coefmat) {
     solidharm(l, 0, 0, coefmat);
     for (int m = 1; m <= l; m++) {
         solidharm(l, m, 0, coefmat);
@@ -193,3 +205,23 @@ void solidharmonic(int l, Matrix &coefmat) {
         }
     }
 }
+
+// standard -- standard ordering (-l, -l+1 ... l)
+void solidharmonic_standard(int l, Matrix &coefmat) {
+    for (int m = -l; m <= l; m++) {
+        solidharm(l, m, 0, coefmat);
+    }
+    for (int r = 2; r <= l; r += 2) {
+        for (int m = -l; m <= l; m++) {
+            if (abs(m) <= l - r) {
+                solidharm(l - r, m, r / 2, coefmat);
+            }
+        }
+    }
+}
+
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+void solidharmonic(int l, Matrix &coefmat) { return solidharmonic_standard(l, coefmat); }
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+void solidharmonic(int l, Matrix &coefmat) { return solidharmonic_gaussian(l, coefmat); }
+#endif

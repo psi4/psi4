@@ -32,6 +32,8 @@
 #include <sstream>
 #include <sys/stat.h>
 
+#include <libint2/engine.h>
+
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/pybind11.h"
@@ -553,6 +555,12 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
     if (module == "SCF" && key == "DIIS_MIN_VECS") {
         py_psi_print_out("WARNING!\n\tRemove keyword DIIS_MIN_VECS! This keyword does nothing. Using it will raise an error in v1.7.\n");
     }
+    if (module == "SCF" && key == "PK_NO_INCORE") {
+        py_psi_print_out("WARNING!\n\tRemove keyword PK_NO_INCORE! PK_NO_INCORE has been replaced by the SCF_SUBTYPE=NO_INCORE option. Using PK_NO_INCORE will raise an error in v1.8.\n");
+    }
+    if (module == "SCF" && key == "PK_ALGO") {
+        py_psi_print_out("WARNING!\n\tRemove keyword PK_ALGO! PK_ALGO has been replaced by the SCF_SUBTYPE=YOSHIMINE_OUT_OF_CORE and REORDER_OUT_OF_CORE options. Using PK_ALGO will raise an error in v1.8.\n");
+    }
 }
 
 Options& py_psi_get_options() { return Process::environment.options; }
@@ -1040,6 +1048,16 @@ bool psi4_python_module_initialize() {
     read_options("", Process::environment.options, true);
     Process::environment.options.set_read_globals(false);
 
+    // Setup Libint2
+    libint2::initialize();
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Standard);
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
+    libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Gaussian);
+#else
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
+
 #ifdef INTEL_Fortran_ENABLED
     static int argc = 1;
     static char* argv = (char*)"";
@@ -1084,6 +1102,8 @@ void psi4_python_module_finalize() {
     // Shut things down:
     // There is only one timer:
     timer_done();
+
+    libint2::finalize();
 
     outfile = std::shared_ptr<PsiOutStream>();
     psi_file_prefix = nullptr;
@@ -1325,13 +1345,21 @@ PYBIND11_MODULE(core, core) {
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
-        auto mode = std::ostream::trunc;
-        outfile = std::make_shared<PsiOutStream>(ofname, mode);
+        if (ofname == "stdout") {
+            outfile = std::make_shared<PsiOutStream>();
+        } else {
+            auto mode = std::ostream::trunc;
+            outfile = std::make_shared<PsiOutStream>(ofname, mode);
+        }
         outfile_name = ofname;
     });
     core.def("set_output_file", [](const std::string ofname, bool append) {
-        auto mode = append ? std::ostream::app : std::ostream::trunc;
-        outfile = std::make_shared<PsiOutStream>(ofname, mode);
+        if (ofname == "stdout") {
+            outfile = std::make_shared<PsiOutStream>();
+        } else {
+            auto mode = append ? std::ostream::app : std::ostream::trunc;
+            outfile = std::make_shared<PsiOutStream>(ofname, mode);
+        }
         outfile_name = ofname;
     }, "ofname"_a, "append"_a = false, "Set the name for output file; prefer :func:`~psi4.set_output_file`");
     core.def("get_output_file", []() { return outfile_name; }, "Returns output file name (stem + suffix, no directory). 'stdout'.");

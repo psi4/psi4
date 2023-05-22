@@ -354,6 +354,11 @@ def highest_analytic_derivative_available(method: str,
     if dertype == '(auto)':
         raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
+    if dertype == 2 and p4util.libint2_configuration()["eri"][2] is None:
+        dertype = 1
+        proc_messages[2] = {"method": method, "blame": "Libint2 build"}
+        #core.print_out("  Warning: Analytical Hessians not available with this Libint2 library. Falling back to finite difference. Setting `points=5` may be needed for precision.\n")
+
     return dertype, proc_messages
 
 
@@ -482,7 +487,10 @@ def sort_derivative_type(
                 conditions2 = [stats[k][1] for k in ["method_type", "reference", "fcae", "qc_module"]]
                 msg += f" under conditions {', '.join(conditions2)}. See {stats['link']}."
             except KeyError:
-                msg += " under any conditions. See (possibly) {stats['link']}."
+                if "blame" in stats:
+                    msg += f" under {stats['blame']} conditions."
+                else:
+                    msg += f" under any conditions. See (possibly) {stats['link']}."
             raise MissingMethodError(msg)
 
     # hack section

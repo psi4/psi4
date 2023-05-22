@@ -92,7 +92,11 @@ class BasisSet;
  *
  *
  */
-class PSI_API ERISieve {
+
+class PSI_API __attribute__((deprecated(
+    "ERISieve is deprecated in favor of TwoBodyAOInt, and "
+    "will be fully be removed as soon as Psi4 v1.9 releases. "
+))) ERISieve {
    protected:
     /// Debug flag (defaults to 0)
     int debug_;

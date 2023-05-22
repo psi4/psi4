@@ -413,6 +413,14 @@ Bibliography
    M. Nottoli, B. Stamm, G. Scalmani, F. Lipparini
    *J. Chem. Theory Comput.* **15**, 6061 (2019).
 
+.. [Lu:2008:973]
+   B. Z. Lu, Y. C. Zhou, M. J. Holst, J. A. McCammon
+   *Commun. Comput. Phys.* **3**, 973 (2008).
+
+.. [Jha:2023:104105]
+   A. Jha, M. Nottoli, A. Mikhalev, C. Quan, B. Stamm
+   *J. Chem. Phys.* **158**, 104105 (2023).
+
 .. [Bondi:1964:441]
    A. Bondi
    *J. Phys. Chem.* **68**, 441 (1964).
@@ -699,4 +707,14 @@ Bibliography
    U. Bozkaya,
    *J. Chem. Phys.* **153**, 244115 (2020).
    https://doi.org/10.1063/5.0035811
+
+.. [Luu:2023:356]
+   D. Luu and K. Patkowski,
+   *J. Phys. Chem. A* **127**, 356-377 (2023).
+   https://doi.org/10.1021/acs.jpca.2c06465
+
+.. [Weigend:2002:4285]
+   F. Weigend,
+   *Phys. Chem. Chem. Phys.* **4**, 4285-4291 (2002).
+   https://doi.org/10.1039/B204199P
 

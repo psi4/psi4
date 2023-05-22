@@ -1,7 +1,6 @@
 list(APPEND sources
   CDJK.cc
-  DFJCOSK.cc
-  DFJLinK.cc
+  CompositeJK.cc
   DirectJK.cc
   DiskDFJK.cc
   DiskJK.cc
@@ -28,12 +27,14 @@ target_compile_definitions(fock
   PRIVATE
     "restrict=${RESTRICT_KEYWORD}"
     $<$<BOOL:${ENABLE_GTFOCK}>:ENABLE_GTFOCK>
+    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
   )
 
 target_link_libraries(fock
   PRIVATE
     gau2grid::gg
     pybind11::headers
+    Libint2::cxx  # for <libint2/config.h>
   )
 
 if(TARGET BrianQC::static_wrapper)

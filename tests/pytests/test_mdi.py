@@ -138,4 +138,4 @@ def test_mdi_water():
     # Test the EXIT command
     engine.exit()
 
-    return 0
+    return None

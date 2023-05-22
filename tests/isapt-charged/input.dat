@@ -1,0 +1,77 @@
+#! This test case shows an example of running the
+#! I-SAPT0/aug-cc-pVDZ computation for a positively charged system, 
+#! illustrating the cation-pi interaction.
+#! The SIAO1 link partitioning algorithm is used.
+#! The system is taken from http://dx.doi.org/10.1016/j.comptc.2014.02.008
+
+memory 8 GB
+
+mol = psi4.core.Molecule.from_arrays(
+elez=[6, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 7, 1, 1, 1, 6, 6, 1, 1, 6, 1, 1, 1, 1],
+fragment_separators=[11, 15],
+fix_com=True,
+fix_orientation=True,
+fix_symmetry='c1',
+fragment_multiplicities=[2, 2, 1],
+molecular_charge=1,
+molecular_multiplicity=1,
+geom=[
+  -2.55005,       -1.09093,        0.80130,
+  -1.95012,       -2.11935,        0.04768,
+  -1.90954,        0.15479,        0.92948,
+  -0.66102,        0.38998,        0.31053,
+  -0.09078,       -0.63135,       -0.48315,
+  -0.72833,       -1.88259,       -0.61078,
+  -2.37934,        0.94931,        1.51831,
+  -3.51641,       -1.25973,        1.28269,
+   0.85695,       -0.44770,       -0.99950,
+  -0.27718,       -2.66423,       -1.22676,
+  -2.44433,       -3.08878,       -0.04743,
+
+   0.66430,       -0.96461,        2.49656,
+  -0.03462,       -0.82120,        3.23388,
+   1.21957,       -1.79230,        2.73915,
+   0.15170,       -1.15372,        1.61377,
+
+   0.12759,        1.63388,        0.64552,
+   0.71086,        1.52562,        2.07254,
+  -0.50847,        2.53073,        0.59149,
+   0.94842,        1.76712,       -0.07716,
+   1.53968,        0.26342,        2.32409,
+  -0.10000,        1.58219,        2.82007,
+   1.37367,        2.38288,        2.26984,
+   2.12960,        0.34927,        3.24598,
+   2.21495,        0.03561,        1.48709])
+activate(mol)
+
+# => Standard Options <= #
+
+set {
+basis aug-cc-pVDZ
+scf_type disk_df
+guess sad
+freeze_core true
+fisapt_link_assignment SIAO1
+fisapt_link_ortho fragment
+}
+
+energy('fisapt0') 
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT0 TOTAL ENERGY")
+ 
+Eref = [ -0.01384434235,        #TEST
+          0.02112897605,        #TEST
+         -0.02158095922,        #TEST
+         -0.00757272476,        #TEST
+         -0.02186905028 ]       #TEST
+       
+compare_values(Eref[0], Eelst, 6, "SAPT0 Eelst")   #TEST
+compare_values(Eref[1], Eexch, 6, "SAPT0 Eexch")   #TEST
+compare_values(Eref[2], Eind, 6, "SAPT0 Eind")     #TEST
+compare_values(Eref[3], Edisp, 6, "SAPT0 Edisp")   #TEST
+compare_values(Eref[4], ET, 6, "SAPT0 Etotal")     #TEST
+

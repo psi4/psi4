@@ -33,6 +33,7 @@
 #include "psi4/libpsio/psio.hpp"
 
 namespace psi {
+class VBase;
 namespace scf {
 
 /*
@@ -85,6 +86,7 @@ class CUHF final : public HF {
     void compute_spin_contamination() override;
 
     void common_init();
+    void setup_potential() override;
 
    public:
     CUHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
@@ -103,6 +105,8 @@ class CUHF final : public HF {
 
     void damping_update(double) override;
     bool stability_analysis() override;
+
+    std::shared_ptr<VBase> V_potential() const override { return nullptr; };
 
     std::shared_ptr<CUHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 

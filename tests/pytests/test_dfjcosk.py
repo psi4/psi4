@@ -67,6 +67,7 @@ units au
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       "ref" :  -0.040121884077},
+                      marks=pytest.mark.nbody,
                       id="h2o/na+ (rhf ie)"),
     ],
 )
@@ -74,7 +75,7 @@ def test_dfjcosk(inp, mols):
     """Test the DFJCOSK JK object via SCF calculations"""
 
     molecule = mols[inp["molecule"]]
-    psi4.set_options({"scf_type" : "cosx", "basis": "cc-pvdz"})
+    psi4.set_options({"scf_type" : "dfdirj+cosx", "basis": "cc-pvdz"})
     psi4.set_options(inp["options"])
 
     # does the DFJCOSK SCF energy match a pre-computed reference?
@@ -118,6 +119,7 @@ def test_dfjcosk(inp, mols):
                       "molecule" : "h2o_nap1",
                       "bsse_type" : "CP",
                       "ref" :  -0.040121884077},
+                      marks=pytest.mark.nbody,
                       id="h2o/na+ (rhf ie)"),
     ],
 )
@@ -125,7 +127,7 @@ def test_dfjcosk_incfock(inp, mols):
     """Test the efficiency of IncFock in DFJCOSK JK object via SCF calculations"""
 
     molecule = mols[inp["molecule"]]
-    psi4.set_options({"scf_type" : "cosx", "basis": "cc-pvdz", "incfock": False})
+    psi4.set_options({"scf_type" : "dfdirj+cosx", "basis": "cc-pvdz", "incfock": False})
     psi4.set_options(inp["options"])
 
     # compute DFJCOSK energy+wfn without IncFock 

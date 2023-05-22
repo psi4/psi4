@@ -105,6 +105,6 @@ class PSI_API Process {
 
     static Environment get_environment();
 };
-}
+}  // namespace psi
 
 #endif /* PROCESS_H_ */

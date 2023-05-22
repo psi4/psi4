@@ -858,8 +858,31 @@ class BasisSet(object):
                 (bastitle, basgbs, postfunc) = bas
 
                 filename = cls.make_filename(basgbs)
-                # -- First seek bas string in input file strings
-                if filename[:-4] in seek['strings']:
+
+                # If name is prefixed with "bse:", then load from basis set exchange library
+                if bastitle.lower().startswith('bse:'):
+                    if not qcel.util.which_import('basis_set_exchange', return_bool=True):
+                        raise ModuleNotFoundError("Python module 'basis_set_exchange' not found. Solve by installing it: `conda install -c conda-forge basis_set_exchange` or `pip install basis_set_exchange`")
+
+                    import basis_set_exchange as bse
+
+                    index = 'bse %s' % (bastitle)
+
+                    if index not in names:
+                        basparts = bastitle.split(":")
+
+                        # If len=3, then bse:name:version
+                        # else it's just bse:name
+                        if len(basparts) == 3:
+                            _, basname, basver = basparts
+                        else:
+                            _, basname = basparts
+                            basver = None
+
+                        names[index] = bse.get_basis(basname, version=basver, fmt='psi4')
+
+                # -- seek bas string in input file strings
+                elif filename[:-4] in seek['strings']:
                     index = 'inputblock %s' % (filename[:-4])
                     # Store contents
                     if index not in names:

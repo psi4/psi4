@@ -316,6 +316,7 @@ void export_mints(py::module& m) {
     typedef double (Vector::*vector_getitem_2)(int, int) const;
     typedef double (Vector::*vector_one_double)(const Vector& other);
     typedef void (Vector::*vector_two)(double scale, const Vector& other);
+    typedef void (Vector::*vector_three)(double alpha, double beta, const Vector &other);
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
         .def(py::init<int>())
@@ -381,7 +382,8 @@ void export_mints(py::module& m) {
         .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
         .def("vector_dot", vector_one_double(&Vector::vector_dot), "Take the dot product of two vectors", "other"_a)
-        .def("axpy", vector_two(&Vector::axpy), "Adds to this vector another vector scaled by a", "a"_a, "other"_a)
+        .def("axpy", vector_two(&Vector::axpy), "Adds to this vector (unscaled) another vector scaled by a; self <- a * other + self", "a"_a, "other"_a)
+        .def("axpby", vector_three(&Vector::axpby), "Adds to this vector scaled by b another vector scaled by a; self <- a * other + b * self", "a"_a, "b"_a, "other"_a)
         .def("save", &Vector::save, "Save the vector to disk", "psio"_a, "file"_a)
         .def("load", &Vector::load, "Load the vector from disk", "psio"_a, "file"_a)
         .def("get_block", &Vector::get_block, "Get a vector block", "slice"_a)
@@ -1715,4 +1717,11 @@ void export_mints(py::module& m) {
         .def("shell_significant", &ERISieve::shell_significant);
 
     m.def("test_matrix_dpd_interface", &psi::test_matrix_dpd_interface);
+
+    m.def("_libint2_configuration", []() { return libint2::configuration_accessor(); },
+        "Returns string with codes detailing the integral classes, angular momenta, and ordering \
+        characteristics of the linked Libint2. Prefer the processed libint2_configuration function.");
+
+    m.def("_libint2_solid_harmonics_ordering", []() { return int(libint2::solid_harmonics_ordering()); },
+        "Libint2 SH setting");
 }

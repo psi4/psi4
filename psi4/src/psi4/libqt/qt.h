@@ -50,12 +50,9 @@ class Wavefunction;
 void dx_write(std::shared_ptr<Wavefunction> wfn, Options& options, double** D);
 void dx_read(double** V_eff, double* phi_ao, double* phi_so, int nao, int nso, double** u);
 void fill_sym_matrix(double** A, int size);
-double combinations(int n, int k);
-double factorial(int n);
+uint64_t combinations(const uint64_t n, const uint64_t k);
+uint64_t factorial(const uint64_t n);
 void schmidt(double** A, int rows, int cols, std::string out_fname);
-PSI_DEPRECATED("The libqt schmidt_add function is deprecated and 1.7 will be the last release to have it.")
-PSI_API int schmidt_add(double** A, int rows, int cols, double* v);
-void normalize(double** A, int rows, int cols);
 double invert_matrix(double** a, double** y, int N, std::string out_fname);
 void solve_2x2_pep(double** H, double S, double* evals, double** evecs);
 PSI_API
@@ -83,9 +80,6 @@ void start_skip_timers();
 void stop_skip_timers();
 void clean_timers();
 
-void print_block(double*, int, int, FILE*);
-int david(double** A, int N, int M, double* eps, double** v, double cutoff, int print);
-
 int cc_excited(const char* wfn);
 int cc_excited(std::string wfn);
 void free_3d_array(double*** A, int p, int q);
@@ -99,6 +93,7 @@ void C_DSWAP(size_t length, double* x, int incx, double* y, int inc_y);
 void C_DSCAL(size_t len, double alpha, double* vec, int inc);
 void C_DCOPY(size_t length, double* x, int inc_x, double* y, int inc_y);
 void C_DAXPY(size_t length, double a, const double* x, int inc_x, double* y, int inc_y);
+void C_DAXPBY(size_t length, double a, const double* x, int inc_x, double b, double* y, int inc_y);
 double C_DDOT(size_t n, const double* const X, int inc_x, const double* const Y, int inc_y);
 double C_DNRM2(size_t n, double* X, int inc_x);
 double C_DASUM(size_t n, double* X, int inc_x);
@@ -177,12 +172,6 @@ int C_DGEEV(char jobvl, char jobvr, int n, double* a, int lda, double* wr, doubl
 int C_DGEEVX(char balanc, char jobvl, char jobvr, char sense, int n, double* a, int lda, double* wr, double* wi,
              double* vl, int ldvl, double* vr, int ldvr, int* ilo, int* ihi, double* scale, double* abnrm,
              double* rconde, double* rcondv, double* work, int lwork, int* iwork);
-PSI_DEPRECATED("DGEGS will soon be removed from LAPACK. Please use DGGES")
-int C_DGEGS(char jobvsl, char jobvsr, int n, double* a, int lda, double* b, int ldb, double* alphar, double* alphai,
-            double* beta, double* vsl, int ldvsl, double* vsr, int ldvsr, double* work, int lwork);
-PSI_DEPRECATED("DGEGV will soon be removed from LAPACK. Please use DGGEV")
-int C_DGEGV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ldb, double* alphar, double* alphai,
-            double* beta, double* vl, int ldvl, double* vr, int ldvr, double* work, int lwork);
 int C_DGEHRD(int n, int ilo, int ihi, double* a, int lda, double* tau, double* work, int lwork);
 int C_DGELQF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
 PSI_API
@@ -191,16 +180,11 @@ int C_DGELSD(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, dou
              double* work, int lwork, int* iwork);
 int C_DGELSS(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* s, double rcond, int* rank,
              double* work, int lwork);
-PSI_DEPRECATED("DGELSX will soon be removed from LAPACK. Please use DGELSY")
-int C_DGELSX(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, int* jpvt, double rcond, int* rank,
-             double* work);
 int C_DGELSY(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, int* jpvt, double rcond, int* rank,
              double* work, int lwork);
 int C_DGEQLF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
 PSI_API
 int C_DGEQP3(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work, int lwork);
-PSI_DEPRECATED("DGEQPF will soon be removed from LAPACK. Please use DGEQPF3")
-int C_DGEQPF(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work);
 int C_DGEQRF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
 int C_DGERFS(char trans, int n, int nrhs, double* a, int lda, double* af, int ldaf, int* ipiv, double* b, int ldb,
              double* x, int ldx, double* ferr, double* berr, double* work, int* iwork);
@@ -242,20 +226,12 @@ int C_DGGQRF(int n, int m, int p, double* a, int lda, double* taua, double* b, i
              int lwork);
 int C_DGGRQF(int m, int p, int n, double* a, int lda, double* taua, double* b, int ldb, double* taub, double* work,
              int lwork);
-PSI_DEPRECATED("DGGSVD will soon be removed from LAPACK. Please use DGVSVD3")
-int C_DGGSVD(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
-             int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
-             double* work, int* iwork);
-#ifdef LAPACK_HAS_DGGSVD3
+#ifdef BLAS_HAS_DGGSVD3
 int C_DGGSVD3(char jobu, char jobv, char jobq, int m, int n, int p, int* k, int* l, double* a, int lda, double* b,
               int ldb, double* alpha, double* beta, double* u, int ldu, double* v, int ldv, double* q, int ldq,
               double* work, int lwork, int* iwork);
 #endif
-PSI_DEPRECATED("DGGSVP will soon be removed from LAPACK. Please use DGVSVP3")
-int C_DGGSVP(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
-             double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
-             double* tau, double* work);
-#ifdef LAPACK_HAS_DGGSVP3
+#ifdef BLAS_HAS_DGGSVP3
 int C_DGGSVP3(char jobu, char jobv, char jobq, int m, int p, int n, double* a, int lda, double* b, int ldb, double tola,
               double tolb, int* k, int* l, double* u, int ldu, double* v, int ldv, double* q, int ldq, int* iwork,
               double* tau, double* work, int lwork);
@@ -472,7 +448,5 @@ int C_DTRSYL(char trana, char tranb, int isgn, int m, int n, double* a, int lda,
              double* scale);
 int C_DTRTRI(char uplo, char diag, int n, double* a, int lda);
 int C_DTRTRS(char uplo, char trans, char diag, int n, int nrhs, double* a, int lda, double* b, int ldb);
-PSI_DEPRECATED("DTZRQF will soon be removed from LAPACK. Please use DTZRZF")
-int C_DTZRQF(int m, int n, double* a, int lda, double* tau);
 int C_DTZRZF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
 }  // namespace psi

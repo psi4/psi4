@@ -13,6 +13,12 @@ mp2_adtz_ref  = -76.3667778886      #TEST
 mp2_atqz_ref  = -76.4038500042      #TEST
 scf_zapa_ref  = -76.063049097037    #TEST
 
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
 molecule h2o {
     O
     H 1 1.0
@@ -39,10 +45,22 @@ clean()
 scf_tzvp = energy('SCF/def2-TZVP')
 compare_values(scf_tzvp_ref, scf_tzvp, 6, "[2] SCF/TZVP Energy Check")  #TEST
 
-scf_adtz = energy('SCF/aug-cc-pV[23]Z')
+if distributed:
+    plan = energy('SCF/aug-cc-pV[23]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_adtz = plan.get_psi_results(client)
+else:
+    scf_adtz = energy('SCF/aug-cc-pV[23]Z')
 compare_values(scf_adtz_ref, scf_adtz, 6, "[3] SCF/a[DT]Z Energy Check")  #TEST
 
-scf_zapa = energy('SCF/[23]ZaPa-NR')
+if distributed:
+    plan = energy('SCF/[23]ZaPa-NR', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_zapa = plan.get_psi_results(client)
+else:
+    scf_zapa = energy('SCF/[23]ZaPa-NR')
 compare_values(scf_zapa_ref, scf_zapa, 6, "[4] SCF/[DT]ZaPa-NR Energy Check")  #TEST
 
 # Three point extrapolation
@@ -59,10 +77,17 @@ clean()
 mp2_atz = energy('MP2/aug-cc-pVTZ')
 compare_values(mp2_atz_ref, mp2_atz, 6, "[7] MP2/aTZ Energy Check")  #TEST
 
-mp2_adtz = energy('MP2/aug-cc-pV[2T]Z')
+if distributed:
+    plan = energy('MP2/aug-cc-pV[2T]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_adtz = plan.get_psi_results(client)
+else:
+    mp2_adtz = energy('MP2/aug-cc-pV[2T]Z')
 compare_values(mp2_adtz_ref, mp2_adtz, 6, "[8] MP2/a[DT]Z Energy Check")  #TEST
 
 # mp2_atqz = energy('MP2/aug-cc-pV[T,Q]Z')
 # compare_values(mp2_atqz_ref, mp2_atqz, 6, "[9] MP2/a[TQ]Z Energy Check")  #TEST
 
-
+if distributed:
+    snowflake.stop()

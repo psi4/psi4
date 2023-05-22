@@ -161,6 +161,9 @@ class SuperFunctional {
     static std::shared_ptr<SuperFunctional> blank();
     static std::shared_ptr<SuperFunctional> XC_build(std::string name, bool unpolarized);
 
+    // Clones a *polarized*, complete superfunctional. Used, e.g., in spin-symmetry-
+    // breaking eigenvectors of the MO hessian or linear response eigenproblem.
+    std::shared_ptr<SuperFunctional> build_polarized();
     // Builds a worker version of the superfunctional
     std::shared_ptr<SuperFunctional> build_worker();
 
@@ -170,8 +173,9 @@ class SuperFunctional {
     // => Computers <= //
 
     // Populates values_
+    // If not spin polarized, singlet controls whether singlet or triplet is asked for.
     std::map<std::string, SharedVector>& compute_functional(const std::map<std::string, SharedVector>& vals,
-                                                            int npoints = -1);
+                                                            int npoints = -1, bool singlet = true);
     void test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa, SharedVector gamma_ab,
                          SharedVector gamma_bb, SharedVector tau_a, SharedVector tau_b);
 

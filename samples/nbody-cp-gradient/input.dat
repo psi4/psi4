@@ -42,6 +42,12 @@ ref_2cp_grad_ie = [
 ref_3cp_ie = -0.004526713808019167
 ref_3cp_ene = -224.8949202576089
 
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
 import numpy as np
 
 molecule water_trimer {
@@ -65,7 +71,14 @@ units bohr
 set d_convergence 9
 
 # compute nbody
-g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
+if distributed:
+    plan = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
+                                      return_total_data=True, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
                                       return_total_data=True, return_wfn=True)
 core.clean()
 
@@ -104,7 +117,14 @@ core.clean()
 
 # compute nbody again with return_total_data=False
 # * note CURRENT ENERGY moved from first to second testing block
-g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type=['cp','nocp'], max_nbody=2,
+if distributed:
+    plan = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type=['cp','nocp'], max_nbody=2,
+                                      return_total_data=False, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    g, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    g, wfn = gradient('SCF/STO-3G', molecule=water_trimer, bsse_type=['cp','nocp'], max_nbody=2,
                                       return_total_data=False, return_wfn=True)
 core.clean()
 
@@ -113,3 +133,6 @@ core.clean()
 
 
 
+
+if distributed:
+    snowflake.stop()

@@ -207,4 +207,4 @@ double Timer::get() {
     // Convert clock ticks to seconds
     return std::chrono::duration_cast<std::chrono::duration<double>>(duration).count();
 }
-}
+}  // namespace psi

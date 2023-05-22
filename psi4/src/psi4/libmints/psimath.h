@@ -188,14 +188,6 @@ int PSI_DGEEVX(int irrep, char balanc, char jobvl, char jobvr, char sense, int n
                int ldvr, std::shared_ptr<IntVector> ilo, std::shared_ptr<IntVector> ihi, std::shared_ptr<Vector> scale,
                std::shared_ptr<Vector> abnrm, std::shared_ptr<Vector> rconde, std::shared_ptr<Vector> rcondv,
                std::shared_ptr<Vector> work, int lwork, std::shared_ptr<IntVector> iwork);
-/// PSI_DGEGS, a wrapper to return C_DGEGS using objects
-int PSI_DGEGS(int irrep, char jobvsl, char jobvsr, int n, SharedMatrix a, int lda, SharedMatrix b, int ldb,
-              std::shared_ptr<Vector> alphar, std::shared_ptr<Vector> alphai, std::shared_ptr<Vector> beta,
-              SharedMatrix vsl, int ldvsl, SharedMatrix vsr, int ldvsr, std::shared_ptr<Vector> work, int lwork);
-/// PSI_DGEGV, a wrapper to return C_DGEGV using objects
-int PSI_DGEGV(int irrep, char jobvl, char jobvr, int n, SharedMatrix a, int lda, SharedMatrix b, int ldb,
-              std::shared_ptr<Vector> alphar, std::shared_ptr<Vector> alphai, std::shared_ptr<Vector> beta,
-              SharedMatrix vl, int ldvl, SharedMatrix vr, int ldvr, std::shared_ptr<Vector> work, int lwork);
 /// PSI_DGEHRD, a wrapper to return C_DGEHRD using objects
 int PSI_DGEHRD(int irrep, int n, int ilo, int ihi, SharedMatrix a, int lda, std::shared_ptr<Vector> tau,
                std::shared_ptr<Vector> work, int lwork);
@@ -213,10 +205,6 @@ int PSI_DGELSD(int irrep, int m, int n, int nrhs, SharedMatrix a, int lda, Share
 int PSI_DGELSS(int irrep, int m, int n, int nrhs, SharedMatrix a, int lda, SharedMatrix b, int ldb,
                std::shared_ptr<Vector> s, double rcond, std::shared_ptr<IntVector> rank, std::shared_ptr<Vector> work,
                int lwork);
-/// PSI_DGELSX, a wrapper to return C_DGELSX using objects
-int PSI_DGELSX(int irrep, int m, int n, int nrhs, SharedMatrix a, int lda, SharedMatrix b, int ldb,
-               std::shared_ptr<IntVector> jpvt, double rcond, std::shared_ptr<IntVector> rank,
-               std::shared_ptr<Vector> work);
 /// PSI_DGELSY, a wrapper to return C_DGELSY using objects
 int PSI_DGELSY(int irrep, int m, int n, int nrhs, SharedMatrix a, int lda, SharedMatrix b, int ldb,
                std::shared_ptr<IntVector> jpvt, double rcond, std::shared_ptr<IntVector> rank,
@@ -227,9 +215,6 @@ int PSI_DGEQLF(int irrep, int m, int n, SharedMatrix a, int lda, std::shared_ptr
 /// PSI_DGEQP3, a wrapper to return C_DGEQP3 using objects
 int PSI_DGEQP3(int irrep, int m, int n, SharedMatrix a, int lda, std::shared_ptr<IntVector> jpvt,
                std::shared_ptr<Vector> tau, std::shared_ptr<Vector> work, int lwork);
-/// PSI_DGEQPF, a wrapper to return C_DGEQPF using objects
-int PSI_DGEQPF(int irrep, int m, int n, SharedMatrix a, int lda, std::shared_ptr<IntVector> jpvt,
-               std::shared_ptr<Vector> tau, std::shared_ptr<Vector> work);
 /// PSI_DGERFS, a wrapper to return C_DGERFS using objects
 int PSI_DGERFS(int irrep, char trans, int n, int nrhs, SharedMatrix a, int lda, SharedMatrix af, int ldaf,
                std::shared_ptr<IntVector> ipiv, SharedMatrix b, int ldb, SharedMatrix x, int ldx,
@@ -306,16 +291,6 @@ int PSI_DGGQRF(int irrep, int n, int m, int p, SharedMatrix a, int lda, std::sha
 /// PSI_DGGRQF, a wrapper to return C_DGGRQF using objects
 int PSI_DGGRQF(int irrep, int m, int p, int n, SharedMatrix a, int lda, std::shared_ptr<Vector> taua, SharedMatrix b,
                int ldb, std::shared_ptr<Vector> taub, std::shared_ptr<Vector> work, int lwork);
-/// PSI_DGGSVD, a wrapper to return C_DGGSVD using objects
-int PSI_DGGSVD(int irrep, char jobu, char jobv, char jobq, int m, int n, int p, std::shared_ptr<IntVector> k,
-               std::shared_ptr<IntVector> l, SharedMatrix a, int lda, SharedMatrix b, int ldb,
-               std::shared_ptr<Vector> alpha, std::shared_ptr<Vector> beta, SharedMatrix u, int ldu, SharedMatrix v,
-               int ldv, SharedMatrix q, int ldq, std::shared_ptr<Vector> work, std::shared_ptr<IntVector> iwork);
-/// PSI_DGGSVP, a wrapper to return C_DGGSVP using objects
-int PSI_DGGSVP(int irrep, char jobu, char jobv, char jobq, int m, int p, int n, SharedMatrix a, int lda, SharedMatrix b,
-               int ldb, double tola, double tolb, std::shared_ptr<IntVector> k, std::shared_ptr<IntVector> l,
-               SharedMatrix u, int ldu, SharedMatrix v, int ldv, SharedMatrix q, int ldq,
-               std::shared_ptr<IntVector> iwork, std::shared_ptr<Vector> tau, std::shared_ptr<Vector> work);
 /// PSI_DGTCON, a wrapper to return C_DGTCON using objects
 int PSI_DGTCON(int irrep, char norm, int n, std::shared_ptr<Vector> dl, std::shared_ptr<Vector> d,
                std::shared_ptr<Vector> du, std::shared_ptr<Vector> du2, std::shared_ptr<IntVector> ipiv, double anorm,
@@ -669,8 +644,6 @@ int PSI_DTRTRI(int irrep, char uplo, char diag, int n, SharedMatrix a, int lda);
 /// PSI_DTRTRS, a wrapper to return C_DTRTRS using objects
 int PSI_DTRTRS(int irrep, char uplo, char trans, char diag, int n, int nrhs, SharedMatrix a, int lda, SharedMatrix b,
                int ldb);
-/// PSI_DTZRQF, a wrapper to return C_DTZRQF using objects
-int PSI_DTZRQF(int irrep, int m, int n, SharedMatrix a, int lda, std::shared_ptr<Vector> tau);
 /// PSI_DTZRZF, a wrapper to return C_DTZRZF using objects
 int PSI_DTZRZF(int irrep, int m, int n, SharedMatrix a, int lda, std::shared_ptr<Vector> tau,
                std::shared_ptr<Vector> work, int lwork);

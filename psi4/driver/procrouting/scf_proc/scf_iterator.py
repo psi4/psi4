@@ -214,9 +214,16 @@ def scf_initialize(self):
 
         core.print_out("\n  ==> Pre-Iterations <==\n\n")
 
+        # force SCF_SUBTYPE to AUTO during SCF guess
+        optstash = p4util.OptionsState(["SCF", "SCF_SUBTYPE"])
+        core.set_local_option("SCF", "SCF_SUBTYPE", "AUTO")
+
         core.timer_on("HF: Guess")
         self.guess()
         core.timer_off("HF: Guess")
+
+        optstash.restore()
+
         # Print out initial docc/socc/etc data
         if self.get_print():                    
             lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['SAD']
@@ -316,7 +323,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if core.get_option('SCF', 'DDX'):
             Dt = self.Da().clone()
             Dt.add(self.Db())
-            uddx, Vddx = self.ddx_state.get_solvation_contributions(Dt)
+            uddx, Vddx, self.ddx_state = self.ddx.get_solvation_contributions(Dt, self.ddx_state)
             SCFE += uddx
             self.push_back_external_potential(Vddx)
         self.set_variable("DD SOLVATION ENERGY", uddx)  # P::e DDX

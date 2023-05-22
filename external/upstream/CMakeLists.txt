@@ -2,6 +2,7 @@
 foreach(dir
   pybind11
   ambit
+  bse
   chemps2
   cppe
   dkh
@@ -25,3 +26,7 @@ foreach(dir
   )
   add_subdirectory(${dir})
 endforeach()
+
+# for rare case where resolved ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR} isn't nested, make libdir. may yet be empty
+file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" _plain_libdir)
+file(MAKE_DIRECTORY ${_plain_libdir})

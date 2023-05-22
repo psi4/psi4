@@ -29,6 +29,7 @@ data = {
         [0, -0.006730035450, -0.005951905850]])
     }
 
+@pytest.mark.findif
 @pytest.mark.slow
 # TODO: That "true" needs to be a string is silly. Convert it to a boolean when you can do that without incurring a NaN energy.
 @pytest.mark.parametrize("inp", [

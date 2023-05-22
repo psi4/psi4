@@ -574,6 +574,8 @@ def _validate_cbs_inputs(cbs_metadata: CBSMetadata, molecule: Union["qcdb.Molecu
         stage. All validation takes place here.
     """
 
+    # TODO: split options into mixable (qc_module=ccenergy/"") or non-mixable (freeze_core=true/false)
+
     metadata = []
     for iitem, item in enumerate(cbs_metadata):
         # 1a) all items must have wfn
@@ -1635,10 +1637,10 @@ class CompositeComputer(BaseComputer):
                     mc['f_gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
             if 'CURRENT DIPOLE' in task.extras['qcvars']:
-                mc['f_dipole'] = np.array(task.extras['qcvars']['CURRENT DIPOLE'])
+                mc['f_dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
 
             if 'CURRENT DIPOLE GRADIENT' in task.extras['qcvars']:
-                mc['f_dipder'] = np.array(task.extras['qcvars']['CURRENT DIPOLE GRADIENT'])
+                mc['f_dipder'] = task.extras['qcvars']['CURRENT DIPOLE GRADIENT']
 
             # Fill in energies for subsumed methods
             if self.metameta['ptype'] == 'energy':
@@ -1742,11 +1744,15 @@ class CompositeComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('CBS QCSchema\n' + pp.pformat(cbs_model.dict()))
+        logger.debug('CBS QCSchema:\n' + pp.pformat(cbs_model.dict()))
 
         return cbs_model
 
-    def get_psi_results(self, return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+    def get_psi_results(
+        self,
+        client: Optional["qcportal.FractalClient"] = None,
+        *,
+        return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into Composite-flavored QCSchema,
         then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
 
@@ -1770,7 +1776,7 @@ class CompositeComputer(BaseComputer):
             Wavefunction described above when *return_wfn* specified.
 
         """
-        cbs_model = self.get_results()
+        cbs_model = self.get_results(client=client)
 
         if cbs_model.driver == 'energy':
             ret_ptype = cbs_model.return_result

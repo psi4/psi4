@@ -1415,9 +1415,15 @@ class ManyBodyComputer(BaseComputer):
                 'success': True,
             })
 
+        logger.debug('\nNBODY QCSchema:\n' + pp.pformat(nbody_model.dict()))
+
         return nbody_model
 
-    def get_psi_results(self, return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+    def get_psi_results(
+        self,
+        client: Optional["qcportal.FractalClient"] = None,
+        *,
+        return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into ManyBody-flavored QCSchema,
         then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
 
@@ -1440,7 +1446,7 @@ class ManyBodyComputer(BaseComputer):
             Wavefunction described above when *return_wfn* specified.
 
         """
-        nbody_model = self.get_results()
+        nbody_model = self.get_results(client=client)
         ret = nbody_model.return_result
 
         wfn = core.Wavefunction.build(self.molecule, "def2-svp", quiet=True)

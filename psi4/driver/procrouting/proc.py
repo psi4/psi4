@@ -1001,14 +1001,14 @@ def select_ccsd_t__gradient(name, **kwargs):
     func = None
     if reference in ['RHF']:
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module in ['CCENERGY']:  # FORMERLY ""
                 func = run_ccenergy_gradient
         elif mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_gradient
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module in ['CCENERGY']:  # FORMERLY ""
                 func = run_ccenergy_gradient
         elif mtd_type == 'DF':
             if module in ['OCC']:  # SOON "",
@@ -1446,7 +1446,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         wfn._disp_functor = _disp_functor
 
     # Set the DF basis sets
-    df_needed = core.get_global_option("SCF_TYPE") in ["DF", "MEM_DF", "DISK_DF", "COSX", "LINK"]
+    df_needed = core.get_global_option("SCF_TYPE") in ["DF", "MEM_DF", "DISK_DF" ]
+    df_needed |= "DFDIRJ" in core.get_global_option("SCF_TYPE")
     df_needed |= (core.get_global_option("SCF_TYPE") == "DIRECT" and core.get_option("SCF", "DF_SCF_GUESS"))
     if df_needed:
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
@@ -1613,7 +1614,7 @@ def scf_helper(name, post_scf=True, **kwargs):
                        """further calculations in C1 point group.\n""")
 
     # PE needs to use exactly input orientation to correspond to potfile
-    if core.get_option("SCF", "PE"):
+    if core.get_option("SCF", "PE") or "external_potentials" in kwargs:
         c1_molecule = scf_molecule.clone()
         if getattr(scf_molecule, "_initial_cartesian", None) is not None:
             c1_molecule._initial_cartesian = scf_molecule._initial_cartesian.clone()
@@ -1623,7 +1624,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             c1_molecule.fix_com(True)
             c1_molecule.update_geometry()
         else:
-            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE on non-Cartesian molecules.")
+            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE or external potentials on non-Cartesian molecules.")
 
         scf_molecule = c1_molecule
         core.print_out("""  PE does not make use of molecular symmetry: """
@@ -1645,6 +1646,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         if isinstance(name, dict):
             bannername = name.get("name", "custom functional")
 
+    p4util.libint2_print_out()
 
     # Setup the timer
     if do_timer:
@@ -1848,10 +1850,11 @@ def scf_helper(name, post_scf=True, **kwargs):
         if not solvent._have_ddx:
             raise ModuleNotFoundError('Python module ddx not found. Solve by installing it: `pip install pyddx`')
         ddx_options = solvent.ddx.get_ddx_options(scf_molecule)
-        scf_wfn.ddx_state = solvent.ddx.DdxInterface(
+        scf_wfn.ddx = solvent.ddx.DdxInterface(
             molecule=scf_molecule, options=ddx_options,
             basisset=scf_wfn.basisset()
         )
+        scf_wfn.ddx_state = None
 
     # PE preparation
     if core.get_option('SCF', 'PE'):
@@ -3685,6 +3688,13 @@ def run_adcc(name, **kwargs):
         raise ValidationError("adcc extras qc_module not available. Try installing "
             "via 'pip install adcc' or 'conda install -c adcc adcc'.")
 
+    from pkg_resources import parse_version
+    min_version = "0.15.16"
+    if parse_version(adcc.__version__) < parse_version(min_version):
+        raise ModuleNotFoundError("adcc version {} is required at least. "
+                                    "Version {}"
+                                    " was found.".format(min_version,
+                                                        adcc.__version__))
 
     if core.get_option('ADC', 'REFERENCE') not in ["RHF", "UHF"]:
         raise ValidationError('adcc requires reference RHF or UHF')
@@ -4838,11 +4848,14 @@ def run_fisapt(name, **kwargs):
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         core.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        _ini_cart = getattr(sapt_dimer, "_initial_cartesian", None)
         sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
+        if _ini_cart:
+            sapt_dimer._initial_cartesian = _ini_cart
 
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('FISAPT requires requires \"reference rhf\".')

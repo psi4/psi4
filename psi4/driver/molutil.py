@@ -170,10 +170,15 @@ def _molecule_from_arrays(cls,
         nonphysical=nonphysical,
         mtol=mtol,
         verbose=verbose)
+
+    qmol = core.Molecule.from_dict(molrec)
+    geom = np.array(molrec["geom"]).reshape((-1, 3))
+    qmol._initial_cartesian = core.Matrix.from_array(geom)
+
     if return_dict:
-        return core.Molecule.from_dict(molrec), molrec
+        return qmol, molrec
     else:
-        return core.Molecule.from_dict(molrec)
+        return qmol
 
 
 @classmethod

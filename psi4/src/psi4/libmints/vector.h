@@ -331,6 +331,7 @@ class PSI_API Vector final : public IrreppedVector<double> {
     void subtract(const Vector &other);
 
     void axpy(double scale, const Vector &other);
+    void axpby(double alpha, double beta, const Vector &other);
 
     void print(std::string outfile = "outfile") const { IrreppedVector<double>::print(outfile, "%20.15f"); };
 

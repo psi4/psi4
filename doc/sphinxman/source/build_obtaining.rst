@@ -31,6 +31,12 @@
 Obtaining |PSIfour|
 ===================
 
+.. warning:: As of v1.8, primary binary distribution has moved from
+   the psi4 channel to the conda-forge channel. Neither install docs
+   for users nor compile docs for developers have been updated yet to
+   reflect new patterns. Please consult :psicode:`psicode downloads
+   page <installs/latest/>` for the latest guides.
+
 .. _`faq:obtainpsi4`:
 
 How to obtain Psi4: start with find-the-code quiz, end in ``{top-level-psi4-dir}``

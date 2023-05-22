@@ -55,8 +55,8 @@ if(${ENABLE_ambit})
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
                        -DENABLE_TESTS=OFF
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
-                       -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
-                       -DTargetHDF5_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5
+                       -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
+                       -DTargetHDF5_DIR=${TargetHDF5_DIR}
                        -Dpybind11_DIR=${pybind11_DIR}
                        -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}

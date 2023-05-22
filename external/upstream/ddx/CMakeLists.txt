@@ -1,7 +1,7 @@
 if(${ENABLE_ddx})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_ddx}))
         include(FindPythonModule)
-        find_python_module(pyddx ATLEAST 0.1.3 QUIET)
+        find_python_module(pyddx ATLEAST 0.4.2 QUIET)
     endif()
 
     if(${pyddx_FOUND})
@@ -21,7 +21,7 @@ if(${ENABLE_ddx})
 
         ExternalProject_Add(ddx_external
             BUILD_ALWAYS 1
-            URL https://github.com/ddsolvation/ddX/archive/v0.1.3.tar.gz
+            URL https://github.com/ddsolvation/ddX/archive/v0.4.2.tar.gz
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${Python_EXECUTABLE} setup.py build

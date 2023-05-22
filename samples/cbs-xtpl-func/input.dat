@@ -22,8 +22,8 @@ E2 = energy('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]
 # analytic
 
 
-G1 = gradient("cbs", corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
-G2 = gradient('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+G1 = gradient("cbs", cbs_metadata=[{"wfn": "mp2", "basis": 'cc-pV[DT]Z'}, {"wfn": 'ccsd(t)', "basis": '3-21g', "options": {'qc_module': 'ccenergy'}}])
+G2 = gradient('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g', delta_options={'qc_module': 'ccenergy'})
 
 # findif
 # analytic
@@ -36,12 +36,12 @@ for fam in basfams:
 # Reset mol geometries
 mol.R = 1.0
 mol.A = 100.0
-E = optimize("cbs", corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
+E = optimize("cbs", cbs_metadata=[{"wfn": "mp2", "basis": "cc-pV[DT]Z"}, {"wfn": "ccsd(t)", "basis": "3-21g", "options": {"qc_module": "ccenergy"}}])
 
 # Reset mol geometries
 mol.R = 1.0
 mol.A = 100.0
-E = optimize('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
+E = optimize('sherrill_gold_standard', scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g', delta_options={"qc_module": "ccenergy"})
 
 
 # Note (Nov 2019 impl; May 2022 merged): leaving above note for historical reasons. With
