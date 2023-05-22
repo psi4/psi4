@@ -800,6 +800,9 @@ void DLPNOMP2::pno_transform() {
             int centerq = ribasis_->function_to_center(q);
             for (int a_ij = 0; a_ij < npao_ij; a_ij++) {
                 int a = lmopair_to_paos_[ij][a_ij];
+                // riatom_to_lmos_ext_dense_ and riatom_to_paos_ext_dense are guaranteed to not be -1, by construction
+                // since the auxiliary index q is derived from the lmo pair ij, and corresponding PAOs of pair ij are guaranteed
+                // to be in the local, extended domain of the riatom
                 i_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][i], riatom_to_paos_ext_dense_[centerq][a]));
                 j_qa->set(q_ij, a_ij, qia_[q]->get(riatom_to_lmos_ext_dense_[centerq][j], riatom_to_paos_ext_dense_[centerq][a]));
             }
