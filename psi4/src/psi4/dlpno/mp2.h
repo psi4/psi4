@@ -131,11 +131,11 @@ class DLPNOMP2 : public Wavefunction {
     // Dense analogues of some sparse maps for quick lookup
 
     /* Takes an atom index and a global LMO index 
-    to return the sparse LMO index to that atom,
+    to return the sparse LMO index on that atom,
     (-1) if that LMO is not on the riatom's extended domain */
     std::vector<std::vector<int>> riatom_to_lmos_ext_dense_;
     /* Takes an atom index and a global PAO index 
-    to return the sparse PAO index to that atom,
+    to return the sparse PAO index on that atom,
     (-1) if that PAO is not on the riatom's extended domain */
     std::vector<std::vector<int>> riatom_to_paos_ext_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms1_dense_;
