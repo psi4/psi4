@@ -122,7 +122,7 @@ void DLPNOCCSD::estimate_memory() {
     int n_lmo_pairs = ij_to_i_j_.size();
 
     size_t pno_overlap_memory = 0;
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(dynamic, 1) reduction(+ : pno_overlap_memory)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
