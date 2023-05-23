@@ -171,6 +171,7 @@ jobs:
           - python=${{ matrix.cfg.python-version }}
           - scipy
           - toml
+          - typing-extensions=4.5.0
             # non-qc opt'l
           - memory_profiler
             # qc req'd
