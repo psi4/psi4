@@ -693,7 +693,7 @@ void DLPNOCCSD::compute_cc_integrals() {
             C_DCOPY(npno_ij, &(*q_jv_tmp)(0,0), 1, &(*q_jv)(q_ij, 0), 1);
 
             SharedMatrix q_vv_tmp;
-            if (T_CUT_SVD_ > 0.0) {
+            if (T_CUT_EIG_ > 0.0) {
                 SharedMatrix P;
                 SharedVector D;
                 std::tie(P, D) = qab_svd_[q];

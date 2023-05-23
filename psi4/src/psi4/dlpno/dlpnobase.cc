@@ -1094,7 +1094,8 @@ void DLPNOBase::compute_qab() {
 
                 qab_svd_[qstart + q] = std::make_tuple(P, Dnew);
                 svd_mem += P->size() + Dnew->dim();
-
+                
+                qab_[qstart + q] = nullptr;
             } else {
                 qab_[qstart + q] = qab_pao;
             }
