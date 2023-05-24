@@ -131,6 +131,17 @@ get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using gau2grid${ColourReset}: ${_loc} (version ${gau2grid_VERSION})")
 
+if(${ENABLE_gdma})
+    # neither gdma nor pygdma actually needed c-side; runtime detection would
+    #   do just as well. included for completeness and so gdma_PYMOD can be
+    #   hard-loaded into PYTHONPATH.
+    find_package(gdma 2.3.3 CONFIG REQUIRED COMPONENTS Python)
+    get_property(_loc TARGET gdma::pygdma PROPERTY LOCATION)
+    message(STATUS "${Cyan}Found gdma${ColourReset}: ${_loc} (version ${gdma_VERSION})")
+else()
+    message(STATUS "Disabled gdma")
+endif()
+
 if(${ENABLE_Libint1t})
 find_package(Libint 1.2.0 CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET Libint::int PROPERTY LOCATION)
