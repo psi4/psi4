@@ -623,6 +623,10 @@ void DLPNOCCSD::ccsd_pair_prescreening() {
 void DLPNOCCSD::compute_cc_integrals() {
     outfile->Printf("    Computing CC integrals...\n\n");
 
+    if (T_CUT_SVD_ > 0.0) {
+        outfile->Printf("\n    Using SVD decomposition to optimize storage of (Q_ij|a_ij b_ij), with T_CUT_SVD: %6.3e\n", T_CUT_SVD_);
+    }
+
     int n_lmo_pairs = ij_to_i_j_.size();
     // 0 virtual
     K_mnij_.resize(n_lmo_pairs);
@@ -803,8 +807,10 @@ void DLPNOCCSD::compute_cc_integrals() {
         L_bar_[ij]->subtract(K_bar_[ji]);
     }
 
-    outfile->Printf("    SVD Memory/DF Memory : %8.4f \n\n", static_cast<double>(qvv_svd_memory) / qvv_memory);
-
+    if (T_CUT_SVD_ > 0.0) {
+        double memory_savings = 1.0 - static_cast<double>(qvv_svd_memory) / qvv_memory;
+        outfile->Printf("\n    Memory Savings from SVD of (Q_ij|a_ij b_ij): %6.2f %% \n\n", 100.0 * memory_savings);
+    }
 }
 
 SharedMatrix DLPNOCCSD::compute_Fmi(const std::vector<SharedMatrix>& tau_tilde) {

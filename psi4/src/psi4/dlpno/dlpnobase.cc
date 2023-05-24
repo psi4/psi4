@@ -303,7 +303,29 @@ void DLPNOBase::compute_overlap_ints() {
     int npao = C_pao_->colspi(0);  // same as nbf
 
     timer_on("Construct Grid");
-    auto grid = DFTGrid(molecule_, basisset_, options_);
+    // Create a grid for the DOI integrals
+    std::map<std::string, std::string> grid_init_str_options = {
+        {"DFT_PRUNING_SCHEME", options_.get_str("DOI_PRUNING_SCHEME")},
+        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
+        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
+        {"DFT_GRID_NAME",      ""},
+        {"DFT_BLOCK_SCHEME",   "OCTREE"},
+    };
+    std::map<std::string, int> grid_init_int_options = {
+        {"DFT_SPHERICAL_POINTS", options_.get_int("DOI_SPHERICAL_POINTS")}, 
+        {"DFT_RADIAL_POINTS",    options_.get_int("DOI_RADIAL_POINTS")},
+        {"DFT_BLOCK_MIN_POINTS", 100},
+        {"DFT_BLOCK_MAX_POINTS", 256},
+    };
+    std::map<std::string, double> grid_init_float_options = {
+        {"DFT_BASIS_TOLERANCE",   options_.get_double("DOI_BASIS_TOLERANCE")}, 
+        {"DFT_BS_RADIUS_ALPHA",   1.0},
+        {"DFT_PRUNING_ALPHA",     1.0},
+        {"DFT_BLOCK_MAX_RADIUS",  3.0},
+        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
+    };
+    auto grid = DFTGrid(molecule_, basisset_, grid_init_int_options, grid_init_str_options, grid_init_float_options, options_);
+    // auto grid = DFTGrid(molecule_, basisset_, options_);
     timer_off("Construct Grid");
 
     size_t nthread = 1;
@@ -1010,6 +1032,10 @@ void DLPNOBase::compute_qab() {
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to PAO/PAO basis <==\n");
 
+    if (T_CUT_EIG_ > 0.0) {
+        outfile->Printf("\n    Using eigendecomposition to optimize storage of Qab, with T_CUT_EIG: %6.3e\n", T_CUT_EIG_);
+    }
+
     qab_.resize(naux);
     qab_svd_.resize(naux);
 
@@ -1105,9 +1131,9 @@ void DLPNOBase::compute_qab() {
     // qab_memory_ gets updated if SVD/eigen decomp is done
     if (T_CUT_EIG_ > 0.0) {
         qab_memory_ = svd_mem;
+        double memory_savings = 1.0 - static_cast<double>(svd_mem) / non_svd_mem;
+        outfile->Printf("\n    Memory Savings from eigendecomposition of Qab: %6.2f %% \n\n", 100.0 * memory_savings);
     }
-
-    outfile->Printf("\n    Memory Savings from eigendecomposition of Qab: %6.2f %% \n\n", 100.0 * svd_mem / non_svd_mem);
 
     timer_off("(mn|K)->(ab|K)");
 }
