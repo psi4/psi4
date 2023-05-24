@@ -697,12 +697,12 @@ void DLPNOCCSD::compute_cc_integrals() {
                 SharedMatrix P;
                 SharedVector D;
                 std::tie(P, D) = qab_svd_[q];
-                auto qab_temp1 = P->clone();
-                for (int i = 0; i < D->dim(); i++) {
-                    qab_temp1->scale_column(0, i, D->get(i));
-                }
-                qab_temp1 = linalg::doublet(X_pno_[ij], submatrix_rows(*qab_temp1, lmopair_pao_to_riatom_pao_[ij][q_ij]), true, false);
-                auto qab_temp2 = linalg::doublet(X_pno_[ij], submatrix_rows(*P, lmopair_pao_to_riatom_pao_[ij][q_ij]), true, false);
+                auto qab_temp1 = linalg::doublet(X_pno_[ij], submatrix_rows(*P, lmopair_pao_to_riatom_pao_[ij][q_ij]), true, false);
+                auto qab_temp2 = qab_temp1->clone();
+                // auto Dtemp = std::make_shared<Matrix>(D->dim(), D->dim());
+                // Dtemp->set_diagonal(D);
+                for (int i = 0; i < D->dim(); ++i) qab_temp1->scale_column(0, i, D->get(i));
+
                 q_vv_tmp = linalg::doublet(qab_temp1, qab_temp2, false, true);
             } else {
                 q_vv_tmp = submatrix_rows_and_cols(*qab_[q], lmopair_pao_to_riatom_pao_[ij][q_ij],
