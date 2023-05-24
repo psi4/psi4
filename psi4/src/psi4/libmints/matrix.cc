@@ -1120,6 +1120,15 @@ void Matrix::reshape(const uint64_t nrow, const uint64_t ncol) {
         throw PSIEXCEPTION("Invalid input dimensions for Matrix::reshape");
     }
 
+    // Make sure the data in matrix is "re-shaped" properly without copying, data remains contiguous
+    double **mat = (double **)malloc(sizeof(double *) * nrow);
+    mat[0] = &(matrix_[0][0][0]);
+    for (int r = 1; r < nrow; ++r) mat[r] = mat[r - 1] + ncol;
+
+    // Data is NOT lost, so no memory leaks
+    free(matrix_[0]);
+    matrix_[0] = mat;
+
     rowspi_[0] = nrow;
     colspi_[0] = ncol;
 }

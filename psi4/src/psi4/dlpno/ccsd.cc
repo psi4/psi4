@@ -1038,9 +1038,9 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_Wmbej(const std::vector<SharedMatri
         K_temp1->reshape(npno_mj * npno_mj, npno_mj);
         K_temp1 = linalg::doublet(K_temp1, tia_temp, false, false);
         K_temp1->reshape(npno_mj, npno_mj);
-        auto eye = std::make_shared<Matrix>(npno_mj, npno_mj);
-        eye->identity();
-        K_temp1 = linalg::doublet(eye, K_temp1, false, true);
+        // auto eye = std::make_shared<Matrix>(npno_mj, npno_mj);
+        // eye->identity();
+        // K_temp1 = linalg::doublet(eye, K_temp1, false, true);
         
         Wmbej[mj]->add(K_temp1);
 
