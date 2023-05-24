@@ -42,8 +42,6 @@ from typing import Dict, Optional, Union
 import logging
 
 import numpy as np
-import qcelemental as qcel
-from qcelemental.util import which_import
 
 from psi4 import core  # for typing
 from psi4.driver import driver_util
@@ -803,6 +801,9 @@ def properties(*args, **kwargs):
 
 
 def optimize_geometric(name, **kwargs):
+
+    import qcelemental as qcel
+    from qcelemental.util import which_import
 
     if not which_import('geometric', return_bool=True):
         raise ModuleNotFoundError('Python module geometric not found. Solve by installing it: `conda install -c conda-forge geometric` or `pip install geometric`')
@@ -1803,6 +1804,7 @@ def gdma(wfn, datafile=""):
             f.write("Finish\n")
 
     # from outside the Psi4 ecosystem
+    from qcelemental.util import which_import
     if not which_import("gdma", return_bool=True):
         raise ModuleNotFoundError('Python module gdma not found. Solve by installing it: `conda install -c conda-forge gdma` or recompile with `-DENABLE_gdma`')
     import gdma
@@ -1841,10 +1843,10 @@ def gdma(wfn, datafile=""):
     totvals = core.Matrix.from_array(totvals)
     totvals.name = "Total multipoles, translated to the origin"
 
-    wfn.set_variable("DMA DISTRIBUTED MULTIPOLES", dmavals)
-    wfn.set_variable("DMA TOTAL MULTIPOLES", totvals)
-    core.set_variable("DMA DISTRIBUTED MULTIPOLES", dmavals)
-    core.set_variable("DMA TOTAL MULTIPOLES", totvals)
+    wfn.set_variable("DMA DISTRIBUTED MULTIPOLES", dmavals)  # P::e GDMA
+    wfn.set_variable("DMA TOTAL MULTIPOLES", totvals)  # P::e GDMA
+    core.set_variable("DMA DISTRIBUTED MULTIPOLES", dmavals)  # P::e GDMA
+    core.set_variable("DMA TOTAL MULTIPOLES", totvals)  # P::e GDMA
     core.print_out("""
   DMA results are available in the Python driver through the commands:
   variable('DMA DISTRIBUTED MULTIPOLES')
