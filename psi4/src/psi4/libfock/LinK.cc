@@ -84,10 +84,12 @@ size_t LinK::num_computed_shells() {
 }
 
 void LinK::print_header() const {
-    outfile->Printf("\n");
-    outfile->Printf("  ==> LinK: Linear Exchange K <==\n\n");
+    if (print_) {
+        outfile->Printf("\n");
+        outfile->Printf("  ==> LinK: Linear Exchange K <==\n\n");
 
-    outfile->Printf("    K Screening Cutoff:%11.0E\n", linK_ints_cutoff_);
+        outfile->Printf("    K Screening Cutoff:%11.0E\n", linK_ints_cutoff_);
+    }
 }
 
 // build the K matrix using Ochsenfelds's Linear Exchange (LinK) algorithm
