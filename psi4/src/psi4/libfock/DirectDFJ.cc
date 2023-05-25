@@ -311,7 +311,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
     timer_off("ERI2");
 
     num_computed_shells_ = computed_triplets1 + computed_triplets2;
- 
+
     for(size_t jki = 0; jki < njk; jki++) {
         for (size_t thread = 0; thread < nthreads_; thread++) {
             J[jki]->add(JT[jki][thread]);

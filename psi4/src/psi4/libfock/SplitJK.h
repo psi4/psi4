@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -108,7 +108,7 @@ class PSI_API SplitJK {
     // => Knobs <= //
 
     void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
-    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric_; } 
+    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric_; }
     /// Bench accessors
     void set_bench(int bench) { bench_ = bench; }
     int get_bench() const { return bench_; }
