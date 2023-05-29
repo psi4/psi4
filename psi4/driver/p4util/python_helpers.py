@@ -636,7 +636,8 @@ def pcm_helper(block: str):
     """
     import pcmsolver
 
-    with NamedTemporaryFile(mode="w+t", delete=True) as fl:
+    # delete=True works for Unix but not for Windows
+    with NamedTemporaryFile(mode="w+t", delete=False) as fl:
         fl.write(block)
         fl.flush()
         parsed_pcm = pcmsolver.parse_pcm_input(fl.name)
