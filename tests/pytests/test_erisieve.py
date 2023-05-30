@@ -8,7 +8,7 @@ pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 def test_no_screening_schwarz():
     """Checks the number of shell quartets screened with Schwarz screening.
-    No shell quartets should be screened with a threshold of 0.0"""
+    no shell quartets should be screened with a threshold of 0.0"""
 
     mol = psi4.geometry("""
         Ne 0.0 0.0 0.0
@@ -68,6 +68,7 @@ def test_no_screening_density():
         Ne 8.0 0.0 0.0
     """)
     psi4.set_options({ "ints_tolerance" : 0.0,
+                       "screening": "density",
                        "scf_type" : "direct" })
 
     basis = psi4.core.BasisSet.build(mol, target='cc-pVDZ')
@@ -83,6 +84,31 @@ def test_no_screening_density():
             screen_count += 1
 
     assert compare_integers(0, screen_count, 'Quartets Density Screened, Cutoff 0')
+
+def test_no_screening_none():
+    """Checks the number of shell quartets screened with None screening
+    No shell quartets should be screened"""
+    mol = psi4.geometry("""
+        Ne 0.0 0.0 0.0
+        Ne 4.0 0.0 0.0
+        Ne 8.0 0.0 0.0
+    """)
+    psi4.set_options({ "screening": "none" })
+
+    basis = psi4.core.BasisSet.build(mol, target='cc-pVDZ')
+    factory = psi4.core.IntegralFactory(basis)
+    eri = factory.eri(0)
+
+    shell_inds = range(basis.nshell())
+    quartets = itertools.product(shell_inds, shell_inds, shell_inds, shell_inds)
+
+    screen_count = 0
+    for m, n, r, s in quartets:
+        if not eri.shell_significant(m, n, r, s):
+            screen_count += 1
+
+    assert compare_integers(0, screen_count, 'Quartets None Screened')
+
 
 def test_schwarz_vs_csam_quartets():
     """Checks difference between the number of shell quartets screened with Schwarz and CSAM screening. 
@@ -132,7 +158,7 @@ def test_schwarz_vs_csam_quartets():
 
 
 def test_schwarz_vs_csam_energy():
-    """Checks difference in Hartree-Fock energy between no screening and CSAM screening, which should be
+    """Checks difference in Hartree-Fock energy between Schwarz screening and CSAM screening, which should be
     insignificant. """
 
     psi4.geometry("""
@@ -323,3 +349,28 @@ def test_schwarz_vs_density_energy():
 
     assert compare_values(e_schwarz, e_density, 10, 'Schwarz vs Density Screening, Cutoff 1.0e-12')
     assert compare_values(e_schwarz, e_incfock, 10, 'Schwarz vs Density Screening, Cutoff 1.0e-12')
+
+def test_schwarz_vs_none_energy():
+    """Checks difference in Hartree-Fock energy between Schwarz screening and no screening, which should be
+    insignificant. """
+
+    psi4.geometry("""
+        Ne 0.0 0.0 0.0
+        Ne 4.0 0.0 0.0
+        Ne 8.0 0.0 0.0
+    """)
+
+    psi4.set_options({'d_convergence' : 1e-12,
+                      'screening' : 'schwarz',
+                      'ints_tolerance' : 1.0e-12 })
+    e_schwarz = psi4.energy('hf/DZ')
+
+    psi4.core.clean()
+
+    psi4.set_options({'d_convergence' : 1e-12,
+                      'screening' : 'none',
+                      'ints_tolerance' : 1.0e-12 })
+    e_none = psi4.energy('hf/DZ')
+
+    assert compare_values(e_schwarz, e_none, 11, 'Schwarz vs None Screening, Cutoff 1.0e-12')
+
