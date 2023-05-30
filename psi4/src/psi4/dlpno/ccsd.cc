@@ -751,33 +751,41 @@ void DLPNOCCSD::compute_cc_integrals() {
         if (virtual_storage_ == CORE && i <= j) {
             // SVD Decomposition of DF-ERIs
             // DOI: 10.1063/1.4905005
-            auto [U, S, V] = q_vv->svd_temps();
-            q_vv->svd(U, S, V);
+            if (T_CUT_SVD_ > 0.0) {
+                auto [U, S, V] = q_vv->svd_temps();
+                q_vv->svd(U, S, V);
 
-            int nsvd_ij = 0;
-            std::vector<int> slice_indices;
-            while (nsvd_ij < S->dim() && S->get(nsvd_ij) >= T_CUT_SVD_) {
-                U->scale_column(0, nsvd_ij, S->get(nsvd_ij));
-                slice_indices.push_back(nsvd_ij);
-                nsvd_ij += 1;
-            }
+                int nsvd_ij = 0;
+                std::vector<int> slice_indices;
+                while (nsvd_ij < S->dim() && S->get(nsvd_ij) >= T_CUT_SVD_) {
+                    U->scale_column(0, nsvd_ij, S->get(nsvd_ij));
+                    slice_indices.push_back(nsvd_ij);
+                    nsvd_ij += 1;
+                }
 
-            // U(Q_ij, r_ij) S(r_ij) V(r_ij, a_ij * e_ij)
-            // U(Q_ij, s_ij) S(s_ij) V(s_ij, b_ij * f_ij)
-            U = submatrix_cols(*U, slice_indices);
-            auto B_rs = linalg::doublet(U, U, true, false);
-            B_rs->power(0.5, 1.0e-14);
+                // U(Q_ij, r_ij) S(r_ij) V(r_ij, a_ij * e_ij)
+                // U(Q_ij, s_ij) S(s_ij) V(s_ij, b_ij * f_ij)
+                U = submatrix_cols(*U, slice_indices);
+                auto B_rs = linalg::doublet(U, U, true, false);
+                B_rs->power(0.5, 1.0e-14);
             
-            V = linalg::doublet(B_rs, submatrix_rows(*V, slice_indices));
+                V = linalg::doublet(B_rs, submatrix_rows(*V, slice_indices));
 
-            Qab_ij_[ij].resize(nsvd_ij);
-            for (int q_ij = 0; q_ij < nsvd_ij; q_ij++) {
-                Qab_ij_[ij][q_ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
-                C_DCOPY(npno_ij * npno_ij, &(*V)(q_ij, 0), 1, &(*Qab_ij_[ij][q_ij])(0,0), 1);
+                Qab_ij_[ij].resize(nsvd_ij);
+                for (int q_ij = 0; q_ij < nsvd_ij; q_ij++) {
+                    Qab_ij_[ij][q_ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
+                    C_DCOPY(npno_ij * npno_ij, &(*V)(q_ij, 0), 1, &(*Qab_ij_[ij][q_ij])(0, 0), 1);
+                }
+
+                qvv_memory += naux_ij * npno_ij * npno_ij;
+                qvv_svd_memory += nsvd_ij * npno_ij * npno_ij;
+            } else {
+                Qab_ij_[ij].resize(naux_ij);
+                for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
+                    Qab_ij_[ij][q_ij] = std::make_shared<Matrix>(npno_ij, npno_ij);
+                    C_DCOPY(npno_ij * npno_ij, &(*q_vv)(q_ij, 0), 1, &(*Qab_ij_[ij][q_ij])(0, 0), 1);
+                }
             }
-
-            qvv_memory += naux_ij * npno_ij * npno_ij;
-            qvv_svd_memory += nsvd_ij * npno_ij * npno_ij;
         }
 
         // L_iajb
@@ -1042,7 +1050,7 @@ std::vector<SharedMatrix> DLPNOCCSD::compute_Wmbej(const std::vector<SharedMatri
         // eye->identity();
         // K_temp1 = linalg::doublet(eye, K_temp1, false, true);
         
-        Wmbej[mj]->add(K_temp1);
+        Wmbej[mj]->add(K_temp1->transpose());
 
         for (int n_mj = 0; n_mj < lmopair_to_lmos_[mj].size(); n_mj++) {
             int n = lmopair_to_lmos_[mj][n_mj];
