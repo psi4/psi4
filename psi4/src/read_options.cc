@@ -212,7 +212,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
     /*- The type of screening used when computing two-electron integrals. -*/
-    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
+    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY NONE");
 
     // CDS-TODO: We should go through and check that the user hasn't done
     // something silly like specify frozen_docc in DETCI but not in TRANSQT.
