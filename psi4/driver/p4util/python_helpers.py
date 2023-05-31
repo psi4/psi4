@@ -1566,7 +1566,7 @@ def _core_erisieve_build(
     ERI screening and an optional input to enable CSAM screening (over Schwarz screening).
 
     However, the ERISieve class has been removed from Psi4 as of v1.9. So, the function now throws with an UpgradeHelper
-    exception, and lets the user know to use TwoBodyAOInt instead. 
+    exception, and lets the user know to use TwoBodyAOInt instead.
 
     Parameters
     ----------
@@ -1577,7 +1577,7 @@ def _core_erisieve_build(
     do_csam
         Use CSAM screening? If True, CSAM screening is used; else, Schwarz screening is used. By default,
         Schwarz screening is utilized.
-    
+
     Returns
     -------
     ERISieve
