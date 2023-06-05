@@ -212,8 +212,8 @@ class PSI_API TwoBodyAOInt {
     /// Does a given shell pair contribute to any significant integrals?
     bool shell_pair_significant(int shell1, int shell2) const;
     /// Square of ceiling of shell quartet (MN|RS)
-     inline double shell_ceiling2(int M, int N, int R, int S) {
-        return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
+    inline double shell_ceiling2(int M, int N, int R, int S) {
+        return screening_type_ != ScreeningType::None ? shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] : 0.0;
     }
     /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
     inline bool function_pair_significant(const int m, const int n) {
@@ -230,7 +230,7 @@ class PSI_API TwoBodyAOInt {
         return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
     }
     // the value of the bound for pair m and n
-    double shell_pair_value(int m, int n) { return shell_pair_values_[m * nshell_ + n]; };
+    double shell_pair_value(int m, int n) { return screening_type_ != ScreeningType::None ? shell_pair_values_[m * nshell_ + n] : 0.0; };
     /// Return the maximum density matrix element per shell pair. Maximum is over density matrices, if multiple set
     double shell_pair_max_density(int M, int N) const;
 
