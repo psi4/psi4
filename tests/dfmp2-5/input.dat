@@ -1,0 +1,12 @@
+molecule {
+0 2
+Li
+}
+
+set basis def2-SVP
+set reference uhf
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+energy('mp2')

@@ -192,28 +192,16 @@ double DFMP2::compute_energy() {
         }
         throw PSIEXCEPTION("There are no occupied orbitals with alpha spin.");
     }
-    if (Cb_subset("AO", "ACTIVE_OCC")->colspi()[0] == 0) {
-        if (nalpha() == 1) {
-            variables_["MP2 SINGLES ENERGY"] = 0.0;
-            variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
-            variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
-            variables_["MP2 CORRELATION ENERGY"] = 0.0;
-            print_energies();
-            energy_ = variables_["MP2 TOTAL ENERGY"];
-            return variables_["MP2 TOTAL ENERGY"];
-        }
-        else {
-            throw PSIEXCEPTION("There are no occupied orbitals with beta spin.");
-        }
-    }
-    if (Ca_subset("AO", "ACTIVE_VIR")->colspi()[0] == 0) {
-        if (Cb_subset("AO", "ACTIVE_VIR")->colspi()[0] == 0) {
-            throw PSIEXCEPTION("There are no virtual orbitals with alpha or beta spin.");
-        }
-        throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
-    }
-    if (Cb_subset("AO", "ACTIVE_VIR")->colspi()[0] == 0) {
-        throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
+    auto num_alpha_excit = std::min(Ca_subset("AO", "ACTIVE_OCC")->colspi()[0], Ca_subset("AO", "ACTIVE_OCC")->colspi()[0]);
+    auto num_beta_excit = std::min(Cb_subset("AO", "ACTIVE_OCC")->colspi()[0], Cb_subset("AO", "ACTIVE_OCC")->colspi()[0]);
+    if (num_alpha_excit + num_beta_excit < 2) {
+        variables_["MP2 SINGLES ENERGY"] = 0.0;
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
+        variables_["MP2 CORRELATION ENERGY"] = 0.0;
+        print_energies();
+        energy_ = variables_["MP2 TOTAL ENERGY"];
+        return variables_["MP2 TOTAL ENERGY"];
     }
     timer_on("DFMP2 Singles");
     form_singles();
