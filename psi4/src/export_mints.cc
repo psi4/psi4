@@ -1521,7 +1521,9 @@ void export_mints(py::module& m) {
         .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a)
         .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a, "bs1"_a,
              "bs2"_a, "bs3"_a, "bs4"_a)
-        .def("ao_f12g12", &MintsHelper::ao_f12g12, "AO F12G12 integrals", "corr"_a)
+        .def("ao_f12g12", normal_f12(&MintsHelper::ao_f12g12), "AO F12G12 integrals", "corr"_a)
+        .def("ao_f12g12", normal_f122(&MintsHelper::ao_f12g12), "AO F12G12 integrals", "corr"_a, "bs1"_a,
+             "bs2"_a, "bs3"_a, "bs4"_a)
         .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
              "corr"_a)
 	.def("f12_cgtg", &MintsHelper::f12_cgtg, "F12 Fitted Slater Correlation Factor", "exponent"_a = 1.0)

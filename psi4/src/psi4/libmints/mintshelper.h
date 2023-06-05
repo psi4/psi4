@@ -235,6 +235,8 @@ class PSI_API MintsHelper {
                                 std::shared_ptr<BasisSet> bs4);
     /// AO F12G12 Integrals
     SharedMatrix ao_f12g12(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12g12(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
+                        std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
     /// AO F12 double commutator Integrals
     SharedMatrix ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff);
     /// F12 Fitted Slater Correlation Factor
