@@ -7,7 +7,7 @@ jobs:
       vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '14.0.0'
+      llvm.version: '15.0.7'
       mkl.version: '2022.1.0'
       cmake.build_type: 'Release'
       conda.build: false
@@ -25,8 +25,9 @@ jobs:
           if "%PYTHON_VERSION%"=="3.8" set VALID=true
           if "%PYTHON_VERSION%"=="3.9" set VALID=true
           if "%PYTHON_VERSION%"=="3.10" set VALID=true
+          if "%PYTHON_VERSION%"=="3.11" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.8" through "3.10".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.8" through "3.11".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -125,7 +126,6 @@ jobs:
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^
-                        typing-extensions=4.5.0 ^
                         msgpack-python ^
                         networkx ^
                         ninja ^
