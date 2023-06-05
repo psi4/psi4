@@ -92,7 +92,13 @@ void CompositeJK::common_init() {
     }
 
     // other options
-    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
+    if (options_.get_str("SCREENING") == "NONE") {
+        timer_off("CompositeJK: Setup");
+        throw PSIEXCEPTION("The CompositeJK algorithms do not support SCREENING=NONE currently!");
+    } else {
+        density_screening_ = options_.get_str("SCREENING") == "DENSITY";
+    }
+
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 
     // pre-construct per-thread TwoBodyAOInt objects for computing 3- and 4-index ERIs
