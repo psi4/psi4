@@ -186,14 +186,8 @@ void DFMP2::common_init() {
 }
 double DFMP2::compute_energy() {
     print_header();
-    if (Ca_subset("AO", "ACTIVE_OCC")->colspi()[0] == 0) {
-        if (Cb_subset("AO", "ACTIVE_OCC")->colspi()[0] == 0) {
-            throw PSIEXCEPTION("There are no occupied orbitals with alpha or beta spin.");
-        }
-        throw PSIEXCEPTION("There are no occupied orbitals with alpha spin.");
-    }
-    auto num_alpha_excit = std::min(Ca_subset("AO", "ACTIVE_OCC")->colspi()[0], Ca_subset("AO", "ACTIVE_OCC")->colspi()[0]);
-    auto num_beta_excit = std::min(Cb_subset("AO", "ACTIVE_OCC")->colspi()[0], Cb_subset("AO", "ACTIVE_OCC")->colspi()[0]);
+    auto num_alpha_excit = std::min(Ca_subset("AO", "ACTIVE_OCC")->colspi()[0], Ca_subset("AO", "ACTIVE_VIR")->colspi()[0]);
+    auto num_beta_excit = std::min(Cb_subset("AO", "ACTIVE_OCC")->colspi()[0], Cb_subset("AO", "ACTIVE_VIR")->colspi()[0]);
     if (num_alpha_excit + num_beta_excit < 2) {
         variables_["MP2 SINGLES ENERGY"] = 0.0;
         variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
