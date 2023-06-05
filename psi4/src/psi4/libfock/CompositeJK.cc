@@ -258,7 +258,6 @@ void CompositeJK::common_init() {
             linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
         } else {
             linK_ints_cutoff_ = cutoff_;
-
         }
     
     // Chain-of-Spheres Exchange (COSX)
@@ -329,6 +328,7 @@ void CompositeJK::common_init() {
 	            }
             }
 	        if (warning_printed_init) break;
+        }
 
         auto warning_printed_final = false;
         for (const auto &final_block : grid_final_->blocks()) {
@@ -392,7 +392,6 @@ void CompositeJK::common_init() {
         ;
     } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
-
     }
 }
 
