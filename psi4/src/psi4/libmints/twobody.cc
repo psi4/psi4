@@ -70,6 +70,13 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
 
     // Setup sieve data
     screening_threshold_ = Process::environment.options.get_double("INTS_TOLERANCE");
+    
+    // Default values for when screening isnt used
+    //function_pair_values_ = {}; 
+    shell_pair_values_ = {};
+    max_integral_ = 0.0;
+    screening_threshold_squared_ = 0.0; 
+
     auto screentype = Process::environment.options.get_str("SCREENING");
     if (screentype == "SCHWARZ")
         screening_type_ = ScreeningType::Schwarz;
@@ -478,7 +485,7 @@ bool TwoBodyAOInt::shell_block_significant(int shellpair12, int shellpair34) con
 }
 
 bool TwoBodyAOInt::shell_pair_significant(int M, int N) const {
-    return shell_pair_values_[M * nshell_ + N] * max_integral_ >= screening_threshold_squared_;
+    return screening_type_ != ScreeningType::None ? shell_pair_values_[M * nshell_ + N] * max_integral_ >= screening_threshold_squared_ : true;
 }
 
 void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int npair12, int npair34) {
