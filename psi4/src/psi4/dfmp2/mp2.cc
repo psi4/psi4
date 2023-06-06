@@ -189,6 +189,7 @@ double DFMP2::compute_energy() {
     auto num_alpha_excit = std::min(Ca_subset("AO", "ACTIVE_OCC")->colspi()[0], Ca_subset("AO", "ACTIVE_VIR")->colspi()[0]);
     auto num_beta_excit = std::min(Cb_subset("AO", "ACTIVE_OCC")->colspi()[0], Cb_subset("AO", "ACTIVE_VIR")->colspi()[0]);
     if (num_alpha_excit + num_beta_excit < 2) {
+        outfile->Printf("  Warning: no MP2 calculation performed on system with alpha ACTIVE_OCC (%d), beta ACTIVE_OCC (%d), alpha ACTIVE_VIR (%d), beta ACTIVE_VIR (%d); returning 0.0 by definition.\n", Ca_subset("AO", "ACTIVE_OCC")->colspi()[0], Cb_subset("AO", "ACTIVE_OCC")->colspi()[0], Ca_subset("AO", "ACTIVE_VIR")->colspi()[0], Cb_subset("AO", "ACTIVE_VIR")->colspi()[0]);
         variables_["MP2 SINGLES ENERGY"] = 0.0;
         variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
         variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
