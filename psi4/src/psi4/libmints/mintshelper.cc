@@ -1008,6 +1008,14 @@ SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double,
     return ao_helper("AO F12 Double Commutator Tensor", ints);
 }
 
+SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff,
+                                         std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                         std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::shared_ptr<TwoBodyAOInt> ints(intf.f12_double_commutator(exp_coeff));
+    return ao_helper("AO F12 Double Commutator Tensor", ints);
+}
+
 SharedMatrix MintsHelper::mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4) {
     SharedMatrix mo_ints = mo_eri_helper(ao_erf_eri(omega), C1, C2, C3, C4);
     mo_ints->set_name("MO ERF ERI Tensor");
