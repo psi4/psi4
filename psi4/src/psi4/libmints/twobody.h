@@ -115,6 +115,8 @@ class PSI_API TwoBodyAOInt {
      * Sieve information
      */
     typedef std::vector<std::pair<int, int>> PairList;
+    /// Is sieve initialized?
+    bool initialized_;
     /// The threshold below which integrals are to be neglected
     double screening_threshold_;
     double screening_threshold_squared_;
@@ -149,6 +151,7 @@ class PSI_API TwoBodyAOInt {
     std::function<bool(int, int, int, int)> sieve_impl_;
 
     void setup_sieve();
+    void create_sieve_pair_info();
     void create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra);
 
     /// Implements CSAM screening of a shell quartet
@@ -316,6 +319,9 @@ class PSI_API TwoBodyAOInt {
 
     /// Results go back to buffer_
     void pure_transform(int, int, int, int, int nchunk, bool copy_to_source = true);
+
+    /// Manually set up sieve if desired
+    void initialize_sieve();
 };
 
 typedef std::shared_ptr<TwoBodyAOInt> SharedTwoBodyAOInt;
