@@ -270,7 +270,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = self.jk().get_early_screening()
-    # does the JK algorithm fully converge after early screening is disabled? 
+    # does the SCF fully converge after early screening is disabled? 
     early_screening_full_scf = core.get_option('SCF', 'COSX_FULL_SCF') 
 
     # has early_screening changed from True to False?
