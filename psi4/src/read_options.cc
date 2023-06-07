@@ -1692,7 +1692,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
                         "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
         /*- Do reduce numerical COSX errors with overlap fitting? !expert -*/
         options.add_bool("COSX_OVERLAP_FITTING", true);
- 
+
         /*- SUBSECTION SAD Guess Algorithm -*/
 
         /*- The amount of SAD information to print to the output !expert -*/
