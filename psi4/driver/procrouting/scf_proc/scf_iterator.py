@@ -270,6 +270,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = self.jk().get_early_screening()
+    # does the JK algorithm fully converge after early screening is disabled? 
+    early_screening_full_scf = core.get_option('SCF', 'COSX_FULL_SCF') 
 
     # has early_screening changed from True to False?
     early_screening_disabled = False
@@ -497,7 +499,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             continue
 
         # this is the first iteration after early screening was turned off
-        if early_screening_disabled:
+        if early_screening_disabled and not early_screening_full_scf:
             break
 
         # Call any postiteration callbacks
@@ -518,7 +520,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                     self.jk().clear_D_prev()
 
                 core.print_out("  Energy and wave function converged with early screening.\n")
-                core.print_out("  Performing final iteration with tighter screening.\n\n")
+                if early_screening_full_scf:
+                    core.print_out("  Continuing SCF iterations with tighter screening.\n\n")
+                else:
+                    core.print_out("  Performing final iteration with tighter screening.\n\n")
             else:
                 break
 

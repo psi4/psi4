@@ -1681,6 +1681,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("COSX_RADIAL_POINTS_FINAL", 35);
         /*- Screening criteria for integrals and intermediates in COSX -*/
         options.add_double("COSX_INTS_TOLERANCE", 1.0E-11);
+        /*- Fully converge SCF on larger (i.e., final) grid? -*/ 
+        options.add_bool("COSX_FULL_SCF", false);
         /*- Screening criteria for shell-pair densities in COSX !expert -*/
         options.add_double("COSX_DENSITY_TOLERANCE", 1.0E-10);
         /*- Screening criteria for basis function values on COSX grids !expert -*/
@@ -1690,7 +1692,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
                         "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
         /*- Do reduce numerical COSX errors with overlap fitting? !expert -*/
         options.add_bool("COSX_OVERLAP_FITTING", true);
-
+ 
         /*- SUBSECTION SAD Guess Algorithm -*/
 
         /*- The amount of SAD information to print to the output !expert -*/
