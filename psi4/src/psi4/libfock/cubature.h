@@ -258,6 +258,8 @@ class RadialGrid {
     static std::shared_ptr<RadialGrid> build_becke(int npoints, double alpha, int Z);
     /// Build the Treutler-Ahlrichs 1995 radial grid (scale power = 0.6)
     static std::shared_ptr<RadialGrid> build_treutler(int npoints, double alpha, int Z);
+    /// Build the Krack-Koster 1998 radial grid
+    static std::shared_ptr<RadialGrid> build_krack(int npoints, double alpha);
     // TODO: Add more grids
 
     /// Protected constructor

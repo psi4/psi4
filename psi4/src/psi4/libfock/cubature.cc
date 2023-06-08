@@ -2103,6 +2103,22 @@ void RadialGridMgr::getChebychevRoots(int n, double r[], double w[]) {
     }
 }
 
+void RadialGridMgr::getModChebychevRoots(int n, double r[], double w[]) {
+  double oonpp = 1.0 / (n + 1);
+  for (int i = 1; i <= n; i++) {
+    // Compute value of sine and cosine
+    double sine=sin(i*M_PI*oonpp);
+    double sinesq=sine*sine;
+    double cosine=cos(i*M_PI*oonpp);
+
+    // Weight is
+    w[i-1]=16.0/3.0/(n+1.0)*sinesq*sinesq;
+
+    // Node is
+    r[i-1]=1.0 - 2.0*i*oonpp + M_2_PI*(1.0 + 2.0/3.0*sinesq)*cosine*sine;
+  }
+}
+
 double RadialGridMgr::maxRowSumNorm(int n, double a[], double b[]) {
     if (n == 1) return std::fabs(a[0]);
 
@@ -2398,6 +2414,7 @@ RadialGridMgr::SchemeTable RadialGridMgr::radialschemes[] = {
     {"MULTIEXP", getMultiExpRoots,    multiexp_r, multiexp_dr},
     {"AHLRICHS", getChebychevRoots,   ahlrichs_r, ahlrichs_dr},  // Also called "Treutler" or "Treutler-Ahlrichs"
     {"TREUTLER", getChebychevRoots,   ahlrichs_r, ahlrichs_dr},
+    {"KRACK",    getModChebychevRoots, krack_r, krack_dr},
     {"BECKE",    getChebychevRoots,   becke_r,    becke_dr},
     {"MURA",     getTrapezoidalRoots, mura5_r,    mura5_dr},     // Also called "Knowles" or "Mura-Knowles". Molpro calls this "LOG"
     {"MURA7",    getTrapezoidalRoots, mura7_r,    mura7_dr},     // This is a hack.
@@ -5044,7 +5061,33 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     grid->r_ = new double[npoints];
     grid->w_ = new double[npoints];
 
-    double INVLN2 = TreutlerEta.data()[Z] / log(2.0);
+    double INVLN2 = TreutlerEta[Z] / log(2.0);
+
+    for (int tau = 1; tau <= npoints; tau++) {
+        double x = cos(tau / (npoints + 1.0) * M_PI);
+        double r = alpha * INVLN2 * pow(1.0 + x, 0.6) * log(2.0 / (1.0 - x));
+        double temp = sin(tau / (npoints + 1.0) * M_PI);
+        double w = M_PI / (npoints + 1.0) * temp * temp;
+        w *= alpha * INVLN2 * (0.6 * pow(1.0 + x, 0.6 - 1.0) * log(2.0 / (1.0 - x)) + pow(1.0 + x, 0.6) / (1.0 - x));
+        w *= 1.0 / sqrt(1.0 - x * x);
+        w *= r * r;
+        grid->r_[tau - 1] = r;
+        grid->w_[tau - 1] = w;
+    }
+
+    return std::shared_ptr<RadialGrid>(grid);
+}
+std::shared_ptr<RadialGrid> RadialGrid::build_krack(int npoints, double alpha) {
+    RadialGrid *grid = new RadialGrid();
+
+    // clang-format on
+    grid->scheme_ = "TREUTLER";
+    grid->npoints_ = npoints;
+    grid->alpha_ = alpha;
+    grid->r_ = new double[npoints];
+    grid->w_ = new double[npoints];
+
+    double INVLN2 = 1.0 / log(2.0);
 
     for (int tau = 1; tau <= npoints; tau++) {
         double x = cos(tau / (npoints + 1.0) * M_PI);
