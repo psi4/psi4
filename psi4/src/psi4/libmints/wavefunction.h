@@ -164,8 +164,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Total number of SOs
     int nso_;
-    /// Total number of MOs
-    int nmo_;
+
     /// Number of irreps
     int nirrep_;
 
@@ -401,8 +400,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     FieldType get_dipole_perturbation_type() const;
 
     /**
-     * @brief Expert specialized use only. Sets the number of doubly and singly occupied orbitals per irrep. Results in an
-     * inconsistent Wavefunction object for SCF purposes, so caution is advised.
+     * @brief Expert specialized use only. Sets the number of doubly and singly occupied orbitals per irrep. Results in
+     * an inconsistent Wavefunction object for SCF purposes, so caution is advised.
      * @param doccpi the new list of doubly occupied orbitals per irrep
      */
     void force_occpi(const Dimension& input_doccpi, const Dimension& input_soccpi);
@@ -419,12 +418,13 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Returns the number of SOs
     int nso() const { return nso_; }
     /// Returns the number of MOs
-    int nmo() const { return nmo_; }
+    int nmo() const { return nmopi_.sum(); }
     /// Returns the number of irreps
     int nirrep() const { return nirrep_; }
     /// Returns the energy
     PSI_DEPRECATED(
-        "Using `Wavefunction.reference_energy` instead of `Wavefunction.energy` is deprecated, and as soon as 1.4 it will "
+        "Using `Wavefunction.reference_energy` instead of `Wavefunction.energy` is deprecated, and as soon as 1.4 it "
+        "will "
         "stop working")
     double reference_energy() const { return energy_; }
     double energy() const { return energy_; }
@@ -692,27 +692,33 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     std::map<std::string, std::shared_ptr<ExternalPotential>> potential_variables();
 
     PSI_DEPRECATED(
-        "Using `Wavefunction.get_variable` instead of `Wavefunction.scalar_variable` is deprecated, and as soon as 1.4 it will "
+        "Using `Wavefunction.get_variable` instead of `Wavefunction.scalar_variable` is deprecated, and as soon as 1.4 "
+        "it will "
         "stop working")
     double get_variable(const std::string& key);
     PSI_DEPRECATED(
-        "Using `Wavefunction.set_variable` instead of `Wavefunction.set_scalar_variable` is deprecated, and as soon as 1.4 it "
+        "Using `Wavefunction.set_variable` instead of `Wavefunction.set_scalar_variable` is deprecated, and as soon as "
+        "1.4 it "
         "will stop working")
     void set_variable(const std::string& key, double value);
     PSI_DEPRECATED(
-        "Using `Wavefunction.variables` instead of `Wavefunction.scalar_variables` is deprecated, and as soon as 1.4 it will "
+        "Using `Wavefunction.variables` instead of `Wavefunction.scalar_variables` is deprecated, and as soon as 1.4 "
+        "it will "
         "stop working")
     std::map<std::string, double> variables();
     PSI_DEPRECATED(
-        "Using `Wavefunction.get_array` instead of `Wavefunction.array_variable` is deprecated, and as soon as 1.4 it will "
+        "Using `Wavefunction.get_array` instead of `Wavefunction.array_variable` is deprecated, and as soon as 1.4 it "
+        "will "
         "stop working")
     SharedMatrix get_array(const std::string& key);
     PSI_DEPRECATED(
-        "Using `Wavefunction.set_array` instead of `Wavefunction.set_array_variable` is deprecated, and as soon as 1.4 it will "
+        "Using `Wavefunction.set_array` instead of `Wavefunction.set_array_variable` is deprecated, and as soon as 1.4 "
+        "it will "
         "stop working")
     void set_array(const std::string& key, SharedMatrix value);
     PSI_DEPRECATED(
-        "Using `Wavefunction.arrays` instead of `Wavefunction.array_variables` is deprecated, and as soon as 1.4 it will stop "
+        "Using `Wavefunction.arrays` instead of `Wavefunction.array_variables` is deprecated, and as soon as 1.4 it "
+        "will stop "
         "working")
     std::map<std::string, SharedMatrix> arrays();
 
@@ -729,7 +735,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// SOME way to let it get/set.
     /// Vector of density matrices
     std::map<std::string, SharedMatrix> density_map_;
-
 };
 
 }  // namespace psi
