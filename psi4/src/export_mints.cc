@@ -1613,20 +1613,18 @@ void export_mints(py::module& m) {
         .def("integral", &OrbitalSpace::integral, "The integral factory used to create C")
         .def("dim", &OrbitalSpace::dim, "MO dimensions")
         .def("print_out", &OrbitalSpace::print, "Print information about the orbital space to the output file")
-        .def_static("build_cabs_space", &OrbitalSpace::build_cabs_space,
+	.def_static("build_cabs_space", &OrbitalSpace::build_cabs_space,
                     "Given two spaces, it projects out one space from the other and returns the new spaces \
                     The first argument (orb_space) is the space to project out. The returned space will be orthogonal to this \
                     The second argument (ri_space) is the space that is being projected on. The returned space = this space - orb_space \
                     The third argument is the tolerance for linear dependencies",
-                    "orb_space"_a, "ri_space"_a, "linear_tol"_a)
+                    "orb_space"_a, "ri_space"_a, "linear_tol"_a = 1.e-6)
         .def_static("build_ri_space", &OrbitalSpace::build_ri_space,
-                    "Given two basis sets, it merges the basis sets and then constructs an orthogonalized \
+                    "Given combined basis sets, it constructs an orthogonalized \
                     space with the same span. Linearly dependent orbitals are thrown out. \
-                    The first argument, molecule, is the molecule to construct the basis for \
-                    The second argument, obs_key, is the option keyword for orbital basis set 'BASIS' \
-                    The third argument, aux_key, is the option keyword for auxiliery basis set 'DF_BASIS_MP2' \
-                    The fourth argument, lindep_tol, is the tolerance for linear dependencies",
-                    "molecule"_a, "obs_key"_a, "aux_key"_a, "lindep_tol"_a);
+                    The first argument, combined, is the two basis sets together but unorthogonalized \
+                    The second argument, lindep_tol, is the tolerance for linear dependencies",
+                    "combined"_a, "lindep_tol"_a = 1.e-6);
 
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")
