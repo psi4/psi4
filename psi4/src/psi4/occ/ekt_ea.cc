@@ -204,9 +204,9 @@ void OCCWave::ekt_ea() {
     if (reference_ == "RESTRICTED") ps_vecA.scale(0.5);
 
     // Sort pole strength
-    Array1d evals_A("Alpha ORB C1", nmo_);
-    Array1d ps_vec2A("Sorted Pole strength", nmo_);
-    Array1i irrep_A("IrrepA", nmo_);
+    Array1d evals_A("Alpha ORB C1", Wavefunction::nmo());
+    Array1d ps_vec2A("Sorted Pole strength", Wavefunction::nmo());
+    Array1i irrep_A("IrrepA", Wavefunction::nmo());
     evals_A.zero();
     ps_vec2A.zero();
     irrep_A.zero();
@@ -223,8 +223,8 @@ void OCCWave::ekt_ea() {
     }
 
     // Sort to descending order
-    for (int i = 0; i < nmo_; ++i) {
-        for (int j = nmo_ - 1; j > i; --j) {
+    for (int i = 0; i < Wavefunction::nmo(); ++i) {
+        for (int j = Wavefunction::nmo() - 1; j > i; --j) {
             if (ps_vec2A.get(j - 1) < ps_vec2A.get(j)) {
                 double dum = evals_A.get(j - 1);
                 evals_A.set(j - 1, evals_A.get(j));
@@ -301,7 +301,7 @@ void OCCWave::ekt_ea() {
         outfile->Printf("\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
         outfile->Printf("\t------------------------------------------------------------------- \n");
 
-        for (int i = 0; i < nmo_; ++i) {
+        for (int i = 0; i < Wavefunction::nmo(); ++i) {
             int h = irrep_A.get(i);
             outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evals_A.get(i),
                             -evals_A.get(i) * pc_hartree2ev, ps_vec2A.get(i));
@@ -381,9 +381,9 @@ void OCCWave::ekt_ea() {
         }
 
         // Sort pole strength
-        Array1d evals_B("Alpha ORB C1", nmo_);
-        Array1d ps_vec2B("Sorted Pole strength", nmo_);
-        Array1i irrep_B("IrrepB", nmo_);
+        Array1d evals_B("Alpha ORB C1", Wavefunction::nmo());
+        Array1d ps_vec2B("Sorted Pole strength", Wavefunction::nmo());
+        Array1i irrep_B("IrrepB", Wavefunction::nmo());
         evals_B.zero();
         ps_vec2B.zero();
         irrep_B.zero();
@@ -400,8 +400,8 @@ void OCCWave::ekt_ea() {
         }
 
         // Sort to descending order
-        for (int i = 0; i < nmo_; ++i) {
-            for (int j = nmo_ - 1; j > i; --j) {
+        for (int i = 0; i < Wavefunction::nmo(); ++i) {
+            for (int j = Wavefunction::nmo() - 1; j > i; --j) {
                 if (ps_vec2B.get(j - 1) < ps_vec2B.get(j)) {
                     double dum = evals_B.get(j - 1);
                     evals_B.set(j - 1, evals_B.get(j));
@@ -474,7 +474,7 @@ void OCCWave::ekt_ea() {
             outfile->Printf("\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
             outfile->Printf("\t------------------------------------------------------------------- \n");
 
-            for (int i = 0; i < nmo_; ++i) {
+            for (int i = 0; i < Wavefunction::nmo(); ++i) {
                 int h = irrep_B.get(i);
                 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i + 1, ct.gamma(h).symbol(), evals_B.get(i),
                                 -evals_B.get(i) * pc_hartree2ev, ps_vec2B.get(i));

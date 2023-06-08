@@ -49,7 +49,6 @@ namespace mcscf {
 
 void SCF::save_info() {
     // No projection of MOs, just yet
-    nmo_ = nso_;
 
     // figure out how many frozen orbitals per irrep
     int nfrzc = basisset_->n_frozen_core();

@@ -61,8 +61,8 @@ namespace dfmp2 {
 
 void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ) {
     // The density matrix
-    auto c1MO_c1NO = std::make_shared<Matrix>("NOs", nmo_, nmo_);
-    auto occ_c1 = std::make_shared<Vector>("NO Occupations", nmo_);
+    auto c1MO_c1NO = std::make_shared<Matrix>("NOs", Wavefunction::nmo(), Wavefunction::nmo());
+    auto occ_c1 = std::make_shared<Vector>("NO Occupations", Wavefunction::nmo());
     Dnosym->diagonalize(c1MO_c1NO, occ_c1, descending);
     // Rotate the canonical MOs to NOs
     auto AO_c1MO = reference_wavefunction_->Ca_subset("AO");
@@ -70,7 +70,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     AO_c1NO->gemm(false, false, 1.0, AO_c1MO, c1MO_c1NO, 0.0);
     // Reapply the symmetry to the AO dimension
     auto AO_SO = reference_wavefunction_->aotoso();
-    auto SO_c1NO = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, nmo_);
+    auto SO_c1NO = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, Wavefunction::nmo());
     SO_c1NO->set_name("SO to C1 NO");
     for (int h = 0; h < nirrep_; ++h) {
         int so_h = nsopi_[h];
@@ -78,7 +78,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
             double** pAOSO = AO_SO->pointer(h);
             double** pAONO = AO_c1NO->pointer(0);
             double** pSONO = SO_c1NO->pointer(h);
-            C_DGEMM('T', 'N', so_h, nmo_, nso_, 1.0, pAOSO[0], so_h, pAONO[0], nmo_, 0.0, pSONO[0], nmo_);
+            C_DGEMM('T', 'N', so_h, Wavefunction::nmo(), nso_, 1.0, pAOSO[0], so_h, pAONO[0], Wavefunction::nmo(), 0.0, pSONO[0], Wavefunction::nmo());
         }
     }
     // Now, copy over the full matrix, whenever nonzero columns are
@@ -88,11 +88,11 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
         auto pC1 = SO_c1NO->pointer(h);
         auto Smat = S_->pointer(h);
         int symcol = 0;
-        for (int col = 0; col < nmo_; ++col) {
+        for (int col = 0; col < Wavefunction::nmo(); ++col) {
             // Compute orthonormalized self-overlap, to see if it's nonzero.
             // If it is, grab this orbital and store it in the symmetry NO matrix.
-            C_DGEMV('n', nsopi_[h], nsopi_[h], 1.0, Smat[0], nsopi_[h], &(pC1[0][col]), nmo_, 0.0, CStemp.data(), 1);
-            double overlap = C_DDOT(nsopi_[h], CStemp.data(), 1, &(pC1[0][col]), nmo_);
+            C_DGEMV('n', nsopi_[h], nsopi_[h], 1.0, Smat[0], nsopi_[h], &(pC1[0][col]), Wavefunction::nmo(), 0.0, CStemp.data(), 1);
+            double overlap = C_DDOT(nsopi_[h], CStemp.data(), 1, &(pC1[0][col]), Wavefunction::nmo());
             if (overlap > 0.8) {
                 for (int row = 0; row < nsopi_[h]; ++row) {
                     Cno->set(h, row, symcol, pC1[row][col]);
@@ -120,7 +120,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     //
     // Now we're finished with the MO(c1)->NO(c1) matrix, use it as scratch for diag(NO occ)
     c1MO_c1NO->set_diagonal(occ_c1);
-    auto temp = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, nmo_);
+    auto temp = std::make_shared<Matrix>(nirrep_, (const int*)nsopi_, Wavefunction::nmo());
     for (int h = 0; h < nirrep_; ++h) {
         int so_h = nsopi_[h];
         if (so_h) {
@@ -129,9 +129,9 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
             double** pC = SO_c1NO->pointer(h);
             double** pOcc = c1MO_c1NO->pointer(0);
             // temp = C[SO->MO(c1)] X diag(NO occ)
-            C_DGEMM('N', 'N', so_h, nmo_, nmo_, 1.0, pC[0], nmo_, pOcc[0], nmo_, 0.0, ptemp[0], nmo_);
+            C_DGEMM('N', 'N', so_h, Wavefunction::nmo(), Wavefunction::nmo(), 1.0, pC[0], Wavefunction::nmo(), pOcc[0], Wavefunction::nmo(), 0.0, ptemp[0], Wavefunction::nmo());
             // Da = C[SO->MO(c1)] X diag(NO occ)
-            C_DGEMM('N', 'T', so_h, so_h, nmo_, 1.0, ptemp[0], nmo_, pC[0], nmo_, 0.0, pDso[0], so_h);
+            C_DGEMM('N', 'T', so_h, so_h, Wavefunction::nmo(), 1.0, ptemp[0], Wavefunction::nmo(), pC[0], Wavefunction::nmo(), 0.0, pDso[0], so_h);
         }
     }
 }

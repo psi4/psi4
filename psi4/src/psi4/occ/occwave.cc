@@ -454,8 +454,8 @@ double OCCWave::compute_energy() {
     if (write_mo_coeff == "TRUE") {
         outfile->Printf("\n\tWriting MO coefficients in pitzer order to external file CmoA.psi...\n");
 
-        double **C_pitzerA = block_matrix(nso_, nmo_);
-        memset(C_pitzerA[0], 0, sizeof(double) * nso_ * nmo_);
+        double **C_pitzerA = block_matrix(nso_, Wavefunction::nmo());
+        memset(C_pitzerA[0], 0, sizeof(double) * nso_ * Wavefunction::nmo());
 
         // set C_pitzer
         C_pitzerA = Ca_->to_block_matrix();
@@ -463,15 +463,15 @@ double OCCWave::compute_energy() {
         // write binary data
         std::ofstream OutFile1;
         OutFile1.open("CmoA.psi", std::ios::out | std::ios::binary);
-        OutFile1.write((char *)C_pitzerA[0], sizeof(double) * nso_ * nmo_);
+        OutFile1.write((char *)C_pitzerA[0], sizeof(double) * nso_ * Wavefunction::nmo());
         OutFile1.close();
         free_block(C_pitzerA);
 
         if (reference_ == "UNRESTRICTED") {
             outfile->Printf("\n\tWriting MO coefficients in pitzer order to external file CmoB.psi...\n");
 
-            double **C_pitzerB = block_matrix(nso_, nmo_);
-            memset(C_pitzerB[0], 0, sizeof(double) * nso_ * nmo_);
+            double **C_pitzerB = block_matrix(nso_, Wavefunction::nmo());
+            memset(C_pitzerB[0], 0, sizeof(double) * nso_ * Wavefunction::nmo());
 
             // set C_pitzer
             C_pitzerB = Cb_->to_block_matrix();
@@ -479,7 +479,7 @@ double OCCWave::compute_energy() {
             // write binary data
             std::ofstream OutFile2;
             OutFile2.open("CmoB.psi", std::ios::out | std::ios::binary);
-            OutFile2.write((char *)C_pitzerB[0], sizeof(double) * nso_ * nmo_);
+            OutFile2.write((char *)C_pitzerB[0], sizeof(double) * nso_ * Wavefunction::nmo());
             OutFile2.close();
             free_block(C_pitzerB);
         }

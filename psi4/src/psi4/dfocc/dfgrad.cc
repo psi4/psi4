@@ -48,7 +48,7 @@ void DFOCC::dfgrad() {
     tstart();
     tpdm_tilde();
     back_trans();
-    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
+    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", Wavefunction::nmo(), Wavefunction::nmo());
     GFao->to_shared_matrix(W);
     Lagrangian_ = W;
 }  // end dfgrad

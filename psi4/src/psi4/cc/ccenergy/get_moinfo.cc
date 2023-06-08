@@ -65,7 +65,7 @@ void CCEnergyWavefunction::get_moinfo() {
     psio_address next;
 
     moinfo_.nirreps = nirrep_;
-    moinfo_.nmo = nmo_;
+    moinfo_.nmo = Wavefunction::nmo();
     moinfo_.nso = nso_;
     moinfo_.nao = basisset_->nao();
     moinfo_.labels = molecule_->irrep_labels();

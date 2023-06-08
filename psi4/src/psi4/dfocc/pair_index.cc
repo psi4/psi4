@@ -287,7 +287,7 @@ int DFOCC::so_pair_idx(int i, int j) {
 //   mo_pair_idx (unpacked)
 //====================================
 int DFOCC::mo_pair_idx(int i, int j) {
-    int value = j + (i * nmo_);
+    int value = j + (i * Wavefunction::nmo());
     return value;
 }
 

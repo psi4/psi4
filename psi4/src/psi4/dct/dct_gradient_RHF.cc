@@ -368,18 +368,18 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     auto a_opdm = Matrix("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
-    auto *alpha_pitzer_to_corr = new int[nmo_];
-    ::memset(alpha_pitzer_to_corr, '\0', nmo_ * sizeof(int));
+    auto *alpha_pitzer_to_corr = new int[Wavefunction::nmo()];
+    ::memset(alpha_pitzer_to_corr, '\0', Wavefunction::nmo() * sizeof(int));
 
-    for (int n = 0; n < nmo_; ++n) {
+    for (int n = 0; n < Wavefunction::nmo(); ++n) {
         alpha_pitzer_to_corr[alpha_corr_to_pitzer[n]] = n;
     }
 
     const int *beta_corr_to_pitzer = _ints->beta_corr_to_pitzer();
-    auto *beta_pitzer_to_corr = new int[nmo_];
-    ::memset(beta_pitzer_to_corr, '\0', nmo_ * sizeof(int));
+    auto *beta_pitzer_to_corr = new int[Wavefunction::nmo()];
+    ::memset(beta_pitzer_to_corr, '\0', Wavefunction::nmo() * sizeof(int));
 
-    for (int n = 0; n < nmo_; ++n) {
+    for (int n = 0; n < Wavefunction::nmo(); ++n) {
         beta_pitzer_to_corr[beta_corr_to_pitzer[n]] = n;
     }
 

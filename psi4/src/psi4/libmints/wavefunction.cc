@@ -156,7 +156,6 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
     nbeta_ = ints["nbeta"];
     nfrzc_ = ints["nfrzc"];
     nirrep_ = ints["nirrep"];
-    nmo_ = ints["nmo"];
     nso_ = ints["nso"];
     print_ = ints["print"];
 
@@ -221,7 +220,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
               dipole_field_strength_.begin());
 
     nso_ = other->nso_;
-    nmo_ = other->nmo_;
     nirrep_ = other->nirrep_;
 
     same_a_b_dens_ = other->same_a_b_dens_;
@@ -302,7 +300,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     nmopi_ = other->nmopi_;
 
     nso_ = other->nso_;
-    nmo_ = other->nmo_;
     nirrep_ = other->nirrep_;
 
     same_a_b_dens_ = other->same_a_b_dens_;
@@ -393,7 +390,6 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->nmopi_[0] = nmopi_.sum();
 
     wfn->nso_ = nso_;
-    wfn->nmo_ = nmo_;
     wfn->nirrep_ = 1;
 
     wfn->same_a_b_dens_ = same_a_b_dens_;
@@ -493,7 +489,6 @@ void Wavefunction::common_init() {
     memory_ = Process::environment.get_memory();
 
     nso_ = basisset_->nbf();
-    nmo_ = basisset_->nbf();
     for (int k = 0; k < nirrep_; k++) {
         nmopi_[k] = 0;
         nalphapi_[k] = 0;
@@ -606,16 +601,19 @@ void Wavefunction::common_init() {
             atomCoordinates.push_back(molecule_->fz(atomIndex));
         }
 
-        brianCOMSetMolecule(&brianCookie, &totalCharge, &spinMultiplicity, &atomCount, atomCoordinates.data(), atomicNumbers.data());
+        brianCOMSetMolecule(&brianCookie, &totalCharge, &spinMultiplicity, &atomCount, atomCoordinates.data(),
+                            atomicNumbers.data());
         checkBrian();
 
         std::vector<brianInt> shellSchemas(basisset_->max_am() + 1, -1);
         for (unsigned int shellIndex = 0; shellIndex < basisset_->nshell(); shellIndex++) {
             int shellType = basisset_->shell(shellIndex).am();
-            brianInt shellSchema = basisset_->shell(shellIndex).is_pure() ? BRIAN_SHELL_SCHEMA_SPHERICAL_PSI4 : BRIAN_SHELL_SCHEMA_CARTESIAN_STANDARD;
+            brianInt shellSchema = basisset_->shell(shellIndex).is_pure() ? BRIAN_SHELL_SCHEMA_SPHERICAL_PSI4
+                                                                          : BRIAN_SHELL_SCHEMA_CARTESIAN_STANDARD;
 
             if (shellSchemas[shellType] != -1 and shellSchemas[shellType] != shellSchema) {
-                throw PSIEXCEPTION("BrianQC needs shells of the same angular momentum to be either all pure or all cartesian\n");
+                throw PSIEXCEPTION(
+                    "BrianQC needs shells of the same angular momentum to be either all pure or all cartesian\n");
             }
 
             shellSchemas[shellType] = shellSchema;
@@ -632,7 +630,7 @@ void Wavefunction::common_init() {
         std::vector<brianInt> shellPrefactorOffsets;
         std::vector<double> prefactors;
         for (unsigned int shellIndex = 0; shellIndex < basisset_->nshell(); shellIndex++) {
-            const GaussianShell& shell = basisset_->shell(shellIndex);
+            const GaussianShell &shell = basisset_->shell(shellIndex);
             shellAtomIndices.push_back(shell.ncenter());
             shellMinTypes.push_back(shell.am());
             shellMaxTypes.push_back(shell.am());
@@ -647,22 +645,25 @@ void Wavefunction::common_init() {
 
         brianInt basisRole = BRIAN_BASIS_ROLE_ORBITAL;
 
-        // NOTE: if we ever want to use BrianQC's SAD initial guess, then we will need to find the basis name here and map it to the macro value
+        // NOTE: if we ever want to use BrianQC's SAD initial guess, then we will need to find the basis name here and
+        // map it to the macro value
         brianInt basisSetID = BRIAN_BASIS_SET_CUSTOM;
-        brianCOMSetBasis(&brianCookie, &basisRole, &basisSetID, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data());
+        brianCOMSetBasis(&brianCookie, &basisRole, &basisSetID, shellSchemas.data(), &shellCount,
+                         shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(),
+                         shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(),
+                         shellPrefactorOffsets.data(), prefactors.data());
         checkBrian();
 
         if (options_.get_str("REFERENCE") == "RHF" or options_.get_str("REFERENCE") == "RKS") {
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_RHF;
-        }
-        else if (options_.get_str("REFERENCE") == "UHF" or options_.get_str("REFERENCE") == "UKS" or options_.get_str("REFERENCE") == "CUHF") {
-            // CUHF is different from UHF, but Fock building works the same, so for the time being we just set BrianQC to UHF
+        } else if (options_.get_str("REFERENCE") == "UHF" or options_.get_str("REFERENCE") == "UKS" or
+                   options_.get_str("REFERENCE") == "CUHF") {
+            // CUHF is different from UHF, but Fock building works the same, so for the time being we just set BrianQC
+            // to UHF
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_UHF;
-        }
-        else if (options_.get_str("REFERENCE") == "ROHF") {
+        } else if (options_.get_str("REFERENCE") == "ROHF") {
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_ROHF;
-        }
-        else {
+        } else {
             throw PSIEXCEPTION("Currently, BrianQC can only handle RHF, RKS, UHF, UKS, CUHF and ROHF calculations");
         }
 
@@ -771,7 +772,9 @@ std::map<std::string, std::shared_ptr<BasisSet>> Wavefunction::basissets() const
 
 std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) { return mintshelper_->get_basisset(label); }
 
-void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) { return mintshelper_->set_basisset(label, basis); }
+void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) {
+    return mintshelper_->set_basisset(label, basis);
+}
 
 bool Wavefunction::basisset_exists(std::string label) { return mintshelper_->basisset_exists(label); }
 
@@ -1252,7 +1255,7 @@ std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {
 std::vector<SharedVector> Wavefunction::get_mo_extents() const {
     std::vector<SharedVector> m = mo_extents();
 
-    int n = nmo_;
+    int n = Wavefunction::nmo();
     std::vector<SharedVector> mo_vectors;
     mo_vectors.push_back(std::make_shared<Vector>("<x^2>", basisset_->nbf()));
     mo_vectors.push_back(std::make_shared<Vector>("<y^2>", basisset_->nbf()));

@@ -87,10 +87,10 @@ void OCCWave::dump_pdms() {
         psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 
         const int *alpha_corr_to_pitzer = ints->alpha_corr_to_pitzer();
-        auto *alpha_pitzer_to_corr = new int[nmo_];
-        memset(alpha_pitzer_to_corr, 0, nmo_ * sizeof(int));
+        auto *alpha_pitzer_to_corr = new int[Wavefunction::nmo()];
+        memset(alpha_pitzer_to_corr, 0, Wavefunction::nmo() * sizeof(int));
 
-        for (int n = 0; n < nmo_; ++n) {
+        for (int n = 0; n < Wavefunction::nmo(); ++n) {
             alpha_pitzer_to_corr[alpha_corr_to_pitzer[n]] = n;
         }
 
@@ -248,18 +248,18 @@ void OCCWave::dump_pdms() {
         psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 
         const int *alpha_corr_to_pitzer = ints->alpha_corr_to_pitzer();
-        auto *alpha_pitzer_to_corr = new int[nmo_];
-        memset(alpha_pitzer_to_corr, 0, nmo_ * sizeof(int));
+        auto *alpha_pitzer_to_corr = new int[Wavefunction::nmo()];
+        memset(alpha_pitzer_to_corr, 0, Wavefunction::nmo() * sizeof(int));
 
-        for (int n = 0; n < nmo_; ++n) {
+        for (int n = 0; n < Wavefunction::nmo(); ++n) {
             alpha_pitzer_to_corr[alpha_corr_to_pitzer[n]] = n;
         }
 
         const int *beta_corr_to_pitzer = ints->beta_corr_to_pitzer();
-        auto *beta_pitzer_to_corr = new int[nmo_];
-        memset(beta_pitzer_to_corr, 0, nmo_ * sizeof(int));
+        auto *beta_pitzer_to_corr = new int[Wavefunction::nmo()];
+        memset(beta_pitzer_to_corr, 0, Wavefunction::nmo() * sizeof(int));
 
-        for (int n = 0; n < nmo_; ++n) {
+        for (int n = 0; n < Wavefunction::nmo(); ++n) {
             beta_pitzer_to_corr[beta_corr_to_pitzer[n]] = n;
         }
 

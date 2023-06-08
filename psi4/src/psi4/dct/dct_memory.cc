@@ -49,7 +49,6 @@ namespace dct {
 void DCTSolver::init() {
     nso_ = reference_wavefunction_->nso();
     nirrep_ = reference_wavefunction_->nirrep();
-    nmo_ = reference_wavefunction_->nmo();
     enuc_ = reference_wavefunction_->molecule()->nuclear_repulsion_energy(
         reference_wavefunction_->get_dipole_field_strength());
     scf_energy_ = reference_wavefunction_->energy();
@@ -68,14 +67,12 @@ void DCTSolver::init() {
     nbvir_ = nbvirpi_.sum();
 
     auto zero = Dimension(nirrep_);
-    slices_ = {
-        {"SO",  Slice(zero, nsopi_)},
-        {"MO",  Slice(zero, nmopi_)},
-        {"ACTIVE_OCC_A",  Slice(frzcpi_, nalphapi_)},
-        {"ACTIVE_OCC_B",  Slice(frzcpi_, nbetapi_)},
-        {"ACTIVE_VIR_A",  Slice(nalphapi_, nalphapi_ + navirpi_)},
-        {"ACTIVE_VIR_B",  Slice(nbetapi_, nbetapi_ + nbvirpi_)}
-    };
+    slices_ = {{"SO", Slice(zero, nsopi_)},
+               {"MO", Slice(zero, nmopi_)},
+               {"ACTIVE_OCC_A", Slice(frzcpi_, nalphapi_)},
+               {"ACTIVE_OCC_B", Slice(frzcpi_, nbetapi_)},
+               {"ACTIVE_VIR_A", Slice(nalphapi_, nalphapi_ + navirpi_)},
+               {"ACTIVE_VIR_B", Slice(nbetapi_, nbetapi_ + nbvirpi_)}};
 
     aocc_c_ = std::make_shared<Matrix>("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_);
     bocc_c_ = std::make_shared<Matrix>("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_);

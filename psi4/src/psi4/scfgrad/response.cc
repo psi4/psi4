@@ -2183,9 +2183,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
     auto ao_dipole = mints.ao_dipole();
     auto Ca = Ca_subset("AO");
     auto Caocc = Ca_subset("AO", "OCC");
-    Matrix mu_x("mu X", nmo_, nocc);
-    Matrix mu_y("mu Y", nmo_, nocc);
-    Matrix mu_z("mu Z", nmo_, nocc);
+    Matrix mu_x("mu X", Wavefunction::nmo(), nocc);
+    Matrix mu_y("mu Y", Wavefunction::nmo(), nocc);
+    Matrix mu_z("mu Z", Wavefunction::nmo(), nocc);
     mu_x.transform(Ca, ao_dipole[0], Caocc);
     mu_y.transform(Ca, ao_dipole[1], Caocc);
     mu_z.transform(Ca, ao_dipole[2], Caocc);
@@ -4707,12 +4707,12 @@ void USCFDeriv::dipole_derivatives(std::shared_ptr<Matrix> C1,
 
     MintsHelper mints(basisset_);
     auto ao_dipole = mints.ao_dipole();
-    Matrix mu1_x("mu X", nmo_, n1occ);
-    Matrix mu1_y("mu Y", nmo_, n1occ);
-    Matrix mu1_z("mu Z", nmo_, n1occ);
-    Matrix mu2_x("mu X", nmo_, n2occ);
-    Matrix mu2_y("mu Y", nmo_, n2occ);
-    Matrix mu2_z("mu Z", nmo_, n2occ);
+    Matrix mu1_x("mu X", Wavefunction::nmo(), n1occ);
+    Matrix mu1_y("mu Y", Wavefunction::nmo(), n1occ);
+    Matrix mu1_z("mu Z", Wavefunction::nmo(), n1occ);
+    Matrix mu2_x("mu X", Wavefunction::nmo(), n2occ);
+    Matrix mu2_y("mu Y", Wavefunction::nmo(), n2occ);
+    Matrix mu2_z("mu Z", Wavefunction::nmo(), n2occ);
     mu1_x.transform(C1, ao_dipole[0], C1occ);
     mu1_y.transform(C1, ao_dipole[1], C1occ);
     mu1_z.transform(C1, ao_dipole[2], C1occ);

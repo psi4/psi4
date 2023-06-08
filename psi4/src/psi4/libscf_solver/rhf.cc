@@ -393,7 +393,7 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
     SharedMatrix F, Co, Cv;
     for (size_t i = 0; i < x_vec.size(); i++) {
         if (c1_input_[i]) {
-            if ((x_vec[i]->rowspi()[0] != nalpha_) || (x_vec[i]->colspi()[0] != (nmo_ - nalpha_))) {
+            if ((x_vec[i]->rowspi()[0] != nalpha_) || (x_vec[i]->colspi()[0] != (Wavefunction::nmo() - nalpha_))) {
                 throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             F = F_ao;
@@ -461,7 +461,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bo
     SharedMatrix Co, Cv;
     for (size_t i = 0; i < x_vec.size(); i++) {
         if (c1_input_[i]) {
-            if ((x_vec[i]->rowspi()[0] != nalpha_) || (x_vec[i]->colspi()[0] != (nmo_ - nalpha_))) {
+            if ((x_vec[i]->rowspi()[0] != nalpha_) || (x_vec[i]->colspi()[0] != (Wavefunction::nmo() - nalpha_))) {
                 throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             Co = Cocc_ao;
@@ -637,13 +637,13 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         auto Cocc_ao = Ca_subset("AO", "ALL");
         auto F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
         auto IFock_ao = linalg::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
-        Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
+        Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, Wavefunction::nmo() - nalpha_);
 
         auto denomp = Precon_ao->pointer()[0];
         auto fp = IFock_ao->pointer();
 
         for (size_t i = 0, target = 0; i < nalpha_; i++) {
-            for (size_t a = nalpha_; a < nmo_; a++) {
+            for (size_t a = nalpha_; a < Wavefunction::nmo(); a++) {
                 denomp[target++] = -fp[i][i] + fp[a][a];
             }
         }

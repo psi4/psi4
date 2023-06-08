@@ -47,9 +47,9 @@ void DFOCC::s2_response() {
     //=========================
     // Read AO basis SO
     //=========================
-    SharedTensor2d SmoAB = std::make_shared<Tensor2d>("MO-basis Alpha-Beta Overlap Ints", nmo_, nmo_);
-    SharedTensor2d SmoBA = std::make_shared<Tensor2d>("MO-basis Beta-Alpha Overlap Ints", nmo_, nmo_);
-    SharedTensor2d temp = std::make_shared<Tensor2d>("Temp", nso_, nmo_);
+    SharedTensor2d SmoAB = std::make_shared<Tensor2d>("MO-basis Alpha-Beta Overlap Ints", Wavefunction::nmo(), Wavefunction::nmo());
+    SharedTensor2d SmoBA = std::make_shared<Tensor2d>("MO-basis Beta-Alpha Overlap Ints", Wavefunction::nmo(), Wavefunction::nmo());
+    SharedTensor2d temp = std::make_shared<Tensor2d>("Temp", nso_, Wavefunction::nmo());
 
     // AB
     temp->gemm(false, false, Sso, CmoB, 1.0, 0.0);
@@ -155,9 +155,9 @@ void DFOCC::s2_lagrangian() {
     //=========================
     // Read AO basis SO
     //=========================
-    SharedTensor2d SmoAB = std::make_shared<Tensor2d>("MO-basis Alpha-Beta Overlap Ints", nmo_, nmo_);
-    SharedTensor2d SmoBA = std::make_shared<Tensor2d>("MO-basis Beta-Alpha Overlap Ints", nmo_, nmo_);
-    SharedTensor2d temp = std::make_shared<Tensor2d>("Temp", nso_, nmo_);
+    SharedTensor2d SmoAB = std::make_shared<Tensor2d>("MO-basis Alpha-Beta Overlap Ints", Wavefunction::nmo(), Wavefunction::nmo());
+    SharedTensor2d SmoBA = std::make_shared<Tensor2d>("MO-basis Beta-Alpha Overlap Ints", Wavefunction::nmo(), Wavefunction::nmo());
+    SharedTensor2d temp = std::make_shared<Tensor2d>("Temp", nso_, Wavefunction::nmo());
 
     // AB
     temp->gemm(false, false, Sso, CmoB, 1.0, 0.0);

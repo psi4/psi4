@@ -282,10 +282,10 @@ void DCTSolver::print_opdm_RHF() {
         if (count % 4 == 3 && i != nalpha_) outfile->Printf("\n\t\t");
     }
     outfile->Printf("\n\n\t\tVirtual orbitals\n\t\t");
-    for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
+    for (int i = nalpha_, count = 0; i < Wavefunction::nmo(); ++i, ++count) {
         int irrep = aPairs[i].second;
         outfile->Printf("%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), 2 * aPairs[i].first);
-        if (count % 4 == 3 && i != nmo_) outfile->Printf("\n\t\t");
+        if (count % 4 == 3 && i != Wavefunction::nmo()) outfile->Printf("\n\t\t");
     }
     outfile->Printf("\n\n");
 }

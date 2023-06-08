@@ -788,13 +788,13 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         auto Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
         auto IFock_ao_a = linalg::triplet(Caocc_ao, Fa_ao, Caocc_ao, true, false, false);
         auto IFock_ao_b = linalg::triplet(Cbocc_ao, Fb_ao, Cbocc_ao, true, false, false);
-        Precon_ao_a = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
-        Precon_ao_b = std::make_shared<Matrix>("Precon", nbeta_, nmo_ - nbeta_);
+        Precon_ao_a = std::make_shared<Matrix>("Precon", nalpha_, Wavefunction::nmo() - nalpha_);
+        Precon_ao_b = std::make_shared<Matrix>("Precon", nbeta_, Wavefunction::nmo() - nbeta_);
 
         auto denom_ap = Precon_ao_a->pointer()[0];
         auto f_ap = IFock_ao_a->pointer();
         for (size_t i = 0, target = 0; i < nalpha_; i++) {
-            for (size_t a = nalpha_; a < nmo_; a++) {
+            for (size_t a = nalpha_; a < Wavefunction::nmo(); a++) {
                 denom_ap[target++] = -f_ap[i][i] + f_ap[a][a];
             }
         }
@@ -802,7 +802,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         auto denom_bp = Precon_ao_b->pointer()[0];
         auto f_bp = IFock_ao_b->pointer();
         for (size_t i = 0, target = 0; i < nbeta_; i++) {
-            for (size_t a = nbeta_; a < nmo_; a++) {
+            for (size_t a = nbeta_; a < Wavefunction::nmo(); a++) {
                 denom_bp[target++] = -f_bp[i][i] + f_bp[a][a];
             }
         }
@@ -1106,7 +1106,7 @@ void UHF::compute_nos() {
     // Print the NOONs -- code ripped off from OEProp::compute_no_occupations()
     int max_num;
     if (options_.get_str("PRINT_NOONS") == "ALL")
-        max_num = nmo_;
+        max_num = Wavefunction::nmo();
     else
         max_num = to_integer(options_.get_str("PRINT_NOONS"));
 

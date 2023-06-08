@@ -192,12 +192,12 @@ void SAPT2::print_header() {
         outfile->Printf("    NSO        = %9d\n", nso_);
         outfile->Printf("    NSO A      = %9zu\n", nsoA_);
         outfile->Printf("    NSO B      = %9zu\n", nsoB_);
-        outfile->Printf("    NMO        = %9d\n", nmo_);
+        outfile->Printf("    NMO        = %9d\n", Wavefunction::nmo());
         outfile->Printf("    NMO A      = %9zu\n", nmoA_);
         outfile->Printf("    NMO B      = %9zu\n", nmoB_);
     } else {
         outfile->Printf("    NSO        = %9d\n", nso_);
-        outfile->Printf("    NMO        = %9d\n", nmo_);
+        outfile->Printf("    NMO        = %9d\n", Wavefunction::nmo());
     }
     outfile->Printf("    NRI        = %9zu\n", ndf_);
     outfile->Printf("    NOCC A     = %9zu\n", noccA_);

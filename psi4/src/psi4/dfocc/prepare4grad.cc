@@ -956,8 +956,8 @@ void DFOCC::effective_pdm_gfm() {
 }  // end effective_pdm_gfm
 
 void DFOCC::set_opdm() {
-    auto Da = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
-    auto Db = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
+    auto Da = std::make_shared<Matrix>("MO-basis alpha OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+    auto Db = std::make_shared<Matrix>("MO-basis beta OPDM", Wavefunction::nmo(), Wavefunction::nmo());
     if (reference_ == "RESTRICTED") {
         G1->to_shared_matrix(Da);
         Da->scale(0.5);

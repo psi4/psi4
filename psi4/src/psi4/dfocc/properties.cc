@@ -48,8 +48,8 @@ void DFOCC::oeprop() {
     // is, CD gradient tech available in the literature but none in Psi4, even for CD-HF.)
     // This should wait until after the current dfocc push. - JPM 08/2022
 
-    auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
-    auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
+    auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+    auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", Wavefunction::nmo(), Wavefunction::nmo());
     if (reference_ == "RESTRICTED") {
         G1->to_shared_matrix(Da_);
         Da_->scale(0.5);
@@ -90,7 +90,7 @@ void DFOCC::ekt_ip() {
     if (reference_ == "RESTRICTED") {
 
         // Call EKT
-        auto ektA = std::make_shared<Ektip>("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5);
+        auto ektA = std::make_shared<Ektip>("Alpha EKT", noccA, Wavefunction::nmo(), GF, G1, 1.0, 0.5);
 
         // Print IPs
         outfile->Printf("\n\tEKT Ionization Potentials (Alpha Spin Case) \n");

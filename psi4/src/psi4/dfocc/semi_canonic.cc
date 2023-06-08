@@ -113,7 +113,7 @@ void DFOCC::semi_canonic() {
     }
 
     // Get new MOs
-    SharedTensor2d Ca_new = std::make_shared<Tensor2d>("New alpha MO coefficients", nso_, nmo_);
+    SharedTensor2d Ca_new = std::make_shared<Tensor2d>("New alpha MO coefficients", nso_, Wavefunction::nmo());
     Ca_new->gemm(false, false, CmoA, UorbA, 1.0, 0.0);
     CmoA->copy(Ca_new);
     Ca_new.reset();
@@ -205,7 +205,7 @@ void DFOCC::semi_canonic() {
         }
 
         // Get new MOs
-        SharedTensor2d Cb_new = std::make_shared<Tensor2d>("New beta MO coefficients", nso_, nmo_);
+        SharedTensor2d Cb_new = std::make_shared<Tensor2d>("New beta MO coefficients", nso_, Wavefunction::nmo());
         Cb_new->gemm(false, false, CmoB, UorbB, 1.0, 0.0);
         CmoB->copy(Cb_new);
         Cb_new.reset();

@@ -695,10 +695,10 @@ void DFOCC::ccsd_manager_cd() {
             G1c_vvA = std::make_shared<Tensor2d>("Correlation OPDM <V|V>", nvirA, nvirA);
             G1c_vvB = std::make_shared<Tensor2d>("Correlation OPDM <v|v>", nvirB, nvirB);
 
-            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
-            G1cB = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
-            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", nmo_, nmo_);
-            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", nmo_, nmo_);
+            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1cB = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", Wavefunction::nmo(), Wavefunction::nmo());
 
             ccsd_opdm();
             uccsd_tpdm();
@@ -1164,10 +1164,10 @@ void DFOCC::ccsd_t_manager_cd() {
             G1c_vvA = std::make_shared<Tensor2d>("Correlation OPDM <V|V>", nvirA, nvirA);
             G1c_vvB = std::make_shared<Tensor2d>("Correlation OPDM <v|v>", nvirB, nvirB);
 
-            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
-            G1cB = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
-            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", nmo_, nmo_);
-            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", nmo_, nmo_);
+            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1cB = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", Wavefunction::nmo(), Wavefunction::nmo());
 
             ccsd_opdm();
             uccsd_tpdm();

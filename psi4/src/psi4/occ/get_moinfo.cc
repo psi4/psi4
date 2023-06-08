@@ -56,7 +56,6 @@ void OCCWave::get_moinfo() {
         // Read in mo info
         nso_ = reference_wavefunction_->nso();
         nirrep_ = reference_wavefunction_->nirrep();
-        nmo_ = reference_wavefunction_->nmo();
         nmopi_ = reference_wavefunction_->nmopi();
         nsopi_ = reference_wavefunction_->nsopi();
         frzcpi_ = reference_wavefunction_->frzcpi();
@@ -91,8 +90,8 @@ void OCCWave::get_moinfo() {
         // epsilon_a_ = SharedVector(reference_wavefunction_->epsilon_a());
 
         /* Build mosym arrays */
-        mosym = new int[nmo_];
-        memset(mosym, 0, sizeof(int) * nmo_);
+        mosym = new int[Wavefunction::nmo()];
+        memset(mosym, 0, sizeof(int) * Wavefunction::nmo());
         for (int h = 0, q = 0; h < nirrep_; h++) {
             for (int p = 0; p < nmopi_[h]; p++) {
                 mosym[q++] = h;
@@ -101,7 +100,7 @@ void OCCWave::get_moinfo() {
 
         /* Build sosym arrays */
         sosym = new int[nso_];
-        memset(sosym, 0, sizeof(int) * nmo_);
+        memset(sosym, 0, sizeof(int) * Wavefunction::nmo());
         for (int h = 0, q = 0; h < nirrep_; h++) {
             for (int p = 0; p < nsopi_[h]; p++) {
                 sosym[q++] = h;
@@ -118,25 +117,25 @@ void OCCWave::get_moinfo() {
             PitzerOffset[h] = PitzerOffset[h - 1] + nmopi_[h - 1];
         }
 
-        nvoA = nmo_ - nooA;            // Number of virtual orbitals
-        nacooA = nooA - nfrzc;         // Number of active occupied orbitals
-        nacso = nmo_ - nfrzc - nfrzv;  // Number of active  orbitals
-        nacvoA = nvoA - nfrzv;         // Number of active virtual orbitals
-        npop = nmo_ - nfrzv;           // Number of populated orbitals
+        nvoA = Wavefunction::nmo() - nooA;            // Number of virtual orbitals
+        nacooA = nooA - nfrzc;                        // Number of active occupied orbitals
+        nacso = Wavefunction::nmo() - nfrzc - nfrzv;  // Number of active  orbitals
+        nacvoA = nvoA - nfrzv;                        // Number of active virtual orbitals
+        npop = Wavefunction::nmo() - nfrzv;           // Number of populated orbitals
 
         ntri_so = 0.5 * nso_ * (nso_ + 1);
-        ntri = 0.5 * nmo_ * (nmo_ + 1);
+        ntri = 0.5 * Wavefunction::nmo() * (Wavefunction::nmo() + 1);
         dimtei = 0.5 * ntri * (ntri + 1);
 
         /********************************************************************************************/
         /************************** pitzer2symblk ***************************************************/
         /********************************************************************************************/
-        pitzer2symirrep = new int[nmo_];
-        pitzer2symblk = new int[nmo_];
+        pitzer2symirrep = new int[Wavefunction::nmo()];
+        pitzer2symblk = new int[Wavefunction::nmo()];
         occ2symblkA = new int[nooA];
         virt2symblkA = new int[nvoA];
-        memset(pitzer2symirrep, 0, sizeof(int) * nmo_);
-        memset(pitzer2symblk, 0, sizeof(int) * nmo_);
+        memset(pitzer2symirrep, 0, sizeof(int) * Wavefunction::nmo());
+        memset(pitzer2symblk, 0, sizeof(int) * Wavefunction::nmo());
         memset(occ2symblkA, 0, sizeof(int) * nooA);
         memset(virt2symblkA, 0, sizeof(int) * nvoA);
 
@@ -177,7 +176,7 @@ void OCCWave::get_moinfo() {
 
         // print
         if (print_ > 1) {
-            for (int p = 0; p < nmo_; p++) {
+            for (int p = 0; p < Wavefunction::nmo(); p++) {
                 outfile->Printf(" p, pitzer2symblk[p]: %2d %2d \n", p, pitzer2symblk[p]);
             }
             outfile->Printf("\n");
@@ -186,25 +185,25 @@ void OCCWave::get_moinfo() {
         /********************************************************************************************/
         /************************** qt2pitzer *******************************************************/
         /********************************************************************************************/
-        qt2pitzerA = new int[nmo_];
-        pitzer2qtA = new int[nmo_];
-        memset(qt2pitzerA, 0, sizeof(int) * nmo_);
-        memset(pitzer2qtA, 0, sizeof(int) * nmo_);
+        qt2pitzerA = new int[Wavefunction::nmo()];
+        pitzer2qtA = new int[Wavefunction::nmo()];
+        memset(qt2pitzerA, 0, sizeof(int) * Wavefunction::nmo());
+        memset(pitzer2qtA, 0, sizeof(int) * Wavefunction::nmo());
 
         reorder_qt(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, nmopi_, nirrep_);
-        for (int p = 0; p < nmo_; p++) {
+        for (int p = 0; p < Wavefunction::nmo(); p++) {
             int pa = pitzer2qtA[p];
             qt2pitzerA[pa] = p;
         }
 
         // print
         if (print_ > 1) {
-            for (int p = 0; p < nmo_; p++) {
+            for (int p = 0; p < Wavefunction::nmo(); p++) {
                 outfile->Printf(" p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
             }
             outfile->Printf("\n");
 
-            for (int p = 0; p < nmo_; p++) {
+            for (int p = 0; p < Wavefunction::nmo(); p++) {
                 outfile->Printf(" p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
             }
             outfile->Printf("\n");
@@ -337,13 +336,13 @@ void OCCWave::get_moinfo() {
         if (read_mo_coeff == "TRUE") {
             outfile->Printf("\n\tReading MO coefficients in pitzer order from the external file CmoA.psi...\n");
 
-            double **C_pitzerA = block_matrix(nso_, nmo_);
-            memset(C_pitzerA[0], 0, sizeof(double) * nso_ * nmo_);
+            double **C_pitzerA = block_matrix(nso_, Wavefunction::nmo());
+            memset(C_pitzerA[0], 0, sizeof(double) * nso_ * Wavefunction::nmo());
 
             // read binary data
             std::ifstream InFile1;
             InFile1.open("CmoA.psi", std::ios::in | std::ios::binary);
-            InFile1.read((char *)C_pitzerA[0], sizeof(double) * nso_ * nmo_);
+            InFile1.read((char *)C_pitzerA[0], sizeof(double) * nso_ * Wavefunction::nmo());
             InFile1.close();
 
             // set C_scf
@@ -369,7 +368,6 @@ void OCCWave::get_moinfo() {
         // Read in mo info
         nso_ = reference_wavefunction_->nso();
         nirrep_ = reference_wavefunction_->nirrep();
-        nmo_ = reference_wavefunction_->nmo();
         nmopi_ = reference_wavefunction_->nmopi();
         nsopi_ = reference_wavefunction_->nsopi();
         frzcpi_ = reference_wavefunction_->frzcpi();
@@ -408,8 +406,8 @@ void OCCWave::get_moinfo() {
         epsilon_b_ = reference_wavefunction_->epsilon_b();
 
         /* Build mosym arrays */
-        mosym = new int[nmo_];
-        memset(mosym, 0, sizeof(int) * nmo_);
+        mosym = new int[Wavefunction::nmo()];
+        memset(mosym, 0, sizeof(int) * Wavefunction::nmo());
         for (int h = 0, q = 0; h < nirrep_; h++) {
             for (int p = 0; p < nmopi_[h]; p++) {
                 mosym[q++] = h;
@@ -418,7 +416,7 @@ void OCCWave::get_moinfo() {
 
         /* Build sosym arrays */
         sosym = new int[nso_];
-        memset(sosym, 0, sizeof(int) * nmo_);
+        memset(sosym, 0, sizeof(int) * Wavefunction::nmo());
         for (int h = 0, q = 0; h < nirrep_; h++) {
             for (int p = 0; p < nsopi_[h]; p++) {
                 sosym[q++] = h;
@@ -436,30 +434,30 @@ void OCCWave::get_moinfo() {
             PitzerOffset[h] = PitzerOffset[h - 1] + nmopi_[h - 1];
         }
 
-        nvoA = nmo_ - nooA;            // Number of virtual orbitals
-        nvoB = nmo_ - nooB;            // Number of virtual orbitals
-        nacooA = nooA - nfrzc;         // Number of active occupied orbitals
-        nacooB = nooB - nfrzc;         // Number of active occupied orbitals
-        nacso = nmo_ - nfrzc - nfrzv;  // Number of active  orbitals
-        nacvoA = nvoA - nfrzv;         // Number of active virtual orbitals
-        nacvoB = nvoB - nfrzv;         // Number of active virtual orbitals
-        npop = nmo_ - nfrzv;           // Number of populated orbitals
+        nvoA = Wavefunction::nmo() - nooA;            // Number of virtual orbitals
+        nvoB = Wavefunction::nmo() - nooB;            // Number of virtual orbitals
+        nacooA = nooA - nfrzc;                        // Number of active occupied orbitals
+        nacooB = nooB - nfrzc;                        // Number of active occupied orbitals
+        nacso = Wavefunction::nmo() - nfrzc - nfrzv;  // Number of active  orbitals
+        nacvoA = nvoA - nfrzv;                        // Number of active virtual orbitals
+        nacvoB = nvoB - nfrzv;                        // Number of active virtual orbitals
+        npop = Wavefunction::nmo() - nfrzv;           // Number of populated orbitals
 
         ntri_so = 0.5 * nso_ * (nso_ + 1);
-        ntri = 0.5 * nmo_ * (nmo_ + 1);
+        ntri = 0.5 * Wavefunction::nmo() * (Wavefunction::nmo() + 1);
         dimtei = 0.5 * ntri * (ntri + 1);
 
         /********************************************************************************************/
         /************************** pitzer2symblk ***************************************************/
         /********************************************************************************************/
-        pitzer2symirrep = new int[nmo_];
-        pitzer2symblk = new int[nmo_];
+        pitzer2symirrep = new int[Wavefunction::nmo()];
+        pitzer2symblk = new int[Wavefunction::nmo()];
         occ2symblkA = new int[nooA];
         occ2symblkB = new int[nooB];
         virt2symblkA = new int[nvoA];
         virt2symblkB = new int[nvoB];
-        memset(pitzer2symirrep, 0, sizeof(int) * nmo_);
-        memset(pitzer2symblk, 0, sizeof(int) * nmo_);
+        memset(pitzer2symirrep, 0, sizeof(int) * Wavefunction::nmo());
+        memset(pitzer2symblk, 0, sizeof(int) * Wavefunction::nmo());
         memset(occ2symblkA, 0, sizeof(int) * nooA);
         memset(occ2symblkB, 0, sizeof(int) * nooB);
         memset(virt2symblkA, 0, sizeof(int) * nvoA);
@@ -524,7 +522,7 @@ void OCCWave::get_moinfo() {
 
         // print
         if (print_ > 1) {
-            for (int p = 0; p < nmo_; p++) {
+            for (int p = 0; p < Wavefunction::nmo(); p++) {
                 outfile->Printf(" p, pitzer2symblk[p]: %2d %2d \n", p, pitzer2symblk[p]);
             }
             outfile->Printf("\n");
@@ -533,16 +531,16 @@ void OCCWave::get_moinfo() {
         /********************************************************************************************/
         /************************** qt2pitzer *******************************************************/
         /********************************************************************************************/
-        qt2pitzerA = new int[nmo_];
-        pitzer2qtA = new int[nmo_];
-        qt2pitzerB = new int[nmo_];
-        pitzer2qtB = new int[nmo_];
-        memset(qt2pitzerA, 0, sizeof(int) * nmo_);
-        memset(pitzer2qtA, 0, sizeof(int) * nmo_);
-        memset(qt2pitzerB, 0, sizeof(int) * nmo_);
-        memset(pitzer2qtB, 0, sizeof(int) * nmo_);
+        qt2pitzerA = new int[Wavefunction::nmo()];
+        pitzer2qtA = new int[Wavefunction::nmo()];
+        qt2pitzerB = new int[Wavefunction::nmo()];
+        pitzer2qtB = new int[Wavefunction::nmo()];
+        memset(qt2pitzerA, 0, sizeof(int) * Wavefunction::nmo());
+        memset(pitzer2qtA, 0, sizeof(int) * Wavefunction::nmo());
+        memset(qt2pitzerB, 0, sizeof(int) * Wavefunction::nmo());
+        memset(pitzer2qtB, 0, sizeof(int) * Wavefunction::nmo());
         reorder_qt_uhf(doccpi(), soccpi(), frzcpi_, frzvpi_, pitzer2qtA, pitzer2qtB, nmopi_, nirrep_);
-        for (int p = 0; p < nmo_; p++) {
+        for (int p = 0; p < Wavefunction::nmo(); p++) {
             int pa = pitzer2qtA[p];
             int pb = pitzer2qtB[p];
             qt2pitzerA[pa] = p;
@@ -551,22 +549,22 @@ void OCCWave::get_moinfo() {
 
         // print
         if (print_ > 1) {
-            for (int p = 0; p < nmo_; p++) {
+            for (int p = 0; p < Wavefunction::nmo(); p++) {
                 outfile->Printf(" p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
             }
             outfile->Printf("\n");
 
-            for (int p = 0; p < nmo_; p++) {
+            for (int p = 0; p < Wavefunction::nmo(); p++) {
                 outfile->Printf(" p, pitzer2qtB[p]: %2d %2d \n", p, pitzer2qtB[p]);
             }
             outfile->Printf("\n");
 
-            for (int p = 0; p < nmo_; p++) {
+            for (int p = 0; p < Wavefunction::nmo(); p++) {
                 outfile->Printf(" p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
             }
             outfile->Printf("\n");
 
-            for (int p = 0; p < nmo_; p++) {
+            for (int p = 0; p < Wavefunction::nmo(); p++) {
                 outfile->Printf(" p, qt2pitzerB[p]: %2d %2d \n", p, qt2pitzerB[p]);
             }
             outfile->Printf("\n");
@@ -643,21 +641,21 @@ void OCCWave::get_moinfo() {
             outfile->Printf(
                 "\n\tReading MO coefficients in pitzer order from external files CmoA.psi and CmoB.psi...\n");
 
-            double **C_pitzerA = block_matrix(nso_, nmo_);
-            double **C_pitzerB = block_matrix(nso_, nmo_);
-            memset(C_pitzerA[0], 0, sizeof(double) * nso_ * nmo_);
-            memset(C_pitzerB[0], 0, sizeof(double) * nso_ * nmo_);
+            double **C_pitzerA = block_matrix(nso_, Wavefunction::nmo());
+            double **C_pitzerB = block_matrix(nso_, Wavefunction::nmo());
+            memset(C_pitzerA[0], 0, sizeof(double) * nso_ * Wavefunction::nmo());
+            memset(C_pitzerB[0], 0, sizeof(double) * nso_ * Wavefunction::nmo());
 
             // read binary data
             std::ifstream InFile1;
             InFile1.open("CmoA.psi", std::ios::in | std::ios::binary);
-            InFile1.read((char *)C_pitzerA[0], sizeof(double) * nso_ * nmo_);
+            InFile1.read((char *)C_pitzerA[0], sizeof(double) * nso_ * Wavefunction::nmo());
             InFile1.close();
 
             // read binary data
             std::ifstream InFile2;
             InFile2.open("CmoB.psi", std::ios::in | std::ios::binary);
-            InFile2.read((char *)C_pitzerB[0], sizeof(double) * nso_ * nmo_);
+            InFile2.read((char *)C_pitzerB[0], sizeof(double) * nso_ * Wavefunction::nmo());
             InFile2.close();
 
             // set C_scf
@@ -691,5 +689,5 @@ void OCCWave::get_moinfo() {
     Hso = SharedMatrix(Tso->clone());
     Hso->add(Vso);
 }
-}
-}  // End Namespaces
+}  // namespace occwave
+}  // namespace psi

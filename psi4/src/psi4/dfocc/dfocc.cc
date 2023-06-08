@@ -547,7 +547,7 @@ void DFOCC::common_malloc() {
 
     if (reference_ == "RESTRICTED") {
         // Memory allocation
-        HmoA = std::make_shared<Tensor2d>("MO-basis alpha one-electron ints", nmo_, nmo_);
+        HmoA = std::make_shared<Tensor2d>("MO-basis alpha one-electron ints", Wavefunction::nmo(), Wavefunction::nmo());
         FijA = std::make_shared<Tensor2d>("Fint <I|J>", naoccA, naoccA);
         FabA = std::make_shared<Tensor2d>("Fint <A|B>", navirA, navirA);
         HooA = std::make_shared<Tensor2d>("OEI <O|O>", noccA, noccA);
@@ -564,20 +564,20 @@ void DFOCC::common_malloc() {
             GabA = std::make_shared<Tensor2d>("G Intermediate <A|B>", navirA, navirA);
             G1c_oo = std::make_shared<Tensor2d>("Correlation OPDM <O|O>", noccA, noccA);
             G1c_vv = std::make_shared<Tensor2d>("Correlation OPDM <V|V>", nvirA, nvirA);
-            G1 = std::make_shared<Tensor2d>("MO-basis OPDM", nmo_, nmo_);
+            G1 = std::make_shared<Tensor2d>("MO-basis OPDM", Wavefunction::nmo(), Wavefunction::nmo());
             G1ao = std::make_shared<Tensor2d>("AO-basis OPDM", nso_, nso_);
-            G1c = std::make_shared<Tensor2d>("MO-basis correlation OPDM", nmo_, nmo_);
-            GF = std::make_shared<Tensor2d>("MO-basis GFM", nmo_, nmo_);
+            G1c = std::make_shared<Tensor2d>("MO-basis correlation OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            GF = std::make_shared<Tensor2d>("MO-basis GFM", Wavefunction::nmo(), Wavefunction::nmo());
             GFao = std::make_shared<Tensor2d>("AO-basis GFM", nso_, nso_);
             GFoo = std::make_shared<Tensor2d>("MO-basis GFM <O|O>", noccA, noccA);
             GFvo = std::make_shared<Tensor2d>("MO-basis GFM <V|O>", nvirA, noccA);
             GFov = std::make_shared<Tensor2d>("MO-basis GFM <O|V>", noccA, nvirA);
             GFvv = std::make_shared<Tensor2d>("MO-basis GFM <V|V>", nvirA, nvirA);
             GFtvv = std::make_shared<Tensor2d>("MO-basis Complementary GFM <V|V>", nvirA, nvirA);
-            WorbA = std::make_shared<Tensor2d>("MO-basis alpha MO gradient", nmo_, nmo_);
-            UorbA = std::make_shared<Tensor2d>("Alpha MO rotation matrix", nmo_, nmo_);
-            KorbA = std::make_shared<Tensor2d>("Alpha K MO rotation parameters matrix", nmo_, nmo_);
-            KsqrA = std::make_shared<Tensor2d>("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_);
+            WorbA = std::make_shared<Tensor2d>("MO-basis alpha MO gradient", Wavefunction::nmo(), Wavefunction::nmo());
+            UorbA = std::make_shared<Tensor2d>("Alpha MO rotation matrix", Wavefunction::nmo(), Wavefunction::nmo());
+            KorbA = std::make_shared<Tensor2d>("Alpha K MO rotation parameters matrix", Wavefunction::nmo(), Wavefunction::nmo());
+            KsqrA = std::make_shared<Tensor2d>("Alpha K^2 MO rotation parameters matrix", Wavefunction::nmo(), Wavefunction::nmo());
             AvoA = std::make_shared<Tensor2d>("Diagonal MO Hessian <V|O>", nvirA, noccA);
             if (orb_opt_ == "FALSE") {
                 WvoA = std::make_shared<Tensor2d>("Effective MO gradient <V|O>", nvirA, noccA);
@@ -588,8 +588,8 @@ void DFOCC::common_malloc() {
 
     else if (reference_ == "UNRESTRICTED") {
         // Memory allocation
-        HmoA = std::make_shared<Tensor2d>("MO-basis alpha one-electron ints", nmo_, nmo_);
-        HmoB = std::make_shared<Tensor2d>("MO-basis beta one-electron ints", nmo_, nmo_);
+        HmoA = std::make_shared<Tensor2d>("MO-basis alpha one-electron ints", Wavefunction::nmo(), Wavefunction::nmo());
+        HmoB = std::make_shared<Tensor2d>("MO-basis beta one-electron ints", Wavefunction::nmo(), Wavefunction::nmo());
         FijA = std::make_shared<Tensor2d>("Fint <I|J>", naoccA, naoccA);
         FijB = std::make_shared<Tensor2d>("Fint <i|j>", naoccB, naoccB);
         FabA = std::make_shared<Tensor2d>("Fint <A|B>", navirA, navirA);
@@ -617,13 +617,13 @@ void DFOCC::common_malloc() {
             G1c_ooB = std::make_shared<Tensor2d>("Correlation OPDM <o|o>", noccB, noccB);
             G1c_vvA = std::make_shared<Tensor2d>("Correlation OPDM <V|V>", nvirA, nvirA);
             G1c_vvB = std::make_shared<Tensor2d>("Correlation OPDM <v|v>", nvirB, nvirB);
-            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
-            G1cB = std::make_shared<Tensor2d>("MO-basis beta correlation OPDM", nmo_, nmo_);
-            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", nmo_, nmo_);
-            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", nmo_, nmo_);
+            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1cB = std::make_shared<Tensor2d>("MO-basis beta correlation OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", Wavefunction::nmo(), Wavefunction::nmo());
+            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", Wavefunction::nmo(), Wavefunction::nmo());
             G1ao = std::make_shared<Tensor2d>("AO-basis OPDM", nso_, nso_);
-            GFA = std::make_shared<Tensor2d>("MO-basis alpha GFM", nmo_, nmo_);
-            GFB = std::make_shared<Tensor2d>("MO-basis beta GFM", nmo_, nmo_);
+            GFA = std::make_shared<Tensor2d>("MO-basis alpha GFM", Wavefunction::nmo(), Wavefunction::nmo());
+            GFB = std::make_shared<Tensor2d>("MO-basis beta GFM", Wavefunction::nmo(), Wavefunction::nmo());
             GFao = std::make_shared<Tensor2d>("AO-basis GFM", nso_, nso_);
             GFooA = std::make_shared<Tensor2d>("MO-basis GFM <O|O>", noccA, noccA);
             GFooB = std::make_shared<Tensor2d>("MO-basis GFM <o|o>", noccB, noccB);
@@ -635,14 +635,14 @@ void DFOCC::common_malloc() {
             GFvvB = std::make_shared<Tensor2d>("MO-basis GFM <v|v>", nvirB, nvirB);
             GFtvvA = std::make_shared<Tensor2d>("MO-basis Complementary GFM <V|V>", nvirA, nvirA);
             GFtvvB = std::make_shared<Tensor2d>("MO-basis Complementary GFM <v|v>", nvirB, nvirB);
-            WorbA = std::make_shared<Tensor2d>("MO-basis alpha MO gradient", nmo_, nmo_);
-            WorbB = std::make_shared<Tensor2d>("MO-basis beta MO gradient", nmo_, nmo_);
-            UorbA = std::make_shared<Tensor2d>("Alpha MO rotation matrix", nmo_, nmo_);
-            UorbB = std::make_shared<Tensor2d>("Beta MO rotation matrix", nmo_, nmo_);
-            KorbA = std::make_shared<Tensor2d>("Alpha K MO rotation parameters matrix", nmo_, nmo_);
-            KorbB = std::make_shared<Tensor2d>("Beta K MO rotation parameters matrix", nmo_, nmo_);
-            KsqrA = std::make_shared<Tensor2d>("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_);
-            KsqrB = std::make_shared<Tensor2d>("Beta K^2 MO rotation parameters matrix", nmo_, nmo_);
+            WorbA = std::make_shared<Tensor2d>("MO-basis alpha MO gradient", Wavefunction::nmo(), Wavefunction::nmo());
+            WorbB = std::make_shared<Tensor2d>("MO-basis beta MO gradient", Wavefunction::nmo(), Wavefunction::nmo());
+            UorbA = std::make_shared<Tensor2d>("Alpha MO rotation matrix", Wavefunction::nmo(), Wavefunction::nmo());
+            UorbB = std::make_shared<Tensor2d>("Beta MO rotation matrix", Wavefunction::nmo(), Wavefunction::nmo());
+            KorbA = std::make_shared<Tensor2d>("Alpha K MO rotation parameters matrix", Wavefunction::nmo(), Wavefunction::nmo());
+            KorbB = std::make_shared<Tensor2d>("Beta K MO rotation parameters matrix", Wavefunction::nmo(), Wavefunction::nmo());
+            KsqrA = std::make_shared<Tensor2d>("Alpha K^2 MO rotation parameters matrix", Wavefunction::nmo(), Wavefunction::nmo());
+            KsqrB = std::make_shared<Tensor2d>("Beta K^2 MO rotation parameters matrix", Wavefunction::nmo(), Wavefunction::nmo());
             AvoA = std::make_shared<Tensor2d>("Diagonal MO Hessian <V|O>", nvirA, noccA);
             AvoB = std::make_shared<Tensor2d>("Diagonal MO Hessian <v|o>", nvirB, noccB);
             if (orb_opt_ == "FALSE") {

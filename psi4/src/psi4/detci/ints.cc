@@ -423,7 +423,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only) {
     }
 
     int nact = CalcInfo_->num_ci_orbs;
-    int nrot = nmo_ - CalcInfo_->num_fzc_orbs - CalcInfo_->num_fzv_orbs;
+    int nrot = Wavefunction::nmo() - CalcInfo_->num_fzc_orbs - CalcInfo_->num_fzv_orbs;
 
     // Transform from the SO to the AO basis for the C matrix.
     // just transfroms the C_{mu_ao i} -> C_{mu_so i}

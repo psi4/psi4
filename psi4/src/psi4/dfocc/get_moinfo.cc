@@ -55,7 +55,6 @@ void DFOCC::get_moinfo() {
         // Read in mo info
         nso_ = reference_wavefunction_->nso();
         nirrep_ = reference_wavefunction_->nirrep();
-        nmo_ = reference_wavefunction_->nmo();
         nmopi_ = reference_wavefunction_->nmopi();
         nsopi_ = reference_wavefunction_->nsopi();
         frzcpi_ = reference_wavefunction_->frzcpi();
@@ -77,19 +76,19 @@ void DFOCC::get_moinfo() {
         nfrzc = frzcpi_[0];
         nfrzv = frzvpi_[0];
         noccA = nalphapi_.sum();
-        nvirA = nmo_ - noccA;         // Number of virtual orbitals
-        naoccA = noccA - nfrzc;       // Number of active occupied orbitals
-        navirA = nvirA - nfrzv;       // Number of active virtual orbitals
-        nocc2AA = noccA * noccA;      // Number of all OCC-OCC pairs
-        nvir2AA = nvirA * nvirA;      // Number of all VIR-VIR pairs
-        naocc2AA = naoccA * naoccA;   // Number of active OCC-OCC pairs
-        navir2AA = navirA * navirA;   // Number of active VIR-VIR pairs
-        navoAA = naoccA * navirA;     // Number of active OCC-VIR pairs
-        nvoAA = noccA * nvirA;        // Number of all OCC-VIR pairs
-        namo = nmo_ - nfrzc - nfrzv;  // Number of active  orbitals
-        npop = nmo_ - nfrzv;          // Number of populated orbitals
+        nvirA = Wavefunction::nmo() - noccA;         // Number of virtual orbitals
+        naoccA = noccA - nfrzc;                      // Number of active occupied orbitals
+        navirA = nvirA - nfrzv;                      // Number of active virtual orbitals
+        nocc2AA = noccA * noccA;                     // Number of all OCC-OCC pairs
+        nvir2AA = nvirA * nvirA;                     // Number of all VIR-VIR pairs
+        naocc2AA = naoccA * naoccA;                  // Number of active OCC-OCC pairs
+        navir2AA = navirA * navirA;                  // Number of active VIR-VIR pairs
+        navoAA = naoccA * navirA;                    // Number of active OCC-VIR pairs
+        nvoAA = noccA * nvirA;                       // Number of all OCC-VIR pairs
+        namo = Wavefunction::nmo() - nfrzc - nfrzv;  // Number of active  orbitals
+        npop = Wavefunction::nmo() - nfrzv;          // Number of populated orbitals
         ntri_so = 0.5 * nso_ * (nso_ + 1);
-        ntri = 0.5 * nmo_ * (nmo_ + 1);
+        ntri = 0.5 * Wavefunction::nmo() * (Wavefunction::nmo() + 1);
         dimtei = 0.5 * ntri * (ntri + 1);
         nso2_ = nso_ * nso_;
         ntri_ijAA = 0.5 * naoccA * (naoccA + 1);
@@ -100,11 +99,11 @@ void DFOCC::get_moinfo() {
         /********************************************************************************************/
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
-        eps_orbA = std::make_shared<Tensor1d>("epsilon <P|Q>", nmo_);
-        for (int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
+        eps_orbA = std::make_shared<Tensor1d>("epsilon <P|Q>", Wavefunction::nmo());
+        for (int p = 0; p < Wavefunction::nmo(); ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
 
         // Build Initial fock matrix
-        FockA = std::make_shared<Tensor2d>("MO-basis alpha Fock matrix", nmo_, nmo_);
+        FockA = std::make_shared<Tensor2d>("MO-basis alpha Fock matrix", Wavefunction::nmo(), Wavefunction::nmo());
         for (int i = 0; i < noccA; ++i) FockA->set(i, i, epsilon_a_->get(0, i));
         for (int a = 0; a < nvirA; ++a) FockA->set(a + noccA, a + noccA, epsilon_a_->get(0, a + noccA));
         if (print_ > 2) FockA->print();
@@ -135,10 +134,10 @@ void DFOCC::get_moinfo() {
 
         // Read orbital coefficients from reference_wavefunction
         Ca_ = reference_wavefunction_->Ca()->clone();
-        CmoA = std::make_shared<Tensor2d>("Alpha MO Coefficients", nso_, nmo_);
+        CmoA = std::make_shared<Tensor2d>("Alpha MO Coefficients", nso_, Wavefunction::nmo());
         CmoA->set(Ca_);
         if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
-            Cmo_refA = std::make_shared<Tensor2d>("Alpha Reference MO Coefficients", nso_, nmo_);
+            Cmo_refA = std::make_shared<Tensor2d>("Alpha Reference MO Coefficients", nso_, Wavefunction::nmo());
             Cmo_refA->copy(CmoA);
         }
         if (print_ > 2) CmoA->print();
@@ -159,7 +158,6 @@ void DFOCC::get_moinfo() {
         // Read in mo info
         nso_ = reference_wavefunction_->nso();
         nirrep_ = reference_wavefunction_->nirrep();
-        nmo_ = reference_wavefunction_->nmo();
         nmopi_ = reference_wavefunction_->nmopi();
         nsopi_ = reference_wavefunction_->nsopi();
         frzcpi_ = reference_wavefunction_->frzcpi();
@@ -182,36 +180,36 @@ void DFOCC::get_moinfo() {
         nfrzv = frzvpi_[0];
         noccA = nalphapi_.sum();
         noccB = nbetapi_.sum();
-        nvirA = nmo_ - noccA;         // Number of virtual orbitals
-        nvirB = nmo_ - noccB;         // Number of virtual orbitals
-        naoccA = noccA - nfrzc;       // Number of active occupied orbitals
-        naoccB = noccB - nfrzc;       // Number of active occupied orbitals
-        navirA = nvirA - nfrzv;       // Number of active virtual orbitals
-        navirB = nvirB - nfrzv;       // Number of active virtual orbitals
-        nocc2AA = noccA * noccA;      // Number of all OCC-OCC pairs
-        nocc2AB = noccA * noccB;      // Number of all OCC-OCC pairs
-        nocc2BB = noccB * noccB;      // Number of all OCC-OCC pairs
-        nvir2AA = nvirA * nvirA;      // Number of all VIR-VIR pairs
-        nvir2AB = nvirA * nvirB;      // Number of all VIR-VIR pairs
-        nvir2BB = nvirB * nvirB;      // Number of all VIR-VIR pairs
-        naocc2AA = naoccA * naoccA;   // Number of active OCC-OCC pairs
-        naocc2AB = naoccA * naoccB;   // Number of active OCC-OCC pairs
-        naocc2BB = naoccB * naoccB;   // Number of active OCC-OCC pairs
-        navir2AA = navirA * navirA;   // Number of active VIR-VIR pairs
-        navir2AB = navirA * navirB;   // Number of active VIR-VIR pairs
-        navir2BB = navirB * navirB;   // Number of active VIR-VIR pairs
-        navoAA = naoccA * navirA;     // Number of active OCC-VIR pairs
-        navoBA = naoccA * navirB;     // Number of active OCC-VIR pairs
-        navoAB = naoccB * navirA;     // Number of active OCC-VIR pairs
-        navoBB = naoccB * navirB;     // Number of active OCC-VIR pairs
-        nvoAA = noccA * nvirA;        // Number of all OCC-VIR pairs
-        nvoBA = noccA * nvirB;        // Number of all OCC-VIR pairs
-        nvoAB = noccB * nvirA;        // Number of all OCC-VIR pairs
-        nvoBB = noccB * nvirB;        // Number of all OCC-VIR pairs
-        namo = nmo_ - nfrzc - nfrzv;  // Number of active  orbitals
-        npop = nmo_ - nfrzv;          // Number of populated orbitals
+        nvirA = Wavefunction::nmo() - noccA;         // Number of virtual orbitals
+        nvirB = Wavefunction::nmo() - noccB;         // Number of virtual orbitals
+        naoccA = noccA - nfrzc;                      // Number of active occupied orbitals
+        naoccB = noccB - nfrzc;                      // Number of active occupied orbitals
+        navirA = nvirA - nfrzv;                      // Number of active virtual orbitals
+        navirB = nvirB - nfrzv;                      // Number of active virtual orbitals
+        nocc2AA = noccA * noccA;                     // Number of all OCC-OCC pairs
+        nocc2AB = noccA * noccB;                     // Number of all OCC-OCC pairs
+        nocc2BB = noccB * noccB;                     // Number of all OCC-OCC pairs
+        nvir2AA = nvirA * nvirA;                     // Number of all VIR-VIR pairs
+        nvir2AB = nvirA * nvirB;                     // Number of all VIR-VIR pairs
+        nvir2BB = nvirB * nvirB;                     // Number of all VIR-VIR pairs
+        naocc2AA = naoccA * naoccA;                  // Number of active OCC-OCC pairs
+        naocc2AB = naoccA * naoccB;                  // Number of active OCC-OCC pairs
+        naocc2BB = naoccB * naoccB;                  // Number of active OCC-OCC pairs
+        navir2AA = navirA * navirA;                  // Number of active VIR-VIR pairs
+        navir2AB = navirA * navirB;                  // Number of active VIR-VIR pairs
+        navir2BB = navirB * navirB;                  // Number of active VIR-VIR pairs
+        navoAA = naoccA * navirA;                    // Number of active OCC-VIR pairs
+        navoBA = naoccA * navirB;                    // Number of active OCC-VIR pairs
+        navoAB = naoccB * navirA;                    // Number of active OCC-VIR pairs
+        navoBB = naoccB * navirB;                    // Number of active OCC-VIR pairs
+        nvoAA = noccA * nvirA;                       // Number of all OCC-VIR pairs
+        nvoBA = noccA * nvirB;                       // Number of all OCC-VIR pairs
+        nvoAB = noccB * nvirA;                       // Number of all OCC-VIR pairs
+        nvoBB = noccB * nvirB;                       // Number of all OCC-VIR pairs
+        namo = Wavefunction::nmo() - nfrzc - nfrzv;  // Number of active  orbitals
+        npop = Wavefunction::nmo() - nfrzv;          // Number of populated orbitals
         ntri_so = 0.5 * nso_ * (nso_ + 1);
-        ntri = 0.5 * nmo_ * (nmo_ + 1);
+        ntri = 0.5 * Wavefunction::nmo() * (Wavefunction::nmo() + 1);
         dimtei = 0.5 * ntri * (ntri + 1);
         nso2_ = nso_ * nso_;
         ntri_ijAA = 0.5 * naoccA * (naoccA + 1);
@@ -221,20 +219,16 @@ void DFOCC::get_moinfo() {
 
         if (naoccA == 0 && naoccB == 0) {
             throw PSIEXCEPTION("There are no occupied orbitals with alpha or beta spin.");
-        }
-        else if (naoccA == 0) {
+        } else if (naoccA == 0) {
             throw PSIEXCEPTION("There are no occupied orbitals with alpha spin.");
-        }
-        else if (naoccB == 0) {
+        } else if (naoccB == 0) {
             throw PSIEXCEPTION("There are no occupied orbitals with beta spin.");
         }
         if (navirA == 0 && navirB == 0) {
             throw PSIEXCEPTION("There are no virtual orbitals with alpha or beta spin.");
-        }
-        else if (navirA == 0) {
+        } else if (navirA == 0) {
             throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
-        }
-        else if (navirB == 0) {
+        } else if (navirB == 0) {
             throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
         }
 
@@ -261,18 +255,18 @@ void DFOCC::get_moinfo() {
         // Read orbital energies
         epsilon_a_ = reference_wavefunction_->epsilon_a();
         epsilon_b_ = reference_wavefunction_->epsilon_b();
-        eps_orbA = std::make_shared<Tensor1d>("epsilon <P|Q>", nmo_);
-        eps_orbB = std::make_shared<Tensor1d>("epsilon <p|q>", nmo_);
-        for (int p = 0; p < nmo_; ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
-        for (int p = 0; p < nmo_; ++p) eps_orbB->set(p, epsilon_b_->get(0, p));
+        eps_orbA = std::make_shared<Tensor1d>("epsilon <P|Q>", Wavefunction::nmo());
+        eps_orbB = std::make_shared<Tensor1d>("epsilon <p|q>", Wavefunction::nmo());
+        for (int p = 0; p < Wavefunction::nmo(); ++p) eps_orbA->set(p, epsilon_a_->get(0, p));
+        for (int p = 0; p < Wavefunction::nmo(); ++p) eps_orbB->set(p, epsilon_b_->get(0, p));
 
         // Build Initial fock matrix
-        FockA = std::make_shared<Tensor2d>("MO-basis alpha Fock matrix", nmo_, nmo_);
+        FockA = std::make_shared<Tensor2d>("MO-basis alpha Fock matrix", Wavefunction::nmo(), Wavefunction::nmo());
         for (int i = 0; i < noccA; ++i) FockA->set(i, i, epsilon_a_->get(0, i));
         for (int a = 0; a < nvirA; ++a) FockA->set(a + noccA, a + noccA, epsilon_a_->get(0, a + noccA));
         if (print_ > 2) FockA->print();
 
-        FockB = std::make_shared<Tensor2d>("MO-basis beta Fock matrix", nmo_, nmo_);
+        FockB = std::make_shared<Tensor2d>("MO-basis beta Fock matrix", Wavefunction::nmo(), Wavefunction::nmo());
         for (int i = 0; i < noccB; ++i) FockB->set(i, i, epsilon_b_->get(0, i));
         for (int a = 0; a < nvirB; ++a) FockB->set(a + noccB, a + noccB, epsilon_b_->get(0, a + noccB));
         if (print_ > 2) FockB->print();
@@ -316,16 +310,16 @@ void DFOCC::get_moinfo() {
 
         // Read orbital coefficients from reference_wavefunction
         Ca_ = reference_wavefunction_->Ca()->clone();
-        CmoA = std::make_shared<Tensor2d>("Alpha MO Coefficients", nso_, nmo_);
+        CmoA = std::make_shared<Tensor2d>("Alpha MO Coefficients", nso_, Wavefunction::nmo());
         CmoA->set(Ca_);
         if (print_ > 2) CmoA->print();
 
         Cb_ = reference_wavefunction_->Cb()->clone();
-        CmoB = std::make_shared<Tensor2d>("Beta MO Coefficients", nso_, nmo_);
+        CmoB = std::make_shared<Tensor2d>("Beta MO Coefficients", nso_, Wavefunction::nmo());
         CmoB->set(Cb_);
         if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
-            Cmo_refA = std::make_shared<Tensor2d>("Alpha Reference MO Coefficients", nso_, nmo_);
-            Cmo_refB = std::make_shared<Tensor2d>("Beta Reference MO Coefficients", nso_, nmo_);
+            Cmo_refA = std::make_shared<Tensor2d>("Alpha Reference MO Coefficients", nso_, Wavefunction::nmo());
+            Cmo_refB = std::make_shared<Tensor2d>("Beta Reference MO Coefficients", nso_, Wavefunction::nmo());
             Cmo_refA->copy(CmoA);
             Cmo_refB->copy(CmoB);
         }

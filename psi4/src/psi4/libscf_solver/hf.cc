@@ -743,7 +743,6 @@ void HF::form_Shalf() {
 
         // Update nmo_
         nmopi_ = X_->colspi();
-        nmo_ = nmopi_.sum();
     }
 
     // Double check occupation vectors

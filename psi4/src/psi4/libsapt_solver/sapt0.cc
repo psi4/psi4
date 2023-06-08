@@ -180,12 +180,12 @@ void SAPT0::print_header() {
         outfile->Printf("    NSO        = %9d\n", nso_);
         outfile->Printf("    NSO A      = %9zu\n", nsoA_);
         outfile->Printf("    NSO B      = %9zu\n", nsoB_);
-        outfile->Printf("    NMO        = %9d\n", nmo_);
+        outfile->Printf("    NMO        = %9d\n", Wavefunction::nmo());
         outfile->Printf("    NMO A      = %9zu\n", nmoA_);
         outfile->Printf("    NMO B      = %9zu\n", nmoB_);
     } else {
         outfile->Printf("    NSO        = %9d\n", nso_);
-        outfile->Printf("    NMO        = %9d\n", nmo_);
+        outfile->Printf("    NMO        = %9d\n", Wavefunction::nmo());
     }
     if (elst_basis_) {
         outfile->Printf("    NRI        = %9d\n", ribasis_->nbf());
@@ -698,8 +698,8 @@ void SAPT0::df_integrals() {
     double **B_p_RB = block_matrix(Plength, noccB_ * nvirA_);
 
     double **munu_temp = block_matrix(nthreads, nso_ * nso_);
-    double **Inu_temp = block_matrix(nthreads, nmo_ * nso_);
-    double **IJ_temp = block_matrix(nthreads, nmo_ * nmo_);
+    double **Inu_temp = block_matrix(nthreads, Wavefunction::nmo() * nso_);
+    double **IJ_temp = block_matrix(nthreads, Wavefunction::nmo() * Wavefunction::nmo());
 
     next_DF_AO = PSIO_ZERO;
     psio_address next_DF_AA = PSIO_ZERO;
@@ -1187,8 +1187,8 @@ void SAPT0::df_integrals_aio() {
     B_p_RB[1] = block_matrix(Plength, noccB_ * nvirA_);
 
     double **munu_temp = block_matrix(nthreads, nso_ * nso_);
-    double **Inu_temp = block_matrix(nthreads, nmo_ * nso_);
-    double **IJ_temp = block_matrix(nthreads, nmo_ * nmo_);
+    double **Inu_temp = block_matrix(nthreads, Wavefunction::nmo() * nso_);
+    double **IJ_temp = block_matrix(nthreads, Wavefunction::nmo() * Wavefunction::nmo());
 
     next_DF_AO = PSIO_ZERO;
     psio_address next_DF_AA = PSIO_ZERO;
