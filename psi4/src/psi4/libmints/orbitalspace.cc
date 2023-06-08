@@ -250,7 +250,7 @@ OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpac
 
 OrbitalSpace OrbitalSpace::build_cabs_space(const OrbitalSpace &orb_space, const OrbitalSpace &ri_space,
                                             double lindep_tol) {
-    return orthogonal_compliment(orb_space, ri_space, "p''", "CABS", lindep_tol);
+    return orthogonal_complement(orb_space, ri_space, "p''", "CABS", lindep_tol);
 }
 
 OrbitalSpace OrbitalSpace::build_ri_space(const std::shared_ptr<BasisSet> &combined, double lindep_tol) {
