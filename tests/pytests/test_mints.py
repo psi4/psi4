@@ -7,6 +7,23 @@ from utils import compare_arrays
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
+def test_overlap():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+        symmetry c1
+    """)
+
+    rhf_e, wfn = psi4.energy('SCF/cc-pVDZ', molecule=h2o, return_wfn=True)
+
+    mints = psi4.core.MintsHelper(wfn.basisset())
+
+    case1 = mints.ao_overlap()
+    case2 = mints.ao_overlap(wfn.basisset(), wfn.basisset())
+
+    assert psi4.compare_matrices(case1, case2, 10, "OVERLAP_TEST")  # TEST
+
 def test_export_ao_elec_dip_deriv():
     h2o = psi4.geometry("""
         O
