@@ -64,6 +64,10 @@
 #include <tuple>
 #include <memory>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 // In molecule.cc
 namespace psi {
 extern int str_to_int(const std::string &s);
@@ -1793,6 +1797,10 @@ void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
 }
 
 void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
+#ifdef _OPENMP
+    int nthreads = omp_get_num_threads();
+    omp_set_num_threads(1);
+#endif
     // Actually, this routine takes mn + mk + nk
     for (int h = 0; h < nirrep_; h++) {
         int m = rowspi_[h];
@@ -1850,7 +1858,10 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
                 Vp[i][i] = 1.0;
             }
         }
-    }
+    } // End for loop
+#ifdef _OPENMP
+    omp_set_num_threads(nthreads);
+#endif
 }
 
 SharedMatrix Matrix::pseudoinverse(double condition, int &nremoved) {
