@@ -279,7 +279,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
-    scf_iter_post_screening = 0 
+    scf_iter_post_screening = 0
     while True:
         self.iteration_ += 1
 
@@ -500,10 +500,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             continue
 
         # have we completed our post-early screening SCF iterations? 
-        if early_screening_disabled: 
+        if early_screening_disabled:
             scf_iter_post_screening += 1
             if scf_iter_post_screening >= scf_maxiter_post_screening and scf_maxiter_post_screening > 0:
-                break 
+                break
 
         # Call any postiteration callbacks
         if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
