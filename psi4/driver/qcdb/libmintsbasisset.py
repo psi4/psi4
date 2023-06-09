@@ -540,6 +540,8 @@ class BasisSet(object):
         # load in the basis sets
         sets = []
         name = ""
+        keywords = ""
+        blends = ""
         for at in range(len(keys)):
             bas = BasisSet.pyconstruct(mol, keys[at], targets[at], fitroles[at], others[at])
             name += targets[at] + " + "
