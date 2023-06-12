@@ -419,7 +419,8 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 void TwoBodyAOInt::create_sieve_pair_info() {
     // We only want to initialize TwoBodyAOInt once
     if(initialized_) throw PSIEXCEPTION("Sieve pair info has already been created!");
-    
+   
+    outfile->Printf("BEGIN INITIALIZE\n"); 
     // We assume that only the bra or the ket has a pair that generates a sieve.  If all bases are the same, either
     // can be used.  If only bra or ket has a matching pair, that matching pair is used.  If both bra and ket have
     // matching pairs but those pairs are different, we need to generalize this machinery a little to disambiguate
@@ -428,6 +429,7 @@ void TwoBodyAOInt::create_sieve_pair_info() {
     if(bra_same_ && ket_same_ && !braket_same_) throw PSIEXCEPTION("Unexpected integral type (aa|bb) in setup_sieve()");
 
     if(bra_same_) {
+        outfile->Printf("BRA SAME\n");
         create_sieve_pair_info(basis1(), shell_pairs_bra_, true);
         shell_pairs_ = shell_pairs_bra_;
     } else {
@@ -436,6 +438,7 @@ void TwoBodyAOInt::create_sieve_pair_info() {
         for(int shell = 0; shell < basis1()->nshell(); ++shell) shell_pairs_bra_.emplace_back(shell,0);
     }
     if(ket_same_) {
+        outfile->Printf("KET SAME\n");
         if(braket_same_) {
             shell_pairs_ket_ = shell_pairs_bra_;
         } else {
@@ -446,6 +449,7 @@ void TwoBodyAOInt::create_sieve_pair_info() {
         if (basis4()->l2_shell(0) != libint2::Shell::unit()) 
                throw PSIEXCEPTION("If different basis sets exist in the ket, basis4 is expected to be dummy in setup_sieve()");
         for(int shell = 0; shell < basis3()->nshell(); ++shell) shell_pairs_ket_.emplace_back(shell,0);
+        outfile->Printf("KET NOT SAME\n");
     }
 
     //assert(!shell_pairs_.empty());
@@ -454,6 +458,7 @@ void TwoBodyAOInt::create_sieve_pair_info() {
     //assert(!function_pairs_reverse_.empty());
 
     initialized_ = true;
+    outfile->Printf("END INITIALIZE\n\n"); 
 }
 
 void TwoBodyAOInt::initialize_sieve() { create_sieve_pair_info(); }
