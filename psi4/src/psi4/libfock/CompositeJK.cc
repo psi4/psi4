@@ -308,12 +308,28 @@ void CompositeJK::compute_JK() {
         zero();
     }
 
-    // update ERI engine density matrices for density screening
-    if (density_screening_) {
+    // update ERI engine density matrices for density screening...
+    if (density_screening_ || k_type_ == "LINK") {
         for (auto eri_computer : eri_computers_["4-Center"]) {
             eri_computer->update_density(D_ref_);
         }
     }
+    // ... or set ERI engine density matrices to zero for no screening 
+    /*
+    } else if (options_.get_str("SCREENING") == "NONE") {
+        std::vector<SharedMatrix> zero_matrices;
+            
+        auto zero_matrix = D_ref_[0]->clone();
+        zero_matrix->zero();
+        for (int izero = 0; izero != D_ref_.size(); ++izero) {
+            zero_matrices.push_back(zero_matrix->clone());
+        }
+     
+        for (auto eri_computer : eri_computers_["4-Center"]) {
+            eri_computer->update_density(zero_matrices);
+        }
+    }
+    */
 
     // => Perform matrix calculations <= //
 

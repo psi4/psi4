@@ -177,17 +177,17 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return jk;
     } else if (jk_type == "PK") {
-        PKJK* jk = new PKJK(primary, options);
+        auto jk = std::make_shared<PKJK>(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "OUT_OF_CORE") {
-        DiskJK* jk = new DiskJK(primary, options);
+        auto jk = std::make_shared<DiskJK>(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -195,10 +195,10 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     } else if (jk_type == "DIRECT") {
-        DirectJK* jk = new DirectJK(primary, options);
+        auto jk = std::make_shared<DirectJK>(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -208,7 +208,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
-        return std::shared_ptr<JK>(jk);
+        return jk;
 
     /// handle composite methods
     } else if (is_composite) {
