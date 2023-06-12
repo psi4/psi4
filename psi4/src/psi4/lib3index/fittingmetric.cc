@@ -122,6 +122,7 @@ void FittingMetric::form_fitting_metric() {
         } else {
             Jint[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory_J.eri());
         }
+        if (!Jint[Q]->initialized()) Jint[Q]->initialize_sieve();
     }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
