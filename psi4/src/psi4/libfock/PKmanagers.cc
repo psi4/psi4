@@ -240,7 +240,6 @@ void PKManager::compute_integrals(bool wK) {
 
     // Get ERI object, one per thread
     std::vector<std::shared_ptr<TwoBodyAOInt>> tb;
-
     if (wK) {
         for (int i = 0; i < nthreads_; ++i) {
             tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->erf_eri(omega())));
@@ -1081,6 +1080,9 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
     if (!wK) {
         for (int i = 0; i < nthreads(); ++i) {
             tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->eri()));
+        }
+        for (auto eri : tb) {
+            if (!eri->initialized()) eri->initialize_sieve(); 
         }
     } else {
         for (int i = 0; i < nthreads(); ++i) {
