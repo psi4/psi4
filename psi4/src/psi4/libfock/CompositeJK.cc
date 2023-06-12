@@ -92,7 +92,12 @@ void CompositeJK::common_init() {
     }
 
     // other options
-    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
+    auto screening_type = options_.get_str("SCREENING");
+    if (screening_type == "NONE") {
+        throw PSIEXCEPTION("Composite methods do not support SCREENING=NONE yet!");
+    } else {
+        density_screening_ = options_.get_str("SCREENING") == "DENSITY";
+    }
 
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 
