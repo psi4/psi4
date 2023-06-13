@@ -159,9 +159,9 @@ void Libint2TwoElectronInt::common_init() {
 
 Libint2TwoElectronInt::~Libint2TwoElectronInt() {}
 
-void Libint2TwoElectronInt::initialize_sieve() { 
+void Libint2TwoElectronInt::initialize_sieve() {
     create_sieve_pair_info();
-    
+
     create_blocks();
     const auto max_engine_precision = std::numeric_limits<double>::epsilon() * screening_threshold_;
 
