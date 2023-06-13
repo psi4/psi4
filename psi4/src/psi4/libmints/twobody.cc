@@ -461,7 +461,9 @@ void TwoBodyAOInt::create_sieve_pair_info() {
     outfile->Printf("END INITIALIZE\n\n"); 
 }
 
-void TwoBodyAOInt::initialize_sieve() { create_sieve_pair_info(); }
+void TwoBodyAOInt::initialize_sieve() { 
+    create_sieve_pair_info(); 
+}
 
 std::shared_ptr<BasisSet> TwoBodyAOInt::basis() { return original_bs1_; }
 
