@@ -115,9 +115,8 @@ void CompositeJK::common_init() {
     IntegralFactory factory(primary_, primary_, primary_, primary_);
     eri_computers_["4-Center"][0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
     
-    if (!eri_computers_["4-Center"][0]->initialized()) eri_computers_["4-Center"][0]->initialize_sieve();  
+    if (!eri_computers_["4-Center"][0]->initialized()) eri_computers_["4-Center"][0]->initialize_sieve();
  
-<<<<<<< HEAD
     // create each threads' ERI computers
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
@@ -135,14 +134,13 @@ void CompositeJK::common_init() {
         j_algo_ = std::make_shared<DirectDFJ>(primary_, auxiliary_, options_);
 
         // initialize 3-Center ERIs
-        outfile->Printf("Create 3-center ERIs\n");
         eri_computers_["3-Center"].emplace({});
         eri_computers_["3-Center"].resize(nthreads_);
 
         IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
         eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
-        if (!eri_computers_["3-Center"][0]->initialized()) eri_computers_["3-Center"][0]->initialize_sieve();  
-        
+        if (!eri_computers_["3-Center"][0]->initialized()) eri_computers_["3-Center"][0]->initialize_sieve();
+
         FittingMetric J_metric_obj(auxiliary_, true);
         J_metric_obj.form_fitting_metric();
         J_metric_ = J_metric_obj.get_metric();
@@ -307,28 +305,12 @@ void CompositeJK::compute_JK() {
         zero();
     }
 
-    // update ERI engine density matrices for density screening...
+    // update ERI engine density matrices for density screening
     if (density_screening_ || k_type_ == "LINK") {
         for (auto eri_computer : eri_computers_["4-Center"]) {
             eri_computer->update_density(D_ref_);
         }
     }
-    // ... or set ERI engine density matrices to zero for no screening 
-    /*
-    } else if (options_.get_str("SCREENING") == "NONE") {
-        std::vector<SharedMatrix> zero_matrices;
-            
-        auto zero_matrix = D_ref_[0]->clone();
-        zero_matrix->zero();
-        for (int izero = 0; izero != D_ref_.size(); ++izero) {
-            zero_matrices.push_back(zero_matrix->clone());
-        }
-     
-        for (auto eri_computer : eri_computers_["4-Center"]) {
-            eri_computer->update_density(zero_matrices);
-        }
-    }
-    */
 
     // => Perform matrix calculations <= //
 
