@@ -73,7 +73,6 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
     #== specifically, non-integral-direct methods and DFDirJ+COSX/SNLINK with SCREENING = DENSITY... ==# 
     should_throw = should_throw or (scf_type not in [ "DIRECT", "DFDIRJ+LINK" ] and screening == "DENSITY")
     #== other combinations error out badly and need to be fixed; skip them here ==#
-    should_throw = should_throw or (scf_type == "DISK_DF" and screening == "NONE")
     should_throw = should_throw or (scf_type == "DFDIRJ+LINK" and screening in [ "SCHWARZ", "CSAM" ])
 
     E = 0.0 
