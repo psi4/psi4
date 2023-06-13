@@ -426,7 +426,7 @@ void DFHelper::prepare_AO() {
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     for(int rank = 1; rank < nthreads_; rank++) {
-	    eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
         if (!eri[rank]->initialized()) eri[rank]->initialize_sieve();
     }
 
@@ -604,7 +604,7 @@ void DFHelper::prepare_AO_wK_core() {
         if (rank) {
             eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
             if (!eri[rank]->initialized()) eri[rank]->initialize_sieve();
-            
+
             weri[rank] = std::shared_ptr<TwoBodyAOInt>(weri.front()->clone());
             if (!weri[rank]->initialized()) weri[rank]->initialize_sieve();
         }
