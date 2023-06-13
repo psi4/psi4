@@ -116,7 +116,7 @@ void CompositeJK::common_init() {
     eri_computers_["4-Center"][0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
     
     if (!eri_computers_["4-Center"][0]->initialized()) eri_computers_["4-Center"][0]->initialize_sieve();
- 
+    
     // create each threads' ERI computers
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
