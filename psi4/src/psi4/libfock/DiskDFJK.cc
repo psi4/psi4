@@ -76,7 +76,6 @@ void DiskDFJK::common_init() {
     auto tmperi = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     if (!tmperi->initialized()) tmperi->initialize_sieve();
     n_function_pairs_ = tmperi->function_pairs().size();
-    outfile->Printf("n_function_pairs_, %d\n", n_function_pairs_);
 }
 size_t DiskDFJK::memory_estimate() {
     size_t three_memory = ((size_t)auxiliary_->nbf()) * n_function_pairs_;

@@ -206,7 +206,7 @@ class PSI_API TwoBodyAOInt {
     /*
      * Sieve information
      */
-    /// 
+    /// Is sieve initialized?
     bool initialized() { return initialized_; };
     /// Update max_dens_shell_pair_ given an updated density matrix (Haser 1989)
     void update_density(const std::vector<SharedMatrix>& D);

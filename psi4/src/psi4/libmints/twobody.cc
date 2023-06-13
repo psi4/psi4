@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include <cassert>
-
 #include <algorithm>
 #include <stdexcept>
 #include "psi4/libqt/qt.h"
@@ -72,13 +70,8 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
 
     // Setup sieve data
     screening_threshold_ = Process::environment.options.get_double("INTS_TOLERANCE");
-    
-    // Default values for when screening isnt used
+
     initialized_ = false;
-    //function_pair_values_ = {}; 
-    //shell_pair_values_ = {};
-    //max_integral_ = 0.0;
-    //screening_threshold_squared_ = 0.0; 
 
     auto screentype = Process::environment.options.get_str("SCREENING");
     if (screentype == "SCHWARZ")
@@ -268,11 +261,10 @@ void TwoBodyAOInt::setup_sieve() {
 
 void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra) {
 
-    outfile->Printf("Creating sieve pair info...");
     nshell_ = bs->nshell();
     nbf_ = bs->nbf();
 
-    auto noscreen = screening_type_ == ScreeningType::None || screening_threshold_ == 0.0; 
+    auto noscreen = screening_type_ == ScreeningType::None || screening_threshold_ == 0.0;
     function_pair_values_.resize((size_t)nbf_ * nbf_, 0.0);
     shell_pair_values_.resize((size_t)nshell_ * nshell_, 0.0);
     max_integral_ = 0.0;
@@ -310,10 +302,6 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     bs3_ = original_bs3_;
     bs4_ = original_bs4_;
 
-    outfile->Printf("Max integral: %f\n", max_integral_);
-    outfile->Printf("Screening threshold: %f\n", screening_threshold_);
-    outfile->Printf("Nshell: %d\n", nshell_);
-    outfile->Printf("Nbf: %d\n", nbf_);
     screening_threshold_squared_ = screening_threshold_ * screening_threshold_;
     double screening_threshold_over_max = screening_threshold_ / max_integral_;
     double screening_threshold_squared_over_max = screening_threshold_squared_ / max_integral_;
@@ -409,18 +397,12 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
             }
         }
     }
-
-    outfile->Printf("Shell pairs length: %d\n", shell_pairs.size());
-    outfile->Printf("Shell pairs reverse length: %d\n", shell_pairs_reverse_.size());
-    outfile->Printf("Function pairs length: %d\n", function_pairs_.size());
-    outfile->Printf("Function pairs reverse length: %d\n", function_pairs_reverse_.size());
 }
 
 void TwoBodyAOInt::create_sieve_pair_info() {
     // We only want to initialize TwoBodyAOInt once
     if(initialized_) throw PSIEXCEPTION("Sieve pair info has already been created!");
-   
-    outfile->Printf("BEGIN INITIALIZE\n"); 
+
     // We assume that only the bra or the ket has a pair that generates a sieve.  If all bases are the same, either
     // can be used.  If only bra or ket has a matching pair, that matching pair is used.  If both bra and ket have
     // matching pairs but those pairs are different, we need to generalize this machinery a little to disambiguate
@@ -429,16 +411,14 @@ void TwoBodyAOInt::create_sieve_pair_info() {
     if(bra_same_ && ket_same_ && !braket_same_) throw PSIEXCEPTION("Unexpected integral type (aa|bb) in setup_sieve()");
 
     if(bra_same_) {
-        outfile->Printf("BRA SAME\n");
         create_sieve_pair_info(basis1(), shell_pairs_bra_, true);
         shell_pairs_ = shell_pairs_bra_;
     } else {
-        if (basis2()->l2_shell(0) != libint2::Shell::unit()) 
+        if (basis2()->l2_shell(0) != libint2::Shell::unit())
                throw PSIEXCEPTION("If different basis sets exist in the bra, basis3 is expected to be dummy in setup_sieve()");
         for(int shell = 0; shell < basis1()->nshell(); ++shell) shell_pairs_bra_.emplace_back(shell,0);
     }
     if(ket_same_) {
-        outfile->Printf("KET SAME\n");
         if(braket_same_) {
             shell_pairs_ket_ = shell_pairs_bra_;
         } else {
@@ -446,23 +426,16 @@ void TwoBodyAOInt::create_sieve_pair_info() {
             shell_pairs_ = shell_pairs_ket_;
         }
     } else {
-        if (basis4()->l2_shell(0) != libint2::Shell::unit()) 
+        if (basis4()->l2_shell(0) != libint2::Shell::unit())
                throw PSIEXCEPTION("If different basis sets exist in the ket, basis4 is expected to be dummy in setup_sieve()");
         for(int shell = 0; shell < basis3()->nshell(); ++shell) shell_pairs_ket_.emplace_back(shell,0);
-        outfile->Printf("KET NOT SAME\n");
     }
 
-    //assert(!shell_pairs_.empty());
-    //assert(!shell_pairs_reverse_.empty());
-    //assert(!function_pairs_.empty());
-    //assert(!function_pairs_reverse_.empty());
-
     initialized_ = true;
-    outfile->Printf("END INITIALIZE\n\n"); 
 }
 
-void TwoBodyAOInt::initialize_sieve() { 
-    create_sieve_pair_info(); 
+void TwoBodyAOInt::initialize_sieve() {
+    create_sieve_pair_info();
 }
 
 std::shared_ptr<BasisSet> TwoBodyAOInt::basis() { return original_bs1_; }

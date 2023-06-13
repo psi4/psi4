@@ -1082,7 +1082,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
             tb.push_back(std::shared_ptr<TwoBodyAOInt>(intfact->eri()));
         }
         for (auto eri : tb) {
-            if (!eri->initialized()) eri->initialize_sieve(); 
+            if (!eri->initialized()) eri->initialize_sieve();
         }
     } else {
         for (int i = 0; i < nthreads(); ++i) {
