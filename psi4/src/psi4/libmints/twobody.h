@@ -323,7 +323,7 @@ class PSI_API TwoBodyAOInt {
     void pure_transform(int, int, int, int, int nchunk, bool copy_to_source = true);
 
     /// Manually set up sieve if desired
-    void initialize_sieve();
+    virtual void initialize_sieve();
 };
 
 typedef std::shared_ptr<TwoBodyAOInt> SharedTwoBodyAOInt;

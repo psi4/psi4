@@ -76,6 +76,7 @@ void DiskDFJK::common_init() {
     auto tmperi = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     if (!tmperi->initialized()) tmperi->initialize_sieve();
     n_function_pairs_ = tmperi->function_pairs().size();
+    outfile->Printf("n_function_pairs_, %d\n", n_function_pairs_);
 }
 size_t DiskDFJK::memory_estimate() {
     size_t three_memory = ((size_t)auxiliary_->nbf()) * n_function_pairs_;
@@ -450,6 +451,9 @@ void DiskDFJK::preiterations() {
         erf_eri_.emplace_back(rifactory->erf_eri(omega_));
         for (int Q = 1; Q < df_ints_num_threads_; Q++) {
             erf_eri_.emplace_back(erf_eri_.front()->clone());
+        }
+        for (auto erf_eri : erf_eri_) {
+            if (!erf_eri->initialized()) erf_eri->initialize_sieve();
         }
     }
 
@@ -1741,7 +1745,6 @@ void DiskDFJK::manage_wK_disk() {
 void DiskDFJK::block_J(double** Qmnp, int naux) {
     const std::vector<std::pair<int, int> >& function_pairs = eri_.front()->function_pairs();
     size_t num_nm = function_pairs.size();
-
     for (size_t N = 0; N < J_ao_.size(); N++) {
         double** Dp = D_ao_[N]->pointer();
         double** Jp = J_ao_[N]->pointer();

@@ -159,6 +159,33 @@ void Libint2TwoElectronInt::common_init() {
 
 Libint2TwoElectronInt::~Libint2TwoElectronInt() {}
 
+void Libint2TwoElectronInt::initialize_sieve() { 
+    create_sieve_pair_info();
+    
+    create_blocks();
+    const auto max_engine_precision = std::numeric_limits<double>::epsilon() * screening_threshold_;
+
+    // Reset the engine type back to the general case needed
+    size_t npairs = shell_pairs_bra_.size();
+    pairs12_.resize(npairs);
+//#pragma omp parallel for
+    for (int pair = 0; pair < npairs; ++pair) {
+        auto s1 = shell_pairs_bra_[pair].first;
+        auto s2 = shell_pairs_bra_[pair].second;
+        pairs12_[pair] = std::make_shared<libint2::ShellPair>(basis1()->l2_shell(s1), basis2()->l2_shell(s2),
+                                                              std::log(max_engine_precision));
+    }
+    npairs = shell_pairs_ket_.size();
+    pairs34_.resize(npairs);
+//#pragma omp parallel for
+    for (int pair = 0; pair < npairs; ++pair) {
+        auto s3 = shell_pairs_ket_[pair].first;
+        auto s4 = shell_pairs_ket_[pair].second;
+        pairs34_[pair] = std::make_shared<libint2::ShellPair>(basis3()->l2_shell(s3), basis4()->l2_shell(s4),
+                                                              std::log(max_engine_precision));
+    }
+}
+
 size_t Libint2TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
     return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
 }
