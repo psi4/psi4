@@ -435,7 +435,9 @@ void TwoBodyAOInt::create_sieve_pair_info() {
 }
 
 void TwoBodyAOInt::initialize_sieve() {
-    create_sieve_pair_info();
+    /// Manual initialization must be manually implemented per ERI engine
+    /// TODO: Add manual initialization for ERI engines beyond Libint2 (e.g., Simint)
+    throw PSIEXCEPTION("Manual ERI sieve initialization is not supported by your current ERI engine! Currently, only Libint2 supports manual ERI sieve initialization.");
 }
 
 std::shared_ptr<BasisSet> TwoBodyAOInt::basis() { return original_bs1_; }
