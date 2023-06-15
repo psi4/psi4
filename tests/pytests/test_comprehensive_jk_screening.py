@@ -70,13 +70,12 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
 
     #== certain combinations of SCF_TYPE and SCREENING should throw an exception by design ==#
     should_throw = False
-    #== specifically, non-integral-direct methods and DFDirJ+COSX/SNLINK with SCREENING = DENSITY... ==# 
+    #== for now, this is non-integral-direct methods and DFDirJ+COSX with SCREENING=DENSITY... ==#
     should_throw = should_throw or (scf_type not in [ "DIRECT", "DFDIRJ+LINK" ] and screening == "DENSITY")
-    #== other combinations error out badly and need to be fixed; skip them here ==#
-    should_throw = should_throw or (scf_type == "DFDIRJ+LINK" and screening in [ "SCHWARZ", "CSAM" ])
 
     E = 0.0 
     
+    #== if expected, test if current option combo throws exception ==# 
     if should_throw:
         with pytest.raises(Exception) as e_info:
             E = psi4.energy('scf')
