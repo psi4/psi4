@@ -183,8 +183,8 @@ def test_schwarz_vs_csam_energy():
 
     assert compare_values(e_schwarz, e_csam, 11, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
 
-def test_schwarz_vs_density_quartets():
-    """Checks difference between the number of shell quartets computed with Schwarz and Density screening. 
+def test_schwarz_vs_density_vs_none_quartets():
+    """Checks difference between the number of shell quartets computed with Schwarz, Density, and no screening.
     Default threshhold of 1.0E-12 is used"""
 
     mol = psi4.geometry("""
@@ -225,21 +225,41 @@ def test_schwarz_vs_density_quartets():
     })
     density_energy, density_wfn = psi4.energy('hf/DZ', return_wfn=True)
 
+    # run no-screening calculation
+    psi4.set_options({
+        "scf_type": "direct",
+        "screening" : 'none',
+        "df_scf_guess" : False,
+        "integral_package": 'libint2',
+        "ints_tolerance" : 1e-12,
+        "save_jk": True,
+        "bench" : 1
+    })
+    none_energy, none_wfn = psi4.energy('hf/DZ', return_wfn=True)
+
     # prep for comparing results to expected values
     schwarz_computed_shells = schwarz_wfn.jk().computed_shells_per_iter("Quartets")
     density_computed_shells = density_wfn.jk().computed_shells_per_iter("Quartets")
+    none_computed_shells    = none_wfn.jk().computed_shells_per_iter("Quartets")
 
     schwarz_computed_shells_expected = [20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290, 20290]
-    density_computed_shells_expected = [13187, 19683, 19644, 19663, 19661, 19661, 19663, 19663, 19663]
+#<<<<<<< HEAD
+    #density_computed_shells_expected = [13187, 19683, 19644, 19663, 19661, 19661, 19663, 19663, 19663]
+#=======
+    density_computed_shells_expected = [13171, 19618, 19665, 19657, 19661, 19661, 19663, 19663, 19663]
+    none_computed_shells_expected    = [22155, 22155, 22155, 22155, 22155, 22155, 22155, 22155, 22155]
+#>>>>>>> Refine tests further
 
     # compare iteration counts of runs with computed shell quartet array lengths
     # iteration_+1 is used to account for computed_shells arrays including SAD guess results
     assert len(schwarz_computed_shells_expected) == schwarz_wfn.iteration_+1
     assert len(density_computed_shells_expected) == density_wfn.iteration_+1
+    assert len(none_computed_shells_expected)    == none_wfn.iteration_+1
 
     # actually compare results with expected values
     assert compare(schwarz_computed_shells_expected, schwarz_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
     assert compare(density_computed_shells_expected, density_computed_shells, 'Density Computed Shells Count, Cutoff 1.0e-12')
+    assert compare(none_computed_shells_expected, none_computed_shells, 'None Computed Shells Count, Cutoff 1.0e-12')
 
 def test_rhf_vs_uhf_screening():
     """Checks difference between the number of shell quartets screened with Density screening in RHF vs UHF. 
