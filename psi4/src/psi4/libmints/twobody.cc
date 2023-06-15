@@ -264,7 +264,6 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     nshell_ = bs->nshell();
     nbf_ = bs->nbf();
 
-    auto noscreen = screening_type_ == ScreeningType::None || screening_threshold_ == 0.0;
     function_pair_values_.resize((size_t)nbf_ * nbf_, 0.0);
     shell_pair_values_.resize((size_t)nshell_ * nshell_, 0.0);
     max_integral_ = 0.0;
@@ -315,7 +314,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     size_t munu = 0L;
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu <= mu; nu++, munu++) {
-            if ((function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) || noscreen) {
+            if (function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) {
                 function_pairs_.push_back(std::make_pair(mu, nu));
                 function_pairs_reverse_[munu] = offset;
                 offset++;
@@ -332,7 +331,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU < nshell_; NU++) {
-            if ((shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) || noscreen) {
+            if (shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) {
                 shell_to_shell_[MU].push_back(NU);
             }
         }
@@ -345,7 +344,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     size_t MUNU = 0L;
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU <= MU; NU++, MUNU++) {
-            if ((shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) || noscreen) {
+            if (shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) {
                 shell_pairs.push_back(std::make_pair(MU, NU));
                 shell_pairs_reverse_[MUNU] = offset;
                 offset++;
@@ -355,7 +354,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu < nbf_; nu++) {
-            if ((function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) || noscreen) {
+            if (function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) {
                 function_to_function_[mu].push_back(nu);
             }
         }
