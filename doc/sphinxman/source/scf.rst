@@ -834,7 +834,7 @@ on a larger grid. By default, |scf__cosx_maxiter_final| is set to 1, a single
 SCF iteration, which results in numerical errors comparable to
 performing the entire SCF on the expensive larger grid at a computational cost
 much closer to the smaller grid. Setting |scf__cosx_maxiter_final| to 0 disables the
-larger grid entirely. Setting |scf__cosx_maxiter_final| to a negative number allows
+larger grid entirely. Setting |scf__cosx_maxiter_final| to -1 allows
 for the SCF to fully converge on the larger grid, useful for the study of wavefunction
 properties such as gradients. The size of the initial grid is controlled by the keywords
 |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
