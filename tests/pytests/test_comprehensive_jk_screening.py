@@ -14,13 +14,13 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
 
     #== define reference energies ==#
     Eref = {  
-        "Nuclear"       :   30.7884922572,     #TEST
+        "Nuclear"       :   30.7884922572,
         "Singlet": {
-            "Canonical" : -149.58723684929720, #TEST
-            "DF"        : -149.58715054487624, #TEST
+            "Canonical" : -149.58723684929720,
+            "DF"        : -149.58715054487624,
             "Composite": {
-              "DFDIRJ+COSX"    : -149.58722317236171, #TEST
-              "DFDIRJ+LINK"    : -149.58726772171027  #TEST
+              "DFDIRJ+COSX"    : -149.58722317236171,
+              "DFDIRJ+LINK"    : -149.58726772171027
             } 
         }
     }
@@ -83,7 +83,7 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
             E = psi4.energy('scf')
 
         # we keep this line just for printout purposes; should always pass if done correctly
-        assert compare_values(0.0, E, 6, f'Singlet {scf_type}({scf_subtype})+{screening}  throws exception') #TEST
+        assert compare_values(0.0, E, 6, f'Singlet {scf_type}({scf_subtype})+{screening}  throws exception')
 
     #== otherwise, test if current option combo gives right answer ==#
     else: 
@@ -99,4 +99,4 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
         else:
             raise Exception("Invalid JK method used!") 
 
-        assert compare_values(E_ref, E, 6, f'Singlet {scf_type}({scf_subtype})+{screening}  RHF energy') #TEST
+        assert compare_values(E_ref, E, 6, f'Singlet {scf_type}({scf_subtype})+{screening}  RHF energy')
