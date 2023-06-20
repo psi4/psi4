@@ -273,6 +273,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # maximum number of scf iterations to run after early screening is disabled
     scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
 
+    if scf_maxiter_post_screening < -1:
+        raise ValidationError('COSX_MAXITER_FINAL ({}) must be -1 or above. If you wish to attempt full SCF converge on the final COSX grid, set COSX_MAXITER_FINAL to -1.'.format(scf_maxiter_post_screening))
+
     # has early_screening changed from True to False?
     early_screening_disabled = False
 

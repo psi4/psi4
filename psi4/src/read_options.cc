@@ -1681,7 +1681,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("COSX_RADIAL_POINTS_FINAL", 35);
         /*- Screening criteria for integrals and intermediates in COSX -*/
         options.add_double("COSX_INTS_TOLERANCE", 1.0E-11);
-        /*- Maximum number of SCF iterations to run on on larger (i.e., final) COSX grid -*/
+        /*- Controls SCF iteration behavior for the larger (i.e., final) COSX grid.
+        -1 fully converges the SCF on the final grid if possible, ending early if MAXITER total SCF iterations are performed.
+        0 disables the final COSX grid entirely.
+        n runs up to n iterations on the final COSX grid, ending early if SCF convergence is reached or MAXITER total SCF iterations are performed. -*/
         options.add_int("COSX_MAXITER_FINAL", 1);
         /*- Screening criteria for shell-pair densities in COSX !expert -*/
         options.add_double("COSX_DENSITY_TOLERANCE", 1.0E-10);
