@@ -99,6 +99,16 @@ def test_parse_cotton_irreps_error(inp):
     assert 'not valid for point group' in str(e.value)
 
 
+def test_slash_in_molecule_name_plus_dfhelper():
+    mymol = psi4.core.Molecule.from_arrays(geom=[0, 0, 0, 2, 0, 0], elem=["h", "h"], name="h2/mol")
+
+    # segfaults if any DF (that is, following line commented). runs if DF suppressed (following line active)
+    #psi4.set_options({"scf_type": "pk", "df_basis_guess": "false"})
+
+    ene = psi4.energy("b3lyp/cc-pvtz", molecule=mymol)
+    assert compare_values(-1.00125358, ene, 5, 'weird mol name ok as file')
+
+
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>
 
 @uusing("networkx")
