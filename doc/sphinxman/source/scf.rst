@@ -828,11 +828,16 @@ DFT quadrature grids, which are described in :ref:`sec:dft`.
 Both the accuracy of the COSX algorithm and also the computational
 cost are directly determined by the size of the integration grid, so selection
 of the grid is important. This COSX implementation uses two separate grids.
-The SCF algorithm is first converged on a smaller grid, followed by a final SCF
-iteration on a larger grid. This results in numerical errors comparable to
+By default, the SCF algorithm is first converged on a smaller grid, followed by a
+number of SCF iterations up to a maximum value (controlled by the |scf__cosx_maxiter_final| keyword)
+on a larger grid. By default, |scf__cosx_maxiter_final| is set to 1, a single
+SCF iteration, which results in numerical errors comparable to
 performing the entire SCF on the expensive larger grid at a computational cost
-much closer to the smaller grid. The size of the initial grid is controlled by the
-keywords |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
+much closer to the smaller grid. Setting |scf__cosx_maxiter_final| to 0 disables the
+larger grid entirely. Setting |scf__cosx_maxiter_final| to -1 allows
+for the SCF to fully converge on the larger grid, useful for the study of wavefunction
+properties such as gradients. The size of the initial grid is controlled by the keywords
+|scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
 The final grid is controlled by |scf__cosx_radial_points_final| and
 |scf__cosx_spherical_points_final|. The defaults for both grids aim to balance
 cost and accuracy.
