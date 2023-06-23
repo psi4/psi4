@@ -66,6 +66,7 @@ import numpy as np
 
 import qcelemental as qcel
 from psi4 import core
+from psi4 import extras
 from psi4.driver import qcdb
 
 from . import optproc
@@ -641,10 +642,12 @@ def pcm_helper(block: str):
         fl.write(block)
         fl.flush()
         parsed_pcm = pcmsolver.parse_pcm_input(fl.name)
+        extras.register_scratch_file(fl.name)
 
     with NamedTemporaryFile(mode="w+t", delete=False) as fl:
         fl.write(parsed_pcm)
         core.set_local_option("PCM", "PCMSOLVER_PARSED_FNAME", fl.name)
+        extras.register_scratch_file(fl.name)  # retain with -m (messy) option
 
 
 def _basname(name: str) -> str:
