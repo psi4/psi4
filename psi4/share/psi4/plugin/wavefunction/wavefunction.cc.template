@@ -64,12 +64,12 @@ void @Plugin@::common_init()
 {
     // nsopi_, frzcpi_, etc are Dimension objects for symmetry orbitals
     // These are copied from ref_wfn when we call for shallow_copy
-    virtpi_ = nsopi_ - frzcpi_ - frzvpi_ - doccpi_;
+    virtpi_ = nsopi_ - frzcpi_ - frzvpi_ - doccpi();
 
     outfile->Printf("The wavefunction has the following dimensions:\n");
     nsopi_.print();
     frzcpi_.print();
-    doccpi_.print();
+    doccpi().print();
     virtpi_.print();
     frzvpi_.print();
 }
