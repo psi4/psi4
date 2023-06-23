@@ -110,7 +110,7 @@ class PKManager {
     double omega_;
 
     /// Sieving object for the integrals
-    std::shared_ptr<TwoBodyAOInt> sieve_;
+    std::shared_ptr<TwoBodyAOInt> eri_;
     /// Size of triangular list of PK pairs
     size_t pk_pairs_;
     /// Total size of the four-index triangular PK
@@ -153,7 +153,7 @@ class PKManager {
     double cutoff() const { return cutoff_; }
     int nthreads() const { return nthreads_; }
     int nbf() const { return nbf_; }
-    std::shared_ptr<TwoBodyAOInt> sieve() const { return sieve_; }
+    std::shared_ptr<TwoBodyAOInt> eri() const { return eri_; }
     size_t pk_pairs() const { return pk_pairs_; }
     size_t pk_size() const { return pk_size_; }
     size_t ntasks() const { return ntasks_; }

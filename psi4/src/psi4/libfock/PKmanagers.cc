@@ -190,7 +190,7 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
     ntasks_ = 0;
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    sieve_ = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    eri_ = std::shared_ptr<TwoBodyAOInt>(factory->eri());
 
     if (memory_ < pk_pairs_) {
         throw PSIEXCEPTION("Not enough memory for PK algorithm\n");
@@ -887,7 +887,7 @@ void PKMgrReorder::allocate_buffers() {
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for (int i = 0; i < nthreads(); ++i) {
-        fill_buffer(std::make_shared<PKWrkrReord>(primary(), sieve(), AIO(), pk_file(), buf_size, buf_per_thread));
+        fill_buffer(std::make_shared<PKWrkrReord>(primary(), eri(), AIO(), pk_file(), buf_size, buf_per_thread));
     }
 }
 
@@ -1024,7 +1024,7 @@ void PKMgrYoshimine::allocate_buffers() {
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for (int i = 0; i < nthreads(); ++i) {
-        fill_buffer(std::make_shared<PKWrkrIWL>(primary(), sieve(), AIO(), iwl_file_J_, iwl_file_K_, ints_per_buf_,
+        fill_buffer(std::make_shared<PKWrkrIWL>(primary(), eri(), AIO(), iwl_file_J_, iwl_file_K_, ints_per_buf_,
                                                 batch_for_pq(), current_pos));
     }
 }
@@ -1505,7 +1505,7 @@ void PKMgrInCore::allocate_buffers() {
 
     for (size_t i = 0; i < nthreads(); ++i) {
         // DEBUG        outfile->Printf("start is %lu\n",start);
-        SharedPKWrkr buf = std::make_shared<PKWrkrInCore>(primary(), sieve(), buffer_size, lastbuf, J_ints_.get(),
+        SharedPKWrkr buf = std::make_shared<PKWrkrInCore>(primary(), eri(), buffer_size, lastbuf, J_ints_.get(),
                                                           K_ints_.get(), wK_ints_.get(), nthreads());
         fill_buffer(buf);
         set_ntasks(nthreads());
