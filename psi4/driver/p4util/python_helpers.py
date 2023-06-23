@@ -1562,7 +1562,7 @@ def _core_erisieve_build(
         do_csam: bool = False
     ) -> core.ERISieve:
     """
-    Previously constructed a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
+    This function previously constructed a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
     ERI screening and an optional input to enable CSAM screening (over Schwarz screening).
 
     However, as the ERISieve class was removed from Psi4 in v1.9, the function now throws with an UpgradeHelper
