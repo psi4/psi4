@@ -48,6 +48,11 @@ def register_numpy_file(filename):
         numpy_files.append(filename)
 
 
+def register_scratch_file(filename):
+    if filename not in numpy_files:
+        numpy_files.append(filename)
+
+
 def clean_numpy_files():
     for nfile in numpy_files:
         try:
