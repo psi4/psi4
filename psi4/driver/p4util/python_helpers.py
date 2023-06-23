@@ -1565,7 +1565,7 @@ def _core_erisieve_build(
     Previously constructed a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
     ERI screening and an optional input to enable CSAM screening (over Schwarz screening).
 
-    However, the ERISieve class has been removed from Psi4 as of v1.9. So, the function now throws with an UpgradeHelper
+    However, as the ERISieve class was removed from Psi4 in v1.9, the function now throws with an UpgradeHelper
     exception, and lets the user know to use TwoBodyAOInt instead.
 
     Parameters
