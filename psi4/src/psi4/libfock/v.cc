@@ -2483,7 +2483,7 @@ SharedMatrix RV::compute_hessian() {
 //               -einsum("p, pσ, pm, pnx, mnσ, mi -> ix", w, -- f, φ, -- φ, D, δ)
 //                                                           ∂ρ       ∂x
 //                                                               ∂        ∂
-//             = -2 * einsum("p, pσ, pm, pnx, mnσ, mi -> ix", w, -- f, φ, -- φ, φ, D, δ)
+//             = -2 * einsum("p, pσ, pm, pnx, mnσ, mi -> ix", w, -- f, φ, -- φ, D, δ)
 //                                                               ∂ρ       ∂x
 //             [for D hermitian]
 
