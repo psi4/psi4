@@ -206,6 +206,7 @@ class UV : public VBase {
     /// ret[2n], ret[2n+1] are alpha and beta Vx where x concatenates Dx[2n] (α) and Dx[2n+1] (β).
     void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
     SharedMatrix compute_gradient() override;
+    SharedMatrix compute_hessian() override;
 
     void print_header() const override;
 };
