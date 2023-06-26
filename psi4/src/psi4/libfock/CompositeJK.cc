@@ -93,7 +93,7 @@ void CompositeJK::common_init() {
     // other options
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
-    early_screening_ = k_type_ == "COSX" ? true : false;
+    early_screening_ = k_type == "COSX" ? true : false;
 
     // pre-construct per-thread TwoBodyAOInt objects for computing 3- and 4-index ERIs
     timer_on("CompositeJK: ERI Computers");
