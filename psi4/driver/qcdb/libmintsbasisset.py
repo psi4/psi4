@@ -557,7 +557,7 @@ class BasisSet(object):
 
         # sort the shells by angular momentum
         for label, basis_map in combined_atom_basis_shell.items():
-            combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name],\
+            combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name],
                     key=lambda shell: shell.l)
 
         # Molecule and parser prepped, call the constructor
