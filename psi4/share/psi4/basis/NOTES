@@ -1,6 +1,22 @@
 *******************************************************************************
 *******************************************************************************
 
+Thursday, June 8, 2023 -- ECM
+
+[51] Updated and added F12 basis sets from BSE. Updated basissets
+     were incomplete i.e. missing atoms. Added F12-OPTRI basissets.
+
+     cc-pcvdz-f12.gbs      cc-pcvdz-f12-optri.gbs
+     cc-pcvtz-f12.gbs      cc-pcvtz-f12-optri.gbs
+     cc-pcvqz-f12.gbs      cc-pcvqz-f12-optri.gbs
+     cc-pvdz-f12.gbs       cc-pvdz-f12-optri.gbs
+     cc-pvtz-f12.gbs       cc-pvtz-f12-optri.gbs
+     cc-pvqz-f12.gbs       cc-pvqz-f12-optri.gbs
+     cc-pv5z-f12.gbs
+
+*******************************************************************************
+*******************************************************************************
+
 Friday, September 4, 2020 -- LAB
 
 [50] Removed ambiguity of L>=7 character from HIJ (GBS convention)
