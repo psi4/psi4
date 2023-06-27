@@ -59,7 +59,7 @@ class AOShellSieveIterator;
 class AOFctSieveIterator;
 
 typedef std::unique_ptr<AOShellSieveIterator> UniqueAOShellIt;
-typedef std::shared_ptr<TwoBodyAOInt> SharedSieve;
+typedef std::shared_ptr<TwoBodyAOInt> SharedInt;
 
 /** AOShellSieveIterator provides an iterator over significant shell
  * quartets using a TwoBodyAOInt object.
@@ -70,7 +70,7 @@ class AOShellSieveIterator {
     // Basis set
     std::shared_ptr<BasisSet> bs_;
     // Sieve object
-    SharedSieve eri_;
+    SharedInt eri_;
     // Vector of significant shell pairs
     const std::vector<std::pair<int, int>>& shell_pairs_;
     // Number of shell pairs
@@ -87,7 +87,7 @@ class AOShellSieveIterator {
 
    public:
     /// Constructor
-    AOShellSieveIterator(std::shared_ptr<BasisSet> prim, SharedSieve eri_input);
+    AOShellSieveIterator(std::shared_ptr<BasisSet> prim, SharedInt eri_input);
 
     /// Iterator functions
     void first();
@@ -221,7 +221,7 @@ class PKWorker {
     /// Current basis set
     std::shared_ptr<BasisSet> primary_;
     /// Current sieve
-    SharedSieve eri_;
+    SharedInt eri_;
     /// Are we doing wK?
     bool do_wK_;
 
@@ -265,7 +265,7 @@ class PKWorker {
 
    public:
     /// Constructor for PKWorker
-    PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve eri, std::shared_ptr<AIOHandler> AIO, int target_file,
+    PKWorker(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIO, int target_file,
              size_t buf_size);
     /// Destructor for PKWorker, does nothing
     virtual ~PKWorker() {}
@@ -395,7 +395,7 @@ class PKWrkrReord : public PKWorker {
 
    public:
     /// Constructor
-    PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve eri, std::shared_ptr<AIOHandler> AIO, int target_file,
+    PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIO, int target_file,
                 size_t buffer_size, size_t nbuffer);
     /// Destructor
     ~PKWrkrReord() override;
@@ -443,7 +443,7 @@ class PKWrkrInCore : public PKWorker {
     void initialize_task() override;
 
    public:
-    PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve eri, size_t buf_size, size_t lastbuf, double* Jbuf,
+    PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedInt eri, size_t buf_size, size_t lastbuf, double* Jbuf,
                  double* Kbuf, double* wKbuf, int nworkers);
 
     /// Filling values in the relevant part of the buffer
@@ -487,7 +487,7 @@ class PKWrkrIWL : public PKWorker {
 
    public:
     /// Constructor
-    PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve eri, std::shared_ptr<AIOHandler> AIOp, int targetfile,
+    PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIOp, int targetfile,
               int K_file, size_t buf_size, std::vector<int>& bufforpq, std::shared_ptr<std::vector<size_t>> pos);
     /// Destructor
     ~PKWrkrIWL() override;

@@ -39,7 +39,7 @@ namespace psi {
 
 namespace pk {
 
-AOShellSieveIterator::AOShellSieveIterator(std::shared_ptr<BasisSet> prim, SharedSieve eri_input)
+AOShellSieveIterator::AOShellSieveIterator(std::shared_ptr<BasisSet> prim, SharedInt eri_input)
     : shell_pairs_(eri_input->shell_pairs()) {
     bs_ = prim;
     eri_ = eri_input;
@@ -317,7 +317,7 @@ void AOFctSieveIterator::next() {
     reorder_inds();
 }
 
-PKWorker::PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve eri, std::shared_ptr<AIOHandler> AIO,
+PKWorker::PKWorker(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIO,
                    int target_file, size_t buf_size) {
     AIO_ = AIO;
     eri_ = eri;
@@ -455,7 +455,7 @@ void PKWorker::next_quartet() {
     shells_left_ = shell_found;
 }
 
-PKWrkrReord::PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve eri, std::shared_ptr<AIOHandler> AIO,
+PKWrkrReord::PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIO,
                          int target_file, size_t buffer_size, size_t nbuffer)
     : PKWorker(primary, eri, AIO, target_file, buffer_size) {
     set_nbuf(nbuffer);
@@ -734,7 +734,7 @@ void PKWrkrReord::write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_
     ::memset((void *)wK_bufs_[buf_], '\0', buf_size() * sizeof(double));
 }
 
-PKWrkrInCore::PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve eri, size_t buf_size, size_t lastbuf,
+PKWrkrInCore::PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedInt eri, size_t buf_size, size_t lastbuf,
                            double *Jbuf, double *Kbuf, double *wKbuf, int nworkers)
     : PKWorker(primary, eri, std::shared_ptr<AIOHandler>(), 0, buf_size) {
     nworkers_ = nworkers;
@@ -845,7 +845,7 @@ void PKWrkrInCore::finalize_ints_wK(size_t pk_pairs) {
     }
 }
 
-PKWrkrIWL::PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve eri, std::shared_ptr<AIOHandler> AIOp,
+PKWrkrIWL::PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIOp,
                      int targetfile, int K_file, size_t buf_size, std::vector<int> &bufforpq,
                      std::shared_ptr<std::vector<size_t>> pos)
     : PKWorker(primary, eri, AIOp, targetfile, buf_size) {
