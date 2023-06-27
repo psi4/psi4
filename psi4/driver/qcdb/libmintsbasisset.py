@@ -538,20 +538,10 @@ class BasisSet(object):
         mol.update_geometry()
 
         # load in the basis sets
-        sets = []
-        name = ""
-        keywords = ""
-        blends = ""
-        for at in range(len(keys)):
-            bas = BasisSet.pyconstruct(mol, keys[at], targets[at], fitroles[at], others[at])
-            name += targets[at] + " + "
-            keywords += keys[at] + " + "
-            blends += bas.name.upper() + " + "
-            sets.append(bas)
-
-        name = name[:-3].strip()
-        keywords = keywords[:-3].strip()
-        blends = blends[:-3].strip()
+        sets = [BasisSet.pyconstruct(mol, keys[at], targets[at], fitroles[at], others[at]) for at in range(len(keys))]
+        name = " + ".join(targets)
+        keywords = " + ".join(keys)
+        blends = " + ".join([bas.name.upper() for bas in sets])
 
         # work our way through the sets merging them
         combined_atom_basis_shell = collections.OrderedDict()
