@@ -47,7 +47,7 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
     })
  
     #== skip redundant option combinations based on type/subtype combination ==#   
-    if scf_type not in [ "PK", "DISK_DF", "MEM_DF"] and scf_subtype != "AUTO":
+    if scf_type not in [ "PK", "DISK_DF", "MEM_DF"] and scf_subtype == "AUTO":
         pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: redundant test') 
     elif scf_type in [ "DISK_DF", "MEM_DF"] and scf_subtype in [ "YOSHIMINE_OUT_OF_CORE", "REORDER_OUT_OF_CORE" ]:
         pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: redundant test') 
