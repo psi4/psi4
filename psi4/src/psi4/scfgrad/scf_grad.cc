@@ -1001,7 +1001,8 @@ SharedMatrix SCFDeriv::compute_hessian()
 #endif
     if (options_.get_str("REFERENCE") == "RHF" || 
         options_.get_str("REFERENCE") == "RKS" || 
-        options_.get_str("REFERENCE") == "UHF") {
+        options_.get_str("REFERENCE") == "UHF" ||
+        options_.get_str("REFERENCE") == "UKS") {
         hessians_["Response"] = hessian_response();
     } else {
         throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");

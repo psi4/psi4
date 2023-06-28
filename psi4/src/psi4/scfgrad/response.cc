@@ -2511,6 +2511,7 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     // Jpi/Kpi
     JK_deriv2(jk,mem, Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir);
 
+    // TODO: I suspect this is another case where we don't want to call this twice.
     VXC_deriv(Ca, Ca_occ, nso, naocc, navir, true);
     VXC_deriv(Cb, Cb_occ, nso, nbocc, nbvir, false);
 
