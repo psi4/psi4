@@ -2911,7 +2911,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         throw PSIEXCEPTION("Vx: UKS input and output sizes should be the same.");
     }
     if ((Dx.size() % 2) != 0) {
-        throw PSIEXCEPTION("Vx: UKS input and output sizes should be the same.");
+        throw PSIEXCEPTION("Vx: UKS input should occur in alpha and beta pairs.");
     }
 
     if (functional_->needs_vv10()) {
@@ -3866,12 +3866,12 @@ SharedMatrix UV::compute_hessian() {
 
         // TODO: these need to be threaded eventually, to fit in with the new infrastructure
         // Directional Temps
-        auto Txa(U_local->clone());
-        auto Tya(U_local->clone());
-        auto Tza(U_local->clone());
-        auto Txb(U_local->clone());
-        auto Tyb(U_local->clone());
-        auto Tzb(U_local->clone());
+        auto Txa(Ua_local->clone());
+        auto Tya(Ua_local->clone());
+        auto Tza(Ua_local->clone());
+        auto Txb(Ub_local->clone());
+        auto Tyb(Ub_local->clone());
+        auto Tzb(Ub_local->clone());
         auto pTx2a = Txa->pointer();
         auto pTy2a = Tya->pointer();
         auto pTz2a = Tza->pointer();
@@ -3936,7 +3936,7 @@ SharedMatrix UV::compute_hessian() {
         C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], coll_funcs, Dbp[0], max_functions, 0.0, Tbp[0],
                 max_functions);
         for (int P = 0; P < npoints; P++) {
-            std::fill(Up[P], Up[P] + nlocal, 0.0);
+            std::fill(Uap[P], Uap[P] + nlocal, 0.0);
             if (std::fabs(rho_a[P]) + std::fabs(rho_b[P]) > v2_rho_cutoff_) {
                 C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], Tap[P], 1, Uap[P], 1);
                 // Uap is not a typo: this intermediate is spin-summed.
@@ -3945,12 +3945,12 @@ SharedMatrix UV::compute_hessian() {
         }
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
-            double Txx = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xx[0][ml], coll_funcs);
-            double Txy = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
-            double Txz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
-            double Tyy = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_yy[0][ml], coll_funcs);
-            double Tyz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
-            double Tzz = C_DDOT(npoints, &Up[0][ml], max_functions, &phi_zz[0][ml], coll_funcs);
+            double Txx = C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_xx[0][ml], coll_funcs);
+            double Txy = C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_xy[0][ml], coll_funcs);
+            double Txz = C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_xz[0][ml], coll_funcs);
+            double Tyy = C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_yy[0][ml], coll_funcs);
+            double Tyz = C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_yz[0][ml], coll_funcs);
+            double Tzz = C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_zz[0][ml], coll_funcs);
             Hp[3 * A + 0][3 * A + 0] += Txx;
             Hp[3 * A + 0][3 * A + 1] += Txy;
             Hp[3 * A + 0][3 * A + 2] += Txz;
