@@ -4280,8 +4280,10 @@ SharedMatrix UV::compute_hessian() {
             std::fill(Uap[P], Uap[P] + nlocal, 0.0);
             std::fill(Ubp[P], Ubp[P] + nlocal, 0.0);
             if (std::fabs(rho_a[P]) > v2_rho_cutoff_) {
-                C_DAXPY(nlocal, 4.0 * w[P] * (v_rho_aa[P] + v_rho_ab[P]), Tap[P], 1, Uap[P], 1);
-                C_DAXPY(nlocal, 4.0 * w[P] * (v_rho_bb[P] + v_rho_ab[P]), Tbp[P], 1, Ubp[P], 1);
+                C_DAXPY(nlocal, 4.0 * w[P] * v_rho_aa[P], Tap[P], 1, Uap[P], 1);
+                C_DAXPY(nlocal, 4.0 * w[P] * v_rho_ab[P], Tbp[P], 1, Uap[P], 1);
+                C_DAXPY(nlocal, 4.0 * w[P] * v_rho_ab[P], Tap[P], 1, Ubp[P], 1);
+                C_DAXPY(nlocal, 4.0 * w[P] * v_rho_bb[P], Tbp[P], 1, Ubp[P], 1);
             }
         }
         for (int P = 0; P < npoints; P++) {
