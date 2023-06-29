@@ -4082,7 +4082,6 @@ SharedMatrix UV::compute_gradient() {
     return G;
 }
 SharedMatrix UV::compute_hessian() {
-    outfile->Printf("Entered compute_hessian.");
     // => Validation <=
     if (functional_->is_gga() || functional_->is_meta())
         throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
