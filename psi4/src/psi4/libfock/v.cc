@@ -2448,8 +2448,9 @@ SharedMatrix RV::compute_hessian() {
 //    phenomena, e.g., excitation to a triplet or symmetry-breaking orbital rotations.
 //    This is derived by taking ∂^2/∂D^2[same-spin] - ∂^2/∂D^2[opposite-spin].
 //    Incidentally, the + combination provides the singlet spin-adaptation without redefining intermediates.
-// Geometric derivative equations assume D is a density that satisfies the SCF equations.
-//    Therefore, densities are assumed hermitian and ∂E/∂D = 0 means ∂E/∂D ∂D/∂x terms may be neglected.
+// Geometric derivative equations neglect the implicit ∂D/∂x terms. These are accounted for separately.
+//    For the first derivative, D is assumed to satisfy the SCF equations. ∂E/∂D = 0 means ∂E/∂D ∂D/∂x is
+//    rigorously zero. Furthermore, densities are assumed hermitian.
 // Geometric derivative equations use a compound index (i, x) to refer to displacing atom i in the x
 //    direction. Accordingly, we define δ_μi = 1 if μ centered on atom i, else 0. In particular,
 //    d/d(x,i) φ_μ,p = - (d/dx φ_μ,p) * δ_μi, where the minus sign is needed because moving
@@ -2476,12 +2477,29 @@ SharedMatrix RV::compute_hessian() {
 // ------ E_XC = -einsum("p, pσ, pmx, pn, mnσ, mi -> ix", w, -- f, -- φ, φ, D, δ)
 // ∂(x,i)                                                    ∂ρ    ∂x
 //                                                           ∂        ∂
-//               -einsum("p, pσ, pm, pnx, mnσ, mi -> ix", w, -- f, φ, -- φ, D, δ)
+//               -einsum("p, pσ, pm, pnx, mnσ, ni -> ix", w, -- f, φ, -- φ, D, δ)
 //                                                           ∂ρ       ∂x
 //                                                               ∂        ∂
-//             = -2 * einsum("p, pσ, pm, pnx, mnσ, mi -> ix", w, -- f, φ, -- φ, D, δ)
+//             = -2 * einsum("p, pσ, pm, pnx, mnσ, ni -> ix", w, -- f, φ, -- φ, D, δ)
 //                                                               ∂ρ       ∂x
-//             [for D hermitian]
+//             [for D hermitian... if D ISN'T hermitian, just replace D with the hermitivitzed version]
+// ∂                                                                        ∂         ∂^2
+// ----------- E_XC = 2 * einsum("p, pσ, pm, pnxy, mnσ, ni, nj -> ixjy", w, -- f, φ, ---- φ, D, δ, δ)
+// ∂(x,i)(y,j)                                                              ∂ρ        ∂x∂y
+//                                                                          ∂     ∂     ∂
+//                  + 2 * einsum("p, pσ, pmx, pny, mnσ, mi, nj -> ixjy", w, -- f, -- φ, -- φ, D, δ, δ)
+//                                                                          ∂ρ    ∂x    ∂y
+//                                                                                        ∂        ∂
+//                  + 4 * einsum("p, pστ, pm, pnx, mnσ, pr, psy, rsτ, mi, sj -> ixjy", w, -- f, φ, -- φ, D, δ, δ)
+//                                                                                        ∂ρ       ∂x
+// ∂                      [for D hermitian; if not hermitian, hermitivize]
+// --------                                                            ∂        ∂
+// ∂(x,i)∂D            = -2 * einsum("p, pσ, pm, pnx, ni -> ixmnσ", w, -- f, φ, -- φ, δ)
+//                                                                     ∂ρ       ∂x
+//                                                                                   ∂^2        ∂
+//                       -2 * einsum("p, pτσ, pr, psx, rsσ, ni, pm, pn -> ixmnσ", w, ---- f, φ, -- φ, D, δ, φ, φ)
+//                                                                                   ∂ρ^2       ∂x
+//             [for D hermitian... if D ISN'T hermitian, just replace D with the hermitivitzed version]
 
 // GGA
 //
@@ -3042,7 +3060,7 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
                 //       \  | ∂ ρ^2
                 std::fill(Tap[P], Tap[P] + nlocal, 0);
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0);
-                // TODO: Figure out what the 0.5 is doing.
+                // The extra 0.5, relative to RKS, is needed because RKS v_rho_aa is the average of v_rho_aa and v_rho_ab.
                 C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_aa[P] * rho_xaP + v_rho_ab[P] * rho_xbP), phi[P], 1, Tap[P], 1);
                 C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_ab[P] * rho_xaP + v_rho_bb[P] * rho_xbP), phi[P], 1, Tbp[P], 1);
                 //

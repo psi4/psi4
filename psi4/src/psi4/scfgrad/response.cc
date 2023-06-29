@@ -4370,14 +4370,10 @@ void USCFDeriv::JK_deriv2(std::shared_ptr<JK> jk, int mem,
     L.clear();
     R.clear();
 
-    // Write some placeholder data to PSIO, to get the sizing right
+    // Set the size of G2pi^A_a, so it doesn't run into G2pi^A_b.
     psio_address next_GpiA = PSIO_ZERO;
     for (int A = 0; A < 3 * natom; A++) {
         psio_->write(PSIF_HESS,"G2pi^A_a",(char*)Uap[0], static_cast<size_t> (nmo)*naocc*sizeof(double),next_GpiA,&next_GpiA);
-    }
-    psio_address next_GpiB = PSIO_ZERO;
-    for (int A = 0; A < 3 * natom; A++) {
-        psio_->write(PSIF_HESS,"G2pi^A_b",(char*)Ubp[0], static_cast<size_t> (nmo)*nbocc*sizeof(double),next_GpiB,&next_GpiB);
     }
 
     std::vector<SharedMatrix> Dx, Vx;
@@ -4683,15 +4679,11 @@ void USCFDeriv::assemble_Q(std::shared_ptr<JK> jk,
     auto Uap = Ua->pointer();
     auto Ub = std::make_shared<Matrix>("T",nmo,nbocc);
     auto Ubp = Ub->pointer();
-    
-    // Write some placeholder data to PSIO, to get the sizing right
+
+    // Set the size of Qpi^A_a, so it doesn't run into Qpi^A_b.
     psio_address next_QpiA = PSIO_ZERO;
     for (int A = 0; A < 3 * natom; A++) {
         psio_->write(PSIF_HESS,"Qpi^A_a",(char*)Uap[0], static_cast<size_t> (nmo)*naocc*sizeof(double),next_QpiA,&next_QpiA);
-    }
-    psio_address next_QpiB = PSIO_ZERO;
-    for (int A = 0; A < 3 * natom; A++) {
-        psio_->write(PSIF_HESS,"Qpi^A_b",(char*)Ubp[0], static_cast<size_t> (nmo)*nbocc*sizeof(double),next_QpiB,&next_QpiB);
     }
 
     for (int A = 0; A < 3 * natom; A+=max_A) {

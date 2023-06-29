@@ -5399,23 +5399,23 @@ def test_svwn_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, r
 
         ###### scf_solver
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "pk",      "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  rhf   pk ae:   scf  ",),
-        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "pk",      "freeze_core": "false", **_psi_grid                  }, "error": {2: _p25}                  }, id="svwn  uhf   pk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "pk",      "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  uhf   pk ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "pk",      "freeze_core": "false", **_psi_grid                  }, "error": {2: _p29, 1: _p29, 0: _p29}}, id="svwn rohf   pk ae:   scf  ",),
         ####
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "direct",  "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  rhf drct ae:   scf  ",),
-        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "direct",  "freeze_core": "false", **_psi_grid                  }, "error": {2: _p25}                  }, id="svwn  uhf drct ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "direct",  "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  uhf drct ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "direct",  "freeze_core": "false", **_psi_grid                  }, "error": {2: _p29, 1: _p29, 0: _p29}}, id="svwn rohf drct ae:   scf  ",),
         ####
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  rhf   df ae:   scf  ",),
-        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid                  }, "error": {2: _p25}                  }, id="svwn  uhf   df ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "df",      "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  uhf   df ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "df",      "freeze_core": "false", **_psi_grid                  }, "error": {2: _p29, 1: _p29, 0: _p29}}, id="svwn rohf   df ae:   scf  ",),
         ####
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  rhf  mem ae:   scf  ",),
-        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                  }, "error": {2: _p25}                  }, id="svwn  uhf  mem ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  uhf  mem ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "mem_df",  "freeze_core": "false", **_psi_grid                  }, "error": {2: _p29, 1: _p29, 0: _p29}}, id="svwn rohf  mem ae:   scf  ",),
         ####
         pytest.param({"keywords": {"reference": "rhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  rhf disk ae:   scf  ",),
-        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                  }, "error": {2: _p25}                  }, id="svwn  uhf disk ae:   scf  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                  },                                     }, id="svwn  uhf disk ae:   scf  ",),
         pytest.param({"keywords": {"reference": "rohf", "scf_type": "disk_df", "freeze_core": "false", **_psi_grid                  }, "error": {2: _p29, 1: _p29, 0: _p29}}, id="svwn rohf disk ae:   scf  ",),
         ####
         # only H-by-E available for CD ref Hessians, and loose dflt cholesky_tolerance means they're not close to CONV, so skipping for now
