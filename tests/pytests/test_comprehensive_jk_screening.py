@@ -78,7 +78,7 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
         pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: will error out') 
 
     #== if expected, test if current option combo throws exception ==# 
-    if not should_error_out and should_throw:
+    elif not should_error_out and should_throw:
         with pytest.raises(Exception) as e_info:
             E = psi4.energy('scf')
 
