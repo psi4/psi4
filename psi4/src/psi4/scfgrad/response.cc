@@ -2614,8 +2614,7 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     assemble_U(naocc, navir, true);
     assemble_U(nbocc, nbvir, false);
 
-    assemble_Q(jk, Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir, true);
-    assemble_Q(jk, Cb, Cb_occ, Ca, Ca_occ, nso, nbocc, naocc, nbvir, false);
+    assemble_Q(jk, Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir);
     jk.reset();
 
     // => Zipper <= //
@@ -4617,54 +4616,68 @@ void USCFDeriv::assemble_U(int nocc, int nvir, bool alpha)
 }
 
 void USCFDeriv::assemble_Q(std::shared_ptr<JK> jk,
-                           std::shared_ptr<Matrix> C1, 
-                           std::shared_ptr<Matrix> C1occ,
-                           std::shared_ptr<Matrix> C2, 
-                           std::shared_ptr<Matrix> C2occ,
-                           int nso, int n1occ, int n2occ, int n1vir, bool alpha)
+                           std::shared_ptr<Matrix> Ca,
+                           std::shared_ptr<Matrix> Caocc,
+                           std::shared_ptr<Matrix> Cb,
+                           std::shared_ptr<Matrix> Cbocc,
+                           int nso, int naocc, int nbocc, int navir)
 {
     // => Qpi <= //
-    size_t nmo = n1occ + n1vir;
+    size_t nmo = naocc + navir;
     int natom = molecule_->natom();
     size_t mem = 0.9 * memory_ / 8L;
-    size_t per_A = 3L * nso * nso + 1L * n1occ * nso;
+    // Dx, Vx (alpha and beta); L, R (C1); L, R (C2)
+    size_t per_A = 2L * (2 * nso + naocc + nbocc) * nso;
     size_t max_A = (mem / 2L) / per_A;
+    max_A = std::min(max_A, 3 * static_cast<size_t>(natom));
 
-    double** C1p  = C1->pointer();  
-    double** C1op = C1occ->pointer();
-    double** C2p = C2->pointer();
-    double** C2op = C2occ->pointer();
+    auto Cap  = Ca->pointer();
+    auto Caop = Caocc->pointer();
+    auto Cbp = Cb->pointer();
+    auto Cbop = Cbocc->pointer();
 
     max_A = (max_A > 3 * natom ? 3 * natom : max_A);
     double Kscale = functional_->x_alpha();
-    std::vector<std::shared_ptr<Matrix> >& L = jk->C_left();
-    std::vector<std::shared_ptr<Matrix> >& R = jk->C_right();
-    const std::vector<std::shared_ptr<Matrix> >& J = jk->J();
-    const std::vector<std::shared_ptr<Matrix> >& K = jk->K();
+    auto& L = jk->C_left();
+    auto& R = jk->C_right();
+    const auto& J = jk->J();
+    const auto& K = jk->K();
     std::vector<SharedMatrix> Dx, Vx;
     L.clear();
     R.clear();
     for (int a = 0; a < max_A; a++) {
-        L.push_back(C1occ);
-        R.push_back(std::make_shared<Matrix>("R",nso,n1occ));
-        Dx.push_back(std::make_shared<Matrix>("Dx", nso,nso));
-        Vx.push_back(std::make_shared<Matrix>("Vx", nso,nso));
-        L.push_back(C2occ);
-        R.push_back(std::make_shared<Matrix>("R",nso,n2occ));
+        L.push_back(Caocc);
+        R.push_back(std::make_shared<Matrix>("R",nso,naocc));
+        Dx.push_back(std::make_shared<Matrix>("Dx alpha", nso,nso));
+        Vx.push_back(std::make_shared<Matrix>("Vx alpha", nso,nso));
+        L.push_back(Cbocc);
+        R.push_back(std::make_shared<Matrix>("R",nso,nbocc));
+        Dx.push_back(std::make_shared<Matrix>("Dx beta", nso,nso));
+        Vx.push_back(std::make_shared<Matrix>("Vx beta", nso,nso));
     }
 
-    auto U1pi = std::make_shared<Matrix>("Upi",nmo,n1occ);
-    double** U1pip = U1pi->pointer();
-    auto U2pi = std::make_shared<Matrix>("Upi",nmo,n2occ);
-    double** U2pip = U2pi->pointer();
-    auto T = std::make_shared<Matrix>("T",nso,n1occ);
-    double** Tp = T->pointer();
-    auto U = std::make_shared<Matrix>("T",nmo,n1occ);
-    double** Up = U->pointer();
+    auto Uapi = std::make_shared<Matrix>("Upi",nmo,naocc);
+    auto Uapip = Uapi->pointer();
+    auto Ubpi = std::make_shared<Matrix>("Upi",nmo,nbocc);
+    auto Ubpip = Ubpi->pointer();
+    auto Ta = std::make_shared<Matrix>("T",nso,naocc);
+    auto Tap = Ta->pointer();
+    auto Tb = std::make_shared<Matrix>("T",nso,nbocc);
+    auto Tbp = Tb->pointer();
+    auto Ua = std::make_shared<Matrix>("T",nmo,naocc);
+    auto Uap = Ua->pointer();
+    auto Ub = std::make_shared<Matrix>("T",nmo,nbocc);
+    auto Ubp = Ub->pointer();
     
-    auto Ustr_1 = (alpha) ? "Upi^A_a" : "Upi^A_b"; 
-    auto Ustr_2 = (alpha) ? "Upi^A_b" : "Upi^A_a"; 
-    auto Qstr = (alpha) ? "Qpi^A_a" :  "Qpi^A_b";
+    // Write some placeholder data to PSIO, to get the sizing right
+    psio_address next_QpiA = PSIO_ZERO;
+    for (int A = 0; A < 3 * natom; A++) {
+        psio_->write(PSIF_HESS,"Qpi^A_a",(char*)Uap[0], static_cast<size_t> (nmo)*naocc*sizeof(double),next_QpiA,&next_QpiA);
+    }
+    psio_address next_QpiB = PSIO_ZERO;
+    for (int A = 0; A < 3 * natom; A++) {
+        psio_->write(PSIF_HESS,"Qpi^A_b",(char*)Ubp[0], static_cast<size_t> (nmo)*nbocc*sizeof(double),next_QpiB,&next_QpiB);
+    }
 
     for (int A = 0; A < 3 * natom; A+=max_A) {
         int nA = max_A;
@@ -4674,18 +4687,18 @@ void USCFDeriv::assemble_Q(std::shared_ptr<JK> jk,
             R.resize(2*nA);
         }
         for (int a = 0; a < nA; a++) {
-            psio_address next_Upi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * n1occ * sizeof(double));
-            psio_->read(PSIF_HESS,Ustr_1,(char*)U1pip[0], static_cast<size_t> (nmo)*n1occ*sizeof(double),next_Upi,&next_Upi);
-            C_DGEMM('N','N',nso,n1occ,nmo,1.0,C1p[0],nmo,U1pip[0],n1occ,0.0,R[2*a]->pointer()[0],n1occ);
-            Dx[a] = linalg::doublet(L[2*a], R[2*a], false, true);
-            // Symmetrize the pseudodensity
-            Dx[a]->add(Dx[a]->transpose());
-            Dx[a]->scale(0.5);
+            psio_address next_Upi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * naocc * sizeof(double));
+            psio_->read(PSIF_HESS,"Upi^A_a",(char*)Uapip[0], static_cast<size_t> (nmo)*naocc*sizeof(double),next_Upi,&next_Upi);
+            C_DGEMM('N','N',nso,naocc,nmo,1.0,Cap[0],nmo,Uapip[0],naocc,0.0,R[2*a]->pointer()[0],naocc);
+            Dx[2*a] = linalg::doublet(L[2*a], R[2*a], false, true);
+            Dx[2*a]->hermitivitize();
         }
         for (int a = 0; a < nA; a++) {
-            psio_address next_Upi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * n2occ * sizeof(double));
-            psio_->read(PSIF_HESS,Ustr_2,(char*)U2pip[0], static_cast<size_t> (nmo)*n2occ*sizeof(double),next_Upi,&next_Upi);
-            C_DGEMM('N','N',nso,n2occ,nmo,1.0,C2p[0],nmo,U2pip[0],n2occ,0.0,R[2*a+1]->pointer()[0],n2occ);
+            psio_address next_Upi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nbocc * sizeof(double));
+            psio_->read(PSIF_HESS,"Upi^A_b",(char*)Ubpip[0], static_cast<size_t> (nmo)*nbocc*sizeof(double),next_Upi,&next_Upi);
+            C_DGEMM('N','N',nso,nbocc,nmo,1.0,Cbp[0],nmo,Ubpip[0],nbocc,0.0,R[2*a+1]->pointer()[0],nbocc);
+            Dx[2*a+1] = linalg::doublet(L[2*a+1], R[2*a+1], false, true);
+            Dx[2*a+1]->hermitivitize();
         }
 
         jk->compute();
@@ -4694,21 +4707,44 @@ void USCFDeriv::assemble_Q(std::shared_ptr<JK> jk,
         }
 
         for (int a = 0; a < nA; a++) {
-            //C_DGEMM('N','N',nso,n1occ,nso, 4.0,J[a]->pointer()[0],nso,C1op[0],n1occ,0.0,Tp[0],n1occ);
-            C_DGEMM('N','N',nso,n1occ,nso, 2.0,J[2*a]->pointer()[0],nso,C1op[0],n1occ,0.0,Tp[0],n1occ);
-            C_DGEMM('N','N',nso,n1occ,nso, 2.0,J[2*a+1]->pointer()[0],nso,C1op[0],n1occ,1.0,Tp[0],n1occ);
-            if(Kscale) {
-                C_DGEMM('N','N',nso,n1occ,nso,-Kscale,K[2*a]->pointer()[0],nso,C1op[0],n1occ,1.0,Tp[0],n1occ);
-                C_DGEMM('T','N',nso,n1occ,nso,-Kscale,K[2*a]->pointer()[0],nso,C1op[0],n1occ,1.0,Tp[0],n1occ);
+            // Now construct the matrices. Both the alpha and beta term sum the two J terms.
+            // When we're done, J[2*a] will be the running alpha result,and J[2*a+1] the beta.
+            J[2*a]->add(J[2*a+1]);
+            J[2*a]->scale(2);
+            J[2*a+1]->copy(J[2*a]);
+
+            if (Kscale) {
+                K[2*a]->add(K[2*a]->transpose());
+                K[2*a+1]->add(K[2*a+1]->transpose());
+                K[2*a]->scale(-Kscale);
+                K[2*a+1]->scale(-Kscale);
+                J[2*a]->add(K[2*a]);
+                J[2*a+1]->add(K[2*a+1]);
             }
-            if(functional_->needs_xc()) {
-                // Symmetrize the result, just to be safe
-                C_DGEMM('N','N',nso,n1occ,nso, 2.0,Vx[2*a]->pointer()[0],nso,C1op[0],n1occ,1.0,Tp[0],n1occ);
-                C_DGEMM('T','N',nso,n1occ,nso, 2.0,Vx[2*a]->pointer()[0],nso,C1op[0],n1occ,1.0,Tp[0],n1occ);
+
+            // Add DFT, if any.
+            if (functional_->needs_xc()) {
+                // Symmetrize the result, just to be safe, ans we also need to double it.
+                Vx[2*a]->add(Vx[2*a]->transpose());
+                Vx[2*a+1]->add(Vx[2*a+1]->transpose());
+                J[2*a]->add(Vx[2*a]);
+                J[2*a+1]->add(Vx[2*a+1]);
             }
-            C_DGEMM('T','N',nmo,n1occ,nso,1.0,C1p[0],nmo,Tp[0],n1occ,0.0,Up[0],n1occ);
-            psio_address next_Qpi = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * n1occ * sizeof(double));
-            psio_->write(PSIF_HESS,Qstr,(char*)Up[0], static_cast<size_t> (nmo)*n1occ*sizeof(double),next_Qpi,&next_Qpi);
+
+            // TODO: We can simplify the code by converting these to transform calls, but that means allocating
+            //       temporary intermediates in a loop. In the (likely) event the allocation time cost is
+            //       negligible in comparison to the J/K build, simplify away.
+            C_DGEMM('N','N',nso,naocc,nso, 1.0,J[2*a]->pointer()[0],nso,Caop[0],naocc,0.0,Tap[0],naocc);
+            C_DGEMM('T','N',nmo,naocc,nso,1.0,Cap[0],nmo,Tap[0],naocc,0.0,Uap[0],naocc);
+
+            C_DGEMM('N','N',nso,nbocc,nso, 1.0,J[2*a+1]->pointer()[0],nso,Cbop[0],nbocc,0.0,Tbp[0],nbocc);
+            C_DGEMM('T','N',nmo,nbocc,nso,1.0,Cbp[0],nmo,Tbp[0],nbocc,0.0,Ubp[0],nbocc);
+
+            psio_address next_QpiA = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * naocc * sizeof(double));
+            psio_->write(PSIF_HESS,"Qpi^A_a",(char*)Uap[0], static_cast<size_t> (nmo)*naocc*sizeof(double),next_QpiA,&next_QpiA);
+
+            psio_address next_QpiB = psio_get_address(PSIO_ZERO,(A + a) * (size_t) nmo * nbocc * sizeof(double));
+            psio_->write(PSIF_HESS,"Qpi^A_b",(char*)Ubp[0], static_cast<size_t> (nmo)*nbocc*sizeof(double),next_QpiB,&next_QpiB);
         }
     }
 }

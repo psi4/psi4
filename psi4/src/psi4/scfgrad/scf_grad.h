@@ -127,7 +127,7 @@ protected:
                     std::shared_ptr<Matrix> C1occ,
                     std::shared_ptr<Matrix> C2, 
                     std::shared_ptr<Matrix> C2occ, 
-                    int nso, int n1occ, int n2occ, int nvir,bool alpha);
+                    int nso, int n1occ, int n2occ, int nvir);
 
     void dipole_derivatives(std::shared_ptr<Matrix> C1, 
                             std::shared_ptr<Matrix> C1occ,
