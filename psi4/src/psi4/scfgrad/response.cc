@@ -2511,9 +2511,7 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
     // Jpi/Kpi
     JK_deriv2(jk,mem, Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir);
 
-    // TODO: I suspect this is another case where we don't want to call this twice.
-    VXC_deriv(Ca, Ca_occ, nso, naocc, navir, true);
-    VXC_deriv(Cb, Cb_occ, nso, nbocc, nbvir, false);
+    VXC_deriv(Ca, Ca_occ, Cb, Cb_occ, nso, naocc, nbocc, navir);
 
     assemble_Fock(naocc, navir,true);
     assemble_Fock(nbocc, nbvir,false);
@@ -4469,40 +4467,56 @@ void USCFDeriv::JK_deriv2(std::shared_ptr<JK> jk, int mem,
     }
 }
 
-void USCFDeriv::VXC_deriv(std::shared_ptr<Matrix> C, 
-                          std::shared_ptr<Matrix> Cocc,
-                          int nso, int nocc, int nvir, bool alpha)
+void USCFDeriv::VXC_deriv(std::shared_ptr<Matrix> Ca,
+                          std::shared_ptr<Matrix> Caocc,
+                          std::shared_ptr<Matrix> Cb,
+                          std::shared_ptr<Matrix> Cbocc,
+                          int nso, int naocc, int nbocc, int navir)
 {
     // => XC Gradient <= //
-    double** Cp  = C->pointer();  
-    double** Cop = Cocc->pointer();
-    size_t nmo = nocc + nvir;
+    auto Cap  = Ca->pointer();
+    auto Caop = Caocc->pointer();
+    auto Cbp  = Cb->pointer();
+    auto Cbop = Cbocc->pointer();
+    size_t nmo = naocc + navir;
     int natom = molecule_->natom();
 
-    auto T = std::make_shared<Matrix>("T",nso,nocc);
-    double** Tp = T->pointer();
-    auto U = std::make_shared<Matrix>("Tempai",nmo,nocc);
-    double** Up = U->pointer();
-
-    auto VXCpi_str = (alpha) ? "VXCpi^A_a" : "VXCpi^A_b";
+    auto Ta = std::make_shared<Matrix>("T",nso,naocc);
+    auto Tap = Ta->pointer();
+    auto Ua = std::make_shared<Matrix>("Tempai",nmo,naocc);
+    auto Uap = Ua->pointer();
+    auto Tb = std::make_shared<Matrix>("T",nso,nbocc);
+    auto Tbp = Tb->pointer();
+    auto Ub = std::make_shared<Matrix>("Tempai",nmo,nbocc);
+    auto Ubp = Ub->pointer();
 
     if (functional_->needs_xc()) {
         // Write some placeholder data to PSIO, to get the sizing right
         psio_address next_VXCpi = PSIO_ZERO;
 
         for (int A = 0; A < 3 * natom; A++)
-            psio_->write(PSIF_HESS,VXCpi_str,(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_VXCpi,&next_VXCpi);
+            psio_->write(PSIF_HESS,"VXCpi^A_a",(char*)Uap[0], static_cast<size_t> (nmo)*naocc*sizeof(double),next_VXCpi,&next_VXCpi);
 
         // For now we just compute all 3N matrices in one go.  If this becomes to burdensome
         // in terms of memory we can reevaluate and implement a batching mechanism instead.
         auto Vxc_matrices = potential_->compute_fock_derivatives();
         for(int a =0; a < 3*natom; ++a){
             // Transform from SO basis to pi
-            C_DGEMM('N','N',nso,nocc,nso,1.0,Vxc_matrices[a]->pointer()[0],nso,Cop[0],nocc,0.0,Tp[0],nocc);
-            C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Tp[0],nocc,0.0,Up[0],nocc);
-            next_VXCpi = psio_get_address(PSIO_ZERO,a * (size_t) nmo * nocc * sizeof(double));
+            C_DGEMM('N','N',nso,naocc,nso,1.0,Vxc_matrices[2*a]->pointer()[0],nso,Caop[0],naocc,0.0,Tap[0],naocc);
+            C_DGEMM('T','N',nmo,naocc,nso,1.0,Cap[0],nmo,Tap[0],naocc,0.0,Uap[0],naocc);
+            next_VXCpi = psio_get_address(PSIO_ZERO,a * (size_t) nmo * naocc * sizeof(double));
 
-            psio_->write(PSIF_HESS,VXCpi_str,(char*)Up[0], static_cast<size_t> (nmo)*nocc*sizeof(double),next_VXCpi,&next_VXCpi);
+            psio_->write(PSIF_HESS,"VXCpi^A_a",(char*)Uap[0], static_cast<size_t> (nmo)*naocc*sizeof(double),next_VXCpi,&next_VXCpi);
+        }
+
+        next_VXCpi = PSIO_ZERO;
+        for(int a =0; a < 3*natom; ++a){
+            // Transform from SO basis to pi
+            C_DGEMM('N','N',nso,nbocc,nso,1.0,Vxc_matrices[2*a+1]->pointer()[0],nso,Cbop[0],nbocc,0.0,Tbp[0],nbocc);
+            C_DGEMM('T','N',nmo,nbocc,nso,1.0,Cbp[0],nmo,Tbp[0],nbocc,0.0,Ubp[0],nbocc);
+            next_VXCpi = psio_get_address(PSIO_ZERO,a * (size_t) nmo * nbocc * sizeof(double));
+
+            psio_->write(PSIF_HESS,"VXCpi^A_b",(char*)Ubp[0], static_cast<size_t> (nmo)*nbocc*sizeof(double),next_VXCpi,&next_VXCpi);
         }
     }
 }

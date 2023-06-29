@@ -114,9 +114,11 @@ protected:
                    std::shared_ptr<Matrix> Cbocc,
                    int nso, int naocc, int nbocc, int navir);
 
-    void VXC_deriv(std::shared_ptr<Matrix> C, 
-                   std::shared_ptr<Matrix> Cocc,
-                   int nso, int nocc, int nvir, bool alpha);
+    void VXC_deriv(std::shared_ptr<Matrix> Ca,
+                   std::shared_ptr<Matrix> Caocc,
+                   std::shared_ptr<Matrix> Cb,
+                   std::shared_ptr<Matrix> Cbocc,
+                   int nso, int naocc, int nbocc, int navir);
 
     void assemble_Fock(int nocc, int nvir, bool alpha);
 

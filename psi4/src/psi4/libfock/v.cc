@@ -3044,7 +3044,7 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0);
                 // TODO: Figure out what the 0.5 is doing.
                 C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_aa[P] * rho_xaP + v_rho_ab[P] * rho_xbP), phi[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_ab[P] * rho_xaP + v_rho_bb[P] * rho_xbP), phi[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_ab[P] * rho_xaP + v_rho_bb[P] * rho_xbP), phi[P], 1, Tbp[P], 1);
                 //
                 //       /    | ∂ F
                 // T <- | ɸ_x | ---
@@ -3102,7 +3102,7 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0);
                 // TODO: Figure out what the 0.5 is doing.
                 C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_aa[P] * rho_yaP + v_rho_ab[P] * rho_ybP), phi[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_ab[P] * rho_yaP + v_rho_bb[P] * rho_ybP), phi[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_ab[P] * rho_yaP + v_rho_bb[P] * rho_ybP), phi[P], 1, Tbp[P], 1);
                 //
                 //       /    | ∂ F
                 // T <- | ɸ_y | ---
@@ -3160,7 +3160,7 @@ std::vector<SharedMatrix> UV::compute_fock_derivatives() {
                 std::fill(Tbp[P], Tbp[P] + nlocal, 0);
                 // TODO: Figure out what the 0.5 is doing.
                 C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_aa[P] * rho_zaP + v_rho_ab[P] * rho_zbP), phi[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_ab[P] * rho_zaP + v_rho_bb[P] * rho_zbP), phi[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal, -0.5 * w[P] * (v_rho_ab[P] * rho_zaP + v_rho_bb[P] * rho_zbP), phi[P], 1, Tbp[P], 1);
                 //
                 //       /    | ∂ F
                 // T <- | ɸ_z | ---
