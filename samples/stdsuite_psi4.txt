@@ -2702,12 +2702,18 @@
 {'module': 'psi4', 'driver': 'hessian', 'method': 'svwn', 'reference': 'rohf', 'fcae': 'ae', 'sdsc': 'sc', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no rohf for dft'}
 {'module': 'aaaa-', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': ''}
 {'module': 'aaaa-', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': 'defaultdefault'}
-{'module': 'psi4', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'error', 'note': 'nyi: no rohf hessians for hf'}
+{'module': 'aaaa-', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'aaaa-', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'psi4-scf', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': 'default'}
 {'module': 'psi4-scf', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'fd', 'note': 'defaultdefault'}
+{'module': 'psi4-scf', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
+{'module': 'psi4-scf', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'default'}
+{'module': 'psi4-scf', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'defaultdefault'}
 {'module': 'aaaa-', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': ''}
-{'module': 'psi4', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'error', 'note': 'nyi: no rohf hessians for hf'}
+{'module': 'aaaa-', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
 {'module': 'psi4-scf', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'fd', 'note': 'default'}
+{'module': 'psi4-scf', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': ''}
+{'module': 'psi4-scf', 'driver': 'hessian', 'method': 'svwn', 'reference': 'uhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'pk', 'corl_type': 'conv', 'status': 'pass', 'note': 'default'}
 {'module': 'psi4', 'driver': 'energy', 'method': 'wb97x', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'cd', 'corl_type': 'cd', 'status': 'error', 'note': 'nyi: no cd for lrc in dft'}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'wb97x', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': ''}
 {'module': 'aaaa-', 'driver': 'energy', 'method': 'wb97x', 'reference': 'rhf', 'fcae': 'ae', 'sdsc': 'sd', 'scf_type': 'df', 'corl_type': 'df', 'status': 'pass', 'note': 'defaultdefault'}
