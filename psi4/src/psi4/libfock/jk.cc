@@ -72,11 +72,12 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
                                  Options& options, std::string jk_type) {
 
     bool is_composite = jk_type.find("+") != std::string::npos; // does SCF_TYPE contain +?
+    is_composite = is_composite || options.get_str("SCF_TYPE") == "DFDIRJ"; // is SCF_TYPE equal to DFDIRJ? 
 
     bool do_density_screen = options.get_str("SCREENING") == "DENSITY";
     bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
     
-    bool can_do_density_screen = (jk_type == "DIRECT" || jk_type == "DFDIRJ+LINK");
+    bool can_do_density_screen = (jk_type == "DIRECT" || jk_type == "DFDIRJ+LINK" || jk_type == "DFDIRJ");
 
     if (do_density_screen && !(can_do_density_screen || do_df_scf_guess)) {
         throw PSIEXCEPTION("Density screening has not been implemented for non-Direct SCF algorithms.");
