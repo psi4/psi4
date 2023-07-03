@@ -1348,8 +1348,8 @@ class PSI_API CompositeJK : public JK {
     * @param do_K do K matrices or not,
     *        defaults to true
     */
-    virtual void set_do_K(bool do_K) override; 
- 
+    virtual void set_do_K(bool do_K) override;
+
     /**
     * Print header information regarding JK
     * type on output file
