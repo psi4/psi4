@@ -363,9 +363,9 @@ void CompositeJK::common_init() {
         timer_off("CompositeJK: COSX Overlap Metric Solve");
     
     // Do nothing special if no composite K algorithm 
-   } else if (k_type_ == "NONE") {
-       ; 
-   } else {
+    } else if (k_type_ == "NONE") {
+        ; 
+    } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
     }
 }
