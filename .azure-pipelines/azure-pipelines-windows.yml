@@ -142,7 +142,7 @@ jobs:
                         conda-forge/label/libint_dev::libint=2.7.3dev1 ^
                         qcelemental ^
                         qcengine ^
-                        pydantic<2.0 ^
+                        pydantic=1.10.10 ^
                         optking ^
                         scipy
           conda install --only-deps anaconda-client
