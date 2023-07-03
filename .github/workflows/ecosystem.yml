@@ -124,6 +124,7 @@ jobs:
           - ninja
           - numpy
           - pybind11
+          - pydantic<2.0
             # qc req'd
           - gau2grid
           - conda-forge/label/libint_dev::libint=2.7.3dev1
@@ -171,7 +172,7 @@ jobs:
           - python=${{ matrix.cfg.python-version }}
           - scipy
           - toml
-          - typing-extensions=4.5.0
+          - pydantic<2.0
             # non-qc opt'l
           - memory_profiler
             # qc req'd
