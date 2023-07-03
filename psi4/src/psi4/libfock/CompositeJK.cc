@@ -378,9 +378,16 @@ void CompositeJK::set_do_K(bool do_K) {
         error_message += "+{K_ALGO}.";
         
         throw PSIEXCEPTION(error_message);
-    } else {
-        do_K_ = do_K;
+    } else if (!do_K && k_type_ != "NONE") {
+        std::string info_message = "  INFO: A K algorithm (";
+        info_message += k_type_;
+        info_message += ") was specified in SCF_TYPE, but the current method does not use a K matrix!\n";
+        info_message += "  Thus, the specified K algorithm will be unused.\n\n";
+
+        outfile->Printf(info_message);
     }
+ 
+    do_K_ = do_K;
 }
  
 size_t CompositeJK::num_computed_shells() {
