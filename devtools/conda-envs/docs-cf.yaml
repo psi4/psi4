@@ -5,6 +5,7 @@ dependencies:
   - libblas=*=*mkl
   - mkl-devel
   - intel-openmp!=2019.5
+  - pydantic<2.0
     # build
   - cmake
   - doxygen

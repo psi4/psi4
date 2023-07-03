@@ -101,6 +101,7 @@ jobs:
         msgpack-python \
         conda-forge::qcelemental \
         conda-forge::qcengine=0.26.0 \
+        pydantic=1.10.10 \
         conda-forge::optking \
         scipy
       source activate p4env
