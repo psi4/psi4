@@ -477,6 +477,10 @@ Bibliography
    S. Lehtola
    *J. Chem. Theory Comput.* **15**, 1593 (2019), https://doi.org/10.1021/acs.jctc.8b01089.
 
+.. [Ammeter:1978:3686]
+   J. H. Ammeter, H.-B. B\ |u_dots|\ rgi, J. C. Thibeault, and R. Hoffmann
+   *J. Am. Chem. Soc.* **100**, 3686 (1978), https://doi.org/10.1021/ja00480a005
+
 .. [Lehtola:2019:241102]
    S. Lehtola
    *J. Chem. Phys.* **151**, 241102 (2019), https://doi.org/10.1063/1.5139948.
