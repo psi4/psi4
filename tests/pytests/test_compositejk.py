@@ -82,12 +82,12 @@ def test_dfjcosk(inp, mols, request):
 
     # does the DFJCOSK SCF energy match a pre-computed reference?
     energy_dfjcosk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(inp["ref"], energy_dfjcosk, 6, f'{test_id} DFDIRJ+COSX accurate to reference (1e-6)')
+    assert compare_values(inp["ref"], energy_dfjcosk, 6, f'{test_id} DFDIRJ+COSX accurate to reference (1e-6 threshold)')
 
     # is the DFJCOSK SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
     energy_pk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(energy_pk, energy_dfjcosk, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4)')
+    assert compare_values(energy_pk, energy_dfjcosk, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4 threshold)')
 
 @pytest.mark.parametrize(
     "inp",
@@ -143,7 +143,7 @@ def test_dfjcosk_incfock(inp, mols, request):
     energy_dfjcosk_inc, wfn_dfjcosk_inc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
 
     # how do energies compare?
-    assert compare_values(energy_dfjcosk_noinc, energy_dfjcosk_inc, 6, f'{test_id} IncFock accurate (1e-6)')
+    assert compare_values(energy_dfjcosk_noinc, energy_dfjcosk_inc, 6, f'{test_id} IncFock accurate (1e-6 threshold)')
     
     # how do SCF iteration counts compare?
     niter_noinc = int(wfn_dfjcosk_noinc.variable("SCF ITERATIONS")) if wfn_dfjcosk_noinc.has_scalar_variable("SCF ITERATIONS") else 0
@@ -153,7 +153,7 @@ def test_dfjcosk_incfock(inp, mols, request):
 
 @pytest.mark.parametrize("functional", [ "bp86", "b3lyp" ])
 @pytest.mark.parametrize("scf_type", [ "DFDIRJ", "LINK", "COSX", "DFDIRJ+COSX", "DFDIRJ+LINK" ])
-def test_compositejk_scftype(functional, scf_type, mols):
+def test_dfdirj(functional, scf_type, mols):
     """Test the functionality of the SCF_TYPE keyword for CompositeJK methods under varying situations:
       - Using hybrid DFT functionals without specifying a K algorithm should cause a RuntimeError to be thrown.
       - Not specifying a J algorithm should cause a ValidationError to be thrown."""
@@ -190,4 +190,26 @@ def test_compositejk_scftype(functional, scf_type, mols):
     # ... else code will run fine
     else:
         E = psi4.energy(functional, molecule=molecule) 
-     
+
+@pytest.mark.parametrize("j_algo", [ "DFDIRJ" ]) #to be extended in the future
+def test_j_algo_bp86(j_algo, mols):
+    """Test SCF_TYPE={J} and all SCF_TYPE={J}+{K} combinations for a BP86 calculation.
+    They should all give the exact same answer (within tolerance).""" 
+
+    composite_K_algo = [ "LINK", "COSX" ]
+  
+    molecule = mols["h2o"]
+    
+    # run base composite J algorithm 
+    psi4.set_options({"scf_type" : j_algo, "basis": "cc-pvdz"})
+    energy_dfdirj = psi4.energy("bp86", molecule=molecule) 
+    
+    # compare composite combinations to base J algorithm
+    for k_algo in composite_K_algo:
+        scf_type = j_algo + "+" + k_algo    
+        screening = "CSAM" if "COSX" in scf_type else "DENSITY"
+
+        psi4.set_options({"scf_type" : scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening})
+        energy_composite = psi4.energy("bp86", molecule=molecule) 
+ 
+        assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86 {scf_type} accurate to {j_algo} (1e-6 threshold)')
