@@ -1014,8 +1014,8 @@ def thermo(vibinfo, T: float, P: float, multiplicity: int, molecular_mass: float
         therminfo['_'.join(entry)] = Datum(terms[entry[1]].strip().lower() + ' ' + entry[0], unit, sm[entry])
 
     # display
-    format_S_Cv_Cp = """\n  {:19} {:11.3f} [cal/(mol K)]  {:11.3f} [J/(mol K)]  {:15.8f} [mEh/K]"""
-    format_ZPE_E_H_G = """\n  {:19} {:11.3f} [kcal/mol]  {:11.3f} [kJ/mol]  {:15.8f} [Eh]"""
+    format_S_Cv_Cp = """\n  {:36} {:11.3f} [cal/(mol K)]  {:11.3f} [J/(mol K)]  {:15.8f} [mEh/K]"""
+    format_ZPE_E_H_G = """\n  {:36} {:11.3f} [kcal/mol]  {:11.3f} [kJ/mol]  {:15.8f} [Eh]"""
     uconv = np.asarray([qcel.constants.hartree2kcalmol, qcel.constants.hartree2kJmol, 1.])
 
     # TODO rot_const, rotor_type
@@ -1044,35 +1044,57 @@ def thermo(vibinfo, T: float, P: float, multiplicity: int, molecular_mass: float
     terms['corr'] = 'Correction'
 
     text += """\n\n  ==> Thermochemistry Energy Analysis <=="""
+    text += """\n\n  Raw electronic energy, E_e"""
+    text += f"""\n  Total E_e, Electronic energy at well bottom                                        {E0:15.8f} [Eh]"""
 
-    text += """\n\n  Raw electronic energy, E0"""
-    text += """\n  Total E0, Electronic energy at well bottom at 0 [K]               {:15.8f} [Eh]""".format(E0)
-
-    text += """\n\n  Zero-point energy, ZPE_vib = Sum_i nu_i / 2"""
+    text += """\n\n  Zero-point vibrational energy, ZPVE = Sum_i omega_i / 2,  E_0 = E_e + ZPVE"""
+    
     for term in terms:
-        text += format_ZPE_E_H_G.format(terms[term] + ' ZPE', *sm[('ZPE', term)] * uconv)
-        if term in ['vib', 'corr']:
+        if term in ['vib']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' ZPVE', *sm[('ZPE', term)] * uconv)
             text += """ {:15.3f} [cm^-1]""".format(sm[('ZPE', term)] * qcel.constants.hartree2wavenumbers)
-    text += """\n  Total ZPE, Electronic energy at 0 [K]                             {:15.8f} [Eh]""".format(
-        sm[('ZPE', 'tot')])
-
-    text += """\n\n  Thermal Energy, E (includes ZPE)"""
+        elif term in ['corr']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' ZPVE to E_e', *sm[('ZPE', term)] * uconv)
+            text += """ {:15.3f} [cm^-1]""".format(sm[('ZPE', term)] * qcel.constants.hartree2wavenumbers)
+    text += """\n  Total E_0, Enthalpy at 0 [K]                                                       {:15.8f} [Eh]""".format(
+        sm[('ZPE', 'tot')]) 
+    text += """\n  *** Absolute enthalpy, not an enthalpy of formation ***"""
+    
+    text += """\n\n  Thermal (internal) energy, E (includes ZPVE and finite-temperature corrections)"""
     for term in terms:
-        text += format_ZPE_E_H_G.format(terms[term] + ' E', *sm[('E', term)] * uconv)
-    text += """\n  Total E, Electronic energy at {:7.2f} [K]                         {:15.8f} [Eh]""".format(
+        if term in ['elec']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to E beyond E_e', *sm[('E', term)] * uconv) 
+        elif term in ['corr']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' E', *sm[('E', term)] * uconv)
+        else:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to E', *sm[('E', term)] * uconv)
+
+    text += """\n  Total E, Thermal (internal) energy at {:7.2f} [K]                                  {:15.8f} [Eh]""".format(
         T, sm[('E', 'tot')])
 
-    text += """\n\n  Enthalpy, H_trans = E_trans + k_B * T"""
+    text += """\n\n  Enthalpy, H_trans = E_trans + k_B * T = E_trans + P * V"""
     for term in terms:
-        text += format_ZPE_E_H_G.format(terms[term] + ' H', *sm[('H', term)] * uconv)
-    text += """\n  Total H, Enthalpy at {:7.2f} [K]                                  {:15.8f} [Eh]""".format(
+        if term in ['elec']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to H beyond E_e', *sm[('H', term)] * uconv)
+        elif term in ['corr']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' H', *sm[('H', term)] * uconv)
+        else:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to H', *sm[('H', term)] * uconv)
+    text += """\n  Total H, Enthalpy at {:7.2f} [K]                                                   {:15.8f} [Eh]""".format(
         T, sm[('H', 'tot')])
+    text += """\n  *** Absolute enthalpy, not an enthalpy of formation ***"""
 
     text += """\n\n  Gibbs free energy, G = H - T * S"""
     for term in terms:
-        text += format_ZPE_E_H_G.format(terms[term] + ' G', *sm[('G', term)] * uconv)
-    text += """\n  Total G, Free enthalpy at {:7.2f} [K]                             {:15.8f} [Eh]\n""".format(
+        if term in ['elec']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to G beyond E_e', *sm[('G', term)] * uconv)
+        elif term in ['corr']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' G', *sm[('G', term)] * uconv)
+        else:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to G', *sm[('G', term)] * uconv)
+    text += """\n  Total G, Gibbs energy at {:7.2f} [K]                                               {:15.8f} [Eh]""".format(
         T, sm[('G', 'tot')])
+    text += """\n  *** Absolute Gibbs energy, not a free energy of formation ***\n\n""" 
 
     return therminfo, text
 
