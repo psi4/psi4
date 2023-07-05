@@ -618,7 +618,7 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr<BasisSet> bs1, std::shared_
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_overlap()));
     }
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, bs1->nbf(), bs2->nbf());
-    one_body_ao_computer(ints_vec, overlap_mat, false);
+    one_body_ao_computer(ints_vec, overlap_mat, bs1 == bs2);
     return overlap_mat;
 }
 
@@ -650,7 +650,7 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_kinetic()));
     }
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", bs1->nbf(), bs2->nbf());
-    one_body_ao_computer(ints_vec, kinetic_mat, false);
+    one_body_ao_computer(ints_vec, kinetic_mat, bs1 == bs2);
     return kinetic_mat;
 }
 
@@ -683,7 +683,7 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr<BasisSet> bs1, std::share
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_potential()));
     }
     auto potential_mat = std::make_shared<Matrix>("AO-basis Potential Ints", bs1->nbf(), bs2->nbf());
-    one_body_ao_computer(ints_vec, potential_mat, false);
+    one_body_ao_computer(ints_vec, potential_mat, bs1 == bs2);
     return potential_mat;
 }
 
@@ -705,7 +705,7 @@ SharedMatrix MintsHelper::ao_ecp(std::shared_ptr<BasisSet> bs1, std::shared_ptr<
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_ecp()));
     }
     auto ecp_mat = std::make_shared<Matrix>("AO-basis ECP Ints", bs1->nbf(), bs2->nbf());
-    one_body_ao_computer(ints_vec, ecp_mat, false);
+    one_body_ao_computer(ints_vec, ecp_mat, bs1 == bs2);
     return ecp_mat;
 }
 #endif
@@ -995,8 +995,24 @@ SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_c
     return ao_helper("AO F12G12 Tensor", ints);
 }
 
+SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_coeff,
+                                    std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                    std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::shared_ptr<TwoBodyAOInt> ints(intf.f12g12(exp_coeff));
+    return ao_helper("AO F12G12 Tensor", ints);
+}
+
 SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff) {
     std::shared_ptr<TwoBodyAOInt> ints(integral_->f12_double_commutator(exp_coeff));
+    return ao_helper("AO F12 Double Commutator Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff,
+                                         std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                         std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::shared_ptr<TwoBodyAOInt> ints(intf.f12_double_commutator(exp_coeff));
     return ao_helper("AO F12 Double Commutator Tensor", ints);
 }
 

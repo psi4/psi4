@@ -212,7 +212,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
     /*- The type of screening used when computing two-electron integrals. -*/
-    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
+    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY NONE");
 
     // CDS-TODO: We should go through and check that the user hasn't done
     // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -1681,6 +1681,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("COSX_RADIAL_POINTS_FINAL", 35);
         /*- Screening criteria for integrals and intermediates in COSX -*/
         options.add_double("COSX_INTS_TOLERANCE", 1.0E-11);
+        /*- Controls SCF iteration behavior for the larger (i.e., final) COSX grid.
+        -1 fully converges the SCF on the final grid if possible, ending early if |scf__maxiter| total SCF iterations are reached (failure).
+        0 disables the final COSX grid entirely.
+        n runs up to n iterations on the final COSX grid, ending early if SCF convergence is reached (success) or if |scf__maxiter| total SCF iterations are reached (failure). -*/
+        options.add_int("COSX_MAXITER_FINAL", 1);
         /*- Screening criteria for shell-pair densities in COSX !expert -*/
         options.add_double("COSX_DENSITY_TOLERANCE", 1.0E-10);
         /*- Screening criteria for basis function values on COSX grids !expert -*/

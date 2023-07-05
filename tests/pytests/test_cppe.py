@@ -479,6 +479,7 @@ def test_cppe_tdscf_uhf():
     _base_tdscf_test(mol, ref_scf_energy, ref_pe_energy, exc_energies, osc_strengths)
 
 
+@pytest.mark.smoke
 @pytest.mark.quick
 @pytest.mark.ecp
 @uusing("ecpint")

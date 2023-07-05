@@ -270,6 +270,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = self.jk().get_early_screening()
+    # maximum number of scf iterations to run after early screening is disabled
+    scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
+
+    if scf_maxiter_post_screening < -1:
+        raise ValidationError('COSX_MAXITER_FINAL ({}) must be -1 or above. If you wish to attempt full SCF converge on the final COSX grid, set COSX_MAXITER_FINAL to -1.'.format(scf_maxiter_post_screening))
 
     # has early_screening changed from True to False?
     early_screening_disabled = False
@@ -277,6 +282,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
+    scf_iter_post_screening = 0
     while True:
         self.iteration_ += 1
 
@@ -496,9 +502,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if frac_enabled and not self.frac_performed_:
             continue
 
-        # this is the first iteration after early screening was turned off
+        # have we completed our post-early screening SCF iterations? 
         if early_screening_disabled:
-            break
+            scf_iter_post_screening += 1
+            if scf_iter_post_screening >= scf_maxiter_post_screening and scf_maxiter_post_screening > 0:
+                break
 
         # Call any postiteration callbacks
         if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
@@ -517,8 +525,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 if hasattr(self.jk(), 'clear_D_prev'):
                     self.jk().clear_D_prev()
 
-                core.print_out("  Energy and wave function converged with early screening.\n")
-                core.print_out("  Performing final iteration with tighter screening.\n\n")
+                if scf_maxiter_post_screening == 0:
+                    break
+                else:
+                    core.print_out("  Energy and wave function converged with early screening.\n")
+                    core.print_out("  Continuing SCF iterations with tighter screening.\n\n")
             else:
                 break
 
