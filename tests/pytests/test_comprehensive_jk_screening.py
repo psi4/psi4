@@ -73,9 +73,9 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
     #== check that should_error_out and should_throw are not simultaneously true, for better testing ==# 
     if should_error_out and should_throw:
         raise Exception(f'Duplicate checks on {scf_type}({scf_subtype})+{screening}!')
-    #== skip if current option combo is expected to break ==#
+    #== xfail if current option combo is expected to break ==#
     elif should_error_out and not should_throw:
-        pytest.skip(f'Singlet {scf_type}({scf_subtype})+{screening}  skipped: will error out') 
+        pytest.xfail(f'Singlet {scf_type}({scf_subtype})+{screening}  xfailed: will error out')
 
     #== if expected, test if current option combo throws exception ==# 
     elif not should_error_out and should_throw:
