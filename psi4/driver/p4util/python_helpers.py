@@ -1562,8 +1562,11 @@ def _core_erisieve_build(
         do_csam: bool = False
     ) -> core.ERISieve:
     """
-    Constructs a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
+    This function previously constructed a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
     ERI screening and an optional input to enable CSAM screening (over Schwarz screening).
+
+    However, as the ERISieve class was removed from Psi4 in v1.9, the function now throws with an UpgradeHelper
+    exception, and lets the user know to use TwoBodyAOInt instead.
 
     Parameters
     ----------
@@ -1585,12 +1588,7 @@ def _core_erisieve_build(
     >>> sieve = psi4.core.ERISieve.build(bas, cutoff, csam)
     """
 
-    warnings.warn(
-        "`ERISieve` is deprecated in favor of `TwoBodyAOInt`, and will be removed as soon as Psi4 v1.9 is released.\n",
-        category=FutureWarning,
-        stacklevel=2)
-
-    return core.ERISieve(orbital_basis, cutoff, do_csam)
+    raise UpgradeHelper("ERISieve", "TwoBodyAOInt", 1.8, " The ERISieve class has been removed and replaced with the TwoBodyAOInt class. ERISieve.build(orbital_basis, cutoff, do_csam) can be replaced with the command sequence factory = psi4.core.IntegralFactory(basis); factory.eri(0).")
 
 
 core.ERISieve.build = _core_erisieve_build

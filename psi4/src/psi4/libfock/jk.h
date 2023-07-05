@@ -44,7 +44,6 @@ namespace psi {
 class MinimalInterface;
 class BasisSet;
 class Matrix;
-class ERISieve;
 class TwoBodyAOInt;
 class Options;
 class PSIO;
@@ -734,7 +733,7 @@ class PSI_API DirectJK : public JK {
     /// Number of threads for DF integrals TODO: DF_INTS_NUM_THREADS
     int df_ints_num_threads_;
     /// ERI Sieve
-    std::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<TwoBodyAOInt> eri_;
 
     /// Options object
     Options& options_;
