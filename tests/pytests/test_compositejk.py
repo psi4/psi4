@@ -147,40 +147,35 @@ def test_dfjcosk_incfock(inp, mols):
     
     assert compare(True, abs(niter_inc - niter_noinc) <= 3, "IncFock efficient?")
 
-@pytest.mark.parametrize(
-    "inp",
-    [
-        pytest.param({"method" : "bp86",
-                      "options": {"reference" : "rhf"},
-                      "molecule" : "h2o"},
-                      id="h2o (bp86)"),
-        pytest.param({"method" : "b3lyp",
-                      "options": {"reference" : "rhf"},
-                      "molecule" : "h2o"},
-                      id="h2o (b3lyp)"),
-    ],
-)
-@pytest.mark.parametrize("scf_type", [ "DFDIRJ", "DFDIRJ+COSX", "DFDIRJ+LINK" ])
-def test_compositejk_scftype(inp, scf_type, mols):
-    """Test the functionality of the SCF_TYPE keyword for CompositeJK methods under varying situations.
-    Using hybrid DFT functionals without specifying a K algorithm should cause an exception to be thrown."""
+@pytest.mark.parametrize("functional", [ "bp86", "b3lyp" ])
+@pytest.mark.parametrize("scf_type", [ "DFDIRJ", "LINK", "COSX", "DFDIRJ+COSX", "DFDIRJ+LINK" ])
+def test_compositejk_scftype(functional, scf_type, mols):
+    """Test the functionality of the SCF_TYPE keyword for CompositeJK methods under varying situations:
+      - Using hybrid DFT functionals without specifying a K algorithm should cause a RuntimeError to be thrown.
+      - Not specifying a J algorithm should cause a ValidationError to be thrown."""
 
-    molecule = mols[inp["molecule"]]
-    
+    molecule = mols["h2o"]
     screening = "DENSITY" if "COSX" not in scf_type else "CSAM"
-    psi4.set_options({"scf_type" : scf_type, "basis": "cc-pvdz", "screening": screening}) 
-    psi4.set_options(inp["options"])
-
-    is_hybrid = True if inp["method"] == "b3lyp" else False
-    k_algo_specified = True if "+" in scf_type else False
+    
+    # if J algorithm isn't specified, code should throw here...
+    if not any([ piece in scf_type for piece in ["DFDIRJ"] ]):
+        with pytest.raises(psi4.ValidationError) as e_info:
+            psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening}) 
+    
+    # ... else options will set normally
+    else:  
+        psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening}) 
+    
+    is_hybrid = True if functional == "b3lyp" else False
+    k_algo_specified = True if any([ piece in scf_type for piece in ["COSX", "LINK"] ]) else False
 
     # if K algorithm isn't specified, but hybrid functional is used, code should throw...
     if is_hybrid and not k_algo_specified: 
-        with pytest.raises(Exception) as e_info:
-            E = psi4.energy(inp["method"], molecule=molecule) 
+        with pytest.raises(RuntimeError) as e_info:
+            E = psi4.energy(functional, molecule=molecule) 
         #assert compare_values(inp["ref"], energy_dfjcosk, atol=1e-6)
     
     # ... else code will run fine
     else:
-        E = psi4.energy(inp["method"], molecule=molecule) 
+        E = psi4.energy(functional, molecule=molecule) 
      
