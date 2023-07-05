@@ -131,6 +131,7 @@ void psio_error(size_t unit, size_t errval, std::string prev_msg /* = ""*/) {
                         " If you're a developer, get yourself some coffee.\n";
             break;
     }
+    std::cerr << prev_msg << std::endl;
     throw PSIEXCEPTION(prev_msg);
 }
 
