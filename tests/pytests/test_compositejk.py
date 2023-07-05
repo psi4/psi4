@@ -71,21 +71,23 @@ units au
                       id="h2o/na+ (rhf ie)"),
     ],
 )
-def test_dfjcosk(inp, mols):
+def test_dfjcosk(inp, mols, request):
     """Test the DFJCOSK JK object via SCF calculations"""
 
+    test_id = request.node.callspec.id
+    
     molecule = mols[inp["molecule"]]
     psi4.set_options({"scf_type" : "dfdirj+cosx", "basis": "cc-pvdz"})
     psi4.set_options(inp["options"])
 
     # does the DFJCOSK SCF energy match a pre-computed reference?
     energy_dfjcosk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(inp["ref"], energy_dfjcosk, atol=1e-6)
+    assert compare_values(inp["ref"], energy_dfjcosk, 6, f'{test_id} DFDIRJ+COSX accurate to reference (1e-6)')
 
     # is the DFJCOSK SCF energy reasonably close to a conventional SCF?
     psi4.set_options({"scf_type" : "pk"})
     energy_pk = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"])
-    assert compare_values(energy_pk, energy_dfjcosk, atol=1e-4)
+    assert compare_values(energy_pk, energy_dfjcosk, 4, f'{test_id} DFDIRJ+COSX accurate to PK (1e-4)')
 
 @pytest.mark.parametrize(
     "inp",
@@ -123,8 +125,10 @@ def test_dfjcosk(inp, mols):
                       id="h2o/na+ (rhf ie)"),
     ],
 )
-def test_dfjcosk_incfock(inp, mols):
+def test_dfjcosk_incfock(inp, mols, request):
     """Test the efficiency of IncFock in DFJCOSK JK object via SCF calculations"""
+
+    test_id = request.node.callspec.id
 
     molecule = mols[inp["molecule"]]
     psi4.set_options({"scf_type" : "dfdirj+cosx", "basis": "cc-pvdz", "incfock": False})
@@ -139,13 +143,13 @@ def test_dfjcosk_incfock(inp, mols):
     energy_dfjcosk_inc, wfn_dfjcosk_inc = psi4.energy(inp["method"], molecule=molecule, bsse_type=inp["bsse_type"], return_wfn=True)
 
     # how do energies compare?
-    assert compare_values(energy_dfjcosk_noinc, energy_dfjcosk_inc, atol=1e-6)
+    assert compare_values(energy_dfjcosk_noinc, energy_dfjcosk_inc, 6, f'{test_id} IncFock accurate (1e-6)')
     
     # how do SCF iteration counts compare?
     niter_noinc = int(wfn_dfjcosk_noinc.variable("SCF ITERATIONS")) if wfn_dfjcosk_noinc.has_scalar_variable("SCF ITERATIONS") else 0
     niter_inc = int(wfn_dfjcosk_inc.variable("SCF ITERATIONS")) if wfn_dfjcosk_inc.has_scalar_variable("SCF ITERATIONS") else 0
     
-    assert compare(True, abs(niter_inc - niter_noinc) <= 3, "IncFock efficient?")
+    assert compare(True, abs(niter_inc - niter_noinc) <= 3, f'{test_id} IncFock efficient')
 
 @pytest.mark.parametrize("functional", [ "bp86", "b3lyp" ])
 @pytest.mark.parametrize("scf_type", [ "DFDIRJ", "LINK", "COSX", "DFDIRJ+COSX", "DFDIRJ+LINK" ])
@@ -154,26 +158,34 @@ def test_compositejk_scftype(functional, scf_type, mols):
       - Using hybrid DFT functionals without specifying a K algorithm should cause a RuntimeError to be thrown.
       - Not specifying a J algorithm should cause a ValidationError to be thrown."""
 
+    composite_J_algo = [ "DFDIRJ" ]
+    composite_K_algo = [ "LINK", "COSX" ]
+
     molecule = mols["h2o"]
-    screening = "DENSITY" if "COSX" not in scf_type else "CSAM"
+    screening = "CSAM" if "COSX" in scf_type else "DENSITY"
     
     # if J algorithm isn't specified, code should throw here...
-    if not any([ piece in scf_type for piece in ["DFDIRJ"] ]):
+    if not any([ piece in scf_type for piece in composite_J_algo ]): 
         with pytest.raises(psi4.ValidationError) as e_info:
             psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening}) 
+
+        # we keep this line just for printout purposes; should always pass if done correctly 
+        assert compare(type(e_info), pytest.ExceptionInfo, f'{scf_type}+{functional} throws ValidationError')
     
     # ... else options will set normally
     else:  
         psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening}) 
     
     is_hybrid = True if functional == "b3lyp" else False
-    k_algo_specified = True if any([ piece in scf_type for piece in ["COSX", "LINK"] ]) else False
+    k_algo_specified = True if any([ piece in scf_type for piece in composite_K_algo ]) else False
 
     # if K algorithm isn't specified, but hybrid functional is used, code should throw...
     if is_hybrid and not k_algo_specified: 
         with pytest.raises(RuntimeError) as e_info:
             E = psi4.energy(functional, molecule=molecule) 
-        #assert compare_values(inp["ref"], energy_dfjcosk, atol=1e-6)
+
+        # we keep this line just for printout purposes; should always pass if done correctly 
+        assert compare(type(e_info), pytest.ExceptionInfo, f'{scf_type}+{functional} throws RuntimeError')
     
     # ... else code will run fine
     else:
