@@ -83,7 +83,7 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
             E = psi4.energy('scf')
 
         # we keep this line just for printout purposes; should always pass if done correctly
-        assert compare_values(0.0, E, 6, f'Singlet {scf_type}({scf_subtype})+{screening}  throws exception')
+        assert compare(type(e_info), pytest.ExceptionInfo, f'Singlet {scf_type}({scf_subtype})+{screening}  throws exception')
 
     #== otherwise, test if current option combo gives right answer ==#
     else: 
