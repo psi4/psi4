@@ -73,7 +73,7 @@ class PSI_API Dimension {
     void init(const size_t n, const std::string& name = "");
 
     /// @brief Return the rank (number of block numbers)
-    int n() const { return blocks_.size(); }
+    size_t n() const { return blocks_.size(); }
 
     /// @brief Return the name of the Dimension object
     const std::string& name() const { return name_; }
@@ -87,7 +87,7 @@ class PSI_API Dimension {
     /// @brief Access a block number at a partcular index. Not bounds-checked.
     const int& operator[](const size_t i) const { return blocks_[i]; }
 
-    /// @brief Access a block number at a partcular index. Not bounds-checked.
+    /// @brief Get a const reference to the std::vector storing the block numbers inside the Dimension object.
     const std::vector<int>& blocks() const { return blocks_; }
 
     /// @brief Casting operator to int*
