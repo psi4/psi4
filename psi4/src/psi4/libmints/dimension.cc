@@ -38,10 +38,10 @@
 
 namespace psi {
 Dimension::Dimension() : name_("(empty)") {}
-Dimension::Dimension(const size_t n, const std::string& name) : name_(name), blocks_(n, 0) {}
+Dimension::Dimension(const size_t n, const std::string& name/* = ""*/) : name_(name), blocks_(n, 0) {}
 Dimension::Dimension(const std::vector<int>& v) : blocks_(v) {}
 
-void Dimension::init(const size_t n, const std::string& name) {
+void Dimension::init(const size_t n, const std::string& name/* = ""*/) {
     name_ = name;
     blocks_.assign(n, 0);
 }
