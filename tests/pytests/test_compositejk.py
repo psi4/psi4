@@ -174,31 +174,32 @@ def test_dfdirj(functional, scf_type, mols):
 
         # we keep this line just for printout purposes; should always pass if done correctly 
         assert compare(type(e_info), pytest.ExceptionInfo, f'{scf_type}+{functional} throws ValidationError')
-    
-    # ... else options will set normally
+ 
+    # ... else we continue as normal 
     else:  
         psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening}) 
     
-    is_hybrid = True if functional == "b3lyp" else False
-    k_algo_specified = True if any([ algo in scf_type for algo, matrix in composite_algo_to_matrix.items() if matrix == "K" ]) else False
+        is_hybrid = True if functional == "b3lyp" else False
+        k_algo_specified = True if any([ algo in scf_type for algo, matrix in composite_algo_to_matrix.items() if matrix == "K" ]) else False
 
-    # if K algorithm isn't specified, but hybrid functional is used, code should throw...
-    if is_hybrid and not k_algo_specified: 
-        with pytest.raises(RuntimeError) as e_info:
+        # if K algorithm isn't specified, but hybrid functional is used, code should throw...
+        if is_hybrid and not k_algo_specified: 
+            with pytest.raises(RuntimeError) as e_info:
+                E = psi4.energy(functional, molecule=molecule) 
+
+            # we keep this line just for printout purposes; should always pass if done correctly 
+            assert compare(type(e_info), pytest.ExceptionInfo, f'{scf_type}+{functional} throws RuntimeError')
+    
+        # ... else code will run fine
+        else:
             E = psi4.energy(functional, molecule=molecule) 
 
-        # we keep this line just for printout purposes; should always pass if done correctly 
-        assert compare(type(e_info), pytest.ExceptionInfo, f'{scf_type}+{functional} throws RuntimeError')
-    
-    # ... else code will run fine
-    else:
-        E = psi4.energy(functional, molecule=molecule) 
-
-        # we keep this line just for printout purposes; should always pass if done correctly 
-        assert compare(type(E), float, f'{scf_type}+{functional} executes')
+            # we keep this line just for printout purposes; should always pass if done correctly 
+            assert compare(type(E), float, f'{scf_type}+{functional} executes')
 
 @pytest.mark.parametrize("j_algo", [ "DFDIRJ" ]) #to be extended in the future
-def test_j_algo_bp86(j_algo, mols):
+@pytest.mark.parametrize("df_basis_scf", [ "CC-PVDZ-JKFIT", "DEF2-UNIVERSAL-JFIT" ]) #to be extended in the future
+def test_j_algo_bp86(j_algo, df_basis_scf, mols):
     """Test SCF_TYPE={J} and all SCF_TYPE={J}+{K} combinations for a BP86 calculation.
     They should all give the exact same answer (within tolerance).""" 
 
@@ -207,7 +208,7 @@ def test_j_algo_bp86(j_algo, mols):
     molecule = mols["h2o"]
     
     # run base composite J algorithm 
-    psi4.set_options({"scf_type" : j_algo, "basis": "cc-pvdz"})
+    psi4.set_options({"scf_type" : j_algo, "basis": "cc-pvdz", "df_basis_scf": df_basis_scf})
     energy_dfdirj = psi4.energy("bp86", molecule=molecule) 
     
     # compare composite combinations to base J algorithm
@@ -215,7 +216,7 @@ def test_j_algo_bp86(j_algo, mols):
         scf_type = j_algo + "+" + k_algo    
         screening = "CSAM" if "COSX" in scf_type else "DENSITY"
 
-        psi4.set_options({"scf_type" : scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening})
+        psi4.set_options({"scf_type" : scf_type, "reference": "rhf", "basis": "cc-pvdz", "df_basis_scf": df_basis_scf, "screening": screening})
         energy_composite = psi4.energy("bp86", molecule=molecule) 
  
-        assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86 {scf_type} accurate to {j_algo} (1e-6 threshold)')
+        assert compare_values(energy_dfdirj, energy_composite, 6, f'BP86/{df_basis_scf} {scf_type} accurate to {j_algo} (1e-6 threshold)')
