@@ -1467,7 +1467,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         wfn.set_basisset("BASIS_RELATIVISTIC", decon_basis)
 
     # Set the multitude of SAD basis sets
-    if (core.get_option("SCF", "GUESS") in ["SAD", "SADNO", "HUCKEL"]):
+    if (core.get_option("SCF", "GUESS") in ["SAD", "SADNO", "HUCKEL", "MODHUCKEL"]):
         sad_basis_list = core.BasisSet.build(wfn.molecule(), "ORBITAL",
                                              core.get_global_option("BASIS"),
                                              puream=wfn.basisset().has_puream(),

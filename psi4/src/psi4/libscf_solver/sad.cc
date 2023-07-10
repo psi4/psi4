@@ -721,7 +721,18 @@ void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, Shar
     Scratch1.reset();
     Scratch2.reset();
 }
-SharedMatrix SADGuess::huckel_guess() {
+static double gwh_k(double Ei, double Ej, bool updated_rule) {
+    const double k = 1.75;
+    if (!updated_rule) {
+        return k;
+    } else {
+        // See after equation 2 in doi:10.1021/ja00480a005
+        double Delta = (Ei - Ej) / (Ei + Ej);
+        double Delta_squared = Delta * Delta;
+        return k + Delta_squared + Delta_squared * Delta_squared * (1 - k);
+    }
+}
+SharedMatrix SADGuess::huckel_guess(bool updated_rule) {
     // Build Neutral D in AO basis (block diagonal)
     SharedMatrix DAO;
     // Huckel matrices
@@ -757,7 +768,9 @@ SharedMatrix SADGuess::huckel_guess() {
     for (int i = 0; i < nhu; i++) {
         huckelmo->set(i, i, Ehu->get(i));
         for (int j = 0; j < nhu; j++) {
-            huckelmo->set(i, j, 0.875 * ChuSChu->get(i, j) * (Ehu->get(i) + Ehu->get(j)));
+            huckelmo->set(
+                i, j,
+                0.5 * gwh_k(Ehu->get(i), Ehu->get(j), updated_rule) * ChuSChu->get(i, j) * (Ehu->get(i) + Ehu->get(j)));
         }
     }
 
@@ -855,7 +868,7 @@ void HF::compute_SAD_guess(bool natorb) {
         energies_["Total Energy"] = 0.0;  // This is the -1th iteration
     }
 }
-void HF::compute_huckel_guess() {
+void HF::compute_huckel_guess(bool updated_rule) {
     if (sad_basissets_.empty()) {
         throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
     }
@@ -868,7 +881,7 @@ void HF::compute_huckel_guess() {
         guess->set_atomic_fit_bases(sad_fitting_basissets_);
     }
 
-    SharedMatrix Fhuckel = guess->huckel_guess();
+    SharedMatrix Fhuckel = guess->huckel_guess(updated_rule);
     Fa_->copy(Fhuckel);
     Fb_->copy(Fhuckel);
 

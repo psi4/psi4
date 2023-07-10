@@ -497,6 +497,11 @@ GWH
 HUCKEL
     An extended H\ |u_dots|\ ckel guess based on on-the-fly atomic UHF
     calculations alike SAD, see [Lehtola:2019:1593]_.
+MODHUCKEL
+    Like HUCKEL, an extended H\ |u_dots|\ ckel guess based on
+    on-the-fly atomic UHF calculations alike SAD, see
+    [Lehtola:2019:1593]_. This variant employs an updated rule for the
+    generalized Wolfsberg-Helmholz formula from [Ammeter:1978:3686]_.
 READ
     Read the previous orbitals from a ``wfn`` file, casting from
     one basis to another if needed. Useful for starting anion

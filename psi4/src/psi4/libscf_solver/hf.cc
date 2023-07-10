@@ -1078,7 +1078,28 @@ void HF::guess() {
         if (!options_.get_bool("SAD_FRAC_OCC")) {
             throw PSIEXCEPTION("  Huckel guess requires SAD_FRAC_OCC = True!");
         }
-        compute_huckel_guess();
+        compute_huckel_guess(false);
+
+        form_initial_C();
+        form_D();
+        guess_E = compute_initial_E();
+
+    } else if (guess_type == "MODHUCKEL") {
+      if (print_)
+            outfile->Printf("  SCF Guess: Huckel guess via on-the-fly atomic UHF (doi:10.1021/acs.jctc.8b01089) with the updated GWH rule from doi:10.1021/ja00480a005.\n\n");
+
+        // Huckel guess, written by Susi Lehtola 2019-01-27.  See "An
+        // assessment of initial guesses for self-consistent field
+        // calculations. Superposition of Atomic Potentials: simple
+        // yet efficient", JCTC 2019, doi: 10.1021/acs.jctc.8b01089.
+
+        if (!options_.get_bool("SAD_SPIN_AVERAGE")) {
+            throw PSIEXCEPTION("  Huckel guess requires SAD_SPIN_AVERAGE = True!");
+        }
+        if (!options_.get_bool("SAD_FRAC_OCC")) {
+            throw PSIEXCEPTION("  Huckel guess requires SAD_FRAC_OCC = True!");
+        }
+        compute_huckel_guess(true);
 
         form_initial_C();
         form_D();
