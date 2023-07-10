@@ -447,7 +447,7 @@ class PSI_API JK {
     * @param do_K do K matrices or not,
     *        defaults to true
     */
-    void set_do_K(bool do_K) { do_K_ = do_K; }
+    virtual void set_do_K(bool do_K) { do_K_ = do_K; }
     /**
     * Set to do wK tasks
     * @param do_wK do wK matrices or not,
@@ -1343,6 +1343,13 @@ class PSI_API CompositeJK : public JK {
     void clear_D_prev() { D_prev_.clear();}
 
     // => Knobs <= //
+    /**
+    * Set to do K tasks
+    * @param do_K do K matrices or not,
+    *        defaults to true
+    */
+    virtual void set_do_K(bool do_K) override;
+
     /**
     * Print header information regarding JK
     * type on output file

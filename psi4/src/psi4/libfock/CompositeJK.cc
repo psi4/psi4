@@ -178,6 +178,11 @@ void CompositeJK::common_init() {
     j_type_ = jk_type.substr(0, jk_type.find("+"));
     k_type_ = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
 
+    // occurs if no composite K algorithm was specified; useful for LDA/GGA DFT runs
+    if (k_type_ == j_type_) {
+      k_type_ = "NONE";
+    }
+
     // other options
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
@@ -356,9 +361,33 @@ void CompositeJK::common_init() {
         C_DGESV(nbf, nbf, S_num_final.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
 
         timer_off("CompositeJK: COSX Overlap Metric Solve");
+
+    // Do nothing special if no composite K algorithm
+    } else if (k_type_ == "NONE") {
+        ;
     } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
     }
+}
+
+void CompositeJK::set_do_K(bool do_K) {
+    // if doing K, we need an associated composite K build algorithm
+    if (do_K && k_type_ == "NONE") {
+        std::string error_message = "No composite K build algorithm was specified, but K matrix is required for current method! Please specify a composite K build algorithm by setting SCF_TYPE to ";
+        error_message += j_type_;
+        error_message += "+{K_ALGO}.";
+
+        throw PSIEXCEPTION(error_message);
+    } else if (!do_K && k_type_ != "NONE") {
+        std::string info_message = "  INFO: A K algorithm (";
+        info_message += k_type_;
+        info_message += ") was specified in SCF_TYPE, but the current method does not use a K matrix!\n";
+        info_message += "  Thus, the specified K algorithm will be unused.\n\n";
+
+        outfile->Printf(info_message);
+    }
+
+    do_K_ = do_K;
 }
 
 size_t CompositeJK::num_computed_shells() {
