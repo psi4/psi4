@@ -58,7 +58,19 @@ def _capable_engines_for_disp()-> Dict[str, List[str]]:
     capable engines, where the engine in the first element is available, if any are.
 
     """
-    from qcengine.testing import _programs as _programs_qcng
+    try:
+        from qcengine.testing import _programs as _programs_qcng
+    except ModuleNotFoundError:
+        # _programs_qcng is up-to-date with current harnesses but it requires pytest present, so let's provide a workaround
+        from qcelemental.util import which, which_import
+        _programs_qcng = {
+            "dftd3": which("dftd3", return_bool=True),
+            "dftd4": which_import("dftd4", return_bool=True),
+            "s-dftd3": which_import("dftd3", return_bool=True),
+            "mctc-gcp": which("mctc-gcp", return_bool=True),
+            "gcp": which("gcp", return_bool=True),
+            "mp2d": which("mp2d", return_bool=True),
+        }
 
     programs_disp = {k: v for k, v in _programs_qcng.items() if k in _engine_can_do}
     programs_disp["libdisp"] = True
