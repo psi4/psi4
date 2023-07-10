@@ -158,14 +158,17 @@ def test_dfdirj(functional, scf_type, mols):
       - Using hybrid DFT functionals without specifying a K algorithm should cause a RuntimeError to be thrown.
       - Not specifying a J algorithm should cause a ValidationError to be thrown."""
 
-    composite_J_algo = [ "DFDIRJ" ]
-    composite_K_algo = [ "LINK", "COSX" ]
+    composite_algo_to_matrix = {
+        "DFDIRJ": "J",
+        "LINK" : "K",
+        "COSX": "K"
+    }
 
     molecule = mols["h2o"]
     screening = "CSAM" if "COSX" in scf_type else "DENSITY"
     
     # if J algorithm isn't specified, code should throw here...
-    if not any([ piece in scf_type for piece in composite_J_algo ]): 
+    if not any([ algo in scf_type for algo, matrix in composite_algo_to_matrix.items() if matrix == "J" ]):
         with pytest.raises(psi4.ValidationError) as e_info:
             psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening}) 
 
@@ -177,7 +180,7 @@ def test_dfdirj(functional, scf_type, mols):
         psi4.set_options({"scf_type": scf_type, "reference": "rhf", "basis": "cc-pvdz", "screening": screening}) 
     
     is_hybrid = True if functional == "b3lyp" else False
-    k_algo_specified = True if any([ piece in scf_type for piece in composite_K_algo ]) else False
+    k_algo_specified = True if any([ algo in scf_type for algo, matrix in composite_algo_to_matrix.items() if matrix == "K" ]) else False
 
     # if K algorithm isn't specified, but hybrid functional is used, code should throw...
     if is_hybrid and not k_algo_specified: 
@@ -190,6 +193,9 @@ def test_dfdirj(functional, scf_type, mols):
     # ... else code will run fine
     else:
         E = psi4.energy(functional, molecule=molecule) 
+
+        # we keep this line just for printout purposes; should always pass if done correctly 
+        assert compare(type(E), float, f'{scf_type}+{functional} executes')
 
 @pytest.mark.parametrize("j_algo", [ "DFDIRJ" ]) #to be extended in the future
 def test_j_algo_bp86(j_algo, mols):

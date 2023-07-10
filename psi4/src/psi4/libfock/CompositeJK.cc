@@ -389,7 +389,7 @@ void CompositeJK::set_do_K(bool do_K) {
 
     do_K_ = do_K;
 }
- 
+
 size_t CompositeJK::num_computed_shells() {
     return num_computed_shells_;
 }
