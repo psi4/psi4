@@ -1072,7 +1072,7 @@ bool PKMgrYoshimine::shell_significant(int M, int N, int R, int S,
     const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
     const std::vector<SharedMatrix>& D) 
 {
-    return sieve()->shell_significant(M,N,R,S); 
+    return eri()->shell_significant(M,N,R,S); 
 }
 
 void PKMgrYoshimine::compute_integrals(bool wK) {

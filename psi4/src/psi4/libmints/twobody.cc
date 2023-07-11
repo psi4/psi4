@@ -77,7 +77,7 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     else if (screentype == "CSAM")
         screening_type_ = ScreeningType::CSAM;
     else if (screentype == "DENSITY")
-        screening_type_ = ScreeningType::Density;
+        screening_type_ = ScreeningType::Schwarz;
     else if (screentype == "NONE")
         screening_type_ = ScreeningType::None;
     else
