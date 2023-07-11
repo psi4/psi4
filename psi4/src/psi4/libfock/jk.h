@@ -364,7 +364,7 @@ class PSI_API JK {
     */
     virtual bool shell_significant(int M, int N, int R, int S, 
         const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
-	const std::vector<SharedMatrix>& D = {}) {
+        const std::vector<SharedMatrix>& D = {}) {
           return true; 
     }; 
 
@@ -1361,9 +1361,9 @@ class PSI_API CompositeJK : public JK {
     * Determine if shell quartet is significant or not 
     * based on screening method used
     */
-    bool shell_significant(int M, int N, int R, int S,
-        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
-        const std::vector<SharedMatrix>& D = {}) override; 
+    //bool shell_significant(int M, int N, int R, int S,
+    //    const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+    //    const std::vector<SharedMatrix>& D = {}) override; 
 
    public:
     // => Constructors < = //

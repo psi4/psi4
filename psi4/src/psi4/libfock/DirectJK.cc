@@ -138,7 +138,7 @@ void DirectJK::incfock_setup() {
 
         // If there is no previous pseudo-density, this iteration is normal
         if (initial_iteration_ || D_prev_.size() != njk) {
-	        initial_iteration_ = true;
+            initial_iteration_ = true;
 
             D_ref_ = D_ao_;
             zero();
@@ -164,26 +164,28 @@ void DirectJK::incfock_postiter() {
 
 bool DirectJK::shell_significant(int M, int N, int R, int S, 
     const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
-    const std::vector<SharedMatrix>& D) {
+    const std::vector<SharedMatrix>& D) 
+{
     if (density_screening_) {
-	if (!ints.empty() && !D.empty()) {
+        if (!ints.empty() && !D.empty()) {
             // Maximum density matrix equation
             double max_density = 0.0;
 
-	    auto is_in_array = [&](auto element, auto array) {
-              return std::find(std::begin(array), std::end(array), element) != std::end(array);
-	    };
+            auto is_in_array = [&](auto element, auto array) {
+                return std::find(std::begin(array), std::end(array), element) != std::end(array);
+            };
 
-	    std::array<std::string, 2> one_density_jk_references = { "RHF", "RKS" };
-	    std::array<std::string, 3> two_density_jk_references = { "UHF", "UKS", "ROHF" }; 
+            std::array<std::string, 2> one_density_jk_references = { "RHF", "RKS" };
+            std::array<std::string, 3> two_density_jk_references = { "UHF", "UKS", "ROHF" }; 
             
-	    // Equation 6 (RHF/RKS Case)
+            // Equation 6 (RHF/RKS Case)
             if (is_in_array(jk_reference_, one_density_jk_references)) {
                 max_density = std::max({4.0 * ints[0]->shell_pair_max_density(0, M, N), 4.0 * ints[0]->shell_pair_max_density(0, R, S),
                     ints[0]->shell_pair_max_density(0, M, R), ints[0]->shell_pair_max_density(0, M, S),
                     ints[0]->shell_pair_max_density(0, N, R), ints[0]->shell_pair_max_density(0, N, S)});
+            
             // UHF/UKS/ROHF Case
-	    } else if (is_in_array(jk_reference_, two_density_jk_references)) { 
+            } else if (is_in_array(jk_reference_, two_density_jk_references)) { 
                 // J-like terms
                 double D_MN = ints[0]->shell_pair_max_density(0, M, N) + ints[0]->shell_pair_max_density(1, M, N);
                 double D_RS = ints[0]->shell_pair_max_density(0, R, S) + ints[0]->shell_pair_max_density(1, R, S);
@@ -196,22 +198,22 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
 
                 max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
             // throw, because we are using incompatible reference wave function
-	    } else {
-	      std::string error_message = "DirectJK shell significance tests being performed with invalid reference wave function type " + jk_reference_ + "! DirectJK::shell_significant() is only allowed with RHF/RKS, UHF/UKS, and ROHF reference wave functions.";
-              throw PSIEXCEPTION(error_message);
+            } else {
+                std::string error_message = "DirectJK shell significance tests being performed with invalid reference wave function type " + jk_reference_ + "! DirectJK::shell_significant() is only allowed with RHF/RKS, UHF/UKS, and ROHF reference wave functions.";
+                throw PSIEXCEPTION(error_message);
             }
 
             // The density screened ERI bound (Eq. 6)
             return (ints[0]->shell_ceiling2(M, N, R, S) * max_density * max_density >= cutoff_*cutoff_);
         } else {
             throw PSIEXCEPTION("Tests for significant shell quartets using density screening are being conducted, but the ints and/or D variables are undefined. Check your DirectJK::shell_significant function arguments");
-	}
+        }
     } else {
-	if (!ints.empty()) {
+        if (!ints.empty()) {
             return ints[0]->shell_significant(M, N, R, S);
-	} else {
+        } else {
             throw PSIEXCEPTION("Tests for significant shell quartets are being conducted, but the ints variable is undefined. Check your DirectJK::shell_significant function arguments");
-	}
+        }
     }
 }
 
@@ -391,7 +393,7 @@ void DirectJK::compute_JK() {
         if (!initial_iteration_ && (Dnorm >= incfock_conv)) incfock_count_ += 1;
         
         incfock_setup();
-	
+    
         timer_off("DirectJK: INCFOCK Preprocessing");
     } else {
         D_ref_ = D_ao_;
@@ -781,15 +783,15 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
         // => Stripe out <= //
         if (build_J) {
-	    for (auto& JTmat : JT[thread]) {
+        for (auto& JTmat : JT[thread]) {
                 JTmat->scale(2.0);
-	    }
+        }
         }
         
         if (build_K && lr_symmetric_) {
-	    for (auto& KTmat : KT[thread]) {
+        for (auto& KTmat : KT[thread]) {
                 KTmat->scale(2.0);
-	    }
+        }
         }
 
         // if (thread == 0) timer_on("JK: Atomic");
