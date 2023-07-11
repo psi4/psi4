@@ -63,8 +63,8 @@ def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
     should_error_out = should_error_out or (scf_type in Eref["Singlet"]["Composite"].keys() and screening == "NONE")
     #== .. DFDIRJ+LINK with SCREENING=SCHWARZ or CSAM... ==#
     should_error_out = should_error_out or (scf_type == "DFDIRJ+LINK" and screening in [ "SCHWARZ", "CSAM" ])
-    #== .. and DISK_DF, DIRECT, or Yoshimine PK with SCREENING=NONE ==# 
-    should_error_out = should_error_out or (scf_type == "PK" and scf_subtype == "YOSHIMINE_OUT_OF_CORE" and screening == "NONE")
+    #== .. and DISK_DF, DIRECT, or PK with SCREENING=NONE ==#
+    should_error_out = should_error_out or (scf_type == "PK" and screening == "NONE")
     should_error_out = should_error_out or (scf_type == "DISK_DF" and screening == "NONE")
     should_error_out = should_error_out or (scf_type == "DIRECT" and screening == "NONE")
   
