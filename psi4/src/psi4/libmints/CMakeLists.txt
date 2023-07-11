@@ -6,7 +6,6 @@ list(APPEND sources
   oeprop.cc
   writer.cc
   transform.cc
-  sieve.cc
   multipolesymmetry.cc
   shellrotation.cc
   deriv.cc
