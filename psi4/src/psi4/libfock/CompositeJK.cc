@@ -487,6 +487,32 @@ void CompositeJK::incfock_postiter() {
     }
 }
 
+bool CompositeJK::shell_significant(int M, int N, int R, int S, 
+    const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+    const std::vector<SharedMatrix>& D) 
+{
+    throw PSIEXCEPTION("CompositeJK::shell_significant() must be called per-algorithm!");
+}
+
+bool CompositeJK::shell_significant_DirectDFJ(int M, int N, int P, 
+    double** matrixp, const std::vector<double>& J_metric_shell_diag) 
+{
+    double thresh2 = options_.get_double("INTS_TOLERANCE") * options_.get_double("INTS_TOLERANCE");
+    return matrixp[M][N] * matrixp[M][N] * J_metric_shell_diag[P] * eri_computers_["3-Center"][0]->shell_pair_value(M,N) >= thresh2;
+}
+
+bool CompositeJK::shell_significant_DirectDFJ(int M, int N, int P, 
+    double* vectorp, const std::vector<double>& J_metric_shell_diag) 
+{
+    double thresh2 = options_.get_double("INTS_TOLERANCE") * options_.get_double("INTS_TOLERANCE");
+    return vectorp[P] * vectorp[P] * J_metric_shell_diag[P] * eri_computers_["3-Center"][0]->shell_pair_value(M,N) >= thresh2;
+}
+
+bool CompositeJK::shell_significant_linK(int M, int N, int R, int S) 
+{
+    return eri_computers_["4-Center"][0]->shell_significant(M, N, R, S);
+}
+
 void CompositeJK::compute_JK() {
     // wK not supported in CompositeJK yet
     // range-separated semi-numerical exchange needs https://github.com/psi4/psi4/pull/2473
@@ -656,11 +682,9 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers_["3-Center"][rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        // TODO: Implement screening using shell_significant() framework
-        if(Dshellp[M][N] * Dshellp[M][N] * J_metric_shell_diag[P] * eri_computers_["3-Center"][rank]->shell_pair_value(M,N) < thresh2) {
+        if(!shell_significant_DirectDFJ(M, N, P, Dshellp, J_metric_shell_diag)) {
             continue;
         }
-        // TODO: Implement benchmarking using computed_shells_per_iter_ framework
         computed_triplets1++;
         int np = auxiliary_->shell(P).nfunction();
         int pstart = auxiliary_->shell(P).function_index();
@@ -756,11 +780,9 @@ void CompositeJK::build_DirectDFJ(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers_["3-Center"][rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        // TODO: Implement screening using shell_significant() framework
-        if(H_shell_maxp[P] * H_shell_maxp[P] * J_metric_shell_diag[P] * eri_computers_["3-Center"][rank]->shell_pair_value(M,N) < thresh2) {
+        if(!shell_significant_DirectDFJ(M, N, P, H_shell_maxp, J_metric_shell_diag)) {
             continue;
         }
-        // TODO: Implement benchmarking using computed_shells_per_iter_ framework
         computed_triplets2++;
         int np = auxiliary_->shell(P).nfunction();
         int pstart = auxiliary_->shell(P).function_index();
@@ -1062,7 +1084,7 @@ void CompositeJK::build_linK(std::vector<SharedMatrix>& D, std::vector<SharedMat
                     int S = RS % nshell;
 
                     if (!eri_computers_["4-Center"][0]->shell_pair_significant(R, S)) continue;
-                    if (!eri_computers_["4-Center"][0]->shell_significant(P, Q, R, S)) continue;
+                    if (!shell_significant_linK(P, Q, R, S)) continue;
 
                     if (eri_computers_["4-Center"][thread]->compute_shell(P, Q, R, S) == 0)
                         continue;
@@ -1536,7 +1558,6 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 int_shells_total += npoints_block;
 
                 // can we screen the whole block over K_uv = (X_ug (A_vtg (F_tg)) upper bound?
-                // TODO: implement this screening process using shell_significant() framework
                 double k_bound = X_block_max * esp_boundp[NU][TAU] * F_block_gmaxp[TAU];
                 if (symm) k_bound = std::max(k_bound, X_block_max * esp_boundp[TAU][NU] * F_block_gmaxp[NU]);
                 if (k_bound < kscreen) continue;

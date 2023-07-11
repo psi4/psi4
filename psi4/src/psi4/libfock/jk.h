@@ -1360,10 +1360,18 @@ class PSI_API CompositeJK : public JK {
     /**
     * Determine if shell quartet is significant or not 
     * based on screening method used
+    * Varies per composite algorithm
     */
-    //bool shell_significant(int M, int N, int R, int S,
-    //    const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
-    //    const std::vector<SharedMatrix>& D = {}) override; 
+    bool shell_significant(int M, int N, int R, int S,
+        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::vector<SharedMatrix>& D = {}) override; 
+
+    bool shell_significant_DirectDFJ(int M, int N, int P, 
+        double** matrixp, const std::vector<double>& J_metric_shell_diag); 
+    bool shell_significant_DirectDFJ(int M, int N, int P, 
+        double* vectorp, const std::vector<double>& J_metric_shell_diag); 
+
+    bool shell_significant_linK(int M, int N, int R, int S); 
 
    public:
     // => Constructors < = //
