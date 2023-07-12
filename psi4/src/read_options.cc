@@ -1772,7 +1772,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DFT_BLOCK_MIN_POINTS", 100);
         /*- The maximum radius to terminate subdivision of an octree block [au]. !expert -*/
         options.add_double("DFT_BLOCK_MAX_RADIUS", 3.0);
-        /*- Remove points from the quadrature grid that exceed the spatial extend of the basis functions. !expert -*/
+        /*- Remove points from the quadrature grid that are beyond the reach of any basis functions. !expert -*/
         options.add_bool("DFT_REMOVE_DISTANT_POINTS",true);
         /*- The blocking scheme for DFT. !expert -*/
         options.add_str("DFT_BLOCK_SCHEME", "OCTREE", "NAIVE OCTREE ATOMIC");

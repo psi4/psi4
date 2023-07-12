@@ -110,7 +110,8 @@ class MolecularGrid {
 
     /// Sieve and block
     void postProcess(std::shared_ptr<BasisExtents> extents, int max_points, int min_points, double max_radius);
-    void remove_distant_points(double Rcut);
+    /// Removes points from the grid that are so far away that no basis functions reach them
+    void remove_distant_points(double maximal_shell_extent);
     void block(int max_points, int min_points, double max_radius);
 
    public:
