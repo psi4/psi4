@@ -2197,7 +2197,7 @@ void DFJKGrad::compute_hessian() {
     }
 
     hessians_["Coulomb"]->scale(0.5);
-    if (!same_ab) {
+    if (do_K_ && !same_ab) {
         hessians_["Exchange"]->scale(0.5);
     }
 }
