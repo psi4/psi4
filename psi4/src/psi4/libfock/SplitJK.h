@@ -80,7 +80,8 @@ class PSI_API SplitJK : public JK {
     /// SplitJK algorithm info
     std::string algo_; 
 
-    /// general options
+    /// general options    
+    int print_;
     bool bench_;
     int debug_;
     double cutoff_;
@@ -108,6 +109,11 @@ class PSI_API SplitJK : public JK {
                  std::vector<std::shared_ptr<Matrix> >& G_comp) = 0;
 
     // => Knobs <= //
+   
+    // needed for COSX
+    void set_early_screening(bool early_screening) { return; }
+    void set_lr_symmetric(bool lr_symmetric) { return; } 
+
     /**
     * Print header information regarding JK
     * type on output file
@@ -192,7 +198,9 @@ class PSI_API LinK : public SplitJK {
     // => LinK variables <= //
 
     // Density-based ERI Screening tolerance to use in the LinK algorithm
-    double linK_ints_cutoff_;    
+    double linK_ints_cutoff_;
+    /// Left-right symmetric? Determined in each call of compute()
+    bool lr_symmetric_;
 
    public:
     // => Constructors < = //
@@ -214,6 +222,9 @@ class PSI_API LinK : public SplitJK {
 		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
 
     // => Knobs <= //
+
+    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
+
     /**
     * Print header information regarding JK
     * type on output file
@@ -240,10 +251,18 @@ class PSI_API COSK : public SplitJK {
     /// Overlap fitting metric for grid_final_
     SharedMatrix Q_final_;
 
+    // integral cutoff
     double kscreen_; 
+    // density element cutoff
     double dscreen_; 
+    // basis cutoff
     double basis_tol_; 
+    /// use overlap-fitted COSX algo?
     bool overlap_fitted_; 
+    /// Use severe screening techniques? Useful in early SCF iterations 
+    bool early_screening_;
+     /// Left-right symmetric? Determined in each call of compute()
+    bool lr_symmetric_;
 
    public:
     // => Constructors < = //
@@ -265,6 +284,9 @@ class PSI_API COSK : public SplitJK {
 		 std::vector<std::shared_ptr<TwoBodyAOInt> >& eri_computers) override;
     
     // => Knobs <= //
+    void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
+    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
+
     /**
     * Print header information regarding JK
     * type on output file
@@ -278,7 +300,7 @@ class PSI_API COSK : public SplitJK {
     */ 
     std::string name() override { return "COSX"; }
 };
-#endif
+
 }
 
 #endif

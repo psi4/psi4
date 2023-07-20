@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -57,6 +57,13 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
 
     // DOI 10.1063/1.3646921, EQ. 9
 
+     // note that the S_num matrix is defined slightly differently in our code
+    // to account for the possibility of negative grid weights
+    // here, we use S_num = X_sign*(X_nosign)^T
+    // where:
+    //   1. X_nosign uses sqrt(abs(w)) instead of sqrt(w) for the X matrix
+    //   2. X_sign uses sign(w) * sqrt(abs(w)), where sign returns the sign of w, instead of sqrt(w) for the X matrix
+
     int nbf = primary->nbf();
     BasisFunctions bf_computer(primary, grid.max_points(), grid.max_functions());
     Matrix S_num("Numerical Overlap", nbf, nbf);
@@ -76,19 +83,28 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         bf_computer.compute_functions(block);
         auto point_values = bf_computer.basis_values()["PHI"];
 
+        // lambda for returning sign of double
+        auto sign = [ ](double val) {
+            return (val >= 0.0) ? 1.0 : -1.0;
+        };
+
         // resize the buffer of basis function values
-        Matrix X_block("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
-        auto X_blockp = X_block.pointer();
+        Matrix X_block_nosign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
+        Matrix X_block_sign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
+
+        auto X_block_nosignp = X_block_nosign.pointer();
+        auto X_block_signp = X_block_sign.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
+                X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::abs(w[p]));
+                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
             }
         }
 
         // significant basis functions at these grid points
         const auto &bf_map = block->functions_local_to_global();
 
-        auto S_num_block = linalg::doublet(X_block, X_block, true, false);
+        auto S_num_block = linalg::doublet(X_block_sign, X_block_nosign, true, false);
         auto S_num_blockp = S_num_block.pointer();
 
         for (size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
@@ -145,8 +161,8 @@ Matrix compute_esp_bound(const BasisSet &primary) {
     }
 
     return esp_bound;
-
 }
+
 COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primary, options) {
     timer_on("COSK: Setup");
 
@@ -158,10 +174,14 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     nthreads_ = Process::environment.get_n_threads();
 #endif
 
+    // set options
+    early_screening_ = false;
+    lr_symmetric_ = true;
+
     if (options["COSX_INTS_TOLERANCE"].has_changed()) kscreen_ = options.get_double("COSX_INTS_TOLERANCE");
     if (options["COSX_DENSITY_TOLERANCE"].has_changed()) dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
-    if (options["COSX_BASIS_TOLERANCE"].has_changed()) basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE")
-    if (options["COSX_OVERLAP_FITTING"].has_changed() overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
+    if (options["COSX_BASIS_TOLERANCE"].has_changed()) basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
+    if (options["COSX_OVERLAP_FITTING"].has_changed()) overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
 
     timer_on("COSK: COSX Grid Construction");
 
@@ -212,6 +232,37 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
         {"DFT_WEIGHTS_TOLERANCE", 1e-15},
     };
     grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options);
+
+    // Print out warning if grid with negative grid weights is used 
+    // Original Nesse COSX formulation does not support negative grid weights
+    // which can happen with certain grid configurations
+    // the Psi4 COSX implementation is slightly modified to work with negative grid weights
+    // See https://github.com/psi4/psi4/issues/2890 for discussion
+    auto warning_printed_init = false;
+    for (const auto &init_block : grid_init_->blocks()) {
+        const auto w = init_block->w();
+        for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
+            if (w[ipoint] < 0.0) {
+                outfile->Printf("  INFO: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.\n\n");
+                warning_printed_init = true;
+                break;
+            }
+        }
+        if (warning_printed_init) break;
+    }
+
+    auto warning_printed_final = false;
+    for (const auto &final_block : grid_final_->blocks()) {
+        const auto w = final_block->w();
+        for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
+            if (w[ipoint] < 0.0) {
+	            outfile->Printf("  INFO: The definition of the current final grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.\n\n");
+                warning_printed_final = true;
+	            break;
+	        }
+        }
+	    if (warning_printed_final) break;
+    }
 
     timer_off("COSK: COSX Grid Construction");
 
@@ -275,7 +326,7 @@ void COSK::print_header() const {
         outfile->Printf("    K Screening Cutoff: %11.0E\n", kscreen_);
         outfile->Printf("    K Density Cutoff:   %11.0E\n", dscreen_); 
         outfile->Printf("    K Basis Cutoff:     %11.0E\n", basis_tol_);
-        outfile->Printf("    K Overlap Fitting:  %11s\n", (overlap_fitting_ ? "Yes" : "No"));
+        outfile->Printf("    K Overlap Fitting:  %11s\n", (overlap_fitted_ ? "Yes" : "No"));
     }
 }
 
@@ -345,6 +396,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
     // => Integral Computation <= //
 
     // benchmarking statistics
+    num_computed_shells_ = 0L;
     size_t int_shells_total = 0;
     size_t int_shells_computed = 0;
 
@@ -475,7 +527,11 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 4
 
+        // note that the X matrix is defined slightly differently in our code
+        // to account for the possibility of negative grid weights
+        // here, we define X using sqrt(abs(w)) instead of sqrt(w)
         // compute basis functions at these grid points
+        
         bf_computers[rank]->compute_functions(block);
         auto point_values = bf_computers[rank]->basis_values()["PHI"];
 
@@ -484,7 +540,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         auto X_blockp = X_block->pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
+                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(std::abs(w[p]));
             }
         }
 
@@ -562,6 +618,12 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         const auto & int_buff = int_computers[rank]->buffers()[0];
 
+        // lambda for returning sign of double
+        // needed for formation of G
+        auto sign = [ ](double val) {
+            return (val >= 0.0) ? 1.0 : -1.0;
+        };
+
         // calculate A_NU_TAU at all grid points in this block
         // contract A_NU_TAU with F_TAU to get G_NU
         for (size_t TAU : shell_map_tau) {
@@ -619,13 +681,14 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
                     // contract A_nu_tau with F_tau to get contribution to G_nu
                     // symmetry permitting, also contract A_nu_tau with F_nu to get contribution to G_tau
+                    // we fold sign(w) into the formation of G to correct for the modified definition of X
                     for(size_t jki = 0; jki < njk; jki++) {
                         auto F_blockp = F_block[jki]->pointer();
                         auto G_blockp = G_block[jki]->pointer();
                         for (size_t nu = nu_start, index = 0; nu < (nu_start + num_nu); ++nu) {
                             for (size_t tau = tau_start; tau < (tau_start + num_tau); ++tau, index++) {
-                                G_blockp[nu][g] += int_buff[index] * F_blockp[g][tau];
-                                if (symm) G_blockp[tau][g] += int_buff[index] * F_blockp[g][nu];
+                                G_blockp[nu][g] += sign(w[g]) * int_buff[index] * F_blockp[g][tau];
+                                if (symm) G_blockp[tau][g] += sign(w[g]) * int_buff[index] * F_blockp[g][nu];
                             }
                         }
                     }
@@ -670,13 +733,10 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         }
     }
 
-    if (bench_) {
-        auto mode = std::ostream::app;
-        PsiOutStream printer("bench.dat", mode);
-        size_t ints_per_atom = int_shells_computed  / (size_t) natom;
-        printer.Printf("COSK ESP Shells: %zu,%zu,%zu\n", ints_per_atom, int_shells_computed, int_shells_total);
+    num_computed_shells_ = int_shells_computed;
+    if (get_bench()) {
+        computed_shells_per_iter_["Quartets"].push_back(num_computed_shells());
     }
-
 }
 
 }  // namespace psi

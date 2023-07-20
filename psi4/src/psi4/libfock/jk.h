@@ -1277,12 +1277,15 @@ class PSI_API CompositeJK : public JK {
     /// Post-iteration Incfock processing
     void incfock_postiter();
 
+<<<<<<< HEAD
     /// Build the exchange (K) matrix using COSX
     // primary reference is https://doi.org/10.1016/j.chemphys.2008.10.036 
     // overlap fitting is discussed in https://doi.org/10.1063/1.3646921
     void build_COSK(std::vector<std::shared_ptr<Matrix> >& D,
                  std::vector<std::shared_ptr<Matrix> >& K);
 
+=======
+>>>>>>> cf0ea4fe4 (More work on COSX SplitJK impl)
     /// Common initialization
     void common_init();
 
@@ -1325,8 +1328,6 @@ class PSI_API CompositeJK : public JK {
     * type on output file
     */
     void print_header() const override;
-
-    void print_COSX_header() const;
 };
 
 }
