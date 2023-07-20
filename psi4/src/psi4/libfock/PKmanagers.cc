@@ -188,9 +188,6 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
         cutoff_ = options.get_double("INTS_TOLERANCE");
     }
     
-    if (options["SCREENING"].has_changed()) {
-        do_csam_ = (options.get_str("SCREENING") == "CSAM");
-    }
     ntasks_ = 0;
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
