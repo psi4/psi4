@@ -86,8 +86,8 @@ void CompositeJK::common_init() {
     auto k_type = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
 
     // occurs if no composite K algorithm was specified; useful for LDA/GGA DFT runs
-    if (k_type_ == j_type_) {
-      k_type_ = "NONE";
+    if (k_type == j_type) {
+      k_type = "NONE";
     }
 
     // other options
@@ -146,11 +146,12 @@ void CompositeJK::common_init() {
     // COSX
     } else if (k_type == "COSX") {
         k_algo_ = std::make_shared<COSK>(primary_, options_);
-
-        // set up other options
-        k_algo_->set_early_screening(early_screening_);
-    } else if (k_type_ == "NONE") {
-        ;
+    
+    // No K algorithm specified in SCF_TYPE
+    } else if (k_type == "NONE") {
+        k_algo_ = nullptr;
+    
+    // Invalid K algorithm selected
     } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
     }
@@ -158,15 +159,15 @@ void CompositeJK::common_init() {
 
 void CompositeJK::set_do_K(bool do_K) {
     // if doing K, we need an associated composite K build algorithm
-    if (do_K && k_type_ == "NONE") {
+    if (do_K && k_algo_ == nullptr) {
         std::string error_message = "No composite K build algorithm was specified, but K matrix is required for current method! Please specify a composite K build algorithm by setting SCF_TYPE to ";
-        error_message += j_type_;
+        error_message += j_algo_->name();
         error_message += "+{K_ALGO}.";
 
         throw PSIEXCEPTION(error_message);
-    } else if (!do_K && k_type_ != "NONE") {
+    } else if (!do_K && k_algo_ != nullptr) {
         std::string info_message = "  INFO: A K algorithm (";
-        info_message += k_type_;
+        info_message += k_algo_->name();
         info_message += ") was specified in SCF_TYPE, but the current method does not use a K matrix!\n";
         info_message += "  Thus, the specified K algorithm will be unused.\n\n";
 
@@ -249,10 +250,12 @@ void CompositeJK::compute_JK() {
 
     // set compute()-specific parameters
     j_algo_->set_early_screening(early_screening_);
-    k_algo_->set_early_screening(early_screening_);
-
     j_algo_->set_lr_symmetric(lr_symmetric_);
-    k_algo_->set_lr_symmetric(lr_symmetric_);
+    
+    if (do_K_) {
+        k_algo_->set_early_screening(early_screening_);
+        k_algo_->set_lr_symmetric(lr_symmetric_);
+    }
 
     // explicit setup of Incfock for this SCF iteration
     if (incfock_) {
