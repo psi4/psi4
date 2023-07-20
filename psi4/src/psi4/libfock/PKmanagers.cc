@@ -192,6 +192,7 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     eri_ = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    if (!eri_->initialized()) eri_->initialize_sieve();
 
     if (memory_ < pk_pairs_) {
         throw PSIEXCEPTION("Not enough memory for PK algorithm\n");
