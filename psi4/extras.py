@@ -158,7 +158,6 @@ _addons_ = {
     "snsmp2": which_import("snsmp2", return_bool=True),
     "resp": which_import("resp", return_bool=True),
     "psi4fockci": which_import("psi4fockci", return_bool=True),
-    "adcc": which_import("adcc", return_bool=True),
     "mdi": which_import("mdi", return_bool=True),
     "cct3": which_import("cct3", return_bool=True),
     "dftd4": which_import("dftd4", return_bool=True),

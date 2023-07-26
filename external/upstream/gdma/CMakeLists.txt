@@ -30,7 +30,9 @@ if(${ENABLE_gdma})
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
-                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1})
 
         set(gdma_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gdma CACHE PATH "path to internally built gdmaConfig.cmake" FORCE)
     endif()

@@ -21,7 +21,7 @@ if(${ENABLE_ddx})
 
         ExternalProject_Add(ddx_external
             BUILD_ALWAYS 1
-            URL https://github.com/ddsolvation/ddX/archive/v0.4.2.tar.gz
+            URL https://github.com/ddsolvation/ddX/archive/v0.4.4.tar.gz
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
             BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
