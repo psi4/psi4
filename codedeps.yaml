@@ -495,8 +495,11 @@ data:
       constraint: "==2.7.3dev1"
       constraint_note: "v2.7.3dev1 provides rt-switchable ordering (src) and derivative integrals (build)."
       aux_build_names:
+        - //psi4/label/testing::libint2
         - boost-cpp
         - eigen
+      aux_build_names_note:
+        "//psi4/label/testing::libint2": "Optionally for linux-64, an AM=7 build is available here."
       cmake:
         BOOST_ROOT: ${CONDA_PREFIX}
         Eigen3_ROOT: ${CONDA_PREFIX}
@@ -712,7 +715,7 @@ data:
       aux_run_names:
         - msgpack-python
         - networkx
-        - pydantic=1
+        - pydantic=1.10.11
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
 
@@ -1065,6 +1068,11 @@ data:
           LAPACK_INCLUDE_DIRS: ${CONDA_PREFIX}/include
         openblas:
           LAPACK_LIBRARIES:    ${CONDA_PREFIX}/lib/libopenblas${SHLIB_EXT}
+        blis:
+          LAPACK_LIBRARIES:    ${CONDA_PREFIX}/lib/libblis${SHLIB_EXT}
+          # gives "undefined symbol: dggev_" at the moment
+        netlib:
+          LAPACK_LIBRARIES:    ${CONDA_PREFIX}/lib/liblapack${SHLIB_EXT};${CONDA_PREFIX}/lib/libblas${SHLIB_EXT}
 
   - project: python
     use:
