@@ -108,7 +108,9 @@ else()
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1})
 
     else()
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2${ColourReset} from generator source instead.")
@@ -157,6 +159,8 @@ else()
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DWITH_ERI_MAX_AM:STRING=3;2;2
                              -DWITH_ERI3_MAX_AM:STRING=4;3;3
                              -DWITH_ERI2_MAX_AM:STRING=4;3;3

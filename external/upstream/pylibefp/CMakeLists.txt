@@ -1,9 +1,12 @@
 if(${ENABLE_libefp})
-    find_package(pylibefp 0.6.1 CONFIG QUIET)
+    #find_package(pylibefp 0.6.1 CONFIG QUIET)
+    if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_pylibefp}))
+        include(FindPythonModule)
+        find_python_module(pylibefp QUIET)
+    endif()
 
     if(${pylibefp_FOUND})
-        get_property(_loc TARGET pylibefp::core PROPERTY LOCATION)
-        message(STATUS "${Cyan}Found pylibefp${ColourReset}: ${_loc} (found version ${pylibefp_VERSION})")
+        message(STATUS "${Cyan}Found pylibefp${ColourReset}: ${PY_pylibefp} (found version ${pylibefp_VERSION})")
         add_library(pylibefp_external INTERFACE)  # dummy
 
         # reset below necessary as find_package clears it. better solution sought
@@ -20,7 +23,7 @@ if(${ENABLE_libefp})
             DEPENDS lapack_external
                     libefp_external
                     pybind11_external
-            URL https://github.com/loriab/pylibefp/archive/v0.6.1.tar.gz
+            URL https://github.com/loriab/pylibefp/archive/b3da48f.tar.gz  # v0.6.2 + 5
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -44,7 +47,10 @@ if(${ENABLE_libefp})
                        -Dpybind11_DIR=${pybind11_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-            CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+            CMAKE_CACHE_ARGS -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                             -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
 
         set(pylibefp_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/pylibefp CACHE PATH "path to internally built pylibefpConfig.cmake" FORCE)
     endif()

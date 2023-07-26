@@ -43,7 +43,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
 #    - networkx >=2.4 (runtime only; e.g., `conda install networkx`)
 #    - pint >=0.10 (runtime only; e.g., `conda install pint -c conda-forge`)
-#    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
+#    - pydantic >=1.0,<2 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 #    - Eigen (for Libint2; e.g., `conda install eigen`)
 #    - Boost (header-only libs for Libint2; e.g., `conda install boost-cpp`)
@@ -324,6 +324,10 @@ ExternalProject_Add(psi4-core
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
               -Dpsi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+              -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+              -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+              -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1}
+               # CMAKE_<lang>_COMPILER_ARG1 vars pass args thru when CMAKE_<lang>_COMPILER set as "compiler --vital-args"
    USES_TERMINAL_BUILD 1
    BUILD_ALWAYS 1)
 

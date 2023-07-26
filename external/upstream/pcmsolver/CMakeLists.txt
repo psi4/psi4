@@ -57,7 +57,10 @@
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-                             -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS})
+                             -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
+                             -DCMAKE_Fortran_COMPILER_ARG1:STRING=${CMAKE_Fortran_COMPILER_ARG1})
 
         set(PCMSolver_DIR ${STAGED_INSTALL_PREFIX}/${_pcmsolver_dir} CACHE PATH "path to internally built PCMSolverConfig.cmake" FORCE)
     endif()

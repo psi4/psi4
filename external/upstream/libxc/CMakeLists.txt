@@ -40,7 +40,8 @@ else()
                    -DBUILD_TESTING=OFF
                    -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                    -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
-        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
+        CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                         -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1})
 
     set(Libxc_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/Libxc CACHE PATH "path to internally built LibxcConfig.cmake" FORCE)
 endif()

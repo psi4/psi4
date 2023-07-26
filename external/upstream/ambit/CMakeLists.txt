@@ -65,6 +65,8 @@ if(${ENABLE_ambit})
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=C;CXX)
 
         set(ambit_DIR ${STAGED_INSTALL_PREFIX}/${_ambit_dir} CACHE PATH "path to internally built ambitConfig.cmake" FORCE)
