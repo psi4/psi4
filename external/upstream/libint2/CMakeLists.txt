@@ -79,6 +79,7 @@ find_package(
 #  )
 
 if (TARGET Libint2::cxx)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     get_target_property(_loc Libint2::int2 LOCATION)
     # defer until upstream provides full-dress targets get_target_property(Libint2_VERSION Libint2::int2 Libint2_VERSION)
     # defer until upstream provides full-dress targets get_target_property(Libint2_MAX_AM_ERI Libint2::int2 Libint2_MAX_AM_ERI)
