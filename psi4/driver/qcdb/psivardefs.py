@@ -31,7 +31,18 @@ import collections
 
 def sapt_psivars():
     """Returns dictionary of PsiVariable definitions.
+    This function assembles SAPT subtotals and total energies from the fundamental SAPT variables like SAPT EXCH-DISP20 ENERGY.
+    This function pertains to wavefunction-based SAPT (not FISAPT or SAPT(DFT))
+    
+    Those fundamental SAPT varliables are never scaled by any exchange scaling.  
+    Optionally, we can scale terms that depend on the S^2 approximation by the ratio 
+    [(SAPT EXCH10 ENERGY) / (SAPT EXCH10(S^2) ENERGY)]^(SAPT ALPHA), where SAPT ALPHA would normally be 1.0.
+    (if SAPT EXCH10 ENERGY is < 1E-5 we set the ratio to 1).
+    In older copies of Psi4, we did this scaling (with SAPT ALPHA = 1) by default, but then we changed the default
+    to not do this scaling (this is controlled by user option EXCH_SCALE_ALPHA which is False by default, or 
+    it can be set to True to set SAPT ALPHA = 1, or it can be set to some other value to set SAPT ALPHA to that value)
 
+    Note: SAPT HF TOTAL ENERGY is the HF *interaction* energy (like all SAPT energies)
     """
     pv1 = collections.OrderedDict()
     pv1['SAPT EXCHSCAL1'] = {'func': lambda x: 1.0 if x[0] < 1.0e-5 else x[0] / x[1], 'args': ['SAPT EXCH10 ENERGY', 'SAPT EXCH10(S^2) ENERGY']}  # special treatment in pandas
