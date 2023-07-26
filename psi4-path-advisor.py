@@ -53,7 +53,12 @@ conda_platform_native = conda_info_dict["platform"]
 conda_prefix = conda_info_dict["active_prefix"]
 conda_prefix_short = conda_info_dict["active_prefix_name"]
 conda_host = conda_info_dict["env_vars"].get("CONDA_TOOLCHAIN_HOST", None)  # None if no compilers in env
-conda_list_pkgver = {item["name"]: item["version"] for item in conda_list()}
+conda_list_struct = conda_list()
+conda_list_pkgver = {item["name"]: item["version"] for item in conda_list_struct}
+conda_lapack_variant = None  # None if no c-f libblas in env
+for itm in conda_list_struct:
+    if itm['name'] == "libblas":
+        conda_lapack_variant = itm["build_string"].split("_")[-1]
 
 # TODO handle conda_host None in base env with no compilers present
 
@@ -254,7 +259,7 @@ parser_env.add_argument("--python",
     help="""Specify a python version.
 Can instead accept latest or edit env spec file by hand.""")
 parser_env.add_argument("--lapack",
-    choices=["mkl", "openblas", "accelerate", "blis"],
+    choices=["mkl", "openblas", "accelerate", "blis", "netlib"],
     help=f"""(default: mkl if available else accelerate)
 Specify a blas/lapack version.
 'accelerate' only for osx-* platforms.
@@ -683,14 +688,6 @@ elif args.subparser_name == "cmake":
 #
 #if args.mkl:
 #    recc.insert(-1, '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsMKLCache.cmake')
-#
-#if sys.platform.startswith('linux'):
-#    if args.intel:
-#        recc.insert(-1, '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsIntelCache.cmake')
-#    if args.intel_multiarch:
-#        recc.insert(-1, '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsIntelMultiarchCache.cmake')
-#    if args.gcc:
-#        recc.insert(-1, '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsGNUCache.cmake')
 #
 #if sys.platform == 'darwin':
 #    if args.clang:
