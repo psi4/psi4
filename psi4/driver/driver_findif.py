@@ -143,7 +143,10 @@ from functools import partial
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union, TYPE_CHECKING
 
 import numpy as np
-from pydantic import Field, validator
+try:
+    from pydantic.v1 import Field, validator
+except ImportError:
+    from pydantic import Field, validator
 from qcelemental.models import DriverEnum, AtomicResult
 from qcelemental import constants
 
