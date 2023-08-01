@@ -47,7 +47,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 #    - Eigen (for Libint2; e.g., `conda install eigen`)
 #    - Boost (header-only libs for Libint2; e.g., `conda install boost-cpp`)
-#    - SciPy (runtime only; e.g., `conda install scipy`)
+#    - SciPy (runtime only; avoidable through keyword setting; e.g., `conda install scipy`)
 #    - py-cpuinfo (runtime only; e.g., `conda install py-cpuinfo`)
 #    - psutil (runtime only; e.g., `conda install psutil`)
 
