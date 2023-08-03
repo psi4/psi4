@@ -4,6 +4,7 @@ channels:
 dependencies:
   - libblas=*=*mkl
   - mkl-devel
+  - pydantic=1  # to keep on v1 branch for autodoc-pydantic
     # build
   - cmake
   - doxygen
