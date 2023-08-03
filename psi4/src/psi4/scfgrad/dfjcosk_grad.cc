@@ -813,10 +813,6 @@ void DFJCOSKGrad::build_JGrad() {
     timer_on("J Grad");
     int nthread_df = ints_num_threads_;
 
-    timer_on("contract c_A");
-    // contract c_A
-    // c_A = (B|pq) Dt_pq
-
     // => Sizing <= //
 
     int nso = primary_->nbf();
@@ -866,16 +862,20 @@ void DFJCOSKGrad::build_JGrad() {
 
     // => Temporary Buffers <= //
 
+    // contract c_A
+    // c_A = (B|pq) Dt_pq
+    timer_on("contract c_A");
+
     SharedVector c;
     double* cp;
 
     c = std::make_shared<Vector>("c", naux);
     cp = c->pointer();
+    std::vector<SharedVector> cT(nthread_df);
+    for(size_t thread = 0; thread < nthread_df; thread++) {
+        cT[thread] = std::make_shared<Vector>(naux);
+    }
 
-    SharedMatrix Amn;
-    double** Amnp;
-    Amn = std::make_shared<Matrix>("Amn", max_rows, nso * (size_t)nso);
-    Amnp = Amn->pointer();
 
     double** Dtp = Dt_->pointer();
 
@@ -892,8 +892,6 @@ void DFJCOSKGrad::build_JGrad() {
         int pstop = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop).function_index());
         int np = pstop - pstart;
 
-        // > Clear Integrals Register < //
-        ::memset((void*)Amnp[0], '\0', sizeof(double) * np * nso * nso);
 
         // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
@@ -910,30 +908,30 @@ void DFJCOSKGrad::build_JGrad() {
 
             eri[thread]->compute_shell(P, 0, M, N);
 
-            const double* buffer = eri[thread]->buffer();
+            const auto & buffer = eri[thread]->buffer();
 
             int nP = auxiliary_->shell(P).nfunction();
-            int oP = auxiliary_->shell(P).function_index() - pstart;
+            int Pstart = auxiliary_->shell(P).function_index() - pstart;
 
             int nM = primary_->shell(M).nfunction();
-            int oM = primary_->shell(M).function_index();
+            int Mstart = primary_->shell(M).function_index();
 
             int nN = primary_->shell(N).nfunction();
-            int oN = primary_->shell(N).function_index();
+            int Nstart = primary_->shell(N).function_index();
 
-            for (int p = oP; p < nP + oP; p++) {
-                for (int m = oM; m < nM + oM; m++) {
-                    for (int n = oN; n < nN + oN; n++) {
-                        Amnp[p][(m) * nso + (n)] = Amnp[p][(n) * nso + (m)] = *buffer++;
+            auto cTp = cT[thread]->pointer();
+
+            for (int p = Pstart, index=0; p < Pstart + nP; p++) {
+                for (int m = Mstart; m < Mstart + nM; m++) {
+                    for (int n = Nstart; n < Nstart + nN; n++, index++) {
+                        cTp[p] += buffer[index] * Dtp[m][n];
+                        if (N != M) cTp[p] += buffer[index] * Dtp[n][m];
+                        
                     }
                 }
             }
         }
 
-        // > (A|mn) D_mn -> c_A < //
-        if (do_J_) {
-            C_DGEMV('N', np, nso * (size_t)nso, 1.0, Amnp[0], nso * (size_t)nso, Dtp[0], 1, 0.0, &cp[pstart], 1);
-        }
     }
 
     timer_off("contract c_A");
@@ -945,6 +943,11 @@ void DFJCOSKGrad::build_JGrad() {
     metric->form_full_eig_inverse(condition_);
     SharedMatrix J = metric->get_metric();
     double** Jp = J->pointer();
+
+    // add up per-thread contributions
+    for(size_t thread = 0; thread < nthread_df; thread++) {
+        c->add(*cT[thread]);
+    }
 
     auto d = std::make_shared<Vector>("d", naux);
     double* dp = d->pointer();
@@ -979,9 +982,7 @@ void DFJCOSKGrad::build_JGrad() {
     int natom = primary_->molecule()->natom();
     std::vector<SharedMatrix> Jtemps;
     for (int t = 0; t < ints_num_threads_; t++) {
-        if (do_J_) {
-            Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
-        }
+        Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
     }
 
     for (int block = 0; block < Pstarts.size() - 1; block++) {
@@ -1015,7 +1016,7 @@ void DFJCOSKGrad::build_JGrad() {
             int nP = auxiliary_->shell(P).nfunction();
             int cP = auxiliary_->shell(P).ncartesian();
             int aP = auxiliary_->shell(P).ncenter();
-            int oP = auxiliary_->shell(P).function_index() - pstart;
+            int oP = auxiliary_->shell(P).function_index();
 
             int nM = primary_->shell(M).nfunction();
             int cM = primary_->shell(M).ncartesian();
@@ -1040,38 +1041,22 @@ void DFJCOSKGrad::build_JGrad() {
 
             double perm = (M == N ? 1.0 : 2.0);
 
-            double** grad_Jp;
+            double** grad_Jp = Jtemps[thread]->pointer();
 
-            if (do_J_) {
-                grad_Jp = Jtemps[thread]->pointer();
-            }
-
-            for (int p = 0; p < nP; p++) {
-                for (int m = 0; m < nM; m++) {
-                    for (int n = 0; n < nN; n++) {
+            for (int p = oP, index = 0; p < nP + oP; p++) {
+                for (int m = oM; m < nM + oM; m++) {
+                    for (int n = oN; n < nN + oN; n++, index++) {
                         //  J^x = (A|pq)^x d_A Dt_pq
-                        if (do_J_) {
-                            double Ival = 1.0 * perm * dp[p + oP + pstart] * Dtp[m + oM][n + oN];
-                            grad_Jp[aP][0] += Ival * (*Px);
-                            grad_Jp[aP][1] += Ival * (*Py);
-                            grad_Jp[aP][2] += Ival * (*Pz);
-                            grad_Jp[aM][0] += Ival * (*Mx);
-                            grad_Jp[aM][1] += Ival * (*My);
-                            grad_Jp[aM][2] += Ival * (*Mz);
-                            grad_Jp[aN][0] += Ival * (*Nx);
-                            grad_Jp[aN][1] += Ival * (*Ny);
-                            grad_Jp[aN][2] += Ival * (*Nz);
-                        }
-
-                        Px++;
-                        Py++;
-                        Pz++;
-                        Mx++;
-                        My++;
-                        Mz++;
-                        Nx++;
-                        Ny++;
-                        Nz++;
+                        double Ival = 1.0 * perm * dp[p] * Dtp[m][n];
+                        grad_Jp[aP][0] += Ival * Px[index];
+                        grad_Jp[aP][1] += Ival * Py[index];
+                        grad_Jp[aP][2] += Ival * Pz[index];
+                        grad_Jp[aM][0] += Ival * Mx[index];
+                        grad_Jp[aM][1] += Ival * My[index];
+                        grad_Jp[aM][2] += Ival * Mz[index];
+                        grad_Jp[aN][0] += Ival * Nx[index];
+                        grad_Jp[aN][1] += Ival * Ny[index];
+                        grad_Jp[aN][2] += Ival * Nz[index];
                     }
                 }
             }
@@ -1081,10 +1066,8 @@ void DFJCOSKGrad::build_JGrad() {
     timer_off("eri grad");
     // => Temporary Gradient Reduction <= //
 
-    if (do_J_) {
-        for (int t = 0; t < ints_num_threads_; t++) {
-            gradients_["Coulomb"]->add(Jtemps[t]);
-        }
+    for (int t = 0; t < ints_num_threads_; t++) {
+        gradients_["Coulomb"]->add(Jtemps[t]);
     }
     timer_off("J Grad");
 }
