@@ -844,10 +844,6 @@ void DFJCOSKGrad::build_JGrad() {
     int maxP = auxiliary_->max_function_per_shell();
     size_t row_cost = 0L;
     row_cost += nso * (size_t)nso;
-    if (do_K_ || do_wK_) {
-        row_cost += nso * (size_t)na;
-        row_cost += na * (size_t)na;
-    }
     size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < maxP ? maxP : rows);
