@@ -38,7 +38,10 @@ import logging
 import pprint
 from typing import Any, Dict, Optional, Tuple, Union, TYPE_CHECKING
 
-from pydantic import Field, validator
+try:
+    from pydantic.v1 import Field, validator
+except ImportError:
+    from pydantic import Field, validator
 import qcelemental as qcel
 from qcelemental.models import DriverEnum, AtomicInput, AtomicResult
 qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
