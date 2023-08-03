@@ -833,34 +833,8 @@ void DFJCOSKGrad::build_JGrad() {
 
     const std::vector<std::pair<int, int>>& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
-
-    // => Memory Constraints <= //
-
-    int max_rows;
-    int maxP = auxiliary_->max_function_per_shell();
-    size_t row_cost = 0L;
-    row_cost += nso * (size_t)nso;
-    size_t rows = memory_ / row_cost;
-    rows = (rows > naux ? naux : rows);
-    rows = (rows < maxP ? maxP : rows);
-    max_rows = (int)rows;
-
-    // => Block Sizing <= //
-
-    std::vector<int> Pstarts;
-    int counter = 0;
-    Pstarts.push_back(0);
-    for (int P = 0; P < auxiliary_->nshell(); P++) {
-        int nP = auxiliary_->shell(P).nfunction();
-        if (counter + nP > max_rows) {
-            counter = 0;
-            Pstarts.push_back(P);
-        }
-        counter += nP;
-    }
-    Pstarts.push_back(auxiliary_->nshell());
-
-    // => Temporary Buffers <= //
+    int nshell_aux = auxiliary_->nshell();
+    int ntriplets = nshell_aux * npairs;
 
     // contract c_A
     // c_A = (B|pq) Dt_pq
@@ -879,59 +853,43 @@ void DFJCOSKGrad::build_JGrad() {
 
     double** Dtp = Dt_->pointer();
 
-    // => Master Loop <= //
 
-    for (int block = 0; block < Pstarts.size() - 1; block++) {
-        // > Sizing < //
-
-        int Pstart = Pstarts[block];
-        int Pstop = Pstarts[block + 1];
-        int NP = Pstop - Pstart;
-
-        int pstart = auxiliary_->shell(Pstart).function_index();
-        int pstop = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop).function_index());
-        int np = pstop - pstart;
-
-
-        // > Integrals < //
-#pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < static_cast<long>(NP) * npairs; PMN++) {
-            int thread = 0;
+#pragma omp parallel for schedule(guided) num_threads(nthread_df)
+    for (long int PMN = 0L; PMN < ntriplets; PMN++) {
+        int thread = 0;
 #ifdef _OPENMP
-            thread = omp_get_thread_num();
+        thread = omp_get_thread_num();
 #endif
 
-            int P = PMN / npairs + Pstart;
-            int MN = PMN % npairs;
-            int M = shell_pairs[MN].first;
-            int N = shell_pairs[MN].second;
+        int P = PMN / npairs;
+        int MN = PMN % npairs;
+        int M = shell_pairs[MN].first;
+        int N = shell_pairs[MN].second;
 
-            eri[thread]->compute_shell(P, 0, M, N);
+        eri[thread]->compute_shell(P, 0, M, N);
 
-            const auto & buffer = eri[thread]->buffer();
+        const auto & buffer = eri[thread]->buffer();
 
-            int nP = auxiliary_->shell(P).nfunction();
-            int Pstart = auxiliary_->shell(P).function_index() - pstart;
+        int nP = auxiliary_->shell(P).nfunction();
+        int Pstart = auxiliary_->shell(P).function_index();
 
-            int nM = primary_->shell(M).nfunction();
-            int Mstart = primary_->shell(M).function_index();
+        int nM = primary_->shell(M).nfunction();
+        int Mstart = primary_->shell(M).function_index();
 
-            int nN = primary_->shell(N).nfunction();
-            int Nstart = primary_->shell(N).function_index();
+        int nN = primary_->shell(N).nfunction();
+        int Nstart = primary_->shell(N).function_index();
 
-            auto cTp = cT[thread]->pointer();
+        auto cTp = cT[thread]->pointer();
 
-            for (int p = Pstart, index=0; p < Pstart + nP; p++) {
-                for (int m = Mstart; m < Mstart + nM; m++) {
-                    for (int n = Nstart; n < Nstart + nN; n++, index++) {
-                        cTp[p] += buffer[index] * Dtp[m][n];
-                        if (N != M) cTp[p] += buffer[index] * Dtp[n][m];
-                        
-                    }
+        for (int p = Pstart, index=0; p < Pstart + nP; p++) {
+            for (int m = Mstart; m < Mstart + nM; m++) {
+                for (int n = Nstart; n < Nstart + nN; n++, index++) {
+                    cTp[p] += buffer[index] * Dtp[m][n];
+                    if (N != M) cTp[p] += buffer[index] * Dtp[n][m];
+                    
                 }
             }
         }
-
     }
 
     timer_off("contract c_A");
@@ -985,79 +943,67 @@ void DFJCOSKGrad::build_JGrad() {
         Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
     }
 
-    for (int block = 0; block < Pstarts.size() - 1; block++) {
-        // > Sizing < //
-
-        int Pstart = Pstarts[block];
-        int Pstop = Pstarts[block + 1];
-        int NP = Pstop - Pstart;
-
-        int pstart = auxiliary_->shell(Pstart).function_index();
-        int pstop = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop).function_index());
-        int np = pstop - pstart;
-
-        // > Integrals < //
-#pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-        for (long int PMN = 0L; PMN < static_cast<long>(NP) * npairs; PMN++) {
-            int thread = 0;
+    // > Integrals < //
+#pragma omp parallel for schedule(guided) num_threads(nthread_df)
+    for (long int PMN = 0L; PMN < ntriplets; PMN++) {
+        int thread = 0;
 #ifdef _OPENMP
-            thread = omp_get_thread_num();
+        thread = omp_get_thread_num();
 #endif
 
-            int P = PMN / npairs + Pstart;
-            int MN = PMN % npairs;
-            int M = shell_pairs[MN].first;
-            int N = shell_pairs[MN].second;
+        int P = PMN / npairs;
+        int MN = PMN % npairs;
+        int M = shell_pairs[MN].first;
+        int N = shell_pairs[MN].second;
 
-            eri[thread]->compute_shell_deriv1(P, 0, M, N);
+        eri[thread]->compute_shell_deriv1(P, 0, M, N);
 
-            const double* buffer = eri[thread]->buffer();
+        const double* buffer = eri[thread]->buffer();
 
-            int nP = auxiliary_->shell(P).nfunction();
-            int cP = auxiliary_->shell(P).ncartesian();
-            int aP = auxiliary_->shell(P).ncenter();
-            int oP = auxiliary_->shell(P).function_index();
+        int nP = auxiliary_->shell(P).nfunction();
+        int cP = auxiliary_->shell(P).ncartesian();
+        int aP = auxiliary_->shell(P).ncenter();
+        int oP = auxiliary_->shell(P).function_index();
 
-            int nM = primary_->shell(M).nfunction();
-            int cM = primary_->shell(M).ncartesian();
-            int aM = primary_->shell(M).ncenter();
-            int oM = primary_->shell(M).function_index();
+        int nM = primary_->shell(M).nfunction();
+        int cM = primary_->shell(M).ncartesian();
+        int aM = primary_->shell(M).ncenter();
+        int oM = primary_->shell(M).function_index();
 
-            int nN = primary_->shell(N).nfunction();
-            int cN = primary_->shell(N).ncartesian();
-            int aN = primary_->shell(N).ncenter();
-            int oN = primary_->shell(N).function_index();
+        int nN = primary_->shell(N).nfunction();
+        int cN = primary_->shell(N).ncartesian();
+        int aN = primary_->shell(N).ncenter();
+        int oN = primary_->shell(N).function_index();
 
-            const auto& buffers = eri[thread]->buffers();
-            const double* Px = buffers[0];
-            const double* Py = buffers[1];
-            const double* Pz = buffers[2];
-            const double* Mx = buffers[3];
-            const double* My = buffers[4];
-            const double* Mz = buffers[5];
-            const double* Nx = buffers[6];
-            const double* Ny = buffers[7];
-            const double* Nz = buffers[8];
+        const auto& buffers = eri[thread]->buffers();
+        const double* Px = buffers[0];
+        const double* Py = buffers[1];
+        const double* Pz = buffers[2];
+        const double* Mx = buffers[3];
+        const double* My = buffers[4];
+        const double* Mz = buffers[5];
+        const double* Nx = buffers[6];
+        const double* Ny = buffers[7];
+        const double* Nz = buffers[8];
 
-            double perm = (M == N ? 1.0 : 2.0);
+        double perm = (M == N ? 1.0 : 2.0);
 
-            double** grad_Jp = Jtemps[thread]->pointer();
+        double** grad_Jp = Jtemps[thread]->pointer();
 
-            for (int p = oP, index = 0; p < nP + oP; p++) {
-                for (int m = oM; m < nM + oM; m++) {
-                    for (int n = oN; n < nN + oN; n++, index++) {
-                        //  J^x = (A|pq)^x d_A Dt_pq
-                        double Ival = 1.0 * perm * dp[p] * Dtp[m][n];
-                        grad_Jp[aP][0] += Ival * Px[index];
-                        grad_Jp[aP][1] += Ival * Py[index];
-                        grad_Jp[aP][2] += Ival * Pz[index];
-                        grad_Jp[aM][0] += Ival * Mx[index];
-                        grad_Jp[aM][1] += Ival * My[index];
-                        grad_Jp[aM][2] += Ival * Mz[index];
-                        grad_Jp[aN][0] += Ival * Nx[index];
-                        grad_Jp[aN][1] += Ival * Ny[index];
-                        grad_Jp[aN][2] += Ival * Nz[index];
-                    }
+        for (int p = oP, index = 0; p < nP + oP; p++) {
+            for (int m = oM; m < nM + oM; m++) {
+                for (int n = oN; n < nN + oN; n++, index++) {
+                    //  J^x = (A|pq)^x d_A Dt_pq
+                    double Ival = 1.0 * perm * dp[p] * Dtp[m][n];
+                    grad_Jp[aP][0] += Ival * Px[index];
+                    grad_Jp[aP][1] += Ival * Py[index];
+                    grad_Jp[aP][2] += Ival * Pz[index];
+                    grad_Jp[aM][0] += Ival * Mx[index];
+                    grad_Jp[aM][1] += Ival * My[index];
+                    grad_Jp[aM][2] += Ival * Mz[index];
+                    grad_Jp[aN][0] += Ival * Nx[index];
+                    grad_Jp[aN][1] += Ival * Ny[index];
+                    grad_Jp[aN][2] += Ival * Nz[index];
                 }
             }
         }
