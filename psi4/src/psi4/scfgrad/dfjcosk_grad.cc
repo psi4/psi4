@@ -320,6 +320,7 @@ void DFJCOSKGrad::compute_gradient() {
 
 void DFJCOSKGrad::build_KGrad() {
     if (!do_K_) return;
+    timer_on("K Grad");
 
     auto nthreads_ = ints_num_threads_;
     std::vector<SharedMatrix> D;
@@ -528,11 +529,13 @@ void DFJCOSKGrad::build_KGrad() {
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 4
 
         // compute basis functions at these grid points
+        if(rank == 0) timer_on("Basis Derivs");
         bf_computers[rank]->compute_functions(block);
         auto point_values = bf_computers[rank]->basis_values()["PHI"];
         auto point_values_dx = bf_computers[rank]->basis_values()["PHI_X"];
         auto point_values_dy = bf_computers[rank]->basis_values()["PHI_Y"];
         auto point_values_dz = bf_computers[rank]->basis_values()["PHI_Z"];
+        if(rank ==0) timer_off("Basis Derivs");
 
         // resize the buffer of basis function values
         auto X_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
@@ -714,60 +717,71 @@ void DFJCOSKGrad::build_KGrad() {
         if (rank == 0) timer_on("Contract K Gradient");
 
         for (size_t jki = 0; jki < njk; jki++) {
-        for (int center = 0; center < natom; center++) {
-            //  mask X_dx matrices:
-            auto Xdx_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
-            auto Xdy_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
-            auto Xdz_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
-            auto Xdx_blockp = Xdx_block->pointer();
-            auto Xdy_blockp = Xdy_block->pointer();
-            auto Xdz_blockp = Xdz_block->pointer();
-            for (size_t p = 0; p < npoints_block; p++) {
-                for (size_t k = 0; k < nbf_block; k++) {
-                    auto k_center = primary_->function_to_center(bf_map[k]);
-                    if (k_center == center){
-                        Xdx_blockp[p][k] = point_values_dx->get(p, k) * std::sqrt(w[p]);
-                        Xdy_blockp[p][k] = point_values_dy->get(p, k) * std::sqrt(w[p]);
-                        Xdz_blockp[p][k] = point_values_dz->get(p, k) * std::sqrt(w[p]);
-                    } else {
-                        Xdx_blockp[p][k] = 0;
-                        Xdy_blockp[p][k] = 0;
-                        Xdz_blockp[p][k] = 0;
-                    }
-                }
-            }
-            //  contract with G_block:
-            SharedMatrix KT_dx_block;
-            SharedMatrix KT_dy_block;
-            SharedMatrix KT_dz_block;
-            if (overlap_fitted) {
-                //Qdx_block = linalg::doublet(Xdx_block, Q_block, false, true);
-                //Qdy_block = linalg::doublet(Xdy_block, Q_block, false, true);
-                //Qdz_block = linalg::doublet(Xdz_block, Q_block, false, true);
-                KT_dx_block = linalg::doublet(Xdx_block, G_block[jki], true, true);
-                KT_dy_block = linalg::doublet(Xdy_block, G_block[jki], true, true);
-                KT_dz_block = linalg::doublet(Xdz_block, G_block[jki], true, true);
-            } else {
-                KT_dx_block = linalg::doublet(Xdx_block, G_block[jki], true, true);
-                KT_dy_block = linalg::doublet(Xdy_block, G_block[jki], true, true);
-                KT_dz_block = linalg::doublet(Xdz_block, G_block[jki], true, true);
-            }
-            //  contract with density, load into derivative matrix
-            auto D_blockp = D_block[jki]->pointer();
-            auto KT_dx_blockp = KT_dx_block->pointer();
-            auto KT_dy_blockp = KT_dy_block->pointer();
-            auto KT_dz_blockp = KT_dz_block->pointer();
-            auto KTgradp = KTgrad[jki][rank]->pointer();
-            for (size_t mu = 0; mu < nbf_block_all; mu++) {
-                for (size_t nu = 0; nu < nbf_block; nu++) {
-                    KTgradp[center][0] -= D_blockp[mu][nu] * KT_dx_blockp[nu][mu];
-                    KTgradp[center][1] -= D_blockp[mu][nu] * KT_dy_blockp[nu][mu];
-                    KTgradp[center][2] -= D_blockp[mu][nu] * KT_dz_blockp[nu][mu];
-                }
-            }
-        }}
 
-        if (rank == 0) timer_off("Contract K Gradient");
+        // which atom centers have basis functions in this block?
+        std::vector<int> centers_in_block;
+
+        for (size_t k = 0; k < nbf_block; k++) {
+            auto center = primary_->function_to_center(bf_map[k]);
+            if (std::find(centers_in_block.begin(), centers_in_block.end(), center) == centers_in_block.end()){
+                centers_in_block.push_back(center);
+            }
+        }
+
+        //for (auto center : centers_in_block) {
+            //  mask X_dx matrices:
+        auto Xdx_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        auto Xdy_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        auto Xdz_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        auto Xdx_blockp = Xdx_block->pointer();
+        auto Xdy_blockp = Xdy_block->pointer();
+        auto Xdz_blockp = Xdz_block->pointer();
+        if (rank == 0) timer_on("Form Xdx");
+        for (size_t p = 0; p < npoints_block; p++) {
+            for (size_t k = 0; k < nbf_block; k++) {
+                Xdx_blockp[p][k] = point_values_dx->get(p, k) * std::sqrt(w[p]);
+                Xdy_blockp[p][k] = point_values_dy->get(p, k) * std::sqrt(w[p]);
+                Xdz_blockp[p][k] = point_values_dz->get(p, k) * std::sqrt(w[p]);
+            }
+        }
+        if (rank == 0) timer_off("Form Xdx");
+        if (rank == 0) timer_on("Form KT_dx");
+        //  contract with G_block:
+        SharedMatrix KT_dx_block;
+        SharedMatrix KT_dy_block;
+        SharedMatrix KT_dz_block;
+        if (overlap_fitted) {
+            //Qdx_block = linalg::doublet(Xdx_block, Q_block, false, true);
+            //Qdy_block = linalg::doublet(Xdy_block, Q_block, false, true);
+            //Qdz_block = linalg::doublet(Xdz_block, Q_block, false, true);
+            KT_dx_block = linalg::doublet(Xdx_block, G_block[jki], true, true);
+            KT_dy_block = linalg::doublet(Xdy_block, G_block[jki], true, true);
+            KT_dz_block = linalg::doublet(Xdz_block, G_block[jki], true, true);
+        } else {
+            KT_dx_block = linalg::doublet(Xdx_block, G_block[jki], true, true);
+            KT_dy_block = linalg::doublet(Xdy_block, G_block[jki], true, true);
+            KT_dz_block = linalg::doublet(Xdz_block, G_block[jki], true, true);
+        }
+        if (rank == 0) timer_off("Form KT_dx");
+        if (rank == 0) timer_on("Contract Density");
+        //  contract with density, load into derivative matrix
+        auto D_blockp = D_block[jki]->pointer();
+        auto KT_dx_blockp = KT_dx_block->pointer();
+        auto KT_dy_blockp = KT_dy_block->pointer();
+        auto KT_dz_blockp = KT_dz_block->pointer();
+        auto KTgradp = KTgrad[jki][rank]->pointer();
+        for (size_t mu = 0; mu < nbf_block_all; mu++) {
+            for (size_t nu = 0; nu < nbf_block; nu++) {
+                auto center = primary_->function_to_center(bf_map[nu]);
+                KTgradp[center][0] -= D_blockp[mu][nu] * KT_dx_blockp[nu][mu];
+                KTgradp[center][1] -= D_blockp[mu][nu] * KT_dy_blockp[nu][mu];
+                KTgradp[center][2] -= D_blockp[mu][nu] * KT_dz_blockp[nu][mu];
+            }
+        }
+        if (rank == 0) timer_off("Contract Density");
+    }
+
+    if (rank == 0) timer_off("Contract K Gradient");
 
     }
 
@@ -791,14 +805,15 @@ void DFJCOSKGrad::build_KGrad() {
         printer.Printf("COSK ESP Shells: %zu,%zu,%zu\n", ints_per_atom, int_shells_computed, int_shells_total);
     }
 
-
+    timer_off("K Grad");
 }
 
 void DFJCOSKGrad::build_JGrad() {
     if (!do_J_) return;
-    
+    timer_on("J Grad");
     int nthread_df = ints_num_threads_;
 
+    timer_on("contract c_A");
     // contract c_A
     // c_A = (B|pq) Dt_pq
 
@@ -910,10 +925,10 @@ void DFJCOSKGrad::build_JGrad() {
             int nN = primary_->shell(N).nfunction();
             int oN = primary_->shell(N).function_index();
 
-            for (int p = 0; p < nP; p++) {
-                for (int m = 0; m < nM; m++) {
-                    for (int n = 0; n < nN; n++) {
-                        Amnp[p + oP][(m + oM) * nso + (n + oN)] = Amnp[p + oP][(n + oN) * nso + (m + oM)] = *buffer++;
+            for (int p = oP; p < nP + oP; p++) {
+                for (int m = oM; m < nM + oM; m++) {
+                    for (int n = oN; n < nN + oN; n++) {
+                        Amnp[p][(m) * nso + (n)] = Amnp[p][(n) * nso + (m)] = *buffer++;
                     }
                 }
             }
@@ -925,7 +940,8 @@ void DFJCOSKGrad::build_JGrad() {
         }
     }
 
-
+    timer_off("contract c_A");
+    timer_on("contract d_A");
     // contract d_A
     // d_A = (A|B)^-1 c_A
 
@@ -940,6 +956,8 @@ void DFJCOSKGrad::build_JGrad() {
     C_DGEMV('N', naux, naux, 1.0, Jp[0], naux, cp, 1, 0.0, dp, 1);
 
 
+    timer_off("contract d_A");
+    timer_on("metric grad");
     // metrix grad term
     // J = 0.5 * (A|B)^x d_B d_A
 
@@ -957,6 +975,8 @@ void DFJCOSKGrad::build_JGrad() {
     }
  
 
+    timer_off("metric grad");
+    timer_on("eri grad");
     // eri grad term
     // J += (A|pq)^x d_A Dt_pq
 
@@ -1062,6 +1082,7 @@ void DFJCOSKGrad::build_JGrad() {
         }
     }
 
+    timer_off("eri grad");
     // => Temporary Gradient Reduction <= //
 
     if (do_J_) {
@@ -1069,6 +1090,7 @@ void DFJCOSKGrad::build_JGrad() {
             gradients_["Coulomb"]->add(Jtemps[t]);
         }
     }
+    timer_off("J Grad");
 }
 
 void DFJCOSKGrad::compute_hessian(){

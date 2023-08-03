@@ -80,7 +80,7 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHel
 {
     Options& options = Process::environment.options;
 
-    if (options.get_str("SCF_TYPE") == "COSX") {
+    if (options.get_str("SCF_TYPE") == "DFDIRJ+COSX") {
         DFJCOSKGrad* jk = new DFJCOSKGrad(deriv, mints, options);
 
         if (options["INTS_TOLERANCE"].has_changed())
