@@ -12,14 +12,18 @@ if(${ENABLE_dkh})
 
         include(ExternalProject)
         message(STATUS "Suitable dkh could not be located, ${Magenta}Building dkh${ColourReset} instead.")
+
+        set(_dkh_dir "share/cmake/dkh")
+
         ExternalProject_Add(dkh_external
             DEPENDS lapack_external
-            URL https://github.com/psi4/dkh/archive/319b320.tar.gz  # v1.2 + cmake
+            URL https://github.com/psi4/dkh/archive/3ba0128.tar.gz  # v1.2 + cmake
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                       -Ddkh_INSTALL_CMAKEDIR=${_dkh_dir}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
@@ -34,7 +38,7 @@ if(${ENABLE_dkh})
             CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
                              -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
 
-        set(dkh_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/dkh CACHE PATH "path to internally built dkhConfig.cmake" FORCE)
+        set(dkh_DIR ${STAGED_INSTALL_PREFIX}/${_dkh_dir} CACHE PATH "path to internally built dkhConfig.cmake" FORCE)
     endif()
 else()
     add_library(dkh_external INTERFACE)  # dummy
