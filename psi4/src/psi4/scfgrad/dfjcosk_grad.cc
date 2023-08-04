@@ -728,11 +728,22 @@ void DFJCOSKGrad::build_KGrad() {
             }
         }
 
-        //for (auto center : centers_in_block) {
-            //  mask X_dx matrices:
         auto Xdx_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
         auto Xdy_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
         auto Xdz_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        auto Qdx_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        auto Qdy_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+        auto Qdz_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+
+        auto Q_block = std::make_shared<Matrix>(nbf_block, nbf_block);
+        for(size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
+            size_t mu = bf_map[mu_local];
+            for(size_t nu_local = 0; nu_local < nbf_block; nu_local++) {
+                size_t nu = bf_map[nu_local];
+                Q_block->set(mu_local, nu_local, Q->get(mu, nu));
+            }
+        }
+
         auto Xdx_blockp = Xdx_block->pointer();
         auto Xdy_blockp = Xdy_block->pointer();
         auto Xdz_blockp = Xdz_block->pointer();
@@ -751,12 +762,12 @@ void DFJCOSKGrad::build_KGrad() {
         SharedMatrix KT_dy_block;
         SharedMatrix KT_dz_block;
         if (overlap_fitted) {
-            //Qdx_block = linalg::doublet(Xdx_block, Q_block, false, true);
-            //Qdy_block = linalg::doublet(Xdy_block, Q_block, false, true);
-            //Qdz_block = linalg::doublet(Xdz_block, Q_block, false, true);
-            KT_dx_block = linalg::doublet(Xdx_block, G_block[jki], true, true);
-            KT_dy_block = linalg::doublet(Xdy_block, G_block[jki], true, true);
-            KT_dz_block = linalg::doublet(Xdz_block, G_block[jki], true, true);
+            Qdx_block = linalg::doublet(Xdx_block, Q_block, false, true);
+            Qdy_block = linalg::doublet(Xdy_block, Q_block, false, true);
+            Qdz_block = linalg::doublet(Xdz_block, Q_block, false, true);
+            KT_dx_block = linalg::doublet(Qdx_block, G_block[jki], true, true);
+            KT_dy_block = linalg::doublet(Qdy_block, G_block[jki], true, true);
+            KT_dz_block = linalg::doublet(Qdz_block, G_block[jki], true, true);
         } else {
             KT_dx_block = linalg::doublet(Xdx_block, G_block[jki], true, true);
             KT_dy_block = linalg::doublet(Xdy_block, G_block[jki], true, true);
