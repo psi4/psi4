@@ -818,10 +818,6 @@ void DFJCOSKGrad::build_JGrad() {
 
     int nso = primary_->nbf();
     int naux = auxiliary_->nbf();
-    int na = Ca_->colspi()[0];
-    int nb = Cb_->colspi()[0];
-
-    bool restricted = (Ca_ == Cb_);
 
     // => Integrals <= //
 
