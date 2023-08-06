@@ -718,16 +718,6 @@ void DFJCOSKGrad::build_KGrad() {
 
         for (size_t jki = 0; jki < njk; jki++) {
 
-        // which atom centers have basis functions in this block?
-        std::vector<int> centers_in_block;
-
-        for (size_t k = 0; k < nbf_block; k++) {
-            auto center = primary_->function_to_center(bf_map[k]);
-            if (std::find(centers_in_block.begin(), centers_in_block.end(), center) == centers_in_block.end()){
-                centers_in_block.push_back(center);
-            }
-        }
-
         auto Xdx_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
         auto Xdy_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
         auto Xdz_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
