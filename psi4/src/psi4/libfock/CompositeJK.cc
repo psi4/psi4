@@ -255,6 +255,26 @@ void CompositeJK::common_init() {
 	        if (warning_printed) break;
         }
 
+        // Print out specific grid info upon request
+        if (true) {
+            for (auto& [gridname, grid] : grids) { 
+                outfile->Printf("  ==> COSX: ");
+                outfile->Printf(gridname); 
+                outfile->Printf(" Grid Details <==\n\n");
+
+                auto npoints = grid->npoints();
+                auto nblocks = grid->blocks().size();
+                auto natoms = primary_->molecule()->natom();
+                double npoints_per_batch = static_cast<double>(npoints) / static_cast<double>(nblocks);
+                double npoints_per_atom = static_cast<double>(npoints) / static_cast<double>(natoms);
+            
+                outfile->Printf("    Total number of grid points: %d \n", npoints);
+                outfile->Printf("    Total number of batches: %d \n", nblocks);
+                outfile->Printf("    Average number of points per batch: %f \n", npoints_per_batch);
+                outfile->Printf("    Average number of grid points per atom: %f \n\n", npoints_per_atom);
+            }
+        }
+
         timer_off("CompositeJK: COSX Grid Construction");
 
         // => Overlap Fitting Metric <= //

@@ -240,10 +240,10 @@ class PSI_API COSK : public SplitJK {
 
     // => Semi-Numerical Stuff, for COSX <= //
 
-    /// Small DFTGrid for initial SCF iterations
-    // std::shared_ptr<DFTGrid> grid_init_;
-    /// Large DFTGrid for the final SCF iteration
-    // std::shared_ptr<DFTGrid> grid_final_;
+    /// COSX grids
+    /// Currently contains two grids:
+    /// -  A small DFTGrid for initial SCF iterations
+    /// -  A large DFTGrid for the final SCF iteration
     std::unordered_map<std::string, std::shared_ptr<DFTGrid> > grids;
 
     /// Overlap fitting metric for grid_initial_
