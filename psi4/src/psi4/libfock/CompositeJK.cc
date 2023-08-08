@@ -472,7 +472,11 @@ void CompositeJK::compute_JK() {
 
     // Exchange Matrix
     if (do_K_) {
-        timer_on("CompositeJK: K");
+        if (early_screening_) {
+            timer_on("CompositeJK: K Initial");
+        } else {
+            timer_on("CompositeJK: K Final");
+        }
 
         k_algo_->build_G_component(D_ref_, K_ao_, eri_computers_["4-Center"]);
 
@@ -480,7 +484,11 @@ void CompositeJK::compute_JK() {
             computed_shells_per_iter_["Quartets"].push_back(k_algo_->num_computed_shells());
         }
 
-        timer_off("CompositeJK: K");
+        if (early_screening_) {
+            timer_off("CompositeJK: K Initial");
+        } else {
+            timer_off("CompositeJK: K Final");
+        }
     }
 
     // => Finalize Incremental Fock if required <= //
