@@ -183,88 +183,94 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
 
-    timer_on("COSK: COSX Grid Construction");
+    timer_on("CompositeJK: COSX Grid Construction");
 
-    // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
+    // for now, we use two COSX grids:
+    //   - a small DFTGrid for the initial SCF iterations        
+    //   - a large DFTGrid for the final SCF iteration
+    grids["Initial"] = nullptr; 
+    grids["Final"] = nullptr; 
+    
+    for (auto& [ gridname, grid ] : grids) { 
+        std::string gridname_uppercase = gridname;
+        std::transform(gridname.begin(), gridname.end(), gridname_uppercase.begin(), ::toupper);
+    
+        // initialize grid 
+        // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
+        std::map<std::string, std::string> grid_str_options = {
+            {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
+            {"DFT_RADIAL_SCHEME",  "TREUTLER"},
+            {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
+            {"DFT_GRID_NAME",      ""},
+            {"DFT_BLOCK_SCHEME",   "OCTREE"},
+        };
 
-    // Create a small DFTGrid for the initial SCF iterations
-    std::map<std::string, std::string> grid_init_str_options = {
-        {"DFT_PRUNING_SCHEME", options.get_str("COSX_PRUNING_SCHEME")},
-        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
-        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
-        {"DFT_GRID_NAME",      ""},
-        {"DFT_BLOCK_SCHEME",   "OCTREE"},
-    };
-    std::map<std::string, int> grid_init_int_options = {
-        {"DFT_SPHERICAL_POINTS", options.get_int("COSX_SPHERICAL_POINTS_INITIAL")},
-        {"DFT_RADIAL_POINTS",    options.get_int("COSX_RADIAL_POINTS_INITIAL")},
-        {"DFT_BLOCK_MIN_POINTS", 100},
-        {"DFT_BLOCK_MAX_POINTS", 256},
-    };
-    std::map<std::string, double> grid_init_float_options = {
-        {"DFT_BASIS_TOLERANCE",   basis_tol_},
-        {"DFT_BS_RADIUS_ALPHA",   1.0},
-        {"DFT_PRUNING_ALPHA",     1.0},
-        {"DFT_BLOCK_MAX_RADIUS",  3.0},
-        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
-    };
-    grid_init_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_init_int_options, grid_init_str_options, grid_init_float_options, options);
+        //std::string cosx_spherical_points = "COSX_SPHERICAL_POINTS_"; cosx_spherical_points = cosx_spherical_points.append(gridname_uppercase);
+        std::map<std::string, int> grid_int_options = {
+            //{"DFT_SPHERICAL_POINTS", options_.get_int(cosx_spherical_points)},
+            //{"DFT_RADIAL_POINTS",    options_.get_int(static_cast<std::string>("COSX_RADIAL_POINTS_").append(gridname_uppercase))},
+            {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_" + gridname_uppercase)},
+            {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_" + gridname_uppercase)},
+            {"DFT_BLOCK_MIN_POINTS", 100},
+            {"DFT_BLOCK_MAX_POINTS", 256},
+        };
 
-    // Create a large DFTGrid for the final SCF iteration
-    std::map<std::string, std::string> grid_final_str_options = {
-        {"DFT_PRUNING_SCHEME", options.get_str("COSX_PRUNING_SCHEME")},
-        {"DFT_RADIAL_SCHEME",  "TREUTLER"},
-        {"DFT_NUCLEAR_SCHEME", "TREUTLER"},
-        {"DFT_GRID_NAME",      ""},
-        {"DFT_BLOCK_SCHEME",   "OCTREE"},
-    };
-    std::map<std::string, int> grid_final_int_options = {
-        {"DFT_SPHERICAL_POINTS", options.get_int("COSX_SPHERICAL_POINTS_FINAL")},
-        {"DFT_RADIAL_POINTS",    options.get_int("COSX_RADIAL_POINTS_FINAL")},
-        {"DFT_BLOCK_MIN_POINTS", 100},
-        {"DFT_BLOCK_MAX_POINTS", 256},
-    };
-    std::map<std::string, double> grid_final_float_options = {
-        {"DFT_BASIS_TOLERANCE",   basis_tol_},
-        {"DFT_BS_RADIUS_ALPHA",   1.0},
-        {"DFT_PRUNING_ALPHA",     1.0},
-        {"DFT_BLOCK_MAX_RADIUS",  3.0},
-        {"DFT_WEIGHTS_TOLERANCE", 1e-15},
-    };
-    grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options);
+        std::map<std::string, double> grid_float_options = {
+            {"DFT_BASIS_TOLERANCE",   options_.get_double("COSX_BASIS_TOLERANCE")},
+            {"DFT_BS_RADIUS_ALPHA",   1.0},
+            {"DFT_PRUNING_ALPHA",     1.0},
+            {"DFT_BLOCK_MAX_RADIUS",  3.0},
+            {"DFT_WEIGHTS_TOLERANCE", 1e-15},
+        };
+        grid = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_float_options, options_);
 
-    // Print out warning if grid with negative grid weights is used 
-    // Original Nesse COSX formulation does not support negative grid weights
-    // which can happen with certain grid configurations
-    // the Psi4 COSX implementation is slightly modified to work with negative grid weights
-    // See https://github.com/psi4/psi4/issues/2890 for discussion
-    auto warning_printed_init = false;
-    for (const auto &init_block : grid_init_->blocks()) {
-        const auto w = init_block->w();
-        for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
-            if (w[ipoint] < 0.0) {
-                outfile->Printf("  INFO: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.\n\n");
-                warning_printed_init = true;
-                break;
+        // Print out warning if grid with negative grid weights is used 
+        // Original Nesse COSX formulation does not support negative grid weights
+        // which can happen with certain grid configurations
+        // See https://github.com/psi4/psi4/issues/2890
+        auto warning_printed = false;
+        for (const auto &block : grid->blocks()) {
+            const auto w = block->w();
+            for (int ipoint = 0; ipoint < block->npoints(); ++ipoint) {
+                if (w[ipoint] < 0.0) {
+                    std::string gridname_uppercase;
+                    std::transform(gridname.begin(), gridname.end(), gridname_uppercase.begin(), ::toupper);
+
+                    std::string warning_message = "The definition of the current "; 
+                    warning_message += gridname; 
+                    warning_message += " which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_.\n;
+                    warning_message += gridname_uppercase;
+                    warning_message += ".\n\n"; 
+                    
+                    outfile->Printf(warning_message)
+                    
+                    warning_printed = true;
+                    break;
+                }
             }
+            if (warning_printed) break;
         }
-        if (warning_printed_init) break;
-    }
 
-    auto warning_printed_final = false;
-    for (const auto &final_block : grid_final_->blocks()) {
-        const auto w = final_block->w();
-        for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
-            if (w[ipoint] < 0.0) {
-	            outfile->Printf("  INFO: The definition of the current final grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.\n\n");
-                warning_printed_final = true;
-	            break;
-	        }
+        // Print out specific grid info upon request
+        if (true) {
+            outfile->Printf("  ==> COSX: ");
+            outfile->Printf(gridname); 
+            outfile->Printf(" Grid Details <==\n\n");
+
+            auto npoints = grid->npoints();
+            auto nblocks = grid->blocks().size();
+            auto natoms = primary_->molecule()->natom();
+            double npoints_per_batch = static_cast<double>(npoints) / static_cast<double>(nblocks);
+            double npoints_per_atom = static_cast<double>(npoints) / static_cast<double>(natoms);
+        
+            outfile->Printf("    Total number of grid points: %d \n", npoints);
+            outfile->Printf("    Total number of batches: %d \n", nblocks);
+            outfile->Printf("    Average number of points per batch: %f \n", npoints_per_batch);
+            outfile->Printf("    Average number of grid points per atom: %f \n\n", npoints_per_atom);
         }
-	    if (warning_printed_final) break;
     }
-
-    timer_off("COSK: COSX Grid Construction");
+    
+    timer_off("CompositeJK: COSX Grid Construction");
 
     // => Overlap Fitting Metric <= //
 
@@ -275,25 +281,25 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     // Here, Q refers to just S_ @ S_num^{-1} (no X)
     // This Q is contracted with X later to agree with the literature definition
 
-    timer_on("COSK: COSX Numeric Overlap");
+    timer_on("CompositeJK: COSX Numeric Overlap");
 
     // compute the numeric overlap matrix for each grid
-    auto S_num_init = compute_numeric_overlap(*grid_init_, primary_);
-    auto S_num_final = compute_numeric_overlap(*grid_final_, primary_ );
+    auto S_num_init = compute_numeric_overlap(*(grids["Initial"]), primary_);
+    auto S_num_final = compute_numeric_overlap(*(grids["Final"]), primary_ );
 
-    timer_off("COSK: COSX Numeric Overlap");
+    timer_off("CompositeJK: COSX Numeric Overlap");
 
-    timer_on("COSK: COSX Analytic Overlap");
+    timer_on("CompositeJK: COSX Analytic Overlap");
 
     // compute the analytic overlap matrix
-    MintsHelper helper(primary_, options);
+    MintsHelper helper(primary_, options_);
     auto S_an = helper.ao_overlap();
 
-    timer_off("COSK: COSX Analytic Overlap");
+    timer_off("CompositeJK: COSX Analytic Overlap");
 
     // form the overlap metric (Q) for each grid
 
-    timer_on("COSK: COSX Overlap Metric Solve");
+    timer_on("CompositeJK: COSX Overlap Metric Solve");
 
     int nbf = primary_->nbf();
     std::vector<int> ipiv(nbf);
@@ -306,7 +312,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     Q_final_ = S_an->clone();
     C_DGESV(nbf, nbf, S_num_final.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
 
-    timer_off("COSK: COSX Overlap Metric Solve");
+    timer_off("CompositeJK: COSX Overlap Metric Solve");
 
     timer_off("COSK: Setup");
 }
@@ -343,7 +349,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     // use a small DFTGrid grid (and overlap metric) for early SCF iterations
     // otherwise use a large DFTGrid
-    auto grid = early_screening_ ? grid_init_ : grid_final_;
+    auto grid = early_screening_ ? grids["Initial"] : grids["Final"]; 
     auto Q = early_screening_ ? Q_init_ : Q_final_;
 
     // => Initialization <= //
