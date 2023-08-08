@@ -182,7 +182,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
-
+    
     timer_on("CompositeJK: COSX Grid Construction");
 
     // for now, we use two COSX grids:
@@ -249,7 +249,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
         }
 
         // Print out specific grid info upon request
-        if (true) {
+        if (options_.get_int("DEBUG")) {
             outfile->Printf("  ==> COSX: ");
             outfile->Printf(gridname);
             outfile->Printf(" Grid Details <==\n\n");
