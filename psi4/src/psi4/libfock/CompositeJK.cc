@@ -98,7 +98,7 @@ void CompositeJK::common_init() {
 
     // pre-construct per-thread TwoBodyAOInt objects for computing 3- and 4-index ERIs
     timer_on("CompositeJK: ERI Computers");
-    
+
     auto zero = BasisSet::zero_ao_basis_set();
 
     // initialize 4-Center ERIs
@@ -303,7 +303,7 @@ void CompositeJK::compute_JK() {
     // Exchange Matrix
     if (do_K_) {
         timer_on("CompositeJK: " + k_algo_->name());
-        
+
         if (k_algo_->name() == "COSX") {
             std::string gridname = early_screening_ ? "Initial" : "Final";
             timer_on("COSX " + gridname + " Grid");
@@ -317,8 +317,10 @@ void CompositeJK::compute_JK() {
 
         if (k_algo_->name() == "COSX") {
             std::string gridname = early_screening_ ? "Initial" : "Final";
-            timer_on("COSX " + gridname + " Grid");
+            timer_off("COSX " + gridname + " Grid");
         }
+
+        timer_off("CompositeJK: " + k_algo_->name());
     }
 
     // => Finalize Incremental Fock if required <= //

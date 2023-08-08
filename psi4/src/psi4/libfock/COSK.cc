@@ -186,16 +186,16 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     timer_on("CompositeJK: COSX Grid Construction");
 
     // for now, we use two COSX grids:
-    //   - a small DFTGrid for the initial SCF iterations        
+    //   - a small DFTGrid for the initial SCF iterations
     //   - a large DFTGrid for the final SCF iteration
-    grids["Initial"] = nullptr; 
-    grids["Final"] = nullptr; 
-    
-    for (auto& [ gridname, grid ] : grids) { 
+    grids["Initial"] = nullptr;
+    grids["Final"] = nullptr;
+
+    for (auto& [ gridname, grid ] : grids) {
         std::string gridname_uppercase = gridname;
         std::transform(gridname.begin(), gridname.end(), gridname_uppercase.begin(), ::toupper);
-    
-        // initialize grid 
+
+        // initialize grid
         // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
         std::map<std::string, std::string> grid_str_options = {
             {"DFT_PRUNING_SCHEME", options_.get_str("COSX_PRUNING_SCHEME")},
@@ -205,10 +205,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
             {"DFT_BLOCK_SCHEME",   "OCTREE"},
         };
 
-        //std::string cosx_spherical_points = "COSX_SPHERICAL_POINTS_"; cosx_spherical_points = cosx_spherical_points.append(gridname_uppercase);
         std::map<std::string, int> grid_int_options = {
-            //{"DFT_SPHERICAL_POINTS", options_.get_int(cosx_spherical_points)},
-            //{"DFT_RADIAL_POINTS",    options_.get_int(static_cast<std::string>("COSX_RADIAL_POINTS_").append(gridname_uppercase))},
             {"DFT_SPHERICAL_POINTS", options_.get_int("COSX_SPHERICAL_POINTS_" + gridname_uppercase)},
             {"DFT_RADIAL_POINTS",    options_.get_int("COSX_RADIAL_POINTS_" + gridname_uppercase)},
             {"DFT_BLOCK_MIN_POINTS", 100},
@@ -236,25 +233,25 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
                     std::string gridname_uppercase;
                     std::transform(gridname.begin(), gridname.end(), gridname_uppercase.begin(), ::toupper);
 
-                    std::string warning_message = "The definition of the current "; 
-                    warning_message += gridname; 
-                    warning_message += " which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_.\n;
+                    std::string warning_message = "The definition of the current ";
+                    warning_message += gridname;
+                    warning_message += " which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_;
                     warning_message += gridname_uppercase;
-                    warning_message += ".\n\n"; 
-                    
-                    outfile->Printf(warning_message)
-                    
+                    warning_message += ".\n\n";
+
+                    outfile->Printf(warning_message);
+
                     warning_printed = true;
-                    break;
+                        break;
                 }
             }
-            if (warning_printed) break;
+                if (warning_printed) break;
         }
 
         // Print out specific grid info upon request
         if (true) {
             outfile->Printf("  ==> COSX: ");
-            outfile->Printf(gridname); 
+            outfile->Printf(gridname);
             outfile->Printf(" Grid Details <==\n\n");
 
             auto npoints = grid->npoints();
@@ -262,14 +259,13 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
             auto natoms = primary_->molecule()->natom();
             double npoints_per_batch = static_cast<double>(npoints) / static_cast<double>(nblocks);
             double npoints_per_atom = static_cast<double>(npoints) / static_cast<double>(natoms);
-        
+
             outfile->Printf("    Total number of grid points: %d \n", npoints);
             outfile->Printf("    Total number of batches: %d \n", nblocks);
             outfile->Printf("    Average number of points per batch: %f \n", npoints_per_batch);
             outfile->Printf("    Average number of grid points per atom: %f \n\n", npoints_per_atom);
         }
     }
-    
     timer_off("CompositeJK: COSX Grid Construction");
 
     // => Overlap Fitting Metric <= //
