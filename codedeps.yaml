@@ -37,829 +37,47 @@ data:
 # github        URL https://github.com/MolSSI-BSE/basis_set_exchange/archive/v0.9.tar.gz
 # any field is also allowed a <field>_note so comments are useable.
 
-  - project: adcc
-    use:
-      added: 1.4
-      required: false
-      required_note: "Allows using adcc for algebraic-diagrammatic construction methods."
-      buildable: true
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: adc-connect
-      name: adcc
-      commit: v0.15.13
-    cmake:
-      name: adcc
-      constraint: ATLEAST 0.15.13
-#      ENABLE_adcc
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: adcc
-      constraint: ">=0.15.16"
-      constraint_note: v0.15.16 has transition moment corrections
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_adcc is inconsequential."
-      skip_win: true
-
-  - project: ambit
-    use:
-      added: 1.2  # ambit appears in repo by 1.0, but the table in v1.4 paper says v1.2
-      required: false
-      required_note: "Allow using the ambit tensor library."
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: jturney
-      name: ambit
-      commit: bda0f02  # recent for c-f
-#      commit: 733c529  # current master
-#    cmake:
-#      name:
-#      constraint: 0.6
-#      target: ambit::ambit
-#      components:
-#      ENABLE_ambit
-    conda: null
-      #cmake:
-      #  ENABLE_ambit: true
-      #  ambit_DIR: ${CONDA_PREFIX}/share/cmake/ambit
-
-  - project: brianqc
-    use:
-      added: 1.4
-      required: false
-      required_note: "Allows using the BrianQC GPU module."
-      buildable: false
-      buildtime: true
-      cms: true
-    repository: null
-#      host:
-#      account:
-#      name:
-#      commit:
-#    cmake:
-#      name:
-#      constraint: "1.1"
-#      target: BrianQC::static_wrapper
-#     ENABLE_BrianQC
-    conda: null
-
-  - project: bse
-    use:
-      added: 1.8
-      required: false
-      required_note: "Allows using the basis_set_exchange for requesting basis sets."
-      buildable: true
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: MolSSI-BSE
-      name: basis_set_exchange
-      commit: v0.9
-#    cmake:
-#      name:
-#      constraint: ATLEAST 0.9.0
-#      "ENABLE_bse"
-    conda:
-      channel: conda-forge
-      name: basis_set_exchange
-      constraint: null
-      cmake:
-        ENABLE_bse: true
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
-
-  - project: chemps2
-    use:
-      added: "1.0"  # external at 1.1
-      required: false
-      required_note: "Allows using CheMPS2 for DMRG."
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: SebWouters
-      name: CheMPS2
-      commit: d8ac508  # v1.8.9 + 1  # TODO update
-#    cmake:
-#      name: CheMPS2
-#      constraint: 1.8.7
-#      target: CheMPS2::chemps2
-#      ENABLE_CheMPS2
-    conda: null
-      #cmake:
-      #  ENABLE_CheMPS2: true
-      #  CheMPS2_DIR: ${CONDA_PREFIX}/share/cmake/CheMPS2
-
-  - project: cppe
-    use:
-      added: 1.4
-      required: false
-      required_note: "Allows using CPPE for Polarizable Embedding."
-      buildable: true
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: maxscheurer
-      name: cppe
-      commit: v0.3.1
-#    cmake:
-#      name: cppe
-#      constraint: ATLEAST 0.3.1
-#      target:
-#     ENABLE_cppe
-    conda:
-      channel: conda-forge
-      name: cppe
-      name_note: "Equivalent to psi4::pycppe ."
-      constraint: ">=0.3.1"
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
-      skip_win: true
-
-  - project: ddx
-    use:
-      added: 1.7
-      required: false
-      required_note: "Allows using ddx for domain-decomposition contiuum solvation models."
-      buildable: true
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: ddsolvation
-      name: ddX
-      commit: v0.4.5
-#    cmake:
-#      name:
-#      constraint: ATLEAST 0.4.3
-#      target:
-#      components:
-#     ENABLE_ddx
-    conda:
-      channel: conda-forge
-      name: pyddx
-      constraint: ">=0.4.3"
-      constraint_note: "v0.4.3 has correct LBP."
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_ddx is inconsequential."
-      skip_win: true
-
-  - project: dftd3
+  - project: c
     use:
       added: "1.0"
-      added_note: "Switched from classic dftd3 exe to py intf of simple-dftd3 (from dftd3-python) at 1.7. Classic still supported as of 1.8."
-      required: false
-      buildable: false
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: dftd3
-      name: simple-dftd3
-      commit: v0.7.0  # TODO not in psi src
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: dftd3-python
-      constraint: ">=0.6.0"
-      cmake:
-        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
-
-  - project: dftd4
-    use:
-      added: 1.5
-      added_note: "Py intf of dftd4 was equivalently packaged as psi4::dftd4 and conda-forge::dftd4-python. Switched preference from former to latter at 1.7. Former still supported as of 1.8."
-      required: false
-      buildable: false
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: dftd4
-      name: dftd4
-      commit: v3.5.0  # TODO will be needed for scan
-#    # - dftd4-python >=3.5.0                         # 3.5.0 provides b97-3c parameters
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: dftd4-python
-      name_note: "Equivalent to psi4::dftd4 . toml needed for qcengine/dftd4-python interface."
-      constraint: ">=3.3.0"
-      aux_run_names:
-        - toml
-      cmake:
-        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
-
-  - project: dkh
-    use:
-      added: "1.0"
-      added_note: "Extracted to external dependency at v1.1."
-      required: false
-      required_note: "Allows using DKH relativistic integrals."
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: psi4
-      name: dkh
-      commit: 3ba0128
-#      commit: v1.2
-#    cmake:
-#      name: dkh
-#      constraint: 1.2
-#      target: dkh::dkh
-#      enable: ENABLE_dkh
-    conda:
-      channel: conda-forge
-      name: dkh
-      constraint: ">=1.2"
-      cmake:
-        ENABLE_dkh: true
-        dkh_DIR: ${CONDA_PREFIX}/share/cmake/dkh
-
-  - project: ecpint
-    use:
-      added: 1.6
-      required: false
-      required_note: "Allow using libecpint for effective core potentials (ECP)."
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: robashaw
-      name: libecpint
-      commit: v1.0.7  # TODO needs PR
-#    cmake:
-#      name: ecpint
-#      constraint: 1.0.7
-#      target: ECPINT::ecpint
-#      ENABLE_ecpint
-    conda:
-      channel: conda-forge
-      name: libecpint
-      constraint: ">=1.0.7"
-      cmake:
-        ENABLE_ecpint: true
-        ecpint_DIR: ${CONDA_PREFIX}/lib/cmake/ecpint
-
-  - project: libefp
-    use:
-      added: "1.0"  # external at 1.1
-      added_note: "Switched to Py intf through pylibefp at 1.3."
-      required: false
-      required_note: "Allows using LIBEFP and PylibEFP for EFP-modeled fragments."
-      buildable: true
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: loriab
-      name: pylibefp
-      commit: v0.6.1  # libefp itself 15cd7ce = v1.5.0 + 10
-#    cmake:
-#      name: pylibefp
-#      constraint: 0.6.1
-#      target: pylibefp::core
-      #components: shallow
-#      ENABLE_libefp
-    conda:
-      channel: conda-forge
-      name: pylibefp
-      name_note: "0.6.2 provides windows arch"
-      constraint: ">=0.6.2"
-      cmake:
-        ENABLE_libefp: true
-        libefp_DIR: ${CONDA_PREFIX}/share/cmake/libefp
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest and for managing fragment files."
-
-  - project: erd
-    use:
-      added: "1.0"  # external at 1.1
-      deprecated: 1.2
-    repository: null
-    cmake: null
-    conda: null
-
-  - project: gau2grid
-    use:
-      added: 1.2
       required: true
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: dgasmith
-      name: gau2grid
-      commit: v2.0.7
-#    cmake:
-#      name: gau2grid
-#      constraint: 2.0
-#      target: gau2grid::gg
-    conda:
-      channel: conda-forge
-      name: gau2grid
-      constraint: ">=2.0.7"
-      cmake:
-        gau2grid_DIR: ${CONDA_PREFIX}/share/cmake/gau2grid
-
-  - project: gcp
-    use:
-      added: 1.1
-      added_note: "Switched from classic gcp exe to mctc-gcp exe (from gcp-correction) at 1.7. Classic still supported as of 1.8."
-      required: false
       buildable: false
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: grimme-lab
-      name: gcp
-      commit: v2.3.1
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: gcp-correction
-      constraint: ">=2.3.1"
-      cmake:
-        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
-
-  - project: gdma
-    use:
-      added: "1.0"  # external at 1.1
-      required: false
-      required_note: "Allows using Stone's GDMA multipole code."
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: psi4
-      name: gdma
-      commit: 9d607d7  # v2.2.6-2-g9d607d7
-#    cmake:
-#      name: gdma
-#      constraint: 2.2.6
-#      target: gdma::gdma
-#     ENABLE_gdma
-    conda: null
-
-  - project: geometric
-    use:
-      added: 1.4
-      required: false
-      buildable: false
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: leeping
-      name: geomeTRIC
-      commit: "1.0"
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: geometric
-      constraint: ">=1.0"
-      constraint_note: "v1.0 has new API."
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: libint
-    use:
-      added: "1.0"
-      added_note: "Switched from Libint1 to C++11 intf of Libint2 at 1.4."
-      required: true
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: evaleev
-      #account: loriab  # TODO using evaleev for license but commit only at loriab
-      name: libint
-      commit: 0eca57e
-#    cmake:
-#      name: Libint2
-#      constraint:
-#      target: Libint2::cxx
-#      components:
-#        - gss
-#        - CXX_ho
-#        - impure_sh
-#        - "eri_c4_d0_l${MAX_AM_ERI}"
-#        - eri_c4_d1_l2
-#        - eri_c4_d2_l2
-#        - eri_c3_d0_l4
-#        - eri_c3_d1_l3
-#        - eri_c3_d2_l3
-#        - eri_c2_d0_l4
-#        - eri_c2_d1_l3
-#        - eri_c2_d2_l3
-#        - onebody_d0_l4
-#        - onebody_d1_l3
-#        - onebody_d2_l3
-    conda:
-      channel: conda-forge/label/libint_dev
-      name: libint
-      constraint: "==2.7.3dev1"
-      constraint_note: "v2.7.3dev1 provides rt-switchable ordering (src) and derivative integrals (build)."
-      aux_build_names:
-        - //psi4/label/testing::libint2
-        - boost-cpp
-        - eigen
-      aux_build_names_note:
-        "//psi4/label/testing::libint2": "Optionally for linux-64, an AM=7 build is available here."
-      cmake:
-        BOOST_ROOT: ${CONDA_PREFIX}
-        Eigen3_ROOT: ${CONDA_PREFIX}
-        Libint2_DIR: ${CONDA_PREFIX}/lib/cmake/libint2
-        //MAX_AM_ERI: 5
-
-  - project: mdi
-    use:
-      added: 1.4
-      required: false
-      required_note: "Allows using MolSSI driver interface."
-      buildable: true
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: MolSSI-MDI
-      name: MDI_Library
-      commit: v1.2.3
-#    cmake:
-#      name: mdi
-#      constraint: 1.2.3
-#      target: mdi::mdi
-#      components: null
-#     ENABLE_mdi
-    conda:
-      channel: conda-forge
-      name: pymdi
-      constraint: ">=1.2"
-      constraint_note: "v1.2 has breaking API change."
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_mdi is inconsequential."
-
-  - project: mp2d
-    use:
-      added: 1.4
-      required: false
-      buildable: false
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: Chandemonium
-      name: MP2D
-      commit: c6c7f86
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda: null
-
-  - project: mrcc
-    use:
-      added: "1.0"
-      required: false
-      buildable: false
-      buildtime: false
-      cms: true
-    repository: null
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda: null
-      #cmake:
-      #  CMAKE_PROGRAM_PATH: null
-
-  - project: openfermionpsi4
-    use:
-      added: 1.3
-      required: false
-      buildable: false
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: quantumlib
-      name: OpenFermion-Psi4
-      commit: v0.5
-    #cmake:
-    #  name:
-    #  constraint:
-    #  target:
-    #  components:
-    conda:
-      channel: conda-forge
-      name: openfermionpsi4
-      constraint: null
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: optking
-    use:
-      added: 1.7
-      required: true
-      buildable: true
-      buildtime: true
-      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
-      cms: true
-    repository:
-      host: github
-      account: psi-rking
-      name: optking
-      commit: 0.2.1
-#    cmake:
-#      name: optking
-#      constraint: ATLEAST 0.2.1
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: optking
-      constraint: ">=0.2.1"
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: pcmsolver
-    use:
-      added: "1.0"  # external at 1.1
-      required: false
-      required_note: "Allows using PCMSolver library."
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: github
-      account: loriab
-      name: pcmsolver
-      commit: v123_plus_ming
-#    cmake:
-#      name: PCMSolver
-#      constraint: 1.2.3
-#      target: PCMSolver::pcm
-#     ENABLE_PCMSolver
-    conda:
-      channel: conda-forge
-      name: pcmsolver
-      constraint: "1.2.3"
-      aux_build_names:
-        - zlib
-      cmake:
-        ENABLE_PCMSolver: true
-        PCMSolver_DIR: ${CONDA_PREFIX}/share/cmake/PCMSolver
-
-  - project: pybind11
-    use:
-      added: 1.1  # previously, boost-python
-      required: true
-      buildable: true
       buildtime: true
       cms: false
-    repository:
-      host: github
-      account: pybind
-      name: pybind11
-      commit: v2.10.1
-#    cmake:
-#      name: pybind11  # detect Python before pybind11
-#      constraint: 2.10.1
-#      target:
-    conda:
-      channel: conda-forge
-      name: pybind11
-        #- pybind11-abi
-      constraint: ">=2.10.*"
-      cmake:
-        pybind11_DIR: ${CONDA_PREFIX}/share/cmake/pybind11
-
-  - project: pytest
-    use:
-      added: 1.1
-      required: false
-      required_note: "Required for `psi4 --test` or `psi4.test()` ."
-      buildable: false
-      buildtime: false
-      cms: false
-      test_required: true
-    conda:
-      channel: conda-forge
-      name: pytest
-      constraint: ">=7.0.1"
-      aux_run_names:
-        - pytest-xdist
-      aux_run_names_note:
-        pytest-xdist: "Parallel runner not strictly needed but very handy."
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: qcelemental
-    use:
-      added: 1.3
-      required: true
-      buildable: true
-      buildtime: true
-      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
-      cms: true
-    repository:
-      host: github
-      account: MolSSI
-      name: QCElemental
-      commit: v0.25.1
-#    cmake:
-#      name:
-#      constraint: ATLEAST 0.24.0
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: qcelemental
-      constraint: null
-      aux_run_names:
-        - msgpack-python
-        - networkx
-        - pydantic=1.10.11
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: qcengine
-    use:
-      added: 1.4
-      required: true
-      buildable: true
-      buildtime: true
-      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
-      cms: true
-    repository:
-      host: github
-      account: MolSSI
-      name: QCEngine
-      commit: v0.26.0
-#    cmake:
-#      name: qcengine
-#      constraint: ATLEAST 0.26.0
-#      target:
-    conda:
-      channel: conda-forge
-      name: qcengine
-      constraint: null
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: qcfractal
-    use:
-      added: 1.6
-      required: false
-      buildable: false
-      buildtime: false
-      cms: true
-    repository:
-      host: github
-      account: MolSSI
-      name: QCFractal
-      commit: next  # TODO branch
-    cmake: null
-    conda:
-      channel: qcarchive/label/next
-      name: qcfractal
-      constraint: ">=0.50b10"
-      aux_run_names:
-        - postgresql
-      aux_run_names_note:
-        postgresql: "Easy way to use QCFractal, but you can instead supply your own database."
-      skip_win: true
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: simint
-    use:
-      added: 1.1
-      required: false
-      required_note: "Allows using use of SIMINT two-electron integral library."
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: url
-      url: http://www.bennyp.org/research/simint/download/simint-v0.7.tar.bz2
-#    cmake:
-#      name: simint
-#      constraint: 0.7
-#      target: simint::simint
-#     ENABLE_simint
-      components:
-        - "am${MAX_AM_ERI}"
-        - der0
-    conda: null
-      #cmake:
-      #  ENABLE_simint: true
-      #  simint_DIR: ${CONDA_PREFIX}/share/cmake/simint
-      #  //SIMINT_VECTOR: null
-
-  - project: libxc
-    use:
-      added: 1.2
-      required: true
-      buildable: true
-      buildtime: true
-      cms: true
-    repository:
-      host: gitlab
-      account: libxc
-      name: libxc
-      commit: 6.2.2
-#    cmake:
-#      name: Libxc
-#      constraint: 5.1.2  # two calls: catch v5, v6
-#      target: Libxc::xc
-      components:
-        - C
-    conda:
-      channel: conda-forge
-      name: libxc-c
-      constraint: null
-      cmake:
-        Libxc_DIR: ${CONDA_PREFIX}/lib/cmake/Libxc
-
-#  - project: dummy
-#    use:
-#      added:
-#      required:
-#      buildable:
-#      buildtime:
-#      cms:
-#      test_required:
-#      docs_required:
-#    repository:
-#      host: github
-#      account:
-#      name:
-#      commit:
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-#    conda:
-#      channel: conda-forge
-#      name:
-#      constraint:
-
-
-  - project: memory_profiler
-    use:
-      added: 1.2
-      required: false
-      required_note: optional for extra tests
-      buildable: false
-      buildtime: false
-      cms: false
-      test_required: false
     repository: null
     cmake: null
     conda:
       channel: conda-forge
-      name: memory_profiler
+      name: c-compiler
       constraint: null
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
+      cmake:
+        # {CMAKE_CXX_COMPILER_ID}_{Conda_platform}
+        GNU_linux-64:
+          CMAKE_C_COMPILER:       "${CONDA_PREFIX}/bin/${HOST}-gcc"
+          //CMAKE_C_FLAGS:        null
+        Clang_osx-64:
+          CMAKE_C_COMPILER:       "${CONDA_PREFIX}/bin/${HOST}-clang"
+          //CMAKE_C_FLAGS:        null
+        Clang_osx-arm64:
+          CMAKE_C_COMPILER:       "${CONDA_PREFIX}/bin/${HOST}-clang"
+          //CMAKE_C_FLAGS:        null
+        MSVC_win-64: null
+          #CMAKE_C_COMPILER:      clang-cl
+        Intel_linux-64:
+          CMAKE_C_COMPILER:       "\"icc;-gnu-prefix=${CONDA_PREFIX}/bin/${HOST}-;--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
+          //CMAKE_C_FLAGS:        null
+        Intel-multiarch_linux-64:
+          CMAKE_C_COMPILER:       "\"icc;-gnu-prefix=${CONDA_PREFIX}/bin/${HOST}-;--sysroot=${CONDA_PREFIX}/${HOST}/sysroot;-msse2;-axCORE-AVX512,CORE-AVX2,AVX\""
+          //CMAKE_C_FLAGS:        null
+        IntelLLVM_linux-64:
+          CMAKE_C_COMPILER:       "\"${CONDA_PREFIX}/bin/icx;--target=${HOST};--gcc-toolchain=${CONDA_PREFIX};--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
+          //CMAKE_C_FLAGS:        null
+        AppleClang_osx-arm64:
+          CMAKE_C_COMPILER:       "/usr/bin/clang"
+          //CMAKE_C_FLAGS:        null
+        byo:
+          //CMAKE_C_COMPILER:     null
+          //CMAKE_C_FLAGS:        null
 
   - project: cxx
     use:
@@ -889,6 +107,7 @@ data:
           CMAKE_CXX_COMPILER:     "${CONDA_PREFIX}/bin/${HOST}-clang++"
           //CMAKE_CXX_FLAGS:      null
         MSVC_win-64: null
+          #CMAKE_CXX_COMPILER:    clang-cl
         Intel_linux-64:
           CMAKE_CXX_COMPILER:     "\"icpc;-gnu-prefix=${CONDA_PREFIX}/bin/${HOST}-;--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
           //CMAKE_CXX_FLAGS:      null
@@ -906,47 +125,6 @@ data:
         byo:
           //CMAKE_CXX_COMPILER:   null
           //CMAKE_CXX_FLAGS:      null
-
-  - project: c
-    use:
-      added: "1.0"
-      required: true
-      buildable: false
-      buildtime: true
-      cms: false
-    repository: null
-    cmake: null
-    conda:
-      channel: conda-forge
-      name: c-compiler
-      constraint: null
-      cmake:
-        # {CMAKE_CXX_COMPILER_ID}_{Conda_platform}
-        GNU_linux-64:
-          CMAKE_C_COMPILER:       "${CONDA_PREFIX}/bin/${HOST}-gcc"
-          //CMAKE_C_FLAGS:        null
-        Clang_osx-64:
-          CMAKE_C_COMPILER:       "${CONDA_PREFIX}/bin/${HOST}-clang"
-          //CMAKE_C_FLAGS:        null
-        Clang_osx-arm64:
-          CMAKE_C_COMPILER:       "${CONDA_PREFIX}/bin/${HOST}-clang"
-          //CMAKE_C_FLAGS:        null
-        MSVC_win-64: null
-        Intel_linux-64:
-          CMAKE_C_COMPILER:       "\"icc;-gnu-prefix=${CONDA_PREFIX}/bin/${HOST}-;--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
-          //CMAKE_C_FLAGS:        null
-        Intel-multiarch_linux-64:
-          CMAKE_C_COMPILER:       "\"icc;-gnu-prefix=${CONDA_PREFIX}/bin/${HOST}-;--sysroot=${CONDA_PREFIX}/${HOST}/sysroot;-msse2;-axCORE-AVX512,CORE-AVX2,AVX\""
-          //CMAKE_C_FLAGS:        null
-        IntelLLVM_linux-64:
-          CMAKE_C_COMPILER:       "\"${CONDA_PREFIX}/bin/icx;--target=${HOST};--gcc-toolchain=${CONDA_PREFIX};--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
-          //CMAKE_C_FLAGS:        null
-        AppleClang_osx-arm64:
-          CMAKE_C_COMPILER:       "/usr/bin/clang"
-          //CMAKE_C_FLAGS:        null
-        byo:
-          //CMAKE_C_COMPILER:     null
-          //CMAKE_C_FLAGS:        null
 
   - project: fortran
     use:
@@ -989,7 +167,7 @@ data:
           //CMAKE_Fortran_COMPILER: null
           //CMAKE_Fortran_FLAGS:  null
 
-  - project: generator
+  - project: python
     use:
       added: "1.0"
       required: true
@@ -997,14 +175,21 @@ data:
       buildtime: true
       cms: false
     repository: null
-    cmake: null
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
     conda:
       channel: conda-forge
-      name: ninja
-      name_note: "Examplar -- other build generators like Unix Makefiles work, too."
-      constraint: null
+      name: python
+      constraint: ">=3.8"
       cmake:
-        -G: Ninja
+        #Python_ROOT_DIR: ${CONDA_PREFIX}
+        Python_EXECUTABLE: ${CONDA_PREFIX}/bin/python
+        #Python_EXECUTABLE: %CONDA_PREFIX%/python.exe
+        #//Python_LIBRARY: null
+        #//Python_INCLUDE_DIR: null
 
   - project: cmake
     use:
@@ -1023,21 +208,156 @@ data:
         -S: <src>
         -B: <bld>
         CMAKE_PREFIX_PATH: ${CONDA_PREFIX}
+        //CMAKE_BUILD_TYPE: null
+        //CMAKE_VERBOSE_MAKEFILE: null
 
-  - project: numpy
+  - project: generator
     use:
-      added: 1.1
+      added: "1.0"
       required: true
       buildable: false
-      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
       buildtime: true
       cms: false
     repository: null
     cmake: null
     conda:
       channel: conda-forge
-      name: numpy
+      name: ninja
+      name_note: "Examplar -- other build generators like Unix Makefiles work, too."
       constraint: null
+      cmake:
+        -G: Ninja
+
+  - project: cfour
+    use:
+      added: "1.0"
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository: null
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    # xcfour
+    conda: null
+      #cmake:
+      #  CMAKE_PROGRAM_PATH: null
+
+  - project: chemps2
+    use:
+      added: "1.0"  # external at 1.1
+      required: false
+      required_note: "Allows using CheMPS2 for DMRG."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: SebWouters
+      name: CheMPS2
+      commit: d8ac508  # v1.8.9 + 1  # TODO update
+    #cmake:
+    #  name: CheMPS2
+    #  constraint: 1.8.7
+    #  target: CheMPS2::chemps2
+    #  ENABLE_CheMPS2
+    conda: null
+      #cmake:
+      #  ENABLE_CheMPS2: true
+      #  CheMPS2_DIR: ${CONDA_PREFIX}/share/cmake/CheMPS2
+
+  - project: dftd3
+    use:
+      added: "1.0"
+      added_note: "Switched from classic dftd3 exe to py intf of simple-dftd3 (from dftd3-python) at 1.7. Classic still supported as of 1.8."
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: dftd3
+      name: simple-dftd3
+      commit: v0.7.0  # TODO not in psi src
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: dftd3-python
+      constraint: ">=0.6.0"
+      cmake:
+        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
+
+  - project: dkh
+    use:
+      added: "1.0"
+      added_note: "Extracted to external dependency at v1.1."
+      required: false
+      required_note: "Allows using DKH relativistic integrals."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: psi4
+      name: dkh
+      commit: 3ba0128
+    #  commit: v1.2
+    #cmake:
+    #  name: dkh
+    #  constraint: 1.2
+    #  target: dkh::dkh
+    #  enable: ENABLE_dkh
+    conda:
+      channel: conda-forge
+      name: dkh
+      constraint: ">=1.2"
+      cmake:
+        ENABLE_dkh: true
+        dkh_DIR: ${CONDA_PREFIX}/share/cmake/dkh
+
+  - project: erd
+    use:
+      added: "1.0"  # external at 1.1
+      deprecated: 1.2
+    repository: null
+    cmake: null
+    conda: null
+
+  - project: gdma
+    use:
+      added: "1.0"  # external at 1.1
+      added_note: "Switched to Py intf through pygdma at 1.9."
+      required: false
+      required_note: "Allows using Stone's GDMA multipole code."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: psi4
+      name: gdma
+      commit: 9d607d7  # v2.2.6-2-g9d607d7
+    #cmake:
+    #  name: gdma
+    #  constraint: 2.2.6
+    #  target: gdma::gdma
+    # ENABLE_gdma
+    conda:
+      channel: conda-forge
+      name: pygdma
+      constraint: null
+      cmake:
+        ENABLE_gdma: true
+        gdma_DIR: ${CONDA_PREFIX}/share/cmake/gdma
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
 
   - project: lapack
     use:
@@ -1073,29 +393,109 @@ data:
           # gives "undefined symbol: dggev_" at the moment
         netlib:
           LAPACK_LIBRARIES:    ${CONDA_PREFIX}/lib/liblapack${SHLIB_EXT};${CONDA_PREFIX}/lib/libblas${SHLIB_EXT}
+        byo:
+          //LAPACK_LIBRARIES:  null
+          //LAPACK_INCLUDE_DIRS:  null
 
-  - project: python
+  - project: libint
     use:
       added: "1.0"
+      added_note: "Switched from Libint1 to C++11 intf of Libint2 at 1.4."
       required: true
-      buildable: false
+      buildable: true
       buildtime: true
-      cms: false
-    repository: null
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
+      cms: true
+    repository:
+      host: github
+      account: evaleev
+      #account: loriab  # TODO using evaleev for license but commit only at loriab
+      name: libint
+      commit: 0eca57e
+    #cmake:
+    #  name: Libint2
+    #  constraint:
+    #  target: Libint2::cxx
+    #  components:
+    #    - gss
+    #    - CXX_ho
+    #    - impure_sh
+    #    - "eri_c4_d0_l${MAX_AM_ERI}"
+    #    - eri_c4_d1_l2
+    #    - eri_c4_d2_l2
+    #    - eri_c3_d0_l4
+    #    - eri_c3_d1_l3
+    #    - eri_c3_d2_l3
+    #    - eri_c2_d0_l4
+    #    - eri_c2_d1_l3
+    #    - eri_c2_d2_l3
+    #    - onebody_d0_l4
+    #    - onebody_d1_l3
+    #    - onebody_d2_l3
+    conda:
+      channel: conda-forge/label/libint_dev
+      name: libint
+      constraint: "==2.7.3dev1"
+      constraint_note: "v2.7.3dev1 provides rt-switchable ordering (src) and derivative integrals (build)."
+      aux_build_names:
+        - //psi4/label/testing::libint2
+        - boost-cpp
+        - eigen
+      aux_build_names_note:
+        "//psi4/label/testing::libint2": "Optionally for linux-64, an AM=7 build is available here."
+      cmake:
+        BOOST_ROOT: ${CONDA_PREFIX}
+        Eigen3_ROOT: ${CONDA_PREFIX}
+        Libint2_DIR: ${CONDA_PREFIX}/lib/cmake/libint2
+        //MAX_AM_ERI: 5
+        #BOOST_ROOT:  %CONDA_PREFIX%/Library
+        #Eigen3_ROOT: %CONDA_PREFIX%/Library
+
+  - project: libefp
+    use:
+      added: "1.0"  # external at 1.1
+      added_note: "Switched to Py intf through pylibefp at 1.3."
+      required: false
+      required_note: "Allows using LIBEFP and PylibEFP for EFP-modeled fragments."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: loriab
+      name: pylibefp
+      commit: v0.6.1  # libefp itself 15cd7ce = v1.5.0 + 10
+    #cmake:
+    #  name: pylibefp
+    #  constraint: 0.6.1
+    #  target: pylibefp::core
+    #  components: shallow
+    #  ENABLE_libefp
     conda:
       channel: conda-forge
-      name: python
-      constraint: ">=3.8"
+      name: pylibefp
+      name_note: "0.6.2 provides windows arch"
+      constraint: ">=0.6.2"
       cmake:
-        #Python_ROOT_DIR: ${CONDA_PREFIX}
-        Python_EXECUTABLE: ${CONDA_PREFIX}/bin/python
-        #//Python_LIBRARY: null
-        #//Python_INCLUDE_DIR: null
+        ENABLE_libefp: true
+        libefp_DIR: ${CONDA_PREFIX}/share/cmake/libefp
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest and for managing fragment files."
+
+  - project: mrcc
+    use:
+      added: "1.0"
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository: null
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda: null
+      #cmake:
+      #  CMAKE_PROGRAM_PATH: null
 
   - project: openmp
     use:
@@ -1123,6 +523,652 @@ data:
         ENABLE_OPENMP: true
         OpenMP_LIBRARY_DIRS: ${CONDA_PREFIX}/lib
 
+  - project: pcmsolver
+    use:
+      added: "1.0"  # external at 1.1
+      required: false
+      required_note: "Allows using PCMSolver library."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: loriab
+      name: pcmsolver
+      commit: v123_plus_ming
+    #cmake:
+    #  name: PCMSolver
+    #  constraint: 1.2.3
+    #  target: PCMSolver::pcm
+    # ENABLE_PCMSolver
+    conda:
+      channel: conda-forge
+      name: pcmsolver
+      constraint: "1.2.3"
+      aux_build_names:
+        - zlib
+      cmake:
+        ENABLE_PCMSolver: true
+        PCMSolver_DIR: ${CONDA_PREFIX}/share/cmake/PCMSolver
+
+  - project: doxygen
+    use:
+      added: "1.0"
+      required: false
+      buildable: false
+      buildtime: true
+      cms: false
+      docs_required: false
+    repository: null
+    #cmake:
+    #  name: Doxygen
+    #  constraint: null
+    #  target: Doxygen::doxygen
+    #  components: null
+    #  enables_target: doxyman
+    conda:
+      channel: conda-forge
+      name: doxygen
+      constraint: false
+      cmake:
+        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
+
+  - project: python-graphviz
+    use:
+      added: "1.0"
+      required: false
+      buildable: false
+      buildtime: true
+      cms: false
+      docs_required: true
+    repository: null
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: python-graphviz
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: sphinx
+    use:
+      added: "1.0"
+      required: false
+      buildable: false
+      buildtime: true
+      cms: false
+      docs_required: true
+    repository: null
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: sphinx
+      constraint: ">=3.5"
+      aux_build_names:
+        - sphinx-automodapi
+        - sphinx-autodoc-typehints
+        - autodoc-pydantic=1
+      cmake:
+        SPHINX_ROOT: ${CONDA_PREFIX}
+        //SPHINXMAN_STRICT: OFF
+
+  - project: sphinx-psi-theme
+    use:
+      added: "1.0"
+      required: false
+      buildable: false
+      buildtime: true
+      cms: false
+      docs_required: true
+      docs_required_note: "Avoidable by specifying SPHINX_THEME=<alternative_theme>."
+    repository: null
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: psi4
+      name: sphinx-psi-theme
+      constraint: null
+      cmake:
+        SPHINX_THEME: sphinx_psi_theme
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: gcp
+    use:
+      added: 1.1
+      added_note: "Switched from classic gcp exe to mctc-gcp exe (from gcp-correction) at 1.7. Classic still supported as of 1.8."
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: grimme-lab
+      name: gcp
+      commit: v2.3.1
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: gcp-correction
+      constraint: ">=2.3.1"
+      cmake:
+        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
+
+  - project: pybind11
+    use:
+      added: 1.1
+      added_note: "Role previously served by boost-python."
+      required: true
+      buildable: true
+      buildtime: true
+      cms: false
+    repository:
+      host: github
+      account: pybind
+      name: pybind11
+      commit: v2.10.1
+    #cmake:
+    #  name: pybind11  # detect Python before pybind11
+    #  constraint: 2.10.1
+    #  target:
+    conda:
+      channel: conda-forge
+      name: pybind11
+      constraint: ">=2.10.*"
+      cmake:
+        pybind11_DIR: ${CONDA_PREFIX}/share/cmake/pybind11
+
+  - project: pytest
+    use:
+      added: 1.1
+      required: false
+      required_note: "Required for `psi4 --test` or `psi4.test()` ."
+      buildable: false
+      buildtime: false
+      cms: false
+      test_required: true
+    conda:
+      channel: conda-forge
+      name: pytest
+      constraint: ">=7.0.1"
+      aux_run_names:
+        - pytest-xdist
+      aux_run_names_note:
+        pytest-xdist: "Parallel runner not strictly needed but very handy."
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: nbsphinx
+    use:
+      added: 1.1
+      required: false
+      buildable: false
+      buildtime: true
+      cms: false
+      docs_required: false
+      docs_required_note: "Allows including the PsiAPI tutorial in the docs."
+    repository: false
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: nbsphinx
+      constraint: null
+      aux_build_names:
+        - ipykernel
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: numpy
+    use:
+      added: 1.1
+      required: true
+      buildable: false
+      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
+      buildtime: true
+      cms: false
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: numpy
+      constraint: null
+      cmake: null
+
+  - project: simint
+    use:
+      added: 1.1
+      required: false
+      required_note: "Allows using use of SIMINT two-electron integral library."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: url
+      url: http://www.bennyp.org/research/simint/download/simint-v0.7.tar.bz2
+    #cmake:
+    #  name: simint
+    #  constraint: 0.7
+    #  target: simint::simint
+    # ENABLE_simint
+      components:
+        - "am${MAX_AM_ERI}"
+        - der0
+    conda: null
+      #cmake:
+      #  ENABLE_simint: true
+      #  simint_DIR: ${CONDA_PREFIX}/share/cmake/simint
+      #  //SIMINT_VECTOR: null
+
+  - project: ambit
+    use:
+      added: 1.2  # ambit appears in repo by 1.0, but the table in v1.4 paper says v1.2
+      required: false
+      required_note: "Allow using the ambit tensor library."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: jturney
+      name: ambit
+      commit: bda0f02  # recent for c-f
+    #  commit: 733c529  # current master
+    #cmake:
+    #  name:
+    #  constraint: 0.6
+    #  target: ambit::ambit
+    #  components:
+    #  ENABLE_ambit
+    conda: null
+      #cmake:
+      #  ENABLE_ambit: true
+      #  ambit_DIR: ${CONDA_PREFIX}/share/cmake/ambit
+
+  - project: gau2grid
+    use:
+      added: 1.2
+      required: true
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: dgasmith
+      name: gau2grid
+      commit: v2.0.7
+    #cmake:
+    #  name: gau2grid
+    #  constraint: 2.0
+    #  target: gau2grid::gg
+    conda:
+      channel: conda-forge
+      name: gau2grid
+      constraint: ">=2.0.7"
+      cmake:
+        gau2grid_DIR: ${CONDA_PREFIX}/share/cmake/gau2grid
+
+  - project: memory_profiler
+    use:
+      added: 1.2
+      required: false
+      required_note: optional for extra tests
+      buildable: false
+      buildtime: false
+      cms: false
+      test_required: false
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: memory_profiler
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: libxc
+    use:
+      added: 1.2
+      required: true
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: gitlab
+      account: libxc
+      name: libxc
+      commit: 6.2.2
+    #cmake:
+    #  name: Libxc
+    #  constraint: 5.1.2  # two calls: catch v5, v6
+    #  target: Libxc::xc
+      components:
+        - C
+    conda:
+      channel: conda-forge
+      name: libxc-c
+      constraint: null
+      cmake:
+        Libxc_DIR: ${CONDA_PREFIX}/lib/cmake/Libxc
+
+  - project: openfermionpsi4
+    use:
+      added: 1.3
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: quantumlib
+      name: OpenFermion-Psi4
+      commit: v0.5
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: openfermionpsi4
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: qcelemental
+    use:
+      added: 1.3
+      required: true
+      buildable: true
+      buildtime: true
+      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
+      cms: true
+    repository:
+      host: github
+      account: MolSSI
+      name: QCElemental
+      commit: v0.26.0
+    #cmake:
+    #  name:
+    #  constraint: ATLEAST 0.24.0
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: qcelemental
+      constraint: null
+      aux_run_names:
+        - msgpack-python
+        - networkx
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: adcc
+    use:
+      added: 1.4
+      required: false
+      required_note: "Allows using adcc for algebraic-diagrammatic construction methods."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: adc-connect
+      name: adcc
+      commit: v0.15.13
+    cmake:
+      name: adcc
+      constraint: ATLEAST 0.15.13
+      #ENABLE_adcc
+      #target:
+      #components:
+    conda:
+      channel: conda-forge
+      name: adcc
+      constraint: ">=0.15.16"
+      constraint_note: v0.15.16 has transition moment corrections
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_adcc is inconsequential."
+      skip_win: true
+
+  - project: brianqc
+    use:
+      added: 1.4
+      required: false
+      required_note: "Allows using the BrianQC GPU module."
+      buildable: false
+      buildtime: true
+      cms: true
+    repository: null
+    #cmake:
+    #  name:
+    #  constraint: "1.1"
+    #  target: BrianQC::static_wrapper
+    # ENABLE_BrianQC "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)"
+    # BrianQC_DIR
+    conda: null
+
+  - project: cppe
+    use:
+      added: 1.4
+      required: false
+      required_note: "Allows using CPPE for Polarizable Embedding."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: maxscheurer
+      name: cppe
+      commit: v0.3.1
+    #cmake:
+    #  name: cppe
+    #  constraint: ATLEAST 0.3.1
+    #  target:
+    # ENABLE_cppe
+    conda:
+      channel: conda-forge
+      name: cppe
+      name_note: "Equivalent to psi4::pycppe ."
+      constraint: ">=0.3.1"
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
+      skip_win: true
+
+  - project: geometric
+    use:
+      added: 1.4
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: leeping
+      name: geomeTRIC
+      commit: "1.0"
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: geometric
+      constraint: ">=1.0"
+      constraint_note: "v1.0 has new API."
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: mdi
+    use:
+      added: 1.4
+      required: false
+      required_note: "Allows using MolSSI driver interface."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: MolSSI-MDI
+      name: MDI_Library
+      commit: v1.2.3
+    #cmake:
+    #  name: mdi
+    #  constraint: 1.2.3
+    #  target: mdi::mdi
+    #  components: null
+    # ENABLE_mdi
+    conda:
+      channel: conda-forge
+      name: pymdi
+      constraint: ">=1.2"
+      constraint_note: "v1.2 has breaking API change."
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_mdi is inconsequential."
+
+  - project: mp2d
+    use:
+      added: 1.4
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: Chandemonium
+      name: MP2D
+      commit: c6c7f86
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda: null
+
+  - project: qcengine
+    use:
+      added: 1.4
+      required: true
+      buildable: true
+      buildtime: true
+      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
+      cms: true
+    repository:
+      host: github
+      account: MolSSI
+      name: QCEngine
+      commit: v0.27.0
+    #cmake:
+    #  name: qcengine
+    #  constraint: ATLEAST 0.26.0
+    #  target:
+    conda:
+      channel: conda-forge
+      name: qcengine
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: dftd4
+    use:
+      added: 1.5
+      added_note: "Py intf of dftd4 was equivalently packaged as psi4::dftd4 and conda-forge::dftd4-python. Switched preference from former to latter at 1.7. Former still supported as of 1.8."
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: dftd4
+      name: dftd4
+      commit: v3.5.0  # TODO will be needed for scan
+    # - dftd4-python >=3.5.0                         # 3.5.0 provides b97-3c parameters
+    #cmake:
+    #  name:
+    #  constraint:
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: dftd4-python
+      name_note: "Equivalent to psi4::dftd4 . toml needed for qcengine/dftd4-python interface."
+      constraint: ">=3.3.0"
+      aux_run_names:
+        - toml
+      cmake:
+        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
+
+  - project: ecpint
+    use:
+      added: 1.6
+      required: false
+      required_note: "Allow using libecpint for effective core potentials (ECP)."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: robashaw
+      name: libecpint
+      commit: v1.0.7  # TODO needs PR
+    #cmake:
+    #  name: ecpint
+    #  constraint: 1.0.7
+    #  target: ECPINT::ecpint
+    #  ENABLE_ecpint
+    conda:
+      channel: conda-forge
+      name: libecpint
+      constraint: ">=1.0.7"
+      cmake:
+        ENABLE_ecpint: true
+        ecpint_DIR: ${CONDA_PREFIX}/lib/cmake/ecpint
+
+  - project: qcfractal
+    use:
+      added: 1.6
+      required: false
+      buildable: false
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: MolSSI
+      name: QCFractal
+      commit: next  # TODO branch
+    cmake: null
+    conda:
+      channel: qcarchive/label/next
+      name: qcfractal
+      constraint: ">=0.50b10"
+      aux_run_names:
+        - postgresql
+      aux_run_names_note:
+        postgresql: "Easy way to use QCFractal, but you can instead supply your own database."
+      skip_win: true
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
   - project: scipy
     use:
       added: 1.6
@@ -1140,128 +1186,90 @@ data:
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
 
-  - project: doxygen
+  - project: ddx
     use:
-      added: "1.0"
+      added: 1.7
       required: false
-      buildable: false
-      buildtime: true
-      cms: false
-      docs_required: false
-    repository: null
-#    cmake:
-#      name: Doxygen
-#      constraint: null
-#      target: Doxygen::doxygen
-#      components: null
-#      enables_target: doxyman
-    conda:
-      channel: conda-forge
-      name: doxygen
-      constraint: false
-      cmake:
-        CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
-
-  - project: sphinx-psi-theme
-    use:
-      added: "1.0"
-      required: false
-      buildable: false
-      buildtime: true
-      cms: false
-      docs_required: true
-      docs_required_note: "Avoidable by specifying SPHINX_THEME=<alternative_theme>."
-    repository: null
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda:
-      channel: psi4
-      name: sphinx-psi-theme
-      constraint: null
-      cmake:
-        SPHINX_THEME: sphinx_psi_theme
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: sphinx
-    use:
-      added: "1.0"
-      required: false
-      buildable: false
-      buildtime: true
-      cms: false
-      docs_required: true
-    repository: null
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: sphinx
-      constraint: ">=3.5"
-      aux_build_names:
-        - sphinx-automodapi
-        - sphinx-autodoc-typehints
-        - autodoc-pydantic
-      cmake:
-        SPHINX_ROOT: ${CONDA_PREFIX}
-        //SPHINXMAN_STRICT: OFF
-
-  - project: nbsphinx
-    use:
-      added: 1.1
-      required: false
-      buildable: false
-      buildtime: true
-      cms: false
-      docs_required: false
-      docs_required_note: "Allows including the PsiAPI tutorial in the docs."
-    repository: false
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: nbsphinx
-      constraint: null
-      aux_build_names:
-        - ipykernel
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  - project: python-graphviz
-    use:
-      added: "1.0"
-      required: false
-      buildable: false
-      buildtime: true
-      cms: false
-      docs_required: true
-    repository: null
-#    cmake:
-#      name:
-#      constraint:
-#      target:
-#      components:
-    conda:
-      channel: conda-forge
-      name: python-graphviz
-      constraint: null
-      cmake: null
-      cmake_note: "Primarily OTF runtime detected."
-
-  #- project: cfour
+      required_note: "Allows using ddx for domain-decomposition contiuum solvation models."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: ddsolvation
+      name: ddX
+      commit: v0.4.5
     #cmake:
-      # xcfour
-    #conda:
-      #cmake:
-      #  CMAKE_PROGRAM_PATH: null
+    #  name:
+    #  constraint: ATLEAST 0.4.3
+    #  target:
+    #  components:
+    # ENABLE_ddx
+    conda:
+      channel: conda-forge
+      name: pyddx
+      constraint: ">=0.4.3"
+      constraint_note: "v0.4.3 has correct LBP."
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_ddx is inconsequential."
+      skip_win: true
+
+  - project: optking
+    use:
+      added: 1.7
+      required: true
+      buildable: true
+      buildtime: true
+      buildtime_note: "buildtime for cmake checks; otherwise, runtime."
+      cms: true
+    repository:
+      host: github
+      account: psi-rking
+      name: optking
+      commit: 0.2.1
+    #cmake:
+    #  name: optking
+    #  constraint: ATLEAST 0.2.1
+    #  target:
+    #  components:
+    conda:
+      channel: conda-forge
+      name: optking
+      constraint: ">=0.2.1"
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
+  - project: bse
+    use:
+      added: 1.8
+      required: false
+      required_note: "Allows using the basis_set_exchange for requesting basis sets."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: MolSSI-BSE
+      name: basis_set_exchange
+      commit: v0.9
+    #cmake:
+    #  name:
+    #  constraint: ATLEAST 0.9.0
+    #  "ENABLE_bse"
+    conda:
+      channel: conda-forge
+      name: basis_set_exchange
+      constraint: null
+      cmake:
+        ENABLE_bse: true
+      cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
+
+
+
+
+#    "CONDA_TOOLCHAIN_HOST": "x86_64-conda-linux-gnu",
+#    "CONDA_TOOLCHAIN_HOST": "arm64-apple-darwin20.0.0",
+#    "CONDA_TOOLCHAIN_HOST": "x86_64-apple-darwin13.4.0",
 
 
 #  - tomli
@@ -1298,4 +1306,175 @@ data:
 #     ENABLE_cct3         required_note: "Allows using cct3 plugin."
 #     ENABLE_gpu_dfcc     required_note: "Allows using GPU_DFCC plugin for gpu-accelerated df-cc."
 
+##########
+#   # psi4DepsAppleClangCache.cmake
+#   # -----------------------------
+#   #
+#   # This module sets some likely variable values to initialize the CMake
+#   #   cache for dependencies to build your Psi4 source.
+#   #   Note that this is for *Mac* and uses native (non-conda) tools, except
+#   #   for gfortran, which is usable regardless of C/CXX compiler family.
+#   #
+#   # See ``psi4-path-advisor`` (or cmake command below) for use.
+#   #
+#   # >>> /opt/anaconda1anaconda2anaconda3/bin/cmake \
+#   #       -S. \
+#   #       -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsAppleClangCache.cmake \
+#   #       -Bobjdir
+#   #
+#
+#   set(CMAKE_C_COMPILER       "/usr/bin/clang" CACHE STRING "")
+#   set(CMAKE_CXX_COMPILER     "/usr/bin/clang++" CACHE STRING "")
+#   set(CMAKE_CXX_FLAGS        "-stdlib=libc++" CACHE STRING "")
+#   set(CMAKE_Fortran_COMPILER "/opt/anaconda1anaconda2anaconda3/bin/gfortran" CACHE STRING "")
+#
+#   # psi4DepsDisableCache.cmake
+#   # --------------------------
+#   #
+#   # This module cancels the enabling of the link-time Add-Ons set by
+#   #   psi4DepsCache.cmake. Use *after* that file.
+#   #
+#   # See ``psi4-path-advisor`` (or cmake command below) for use.
+#   #
+#   # >>> /opt/anaconda1anaconda2anaconda3/bin/cmake \
+#   #       -S. \
+#   #       -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsCache.cmake \
+#   #       -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsDisableCache.cmake \
+#   #       -Bobjdir
+#   #
+#
+#   set(ENABLE_ambit           OFF CACHE BOOL "" FORCE)
+#   set(ENABLE_dkh             OFF CACHE BOOL "" FORCE)
+#   set(ENABLE_ecpint          OFF CACHE BOOL "" FORCE)
+#   set(ENABLE_PCMSolver       OFF CACHE BOOL "" FORCE)
+#   set(ENABLE_simint          OFF CACHE BOOL "" FORCE)
+#
+########
+
+
+
+#  <<<  Required build dependencies that Psi4 can't build itself  >>>
+#
+#    - BLAS/LAPACK (also runtime; e.g., `conda install mkl-devel`)
+
+#  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
+
+#  <<<  Detecting dependencies and add-ons  >>>
+#
+#    For any ${AddOn} of: , , , , , , , , , , , ,
+#                         , , , ,
+#    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
+#    - CMAKE_DISABLE_FIND_PACKAGE_${AddON} "Set to OFF to force internal build"
+#    - CMAKE_INSIST_FIND_PACKAGE_${AddON} "Set to ON to force external detect"
+
+#  <<<  Detecting BLAS/LAPACK  >>>
+#
+#    - ENV(MATH_ROOT) "Root directory where BLAS/LAPACK libraries should be detected (e.g., ${MATH_ROOT}/lib/libblas.so)"
+#    - BLAS_TYPE "Target BLAS distribution for math detection
+#                 (default: search order MKL>FLEXIBLAS>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#    - LAPACK_TYPE "Target LAPACK distribution for math detection
+#                 (default: search order MKL>FLEXIBLAS>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#    - LAPACK_LIBRARIES "Location of BLAS/LAPACK libraries as ";"-separated list of full paths, bypassing math detection"
+#    - LAPACK_INCLUDE_DIRS "Location of BLAS/LAPACK headers (only needed for MKL), bypassing math detection"
+
+############################  Options: Build What?  ############################
+#option(ENABLE_snsmp2 "Enables SNSMP2 plugin (can also be added at runtime)" OFF)
+#option(ENABLE_v2rdm_casscf "Enables V2RDM_CASSCF plugin (requires Fortran; can also be added at runtime)" OFF)
+#option(ENABLE_psi4fockci "Enables Psi4FockCI plugin (can also be added at runtime)" OFF)
+#option(ENABLE_cct3 "Enables cct3 plugin (requires Fortran; can also be added at runtime)" OFF)
+#option(ENABLE_gpu_dfcc "Enables GPU_DFCC plugin for gpu-accelerated df-cc (requires CUDA; can also be added at runtime)" OFF)
+## These options are relevant to pasture, expert only
+#option(psi4_SKIP_ENABLE_Fortran "Suppress enabling Fortran language even when Fortran addons enabled. Use when only linking pre-built, not compiling addon code." OFF)
+#
+## Append modules added to pasture as needed
+#if(ENABLE_ccsort OR ENABLE_transqt2)
+#  set(ENABLE_pasture ON)
+#  message(STATUS "Enabling pasture plugins")
+#endif()
+#
+#############################  Options: Build How?  #############################
+#include(psi4OptionsTools)
+#option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
+#include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
+## below are uncommon to adjust
+#option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
+#option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
+#option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
+#option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
+#option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
+#                  "-ftest-coverage")
+#option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
+#                  "-ftrapuv -check all -fpstkchk" "-fcheck=all" "-fbounds-check -fcheck-array-temporaries")
+#option_with_flags(ENABLE_ASAN "Enables address sanitizer (requires similarly compiled Python and Numpy)" OFF
+#                  "-fsanitize=address -fno-omit-frame-pointer")
+#option_with_flags(ENABLE_TSAN "Enables thread sanitizer (requires similarly compiled Python and Numpy)" OFF
+#                  "-fsanitize=thread -fPIE -pie -fno-omit-frame-pointer")
+#option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer (requires similarly compiled Python and Numpy)" OFF
+#                  "-fsanitize=undefined -fno-omit-frame-pointer")
+#option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF
+#                  "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
+#option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
+#option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
+#option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
+#option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
+#option_with_default(psi4_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/psi4)
+#option_with_default(TargetLAPACK_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetLAPACK)
+#option_with_default(TargetHDF5_INSTALL_CMAKEDIR "Directory to which psi4 CMake config files installed." share/cmake/TargetHDF5)
+#option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
+#option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
+#option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 17)
+#option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
+#option_with_default(psi4_SHGAUSS_ORDERING "Ordering for shells of solid harmonic Gaussians: standard -- standard ordering (-l, -l+1 ... l) -or- gaussian -- the Gaussian ordering (0, 1, -1, 2, -2, ... l, -l). Changing this is experimental, expert only, and not a future plan. Internal calculations should be correct and fchk files should be correct, but other exports like Molden and QCSchema.Wavefunction won't be." gaussian)
+#include(custom_int_orderings)
+#
+#
+#########################  Process & Validate Options  ##########################
+#include(GNUInstallDirs)
+#include(autocmake_safeguards)
+#include(custom_color_messages)
+#
+#if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+#    set(CMAKE_INSTALL_PREFIX "/usr/local/psi4" CACHE PATH "Install path" FORCE)
+#endif()
+#message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
+#
+#
+## Python use in psi4 (not incl. external/)
+## * interpreter: run the versioner in psi4-core. run tests and build docs in psi4
+## * headers: Python.h for pybind11 to build against in psi4-core
+## * library: not at all
+#
+#set(Python_ADDITIONAL_VERSIONS 3.11 3.10 3.9 3.8)  # adjust with CMake minimum FindPythonInterp
+#find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
+#message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
+#
+#
+#
+#################################  Main Project  ################################
+#              -D CMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+#              -D Python_NumPy_INCLUDE_DIR=${Python_NumPy_INCLUDE_DIR}
+#              -D TargetLAPACK_DIR=${TargetLAPACK_DIR}
+#              -D TargetHDF5_DIR=${TargetHDF5_DIR}
+
+#####
+
+#    "ipi": which_import("ipi", return_bool=True),
+#    "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
+#    "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
+#    "forte": which_import("forte", return_bool=True),
+#    "snsmp2": which_import("snsmp2", return_bool=True),
+#    "resp": which_import("resp", return_bool=True),
+#    "psi4fockci": which_import("psi4fockci", return_bool=True),
+#    "cct3": which_import("cct3", return_bool=True),
+#    "mp2d": psi4_which("mp2d", return_bool=True),
+#    "psixas": which_import("psixas", return_bool=True),
+
+
+#                -D CMAKE_INSTALL_PREFIX=../install ^
+#                -D CMAKE_CXX_FLAGS="/arch:AVX" ^
+#                -D Python_NumPy_INCLUDE_DIR="C:/tools/miniconda3/lib/site-packages/numpy/core/include" ^
+#                -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
+#                -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
+#                -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON ^
+#                -D BUILD_SHARED_LIBS=OFF ^
 

@@ -2,23 +2,22 @@
 
 import os
 import re
-import sys
 import json
 import yaml
-import pprint
 import shutil
 import argparse
 import itertools
+import unicodedata
+import textwrap as _textwrap
 from pathlib import Path
 from subprocess import run
 
-psi4_path_advisor_dir = Path(__file__).resolve().parent
-codedeps_fullpath = (psi4_path_advisor_dir / "codedeps.yaml").resolve()
-entry_dir = Path.cwd()
-cmake_S = os.path.relpath(codedeps_fullpath.parent, start=entry_dir)
+
+codedeps_yaml = Path(__file__).parent.parent / "codedeps.yaml"
+cmake_S = os.path.relpath(codedeps_yaml.parent, start=Path.cwd())
 
 
-def conda_list(environment: str=None) -> str:
+def conda_list(*, name: str = None, prefix: str = None) -> str:
     # thanks, https://stackoverflow.com/a/56363822
     #   SO convinced me that subprocess was better than import (following block)
     #   Also, the conda.cli only works on base env (where conda pkg installed)
@@ -27,8 +26,10 @@ def conda_list(environment: str=None) -> str:
     #env_list_json, stderr, rc = Conda.run_command(Conda.Commands.LIST, ["--json"])
     #env_list_dict = json.loads(env_list_json)
 
-    if environment:
-        proc = run(["conda", "list", "--json", "--name", environment], text=True, capture_output=True)
+    if name:
+        proc = run(["conda", "list", "--json", "--name", name], text=True, capture_output=True)
+    elif prefix:
+        proc = run(["conda", "list", "--json", "--prefix", prefix], text=True, capture_output=True)
     else:
         proc = run(["conda", "list", "--json"], text=True, capture_output=True)
     return json.loads(proc.stdout)
@@ -39,15 +40,30 @@ def conda_info():
     return json.loads(proc.stdout)
 
 
-def strike(text):
-    if os.name == "nt":
+def strike(text: str, tilde: bool = False) -> str:
+    if (os.name == "nt") or tilde:
         # Windows has a probably correctable problem with unicode, but I can't iterate it quickly, so use tilde for strike.
         #   UnicodeEncodeError: 'charmap' codec can't encode character '\u0336' in position 3: character maps to <undefined>
         return "~" + text + "~"
     else:
         return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
 
-#pprint.pprint(conda_info(), width=200)
+
+def visible_width(chars):
+    return sum(not unicodedata.combining(ch) for ch in chars)
+
+
+def compute_width(head, width):
+    return width + len(head) - visible_width(head)
+
+
+re_pkgline = re.compile("(?P<suppress>//)?(?P<chnl>.*::)?(?P<pkg>[A-Za-z0-9_-]+)(?P<constraint>[=!<> ].*)?")
+
+conda_available = shutil.which("conda")
+mamba_available = shutil.which("mamba")
+if not conda_available or mamba_available:
+    raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
+
 conda_info_dict = conda_info()
 conda_platform_native = conda_info_dict["platform"]
 conda_prefix = conda_info_dict["active_prefix"]
@@ -57,10 +73,114 @@ conda_list_struct = conda_list()
 conda_list_pkgver = {item["name"]: item["version"] for item in conda_list_struct}
 conda_lapack_variant = None  # None if no c-f libblas in env
 for itm in conda_list_struct:
-    if itm['name'] == "libblas":
+    if itm["name"] == "libblas":
         conda_lapack_variant = itm["build_string"].split("_")[-1]
+    if itm["name"] == "openblas":
+        conda_openblas_variant = itm["build_string"].split("_")[0]
 
 # TODO handle conda_host None in base env with no compilers present
+# TODO handle conda_lapack_variant None in base env with no lapack present
+
+base_prefix = conda_info_dict["conda_prefix"]  # env with conda cmd
+base_list_struct = conda_list(prefix=base_prefix)
+conda_libmamba_available = False
+for itm in base_list_struct:
+    if itm["name"] == "conda-libmamba-solver":
+        conda_libmamba_available = True
+        break
+
+### conda/mamba
+
+conda_choices = ["mamba-as-possible"]
+conda_help = [f"""(default: mamba-as-possible)
+mamba-as-possible:
+    Use conda-libmamba else mamba else conda to solve environments.
+    Can instead adjust on cmdline, so argument mostly for printing."""]
+if conda_libmamba_available:
+    conda_choices.append("conda-libmamba")
+    conda_help.append("""conda-libmamba:
+    Use `conda ... --solver=libmamba` to solve environments.""")
+else:
+    conda_choices.append(strike("conda-libmamba"))
+    conda_help.append(f"""{strike('conda-libmamba')}
+    Can't use `conda ... --solver=libmamba` to solve environments
+    because packages (conda or conda-libmamba-solver) not installed in base env.""")
+if mamba_available:
+    conda_choices.append("mamba")
+    conda_help.append("""mamba:
+    Use `mamba` to solve environments. UNTESTED""")
+else:
+    conda_choices.append(strike("mamba"))
+    conda_help.append(f"""{strike('mamba')}
+    Can't use `mamba` to solve environments
+    because packages (mamba?) not installed in base env.""")
+if conda_available:
+    conda_choices.append("conda")
+    conda_help.append("""conda:
+    Use `conda` to solve environments.""")
+else:
+    conda_choices.append(strike("conda"))
+    conda_help.append(f"""{strike('conda')}
+    Can't use `conda` to solve environments
+    because package (conda) not installed in base env.""")
+
+
+### blas/lapack
+
+lapack_conda_native = "blas-devel" in conda_list_pkgver
+lapack_default = "conda" if lapack_conda_native else "byo"
+lapack_choices = []
+lapack_help = []
+conda_lapack_platform = {
+    "linux-64":  ["mkl",               "openblas", "blis", "netlib"],
+    "osx-64":    ["mkl", "accelerate", "openblas", "blis", "netlib"],
+    "osx-arm64": [       "accelerate", "openblas",         "netlib"],
+    "win-64":    ["mkl",               "openblas", "blis", "netlib"],
+}
+
+lapack_help.append(f"""(default: {lapack_default})""")
+# byo
+lapack_choices.append("byo")
+lapack_help.append("""byo:
+    Omit blas/lapack from cache to engage self-provided libraries.
+    CMake configuration may still use conda libraries if
+    present and not contravened.""")
+
+# conda
+if lapack_conda_native:
+    lapack_choices.append("conda")
+    lapack_choices.append(conda_lapack_variant)
+    lapack_help.append(f"""conda ({conda_lapack_variant}):
+{conda_lapack_variant} (conda):
+    Engage conda-provided (blas-devel=*=*{conda_lapack_variant}) blas/lapack libraries.""")
+elif conda_lapack_variant:
+    lapack_choices.append(strike("conda"))
+    lapack_choices.append(strike(conda_lapack_variant))
+    lapack_help.append(f"""{strike(f'conda ({conda_lapack_variant})')}:
+{strike(f'{conda_lapack_variant} (conda)')}:
+    Can't engage conda-provided blas/lapack libraries because
+    package (blas-devel=*=*{conda_lapack_variant} etc.) not installed in current env.""")
+else:
+    conda_lapack_platform_this = conda_lapack_platform[conda_platform_native]
+    options_lap = [f"{strike(f'{lap} (conda)')}:" for lap in conda_lapack_platform_this]
+    lapack_default_pkg = conda_lapack_platform_this[0]
+    lapack_choices.append(strike("conda"))
+    for lap in conda_lapack_platform_this:
+        lapack_choices.append(strike(lap))
+    lapack_help.append(f"""{strike(f'conda ({lapack_default_pkg})')}:\n""" + "\n".join(options_lap) + f"""
+    Can't engage conda-provided blas/lapack libraries because
+    package (blas-devel=*=*{lapack_default_pkg} etc.) not installed in current env.""")
+
+
+def lapack_type(arg):
+    if arg.lower() == "conda":
+        return conda_lapack_variant
+    for itm in lapack_choices:
+        if arg.lower() == itm.lower():
+            return itm
+
+
+### compilers
 
 byo_icpc = shutil.which("icpc")
 byo_icpx = shutil.which("icpx")
@@ -77,7 +197,7 @@ if conda_platform_native == "linux-64":
     # byo
     compiler_choices.append("byo")
     compiler_help.append("""byo:
-    Omit compilers in cache to engage self-provided compilers.
+    Omit compilers from cache to engage self-provided compilers.
     CMake configuration may still use conda compilers if
     present and not contravened.""")
 
@@ -146,6 +266,8 @@ GNU (conda):
     Can't engage self-provided icc/icpc compilers backed by
     conda-provided gcc/g++ because package (cxx-compiler)
     not installed in current env.""")
+else:
+    raise RuntimeError("unexpected A")
 
 
 def compiler_type(arg):
@@ -155,25 +277,6 @@ def compiler_type(arg):
         if arg.lower() == itm.lower():
             return itm
 
-
-
-# TODO: need cxx-compiler for dpcpp? (compare i2023 vs i2023b)
-# TODO: full compilers dpcpp from c-f or just intel?
-
-    #elif byo_icpc and not conda_native:
-    #    need cxx (otherwise do byo)
-    #elif not byo_icpc and conda_native:
-    #    need icpc in PATH
-    #elif not byo_icpc and not conda_native:
-    #    need icpc in PATH
-
-
-#
-#        "linux-64": "gxx_linux-64",
-#        "osx-64": "clangxx_osx-64",
-#        "osx-arm64": "clangxx_osx-arm64",
-#        "win-64": "vs2019_win-64"
-#        "linux-64-intelllvm": "dpcpp_linux-64"
 
 #   gcc_linux-64              11.3.0              he6f903b_13    conda-forge
 #   gfortran_linux-64         11.3.0              h3c55166_13    conda-forge
@@ -186,13 +289,15 @@ def compiler_type(arg):
 #   clangxx_osx-arm64         15.0.7               h768a7fd_3    conda-forge
 #   gfortran_osx-arm64        12.2.0               h57527a5_1    conda-forge
 #
+#   vs2019_win-64
+#
 #   intel::dpcpp_linux-64     2023.0.0            intel_25370    intel
 #   dpcpp_linux-64            2023.2.0                  49495    conda-forge
 
-import textwrap as _textwrap
 
 class PreserveWhiteSpaceWrapRawTextHelpFormatter(argparse.RawDescriptionHelpFormatter):
     # thanks, https://stackoverflow.com/a/35925919
+
     def __add_whitespace(self, idx, iWSpace, text):
         if idx == 0:
             return text
@@ -212,52 +317,68 @@ class PreserveWhiteSpaceWrapRawTextHelpFormatter(argparse.RawDescriptionHelpForm
         return [item for sublist in textRows for item in sublist]
 
 
+##### MENU
+
 parser = argparse.ArgumentParser(
-    prog="Psi4",
-    formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter, #)
-                                 #formatter_class=argparse.RawTextHelpFormatter)
+    prog="psi4-path-advisor",
+    formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
     #description="""Build and Run path advisor for Psi4"
     description="""Run env subcommand. Conda env create and activate. Run cmake subcommand. Build.
 
     Run env subcommand. Conda env create and activate. Run cmake subcommand. Build.
 #(Command Default) Generates a minimal CMake command for building Psi4 against
 #    this psi4-dev conda metapackage.
-> git clone https://github.com/psi4/psi4.git && cd psi4
-#> PTH psi4-path-advisor.py env
-#> PTH psi4-path-advisor.py cmake
+
+# <<<  black-box usage (copy/paste-able)
+# get code from GitHub
+git clone https://github.com/psi4/psi4.git && cd psi4
+# generate env spec file from codedeps.yaml. "eval $(...)" creates and activates conda env.
+eval $(conda/psi4-path-advisor.py env)
+# generate cmake cache file from conda env. "eval $(...)" configures and builds with cmake.
+eval $(conda/psi4-path-advisor.py cmake)
+
+shows up in p4dev
+
+# <<<  flexible usage
+# get code from GitHub
+git clone https://github.com/psi4/psi4.git && cd psi4
+
+conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
+# output: conda env create -n p4dev310 -f /psi/gits/hrw-tag/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
+
+./conda/psi4-path-advisor.py cmake
+cmake -S. -GNinja -C/psi/gits/hrw-tag/cache_ppa_noaddons.cmake -Bobjdir_ppa_noaddons && cmake --build objdir_ppa_noaddons
+
+conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
+> psi4-path-advisor.py
+eval $(conda/psi4-path-advisor.py env -n ppa_plain)
 #>>> conda create -n p4dev python={3.6} psi4-dev -c psi4[/label/dev]
+> # intermediate cmd: conda env create -n p4dev -f env_p4dev.yaml && conda activate p4dev
+cmake -S. -GNinja -C/psi/gits/hrw-tag/cache_ppa_plain.cmake -Bobjdir_ppa_plain && cmake --build objdir_ppa_plain
 #>>> conda activate p4dev
 #>>> psi4-path-advisor
 ## execute or adapt `cmake` commands above; DepsCache handles python & addons;
 ##   DepsMKLCache handles math; further psi4-path-advisor options handle compilers.
 #>>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
+    #env_create_and_activate_cmd = f"{subdircmd}conda env create -n {args.name} -f {envspec_fn} --solver libmamba  && conda activate {args.name}"
+bash for eval. conda available.
 #>>> make install""")
 
-parser.add_argument('-v', action='count', default=0,
+parser.add_argument("-v", action="count", default=0,
     help="""Use for more printing (-vv).
-Only the default can be used with direct execution: `psi4-path-advisor args`""")
+Do not use with bash command substitution: eval $(psi4-path-advisor args)""")
+parser.add_argument("--solver",
+    default="mamba-as-possible",
+    choices=conda_choices,
+    help="\n".join(conda_help))
 
 subparsers = parser.add_subparsers(dest="subparser_name",
     help="???")
 
 parser_env = subparsers.add_parser("env",
+    aliases=["conda"],
     formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
-    help="Write conda environment file")
-parser_env.add_argument("--platform",
-    choices=["linux-64", "osx-64", "osx-arm64", "win-64"],
-    default=conda_platform_native,
-    help=f"""Conda platform/subdir for env file, if not the computed native
-(default: {conda_platform_native}). Apple Silicon users,
-check this value! Argument rarely used.""")
-optl_env_file_categories = ["compilers", "lapack", "addons", "test", "docs"]
-parser_env.add_argument("--disable", nargs="+",
-    choices=optl_env_file_categories,
-    help=f"""Categories of dependencies to not include in env file.
-Can instead edit env spec file by hand.""")
-parser_env.add_argument("--python",
-    default="",
-    help="""Specify a python version.
-Can instead accept latest or edit env spec file by hand.""")
+    help="Write conda environment file from codedeps file.")
 parser_env.add_argument("--lapack",
     choices=["mkl", "openblas", "accelerate", "blis", "netlib"],
     help=f"""(default: mkl if available else accelerate)
@@ -266,25 +387,66 @@ Specify a blas/lapack version.
 'mkl' and 'blis' only for *-64 platforms.""")
 parser_env.add_argument("-n", "--name",
     default="p4dev",
-    help=f"""Specify environment name. Can instead edit env spec file by hand
+    help=f"""Specify environment name.
+Can instead edit generated env spec file by hand
 -or- rename on the cmdline, so argument mostly for printing.""")
-# big L2 ?
-# alt compilers
+parser_env.add_argument("--python",
+    default="",
+    help="""Specify a python version.
+Can instead accept latest or edit env spec file by hand.""")
+parser_env.add_argument("--disable",
+    nargs="+",
+    choices=["compilers", "lapack", "addons", "test", "docs"],
+    help=f"""Categories of dependencies to not include in env file.
+Can instead edit generated env spec file by hand.""")
+parser_env.add_argument("--platform",
+    choices=["linux-64", "osx-64", "osx-arm64", "win-64"],
+    default=conda_platform_native,
+    help=f"""Conda platform/subdir for env file, if not the computed native
+(default: {conda_platform_native}). Apple Silicon users,
+check this value! Argument rarely used.""")
+# add constraints to env file?
 
-parser_cmake = subparsers.add_parser("cmake",
+parser_cmake = subparsers.add_parser("cache",
+    aliases=["cmake"],
     formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
-    help="Write cmake configuration cache from environment")
-parser_cmake.add_argument("--objdir",
-    default=f"objdir_{conda_prefix_short}",
-    help=f"""Specify a build directory to cmake, if not (default: objdir_{conda_prefix_short}).
-Can instead rename on cmdline, so argument mostly for printing.""")
+    help="Write cmake configuration cache from conda environment.")
 parser_cmake.add_argument("--compiler",
     choices=compiler_choices,
     default=compiler_default,
     type=compiler_type,
     help="\n".join(compiler_help))
+parser_cmake.add_argument("--lapack",
+    choices=lapack_choices,
+    default=lapack_default,
+    type=lapack_type,
+    help="\n".join(lapack_help))
+parser_cmake.add_argument("--objdir",
+    default=f"objdir_{conda_prefix_short}",
+    help=f"""Specify a build directory to cmake, if not (default: objdir_{conda_prefix_short}).
+Can instead rename on cmdline, so argument mostly for printing.""")
 
 args = parser.parse_args()
+
+if args.subparser_name in ["conda", "env"]:
+    conda_platform = args.platform
+else:
+    conda_platform = conda_platform_native
+
+if args.solver == "mamba-as-possible":
+    if conda_libmamba_available:
+        solver = "conda-libmamba"
+    elif mamba_available:
+        solver = "mamba"
+    elif conda_available:
+        solver = "conda"
+else:
+    solver = args.solver
+if solver == "conda-libmamba":
+    solver = ["conda", "--solver libmamba"]
+else:
+    solver = [solver, ""]
+
 
 if args.v > 1:
     print("#######")
@@ -294,14 +456,8 @@ if args.v > 1:
     print("#######")
     parser_cmake.print_help()
     print("#######")
-
-if args.subparser_name == "env":
-    conda_platform = args.platform
-else:
-    conda_platform = conda_platform_native
-
-if args.v > 1:
-    print(f"{conda_platform=}  {args=}")
+    print(f"{solver=}  {conda_platform=}  {conda_lapack_variant=}  {args=}")
+    print("#######")
 
 #            # pip
 #          - pip
@@ -309,10 +465,12 @@ if args.v > 1:
 #             - git+https://github.com/i-pi/i-pi.git@master-py3
 #""")
 
-with codedeps_fullpath.open() as fp:
+with codedeps_yaml.open() as fp:
     ydict = yaml.load(fp, Loader=yaml.FullLoader)
 
-if args.subparser_name == "env":
+##### ENV
+
+if args.subparser_name in ["conda", "env"]:
     stuff = {
         "build": [],
         "non-qc buildtime required": [],
@@ -355,13 +513,13 @@ if args.subparser_name == "env":
                     raise RuntimeError("libblas accelerate only available for platforms osx-[64|arm64].")
                 if args.lapack in ["mkl", "blis"] and not conda_platform.endswith("-64"):
                     raise RuntimeError("libblas mkl and blis only available for platforms [linux|osx|win]-64.")
-                conda_lapack = f"=*=*{args.lapack}"
+                lapack_constraint = f"=*=*{args.lapack}"
 
                 if args.lapack == "openblas" and conda_platform == "linux-64":
                     aux_bld.append("openblas=*=openmp*")
             else:
-                conda_lapack = conda["constraint"][conda_platform]
-            primary += conda_lapack
+                lapack_constraint = conda["constraint"][conda_platform]
+            primary += lapack_constraint
 
             lapack_packages.extend([primary, *aux_bld, *aux_run])
 
@@ -380,6 +538,7 @@ if args.subparser_name == "env":
             if note := conda.get("aux_build_names_note", {}).get(pkg, None):
                 notes[pkg] += f"; {note}"
 
+        # sort into categories
         if use.get("test_required", None) is not None:
             stuff["test"].append(primary)
             stuff["test"].extend(aux_bld)
@@ -392,7 +551,13 @@ if args.subparser_name == "env":
             if use["cms"]:
                 if use["required"]:
                     stuff["qc buildtime required"].append(primary)
-                    stuff["non-qc buildtime required"].extend(aux_bld)
+                    bareprimary = re.match(re_pkgline, primary).group("pkg")
+                    for itm in aux_bld:
+                        if re.match(re_pkgline, itm).group("pkg").startswith(bareprimary):
+                            # pretty much only to sort the alternate libints to the same section
+                            stuff["qc buildtime required"].append(itm)
+                        else:
+                            stuff["non-qc buildtime required"].append(itm)
                     stuff["runtime required"].extend(aux_run)
                 else:
                     stuff["buildtime optional"].append(primary)
@@ -403,7 +568,7 @@ if args.subparser_name == "env":
                     stuff["build"].append(primary)
                     stuff["build"].extend(aux_bld)
                     if aux_run:
-                        sys.exit(4)
+                        raise RuntimeError("unexpected B")
                 elif use["required"]:
                     stuff["non-qc buildtime required"].append(primary)
                     stuff["non-qc buildtime required"].extend(aux_bld)
@@ -415,7 +580,7 @@ if args.subparser_name == "env":
         else:
             if use["cms"]:
                 if use["required"]:
-                    sys.exit(4)
+                    raise RuntimeError("unexpected C")
                 else:
                     stuff["runtime optional"].append(primary)
                     stuff["runtime optional"].extend(aux_run)
@@ -436,7 +601,7 @@ if args.subparser_name == "env":
         if "compilers" in args.disable:
             for category in list(stuff):
                 for pkg in list(stuff[category]):
-                    if "compiler" in pkg:
+                    if "compiler" in pkg or "dpcpp_linux-64" in pkg:
                         stuff[category].remove(pkg)
         if "lapack" in args.disable:
             for category in list(stuff):
@@ -453,34 +618,37 @@ if args.subparser_name == "env":
 
     for category in stuff:
         text.append(f"    # {category}")
-        for pkg in stuff[category]:
+        for pkg in sorted(stuff[category], key=lambda x: re.match(re_pkgline, x).group("pkg")):
+            commentout, chnl, barepkg, constraint = re.match(re_pkgline, pkg).groups()
+
             if note := notes.get(pkg, ""):
-                if pkg.startswith("//"):
+                if commentout:
                     text.append(f"  #- {pkg[2:]:<24}  # {note}")
                 else:
                     text.append(f"  - {pkg:<24}  # {note}")
             else:
-                if pkg == "python" and args.python:
+                if barepkg == "python" and args.python:
                     text.append(f"  - {pkg}={args.python}")
-                elif pkg.startswith("//"):
+                elif commentout:
                     text.append(f"  #- {pkg[2:]}")
                 else:
                     text.append(f"  - {pkg}")
 
-    envspec_fn = f"env_{args.name}.yaml"
-    with open(envspec_fn, "w") as fp:
+    text.append("")
+    condaenvspec = Path(f"env_{args.name}.yaml").resolve()
+    with condaenvspec.open("w") as fp:
         fp.write("\n".join(text))
     if args.v > 0:
         print("\n".join(text))
 
     subdircmd = "" if conda_platform == conda_platform_native else f"CONDA_SUBDIR={conda_platform} "
-    env_create_and_activate_cmd = f"{subdircmd}conda env create -n {args.name} -f {envspec_fn} --solver libmamba  && conda activate {args.name}"
+    env_create_and_activate_cmd = f"""{subdircmd}{solver[0]} env create -n {args.name} -f {condaenvspec} {solver[1]} && conda activate {args.name}"""
     print(env_create_and_activate_cmd)
-    # TODO decide on mamba and dryrun
 
-# conda config --system --set subdir osx-arm64
 
-elif args.subparser_name == "cmake":
+##### CACHE
+
+elif args.subparser_name in ["cmake", "cache"]:
 
     text = []
     pyotf_merge = {}
@@ -488,7 +656,12 @@ elif args.subparser_name == "cmake":
     cmake_program_path = []
     cpp_merge = []
     absent_merge = []
-    big_args = {}  # -S -G -C -B
+    big_args = {
+        "-S": cmake_S,
+      # "-G"
+      # "-C"
+        "-B": args.objdir,
+    }
     shlib_ext = {
         "linux-64": ".so",
         "osx-64": ".dylib",
@@ -517,33 +690,45 @@ elif args.subparser_name == "cmake":
         plain_package_set = [re.split(constraint_delimiter, pkg)[0] for pkg in package_set]
         plain_package_set = [pkg for pkg in plain_package_set if not pkg.startswith("//")]
 
-        if not all(pkg in conda_list_pkgver for pkg in plain_package_set):
-            absent_merge.append(f"""# <<<  {primary:<30} {", ".join(plain_package_set[1:])}""")
-            continue
+        if all(pkg in conda_list_pkgver for pkg in plain_package_set):
+            all_found = True
+            pkgstr = plain_package_set
+            primary_banner = f"""# <<<  {primary:<27} {", ".join(plain_package_set[1:])}"""
+        else:
+            all_found = False
+            pkgstr = [pkg if (pkg in conda_list_pkgver) else strike(pkg) for pkg in plain_package_set]
+            primary_banner = f"""# <<<  {pkgstr[0]:<{compute_width(pkgstr[0], 27)}} {", ".join(pkgstr[1:])}"""
+            if not use["required"]:
+                absent_merge.append(primary_banner)
+                continue
 
-        if "cmake" not in conda:
-            text.append("")
-            text.append(f"# <<<  {primary}")
-            text.append("# TODO")
+        if primary == "libblas" and args.lapack == "openblas" and conda_platform == "linux-64":
+            if conda_openblas_variant != "openmp":
+                all_found = False
+                pkgstr.append(strike("openblas=*=openmp*"))
+                primary_banner = f"""# <<<  {pkgstr[0]:<{compute_width(pkgstr[0], 27)}} {", ".join(pkgstr[1:])}"""
 
-        elif conda["cmake"] and list(conda["cmake"].keys()) == ["CMAKE_PROGRAM_PATH"]:
+        if conda["cmake"] and list(conda["cmake"].keys()) == ["CMAKE_PROGRAM_PATH"]:
+            if not all_found:
+                raise RuntimeError("required and program_path not handled")
             cmake_program_path.append(conda["cmake"]["CMAKE_PROGRAM_PATH"].replace("${CONDA_PREFIX}", conda_prefix))
-            cpp_merge.append(f"""# <<<  {primary:<30} {conda.get("cmake_note", "")}""")
+            cpp_merge.append(f"""# <<<  {primary:<27} {conda.get("cmake_note", "")}""")
 
         elif conda["cmake"]:
             text.append("")
-            text.append(f"# <<<  {primary}")
+            text.append(primary_banner)
             if note := conda.get("cmake_note"):
                 text.append(f"# {note}")
 
-
             if primary in ["c-compiler", "cxx-compiler", "fortran-compiler"]:
                 if args.compiler == "byo":
-                    text.append("# bring-your-own (byo) compilers by setting here -or- by passing on cmdline -or- by letting cmake autodetect")
+                    text.append("# Bring-your-own (byo) compilers by setting here -or- by passing on cmdline -or- by letting cmake autodetect.")
                 dcmake_vars = conda["cmake"].get(f"{args.compiler}_{conda_platform}", conda["cmake"].get(args.compiler))
             elif primary in ["libblas"]:
-                print("EEE", primary, conda_lapack_variant)
-                dcmake_vars = conda["cmake"].get(f"{conda_lapack_variant}_{conda_platform}", conda["cmake"].get(conda_lapack_variant))
+                if args.lapack == "byo":
+                    text.append("# Bring-your-own (byo) blas/lapack libraries by setting here -or- by passing on cmdline -or- by letting cmake autodetect.")
+                    text.append("#   Note that mixing lapack implementations is not advised.")
+                dcmake_vars = conda["cmake"].get(f"{args.lapack}_{conda_platform}", conda["cmake"].get(args.lapack))
             else:
                 dcmake_vars = conda["cmake"]
 
@@ -562,6 +747,8 @@ elif args.subparser_name == "cmake":
 
                 if k.startswith("//"):
                     text.append(f'# set({k[2:]:<28} {"<placeholder>" if v is None else v} CACHE {ctyp} "")')
+                elif not all_found:
+                    text.append(f'# set({k:<28} {"<placeholder>"} CACHE {ctyp} "")')
                 elif k.startswith("-"):
                     big_args[k] = v.replace("<src>", cmake_S).replace("<bld>", args.objdir)
                 else:
@@ -577,11 +764,11 @@ elif args.subparser_name == "cmake":
                     pyotf_merge[primary] = note
                 else:
                     text.append("")
-                    text.append(f"# <<<  {primary}")
+                    text.append(primary_banner)
                     text.append(f"# {note}")
             else:
                 text.append("")
-                text.append(f"# <<<  {primary}")
+                text.append(primary_banner)
                 text.append("# NOTE TODO no cmake hook")
 
     text.append("")
@@ -595,34 +782,56 @@ elif args.subparser_name == "cmake":
     text.append("")
     text.append("# Sections skipped because packages detected on-the-fly, not through CMake")
     for primary, msg in pyotf_merge.items():
-        text.append(f"# <<<  {primary:<30} {msg}")
+        text.append(f"# <<<  {primary:<27} {msg}")
 
     text.append("")
     text.append("# Sections skipped because packages absent from current environment")
     text.extend(absent_merge)
 
-    cmakecache_lbl = conda_prefix_short
-    if (objdir_lbl := args.objdir.replace("objdir_", "")) != conda_prefix_short:
-        cmakecache_lbl = f"{conda_prefix_short}@{objdir_lbl}"
-    cmakecache = Path(f"cache_{cmakecache_lbl}.cmake").resolve()
+    objdir_lbl = Path(args.objdir).stem.replace("objdir_", "")
+    cmakecache_lbl = conda_prefix_short if (objdir_lbl == conda_prefix_short) else f"{conda_prefix_short}@{objdir_lbl}"
+    cmakecache_lbl = f"cache_{cmakecache_lbl}.cmake"
+    cmakecache = Path(cmakecache_lbl).resolve()
+    big_args["-C"] = cmakecache
+    big_args_sorted = [f"{k}{big_args[k]}" for k in sorted(big_args.keys(), reverse=True)]
+
+    pretext = f"""# {cmakecache_lbl}
+# {'-' * len(cmakecache_lbl)}
+#
+# This file is autogenerated by psi4-path-advisor from conda env {conda_prefix_short}.
+#   It sets some likely values to initialize the CMake cache for dependencies
+#   to build your Psi4 source.
+#
+# Dependency packages are shown as \"present-package\" or \"{strike('missing-package')}\".
+#   Psi4 is not assured to build if any required dependencies show as missing.
+#   Feel free to edit this file prior to CMake configuration or to override with
+#   \"-D\" arguments on the command line. Note that for most setups, no cache file
+#   is needed for CMake configuration to detect all the dependencies in an
+#   active conda environment.
+#
+# An example command line usage is below:
+#
+# > conda activate {conda_prefix_short}
+# > cmake \\
+"""
+    for itm in big_args_sorted:
+        pretext += "#    " + itm
+        pretext += "\n" if itm == big_args_sorted[-1] else " \\\n"
+    pretext += f"# > cmake --build {big_args['-B']}"
+
+    pretext = pretext.splitlines()
+    pretext.extend(text)
+    text = pretext
+
     with cmakecache.open("w") as fp:
         fp.write("\n".join(text))
     if args.v > 0:
         print("\n".join(text))
 
-    big_args["-C"] = cmakecache
-    cmake_configure_and_build_cmd = "cmake " \
-        + " ".join([f"{k}{big_args[k]}" for k in sorted(big_args.keys(), reverse=True)]) \
-        + f" && cmake --build {big_args['-B']}"
+    cmake_configure_and_build_cmd = "cmake " + " ".join(big_args_sorted) + f" && cmake --build {big_args['-B']}"
     print(cmake_configure_and_build_cmd)
 
 
-#parser.add_argument('--disable-addons', action='store_true',
-#                    help="""Disengage building against the psi4-dev-provided _optional_ link-time Add-Ons like CheMPS2.""")
-#
-#parser.add_argument('--disable-mkl', action='store_false', dest='mkl',
-#                    help="""Disengage building against the psi4-dev-provided MKL libraries (`libmkl_rt`).""")
-#
 #elif sys.platform == 'darwin':
 #    parser.add_argument('--clang', action='store_true',
 #                        help="""Engage conda's psi4-dev-provided clang/clang++/gfortran compilers. You must have downloaded this file https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.9.sdk.tar.xz, unpacked it, and saved it at ~/SDKs/MacOSX10.9.sdk . !Change! this arg invoked XCode AppleClang prior to Jul 2018.""")
@@ -701,7 +910,9 @@ elif args.subparser_name == "cmake":
 #print(srecc)
 
 def native_platform():
-    # fn is good but unused. since this can't distinguish the metal for osx, use conda info platform directly.
+    # fn is good but unused. since this can't distinguish the metal chip for osx, we instead use
+    #   conda info platform directly.
+    import sys
     import platform
     if sys.platform.startswith("linux"):
         return "linux-64"
@@ -713,4 +924,8 @@ def native_platform():
             return "osx-64"
     elif sys.platform.startswith("win"):
         return "win-64"
+
+
+# For Silicon owners whose miniconda is set to Intel:
+#   conda config --system --set subdir osx-arm64
 
