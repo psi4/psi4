@@ -1249,6 +1249,37 @@ class PSI_API CompositeJK : public JK {
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
   
+<<<<<<< HEAD
+=======
+    // => Density Fitting Stuff, for Direct DF-J <= //
+
+    /// Auxiliary basis set
+    std::shared_ptr<BasisSet> auxiliary_;
+    /// Coulomb Metric
+    SharedMatrix J_metric_;
+    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
+    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
+
+    // => Semi-Numerical Stuff, for COSX <= //
+
+    /// COSX grids
+    /// Currently contains two grids:
+    /// -  A small DFTGrid for the pre-convergence SCF iterations
+    /// -  A large DFTGrid for the final SCF iteration
+    std::unordered_map<std::string, std::shared_ptr<DFTGrid> > grids_;
+    /// COSX grid currently in use for this iteration
+    std::string gridopt_;
+
+    /// Overlap fitting metric for different COSX grids
+    std::unordered_map<std::string, SharedMatrix> Q_mat_;
+ 
+    // => LinK variables <= //
+
+    // Density-based ERI Screening tolerance to use in the LinK algorithm
+    double linK_ints_cutoff_;
+
+    std::string name() override { return "CompositeJK"; }
+>>>>>>> 8bbea9b7b (Further adjustments to support cleaner COSX model)
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Methods <= //
@@ -1305,6 +1336,12 @@ class PSI_API CompositeJK : public JK {
     *        defaults to true
     */
     virtual void set_do_K(bool do_K) override;
+
+    /**
+    * Knobs for getting and setting current COSX grid
+    */
+    void set_COSX_grid(std::string gridopt) { gridopt_ = gridopt; };
+    std::string get_COSX_grid() { return gridopt_; };
 
     /**
     * Print header information regarding JK

@@ -267,9 +267,13 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
+    cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
     early_screening = self.jk().get_early_screening()
+    if cosx_enabled:
+        self.jk().set_COSX_grid("Initial")
+
     # maximum number of scf iterations to run after early screening is disabled
     scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
 
@@ -457,7 +461,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 if incfock_performed:
                     status.append("INCFOCK")
-                
+
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:
                     self.reset_occupation()
@@ -489,7 +493,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         # Print out the iteration
         core.print_out(
-            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
+            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s \n" %
             ("DF-" if is_dfjk else "", reference, "SAD" if
              ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
 
@@ -519,6 +523,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 # make note of the change to early screening; next SCF iteration will be the last
                 early_screening_disabled = True
+
+                # cosx uses the largest grid for its final SCF iteration
+                if cosx_enabled:
+                    self.jk().set_COSX_grid("Final")
 
                 # clear any cached matrices associated with incremental fock construction
                 # the change in the screening spoils the linearity in the density matrix
