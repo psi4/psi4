@@ -4957,6 +4957,11 @@ def run_mrcc(name, **kwargs):
     os.chdir(mrcc_tmpdir)
 
     # Generate integrals and input file (dumps files to the current directory)
+    if core.get_option('FNOCC', 'NAT_ORBS'):
+        mints = core.MintsHelper(ref_wfn.basisset())
+        mints.set_print(1)
+        mints.integrals()
+
     core.mrcc_generate_input(ref_wfn, level)
     ref_wfn.set_module("mrcc")
 

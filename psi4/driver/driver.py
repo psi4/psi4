@@ -1822,10 +1822,7 @@ def gdma(wfn, datafile=""):
     core.reopen_outfile()
 
     nsites = gdma.get_nsites()
-    maxorder = 0
-    for site in range(1, nsites + 1):
-        site_order = gdma.get_order(site)
-        maxorder = max(maxorder, site_order)
+    maxorder = max(gdma.get_order(site) for site in range(1, nsites + 1))
 
     nvals = (maxorder + 1) * (maxorder + 1)
     dmavals = np.zeros((nsites, nvals))
