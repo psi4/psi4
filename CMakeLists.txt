@@ -43,7 +43,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
 #    - networkx >=2.4 (runtime only; e.g., `conda install networkx`)
 #    - pint >=0.10 (runtime only; e.g., `conda install pint -c conda-forge`)
-#    - pydantic >=1.0,<2 (runtime only; e.g., `conda install pydantic -c conda-forge`)
+#    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 #    - Eigen (for Libint2; e.g., `conda install eigen`)
 #    - Boost (header-only libs for Libint2; e.g., `conda install boost-cpp`)
