@@ -1,6 +1,6 @@
 from addons import *
 
-@uusing("gcp")
+@uusing("mctc-gcp")
 @uusing("dftd4_350")
 @ctest_labeler("quick")
 def test_gcp_r2scan3c():

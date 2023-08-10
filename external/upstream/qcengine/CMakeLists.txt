@@ -31,6 +31,9 @@ else()
     # Note: Without downgrading setuptools or `sed`ing "git_refnames" (_version.py for versioneer-generated),
     #   pip will strenuously resist ("Invalid version: <branch or commit>") arbitrary branch or commit refs from GH.
     #   Make a proper PEP440 tag (e.g., `git tag -a v0.26.0.dev1 -m "v0.26.0.dev1"`), push it, and use in URL below.
+    #
+    #   With downgrading to (setuptools"<66.0.0" packaging"<23.0" ; former vendors latter), one can use arbitrary
+    #   branch or commit tarballs without the tagging procedure described above.
 
     ExternalProject_Add(qcengine_external
         DEPENDS qcelemental_external
