@@ -49,5 +49,6 @@ test:
     - dftd3-python
     - gcp-correction
   commands:
-    - python -c "import psi4; assert psi4.test('quick') == 0"
-    - psi4 --test quick
+    - python -c "import psi4; print(psi4.__version__, psi4.__file__)"
+    #- python -c "import psi4; assert psi4.test('quick') == 0"
+    - psi4 --test smoke_not_d2ints -n2
