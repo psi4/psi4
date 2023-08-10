@@ -182,14 +182,14 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
-   
+
     timer_on("CompositeJK: COSX Grid Construction");
 
     // for now, we use two COSX grids:
     //   - a small DFTGrid for the pre-converged SCF iterations
     //   - a large DFTGrid for the final SCF iteration
-    grids["Initial"] = nullptr;
-    grids["Final"] = nullptr;
+    grids_["Initial"] = nullptr;
+    grids_["Final"] = nullptr;
 
     for (auto& [ gridname, grid ] : grids_) {
         std::string gridname_uppercase = gridname;

@@ -236,20 +236,19 @@ class PSI_API LinK : public SplitJK {
  * doi: 10.1016/j.chemphys.2008.10.036
  */
 class PSI_API COSK : public SplitJK {
-    // => Semi-Numerical Stuff <= //
-
+    
     // => Semi-Numerical Stuff, for COSX <= //
 
     /// COSX grids
     /// Currently contains two grids:
-    /// -  A small DFTGrid for initial SCF iterations
+    /// -  A small DFTGrid for the pre-convergence SCF iterations
     /// -  A large DFTGrid for the final SCF iteration
-    std::unordered_map<std::string, std::shared_ptr<DFTGrid> > grids;
+    std::unordered_map<std::string, std::shared_ptr<DFTGrid> > grids_;
+    /// COSX grid currently in use for this iteration
+    std::string gridopt_;
 
-    /// Overlap fitting metric for grid_initial_
-    SharedMatrix Q_init_;
-    /// Overlap fitting metric for grid_final_
-    SharedMatrix Q_final_;
+    /// Overlap fitting metric for different COSX grids
+    std::unordered_map<std::string, SharedMatrix> Q_mat_;
  
     // integral cutoff
     double kscreen_;
