@@ -91,36 +91,36 @@ for itm in base_list_struct:
 
 ### conda/mamba
 
-conda_choices = ["mamba-as-possible"]
-conda_help = [f"""(default: mamba-as-possible)
+solver_choices = ["mamba-as-possible"]
+solver_help = [f"""(default: mamba-as-possible)
 mamba-as-possible:
     Use conda-libmamba else mamba else conda to solve environments.
     Can instead adjust on cmdline, so argument mostly for printing."""]
 if conda_libmamba_available:
-    conda_choices.append("conda-libmamba")
-    conda_help.append("""conda-libmamba:
+    solver_choices.append("conda-libmamba")
+    solver_help.append("""conda-libmamba:
     Use `conda ... --solver=libmamba` to solve environments.""")
 else:
-    conda_choices.append(strike("conda-libmamba"))
-    conda_help.append(f"""{strike('conda-libmamba')}
+    solver_choices.append(strike("conda-libmamba"))
+    solver_help.append(f"""{strike('conda-libmamba')}
     Can't use `conda ... --solver=libmamba` to solve environments
     because packages (conda or conda-libmamba-solver) not installed in base env.""")
 if mamba_available:
-    conda_choices.append("mamba")
-    conda_help.append("""mamba:
+    solver_choices.append("mamba")
+    solver_help.append("""mamba:
     Use `mamba` to solve environments. UNTESTED""")
 else:
-    conda_choices.append(strike("mamba"))
-    conda_help.append(f"""{strike('mamba')}
+    solver_choices.append(strike("mamba"))
+    solver_help.append(f"""{strike('mamba')}
     Can't use `mamba` to solve environments
     because packages (mamba?) not installed in base env.""")
 if conda_available:
-    conda_choices.append("conda")
-    conda_help.append("""conda:
+    solver_choices.append("conda")
+    solver_help.append("""conda:
     Use `conda` to solve environments.""")
 else:
-    conda_choices.append(strike("conda"))
-    conda_help.append(f"""{strike('conda')}
+    solver_choices.append(strike("conda"))
+    solver_help.append(f"""{strike('conda')}
     Can't use `conda` to solve environments
     because package (conda) not installed in base env.""")
 
@@ -367,10 +367,6 @@ bash for eval. conda available.
 parser.add_argument("-v", action="count", default=0,
     help="""Use for more printing (-vv).
 Do not use with bash command substitution: eval $(psi4-path-advisor args)""")
-parser.add_argument("--solver",
-    default="mamba-as-possible",
-    choices=conda_choices,
-    help="\n".join(conda_help))
 
 subparsers = parser.add_subparsers(dest="subparser_name",
     help="???")
@@ -399,6 +395,10 @@ parser_env.add_argument("--disable",
     choices=["compilers", "lapack", "addons", "test", "docs"],
     help=f"""Categories of dependencies to not include in env file.
 Can instead edit generated env spec file by hand.""")
+parser_env.add_argument("--solver",
+    default="mamba-as-possible",
+    choices=solver_choices,
+    help="\n".join(solver_help))
 parser_env.add_argument("--platform",
     choices=["linux-64", "osx-64", "osx-arm64", "win-64"],
     default=conda_platform_native,
@@ -433,20 +433,6 @@ if args.subparser_name in ["conda", "env"]:
 else:
     conda_platform = conda_platform_native
 
-if args.solver == "mamba-as-possible":
-    if conda_libmamba_available:
-        solver = "conda-libmamba"
-    elif mamba_available:
-        solver = "mamba"
-    elif conda_available:
-        solver = "conda"
-else:
-    solver = args.solver
-if solver == "conda-libmamba":
-    solver = ["conda", "--solver libmamba"]
-else:
-    solver = [solver, ""]
-
 
 if args.v > 1:
     print("#######")
@@ -456,7 +442,7 @@ if args.v > 1:
     print("#######")
     parser_cmake.print_help()
     print("#######")
-    print(f"{solver=}  {conda_platform=}  {conda_lapack_variant=}  {args=}")
+    print(f"{conda_platform=}  {conda_lapack_variant=}  {args=}")
     print("#######")
 
 #            # pip
@@ -471,6 +457,21 @@ with codedeps_yaml.open() as fp:
 ##### ENV
 
 if args.subparser_name in ["conda", "env"]:
+
+    if args.solver == "mamba-as-possible":
+        if conda_libmamba_available:
+            solver = "conda-libmamba"
+        elif mamba_available:
+            solver = "mamba"
+        elif conda_available:
+            solver = "conda"
+    else:
+        solver = args.solver
+    if solver == "conda-libmamba":
+        solver = ["conda", "--solver libmamba"]
+    else:
+        solver = [solver, ""]
+
     stuff = {
         "build": [],
         "non-qc buildtime required": [],

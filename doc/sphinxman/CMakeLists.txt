@@ -118,7 +118,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
       psi4square.png
       favicon-psi4.ico
       AlphaMOs.png
-      gdma-2.2.06.pdf
+      gdma-2.3.pdf
       Total.png
       VA.png
       prflow.001.jpeg

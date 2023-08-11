@@ -213,6 +213,7 @@ jobs:
           #- psi4/label/dev::fockci
           - gcp-correction
           - geometric
+          - i-pi
           #- psi4/label/dev::mp2d
           - openfermion>=1.0
           - openfermionpsi4
@@ -228,9 +229,6 @@ jobs:
           - pytest-xdist
             # pip
           - pip
-          - pip:
-             - git+https://github.com/i-pi/i-pi.git@master-py3
-             #- git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
 
         # toml needed for psi4 to load parameters from dftd4-python
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error

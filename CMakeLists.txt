@@ -74,7 +74,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
-#    - CMAKE_DISABLE_FIND_PACKAGE_${AddON} "Set to OFF to force internal build"
+#    - CMAKE_DISABLE_FIND_PACKAGE_${AddON} "Set to ON to force internal build"
 #    - CMAKE_INSIST_FIND_PACKAGE_${AddON} "Set to ON to force external detect"
 
 #  <<<  Detecting BLAS/LAPACK  >>>

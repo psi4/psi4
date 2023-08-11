@@ -184,6 +184,10 @@ data:
       channel: conda-forge
       name: python
       constraint: ">=3.8"
+      aux_build_names:
+        - pip
+      aux_build_names_note:
+        pip: "Package installer not strictly needed but needs to be tied to this python if used."
       cmake:
         #Python_ROOT_DIR: ${CONDA_PREFIX}
         Python_EXECUTABLE: ${CONDA_PREFIX}/bin/python
@@ -268,6 +272,8 @@ data:
       #cmake:
       #  ENABLE_CheMPS2: true
       #  CheMPS2_DIR: ${CONDA_PREFIX}/share/cmake/CheMPS2
+      #  //CMAKE_INSIST_FIND_PACKAGE_CheMPS2: true
+      #  //CMAKE_DISABLE_FIND_PACKAGE_CheMPS2: true
 
   - project: dftd3
     use:
@@ -322,6 +328,8 @@ data:
       cmake:
         ENABLE_dkh: true
         dkh_DIR: ${CONDA_PREFIX}/share/cmake/dkh
+        //CMAKE_INSIST_FIND_PACKAGE_dkh: true
+        //CMAKE_DISABLE_FIND_PACKAGE_dkh: true
 
   - project: erd
     use:
@@ -331,6 +339,7 @@ data:
     cmake: null
     conda: null
 
+    # TODO update now pygdma merged
   - project: gdma
     use:
       added: "1.0"  # external at 1.1
@@ -357,6 +366,8 @@ data:
       cmake:
         ENABLE_gdma: true
         gdma_DIR: ${CONDA_PREFIX}/share/cmake/gdma
+        //CMAKE_INSIST_FIND_PACKAGE_gdma: true
+        //CMAKE_DISABLE_FIND_PACKAGE_gdma: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
 
   - project: lapack
@@ -447,6 +458,8 @@ data:
         Eigen3_ROOT: ${CONDA_PREFIX}
         Libint2_DIR: ${CONDA_PREFIX}/lib/cmake/libint2
         //MAX_AM_ERI: 5
+        //CMAKE_INSIST_FIND_PACKAGE_Libint2: true
+        //CMAKE_DISABLE_FIND_PACKAGE_Libint2: true
         #BOOST_ROOT:  %CONDA_PREFIX%/Library
         #Eigen3_ROOT: %CONDA_PREFIX%/Library
 
@@ -478,6 +491,8 @@ data:
       cmake:
         ENABLE_libefp: true
         libefp_DIR: ${CONDA_PREFIX}/share/cmake/libefp
+        //CMAKE_INSIST_FIND_PACKAGE_pylibefp: true
+        //CMAKE_DISABLE_FIND_PACKAGE_pylibefp: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest and for managing fragment files."
 
   - project: mrcc
@@ -550,6 +565,8 @@ data:
       cmake:
         ENABLE_PCMSolver: true
         PCMSolver_DIR: ${CONDA_PREFIX}/share/cmake/PCMSolver
+        //CMAKE_INSIST_FIND_PACKAGE_PCMSolver: true
+        //CMAKE_DISABLE_FIND_PACKAGE_PCMSolver: true
 
   - project: doxygen
     use:
@@ -692,6 +709,8 @@ data:
       constraint: ">=2.10.*"
       cmake:
         pybind11_DIR: ${CONDA_PREFIX}/share/cmake/pybind11
+        //CMAKE_INSIST_FIND_PACKAGE_pybind11: true
+        //CMAKE_DISABLE_FIND_PACKAGE_pybind11: true
 
   - project: pytest
     use:
@@ -777,7 +796,10 @@ data:
       #  ENABLE_simint: true
       #  simint_DIR: ${CONDA_PREFIX}/share/cmake/simint
       #  //SIMINT_VECTOR: null
+      #  //CMAKE_INSIST_FIND_PACKAGE_simint: true
+      #  //CMAKE_DISABLE_FIND_PACKAGE_simint: true
 
+    # TODO update now ambit merged
   - project: ambit
     use:
       added: 1.2  # ambit appears in repo by 1.0, but the table in v1.4 paper says v1.2
@@ -802,6 +824,8 @@ data:
       #cmake:
       #  ENABLE_ambit: true
       #  ambit_DIR: ${CONDA_PREFIX}/share/cmake/ambit
+      #  //CMAKE_INSIST_FIND_PACKAGE_ambit: true
+      #  //CMAKE_DISABLE_FIND_PACKAGE_ambit: true
 
   - project: gau2grid
     use:
@@ -825,6 +849,8 @@ data:
       constraint: ">=2.0.7"
       cmake:
         gau2grid_DIR: ${CONDA_PREFIX}/share/cmake/gau2grid
+        //CMAKE_INSIST_FIND_PACKAGE_gau2grid: true
+        //CMAKE_DISABLE_FIND_PACKAGE_gau2grid: true
 
   - project: memory_profiler
     use:
@@ -868,6 +894,8 @@ data:
       constraint: null
       cmake:
         Libxc_DIR: ${CONDA_PREFIX}/lib/cmake/Libxc
+        //CMAKE_INSIST_FIND_PACKAGE_Libxc: true
+        //CMAKE_DISABLE_FIND_PACKAGE_Libxc: true
 
   - project: openfermionpsi4
     use:
@@ -890,6 +918,11 @@ data:
       channel: conda-forge
       name: openfermionpsi4
       constraint: null
+      aux_run_names:
+        - openfermion=1
+        - pydantic=1
+      aux_run_names_note:
+        - "openfermion=1": "Shouldn't need to specify but do for the pydantic transition."
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
 
@@ -918,7 +951,9 @@ data:
       aux_run_names:
         - msgpack-python
         - networkx
-      cmake: null
+      cmake:
+        //CMAKE_INSIST_FIND_PACKAGE_qcelemental: true
+        //CMAKE_DISABLE_FIND_PACKAGE_qcelemental: true
       cmake_note: "Primarily OTF runtime detected."
 
   - project: adcc
@@ -1018,6 +1053,23 @@ data:
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
 
+  - project: i-pi
+    use:
+      added: 1.4
+      required: false
+      required_note: "Allows using the i-PI universal force engine."
+      buildable: false
+      buildtime: false
+      cms: true
+    repository: null
+    cmake: null
+    conda:
+      channel: conda-forge
+      name: i-pi
+      constraint: null
+      cmake: null
+      cmake_note: "Primarily OTF runtime detected."
+
   - project: mdi
     use:
       added: 1.4
@@ -1085,7 +1137,9 @@ data:
       channel: conda-forge
       name: qcengine
       constraint: null
-      cmake: null
+      cmake:
+        //CMAKE_INSIST_FIND_PACKAGE_qcengine: true
+        //CMAKE_DISABLE_FIND_PACKAGE_qcengine: true
       cmake_note: "Primarily OTF runtime detected."
 
   - project: dftd4
@@ -1143,6 +1197,8 @@ data:
       cmake:
         ENABLE_ecpint: true
         ecpint_DIR: ${CONDA_PREFIX}/lib/cmake/ecpint
+        //CMAKE_INSIST_FIND_PACKAGE_ecpint: true
+        //CMAKE_DISABLE_FIND_PACKAGE_ecpint: true
 
   - project: qcfractal
     use:
@@ -1236,7 +1292,9 @@ data:
       channel: conda-forge
       name: optking
       constraint: ">=0.2.1"
-      cmake: null
+      cmake:
+        //CMAKE_INSIST_FIND_PACKAGE_optking: true
+        //CMAKE_DISABLE_FIND_PACKAGE_optking: true
       cmake_note: "Primarily OTF runtime detected."
 
   - project: bse
