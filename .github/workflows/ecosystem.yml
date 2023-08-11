@@ -137,7 +137,7 @@ jobs:
           # - psi4/label/dev::chemps2
           # - psi4/label/dev::libecpint
           - dkh
-          # - psi4/label/dev::gdma
+          - pygdma
           # - psi4/label/dev::pcmsolver
           # - psi4/label/dev::simint
             # runtime
@@ -187,7 +187,7 @@ jobs:
           #- psi4/label/dev::chemps2
           - dkh
           #- psi4/label/dev::libecpint
-          #- psi4/label/dev::gdma
+          - pygdma
           #- psi4/label/dev::pcmsolver
           #- psi4/label/dev::simint
             # qc opt'l
@@ -297,7 +297,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
           -D ENABLE_ecpint=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -D ENABLE_gdma=OFF \
+          -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
           -D ENABLE_PCMSolver=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
@@ -338,7 +338,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
           -D ENABLE_ecpint=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -D ENABLE_gdma=OFF \
+          -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
           -D ENABLE_PCMSolver=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
@@ -375,6 +375,8 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+          -D ENABLE_gdma=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.cmargs }}

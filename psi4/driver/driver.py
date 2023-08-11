@@ -1748,7 +1748,7 @@ def vibanal_wfn(
 
 def gdma(wfn, datafile=""):
     """Function to use wavefunction information in *wfn* and, if specified,
-    additional commands in *filename* to run GDMA analysis.
+    additional commands in *filename* to run GDMA analysis with A. J. Stone's program.
 
     .. versionadded:: 0.6
 
@@ -1802,7 +1802,54 @@ def gdma(wfn, datafile=""):
             f.write("Limit %d\n" % core.get_option('GDMA', 'GDMA_LIMIT'))
             f.write("Start\n")
             f.write("Finish\n")
-    core.run_gdma(wfn, commands)
+
+    # from outside the Psi4 ecosystem
+    from qcelemental.util import which_import
+    if not which_import("gdma", return_bool=True):
+        raise ModuleNotFoundError('Python module gdma not found. Solve by installing it: `conda install -c conda-forge gdma` or recompile with `-DENABLE_gdma`')
+    import gdma
+
+    min_version = "2.3.3"
+    from pkg_resources import parse_version
+    if parse_version(gdma.__version__) < parse_version(min_version):
+        raise ModuleNotFoundError(f"GDMA version {min_version} is required at least. Version {gdma.__version__} was found.")
+
+    core.prepare_options_for_module("GDMA")
+
+    gof = core.get_output_file()
+    gdma.run_gdma(gof, commands)
+    core.set_output_file(gof, True)
+    core.reopen_outfile()
+
+    nsites = gdma.get_nsites()
+    maxorder = max(gdma.get_order(site) for site in range(1, nsites + 1))
+
+    nvals = (maxorder + 1) * (maxorder + 1)
+    dmavals = np.zeros((nsites, nvals))
+    for site in range(1, nsites + 1):
+        site_order = gdma.get_order(site)
+        site_nvals = (site_order + 1) * (site_order + 1)
+        for n in range(1, site_nvals + 1):
+            dmavals[site - 1][n - 1] = gdma.get_dma_value(site, n)
+    dmavals = core.Matrix.from_array(dmavals)
+    dmavals.name = "Spherical Harmonic DMA for each site"
+
+    totvals = np.zeros((1, nvals))
+    for n in range(1, nvals + 1):
+        totvals[0][n - 1] = gdma.get_tot_value(n)
+    totvals = core.Matrix.from_array(totvals)
+    totvals.name = "Total multipoles, translated to the origin"
+
+    wfn.set_variable("DMA DISTRIBUTED MULTIPOLES", dmavals)  # P::e GDMA
+    wfn.set_variable("DMA TOTAL MULTIPOLES", totvals)  # P::e GDMA
+    core.set_variable("DMA DISTRIBUTED MULTIPOLES", dmavals)  # P::e GDMA
+    core.set_variable("DMA TOTAL MULTIPOLES", totvals)  # P::e GDMA
+    core.print_out("""
+  DMA results are available in the Python driver through the commands:
+  variable('DMA DISTRIBUTED MULTIPOLES')
+  variable('DMA TOTAL MULTIPOLES')
+
+""")
 
     os.remove(fchkfile)
     # If we generated the DMA control file, we should clean up here

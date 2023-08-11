@@ -75,7 +75,7 @@ _programs = {
     "erd": psi4.addons("erd"),
     "fockci": which_import("psi4fockci", return_bool=True),  # package fockci, import psi4fockci
     "forte": which_import("forte", return_bool=True),
-    "gdma": psi4.addons("gdma"),
+    "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
     "ipi": which_import("ipi", return_bool=True),
     "mrcc": which("dmrcc", return_bool=True),

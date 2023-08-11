@@ -199,12 +199,6 @@ namespace psimrcc {
 SharedWavefunction psimrcc(SharedWavefunction, Options&);
 }
 
-#ifdef USING_gdma
-namespace gdma_interface {
-SharedWavefunction gdma_interface(SharedWavefunction, Options&, const std::string& datfilename);
-}
-#endif
-
 // Matrix returns
 namespace scfgrad {
 SharedMatrix scfgrad(std::shared_ptr<scf::HF>, Options&);
@@ -402,18 +396,6 @@ SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("DETCI");
     return detci::detci(ref_wfn, Process::environment.options);
 }
-
-#ifdef USING_gdma
-double py_psi_gdma(SharedWavefunction ref_wfn, const std::string& datfilename) {
-    py_psi_prepare_options_for_module("GDMA");
-    gdma_interface::gdma_interface(ref_wfn, Process::environment.options, datfilename);
-    return 0.0;
-}
-#else
-double py_psi_gdma(SharedWavefunction ref_wfn, const std::string& datfilename) {
-    throw PSIEXCEPTION("GDMA not enabled. Recompile with -DENABLE_gdma.");
-}
-#endif
 
 #ifdef USING_CheMPS2
 SharedWavefunction py_psi_dmrg(SharedWavefunction ref_wfn) {
@@ -1333,7 +1315,6 @@ PYBIND11_MODULE(core, core) {
     core.def("cctriples", py_psi_cctriples, "ref_wfn"_a, "Runs the coupled cluster (T) energy code.");
     core.def("detci", py_psi_detci, "ref_wfn"_a, "Runs the determinant-based configuration interaction code.");
     core.def("dmrg", py_psi_dmrg, "ref_wfn"_a, "Runs the CheMPS2 interface DMRG code.");
-    core.def("run_gdma", py_psi_gdma, "ref_wfn"_a, "datfilename"_a, "Runs the GDMA interface code.");
     core.def("fnocc", py_psi_fnocc, "ref_wfn"_a, "Runs the FNO-CCSD(T)/QCISD(T)/MP4/CEPA energy code");
     core.def("cchbar", py_psi_cchbar, "ref_wfn"_a, "Runs the code to generate the similarity transformed Hamiltonian.");
     core.def("cclambda", py_psi_cclambda, "ref_wfn"_a, "Runs the coupled cluster lambda equations code.");
