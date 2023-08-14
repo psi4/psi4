@@ -28,7 +28,7 @@ dependencies:
   - jupyter_client
   - nbsphinx
   - python-graphviz
-  - sphinx
+  - sphinx=6
   - sphinx-autodoc-typehints
   - sphinx-automodapi
   - psi4/label/dev::sphinx-psi-theme
