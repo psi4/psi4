@@ -74,10 +74,6 @@ inline int64_t i_offset64(int64_t i) { return ((i * (i + 1)) >> 1); }
 /// @}
 
   ShellMapType compute_shell_map(const std::vector<std::vector<int>> & atom_map, const std::shared_ptr<BasisSet> &);
-PSI_DEPRECATED(
-    "Calling `PetiteList.delete_shell_map` is no longer necessary.  In the version "
-    " of Psi4 following 1.4 this function will no longer be provided.")
-void delete_shell_map(ShellMapType shell_map, const std::shared_ptr<BasisSet> &);
 
 /////////////////////////////////////////////////////////////////////////////
 

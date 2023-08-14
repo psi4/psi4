@@ -259,8 +259,6 @@ std::vector<std::vector<int>> compute_atom_map(const std::shared_ptr<Molecule> &
     return shell_map;
 }
 
-void delete_shell_map(ShellMapType shell_map, const std::shared_ptr<BasisSet> &) {}
-
 ////////////////////////////////////////////////////////////////////////////
 
 void SOCoefficients::add_contribution(int bf, double coeff, int symm) {
