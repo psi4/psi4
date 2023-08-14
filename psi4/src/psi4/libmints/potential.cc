@@ -156,7 +156,7 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSa
                     int icenter = b1_->basis()->shell(s1.aoshell).ncenter();
                     int jcenter = b2_->basis()->shell(s2.aoshell).ncenter();
 
-                    for (int itr = 0; itr < s1.nfunc; ++itr) {
+                    for (int itr = 0; itr < s1.nfunc(); ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
                         // SO transform coefficient
                         double icoef = ifunc.coef;
@@ -170,7 +170,7 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSa
                         int irel = b1_->function_within_irrep(ish, isofunc);
                         int iirrep = ifunc.irrep;
 
-                        for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
+                        for (int jtr = 0; jtr < s2.nfunc(); ++jtr) {
                             const SOTransformFunction &jfunc = s2.func[jtr];
                             double jcoef = jfunc.coef * icoef;
                             int jaofunc = jfunc.aofunc;
