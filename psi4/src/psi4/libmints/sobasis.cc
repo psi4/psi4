@@ -196,7 +196,7 @@ void SOBasisSet::init() {
     aotrans_.resize(basis_->nshell());  // we need the ao shell number here
 
     for (i = 0; i < nblocks; i++) {
-      for (j = 0; j < soblocks[i].so.size(); j++) {
+      for (j = 0; j < soblocks[i].len(); j++) {
           if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
             int aoshell0 = include_pure_transform ? basis_->ao_to_shell(bfn0) : basis_->function_to_shell(bfn0);
