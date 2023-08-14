@@ -14,8 +14,8 @@ requirements:
     - networkx
     - numpy
     - python={{ PY_VER }}
-    - qcelemental=0.25.1
-    - qcengine=0.26.0
+    - qcelemental=0.26.0
+    - qcengine=0.27.0
     - msgpack-python
     - optking
     - gau2grid
