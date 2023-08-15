@@ -184,7 +184,7 @@ void SOBasisSet::init() {
     //    petite_->print();
 
     int nblocks = petite_->nblocks();
-    SO_block *soblocks(petite_->compute_aotoso_info());
+    auto soblocks(petite_->compute_aotoso_info());
 
     //    for (i=0; i<nblocks; ++i) {
     //        outfile->Printf( "soblock[%d]\n", i);
@@ -196,8 +196,8 @@ void SOBasisSet::init() {
     aotrans_.resize(basis_->nshell());  // we need the ao shell number here
 
     for (i = 0; i < nblocks; i++) {
-        for (j = 0; j < soblocks[i].len; j++) {
-            if (soblocks[i].so[j].length == 0) continue;
+      for (j = 0; j < soblocks[i].len(); j++) {
+          if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
             int aoshell0 = include_pure_transform ? basis_->ao_to_shell(bfn0) : basis_->function_to_shell(bfn0);
             int soshell0 = aoshell_to_soshell[aoshell0];
@@ -212,7 +212,7 @@ void SOBasisSet::init() {
     int nfuncall = 0;
     for (i = 0; i < nblocks; i++) {
         int irrep = ct.which_irrep(i);
-        for (j = 0; j < soblocks[i].len; j++) {
+        for (j = 0; j < soblocks[i].len(); j++) {
             if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
             int aoshell0 = include_pure_transform ? basis_->ao_to_shell(bfn0) : basis_->function_to_shell(bfn0);

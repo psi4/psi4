@@ -190,7 +190,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
     for (int i = 0; i < natom; ++i) atom_salcs_.push_back(CdSalcWRTAtom());
 
     // Obtain atom mapping of atom * symm op to atom
-    int **atom_map = compute_atom_map(molecule_);
+    auto atom_map = compute_atom_map(molecule_);
     memset(cdsalcpi_, 0, sizeof(int) * 8);
 
     int nsalc = 0;
@@ -281,9 +281,6 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol, int needed_irreps, bool pr
     }
     ncd_ = salcs_.size();
     memcpy(cdsalcpi_, new_cdsalcpi, sizeof(int) * 8);
-
-    // Free memory.
-    delete_atom_map(atom_map, molecule_);
 }
 
 CdSalcList::~CdSalcList() {}
