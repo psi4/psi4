@@ -45,12 +45,12 @@ from qcelemental.util import parse_version, which
 
 from psi4 import extras
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import qcdb
-from psi4.driver import psifiles as psif
-from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, UpgradeHelper, ValidationError, docs_table_link
+from .. import p4util
+from .. import qcdb
+from .. import psifiles as psif
+from ..p4util.exceptions import ManagedMethodError, PastureRequiredError, UpgradeHelper, ValidationError, docs_table_link
 #from psi4.driver.molutil import *
-from psi4.driver.qcdb.basislist import corresponding_basis
+from ..qcdb.basislist import corresponding_basis
 # never import driver, wrappers, or aliases into this file
 
 from .proc_data import method_algorithm_type

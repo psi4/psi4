@@ -34,8 +34,9 @@ from ..solvent.efp import (get_qm_atoms_opts, modify_Fock_induced,
                            modify_Fock_permanent)
 
 from psi4 import core
-from psi4.driver import constants, p4util
-from psi4.driver.p4util.exceptions import SCFConvergenceError, ValidationError
+from ...constants import constants
+from ... import p4util
+from ...p4util.exceptions import SCFConvergenceError, ValidationError
 
 #import logging
 #logger = logging.getLogger("scf.scf_iterator")

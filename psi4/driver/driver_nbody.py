@@ -154,19 +154,18 @@ try:
 except ImportError:
     from pydantic import Field, validator
 
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 import logging
 
 import numpy as np
 from qcelemental.models import DriverEnum, AtomicResult
 
 from psi4 import core
-from psi4.driver import constants, driver_nbody_multilevel, p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.task_base import BaseComputer, AtomicComputer, EnergyGradientHessianWfnReturn
-from psi4.driver.driver_cbs import CompositeComputer
-from psi4.driver.driver_findif import FiniteDifferenceComputer
+from .constants import constants, pp
+from . import driver_nbody_multilevel, p4util
+from .p4util.exceptions import *
+from .task_base import BaseComputer, AtomicComputer, EnergyGradientHessianWfnReturn
+from .driver_cbs import CompositeComputer
+from .driver_findif import FiniteDifferenceComputer
 
 if TYPE_CHECKING:
     import qcportal

@@ -44,19 +44,18 @@ import logging
 import numpy as np
 
 from psi4 import core  # for typing
-from .constants import constants
-from psi4.driver import driver_util
-from psi4.driver import driver_cbs
-from psi4.driver import driver_nbody
-from psi4.driver import driver_findif
-from psi4.driver import task_planner
-from psi4.driver import p4util
-from psi4.driver import qcdb
-from psi4.driver import pp, nppp, nppp10
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting import *
-from psi4.driver.mdi_engine import mdi_run
-from psi4.driver.task_base import AtomicComputer
+from . import driver_util
+from . import driver_cbs
+from . import driver_nbody
+from . import driver_findif
+from . import task_planner
+from . import p4util
+from . import qcdb
+from .constants import constants pp, nppp, nppp10
+from .p4util.exceptions import *
+from .procrouting import *
+from .mdi_engine import mdi_run
+from .task_base import AtomicComputer
 
 # never import wrappers or aliases into this file
 

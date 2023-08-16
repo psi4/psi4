@@ -34,9 +34,9 @@ import logging
 import numpy as np
 
 from psi4 import core
-from psi4.driver.p4util.exceptions import ValidationError
-nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)  # when safe, "from psi4.driver import nppp"
-from psi4.driver.aliases import sherrill_gold_standard, allen_focal_point
+from .p4util.exceptions import ValidationError
+from .constants import nppp
+from .aliases import sherrill_gold_standard, allen_focal_point
 
 logger = logging.getLogger(__name__)
 

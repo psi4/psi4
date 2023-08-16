@@ -46,7 +46,6 @@ __all__ = [
     "plump_qcvar",
     "set_options",
     "set_module_options",
-    "temp_circular_import_blocker",  # retire ASAP
 ]
 
 
@@ -653,10 +652,6 @@ def pcm_helper(block: str):
 def _basname(name: str) -> str:
     """Imitates :py:meth:`core.BasisSet.make_filename` without the gbs extension."""
     return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
-
-
-def temp_circular_import_blocker():
-    pass
 
 
 def basis_helper(block: str, name: str = '', key: str = 'BASIS', set_option: bool = True):

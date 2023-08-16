@@ -42,7 +42,7 @@ from typing import List, Optional
 import sys
 import warnings
 
-from psi4.driver import constants
+from .. import constants
 
 from psi4 import core
 

@@ -31,9 +31,9 @@ import time
 import numpy as np
 
 from psi4 import core
-from psi4.driver.p4util.exceptions import *
-from psi4.driver import p4util
-from psi4.driver import psifiles as psif
+from ...p4util.exceptions import *
+from ... import p4util
+from ... import psifiles as psif
 
 from .sapt_util import print_sapt_var
 

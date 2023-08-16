@@ -36,8 +36,8 @@ from typing import Any, Dict, List
 import numpy as np
 
 from psi4 import core
-from psi4.driver import constants
-from psi4.driver.p4util.exceptions import *
+from . import constants
+from .p4util.exceptions import *
 
 
 def least_squares_fit_polynomial(

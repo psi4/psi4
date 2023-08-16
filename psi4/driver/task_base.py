@@ -48,7 +48,7 @@ qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries fo
 import qcengine as qcng
 
 from psi4 import core
-from psi4.driver import p4util
+from . import p4util
 
 if TYPE_CHECKING:
     import qcportal

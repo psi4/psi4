@@ -30,8 +30,8 @@ import numpy as np
 from collections import OrderedDict
 
 from psi4 import core
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.p4util import solvers
+from ...p4util.exceptions import *
+from ...p4util import solvers
 
 from .sapt_util import print_sapt_var
 

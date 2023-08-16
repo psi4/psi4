@@ -146,9 +146,7 @@ import math
 import re
 import sys
 import copy
-import pprint
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 import logging
 
 import numpy as np
@@ -159,13 +157,14 @@ except ImportError:
 from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
-from psi4.driver import driver_util, p4util, pp
-from psi4.driver import qcdb
-from psi4.driver.driver_cbs_helper import composite_procedures, register_composite_function, register_xtpl_function, xtpl_procedures  # lgtm[py/unused-import]
-from psi4.driver.driver_util import UpgradeHelper
-from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
+from . import driver_util, p4util
+from . import qcdb
+from .constants import pp
+from .driver_cbs_helper import composite_procedures, register_composite_function, register_xtpl_function, xtpl_procedures  # lgtm[py/unused-import]
+from .driver_util import UpgradeHelper
+from .p4util.exceptions import ValidationError
+from .procrouting.interface_cfour import cfour_psivar_list
+from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
 if TYPE_CHECKING:
     import qcportal

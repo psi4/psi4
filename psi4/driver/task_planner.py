@@ -39,11 +39,11 @@ from typing import Dict, Tuple, Union
 
 from qcelemental.models import DriverEnum
 from psi4.driver import p4util, pp
-from psi4.driver.task_base import AtomicComputer
-from psi4.driver.driver_findif import FiniteDifferenceComputer
-from psi4.driver.driver_nbody import ManyBodyComputer
-from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
-from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
+from .task_base import AtomicComputer
+from .driver_findif import FiniteDifferenceComputer, FDComputerEnum
+from .driver_nbody import ManyBodyComputer
+from .driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
+from .driver_util import negotiate_derivative_type, negotiate_convergence_criterion
 from psi4 import core
 
 logger = logging.getLogger(__name__)

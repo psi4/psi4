@@ -32,6 +32,8 @@ a QM calculation.
 """
 
 from psi4.driver import *
+from psi4 import core
+from .p4util.exceptions import UpgradeHelper
 
 
 class Diffuse():

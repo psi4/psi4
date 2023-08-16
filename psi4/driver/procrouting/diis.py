@@ -3,7 +3,7 @@ from itertools import product
 import os
 
 from psi4 import core
-from psi4.driver import psifiles as psif
+from .. import psifiles as psif
 
 import numpy as np
 from qcelemental.util import which_import

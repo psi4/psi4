@@ -27,7 +27,7 @@
 #
 
 from psi4 import core
-from psi4.driver import constants
+from ...constants import constants
 
 
 def print_sapt_var(name, value, short=False, start_spacer="    "):

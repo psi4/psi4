@@ -45,7 +45,6 @@ import warnings
 from typing import Dict, List, Union
 
 from psi4 import core
-from psi4.driver.procrouting import *
 from .exceptions import ValidationError
 from .prop_util import *
 

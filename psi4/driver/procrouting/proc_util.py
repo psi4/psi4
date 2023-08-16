@@ -32,10 +32,10 @@ import numpy as np
 from ..constants import constants
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
-from psi4.driver.procrouting.sapt import fisapt_proc
+from .. import p4util
+from ..p4util.exceptions import *
+from .dft import functionals, build_superfunctional_from_dictionary
+from .sapt import fisapt_proc
 
 
 def scf_set_reference_local(name, is_dft=False):
