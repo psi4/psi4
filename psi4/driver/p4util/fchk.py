@@ -31,7 +31,7 @@ import re
 from typing import Union
 
 import numpy as np
-from psi4.driver.p4util.testing import compare_strings, compare_arrays, compare_values, compare_integers
+from ..p4util.testing import compare_strings, compare_arrays, compare_values, compare_integers
 from psi4 import core
 from .exceptions import ValidationError
 

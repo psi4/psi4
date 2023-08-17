@@ -36,7 +36,7 @@ import sys
 from pathlib import Path
 
 from psi4 import core
-from psi4.driver.util import tty
+from .util import tty
 
 
 def sanitize_name(name: str) -> str:

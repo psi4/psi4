@@ -151,9 +151,11 @@ from qcelemental.models import DriverEnum, AtomicResult
 from .constants import constants
 
 from psi4 import core
-from psi4.driver import p4util, pp, qcdb, nppp10
-from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
+from . import p4util
+from . import qcdb
+from .constants import pp, nppp10
+from .p4util.exceptions import ValidationError
+from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
 if TYPE_CHECKING:
     import qcportal

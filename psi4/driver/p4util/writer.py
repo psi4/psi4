@@ -34,7 +34,7 @@ __all__ = []
 
 from typing import Optional
 
-from psi4.driver import constants
+from ..constants import constants
 
 from psi4 import core
 

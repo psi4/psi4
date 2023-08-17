@@ -79,7 +79,7 @@ dict = {
     },
 }
 """
-from psi4.driver.p4util.exceptions import ValidationError
+from ...p4util.exceptions import ValidationError
 import copy
 import collections
 

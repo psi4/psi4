@@ -48,7 +48,7 @@ import numpy as np
 import qcelemental as qcel
 
 from psi4 import core
-from psi4.driver import qcdb
+from .. import qcdb
 from .exceptions import TestComparisonError
 
 # TODO in multistage compare_* fns, we're potentially stopping the fn prematurely and not in the manner of the handling fn.

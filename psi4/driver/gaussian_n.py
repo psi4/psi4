@@ -28,10 +28,10 @@
 
 __all__ = []
 
-from psi4.driver import driver
-from psi4.driver import p4util
-from psi4.driver import constants
-from psi4.driver.p4util.exceptions import ValidationError
+from . import driver
+from . import p4util
+from .constants import constants
+from .p4util.exceptions import ValidationError
 
 from psi4 import core
 

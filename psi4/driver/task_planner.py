@@ -38,7 +38,8 @@ import logging
 from typing import Dict, Tuple, Union
 
 from qcelemental.models import DriverEnum
-from psi4.driver import p4util, pp
+from . import p4util
+from .constants import pp
 from .task_base import AtomicComputer
 from .driver_findif import FiniteDifferenceComputer, FDComputerEnum
 from .driver_nbody import ManyBodyComputer

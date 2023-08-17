@@ -29,7 +29,7 @@
 import numpy as np
 
 from psi4 import core
-from psi4.driver.p4util.exceptions import *
+from ...p4util.exceptions import *
 """
 This module provides ``engine`` objects that can be used by the :func:`~psi4.driver.p4util.solvers.davidson_solver` and
 :func:`~psi4.driver.p4util.solvers.hamiltonian_solver`

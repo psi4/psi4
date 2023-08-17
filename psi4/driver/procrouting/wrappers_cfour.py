@@ -41,7 +41,7 @@ import difflib
 import datetime
 import subprocess
 
-from psi4.driver.p4util.exceptions import *
+from ..p4util.exceptions import *
 
 # Not maintained: see https://github.com/psi4/psi4/issues/2478
 

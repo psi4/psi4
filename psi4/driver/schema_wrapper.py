@@ -54,7 +54,8 @@ import qcengine as qcng
 from psi4.extras import exit_printing
 from psi4.header import print_header
 from psi4.metadata import __version__
-from psi4.driver import driver, p4util
+from . import driver
+from . import p4util
 
 from psi4 import core
 

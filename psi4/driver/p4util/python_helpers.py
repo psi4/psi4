@@ -66,7 +66,7 @@ import numpy as np
 import qcelemental as qcel
 from psi4 import core
 from psi4 import extras
-from psi4.driver import qcdb
+from .. import qcdb
 
 from . import optproc
 from .exceptions import TestComparisonError, ValidationError, UpgradeHelper

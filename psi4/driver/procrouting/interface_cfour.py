@@ -42,9 +42,9 @@ import subprocess
 
 import qcelemental as qcel
 
-from psi4.driver import qcdb
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
+from .. import qcdb
+from .. import p4util
+from ..p4util.exceptions import *
 from psi4 import core
 # never import driver, wrappers, or aliases into this file
 
