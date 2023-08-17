@@ -44,6 +44,7 @@ import logging
 import numpy as np
 
 from psi4 import core  # for typing
+from .constants import constants
 from psi4.driver import driver_util
 from psi4.driver import driver_cbs
 from psi4.driver import driver_nbody
@@ -822,7 +823,8 @@ def optimize_geometric(name, **kwargs):
     
             molecule = geometric.molecule.Molecule()
             molecule.elem = [p4_mol.symbol(i).capitalize() for i in range(p4_mol.natom())]
-            molecule.xyzs = [p4_mol.geometry().np * qcel.constants.bohr2angstroms] 
+            # beware if geomeTRIC and psi4 choose different sets of constants
+            molecule.xyzs = [p4_mol.geometry().np * constants.bohr2angstroms]
             molecule.build_bonds()
                                  
             super(Psi4NativeEngine, self).__init__(molecule)
@@ -906,7 +908,7 @@ def optimize_geometric(name, **kwargs):
         cvals=CVals[0] if CVals is not None else None)
     
     # Get initial coordinates in bohr
-    coords = M.xyzs[0].flatten() / qcel.constants.bohr2angstroms
+    coords = M.xyzs[0].flatten() / constants.bohr2angstroms
 
     # Setup an optimizer object
     params = geometric.optimize.OptParams(**optimizer_keywords)

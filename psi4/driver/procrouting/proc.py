@@ -40,7 +40,7 @@ import warnings
 from typing import Dict, List, Union
 
 import numpy as np
-from qcelemental import constants
+from ..constants import constants
 from qcelemental.util import which
 
 from psi4 import extras
