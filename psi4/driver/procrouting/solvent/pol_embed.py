@@ -32,7 +32,7 @@ import numpy as np
 import cppe
 from pkg_resources import parse_version
 
-from .constants import constants
+from ...constants import constants
 from psi4 import core
 from psi4.driver.qcdb import libmintsbasisset
 from psi4.driver.p4util.exceptions import ValidationError
