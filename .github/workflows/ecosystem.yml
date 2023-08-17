@@ -18,28 +18,28 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
-            python-version: "3.10"
-            mkl-version: ""
-            base-channel: "conda-forge"
-            pytest-marker-expr: "addon and not long"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
+          #- runs-on: ubuntu-latest
+          #  python-version: "3.10"
+          #  mkl-version: ""
+          #  base-channel: "conda-forge"
+          #  pytest-marker-expr: "addon and not long"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D BUILD_SHARED_LIBS=ON
 
-          - runs-on: macos-latest
-            python-version: "3.9"
-            mkl-version: ""
-            base-channel: "conda-forge"
-            pytest-marker-expr: "addon and not long"
-            target-sdk: "10.10"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
-              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-            # Notes:
-            # * libiomp5 is picking up naturally but left explicit as guide
+          #- runs-on: macos-latest
+          #  python-version: "3.9"
+          #  mkl-version: ""
+          #  base-channel: "conda-forge"
+          #  pytest-marker-expr: "addon and not long"
+          #  target-sdk: "10.10"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D BUILD_SHARED_LIBS=ON
+          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+          #  # Notes:
+          #  # * libiomp5 is picking up naturally but left explicit as guide
 
           - runs-on: windows-latest
             python-version: "3.9"
@@ -260,6 +260,7 @@ jobs:
 
     - name: Buildtime Conda environment
       run: |
+        conda remove qcengine --force
         mamba info
         mamba list
 
@@ -287,7 +288,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_DISABLE_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_ambit=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
@@ -328,7 +329,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_DISABLE_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_ambit=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
@@ -371,7 +372,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_DISABLE_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
@@ -412,6 +413,7 @@ jobs:
         #fi
         conda activate baseenv
         echo "::endgroup::"
+        conda remove qcengine --force
         mamba info
         mamba list -n baseenv
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
