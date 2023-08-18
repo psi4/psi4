@@ -1,6 +1,7 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcengine}))
     include(FindPythonModule)
-    find_python_module(qcengine ATLEAST 0.28.1 QUIET)
+    #find_python_module(qcengine ATLEAST 0.28.1 QUIET)
+    find_python_module(qcengine ATLEAST 0.28.0) # QUIET)
 endif()
 
 if(${qcengine_FOUND})

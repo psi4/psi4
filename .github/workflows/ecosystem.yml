@@ -133,7 +133,7 @@ jobs:
           - conda-forge/label/libint_dev::libint=2.7.3dev1
           - optking
           - qcelemental
-          - qcengine
+          #- qcengine
           - libxc-c
             # qc opt'l
           # - psi4/label/dev::ambit
@@ -144,6 +144,10 @@ jobs:
           # - psi4/label/dev::pcmsolver
           # - psi4/label/dev::simint
             # runtime
+            # pip
+          - pip
+          - pip:
+             - git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
@@ -183,7 +187,7 @@ jobs:
           - conda-forge/label/libint_dev::libint=2.7.3dev1
           - optking
           - qcelemental
-          - qcengine
+          #- qcengine
           - libxc-c
             # qc req'd from buildtime
           #- psi4/label/dev::ambit
@@ -220,6 +224,7 @@ jobs:
           - pip
           - pip:
              - git+https://github.com/i-pi/i-pi.git@master-py3
+             - git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
 
         # toml needed for psi4 to load parameters from dftd4-python
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
@@ -263,7 +268,7 @@ jobs:
 
     - name: Buildtime Conda environment
       run: |
-        conda remove qcengine --force
+        #conda remove qcengine --force
         mamba info
         mamba list
 
@@ -291,7 +296,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_ambit=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
@@ -332,7 +337,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_ambit=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
@@ -375,7 +380,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
@@ -416,7 +421,7 @@ jobs:
         #fi
         conda activate baseenv
         echo "::endgroup::"
-        conda remove qcengine --force
+        #conda remove qcengine --force
         mamba info
         mamba list -n baseenv
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
@@ -484,9 +489,11 @@ jobs:
         ls -l ./install/lib
         ls -l ./install/bin
         if [[ "${{ runner.os }}" != "Windows" ]]; then
+          qcengine info
           PATH=./install/bin:$PATH PYTHONPATH=./install/lib:./objdir/stage/lib qcengine info
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
+          qcengine.exe info
           PATH=./install/bin:$PATH PYTHONPATH=./install/lib:./objdir/stage/lib qcengine.exe info
         fi
 
