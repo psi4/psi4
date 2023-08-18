@@ -14,7 +14,7 @@ jobs:
 
   ecosystem:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         cfg:
 

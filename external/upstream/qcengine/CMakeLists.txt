@@ -17,6 +17,7 @@ else()
 
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" _install_bin)
+    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/bin/qcengine" _pip_install_qcengine)
 
     # Note: Without downgrading setuptools or `sed`ing "git_refnames" (_version.py for versioneer-generated),
     #   pip will strenuously resist ("Invalid version: <branch or commit>") arbitrary branch or commit refs from GH.
@@ -40,6 +41,6 @@ else()
     ExternalProject_Add_Step(qcengine_external
         fix_qcng_bin
         DEPENDEES install
-        COMMAND ${CMAKE_COMMAND} -E copy "${_install_lib}/bin/qcengine" "${_install_bin}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${_pip_install_qcengine}" "${_install_bin}"
         )
 endif()
