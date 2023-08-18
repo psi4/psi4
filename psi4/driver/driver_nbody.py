@@ -173,7 +173,8 @@ logger = logging.getLogger(__name__)
 
 FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
-SubTaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
+MBETaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
+
 
 def nbody():
     """
@@ -863,7 +864,7 @@ class ManyBodyComputer(BaseComputer):
     return_total_data: Optional[bool] = Field(None, validate_default=True, description="When True, returns the total data (energy/gradient/Hessian) of the system, otherwise returns interaction data. Default is False for energies, True for gradients and Hessians. Note that the calculation of total counterpoise corrected energies implies the calculation of the energies of monomers in the monomer basis, hence specifying ``return_total_data = True`` may carry out more computations than ``return_total_data = False``.")
     quiet: bool = Field(False, description="Whether to print/log formatted n-body energy analysis. Presently used by multi to suppress output. Candidate for removal from class once in-class/out-of-class functions sorted.")
 
-    task_list: Dict[str, SubTaskComputers] = {}
+    task_list: Dict[str, MBETaskComputers] = {}
 
     # Note that validation of user fields happens through typing and validator functions, so no class __init__ needed.
 
@@ -921,7 +922,7 @@ class ManyBodyComputer(BaseComputer):
 
     def build_tasks(
         self,
-        mb_computer: SubTaskComputers,
+        mb_computer: MBETaskComputers,
         mc_level_idx: int,
         **kwargs: Dict[str, Any],
     ) -> int:
@@ -1024,7 +1025,7 @@ class ManyBodyComputer(BaseComputer):
 
     def prepare_results(
         self,
-        results: Optional[Dict[str, SubTaskComputers]] = None,
+        results: Optional[Dict[str, MBETaskComputers]] = None,
         client: Optional["qcportal.FractalClient"] = None,
     ) -> Dict[str, Any]:
         """Process the results from all n-body component molecular systems and model chemistry levels into final quantities.

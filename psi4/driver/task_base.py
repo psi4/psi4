@@ -29,11 +29,13 @@
 __all__ = [
     "AtomicComputer",
     "BaseComputer",
+    "ComputerEnum",
     "EnergyGradientHessianWfnReturn",
 ]
 
 import abc
 import copy
+from enum import Enum
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
@@ -277,3 +279,22 @@ def _drink_filter(stdout: str) -> str:
     stdout = stdout.replace("\n*** Psi4 exiting successfully. Buy a developer a beer!", "")
     stdout = stdout.replace("\n*** Psi4 encountered an error. Buy a developer more coffee!", "")
     return stdout
+
+
+class ComputerEnum(str, Enum):
+    """Allowed driver compute layers."""
+
+    def computer(self) -> BaseComputer:
+        """Return class specified by enum."""
+
+        if self == "atomic":
+            return AtomicComputer
+        elif self == "composite":
+            from .driver_cbs import CompositeComputer
+            return CompositeComputer
+        elif self == "finitedifference":
+            from .driver_findif import FiniteDifferenceComputer
+            return FiniteDifferenceComputer
+        elif self == "manybody":
+            from .driver_nbody import ManyBodyComputer
+            return ManyBodyComputer

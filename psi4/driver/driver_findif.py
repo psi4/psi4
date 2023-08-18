@@ -151,12 +151,22 @@ from psi4 import core
 from . import p4util, qcdb
 from .constants import constants, nppp10, pp
 from .p4util.exceptions import ValidationError
-from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
+from .task_base import AtomicComputer, BaseComputer, ComputerEnum, EnergyGradientHessianWfnReturn
+from .driver_cbs import CompositeComputer
+
 
 if TYPE_CHECKING:
     import qcportal
 
 logger = logging.getLogger(__name__)
+
+FDTaskComputers = Union[AtomicComputer, CompositeComputer]
+
+
+class FDComputerEnum(ComputerEnum):
+    atomic = "atomic"
+    composite = "composite"
+
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
@@ -1143,9 +1153,14 @@ class FiniteDifferenceComputer(BaseComputer):
     molecule: Any
     driver: DriverEnum
     metameta: Dict[str, Any] = {}
-    task_list: Dict[str, BaseComputer] = {}
+    task_list: Dict[str, FDTaskComputers] = {}
     findifrec: Dict[str, Any] = {}
-    computer: BaseComputer = AtomicComputer
+    # Field `computer` "holds" a computer class: AtomicComputer or CompositeComputer, *not* an instance of the class.
+    #   While pydantic v1 was ok with the class, pydantic v2 hates it, both at point of validation (it demands an
+    #   instance of stated class, not the class itself; avoidable by `computer: Any = AtomicComputer`) and at point of
+    #   serialization (it refuses to serialize the class/mappingproxy; avoidable by `plan.model_dump(...)` or
+    #   `plan.dict(exclude=["computer", "task_list"])`, esp. in driver.py. Enum plus func avoids both objections.
+    computer: FDComputerEnum = FDComputerEnum.atomic
     method: str
 
     @field_validator('driver')
@@ -1254,7 +1269,7 @@ class FiniteDifferenceComputer(BaseComputer):
         passalong = {k: v for k, v in data.items() if k not in packet}
         passalong.pop('ptype', None)
 
-        self.task_list["reference"] = self.computer(**packet, **passalong)
+        self.task_list["reference"] = self.computer.computer()(**packet, **passalong)
 
         parent_group = self.molecule.point_group()
         for label, displacement in self.findifrec["displacements"].items():
@@ -1286,7 +1301,7 @@ class FiniteDifferenceComputer(BaseComputer):
             if 'cbs_metadata' in data:
                 packet['cbs_metadata'] = data['cbs_metadata']
 
-            self.task_list[label] = self.computer(**packet, **passalong)
+            self.task_list[label] = self.computer.computer()(**packet, **passalong)
 
 
 #        for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
