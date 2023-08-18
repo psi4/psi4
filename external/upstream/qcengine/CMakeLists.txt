@@ -26,7 +26,7 @@ else()
         DEPENDS qcelemental_external
         BUILD_ALWAYS 1
         #URL https://github.com/MolSSI/QCEngine/archive/v0.27.0.tar.gz
-        URL https://github.com/loriab/QCEngine/archive/v0.28.1.dev2.tar.gz
+        URL https://github.com/loriab/QCEngine/archive/v0.28.1.dev5.tar.gz
         DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
