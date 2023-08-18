@@ -22,7 +22,8 @@ jobs:
             python-version: "3.10"
             mkl-version: ""
             base-channel: "conda-forge"
-            pytest-marker-expr: "addon and not long"
+            #pytest-marker-expr: "addon and not long"
+            pytest-marker-expr: "addon and smoke"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
@@ -31,7 +32,8 @@ jobs:
             python-version: "3.9"
             mkl-version: ""
             base-channel: "conda-forge"
-            pytest-marker-expr: "addon and not long"
+            #pytest-marker-expr: "addon and not long"
+            pytest-marker-expr: "addon and smoke"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -45,7 +47,8 @@ jobs:
             python-version: "3.9"
             mkl-version: "=2022.1"
             base-channel: "conda-forge"
-            pytest-marker-expr: "addon and not long and not d2ints"
+            #pytest-marker-expr: "addon and not long and not d2ints"
+            pytest-marker-expr: "addon and smoke and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=OFF
@@ -419,9 +422,9 @@ jobs:
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda list -n auxenv
         if [[ "${{ runner.os }}" != "Windows" ]]; then
-          export PATH=./install/bin:$PATH
-          export PYTHONPATH=./install/lib:$PYTHONPATH
-          qcengine info
+          #PATH=./install/bin:$PATH PYTHONPATH=./install/lib:$PYTHONPATH qcengine info
+          ls -l ./install/bin
+          PATH=./install/bin:$PATH PYTHONPATH=./install/lib qcengine info
         fi
 
     - name: Patch QCFractal for Python
@@ -478,13 +481,13 @@ jobs:
     - name: QCEngine Info
       #working-directory: ./objdir
       run: |
-        export PATH=./install/bin:$PATH
-        export PYTHONPATH=./install/lib:$PYTHONPATH
+        ls -l ./install/lib
+        ls -l ./install/bin
         if [[ "${{ runner.os }}" != "Windows" ]]; then
-          qcengine info
+          PATH=./install/bin:$PATH PYTHONPATH=./install/lib:./objdir/stage/lib qcengine info
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          qcengine.exe info
+          PATH=./install/bin:$PATH PYTHONPATH=./install/lib:./objdir/stage/lib qcengine.exe info
         fi
 
     - name: Write user Conda environment files
