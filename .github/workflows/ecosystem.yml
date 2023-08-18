@@ -420,6 +420,7 @@ jobs:
         #conda list -n auxenv
         if [[ "${{ runner.os }}" != "Windows" ]]; then
           export PATH=./install/bin:$PATH
+          export PYTHONPATH=./install/lib:$PYTHONPATH
           qcengine info
         fi
 
@@ -475,10 +476,16 @@ jobs:
     #    pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
 
     - name: QCEngine Info
-      working-directory: ./objdir
+      #working-directory: ./objdir
       run: |
-        export PATH=../install/bin:$PATH
-        python qcengine info
+        export PATH=./install/bin:$PATH
+        export PYTHONPATH=./install/lib:$PYTHONPATH
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
+          qcengine info
+        fi
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          qcengine.exe info
+        fi
 
     - name: Write user Conda environment files
       run: |
