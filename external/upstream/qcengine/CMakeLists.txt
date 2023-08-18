@@ -17,6 +17,7 @@ else()
 
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" _install_bin)
+    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/qcengine" _install_bin_qcengine)
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/bin/qcengine" _pip_install_qcengine)
 
     # Note: Without downgrading setuptools or `sed`ing "git_refnames" (_version.py for versioneer-generated),
@@ -36,11 +37,25 @@ else()
         INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
                                                       --target=${_install_lib}
                                                       --no-deps
-                                                      #-v
+                                                      -v
         )
+    if(WIN32)
     ExternalProject_Add_Step(qcengine_external
         fix_qcng_bin
         DEPENDEES install
-        COMMAND ${CMAKE_COMMAND} -E copy "${_pip_install_qcengine}" "${_install_bin}"
+        COMMAND ${CMAKE_COMMAND} -E copy ${_pip_install_qcengine} ${_install_bin_qcengine}
+        COMMAND dir ${_install_lib}
+        COMMAND dir ${_install_lib}/bin
+        COMMAND dir ${_install_bin}
         )
+    else()
+    ExternalProject_Add_Step(qcengine_external
+        fix_qcng_bin
+        DEPENDEES install
+        COMMAND ${CMAKE_COMMAND} -E copy ${_pip_install_qcengine} ${_install_bin_qcengine}
+        COMMAND ls -l ${_install_lib}
+        COMMAND ls -l ${_install_lib}/bin
+        COMMAND ls -l ${_install_bin}
+        )
+    endif()
 endif()
