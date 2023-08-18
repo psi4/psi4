@@ -1,7 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcengine}))
     include(FindPythonModule)
-    #find_python_module(qcengine ATLEAST 0.28.1 QUIET)
-    find_python_module(qcengine ATLEAST 0.28.0) # QUIET)
+    find_python_module(qcengine ATLEAST 0.28.1 QUIET)
 endif()
 
 if(${qcengine_FOUND})
@@ -17,11 +16,13 @@ else()
     message(STATUS "Suitable qcengine could not be located, ${Magenta}Building qcengine${ColourReset} instead.")
 
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
-    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" _install_bin)
-    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/" _install_bin2)
-    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/qcengine" _install_bin_qcengine)
-    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/bin/qcengine" _pip_install_qcengine)
+    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/" _install_bin)
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/bin/" _pip_install_bin)
+    if(WIN32)
+        set(_qcengineexe "qcengine.exe")
+    else()
+        set(_qcengineexe "qcengine")
+    endif()
 
     # Note: Without downgrading setuptools or `sed`ing "git_refnames" (_version.py for versioneer-generated),
     #   pip will strenuously resist ("Invalid version: <branch or commit>") arbitrary branch or commit refs from GH.
@@ -30,8 +31,7 @@ else()
     ExternalProject_Add(qcengine_external
         DEPENDS qcelemental_external
         BUILD_ALWAYS 1
-        #URL https://github.com/MolSSI/QCEngine/archive/v0.28.1.tar.gz
-        URL https://github.com/loriab/QCEngine/archive/v0.28.1.dev6.tar.gz
+        URL https://github.com/MolSSI/QCEngine/archive/v0.28.1.tar.gz
         DOWNLOAD_NO_EXTRACT 1
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
@@ -42,23 +42,10 @@ else()
                                                       --no-deps
                                                       #-v
         )
-    if(WIN32)
     ExternalProject_Add_Step(qcengine_external
         fix_qcng_bin
         DEPENDEES install
-        COMMAND dir ${_install_lib}
-        COMMAND dir ${_pip_install_bin}
-        COMMAND ${CMAKE_COMMAND} -E copy "${_pip_install_bin}qcengine.exe" "${_install_bin2}qcengine.exe"
-        COMMAND dir ${_install_bin2}
+        COMMAND ${CMAKE_COMMAND} -E copy "${_pip_install_bin}${_qcengineexe}" "${_install_bin}${_qcengineexe}"
+        COMMENT "Moves qcengine entry-point into place alongside bin/psi4 for `qcengine info`"
         )
-    else()
-    ExternalProject_Add_Step(qcengine_external
-        fix_qcng_bin
-        DEPENDEES install
-        COMMAND ${CMAKE_COMMAND} -E copy ${_pip_install_qcengine} ${_install_bin_qcengine}
-        COMMAND ls -l ${_install_lib}
-        COMMAND ls -l ${_install_lib}/bin
-        COMMAND ls -l ${_install_bin}
-        )
-    endif()
 endif()

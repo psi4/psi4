@@ -42,6 +42,7 @@ from typing import Dict, Optional, Union
 import logging
 
 import numpy as np
+from qcelemental.util import parse_version
 
 from psi4 import core  # for typing
 from .constants import constants
@@ -1812,7 +1813,6 @@ def gdma(wfn, datafile=""):
     import gdma
 
     min_version = "2.3.3"
-    from pkg_resources import parse_version
     if parse_version(gdma.__version__) < parse_version(min_version):
         raise ModuleNotFoundError(f"GDMA version {min_version} is required at least. Version {gdma.__version__} was found.")
 

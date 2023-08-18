@@ -41,7 +41,7 @@ from typing import Dict, List, Union
 
 import numpy as np
 from ..constants import constants
-from qcelemental.util import which
+from qcelemental.util import parse_version, which
 
 from psi4 import extras
 from psi4 import core
@@ -3688,7 +3688,6 @@ def run_adcc(name, **kwargs):
         raise ValidationError("adcc extras qc_module not available. Try installing "
             "via 'pip install adcc' or 'conda install -c conda-forge adcc'.")
 
-    from pkg_resources import parse_version
     min_version = "0.15.16"
     if parse_version(adcc.__version__) < parse_version(min_version):
         raise ModuleNotFoundError("adcc version {} is required at least. "

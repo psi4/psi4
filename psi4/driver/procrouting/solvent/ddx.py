@@ -27,7 +27,7 @@
 #
 import numpy as np
 
-from pkg_resources import parse_version
+from qcelemental.util import parse_version
 
 from ...constants import constants
 from psi4 import core

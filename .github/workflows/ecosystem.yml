@@ -14,7 +14,7 @@ jobs:
 
   ecosystem:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         cfg:
 
@@ -22,8 +22,7 @@ jobs:
             python-version: "3.10"
             mkl-version: ""
             base-channel: "conda-forge"
-            #pytest-marker-expr: "addon and not long"
-            pytest-marker-expr: "addon and smoke"
+            pytest-marker-expr: "addon and not long"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
@@ -32,8 +31,7 @@ jobs:
             python-version: "3.9"
             mkl-version: ""
             base-channel: "conda-forge"
-            #pytest-marker-expr: "addon and not long"
-            pytest-marker-expr: "addon and smoke"
+            pytest-marker-expr: "addon and not long"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -47,8 +45,7 @@ jobs:
             python-version: "3.9"
             mkl-version: "=2022.1"
             base-channel: "conda-forge"
-            #pytest-marker-expr: "addon and not long and not d2ints"
-            pytest-marker-expr: "addon and smoke and not d2ints"
+            pytest-marker-expr: "addon and not long and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=OFF
@@ -133,7 +130,7 @@ jobs:
           - conda-forge/label/libint_dev::libint=2.7.3dev1
           - optking
           - qcelemental
-          #- qcengine
+          - qcengine
           - libxc-c
             # qc opt'l
           # - psi4/label/dev::ambit
@@ -145,9 +142,12 @@ jobs:
           # - psi4/label/dev::simint
             # runtime
             # pip
-          - pip
-          - pip:
-             - git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
+            # * note that this is the reliable way to patch in dev versions of py deps,
+            #   as internal builds need path adjustments, force removals of conda version,
+            #   and can still be insufficient for qcfractal.
+          #- pip
+          #- pip:
+          #   - git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
@@ -187,7 +187,7 @@ jobs:
           - conda-forge/label/libint_dev::libint=2.7.3dev1
           - optking
           - qcelemental
-          #- qcengine
+          - qcengine
           - libxc-c
             # qc req'd from buildtime
           #- psi4/label/dev::ambit
@@ -224,7 +224,7 @@ jobs:
           - pip
           - pip:
              - git+https://github.com/i-pi/i-pi.git@master-py3
-             - git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
+             #- git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
 
         # toml needed for psi4 to load parameters from dftd4-python
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
@@ -268,7 +268,6 @@ jobs:
 
     - name: Buildtime Conda environment
       run: |
-        #conda remove qcengine --force
         mamba info
         mamba list
 
@@ -421,15 +420,15 @@ jobs:
         #fi
         conda activate baseenv
         echo "::endgroup::"
-        #conda remove qcengine --force
         mamba info
         mamba list -n baseenv
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda list -n auxenv
         if [[ "${{ runner.os }}" != "Windows" ]]; then
-          #PATH=./install/bin:$PATH PYTHONPATH=./install/lib:$PYTHONPATH qcengine info
-          ls -l ./install/bin
-          PATH=./install/bin:$PATH PYTHONPATH=./install/lib qcengine info
+          qcengine info
+        fi
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          qcengine.exe info
         fi
 
     - name: Patch QCFractal for Python
@@ -482,20 +481,6 @@ jobs:
     #    fi
     #    echo $PYTHONPATH
     #    pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
-
-    - name: QCEngine Info
-      #working-directory: ./objdir
-      run: |
-        ls -l ./install/lib
-        ls -l ./install/bin
-        if [[ "${{ runner.os }}" != "Windows" ]]; then
-          qcengine info
-          PATH=./install/bin:$PATH PYTHONPATH=./install/lib:./objdir/stage/lib qcengine info
-        fi
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-          qcengine.exe info
-          PATH=./install/bin:$PATH PYTHONPATH=./install/lib:./objdir/stage/lib qcengine.exe info
-        fi
 
     - name: Write user Conda environment files
       run: |
