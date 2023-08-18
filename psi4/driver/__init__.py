@@ -28,8 +28,6 @@
 
 import pickle
 
-from . import dependency_check
-
 from .constants import *
 from . import psifiles as psif
 

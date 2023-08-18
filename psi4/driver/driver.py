@@ -51,7 +51,7 @@ from . import driver_findif
 from . import task_planner
 from . import p4util
 from . import qcdb
-from .constants import constants pp, nppp, nppp10
+from .constants import constants, pp, nppp, nppp10
 from .p4util.exceptions import *
 from .procrouting import *
 from .mdi_engine import mdi_run

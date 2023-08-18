@@ -41,7 +41,7 @@ from qcelemental.models import DriverEnum
 from . import p4util
 from .constants import pp
 from .task_base import AtomicComputer
-from .driver_findif import FiniteDifferenceComputer, FDComputerEnum
+from .driver_findif import FiniteDifferenceComputer
 from .driver_nbody import ManyBodyComputer
 from .driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
 from .driver_util import negotiate_derivative_type, negotiate_convergence_criterion
