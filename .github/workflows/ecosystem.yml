@@ -473,6 +473,12 @@ jobs:
     #    echo $PYTHONPATH
     #    pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
 
+    - name: QCEngine Info
+      working-directory: ./objdir
+      run: |
+        export PATH=../install/bin:$PATH
+        python qcengine info
+
     - name: Write user Conda environment files
       run: |
         echo "::group::Prepare Environment"
