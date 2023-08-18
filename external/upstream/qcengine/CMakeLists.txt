@@ -39,7 +39,7 @@ else()
         INSTALL_COMMAND ${Python_EXECUTABLE} -m pip install <DOWNLOADED_FILE>
                                                       --target=${_install_lib}
                                                       --no-deps
-                                                      -v
+                                                      #-v
         )
     if(WIN32)
     ExternalProject_Add_Step(qcengine_external
@@ -47,7 +47,6 @@ else()
         DEPENDEES install
         COMMAND dir ${_install_lib}
         COMMAND dir ${_pip_install_bin}
-        COMMAND dir ${STAGED_INSTALL_PREFIX}
         COMMAND ${CMAKE_COMMAND} -E copy "${_pip_install_bin}qcengine.exe" "${_install_bin2}qcengine.exe"
         COMMAND dir ${_install_bin2}
         )
