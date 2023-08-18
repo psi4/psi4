@@ -43,10 +43,10 @@ else()
     ExternalProject_Add_Step(qcengine_external
         fix_qcng_bin
         DEPENDEES install
-        COMMAND ${CMAKE_COMMAND} -E copy ${_pip_install_qcengine} ${_install_bin_qcengine}
         COMMAND dir ${_install_lib}
         COMMAND dir ${_install_lib}/bin
         COMMAND dir ${_install_bin}
+        COMMAND ${CMAKE_COMMAND} -E copy ${_pip_install_qcengine} ${_install_bin_qcengine}
         )
     else()
     ExternalProject_Add_Step(qcengine_external
