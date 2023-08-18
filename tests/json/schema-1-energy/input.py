@@ -126,9 +126,9 @@ json_data["keywords"]["mp2_type"] = "conv"
 json_data["extras"] = {"current_qcvars_only": True}
 json_ret = psi4.schema_wrapper.run_qcschema(json_data)
 
-#print(json.dumps(json_ret.json(), indent=2))
+#print(json.dumps(json_ret.model_dump_json(), indent=2))
 #import pprint
-#pprint.pprint(json_ret.dict(), width=200)
+#pprint.pprint(json_ret.model_dump(), width=200)
 
 psi4.compare_integers(True, json_ret.success, "JSON Success")                           #TEST
 psi4.compare_values(expected_return_result, json_ret.return_result, 5, "Return Value")  #TEST

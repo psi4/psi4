@@ -1589,7 +1589,7 @@ class CompositeComputer(BaseComputer):
                     })
                 self.task_list.append(task)
 
-                # logger.debug("TASK\n" + pp.pformat(task.dict()))
+                # logger.debug("TASK\n" + pp.pformat(task.model_dump()))
 
     def build_tasks(self, obj, **kwargs):
         # permanently a dummy function
@@ -1747,7 +1747,7 @@ class CompositeComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('CBS QCSchema:\n' + pp.pformat(cbs_model.dict()))
+        logger.debug('CBS QCSchema:\n' + pp.pformat(cbs_model.model_dump()))
 
         return cbs_model
 
@@ -1796,7 +1796,7 @@ class CompositeComputer(BaseComputer):
 def _cbs_schema_to_wfn(cbs_model):
     """Helper function to produce Wavefunction from a Composite-flavored AtomicResult."""
 
-    mol = core.Molecule.from_schema(cbs_model.molecule.dict())
+    mol = core.Molecule.from_schema(cbs_model.molecule.model_dump())
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp', quiet=True)
     wfn = core.Wavefunction(mol, basis)
     if hasattr(cbs_model.provenance, "module"):

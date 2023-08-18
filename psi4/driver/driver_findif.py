@@ -1473,7 +1473,7 @@ class FiniteDifferenceComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model.dict()))
+        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model.model_dump()))
 
         return findif_model
 
@@ -1523,7 +1523,7 @@ def _findif_schema_to_wfn(findif_model: AtomicResult) -> core.Wavefunction:
     """Helper function to produce Wavefunction and Psi4 files from a FiniteDifference-flavored AtomicResult."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(findif_model.molecule.dict(), nonphysical=True)
+    mol = core.Molecule.from_schema(findif_model.molecule.model_dump(), nonphysical=True)
     sbasis = "def2-svp" if (findif_model.model.basis == "(auto)") else findif_model.model.basis
     basis = core.BasisSet.build(mol, "ORBITAL", sbasis, quiet=True)
     wfn = core.Wavefunction(mol, basis)

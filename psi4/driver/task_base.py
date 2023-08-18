@@ -216,12 +216,12 @@ class AtomicComputer(BaseComputer):
         )
         # ... END
 
-        #pp.pprint(self.result.dict())
+        #pp.pprint(self.result.model_dump())
         #print("... JSON returns >>>")
         core.set_output_file(gof, True)
         core.reopen_outfile()
-        logger.debug(pp.pformat(self.result.dict()))
-        core.print_out(_drink_filter(self.result.dict()["stdout"]))
+        logger.debug(pp.pformat(self.result.model_dump()))
+        core.print_out(_drink_filter(self.result.model_dump()["stdout"]))
         self.computed = True
 
     def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:

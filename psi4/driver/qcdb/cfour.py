@@ -61,7 +61,7 @@ def harvest_output(outtext):
         if "Final ZMATnew file" in outpass:
             continue
         psivar, qcskcoord, c4grad, version, module, error = qcng.programs.cfour.harvester.harvest_outfile_pass(outpass)
-        c4coord = Molecule.from_schema(qcskcoord.dict())
+        c4coord = Molecule.from_schema(qcskcoord.model_dump())
 
         pass_psivar.append(psivar)
         pass_coord.append(c4coord)

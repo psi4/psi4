@@ -1399,7 +1399,7 @@ class ManyBodyComputer(BaseComputer):
             properties["return_gradient"] = ret_gradient
             properties["return_hessian"] = ret_ptype
 
-        component_results = self.dict()['task_list']
+        component_results = self.model_dump()['task_list']
         for k, val in component_results.items():
             val['molecule'] = val['molecule'].to_schema(dtype=2)
 
@@ -1421,7 +1421,7 @@ class ManyBodyComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nNBODY QCSchema:\n' + pp.pformat(nbody_model.dict()))
+        logger.debug('\nNBODY QCSchema:\n' + pp.pformat(nbody_model.model_dump()))
 
         return nbody_model
 

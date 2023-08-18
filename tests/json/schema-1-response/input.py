@@ -298,7 +298,7 @@ expected_response = {
 
 expected_response = {k: (np.asarray(v) if isinstance(v, list) else v) for k, v in expected_response.items()}
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
+json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()  # .model_dump() now, but .dict() still works
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")  #TEST
 psi4.compare_strings("qcschema_output", json_ret["schema_name"], "Schema Name")  #TEST
