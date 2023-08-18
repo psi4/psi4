@@ -19,6 +19,7 @@ else()
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" _install_bin)
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/qcengine" _install_bin_qcengine)
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/bin/qcengine" _pip_install_qcengine)
+    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/bin" _pip_install_bin)
 
     # Note: Without downgrading setuptools or `sed`ing "git_refnames" (_version.py for versioneer-generated),
     #   pip will strenuously resist ("Invalid version: <branch or commit>") arbitrary branch or commit refs from GH.
@@ -44,7 +45,7 @@ else()
         fix_qcng_bin
         DEPENDEES install
         COMMAND dir ${_install_lib}
-        COMMAND dir ${_install_lib}/bin
+        COMMAND dir ${_pip_install_bin}
         COMMAND dir ${_install_bin}
         COMMAND ${CMAKE_COMMAND} -E copy ${_pip_install_qcengine} ${_install_bin_qcengine}
         )

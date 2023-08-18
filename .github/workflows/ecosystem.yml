@@ -419,6 +419,7 @@ jobs:
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda list -n auxenv
         if [[ "${{ runner.os }}" != "Windows" ]]; then
+          export PATH=./install/bin:$PATH
           qcengine info
         fi
 
