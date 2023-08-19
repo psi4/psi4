@@ -424,12 +424,8 @@ jobs:
         mamba list -n baseenv
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda list -n auxenv
-        if [[ "${{ runner.os }}" != "Windows" ]]; then
-          qcengine info
-        fi
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-          qcengine.exe info
-        fi
+        # cmd can be `qcengine` or `qcengine.exe` depending on OS and install mtd
+        qceng* info
 
     - name: Patch QCFractal for Python
       if: runner.os == 'macOS'
