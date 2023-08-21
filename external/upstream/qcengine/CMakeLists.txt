@@ -16,7 +16,13 @@ else()
     message(STATUS "Suitable qcengine could not be located, ${Magenta}Building qcengine${ColourReset} instead.")
 
     file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}" _install_lib)
-    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}" _install_bin)
+    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/" _install_bin)
+    file(TO_NATIVE_PATH "${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/bin/" _pip_install_bin)
+    if(WIN32)
+        set(_qcengineexe "qcengine.exe")
+    else()
+        set(_qcengineexe "qcengine")
+    endif()
 
     # Note: Without downgrading setuptools or `sed`ing "git_refnames" (_version.py for versioneer-generated),
     #   pip will strenuously resist ("Invalid version: <branch or commit>") arbitrary branch or commit refs from GH.
@@ -35,5 +41,11 @@ else()
                                                       --target=${_install_lib}
                                                       --no-deps
                                                       #-v
+        )
+    ExternalProject_Add_Step(qcengine_external
+        fix_qcng_bin
+        DEPENDEES install
+        COMMAND ${CMAKE_COMMAND} -E copy "${_pip_install_bin}${_qcengineexe}" "${_install_bin}${_qcengineexe}"
+        COMMENT "Moves qcengine entry-point into place alongside bin/psi4 for `qcengine info`"
         )
 endif()

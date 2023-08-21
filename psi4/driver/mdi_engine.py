@@ -160,7 +160,8 @@ class MDIEngine():
         """
         unit_name = self.molecule.units()
         if unit_name == "Angstrom":
-            unit_conv = qcel.constants.bohr2angstroms
+            # beware if MDI and psi4 choose different sets of constants
+            unit_conv = psi4.driver.constants.bohr2angstroms
         elif unit_name == "Bohr":
             unit_conv = 1.0
         else:

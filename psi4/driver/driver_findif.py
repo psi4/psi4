@@ -148,7 +148,7 @@ try:
 except ImportError:
     from pydantic import Field, validator
 from qcelemental.models import DriverEnum, AtomicResult
-from qcelemental import constants
+from .constants import constants
 
 from psi4 import core
 from psi4.driver import p4util, pp, qcdb, nppp10

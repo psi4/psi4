@@ -29,7 +29,7 @@ from typing import Tuple
 
 import numpy as np
 
-from qcelemental import constants
+from ..constants import constants
 
 from psi4 import core
 from psi4.driver import p4util

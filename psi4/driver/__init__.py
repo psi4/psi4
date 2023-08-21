@@ -28,18 +28,7 @@
 
 import pickle
 
-from . import dependency_check
-
-# printing and logging formatting niceties
-import pprint
-from functools import partial
-import numpy as np
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
-nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)
-nppp10 = partial(np.array_str, max_line_width=120, precision=10, suppress_small=True)
-del partial
-
-from qcelemental import constants
+from .constants import *
 from psi4.driver import psifiles as psif
 
 from psi4.driver.ipi_broker import ipi_broker
