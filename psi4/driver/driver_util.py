@@ -27,7 +27,6 @@
 #
 
 import math
-import re
 from typing import Any, Dict, Optional, Tuple, Union
 
 from psi4 import core

@@ -29,7 +29,6 @@
 isort:skip_file
 """
 
-import pickle
 
 from .constants import *
 from . import psifiles as psif

@@ -148,7 +148,7 @@ import itertools
 import math
 from ast import literal_eval
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union
 
 try:
     from pydantic.v1 import Field, validator
@@ -237,7 +237,6 @@ def nbody():
         Add atom-centered point charges for fragments whose basis sets are not included in the computation.
 
     """
-    pass
 
 
 class BsseEnum(str, Enum):

@@ -35,7 +35,6 @@ __all__ = ["process_input"]
 
 import os
 import re
-import sys
 import uuid
 
 from psi4 import core

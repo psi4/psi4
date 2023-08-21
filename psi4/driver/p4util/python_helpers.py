@@ -52,7 +52,6 @@ __all__ = [
 import math
 import os
 import re
-import sys
 import uuid
 import warnings
 from collections import Counter

@@ -30,7 +30,6 @@
 
 __all__ = []
 
-import sys
 
 try:
     import v2rdm_casscf

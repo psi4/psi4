@@ -26,7 +26,6 @@
 # @END LICENSE
 #
 
-import os
 
 import numpy as np
 

@@ -37,8 +37,6 @@ __all__ = [
     "message_box",
 ]
 
-import sys
-import warnings
 from typing import List, Optional
 
 from psi4 import core

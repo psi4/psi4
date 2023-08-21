@@ -52,7 +52,6 @@ from psi4 import core, extras
 class PsiException(Exception):
     """Error class for |PSIfour|. Flags success as False (triggering coffee)."""
     extras._success_flag_ = False
-    pass
 
 
 class ValidationError(PsiException):

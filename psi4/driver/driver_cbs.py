@@ -144,7 +144,6 @@ CompositeComputer.get_psi_results()
 
 import copy
 import logging
-import math
 import re
 import sys
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
@@ -1031,7 +1030,6 @@ def cbs(func, label, **kwargs):
     >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme='corl_xtpl_helgaker_2', func=cbs)
 
     """
-    pass
 
 
 ##  Aliases  ##
