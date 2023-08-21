@@ -31,6 +31,7 @@ import os
 import numpy as np
 
 from psi4 import core
+
 from ... import p4util
 from ...p4util.exceptions import *
 

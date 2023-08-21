@@ -29,12 +29,12 @@ from typing import Tuple
 
 import numpy as np
 
-from ..constants import constants
-
 from psi4 import core
+
 from .. import p4util
+from ..constants import constants
 from ..p4util.exceptions import *
-from .dft import functionals, build_superfunctional_from_dictionary
+from .dft import build_superfunctional_from_dictionary, functionals
 from .sapt import fisapt_proc
 
 

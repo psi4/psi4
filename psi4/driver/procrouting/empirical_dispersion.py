@@ -30,10 +30,11 @@ import collections
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
-from qcelemental.models import AtomicInput
 import qcengine as qcng
+from qcelemental.models import AtomicInput
 
 from psi4 import core
+
 from .. import p4util
 from ..p4util.exceptions import ValidationError
 
@@ -375,7 +376,7 @@ class EmpiricalDispersion():
             (3*nat, 3*nat) dispersion Hessian [Eh/a0/a0].
 
         """
-        from psi4.driver.driver_findif import hessian_from_gradients_geometries, assemble_hessian_from_gradients
+        from psi4.driver.driver_findif import assemble_hessian_from_gradients, hessian_from_gradients_geometries
 
         optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)

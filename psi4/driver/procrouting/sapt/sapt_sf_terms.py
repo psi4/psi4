@@ -26,13 +26,14 @@
 # @END LICENSE
 #
 
-import numpy as np
 from collections import OrderedDict
 
-from psi4 import core
-from ...p4util.exceptions import *
-from ...p4util import solvers
+import numpy as np
 
+from psi4 import core
+
+from ...p4util import solvers
+from ...p4util.exceptions import *
 from .sapt_util import print_sapt_var
 
 __all__ = ["compute_sapt_sf"]

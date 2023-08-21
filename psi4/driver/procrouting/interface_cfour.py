@@ -32,20 +32,21 @@ Also calls to qcdb module are here and not elsewhere in driver.
 Organizationally, this module isolates qcdb code from psi4 code.
 
 """
+import inspect
 import os
 import re
+import shutil
+import subprocess
 import sys
 import uuid
-import shutil
-import inspect
-import subprocess
 
 import qcelemental as qcel
 
-from .. import qcdb
-from .. import p4util
-from ..p4util.exceptions import *
 from psi4 import core
+
+from .. import p4util, qcdb
+from ..p4util.exceptions import *
+
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}

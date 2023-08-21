@@ -35,10 +35,11 @@ Properties that are able to use this module should be added to
 the registered_props dictionary.
 
 """
-import os
 import collections
+import os
 
 from psi4 import core
+
 from ... import p4util
 
 

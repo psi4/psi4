@@ -27,7 +27,8 @@
 #
 
 from collections import Counter
-from typing import Union, List
+from typing import List, Union
+
 try:
     from dataclasses import dataclass
 except ImportError:
@@ -36,10 +37,11 @@ except ImportError:
 import numpy as np
 
 from psi4 import core
+
 from ...constants import constants
 from ...p4util import solvers
 from ...p4util.exceptions import *
-from .scf_products import (TDRSCFEngine, TDUSCFEngine)
+from .scf_products import TDRSCFEngine, TDUSCFEngine
 
 # TODO: Split this file into a CPSCF file (frequency-independent case) and TD-SCF file (frequency-dependent case).
 # Neither "half" of the file uses any function from the other "half". The danger is what could happen to import paths...

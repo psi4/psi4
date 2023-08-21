@@ -29,10 +29,11 @@
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
 """
-import re
 import os
+import re
 
 from psi4 import core
+
 from ...p4util.exceptions import ValidationError
 from . import dft_builder
 
