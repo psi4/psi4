@@ -40,6 +40,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict, List, Union
 
 import numpy as np
+
 from ..constants import constants
 
 

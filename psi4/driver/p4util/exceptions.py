@@ -45,6 +45,7 @@ __all__ = [
 ]
 
 from typing import Any, Dict, List, Optional
+
 from psi4 import core, extras
 
 

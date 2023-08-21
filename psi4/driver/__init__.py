@@ -25,6 +25,9 @@
 #
 # @END LICENSE
 #
+"""
+isort:skip_file
+"""
 
 import pickle
 

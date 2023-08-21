@@ -37,14 +37,13 @@ __all__ = [
     "message_box",
 ]
 
-from typing import List, Optional
-
 import sys
 import warnings
-
-from .. import constants
+from typing import List, Optional
 
 from psi4 import core
+
+from .. import constants
 
 
 def banner(text: str, type: int = 1, width: int = 35, strNotOutfile: bool = False) -> Optional[str]:

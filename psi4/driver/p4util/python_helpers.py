@@ -49,10 +49,10 @@ __all__ = [
 ]
 
 
+import math
 import os
 import re
 import sys
-import math
 import uuid
 import warnings
 from collections import Counter
@@ -62,14 +62,13 @@ from tempfile import NamedTemporaryFile
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-
 import qcelemental as qcel
-from psi4 import core
-from psi4 import extras
-from .. import qcdb
 
+from psi4 import core, extras
+
+from .. import qcdb
 from . import optproc
-from .exceptions import TestComparisonError, ValidationError, UpgradeHelper
+from .exceptions import TestComparisonError, UpgradeHelper, ValidationError
 
 ## Python basis helps
 

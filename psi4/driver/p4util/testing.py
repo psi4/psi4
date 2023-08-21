@@ -48,6 +48,7 @@ import numpy as np
 import qcelemental as qcel
 
 from psi4 import core
+
 from .. import qcdb
 from .exceptions import TestComparisonError
 
