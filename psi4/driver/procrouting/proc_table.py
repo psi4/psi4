@@ -31,12 +31,8 @@ chemical methods.
 
 from qcelemental.util import which
 
-from . import sapt
-from . import proc
-from . import interface_cfour
-from . import proc_data
-
-from .dft import functionals, build_superfunctional_from_dictionary
+from . import interface_cfour, proc, proc_data, sapt
+from .dft import build_superfunctional_from_dictionary, functionals
 
 # never import wrappers or aliases into this file
 

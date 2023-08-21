@@ -25,36 +25,24 @@
 #
 # @END LICENSE
 #
-"""
-isort:skip_file
-"""
 
-
-from .constants import *
 from . import psifiles as psif
+from .constants import *
 
+# isort: split
+
+from . import schema_wrapper  # Deprecate in 1.4
+from . import aliases, diatomic, frac, gaussian_n, wrapper_autofrag, wrapper_database
+from .driver import *
+from .driver_cbs import cbs  # remove in v1.8 when UpgradeHelper expires
+from .inputparser import process_input
 from .ipi_broker import ipi_broker
 from .molutil import *
-from .inputparser import process_input
-from .p4util.util import *
-from .p4util.testing import *
-from .p4util.fcidump import *
 from .p4util.fchk import *
+from .p4util.fcidump import *
+from .p4util.python_helpers import basis_helper, pcm_helper, set_module_options, set_options
+from .p4util.testing import *
 from .p4util.text import *
-from .qmmm import QMMM, QMMMbohr
+from .p4util.util import *
 from .pluginutil import *
-
-from . import gaussian_n
-from . import aliases
-from . import diatomic
-from . import wrapper_database
-from . import wrapper_autofrag
-from . import schema_wrapper
-from . import schema_wrapper as json_wrapper  # Deprecate in 1.4
-from . import frac
-
-from .driver import *
-
-# Single functions
-from .driver_cbs import cbs  # remove in v1.8 when UpgradeHelper expires
-from .p4util.python_helpers import set_options, set_module_options, pcm_helper, basis_helper
+from .qmmm import QMMM, QMMMbohr
