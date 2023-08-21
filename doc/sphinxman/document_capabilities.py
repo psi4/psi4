@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import ast
 import argparse
+import ast
 import unicodedata
 from pathlib import Path
 
-from psi4.driver.procrouting.proc_data import method_governing_type_keywords
 from psi4.driver.p4util.exceptions import sanitize_method
+from psi4.driver.procrouting.proc_data import method_governing_type_keywords
 
 # stdsuite DFT methods set explicitly to "scf_type" since the DFTs aren't individually entered in proc_data.py
 method_governing_type_keywords["svwn"] = "scf_type"
