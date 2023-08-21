@@ -35,8 +35,8 @@ __all__ = [
 from typing import Callable, Dict, Union
 
 from psi4 import core
-from . import p4util
-from . import driver
+
+from . import driver, p4util
 from .p4util.exceptions import *
 
 

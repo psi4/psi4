@@ -45,9 +45,11 @@ import re
 import sys
 
 from psi4 import core
-from .constants import constants
+
 from . import p4util
+from .constants import constants
 from .driver import *
+
 # never import aliases into this file
 
 

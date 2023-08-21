@@ -36,6 +36,7 @@ import sys
 from pathlib import Path
 
 from psi4 import core
+
 from .util import tty
 
 

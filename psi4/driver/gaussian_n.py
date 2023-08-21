@@ -28,12 +28,11 @@
 
 __all__ = []
 
-from . import driver
-from . import p4util
+from psi4 import core
+
+from . import driver, p4util
 from .constants import constants
 from .p4util.exceptions import ValidationError
-
-from psi4 import core
 
 # never import aliases into this file
 

@@ -36,18 +36,21 @@ import abc
 import copy
 import logging
 import pprint
-from typing import Any, Dict, Optional, Tuple, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
 try:
     from pydantic.v1 import Field, validator
 except ImportError:
     from pydantic import Field, validator
+
 import qcelemental as qcel
-from qcelemental.models import DriverEnum, AtomicInput, AtomicResult
+from qcelemental.models import AtomicInput, AtomicResult, DriverEnum
+
 qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
 import qcengine as qcng
 
 from psi4 import core
+
 from . import p4util
 
 if TYPE_CHECKING:

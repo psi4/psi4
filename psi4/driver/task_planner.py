@@ -32,20 +32,22 @@ __all__ = [
     "TaskComputers",
 ]
 
-import os
 import copy
 import logging
+import os
 from typing import Dict, Tuple, Union
 
 from qcelemental.models import DriverEnum
+
+from psi4 import core
+
 from . import p4util
 from .constants import pp
-from .task_base import AtomicComputer
+from .driver_cbs import CompositeComputer, cbs_text_parser, composite_procedures
 from .driver_findif import FiniteDifferenceComputer
 from .driver_nbody import ManyBodyComputer
-from .driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
-from .driver_util import negotiate_derivative_type, negotiate_convergence_criterion
-from psi4 import core
+from .driver_util import negotiate_convergence_criterion, negotiate_derivative_type
+from .task_base import AtomicComputer
 
 logger = logging.getLogger(__name__)
 

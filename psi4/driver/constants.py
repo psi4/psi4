@@ -56,7 +56,9 @@ except ImportError:
 # printing and logging formatting niceties
 import pprint
 from functools import partial
+
 import numpy as np
+
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)
 nppp10 = partial(np.array_str, max_line_width=120, precision=10, suppress_small=True)
@@ -64,5 +66,6 @@ del np, partial, pprint
 
 # ensure Psi4 py-side constants are fixed at CODATA 2014, regardless of qcel default
 import qcelemental as qcel
+
 constants = qcel.PhysicalConstantsContext("CODATA2014")
 del qcel

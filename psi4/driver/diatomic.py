@@ -36,6 +36,7 @@ from typing import Any, Dict, List
 import numpy as np
 
 from psi4 import core
+
 from . import constants
 from .p4util.exceptions import *
 

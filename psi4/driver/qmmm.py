@@ -32,6 +32,7 @@ a QM calculation.
 """
 
 from psi4 import core
+
 from .driver import *
 from .p4util.exceptions import UpgradeHelper
 
