@@ -26,17 +26,18 @@
 # @END LICENSE
 #
 
+import logging
 import math
 from functools import partial
 from typing import Callable, Optional, Union
-import logging
 
 import numpy as np
 
 from psi4 import core
-from .p4util.exceptions import ValidationError
+
+from .aliases import allen_focal_point, sherrill_gold_standard
 from .constants import nppp
-from .aliases import sherrill_gold_standard, allen_focal_point
+from .p4util.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 

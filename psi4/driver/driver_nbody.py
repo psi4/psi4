@@ -146,9 +146,10 @@ __all__ = [
 import copy
 import itertools
 import math
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union, TYPE_CHECKING
 from ast import literal_eval
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union
+
 try:
     from pydantic.v1 import Field, validator
 except ImportError:
@@ -157,15 +158,16 @@ except ImportError:
 import logging
 
 import numpy as np
-from qcelemental.models import DriverEnum, AtomicResult
+from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
-from .constants import constants, pp
+
 from . import driver_nbody_multilevel, p4util
-from .p4util.exceptions import *
-from .task_base import BaseComputer, AtomicComputer, EnergyGradientHessianWfnReturn
+from .constants import constants, pp
 from .driver_cbs import CompositeComputer
 from .driver_findif import FiniteDifferenceComputer
+from .p4util.exceptions import *
+from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
 if TYPE_CHECKING:
     import qcportal

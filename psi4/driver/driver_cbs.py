@@ -142,25 +142,32 @@ CompositeComputer.get_psi_results()
 
 """
 
+import copy
+import logging
 import math
 import re
 import sys
-import copy
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
-import logging
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+
 try:
     from pydantic.v1 import Field, validator
 except ImportError:
     from pydantic import Field, validator
+
 from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
-from . import driver_util, p4util
-from . import qcdb
+
+from . import driver_util, p4util, qcdb
 from .constants import pp
-from .driver_cbs_helper import composite_procedures, register_composite_function, register_xtpl_function, xtpl_procedures  # lgtm[py/unused-import]
+from .driver_cbs_helper import (  # lgtm[py/unused-import]
+    composite_procedures,
+    register_composite_function,
+    register_xtpl_function,
+    xtpl_procedures,
+)
 from .driver_util import UpgradeHelper
 from .p4util.exceptions import ValidationError
 from .procrouting.interface_cfour import cfour_psivar_list

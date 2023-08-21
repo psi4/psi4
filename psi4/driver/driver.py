@@ -31,30 +31,24 @@ single-point energies, geometry optimizations, properties, and vibrational
 frequency calculations.
 
 """
+import copy
 import json
+import logging
 import os
 import re
-import copy
 import shutil
 import sys
-import logging
 from typing import Dict, Optional, Union
-import logging
 
 import numpy as np
 
 from psi4 import core  # for typing
-from . import driver_util
-from . import driver_cbs
-from . import driver_nbody
-from . import driver_findif
-from . import task_planner
-from . import p4util
-from . import qcdb
-from .constants import constants, pp, nppp, nppp10
+
+from . import driver_cbs, driver_findif, driver_nbody, driver_util, p4util, qcdb, task_planner
+from .constants import constants, nppp, nppp10, pp
+from .mdi_engine import mdi_run
 from .p4util.exceptions import *
 from .procrouting import *
-from .mdi_engine import mdi_run
 from .task_base import AtomicComputer
 
 # never import wrappers or aliases into this file

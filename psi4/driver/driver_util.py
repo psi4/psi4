@@ -26,13 +26,14 @@
 # @END LICENSE
 #
 
-import re
 import math
+import re
 from typing import Any, Dict, Optional, Tuple, Union
 
 from psi4 import core
+
 from . import p4util
-from .p4util.exceptions import docs_table_link, ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError
+from .p4util.exceptions import ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError, docs_table_link
 from .procrouting import proc
 from .procrouting.proc_table import procedures
 

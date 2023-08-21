@@ -140,20 +140,21 @@ FiniteDifferenceComputer.get_psi_results()
 import copy
 import logging
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
+
 try:
     from pydantic.v1 import Field, validator
 except ImportError:
     from pydantic import Field, validator
-from qcelemental.models import DriverEnum, AtomicResult
-from .constants import constants
+
+from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
-from . import p4util
-from . import qcdb
-from .constants import pp, nppp10
+
+from . import p4util, qcdb
+from .constants import constants, nppp10, pp
 from .p4util.exceptions import ValidationError
 from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
