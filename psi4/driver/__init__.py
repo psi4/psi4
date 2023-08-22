@@ -31,8 +31,10 @@ from .constants import *
 
 # isort: split
 
-from . import schema_wrapper  # Deprecate in 1.4
-from . import aliases, diatomic, frac, gaussian_n, wrapper_autofrag, wrapper_database
+from . import aliases, diatomic, frac, gaussian_n
+from . import schema_wrapper as json_wrapper  # Deprecate in 1.4
+from . import schema_wrapper as schema_wrapper
+from . import wrapper_autofrag, wrapper_database
 from .driver import *
 from .driver_cbs import cbs  # remove in v1.8 when UpgradeHelper expires
 from .inputparser import process_input
