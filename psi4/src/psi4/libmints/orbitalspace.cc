@@ -214,10 +214,7 @@ OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpac
     C12->gemm(false, false, 1.0, O12, space2.C(), 0.0);
 
     // SVD of MO overlap matrix
-    std::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_a_tmps = C12->svd_a_temps();
-    SharedMatrix U = std::get<0>(svd_a_tmps);
-    SharedVector S = std::get<1>(svd_a_tmps);
-    SharedMatrix Vt = std::get<2>(svd_a_tmps);
+    auto [U, S, Vt] = C12->svd_a_temps();
     C12->svd_a(U, S, Vt);
 
     // Remove near-zero eigenvalues from the S matrix

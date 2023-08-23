@@ -43,6 +43,6 @@ def test_orthonormality(spaces, o1, o2):
     S_mo = np.linalg.multi_dot([C1.T, S_ao, C2])
 
     if o1 != o2:
-        np.testing.assert_allclose(np.dot(S_mo.T, S_mo), np.zeros((C2.shape[1], C2.shape[1])), rtol=1e-05, atol=1e-07)
+        np.testing.assert_allclose(S_mo, np.zeros((C1.shape[1], C2.shape[1])), rtol=1e-05, atol=1e-07)
     else:
-        np.testing.assert_allclose(np.dot(S_mo.T, S_mo), np.eye(C1.shape[1]), rtol=1e-05, atol=1e-07)
+        np.testing.assert_allclose(S_mo, np.eye(C1.shape[1]), rtol=1e-05, atol=1e-07)
