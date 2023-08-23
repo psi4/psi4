@@ -38,6 +38,7 @@ from typing import Dict, Optional, Union
 import numpy as np
 
 import psi4
+
 try:
     from ipi.interfaces.clients import Client
     ipi_available = True

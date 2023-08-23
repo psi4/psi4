@@ -27,16 +27,16 @@
 #
 
 import collections
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Union
 
 import numpy as np
-from qcelemental.models import AtomicInput
 import qcengine as qcng
+from qcelemental.models import AtomicInput
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import driver_findif
-from psi4.driver.p4util.exceptions import ValidationError
+
+from .. import p4util
+from ..p4util.exceptions import ValidationError
 
 _engine_can_do = collections.OrderedDict([
     # engine order establishes default for each disp
@@ -376,6 +376,8 @@ class EmpiricalDispersion():
             (3*nat, 3*nat) dispersion Hessian [Eh/a0/a0].
 
         """
+        from psi4.driver.driver_findif import assemble_hessian_from_gradients, hessian_from_gradients_geometries
+
         optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)
 
@@ -391,14 +393,14 @@ class EmpiricalDispersion():
         # Record undisplaced symmetry for projection of diplaced point groups
         core.set_global_option("PARENT_SYMMETRY", molecule.schoenflies_symbol())
 
-        findif_meta_dict = driver_findif.hessian_from_gradients_geometries(molclone, -1)
+        findif_meta_dict = hessian_from_gradients_geometries(molclone, -1)
         for displacement in findif_meta_dict["displacements"].values():
             geom_array = np.reshape(displacement["geometry"], (-1, 3))
             molclone.set_geometry(core.Matrix.from_array(geom_array))
             molclone.update_geometry()
             displacement["gradient"] = self.compute_gradient(molclone).np.ravel().tolist()
 
-        H = driver_findif.assemble_hessian_from_gradients(findif_meta_dict, -1)
+        H = assemble_hessian_from_gradients(findif_meta_dict, -1)
         if wfn is not None:
             wfn.set_variable('DISPERSION CORRECTION HESSIAN', H)
         optstash.restore()

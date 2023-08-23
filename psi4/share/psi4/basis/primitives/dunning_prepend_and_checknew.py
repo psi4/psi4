@@ -29,9 +29,10 @@
 #
 
 from __future__ import print_function
+
 import os
-import sys
 import subprocess
+import sys
 
 qcdb_module = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + '../../../../../driver')
 sys.path.append(qcdb_module)

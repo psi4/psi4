@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import re
-import sys
 import json
 import os
+import re
+import sys
 
 badtests = []
 testfail = re.compile(r'^\s*(?P<num>\d+) - (?P<name>\w+(?:-\w+)*) \(Failed\)\s*$')

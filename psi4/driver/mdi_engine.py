@@ -43,9 +43,18 @@ import psi4
 
 _have_mdi = False
 try:
-    from mdi import MDI_Init, MDI_MPI_get_world_comm, MDI_Accept_Communicator, \
-        MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_INT, MDI_DOUBLE, \
-        MDI_Register_Node, MDI_Register_Command
+    from mdi import (
+        MDI_DOUBLE,
+        MDI_INT,
+        MDI_Accept_Communicator,
+        MDI_Init,
+        MDI_MPI_get_world_comm,
+        MDI_Recv,
+        MDI_Recv_Command,
+        MDI_Register_Command,
+        MDI_Register_Node,
+        MDI_Send,
+    )
     _have_mdi = True
 except ImportError:
     pass

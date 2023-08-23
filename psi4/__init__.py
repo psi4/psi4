@@ -26,6 +26,9 @@
 # @END LICENSE
 #
 
+"""
+isort:skip_file
+"""
 
 # Figure out paths
 # * in figuring out psidatadir: envvar trumps staged/installed

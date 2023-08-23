@@ -41,7 +41,6 @@ __all__ = [
 ]
 
 
-import sys
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
