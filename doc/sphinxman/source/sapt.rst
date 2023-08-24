@@ -217,7 +217,7 @@ pair between monomers.
 The :math:`S^{2}` approximation is usually pretty good, but may 
 break down for short intermolecular distance, particularly in high-order
 terms. To compensate these deviations, in 2014 Parker et al. [Parker:2014:094106]_ 
-recommend to scale all :math:`S^{2}` approximated exchange terms by the ratio:
+recommended to scale all :math:`S^{2}` approximated exchange terms by the ratio:
 
 .. math:: p_{EX}(\alpha) = \left( \frac{E_{exch}^{(10)}}{E_{exch}^{(10)}(S^{2})} \right)^{\alpha}
 
