@@ -229,7 +229,7 @@ can be specified by setting |sapt__exch_scale_alpha| to a value. For example, ::
 
 will set :math:`\alpha = 1.0` and scale exchange energies with :math:`p_{EX}(1.0)`.
 
-However, as later pointed out by Schaeffer and Jansen [Schaeffer:2013:2570]_
+However, as later pointed out by Schaeffer and Jansen [Schaffer:2013:2570]_
 in the context of DFT-based SAPT, the ratios :math:`E_{exch}^{(1)}(S^{2})/E_{exch}^{(1)}`,
 :math:`E_{\rm exch-ind}^{(2)}(S^2)/E_{\rm exch-ind}^{(2)}`, and 
 :math:`E_{\rm exch-disp}^{(2)}(S^2)/E_{\rm exch-disp}^{(2)}` are not very similar to
