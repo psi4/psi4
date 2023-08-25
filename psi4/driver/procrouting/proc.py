@@ -4882,6 +4882,9 @@ def run_fisapt(name, **kwargs):
     minao = core.BasisSet.build(ref_wfn.molecule(), "BASIS", core.get_global_option("MINAO_BASIS"))
     ref_wfn.set_basisset("MINAO", minao)
 
+    sapgau = core.BasisSet.build(ref_wfn.molecule(), "SAPGAU_BASIS", core.get_global_option("SAPGAU_BASIS"))
+    ref_wfn.set_basisset("SAPGAU", sapgau)
+
     # Turn of dispersion for -d
     if "-d" in name.lower():
         core.set_local_option("FISAPT", "FISAPT_DO_FSAPT_DISP", False)
