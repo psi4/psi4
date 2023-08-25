@@ -400,6 +400,9 @@ class PSI_API BasisSet {
     void move_atom(int atom, const Vector3 &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
+
+    // Converts the contraction to match the SAP approach
+    void convert_sap_contraction();
     
    private: 
     /// Helper functions for frozen core to reduce LOC

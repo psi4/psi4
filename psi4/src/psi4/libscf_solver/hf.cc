@@ -938,6 +938,34 @@ void HF::print_orbitals() {
     outfile->Printf("    Final Occupation by Irrep:\n");
     print_occupation();
 }
+ 
+void HF::compute_sapgau_guess() {
+  // Build auxiliary basis set object
+  auto sap_basis = get_basisset("SAPGAU_BASIS");
+  sap_basis->convert_sap_contraction();
+  
+  auto zero_bas = BasisSet::zero_ao_basis_set();
+  auto nsap = sap_basis->nbf();
+  auto nso = basisset_->nbf();
+
+  // Build (P|pq) raw 3-index ERIs, dimension (1, Nsap, nso, nso).
+  // TBD: write this in terms of ao_eri_shell for a Nnuc times reduction in memory use
+  auto Ppq = mintshelper()->ao_eri(sap_basis, zero_bas, basisset_, basisset_);
+
+  auto Fsap = std::make_shared<Matrix>("SAP potential", nso, nso);
+  Fsap.reset();
+  for (auto P = 0; P < nsap; P++) {
+    for(auto u = 0; u < nso; u++) {
+      for(auto v = 0; v < nso; v++) {
+        Fsap(u,v) += Ppq(P,u*nso+v);
+      }
+    }
+  }
+
+  Fsap->add(H_);
+  Fa_->copy(Fsap);
+  Fb_->copy(Fsap);
+}
 
 void HF::guess() {
     // don't save guess energy as "the" energy because we need to avoid
@@ -1158,6 +1186,19 @@ void HF::guess() {
         Fa_->add(Vsap[0]);
         Fb_->copy(Fa_);
         form_initial_C();
+        form_D();
+        guess_E = compute_initial_E();
+
+    } else if (guess_type == "SAPGAU") {
+      if (print_)
+        outfile->Printf("  SCF Guess: Superposition of Atomic Potentials (doi:10.1021/acs.jctc.8b01089).\n  Using error function fits of the atomic potentials (doi:10.1063/5.0004046).\n\n");
+
+        // Build non-idempotent, spin-restricted SAD density matrix
+        compute_sapgau_guess();
+        // Find occupations
+        find_occupation();
+
+        // Now we have orbitals and occupations, build a density matrix
         form_D();
         guess_E = compute_initial_E();
 

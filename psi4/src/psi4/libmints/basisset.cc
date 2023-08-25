@@ -1256,3 +1256,9 @@ void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
         ao += INT_NFUNC(puream_, am);
     }  // nshell
 }
+
+void BasisSet::convert_sap_contraction() {
+  for (auto shell: shells_) {
+    shell.convert_sap_contraction();
+  }
+}

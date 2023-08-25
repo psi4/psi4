@@ -295,6 +295,9 @@ class PSI_API GaussianShell {
     int function_index() const { return start_; }
     void set_function_index(int i) { start_ = i; }
     double evaluate(double r, int l) const;
+
+    /// Convert error function contractions to Gaussians for SAP
+    void convert_sap_contraction();
 };
 
 }  // namespace psi
