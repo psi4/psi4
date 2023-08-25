@@ -1448,7 +1448,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
          what the defaults are. -*/
         options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD SADNO SAP SAPGAU HUCKEL MODHUCKEL READ");
         /*- The potential basis set used for the SAPGAU guess -*/
-        options.add_str("SAPGAU_BASIS", "helfem_large");
+        options.add_str("SAPGAU_BASIS", "sap_helfem_large");
         /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
         Useful to produce broken-symmetry unrestricted solutions.
         Notice that this procedure is defined only for calculations in C1 symmetry. -*/

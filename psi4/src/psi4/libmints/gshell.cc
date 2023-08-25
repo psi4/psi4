@@ -143,13 +143,6 @@ int ShellInfo::nfunction() const { return INT_NFUNC(puream_, l_); }
 
 int ShellInfo::nprimitive() const { return exp_.size(); }
 
-void ShellInfo::convert_sap_contraction() {
-  // Converts overlap normalized coefficients to Coulomb normalized coefficients
-  for (auto i = 0; i < nprimitive(); ++i) {
-    coef_[i] *= std::sqrt(exp_[i]);
-  }
-}
-
 void ShellInfo::print(std::string out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
 

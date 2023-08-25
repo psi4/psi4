@@ -938,31 +938,40 @@ void HF::print_orbitals() {
     outfile->Printf("    Final Occupation by Irrep:\n");
     print_occupation();
 }
- 
+
 void HF::compute_sapgau_guess() {
   // Build auxiliary basis set object
-  auto sap_basis = get_basisset("SAPGAU_BASIS");
+  auto sap_basis = get_basisset("SAPGAU");
   sap_basis->convert_sap_contraction();
-  
+
   auto zero_bas = BasisSet::zero_ao_basis_set();
   auto nsap = sap_basis->nbf();
   auto nso = basisset_->nbf();
 
   // Build (P|pq) raw 3-index ERIs, dimension (1, Nsap, nso, nso).
-  // TBD: write this in terms of ao_eri_shell for a Nnuc times reduction in memory use
+  // These integrals are in AO basis
   auto Ppq = mintshelper()->ao_eri(sap_basis, zero_bas, basisset_, basisset_);
 
-  auto Fsap = std::make_shared<Matrix>("SAP potential", nso, nso);
-  Fsap.reset();
+  // Build repulsive potential matrix in AO basis
+  auto Vsap = std::make_shared<Matrix>("VSAP", basisset_->nbf(), basisset_->nbf());
+  auto Varr = Vsap->pointer();
+  auto Parr = Ppq->pointer();
   for (auto P = 0; P < nsap; P++) {
     for(auto u = 0; u < nso; u++) {
       for(auto v = 0; v < nso; v++) {
-        Fsap(u,v) += Ppq(P,u*nso+v);
+        // A minus sign is necessary here
+        Varr[u][v] -= Parr[P][u*nso+v];
       }
     }
   }
 
+  // Convert repulsive potential into the SO basis
+  auto Fsap = std::make_shared<Matrix>("FSAP", AO2SO_->colspi(), AO2SO_->colspi());
+  Fsap->apply_symmetry(Vsap, AO2SO_);
+  // and add in the core Hamiltonian
   Fsap->add(H_);
+
+  // Set the alpha and beta Fock matrices
   Fa_->copy(Fsap);
   Fb_->copy(Fsap);
 }
@@ -1193,8 +1202,10 @@ void HF::guess() {
       if (print_)
         outfile->Printf("  SCF Guess: Superposition of Atomic Potentials (doi:10.1021/acs.jctc.8b01089).\n  Using error function fits of the atomic potentials (doi:10.1063/5.0004046).\n\n");
 
-        // Build non-idempotent, spin-restricted SAD density matrix
+        // Build the SAP potential
         compute_sapgau_guess();
+        form_initial_C();
+
         // Find occupations
         find_occupation();
 

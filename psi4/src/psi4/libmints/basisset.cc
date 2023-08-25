@@ -1258,7 +1258,10 @@ void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
 }
 
 void BasisSet::convert_sap_contraction() {
-  for (auto shell: shells_) {
-    shell.convert_sap_contraction();
+  // Scale coefficients by sqrt(exponent) to account for difference in normalization
+  for (int i = 0; i < n_uprimitive_; ++i) {
+    auto scale = std::pow(uexponents_[i]/M_PI,1.5);
+    ucoefficients_[i] *= scale;
+    uerd_coefficients_[i] *= scale;
   }
 }

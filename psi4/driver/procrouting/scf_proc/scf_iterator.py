@@ -218,6 +218,10 @@ def scf_initialize(self):
         optstash = p4util.OptionsState(["SCF", "SCF_SUBTYPE"])
         core.set_local_option("SCF", "SCF_SUBTYPE", "AUTO")
 
+        # Populate sapgau basis
+        sapgau = core.BasisSet.build(self.molecule(), "SAPGAU_BASIS", core.get_global_option("SAPGAU_BASIS"))
+        self.set_basisset("SAPGAU", sapgau)
+
         core.timer_on("HF: Guess")
         self.guess()
         core.timer_off("HF: Guess")
