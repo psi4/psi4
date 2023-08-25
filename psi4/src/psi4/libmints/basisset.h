@@ -169,7 +169,7 @@ class PSI_API BasisSet {
     std::vector<double> xyz_;
 
     /// Update Libint2 shells
-    void update_l2_shells();
+    void update_l2_shells(bool embed_normalization = true);
 
    public:
     BasisSet();
@@ -406,7 +406,10 @@ class PSI_API BasisSet {
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
 
-   private:
+    // Converts the contraction to match the SAP approach.
+    void convert_sap_contraction();
+    
+   private: 
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);
