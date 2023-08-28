@@ -141,6 +141,13 @@ jobs:
           # - psi4/label/dev::pcmsolver
           # - psi4/label/dev::simint
             # runtime
+            # pip
+            # * note that this is the reliable way to patch in dev versions of py deps,
+            #   as internal builds need path adjustments, force removals of conda version,
+            #   and can still be insufficient for qcfractal.
+          #- pip
+          #- pip:
+          #   - git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
@@ -217,6 +224,7 @@ jobs:
           - pip
           - pip:
              - git+https://github.com/i-pi/i-pi.git@master-py3
+             #- git+https://github.com/loriab/QCEngine.git@v0.28.1.dev6
 
         # toml needed for psi4 to load parameters from dftd4-python
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
@@ -417,6 +425,7 @@ jobs:
         #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         #conda list -n auxenv
         if [[ "${{ runner.os }}" != "Windows" ]]; then
+          # on Windows, cmd varies: `qcengine.exe`
           qcengine info
         fi
 

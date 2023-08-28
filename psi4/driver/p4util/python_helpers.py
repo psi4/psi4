@@ -46,14 +46,12 @@ __all__ = [
     "plump_qcvar",
     "set_options",
     "set_module_options",
-    "temp_circular_import_blocker",  # retire ASAP
 ]
 
 
+import math
 import os
 import re
-import sys
-import math
 import uuid
 import warnings
 from collections import Counter
@@ -63,14 +61,13 @@ from tempfile import NamedTemporaryFile
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-
 import qcelemental as qcel
-from psi4 import core
-from psi4 import extras
-from psi4.driver import qcdb
 
+from psi4 import core, extras
+
+from .. import qcdb
 from . import optproc
-from .exceptions import TestComparisonError, ValidationError, UpgradeHelper
+from .exceptions import TestComparisonError, UpgradeHelper, ValidationError
 
 ## Python basis helps
 
@@ -653,10 +650,6 @@ def pcm_helper(block: str):
 def _basname(name: str) -> str:
     """Imitates :py:meth:`core.BasisSet.make_filename` without the gbs extension."""
     return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
-
-
-def temp_circular_import_blocker():
-    pass
 
 
 def basis_helper(block: str, name: str = '', key: str = 'BASIS', set_option: bool = True):

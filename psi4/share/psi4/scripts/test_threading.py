@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import math
-import time
-import importlib
-import sysconfig
-import subprocess
+"""
+isort:skip_file
+"""
 import collections
+import importlib
+import math
+import os
+import subprocess
+import sys
+import sysconfig
+import time
 
 if sys.version_info <= (3, 0):
     print('Much of this script needs py3')

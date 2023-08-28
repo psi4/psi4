@@ -34,9 +34,10 @@ __all__ = []
 
 from typing import Optional
 
-from psi4.driver import constants
-
 from psi4 import core
+
+from ..constants import constants
+
 
 def _write_nbo(self, name: str):
     """Write wavefunction information in *wfn* to *name* in NBO format.

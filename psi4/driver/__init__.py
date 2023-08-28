@@ -26,44 +26,25 @@
 # @END LICENSE
 #
 
-import pickle
+from . import psifiles as psif
+from .constants import *
 
-from . import dependency_check
+# isort: split
 
-# printing and logging formatting niceties
-import pprint
-from functools import partial
-import numpy as np
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
-nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)
-nppp10 = partial(np.array_str, max_line_width=120, precision=10, suppress_small=True)
-del partial
-
-from qcelemental import constants
-from psi4.driver import psifiles as psif
-
-from psi4.driver.ipi_broker import ipi_broker
-from psi4.driver.molutil import *
-from psi4.driver.inputparser import process_input
-from psi4.driver.p4util.util import *
-from psi4.driver.p4util.testing import *
-from psi4.driver.p4util.fcidump import *
-from psi4.driver.p4util.fchk import *
-from psi4.driver.p4util.text import *
-from psi4.driver.qmmm import QMMM, QMMMbohr
-from psi4.driver.pluginutil import *
-
-from psi4.driver import gaussian_n
-from psi4.driver import aliases
-from psi4.driver import diatomic
-from psi4.driver import wrapper_database
-from psi4.driver import wrapper_autofrag
-from psi4.driver import schema_wrapper
-from psi4.driver import schema_wrapper as json_wrapper # Deprecate in 1.4
-from psi4.driver import frac
-
-from psi4.driver.driver import *
-
-# Single functions
-from psi4.driver.driver_cbs import cbs  # remove in v1.8 when UpgradeHelper expires
-from psi4.driver.p4util.python_helpers import set_options, set_module_options, pcm_helper, basis_helper
+from . import aliases, diatomic, frac, gaussian_n
+from . import schema_wrapper as json_wrapper  # Deprecate in 1.4
+from . import schema_wrapper as schema_wrapper
+from . import wrapper_autofrag, wrapper_database
+from .driver import *
+from .driver_cbs import cbs  # remove in v1.8 when UpgradeHelper expires
+from .inputparser import process_input
+from .ipi_broker import ipi_broker
+from .molutil import *
+from .p4util.fchk import *
+from .p4util.fcidump import *
+from .p4util.python_helpers import basis_helper, pcm_helper, set_module_options, set_options
+from .p4util.testing import *
+from .p4util.text import *
+from .p4util.util import *
+from .pluginutil import *
+from .qmmm import QMMM, QMMMbohr

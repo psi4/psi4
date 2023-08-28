@@ -31,31 +31,24 @@ single-point energies, geometry optimizations, properties, and vibrational
 frequency calculations.
 
 """
+import copy
 import json
+import logging
 import os
 import re
-import copy
 import shutil
-import sys
-import logging
 from typing import Dict, Optional, Union
-import logging
 
 import numpy as np
 
 from psi4 import core  # for typing
-from psi4.driver import driver_util
-from psi4.driver import driver_cbs
-from psi4.driver import driver_nbody
-from psi4.driver import driver_findif
-from psi4.driver import task_planner
-from psi4.driver import p4util
-from psi4.driver import qcdb
-from psi4.driver import pp, nppp, nppp10
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting import *
-from psi4.driver.mdi_engine import mdi_run
-from psi4.driver.task_base import AtomicComputer
+
+from . import driver_cbs, driver_findif, driver_nbody, driver_util, p4util, qcdb, task_planner
+from .constants import constants, nppp, nppp10, pp
+from .mdi_engine import mdi_run
+from .p4util.exceptions import *
+from .procrouting import *
+from .task_base import AtomicComputer
 
 # never import wrappers or aliases into this file
 
@@ -822,7 +815,8 @@ def optimize_geometric(name, **kwargs):
     
             molecule = geometric.molecule.Molecule()
             molecule.elem = [p4_mol.symbol(i).capitalize() for i in range(p4_mol.natom())]
-            molecule.xyzs = [p4_mol.geometry().np * qcel.constants.bohr2angstroms] 
+            # beware if geomeTRIC and psi4 choose different sets of constants
+            molecule.xyzs = [p4_mol.geometry().np * constants.bohr2angstroms]
             molecule.build_bonds()
                                  
             super(Psi4NativeEngine, self).__init__(molecule)
@@ -906,7 +900,7 @@ def optimize_geometric(name, **kwargs):
         cvals=CVals[0] if CVals is not None else None)
     
     # Get initial coordinates in bohr
-    coords = M.xyzs[0].flatten() / qcel.constants.bohr2angstroms
+    coords = M.xyzs[0].flatten() / constants.bohr2angstroms
 
     # Setup an optimizer object
     params = geometric.optimize.OptParams(**optimizer_keywords)
@@ -1810,7 +1804,7 @@ def gdma(wfn, datafile=""):
     import gdma
 
     min_version = "2.3.3"
-    from pkg_resources import parse_version
+    from qcelemental.util import parse_version
     if parse_version(gdma.__version__) < parse_version(min_version):
         raise ModuleNotFoundError(f"GDMA version {min_version} is required at least. Version {gdma.__version__} was found.")
 
