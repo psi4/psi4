@@ -467,7 +467,7 @@ Bibliography
 
 .. [Schaffer:2013:2570]
    R. Sch\ |a_dots|\ ffer and G. Jansen
-   *Mol. Phys.* **111**, 2570 (2013).
+   *Mol. Phys.* **111**, 2570 (2013), https://doi.org/10.1080/00268976.2013.827253 .
 
 .. [Laqua:2018:204111]
    H. Laqua, J. Kussmann and C. Ochsenfeld
