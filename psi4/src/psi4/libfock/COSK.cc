@@ -195,6 +195,9 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
         std::string gridname_uppercase = gridname;
         std::transform(gridname.begin(), gridname.end(), gridname_uppercase.begin(), ::toupper);
 
+        std::string gridname_lowercase = gridname;
+        std::transform(gridname.begin(), gridname.end(), gridname_lowercase.begin(), ::tolower);
+
         // initialize grid
         // TODO: specify bool "DFT_REMOVE_DISTANT_POINTS" in the DFTGrid constructors
         std::map<std::string, std::string> grid_str_options = {
@@ -221,7 +224,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
         };
         grid = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_float_options, options_);
 
-        // Print out warning if grid with negative grid weights is used 
+        // Print out warning if grid with negative grid weights is used
         // Original Nesse COSX formulation does not support negative grid weights
         // which can happen with certain grid configurations
         // See https://github.com/psi4/psi4/issues/2890
@@ -230,12 +233,9 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
             const auto w = block->w();
             for (int ipoint = 0; ipoint < block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-                    std::string gridname_uppercase;
-                    std::transform(gridname.begin(), gridname.end(), gridname_uppercase.begin(), ::toupper);
-
-                    std::string warning_message = "The definition of the current ";
-                    warning_message += gridname;
-                    warning_message += " which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_;
+                    std::string warning_message = "  INFO: The definition of the current ";
+                    warning_message += gridname_lowercase;
+                    warning_message += " grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_";
                     warning_message += gridname_uppercase;
                     warning_message += ".\n\n";
 
