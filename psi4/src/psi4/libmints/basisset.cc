@@ -825,6 +825,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                                   &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
                                   &uexponents_[ustart + atom_nprim], puream, n, &xyz_.data()[3 * n], bf_count);
                 shell_first_exponent_[shell_count] = ustart + atom_nprim;
+                n_prim_per_shell_[shell_count] = shell_nprim;
             } else {
                 throw PSIEXCEPTION("Unexpected shell type in BasisSet constructor!");
             }
