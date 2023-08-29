@@ -136,10 +136,10 @@ if(TARGET BrianQC::static_wrapper)
     )
 endif()
 
-if(TARGET IntegratorXX::integratorxx)
+if(TARGET IntegratorXX::IntegratorXX)
   target_link_libraries(core
     PRIVATE
-      IntegratorXX::integratorxx
+      IntegratorXX::IntegratorXX
     )
 endif()
 
