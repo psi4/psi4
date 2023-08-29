@@ -887,7 +887,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     }
 }
 
-void BasisSet::update_l2_shells() {
+void BasisSet::update_l2_shells(bool embed_normalization) {
     l2_shells_.resize(n_shells_);
     for (auto ishell = 0; ishell < n_shells_; ishell++) {
         auto am = shells_[ishell].am();
@@ -898,7 +898,7 @@ void BasisSet::update_l2_shells() {
         auto nprim = n_prim_per_shell_[ishell];
         auto l2c = libint2::svector<double>(&uoriginal_coefficients_[offset], &uoriginal_coefficients_[offset + nprim]);
         auto l2e = libint2::svector<double>(&uexponents_[offset], &uexponents_[offset + nprim]);
-        l2_shells_[ishell] = libint2::Shell{l2e, {{am, puream_, l2c}}, {{xyz[0], xyz[1], xyz[2]}}};
+        l2_shells_[ishell] = libint2::Shell{l2e, {{am, puream_, l2c}}, {{xyz[0], xyz[1], xyz[2]}}, embed_normalization};
     }
 }
 
@@ -1271,4 +1271,26 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
 
         ao += INT_NFUNC(puream_, am);
     }  // nshell
+}
+
+void BasisSet::convert_sap_contraction() {
+  if(max_am_ != 0) {
+    throw PSIEXCEPTION("SAP potentials should be composed of a single S function per atom, and not contain higher angular momentum!");
+  }
+
+  // Coefficients need to be scaled by (expn/pi)^1.5 to go from the
+  // original tabulated error function fits to two-electron integrals,
+  // see doi:10.1063/5.0004046
+  for (int i = 0; i < n_uprimitive_; i++) {
+    // A minus sign is necessary here since the coefficients are
+    // chosen to be negative because of V(r) = - Z(r)/r in the
+    // expansion
+    uoriginal_coefficients_[i] *= -std::pow(uexponents_[i]/M_PI,1.5);
+  }
+  ucoefficients_ = uoriginal_coefficients_;
+  uerd_coefficients_ = uoriginal_coefficients_;
+
+  // Now we just need to recreate the Libint2 data, telling it to skip
+  // the usual renormalization steps
+  update_l2_shells(false);
 }
