@@ -45,6 +45,10 @@ set guess sap
 energy('scf')
 compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAP    guess (a.u.)");             #TEST
 
+set guess sapgau
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAPGAU guess (a.u.)");             #TEST
+
 molecule nocat {
 1 2
 F
@@ -80,6 +84,10 @@ set guess sap
 energy('scf')
 compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, SAP    guess (a.u.)");             #TEST
 
+set guess sapgau
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, SAPGAU guess (a.u.)");             #TEST
+
 
 set {
   reference rohf
@@ -108,6 +116,10 @@ set guess sap
 energy('scf')
 compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAP    guess (a.u.)");             #TEST
 
+set guess sapgau
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAPGAU guess (a.u.)");             #TEST
+
 
 set {
   reference cuhf
@@ -135,3 +147,7 @@ compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, HUCKE
 set guess sap
 energy('scf')
 compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAPGAU guess (a.u.)");             #TEST

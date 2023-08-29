@@ -1485,6 +1485,11 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
             wfn.set_sad_fitting_basissets(sad_fitting_list)
             optstash.restore()
 
+    if core.get_option("SCF", "GUESS") == "SAPGAU":
+        # Populate sapgau basis
+        sapgau = core.BasisSet.build(wfn.molecule(), "SAPGAU_BASIS", core.get_global_option("SAPGAU_BASIS"))
+        wfn.set_basisset("SAPGAU", sapgau)
+
     if hasattr(core, "EXTERN") and 'external_potentials' in kwargs:
         core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +
                        " keyword argument are specified. The external_potentials keyword argument will be ignored.\n")

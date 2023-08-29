@@ -377,7 +377,7 @@ functions that span a sufficiently complete set, see
 be orthonormalized as usual; the rest of the basis functions are
 hidden from the calculation. The Cholesky approach allows reaching
 accurate energies even in the presence of significant linear
-dependencies [Lehtola:2020:04224]_.
+dependencies [Lehtola:2020:134108]_.
 
 In |PSIfour|, symmetric orthogonalization is used by default, unless
 the smallest overlap eigenvalue falls below the user-supplied double
@@ -516,6 +516,18 @@ SAP
     used DFT quadrature. The current implementation is based on
     exchange-only local density calculations that are but nanohartree
     away from the complete basis set limit [Lehtola:2020:012516]_.
+SAPGAU
+    Superposition of Atomic Potentials, but using error function based
+    fits to the atomic radial potentials as discussed in
+    [Lehtola:2020:144105]_. The main difference to the SAP guess
+    discussed above [Lehtola:2019:25945]_ is that the SAPGAU scheme is
+    analytic, and can be efficiently formed in terms of three-center
+    two-electron integrals [Lehtola:2020:144105]_. The potential in
+    the SAPGAU scheme is passed with the |scf__sapgau_basis|
+    keyword. The default potential is given by the large fit to the
+    HelFEM potential, sap_helfem_large, described in
+    [Lehtola:2020:144105]_. Note that this guess is known in the DIRAC
+    program as .SCRPOT and in the ERKALE program as SAPFIT.
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then
