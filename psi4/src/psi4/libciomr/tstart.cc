@@ -66,15 +66,15 @@ double user_stop, sys_stop;
 */
 void PSI_API tstart() {
     int error;
-    char *name;
     struct tms total_tmstime;
     const long clk_tck = sysconf(_SC_CLK_TCK);
     times(&total_tmstime);
 
-    /// host name info, needed?
-    name = (char *)malloc(40 * sizeof(char));
-    error = gethostname(name, 40);
-    if (error != 0) strncpy(name, "nohostname", 11);
+    // host name has up to HOST_NAME_MAX(==64) + 1 bytes, and must end in the null byte
+    std::vector<char> name(65);
+    error = gethostname(name.data(), 65);
+    if (error != 0) strncpy(name.data(), "nohostname", 11);
+    if (name.back() != '\0') name.push_back('\0');
 
     /// start a global timer
     if (!running) {
@@ -89,10 +89,8 @@ void PSI_API tstart() {
     user_start = ((double)total_tmstime.tms_utime) / clk_tck;
     sys_start = ((double)total_tmstime.tms_stime) / clk_tck;
 
-    outfile->Printf("\n*** tstart() called on %s\n", name);
+    outfile->Printf("\n*** tstart() called on %s\n", name.data());
     outfile->Printf("*** at %s\n", ctime(&time_start));
-
-    free(name);
 }
 
 /*!
@@ -105,12 +103,13 @@ void PSI_API tstop() {
     std::time_t total_time;
     std::time_t total_time_overall;
     struct tms total_tmstime;
-    char *name;
     double user_s, sys_s;
 
-    name = (char *)malloc(40 * sizeof(char));
-    error = gethostname(name, 40);
-    if (error != 0) strncpy(name, "nohostname", 11);
+    // host name has up to HOST_NAME_MAX(==64) + 1 bytes, and must end in the null byte
+    std::vector<char> name(65);
+    error = gethostname(name.data(), 65);
+    if (error != 0) strncpy(name.data(), "nohostname", 11);
+    if (name.back() != '\0') name.push_back('\0');
 
     time_end = std::time(nullptr);
     total_time = time_end - time_start;
@@ -124,7 +123,7 @@ void PSI_API tstop() {
     user_s = user_stop - user_start;
     sys_s = sys_stop - sys_start;
 
-    outfile->Printf("\n*** tstop() called on %s at %s", name, ctime(&time_end));
+    outfile->Printf("\n*** tstop() called on %s at %s", name.data(), ctime(&time_end));
 
     /// print all module timings
     outfile->Printf("Module time:\n");
@@ -141,7 +140,5 @@ void PSI_API tstop() {
     outfile->Printf("\tsystem time = %10.2f seconds = %10.2f minutes\n", sys_s, sys_s / 60.0);
     outfile->Printf("\ttotal time  = %10d seconds = %10.2f minutes\n", (int)total_time_overall,
                     ((double)total_time_overall) / 60.0);
-
-    free(name);
 }
 }  // namespace psi
