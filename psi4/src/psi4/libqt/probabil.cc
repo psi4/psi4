@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -32,73 +32,27 @@
   \ingroup QT
 */
 
+#include "qt.h"
+#include "psi4/libpsi4util/exception.h"
 namespace psi {
 
-/*!
-** factorial(): Returns n!
-**
-** Parameters:
-**    \param n  = number to take factorial of
-**
-** Returns:
-**    n factorial, as a double word (since n! can get very large).
-** \ingroup QT
-*/
-double factorial(int n) {
-    if (n == 0 || n == 1) return (1.0);
-    if (n < 0)
-        return (0.0);
-    else {
-        return ((double)n * factorial(n - 1));
-    }
+/// @brief Returns n!
+/// @param n : number to take factorial of
+/// @return n factorial, as a 64-bit int (since n! can get very large)
+/// \ingroup QT
+uint64_t factorial(const uint64_t n) {
+    if (n <= 1) return 1;
+    if (n > 20) throw PSIEXCEPTION("Cannot compute n! if n > 20, as the result would overflow in a 64-bit integer.");
+    return (n * factorial(n - 1));
 }
 
-/*!
-** combinations() : Calculates the number of ways to choose k objects
-**    from n objects, or "n choose k"
-**
-** Parameters:
-**   \param n   =  number of objects in total
-**   \param k   =  number of objects taken at a time
-**
-** Returns:
-**    number of combinations of n objects taken k at a time ("n choose k")
-**    (returned as a double).
-**
-** \ingroup QT
-*/
-double combinations(int n, int k) {
-    double comb;
-
-    if (n == k)
-        return (1.0);
-    else if (k > n)
-        return (0.0);
-    else if (k == 0)
-        return (1.0);
-    comb = factorial(n) / (factorial(k) * factorial(n - k));
-
-    return (comb);
+/// @brief Calculates the number of ways to choose k objects from n objects, or "n choose k"
+/// @param n : number of objects in total
+/// @param k : number of objects taken at a time
+/// @return number of combinations of n objects taken k at a time ("n choose k")
+/// \ingroup QT
+uint64_t combinations(const uint64_t n, const uint64_t k) {
+    if (k > n) throw PSIEXCEPTION("Cannot compute n choose k if k > n!");
+    return factorial(n) / (factorial(k) * factorial(n - k));
 }
-
-/*
-** test combinations routines
-**
-#include <cstdio>
-
-main()
-{
-   int i, j ;
-   double factorial() ;
-   double combinations() ;
-
-   printf("Enter two numbers: ") ;
-   scanf("%d %d", &i, &j) ;
-   printf("i! = %.2f\n", factorial(i)) ;
-   printf("j! = %.2f\n", factorial(j)) ;
-   printf("i choose j = %.2f\n", combinations(i,j)) ;
-}
-**
-*/
-
 }  // namespace psi

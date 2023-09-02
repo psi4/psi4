@@ -11,5 +11,6 @@ if(TARGET PCMSolver::pcm)
     )
     # Because psipcm.cc includes potentialint.h, which includes libint2's engine.h
     # we have to make sure we reduce the optimization level to match libmints
-    set_property(TARGET psipcm PROPERTY CXX_STANDARD 14)
+    # See note at psi4/src/psi4/libmints/CMakeLists.txt
+    set_property(TARGET psipcm PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
 endif()

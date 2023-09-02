@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2022 The Psi4 Developers.
+.. # Copyright (c) 2007-2023 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -465,7 +465,7 @@ Publish psicode release
 * Copy a recent release page like https://github.com/psi4/psicode-hugo-website/blob/master/content/posts/v1p2.md
 * Edit its filename, title, date, image, and links
 * Execute https://api.github.com/repos/psi4/psi4/releases/latest and note the ``id`` field value
-* Use the ``id`` value in the shortcode call at the bottom
+* Use the ``id`` value in the shortcode call at the bottom by ``ghRN``
 
 
 Finalize release

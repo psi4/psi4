@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -3073,7 +3073,6 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(const IntegralFactory *integral, in
                                              bool use_shell_pairs, bool needs_exchange)
     : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs) {
     // Initialize libint static data
-    libint2::initialize();
 
     // Make sure there's enough space for the sieve generation.  This array is used to return an array of
     // zeros back to the caller if libint2 gave us nullptr, so the caller doesn't have to check.
@@ -3161,7 +3160,7 @@ void Libint2TwoElectronInt::common_init() {
     }
 }
 
-Libint2TwoElectronInt::~Libint2TwoElectronInt() { libint2::finalize(); }
+Libint2TwoElectronInt::~Libint2TwoElectronInt() {}
 
 size_t Libint2TwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
     return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());

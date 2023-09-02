@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import ast
 import argparse
+import ast
 import unicodedata
 from pathlib import Path
 
-from psi4.driver.procrouting.proc_data import method_governing_type_keywords
 from psi4.driver.p4util.exceptions import sanitize_method
+from psi4.driver.procrouting.proc_data import method_governing_type_keywords
 
 # stdsuite DFT methods set explicitly to "scf_type" since the DFTs aren't individually entered in proc_data.py
 method_governing_type_keywords["svwn"] = "scf_type"
@@ -242,6 +242,7 @@ notes_holder = {
     ("cisd", None): (", ci\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
     ("zapt2", None): (", zapt\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", None),
     ("mp4", None): (", mp\ *n*", "Arbitrary-order *n* through DETCI is inefficient byproduct of CI", ["fnocc"]),
+    ("ccsd(t)", "CCENERGY"): ("FN", "Analytic gradients for conventional all-electron RHF/UHF computations can be requested through |globals__qc_module|\ ``=ccenergy``, but their scaling is best suited to small molecules.", None),
 }
 
 

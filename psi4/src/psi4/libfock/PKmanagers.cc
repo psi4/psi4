@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,7 +40,6 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/aiohandler.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -86,8 +85,11 @@ void ijklBasisIterator::next() {
 
 std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio, std::shared_ptr<BasisSet> primary,
                                                       size_t memory, Options& options, bool dowK, double omega_in) {
-    std::string algo = options.get_str("PK_ALGO");
-    bool noincore = options.get_bool("PK_NO_INCORE");
+    // read in subalgorithm choice
+    std::string subalgo = "AUTO";
+    if(options["SCF_SUBTYPE"].has_changed()) {
+        subalgo = options.get_str("SCF_SUBTYPE");
+    }
 
     // We introduce another safety factor in the memory, otherwise
     // we are apparently prone to being killed by the OS.
@@ -107,24 +109,48 @@ std::shared_ptr<PKManager> PKManager::build_PKManager(std::shared_ptr<PSIO> psio
         ncorebuf = 3;
     }
 
+    // determine which sub-algorithm to use
     bool do_reord = false;
     bool do_yosh = false;
     bool do_incore = false;
-    if (options["PK_ALGO"].has_changed()) {
-        if (algo == "REORDER") {
-            do_reord = true;
-        } else if (algo == "YOSHIMINE") {
-            do_yosh = true;
-        }
-    } else {
+
+    // specify particular out-of-core subalgorithm...
+    if (subalgo == "REORDER_OUT_OF_CORE") {
+        do_reord = true;
+    } else if (subalgo == "YOSHIMINE_OUT_OF_CORE") {
+        do_yosh = true;
+
+    // ...or automatically select an out-of-core subalgorithm...
+    } else if (subalgo == "OUT_OF_CORE") {
         if (algo_factor * memory > pk_size) {
             do_reord = true;
         } else {
             do_yosh = true;
         }
-    }
 
-    if (ncorebuf * pk_size < memory && !noincore) do_incore = true;
+    // ...or force the in-core algorithm...
+    } else if (subalgo == "INCORE") {
+        // throw an exception if in-core is forced, but not enough memory is allocated
+        if (ncorebuf * pk_size > memory) {
+            throw PSIEXCEPTION("SCF_SUBTYPE=INCORE was specified, but there is not enough memory to do in-core! Increase the amount of memory allocated to Psi4 or allow for out-of-core to be used.\n");
+        } else {
+            do_incore = true;
+        }
+
+    // ...or just let psi4 pick any subalgorithm
+    } else if (subalgo == "AUTO") {
+        if (ncorebuf * pk_size < memory) {
+            do_incore = true;
+        } else if (algo_factor * memory > pk_size) {
+            do_reord = true;
+        } else {
+            do_yosh = true;
+        }
+
+    // throw an exception on an invalid SCF_SUBTYPE
+    } else {
+        throw PSIEXCEPTION("Invalid SCF_SUBTYPE option! The valid choices of SCF_SUBTYPE for SCF_TYPE=PK are AUTO, INCORE, OUT_OF_CORE, YOSHIMINE_OUT_OF_CORE, and REORDER_OUT_OF_CORE.");
+    }
 
     std::shared_ptr<PKManager> pkmgr;
 
@@ -158,15 +184,13 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
     pk_pairs_ = (size_t)nbf_ * ((size_t)nbf_ + 1) / 2;
     pk_size_ = pk_pairs_ * (pk_pairs_ + 1) / 2;
     cutoff_ = 1.0e-12;
-    do_csam_ = false;
     if (options["INTS_TOLERANCE"].has_changed()) {
         cutoff_ = options.get_double("INTS_TOLERANCE");
     }
-    if (options["SCREENING"].has_changed()) {
-        do_csam_ = (options.get_str("SCREENING") == "CSAM");
-    }
     ntasks_ = 0;
-    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, do_csam_);
+
+    auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+    eri_ = std::shared_ptr<TwoBodyAOInt>(factory->eri());
 
     if (memory_ < pk_pairs_) {
         throw PSIEXCEPTION("Not enough memory for PK algorithm\n");
@@ -177,9 +201,9 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
 #ifdef _OPENMP
     nthreads_ = Process::environment.get_n_threads();
     if (nthreads_ > pk_size_) {
-	outfile->Printf("  WARNING! More threads than unique shell quartets to compute!\n");
-	outfile->Printf("  Decreasing thread count to %d.\n", pk_size_);	
-	nthreads_ = pk_size_;
+        outfile->Printf("  WARNING! More threads than unique shell quartets to compute!\n");
+        outfile->Printf("  Decreasing thread count to %d.\n", pk_size_);
+        nthreads_ = pk_size_;
     }
 #endif
 }
@@ -863,7 +887,7 @@ void PKMgrReorder::allocate_buffers() {
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for (int i = 0; i < nthreads(); ++i) {
-        fill_buffer(std::make_shared<PKWrkrReord>(primary(), sieve(), AIO(), pk_file(), buf_size, buf_per_thread));
+        fill_buffer(std::make_shared<PKWrkrReord>(primary(), eri(), AIO(), pk_file(), buf_size, buf_per_thread));
     }
 }
 
@@ -1000,7 +1024,7 @@ void PKMgrYoshimine::allocate_buffers() {
     // Ok, now we have the size of a buffer and how many buffers
     // we want for each thread. We can allocate IO buffers.
     for (int i = 0; i < nthreads(); ++i) {
-        fill_buffer(std::make_shared<PKWrkrIWL>(primary(), sieve(), AIO(), iwl_file_J_, iwl_file_K_, ints_per_buf_,
+        fill_buffer(std::make_shared<PKWrkrIWL>(primary(), eri(), AIO(), iwl_file_J_, iwl_file_K_, ints_per_buf_,
                                                 batch_for_pq(), current_pos));
     }
 }
@@ -1060,7 +1084,7 @@ void PKMgrYoshimine::compute_integrals(bool wK) {
         }
     }
 
-    // Loop over significant shell pairs from ERISieve
+    // Loop over significant shell pairs from TwoBodyAOInt
     const auto& sh_pairs = tb[0]->shell_pairs();
     size_t npairs = sh_pairs.size();
     // We avoid having one more branch in the loop by moving it outside
@@ -1481,7 +1505,7 @@ void PKMgrInCore::allocate_buffers() {
 
     for (size_t i = 0; i < nthreads(); ++i) {
         // DEBUG        outfile->Printf("start is %lu\n",start);
-        SharedPKWrkr buf = std::make_shared<PKWrkrInCore>(primary(), sieve(), buffer_size, lastbuf, J_ints_.get(),
+        SharedPKWrkr buf = std::make_shared<PKWrkrInCore>(primary(), eri(), buffer_size, lastbuf, J_ints_.get(),
                                                           K_ints_.get(), wK_ints_.get(), nthreads());
         fill_buffer(buf);
         set_ntasks(nthreads());

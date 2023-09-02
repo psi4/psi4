@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,6 +46,12 @@ using namespace psi;
 
 namespace psi {
 
+std::string LibXCFunctional::xclib_description() {
+    auto xclib = "   => LibXC <=\n\n    Version " + std::string(xc_version_string()) + "\n    " +
+                         xc_reference() + " (" + xc_reference_doi() + ")";
+    return xclib;
+}
+
 LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     xc_func_name_ = xc_name;
     func_id_ = xc_functional_get_number(xc_name.c_str());
@@ -68,10 +74,8 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         throw PSIEXCEPTION("Could not find required LibXC functional");
     }
 
-    xclib_description_ = "   => LibXC <=\n\n    Version " + std::string(xc_version_string()) + "\n    " +
-                         xc_reference() + " (" + xc_reference_doi() + ")";
-
     // Extract citation information
+    xclib_description_ = xclib_description();
     name_ = xc_name;
     description_ = "    " + std::string(xc_functional_->info->name);
     for (size_t i = 0; i < 5; i++) {
@@ -180,6 +184,45 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     }
 }  // namespace psi
 LibXCFunctional::~LibXCFunctional() { xc_func_end(xc_functional_.get()); }
+std::shared_ptr<Functional> LibXCFunctional::build_polarized() {
+    if (!unpolarized_) {
+        throw PSIEXCEPTION("LibXCFunctional: Trying to build_polarized_functional from a polarized functional. Are you sure you meant to?");
+    }
+    // Build functional
+    auto func = std::make_shared<LibXCFunctional>(xc_func_name_, false);
+
+    // User omega
+    if (user_omega_) {
+        func->set_omega(omega_);
+    } else {
+        // The only way we enter this branch is if Functional::set_omega
+        // was called on this object. I can think of no justification for that,
+        // but just in case...
+        Functional::set_omega(omega_);
+    }
+
+    // User tweakers
+    if (user_tweakers_.size()) {
+        func->set_tweak(user_tweakers_, true);
+    }
+
+    func->set_alpha(alpha_);
+    func->set_gga(gga_);
+    func->set_meta(meta_);
+    func->set_lsda_cutoff(lsda_cutoff_);
+    func->set_meta_cutoff(meta_cutoff_);
+    func->set_density_cutoff(density_cutoff_);
+    func->exc_ = exc_;
+    func->vxc_ = vxc_;
+    func->fxc_ = fxc_;
+
+    func->set_name(name_);
+    func->set_description(description_);
+    func->set_citation(citation_);
+    func->set_xclib_description(xclib_description_);
+
+    return func;
+}
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     // Build functional
     auto func = std::make_shared<LibXCFunctional>(xc_func_name_, unpolarized_);

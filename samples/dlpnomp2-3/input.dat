@@ -1,0 +1,28 @@
+#! comparison of DF-MP2 and DLPNO-MP2 with a cartesian basis set
+
+                              
+                                               
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis 6-31+G*
+set puream False
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+print('   Testing DF-MP2 ...')
+val = energy('mp2')
+
+clean()
+
+print('   Testing DLPNO-MP2 ...')
+val = energy('dlpno-mp2')
+
+# The DLPNO-MP2 energy is close to the DF-MP2 energy, but not exactly the same
+clean()

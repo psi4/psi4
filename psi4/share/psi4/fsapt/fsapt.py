@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -431,6 +431,7 @@ def extract_osapt_data(filepath):
         for k in range(len(vals['Total'])):
             for l in range(len(vals['Total'][0])):
                 vals['Total'][k][l] += vals[key][k][l]
+
     return vals
 
 def fragment_d3_disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]]) -> Tuple[float, Dict[str, Dict[str, float]]]:
@@ -835,6 +836,39 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
     print_fragments(geom, Zs['B'], Qs['B'], fragkeys['B'], frags['B'], nuclear_ws['B'], orbital_ws['B'], '%s/fragB.dat' % dirname)
 
     osapt = extract_osapt_data(dirname)
+
+    # For I-SAPT/SAOn and I-SAPT/SIAOn, we need to add one extra orbital weight for the reassigned link orbital. It belongs
+    # to the atom of A/B directly connected to the linker C. The user needs to supply a file link_siao.dat that has two lines
+    #   A (atomnumber)
+    #   B (atomnumber)
+    # to specify the numbers of atoms which are connected to C. We will now check if this file exists and read it.
+    if os.path.exists("%s/link_siao.dat" % dirname):
+        (fragsiao,keyssiao) = read_fragments("%s/link_siao.dat" % dirname)
+        if ("A" not in keyssiao) or ("B" not in keyssiao):
+            raise Exception('Invalid syntax of the link_siao.dat file')
+        linkAC = fragsiao["A"][0]
+        linkBC = fragsiao["B"][0]
+        print("\n Extra SAOn/SIAOn link orbitals assigned to atoms",linkAC,"and",linkBC,"\n")
+ 
+    # We add zero entry for all the fragments, making place for the reassigned link orbital
+        for val in total_ws['A'].values():
+            val.append(0.0)
+ 
+        for val in total_ws['B'].values():
+            val.append(0.0)
+
+        for key in fragkeys['A']:
+            if len(key) > 4 and key[:4] == 'Link':
+                continue
+            if linkAC in frags['A'][key]:
+                total_ws['A'][key][-1] = 1.0
+
+        for key in fragkeys['B']:
+            if len(key) > 4 and key[:4] == 'Link':
+                continue
+            if linkBC in frags['B'][key]:
+                total_ws['B'][key][-1] = 1.0
+    # Finished adding an extra entry for I-SAPT/SAOn and I-SAPT/SIAOn
 
     # In F/I-SAPT, the point charges can be either in the interacting subsystems A and B or the environment C
     # The interaction between the point charges in A and fragment B enters the SAPT0 interaction energy, especially

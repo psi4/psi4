@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2022 The Psi4 Developers.
+.. # Copyright (c) 2007-2023 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -160,8 +160,11 @@ provided in the molecule block :samp:`molecule {optional_molecule_name} \\{...\\
 **Charge & Multiplicity**
    If two integers :samp:`{charge} {multiplicity}` are encountered on any
    line of the molecule block, they are interpreted as the molecular charge
-   and multiplicity (:math:`2 M_s + 1`), respectively. For multi-fragment 
+   and multiplicity (:math:`2 M_s + 1`), respectively. If not specified, the
+   charge is taken to be zero, and the multiplicity will be taken to be the
+   lowest multiplicity consistent with that charge. For multi-fragment 
    complexes, each fragment can have a :samp:`{charge} {multiplicity}` line.
+   See :ref:`sec:fragments` for details.
 
 **Units**
    By default, |Angstrom| units are used; this is changed by adding
@@ -534,12 +537,16 @@ block::
       H 0.000000 0.000000 3.963929
     }
 
-In this case, the charge and multiplicity of each interacting fragment is
-explicitly specified. If the charge and multiplicity are specified for the
-first fragment, it is assumed to be the same for all fragments. When
-considering interacting fragments, the overall charge is simply the sum of all
-fragment charges, and any unpaired electrons are assumed to be coupled to
-yield the highest possible :math:`M_s` value.
+This specifies that there are two neutral, spin-singlet fragments. It is
+possible to further specify that the overall complex is neutral and spin-singlet
+by inserting another :samp:`{charge} {multiplicity}` line, separated from the first
+molecule block by a `--` line. If any information is missing, |PSIfour| will set the
+unprovided charges and multiplicities to be consistent with those that are given.
+For example, the overall charge must be simply the sum of all fragment charges.
+|PSIfour| further assumes that any unpaired electrons are coupled to yield the highest
+possible :math:`M_s` value. Psi will also favor neutral, spin-singlet fragments.
+For anything complicated, we strongly suggest explicitly providing the charge
+and multiplicity of each fragment as well as the total molecular charge and multiplicity. For details and examples, see https://github.com/MolSSI/QCElemental/blob/master/qcelemental/molparse/chgmult.py#L105-L136 .
 
 Having defined a molecule containing fragments like ``eneyne`` above, it
 is a simple matter to perform calculations on only a subset of the

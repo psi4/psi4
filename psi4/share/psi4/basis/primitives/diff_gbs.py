@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -31,15 +31,16 @@
 """Run on a single gbs file to get a periodic table printout or on two to compare gbs contents."""
 
 from __future__ import print_function
+
 import os
-import sys
 import subprocess
+import sys
 
 qcdb_module = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + '../../../../../driver')
 sys.path.append(qcdb_module)
 import qcdb
-from qcdb.libmintsbasissetparser import Gaussian94BasisSetParser
 import qcelemental as qcel
+from qcdb.libmintsbasissetparser import Gaussian94BasisSetParser
 
 
 class bcolors:

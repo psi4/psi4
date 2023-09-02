@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2022 The Psi4 Developers.
+.. # Copyright (c) 2007-2023 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -34,6 +34,12 @@
 Compiling and Installing from Source
 ====================================
 
+.. warning:: As of v1.8, primary binary distribution has moved from
+   the psi4 channel to the conda-forge channel. Neither install docs
+   for users nor compile docs for developers have been updated yet to
+   reflect new patterns. Please consult :psicode:`psicode downloads
+   page <installs/latest/>` for the latest guides.
+
 This section fulfills the duty of every Linux project to have an INSTALL
 file detailing how to build it from source. Few (mostly packagers and
 sysadmins) are expected to read this file as it is a broad guide to the
@@ -42,6 +48,8 @@ and performance-tuned build path, see :psicode:`installs/latest`
 (select "source"). For pre-built binaries again well-tested,
 performance-tuned, and available for all common operating systems,
 see :psicode:`installs/latest` (select "conda").
+To see working builds for Linux, Mac, and Windows, see :src:
+:source:`[this GHA] <.github/workflows/ecosystem.yml>`
 
 
 .. _`faq:cmakeviasetup`:
@@ -50,7 +58,7 @@ Planning: how to configure Psi4 and invoke CMake
 ------------------------------------------------
 
 |PSIfour| is built through CMake. An abbreviated build guide can be found
-:source:`within the source itself <CMakeLists.txt#L22>` .
+:source:`within the source itself <CMakeLists.txt#L27>` .
 
 CMake does a good job scanning your computer to locate libraries, header
 files, and executables needed for compilation. So it's very possible that
@@ -89,9 +97,12 @@ installing |PSIfour|. More detail is given :ref:`here
 
     >>> cd {top-level-psi4-dir}
     >>> cmake -S. -Bobjdir [your configuration options]
+    # make
     >>> cd objdir
     >>> make -j`getconf _NPROCESSORS_ONLN`
     >>> make install
+    # -or- general
+    >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
 
 
 .. _`faq:builddetailed`:
@@ -149,7 +160,7 @@ How to build, test, and install Psi4, in detail
 .. code-block:: console
 
     >>> cd {objdir}
-    >>> make -j`getconf _NPROCESSORS_ONLN`
+    >>> cmake --build . -j`getconf _NPROCESSORS_ONLN`
 
 **5. Test**
 
@@ -172,7 +183,7 @@ How to build, test, and install Psi4, in detail
 
    ::
 
-   >>> make install
+   >>> cmake --install .
 
 **7. Configure Runtime**
 
@@ -211,15 +222,18 @@ build system will automatically download and build.
 
 * :ref:`gau2grid <cmake:gau2grid>` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` :source:`[gau2grid min version] <external/upstream/gau2grid/CMakeLists.txt#L1>`
 
-* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` :source:`[Libint min version] <external/upstream/libint/CMakeLists.txt#L1>` (Libint2 as of Nov 2020; added by v1.4)
+* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` :source:`[Libint min version] <external/upstream/libint2/CMakeLists.txt#L1>` (Libint2 as of Nov 2020; added by v1.4)
 
   * Eigen https://eigen.tuxfamily.org/index.php?title=Main_Page
+  * Boost https://www.boost.org/ header-only preprocessor library
 
-* :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` :source:`[Libxc min version] <external/upstream/libxc/CMakeLists.txt#L1>`
-* pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/stable/>`_ :source:`[Pybind11 min version] <external/upstream/pybind11/CMakeLists.txt#L1>`
-* QCElemental |w---w| `[what is QCElemental?] <https://qcelemental.readthedocs.io/en/latest/>`_
+* :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` :source:`[Libxc min version] <external/upstream/libxc/CMakeLists.txt#L4>`
 
-* QCEngine |w---w| `[what is QCEngine?] <https://qcengine.readthedocs.io/en/latest/>`_ (March 2019; added by v1.4)
+* pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/stable/>`_ :source:`[Pybind11 min version] <external/upstream/pybind11/CMakeLists.txt#L2>`
+
+* QCElemental |w---w| `[what is QCElemental?] <https://molssi.github.io/QCElemental/>`_
+
+* QCEngine |w---w| `[what is QCEngine?] <https://molssi.github.io/QCEngine/>`_ (March 2019; added by v1.4)
 
 * optking |w---w| `[what is optking] <https://optking.readthedocs.io/en/latest/>`_ (runtime dependency, required at build-time) 
 
@@ -275,7 +289,7 @@ are available pre-built from conda.
   * Perl (for some auto-documentation scripts) https://www.perl.org/
   * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme
-  * See `["message" lines] :source:`doc/sphinxman/CMakeLists.txt` for advice on obtaining docs dependencies
+  * See :source:`["message" lines] <doc/sphinxman/CMakeLists.txt>` for advice on obtaining docs dependencies or :source:`[conda env spec] <devtools/conda-envs/docs-cf.yaml>`
   * See :source:`.github/workflows/docs.yml` for full docs building procedure to follow
 
 * Ambit |w---w| https://github.com/jturney/ambit

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -112,6 +112,8 @@ void RHF::common_init() {
 
     same_a_b_dens_ = true;
     same_a_b_orbs_ = true;
+
+    subclass_init();
 }
 
 void RHF::finalize() {
@@ -418,7 +420,7 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
 
     return ret;
 }
-std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool combine, std::string return_basis) {
+std::vector<SharedMatrix> RHF::twoel_Hx_full(std::vector<SharedMatrix> x_vec, bool combine, std::string return_basis, bool singlet) {
     // Make sure we have a JK object
     if (!jk_) {
         throw PSIEXCEPTION("RHF::twoel_Hx: JK object is not initialized, please set option SAVE_JK to True.");
@@ -492,7 +494,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
             Vx.push_back(std::make_shared<Matrix>("Vx Temp", Dx[i]->rowspi(), Dx[i]->colspi(), Dx[i]->symmetry()));
         }
-        potential_->compute_Vx(Dx, Vx);
+        potential_->compute_Vx_full(Dx, Vx, singlet);
     }
 
     std::vector<SharedMatrix> V_ext_pert;
@@ -520,6 +522,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 #endif
 
     std::vector<SharedMatrix> ret;
+    if (!singlet) {
+        for (size_t i = 0; i < x_vec.size(); i++) {
+            J[i]->zero();
+        }
+    }
     if (combine) {
         // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
         for (size_t i = 0; i < x_vec.size(); i++) {
@@ -1025,5 +1032,15 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
+
+void RHF::setup_potential() {
+    if (functional_->needs_xc()) {
+        potential_ = std::make_shared<RV>(functional_, basisset_, options_);
+        potential_->initialize();
+    } else {
+        potential_ = nullptr;
+    }
+}
+
 }  // namespace scf
 }  // namespace psi

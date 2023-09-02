@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,10 +32,9 @@ databases. Contains Molecule class and physical constants from psi4 suite.
 __version__ = '0.4'
 __author__ = 'Lori A. Burns'
 
-from qcelemental import constants, periodictable
-
 # Load Python modules
 import sys
+from .constants import constants
 from .molecule import Molecule, compute_atom_map
 from .dbproc import *
 from .options import *

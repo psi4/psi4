@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -36,6 +36,7 @@ import numpy as np
 
 import qcelemental as qcel
 
+from .constants import constants
 from .vecutil import *
 from .exceptions import *
 from .libmintscoordentry import NumberValue, VariableValue, CartesianEntry, ZMatrixEntry
@@ -100,7 +101,7 @@ class LibmintsMolecule():
         # The units used to define the geometry
         self.PYunits = 'Angstrom'
         # The conversion factor to take input units to Bohr
-        self.PYinput_units_to_au = 1.0 / qcel.constants.bohr2angstroms
+        self.PYinput_units_to_au = 1.0 / constants.bohr2angstroms
         # Whether this molecule has at least one zmatrix entry
         self.zmat = False  # TODO None?
         # Whether this molecule has at least one Cartesian entry
@@ -320,7 +321,7 @@ class LibmintsMolecule():
         """
         if units == 'Angstrom':
             self.PYunits = units
-            self.PYinput_units_to_au = 1.0 / qcel.constants.bohr2angstroms
+            self.PYinput_units_to_au = 1.0 / constants.bohr2angstroms
         elif units == 'Bohr':
             self.PYunits = units
             self.PYinput_units_to_au = 1.0
@@ -870,7 +871,7 @@ class LibmintsMolecule():
 
             for i in range(self.natom()):
                 text += """      %3s%-7s """ % ("" if self.Z(i) else "Gh(", self.symbol(i) + ("" if self.Z(i) else ")"))
-                text += ("""  %17.12f""" * 3).format(*self.xyz(i) * qcel.constants.bohr2angstroms)
+                text += ("""  %17.12f""" * 3).format(*self.xyz(i) * constants.bohr2angstroms)
                 text += "\n"
             text += "\n"
         else:
@@ -1300,7 +1301,7 @@ class LibmintsMolecule():
 
         """
         distm = qcel.util.distance_matrix(self.geometry(np_out=True), self.geometry(np_out=True))
-        distm *= qcel.constants.bohr2angstroms
+        distm *= constants.bohr2angstroms
 
         text = "        Interatomic Distances (Angstroms)\n\n          "
         for i in range(self.natom()):
@@ -1335,7 +1336,7 @@ class LibmintsMolecule():
         for i in range(self.natom()):
             for j in range(i + 1, self.natom()):
                 eij = sub(self.xyz(j), self.xyz(i))
-                dist = norm(eij) * qcel.constants.bohr2angstroms
+                dist = norm(eij) * constants.bohr2angstroms
                 text += "        Distance %d to %d %-8.3lf\n" % (i + 1, j + 1, dist)
         text += "\n\n"
         return text
@@ -1807,10 +1808,10 @@ class LibmintsMolecule():
         evals = sorted(evals)
         evals = np.asarray(evals)
 
-        im_amuA = qcel.constants.bohr2angstroms * qcel.constants.bohr2angstroms
-        im_ghz = qcel.constants.h * qcel.constants.na * 1e14 / (8 * math.pi * math.pi * qcel.constants.bohr2angstroms * qcel.constants.bohr2angstroms)
+        im_amuA = constants.bohr2angstroms * constants.bohr2angstroms
+        im_ghz = constants.h * constants.na * 1e14 / (8 * math.pi * math.pi * constants.bohr2angstroms * constants.bohr2angstroms)
         im_mhz = im_ghz * 1000.
-        im_cm = im_ghz * 1.e7 / qcel.constants.c
+        im_cm = im_ghz * 1.e7 / constants.c
 
         rc_moi = {}
         rc_moi['u a0^2'] = evals
@@ -1959,7 +1960,7 @@ class LibmintsMolecule():
 #         H    1.680398000000   -0.373741000000    0.758561000000
 #
 #        """
-#        factor = 1.0 if self.PYunits == 'Angstrom' else qcel.constants.bohr2angstroms
+#        factor = 1.0 if self.PYunits == 'Angstrom' else constants.bohr2angstroms
 #
 #        N = self.natom()
 #        if not save_ghosts:

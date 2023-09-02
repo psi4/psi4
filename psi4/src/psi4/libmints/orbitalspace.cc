@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -133,9 +133,8 @@ SharedMatrix OrbitalSpace::overlap(const OrbitalSpace &space1, const OrbitalSpac
     SharedMatrix Smat =
         std::make_shared<Matrix>("Overlap between space1 and space2", p1.SO_basisdim(), p2.SO_basisdim());
 
-    OneBodySOInt *S = mix_ints.so_overlap();
+    std::unique_ptr<OneBodySOInt> S = mix_ints.so_overlap();
     S->compute(Smat);
-    delete S;
 
     return Smat;
 }
@@ -148,9 +147,8 @@ SharedMatrix OrbitalSpace::overlap(const std::shared_ptr<BasisSet> &basis1, cons
     SharedMatrix Smat =
         std::make_shared<Matrix>("Overlap between space1 and space2", sobasis1.dimension(), sobasis2.dimension());
 
-    OneBodySOInt *S = mix_ints.so_overlap();
+    std::unique_ptr<OneBodySOInt> S = mix_ints.so_overlap();
     S->compute(Smat);
-    delete S;
 
     return Smat;
 }

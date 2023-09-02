@@ -42,10 +42,10 @@ foreach(test_name aediis-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
                   dct-grad3 dct-grad4 dct1 dct2 dct3 dct4 dct5 dct6 dct7 dct8 dct9
-                  dct10 dct11 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp
+                  dct10 dct11 dct12 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp
                   dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1
                   dfccsd-t-grad1
-                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-fc dfmp2-freq1 dfmp2-freq2
+                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-5 dfmp2-fc dfmp2-freq1 dfmp2-freq2
                   dfccsd-grad2 dfccsd-t-grad2 dfccsdat2 dfccsdt2
                   dfmp2-grad1 dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
@@ -53,11 +53,11 @@ foreach(test_name aediis-1
                   dforemp-grad1 dforemp-grad2 dfremp-1 dfremp-2
                   dft-grad-lr1 dft-grad-lr2 dft-grad-lr3 dft-grad-disk
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
-                  dft-freq dft-freq-analytic dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
-                  dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnomp2-1 dlpnomp2-2
+                  dft-freq dft-freq-analytic1 dft-freq-analytic2 dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
+                  dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnomp2-1 dlpnomp2-2 dlpnomp2-3
                   docs-bases docs-dft explicit-am-basis extern1 extern2 extern3
                   fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext fsapt-ext-abc fsapt-ext-abc2
-                  fsapt-ext-abc-au isapt1 isapt2
+                  fsapt-ext-abc-au isapt1 isapt2 isapt-siao1 fisapt-siao1 isapt-charged
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2
                   fci-coverage
                   fcidump
@@ -77,8 +77,8 @@ foreach(test_name aediis-1
                   omp2p5-1 omp2p5-2 omp2p5-grad1 omp2p5-grad2 omp3-1 omp3-2
                   omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change
                   opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9
-                  opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-irc-3 opt-freeze-coords
-                  opt-full-hess-every
+                  opt11 opt12 opt13 opt14 opt15 opt16 opt-irc-1 opt-irc-2 opt-irc-3
+                  opt-freeze-coords opt-full-hess-every
                   oremp-grad1 oremp-grad2
                   phi-ao
                   props1 props2 props3 props4 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2
@@ -133,6 +133,13 @@ message(STATUS "Adding test cases: Psi4")
 #   * have a name that doesn't repeat the exe (e.g., tests/dftd3/energy, not tests/dftd3/dftd3-energy)
 #   * be listed in the test case CMakeLists.txt as addon-testname (e.g., `add_regression_test(dftd3-energy ...`)
 #   * alphabetize the addons
+
+# <<<  BSE  >>>
+
+if(ENABLE_bse)
+    add_subdirectory(mints2-bse)
+    message(STATUS "Adding test cases: Psi4 + bse")
+endif()
 
 # <<<  CFOUR  >>>
 

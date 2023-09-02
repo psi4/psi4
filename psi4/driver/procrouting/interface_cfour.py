@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,20 +32,21 @@ Also calls to qcdb module are here and not elsewhere in driver.
 Organizationally, this module isolates qcdb code from psi4 code.
 
 """
+import inspect
 import os
 import re
+import shutil
+import subprocess
 import sys
 import uuid
-import shutil
-import inspect
-import subprocess
 
 import qcelemental as qcel
 
-from psi4.driver import qcdb
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
 from psi4 import core
+
+from .. import p4util, qcdb
+from ..p4util.exceptions import *
+
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}

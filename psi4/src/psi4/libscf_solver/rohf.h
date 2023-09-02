@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -34,6 +34,7 @@
 #include "hf.h"
 
 namespace psi {
+class VBase;
 namespace scf {
 
 class ROHF : public HF {
@@ -64,6 +65,7 @@ class ROHF : public HF {
     void format_guess() override;
 
     void common_init();
+    void setup_potential() override;
 
    public:
     ROHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional);
@@ -91,6 +93,8 @@ class ROHF : public HF {
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
     bool stability_analysis() override;
+
+    std::shared_ptr<VBase> V_potential() const override { return nullptr; };
 
     std::shared_ptr<ROHF> c1_deep_copy(std::shared_ptr<BasisSet> basis);
 };

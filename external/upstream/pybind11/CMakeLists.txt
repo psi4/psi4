@@ -15,7 +15,7 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable pybind11 could not be located, ${Magenta}Building pybind11${ColourReset} instead.")
     ExternalProject_Add(pybind11_external
-        URL https://github.com/pybind/pybind11/archive/v2.10.1.tar.gz
+        URL https://github.com/pybind/pybind11/archive/v2.10.3.tar.gz
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

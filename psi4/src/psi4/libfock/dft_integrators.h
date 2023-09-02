@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -144,8 +144,9 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
     auto V2p = V->pointer();
 
     // => LSDA contribution <= //
-    // LSDA Contribution at point p is einsum("mp, np, p, ps -> mns", phi, phi, w, v_rho)
-    // Ta := 1/2 einsum("np, p, p -> np", phi, phi, w, v_rho_a)
+    //                                         ∂
+    // T := 1/2 einsum("p, p, pn -> pn", w, φ, -- f)
+    //                                         ∂ρ
     auto v_rho_a = fworker->value("V_RHO_A")->pointer();
     for (int P = 0; P < npoints; P++) {
         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
@@ -155,10 +156,9 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
 
     // => GGA contribution <= //
     if (ansatz >= 1) {
-        // GGA contribution at point p is 2 einsum("mp, npx, px, px, p, p, pxs -> mns" phi, phiX, rho_X, w, v_gamma)
-        // Our special definition of v_gamma allows us to suppress a spinsum.
-        // We'll need to symmetrize this later.
-        // Ta += einsum("npx, px, px, p, p, px -> np" phiX, rho_X, w, v_gamma_alpha)
+        //                                        ∂
+        // T += einsum("p, p, xp, xpn -> pnσ", w, -- f, ∇ρ, ∇φ)
+        //                                        ∂Γ
         // parallel_timer_on("GGA Phi_tmp", rank);
         auto phix = pworker->basis_value("PHI_X")->pointer();
         auto phiy = pworker->basis_value("PHI_Y")->pointer();
@@ -176,11 +176,11 @@ inline void rks_integrator(std::shared_ptr<BlockOPoints> block, std::shared_ptr<
         // parallel_timer_off("GGA Phi_tmp", rank);
     }
 
-    // ==> Contract T aginst phi to complete the LDA and GGA contributions <==
+    // ==> Contract T aginst φ, replacing a point index with  an AO index <==
     C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], coll_funcs, Tp[0], max_functions, 0.0, V2p[0],
             max_functions);
 
-    // ==> Forcibly symmetrize V and scale by 2 <==
+    // ==> Add the adjoint to complete the LDA and GGA contributions  <==
     for (int m = 0; m < nlocal; m++) {
         for (int n = 0; n <= m; n++) {
             V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m];
@@ -218,43 +218,47 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
                                     SharedMatrix G, SharedMatrix U, int ansatz = -1) {
     ansatz = (ansatz == -1 ? fworker->ansatz() : ansatz);
 
-    // Get scratch pointers
-    double** Gp = G->pointer();
+    // => Setup scratch pointers, and associated variables <= //
+    auto Gp = G->pointer();
 
-    double** Up = U->pointer();
-    double** Tp = pworker->scratch()[0]->pointer();
-    double** Dp = pworker->D_scratch()[0]->pointer();
+    auto Up = U->pointer();
+    auto Tp = pworker->scratch()[0]->pointer();
+    auto Dp = pworker->D_scratch()[0]->pointer();
 
     // Fine for now, but not true once we start caching
-    int max_functions = U->ncol();
+    auto max_functions = U->ncol();
 
-    // Get block data
-    int npoints = block->npoints();
-    double* w = block->w();
-    const std::vector<int>& function_map = block->functions_local_to_global();
-    int nlocal = function_map.size();
+    // => Per-block setup <= //
+    auto npoints = block->npoints();
+    auto w = block->w();
+    const auto& function_map = block->functions_local_to_global();
+    auto nlocal = function_map.size();
 
-    // Get points data
-    double** phi = pworker->basis_value("PHI")->pointer();
-    double** phi_x = pworker->basis_value("PHI_X")->pointer();
-    double** phi_y = pworker->basis_value("PHI_Y")->pointer();
-    double** phi_z = pworker->basis_value("PHI_Z")->pointer();
-    double* rho_a = pworker->point_value("RHO_A")->pointer();
-    size_t coll_funcs = pworker->basis_value("PHI")->ncol();
+    // => Setup accessors to computed values <= //
+    auto phi = pworker->basis_value("PHI")->pointer();
+    auto phi_x = pworker->basis_value("PHI_X")->pointer();
+    auto phi_y = pworker->basis_value("PHI_Y")->pointer();
+    auto phi_z = pworker->basis_value("PHI_Z")->pointer();
+    auto rho_a = pworker->point_value("RHO_A")->pointer();
+    auto coll_funcs = pworker->basis_value("PHI")->ncol();
 
-    // => LSDA Contribution <= //
-    double* v_rho_a = fworker->value("V_RHO_A")->pointer();
+    // => phi_x type contributions <= //
+    // ==> LSDA Contribution <== //
+    //                                      ∂        ∂
+    // T:= -2 * einsum("p, p, pm -> pm", w, -- f, φ, -- φ, φ, D, δ)
+    //                                      ∂ρ       ∂x
+    auto v_rho_a = fworker->value("V_RHO_A")->pointer();
     for (int P = 0; P < npoints; P++) {
         std::fill(Tp[P], Tp[P] + nlocal, 0.0);
         C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tp[P], 1);
     }
 
-    // => GGA Contribution (Term 1) <= //
+    // ==> GGA Contribution (Term 1) <== //
     if (fworker->is_gga()) {
-        double* rho_ax = pworker->point_value("RHO_AX")->pointer();
-        double* rho_ay = pworker->point_value("RHO_AY")->pointer();
-        double* rho_az = pworker->point_value("RHO_AZ")->pointer();
-        double* v_gamma_aa = fworker->value("V_GAMMA_AA")->pointer();
+        auto rho_ax = pworker->point_value("RHO_AX")->pointer();
+        auto rho_ay = pworker->point_value("RHO_AY")->pointer();
+        auto rho_az = pworker->point_value("RHO_AZ")->pointer();
+        auto v_gamma_aa = fworker->value("V_GAMMA_AA")->pointer();
 
         for (int P = 0; P < npoints; P++) {
             C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), phi_x[P], 1, Tp[P], 1);
@@ -263,12 +267,16 @@ inline void rks_gradient_integrator(std::shared_ptr<BasisSet> primary, std::shar
         }
     }
 
-    // => Synthesis <= //
+    // ==> Complete Terms <== //
+    // U := einsum("pm, mn -> pn")
     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tp[0], max_functions, Dp[0], max_functions, 0.0, Up[0],
             max_functions);
 
+    //                                      ∂
+    // dE += einsum("pn, pnx, ni -> ix", U, -- φ, δ)
+    //                                      ∂x
     for (int ml = 0; ml < nlocal; ml++) {
-        int A = primary->function_to_center(function_map[ml]);
+        auto A = primary->function_to_center(function_map[ml]);
         Gp[A][0] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_x[0][ml], coll_funcs);
         Gp[A][1] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_y[0][ml], coll_funcs);
         Gp[A][2] += C_DDOT(npoints, &Up[0][ml], max_functions, &phi_z[0][ml], coll_funcs);

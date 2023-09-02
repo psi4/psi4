@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,16 +26,15 @@
 # @END LICENSE
 #
 
-import os
 
 import numpy as np
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import qcdb
-from psi4.driver.p4util import solvers
-from .augmented_hessian import ah_iteration
+
+from ... import p4util, qcdb
+from ...p4util import solvers
 from .. import proc_util
+from .augmented_hessian import ah_iteration
 
 
 def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype):

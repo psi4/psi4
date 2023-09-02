@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -29,17 +29,14 @@
 import numpy as np
 
 from psi4 import core
-from psi4.driver import constants
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.molutil import *
-from psi4.driver.procrouting.proc import scf_helper
-from psi4.driver.procrouting import proc_util
 
-from . import sapt_jk_terms
-from .sapt_util import print_sapt_var, print_sapt_hf_summary, print_sapt_dft_summary
-from . import sapt_mp2_terms
-from . import sapt_sf_terms
+from ... import p4util
+from ...constants import constants
+from ...p4util.exceptions import *
+from .. import proc_util
+from ..proc import scf_helper
+from . import sapt_jk_terms, sapt_mp2_terms, sapt_sf_terms
+from .sapt_util import print_sapt_dft_summary, print_sapt_hf_summary, print_sapt_var
 
 # Only export the run_ scripts
 __all__ = ['run_sapt_dft', 'sapt_dft', 'run_sf_sapt']

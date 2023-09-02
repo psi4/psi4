@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -52,7 +52,7 @@ double DCTSolver::compute_energy_RHF() {
     orbitalsDone_ = false;
     cumulantDone_ = false;
     energyConverged_ = false;
-    initialize_orbitals_from_reference_U();
+    initialize_orbitals_from_reference_R();
 
     // If DCT computation type is density fitting, build b(Q|mn)
     if (options_.get_str("DCT_TYPE") == "DF") {
@@ -139,7 +139,7 @@ void DCTSolver::run_simult_dct_RHF() {
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Amplitude <oo|vv>");
     diisManager.set_error_vector_size(scf_error_a_.get(), scf_error_b_.get(), &Laa, &Lab, &Lbb);
-    diisManager.set_error_vector_size(Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
+    diisManager.set_vector_size(Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);

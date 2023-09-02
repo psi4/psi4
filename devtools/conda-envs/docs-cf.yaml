@@ -2,21 +2,23 @@ name: test
 channels:
   - conda-forge
 dependencies:
-  - blas=*=mkl
-  - intel-openmp!=2019.5
+  - libblas=*=*mkl
+  - mkl-devel
+  - pydantic=1  # to keep on v1 branch for autodoc-pydantic
     # build
-  - cmake>=3.15
+  - cmake
   - doxygen
-  - gxx_linux-64
+  - cxx-compiler
     # core
+  - boost-cpp
   - eigen
   - networkx
-  - pybind11
-  - python=3.10.*
+  - pybind11=2.10.*  # until FixedSize typing percolates upstream
+  - python=3.11.*
     # qc
-  - psi4/label/dev::gau2grid
-  - psi4/label/dev::libint2
-  - psi4/label/dev::libxc
+  - gau2grid
+  - conda-forge/label/libint_dev::libint
+  - libxc-c
   - psi4/label/dev::libecpint
   - optking
   - qcengine
@@ -30,6 +32,6 @@ dependencies:
   - sphinx-autodoc-typehints
   - sphinx-automodapi
   - psi4/label/dev::sphinx-psi-theme
-  - jinja2<3.0
+  - jinja2
   - autodoc-pydantic
 

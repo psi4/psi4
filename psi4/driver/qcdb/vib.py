@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -33,11 +33,11 @@ import sys
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
-import qcelemental as qcel
 from qcelemental import Datum
 
 import psi4  # for typing
 
+from .constants import constants
 from .libmintsmolecule import compute_atom_map
 
 LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
@@ -45,7 +45,7 @@ LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
 __all__ = ["compare_vibinfos", "filter_nonvib", "filter_omega_to_real", "harmonic_analysis", "hessian_symmetrize", "print_molden_vibs", "print_vibs", "thermo"]
 
 
-def compare_vibinfos(expected: Dict[str, qcel.Datum], computed: Dict[str, Datum], tol: float, label: str, verbose: int = 1, forgive: List = None, required: List = None, toldict: Dict[str, float] = None) -> bool:
+def compare_vibinfos(expected: Dict[str, Datum], computed: Dict[str, Datum], tol: float, label: str, verbose: int = 1, forgive: List = None, required: List = None, toldict: Dict[str, float] = None) -> bool:
     """Returns True if two dictionaries of vibration Datum objects are equivalent within a tolerance.
 
     Parameters
@@ -492,8 +492,8 @@ def harmonic_analysis(hess: np.ndarray, geom: np.ndarray, mass: np.ndarray, basi
 
     idx = np.argsort(pre_force_constant_au)
     pre_force_constant_au = pre_force_constant_au[idx]
-    uconv_cm_1 = (np.sqrt(qcel.constants.na * qcel.constants.hartree2J * 1.0e19) /
-                  (2 * np.pi * qcel.constants.c * qcel.constants.bohr2angstroms))
+    uconv_cm_1 = (np.sqrt(constants.na * constants.hartree2J * 1.0e19) /
+                  (2 * np.pi * constants.c * constants.bohr2angstroms))
     pre_frequency_cm_1 = np.lib.scimath.sqrt(pre_force_constant_au) * uconv_cm_1
 
     pre_lowfreq = np.where(np.real(pre_frequency_cm_1) < 100.0)[0]
@@ -571,9 +571,9 @@ def harmonic_analysis(hess: np.ndarray, geom: np.ndarray, mass: np.ndarray, basi
             f'  Note that "Vibration"s include {nrt_expected} un-projected rotation-like and translation-like modes.')
 
     # general conversion factors, LAB II.11
-    uconv_K = (qcel.constants.h * qcel.constants.na * 1.0e21) / (8 * np.pi * np.pi * qcel.constants.c)
-    uconv_S = np.sqrt((qcel.constants.c * (2 * np.pi * qcel.constants.bohr2angstroms)**2) /
-                      (qcel.constants.h * qcel.constants.na * 1.0e21))
+    uconv_K = (constants.h * constants.na * 1.0e21) / (8 * np.pi * np.pi * constants.c)
+    uconv_S = np.sqrt((constants.c * (2 * np.pi * constants.bohr2angstroms)**2) /
+                      (constants.h * constants.na * 1.0e21))
 
     # normco & reduced mass, LAB II.14 & II.15
     wL = np.einsum('i,ij->ij', sqrtmmminv, qL)
@@ -586,11 +586,11 @@ def harmonic_analysis(hess: np.ndarray, geom: np.ndarray, mass: np.ndarray, basi
     vibinfo['x'] = Datum('normal mode', 'a0', xL, comment='normalized un-mass-weighted')
 
     # IR intensities, CCQC Proj. Eqns. 15-16
-    uconv_kmmol = (qcel.constants.get("Avogadro constant") * np.pi * 1.e-3 * qcel.constants.get("electron mass in u") *
-                   qcel.constants.get("fine-structure constant")**2 * qcel.constants.get("atomic unit of length") / 3)
-    uconv_D2A2u = (qcel.constants.get('atomic unit of electric dipole mom.') * 1.e11 /
-                   qcel.constants.get('hertz-inverse meter relationship') /
-                   qcel.constants.get('atomic unit of length'))**2
+    uconv_kmmol = (constants.get("Avogadro constant") * np.pi * 1.e-3 * constants.get("electron mass in u") *
+                   constants.get("fine-structure constant")**2 * constants.get("atomic unit of length") / 3)
+    uconv_D2A2u = (constants.get('atomic unit of electric dipole mom.') * 1.e11 /
+                   constants.get('hertz-inverse meter relationship') /
+                   constants.get('atomic unit of length'))**2
     if not (dipder is None or np.array(dipder).size == 0):
         qDD = dipder.dot(wL)
         ir_intensity = np.zeros(qDD.shape[1])
@@ -604,7 +604,7 @@ def harmonic_analysis(hess: np.ndarray, geom: np.ndarray, mass: np.ndarray, basi
         vibinfo['IR_intensity'] = Datum('infrared intensity', 'km/mol', ir_intensity_kmmol)
 
     # force constants, LAB II.16 (real compensates for earlier sqrt)
-    uconv_mdyne_a = (0.1 * (2 * np.pi * qcel.constants.c)**2) / qcel.constants.na
+    uconv_mdyne_a = (0.1 * (2 * np.pi * constants.c)**2) / constants.na
     force_constant_mdyne_a = reduced_mass_u * (frequency_cm_1 * frequency_cm_1).real * uconv_mdyne_a
     vibinfo['k'] = Datum('force constant', 'mDyne/A', force_constant_mdyne_a)
 
@@ -630,7 +630,7 @@ def harmonic_analysis(hess: np.ndarray, geom: np.ndarray, mass: np.ndarray, basi
 
     # characteristic vibrational temperature, RAK thermo & https://en.wikipedia.org/wiki/Vibrational_temperature
     #   (imag freq zeroed)
-    uconv_K = 100 * qcel.constants.h * qcel.constants.c / qcel.constants.kb
+    uconv_K = 100 * constants.h * constants.c / constants.kb
     vib_temperature_K = frequency_cm_1.real * uconv_K
     vibinfo['theta_vib'] = Datum('char temp', 'K', vib_temperature_K)
 
@@ -916,10 +916,10 @@ def thermo(vibinfo, T: float, P: float, multiplicity: int, molecular_mass: float
     sm[('S', 'elec')] = math.log(q_elec)
 
     # translational
-    beta = 1 / (qcel.constants.kb * T)
-    q_trans = (2.0 * np.pi * molecular_mass * qcel.constants.amu2kg /
-               (beta * qcel.constants.h * qcel.constants.h))**1.5 * qcel.constants.na / (beta * P)
-    sm[('S', 'trans')] = 5 / 2 + math.log(q_trans / qcel.constants.na)
+    beta = 1 / (constants.kb * T)
+    q_trans = (2.0 * np.pi * molecular_mass * constants.amu2kg /
+               (beta * constants.h * constants.h))**1.5 * constants.na / (beta * P)
+    sm[('S', 'trans')] = 5 / 2 + math.log(q_trans / constants.na)
     sm[('Cv', 'trans')] = 3 / 2
     sm[('Cp', 'trans')] = 5 / 2
     sm[('E', 'trans')] = 3 / 2 * T
@@ -929,13 +929,13 @@ def thermo(vibinfo, T: float, P: float, multiplicity: int, molecular_mass: float
     if rotor_type == "RT_ATOM":
         pass
     elif rotor_type == "RT_LINEAR":
-        q_rot = 1. / (beta * sigma * 100 * qcel.constants.c * qcel.constants.h * rot_const[1])
+        q_rot = 1. / (beta * sigma * 100 * constants.c * constants.h * rot_const[1])
         sm[('S', 'rot')] = 1.0 + math.log(q_rot)
         sm[('Cv', 'rot')] = 1
         sm[('Cp', 'rot')] = 1
         sm[('E', 'rot')] = T
     else:
-        phi_A, phi_B, phi_C = rot_const * 100 * qcel.constants.c * qcel.constants.h / qcel.constants.kb
+        phi_A, phi_B, phi_C = rot_const * 100 * constants.c * constants.h / constants.kb
         q_rot = math.sqrt(math.pi) * T**1.5 / (sigma * math.sqrt(phi_A * phi_B * phi_C))
         sm[('S', 'rot')] = 3 / 2 + math.log(q_rot)
         sm[('Cv', 'rot')] = 3 / 2
@@ -968,8 +968,8 @@ def thermo(vibinfo, T: float, P: float, multiplicity: int, molecular_mass: float
     sm[('E', 'vib')] = sm[('ZPE', 'vib')] + np.sum(rT * T / np.expm1(rT))
     sm[('H', 'vib')] = sm[('E', 'vib')]
 
-    assert (abs(ZPE_cm_1 - sm[('ZPE', 'vib')] * qcel.constants.R * qcel.constants.hartree2wavenumbers * 0.001 /
-                qcel.constants.hartree2kJmol) < 0.1)
+    assert (abs(ZPE_cm_1 - sm[('ZPE', 'vib')] * constants.R * constants.hartree2wavenumbers * 0.001 /
+                constants.hartree2kJmol) < 0.1)
 
     #real_vibs = np.ma.masked_where(vibinfo['omega'].data.imag > vibinfo['omega'].data.real, vibinfo['omega'].data)
 
@@ -982,7 +982,7 @@ def thermo(vibinfo, T: float, P: float, multiplicity: int, molecular_mass: float
         # terms above are unitless (S, Cv, Cp) or in units of temperature (ZPE, E, H, G) as expressions are divided by R.
         # R [Eh/K], computed as below, slightly diff in 7th sigfig from 3.1668114e-6 (k_B in [Eh/K])
         #    value listed https://en.wikipedia.org/wiki/Boltzmann_constant
-        uconv_R_EhK = qcel.constants.R / qcel.constants.hartree2kJmol
+        uconv_R_EhK = constants.R / constants.hartree2kJmol
         for piece in ['S', 'Cv', 'Cp']:
             sm[(piece, term)] *= uconv_R_EhK  # [mEh/K] <-- []
         for piece in ['ZPE', 'E', 'H', 'G']:
@@ -1014,9 +1014,9 @@ def thermo(vibinfo, T: float, P: float, multiplicity: int, molecular_mass: float
         therminfo['_'.join(entry)] = Datum(terms[entry[1]].strip().lower() + ' ' + entry[0], unit, sm[entry])
 
     # display
-    format_S_Cv_Cp = """\n  {:19} {:11.3f} [cal/(mol K)]  {:11.3f} [J/(mol K)]  {:15.8f} [mEh/K]"""
-    format_ZPE_E_H_G = """\n  {:19} {:11.3f} [kcal/mol]  {:11.3f} [kJ/mol]  {:15.8f} [Eh]"""
-    uconv = np.asarray([qcel.constants.hartree2kcalmol, qcel.constants.hartree2kJmol, 1.])
+    format_S_Cv_Cp = """\n  {:36} {:11.3f} [cal/(mol K)]  {:11.3f} [J/(mol K)]  {:15.8f} [mEh/K]"""
+    format_ZPE_E_H_G = """\n  {:36} {:11.3f} [kcal/mol]  {:11.3f} [kJ/mol]  {:15.8f} [Eh]"""
+    uconv = np.asarray([constants.hartree2kcalmol, constants.hartree2kJmol, 1.])
 
     # TODO rot_const, rotor_type
     text = ''
@@ -1044,35 +1044,57 @@ def thermo(vibinfo, T: float, P: float, multiplicity: int, molecular_mass: float
     terms['corr'] = 'Correction'
 
     text += """\n\n  ==> Thermochemistry Energy Analysis <=="""
+    text += """\n\n  Raw electronic energy, E_e"""
+    text += f"""\n  Total E_e, Electronic energy at well bottom                                        {E0:15.8f} [Eh]"""
 
-    text += """\n\n  Raw electronic energy, E0"""
-    text += """\n  Total E0, Electronic energy at well bottom at 0 [K]               {:15.8f} [Eh]""".format(E0)
-
-    text += """\n\n  Zero-point energy, ZPE_vib = Sum_i nu_i / 2"""
+    text += """\n\n  Zero-point vibrational energy, ZPVE = Sum_i omega_i / 2,  E_0 = E_e + ZPVE"""
+    
     for term in terms:
-        text += format_ZPE_E_H_G.format(terms[term] + ' ZPE', *sm[('ZPE', term)] * uconv)
-        if term in ['vib', 'corr']:
-            text += """ {:15.3f} [cm^-1]""".format(sm[('ZPE', term)] * qcel.constants.hartree2wavenumbers)
-    text += """\n  Total ZPE, Electronic energy at 0 [K]                             {:15.8f} [Eh]""".format(
-        sm[('ZPE', 'tot')])
-
-    text += """\n\n  Thermal Energy, E (includes ZPE)"""
+        if term in ['vib']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' ZPVE', *sm[('ZPE', term)] * uconv)
+            text += """ {:15.3f} [cm^-1]""".format(sm[('ZPE', term)] * constants.hartree2wavenumbers)
+        elif term in ['corr']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' ZPVE to E_e', *sm[('ZPE', term)] * uconv)
+            text += """ {:15.3f} [cm^-1]""".format(sm[('ZPE', term)] * constants.hartree2wavenumbers)
+    text += """\n  Total E_0, Enthalpy at 0 [K]                                                       {:15.8f} [Eh]""".format(
+        sm[('ZPE', 'tot')]) 
+    text += """\n  *** Absolute enthalpy, not an enthalpy of formation ***"""
+    
+    text += """\n\n  Thermal (internal) energy, E (includes ZPVE and finite-temperature corrections)"""
     for term in terms:
-        text += format_ZPE_E_H_G.format(terms[term] + ' E', *sm[('E', term)] * uconv)
-    text += """\n  Total E, Electronic energy at {:7.2f} [K]                         {:15.8f} [Eh]""".format(
+        if term in ['elec']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to E beyond E_e', *sm[('E', term)] * uconv) 
+        elif term in ['corr']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' E', *sm[('E', term)] * uconv)
+        else:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to E', *sm[('E', term)] * uconv)
+
+    text += """\n  Total E, Thermal (internal) energy at {:7.2f} [K]                                  {:15.8f} [Eh]""".format(
         T, sm[('E', 'tot')])
 
-    text += """\n\n  Enthalpy, H_trans = E_trans + k_B * T"""
+    text += """\n\n  Enthalpy, H_trans = E_trans + k_B * T = E_trans + P * V"""
     for term in terms:
-        text += format_ZPE_E_H_G.format(terms[term] + ' H', *sm[('H', term)] * uconv)
-    text += """\n  Total H, Enthalpy at {:7.2f} [K]                                  {:15.8f} [Eh]""".format(
+        if term in ['elec']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to H beyond E_e', *sm[('H', term)] * uconv)
+        elif term in ['corr']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' H', *sm[('H', term)] * uconv)
+        else:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to H', *sm[('H', term)] * uconv)
+    text += """\n  Total H, Enthalpy at {:7.2f} [K]                                                   {:15.8f} [Eh]""".format(
         T, sm[('H', 'tot')])
+    text += """\n  *** Absolute enthalpy, not an enthalpy of formation ***"""
 
     text += """\n\n  Gibbs free energy, G = H - T * S"""
     for term in terms:
-        text += format_ZPE_E_H_G.format(terms[term] + ' G', *sm[('G', term)] * uconv)
-    text += """\n  Total G, Free enthalpy at {:7.2f} [K]                             {:15.8f} [Eh]\n""".format(
+        if term in ['elec']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to G beyond E_e', *sm[('G', term)] * uconv)
+        elif term in ['corr']:
+            text += format_ZPE_E_H_G.format(terms[term] + ' G', *sm[('G', term)] * uconv)
+        else:
+            text += format_ZPE_E_H_G.format(terms[term] + ' contrib to G', *sm[('G', term)] * uconv)
+    text += """\n  Total G, Gibbs energy at {:7.2f} [K]                                               {:15.8f} [Eh]""".format(
         T, sm[('G', 'tot')])
+    text += """\n  *** Absolute Gibbs energy, not a free energy of formation ***\n\n""" 
 
     return therminfo, text
 

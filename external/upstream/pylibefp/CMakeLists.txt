@@ -39,7 +39,7 @@ if(${ENABLE_libefp})
                        -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
                        -DPYTHON_INCLUDE_DIR=${Python_INCLUDE_DIRS}
                        -DPYTHON_LIBRARY=${Python_LIBRARIES}
-                       -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
+                       -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
                        -Dlibefp_DIR=${libefp_DIR}
                        -Dpybind11_DIR=${pybind11_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}

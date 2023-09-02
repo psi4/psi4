@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -47,7 +47,6 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::shared_ptr<BasisSet> bs1, std:
     int max_nao = INT_NCART(maxam1) * INT_NCART(maxam2) * INT_NCART(maxam3);
     zero_vec_ = std::vector<double>(max_nao, 0.0);
 
-    libint2::initialize();
     // set engine precision to 0.0 to disable primitive screening
     engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::delta, max_nprim, max_am, 0, 0.0);
     buffers_.resize(1);

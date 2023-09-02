@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -95,6 +95,9 @@ class Functional {
     // Build a base version of a DFA functional (say B97_X)
     static std::shared_ptr<Functional> build_base(const std::string& alias);
 
+    // Clones a *polarized*, complete functional. Used, e.g., in spin-symmetry-
+    // breaking eigenvectors of the MO hessian or linear response eigenproblem.
+    virtual std::shared_ptr<Functional> build_polarized() = 0;
     // Clones a *worker* for the functional. This is not a complete functional
     virtual std::shared_ptr<Functional> build_worker();
 

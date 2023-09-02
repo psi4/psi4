@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -174,8 +174,16 @@ class RV : public VBase {
 
     // compute_V assuming same orbitals for different spin. Computes V_alpha, not spin-summed V.
     void compute_V(std::vector<SharedMatrix> ret) override;
-    /// compute_Vx assuming same orbitals for different spin. ret[i] is Vx where x = Dx[i].
-    void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
+    /// Compute the orbital derivative of the KS potential, contract against Dx, and
+    /// putting the result in ret. ret[i] is Vx where x = Dx[i]. The "true" vector has
+    /// 2^-0.5 Dx[i] for each input spin case and returns **half** the α component of the output.
+    /// The singlet flag controls whether to assume singlet spin-integration (β components
+    /// are the α components) or triplet (β components are -α components)
+    void compute_Vx_full(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret, bool singlet);
+    /// A convenience function to call compute_Vx_full for singlets.
+    /// And no, we can't just make singlet a default argument. Then compute_Vx has different signatures for
+    /// different VBase subclasses, so we can't call compute_Vx from VBase, which breaks the hessian code.
+    void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override { compute_Vx_full(Dx, ret, true); };
     std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_gradient() override;
     SharedMatrix compute_hessian() override;
@@ -193,10 +201,13 @@ class UV : public VBase {
     void finalize() override;
 
     void compute_V(std::vector<SharedMatrix> ret) override;
-    /// compute_Vx not assuming same orbitals for different spin.
-    /// ret[2n], ret[2n+1] are alpha and beta Vx where x concatenates Dx[2n] (alpha) and Dx[2n+1] (beta).
+    /// Compute the orbital derivative of the KS potential, contract against Dx, and
+    /// putting the result in ret. ret[i] is Vx where x = Dx[i].
+    /// ret[2n], ret[2n+1] are alpha and beta Vx where x concatenates Dx[2n] (α) and Dx[2n+1] (β).
     void compute_Vx(const std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) override;
+    std::vector<SharedMatrix> compute_fock_derivatives() override;
     SharedMatrix compute_gradient() override;
+    SharedMatrix compute_hessian() override;
 
     void print_header() const override;
 };

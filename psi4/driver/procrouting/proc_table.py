@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -31,12 +31,8 @@ chemical methods.
 
 from qcelemental.util import which
 
-from . import sapt
-from . import proc
-from . import interface_cfour
-from . import proc_data
-
-from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
+from . import interface_cfour, proc, proc_data, sapt
+from .dft import build_superfunctional_from_dictionary, functionals
 
 # never import wrappers or aliases into this file
 

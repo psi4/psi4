@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -129,7 +129,15 @@ class DLPNOMP2 : public Wavefunction {
     SparseMap riatom_to_bfs2_; ///< which orbital BFs are needed for DF int transform (second index)
 
     // Dense analogues of some sparse maps for quick lookup
+
+    /* Takes an atom index and a global LMO index 
+    to return the sparse LMO index on that atom,
+    (-1) if that LMO is not on the riatom's extended domain */
     std::vector<std::vector<int>> riatom_to_lmos_ext_dense_;
+    /* Takes an atom index and a global PAO index 
+    to return the sparse PAO index on that atom,
+    (-1) if that PAO is not on the riatom's extended domain */
+    std::vector<std::vector<int>> riatom_to_paos_ext_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms1_dense_;
     std::vector<std::vector<bool>> riatom_to_atoms2_dense_;
 

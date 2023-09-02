@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -156,7 +156,7 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
     std::vector<double> nbeta(molecule_->natom(), 0);
     std::vector<int> nelec(molecule_->natom(), 0);
 
-    // Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
+    // Ground state high spin occupancy array, atoms 0 to 36 (see Griffith's Quantum Mechanics, pp. 217)
     // For 37 to 86, save for f-block: Atomic, Molecular, & Optical Physics Handbook, Ed. Gordon W. F. Drake, American
     // Institute of Physics, Woodbury, New York, USA, 1996.
 
@@ -252,9 +252,13 @@ void SADGuess::run_atomic_calculations(SharedMatrix& DAO, SharedMatrix& HuckelC,
             continue;
         }
 
+        if (nelec[index] > 2 * nbf) {
+            throw PSIEXCEPTION("SAD: Atom " + molecule_->symbol(index) + " has more electrons than basis functions.");
+        }
+
         if (print_ > 1) {
             outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:\n", uniA, index);
-            outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, nbf = %d\n", nalpha[uniA], nbeta[uniA], nbf);
+            outfile->Printf("  Occupation: nalpha = %.1f, nbeta = %.1f, nbf = %d\n", nalpha[index], nbeta[index], nbf);
         }
 
         // Occupation numbers
@@ -426,7 +430,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::unique_ptr<OneBodyAOInt> T_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_kinetic());
     std::unique_ptr<OneBodyAOInt> V_ints = std::unique_ptr<OneBodyAOInt>(integral.ao_potential());
 #ifdef USING_ecpint
-    auto ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp()));
+    auto ECP_ints = std::unique_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral.ao_ecp().release()));
 #endif
 
     // Compute overlap S and orthogonalizer X;
@@ -527,11 +531,12 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     std::unique_ptr<JK> jk;
     // Need a very special auxiliary basis here
     if (SAD_use_fitting(options_)) {
-        MemDFJK* dfjk = new MemDFJK(bas, fit);
+        auto dfjk = std::make_unique<MemDFJK>(bas, fit, options_);
+
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         dfjk->dfh()->set_print_lvl(0);
-        jk = std::unique_ptr<JK>(dfjk);
+        jk = std::move(dfjk);
     } else {
         DirectJK* directjk(new DirectJK(bas, options_));
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
@@ -716,7 +721,18 @@ void SADGuess::form_C_and_D(SharedMatrix X, SharedMatrix F, SharedMatrix C, Shar
     Scratch1.reset();
     Scratch2.reset();
 }
-SharedMatrix SADGuess::huckel_guess() {
+static double gwh_k(double Ei, double Ej, bool updated_rule) {
+    const double k = 1.75;
+    if (!updated_rule) {
+        return k;
+    } else {
+        // See after equation 2 in doi:10.1021/ja00480a005
+        double Delta = (Ei - Ej) / (Ei + Ej);
+        double Delta_squared = Delta * Delta;
+        return k + Delta_squared + Delta_squared * Delta_squared * (1 - k);
+    }
+}
+SharedMatrix SADGuess::huckel_guess(bool updated_rule) {
     // Build Neutral D in AO basis (block diagonal)
     SharedMatrix DAO;
     // Huckel matrices
@@ -752,7 +768,9 @@ SharedMatrix SADGuess::huckel_guess() {
     for (int i = 0; i < nhu; i++) {
         huckelmo->set(i, i, Ehu->get(i));
         for (int j = 0; j < nhu; j++) {
-            huckelmo->set(i, j, 0.875 * ChuSChu->get(i, j) * (Ehu->get(i) + Ehu->get(j)));
+            huckelmo->set(
+                i, j,
+                0.5 * gwh_k(Ehu->get(i), Ehu->get(j), updated_rule) * ChuSChu->get(i, j) * (Ehu->get(i) + Ehu->get(j)));
         }
     }
 
@@ -850,7 +868,7 @@ void HF::compute_SAD_guess(bool natorb) {
         energies_["Total Energy"] = 0.0;  // This is the -1th iteration
     }
 }
-void HF::compute_huckel_guess() {
+void HF::compute_huckel_guess(bool updated_rule) {
     if (sad_basissets_.empty()) {
         throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
     }
@@ -863,7 +881,7 @@ void HF::compute_huckel_guess() {
         guess->set_atomic_fit_bases(sad_fitting_basissets_);
     }
 
-    SharedMatrix Fhuckel = guess->huckel_guess();
+    SharedMatrix Fhuckel = guess->huckel_guess(updated_rule);
     Fa_->copy(Fhuckel);
     Fb_->copy(Fhuckel);
 

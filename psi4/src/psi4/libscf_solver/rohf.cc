@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,6 +39,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/factory.h"
@@ -97,9 +98,7 @@ void ROHF::common_init() {
     same_a_b_dens_ = false;
     same_a_b_orbs_ = true;
 
-    if (functional_->needs_xc()) {
-        throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
-    }
+    subclass_init();
 }
 
 void ROHF::format_guess() {
@@ -1326,5 +1325,12 @@ void ROHF::compute_SAD_guess(bool natorb) {
         Dt_->add(Db_);
     }
 }
+
+void ROHF::setup_potential() {
+    if (functional_->needs_xc()) {
+        throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
+    }
+}
+
 }  // namespace scf
 }  // namespace psi

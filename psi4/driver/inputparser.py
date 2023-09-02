@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -35,13 +35,11 @@ __all__ = ["process_input"]
 
 import os
 import re
-import sys
 import uuid
 
 from psi4 import core
-from psi4.driver.p4util.util import set_memory
 from psi4.driver.p4util.exceptions import *
-
+from psi4.driver.p4util.util import set_memory
 
 # inputfile contents to be preserved from the processor
 literals = {}
@@ -88,7 +86,7 @@ def quotify(string, isbasis=False):
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
     if isbasis:
-        wordre = re.compile(r'(([$]?)([-+()*.,\w\"\'/\\]+))')
+        wordre = re.compile(r'(([$]?)([-+:()*.,\w\"\'/\\]+))')
     else:
         wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
     string = wordre.sub(process_word_quotes, string)
@@ -276,11 +274,11 @@ def process_basis_block(matchobj):
     cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
     command_lines = re.split('\n', matchobj.group(4))
 
-    symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-+:*\(\)\w]+)\s*$', re.IGNORECASE)
     label_re = re.compile(
-        r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$',
+        r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+:*\(\)\w]+)\s*$',
         re.IGNORECASE)
-    all_re = re.compile(r'^\s*assign\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    all_re = re.compile(r'^\s*assign\s+(?P<basis>[-+:*\(\)\w]+)\s*$', re.IGNORECASE)
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
     result = """%sdef basisspec_psi4_yo__%s(mol, role):\n""" % (spaces, cleanbas)
@@ -672,7 +670,7 @@ def process_input(raw_input: str, print_level: int = 1) -> str:
     # with undesired multiline matches.  Better the double-negative [^\S\n] instead, which
     # will match any space, tab, etc., except a newline
     set_command = re.compile(
-        r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$',
+        r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*:()\.\w]+))\s*$',
         re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 

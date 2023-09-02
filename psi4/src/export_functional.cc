@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -125,7 +125,9 @@ void export_functional(py::module &m) {
         .def_static("XC_build", &SuperFunctional::XC_build, "Builds a SuperFunctional from a XC string.")
         .def("allocate", &SuperFunctional::allocate,
              "Allocates the vectors, should be called after ansatz or npoint changes.")
-        .def("compute_functional", &SuperFunctional::compute_functional, "Computes the SuperFunctional.")
+        .def("compute_functional", &SuperFunctional::compute_functional,
+             "vals"_a, "npoints"_a = -1, "singlet"_a = true,
+             "Computes the SuperFunctional.")
         .def("x_functional", &SuperFunctional::x_functional, "Returns the desired X Functional.")
         .def("c_functional", &SuperFunctional::c_functional, "Returns the desired C Functional.")
         .def("x_functionals", &SuperFunctional::x_functionals, "Returns all X Functionals.")
@@ -188,7 +190,9 @@ void export_functional(py::module &m) {
         .def("needs_vv10", &SuperFunctional::needs_vv10, "Does this functional need VV10 dispersion.")
         .def("needs_grac", &SuperFunctional::needs_grac, "Does this functional need GRAC.")
         .def("print_out", &SuperFunctional::py_print, "Prints out functional details.")
-        .def("print_detail", &SuperFunctional::py_print_detail, "Prints all SuperFunctional information.");
+        .def("print_detail", &SuperFunctional::py_print_detail, "Prints all SuperFunctional information.")
+        .def("xclib_description", &SuperFunctional::xclib_description, "LibXC version and citation string.")
+        .def("set_xclib_description", &SuperFunctional::set_xclib_description, "Sets the LibXC version and citation string");
 
     typedef void (LibXCFunctional::*tweak_set1)(std::vector<double>, bool);
     typedef void (LibXCFunctional::*tweak_set2)(std::map<std::string, double>, bool);
@@ -203,6 +207,7 @@ void export_functional(py::module &m) {
         .def("set_omega", &LibXCFunctional::set_omega, "docstring")
         .def("set_density_cutoff", &LibXCFunctional::set_density_cutoff, "docstring")
         .def("density_cutoff", &LibXCFunctional::density_cutoff, "docstring")
+        .def("xclib_description", &LibXCFunctional::xclib_description, "query libxc for version and citation")
         .def("query_libxc", &LibXCFunctional::query_libxc, "query libxc regarding functional parameters.");
 
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")

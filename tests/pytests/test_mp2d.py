@@ -46,9 +46,9 @@ for bas in ['cc-pVDZ', 'cc-pVTZ']:
     pytest.param({'driver': 'energy', 'name': 'Mp2', 'pv': 'MP2', 'options': {}}, id='mp2-energy'),
     pytest.param({'driver': 'energy', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d-energy', marks=using('mp2d')),
     pytest.param({'driver': 'gradient', 'name': 'Mp2', 'pv': 'MP2', 'options': {}}, id='mp2-gradient'),
-    pytest.param({'driver': 'gradient', 'name': 'Mp2', 'pv': 'MP2', 'dertype': 0, 'options': {}}, id='mp2-gradient-findif'),
+    pytest.param({'driver': 'gradient', 'name': 'Mp2', 'pv': 'MP2', 'dertype': 0, 'options': {}}, id='mp2-gradient-findif', marks=pytest.mark.findif),
     pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'options': {}}, id='mp2d-gradient', marks=using('mp2d')),
-    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'dertype': 0, 'options': {}}, id='mp2d-gradient-findif', marks=using('mp2d')),
+    pytest.param({'driver': 'gradient', 'name': 'MP2-d', 'pv': 'MP2D', 'dertype': 0, 'options': {}}, id='mp2d-gradient-findif', marks=[*using('mp2d'), pytest.mark.findif]),
 #    ('mp2mp2'),
 #    ('mp2-dmp2'),
 ])

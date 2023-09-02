@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -360,7 +360,7 @@ void IntegralTransform::presort_so_tei() {
             }
         }
 
-        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_FZC, mopi_, mopi_);
+        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_FZC, sopi_, sopi_);
         aFzcMat->set(aFzcOp.data());
         aFzcMat->transform(Ca_);
         aFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
@@ -376,12 +376,12 @@ void IntegralTransform::presort_so_tei() {
             }
         }
 
-        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_A_FZC, mopi_, mopi_);
+        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_A_FZC, sopi_, sopi_);
         aFzcMat->set(aFzcOp.data());
         aFzcMat->transform(Ca_);
         aFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
 
-        auto bFzcMat = std::make_shared<Matrix>(PSIF_MO_B_FZC, mopi_, mopi_);
+        auto bFzcMat = std::make_shared<Matrix>(PSIF_MO_B_FZC, sopi_, sopi_);
         bFzcMat->set(bFzcOp.data());
         bFzcMat->transform(Cb_);
         bFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);

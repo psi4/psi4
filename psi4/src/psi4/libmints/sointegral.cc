@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -99,14 +99,14 @@ void OneBodySOInt::compute(SharedMatrix result) {
                     ob_->compute_shell(s1.aoshell, s2.aoshell);
                     const double *aobuf = ob_->buffers()[0];
 
-                    for (int itr = 0; itr < s1.nfunc; ++itr) {
+                    for (int itr = 0; itr < s1.nfunc(); ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
                         double icoef = ifunc.coef;
                         int iaofunc = ifunc.aofunc;
                         int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
                         int iaooff = iaofunc;
 
-                        for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
+                        for (int jtr = 0; jtr < s2.nfunc(); ++jtr) {
                             const SOTransformFunction &jfunc = s2.func[jtr];
                             double jcoef = jfunc.coef * icoef;
                             int jaofunc = jfunc.aofunc;
@@ -151,14 +151,14 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
                     ob_->compute_shell(s1.aoshell, s2.aoshell);
                     const auto &aobuf = ob_->buffers();
 
-                    for (int itr = 0; itr < s1.nfunc; ++itr) {
+                    for (int itr = 0; itr < s1.nfunc(); ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
                         double icoef = ifunc.coef;
                         int iaofunc = ifunc.aofunc;
                         int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
                         int iaooff = iaofunc;
 
-                        for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
+                        for (int jtr = 0; jtr < s2.nfunc(); ++jtr) {
                             const SOTransformFunction &jfunc = s2.func[jtr];
                             double jcoef = jfunc.coef * icoef;
                             int jaofunc = jfunc.aofunc;
@@ -229,7 +229,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                     const auto &aobuf = ob_->buffers();
 
                     // handle SO transform
-                    for (int itr = 0; itr < s1.nfunc; ++itr) {
+                    for (int itr = 0; itr < s1.nfunc(); ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
                         // SO transform coefficient
                         double icoef = ifunc.coef;
@@ -243,7 +243,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                         int irel = b1_->function_within_irrep(ish, isofunc);
                         int iirrep = ifunc.irrep;
 
-                        for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
+                        for (int jtr = 0; jtr < s2.nfunc(); ++jtr) {
                             const SOTransformFunction &jfunc = s2.func[jtr];
                             double jcoef = jfunc.coef * icoef;
                             int jaofunc = jfunc.aofunc;

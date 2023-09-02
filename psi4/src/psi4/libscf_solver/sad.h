@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -78,7 +78,7 @@ class SADGuess {
     SharedMatrix Ca() const { return Ca_; }
     SharedMatrix Cb() const { return Cb_; }
 
-    SharedMatrix huckel_guess();
+    SharedMatrix huckel_guess(bool updated_rule);
 
     void set_atomic_fit_bases(std::vector<std::shared_ptr<BasisSet>> fit_bases) { atomic_fit_bases_ = fit_bases; }
     void set_print(int print) { print_ = print; }

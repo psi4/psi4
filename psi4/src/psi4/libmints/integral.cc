@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -86,130 +86,130 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     init_spherical_harmonics(8);
 }
 
-OneBodyAOInt* IntegralFactory::ao_overlap(int deriv) {
-    return new OverlapInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_overlap(int deriv) {
+    return std::make_unique<OverlapInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_overlap(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_overlap(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_overlap(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-ThreeCenterOverlapInt* IntegralFactory::overlap_3c() { return new ThreeCenterOverlapInt(bs1_, bs2_, bs3_); }
+std::unique_ptr<ThreeCenterOverlapInt> IntegralFactory::overlap_3c() { return std::make_unique<ThreeCenterOverlapInt>(bs1_, bs2_, bs3_); }
 
-OneBodyAOInt* IntegralFactory::ao_kinetic(int deriv) {
-    return new KineticInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_kinetic(int deriv) {
+    return std::make_unique<KineticInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_kinetic(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_kinetic(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_kinetic(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_potential(int deriv) {
-    return new PotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_potential(int deriv) {
+    return std::make_unique<PotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_potential(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_potential(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
-    return new PotentialSOInt(ao_int, this);
+    return  std::make_unique<PotentialSOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_ecp(int deriv) {
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_ecp(int deriv) {
 #ifdef USING_ecpint
-    return new ECPInt(spherical_transforms_, bs1_, bs2_, deriv);
+    return std::make_unique<ECPInt>(spherical_transforms_, bs1_, bs2_, deriv);
 #else
     throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
 #endif
 }
 
-OneBodySOInt* IntegralFactory::so_ecp(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_ecp(int deriv) {
 #ifdef USING_ecpint
     std::shared_ptr<OneBodyAOInt> ao_int(ao_ecp(deriv));
-    return new ECPSOInt(ao_int, this);
+    return  std::make_unique<ECPSOInt>(ao_int, this);
 #else
     throw PSIEXCEPTION("ECP shells requested but libecpint addon not enabled. Re-compile with `-D ENABLE_ecpint=ON`.");
 #endif
 }
 
-OneBodyAOInt* IntegralFactory::ao_rel_potential(int deriv) {
-    return new RelPotentialInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_rel_potential(int deriv) {
+    return  std::make_unique<RelPotentialInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_rel_potential(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_rel_potential(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_rel_potential(deriv));
-    return new RelPotentialSOInt(ao_int, this);
+    return std::make_unique<RelPotentialSOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::electrostatic() { return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0); }
+std::unique_ptr<OneBodyAOInt> IntegralFactory::electrostatic() { return std::make_unique<ElectrostaticInt>(spherical_transforms_, bs1_, bs2_, 0); }
 
-OneBodyAOInt* IntegralFactory::pcm_potentialint() { return new PCMPotentialInt(spherical_transforms_, bs1_, bs2_, 0); }
+std::unique_ptr<OneBodyAOInt> IntegralFactory::pcm_potentialint() { return  std::make_unique<PCMPotentialInt>(spherical_transforms_, bs1_, bs2_, 0); }
 
-OneBodyAOInt* IntegralFactory::ao_dipole(int deriv) { return new DipoleInt(spherical_transforms_, bs1_, bs2_, deriv); }
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_dipole(int deriv) { return  std::make_unique<DipoleInt>(spherical_transforms_, bs1_, bs2_, deriv); }
 
-OneBodySOInt* IntegralFactory::so_dipole(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_dipole(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_dipole(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return  std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_nabla(int deriv) { return new NablaInt(spherical_transforms_, bs1_, bs2_, deriv); }
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_nabla(int deriv) { return  std::make_unique<NablaInt>(spherical_transforms_, bs1_, bs2_, deriv); }
 
-OneBodySOInt* IntegralFactory::so_nabla(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_nabla(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_nabla(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_angular_momentum(int deriv) {
-    return new AngularMomentumInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_angular_momentum(int deriv) {
+    return std::make_unique<AngularMomentumInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_angular_momentum(int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_angular_momentum(int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_angular_momentum(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_quadrupole() { return new QuadrupoleInt(spherical_transforms_, bs1_, bs2_); }
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_quadrupole() { return  std::make_unique<QuadrupoleInt>(spherical_transforms_, bs1_, bs2_); }
 
-OneBodySOInt* IntegralFactory::so_quadrupole() {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_quadrupole() {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_quadrupole());
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_multipoles(int order, int deriv) {
-    return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_multipoles(int order, int deriv) {
+    return  std::make_unique<MultipoleInt>(spherical_transforms_, bs1_, bs2_, order, deriv);
 }
 
-OneBodyAOInt* IntegralFactory::ao_multipole_potential(int order, int deriv) {
-    return new MultipolePotentialInt(spherical_transforms_, bs1_, bs2_, order, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_multipole_potential(int order, int deriv) {
+    return  std::make_unique<MultipolePotentialInt>(spherical_transforms_, bs1_, bs2_, order, deriv);
 }
 
-OneBodySOInt* IntegralFactory::so_multipoles(int order, int deriv) {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_multipoles(int order, int deriv) {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order, deriv));
-    return new OneBodySOInt(ao_int, this);
+    return  std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::ao_traceless_quadrupole() {
-    return new TracelessQuadrupoleInt(spherical_transforms_, bs1_, bs2_);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_traceless_quadrupole() {
+    return  std::make_unique<TracelessQuadrupoleInt>(spherical_transforms_, bs1_, bs2_);
 }
 
-OneBodySOInt* IntegralFactory::so_traceless_quadrupole() {
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_traceless_quadrupole() {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_traceless_quadrupole());
-    return new OneBodySOInt(ao_int, this);
+    return std::make_unique<OneBodySOInt>(ao_int, this);
 }
 
-OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
-    return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::electric_field(int deriv) {
+    return  std::make_unique<ElectricFieldInt>(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
 #ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
+    if (deriv == 0 && integral_package == "SIMINT") return std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
 #endif
-    if (integral_package == "LIBINT2") return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
+    if (integral_package == "LIBINT2") return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef USING_erd
-    if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "ERD") return  std::make_unique<ERDERI>(this, deriv, use_shell_pairs);
 #endif
     if (deriv > 0 && integral_package != "LIBINT1")
         outfile->Printf("ERI derivative integrals only available using Libint");
@@ -217,20 +217,20 @@ TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool nee
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
 #ifdef ENABLE_Libint1t
-    return new ERI(this, deriv, use_shell_pairs);
+    return std::make_unique<ERI>(this, deriv, use_shell_pairs);
 #endif
     throw PSIEXCEPTION("No ERI object to return.");
 }
 
-TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
 #ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
+    if (deriv == 0 && integral_package == "SIMINT") return  std::make_unique<SimintERI>(this, deriv, use_shell_pairs, needs_exchange);
 #endif
-    if (integral_package == "LIBINT2") return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
+    if (integral_package == "LIBINT2") return  std::make_unique<Libint2ERI>(this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef USING_erd
-    if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "ERD") return std::make_unique<ERDERI>(this, deriv, use_shell_pairs);
 #endif
     if (deriv > 0 && integral_package != "LIBINT1")
         outfile->Printf("ERI derivative integrals only available using Libint");
@@ -238,55 +238,55 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_e
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
 #ifdef ENABLE_Libint1t
-    return new ERI(this, deriv, use_shell_pairs);
+    return std::make_unique<ERI>(this, deriv, use_shell_pairs);
 #endif
     throw PSIEXCEPTION("No ERI object to return.");
 }
 
-TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
     if (integral_package == "LIBINT2")
-        return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+        return std::make_unique<Libint2ErfERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef ENABLE_Libint1t
-    return new ErfERI(omega, this, deriv, use_shell_pairs);
+    return std::make_unique<ErfERI>(omega, this, deriv, use_shell_pairs);
 #endif
     throw PSIEXCEPTION("No ERI object to return.");
 }
 
-TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
     if (integral_package == "LIBINT2")
-        return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+        return std::make_unique<Libint2ErfComplementERI>(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef ENABLE_Libint1t
-    return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
+    return std::make_unique<ErfComplementERI>(omega, this, deriv, use_shell_pairs);
 #endif
     throw PSIEXCEPTION("No ERI object to return.");
 }
 
-TwoBodyAOInt* IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::yukawa_eri(double zeta, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    return new Libint2YukawaERI(zeta, this, threshold, deriv, use_shell_pairs, needs_exchange);
+    return std::make_unique<Libint2YukawaERI>(zeta, this, threshold, deriv, use_shell_pairs, needs_exchange);
 }
 
-TwoBodyAOInt* IntegralFactory::f12(std::vector<std::pair<double, double>> exp_coeff, int deriv, bool use_shell_pairs) {
-    return new Libint2F12(exp_coeff, this, deriv, use_shell_pairs);
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::f12(std::vector<std::pair<double, double>> exp_coeff, int deriv, bool use_shell_pairs) {
+    return  std::make_unique<Libint2F12>(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv,
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv,
                                            bool use_shell_pairs) {
-    return new Libint2F12Squared(exp_coeff, this, deriv, use_shell_pairs);
+    return  std::make_unique<Libint2F12Squared>(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv,
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv,
                                       bool use_shell_pairs) {
-    return new Libint2F12G12(exp_coeff, this, deriv, use_shell_pairs);
+    return std::make_unique<Libint2F12G12>(exp_coeff, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv,
+std::unique_ptr<TwoBodyAOInt> IntegralFactory::f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv,
                                                      bool use_shell_pairs) {
-    return new Libint2F12DoubleCommutator(exp_coeff, this, deriv, use_shell_pairs);
+    return std::make_unique<Libint2F12DoubleCommutator>(exp_coeff, this, deriv, use_shell_pairs);
 }
 
 void IntegralFactory::init_spherical_harmonics(int max_am) {

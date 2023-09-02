@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,6 +37,7 @@
 #include "psi4/libqt/qt.h"
 
 #include "gau2grid/gau2grid.h"
+#include <libint2/config.h>
 
 #include <cmath>
 
@@ -649,12 +650,8 @@ SharedMatrix PointFunctions::orbital_value(const std::string& key) { return orbi
 
 BasisFunctions::BasisFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions)
     : primary_(primary), max_points_(max_points), max_functions_(max_functions) {
-    if (!primary_->has_puream()) {
-        puream_ = false;
-        return;
-    }
-
-    puream_ = true;
+    
+    puream_ = primary_->has_puream();
     set_deriv(0);
 }
 BasisFunctions::~BasisFunctions() {}
@@ -764,7 +761,13 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
         // Make new pointers, gg computes along rows so we need to skip down `nval` rows.
         size_t row_shift = static_cast<size_t>(nvals) * npoints;
         double* phi_start = tmpp + row_shift;
+#if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
+        const int order = (int)puream_ ? GG_SPHERICAL_CCA : GG_CARTESIAN_CCA;
+#elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
         const int order = (int)puream_ ? GG_SPHERICAL_GAUSSIAN : GG_CARTESIAN_CCA;
+#else
+#  error "unknown value of macro psi4_SHGSHELL_ORDERING"
+#endif
 
         // Copmute collocation
         if (deriv_ == 0) {

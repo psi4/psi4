@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -140,17 +140,23 @@ FiniteDifferenceComputer.get_psi_results()
 import copy
 import logging
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
-from pydantic import Field, validator
-from qcelemental.models import DriverEnum, AtomicResult
-from qcelemental import constants
+
+try:
+    from pydantic.v1 import Field, validator
+except ImportError:
+    from pydantic import Field, validator
+
+from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
-from psi4.driver import p4util, pp, qcdb, nppp10
-from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
+
+from . import p4util, qcdb
+from .constants import constants, nppp10, pp
+from .p4util.exceptions import ValidationError
+from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
 if TYPE_CHECKING:
     import qcportal
@@ -1278,6 +1284,8 @@ class FiniteDifferenceComputer(BaseComputer):
                 "basis": data["basis"],
                 "keywords": data["keywords"] or {},
             }
+            # Displacements can run in lower symmetry. Don't overwrite orbitals from reference geom
+            packet['keywords']['function_kwargs'].update({"write_orbitals": False})
             if 'cbs_metadata' in data:
                 packet['cbs_metadata'] = data['cbs_metadata']
 
@@ -1453,11 +1461,15 @@ class FiniteDifferenceComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model))
+        logger.debug('\nFINDIF QCSchema:\n' + pp.pformat(findif_model.dict()))
 
         return findif_model
 
-    def get_psi_results(self, return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+    def get_psi_results(
+        self,
+        client: Optional["qcportal.FractalClient"] = None,
+        *,
+        return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into FiniteDifference-flavored QCSchema,
         then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
 
@@ -1481,7 +1493,7 @@ class FiniteDifferenceComputer(BaseComputer):
             Wavefunction described above when *return_wfn* specified.
 
         """
-        findif_model = self.get_results()
+        findif_model = self.get_results(client=client)
 
         ret_ptype = core.Matrix.from_array(findif_model.return_result)
         wfn = _findif_schema_to_wfn(findif_model)

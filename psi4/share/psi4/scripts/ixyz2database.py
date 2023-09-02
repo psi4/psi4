@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -443,7 +443,7 @@ final += """
        *  Make sure the Psi4 driver can find your new database.
           M %s.py into INSTALLED_DIRECTORY/share/psi4/databases .
           Alternatively, add the directory containing %s.py into PYTHONPATH .
-""" % (dbse, dbse, dbse)
+""" % (dbse, dbse)
 
 final += """
    **  To enhance the functionality/documentation of your database, do the following:

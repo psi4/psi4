@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -38,12 +38,12 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from psi4.driver import psifiles as psif
-from psi4.driver.p4util.testing import compare_integers, compare_values, compare_recursive
-from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
-
 from psi4 import core
-from .exceptions import ValidationError, TestComparisonError
+
+from .. import psifiles as psif
+from ..procrouting.proc_util import check_iwl_file_from_scf_type
+from .exceptions import TestComparisonError, ValidationError
+from .testing import compare_integers, compare_recursive, compare_values
 
 
 def fcidump(wfn: core.Wavefunction, fname: str = 'INTDUMP', oe_ints: Optional[List] = None):

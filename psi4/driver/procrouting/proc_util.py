@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -29,13 +29,12 @@ from typing import Tuple
 
 import numpy as np
 
-from qcelemental import constants
-
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
-from psi4.driver.procrouting.sapt import fisapt_proc
+
+from .. import p4util
+from ..constants import constants
+from ..p4util.exceptions import *
+from .dft import build_superfunctional_from_dictionary, functionals
 
 
 def scf_set_reference_local(name, is_dft=False):
@@ -266,6 +265,8 @@ def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[c
 
 
 def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
+    from .sapt import fisapt_proc
+
     sapt_dimer = dimer_wfn.molecule()
     sapt_dimer, monomerA, monomerB = prepare_sapt_molecule(sapt_dimer, "dimer")
     disp_name = name.split("-")[1]
@@ -279,8 +280,8 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
 
     save_pair = (saptd_name == "FISAPT0")
 
-    from .proc import build_disp_functor
-    _, _disp_functor = build_disp_functor('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
+    from .proc import build_functional_and_disp
+    _, _disp_functor = build_functional_and_disp('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
 
     ## Dimer dispersion
     dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)

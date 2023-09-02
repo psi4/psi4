@@ -8,6 +8,84 @@ _std_suite_psi4_extension = [
     # <<<  CONV-AE-CONV  >>>
     {
         "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rhf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "h2o",
+            "basis": "aug-cc-pvdz",
+            "scf_type": "pk",
+            "reference": "rhf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "h2o",
+            "basis": "cfour-qz2p",
+            "scf_type": "pk",
+            "reference": "rhf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "pk",
+            "reference": "uhf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd",
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "nh2",
+            "basis": "aug-cc-pvdz",
+            "scf_type": "pk",
+            "reference": "uhf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "nh2",
+            "basis": "cfour-qz2p",
+            "scf_type": "pk",
+            "reference": "uhf",
+            "fcae": "ae",
+            "corl_type": "conv",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
             "system": "bh3p",
             "basis": "cc-pvdz",
             "scf_type": "pk",
@@ -92,6 +170,86 @@ _std_suite_psi4_extension = [
         },
         "data": {
             "CISD CORRELATION ENERGY": -0.186640254417867,  # detci only != vcc ???
+        },
+    },
+
+    # <<<  DF-AE-DF  >>>
+    {
+        "meta": {
+            "system": "hf",
+            "basis": "cc-pvdz",
+            "scf_type": "df",
+            "reference": "rhf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "h2o",
+            "basis": "aug-cc-pvdz",
+            "scf_type": "df",
+            "reference": "rhf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "h2o",
+            "basis": "cfour-qz2p",
+            "scf_type": "df",
+            "reference": "rhf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "bh3p",
+            "basis": "cc-pvdz",
+            "scf_type": "df",
+            "reference": "uhf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sd",
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "nh2",
+            "basis": "aug-cc-pvdz",
+            "scf_type": "df",
+            "reference": "uhf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sd"
+        },
+        "data": {
+        },
+    },
+    {
+        "meta": {
+            "system": "nh2",
+            "basis": "cfour-qz2p",
+            "scf_type": "df",
+            "reference": "uhf",
+            "fcae": "ae",
+            "corl_type": "df",
+            "sdsc": "sd"
+        },
+        "data": {
         },
     },
     # <<<  CD-AE-CD  >>>

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -45,9 +45,11 @@ import re
 import sys
 
 from psi4 import core
-from psi4.driver import constants
-from psi4.driver import p4util
-from psi4.driver.driver import *
+
+from . import p4util
+from .constants import constants
+from .driver import *
+
 # never import aliases into this file
 
 

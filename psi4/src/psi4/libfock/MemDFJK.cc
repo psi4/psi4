@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -53,8 +53,9 @@ using namespace psi;
 
 namespace psi {
 
-MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
-    : JK(primary), auxiliary_(auxiliary) {
+MemDFJK::MemDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+    Options& options) : JK(primary), auxiliary_(auxiliary), options_(options) {
+
     common_init();
 }
 

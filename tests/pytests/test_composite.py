@@ -1,7 +1,7 @@
 import pytest
 import psi4
 from utils import *
-from addons import uusing
+from addons import using, uusing
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
@@ -28,7 +28,11 @@ def test_allen_focal_point():
     # lowering the basis sets keeps the test within packaged L2's AM bounds
 
 @pytest.mark.cbs
-def test_cbs_with_managed_conditions():
+@pytest.mark.parametrize("distributed", [
+    pytest.param(False, id="internal"),
+    pytest.param(True,  id="snowflake", marks=using("qcfractal")),
+])
+def test_cbs_with_managed_conditions(distributed, snowflake):
 
     n = psi4.geometry("""
             0 4
@@ -44,12 +48,23 @@ def test_cbs_with_managed_conditions():
         "freeze_core": True,
     })
 
-    e_cbs = psi4.energy('cbs',
-        scf_basis='aug-cc-pV[TQ5]Z',
-        corl_wfn='mp2',
-        corl_basis='aug-cc-pV[TQ]Z',
-        delta_wfn='ccsd(t)',
-        delta_basis='aug-cc-pV[DT]Z')
+    cmd_kwargs = {
+        "scf_basis": "aug-cc-pV[TQ5]Z",
+        "corl_wfn": "mp2",
+        "corl_basis": "aug-cc-pV[TQ]Z",
+        "delta_wfn": "ccsd(t)",
+        "delta_basis": "aug-cc-pV[DT]Z",
+    }
+
+    if distributed:
+        client = snowflake.client()
+        plan = psi4.energy("cbs", **cmd_kwargs, return_plan=True)
+        plan.compute(client)
+        snowflake.await_results()
+        e_cbs = plan.get_psi_results(client)
+        snowflake.stop()
+
+    else:
+        e_cbs = psi4.energy("cbs", **cmd_kwargs)
 
     assert compare_values(-54.5325027481897, e_cbs, 5, "cbs")
-

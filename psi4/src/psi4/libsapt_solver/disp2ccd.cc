@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,6 +35,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 #include <cmath>
 
@@ -2037,8 +2038,8 @@ SAPTDIIS::SAPTDIIS(int ampfile, const char *amplabel, const char *errlabel, size
 SAPTDIIS::~SAPTDIIS() { psio_->close(diis_file_, 0); }
 
 void SAPTDIIS::store_vectors() {
-    char *diis_vec_label = get_vec_label(curr_vec_);
-    char *diis_err_label = get_err_label(curr_vec_);
+    std::string diis_vec_label = get_vec_label(curr_vec_);
+    std::string diis_err_label = get_err_label(curr_vec_);
     curr_vec_ = (curr_vec_ + 1) % max_diis_vecs_;
     num_vecs_++;
     if (num_vecs_ > max_diis_vecs_) num_vecs_ = max_diis_vecs_;
@@ -2046,14 +2047,12 @@ void SAPTDIIS::store_vectors() {
     double *vec = init_array(vec_length_);
 
     psio_->read_entry(filenum_, vec_label_, (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
-    psio_->write_entry(diis_file_, diis_vec_label, (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
+    psio_->write_entry(diis_file_, diis_vec_label.c_str(), (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
 
     psio_->read_entry(filenum_, err_label_, (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
-    psio_->write_entry(diis_file_, diis_err_label, (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
+    psio_->write_entry(diis_file_, diis_err_label.c_str(), (char *)&(vec[0]), vec_length_ * (size_t)sizeof(double));
 
     free(vec);
-    free(diis_vec_label);
-    free(diis_err_label);
 }
 
 void SAPTDIIS::get_new_vector() {
@@ -2069,15 +2068,13 @@ void SAPTDIIS::get_new_vector() {
     double *vec_j = init_array(vec_length_);
 
     for (int i = 0; i < num_vecs_; i++) {
-        char *err_label_i = get_err_label(i);
-        psio_->read_entry(diis_file_, err_label_i, (char *)&(vec_i[0]), vec_length_ * (size_t)sizeof(double));
+        std::string err_label_i = get_err_label(i);
+        psio_->read_entry(diis_file_, err_label_i.c_str(), (char *)&(vec_i[0]), vec_length_ * (size_t)sizeof(double));
         for (int j = 0; j <= i; j++) {
-            char *err_label_j = get_err_label(j);
-            psio_->read_entry(diis_file_, err_label_j, (char *)&(vec_j[0]), vec_length_ * (size_t)sizeof(double));
+            std::string err_label_j = get_err_label(j);
+            psio_->read_entry(diis_file_, err_label_j.c_str(), (char *)&(vec_j[0]), vec_length_ * (size_t)sizeof(double));
             Bmat[i][j] = Bmat[j][i] = C_DDOT(vec_length_, vec_i, 1, vec_j, 1);
-            free(err_label_j);
         }
-        free(err_label_i);
     }
 
     for (int i = 0; i < num_vecs_; i++) {
@@ -2094,10 +2091,9 @@ void SAPTDIIS::get_new_vector() {
     memset(vec_j, '\0', sizeof(double) * vec_length_);
 
     for (int i = 0; i < num_vecs_; i++) {
-        char *vec_label_i = get_vec_label(i);
-        psio_->read_entry(diis_file_, vec_label_i, (char *)&(vec_i[0]), vec_length_ * (size_t)sizeof(double));
+        std::string vec_label_i = get_vec_label(i);
+        psio_->read_entry(diis_file_, vec_label_i.c_str(), (char *)&(vec_i[0]), vec_length_ * (size_t)sizeof(double));
         C_DAXPY(vec_length_, Cvec[i], vec_i, 1, vec_j, 1);
-        free(vec_label_i);
     }
 
     psio_->write_entry(filenum_, vec_label_, (char *)&(vec_j[0]), vec_length_ * (size_t)sizeof(double));
@@ -2110,16 +2106,12 @@ void SAPTDIIS::get_new_vector() {
     free_block(Bmat);
 }
 
-char *SAPTDIIS::get_err_label(int num) {
-    char *label = (char *)malloc(16 * sizeof(char));
-    sprintf(label, "Error vector %2d", num);
-    return (label);
+std::string SAPTDIIS::get_err_label(const int64_t num) {
+    return ("Error vector "+to_str_width(num, 2));
 }
 
-char *SAPTDIIS::get_vec_label(int num) {
-    char *label = (char *)malloc(10 * sizeof(char));
-    sprintf(label, "Vector %2d", num);
-    return (label);
+std::string SAPTDIIS::get_vec_label(const int64_t num) {
+    return ("Vector "+to_str_width(num, 2));
 }
 
 std::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, const char *VV_opdm, int nvir, double cutoff) {

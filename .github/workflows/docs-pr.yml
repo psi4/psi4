@@ -2,6 +2,7 @@ name: Docs
 
 on:
   pull_request:
+  merge_group:
 
 jobs:
 
@@ -34,7 +35,8 @@ jobs:
       if: ${{ github.repository == 'psi4/psi4' }}
       uses: conda-incubator/setup-miniconda@v2
       with:
-        mamba-version: "*"
+        miniforge-variant: Mambaforge
+        use-mamba: true
         activate-environment: test
         add-pip-as-python-dependency: true
         auto-activate-base: false
@@ -49,9 +51,10 @@ jobs:
         conda list
         which conda python cmake $CXX
 
-    - name: Patch Sphinx for Pybind11
-      if: ${{ github.repository == 'psi4/psi4' }}
-      run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.10/site-packages/sphinx_automodapi/autodoc_enhancements.py
+    # This patch and the jinja2<3 restriction were needed as recently as March 2023, but when I try a py311 env with newest everything, both can be released.
+    #- name: Patch Sphinx for Pybind11
+    #  if: ${{ github.repository == 'psi4/psi4' }}
+    #  run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.10/site-packages/sphinx_automodapi/autodoc_enhancements.py
 
     # docs are not Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -429,98 +429,98 @@ class PSI_API IntegralFactory {
                            std::shared_ptr<BasisSet> bs4);
 
     /// Returns an OneBodyInt that computes the overlap integral.
-    virtual OneBodyAOInt* ao_overlap(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_overlap(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the overlap integral.
-    virtual OneBodySOInt* so_overlap(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_overlap(int deriv = 0);
 
     /// Returns a ThreeCenterOverlapINt that computes the overlap between three centers
-    virtual ThreeCenterOverlapInt* overlap_3c();
+    virtual std::unique_ptr<ThreeCenterOverlapInt> overlap_3c();
 
     /// Returns an OneBodyInt that computes the kinetic energy integral.
-    virtual OneBodyAOInt* ao_kinetic(int deriv = 0);
-    virtual OneBodySOInt* so_kinetic(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_kinetic(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_kinetic(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the nuclear attraction integral.
-    virtual OneBodyAOInt* ao_potential(int deriv = 0);
-    virtual OneBodySOInt* so_potential(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_potential(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_potential(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the ECP integral.
-    virtual OneBodyAOInt* ao_ecp(int deriv = 0);
-    virtual OneBodySOInt* so_ecp(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_ecp(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_ecp(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the relativistic nuclear attraction integral.
-    virtual OneBodyAOInt* ao_rel_potential(int deriv = 0);
-    virtual OneBodySOInt* so_rel_potential(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_rel_potential(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_rel_potential(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the dipole integral.
-    virtual OneBodyAOInt* ao_dipole(int deriv = 0);
-    virtual OneBodySOInt* so_dipole(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_dipole(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_dipole(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the quadrupole integral.
-    virtual OneBodyAOInt* ao_quadrupole();
-    virtual OneBodySOInt* so_quadrupole();
+    virtual std::unique_ptr<OneBodyAOInt> ao_quadrupole();
+    virtual std::unique_ptr<OneBodySOInt> so_quadrupole();
 
     /// Returns an OneBodyInt that computes arbitrary-order multipole integrals.
-    virtual OneBodyAOInt* ao_multipoles(int order, int deriv = 0);
-    virtual OneBodySOInt* so_multipoles(int order, int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_multipoles(int order, int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_multipoles(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the traceless quadrupole integral.
-    virtual OneBodyAOInt* ao_traceless_quadrupole();
-    virtual OneBodySOInt* so_traceless_quadrupole();
+    virtual std::unique_ptr<OneBodyAOInt> ao_traceless_quadrupole();
+    virtual std::unique_ptr<OneBodySOInt> so_traceless_quadrupole();
 
     /// Returns an OneBodyInt that computes the nabla integral.
-    virtual OneBodyAOInt* ao_nabla(int deriv = 0);
-    virtual OneBodySOInt* so_nabla(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_nabla(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_nabla(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the nabla integral.
-    virtual OneBodyAOInt* ao_angular_momentum(int deriv = 0);
-    virtual OneBodySOInt* so_angular_momentum(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_angular_momentum(int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_angular_momentum(int deriv = 0);
 
     /// Returns a OneBodyInt that computes the multipole potential integrals for PE and EFP
-    virtual OneBodyAOInt* ao_multipole_potential(int order, int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> ao_multipole_potential(int order, int deriv = 0);
 
     /// Returns an OneBodyInt that computes the electric field
-    virtual OneBodyAOInt* electric_field(int deriv = 0);
+    virtual std::unique_ptr<OneBodyAOInt> electric_field(int deriv = 0);
 
     /// Returns an OneBodyInt that computes the point electrostatic potential
-    virtual OneBodyAOInt* electrostatic();
+    virtual std::unique_ptr<OneBodyAOInt> electrostatic();
 
     /// Returns an OneBodyInt that computes the electrostatic potential at desired points
     /// Want to change the name of this after the PCM dust settles
-    virtual OneBodyAOInt* pcm_potentialint();
+    virtual std::unique_ptr<OneBodyAOInt> pcm_potentialint();
 
     /// Returns an ERI integral object
-    virtual TwoBodyAOInt* eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual std::unique_ptr<TwoBodyAOInt> eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
-    virtual TwoBodyAOInt* erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual std::unique_ptr<TwoBodyAOInt> erd_eri(int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an erf ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
+    virtual std::unique_ptr<TwoBodyAOInt> erf_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
                                   bool needs_exchange = false);
 
     /// Returns an erf complement ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
+    virtual std::unique_ptr<TwoBodyAOInt> erf_complement_eri(double omega, int deriv = 0, bool use_shell_pairs = true,
                                              bool needs_exchange = false);
 
     /// Returns an Yukawa integral object (Slater-type geminal times Coulomb, e^(-z*r)/r)
-    virtual TwoBodyAOInt* yukawa_eri(double zeta, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
+    virtual std::unique_ptr<TwoBodyAOInt> yukawa_eri(double zeta, int deriv = 0, bool use_shell_pairs = true, bool needs_exchange = false);
 
     /// Returns an F12 integral object
-    virtual TwoBodyAOInt* f12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+    virtual std::unique_ptr<TwoBodyAOInt> f12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                               bool use_shell_pairs = true);
 
     /// Returns an F12 squared integral object
-    virtual TwoBodyAOInt* f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+    virtual std::unique_ptr<TwoBodyAOInt> f12_squared(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                       bool use_shell_pairs = true);
 
     /// Returns an F12G12 integral object
-    virtual TwoBodyAOInt* f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+    virtual std::unique_ptr<TwoBodyAOInt> f12g12(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                  bool use_shell_pairs = true);
 
     /// Returns an F12 double commutator integral object
-    virtual TwoBodyAOInt* f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
+    virtual std::unique_ptr<TwoBodyAOInt> f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, int deriv = 0,
                                                 bool use_shell_pairs = true);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells

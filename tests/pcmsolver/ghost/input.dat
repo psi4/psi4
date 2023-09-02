@@ -2,7 +2,7 @@
 
 nucenergy   =  12.0367196636183458 #TEST
 polenergy   =  -0.0059568153047844 #TEST
-totalenergy = -55.802798823871 #TEST
+totalenergy = -55.802798786575     #TEST  # adjusted after PEDRA pruning in v1.2.3  -55.802798823871
 
 ref={}
 ref['noCP'] = 0.011128150727074626 #TEST

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -316,6 +316,7 @@ void export_mints(py::module& m) {
     typedef double (Vector::*vector_getitem_2)(int, int) const;
     typedef double (Vector::*vector_one_double)(const Vector& other);
     typedef void (Vector::*vector_two)(double scale, const Vector& other);
+    typedef void (Vector::*vector_three)(double alpha, double beta, const Vector &other);
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
         .def(py::init<int>())
@@ -381,7 +382,8 @@ void export_mints(py::module& m) {
         .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
         .def("vector_dot", vector_one_double(&Vector::vector_dot), "Take the dot product of two vectors", "other"_a)
-        .def("axpy", vector_two(&Vector::axpy), "Adds to this vector another vector scaled by a", "a"_a, "other"_a)
+        .def("axpy", vector_two(&Vector::axpy), "Adds to this vector (unscaled) another vector scaled by a; self <- a * other + self", "a"_a, "other"_a)
+        .def("axpby", vector_three(&Vector::axpby), "Adds to this vector scaled by b another vector scaled by a; self <- a * other + b * self", "a"_a, "b"_a, "other"_a)
         .def("save", &Vector::save, "Save the vector to disk", "psio"_a, "file"_a)
         .def("load", &Vector::load, "Load the vector from disk", "psio"_a, "file"_a)
         .def("get_block", &Vector::get_block, "Get a vector block", "slice"_a)
@@ -607,7 +609,7 @@ void export_mints(py::module& m) {
              "Computes the matrix which is the conditioned pseudoinverse of this matrix", "condition"_a, "nremoved"_a)
         .def("apply_denominator", matrix_one(&Matrix::apply_denominator), "Apply matrix of denominators to this matrix",
              "Matrix"_a)
-        .def("copy", matrix_one(&Matrix::copy), "Returns a copy of the matrix")
+        .def("copy", matrix_one(&Matrix::copy), "Copy another Matrix into this.")
         .def("power", &Matrix::power, "Takes the matrix to the alpha power with precision cutoff", "alpha"_a,
              "cutoff"_a = 1.0E-12)
         .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n",
@@ -853,9 +855,9 @@ void export_mints(py::module& m) {
         .def("connectivity", &Molecule::connectivity, "Gets molecule connectivity")
         .def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry,
              "Do reinterpret coordinate entries during update_geometry().")
-        .def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame")
+        .def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame. Expert use only; use before molecule finalized by update_geometry.")
         .def("fix_com", &Molecule::set_com_fixed,
-             "Sets whether to fix the Cartesian position, or to translate to the C.O.M.")
+             "Sets whether to fix the Cartesian position, or to translate to the C.O.M. Expert use only; use before molecule finalized by update_geometry.")
         .def("orientation_fixed", &Molecule::orientation_fixed, "Get whether or not orientation is fixed")
         .def("com_fixed", &Molecule::com_fixed, "Gets whether or not center of mass is fixed")
         .def("symmetry_from_input", &Molecule::symmetry_from_input, "Returns the symmetry specified in the input")
@@ -1304,7 +1306,7 @@ void export_mints(py::module& m) {
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
              "Determines if the P,Q,R,S shell combination is significant");
 
-    py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
+    py::class_<Libint2ERI, std::unique_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
                                                         "Computes normal two electron repulsion integrals");
 #ifdef ENABLE_Libint1t
     py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
@@ -1519,9 +1521,13 @@ void export_mints(py::module& m) {
         .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a)
         .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a, "bs1"_a,
              "bs2"_a, "bs3"_a, "bs4"_a)
-        .def("ao_f12g12", &MintsHelper::ao_f12g12, "AO F12G12 integrals", "corr"_a)
-        .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
+        .def("ao_f12g12", normal_f12(&MintsHelper::ao_f12g12), "AO F12G12 integrals", "corr"_a)
+        .def("ao_f12g12", normal_f122(&MintsHelper::ao_f12g12), "AO F12G12 integrals", "corr"_a, "bs1"_a,
+             "bs2"_a, "bs3"_a, "bs4"_a)
+        .def("ao_f12_double_commutator", normal_f12(&MintsHelper::ao_f12_double_commutator), "AO F12 double commutator integrals",
              "corr"_a)
+        .def("ao_f12_double_commutator", normal_f122(&MintsHelper::ao_f12_double_commutator), "AO F12 double commutator integrals", "corr"_a, "bs1"_a,
+             "bs2"_a, "bs3"_a, "bs4"_a)
 	.def("f12_cgtg", &MintsHelper::f12_cgtg, "F12 Fitted Slater Correlation Factor", "exponent"_a = 1.0)
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
         .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overlap integrals", "bs1"_a, "bs2"_a,
@@ -1677,10 +1683,6 @@ void export_mints(py::module& m) {
         .def("write", &MoldenWriter::write, "Writes wavefunction information in molden format", "filename"_a, "Ca"_a,
              "Cb"_a, "Ea"_a, "Eb"_a, "OccA"_a, "OccB"_a, "dovirtual"_a);
 
-    py::class_<NBOWriter, std::shared_ptr<NBOWriter>>(m, "NBOWriter", "The Natural Bond Orbital Writer")
-        .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("write", &NBOWriter::write, "Write the natural bond orbitals to a file", "filename"_a);
-
     py::class_<MOWriter, std::shared_ptr<MOWriter>>(m, "MOWriter", "Writes the MOs")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("write", &MOWriter::write, "Write the MOs");  // should the writer.h file take a filename as an argument?
@@ -1719,4 +1721,11 @@ void export_mints(py::module& m) {
         .def("shell_significant", &ERISieve::shell_significant);
 
     m.def("test_matrix_dpd_interface", &psi::test_matrix_dpd_interface);
+
+    m.def("_libint2_configuration", []() { return libint2::configuration_accessor(); },
+        "Returns string with codes detailing the integral classes, angular momenta, and ordering \
+        characteristics of the linked Libint2. Prefer the processed libint2_configuration function.");
+
+    m.def("_libint2_solid_harmonics_ordering", []() { return int(libint2::solid_harmonics_ordering()); },
+        "Libint2 SH setting");
 }

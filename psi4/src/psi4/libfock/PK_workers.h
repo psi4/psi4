@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -48,7 +48,7 @@
 namespace psi {
 
 class AIOHandler;
-class ERISieve;
+class TwoBodyAOInt;
 class BasisSet;
 class GaussianShell;
 
@@ -59,10 +59,10 @@ class AOShellSieveIterator;
 class AOFctSieveIterator;
 
 typedef std::unique_ptr<AOShellSieveIterator> UniqueAOShellIt;
-typedef std::shared_ptr<ERISieve> SharedSieve;
+typedef std::shared_ptr<TwoBodyAOInt> SharedInt;
 
 /** AOShellSieveIterator provides an iterator over significant shell
- * quartets using an ERISieve object.
+ * quartets using a TwoBodyAOInt object.
  */
 
 class AOShellSieveIterator {
@@ -70,7 +70,7 @@ class AOShellSieveIterator {
     // Basis set
     std::shared_ptr<BasisSet> bs_;
     // Sieve object
-    SharedSieve sieve_;
+    SharedInt eri_;
     // Vector of significant shell pairs
     const std::vector<std::pair<int, int>>& shell_pairs_;
     // Number of shell pairs
@@ -87,7 +87,7 @@ class AOShellSieveIterator {
 
    public:
     /// Constructor
-    AOShellSieveIterator(std::shared_ptr<BasisSet> prim, SharedSieve sieve_input);
+    AOShellSieveIterator(std::shared_ptr<BasisSet> prim, SharedInt eri_input);
 
     /// Iterator functions
     void first();
@@ -105,13 +105,13 @@ class AOShellSieveIterator {
 };
 
 /** AOFctSieveIterator: provides an iterator over significant functions for
- * a specific shell quartet, using an ERISieve object.
+ * a specific shell quartet, using a TwoBodyAOInt object.
  */
 
 class AOFctSieveIterator {
    private:
     // Sieve
-    std::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<TwoBodyAOInt> eri_;
     // Integral indices
     int i_, j_, k_, l_;
     // Relative integral indices within shells
@@ -145,7 +145,7 @@ class AOFctSieveIterator {
    public:
     /// Constructor
     AOFctSieveIterator(const GaussianShell& s1, const GaussianShell& s2, const GaussianShell& s3,
-                       const GaussianShell& s4, std::shared_ptr<ERISieve> siev);
+                       const GaussianShell& s4, std::shared_ptr<TwoBodyAOInt> siev);
 
     /// Iterator functions
     void first();
@@ -221,7 +221,7 @@ class PKWorker {
     /// Current basis set
     std::shared_ptr<BasisSet> primary_;
     /// Current sieve
-    SharedSieve sieve_;
+    SharedInt eri_;
     /// Are we doing wK?
     bool do_wK_;
 
@@ -265,7 +265,7 @@ class PKWorker {
 
    public:
     /// Constructor for PKWorker
-    PKWorker(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO, int target_file,
+    PKWorker(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIO, int target_file,
              size_t buf_size);
     /// Destructor for PKWorker, does nothing
     virtual ~PKWorker() {}
@@ -395,7 +395,7 @@ class PKWrkrReord : public PKWorker {
 
    public:
     /// Constructor
-    PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO, int target_file,
+    PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIO, int target_file,
                 size_t buffer_size, size_t nbuffer);
     /// Destructor
     ~PKWrkrReord() override;
@@ -443,7 +443,7 @@ class PKWrkrInCore : public PKWorker {
     void initialize_task() override;
 
    public:
-    PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedSieve sieve, size_t buf_size, size_t lastbuf, double* Jbuf,
+    PKWrkrInCore(std::shared_ptr<BasisSet> primary, SharedInt eri, size_t buf_size, size_t lastbuf, double* Jbuf,
                  double* Kbuf, double* wKbuf, int nworkers);
 
     /// Filling values in the relevant part of the buffer
@@ -487,7 +487,7 @@ class PKWrkrIWL : public PKWorker {
 
    public:
     /// Constructor
-    PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIOp, int targetfile,
+    PKWrkrIWL(std::shared_ptr<BasisSet> primary, SharedInt eri, std::shared_ptr<AIOHandler> AIOp, int targetfile,
               int K_file, size_t buf_size, std::vector<int>& bufforpq, std::shared_ptr<std::vector<size_t>> pos);
     /// Destructor
     ~PKWrkrIWL() override;

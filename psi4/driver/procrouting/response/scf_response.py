@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -27,7 +27,8 @@
 #
 
 from collections import Counter
-from typing import Union, List
+from typing import List, Union
+
 try:
     from dataclasses import dataclass
 except ImportError:
@@ -36,10 +37,11 @@ except ImportError:
 import numpy as np
 
 from psi4 import core
-from psi4.driver import constants
-from psi4.driver.p4util import solvers
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine, TDUSCFEngine)
+
+from ...constants import constants
+from ...p4util import solvers
+from ...p4util.exceptions import *
+from .scf_products import TDRSCFEngine, TDUSCFEngine
 
 # TODO: Split this file into a CPSCF file (frequency-independent case) and TD-SCF file (frequency-dependent case).
 # Neither "half" of the file uses any function from the other "half". The danger is what could happen to import paths...
@@ -399,12 +401,8 @@ def _validate_tdscf(*, wfn, states, triplets, guess) -> None:
     # determine how many states per irrep to seek and apportion them between singlets/triplets and irreps.
 
     # validate calculation
-    if restricted and wfn.functional().needs_xc() and do_triplets:
-        raise ValidationError("TDSCF: Restricted Vx kernel only spin-adapted for singlets")
-
-    not_lda = wfn.functional().is_gga() or wfn.functional().is_meta()
-    if (not restricted) and not_lda:
-        raise ValidationError("TDSCF: Unrestricted Kohn-Sham Vx kernel currently limited to SVWN functional")
+    if wfn.functional().is_meta() or wfn.functional().needs_vv10():
+        raise ValidationError("TDSCF: Kohn-Sham Vx kernel does not support meta or VV10 functionals.")
 
     if guess != "DENOMINATORS":
         raise ValidationError(f"TDSCF: Guess type {guess} is not valid")

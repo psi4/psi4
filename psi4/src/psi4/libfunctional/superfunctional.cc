@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -108,8 +108,53 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
 
     return sup;
 }
+std::shared_ptr<SuperFunctional> SuperFunctional::build_polarized() {
+    // Build the superfunctional
+    auto sup = std::make_shared<SuperFunctional>();
+
+    // Clone over parts
+    for (int i = 0; i < x_functionals_.size(); i++) {
+        sup->add_x_functional(x_functionals_[i]->build_polarized());
+    }
+    for (int i = 0; i < c_functionals_.size(); i++) {
+        sup->add_c_functional(c_functionals_[i]->build_polarized());
+    }
+
+    sup->deriv_ = deriv_;
+    sup->max_points_ = max_points_;
+    sup->libxc_xc_func_ = libxc_xc_func_;
+    if (needs_vv10_) {
+        sup->needs_vv10_ = true;
+        sup->vv10_b_ = vv10_b_;
+        sup->vv10_c_ = vv10_c_;
+        sup->vv10_beta_ = vv10_beta_;
+    }
+    if (needs_grac_) {
+        sup->needs_grac_ = true;
+        sup->grac_shift_ = grac_shift_;
+        sup->grac_alpha_ = grac_alpha_;
+        sup->grac_beta_ = grac_beta_;
+        sup->set_grac_x_functional(grac_x_functional_->build_polarized());
+        sup->set_grac_c_functional(grac_c_functional_->build_polarized());
+    }
+    sup->name_ = name_;
+    sup->description_ = description_;
+    sup->citation_ = citation_;
+    sup->xclib_description_ = xclib_description_;
+    sup->x_omega_ = x_omega_;
+    sup->c_omega_ = c_omega_;
+    sup->x_alpha_ = x_alpha_;
+    sup->x_beta_ = x_beta_;
+    sup->c_alpha_ = c_alpha_;
+    sup->c_ss_alpha_ = c_ss_alpha_;
+    sup->c_os_alpha_ = c_os_alpha_;
+    sup->density_tolerance_ = density_tolerance_;
+    sup->allocate();
+
+    return sup;
+}
 std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
-    // Build the superfuncitonal
+    // Build the superfunctional
     auto sup = std::make_shared<SuperFunctional>();
 
     // Clone over parts
@@ -617,7 +662,66 @@ void SuperFunctional::allocate() {
     }
 }
 std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
-    const std::map<std::string, SharedVector>& vals, int npoints) {
+    const std::map<std::string, SharedVector>& vals, int npoints, bool singlet) {
+    if (!singlet && is_unpolarized() and deriv_ == 2) {
+        // We want triplet spin integration for the second derivatives.
+
+        // First, make a UKS version of this functional.
+        auto UKS = build_polarized();
+
+        // Now compute the UKS version of this functional. Naturally, the input values will need to be UKS-ified first.
+        std::map<std::string, SharedVector> UKS_vals;
+        if (true) {
+            UKS_vals["RHO_A"] = std::make_shared<Vector>(std::move((vals.at("RHO_A")->clone())));
+            UKS_vals["RHO_A"]->scale(0.5); // Un-spinsum
+            UKS_vals["RHO_B"] = UKS_vals["RHO_A"];
+        }
+        if (vals.count("RHO_AX")) {
+            UKS_vals["RHO_AX"] = std::make_shared<Vector>(std::move(vals.at("RHO_AX")->clone()));
+            UKS_vals["RHO_AX"]->scale(0.5); // Un-spinsum
+            UKS_vals["RHO_BX"] = UKS_vals["RHO_AX"];
+            UKS_vals["RHO_AY"] = std::make_shared<Vector>(std::move(vals.at("RHO_AY")->clone()));
+            UKS_vals["RHO_AY"]->scale(0.5); // Un-spinsum
+            UKS_vals["RHO_BY"] = UKS_vals["RHO_AY"];
+            UKS_vals["RHO_AZ"] = std::make_shared<Vector>(std::move(vals.at("RHO_AZ")->clone()));
+            UKS_vals["RHO_AZ"]->scale(0.5); // Un-spinsum
+            UKS_vals["RHO_BZ"] = UKS_vals["RHO_AZ"];
+            UKS_vals["GAMMA_AA"] = std::make_shared<Vector>(std::move(vals.at("GAMMA_AA")->clone()));
+            UKS_vals["GAMMA_AA"]->scale(0.25); // Un-spinsum
+            UKS_vals["GAMMA_AB"] = UKS_vals["GAMMA_AA"];
+            UKS_vals["GAMMA_BB"] = UKS_vals["GAMMA_AA"];
+        }
+
+        auto temp = UKS->compute_functional(UKS_vals, npoints);
+        values_ = std::move(UKS->compute_functional(UKS_vals, npoints));
+
+        // Now we take the magic triplet combinations.
+        if (true) {
+            values_.erase("V_RHO_B_RHO_B");
+            values_.at("V_RHO_A_RHO_A")->axpby(-0.5, 0.5, *values_.at("V_RHO_A_RHO_B"));
+            values_.erase("V_RHO_A_RHO_B");
+        }
+        if (vals.count("RHO_AX")) {
+            values_.erase("V_GAMMA_BB");
+            values_.at("V_GAMMA_AA")->axpby(-0.25, 0.5, *values_.at("V_GAMMA_AB"));
+            values_.erase("V_GAMMA_AB");
+
+            values_.erase("V_RHO_A_GAMMA_AB");
+            values_.erase("V_RHO_B_GAMMA_AA");
+            values_.erase("V_RHO_B_GAMMA_AB");
+            values_.erase("V_RHO_B_GAMMA_BB");
+            values_.at("V_RHO_A_GAMMA_AA")->axpby(-0.25, 0.25, *values_.at("V_RHO_A_GAMMA_BB"));
+            values_.erase("V_RHO_A_GAMMA_BB");
+
+            values_.erase("V_GAMMA_AA_GAMMA_AB");
+            values_.erase("V_GAMMA_AB_GAMMA_AB");
+            values_.erase("V_GAMMA_AB_GAMMA_BB");
+            values_.erase("V_GAMMA_BB_GAMMA_BB");
+            values_.at("V_GAMMA_AA_GAMMA_AA")->axpby(-0.125, 0.125, *values_.at("V_GAMMA_AA_GAMMA_BB"));
+            values_.erase("V_GAMMA_AA_GAMMA_BB");
+        }
+        return values_;
+    }
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
 
     // Zero out values

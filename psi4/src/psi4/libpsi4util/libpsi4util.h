@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -104,6 +104,21 @@ class PSI_API Timer {
 };
 
 void generate_combinations(int n, int k, std::vector<std::vector<int>> &combinations);
+
+/// @brief Converts an input type that is supported by std::to_string, to an std::string that is padded with spaces to a
+/// specified minimum width. This mimics some of the functionality of C-style formatting, eg. %3d.
+/// @tparam T : type of the variable to be converted
+/// @param input : variable to be converted
+/// @param width : pad the string with spaces until it is at least this wide, in a right-justified fashion
+/// @return std::string representation of the input variable, padded if required
+template <typename T>
+std::string to_str_width(const T &input, const size_t width) {
+    std::string str = std::to_string(input);
+    while (str.length() < width) {
+        str.insert(str.begin(), ' ');
+    }
+    return str;
 }
+}  // namespace psi
 
 #endif  // _psi_src_lib_libpsi4util_libpsi4util_h_

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -26,17 +26,17 @@
 # @END LICENSE
 #
 
-import math
-from functools import partial
-from typing import Callable, Optional, Union
 import logging
+import math
+from typing import Callable, Optional, Union
 
 import numpy as np
 
 from psi4 import core
-from psi4.driver.p4util.exceptions import ValidationError
-nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)  # when safe, "from psi4.driver import nppp"
-from psi4.driver.aliases import sherrill_gold_standard, allen_focal_point
+
+from .aliases import allen_focal_point, sherrill_gold_standard
+from .constants import nppp
+from .p4util.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 

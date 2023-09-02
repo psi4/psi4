@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,18 +32,18 @@ __all__ = [
     "copy_file_from_scratch",
     "cubeprop",
     "get_memory",
+    "libint2_configuration",
+    "libint2_print_out",
     "oeprop",
     "set_memory",
 ]
 
 import os
 import re
-import sys
-import warnings
-from typing import List, Union
+from typing import Dict, List, Union
 
 from psi4 import core
-from psi4.driver.procrouting import *
+
 from .exceptions import ValidationError
 from .prop_util import *
 
@@ -75,14 +75,14 @@ def oeprop(wfn: core.Wavefunction, *args: List[str], **kwargs):
         oe.set_title(kwargs['title'])
     for prop in args:
         oe.add(prop)
-            
+
         # If we're doing MBIS, we want the free-atom volumes
         # in order to compute volume ratios,
         # but only if we're calling oeprop as the whole molecule
         free_atom = kwargs.get('free_atom',False)
         if "MBIS_VOLUME_RATIOS" in prop.upper() and not free_atom:
             core.print_out("  Computing free-atom volumes\n")
-            free_atom_volumes(wfn)    
+            free_atom_volumes(wfn)
 
     oe.compute()
 
@@ -337,3 +337,51 @@ def copy_file_from_scratch(filename: str, prefix: str, namespace: str, unit: int
     command = ('%s %s/%s %s' % (cp, scratch, target, filename))
 
     os.system(command)
+
+
+def libint2_configuration() -> Dict[str, List[int]]:
+    """Returns information on integral classes, derivatives, and AM from currently linked Libint2.
+
+    Returns
+    -------
+    Dictionary of integrals classes with values an array of max angular momentum per derivative level.
+    Usual configuration returns:
+        `{'eri': [5, 4, 3], 'eri2': [6, 5, 4], 'eri3': [6, 5, 4], 'onebody': [6, 5, 4]}`
+
+    """
+    skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
+
+    for itm in core._libint2_configuration().split(";"):
+        for cat in list(skel.keys()):
+            if itm.startswith(cat):
+                skel[cat].append(itm[len(cat):])
+
+    for cat in list(skel.keys()):
+        der_max_store = []
+        for der in ["d0_l", "d1_l", "d2_l"]:
+            lmax = -1
+            for itm2 in skel[cat]:
+                if itm2.startswith(der):
+                    lmax = max(int(itm2[len(der):]), lmax)
+            der_max_store.append(None if lmax == -1 else lmax)
+        skel[cat] = der_max_store
+
+    # rename keys from components
+    skel["onebody"] = skel.pop("onebody_")
+    skel["eri"] = skel.pop("eri_c4_")
+    skel["eri3"] = skel.pop("eri_c3_")
+    skel["eri2"] = skel.pop("eri_c2_")
+    return skel
+
+
+def libint2_print_out() -> None:
+    ams = libint2_configuration()
+    # excluding sph_emultipole
+    sho = {1: 'standard', 2: 'gaussian'}[core._libint2_solid_harmonics_ordering()]
+    core.print_out("   => Libint2 <=\n\n");
+
+    core.print_out(f"    Primary   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri'])}\n")
+    core.print_out(f"    Auxiliary basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['eri3'])}\n")
+    core.print_out(f"    Onebody   basis highest AM E, G, H:  {', '.join(('-' if d is None else str(d)) for d in ams['onebody'])}\n")
+    core.print_out(f"    Solid Harmonics ordering:            {sho}\n")
+

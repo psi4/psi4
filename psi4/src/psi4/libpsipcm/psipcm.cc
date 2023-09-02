@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -149,10 +149,11 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
     PetiteList petite(basisset, integrals, true);
     my_aotoso_ = petite.aotoso();
 
-    potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint());
+    potential_int_ = static_cast<PCMPotentialInt *>(integrals->pcm_potentialint().release());
 
     context_ = detail::init_PCMSolver(pcmsolver_parsed_fname_, molecule);
     outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
+    pcmsolver_citation(detail::host_writer);
     pcmsolver_print(context_.get());
     ntess_ = pcmsolver_get_cavity_size(context_.get());
     ntessirr_ = pcmsolver_get_irreducible_cavity_size(context_.get());

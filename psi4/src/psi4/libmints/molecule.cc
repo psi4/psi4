@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -228,8 +228,8 @@ void Molecule::set_reinterpret_coordentry(bool rc) { reinterpret_coordentries_ =
 
 void Molecule::clear() {
     lock_frame_ = false;
-    atoms_.empty();
-    full_atoms_.empty();
+    atoms_.clear();
+    full_atoms_.clear();
 }
 
 void Molecule::add_atom(double Z, double x, double y, double z, std::string symbol, double mass, double charge,
@@ -2050,7 +2050,7 @@ void Molecule::symmetrize(double tol, bool suppress_mol_print_in_exc) {
     CharacterTable ct = point_group()->char_table();
 
     // Obtain atom mapping of atom * symm op to atom
-    int **atom_map = compute_atom_map(this, tol, suppress_mol_print_in_exc);
+    auto atom_map = compute_atom_map(this, tol, suppress_mol_print_in_exc);
 
     // Symmetrize the molecule to remove any noise
     for (int atom = 0; atom < natom(); ++atom) {
@@ -2072,8 +2072,6 @@ void Molecule::symmetrize(double tol, bool suppress_mol_print_in_exc) {
         }
     }
 
-    // Delete the atom map.
-    delete_atom_map(atom_map, this);
     // Set the geometry to ensure z-matrix variables get updated
     set_geometry(temp);
 }

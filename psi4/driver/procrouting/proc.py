@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -31,36 +31,39 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function. *name* can be assumed lowercase by here.
 
 """
-import re
 import os
-import sys
+import re
 import shutil
 import subprocess
+import sys
 import warnings
 from typing import Dict, List, Union
 
 import numpy as np
-from qcelemental import constants
-from qcelemental.util import which
+from qcelemental.util import parse_version, which
 
-from psi4 import extras
-from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import qcdb
-from psi4.driver import psifiles as psif
-from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, UpgradeHelper, ValidationError, docs_table_link
+from psi4 import core, extras
+
+from .. import p4util
+from .. import psifiles as psif
+from .. import qcdb
+from ..constants import constants
+from ..p4util.exceptions import (
+    ManagedMethodError,
+    PastureRequiredError,
+    UpgradeHelper,
+    ValidationError,
+    docs_table_link,
+)
+
 #from psi4.driver.molutil import *
-from psi4.driver.qcdb.basislist import corresponding_basis
-# never import driver, wrappers, or aliases into this file
-
+from ..qcdb.basislist import corresponding_basis
+from . import dft, empirical_dispersion, mcscf, proc_util, response, solvent
 from .proc_data import method_algorithm_type
 from .roa import run_roa
-from . import proc_util
-from . import empirical_dispersion
-from . import dft
-from . import mcscf
-from . import response
-from . import solvent
+
+# never import driver, wrappers, or aliases into this file
+
 
 
 # ADVICE on new additions:
@@ -1001,14 +1004,14 @@ def select_ccsd_t__gradient(name, **kwargs):
     func = None
     if reference in ['RHF']:
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module in ['CCENERGY']:  # FORMERLY ""
                 func = run_ccenergy_gradient
         elif mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc_gradient
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module in ['CCENERGY']:  # FORMERLY ""
                 func = run_ccenergy_gradient
         elif mtd_type == 'DF':
             if module in ['OCC']:  # SOON "",
@@ -1383,7 +1386,7 @@ def select_mrcc(name, **kwargs):
         return func(name, **kwargs)
 
 
-def build_disp_functor(name, restricted, save_pairwise_disp=False, **kwargs):
+def build_functional_and_disp(name, restricted, save_pairwise_disp=False, **kwargs):
 
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
         modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
@@ -1427,7 +1430,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
     """
     # Figure out functional and dispersion
-    superfunc, _disp_functor = build_disp_functor(name, restricted=(reference in ["RKS", "RHF"]), **kwargs)
+    superfunc, _disp_functor = build_functional_and_disp(name, restricted=(reference in ["RKS", "RHF"]), **kwargs)
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")
@@ -1446,7 +1449,8 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         wfn._disp_functor = _disp_functor
 
     # Set the DF basis sets
-    df_needed = core.get_global_option("SCF_TYPE") in ["DF", "MEM_DF", "DISK_DF", "COSX", "LINK"]
+    df_needed = core.get_global_option("SCF_TYPE") in ["DF", "MEM_DF", "DISK_DF" ]
+    df_needed |= "DFDIRJ" in core.get_global_option("SCF_TYPE")
     df_needed |= (core.get_global_option("SCF_TYPE") == "DIRECT" and core.get_option("SCF", "DF_SCF_GUESS"))
     if df_needed:
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
@@ -1466,7 +1470,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         wfn.set_basisset("BASIS_RELATIVISTIC", decon_basis)
 
     # Set the multitude of SAD basis sets
-    if (core.get_option("SCF", "GUESS") in ["SAD", "SADNO", "HUCKEL"]):
+    if (core.get_option("SCF", "GUESS") in ["SAD", "SADNO", "HUCKEL", "MODHUCKEL"]):
         sad_basis_list = core.BasisSet.build(wfn.molecule(), "ORBITAL",
                                              core.get_global_option("BASIS"),
                                              puream=wfn.basisset().has_puream(),
@@ -1483,6 +1487,11 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
                                                    return_atomlist=True)
             wfn.set_sad_fitting_basissets(sad_fitting_list)
             optstash.restore()
+
+    if core.get_option("SCF", "GUESS") == "SAPGAU":
+        # Populate sapgau basis
+        sapgau = core.BasisSet.build(wfn.molecule(), "SAPGAU_BASIS", core.get_global_option("SAPGAU_BASIS"))
+        wfn.set_basisset("SAPGAU", sapgau)
 
     if hasattr(core, "EXTERN") and 'external_potentials' in kwargs:
         core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +
@@ -1613,7 +1622,7 @@ def scf_helper(name, post_scf=True, **kwargs):
                        """further calculations in C1 point group.\n""")
 
     # PE needs to use exactly input orientation to correspond to potfile
-    if core.get_option("SCF", "PE"):
+    if core.get_option("SCF", "PE") or "external_potentials" in kwargs:
         c1_molecule = scf_molecule.clone()
         if getattr(scf_molecule, "_initial_cartesian", None) is not None:
             c1_molecule._initial_cartesian = scf_molecule._initial_cartesian.clone()
@@ -1623,7 +1632,7 @@ def scf_helper(name, post_scf=True, **kwargs):
             c1_molecule.fix_com(True)
             c1_molecule.update_geometry()
         else:
-            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE on non-Cartesian molecules.")
+            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE or external potentials on non-Cartesian molecules.")
 
         scf_molecule = c1_molecule
         core.print_out("""  PE does not make use of molecular symmetry: """
@@ -1645,6 +1654,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         if isinstance(name, dict):
             bannername = name.get("name", "custom functional")
 
+    p4util.libint2_print_out()
 
     # Setup the timer
     if do_timer:
@@ -1846,17 +1856,18 @@ def scf_helper(name, post_scf=True, **kwargs):
     # DDPCM preparation
     if core.get_option('SCF', 'DDX'):
         if not solvent._have_ddx:
-            raise ModuleNotFoundError('Python module ddx not found. Solve by installing it: `pip install pyddx`')
+            raise ModuleNotFoundError('Python module ddx not found. Solve by installing it: `conda install -c conda-forge pyddx` or `pip install pyddx`')
         ddx_options = solvent.ddx.get_ddx_options(scf_molecule)
-        scf_wfn.ddx_state = solvent.ddx.DdxInterface(
+        scf_wfn.ddx = solvent.ddx.DdxInterface(
             molecule=scf_molecule, options=ddx_options,
             basisset=scf_wfn.basisset()
         )
+        scf_wfn.ddx_state = None
 
     # PE preparation
     if core.get_option('SCF', 'PE'):
         if not solvent._have_pe:
-            raise ModuleNotFoundError('Python module cppe not found. Solve by installing it: `conda install -c psi4 pycppe`')
+            raise ModuleNotFoundError('Python module cppe not found. Solve by installing it: `conda install -c conda-forge cppe`')
         # PE needs information about molecule and basis set
         pol_embed_options = solvent.pol_embed.get_pe_options()
         core.print_out(f""" Using potential file
@@ -2707,10 +2718,10 @@ def run_scf_hessian(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = run_scf(name, **kwargs)
 
-    badref = core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF', 'UKS']
+    badref = core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']
     badint = core.get_global_option('SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
     if badref or badint:
-        raise ValidationError("Only RHF/UHF/RKS Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
+        raise ValidationError("Only RHF/UHF/RKS/UKS Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
 
     if hasattr(ref_wfn, "_disp_functor"):
         disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule(), ref_wfn)
@@ -2771,9 +2782,6 @@ def run_dfmp2_gradient(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if ref_wfn.basisset().has_ECP():
-        raise ValidationError('DF-MP2 gradients with an ECP are not yet available.  Use dertype=0 to select numerical gradients.')
-
     core.tstart()
     core.print_out('\n')
     p4util.banner('DFMP2')
@@ -2806,7 +2814,7 @@ def run_dfmp2d_gradient(name, **kwargs):
     dfmp2_wfn = run_dfmp2_gradient('mp2', **kwargs)
     wfn_grad = dfmp2_wfn.gradient().clone()
 
-    _, _disp_functor = build_disp_functor('MP2D', restricted=True)
+    _, _disp_functor = build_functional_and_disp('MP2D', restricted=True)
     disp_grad = _disp_functor.compute_gradient(dfmp2_wfn.molecule(), dfmp2_wfn)
     wfn_grad.add(disp_grad)
     dfmp2_wfn.set_gradient(wfn_grad)
@@ -3686,8 +3694,14 @@ def run_adcc(name, **kwargs):
         from adcc.exceptions import InvalidReference
     except ModuleNotFoundError:
         raise ValidationError("adcc extras qc_module not available. Try installing "
-            "via 'pip install adcc' or 'conda install -c adcc adcc'.")
+            "via 'pip install adcc' or 'conda install -c conda-forge adcc'.")
 
+    min_version = "0.15.16"
+    if parse_version(adcc.__version__) < parse_version(min_version):
+        raise ModuleNotFoundError("adcc version {} is required at least. "
+                                    "Version {}"
+                                    " was found.".format(min_version,
+                                                        adcc.__version__))
 
     if core.get_option('ADC', 'REFERENCE') not in ["RHF", "UHF"]:
         raise ValidationError('adcc requires reference RHF or UHF')
@@ -4841,11 +4855,14 @@ def run_fisapt(name, **kwargs):
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
         core.print_out('  FISAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        _ini_cart = getattr(sapt_dimer, "_initial_cartesian", None)
         sapt_dimer = sapt_dimer.clone()
         sapt_dimer.reset_point_group('c1')
         sapt_dimer.fix_orientation(True)
         sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
+        if _ini_cart:
+            sapt_dimer._initial_cartesian = _ini_cart
 
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError('FISAPT requires requires \"reference rhf\".')
@@ -4947,6 +4964,11 @@ def run_mrcc(name, **kwargs):
     os.chdir(mrcc_tmpdir)
 
     # Generate integrals and input file (dumps files to the current directory)
+    if core.get_option('FNOCC', 'NAT_ORBS'):
+        mints = core.MintsHelper(ref_wfn.basisset())
+        mints.set_print(1)
+        mints.integrals()
+
     core.mrcc_generate_input(ref_wfn, level)
     ref_wfn.set_module("mrcc")
 

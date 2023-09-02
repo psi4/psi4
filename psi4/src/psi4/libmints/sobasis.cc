@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,19 +46,10 @@ using namespace psi;
 ///////////////////////////////////////////////////////////////////////////////
 
 SOTransform::SOTransform() {
-    naoshell_allocated = 0;
-    naoshell = 0;
-    aoshell = nullptr;
+  naoshell = 0;
 }
 
-SOTransform::~SOTransform() { delete[] aoshell; }
-
-void SOTransform::set_naoshell(int n) {
-    naoshell = 0;
-    delete[] aoshell;
-    naoshell_allocated = n;
-    aoshell = new SOTransformShell[n];
-}
+void SOTransform::set_naoshell(int n) { naoshell=0; aoshell.resize(n); }
 
 void SOTransform::add_transform(int aoshellnum, int irrep, double coef, int aofunc, int sofunc) {
     //    outfile->Printf( "SOTransform::add_transform(aoshellnum = %d, irrep = %d, coef = %lf, aofunc = %d, sofunc =
@@ -68,12 +59,12 @@ void SOTransform::add_transform(int aoshellnum, int irrep, double coef, int aofu
     for (i = 0; i < naoshell; i++) {
         if (aoshell[i].aoshell == aoshellnum) break;
     }
-    if (i >= naoshell_allocated) {
+    if (i >= aoshell.size()) {
         throw PSIEXCEPTION("SOTransform::add_transform: allocation too small");
     }
     aoshell[i].add_func(irrep, coef, aofunc, sofunc);
     aoshell[i].aoshell = aoshellnum;
-    if (i == naoshell) naoshell++;
+    if(i == naoshell) naoshell++;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,25 +83,17 @@ void AOTransform::add_transform(int irrep, double coef, int aofunc, int sofunc) 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SOTransformShell::SOTransformShell() {
-    nfunc = 0;
-    func = nullptr;
-}
+SOTransformShell::SOTransformShell() {}
 
-SOTransformShell::~SOTransformShell() {
-    if (func) delete[] func;
-}
+SOTransformShell::~SOTransformShell() {}
 
 void SOTransformShell::add_func(int irrep, double coef, int aofunc, int sofunc) {
-    auto *newfunc = new SOTransformFunction[nfunc + 1];
-    for (int i = 0; i < nfunc; i++) newfunc[i] = func[i];
-    delete[] func;
-    func = newfunc;
-    func[nfunc].irrep = irrep;
-    func[nfunc].coef = coef;
-    func[nfunc].aofunc = aofunc;
-    func[nfunc].sofunc = sofunc;
-    nfunc++;
+    SOTransformFunction newfunc;
+    newfunc.irrep = irrep;
+    newfunc.coef = coef;
+    newfunc.aofunc = aofunc;
+    newfunc.sofunc = sofunc;
+    func.push_back(newfunc);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,10 +128,10 @@ void SOBasisSet::init() {
     //=-----  End debug printing  -----=
 
     // Allocate memory for unique shell to am
-    ushell_am_ = new int[nshell_];
+    ushell_am_.resize(nshell_);
 
     // map each ao shell to an so shell
-    auto *aoshell_to_soshell = new int[basis_->nshell()];
+    std::vector<int> aoshell_to_soshell(basis_->nshell());
     int soshell = 0;
     for (i = 0; i < mol->nunique(); i++) {
         for (j = 0; j < basis_->nshell_on_center(mol->unique(i)); j++) {
@@ -174,7 +157,7 @@ void SOBasisSet::init() {
     //    }
     //=-----  End debug printing  -----=
 
-    ncomp_ = new int[nirrep_];
+    ncomp_.resize(nirrep_);
     for (i = 0; i < nirrep_; i++) {
         ncomp_[i] = ct.gamma(i).degeneracy();
         if (ncomp_[i] != 1) {
@@ -182,14 +165,13 @@ void SOBasisSet::init() {
         }
     }
 
-    naofunc_ = new int[nshell_];
-    memset(naofunc_, 0, sizeof(int) * nshell_);
+    naofunc_.assign(nshell_,0);
 
-    nfunc_ = new int *[nshell_];
-    funcoff_ = new int *[nshell_];
+    nfunc_.resize(nshell_);
+    funcoff_.resize(nshell_);
     for (i = 0; i < nshell_; i++) {
-        nfunc_[i] = new int[nirrep_];
-        funcoff_[i] = new int[nirrep_];
+        nfunc_[i].resize(nirrep_);
+        funcoff_[i].resize(nirrep_);
         for (j = 0; j < nirrep_; j++) {
             nfunc_[i][j] = 0;
         }
@@ -202,7 +184,7 @@ void SOBasisSet::init() {
     //    petite_->print();
 
     int nblocks = petite_->nblocks();
-    SO_block *soblocks(petite_->compute_aotoso_info());
+    auto soblocks(petite_->compute_aotoso_info());
 
     //    for (i=0; i<nblocks; ++i) {
     //        outfile->Printf( "soblock[%d]\n", i);
@@ -210,12 +192,12 @@ void SOBasisSet::init() {
     //    }
 
     // == Begin forming (A|S)OTransform array ==
-    sotrans_ = new SOTransform[nshell_];           // nshell_ is symmetry unique shells
-    aotrans_ = new AOTransform[basis_->nshell()];  // we need the ao shell number here
+    sotrans_.resize(nshell_);           // nshell_ is symmetry unique shells
+    aotrans_.resize(basis_->nshell());  // we need the ao shell number here
 
     for (i = 0; i < nblocks; i++) {
-        for (j = 0; j < soblocks[i].len; j++) {
-            if (soblocks[i].so[j].length == 0) continue;
+      for (j = 0; j < soblocks[i].len(); j++) {
+          if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
             int aoshell0 = include_pure_transform ? basis_->ao_to_shell(bfn0) : basis_->function_to_shell(bfn0);
             int soshell0 = aoshell_to_soshell[aoshell0];
@@ -230,7 +212,7 @@ void SOBasisSet::init() {
     int nfuncall = 0;
     for (i = 0; i < nblocks; i++) {
         int irrep = ct.which_irrep(i);
-        for (j = 0; j < soblocks[i].len; j++) {
+        for (j = 0; j < soblocks[i].len(); j++) {
             if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
             int aoshell0 = include_pure_transform ? basis_->ao_to_shell(bfn0) : basis_->function_to_shell(bfn0);
@@ -281,16 +263,13 @@ void SOBasisSet::init() {
 
     for (int i = 0; i < basis_->nshell(); ++i) {
         int usoshell = aoshell_to_soshell[i];
-        aotrans_[i].add_offsets(nirrep_, funcoff_[usoshell]);
+        aotrans_[i].add_offsets(nirrep_, funcoff_[usoshell].data());
     }
 
-    delete[] aoshell_to_soshell;
-    delete[] soblocks;
-
-    func_ = new int[nshell_];
-    irrep_ = new int[basis_->nbf()];
-    func_within_irrep_ = new int[basis_->nbf()];
-    nfunc_in_irrep_ = new int[nirrep_];
+    func_.resize(nshell_);
+    irrep_.resize(basis_->nbf());
+    func_within_irrep_.resize(basis_->nbf());
+    nfunc_in_irrep_.resize(nirrep_);
 
     for (i = 0; i < nirrep_; i++) nfunc_in_irrep_[i] = 0;
 
@@ -331,24 +310,6 @@ void SOBasisSet::init() {
         sorted_so_shell_list_.push_back(it->second);
     }
     //    print();
-}
-
-SOBasisSet::~SOBasisSet() {
-    for (int i = 0; i < nshell_; i++) {
-        delete[] nfunc_[i];
-        delete[] funcoff_[i];
-    }
-    delete[] nfunc_;
-    delete[] funcoff_;
-    delete[] naofunc_;
-    delete[] ncomp_;
-    delete[] sotrans_;
-    delete[] aotrans_;
-    delete[] func_;
-    delete[] irrep_;
-    delete[] func_within_irrep_;
-    delete[] nfunc_in_irrep_;
-    delete[] ushell_am_;
 }
 
 int SOBasisSet::max_nfunction_in_shell() const {
@@ -421,7 +382,7 @@ void SOBasisSet::print(std::string out) const {
     for (i = 0; i < nshell_; i++) {
         if (i > 0) printer->Printf("\n");
         for (j = 0; j < sotrans_[i].naoshell; j++) {
-            for (k = 0; k < sotrans_[i].aoshell[j].nfunc; k++) {
+          for (k = 0; k < sotrans_[i].aoshell[j].nfunc(); k++) {
                 printer->Printf("      SO(%3d %2d %d [%2d]) += %12.8f * AO(%3d %2d)\n", i,
                                 sotrans_[i].aoshell[j].func[k].sofunc, sotrans_[i].aoshell[j].func[k].irrep,
                                 function_offset_within_shell(i, sotrans_[i].aoshell[j].func[k].irrep) +

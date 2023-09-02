@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -511,11 +511,13 @@ std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer2::localize(std::sha
     ret["U"] = Uocc3;
     ret["F"] = Focc3;
     ret["Q"] = Q;
+    ret["A"] = A_;
 
     ret["L"]->set_name("L");
     ret["U"]->set_name("U");
     ret["F"]->set_name("F");
     ret["Q"]->set_name("Q");
+    ret["A"]->set_name("A");
 
     return ret;
 }

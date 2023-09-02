@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -79,20 +79,15 @@ dict = {
     },
 }
 """
-from psi4.driver.p4util.exceptions import ValidationError
-import copy
 import collections
+import copy
 
 from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases
 
 from psi4 import core
 
-from . import libxc_functionals
-from . import lda_functionals
-from . import gga_functionals
-from . import mgga_functionals
-from . import hyb_functionals
-from . import dh_functionals
+from ...p4util.exceptions import ValidationError
+from . import dh_functionals, gga_functionals, hyb_functionals, lda_functionals, libxc_functionals, mgga_functionals
 
 dict_functionals = {}
 dict_functionals.update(libxc_functionals.functional_list)
@@ -405,6 +400,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
             sup.set_vv10_c(d_params["params"]["c"])
         dispersion = d_params
 
+    sup.set_xclib_description(core.LibXCFunctional.xclib_description())
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
     sup.set_name(func_dictionary["name"].upper())

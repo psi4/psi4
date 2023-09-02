@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -144,7 +144,7 @@ void X2CInt::compute_integrals() {
     if ((lambda_[0] != 0.0) or (lambda_[1] != 0) or (lambda_[2] != 0)) {
         OperatorSymmetry msymm(1, molecule_, integral_, soFactory_);
         std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-        OneBodySOInt *so_dipole = integral_->so_dipole();
+        std::unique_ptr<OneBodySOInt> so_dipole = integral_->so_dipole();
         so_dipole->compute(dipoles);
 
         std::vector<std::string> axis_label{"x", "y", "z"};

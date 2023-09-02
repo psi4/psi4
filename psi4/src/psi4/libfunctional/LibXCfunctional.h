@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -49,9 +49,9 @@ class LibXCFunctional : public Functional {
     std::unique_ptr<xc_func_type> xc_functional_;
     int func_id_;
     bool user_omega_;
-    bool exc_;
-    bool vxc_;
-    bool fxc_;
+    bool exc_; // Can we compute functional at a point?
+    bool vxc_; // Can we compute first derivative at a point?
+    bool fxc_; // Can we compute second derivative at a point?
 
     // **ONLY** Used to pass information up the chain.
     // Exchange
@@ -76,6 +76,9 @@ class LibXCFunctional : public Functional {
     void compute_functional(const std::map<std::string, SharedVector>& in,
                             const std::map<std::string, SharedVector>& out, int npoints, int deriv) override;
 
+    // Clones a *polarized*, complete functional. Used, e.g., in spin-symmetry-
+    // breaking eigenvectors of the MO hessian or linear response eigenproblem.
+    std::shared_ptr<Functional> build_polarized() override;
     // Clones a *worker* for the functional. This is not a complete functional
     std::shared_ptr<Functional> build_worker() override;
 
@@ -96,6 +99,9 @@ class LibXCFunctional : public Functional {
     double vv10_b() { return vv10_b_; }
     double vv10_c() { return vv10_c_; }
     double density_cutoff() { return density_cutoff_; }
+
+    // Get libxc provenance stamp
+    static std::string xclib_description();
 };
 }  // namespace psi
 

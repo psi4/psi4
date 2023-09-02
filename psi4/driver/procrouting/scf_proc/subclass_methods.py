@@ -1,10 +1,13 @@
 import math
+
 import numpy as np
 
 from psi4 import core
-from ..diis import DIIS, StoragePolicy, RemovalPolicy
-from ..response.scf_products import TDUSCFEngine
+
 from ...p4util import solvers
+from ..diis import DIIS, RemovalPolicy, StoragePolicy
+from ..response.scf_products import TDUSCFEngine
+
 
 def diis_engine_helper(self):
     engines = set()
@@ -131,8 +134,8 @@ def _UHF_stability_analysis(self):
     # we've always had it, but we should lift it as much as we can and implement more matrix-
     # vector products so we can lift it further.
     # TODO: It should be up to the SolverEngine to validate whether it can do Hx products for the input wfn.
-    if self.functional().is_gga() or self.functional().is_meta():
-        raise ValidationError("Stability analysis not yet supported for non-LDA functionals.")
+    if self.functional().is_meta() or self.functional().needs_vv10():
+        raise ValidationError("Stability Analysis: Unrestricted Kohn-Sham Vx kernel does not support meta or VV10 functionals.")
 
     # => Prep options for eigenvector solver <=
     if not core.has_option_changed("SCF", "SOLVER_ROOTS_PER_IRREP"):

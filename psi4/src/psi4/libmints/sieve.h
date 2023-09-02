@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -92,7 +92,11 @@ class BasisSet;
  *
  *
  */
-class PSI_API ERISieve {
+
+class PSI_API __attribute__((deprecated(
+    "ERISieve is deprecated in favor of TwoBodyAOInt, and "
+    "will be fully be removed as soon as Psi4 v1.9 releases. "
+))) ERISieve {
    protected:
     /// Debug flag (defaults to 0)
     int debug_;

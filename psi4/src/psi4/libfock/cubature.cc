@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -2054,7 +2054,7 @@ class RadialGridMgr {
 #undef INVLN2
 
     static void getTrapezoidalRoots(int n, double r[], double w[]);
-    static void getChebychevRoots(int n, double r[], double w[]);
+    static void getChebychevRootsKind2(int n, double r[], double w[]);
     static void getLegendreRoots(
         int n, double r[],
         double w[]);  // We don't actually need this function, but I don't have the heart to delete it.
@@ -2093,13 +2093,16 @@ void RadialGridMgr::getTrapezoidalRoots(int n, double r[], double w[]) {
     }
 }
 
-void RadialGridMgr::getChebychevRoots(int n, double r[], double w[]) {
+void RadialGridMgr::getChebychevRootsKind2(int n, double r[], double w[]) {
+    // Chebyshev quadratures of the second kind: Abramowicz and Stegun, page 889, T2
     double piOverNPlusOne = M_PI / (n + 1);
     for (int i = 1; i <= n; i++) {
         double x = cos(i * piOverNPlusOne);
         r[i - 1] = x;
-        w[i - 1] =
-            piOverNPlusOne * sqrt(1.0 - x * x);  // sqrt(1.0 - x*x) could've been replaced with sin(i*piOverNPlusOne).
+        w[i - 1] = piOverNPlusOne * sqrt(1.0 - x * x);
+        // raw weight for 2nd Kind = piOverNPlusOne * sin^2 (i * piOverNPlusOne) = piOverNPlusOne * (1 - cos^2 (i * piOverNPlusOne)) = piOverNPlusOne * (1 - x^2)
+        // for unit form, scale weight by /= sqrt(1 - x^2):
+        // final weight = piOverNplusOne * sqrt(1 - x^2) = piOverNPlusOne * sin(i * piOverNPlusOne)
     }
 }
 
@@ -2394,14 +2397,14 @@ void RadialGridMgr::getMultiExpRoots(int n, double r[], double w[]) {
 // `drdxFn' is the derivative of rFn and is used to adjust the weights.
 // clang-format off
 RadialGridMgr::SchemeTable RadialGridMgr::radialschemes[] = {
-    {"LAGUERRE", getLaguerreRoots,    nullptr,       nullptr},   // nullptrs mean we skip the [0,\infty) correction
-    {"MULTIEXP", getMultiExpRoots,    multiexp_r, multiexp_dr},
-    {"AHLRICHS", getChebychevRoots,   ahlrichs_r, ahlrichs_dr},  // Also called "Treutler" or "Treutler-Ahlrichs"
-    {"TREUTLER", getChebychevRoots,   ahlrichs_r, ahlrichs_dr},
-    {"BECKE",    getChebychevRoots,   becke_r,    becke_dr},
-    {"MURA",     getTrapezoidalRoots, mura5_r,    mura5_dr},     // Also called "Knowles" or "Mura-Knowles". Molpro calls this "LOG"
-    {"MURA7",    getTrapezoidalRoots, mura7_r,    mura7_dr},     // This is a hack.
-    {"EM",       getTrapezoidalRoots, em_r,       em_dr},        // "Euler-MacLaurin", also called "Handy"
+    {"LAGUERRE", getLaguerreRoots,       nullptr,       nullptr},   // nullptrs mean we skip the [0,\infty) correction
+    {"MULTIEXP", getMultiExpRoots,       multiexp_r, multiexp_dr},
+    {"AHLRICHS", getChebychevRootsKind2, ahlrichs_r, ahlrichs_dr},  // Also called "Treutler" or "Treutler-Ahlrichs"
+    {"TREUTLER", getChebychevRootsKind2, ahlrichs_r, ahlrichs_dr},
+    {"BECKE",    getChebychevRootsKind2, becke_r,    becke_dr},
+    {"MURA",     getTrapezoidalRoots,    mura5_r,    mura5_dr},     // Also called "Knowles" or "Mura-Knowles". Molpro calls this "LOG"
+    {"MURA7",    getTrapezoidalRoots,    mura7_r,    mura7_dr},     // This is a hack.
+    {"EM",       getTrapezoidalRoots,    em_r,       em_dr},        // "Euler-MacLaurin", also called "Handy"
 };
 // clang-format on
 

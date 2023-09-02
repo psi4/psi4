@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -186,34 +186,17 @@ void DFMP2::common_init() {
 }
 double DFMP2::compute_energy() {
     print_header();
-    if (Ca_subset("AO", "ACTIVE_OCC")->colspi()[0] == 0) {
-        if (Cb_subset("AO", "ACTIVE_OCC")->colspi()[0] == 0) {
-            throw PSIEXCEPTION("There are no occupied orbitals with alpha or beta spin.");
-        }
-        throw PSIEXCEPTION("There are no occupied orbitals with alpha spin.");
-    }
-    if (Cb_subset("AO", "ACTIVE_OCC")->colspi()[0] == 0) {
-        if (nalpha() == 1) {
-            variables_["MP2 SINGLES ENERGY"] = 0.0;
-            variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
-            variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
-            variables_["MP2 CORRELATION ENERGY"] = 0.0;
-            print_energies();
-            energy_ = variables_["MP2 TOTAL ENERGY"];
-            return variables_["MP2 TOTAL ENERGY"];
-        }
-        else {
-            throw PSIEXCEPTION("There are no occupied orbitals with beta spin.");
-        }
-    }
-    if (Ca_subset("AO", "ACTIVE_VIR")->colspi()[0] == 0) {
-        if (Cb_subset("AO", "ACTIVE_VIR")->colspi()[0] == 0) {
-            throw PSIEXCEPTION("There are no virtual orbitals with alpha or beta spin.");
-        }
-        throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
-    }
-    if (Cb_subset("AO", "ACTIVE_VIR")->colspi()[0] == 0) {
-        throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
+    auto num_alpha_excit = std::min(Ca_subset("AO", "ACTIVE_OCC")->colspi()[0], Ca_subset("AO", "ACTIVE_VIR")->colspi()[0]);
+    auto num_beta_excit = std::min(Cb_subset("AO", "ACTIVE_OCC")->colspi()[0], Cb_subset("AO", "ACTIVE_VIR")->colspi()[0]);
+    if (num_alpha_excit + num_beta_excit < 2) {
+        outfile->Printf("  Warning: no MP2 calculation performed on system with alpha ACTIVE_OCC (%d), beta ACTIVE_OCC (%d), alpha ACTIVE_VIR (%d), beta ACTIVE_VIR (%d); returning 0.0 by definition.\n", Ca_subset("AO", "ACTIVE_OCC")->colspi()[0], Cb_subset("AO", "ACTIVE_OCC")->colspi()[0], Ca_subset("AO", "ACTIVE_VIR")->colspi()[0], Cb_subset("AO", "ACTIVE_VIR")->colspi()[0]);
+        variables_["MP2 SINGLES ENERGY"] = 0.0;
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
+        variables_["MP2 CORRELATION ENERGY"] = 0.0;
+        print_energies();
+        energy_ = variables_["MP2 TOTAL ENERGY"];
+        return variables_["MP2 TOTAL ENERGY"];
     }
     timer_on("DFMP2 Singles");
     form_singles();

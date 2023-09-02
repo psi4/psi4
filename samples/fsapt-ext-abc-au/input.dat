@@ -8,9 +8,6 @@ memory 1 GB
 mol = psi4.core.Molecule.from_arrays(
     elez=[1, 8, 1, 1, 8, 1, 1, 8, 1],
     fragment_separators=[3, 6],
-    fix_com=True,
-    fix_orientation=True,
-    fix_symmetry='c1',
     geom=np.array([
   0.0290, -1.1199, -1.5243,
   0.9481, -1.3990, -1.3587,

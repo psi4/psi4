@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -74,10 +74,9 @@ class PSI_API SOTransformShell {
    public:
     /// The number of the AO shell from which these functions come.
     int aoshell;
-    /// The number of AO/SO function pairs contributing.
-    int nfunc;
     /// The array of SOTransformFunction objects describing the transform.
-    SOTransformFunction *func;
+    std::vector<SOTransformFunction> func;
+    int nfunc() const {return func.size();};
     SOTransformShell();
     ~SOTransformShell();
     /// Add another function to the transform.
@@ -90,13 +89,10 @@ class PSI_API SOTransformShell {
     type SOTransformShell. */
 class PSI_API SOTransform {
    public:
-    int naoshell_allocated;
-    /// The number of AO shells that make up this SO shell.
-    int naoshell;
     /// The SOTransformShell object for each AO.
-    SOTransformShell *aoshell;
+    std::vector<SOTransformShell> aoshell;
     SOTransform();
-    ~SOTransform();
+    int naoshell;
     void set_naoshell(int n);
     /// Adds another term to the transform.
     void add_transform(int aoshell, int irrep, double coef, int aofunc, int sofunc);
@@ -134,20 +130,20 @@ class PSI_API SOBasisSet {
 
     int nshell_;
     int nirrep_;
-    int *ncomp_;
-    int **nfunc_;
-    int *naofunc_;
-    int **funcoff_;
+    std::vector<int> ncomp_;
+    std::vector<std::vector<int>> nfunc_;
+    std::vector<int> naofunc_;
+    std::vector<std::vector<int>> funcoff_;
 
-    int *nfunc_in_irrep_;
-    int *func_;
-    int *irrep_;
-    int *func_within_irrep_;
+    std::vector<int> nfunc_in_irrep_;
+    std::vector<int> func_;
+    std::vector<int> irrep_;
+    std::vector<int> func_within_irrep_;
 
-    int *ushell_am_;
+    std::vector<int> ushell_am_;
 
-    SOTransform *sotrans_;
-    AOTransform *aotrans_;
+    std::vector<SOTransform> sotrans_;
+    std::vector<AOTransform> aotrans_;
 
     //! vector of so shells numbers sorted in acending AM order.
     std::vector<int> sorted_so_shell_list_;
@@ -159,7 +155,6 @@ class PSI_API SOBasisSet {
     /// Create an SOBasis object given a BasisSet and Integral objects.
     SOBasisSet(const std::shared_ptr<BasisSet> &, const std::shared_ptr<IntegralFactory> &);
     SOBasisSet(const std::shared_ptr<BasisSet> &, const IntegralFactory *);
-    ~SOBasisSet();
 
     std::shared_ptr<BasisSet> basis() const;
 
@@ -184,7 +179,7 @@ class PSI_API SOBasisSet {
     /** Returns the maximum number of functions in a shell (summed over all
         irreps) */
     int max_nfunction_in_shell() const;
-    int *function_offset_within_shell(int shell) const { return funcoff_[shell]; }
+    const int *function_offset_within_shell(int shell) const { return funcoff_[shell].data(); }
 
     /** Normally, SO shell numbering starts at zero within each irrep.
         This returns an offset to make SO shell numbers unique within the

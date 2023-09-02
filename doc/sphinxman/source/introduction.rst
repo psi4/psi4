@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2022 The Psi4 Developers.
+.. # Copyright (c) 2007-2023 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -133,6 +133,18 @@ cite some of the following references for theoretical, algorithmic,
 or implementation contributions specific to |PSIfour| (in addition to
 appropriate references for the underlying theory, which are not necessarily
 included in the list below).
+
+Most |PSIfour| calculations employ density functional
+theory. |PSIfour| does not implement any density functionals; instead,
+all the density functionals come from LIBXC, which should be cited in
+addition to |PSIfour|
+
+* "Recent developments in LIBXC — a comprehensive library of
+  functionals for density functional
+  theory," S. Lehtola, C. Steigemann, M. J. T. Oliveira,
+  and M. A. L. Marques, *SoftwareX* **7**, 1 (2018). (doi:
+  `10.1016/j.softx.2017.11.002
+  <https://doi.org/10.1016/j.softx.2017.11.002>`_)
 
 Regardless of the type of the calculation, an initial guess is
 necessary. |PSIfour| features several initial guesses for the
@@ -424,7 +436,7 @@ approximation are found in the following two works:
   (doi: `10.1007/s00214-012-1235-6 <https://doi.org/10.1007/s00214-012-1235-6>`_)
 
 * "Single-determinant-based symmetry-adapted perturbation theory without
-  single-exchange approximation," 
+  single-exchange approximation,"
   R. Sch\ |a_dots|\ ffer and G. Jansen, *Mol. Phys.* **111**, 2570 (2013).
   (doi: `10.1080/00268976.2013.827253 <https://doi.org/10.1080/00268976.2013.827253>`_)
 
@@ -607,7 +619,9 @@ Python
     |PSIfour| 1.5 supports Python 3.7, 3.8, and 3.9.
     |PSIfour| 1.6 supports Python 3.8, 3.9, and 3.10.
     |PSIfour| 1.7 supports Python 3.8, 3.9, 3.10, and 3.11 (no binary packages for 3.11).
-    The future plan is to support the approximately three latest Python versions.
+    |PSIfour| 1.8 supports Python 3.8, 3.9, 3.10, and 3.11.
+    The future plan is to (1) be compatible with 3.8 and above until there is a good reason to drop
+    older versions but (2) only build and test for versions conda-forge supports.
     The current master supports 3.8, 3.9, 3.10, and 3.11.
 
 .. index:: license
@@ -619,7 +633,7 @@ License
 version 3, `LGPL-3.0 <https://opensource.org/licenses/LGPL-3.0>`_.  Its
 required dependencies and add-ons have their own licenses, ranging from
 BSD-2-Clause to GPL-2.0+. It is possible to build |PSIfour| without any
-GPL dependencies.
+General GPL dependencies.
 
 Capabilities
 ============

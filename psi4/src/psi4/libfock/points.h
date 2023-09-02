@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -285,9 +285,9 @@ class UKSFunctions : public PointFunctions {
     SharedMatrix Ca_AO_;
     /// Orbital coefficients, AO
     SharedMatrix Cb_AO_;
-    /// Orbital coefficeints, local AO
+    /// Orbital coefficients, local AO
     SharedMatrix Ca_local_;
-    /// Orbital coefficeints, local AO
+    /// Orbital coefficients, local AO
     SharedMatrix Cb_local_;
 
    public:

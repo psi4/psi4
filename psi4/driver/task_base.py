@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -35,15 +35,22 @@ __all__ = [
 import abc
 import copy
 import logging
-from typing import Any, Dict, Optional, Tuple, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
-from pydantic import Field, validator
+try:
+    from pydantic.v1 import Field, validator
+except ImportError:
+    from pydantic import Field, validator
+
 import qcelemental as qcel
-from qcelemental.models import DriverEnum, AtomicInput, AtomicResult
+from qcelemental.models import AtomicInput, AtomicResult, DriverEnum
+
 qcel.models.molecule.GEOMETRY_NOISE = 13  # need more precision in geometries for high-res findif
 import qcengine as qcng
 
 from psi4 import core
+
+from . import p4util
 
 if TYPE_CHECKING:
     import qcportal
@@ -253,31 +260,16 @@ class AtomicComputer(BaseComputer):
             return self.result
 
 
-def _singlepointrecord_to_atomicresult(spr) -> AtomicResult:
-    extras = spr.raw_data.extras
-    extras.pop("_qcfractal_compressed_outputs", None)
+def _singlepointrecord_to_atomicresult(spr: "qcportal.singlepoint.SinglepointRecord") -> AtomicResult:
+    atres = spr.to_qcschema_result()
 
-    atres = {
-        "driver": spr.raw_data.specification.driver,
-        "model": {
-          "method": spr.raw_data.specification.method,
-          "basis": spr.raw_data.specification.basis,
-        },
-        "molecule": spr.molecule,
-        "keywords": spr.raw_data.specification.keywords,
-        "properties": spr.properties,
-        "protocols": spr.raw_data.specification.protocols,
-        "return_result": spr.return_result,
-        "extras": extras,
-        "stdout": spr.stdout,
-        "native_files": spr.native_files,
-        "wavefunction": spr.wavefunction,
-        "provenance": spr.raw_data.compute_history[0].provenance,
-        "success": spr.status == "complete",
-    }
-
-    from qcelemental.models import AtomicResult
-    atres = AtomicResult(**atres)
+    # QCFractal `next` database stores return_result, properties, and extras["qcvars"] merged
+    #   together and with lowercase keys. `to_qcschema_result` partitions properties back out,
+    #   but we need to restore qcvars keys, types, and dimensions.
+    qcvars = atres.extras.pop("extra_properties")
+    qcvars.pop("return_result")
+    qcvars = {k.upper(): p4util.plump_qcvar(k, v) for k, v in qcvars.items()}
+    atres.extras["qcvars"] = qcvars
 
     return atres
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -29,8 +29,9 @@
 #ifndef __math_test_uhf_h__
 #define __math_test_uhf_h__
 
-#include "hf.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libfock/v.h"
+#include "hf.h"
 
 namespace psi {
 namespace scf {
@@ -40,9 +41,12 @@ class UHF : public HF {
     SharedMatrix Da_old_, Db_old_;
     SharedMatrix Ga_, Gb_, J_, Ka_, Kb_, wKa_, wKb_;
 
+    std::shared_ptr<UV> potential_;
+
     double compute_initial_E() override;
 
     void common_init();
+    void setup_potential() override;
 
     // Guess mix performed?
     bool mix_performed_;
@@ -82,6 +86,8 @@ class UHF : public HF {
 
     void damping_update(double) override;
     int soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, int soscf_print) override;
+
+    std::shared_ptr<VBase> V_potential() const override { return potential_; };
 
     /// Hessian-vector computers and solvers
     std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x) override;

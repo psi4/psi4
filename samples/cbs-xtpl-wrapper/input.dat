@@ -5,6 +5,12 @@ import numpy as np
 # <<<  energies  >>>
 
 
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
 molecule h2o {
     O
     H 1 1.0
@@ -23,26 +29,74 @@ h2o.update_geometry()
 
 # SCF TESTS
 
-scf_dz = energy("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ')
+if distributed:
+    plan = energy("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_dz = plan.get_psi_results(client)
+else:
+    scf_dz = energy("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ')
 
 #scf_tzvp = energy("cbs", scf_basis='def2-TZVP')
-scf_tzvp = energy("cbs", scf_wfn='SCF', scf_basis='def2-TZVP')
+if distributed:
+    plan = energy("cbs", scf_wfn='SCF', scf_basis='def2-TZVP', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_tzvp = plan.get_psi_results(client)
+else:
+    scf_tzvp = energy("cbs", scf_wfn='SCF', scf_basis='def2-TZVP')
 
-scf_adtz = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[23]Z')
+if distributed:
+    plan = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[23]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_adtz = plan.get_psi_results(client)
+else:
+    scf_adtz = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[23]Z')
 
 # Three point extrapolation
-scf_adtqz = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[D3Q]Z')
+if distributed:
+    plan = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[D3Q]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_adtqz = plan.get_psi_results(client)
+else:
+    scf_adtqz = energy("cbs", scf_wfn='SCF', scf_basis='aug-cc-pV[D3Q]Z')
 
 
 # MP2 TESTS
 
-mp2_addz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV(D+d)Z')
+if distributed:
+    plan = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV(D+d)Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_addz = plan.get_psi_results(client)
+else:
+    mp2_addz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV(D+d)Z')
 
-mp2_atz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pVTZ')
+if distributed:
+    plan = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pVTZ', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_atz = plan.get_psi_results(client)
+else:
+    mp2_atz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pVTZ')
 
-mp2_adtz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[2T]Z')
+if distributed:
+    plan = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[2T]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_adtz = plan.get_psi_results(client)
+else:
+    mp2_adtz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[2T]Z')
 
-mp2_atqz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[T,Q]Z')
+if distributed:
+    plan = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[T,Q]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_atqz = plan.get_psi_results(client)
+else:
+    mp2_atqz = energy("cbs", corl_wfn='MP2', corl_basis='aug-cc-pV[T,Q]Z')
 
 
 # <<<  gradients  >>>
@@ -68,19 +122,55 @@ he_dimer.update_geometry()
 
 # SCF TESTS
 
-scf_dz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ')
+if distributed:
+    plan = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_dz = plan.get_psi_results(client)
+else:
+    scf_dz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVDZ')
 
-scf_tz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVTZ')
+if distributed:
+    plan = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVTZ', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_tz = plan.get_psi_results(client)
+else:
+    scf_tz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pVTZ')
 
-scf_dtz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[23]Z')
+if distributed:
+    plan = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[23]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_dtz = plan.get_psi_results(client)
+else:
+    scf_dtz = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[23]Z')
 
-scf_dtqz, wfn = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[DTQ]Z', return_wfn=True)
+if distributed:
+    plan = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[DTQ]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    scf_dtqz, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    scf_dtqz, wfn = gradient("cbs", scf_wfn='SCF', scf_basis='cc-pV[DTQ]Z', return_wfn=True)
 
 
 # MP2 TESTS
-mp2_dtz, wfn = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', return_wfn=True)
+if distributed:
+    plan = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_dtz, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    mp2_dtz, wfn = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', return_wfn=True)
 
-mp2_dtz, wfn = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', dertype='energy', return_wfn=True)
+if distributed:
+    plan = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', dertype='energy', return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    mp2_dtz, wfn = plan.get_psi_results(client, return_wfn=True)
+else:
+    mp2_dtz, wfn = gradient("cbs", corl_wfn='MP2', corl_basis='cc-pV[DT]Z', dertype='energy', return_wfn=True)
 
 # <<<  optimize  >>>
 
@@ -100,6 +190,10 @@ set {
 
 h2.update_geometry()
 
+# optimize() not yet configured for qcfractal/ddd
 optimize("cbs", scf_wfn='SCF', scf_basis='cc-pvdz')
 
 optimize("cbs", scf_wfn='SCF', scf_basis='cc-pV[DT]Z')
+
+if distributed:
+    snowflake.stop()

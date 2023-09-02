@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -31,8 +31,10 @@ import re
 from typing import Union
 
 import numpy as np
-from psi4.driver.p4util.testing import compare_strings, compare_arrays, compare_values, compare_integers
+
 from psi4 import core
+
+from ..p4util.testing import compare_arrays, compare_integers, compare_strings, compare_values
 from .exceptions import ValidationError
 
 __all__ = [

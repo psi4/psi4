@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -48,7 +48,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 
 namespace libint2 {
-    struct Shell;
+struct Shell;
 }
 namespace psi {
 
@@ -81,7 +81,7 @@ class PSI_API BasisSet {
     std::vector<GaussianShell> shells_;
     //! Array of ECP shells
     std::vector<GaussianShell> ecp_shells_;
-    //! Array of Libint2 shells
+    //! Array of Libint2 shells; updated from shells with update_l2_shells()
     std::vector<libint2::Shell> l2_shells_;
 
     //! The number of core electrons for each atom type
@@ -128,6 +128,8 @@ class PSI_API BasisSet {
     std::vector<int> n_prim_per_shell_;
     /// The first (Cartesian) atomic orbital in each shell
     std::vector<int> shell_first_ao_;
+    /// First exponent for i:th shell
+    std::vector<int> shell_first_exponent_;
     /// The first (Cartesian / spherical) basis function in each shell
     std::vector<int> shell_first_basis_function_;
     /// Shell number to atomic center.
@@ -165,6 +167,9 @@ class PSI_API BasisSet {
     std::vector<double> uerd_coefficients_;
     /// The flattened list of Cartesian coordinates for each atom
     std::vector<double> xyz_;
+
+    /// Update Libint2 shells
+    void update_l2_shells(bool embed_normalization = true);
 
    public:
     BasisSet();
@@ -400,6 +405,9 @@ class PSI_API BasisSet {
     void move_atom(int atom, const Vector3 &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
+
+    // Converts the contraction to match the SAP approach.
+    void convert_sap_contraction();
     
    private: 
     /// Helper functions for frozen core to reduce LOC

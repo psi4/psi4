@@ -3,7 +3,7 @@
 ::
 :: Psi4: an open-source quantum chemistry software package
 ::
-:: Copyright (c) 2007-2022 The Psi4 Developers.
+:: Copyright (c) 2007-2023 The Psi4 Developers.
 ::
 :: The copyrights for code used from other parties are included in
 :: the corresponding files.
@@ -25,5 +25,9 @@
 ::
 :: @END LICENSE
 ::
+
+:: Interpretation: when this batch file is called, call the Python interpreter on the "psi4" script
+::  alongside (postpend "psi4" script name to drive and path "~dp" of full path to called batch file "%0")
+::  and pass on any arguments ("%*"): `python this_bat_file_parent_dir/psi4 [other args]`
 
 @Python_EXECUTABLE@ %~dp0psi4 %*

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -116,7 +116,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     for (size_t t = 0; t < nthreads; ++t) {
         V_charge.push_back(std::make_shared<Matrix>("External Potential (Charges)", n, n));
         V_charge[t]->zero();
-        pot.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt *>(fact->ao_potential())));
+        pot.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt *>(fact->ao_potential().release())));
         pot[t]->set_charge_field(Zxyz);
     }
 
@@ -247,7 +247,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     std::vector<std::shared_ptr<PotentialInt> > Vint;
     std::vector<SharedMatrix> Vtemps;
     for (int t = 0; t < threads; t++) {
-        Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1))));
+        Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1).release())));
         Vint[t]->set_charge_field(Zxyz);
         Vtemps.push_back(SharedMatrix(grad->clone()));
         Vtemps[t]->zero();
@@ -349,7 +349,7 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
 
             std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
             auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
-            std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
+            std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential().release()));
             pot->set_charge_field(Zxyz);
             pot->compute(V);
 

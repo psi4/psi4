@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -45,13 +45,13 @@ __all__ = [
 ]
 
 from typing import Any, Dict, List, Optional
+
 from psi4 import core, extras
 
 
 class PsiException(Exception):
     """Error class for |PSIfour|. Flags success as False (triggering coffee)."""
     extras._success_flag_ = False
-    pass
 
 
 class ValidationError(PsiException):

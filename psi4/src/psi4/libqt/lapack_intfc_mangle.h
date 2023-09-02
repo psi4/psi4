@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -72,18 +72,14 @@
 #define F_DGEESX FC_GLOBAL(dgeesx, DGEESX)
 #define F_DGEEV FC_GLOBAL(dgeev, DGEEV)
 #define F_DGEEVX FC_GLOBAL(dgeevx, DGEEVX)
-#define F_DGEGS FC_GLOBAL(dgegs, DGEGS)
-#define F_DGEGV FC_GLOBAL(dgegv, DGEGV)
 #define F_DGEHRD FC_GLOBAL(dgehrd, DGEHRD)
 #define F_DGELQF FC_GLOBAL(dgelqf, DGELQF)
 #define F_DGELS FC_GLOBAL(dgels, DGELS)
 #define F_DGELSD FC_GLOBAL(dgelsd, DGELSD)
 #define F_DGELSS FC_GLOBAL(dgelss, DGELSS)
-#define F_DGELSX FC_GLOBAL(dgelsx, DGELSX)
 #define F_DGELSY FC_GLOBAL(dgelsy, DGELSY)
 #define F_DGEQLF FC_GLOBAL(dgeqlf, DGEQLF)
 #define F_DGEQP3 FC_GLOBAL(dgeqp3, DGEQP3)
-#define F_DGEQPF FC_GLOBAL(dgeqpf, DGEQPF)
 #define F_DGEQRF FC_GLOBAL(dgeqrf, DGEQRF)
 #define F_DGERFS FC_GLOBAL(dgerfs, DGERFS)
 #define F_DGERQF FC_GLOBAL(dgerqf, DGERQF)
@@ -104,9 +100,7 @@
 #define F_DGGLSE FC_GLOBAL(dgglse, DGGLSE)
 #define F_DGGQRF FC_GLOBAL(dggqrf, DGGQRF)
 #define F_DGGRQF FC_GLOBAL(dggrqf, DGGRQF)
-#define F_DGGSVD FC_GLOBAL(dggsvd, DGGSVD)
 #define F_DGGSVD3 FC_GLOBAL(dggsvd3, DGGSVD3)
-#define F_DGGSVP FC_GLOBAL(dggsvp, DGGSVP)
 #define F_DGGSVP3 FC_GLOBAL(dggsvp3, DGGSVP3)
 #define F_DGTCON FC_GLOBAL(dgtcon, DGTCON)
 #define F_DGTRFS FC_GLOBAL(dgtrfs, DGTRFS)
@@ -239,7 +233,6 @@
 #define F_DTRSYL FC_GLOBAL(dtrsyl, DTRSYL)
 #define F_DTRTRI FC_GLOBAL(dtrtri, DTRTRI)
 #define F_DTRTRS FC_GLOBAL(dtrtrs, DTRTRS)
-#define F_DTZRQF FC_GLOBAL(dtzrqf, DTZRQF)
 #define F_DTZRZF FC_GLOBAL(dtzrzf, DTZRZF)
 #else  // USE_FCMANGLE_H
 #if FC_SYMBOL == 2
@@ -273,18 +266,14 @@
 #define F_DGEESX dgeesx_
 #define F_DGEEV dgeev_
 #define F_DGEEVX dgeevx_
-#define F_DGEGS dgegs_
-#define F_DGEGV dgegv_
 #define F_DGEHRD dgehrd_
 #define F_DGELQF dgelqf_
 #define F_DGELS dgels_
 #define F_DGELSD dgelsd_
 #define F_DGELSS dgelss_
-#define F_DGELSX dgelsx_
 #define F_DGELSY dgelsy_
 #define F_DGEQLF dgeqlf_
 #define F_DGEQP3 dgeqp3_
-#define F_DGEQPF dgeqpf_
 #define F_DGEQRF dgeqrf_
 #define F_DGERFS dgerfs_
 #define F_DGERQF dgerqf_
@@ -305,9 +294,7 @@
 #define F_DGGLSE dgglse_
 #define F_DGGQRF dggqrf_
 #define F_DGGRQF dggrqf_
-#define F_DGGSVD dggsvd_
 #define F_DGGSVD3 dggsvd3_
-#define F_DGGSVP dggsvp_
 #define F_DGGSVP3 dggsvp3_
 #define F_DGTCON dgtcon_
 #define F_DGTRFS dgtrfs_
@@ -440,7 +427,6 @@
 #define F_DTRSYL dtrsyl_
 #define F_DTRTRI dtrtri_
 #define F_DTRTRS dtrtrs_
-#define F_DTZRQF dtzrqf_
 #define F_DTZRZF dtzrzf_
 #elif FC_SYMBOL == 1
 #define F_DGEEV dgeev
@@ -473,18 +459,14 @@
 #define F_DGEESX dgeesx
 #define F_DGEEV dgeev
 #define F_DGEEVX dgeevx
-#define F_DGEGS dgegs
-#define F_DGEGV dgegv
 #define F_DGEHRD dgehrd
 #define F_DGELQF dgelqf
 #define F_DGELS dgels
 #define F_DGELSD dgelsd
 #define F_DGELSS dgelss
-#define F_DGELSX dgelsx
 #define F_DGELSY dgelsy
 #define F_DGEQLF dgeqlf
 #define F_DGEQP3 dgeqp3
-#define F_DGEQPF dgeqpf
 #define F_DGEQRF dgeqrf
 #define F_DGERFS dgerfs
 #define F_DGERQF dgerqf
@@ -505,9 +487,7 @@
 #define F_DGGLSE dgglse
 #define F_DGGQRF dggqrf
 #define F_DGGRQF dggrqf
-#define F_DGGSVD dggsvd
 #define F_DGGSVD3 dggsvd3
-#define F_DGGSVP dggsvp
 #define F_DGGSVP3 dggsvp3
 #define F_DGTCON dgtcon
 #define F_DGTRFS dgtrfs
@@ -640,7 +620,6 @@
 #define F_DTRSYL dtrsyl
 #define F_DTRTRI dtrtri
 #define F_DTRTRS dtrtrs
-#define F_DTZRQF dtzrqf
 #define F_DTZRZF dtzrzf
 #elif FC_SYMBOL == 3
 #define F_DGEEV DGEEV
@@ -673,18 +652,14 @@
 #define F_DGEESX DGEESX
 #define F_DGEEV DGEEV
 #define F_DGEEVX DGEEVX
-#define F_DGEGS DGEGS
-#define F_DGEGV DGEGV
 #define F_DGEHRD DGEHRD
 #define F_DGELQF DGELQF
 #define F_DGELS DGELS
 #define F_DGELSD DGELSD
 #define F_DGELSS DGELSS
-#define F_DGELSX DGELSX
 #define F_DGELSY DGELSY
 #define F_DGEQLF DGEQLF
 #define F_DGEQP3 DGEQP3
-#define F_DGEQPF DGEQPF
 #define F_DGEQRF DGEQRF
 #define F_DGERFS DGERFS
 #define F_DGERQF DGERQF
@@ -705,9 +680,7 @@
 #define F_DGGLSE DGGLSE
 #define F_DGGQRF DGGQRF
 #define F_DGGRQF DGGRQF
-#define F_DGGSVD DGGSVD
 #define F_DGGSVD3 DGGSVD3
-#define F_DGGSVP DGGSVP
 #define F_DGGSVP3 DGGSVP3
 #define F_DGTCON DGTCON
 #define F_DGTRFS DGTRFS
@@ -840,7 +813,6 @@
 #define F_DTRSYL DTRSYL
 #define F_DTRTRI DTRTRI
 #define F_DTRTRS DTRTRS
-#define F_DTZRQF DTZRQF
 #define F_DTZRZF DTZRZF
 #elif FC_SYMBOL == 4
 #define F_DGEEV DGEEV_
@@ -873,18 +845,14 @@
 #define F_DGEESX DGEESX_
 #define F_DGEEV DGEEV_
 #define F_DGEEVX DGEEVX_
-#define F_DGEGS DGEGS_
-#define F_DGEGV DGEGV_
 #define F_DGEHRD DGEHRD_
 #define F_DGELQF DGELQF_
 #define F_DGELS DGELS_
 #define F_DGELSD DGELSD_
 #define F_DGELSS DGELSS_
-#define F_DGELSX DGELSX_
 #define F_DGELSY DGELSY_
 #define F_DGEQLF DGEQLF_
 #define F_DGEQP3 DGEQP3_
-#define F_DGEQPF DGEQPF_
 #define F_DGEQRF DGEQRF_
 #define F_DGERFS DGERFS_
 #define F_DGERQF DGERQF_
@@ -905,9 +873,7 @@
 #define F_DGGLSE DGGLSE_
 #define F_DGGQRF DGGQRF_
 #define F_DGGRQF DGGRQF_
-#define F_DGGSVD DGGSVD_
 #define F_DGGSVD3 DGGSVD3_
-#define F_DGGSVP DGGSVP_
 #define F_DGGSVP3 DGGSVP3_
 #define F_DGTCON DGTCON_
 #define F_DGTRFS DGTRFS_
@@ -1040,7 +1006,6 @@
 #define F_DTRSYL DTRSYL_
 #define F_DTRTRI DTRTRI_
 #define F_DTRTRS DTRTRS_
-#define F_DTZRQF DTZRQF_
 #define F_DTZRZF DTZRZF_
 #endif
 

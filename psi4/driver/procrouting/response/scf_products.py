@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -29,7 +29,9 @@
 import numpy as np
 
 from psi4 import core
-from psi4.driver.p4util.exceptions import *
+
+from ...p4util.exceptions import *
+
 """
 This module provides ``engine`` objects that can be used by the :func:`~psi4.driver.p4util.solvers.davidson_solver` and
 :func:`~psi4.driver.p4util.solvers.hamiltonian_solver`
@@ -201,6 +203,8 @@ class TDRSCFEngine(SingleMatPerVector):
         else:
             self.product_cache = ProductCache("A")
 
+        self.needs_J_like = self.singlet or self.wfn.functional().needs_xc()
+
         # orbitals and eigenvalues
         self.Co = self.wfn.Ca_subset("SO", "OCC")
         self.Cv = self.wfn.Ca_subset("SO", "VIR")
@@ -257,7 +261,7 @@ class TDRSCFEngine(SingleMatPerVector):
 
         # Build base one and two electron quantities
         Fx = self.wfn.onel_Hx(compute_vectors)
-        twoel = self.wfn.twoel_Hx(compute_vectors, False, "SO")
+        twoel = self.wfn.twoel_Hx_full(compute_vectors, False, "SO", self.singlet)
         Jx, Kx = self._split_twoel(twoel)
 
         # Switch between rpa and tda
@@ -345,7 +349,7 @@ class TDRSCFEngine(SingleMatPerVector):
                 H1X_so = self.vector_axpy(-1.0, Kxit, H1X_so)
                 # H2x = K^T  - K singlet/triplet
                 H2X_so = self.vector_axpy(-1.0, Kxi, Kxit)
-                if self.singlet:
+                if self.needs_J_like:
                     # H1x += 4*J (singlet only)
                     H1X_so = self.vector_axpy(4.0, Jxi, H1X_so)
 
@@ -355,7 +359,7 @@ class TDRSCFEngine(SingleMatPerVector):
 
         else:
             for Fxi, Jxi in zip(Fx, Jx):
-                if self.singlet:
+                if self.needs_J_like:
                     H1X_so = self.vector_scale(4.0, Jxi)
                     H1X.append(self.vector_axpy(1.0, Fxi, self._so_to_mo(H1X_so)))
                 else:
@@ -375,13 +379,13 @@ class TDRSCFEngine(SingleMatPerVector):
         if Kx is not None:
             for Fxi, Jxi, Kxi in zip(Fx, Jx, Kx):
                 Ax_so = self.vector_scale(-1.0, self.vector_copy(Kxi))
-                if self.singlet:
+                if self.needs_J_like:
                     Ax_so = self.vector_axpy(2.0, Jxi, Ax_so)
                 Ax.append(self.vector_axpy(1.0, Fxi, self._so_to_mo(Ax_so)))
 
         else:
             for Fxi, Jxi in zip(Fx, Jx):
-                if self.singlet:
+                if self.needs_J_like:
                     Ax.append(self.vector_axpy(1.0, Fxi, self._so_to_mo(self.vector_scale(2.0, Jxi))))
                 else:
                     Ax.append(self.vector_copy(Fxi))

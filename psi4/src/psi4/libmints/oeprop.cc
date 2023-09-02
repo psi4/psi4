@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -25,6 +25,10 @@
  *
  * @END LICENSE
  */
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
@@ -1042,12 +1046,11 @@ void OEProp::compute_esp_over_grid() { epc_.compute_esp_over_grid(true); }
 void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     auto mol = basisset_->molecule();
 
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
 
     if (print_output) {
-        outfile->Printf("\n Electrostatic potential computed on the grid and written to grid_esp.dat\n");
+        outfile->Printf("\n Electrostatic potential to be computed on the grid and written to grid_esp.dat\n");
     }
-
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
         Dtot->scale(2.0);
@@ -1094,7 +1097,6 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
     SharedVector output = std::make_shared<Vector>(number_of_grid_points);
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
     SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
     if (same_dens_) {
@@ -1107,13 +1109,38 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
 
     bool convert = mol->units() == Molecule::Angstrom;
 
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    std::vector<std::shared_ptr<Matrix>> VtempT;
+    std::vector<std::shared_ptr<ElectrostaticInt>> VintT;
+
+    for (int thread = 0; thread < nthreads; thread++) {
+        VtempT.push_back(std::make_shared<Matrix>("ints", nbf, nbf));
+        VintT.push_back(std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt*>(integral_->electrostatic().release())));
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
     for (int i = 0; i < number_of_grid_points; ++i) {
         Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
         if (convert) origin /= pc_bohr2angstroms;
-        auto ints = std::make_shared<Matrix>(nbf, nbf);
-        ints->zero();
-        epot->compute(ints, origin);
-        double Velec = Dtot->vector_dot(ints);
+         
+        // Thread info
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+        // => Electronic part <= //
+        VtempT[thread]->zero();
+        VintT[thread]->compute(VtempT[thread],origin);
+        
+        double Velec = Dtot->vector_dot(VtempT[thread]);
+
+        // => Nuclear part <= //
         double Vnuc = 0.0;
         int natom = mol->natom();
         for (int iat = 0; iat < natom; iat++) {
@@ -1121,8 +1148,8 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
             double r = dR.norm();
             if (r > 1.0E-8) Vnuc += mol->Z(iat) / r;
         }
-        double Vtot = Velec + Vnuc;
-        (*output)[i] = Vtot;
+
+        (*output)[i] = Velec + Vnuc;
     }
     return output;
 }
@@ -1132,7 +1159,7 @@ void OEProp::compute_field_over_grid() { epc_.compute_field_over_grid(true); }
 void ESPPropCalc::compute_field_over_grid(bool print_output) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
 
     if (print_output) {
         outfile->Printf("\n Field computed on the grid and written to grid_field.dat\n");
@@ -1145,7 +1172,7 @@ void ESPPropCalc::compute_field_over_grid(bool print_output) {
         Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
     }
 
-    std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
+    std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field().release()));
 
     int nbf = basisset_->nbf();
     std::vector<SharedMatrix> intmats;
@@ -1196,7 +1223,7 @@ SharedMatrix ESPPropCalc::compute_field_over_grid_in_memory(SharedMatrix input_g
         Dtot->add(wfn_->Db_subset("AO"));
     }
 
-    std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
+    std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field().release()));
 
     // Scale the coordinates if needed
     auto coords = input_grid;
@@ -1241,7 +1268,7 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
     auto nesps = std::make_shared<std::vector<double>>(mol->natom());
-    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+    std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic().release()));
 
     int nbf = basisset_->nbf();
     int natoms = mol->natom();

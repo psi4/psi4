@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -34,6 +34,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/exception.h"
 
 #include <cfloat>
 
@@ -46,22 +47,7 @@ ERISieve::ERISieve(std::shared_ptr<BasisSet> primary, double sieve, bool do_csam
 ERISieve::~ERISieve() {}
 
 void ERISieve::common_init() {
-    // if sieve_ is 0, then erfc_inv is infinite
-    // the boost function just throws an error in this case
-    // if (sieve_ > 0.0) {
-    //    throw FeatureNotImplemented("libmints: sieve.cc", "replacement for boost::math::erfc_inv()", __FILE__,
-    //    __LINE__); erfc_thresh_ = boost::math::erfc_inv(sieve_);
-    //} else
-    //    erfc_thresh_ = DBL_MAX;
-
-    Options &options = Process::environment.options;
-    do_qqr_ = false;  // Code below for QQR was/is utterly broken.
-
-    debug_ = 0;
-
-    integrals();
-    if (do_csam_) csam_integrals();
-    set_sieve(sieve_);
+    throw PSIEXCEPTION("Using `ERISieve` instead of `TwoBodyAOInt` is obsolete as of 1.8. The ERISieve class has been removed and replaced with the TwoBodyAOInt class. ERISieve(primary, sieve, do_csam) can be replaced with the command sequence IntegralFactory factory(primary, primary, primary, primary); auto eri_computer = std::shared_ptr<TwoBodyAOInt>(factory.eri());");
 }
 
 void ERISieve::set_sieve(double sieve) {

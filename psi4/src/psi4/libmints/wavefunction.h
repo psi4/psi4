@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -544,10 +544,12 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
      * @param C matrix in the SO basis to use for transforms to MO basis
      * @param basis the symmetry basis to use
      *  AO, SO, MO, CartAO
+     * @param MO_as_overlap whether the AO-to-MO transformation requires the overlap.
+     *   Only used when MO basis requested.
      * @return the matrix M in the desired basis
      **/
     SharedMatrix matrix_subset_helper(SharedMatrix M, SharedMatrix C, const std::string& basis,
-                                      const std::string matrix_basename) const;
+                                      const std::string matrix_basename, bool MO_as_overlap = true) const;
 
     /**
      * Return the alpha orbital eigenvalues in the desired basis

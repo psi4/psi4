@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -618,7 +618,7 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr<BasisSet> bs1, std::shared_
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_overlap()));
     }
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, bs1->nbf(), bs2->nbf());
-    one_body_ao_computer(ints_vec, overlap_mat, false);
+    one_body_ao_computer(ints_vec, overlap_mat, bs1 == bs2);
     return overlap_mat;
 }
 
@@ -650,7 +650,7 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_kinetic()));
     }
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", bs1->nbf(), bs2->nbf());
-    one_body_ao_computer(ints_vec, kinetic_mat, false);
+    one_body_ao_computer(ints_vec, kinetic_mat, bs1 == bs2);
     return kinetic_mat;
 }
 
@@ -683,7 +683,7 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr<BasisSet> bs1, std::share
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_potential()));
     }
     auto potential_mat = std::make_shared<Matrix>("AO-basis Potential Ints", bs1->nbf(), bs2->nbf());
-    one_body_ao_computer(ints_vec, potential_mat, false);
+    one_body_ao_computer(ints_vec, potential_mat, bs1 == bs2);
     return potential_mat;
 }
 
@@ -705,7 +705,7 @@ SharedMatrix MintsHelper::ao_ecp(std::shared_ptr<BasisSet> bs1, std::shared_ptr<
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_ecp()));
     }
     auto ecp_mat = std::make_shared<Matrix>("AO-basis ECP Ints", bs1->nbf(), bs2->nbf());
-    one_body_ao_computer(ints_vec, ecp_mat, false);
+    one_body_ao_computer(ints_vec, ecp_mat, bs1 == bs2);
     return ecp_mat;
 }
 #endif
@@ -995,8 +995,24 @@ SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_c
     return ao_helper("AO F12G12 Tensor", ints);
 }
 
+SharedMatrix MintsHelper::ao_f12g12(std::vector<std::pair<double, double>> exp_coeff,
+                                    std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                    std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::shared_ptr<TwoBodyAOInt> ints(intf.f12g12(exp_coeff));
+    return ao_helper("AO F12G12 Tensor", ints);
+}
+
 SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff) {
     std::shared_ptr<TwoBodyAOInt> ints(integral_->f12_double_commutator(exp_coeff));
+    return ao_helper("AO F12 Double Commutator Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff,
+                                         std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                                         std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) {
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::shared_ptr<TwoBodyAOInt> ints(intf.f12_double_commutator(exp_coeff));
     return ao_helper("AO F12 Double Commutator Tensor", ints);
 }
 
@@ -1400,7 +1416,7 @@ void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
 
     OperatorSymmetry msymm(1, molecule_, integral_, factory_);
     std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-    OneBodySOInt *so_dipole = integral_->so_dipole();
+    std::unique_ptr<OneBodySOInt> so_dipole = integral_->so_dipole();
     so_dipole->compute(dipoles);
 
     if (lambda[0] != 0.0) {
@@ -1720,7 +1736,7 @@ std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> 
 SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix moments) {
     SharedMatrix mat = std::make_shared<Matrix>("Induction operator", basisset_->nbf(), basisset_->nbf());
     ContractOverDipolesFunctor dipfun(moments, mat);
-    auto field_integrals_ = static_cast<ElectricFieldInt *>(integral_->electric_field());
+    auto field_integrals_ = std::unique_ptr<ElectricFieldInt>(static_cast<ElectricFieldInt *>(integral_->electric_field().release()));
     field_integrals_->compute_with_functor(dipfun, coords);
     mat->scale(-1.0);
 
@@ -1728,7 +1744,7 @@ SharedMatrix MintsHelper::induction_operator(SharedMatrix coords, SharedMatrix m
 }
 
 SharedMatrix MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix D) {
-    auto field_integrals_ = static_cast<ElectricFieldInt *>(integral_->electric_field());
+    auto field_integrals_ = std::unique_ptr<ElectricFieldInt>(static_cast<ElectricFieldInt *>(integral_->electric_field().release()));
 
     SharedMatrix efields = std::make_shared<Matrix>("efields", coords->nrow(), 3);
     auto fieldfun = ContractOverDensityFieldFunctor(efields, D);
@@ -1757,7 +1773,7 @@ SharedVector MintsHelper::electrostatic_potential_value(SharedVector charges, Sh
         throw PSIEXCEPTION("Dimension mismatch charges and coordinates.");
     }
 
-    auto potential_integrals_ = static_cast<PCMPotentialInt *>(integral_->pcm_potentialint());
+    auto potential_integrals_ = std::unique_ptr<PCMPotentialInt>(static_cast<PCMPotentialInt *>(integral_->pcm_potentialint().release()));
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i = 0; i < coords->nrow(); ++i) {
         Zxyz.push_back({charges->pointer()[i], {coords->pointer()[i][0],
@@ -2130,7 +2146,7 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
     std::vector<SharedMatrix> gradtemps;
     for (size_t i = 0; i < nthread_; i++) {
         gradtemps.push_back(grad->clone());
-        ecp_ints_vec.push_back(std::shared_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral_->ao_ecp(1))));
+        ecp_ints_vec.push_back(std::shared_ptr<ECPInt>(dynamic_cast<ECPInt*>(integral_->ao_ecp(1).release())));
     }
 
     // Lower Triangle

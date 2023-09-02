@@ -33,7 +33,7 @@ if(${ENABLE_libefp})
                        -DFRAGLIB_UNDERSCORE_L=OFF
                        -DFRAGLIB_DEEP=OFF
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
-                       -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
+                       -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}

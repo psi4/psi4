@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,19 +32,22 @@ __all__ = [
     "TaskComputers",
 ]
 
-import os
 import copy
 import logging
+import os
 from typing import Dict, Tuple, Union
 
 from qcelemental.models import DriverEnum
-from psi4.driver import p4util, pp
-from psi4.driver.task_base import AtomicComputer
-from psi4.driver.driver_findif import FiniteDifferenceComputer
-from psi4.driver.driver_nbody import ManyBodyComputer
-from psi4.driver.driver_cbs import CompositeComputer, composite_procedures, cbs_text_parser
-from psi4.driver.driver_util import negotiate_derivative_type, negotiate_convergence_criterion
+
 from psi4 import core
+
+from . import p4util
+from .constants import pp
+from .driver_cbs import CompositeComputer, cbs_text_parser, composite_procedures
+from .driver_findif import FiniteDifferenceComputer
+from .driver_nbody import ManyBodyComputer
+from .driver_util import negotiate_convergence_criterion, negotiate_derivative_type
+from .task_base import AtomicComputer
 
 logger = logging.getLogger(__name__)
 

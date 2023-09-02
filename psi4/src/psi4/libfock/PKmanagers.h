@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,9 +38,9 @@ namespace psi {
 
 // Forward declarations for Psi4
 class Options;
-class ERISieve;
 class AIOHandler;
 class BasisSet;
+class TwoBodyAOInt;
 
 namespace pk {
 
@@ -95,9 +95,9 @@ class PKManager {
     Options& options_;
     /// Integral cutoff to apply
     double cutoff_;
-    /// CSAM Screening (defaults to false)
-    bool do_csam_;
+    /// Basis set
     std::shared_ptr<BasisSet> primary_;
+    /// Number of threads
     int nthreads_;
     /// Number of basis functions
     int nbf_;
@@ -110,7 +110,7 @@ class PKManager {
     double omega_;
 
     /// Sieving object for the integrals
-    std::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<TwoBodyAOInt> eri_;
     /// Size of triangular list of PK pairs
     size_t pk_pairs_;
     /// Total size of the four-index triangular PK
@@ -153,7 +153,7 @@ class PKManager {
     double cutoff() const { return cutoff_; }
     int nthreads() const { return nthreads_; }
     int nbf() const { return nbf_; }
-    std::shared_ptr<ERISieve> sieve() const { return sieve_; }
+    std::shared_ptr<TwoBodyAOInt> eri() const { return eri_; }
     size_t pk_pairs() const { return pk_pairs_; }
     size_t pk_size() const { return pk_size_; }
     size_t ntasks() const { return ntasks_; }

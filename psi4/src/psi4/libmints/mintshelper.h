@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -235,8 +235,12 @@ class PSI_API MintsHelper {
                                 std::shared_ptr<BasisSet> bs4);
     /// AO F12G12 Integrals
     SharedMatrix ao_f12g12(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12g12(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
+                        std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
     /// AO F12 double commutator Integrals
     SharedMatrix ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff);
+    SharedMatrix ao_f12_double_commutator(std::vector<std::pair<double, double>> exp_coeff, std::shared_ptr<BasisSet> bs1,
+                        std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
     /// F12 Fitted Slater Correlation Factor
     std::vector<std::pair<double, double>> f12_cgtg(double exponent = 1.0);
 

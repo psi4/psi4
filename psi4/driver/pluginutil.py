@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -36,7 +36,8 @@ import sys
 from pathlib import Path
 
 from psi4 import core
-from psi4.driver.util import tty
+
+from .util import tty
 
 
 def sanitize_name(name: str) -> str:

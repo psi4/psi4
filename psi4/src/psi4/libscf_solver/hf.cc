@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -259,25 +259,6 @@ void HF::common_init() {
         print_header();
     }
 
-    // DFT stuff
-    if (functional_->needs_xc()) {
-        potential_ =
-            VBase::build_V(basisset_, functional_, options_, (options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
-        potential_->initialize();
-
-        // Do the GRAC
-        if (options_.get_double("DFT_GRAC_SHIFT") != 0.0) {
-            potential_->set_grac_shift(options_.get_double("DFT_GRAC_SHIFT"));
-        }
-
-        // Print the KS-specific stuff
-        if (print_) {
-            potential_->print_header();
-        }
-    } else {
-        potential_ = nullptr;
-    }
-
     // -D is zero by default
     set_scalar_variable("-D Energy", 0.0);  // no-autodoc
     energies_["-D"] = 0.0;
@@ -285,6 +266,23 @@ void HF::common_init() {
     // CPHF info
     cphf_nfock_builds_ = 0;
     cphf_converged_ = false;
+}
+
+void HF::subclass_init() {
+    // DFT stuff
+    setup_potential();
+
+    if (V_potential() != nullptr) {
+        // Do the GRAC
+        if (options_.get_double("DFT_GRAC_SHIFT") != 0.0) {
+            V_potential()->set_grac_shift(options_.get_double("DFT_GRAC_SHIFT"));
+        }
+
+        // Print the KS-specific stuff
+        if (print_) {
+            V_potential()->print_header();
+        }
+    }
 }
 
 void HF::damping_update(double damping_percentage) {
@@ -941,6 +939,45 @@ void HF::print_orbitals() {
     print_occupation();
 }
 
+void HF::compute_sapgau_guess() {
+  // Build auxiliary basis set object
+  auto sap_basis = get_basisset("SAPGAU");
+  // Do the SAP magic to the basis
+  sap_basis->convert_sap_contraction();
+
+  auto zero_basis = BasisSet::zero_ao_basis_set();
+  auto nsap = sap_basis->nbf();
+  auto nbf = basisset_->nbf();
+
+  // Build (P|pq) raw 3-index ERIs in AO basis, dimension (Nsap, 1, nbf, nbf).
+  auto Ppq = mintshelper()->ao_eri(sap_basis, zero_basis, basisset_, basisset_);
+
+  // Build repulsive potential matrix in AO basis.
+  auto Vsap = std::make_shared<Matrix>("VSAP", basisset_->nbf(), basisset_->nbf());
+  auto Varr = Vsap->pointer();
+  auto Parr = Ppq->pointer();
+  for (auto P = 0; P < nsap; P++) {
+    for(auto u = 0; u < nbf; u++) {
+      for(auto v = 0; v < nbf; v++) {
+        // TBD: this is using Natoms times too much memory - the
+        // integrals should be computed in a loop, parallellizing over
+        // the AO shell pairs
+        Varr[u][v] += Parr[P][u*nbf+v];
+      }
+    }
+  }
+
+  // Convert repulsive potential into the SO basis
+  auto Fsap = std::make_shared<Matrix>("FSAP", AO2SO_->colspi(), AO2SO_->colspi());
+  Fsap->apply_symmetry(Vsap, AO2SO_);
+  // and add in the core Hamiltonian
+  Fsap->add(H_);
+
+  // Set the alpha and beta Fock matrices
+  Fa_->copy(Fsap);
+  Fb_->copy(Fsap);
+}
+
 void HF::guess() {
     // don't save guess energy as "the" energy because we need to avoid
     // a false positive test for convergence on the first iteration (that
@@ -1080,7 +1117,28 @@ void HF::guess() {
         if (!options_.get_bool("SAD_FRAC_OCC")) {
             throw PSIEXCEPTION("  Huckel guess requires SAD_FRAC_OCC = True!");
         }
-        compute_huckel_guess();
+        compute_huckel_guess(false);
+
+        form_initial_C();
+        form_D();
+        guess_E = compute_initial_E();
+
+    } else if (guess_type == "MODHUCKEL") {
+      if (print_)
+            outfile->Printf("  SCF Guess: Huckel guess via on-the-fly atomic UHF (doi:10.1021/acs.jctc.8b01089) with the updated GWH rule from doi:10.1021/ja00480a005.\n\n");
+
+        // Huckel guess, written by Susi Lehtola 2019-01-27.  See "An
+        // assessment of initial guesses for self-consistent field
+        // calculations. Superposition of Atomic Potentials: simple
+        // yet efficient", JCTC 2019, doi: 10.1021/acs.jctc.8b01089.
+
+        if (!options_.get_bool("SAD_SPIN_AVERAGE")) {
+            throw PSIEXCEPTION("  Huckel guess requires SAD_SPIN_AVERAGE = True!");
+        }
+        if (!options_.get_bool("SAD_FRAC_OCC")) {
+            throw PSIEXCEPTION("  Huckel guess requires SAD_FRAC_OCC = True!");
+        }
+        compute_huckel_guess(true);
 
         form_initial_C();
         form_D();
@@ -1139,6 +1197,21 @@ void HF::guess() {
         Fa_->add(Vsap[0]);
         Fb_->copy(Fa_);
         form_initial_C();
+        form_D();
+        guess_E = compute_initial_E();
+
+    } else if (guess_type == "SAPGAU") {
+      if (print_)
+        outfile->Printf("  SCF Guess: Superposition of Atomic Potentials (doi:10.1021/acs.jctc.8b01089).\n  Using error function fits of the atomic potentials (doi:10.1063/5.0004046).\n\n");
+
+        // Build the SAP potential
+        compute_sapgau_guess();
+        form_initial_C();
+
+        // Find occupations
+        find_occupation();
+
+        // Now we have orbitals and occupations, build a density matrix
         form_D();
         guess_E = compute_initial_E();
 

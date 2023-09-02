@@ -28,7 +28,8 @@ TDA = pytest.mark.TDA
 
 @pytest.fixture
 def reference_data():
-    # Reference data generated using G09.E01
+    # Reference data generated using PySCF 2.1.1.
+    # (99, 590) integration grid, no pruning.
     with open(Path(__file__).parent / "tdscf_reference_data.json") as f:
         reference_data = json.load(f)
     return reference_data
@@ -86,6 +87,17 @@ def molecules():
     return {k: psi4.core.Molecule.from_string(v) for k, v in smols.items()}
 
 
+### On Signs
+# Different programs have different sign conventions for the various dipole moments.
+# These dipole moments are only defined up to a common phase, because they depend linearly on
+# the TDSCF eigenvectors, which are only defined up to phase.
+# The choice of sign is not important for _oscillator_strength, but _rotatory_strength
+# requires that the electric and magnetic dipole have the same phase.
+# In Psi's sign convention, the "L" gauge needs a + sign, and the "V" gauge a -
+# sign. Adjust for your case.
+# In PySCF's sign convention, the velocity gauge electric and the magnetic dipole
+# both have flipped sign.
+
 def _oscillator_strength(e: float, tm: np.ndarray, gauge: str = "L") -> float:
     if gauge == "L":
         return ((2 * e) / 3) * np.sum(tm**2)
@@ -105,7 +117,7 @@ def _rotatory_strength(e: float, etm: np.ndarray, mtm: np.ndarray, gauge: str = 
     if gauge == "L":
         return -np.einsum("i,i", etm, 0.5 * mtm)
     else:
-        return np.einsum("i,i", etm, 0.5 * mtm) / e
+        return -np.einsum("i,i", etm, 0.5 * mtm) / e
 
 
 @pytest.mark.tdscf
@@ -182,14 +194,8 @@ def _rotatory_strength(e: float, etm: np.ndarray, mtm: np.ndarray, gauge: str = 
     pytest.param( "METHYLOXIRANE", 'RHF-3',     'wB97X',  'TDA',  'cc-pvdz', marks=[hyb_gga_lrc, RHF_triplet, TDA]),
 ]) # yapf: disable
 def test_tdscf(mol, ref, func, ptype, basis, molecules, reference_data):
-    # expected failures
-    if (ref == 'RHF-3') and (func != "HF"):
-        pytest.xfail("RKS Vx kernel only Spin Adapted for Singlet")
-    elif (ref == 'UHF' and func != 'SVWN'):
-        pytest.xfail("UKS Vx kernel bug for non-LDA")
-
     molecule = molecules[mol]
-    psi4.set_options({'scf_type': 'pk', 'e_convergence': 8, 'd_convergence': 8, 'save_jk': True})
+    psi4.set_options({'scf_type': 'pk', 'e_convergence': 8, 'd_convergence': 8, 'save_jk': True, 'dft_radial_points': 99, 'dft_spherical_points': 590, 'dft_pruning_scheme': "None"})
     if ref == "UHF":
         psi4.set_options({'reference': 'UHF'})
     molecule.reset_point_group('c1')

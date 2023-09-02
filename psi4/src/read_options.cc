@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -192,7 +192,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK COSX LINK");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK");
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -212,7 +212,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
     /*- The type of screening used when computing two-electron integrals. -*/
-    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
+    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY NONE");
 
     // CDS-TODO: We should go through and check that the user hasn't done
     // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -309,7 +309,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             the domain-decomposition paradigm. -*/
 
         /*- Switch available solvation models -*/
-        options.add_str("DDX_MODEL", "PCM", "PCM COSMO");
+        options.add_str("DDX_MODEL", "PCM", "PCM COSMO LPB");
 
         /*- Radius set for cavity spheres. Ignored if RADII is set. -*/
         options.add_str("DDX_RADII_SET", "UFF", "UFF BONDI");
@@ -326,6 +326,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Dielectric constant of the solvent to use -*/
         options.add_double("DDX_SOLVENT_EPSILON", 0);
+
+        /*- Optical dielectric constant of the solvent to use for non-equilibrium solvation -*/
+        options.add_double("DDX_SOLVENT_EPSILON_OPTICAL", 0);
+
+        /*- Debye-Hückel parameter of the solvent to use. Ignored if DDX_MODEL is not LPB;
+            mandatory for LPB. Uses the unit of the molecule (i.e. either ang^{-1} or bohr^{-1}). -*/
+        options.add_double("DDX_SOLVENT_KAPPA", 0);
 
         /*- Maximal degree of modelling spherical harmonics -*/
         options.add_int("DDX_LMAX", 9);
@@ -1174,8 +1181,20 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("FISAPT_CHARGE_COMPLETENESS", 0.8);
         /*- Manual link bond specification [[Atom1, Atom2], ...] -*/
         options.add("FISAPT_MANUAL_LINKS", new ArrayType());
-        /*- Where do sigma links go (to C or to AB)? -*/
-        options.add_str("FISAPT_LINK_ASSIGNMENT", "C", "C AB");
+        /*- Where do sigma links go (to C, AB, or split into IHOs)? -*/
+        options.add_str("FISAPT_LINK_ASSIGNMENT", "C", "C AB SAO0 SAO1 SAO2 SIAO0 SIAO1 SIAO2");
+        /*- Orthogonalization of link orbitals for FISAPT_LINK_ASSIGNMENT=SAOx/SIAOx 
+            Link A orthogonalized to A in whole (interacting) molecule or in the (noninteracting) fragment? -*/
+        options.add_str("FISAPT_LINK_ORTHO", "FRAGMENT", "FRAGMENT WHOLE NONE");
+        /*- Calculate separate exchange corrections for parallel and perpendicular spin coupling of link orbitals? 
+            When false, only the averaged out exchange corrections are computed. -*/
+        options.add_bool("FISAPT_EXCH_PARPERP", false);
+        /*- Generate cube files for unsplit link orbitals (IBOs)? -*/
+        options.add_bool("FISAPT_CUBE_LINKIBOS", false);
+        /*- Generate cube files for split link orbitals (IHOs)? -*/
+        options.add_bool("FISAPT_CUBE_LINKIHOS", false);
+        /*- Generate cube files for fragment density matrices? -*/
+        options.add_bool("FISAPT_CUBE_DENSMAT", false);
 
         // => F-SAPT Options <= //
 
@@ -1394,10 +1413,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DF_BASIS_SCF", "");
         /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
         options.add_int("PK_MAX_BUCKETS", 500);
-        /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/
-        options.add_str("PK_ALGO", "REORDER", "REORDER YOSHIMINE");
-        /*- Deactivate in core algorithm. For debug purposes. !expert -*/
-        options.add_bool("PK_NO_INCORE", false);
         /*- All densities are considered non symmetric, debug only. !expert -*/
         options.add_bool("PK_ALL_NONSYM", false);
         /*- Max memory per buf for PK algo REORDER, for debug and tuning -*/
@@ -1408,6 +1423,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             orbitals before switching to the use of exact integrals in
             a |globals__scf_type| ``DIRECT`` calculation -*/
         options.add_bool("DF_SCF_GUESS", true);
+        /*- For certain |globals__scf_type| algorithms that have internal sub-algorithms
+            depending on available memory or other hardware constraints, allow the best
+            sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
+            forcibly select a sub-algorithm (usually only for debugging or profiling).
+            Presently, ``SCF_SUBTYPE=DF``, ``SCF_SUBTYPE=MEM_DF``, and ``SCF_SUBTYPE=DISK_DF`` 
+	        can have ``INCORE`` and ``OUT_OF_CORE`` selected; and ``SCF_TYPE=PK``  can have ``INCORE``,
+	        ``OUT_OF_CORE``, ``YOSHIMINE_OUT_OF_CORE``, and ``REORDER_OUT_OF_CORE`` selected. !expert -*/
+	    options.add_str("SCF_SUBTYPE", "AUTO", "AUTO INCORE OUT_OF_CORE YOSHIMINE_OUT_OF_CORE REORDER_OUT_OF_CORE");
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);
         /*- Memory safety factor for allocating JK -*/
@@ -1421,10 +1444,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Screening threshold for the chosen screening method (SCHWARZ, CSAM, DENSITY)
           Absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1E-12);
-        /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
-          ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
-          like SAD, as described in doi:10.1021/acs.jctc.8b01089 which also describes the SAP guess. -*/
-        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD SADNO SAP HUCKEL READ");
+        /*- The type of guess orbitals. See :ref:`sec:scfguess` for what the options mean and
+         what the defaults are. -*/
+        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD SADNO SAP SAPGAU HUCKEL MODHUCKEL READ");
+        /*- The potential basis set used for the SAPGAU guess -*/
+        options.add_str("SAPGAU_BASIS", "sap_helfem_large");
         /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
         Useful to produce broken-symmetry unrestricted solutions.
         Notice that this procedure is defined only for calculations in C1 symmetry. -*/
@@ -1659,6 +1683,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("COSX_RADIAL_POINTS_FINAL", 35);
         /*- Screening criteria for integrals and intermediates in COSX -*/
         options.add_double("COSX_INTS_TOLERANCE", 1.0E-11);
+        /*- Controls SCF iteration behavior for the larger (i.e., final) COSX grid.
+        -1 fully converges the SCF on the final grid if possible, ending early if |scf__maxiter| total SCF iterations are reached (failure).
+        0 disables the final COSX grid entirely.
+        n runs up to n iterations on the final COSX grid, ending early if SCF convergence is reached (success) or if |scf__maxiter| total SCF iterations are reached (failure). -*/
+        options.add_int("COSX_MAXITER_FINAL", 1);
         /*- Screening criteria for shell-pair densities in COSX !expert -*/
         options.add_double("COSX_DENSITY_TOLERANCE", 1.0E-10);
         /*- Screening criteria for basis function values on COSX grids !expert -*/
@@ -1700,8 +1729,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("DFT_OMEGA_C", 0.0);
         /*- The DFT Correlation hybrid parameter -*/
         options.add_double("DFT_ALPHA_C", 0.0);
-        /*- Minima rho cutoff for the second derivative -*/
-        options.add_double("DFT_V2_RHO_CUTOFF", 1.e-6);
+        /*- Minima spin-summed density cutoff for the second derivative. Defaults to the density tolerance. -*/
+        options.add_double("DFT_V2_RHO_CUTOFF", -1.0);
         /*- The gradient regularized asymptotic correction shift value -*/
         options.add_double("DFT_GRAC_SHIFT", 0.0);
         /*- The gradient regularized asymptotic correction alpha value -*/
@@ -1845,7 +1874,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
         /*- SCF Type
          -*/
-        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK COSX");
+        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK DFDIRJ+COSX");
         /*- Auxiliary basis for SCF
          -*/
         options.add_str("DF_BASIS_SCF", "");

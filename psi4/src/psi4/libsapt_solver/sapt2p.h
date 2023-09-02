@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -168,8 +168,8 @@ class SAPTDIIS {
     int curr_vec_;
     int num_vecs_;
 
-    char *get_err_label(int);
-    char *get_vec_label(int);
+    std::string get_err_label(const int64_t);
+    std::string get_vec_label(const int64_t);
 
    protected:
     std::shared_ptr<PSIO> psio_;

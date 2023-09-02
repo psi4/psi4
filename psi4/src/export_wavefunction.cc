@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -405,6 +405,7 @@ void export_wavefunction(py::module& m) {
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",
              "basis"_a)
+        .def("twoel_Hx_full", &scf::RHF::twoel_Hx_full, "Two-electron Hessian-vector products. Triplet supported.")
         .def("mintshelper", &Wavefunction::mintshelper, "The MintsHelper object");
 
     py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring")
@@ -463,6 +464,8 @@ void export_wavefunction(py::module& m) {
         .def("scf", &fisapt::FISAPT::scf, "Solve the relaxed SCF equations for A0 and B0.")
         .def("freeze_core", &fisapt::FISAPT::freeze_core, "Freeze the core orbitals.")
         .def("unify", &fisapt::FISAPT::unify, "Produce unified matrices for A', B', and C'.")
+        .def("unify_part2", &fisapt::FISAPT::unify_part2, "Finish producing unified matrices for A', B', and C'.")
+        .def("do_cubes", &fisapt::FISAPT::do_cubes, "Prepare cube files for orbital/density pictures.")
         .def("dHF", &fisapt::FISAPT::dHF, "SAPT0 delta HF.")
         .def("elst", &fisapt::FISAPT::elst, "SAPT0 electrostatics.")
         .def("exch", &fisapt::FISAPT::exch, "SAPT0 exchange.")

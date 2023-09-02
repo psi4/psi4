@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -229,7 +229,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
 
     free_block(sAJ);
 
-    auto potA = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
+    auto potA = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential().release()));
     std::vector<std::pair<double, std::array<double, 3>>> ZxyzA;
     for (int n = 0, p = 0; n < monomerA->natom(); n++) {
         if (monomerA->Z(n)) {
@@ -240,7 +240,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     VAmat_ = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer A)"));
     potA->compute(VAmat_);
 
-    auto potB = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
+    auto potB = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential().release()));
     std::vector<std::pair<double, std::array<double, 3>>> ZxyzB;
     for (int n = 0, p = 0; n < monomerB->natom(); n++) {
         if (monomerB->Z(n)) {

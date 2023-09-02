@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -35,6 +35,7 @@ import numpy as np
 
 import qcelemental as qcel
 
+from .constants import constants
 from .pdict import PreservingDict
 from .exceptions import *
 from .molecule import Molecule
@@ -688,9 +689,9 @@ def harvest(p4Mol, c4out, **largs):
     retMol = None if p4Mol else grdMol
 
     if oriDip is not None:
-        outPsivar['CURRENT DIPOLE X'] = str(oriDip[0] * qcel.constants.dipmom_au2debye)
-        outPsivar['CURRENT DIPOLE Y'] = str(oriDip[1] * qcel.constants.dipmom_au2debye)
-        outPsivar['CURRENT DIPOLE Z'] = str(oriDip[2] * qcel.constants.dipmom_au2debye)
+        outPsivar['CURRENT DIPOLE X'] = str(oriDip[0] * constants.dipmom_au2debye)
+        outPsivar['CURRENT DIPOLE Y'] = str(oriDip[1] * constants.dipmom_au2debye)
+        outPsivar['CURRENT DIPOLE Z'] = str(oriDip[2] * constants.dipmom_au2debye)
 
     if oriGrad is not None:
         retGrad = oriGrad

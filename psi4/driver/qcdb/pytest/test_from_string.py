@@ -333,8 +333,8 @@ fullans5b['efp']['fragment_files'] = ['c6h6', 'c6h6']
 def test_psi4_efp_5a():
     subject = subject5
 
-    hintsans = [[(val / qcel.constants.bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][0])],
-                [(val / qcel.constants.bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][1])]]
+    hintsans = [[(val / qcdb.constants.bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][0])],
+                [(val / qcdb.constants.bohr2angstroms if i < 3 else val) for i, val in enumerate(ans5['geom_hints'][1])]]
     hintsans[0][4] = 1.534222
     fullans = copy.deepcopy(fullans5b)
     fullans['efp']['units'] = 'Angstrom'

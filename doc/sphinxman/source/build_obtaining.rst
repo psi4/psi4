@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2022 The Psi4 Developers.
+.. # Copyright (c) 2007-2023 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -30,6 +30,12 @@
 ===================
 Obtaining |PSIfour|
 ===================
+
+.. warning:: As of v1.8, primary binary distribution has moved from
+   the psi4 channel to the conda-forge channel. Neither install docs
+   for users nor compile docs for developers have been updated yet to
+   reflect new patterns. Please consult :psicode:`psicode downloads
+   page <installs/latest/>` for the latest guides.
 
 .. _`faq:obtainpsi4`:
 
@@ -65,7 +71,7 @@ though the below remains valid.
     and optimization for a variety of processor architectures, I'm willing to forgo
     architecture tuning wizardry to avoid compiling it myself.
 
-    * I'm on Linux or Mac or Windows with Ubuntu Bash Shell.
+    * I'm on Linux or Mac (Intel or Silicon chips) or Windows (native or WSL/Ubuntu Bash Shell).
 
       * I'm familiar with conda and want to manage |PSIfour| as an
         ordinary conda package. |w---w| :ref:`Goto Binary-Package
@@ -146,22 +152,22 @@ Conda Binary Package
 
 * **Get Initially**
 
-  The pre-compiled conda packages at https://anaconda.org/psi4/psi4
+  The pre-compiled conda packages at https://anaconda.org/conda-forge/psi4
   can be installed into an existing Anaconda or Miniconda distribution
   according to :ref:`directions <faq:psi4pkg>`. Locally, install into
   a conda environment as below.
 
   .. code-block:: bash
 
-     >>> conda create -n p4env psi4 -c psi4
+     >>> conda create -n p4env psi4 -c conda-forge/label/libint_dev -c conda-forge
      >>> conda activate p4env
 
   .. code-block:: bash
 
-     >>> # nightly build
-     >>> conda create -n p4env psi4 -c psi4/label/dev
-     >>> # Windows
-     >>> conda create -n p4env psi4 -c psi4 -c conda-forge
+     >>> # nightly build (Linux and Windows only)
+     >>> conda create -n p4env psi4/label/dev::psi4 -c conda-forge/label/libint_dev -c conda-forge
+     >>> # release
+     >>> conda create -n p4env                 psi4 -c conda-forge/label/libint_dev -c conda-forge
 
 
 * **Build**
@@ -172,7 +178,7 @@ Conda Binary Package
 
   .. code-block:: bash
 
-     >>> conda update psi4 -c psi4
+     >>> conda update psi4 -c conda-forge
 
 * **Contribute Back**
 

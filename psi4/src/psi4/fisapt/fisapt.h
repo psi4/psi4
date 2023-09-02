@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -72,6 +72,9 @@ class FISAPT {
 
     // Build the ExchInd20 potential in the monomer A ov space
     std::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
+    std::shared_ptr<Matrix> build_exch_ind_pot_par(std::map<std::string, std::shared_ptr<Matrix> >& vars);
+    std::shared_ptr<Matrix> build_exch_ind_pot_perp(std::map<std::string, std::shared_ptr<Matrix> >& vars);
+    std::shared_ptr<Matrix> build_exch_ind_pot_avg(std::map<std::string, std::shared_ptr<Matrix> >& vars);
     // Build the Ind20 potential in the monomer A ov space
     std::shared_ptr<Matrix> build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars);
 
@@ -83,6 +86,9 @@ class FISAPT {
     //  drop(<Matrix> or <Vector>, filepath) moved py-side
     /// Helper to extract columns from a matrix
     static std::shared_ptr<Matrix> extract_columns(const std::vector<int>& cols, std::shared_ptr<Matrix> A);
+
+    /// Link types as strings, now reused throghout
+    std::vector<std::string> typesL;
 
    public:
     /// Initialize an FISAPT object with an SCF reference
@@ -120,6 +126,10 @@ class FISAPT {
     void freeze_core();
     /// Produce unified matrices for A', B', and C'
     void unify();
+    /// Produce unified matrices for A', B', and C' part2
+    void unify_part2();
+    /// Create requested cube files
+    void do_cubes();
     /// Plot some analysis files
     void raw_plot(const std::string& filepath);
 

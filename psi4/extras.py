@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -30,12 +30,13 @@ import atexit
 import datetime
 import itertools
 import os
-from typing import List, Union
 from pathlib import Path
+from typing import List, Optional, Union
 
 from qcelemental.util import which, which_import
 
 from . import core
+from .header import print_header as _print_header
 
 # Numpy place holder for files and cleanup
 numpy_files = []
@@ -43,6 +44,11 @@ numpy_files = []
 
 def register_numpy_file(filename):
     if not filename.endswith('.npy'): filename += '.npy'
+    if filename not in numpy_files:
+        numpy_files.append(filename)
+
+
+def register_scratch_file(filename):
     if filename not in numpy_files:
         numpy_files.append(filename)
 
@@ -141,16 +147,16 @@ _addons_ = {
     "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@"),
     "libefp": which_import("pylibefp", return_bool=True),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
-    "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
+    "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "ipi": which_import("ipi", return_bool=True),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
     "cppe": which_import("cppe", return_bool=True),
     "ddx": which_import("pyddx", return_bool=True),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
-    "dftd3": psi4_which("dftd3", return_bool=True),
+    "dftd3": which_import("dftd3", return_bool=True),
     "cfour": psi4_which("xcfour", return_bool=True),
     "mrcc": psi4_which("dmrcc", return_bool=True),
-    "gcp": psi4_which("gcp", return_bool=True),
+    "gcp": psi4_which("mctc-gcp", return_bool=True),
     "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
     "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
     "forte": which_import("forte", return_bool=True),
@@ -167,6 +173,7 @@ _addons_ = {
     #"optking": which_import("optking", return_bool=True),
     "psixas": which_import("psixas", return_bool=True),
     #"mctc-gcp": psi4_which("mctc-gcp", return_bool=True),
+    "bse": which_import("basis_set_exchange", return_bool=True),
 }
 
 
@@ -177,7 +184,12 @@ def addons(request: str = None) -> Union[bool, List[str]]:
 
     """
     def strike(text):
-        return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
+        if os.name == "nt":
+            # Windows has a probably correctable problem with unicode, but I can't iterate it quickly, so use tilde for strike.
+            #   UnicodeEncodeError: 'charmap' codec can't encode character '\u0336' in position 3: character maps to <undefined>
+            return "~" + text + "~"
+        else:
+            return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
 
     if request is None:
         return [(k if v else strike(k)) for k, v in sorted(_addons_.items())]
@@ -230,7 +242,14 @@ def test(extent: str = "full", extras: List = None) -> int:
     return retcode
 
 
-def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, execute: bool = True) -> Path:
+def set_output_file(
+    ofile: str,
+    append: bool = False,
+    *,
+    loglevel: int = 20,
+    execute: bool = True,
+    print_header: Optional[bool] = None,
+    inherit_loglevel: bool = False) -> Path:
     """Set the name for output and logging files.
 
     Parameters
@@ -243,6 +262,11 @@ def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, exe
         The criticality level at which to log. 30 for WARN (Python default), 20 for INFO, 10 for DEBUG
     execute
         Do set ``ofile`` via :py:func:`psi4.core.set_output_file` and add the logger, rather than just returning ``ofile`` path.
+    print_header
+        Whether to write the Psi4 header to the ASCII output file. (Only applicable if ``execute=True``.) By default,
+        writes if file is truncated (``append=False``) but not if appended.
+    inherit_loglevel
+        If true, do not set loglevel even to default value. Instead, allow level to be inherited from existing logger.
 
     Returns
     -------
@@ -260,8 +284,10 @@ def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, exe
 
     # Get the custom logger
     import logging
+
     from psi4 import logger
-    logger.setLevel(loglevel)
+    if not inherit_loglevel:
+        logger.setLevel(loglevel)
 
     # Create formatters
     # * detailed:  example: 2019-11-20:01:13:46,811 DEBUG    [psi4.driver.task_base:156]
@@ -277,6 +303,8 @@ def set_output_file(ofile: str, append: bool = False, *, loglevel: int = 20, exe
 
     if execute:
         core.set_output_file(str(out), append)
+        if print_header is True or (print_header is None and not append):
+            _print_header()
         # Warning: baseFilename is not part of the documented API for the logging module and could change.
         filenames = [handle.baseFilename for handle in logger.handlers]
         if not f_handler.baseFilename in filenames:

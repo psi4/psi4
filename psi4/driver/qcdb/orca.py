@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2022 The Psi4 Developers.
+# Copyright (c) 2007-2023 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -28,8 +28,7 @@
 
 from collections import defaultdict
 
-import qcelemental as qcel
-
+from .constants import constants
 from .pdict import PreservingDict
 from .molecule import Molecule
 
@@ -230,7 +229,7 @@ def harvest_dipole(lines, psivar):
         # Dipole x, y, z are the last items 6 lines down in the dipole block
         dipole_str_list = lines[dipole_start + 6].split()[-3:]
         # Convert the dipole to debye
-        dipole = [float(i)*qcel.constants.dipmom_au2debye for i in dipole_str_list]
+        dipole = [float(i)*constants.dipmom_au2debye for i in dipole_str_list]
         psivar['CURRENT DIPOLE X'] = dipole[0]
         psivar['CURRENT DIPOLE Y'] = dipole[1]
         psivar['CURRENT DIPOLE Z'] = dipole[2]

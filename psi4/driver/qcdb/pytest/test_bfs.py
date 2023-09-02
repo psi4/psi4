@@ -1,7 +1,5 @@
 from utils import *
 
-import qcelemental as qcel
-
 import qcdb
 
 
@@ -98,7 +96,7 @@ def test_numpy_BFS():
         [   -0.43274661,      -1.15045330,       0.00000000]])  # yapf: disable
 
 
-    ans = BFS(mol_geom / qcel.constants.bohr2angstroms, mol_elem)
+    ans = BFS(mol_geom / qcdb.constants.bohr2angstroms, mol_elem)
 
     ref_fragmentation = [[0, 2, 4, 6, 8], [1, 3, 5, 7, 9]]
     assert compare_integers(True, ans == ref_fragmentation, 'BFS from np.array')

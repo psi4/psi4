@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -209,26 +209,31 @@ class Tensor2d {
     void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
     void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int start);
     double get_max_element();
-    // diagonalize: diagonalize via rsp
-    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
-    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
-    void diagonalize(int dim, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
-    // cdsyev: diagonalize via lapack
-    void cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
-    // davidson: diagonalize via davidson algorithm
-    void davidson(int n_eigval, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
-                  int print);
+
+    /// @brief diagonalizes the Tensor2d using LAPACK DSYEV
+    /// @param eigvectors matrix of eigenvectors (2D row major array, one column for each eigvector)
+    /// @param eigvalues array to hold eigenvalues
+    /// @param cutoff defunct argument, setting it is a no-op, will be removed in the future
+    /// @param ascending (optional, defaults true) Should the eigvalues be returned in ascending order?
+    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
+                     bool ascending = true);
+
+    /// @brief diagonalizes the Tensor2d using LAPACK DSYEV
+    /// @param dim number of rows (and columns)
+    /// @param eigvectors matrix of eigenvectors (2D row major array, one column for each eigvector)
+    /// @param eigvalues array to hold eigenvalues
+    /// @param cutoff defunct argument, setting it is a no-op, will be removed in the future
+    /// @param ascending Should the eigvalues be returned in ascending order?
+    void diagonalize(int dim, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
+                     bool ascending);
+
     // cdgesv: solve a linear equation via lapack
     void cdgesv(const SharedTensor1d &Xvec);
-    void cdgesv(double *Xvec);
     void cdgesv(const SharedTensor1d &Xvec, int errcod);
-    void cdgesv(double *Xvec, int errcod);
     // lineq_flin: solve a linear equation via FLIN
     void lineq_flin(const SharedTensor1d &Xvec, double *det);
-    void lineq_flin(double *Xvec, double *det);
     // pople: solve a linear equation via Pople's algorithm
     void lineq_pople(const SharedTensor1d &Xvec, int num_vecs, double cutoff);
-    void lineq_pople(double *Xvec, int num_vecs, double cutoff);
 
     // gemm: matrix multiplication C = A * B
     void gemm(bool transa, bool transb, const SharedTensor2d &a, const SharedTensor2d &b, double alpha, double beta);

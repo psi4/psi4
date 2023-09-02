@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -88,5 +88,7 @@ void PCMPotentialInt::compute(PCMPotentialIntFunctor &functor) {
 template void PCMPotentialInt::compute(ContractOverChargesFunctor&);
 template void PCMPotentialInt::compute(PrintIntegralsFunctor&);
 template void PCMPotentialInt::compute(ContractOverDensityFunctor&);
+
+PCMPotentialInt::~PCMPotentialInt() = default;
 
 }  // namespace psi

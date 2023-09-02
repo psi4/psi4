@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2022 The Psi4 Developers.
+ * Copyright (c) 2007-2023 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -122,6 +122,8 @@ void UHF::common_init() {
 
     same_a_b_dens_ = false;
     same_a_b_orbs_ = false;
+
+    subclass_init();
 }
 
 void UHF::finalize() {
@@ -1229,5 +1231,15 @@ std::shared_ptr<UHF> UHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
 
     return hf_wfn;
 }
+
+void UHF::setup_potential() {
+    if (functional_->needs_xc()) {
+        potential_ = std::make_shared<UV>(functional_, basisset_, options_);
+        potential_->initialize();
+    } else {
+        potential_ = nullptr;
+    }
+}
+
 }  // namespace scf
 }  // namespace psi

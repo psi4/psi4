@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2022 The Psi4 Developers.
+.. # Copyright (c) 2007-2023 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -347,15 +347,15 @@ c) Approving before CI completes is fine, though it can be mildly personally emb
 
 d) All main branches (master and `1.N.x` maintenance) are protected by GitHub, including administrators, so even with write access, no one can accidentally push (master) or rewrite the history (master and maintenance).
 
-e) PR owners who also have maintainer status can merge their PRs as GitHub enforces three external reviews.
+e) PR owners who also have maintainer status can merge their PRs as GitHub enforces two external reviews.
 
-f) Unless there's been a lot of discussion on core-dev about merge order, generally the 3rd positive reviewer merges the PR. Also fine to add review and leave merge for later.
+f) Unless there's been a lot of discussion on core-dev about merge order, generally the 2nd positive reviewer merges the PR. Also fine to add review and leave merge for later.
 
-g) Presently only Travis-CI is set up as a required-to-merge service. Incomplete Azure won't block merging, but we do usually let it complete before merging unless it's a trivial PR.
+g) Presently only Azure is set up as a required-to-merge service. Incomplete GHA Ecosystem or Docs won't block merging, but we do usually let it complete before merging unless it's a trivial PR.
 
-h) We don't enforce branches to be up to date before merging since that'd be a lot of extra CI time and coordination when merging several PRs in a day. So, if a PR hasn't been updated in a while, and a reviewer is nervous about PR interference, fine to ask submitter to rebase. For this reason, we try to merge newer contributors first so the rebase falls on more experienced contributors.
+h) We don't enforce branches to be up to date before merging since that'd be a lot of extra CI time and coordination when merging several PRs in a day. So, if a PR hasn't been updated in a while, and a reviewer is nervous about PR interference, fine to ask submitter to rebase. Or, there's an update button on the PR -- but if this is used, warn the submitted that their remote and local branches will be out of sync. For this reason, we try to merge newer contributors first so the rebase falls on more experienced contributors.
 
-i) Ideally a PR consists of atomic, compilable commits. When the PR instead is many successive small changes toward a single goal, consider squashing the PR. For core-dev's PRs, there's implicit permission to squash (unless otherwise noted in PR intro), whereas for new contributors, we often let the commits be messy.
+i) Ideally a PR consists of atomic, compilable commits. It almost never happens, so unless there's been discussion, squash merge all PRs.
 
 j) When discussion on issue has overcome the original problem and settled on needing long-term work, fine to move the long-term item to Wish List and close issue.
 

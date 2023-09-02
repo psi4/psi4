@@ -3,6 +3,7 @@
 
                }
 # Reference values, in atomic units, for finite difference formulas
+# * adjusted after PEDRA pruning in v1.2.3
           }
           }
 
