@@ -70,10 +70,10 @@ void PSI_API tstart() {
     const long clk_tck = sysconf(_SC_CLK_TCK);
     times(&total_tmstime);
 
-    // host name has up to HOST_NAME_MAX(==64) + 1 bytes, and must end in the null byte
-    std::vector<char> name(65);
-    error = gethostname(name.data(), 65);
-    if (error != 0) strncpy(name.data(), "nohostname", 11);
+    // host name has up to HOST_NAME_MAX (64 or 256) + 1 bytes, and must end in the null byte
+    std::vector<char> name(257);
+    error = gethostname(name.data(), name.size());
+    if (error) strncpy(name.data(), "nohostname", name.size());
     if (name.back() != '\0') name.push_back('\0');
 
     /// start a global timer
@@ -105,10 +105,10 @@ void PSI_API tstop() {
     struct tms total_tmstime;
     double user_s, sys_s;
 
-    // host name has up to HOST_NAME_MAX(==64) + 1 bytes, and must end in the null byte
-    std::vector<char> name(65);
-    error = gethostname(name.data(), 65);
-    if (error != 0) strncpy(name.data(), "nohostname", 11);
+    // host name has up to HOST_NAME_MAX (64 or 256) + 1 bytes, and must end in the null byte
+    std::vector<char> name(257);
+    error = gethostname(name.data(), name.size());
+    if (error) strncpy(name.data(), "nohostname", name.size());
     if (name.back() != '\0') name.push_back('\0');
 
     time_end = std::time(nullptr);
