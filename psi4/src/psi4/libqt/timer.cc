@@ -1006,10 +1006,10 @@ void timer_done() {
     extern Timer_Structure root_timer;
     root_timer.turn_off();
 
-    // host name has up to HOST_NAME_MAX(==64) + 1 bytes, and must end in the null byte
-    std::vector<char> host(65);
-    int error = gethostname(host.data(), 65);
-    if (error != 0) strncpy(host.data(), "nohostname", 11);
+    // host name has up to HOST_NAME_MAX (64 or 256) + 1 bytes, and must end in the null byte
+    std::vector<char> host(257);
+    int error = gethostname(host.data(), host.size());
+    if (error) strncpy(host.data(), "nohostname", host.size());
     if (host.back() != '\0') host.push_back('\0');
 
     /* Dump the timing data to timer.dat and free the timers */
