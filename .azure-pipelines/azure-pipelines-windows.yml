@@ -145,7 +145,7 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        libint=2.7.3dev1 ^
+                        psi4/label/testing::libint=2.8.0dev1 ^
                         qcelemental ^
                         qcengine ^
                         pydantic=1.10.13 ^

@@ -101,7 +101,7 @@ jobs:
       fi
       sed -i "s;- libxc-c;- psi4::libxc=5;g" env_p4env.yaml
       sed -i "s;- conda-forge/label/libint_dev;#- conda-forge/label/libint_dev;g" env_p4env.yaml
-      sed -i "s;#- psi4/label/testing::libint2;- psi4/label/testing::libint2;g" env_p4env.yaml
+      sed -i "s;#- psi4/label/testing::libint2;- psi4/label/testing::libint=2.8.0dev2;g" env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
