@@ -1,8 +1,7 @@
 #!/usr/bin/env python
+import subprocess
 import sys
 import time
-import subprocess
-
 
 # <<<  run ctest  >>>
 retcode = subprocess.Popen(['ctest', '-j2', '-L', 'smoke'], bufsize=0,

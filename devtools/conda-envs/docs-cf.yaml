@@ -4,7 +4,7 @@ channels:
 dependencies:
   - libblas=*=*mkl
   - mkl-devel
-  - intel-openmp!=2019.5
+  - pydantic=1  # to keep on v1 branch for autodoc-pydantic
     # build
   - cmake
   - doxygen
@@ -13,7 +13,7 @@ dependencies:
   - boost-cpp
   - eigen
   - networkx
-  - pybind11
+  - pybind11=2.10.*  # until FixedSize typing percolates upstream
   - python=3.11.*
     # qc
   - gau2grid

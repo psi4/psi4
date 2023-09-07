@@ -911,7 +911,7 @@ void Matrix::symmetrize_gradient(std::shared_ptr<Molecule> molecule) {
     CharacterTable ct = molecule->point_group()->char_table();
 
     // Obtain atom mapping of atom * symm op to atom
-    int **atom_map = compute_atom_map(molecule);
+    auto atom_map = compute_atom_map(molecule);
 
     SharedMatrix ret(clone());
     ret->zero();
@@ -937,7 +937,6 @@ void Matrix::symmetrize_gradient(std::shared_ptr<Molecule> molecule) {
             ret->add(atom, 2, so(2, 2) * temp(Gatom, 2) / ct.order());
         }
     }
-    delete_atom_map(atom_map, molecule);
     copy(ret);
     ret.reset();
 }
@@ -948,7 +947,7 @@ void Matrix::symmetrize_hessian(SharedMolecule molecule) {
 
     CharacterTable ct = molecule->point_group()->char_table();
 
-    int **atom_map = compute_atom_map(molecule);
+    auto atom_map = compute_atom_map(molecule);
 
     auto symm = std::make_shared<Matrix>(clone());
     symm->zero();
@@ -1001,7 +1000,6 @@ void Matrix::symmetrize_hessian(SharedMolecule molecule) {
             }
         }
     }
-    delete_atom_map(atom_map, molecule);
 }
 
 void Matrix::identity() {

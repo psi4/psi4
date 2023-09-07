@@ -30,12 +30,12 @@ The SCF iteration functions
 """
 import numpy as np
 
-from ..solvent.efp import (get_qm_atoms_opts, modify_Fock_induced,
-                           modify_Fock_permanent)
-
 from psi4 import core
-from psi4.driver import constants, p4util
-from psi4.driver.p4util.exceptions import SCFConvergenceError, ValidationError
+
+from ... import p4util
+from ...constants import constants
+from ...p4util.exceptions import SCFConvergenceError, ValidationError
+from ..solvent.efp import get_qm_atoms_opts, modify_Fock_induced, modify_Fock_permanent
 
 #import logging
 #logger = logging.getLogger("scf.scf_iterator")

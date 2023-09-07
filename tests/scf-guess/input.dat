@@ -41,9 +41,17 @@ set guess huckel
 energy('scf')
 compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, HUCKEL guess (a.u.)");             #TEST
 
+set guess modhuckel
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, MODHUCKEL guess (a.u.)");             #TEST
+
 set guess sap
 energy('scf')
 compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, SAPGAU guess (a.u.)");             #TEST
 
 molecule nocat {
 1 2
@@ -76,9 +84,17 @@ set guess huckel
 energy('scf')
 compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, HUCKEL guess (a.u.)");             #TEST
 
+set guess modhuckel
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, MODHUCKEL guess (a.u.)");             #TEST
+
 set guess sap
 energy('scf')
 compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refcat_uhf, variable("SCF TOTAL ENERGY"), 6, "UHF  energy, SAPGAU guess (a.u.)");             #TEST
 
 
 set {
@@ -104,9 +120,17 @@ set guess huckel
 energy('scf')
 compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, HUCKEL guess (a.u.)");             #TEST
 
+set guess modhuckel
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, MODHUCKEL guess (a.u.)");             #TEST
+
 set guess sap
 energy('scf')
 compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refcat_rohf, variable("SCF TOTAL ENERGY"), 6, "ROHF energy, SAPGAU guess (a.u.)");             #TEST
 
 
 set {
@@ -132,6 +156,14 @@ set guess huckel
 energy('scf')
 compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, HUCKEL guess (a.u.)");             #TEST
 
+set guess modhuckel
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, MODHUCKEL guess (a.u.)");             #TEST
+
 set guess sap
 energy('scf')
 compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAP    guess (a.u.)");             #TEST
+
+set guess sapgau
+energy('scf')
+compare_values(refcat_cuhf, variable("SCF TOTAL ENERGY"), 6, "CUHF energy, SAPGAU guess (a.u.)");             #TEST

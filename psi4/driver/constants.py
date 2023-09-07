@@ -26,9 +26,17 @@
 # @END LICENSE
 #
 
-"""Attempts to catch Python based import errors and provides possible solutions."""
+"""Catch NumPy based import errors and suggest solutions.
+Define some prettyprint formats.
+Collect physical constants for py-side from QCElemental at CODATA consistent with c-side header.
+"""
 
-__all__ = []
+__all__ = [
+    "constants",
+    "pp",
+    "nppp",
+    "nppp10",
+]
 
 # NumPy import
 try:
@@ -45,13 +53,19 @@ except ImportError:
     """
     raise ImportError(msg)
 
-# Import plugin add-ons here for now
-try:
-    import csx4psi
-except ImportError:
-    pass
+# printing and logging formatting niceties
+import pprint
+from functools import partial
 
-try:
-    from . import pasture
-except ImportError:
-    pass
+import numpy as np
+
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+nppp = partial(np.array_str, max_line_width=120, precision=8, suppress_small=True)
+nppp10 = partial(np.array_str, max_line_width=120, precision=10, suppress_small=True)
+del np, partial, pprint
+
+# ensure Psi4 py-side constants are fixed at CODATA 2014, regardless of qcel default
+import qcelemental as qcel
+
+constants = qcel.PhysicalConstantsContext("CODATA2014")
+del qcel

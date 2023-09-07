@@ -79,20 +79,15 @@ dict = {
     },
 }
 """
-from psi4.driver.p4util.exceptions import ValidationError
-import copy
 import collections
+import copy
 
 from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases
 
 from psi4 import core
 
-from . import libxc_functionals
-from . import lda_functionals
-from . import gga_functionals
-from . import mgga_functionals
-from . import hyb_functionals
-from . import dh_functionals
+from ...p4util.exceptions import ValidationError
+from . import dh_functionals, gga_functionals, hyb_functionals, lda_functionals, libxc_functionals, mgga_functionals
 
 dict_functionals = {}
 dict_functionals.update(libxc_functionals.functional_list)

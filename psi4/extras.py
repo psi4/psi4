@@ -30,8 +30,8 @@ import atexit
 import datetime
 import itertools
 import os
-from typing import List, Optional, Union
 from pathlib import Path
+from typing import List, Optional, Union
 
 from qcelemental.util import which, which_import
 
@@ -44,6 +44,11 @@ numpy_files = []
 
 def register_numpy_file(filename):
     if not filename.endswith('.npy'): filename += '.npy'
+    if filename not in numpy_files:
+        numpy_files.append(filename)
+
+
+def register_scratch_file(filename):
     if filename not in numpy_files:
         numpy_files.append(filename)
 
@@ -142,7 +147,7 @@ _addons_ = {
     "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@"),
     "libefp": which_import("pylibefp", return_bool=True),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
-    "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
+    "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "ipi": which_import("ipi", return_bool=True),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
     "cppe": which_import("cppe", return_bool=True),
@@ -279,6 +284,7 @@ def set_output_file(
 
     # Get the custom logger
     import logging
+
     from psi4 import logger
     if not inherit_loglevel:
         logger.setLevel(loglevel)

@@ -55,6 +55,13 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
 
     // DOI 10.1063/1.3646921, EQ. 9
 
+    // note that the S_num matrix is defined slightly differently in our code
+    // to account for the possibility of negative grid weights
+    // here, we use S_num = X_sign*(X_nosign)^T
+    // where:
+    //   1. X_nosign uses sqrt(abs(w)) instead of sqrt(w) for the X matrix
+    //   2. X_sign uses sign(w) * sqrt(abs(w)), where sign returns the sign of w, instead of sqrt(w) for the X matrix
+
     int nbf = primary->nbf();
     BasisFunctions bf_computer(primary, grid.max_points(), grid.max_functions());
     Matrix S_num("Numerical Overlap", nbf, nbf);
@@ -74,19 +81,28 @@ Matrix compute_numeric_overlap(const DFTGrid &grid, const std::shared_ptr<BasisS
         bf_computer.compute_functions(block);
         auto point_values = bf_computer.basis_values()["PHI"];
 
+        // lambda for returning sign of double
+        auto sign = [ ](double val) {
+            return (val >= 0.0) ? 1.0 : -1.0;
+        };
+
         // resize the buffer of basis function values
-        Matrix X_block("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
-        auto X_blockp = X_block.pointer();
+        Matrix X_block_nosign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
+        Matrix X_block_sign("phi_g,u", npoints_block, nbf_block);  // points x nbf_block
+
+        auto X_block_nosignp = X_block_nosign.pointer();
+        auto X_block_signp = X_block_sign.pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
+                X_block_nosignp[p][k] = point_values->get(p, k) * std::sqrt(std::abs(w[p]));
+                X_block_signp[p][k] = sign(w[p])*X_block_nosignp[p][k];
             }
         }
 
         // significant basis functions at these grid points
         const auto &bf_map = block->functions_local_to_global();
 
-        auto S_num_block = linalg::doublet(X_block, X_block, true, false);
+        auto S_num_block = linalg::doublet(X_block_sign, X_block_nosign, true, false);
         auto S_num_blockp = S_num_block.pointer();
 
         for (size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
@@ -178,6 +194,11 @@ void CompositeJK::common_init() {
     j_type_ = jk_type.substr(0, jk_type.find("+"));
     k_type_ = jk_type.substr(jk_type.find("+") + 1, jk_type.length());
 
+    // occurs if no composite K algorithm was specified; useful for LDA/GGA DFT runs
+    if (k_type_ == j_type_) {
+      k_type_ = "NONE";
+    }
+
     // other options
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
@@ -238,7 +259,7 @@ void CompositeJK::common_init() {
         } else {
             linK_ints_cutoff_ = cutoff_;
         }
-
+    
     // Chain-of-Spheres Exchange (COSX)
     } else if (k_type_ == "COSX") {
         timer_on("CompositeJK: COSX Grid Construction");
@@ -291,26 +312,35 @@ void CompositeJK::common_init() {
         };
         grid_final_ = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_final_int_options, grid_final_str_options, grid_final_float_options, options_);
 
-        // Sanity-check of grids to ensure no negative grid weights
-        // COSX crashes when grids with negative weights are used,
+        // Print out warning if grid with negative grid weights is used 
+        // Original Nesse COSX formulation does not support negative grid weights
         // which can happen with certain grid configurations
-        // See https://github.com/psi4/psi4/issues/2890
+        // the Psi4 COSX implementation is slightly modified to work with negative grid weights
+        // See https://github.com/psi4/psi4/issues/2890 for discussion
+        auto warning_printed_init = false;
         for (const auto &init_block : grid_init_->blocks()) {
             const auto w = init_block->w();
             for (int ipoint = 0; ipoint < init_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-                    throw PSIEXCEPTION("The definition of the current initial grid includes negative weights. As these are not suitable for the COSX implementation, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.");
-                }
+	                outfile->Printf("  INFO: The definition of the current initial grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another initial grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_INITIAL.\n\n");
+	                warning_printed_init = true;
+		            break;
+	            }
             }
+	        if (warning_printed_init) break;
         }
 
+        auto warning_printed_final = false;
         for (const auto &final_block : grid_final_->blocks()) {
             const auto w = final_block->w();
             for (int ipoint = 0; ipoint < final_block->npoints(); ++ipoint) {
                 if (w[ipoint] < 0.0) {
-                    throw PSIEXCEPTION("The definition of the current final grid includes negative weights. As these are not suitable for the COSX implementation, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.");
-                }
+	                outfile->Printf("  INFO: The definition of the current final grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_FINAL.\n\n");
+                    warning_printed_final = true;
+	                break;
+	            }
             }
+	        if (warning_printed_final) break;
         }
 
         timer_off("CompositeJK: COSX Grid Construction");
@@ -356,9 +386,33 @@ void CompositeJK::common_init() {
         C_DGESV(nbf, nbf, S_num_final.pointer()[0], nbf, ipiv.data(), Q_final_->pointer()[0], nbf);
 
         timer_off("CompositeJK: COSX Overlap Metric Solve");
+
+    // Do nothing special if no composite K algorithm
+    } else if (k_type_ == "NONE") {
+        ;
     } else {
         throw PSIEXCEPTION("Invalid Composite K algorithm selected!");
     }
+}
+
+void CompositeJK::set_do_K(bool do_K) {
+    // if doing K, we need an associated composite K build algorithm
+    if (do_K && k_type_ == "NONE") {
+        std::string error_message = "No composite K build algorithm was specified, but K matrix is required for current method! Please specify a composite K build algorithm by setting SCF_TYPE to ";
+        error_message += j_type_;
+        error_message += "+{K_ALGO}.";
+
+        throw PSIEXCEPTION(error_message);
+    } else if (!do_K && k_type_ != "NONE") {
+        std::string info_message = "  INFO: A K algorithm (";
+        info_message += k_type_;
+        info_message += ") was specified in SCF_TYPE, but the current method does not use a K matrix!\n";
+        info_message += "  Thus, the specified K algorithm will be unused.\n\n";
+
+        outfile->Printf(info_message);
+    }
+
+    do_K_ = do_K;
 }
 
 size_t CompositeJK::num_computed_shells() {
@@ -1386,16 +1440,21 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
         // DOI 10.1016/j.chemphys.2008.10.036, EQ. 4
 
-        // compute basis functions at these grid points
+        // note that the X matrix is defined slightly differently in our code
+        // to account for the possibility of negative grid weights
+        // here, we define X using sqrt(abs(w)) instead of sqrt(w)
+
+	// compute basis functions at these grid points
         bf_computers[rank]->compute_functions(block);
         auto point_values = bf_computers[rank]->basis_values()["PHI"];
 
         // resize the buffer of basis function values
         auto X_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+
         auto X_blockp = X_block->pointer();
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
-                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(w[p]);
+                X_blockp[p][k] = point_values->get(p, k) * std::sqrt(std::abs(w[p]));
             }
         }
 
@@ -1419,7 +1478,7 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         for(size_t jki = 0; jki < njk; jki++) {
             F_block[jki] = linalg::doublet(X_block, D_block[jki], false, true);
         }
-
+        
         // shell maxima of F_block
         auto F_block_shell = std::make_shared<Matrix>(npoints_block, nshell);
         auto F_block_shellp = F_block_shell->pointer();
@@ -1472,6 +1531,12 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         if(rank == 0) timer_on("ESP Integrals");
 
         const auto & int_buff = int_computers[rank]->buffers()[0];
+
+        // lambda for returning sign of double
+        // needed for formation of G
+        auto sign = [ ](double val) {
+            return (val >= 0.0) ? 1.0 : -1.0;
+        };
 
         // calculate A_NU_TAU at all grid points in this block
         // contract A_NU_TAU with F_TAU to get G_NU
@@ -1530,13 +1595,14 @@ void CompositeJK::build_COSK(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
                     // contract A_nu_tau with F_tau to get contribution to G_nu
                     // symmetry permitting, also contract A_nu_tau with F_nu to get contribution to G_tau
+                    // we fold sign(w) into the formation of G to correct for the modified definition of X
                     for(size_t jki = 0; jki < njk; jki++) {
                         auto F_blockp = F_block[jki]->pointer();
                         auto G_blockp = G_block[jki]->pointer();
                         for (size_t nu = nu_start, index = 0; nu < (nu_start + num_nu); ++nu) {
                             for (size_t tau = tau_start; tau < (tau_start + num_tau); ++tau, index++) {
-                                G_blockp[nu][g] += int_buff[index] * F_blockp[g][tau];
-                                if (symm) G_blockp[tau][g] += int_buff[index] * F_blockp[g][nu];
+                                G_blockp[nu][g] += sign(w[g]) * int_buff[index] * F_blockp[g][tau];
+                                if (symm) G_blockp[tau][g] += sign(w[g]) * int_buff[index] * F_blockp[g][nu];
                             }
                         }
                     }

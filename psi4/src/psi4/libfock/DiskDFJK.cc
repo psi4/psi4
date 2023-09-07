@@ -38,6 +38,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/lib3index/dftensor.h"
+#include "psi4/liboptions/liboptions.h"
 
 #include "jk.h"
 

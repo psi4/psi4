@@ -26,4 +26,4 @@
 # @END LICENSE
 #
 
-from .sapt_proc import run_sapt_dft, sapt_dft, run_sf_sapt
+from .sapt_proc import run_sapt_dft, run_sf_sapt, sapt_dft

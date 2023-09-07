@@ -26,6 +26,9 @@
 # @END LICENSE
 #
 
+"""
+isort:skip_file
+"""
 
 # Figure out paths
 # * in figuring out psidatadir: envvar trumps staged/installed
@@ -114,6 +117,8 @@ if "@ENABLE_ddx@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pyddx
     sys.path.insert(1, "@pyddx_PYMOD@")
 if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
     sys.path.insert(1, "@pylibefp_PYMOD@")
+if "@ENABLE_gdma@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # gdma
+    sys.path.insert(1, "@gdma_PYMOD@")
 
 # Create a custom logger
 import logging

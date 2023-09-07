@@ -26,14 +26,15 @@
 # @END LICENSE
 #
 
-import re
 import math
 from typing import Any, Dict, Optional, Tuple, Union
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import docs_table_link, ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError
-from psi4.driver.procrouting import *
+
+from . import p4util
+from .p4util.exceptions import ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError, docs_table_link
+from .procrouting import proc
+from .procrouting.proc_table import procedures
 
 
 def negotiate_convergence_criterion(dermode: Union[Tuple[str, str], Tuple[int, int]], method: str, return_optstash: bool = False):

@@ -146,25 +146,28 @@ __all__ = [
 import copy
 import itertools
 import math
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union, TYPE_CHECKING
 from ast import literal_eval
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union
 
-from pydantic import Field, validator
+try:
+    from pydantic.v1 import Field, validator
+except ImportError:
+    from pydantic import Field, validator
 
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 import logging
 
 import numpy as np
-from qcelemental.models import DriverEnum, AtomicResult
+from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
-from psi4.driver import constants, driver_nbody_multilevel, p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.task_base import BaseComputer, AtomicComputer, EnergyGradientHessianWfnReturn
-from psi4.driver.driver_cbs import CompositeComputer
-from psi4.driver.driver_findif import FiniteDifferenceComputer
+
+from . import driver_nbody_multilevel, p4util
+from .constants import constants, pp
+from .driver_cbs import CompositeComputer
+from .driver_findif import FiniteDifferenceComputer
+from .p4util.exceptions import *
+from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
 if TYPE_CHECKING:
     import qcportal
@@ -234,7 +237,6 @@ def nbody():
         Add atom-centered point charges for fragments whose basis sets are not included in the computation.
 
     """
-    pass
 
 
 class BsseEnum(str, Enum):

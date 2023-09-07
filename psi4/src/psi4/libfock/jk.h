@@ -44,7 +44,6 @@ namespace psi {
 class MinimalInterface;
 class BasisSet;
 class Matrix;
-class ERISieve;
 class TwoBodyAOInt;
 class Options;
 class PSIO;
@@ -448,7 +447,7 @@ class PSI_API JK {
     * @param do_K do K matrices or not,
     *        defaults to true
     */
-    void set_do_K(bool do_K) { do_K_ = do_K; }
+    virtual void set_do_K(bool do_K) { do_K_ = do_K; }
     /**
     * Set to do wK tasks
     * @param do_wK do wK matrices or not,
@@ -734,7 +733,7 @@ class PSI_API DirectJK : public JK {
     /// Number of threads for DF integrals TODO: DF_INTS_NUM_THREADS
     int df_ints_num_threads_;
     /// ERI Sieve
-    std::shared_ptr<ERISieve> sieve_;
+    std::shared_ptr<TwoBodyAOInt> eri_;
 
     /// Options object
     Options& options_;
@@ -1344,6 +1343,13 @@ class PSI_API CompositeJK : public JK {
     void clear_D_prev() { D_prev_.clear();}
 
     // => Knobs <= //
+    /**
+    * Set to do K tasks
+    * @param do_K do K matrices or not,
+    *        defaults to true
+    */
+    virtual void set_do_K(bool do_K) override;
+
     /**
     * Print header information regarding JK
     * type on output file

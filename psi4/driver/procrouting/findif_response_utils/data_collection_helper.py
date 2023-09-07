@@ -31,7 +31,7 @@ Module of helper functions for distributed ccresponse computations.
 
 Defines functions for retrieving data computed at displaced geometries.
 """
-from psi4.driver import p4util
+from ... import p4util
 
 
 def collect_displaced_matrix_data(db, signature, row_dim):

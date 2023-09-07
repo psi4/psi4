@@ -73,53 +73,22 @@ namespace psi {
 
 contribution::contribution() {}
 
-contribution::~contribution() {}
-
 contribution::contribution(int b, double c) : bfn(b), coef(c) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SO::SO() : len(0), length(0), cont(nullptr) {}
+SO::SO() {length=0;}
 
-SO::SO(int l) : len(0), length(0), cont(nullptr) { set_length(l); }
-
-SO::~SO() { set_length(0); }
-
-SO &SO::operator=(const SO &so) {
-    set_length(so.length);
-    length = so.length;
-    for (int i = 0; i < length; ++i) cont[i] = so.cont[i];
-    return *this;
-}
+SO::SO(int l) { set_length(l); }
 
 void SO::set_length(int l) {
-    len = l;
-    length = l;
-    if (cont) {
-        delete[] cont;
-        cont = nullptr;
-    }
-
-    if (l) cont = new contribution[l];
+  length=l;
+  cont.resize(l);
 }
 
 void SO::reset_length(int l) {
-    length = l;
-
-    if (l <= len) return;
-
-    l = l + 10;
-
-    auto *newcont = new contribution[l];
-
-    if (cont) {
-        for (int i = 0; i < len; ++i) newcont[i] = cont[i];
-
-        delete[] cont;
-    }
-
-    cont = newcont;
-    len = l;
+  length=l;
+  cont.resize(l);
 }
 
 int SO::equiv(const SO &so) {
@@ -142,43 +111,24 @@ int SO::equiv(const SO &so) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SO_block::SO_block() : len(0), so(nullptr) {}
+SO_block::SO_block() {}
 
-SO_block::SO_block(int l) : len(0), so(nullptr) { set_length(l); }
-
-SO_block::~SO_block() { set_length(0); }
+SO_block::SO_block(int l) { set_length(l); }
 
 void SO_block::set_length(int l) {
-    len = l;
-    if (so) {
-        delete[] so;
-        so = nullptr;
-    }
-
-    if (l) so = new SO[l];
+  so.resize(l);
 }
 
 void SO_block::reset_length(int l) {
-    if (len == l) return;
-
-    auto *newso = new SO[l];
-
-    if (so) {
-        for (int i = 0; i < len; i++) newso[i] = so[i];
-
-        delete[] so;
-    }
-
-    so = newso;
-    len = l;
+  so.resize(l);
 }
 
 int SO_block::add(SO &s, int i) {
     // first check to see if s is already here
-    for (int j = 0; j < ((i < len) ? i : len); j++)
+  for (int j = 0; j < ((i < len()) ? i : len()); j++)
         if (so[j].equiv(s)) return 0;
 
-    if (i >= len) reset_length(i + 1);
+  if (i >= len()) reset_length(i + 1);
     so[i] = s;
 
     return 1;
@@ -189,7 +139,7 @@ void SO_block::print(const char *title) {
 
     outfile->Printf("SO block %s\n", title);
 
-    for (i = 0; i < len; i++) {
+    for (i = 0; i < len(); i++) {
         outfile->Printf("  SO %d\n", i + 1);
         for (j = 0; j < so[i].length; j++) outfile->Printf(" %10d", so[i].cont[j].bfn);
         outfile->Printf("\n");
@@ -205,24 +155,14 @@ struct lin_comb {
     int ns;
     int f0;
     int mapf0;
-    double **c;
+  std::vector<std::vector<double>> c;
 
     lin_comb(int ins, int if0, int imf0) : ns(ins), f0(if0), mapf0(imf0) {
         int i;
 
-        c = new double *[ns];
+        c.resize(ns);
         for (i = 0; i < ns; i++) {
-            c[i] = new double[ns];
-            memset(c[i], 0, sizeof(double) * ns);
-        }
-    }
-
-    ~lin_comb() {
-        if (c) {
-            for (int i = 0; i < ns; i++)
-                if (c[i]) delete[] c[i];
-            delete[] c;
-            c = nullptr;
+          c[i].assign(ns,0);
         }
     }
 
@@ -241,7 +181,7 @@ struct lin_comb {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-int **compute_atom_map(const Molecule *molecule, double tol, bool suppress_mol_print_in_exc) {
+  std::vector<std::vector<int>> compute_atom_map(const Molecule *molecule, double tol, bool suppress_mol_print_in_exc) {
     // grab references to the Molecule
     const Molecule &mol = *molecule;
 
@@ -250,9 +190,8 @@ int **compute_atom_map(const Molecule *molecule, double tol, bool suppress_mol_p
 
     int natom = mol.natom();
     int ng = ct.order();
-    int **atom_map;
-    atom_map = new int *[natom];
-    for (int i = 0; i < natom; i++) atom_map[i] = new int[ng];
+    std::vector<std::vector<int>> atom_map(natom);
+    for (int i = 0; i < natom; i++) atom_map[i].resize(ng);
 
     double np[3];
     SymmetryOperation so;
@@ -289,23 +228,11 @@ int **compute_atom_map(const Molecule *molecule, double tol, bool suppress_mol_p
     return atom_map;
 }
 
-int **compute_atom_map(const std::shared_ptr<Molecule> &molecule, double tol, bool suppress_mol_print_in_exc) {
+std::vector<std::vector<int>> compute_atom_map(const std::shared_ptr<Molecule> &molecule, double tol, bool suppress_mol_print_in_exc) {
     return compute_atom_map(molecule.get(), tol, suppress_mol_print_in_exc);
 }
 
-void delete_atom_map(int **atom_map, const Molecule *molecule) {
-    if (atom_map) {
-        int natom = molecule->natom();
-        for (int i = 0; i < natom; i++) delete[] atom_map[i];
-        delete[] atom_map;
-    }
-}
-
-void delete_atom_map(int **atom_map, const std::shared_ptr<Molecule> &molecule) {
-    delete_atom_map(atom_map, molecule.get());
-}
-
-ShellMapType compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &basis) {
+  ShellMapType compute_shell_map(const std::vector<std::vector<int>> & atom_map, const std::shared_ptr<BasisSet> &basis) {
     BasisSet &gbs = *basis.get();
     Molecule &mol = *gbs.molecule().get();
 
@@ -331,8 +258,6 @@ ShellMapType compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &
 
     return shell_map;
 }
-
-void delete_shell_map(ShellMapType shell_map, const std::shared_ptr<BasisSet> &) {}
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -379,37 +304,6 @@ PetiteList::PetiteList(const std::shared_ptr<BasisSet> &gbs, const IntegralFacto
     init();
 }
 
-PetiteList::~PetiteList() {
-    if (p1_) delete[] p1_;
-
-    if (lamij_) delete[] lamij_;
-
-    if (nbf_in_ir_) delete[] nbf_in_ir_;
-
-    if (atom_map_) {
-        for (int i = 0; i < natom_; i++) delete[] atom_map_[i];
-        delete[] atom_map_;
-    }
-
-    if (unique_shell_map_) {
-        for (int i = 0; i < nunique_shell_; i++) delete[] unique_shell_map_[i];
-        delete[] unique_shell_map_;
-    }
-
-    if (stablizer_) delete[] stablizer_;
-
-    natom_ = 0;
-    nshell_ = 0;
-    ng_ = 0;
-    nblocks_ = 0;
-    nirrep_ = 0;
-    p1_ = nullptr;
-    atom_map_ = nullptr;
-
-    lamij_ = nullptr;
-    nbf_in_ir_ = nullptr;
-}
-
 std::shared_ptr<PetiteList> PetiteList::clone() { return std::make_shared<PetiteList>(basis_, integral_); }
 
 int PetiteList::nfunction(int i) const { return (c1_) ? basis_->nbf() : nbf_in_ir_[i]; }
@@ -438,13 +332,13 @@ void PetiteList::init(double tol) {
         c1_ = true;
         nblocks_ = 1;
 
-        p1_ = nullptr;
-        atom_map_ = nullptr;
+        p1_.clear();
+        atom_map_.clear();
         shell_map_.clear();
-        unique_shell_map_ = nullptr;
-        lamij_ = nullptr;
-        nbf_in_ir_ = nullptr;
-        stablizer_ = nullptr;
+        unique_shell_map_.clear();
+        lamij_.clear();
+        nbf_in_ir_.clear();
+        stablizer_.clear();
         return;
     }
 
@@ -455,18 +349,18 @@ void PetiteList::init(double tol) {
     }
 
     // allocate storage for arrays
-    p1_ = new char[nshell_];
-    lamij_ = new char[i_offset64(nshell_)];
+    p1_.resize(nshell_);
+    lamij_.resize(i_offset64(nshell_));
 
-    atom_map_ = new int *[natom_];
-    for (i = 0; i < natom_; i++) atom_map_[i] = new int[ng_];
+    atom_map_.resize(natom_);
+    for (i = 0; i < natom_; i++) atom_map_[i].resize(ng_);
 
     shell_map_ = ShellMapType(nshell_, pgZeros);
 
-    unique_shell_map_ = new int *[nunique_shell_];
-    for (i = 0; i < nunique_shell_; i++) unique_shell_map_[i] = new int[ng_];
+    unique_shell_map_.resize(nunique_shell_);
+    for (i = 0; i < nunique_shell_; i++) unique_shell_map_[i].resize(ng_);
 
-    stablizer_ = new unsigned short[natom_];
+    stablizer_.resize(natom_);
 
     // set up atom and shell mappings
     double np[3];
@@ -527,8 +421,8 @@ void PetiteList::init(double tol) {
         }
     }
 
-    memset(p1_, 0, nshell_);
-    memset(lamij_, 0, i_offset64(nshell_));
+    p1_.assign(nshell_, 0);
+    lamij_.assign(i_offset64(nshell_), 0);
 
     // now we do p1_ and lamij_
     for (i = 0; i < nshell_; i++) {
@@ -569,8 +463,7 @@ void PetiteList::init(double tol) {
     }
 
     // form reducible representation of the basis functions
-    auto *red_rep = new double[ng_];
-    memset(red_rep, 0, sizeof(double) * ng_);
+    std::vector<double> red_rep(ng_, 0);
 
     for (i = 0; i < natom_; i++) {
         for (int g = 0; g < ng_; g++) {
@@ -595,7 +488,7 @@ void PetiteList::init(double tol) {
     // and then use projection operators to figure out how many SO's of each
     // symmetry type there will be
     nblocks_ = 0;
-    nbf_in_ir_ = new int[nirrep_];
+    nbf_in_ir_.resize(nirrep_);
     for (i = 0; i < nirrep_; i++) {
         double t = 0;
         for (int g = 0; g < ng_; g++) t += ct.gamma(i).character(g) * red_rep[g];
@@ -608,8 +501,6 @@ void PetiteList::init(double tol) {
             nblocks_ += ct.gamma(i).degeneracy();
         }
     }
-
-    delete[] red_rep;
 }
 
 Dimension PetiteList::AO_basisdim() {
@@ -692,7 +583,7 @@ void PetiteList::print(std::string out) {
  * basis requires this) functions, storing the result in a sparse buffer.
  * @return A pointer to the newly-created sparse SO_Block (remember to delete it!).
  */
-SO_block *PetiteList::compute_aotoso_info() {
+std::vector<SO_block> PetiteList::compute_aotoso_info() {
     bool to_pure = include_pure_transform_ && basis_->has_puream();
     bool from_cart = include_pure_transform_ || !basis_->has_puream();
 
@@ -700,16 +591,18 @@ SO_block *PetiteList::compute_aotoso_info() {
     CharacterTable ct = mol->point_group()->char_table();
     int nunique = mol->nunique();
     int maxam = basis_->max_am();
-    int **atom_map = compute_atom_map(mol);
-    size_t functions_per_irrep[8];
-    auto *SOs = new SO_block[nirrep_];
+
+    auto atom_map = compute_atom_map(mol);
+    std::vector<size_t> functions_per_irrep(nirrep_);
+    std::vector<SO_block> SOs(nirrep_);
     for (int h = 0; h < nirrep_; ++h) {
         SOs[h].set_length(nfunction(h));
         functions_per_irrep[h] = 0;
     }
-    auto ***function_parities = new double **[nirrep_];
+
+    std::vector<std::vector<std::vector<double>>> function_parities(nirrep_);
     for (int symop = 0; symop < nirrep_; ++symop) {
-        function_parities[symop] = new double *[maxam + 1];
+      function_parities[symop].resize(maxam + 1);
         SymmetryOperation so = ct.symm_operation(symop);
         // How does this symmetry operation affect the x, y and z coordinates?
         bool op_inverts_x = so(0, 0) < 0.0;
@@ -718,7 +611,7 @@ SO_block *PetiteList::compute_aotoso_info() {
         for (int am = 0; am <= maxam; ++am) {
             // This is always the number of Cartesian functions
             int nfunctions = from_cart ? (am + 1) * (am + 2) / 2 : 2 * am + 1;
-            function_parities[symop][am] = new double[nfunctions];
+            function_parities[symop][am].resize(nfunctions);
             int bf = 0;
             if (from_cart) {
                 CartesianIter cart_it(am);
@@ -777,8 +670,7 @@ SO_block *PetiteList::compute_aotoso_info() {
             int l = basis_->shell(abs_shell).am();
 
             // Store the coefficients for each symmetry
-            SOCoefficients *coefficients_list;
-            coefficients_list = new SOCoefficients[src_dimension];
+            std::vector<SOCoefficients> coefficients_list(src_dimension);
             size_t salc_count = 0;
             for (int bf = 0; bf < src_nfunc; ++bf) {
                 size_t so_count = 0;
@@ -863,8 +755,6 @@ SO_block *PetiteList::compute_aotoso_info() {
                     throw PSIEXCEPTION("PetiteList::aotoso_info: internal error: impossible duplicate SO");
                 }
             }
-
-            delete[] coefficients_list;
         }
     }
     for (int h = 0; h < nirrep_; ++h) {
@@ -877,16 +767,6 @@ SO_block *PetiteList::compute_aotoso_info() {
             throw PSIEXCEPTION(err.str());
         }
     }
-
-    // Free the cached temporaries.
-    delete_atom_map(atom_map, mol);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int am = 0; am <= maxam; ++am) {
-            delete[] function_parities[h][am];
-        }
-        delete[] function_parities[h];
-    }
-    delete[] function_parities;
 
     return SOs;
 }
@@ -904,7 +784,7 @@ SharedMatrix PetiteList::aotoso() {
     //        return aoso;
     //    }
 
-    SO_block *SOs = compute_aotoso_info();
+    auto SOs = compute_aotoso_info();
 
     // There is an SO_block for each irrep
     for (int h = 0; h < nblocks(); ++h) {
@@ -913,10 +793,10 @@ SharedMatrix PetiteList::aotoso() {
 
         SO_block &sob = SOs[h];
 
-        for (int j = 0; j < sob.len; ++j) {
+        for (int j = 0; j < sob.len(); ++j) {
             SO &soj = sob.so[j];
 
-            for (int i = 0; i < soj.len; ++i) {
+            for (int i = 0; i < soj.len(); ++i) {
                 int ii = soj.cont[i].bfn;
 
                 aoso->set(h, ii, j, soj.cont[i].coef);
@@ -924,7 +804,6 @@ SharedMatrix PetiteList::aotoso() {
         }
     }
 
-    delete[] SOs;
     return aoso;
 }
 

@@ -30,6 +30,7 @@ import math
 
 import numpy as np
 import qcelemental as qcel
+from .constants import constants
 
 
 BOND_FACTOR = 1.2  # fudge factor for bond length threshold
@@ -65,9 +66,9 @@ def xyz2mol(self):
 
     # coordinates
     for i in range(self.natom()):
-        x = self.x(i) * qcel.constants.bohr2angstroms
-        y = self.y(i) * qcel.constants.bohr2angstroms
-        z = self.z(i) * qcel.constants.bohr2angstroms
+        x = self.x(i) * constants.bohr2angstroms
+        y = self.y(i) * constants.bohr2angstroms
+        z = self.z(i) * constants.bohr2angstroms
         if self.Z(i):
             text += ' %9.4f %9.4f %9.4f %-2s  0  0  0  0  0\n' % (x, y, z, self.symbol(i))
 
@@ -116,7 +117,7 @@ def _bond_profile(self):
 
     # determine bond topology from covalent radii
     bonds = []
-    b2a = qcel.constants.bohr2angstroms
+    b2a = constants.bohr2angstroms
     for i in range(self.natom()):
         for j in range(i + 1, self.natom()):
             try:
