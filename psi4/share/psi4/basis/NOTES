@@ -1,6 +1,18 @@
 *******************************************************************************
 *******************************************************************************
 
+Thursday, September 7, 2023 -- ECM
+
+[52] Added aug-cc-pVXZ OPTRI basis sets.
+
+    aug-cc-pvdz-optri.gbs
+    aug-cc-pvtz-optri.gbs
+    aug-cc-pvqz-optri.gbs
+    aug-cc-pv5z-optri.gbs
+
+*******************************************************************************
+*******************************************************************************
+
 Thursday, June 8, 2023 -- ECM
 
 [51] Updated and added F12 basis sets from BSE. Updated basissets
