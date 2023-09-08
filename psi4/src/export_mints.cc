@@ -1617,10 +1617,10 @@ void export_mints(py::module& m) {
         .def("integral", &OrbitalSpace::integral, "The integral factory used to create C")
         .def("dim", &OrbitalSpace::dim, "MO dimensions")
         .def("print_out", &OrbitalSpace::print, "Print information about the orbital space to the output file")
-	.def_static("build_cabs_space", &OrbitalSpace::build_cabs_space,
+	   .def_static("build_cabs_space", &OrbitalSpace::build_cabs_space,
                     "Given two spaces, it projects out one space from the other and returns the new spaces \
                     The first argument (orb_space) is the space to project out. The returned space will be orthogonal to this \
-                    The second argument (ri_space) is the space that is being projected on. The returned space = this space - orb_space \
+                    The second argument (ri_space) is the space that is being projected on. The returned space = ri_space - orb_space \
                     The third argument is the tolerance for linear dependencies",
                     "orb_space"_a, "ri_space"_a, "linear_tol"_a = 1.e-6)
         .def_static("build_ri_space", &OrbitalSpace::build_ri_space,

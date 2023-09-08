@@ -522,7 +522,34 @@ class BasisSet(object):
 
     @staticmethod
     def pyconstruct_combined(mol, keys, targets, fitroles, others):
+        """Builds a BasisSet object for *mol* (either a qcdb.Molecule or
+        a string that can be instantiated into one) from two basis set
+        specifications passed in as python functions or as a string that
+        names a basis to be applied to all atoms. The union of the two
+        basis sets can be used as an auxiliary basis set for F12 methods.
 
+        Parameters
+        ----------
+        mol : :py:class:`qcdb.Molecule` or dict or str
+            If not a :py:class:`qcdb.Molecule`, something that can be converted into one.
+            If the latter, the basisset dict is returned rather than the BasisSet object.
+            If you've got a psi4.core.Molecule, pass `qcdb.Molecule(psimol.to_dict())`.
+        keys : {'BASIS', 'CABS_BASIS'}
+            Labels to append to the two basis sets.
+        targets : str or function
+            Defines the basis sets to be combined.
+        fitroles : {'ORBITAL', 'F12'}
+        others :
+            Like `target` only supplies the definitions
+            for the orbital basis.
+
+        Returns
+        -------
+        bas : :py:class:`qcdb.BasisSet`
+            Built BasisSet object for `mol`.
+        dbas : dict, optional
+            Only returned if `mol` is a qcdb.Molecule. Suitable for feeding to libmints.
+        """
         # make sure the lengths are all the same
         if len(keys) != len(targets) or len(keys) != len(fitroles):
             raise ValidationError("""Lengths of keys, targets, and fitroles must be equal""")
@@ -543,16 +570,15 @@ class BasisSet(object):
         keywords = " + ".join(keys)
         blends = " + ".join([bas.name.upper() for bas in sets])
 
-        # work our way through the sets merging them
+        # merges the two maps of ShellInfo into one combined map
         combined_atom_basis_shell = collections.OrderedDict()
-        for at in range(len(sets)):
-            atom_basis_shell = sets[at].atom_basis_shell
+        for basis in sets:
+            atom_basis_shell = basis.atom_basis_shell
 
             for label, basis_map in atom_basis_shell.items():
                 if label not in combined_atom_basis_shell:
-                    combined_atom_basis_shell[label] = collections.OrderedDict()
-                    combined_atom_basis_shell[label][name] = []
-                for basis, shells in basis_map.items():
+                    combined_atom_basis_shell[label] = collections.OrderedDict.fromkeys([name], [])
+                for shells in basis_map.values():
                     combined_atom_basis_shell[label][name].extend(shells)
 
         # sort the shells by angular momentum
