@@ -30,10 +30,10 @@ def spaces():
 
     return [obs, cabs]
 
-@pytest.mark.parametrize("o1,o2", [(0, 0), (0, 1), (1, 0), (1, 1)])
-def test_orthonormality(spaces, o1, o2):
-    s1 = spaces[o1]
-    s2 = spaces[o2]
+@pytest.mark.parametrize("idx1,idx2", [(0, 0), (0, 1), (1, 0), (1, 1)])
+def test_orthonormality(spaces, idx1, idx2):
+    s1 = spaces[idx1]
+    s2 = spaces[idx2]
     bs1 = s1.basisset()
     bs2 = s2.basisset()
     C1 = np.array(s1.C())
@@ -42,7 +42,7 @@ def test_orthonormality(spaces, o1, o2):
     S_ao = np.array(mints.ao_overlap(bs1, bs2))
     S_mo = np.linalg.multi_dot([C1.T, S_ao, C2])
 
-    if o1 != o2:
+    if idx1 != idx2:
         np.testing.assert_allclose(S_mo, np.zeros((C1.shape[1], C2.shape[1])), rtol=1e-05, atol=1e-07)
     else:
         np.testing.assert_allclose(S_mo, np.eye(C1.shape[1]), rtol=1e-05, atol=1e-07)
