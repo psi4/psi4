@@ -1848,7 +1848,7 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
                 Vp[i][i] = 1.0;
             }
         }
-    }
+    } // End for loop
 }
 
 SharedMatrix Matrix::pseudoinverse(double condition, int &nremoved) {
