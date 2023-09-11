@@ -64,10 +64,6 @@
 #include <tuple>
 #include <memory>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 // In molecule.cc
 namespace psi {
 extern int str_to_int(const std::string &s);
