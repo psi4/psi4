@@ -421,10 +421,9 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3.10', None),
                        "numpy": ("https://numpy.org/doc/stable/", None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
                        'matplotlib': ('https://matplotlib.org/stable/', None),
-                       "qcelemental": ("http://docs.qcarchive.molssi.org/projects/QCElemental/en/latest/", None),
-                       "qcengine": ("http://docs.qcarchive.molssi.org/projects/QCEngine/en/latest/", None),
-                       "qcfractal": ("http://docs.qcarchive.molssi.org/projects/QCFractal/en/latest/", None),
-                       "qcportal": ("http://docs.qcarchive.molssi.org/projects/QCPortal/en/latest/", None),
+                       "qcelemental": ("https://molssi.github.io/QCElemental/", None),
+                       "qcengine": ("https://molssi.github.io/QCEngine/", None),
+                       "qcfractal": ("https://molssi.github.io/QCFractal/", None),
                       }
 
 
