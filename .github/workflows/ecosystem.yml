@@ -230,7 +230,7 @@ jobs:
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" run.yaml  # >=0.50b10
+          sed -i "s;- qcfractal;- qcfractal=0.50;g" run.yaml  # >=0.50b10
           sed -i "s;- qcportal;- postgresql;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
