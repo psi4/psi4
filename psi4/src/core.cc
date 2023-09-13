@@ -990,14 +990,19 @@ void py_psi_print_variable_map() {
              << std::fixed << std::setprecision(12) << it->second << std::endl;
     }
 
+
+    outfile->Printf("\n\n  Variable Map:");
+    outfile->Printf("\n  ----------------------------------------------------------------------------\n");
+    outfile->Printf("%s\n\n", line.str().c_str());
+
+    line = std::stringstream();
     for (std::map<std::string, SharedMatrix>::iterator it = Process::environment.arrays.begin();
          it != Process::environment.arrays.end(); ++it) {
         first_tmp = "\"" + it->first + "\"";
         line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right
-             << std::fixed << std::setprecision(12) << it->second->get(0,0) << std::endl;
+             << std::fixed << std::setprecision(12) << it->second->get(0,0) << " ... " << it->second->get(it->second->nrow()-1, it->second->ncol()-1) << " " << it->second->nrow() << " by " << it->second->ncol() << std::endl;
     }
-
-    outfile->Printf("\n\n  Variable Map:");
+    outfile->Printf("\n\n  Array Variable Map:");
     outfile->Printf("\n  ----------------------------------------------------------------------------\n");
     outfile->Printf("%s\n\n", line.str().c_str());
 }
