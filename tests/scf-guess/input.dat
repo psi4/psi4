@@ -21,7 +21,10 @@ set {
   docc [ 3, 0, 1, 1 ]
 }
 energy('scf')
-
+print("SCF TOTAL ENERGIES:", variable("SCF TOTAL ENERGIES"))
+print_variables()
+# -85.33505416384983
+compare_values(-85.33505416384983, variable("SCF TOTAL ENERGIES").np[0,0], 6, "INITIAL ITERATION")
 compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
 compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, CORE   guess (a.u.)");             #TEST
 

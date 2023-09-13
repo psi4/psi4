@@ -80,6 +80,7 @@ def scf_compute_energy(self):
         self.initialize_jk(self.memory_jk_)
     else:
         self.initialize()
+    self.iterene = []
 
     try:
         self.iterations()
@@ -96,6 +97,7 @@ def scf_compute_energy(self):
         core.print_out("  Energy and wave function converged.\n\n")
 
     scf_energy = self.finalize_energy()
+    print(self.iterene)
     return scf_energy
 
 
@@ -122,7 +124,7 @@ def initialize_jk(self, memory, jk=None):
     jk.set_omega(functional.x_omega())
 
     jk.set_omega_alpha(functional.x_alpha())
-    jk.set_omega_beta(functional.x_beta())   
+    jk.set_omega_beta(functional.x_beta())
 
     jk.initialize()
     jk.print_header()
@@ -225,7 +227,7 @@ def scf_initialize(self):
         optstash.restore()
 
         # Print out initial docc/socc/etc data
-        if self.get_print():                    
+        if self.get_print():
             lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['SAD']
             if core.get_global_option('GUESS') in ['SAD']:
                 lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['AUTO']
@@ -371,6 +373,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.set_energies("Total Energy", SCFE)
         core.set_variable("SCF ITERATION ENERGY", SCFE)
+        self.iterene.append(SCFE)
+
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
 
@@ -457,7 +461,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 if incfock_performed:
                     status.append("INCFOCK")
-                
+
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:
                     self.reset_occupation()
@@ -502,7 +506,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if frac_enabled and not self.frac_performed_:
             continue
 
-        # have we completed our post-early screening SCF iterations? 
+        # have we completed our post-early screening SCF iterations?
         if early_screening_disabled:
             scf_iter_post_screening += 1
             if scf_iter_post_screening >= scf_maxiter_post_screening and scf_maxiter_post_screening > 0:
@@ -680,6 +684,16 @@ def scf_finalize_energy(self):
     core.print_out("\n\n")
     self.print_energies()
 
+    # reshape to be 2-d
+    iterene = np.array(self.iterene).reshape(-1, 1)
+    core.print_out("iterene:")
+    print(iterene)
+    iterene = core.Matrix.from_array(iterene)
+    print(iterene.np)
+    iterene.print_out()
+    core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iterene))
+    self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iterene))
+
     self.clear_external_potentials()
     if core.get_option('SCF', 'PCM'):
         calc_type = core.PCM.CalcType.Total
@@ -845,6 +859,7 @@ core.HF.compute_energy = scf_compute_energy
 core.HF.finalize_energy = scf_finalize_energy
 core.HF.print_energies = scf_print_energies
 core.HF.print_preiterations = scf_print_preiterations
+core.HF.iterene = []
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):

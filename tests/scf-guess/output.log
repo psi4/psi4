@@ -1,0 +1,84 @@
+2023-09-13:15:46:47,338 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 1, 1], 'GUESS': 'CORE', 'REFERENCE': 'RHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2023-09-13:15:46:47,341 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=no, nre=5.28296716143095
+2023-09-13:15:46:47,669 INFO     [psi4.driver.driver:527] Return energy(): -100.05844594428044
+2023-09-13:15:46:47,689 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 1, 1], 'GUESS': 'GWH', 'REFERENCE': 'RHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2023-09-13:15:46:47,692 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=no, nre=5.28296716143095
+2023-09-13:15:46:47,900 INFO     [psi4.driver.driver:527] Return energy(): -100.05844594427973
+2023-09-13:15:46:47,920 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 1, 1], 'GUESS': 'SAD', 'REFERENCE': 'RHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2023-09-13:15:46:47,923 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=no, nre=5.28296716143095
+2023-09-13:15:46:48,209 INFO     [psi4.driver.driver:527] Return energy(): -100.05844594407557
+2023-09-13:15:46:48,228 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 1, 1], 'GUESS': 'SADNO', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'RHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2023-09-13:15:46:48,231 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=no, nre=5.28296716143095
+2023-09-13:15:46:48,496 INFO     [psi4.driver.driver:527] Return energy(): -100.058445944231
+2023-09-13:15:46:48,516 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 1, 1], 'GUESS': 'HUCKEL', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'RHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2023-09-13:15:46:48,519 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=no, nre=5.28296716143095
+2023-09-13:15:46:48,789 INFO     [psi4.driver.driver:527] Return energy(): -100.05844594424319
+2023-09-13:15:46:48,809 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 1, 1], 'GUESS': 'MODHUCKEL', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'RHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2023-09-13:15:46:48,812 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=no, nre=5.28296716143095
+2023-09-13:15:46:49,96 INFO     [psi4.driver.driver:527] Return energy(): -100.05844594424148
+2023-09-13:15:46:49,116 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 1, 1], 'GUESS': 'SAP', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'RHF', 'SCF_TYPE': 'PK', 'function_kwargs': {}}
+2023-09-13:15:46:49,119 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=no, nre=5.28296716143095
+2023-09-13:15:46:49,360 INFO     [psi4.driver.driver:527] Return energy(): -100.05844594415572
+2023-09-13:15:46:49,381 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'CORE', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'UHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:49,384 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:49,608 INFO     [psi4.driver.driver:527] Return energy(): -99.53122572199577
+2023-09-13:15:46:49,629 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'GWH', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'UHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:49,632 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:49,856 INFO     [psi4.driver.driver:527] Return energy(): -99.53122572214002
+2023-09-13:15:46:49,876 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SAD', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'UHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:49,879 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:50,204 INFO     [psi4.driver.driver:527] Return energy(): -99.5312257221215
+2023-09-13:15:46:50,224 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SADNO', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'UHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:50,227 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:50,538 INFO     [psi4.driver.driver:527] Return energy(): -99.53122572207228
+2023-09-13:15:46:50,558 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'HUCKEL', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'UHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:50,561 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:50,875 INFO     [psi4.driver.driver:527] Return energy(): -99.5312257220802
+2023-09-13:15:46:50,895 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'MODHUCKEL', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'UHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:50,898 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:51,239 INFO     [psi4.driver.driver:527] Return energy(): -99.53122572207478
+2023-09-13:15:46:51,259 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SAP', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'UHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:51,262 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:51,513 INFO     [psi4.driver.driver:527] Return energy(): -99.53122572166836
+2023-09-13:15:46:51,533 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'CORE', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:51,535 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:51,725 INFO     [psi4.driver.driver:527] Return energy(): -99.52617135108524
+2023-09-13:15:46:51,745 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'GWH', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:51,748 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:51,937 INFO     [psi4.driver.driver:527] Return energy(): -99.52617135123242
+2023-09-13:15:46:51,957 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SAD', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:51,960 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:52,239 INFO     [psi4.driver.driver:527] Return energy(): -99.52617135114173
+2023-09-13:15:46:52,259 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SADNO', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:52,262 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:52,545 INFO     [psi4.driver.driver:527] Return energy(): -99.5261713512296
+2023-09-13:15:46:52,565 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'HUCKEL', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:52,568 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:52,852 INFO     [psi4.driver.driver:527] Return energy(): -99.52617135123235
+2023-09-13:15:46:52,872 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'MODHUCKEL', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:52,875 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:53,162 INFO     [psi4.driver.driver:527] Return energy(): -99.5261713512318
+2023-09-13:15:46:53,182 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SAP', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'ROHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:53,185 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:53,407 INFO     [psi4.driver.driver:527] Return energy(): -99.5261713509843
+2023-09-13:15:46:53,427 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'CORE', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'CUHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:53,430 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:53,702 INFO     [psi4.driver.driver:527] Return energy(): -99.52617134754233
+2023-09-13:15:46:53,722 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'GWH', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'CUHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:53,725 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:53,973 INFO     [psi4.driver.driver:527] Return energy(): -99.52617135060017
+2023-09-13:15:46:53,993 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SAD', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'CUHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:53,996 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:54,298 INFO     [psi4.driver.driver:527] Return energy(): -99.52617134893828
+2023-09-13:15:46:54,319 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SADNO', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'CUHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:54,322 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:54,619 INFO     [psi4.driver.driver:527] Return energy(): -99.52617135147202
+2023-09-13:15:46:54,640 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'HUCKEL', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'CUHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:54,643 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:54,946 INFO     [psi4.driver.driver:527] Return energy(): -99.52617135169285
+2023-09-13:15:46:54,966 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'MODHUCKEL', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'CUHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:54,969 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:55,273 INFO     [psi4.driver.driver:527] Return energy(): -99.52617135168065
+2023-09-13:15:46:55,293 INFO     [psi4.driver.task_planner:283] PLANNING Atomic:  keywords={'DF_SCF_GUESS': 0, 'DOCC': [3, 0, 0, 1], 'GUESS': 'SAP', 'SCF__INTS_TOLERANCE': 1e-12, 'REFERENCE': 'CUHF', 'SCF_TYPE': 'PK', 'SOCC': [0, 0, 1, 0], 'function_kwargs': {}}
+2023-09-13:15:46:55,296 INFO     [psi4.driver.driver:524] Compute energy(): method=scf, basis=cc-pvtz, molecule=nocat, nre=5.28296716143095
+2023-09-13:15:46:55,539 INFO     [psi4.driver.driver:527] Return energy(): -99.52617134909208
