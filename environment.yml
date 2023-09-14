@@ -1,8 +1,9 @@
-name: p4env37
+name: p4env311
 channels:
-  - psi4/label/dev
-  - defaults
+  - conda-forge
+  - nodefaults
 dependencies:
-  - python=3.7
+  - python=3.11
   - psi4
-  - dftd3
+  - conda-forge/label/libint_dev::libint
+  - dftd3-python

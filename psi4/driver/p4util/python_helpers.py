@@ -37,21 +37,21 @@ Also, many Python extensions to core classes:
  - JK (constructor)
  - VBase (grid)
  - OEProp (avail prop)
-
+ - ERISieve (constructor)
 """
 
 __all__ = [
     "basis_helper",
     "pcm_helper",
+    "plump_qcvar",
     "set_options",
     "set_module_options",
-    "temp_circular_import_blocker",  # retire ASAP
 ]
 
 
+import math
 import os
 import re
-import sys
 import uuid
 import warnings
 from collections import Counter
@@ -61,13 +61,13 @@ from tempfile import NamedTemporaryFile
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-
 import qcelemental as qcel
-from psi4 import core
-from psi4.driver import qcdb
 
+from psi4 import core, extras
+
+from .. import qcdb
 from . import optproc
-from .exceptions import TestComparisonError, ValidationError, UpgradeHelper
+from .exceptions import TestComparisonError, UpgradeHelper, ValidationError
 
 ## Python basis helps
 
@@ -634,23 +634,22 @@ def pcm_helper(block: str):
     """
     import pcmsolver
 
-    with NamedTemporaryFile(mode="w+t", delete=True) as fl:
+    # delete=True works for Unix but not for Windows
+    with NamedTemporaryFile(mode="w+t", delete=False) as fl:
         fl.write(block)
         fl.flush()
         parsed_pcm = pcmsolver.parse_pcm_input(fl.name)
+        extras.register_scratch_file(fl.name)
 
     with NamedTemporaryFile(mode="w+t", delete=False) as fl:
         fl.write(parsed_pcm)
         core.set_local_option("PCM", "PCMSOLVER_PARSED_FNAME", fl.name)
+        extras.register_scratch_file(fl.name)  # retain with -m (messy) option
 
 
 def _basname(name: str) -> str:
     """Imitates :py:meth:`core.BasisSet.make_filename` without the gbs extension."""
     return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
-
-
-def temp_circular_import_blocker():
-    pass
 
 
 def basis_helper(block: str, name: str = '', key: str = 'BASIS', set_option: bool = True):
@@ -839,6 +838,64 @@ def _qcvar_warnings(key: str) -> str:
     return key
 
 
+def plump_qcvar(
+    key: str,
+    val: Union[float, str, List]) -> Union[float, np.ndarray]:
+    """Prepare serialized QCVariables for QCSchema AtomicResult.extras["qcvars"] by
+    converting flat arrays into numpy, shaped ones and floating strings.
+    Unlike _qcvar_reshape_get/set, multipoles aren't compressed or plumped, only reshaped.
+
+    Parameters
+    ----------
+    key
+        Shape clue (usually QCVariable key) that includes (case insensitive) an identifier like
+        'gradient' as a clue to the array's natural dimensions.
+    val
+        flat (?, ) list or scalar or string, probably from JSON storage.
+
+    Returns
+    -------
+    float or numpy.ndarray
+        Reshaped array of `val` with natural dimensions of `key`.
+
+    """
+    if isinstance(val, (np.ndarray, core.Matrix)):
+        raise TypeError
+    elif isinstance(val, list):
+        tgt = np.asarray(val)
+    else:
+        # presumably scalar. may be string
+        return float(val)
+
+    if key.upper().startswith("MBIS"):
+        if key.upper().endswith("CHARGES"):
+            reshaper = (-1, )
+        elif key.upper().endswith("DIPOLES"):
+            reshaper = (-1, 3)
+        elif key.upper().endswith("QUADRUPOLES"):
+            reshaper = (-1, 3, 3)
+        elif key.upper().endswith("OCTUPOLES"):
+            reshaper = (-1, 3, 3, 3)
+    elif key.upper().endswith("DIPOLE") or "DIPOLE -" in key.upper():
+        reshaper = (3, )
+    elif "QUADRUPOLE POLARIZABILITY TENSOR" in key.upper():
+        reshaper = (3, 3, 3)
+    elif any((key.upper().endswith(p) or f"{p} -" in key.upper()) for p in _multipole_order):
+        p = [p for p in _multipole_order if (key.upper().endswith(p) or f"{p} -" in key.upper())]
+        reshaper = tuple([3] * _multipole_order.index(p[0]))
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
+        reshaper = (-1, )
+    elif "GRADIENT" in key.upper():
+        reshaper = (-1, 3)
+    elif "HESSIAN" in key.upper():
+        ndof = int(math.sqrt(len(tgt)))
+        reshaper = (ndof, ndof)
+    else:
+        raise ValidationError(f'Uncertain how to reshape array: {key}')
+
+    return tgt.reshape(reshaper)
+
+
 _multipole_order = ["dummy", "dummy", "QUADRUPOLE", "OCTUPOLE", "HEXADECAPOLE"]
 for order in range(5, 10):
     _multipole_order.append(f"{int(2**order)}-POLE")
@@ -881,7 +938,7 @@ def _qcvar_reshape_set(key: str, val: np.ndarray) -> np.ndarray:
         return val
 
 
-def _qcvar_reshape_get(key: str, val: Union[core.Matrix, np.ndarray]) -> Union[core.Matrix, np.ndarray]:
+def _qcvar_reshape_get(key: str, val: core.Matrix) -> Union[core.Matrix, np.ndarray]:
     """For QCVariables where the 2D :py:class:`psi4.core.Matrix` shape is
     unnatural, convert to natural shape in :class:`numpy.ndarray`.
 
@@ -1493,3 +1550,42 @@ def _core_triplet(A, B, C, transA, transB, transC):
 
 core.Matrix.doublet = staticmethod(_core_doublet)
 core.Matrix.triplet = staticmethod(_core_triplet)
+
+
+@staticmethod
+def _core_erisieve_build(
+        orbital_basis: core.BasisSet,
+        cutoff: float = 0.0,
+        do_csam: bool = False
+    ) -> core.ERISieve:
+    """
+    This function previously constructed a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
+    ERI screening and an optional input to enable CSAM screening (over Schwarz screening).
+
+    However, as the ERISieve class was removed from Psi4 in v1.9, the function now throws with an UpgradeHelper
+    exception, and lets the user know to use TwoBodyAOInt instead.
+
+    Parameters
+    ----------
+    orbital_basis
+        Basis set to use in the ERISieve object.
+    cutoff
+        Integral cutoff threshold to use for Schwarz/CSAM screening. Defaults to 0.0, disabling screening entirely.
+    do_csam
+        Use CSAM screening? If True, CSAM screening is used; else, Schwarz screening is used. By default,
+        Schwarz screening is utilized.
+
+    Returns
+    -------
+    ERISieve
+        Initialized ERISieve object.
+
+    Example
+    -------
+    >>> sieve = psi4.core.ERISieve.build(bas, cutoff, csam)
+    """
+
+    raise UpgradeHelper("ERISieve", "TwoBodyAOInt", 1.8, " The ERISieve class has been removed and replaced with the TwoBodyAOInt class. ERISieve.build(orbital_basis, cutoff, do_csam) can be replaced with the command sequence factory = psi4.core.IntegralFactory(basis); factory.eri(0).")
+
+
+core.ERISieve.build = _core_erisieve_build

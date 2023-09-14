@@ -50,8 +50,9 @@ list(APPEND sources
 
 # l2intf is a listing of all the files that include libint2's boys.h include (which is included in L2's engine.h).  they must
 # all be built with the same C++ standard, which is currently chosen as C++14 due to
-# problems building with C++17 using Intel compilers on Linux.  Any files including
-# the engine.h should be added here instead of the sources list above.
+# problems building with C++17 using Intel compilers on Linux.
+# These problems were seen at least through version 2021.4 but were relieved by 2021.8
+# Any files including the engine.h should be added here instead of the sources list above.
 add_library(l2intf OBJECT 
 dipole.cc
 electricfield.cc
@@ -72,7 +73,7 @@ rel_potential.cc
 tracelessquadrupole.cc
 3coverlap.cc
   )
-set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
+set_property(TARGET l2intf PROPERTY CXX_STANDARD "${psi4_CXX_STANDARD_Libint2}")
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
 # * first brings OpenMP headers
@@ -85,6 +86,10 @@ target_link_libraries(l2intf
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
+target_compile_definitions(mints
+  PRIVATE
+    psi4_SHGSHELL_ORDERING=${psi4_SHGSHELL_ORDERING}
+  )
 
 # Always linked-to external projects
 target_link_libraries(mints

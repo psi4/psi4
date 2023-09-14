@@ -6,7 +6,7 @@ from addons import *
 @uusing("dftd3")
 @ctest_labeler("")
 def test_dftd3_psithon2():
-    ctest_runner(__file__, [
+    ctest_runner(__file__, extra_infiles=[
         "psiaux1/myccpvdzri.gbs",
         "psiaux1/S33.py",
         "psiaux1/myplugin1/doc.rst",

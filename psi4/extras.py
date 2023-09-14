@@ -30,8 +30,8 @@ import atexit
 import datetime
 import itertools
 import os
-from typing import List, Optional, Union
 from pathlib import Path
+from typing import List, Optional, Union
 
 from qcelemental.util import which, which_import
 
@@ -44,6 +44,11 @@ numpy_files = []
 
 def register_numpy_file(filename):
     if not filename.endswith('.npy'): filename += '.npy'
+    if filename not in numpy_files:
+        numpy_files.append(filename)
+
+
+def register_scratch_file(filename):
     if filename not in numpy_files:
         numpy_files.append(filename)
 
@@ -142,16 +147,16 @@ _addons_ = {
     "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@"),
     "libefp": which_import("pylibefp", return_bool=True),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
-    "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
+    "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "ipi": which_import("ipi", return_bool=True),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
     "cppe": which_import("cppe", return_bool=True),
     "ddx": which_import("pyddx", return_bool=True),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
-    "dftd3": psi4_which("dftd3", return_bool=True),
+    "dftd3": which_import("dftd3", return_bool=True),
     "cfour": psi4_which("xcfour", return_bool=True),
     "mrcc": psi4_which("dmrcc", return_bool=True),
-    "gcp": psi4_which("gcp", return_bool=True),
+    "gcp": psi4_which("mctc-gcp", return_bool=True),
     "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
     "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
     "forte": which_import("forte", return_bool=True),
@@ -179,7 +184,12 @@ def addons(request: str = None) -> Union[bool, List[str]]:
 
     """
     def strike(text):
-        return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
+        if os.name == "nt":
+            # Windows has a probably correctable problem with unicode, but I can't iterate it quickly, so use tilde for strike.
+            #   UnicodeEncodeError: 'charmap' codec can't encode character '\u0336' in position 3: character maps to <undefined>
+            return "~" + text + "~"
+        else:
+            return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
 
     if request is None:
         return [(k if v else strike(k)) for k, v in sorted(_addons_.items())]
@@ -274,6 +284,7 @@ def set_output_file(
 
     # Get the custom logger
     import logging
+
     from psi4 import logger
     if not inherit_loglevel:
         logger.setLevel(loglevel)

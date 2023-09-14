@@ -45,7 +45,7 @@ foreach(test_name aediis-1
                   dct10 dct11 dct12 ao-dfcasscf-sp density-screen-1 density-screen-2 dfcasscf-sa-sp
                   dfcasscf-fzc-sp dfcasscf-sp dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1
                   dfccsd-t-grad1
-                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-fc dfmp2-freq1 dfmp2-freq2
+                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-5 dfmp2-fc dfmp2-freq1 dfmp2-freq2
                   dfccsd-grad2 dfccsd-t-grad2 dfccsdat2 dfccsdt2
                   dfmp2-grad1 dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
@@ -53,11 +53,11 @@ foreach(test_name aediis-1
                   dforemp-grad1 dforemp-grad2 dfremp-1 dfremp-2
                   dft-grad-lr1 dft-grad-lr2 dft-grad-lr3 dft-grad-disk
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
-                  dft-freq dft-freq-analytic dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
+                  dft-freq dft-freq-analytic1 dft-freq-analytic2 dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
                   dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnomp2-1 dlpnomp2-2 dlpnomp2-3
                   docs-bases docs-dft explicit-am-basis extern1 extern2 extern3
                   fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext fsapt-ext-abc fsapt-ext-abc2
-                  fsapt-ext-abc-au isapt1 isapt2
+                  fsapt-ext-abc-au isapt1 isapt2 isapt-siao1 fisapt-siao1 isapt-charged
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2
                   fci-coverage
                   fcidump

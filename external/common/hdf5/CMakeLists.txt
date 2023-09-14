@@ -24,7 +24,7 @@ if(ENABLE_ambit OR ENABLE_CheMPS2)
 
     include(CMakePackageConfigHelpers)
 
-    set(CMAKECONFIG_INSTALL_DIR "share/cmake/${PN}")
+    set(CMAKECONFIG_INSTALL_DIR "${TargetHDF5_INSTALL_CMAKEDIR}")
     configure_package_config_file(${PN}Config.cmake.in
                                   "${CMAKE_CURRENT_BINARY_DIR}/${PN}Config.cmake"
                                   INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
@@ -47,7 +47,7 @@ if(ENABLE_ambit OR ENABLE_CheMPS2)
         ${CMAKE_COMMAND} "-DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}" -P "${PROJECT_BINARY_DIR}/cmake_install.cmake"
         COMMENT "Installing Psi4-detected HDF5")
 
-    set(${PN}_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/${PN} CACHE PATH "path to externally detected ${PN}Config.cmake" FORCE)
+    set(${PN}_DIR ${STAGED_INSTALL_PREFIX}/${TargetHDF5_INSTALL_CMAKEDIR} CACHE PATH "path to externally detected ${PN}Config.cmake" FORCE)
 else()
     add_library(hdf5_external INTERFACE)  # dummy
 endif()

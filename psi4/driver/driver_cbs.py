@@ -142,27 +142,35 @@ CompositeComputer.get_psi_results()
 
 """
 
-import math
+import copy
+import logging
 import re
 import sys
-import copy
-import pprint
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
-import logging
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from pydantic import Field, validator
+
+try:
+    from pydantic.v1 import Field, validator
+except ImportError:
+    from pydantic import Field, validator
+
 from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
-from psi4.driver import driver_util, p4util, pp
-from psi4.driver import qcdb
-from psi4.driver.driver_cbs_helper import composite_procedures, register_composite_function, register_xtpl_function, xtpl_procedures  # lgtm[py/unused-import]
-from psi4.driver.driver_util import UpgradeHelper
-from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
+
+from . import driver_util, p4util, qcdb
+from .constants import pp
+from .driver_cbs_helper import (  # lgtm[py/unused-import]
+    composite_procedures,
+    register_composite_function,
+    register_xtpl_function,
+    xtpl_procedures,
+)
+from .driver_util import UpgradeHelper
+from .p4util.exceptions import ValidationError
+from .procrouting.interface_cfour import cfour_psivar_list
+from .task_base import AtomicComputer, BaseComputer, EnergyGradientHessianWfnReturn
 
 if TYPE_CHECKING:
     import qcportal
@@ -573,6 +581,8 @@ def _validate_cbs_inputs(cbs_metadata: CBSMetadata, molecule: Union["qcdb.Molecu
         Validated list of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
     """
+
+    # TODO: split options into mixable (qc_module=ccenergy/"") or non-mixable (freeze_core=true/false)
 
     metadata = []
     for iitem, item in enumerate(cbs_metadata):
@@ -1020,7 +1030,6 @@ def cbs(func, label, **kwargs):
     >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme='corl_xtpl_helgaker_2', func=cbs)
 
     """
-    pass
 
 
 ##  Aliases  ##
@@ -1635,10 +1644,10 @@ class CompositeComputer(BaseComputer):
                     mc['f_gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
             if 'CURRENT DIPOLE' in task.extras['qcvars']:
-                mc['f_dipole'] = np.array(task.extras['qcvars']['CURRENT DIPOLE'])
+                mc['f_dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
 
             if 'CURRENT DIPOLE GRADIENT' in task.extras['qcvars']:
-                mc['f_dipder'] = np.array(task.extras['qcvars']['CURRENT DIPOLE GRADIENT'])
+                mc['f_dipder'] = task.extras['qcvars']['CURRENT DIPOLE GRADIENT']
 
             # Fill in energies for subsumed methods
             if self.metameta['ptype'] == 'energy':
@@ -1742,11 +1751,15 @@ class CompositeComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('CBS QCSchema\n' + pp.pformat(cbs_model.dict()))
+        logger.debug('CBS QCSchema:\n' + pp.pformat(cbs_model.dict()))
 
         return cbs_model
 
-    def get_psi_results(self, return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
+    def get_psi_results(
+        self,
+        client: Optional["qcportal.FractalClient"] = None,
+        *,
+        return_wfn: bool = False) -> EnergyGradientHessianWfnReturn:
         """Called by driver to assemble results into Composite-flavored QCSchema,
         then reshape and return them in the customary Psi4 driver interface: ``(e/g/h, wfn)``.
 
@@ -1770,7 +1783,7 @@ class CompositeComputer(BaseComputer):
             Wavefunction described above when *return_wfn* specified.
 
         """
-        cbs_model = self.get_results()
+        cbs_model = self.get_results(client=client)
 
         if cbs_model.driver == 'energy':
             ret_ptype = cbs_model.return_result

@@ -111,10 +111,11 @@ and further parameters allow to influence details of discretisation,
 numerical integration and iterative solvers,
 see the next sections for details.
 
-.. note:: At present dd-based solvation models
-          can only be used for energy calculations with SCF
-          wavefunctions. All ERI algorithms (``PK``, ``OUT_OF_CORE``, ``DIRECT``, ``DF``,
-          ``CD``) are supported.
+.. note:: At present PCM can only be used for energy calculations with SCF
+          wavefunctions in the PTE approximation [Cammi:2009:164104]_.
+          All ERI algorithms (``PK``, ``OUT_OF_CORE``, ``DIRECT``, ``DF``, ``CD``) are supported.
+
+.. note:: linear response calculations (static polarisabilities, TD-SCF) are supported for RHF/UHF if available.
 
 .. warning:: Currently the ddx interface **cannot** exploit molecular point group symmetry.
 

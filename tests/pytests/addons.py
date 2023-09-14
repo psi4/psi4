@@ -26,6 +26,13 @@ def is_psi4_new_enough(version_feature_introduced):
     return parse_version(psi4.__version__) >= parse_version(version_feature_introduced)
 
 
+def is_qcfractal_new_enough(version_feature_introduced):
+    if not which_import('qcfractal', return_bool=True):
+        return False
+    import qcfractal
+    return parse_version(qcfractal.__version__) >= parse_version(version_feature_introduced)
+
+
 def is_nvidia_gpu_present():
     try:
         import GPUtil
@@ -60,7 +67,7 @@ _programs = {
     "ambit": psi4.addons("ambit"),
     "cct3": which_import("cct3", return_bool=True),
     "chemps2": psi4.addons("chemps2"),
-    "cppe": which_import("cppe", return_bool=True),  # package pycppe, import cppe
+    "cppe": which_import("cppe", return_bool=True),  # package psi4::pycppe or conda-forge::cppe, import cppe
     "ddx": which_import("pyddx", return_bool=True),
     "dkh": psi4.addons("dkh"),
     "ecpint": psi4.addons("ecpint"),
@@ -68,7 +75,7 @@ _programs = {
     "erd": psi4.addons("erd"),
     "fockci": which_import("psi4fockci", return_bool=True),  # package fockci, import psi4fockci
     "forte": which_import("forte", return_bool=True),
-    "gdma": psi4.addons("gdma"),
+    "gdma": which_import("gdma", return_bool=True),  # package pygdma, import gdma
     "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
     "ipi": which_import("ipi", return_bool=True),
     "mrcc": which("dmrcc", return_bool=True),
@@ -81,6 +88,7 @@ _programs = {
     "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
     "qcdb": False,  # capabilities of in-psi and out-of-psi qcdb not aligned
     "qcfractal": which_import("qcfractal", return_bool=True),
+    "qcfractal_next": is_qcfractal_new_enough("0.49"),
     "qcportal": which_import("qcportal", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
 }
@@ -168,10 +176,11 @@ hardware_nvidia_gpu = pytest.mark.skipif(
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
 
 
-def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
+def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = None, setenv: List = None):
     """Called from a mock PyTest function, this takes a full path ``inputdatloc`` to an ``"input.dat"`` file set up for
     CTest and submits it to the ``psi4`` executable. Any auxiliary files with names listed in ``extra_infiles`` that reside
-    alongside ``inputdatloc`` are placed in the Psi4 execution directory.
+    alongside ``inputdatloc`` are placed in the Psi4 execution directory. Any strings listed in ``setenv`` are available
+    in the test as environment variables set to "1".
 
     """
     from qcengine.util import execute
@@ -185,6 +194,10 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
         env["PYTHONPATH"] += os.pathsep + str(psiimport)
     else:
         env["PYTHONPATH"] = str(psiimport)
+
+    if setenv:
+        for ev in setenv:
+            env[ev] = "1"
 
     ctestdir = Path(inputdatloc).resolve().parent
 

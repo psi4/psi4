@@ -2,7 +2,7 @@ from addons import *
 
 @ctest_labeler("quick;cubeprop")
 def test_cubeprop():
-    ctest_runner(__file__, [
+    ctest_runner(__file__, extra_infiles=[
         "Psi_a_1_1-A1.cube.ref",
         "Psi_a_2_2-A1.cube.ref",
         "Psi_a_3_1-B2.cube.ref",

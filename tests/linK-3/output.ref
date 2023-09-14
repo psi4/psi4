@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.7a1.dev131 
+                               Psi4 1.8a1.dev68 
 
-                         Git: Rev {dpoole34/dfjlink} 548ccaa dirty
+                         Git: Rev {dpoole34/compositejk-pilot-ref} 78ba1c2 
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -19,7 +19,8 @@
                             Additional Code Authors
     E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
     J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
-    P. Verma, M. H. Lechner, and A. Jiang
+    P. Verma, M. H. Lechner, A. Jiang, S. Behnle, A. G. Heide,
+    M. F. Herbst, and D. L. Poole
 
              Previous Authors, Complete List of Code Contributors,
                        and Citations for Specific Modules
@@ -30,11 +31,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 03 November 2022 10:16AM
+    Psi4 started on: Monday, 08 May 2023 09:31AM
 
-    Process ID: 13034
+    Process ID: 817499
     Host:       ds6
-    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4
+    PSIDATADIR: /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -67,7 +68,7 @@ molecule mol {
 
 set {
     reference uhf
-    scf_type link 
+    scf_type dfdirj+link
     df_scf_guess false
     basis 6-31G*
     e_convergence 1.0e-10
@@ -79,24 +80,26 @@ set {
 
 uhf_energy = energy('scf')
 psi4.compare_values(uhf_energy, uhf_ref, 8, "UHF Energy (using LinK algo)")
+compare(1, variable("SCF ITERATIONS") < 19.0, "UHF LinK Incfock Efficient")
 
 set reference rohf
 rohf_energy = energy('scf')
 psi4.compare_values(rohf_energy, rohf_ref, 8, "ROHF Energy (using LinK algo)")
+compare(1, variable("SCF ITERATIONS") < 19.0, "ROHF LinK Incfock Efficient")
 --------------------------------------------------------------------------
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Nov  3 10:16:16 2022
+*** at Mon May  8 09:31:57 2023
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   111 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/6-31gs.gbs 
-    atoms 7-12 entry H          line    44 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/6-31gs.gbs 
+    atoms 1-6  entry C          line   111 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/6-31gs.gbs 
+    atoms 7-12 entry H          line    44 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -143,7 +146,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -167,24 +170,33 @@ Scratch directory: /scratch/dpoole34/
     Name: (6-31G* AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJLinK: Density-Fitted J and Linear Exchange K <==
+  ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:          Yes
     Screening Type:        DENSITY
+
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
+
     J Screening Cutoff:      1E-12
+
+  ==> LinK: Linear Exchange K <==
+
     K Screening Cutoff:      1E-12
+
   Minimum eigenvalue in the overlap matrix is 5.0916634930E-04.
-  Reciprocal condition number of the overlap matrix is 6.6215194190E-05.
+  Reciprocal condition number of the overlap matrix is 6.6215194189E-05.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -203,31 +215,35 @@ Scratch directory: /scratch/dpoole34/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter SAD:  -229.97628349801749   -2.29976e+02   0.00000e+00 
-   @UHF iter   1:  -230.34049812990114   -3.64215e-01   2.84897e-03 ADIIS/DIIS
-   @UHF iter   2:  -230.40556115546858   -6.50630e-02   9.10573e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   3:  -230.41345636158741   -7.89521e-03   4.49251e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   4:  -230.41572974153297   -2.27338e-03   1.91643e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   5:  -230.41688607751883   -1.15634e-03   1.04622e-04 ADIIS/DIIS/INCFOCK
-   @UHF iter   6:  -230.41726728449058   -3.81207e-04   3.44251e-05 DIIS
-   @UHF iter   7:  -230.41729518028336   -2.78958e-05   8.95035e-06 DIIS/INCFOCK
-   @UHF iter   8:  -230.41729655766810   -1.37738e-06   3.00576e-06 DIIS
-   @UHF iter   9:  -230.41729673019231   -1.72524e-07   7.62041e-07 DIIS
-   @UHF iter  10:  -230.41729674143991   -1.12476e-08   3.40281e-07 DIIS
-   @UHF iter  11:  -230.41729674488283   -3.44292e-09   2.27475e-07 DIIS
-   @UHF iter  12:  -230.41729674660360   -1.72076e-09   1.91708e-07 DIIS
-   @UHF iter  13:  -230.41729674887131   -2.26771e-09   1.56673e-07 DIIS
-   @UHF iter  14:  -230.41729675274422   -3.87291e-09   6.68673e-08 DIIS
-   @UHF iter  15:  -230.41729675337785   -6.33634e-10   1.79330e-08 DIIS
-   @UHF iter  16:  -230.41729675339195   -1.40972e-11   6.35053e-09 DIIS
+   @UHF iter SAD:  -229.97628349801798   -2.29976e+02   0.00000e+00 
+   @UHF iter   1:  -230.34049812990119   -3.64215e-01   2.84897e-03 DIIS/ADIIS
+   @UHF iter   2:  -230.40556115546877   -6.50630e-02   9.10573e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   3:  -230.41345636158763   -7.89521e-03   4.49251e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   4:  -230.41572974153326   -2.27338e-03   1.91643e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   5:  -230.41688607751891   -1.15634e-03   1.04622e-04 DIIS/ADIIS/INCFOCK
+   @UHF iter   6:  -230.41726728449024   -3.81207e-04   3.44251e-05 DIIS
+   @UHF iter   7:  -230.41729518028293   -2.78958e-05   8.95035e-06 DIIS/INCFOCK
+   @UHF iter   8:  -230.41729655766835   -1.37739e-06   3.00576e-06 DIIS
+   @UHF iter   9:  -230.41729673019270   -1.72524e-07   7.62041e-07 DIIS
+   @UHF iter  10:  -230.41729674144077   -1.12481e-08   3.40281e-07 DIIS
+   @UHF iter  11:  -230.41729674488272   -3.44195e-09   2.27475e-07 DIIS
+   @UHF iter  12:  -230.41729674660309   -1.72037e-09   1.91708e-07 DIIS
+   @UHF iter  13:  -230.41729674887114   -2.26805e-09   1.56673e-07 DIIS
+   @UHF iter  14:  -230.41729675274394   -3.87280e-09   6.68673e-08 DIIS
+   @UHF iter  15:  -230.41729675337768   -6.33747e-10   1.79330e-08 DIIS
+   @UHF iter  16:  -230.41729675339184   -1.41540e-11   6.35052e-09 DIIS
+  Energy and wave function converged with early screening.
+  Performing final iteration with tighter screening.
+
+   @UHF iter  17:  -230.41729675339334   -1.50635e-12   3.00871e-09 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   1.219466508E-01
+   @Spin Contamination Metric:   1.219468320E-01
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                8.719466508E-01
+   @S^2 Observed:                8.719468320E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -271,7 +287,7 @@ Scratch directory: /scratch/dpoole34/
       88A      2.651758    89A      2.754711    90A      2.829543  
       91A      2.834632    92A      2.845688    93A      2.849651  
       94A      2.853931    95A      3.155925    96A      3.560784  
-      97A      4.268478    98A      4.283486    99A      4.316104  
+      97A      4.268478    98A      4.283486    99A      4.316105  
      100A      4.500565   101A      4.529669   102A      4.858167  
 
     Beta Occupied:                                                        
@@ -298,7 +314,7 @@ Scratch directory: /scratch/dpoole34/
       48A      0.711420    49A      0.789096    50A      0.895848  
       51A      0.903070    52A      0.905349    53A      0.907096  
       54A      0.920398    55A      0.967268    56A      0.973288  
-      57A      0.992480    58A      1.025602    59A      1.082334  
+      57A      0.992480    58A      1.025603    59A      1.082334  
       60A      1.091238    61A      1.162980    62A      1.166731  
       63A      1.245499    64A      1.289388    65A      1.430327  
       66A      1.477670    67A      1.483733    68A      1.533917  
@@ -306,12 +322,12 @@ Scratch directory: /scratch/dpoole34/
       72A      1.818111    73A      1.855331    74A      1.940939  
       75A      1.946953    76A      2.073049    77A      2.083670  
       78A      2.153608    79A      2.162983    80A      2.229714  
-      81A      2.235518    82A      2.237627    83A      2.242293  
+      81A      2.235518    82A      2.237627    83A      2.242294  
       84A      2.397960    85A      2.406458    86A      2.412472  
       87A      2.644963    88A      2.650397    89A      2.766686  
       90A      2.835291    91A      2.840646    92A      2.845055  
       93A      2.853429    94A      2.858682    95A      3.158146  
-      96A      3.563340    97A      4.275249    98A      4.295468  
+      96A      3.563340    97A      4.275249    98A      4.295469  
       99A      4.315031   100A      4.511714   101A      4.527289  
      102A      4.862323  
 
@@ -322,20 +338,20 @@ Scratch directory: /scratch/dpoole34/
     NA   [    21 ]
     NB   [    20 ]
 
-  @UHF Final Energy:  -230.41729675339195
+  @UHF Final Energy:  -230.41729675339334
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9941107152576478
-    Two-Electron Energy =                 269.8658826015868044
-    Total Energy =                       -230.4172967533919518
+    One-Electron Energy =                -703.9941117519526870
+    Two-Electron Energy =                 269.8658836382804793
+    Total Energy =                       -230.4172967533933161
 
   UHF NO Occupations:
   HONO-2 :   19  A 1.9835690
-  HONO-1 :   20  A 1.9574752
+  HONO-1 :   20  A 1.9574751
   HONO-0 :   21  A 1.0000000
-  LUNO+0 :   22  A 0.0425248
+  LUNO+0 :   22  A 0.0425249
   LUNO+1 :   23  A 0.0164310
   LUNO+2 :   24  A 0.0005171
   LUNO+3 :   25  A 0.0005079
@@ -356,36 +372,37 @@ Properties computed using the SCF density matrix
  ------------------------------------------------------------------------------------
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
- Dipole X            :        144.1022059         -147.6125312           -3.5103252
+ Dipole X            :        144.1022060         -147.6125312           -3.5103252
  Dipole Y            :         22.3598607          -22.9024868           -0.5426261
- Dipole Z            :         -0.0000000            0.0000000           -0.0000000
+ Dipole Z            :          0.0000000            0.0000000            0.0000000
  Magnitude           :                                                    3.5520172
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Nov  3 10:16:51 2022
+*** tstop() called on ds6 at Mon May  8 09:32:33 2023
 Module time:
-	user time   =      34.44 seconds =       0.57 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =         35 seconds =       0.58 minutes
+	user time   =      35.81 seconds =       0.60 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         36 seconds =       0.60 minutes
 Total time:
-	user time   =      34.44 seconds =       0.57 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =         35 seconds =       0.58 minutes
+	user time   =      35.81 seconds =       0.60 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         36 seconds =       0.60 minutes
     UHF Energy (using LinK algo)..........................................................PASSED
+    UHF LinK Incfock Efficient............................................................PASSED
 
 Scratch directory: /scratch/dpoole34/
 
 *** tstart() called on ds6
-*** at Thu Nov  3 10:16:51 2022
+*** at Mon May  8 09:32:33 2023
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   111 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/6-31gs.gbs 
-    atoms 7-12 entry H          line    44 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/6-31gs.gbs 
+    atoms 1-6  entry C          line   111 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/6-31gs.gbs 
+    atoms 7-12 entry H          line    44 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -432,7 +449,7 @@ Scratch directory: /scratch/dpoole34/
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is LINK.
+  SCF Algorithm Type is DFDIRJ+LINK.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -456,24 +473,33 @@ Scratch directory: /scratch/dpoole34/
     Name: (6-31G* AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-dfjlink/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1-6  entry C          line   121 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-12 entry H          line    51 file /theoryfs2/ds/dpoole34/Documents/Codes/psi4-compositejk-pilot-ref/psi4-install/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJLinK: Density-Fitted J and Linear Exchange K <==
+  ==> CompositeJK: Mix-and-Match J+K Algorithm Combos <==
 
     J tasked:                  Yes
+    J algorithm:            DFDIRJ
     K tasked:                  Yes
+    K algorithm:              LINK
     wK tasked:                  No
     Integrals threads:           1
     Memory [MiB]:              375
     Incremental Fock:          Yes
     Screening Type:        DENSITY
+
+  ==> DF-DirJ: Integral-Direct Density-Fitted J <==
+
     J Screening Cutoff:      1E-12
+
+  ==> LinK: Linear Exchange K <==
+
     K Screening Cutoff:      1E-12
+
   Minimum eigenvalue in the overlap matrix is 5.0916634930E-04.
-  Reciprocal condition number of the overlap matrix is 6.6215194190E-05.
+  Reciprocal condition number of the overlap matrix is 6.6215194189E-05.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -492,17 +518,21 @@ Scratch directory: /scratch/dpoole34/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter SAD:  -229.97628349801749   -2.29976e+02   0.00000e+00 
+   @ROHF iter SAD:  -229.97628349801801   -2.29976e+02   0.00000e+00 
    @ROHF iter   1:  -230.34049812990099   -3.64215e-01   1.97150e-03 DIIS
-   @ROHF iter   2:  -230.39754842942511   -5.70503e-02   5.92347e-04 DIIS/INCFOCK
+   @ROHF iter   2:  -230.39754842942534   -5.70503e-02   5.92347e-04 DIIS/INCFOCK
    @ROHF iter   3:  -230.40213224295314   -4.58381e-03   2.54181e-04 DIIS/INCFOCK
-   @ROHF iter   4:  -230.40285594951069   -7.23707e-04   2.60662e-05 DIIS/INCFOCK
-   @ROHF iter   5:  -230.40286971683986   -1.37673e-05   1.09670e-05 DIIS/INCFOCK
-   @ROHF iter   6:  -230.40287161530762   -1.89847e-06   2.55354e-06 DIIS
-   @ROHF iter   7:  -230.40287183399181   -2.18684e-07   5.54114e-07 DIIS
-   @ROHF iter   8:  -230.40287184255340   -8.56159e-09   6.63256e-08 DIIS
-   @ROHF iter   9:  -230.40287184266884   -1.15449e-10   2.77789e-08 DIIS
-   @ROHF iter  10:  -230.40287184268692   -1.80762e-11   1.23581e-08 DIIS
+   @ROHF iter   4:  -230.40285594951104   -7.23707e-04   2.60662e-05 DIIS/INCFOCK
+   @ROHF iter   5:  -230.40286971684026   -1.37673e-05   1.09670e-05 DIIS/INCFOCK
+   @ROHF iter   6:  -230.40287161530773   -1.89847e-06   2.55354e-06 DIIS
+   @ROHF iter   7:  -230.40287183399255   -2.18685e-07   5.54114e-07 DIIS
+   @ROHF iter   8:  -230.40287184255305   -8.56051e-09   6.63256e-08 DIIS
+   @ROHF iter   9:  -230.40287184266913   -1.16074e-10   2.77789e-08 DIIS
+   @ROHF iter  10:  -230.40287184268681   -1.76783e-11   1.23581e-08 DIIS
+  Energy and wave function converged with early screening.
+  Performing final iteration with tighter screening.
+
+   @ROHF iter  11:  -230.40287184269221   -5.40012e-12   3.69592e-09 DIIS
   Energy and wave function converged.
 
 
@@ -517,7 +547,7 @@ Scratch directory: /scratch/dpoole34/
        4A    -11.491900     5A    -11.448961     6A    -11.448708  
        7A     -1.388454     8A     -1.254756     9A     -1.239477  
       10A     -1.053703    11A     -1.051760    12A     -0.935635  
-      13A     -0.862766    14A     -0.855312    15A     -0.824865  
+      13A     -0.862765    14A     -0.855312    15A     -0.824865  
       16A     -0.802499    17A     -0.721547    18A     -0.718163  
       19A     -0.703127    20A     -0.553184  
 
@@ -528,7 +558,7 @@ Scratch directory: /scratch/dpoole34/
     Virtual:                                                              
 
       22A     -0.070934    23A     -0.061047    24A      0.044050  
-      25A      0.101007    26A      0.113271    27A      0.140711  
+      25A      0.101007    26A      0.113272    27A      0.140711  
       28A      0.146847    29A      0.149789    30A      0.160773  
       31A      0.258610    32A      0.259238    33A      0.277736  
       34A      0.281315    35A      0.443033    36A      0.499336  
@@ -538,9 +568,9 @@ Scratch directory: /scratch/dpoole34/
       46A      0.622535    47A      0.687925    48A      0.700359  
       49A      0.779015    50A      0.891832    51A      0.899893  
       52A      0.900877    53A      0.905843    54A      0.920109  
-      55A      0.965157    56A      0.969071    57A      0.990973  
+      55A      0.965157    56A      0.969072    57A      0.990973  
       58A      1.023214    59A      1.076426    60A      1.090406  
-      61A      1.158025    62A      1.166322    63A      1.243207  
+      61A      1.158026    62A      1.166322    63A      1.243207  
       64A      1.275244    65A      1.418828    66A      1.475919  
       67A      1.480289    68A      1.519813    69A      1.528712  
       70A      1.544908    71A      1.562104    72A      1.806511  
@@ -562,14 +592,14 @@ Scratch directory: /scratch/dpoole34/
     NA   [    21 ]
     NB   [    20 ]
 
-  @ROHF Final Energy:  -230.40287184268692
+  @ROHF Final Energy:  -230.40287184269221
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9664594759925649
-    Two-Electron Energy =                 269.8526562730267528
-    Total Energy =                       -230.4028718426869204
+    One-Electron Energy =                -703.9664612139101791
+    Two-Electron Energy =                 269.8526580109390807
+    Total Energy =                       -230.4028718426922069
 
 Computation Completed
 
@@ -586,25 +616,26 @@ Properties computed using the SCF density matrix
  ------------------------------------------------------------------------------------
 
  L = 1.  Multiply by 2.5417464519 to convert [e a0] to [Debye]
- Dipole X            :        144.1020342         -147.6125312           -3.5104969
- Dipole Y            :         22.3602178          -22.9024868           -0.5422690
- Dipole Z            :          0.0000000            0.0000000            0.0000000
- Magnitude           :                                                    3.5521324
+ Dipole X            :        144.1020344         -147.6125312           -3.5104968
+ Dipole Y            :         22.3602175          -22.9024868           -0.5422694
+ Dipole Z            :         -0.0000000            0.0000000           -0.0000000
+ Magnitude           :                                                    3.5521323
 
  ------------------------------------------------------------------------------------
 
-*** tstop() called on ds6 at Thu Nov  3 10:17:13 2022
+*** tstop() called on ds6 at Mon May  8 09:32:56 2023
 Module time:
-	user time   =      21.58 seconds =       0.36 minutes
+	user time   =      23.39 seconds =       0.39 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =         22 seconds =       0.37 minutes
+	total time  =         23 seconds =       0.38 minutes
 Total time:
-	user time   =      56.05 seconds =       0.93 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =         57 seconds =       0.95 minutes
+	user time   =      59.23 seconds =       0.99 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =         59 seconds =       0.98 minutes
     ROHF Energy (using LinK algo).........................................................PASSED
+    ROHF LinK Incfock Efficient...........................................................PASSED
 
-    Psi4 stopped on: Thursday, 03 November 2022 10:17AM
-    Psi4 wall time for execution: 0:00:56.40
+    Psi4 stopped on: Monday, 08 May 2023 09:32AM
+    Psi4 wall time for execution: 0:00:59.55
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -1,0 +1,14 @@
+molecule {
+0 2
+Li
+}
+
+set basis def2-SVP
+set reference uhf
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+wfn = energy('mp2', return_wfn=True)[1]
+
+compare_values(0.0, wfn.variable("MP2 CORRELATION ENERGY"), 7, "MP2 Correlation Energy") #TEST

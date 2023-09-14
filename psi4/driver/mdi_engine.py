@@ -43,9 +43,18 @@ import psi4
 
 _have_mdi = False
 try:
-    from mdi import MDI_Init, MDI_MPI_get_world_comm, MDI_Accept_Communicator, \
-        MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_INT, MDI_DOUBLE, \
-        MDI_Register_Node, MDI_Register_Command
+    from mdi import (
+        MDI_DOUBLE,
+        MDI_INT,
+        MDI_Accept_Communicator,
+        MDI_Init,
+        MDI_MPI_get_world_comm,
+        MDI_Recv,
+        MDI_Recv_Command,
+        MDI_Register_Command,
+        MDI_Register_Node,
+        MDI_Send,
+    )
     _have_mdi = True
 except ImportError:
     pass
@@ -81,7 +90,10 @@ class MDIEngine():
 
         # Molecule all MDI operations are performed on
         input_molecule = kwargs.pop('molecule', psi4.core.get_active_molecule())
+        _ini_cart = getattr(input_molecule, "_initial_cartesian", None)
         self.molecule = input_molecule.clone()
+        if _ini_cart:
+            self.molecule._initial_cartesian = _ini_cart
         psi4.core.set_active_molecule(self.molecule)
 
         # Most recent SCF energy
@@ -157,7 +169,8 @@ class MDIEngine():
         """
         unit_name = self.molecule.units()
         if unit_name == "Angstrom":
-            unit_conv = qcel.constants.bohr2angstroms
+            # beware if MDI and psi4 choose different sets of constants
+            unit_conv = psi4.driver.constants.bohr2angstroms
         elif unit_name == "Bohr":
             unit_conv = 1.0
         else:
@@ -270,6 +283,7 @@ class MDIEngine():
             coords = MDI_Recv(3 * natom, MDI_DOUBLE, self.comm)
         matrix = psi4.core.Matrix.from_array(np.array(coords).reshape(-1, 3))
         self.molecule.set_geometry(matrix)
+        self.molecule._initial_cartesian = matrix
 
     # Respond to the >MASSES command
     def recv_masses(self, masses=None):

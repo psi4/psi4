@@ -32,10 +32,9 @@ databases. Contains Molecule class and physical constants from psi4 suite.
 __version__ = '0.4'
 __author__ = 'Lori A. Burns'
 
-from qcelemental import constants, periodictable
-
 # Load Python modules
 import sys
+from .constants import constants
 from .molecule import Molecule, compute_atom_map
 from .dbproc import *
 from .options import *

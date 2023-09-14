@@ -1,5 +1,5 @@
     if(${ENABLE_PCMSolver})
-    find_package(PCMSolver 1.2.1 CONFIG QUIET)
+    find_package(PCMSolver 1.2.3 CONFIG QUIET)
 
     if(${PCMSolver_FOUND})
         get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
@@ -21,9 +21,12 @@
             set(_so_only OFF)
         endif()
 
+        set(_pcmsolver_dir "share/cmake/PCMSolver")
+
         ExternalProject_Add(pcmsolver_external
             #URL https://github.com/PCMSolver/pcmsolver/archive/v1.3.1.tar.gz
-            URL https://github.com/loriab/pcmsolver/archive/v1211.tar.gz
+            #URL https://github.com/loriab/pcmsolver/archive/v1211.tar.gz
+            URL https://github.com/loriab/pcmsolver/archive/v123_plus_ming.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -35,7 +38,8 @@
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DPYTHON_INTERPRETER=${Python_EXECUTABLE}
+                       -DPCMSolver_INSTALL_CMAKEDIR=${_pcmsolver_dir}
+                       -DPython_EXECUTABLE=${Python_EXECUTABLE}
                        -DSTATIC_LIBRARY_ONLY=${_a_only}
                        -DSHARED_LIBRARY_ONLY=${_so_only}
                        -DENABLE_OPENMP=OFF
@@ -55,7 +59,7 @@
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS})
 
-        set(PCMSolver_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/PCMSolver CACHE PATH "path to internally built PCMSolverConfig.cmake" FORCE)
+        set(PCMSolver_DIR ${STAGED_INSTALL_PREFIX}/${_pcmsolver_dir} CACHE PATH "path to internally built PCMSolverConfig.cmake" FORCE)
     endif()
 else()
     add_library(pcmsolver_external INTERFACE)  # dummy

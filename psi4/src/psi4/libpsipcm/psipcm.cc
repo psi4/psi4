@@ -153,6 +153,7 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
 
     context_ = detail::init_PCMSolver(pcmsolver_parsed_fname_, molecule);
     outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
+    pcmsolver_citation(detail::host_writer);
     pcmsolver_print(context_.get());
     ntess_ = pcmsolver_get_cavity_size(context_.get());
     ntessirr_ = pcmsolver_get_irreducible_cavity_size(context_.get());

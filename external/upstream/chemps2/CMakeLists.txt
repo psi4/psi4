@@ -47,8 +47,8 @@ if(${ENABLE_CheMPS2})
                        -DCMAKE_NM=${CMAKE_NM}
                        -DENABLE_TESTS=OFF
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
-                       -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
-                       -DTargetHDF5_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5
+                       -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
+                       -DTargetHDF5_DIR=${TargetHDF5_DIR}
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}

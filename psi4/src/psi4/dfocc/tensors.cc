@@ -1717,32 +1717,21 @@ void Tensor2d::pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip, int st
 
 }  //
 
-void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff) {
-    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, 1, eigvectors->A2d_, cutoff);
-
-}  //
-
 void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
-                           bool ascending) {
-    int matz;
-    if (ascending)
-        matz = 1;
-    else
-        matz = 3;
-    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, matz, eigvectors->A2d_, cutoff);
-
-}  //
+                           bool ascending /* = true*/) {
+    if (dim1_ == dim2_) {
+        diagonalize(dim1_, eigvectors, eigvalues, cutoff, ascending);
+    } else {
+        throw PSIEXCEPTION("Tensor2d::diagonalize cannot diagonalize non-square matrices!");
+    }
+}
 
 void Tensor2d::diagonalize(int dim, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
                            bool ascending) {
-    int matz;
-    if (ascending)
-        matz = 1;
-    else
-        matz = 3;
-    sq_rsp(dim, dim, A2d_, eigvalues->A1d_, matz, eigvectors->A2d_, cutoff);
-
-}  //
+    const auto ret = ascending ? DSYEV_ascending(dim, A2d_, eigvalues->A1d_, eigvectors->A2d_)
+                               : DSYEV_descending(dim, A2d_, eigvalues->A1d_, eigvectors->A2d_);
+    if (ret != 0) throw PSIEXCEPTION("DSYEV failed in dfoccwave::Tensor2d::diagonalize");
+}
 
 void Tensor2d::cdgesv(const SharedTensor1d &Xvec) {
     if (dim1_) {

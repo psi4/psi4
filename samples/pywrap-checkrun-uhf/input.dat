@@ -26,7 +26,7 @@ set df_basis_cc cc-pvdz-ri
 Earray = [
   'SCF',
   'CCSD',
-  'CCSD(T)',
+  #'CCSD(T)',  # activate with qc_module=ccenergy
   'MP2',
   'DCT',
   'OMP2',

@@ -1,5 +1,11 @@
 #! Sample HF/cc-pVDZ H2O computation all derivatives
 
+distributed = os.environ.get("_PSI4_USE_QCF", False)
+if distributed:
+    from qcfractal.snowflake import FractalSnowflake
+    snowflake = FractalSnowflake()
+    client = snowflake.client()
+
 memory 600 mb
 
 molecule h2o {
@@ -17,15 +23,35 @@ compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
 gradient('scf')
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient')  #TEST
 
-gradient('scf', dertype=0)
+if distributed:
+    plan = gradient('scf', dertype=0, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    plan.get_psi_results(client)
+else:
+    gradient('scf', dertype=0)
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF gradient by energy')  #TEST
 
 hessian('scf')
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF hessian')  #TEST
 
-hessian('scf', dertype=1)
+if distributed:
+    plan = hessian('scf', dertype=1, return_plan=True)
+    plan.compute(client)
+    snowflake.await_results()
+    plan.get_psi_results(client)
+else:
+    hessian('scf', dertype=1)
 compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF hessian by gradient')  #TEST
 
-#hessian('scf', dertype=0)
+#if distributed:
+#    plan = hessian('scf', dertype=0, return_plan=True)
+#    plan.compute(client)
+#    snowflake.await_results()
+#    plan.get_psi_results(client)
+#else:
+#    hessian('scf', dertype=0)
 #compare_values(ans, variable('SCF TOTAL ENERGY'), 6, 'SCF hessian by energy')  #TEST
 
+if distributed:
+    snowflake.stop()

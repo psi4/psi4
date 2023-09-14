@@ -855,9 +855,9 @@ void export_mints(py::module& m) {
         .def("connectivity", &Molecule::connectivity, "Gets molecule connectivity")
         .def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry,
              "Do reinterpret coordinate entries during update_geometry().")
-        .def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame")
+        .def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame. Expert use only; use before molecule finalized by update_geometry.")
         .def("fix_com", &Molecule::set_com_fixed,
-             "Sets whether to fix the Cartesian position, or to translate to the C.O.M.")
+             "Sets whether to fix the Cartesian position, or to translate to the C.O.M. Expert use only; use before molecule finalized by update_geometry.")
         .def("orientation_fixed", &Molecule::orientation_fixed, "Get whether or not orientation is fixed")
         .def("com_fixed", &Molecule::com_fixed, "Gets whether or not center of mass is fixed")
         .def("symmetry_from_input", &Molecule::symmetry_from_input, "Returns the symmetry specified in the input")
@@ -1521,9 +1521,13 @@ void export_mints(py::module& m) {
         .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a)
         .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a, "bs1"_a,
              "bs2"_a, "bs3"_a, "bs4"_a)
-        .def("ao_f12g12", &MintsHelper::ao_f12g12, "AO F12G12 integrals", "corr"_a)
-        .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
+        .def("ao_f12g12", normal_f12(&MintsHelper::ao_f12g12), "AO F12G12 integrals", "corr"_a)
+        .def("ao_f12g12", normal_f122(&MintsHelper::ao_f12g12), "AO F12G12 integrals", "corr"_a, "bs1"_a,
+             "bs2"_a, "bs3"_a, "bs4"_a)
+        .def("ao_f12_double_commutator", normal_f12(&MintsHelper::ao_f12_double_commutator), "AO F12 double commutator integrals",
              "corr"_a)
+        .def("ao_f12_double_commutator", normal_f122(&MintsHelper::ao_f12_double_commutator), "AO F12 double commutator integrals", "corr"_a, "bs1"_a,
+             "bs2"_a, "bs3"_a, "bs4"_a)
 	.def("f12_cgtg", &MintsHelper::f12_cgtg, "F12 Fitted Slater Correlation Factor", "exponent"_a = 1.0)
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
         .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overlap integrals", "bs1"_a, "bs2"_a,
@@ -1613,20 +1617,18 @@ void export_mints(py::module& m) {
         .def("integral", &OrbitalSpace::integral, "The integral factory used to create C")
         .def("dim", &OrbitalSpace::dim, "MO dimensions")
         .def("print_out", &OrbitalSpace::print, "Print information about the orbital space to the output file")
-        .def_static("build_cabs_space", &OrbitalSpace::build_cabs_space,
+	   .def_static("build_cabs_space", &OrbitalSpace::build_cabs_space,
                     "Given two spaces, it projects out one space from the other and returns the new spaces \
                     The first argument (orb_space) is the space to project out. The returned space will be orthogonal to this \
-                    The second argument (ri_space) is the space that is being projected on. The returned space = this space - orb_space \
+                    The second argument (ri_space) is the space that is being projected on. The returned space = ri_space - orb_space \
                     The third argument is the tolerance for linear dependencies",
-                    "orb_space"_a, "ri_space"_a, "linear_tol"_a)
+                    "orb_space"_a, "ri_space"_a, "linear_tol"_a = 1.e-6)
         .def_static("build_ri_space", &OrbitalSpace::build_ri_space,
-                    "Given two basis sets, it merges the basis sets and then constructs an orthogonalized \
+                    "Given combined basis sets, it constructs an orthogonalized \
                     space with the same span. Linearly dependent orbitals are thrown out. \
-                    The first argument, molecule, is the molecule to construct the basis for \
-                    The second argument, obs_key, is the option keyword for orbital basis set 'BASIS' \
-                    The third argument, aux_key, is the option keyword for auxiliery basis set 'DF_BASIS_MP2' \
-                    The fourth argument, lindep_tol, is the tolerance for linear dependencies",
-                    "molecule"_a, "obs_key"_a, "aux_key"_a, "lindep_tol"_a);
+                    The first argument, combined, is the two basis sets together but unorthogonalized \
+                    The second argument, lindep_tol, is the tolerance for linear dependencies",
+                    "combined"_a, "lindep_tol"_a = 1.e-6);
 
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")
@@ -1717,4 +1719,11 @@ void export_mints(py::module& m) {
         .def("shell_significant", &ERISieve::shell_significant);
 
     m.def("test_matrix_dpd_interface", &psi::test_matrix_dpd_interface);
+
+    m.def("_libint2_configuration", []() { return libint2::configuration_accessor(); },
+        "Returns string with codes detailing the integral classes, angular momenta, and ordering \
+        characteristics of the linked Libint2. Prefer the processed libint2_configuration function.");
+
+    m.def("_libint2_solid_harmonics_ordering", []() { return int(libint2::solid_harmonics_ordering()); },
+        "Libint2 SH setting");
 }

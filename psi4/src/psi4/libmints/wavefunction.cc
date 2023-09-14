@@ -519,22 +519,16 @@ void Wavefunction::common_init() {
     // Make sure that the multiplicity is reasonable
     int multiplicity = molecule_->multiplicity();
     if (multiplicity - 1 > nelectron) {
-        char *str = new char[200];
-        sprintf(str,
-                "There are not enough electrons for multiplicity = %d.\n"
-                "Please check your input",
-                multiplicity);
-        throw SanityCheckError(str, __FILE__, __LINE__);
-        delete[] str;
+        std::ostringstream oss;
+        oss << "There are not enough electrons for multiplicity = " << multiplicity << ".\n";
+        oss << "Please check your input";
+        throw SanityCheckError(oss.str(), __FILE__, __LINE__);
     }
     if (multiplicity % 2 == nelectron % 2) {
-        char *str = new char[200];
-        sprintf(str,
-                "A multiplicity of %d with %d electrons is impossible.\n"
-                "Please check your input",
-                multiplicity, nelectron);
-        throw SanityCheckError(str, __FILE__, __LINE__);
-        delete[] str;
+        std::ostringstream oss;
+        oss << "A multiplicity of " << multiplicity << " with " << nelectron << " electrons is impossible.\n";
+        oss << "Please check your input";
+        throw SanityCheckError(oss.str(), __FILE__, __LINE__);
     }
 
     nbeta_ = (nelectron - multiplicity + 1) / 2;
@@ -606,16 +600,19 @@ void Wavefunction::common_init() {
             atomCoordinates.push_back(molecule_->fz(atomIndex));
         }
 
-        brianCOMSetMolecule(&brianCookie, &totalCharge, &spinMultiplicity, &atomCount, atomCoordinates.data(), atomicNumbers.data());
+        brianCOMSetMolecule(&brianCookie, &totalCharge, &spinMultiplicity, &atomCount, atomCoordinates.data(),
+                            atomicNumbers.data());
         checkBrian();
 
         std::vector<brianInt> shellSchemas(basisset_->max_am() + 1, -1);
         for (unsigned int shellIndex = 0; shellIndex < basisset_->nshell(); shellIndex++) {
             int shellType = basisset_->shell(shellIndex).am();
-            brianInt shellSchema = basisset_->shell(shellIndex).is_pure() ? BRIAN_SHELL_SCHEMA_SPHERICAL_PSI4 : BRIAN_SHELL_SCHEMA_CARTESIAN_STANDARD;
+            brianInt shellSchema = basisset_->shell(shellIndex).is_pure() ? BRIAN_SHELL_SCHEMA_SPHERICAL_PSI4
+                                                                          : BRIAN_SHELL_SCHEMA_CARTESIAN_STANDARD;
 
             if (shellSchemas[shellType] != -1 and shellSchemas[shellType] != shellSchema) {
-                throw PSIEXCEPTION("BrianQC needs shells of the same angular momentum to be either all pure or all cartesian\n");
+                throw PSIEXCEPTION(
+                    "BrianQC needs shells of the same angular momentum to be either all pure or all cartesian\n");
             }
 
             shellSchemas[shellType] = shellSchema;
@@ -632,7 +629,7 @@ void Wavefunction::common_init() {
         std::vector<brianInt> shellPrefactorOffsets;
         std::vector<double> prefactors;
         for (unsigned int shellIndex = 0; shellIndex < basisset_->nshell(); shellIndex++) {
-            const GaussianShell& shell = basisset_->shell(shellIndex);
+            const GaussianShell &shell = basisset_->shell(shellIndex);
             shellAtomIndices.push_back(shell.ncenter());
             shellMinTypes.push_back(shell.am());
             shellMaxTypes.push_back(shell.am());
@@ -647,22 +644,25 @@ void Wavefunction::common_init() {
 
         brianInt basisRole = BRIAN_BASIS_ROLE_ORBITAL;
 
-        // NOTE: if we ever want to use BrianQC's SAD initial guess, then we will need to find the basis name here and map it to the macro value
+        // NOTE: if we ever want to use BrianQC's SAD initial guess, then we will need to find the basis name here and
+        // map it to the macro value
         brianInt basisSetID = BRIAN_BASIS_SET_CUSTOM;
-        brianCOMSetBasis(&brianCookie, &basisRole, &basisSetID, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data());
+        brianCOMSetBasis(&brianCookie, &basisRole, &basisSetID, shellSchemas.data(), &shellCount,
+                         shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(),
+                         shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(),
+                         shellPrefactorOffsets.data(), prefactors.data());
         checkBrian();
 
         if (options_.get_str("REFERENCE") == "RHF" or options_.get_str("REFERENCE") == "RKS") {
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_RHF;
-        }
-        else if (options_.get_str("REFERENCE") == "UHF" or options_.get_str("REFERENCE") == "UKS" or options_.get_str("REFERENCE") == "CUHF") {
-            // CUHF is different from UHF, but Fock building works the same, so for the time being we just set BrianQC to UHF
+        } else if (options_.get_str("REFERENCE") == "UHF" or options_.get_str("REFERENCE") == "UKS" or
+                   options_.get_str("REFERENCE") == "CUHF") {
+            // CUHF is different from UHF, but Fock building works the same, so for the time being we just set BrianQC
+            // to UHF
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_UHF;
-        }
-        else if (options_.get_str("REFERENCE") == "ROHF") {
+        } else if (options_.get_str("REFERENCE") == "ROHF") {
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_ROHF;
-        }
-        else {
+        } else {
             throw PSIEXCEPTION("Currently, BrianQC can only handle RHF, RKS, UHF, UKS, CUHF and ROHF calculations");
         }
 
@@ -771,7 +771,9 @@ std::map<std::string, std::shared_ptr<BasisSet>> Wavefunction::basissets() const
 
 std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) { return mintshelper_->get_basisset(label); }
 
-void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) { return mintshelper_->set_basisset(label, basis); }
+void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) {
+    return mintshelper_->set_basisset(label, basis);
+}
 
 bool Wavefunction::basisset_exists(std::string label) { return mintshelper_->basisset_exists(label); }
 
@@ -945,7 +947,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
 }
 
 SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, const std::string &basis,
-                                                const std::string matrix_basename) const {
+                                                const std::string matrix_basename, bool MO_as_overlap) const {
     if (basis == "AO") {
         auto temp = std::vector<double>(AO2SO_->max_ncol() * AO2SO_->max_nrow());
         std::string m2_name = matrix_basename + " (AO basis)";
@@ -998,30 +1000,37 @@ SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C, 
         return M2;
     } else if (basis == "MO") {
         std::string m2_name = matrix_basename + " (MO basis)";
-        auto M2 = std::make_shared<Matrix>(m2_name, C->colspi(), C->colspi());
+        SharedMatrix M2;
+        if (MO_as_overlap) {
+            M2 = std::make_shared<Matrix>(m2_name, C->colspi(), C->colspi());
 
-        int symm = M->symmetry();
-        int nirrep = M->nirrep();
+            int symm = M->symmetry();
+            int nirrep = M->nirrep();
 
-        auto SC = std::vector<double>(C->max_ncol() * C->max_nrow());
-        auto temp = std::vector<double>(C->max_ncol() * C->max_nrow());
-        for (int h = 0; h < nirrep; h++) {
-            int nmol = C->colspi()[h];
-            int nmor = C->colspi()[h ^ symm];
-            int nsol = C->rowspi()[h];
-            int nsor = C->rowspi()[h ^ symm];
-            if (!nmol || !nmor || !nsol || !nsor) continue;
-            double **Slp = S_->pointer(h);
-            double **Srp = S_->pointer(h ^ symm);
-            double **Clp = C->pointer(h);
-            double **Crp = C->pointer(h ^ symm);
-            double **Mmop = M2->pointer(h);
-            double **Msop = M->pointer(h);
+            auto SC = std::vector<double>(C->max_ncol() * C->max_nrow());
+            auto temp = std::vector<double>(C->max_ncol() * C->max_nrow());
+            for (int h = 0; h < nirrep; h++) {
+                int nmol = C->colspi()[h];
+                int nmor = C->colspi()[h ^ symm];
+                int nsol = C->rowspi()[h];
+                int nsor = C->rowspi()[h ^ symm];
+                if (!nmol || !nmor || !nsol || !nsor) continue;
+                double **Slp = S_->pointer(h);
+                double **Srp = S_->pointer(h ^ symm);
+                double **Clp = C->pointer(h);
+                double **Crp = C->pointer(h ^ symm);
+                double **Mmop = M2->pointer(h);
+                double **Msop = M->pointer(h);
 
-            C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC.data(), nmor);
-            C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Msop[0], nsor, SC.data(), nmor, 0.0, temp.data(), nmor);
-            C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC.data(), nmol);
-            C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC.data(), nmol, temp.data(), nmor, 0.0, Mmop[0], nmor);
+                C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC.data(), nmor);
+                C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Msop[0], nsor, SC.data(), nmor, 0.0, temp.data(), nmor);
+                C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC.data(), nmol);
+                C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC.data(), nmol, temp.data(), nmor, 0.0, Mmop[0], nmor);
+            }
+        } else {
+            M2 = M->clone();
+            M2->transform(C);
+            M2->set_name(m2_name);
         }
         return M2;
     } else {
@@ -1188,11 +1197,11 @@ SharedMatrix Wavefunction::Db_subset(const std::string &basis) const {
 }
 
 SharedMatrix Wavefunction::Fa_subset(const std::string &basis) const {
-    return matrix_subset_helper(Fa_, Ca_, basis, "Fock");
+    return matrix_subset_helper(Fa_, Ca_, basis, "Fock", false);
 }
 
 SharedMatrix Wavefunction::Fb_subset(const std::string &basis) const {
-    return matrix_subset_helper(Fb_, Cb_, basis, "Fock");
+    return matrix_subset_helper(Fb_, Cb_, basis, "Fock", false);
 }
 
 SharedVector Wavefunction::epsilon_a_subset(const std::string &basis, const std::string &subset) const {

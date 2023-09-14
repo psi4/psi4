@@ -73,7 +73,7 @@ __geoms = {
 }
 
 
-def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
+def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-8):
     E, V = fock_term(density_matrix)
 
     perturbation = np.random.random(density_matrix.np.shape)
@@ -87,6 +87,7 @@ def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
     assert abs(delta - delta_ref) < tol
 
 
+@pytest.mark.smoke
 @pytest.mark.quick
 @uusing("ddx")
 @pytest.mark.parametrize("inp", [
@@ -95,21 +96,23 @@ def _base_test_fock(fock_term, density_matrix, eps=1e-4, tol=1e-6):
        "dm": core.Matrix.from_array(np.array([[0.]])),
        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "radii": [1.0]},
        "ref": -0.2645886054599999,  # from Gaussian
-       "tol": 1e-6,
    }, id='h'),
    pytest.param({
        "geom": __geoms["h2"],
        "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
        "ddx": {"model": "cosmo", "solvent_epsilon": 1e8, "eta": 0, "radii": [1.5873, 1.5873]},
        "ref": -0.0002016948,  # from Gaussian
-       "tol": 1e-6,
-   }, id='h2'),
+   }, id='h2cosmo'),
+   pytest.param({
+       "geom": __geoms["h2"],
+       "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
+       "ddx": {"model": "pcm", "solvent_epsilon": 80, "radii": [1.5873, 1.5873]},
+   }, id='h2pcm'),
    pytest.param({
        "geom": __geoms["h2"],
        "dm": core.Matrix.from_array(0.6682326961201372 * np.ones((2, 2))),
        "ddx": {"model": "lpb", "solvent_epsilon": 80, "solvent_kappa": 1.5,
                "radii": [1.5873, 1.5873]},
-       "tol": 5e-6,
    }, id='h2lpb'),
 ])
 def test_ddx_fock_build(inp):
@@ -140,7 +143,7 @@ def test_ddx_fock_build(inp):
         E, V, _ = ddx_iface.get_solvation_contributions(density_matrix)
         return E, V
 
-    _base_test_fock(get_EV, inp["dm"], tol=inp["tol"])
+    _base_test_fock(get_EV, inp["dm"], tol=1e-8)
 
     if "ref" in inp:
         E, _ = get_EV(inp["dm"])
@@ -188,24 +191,25 @@ def test_ddx_limiting_cases():
     e_cosmo, v_cosmo = ddenergy("cosmo", solvent_epsilon=1e12)
 
     e_lpb_einf, v_lpb_einf = ddenergy("lpb", solvent_kappa=0.1, solvent_epsilon=1e12)
-    e_lpb0, v_lpb0 = ddenergy("lpb", solvent_kappa=1e-3, solvent_epsilon=80.0)
-    e_lpbinf, v_lpbinf = ddenergy("lpb", solvent_kappa=8, solvent_epsilon=80.0)
+    e_lpb0, v_lpb0 = ddenergy("lpb", solvent_kappa=1e-5, solvent_epsilon=80.0)
+    e_lpbinf, v_lpbinf = ddenergy("lpb", solvent_kappa=10, solvent_epsilon=80.0)
 
-    assert abs(e_pcminf - e_cosmo) / abs(e_cosmo) < 1e-5
-    assert abs(e_pcminf - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
-    assert abs(e_cosmo - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
-    assert abs(e_lpbinf - e_lpb_einf) / abs(e_lpb_einf) < 1e-4
-    assert abs(e_lpbinf - e_cosmo) / abs(e_cosmo) < 1e-4
-    assert abs(e_lpbinf - e_pcminf) / abs(e_pcminf) < 1e-4
-    assert abs(e_lpb0 - e_pcm) / abs(e_pcm) < 1e-3
+    assert abs(e_pcminf - e_cosmo)    / abs(e_cosmo)    < 1e-10  # noqa: E221
+    assert abs(e_pcminf - e_lpb_einf) / abs(e_lpb_einf) < 1e-10  # noqa: E221
+    assert abs(e_cosmo  - e_lpb_einf) / abs(e_lpb_einf) < 1e-10  # noqa: E221
+    assert abs(e_lpb0   - e_pcm)      / abs(e_pcm)      < 1e-5   # noqa: E221
+    assert abs(e_lpbinf - e_lpb_einf) / abs(e_lpb_einf) < 1e-4   # noqa: E221
+    assert abs(e_lpbinf - e_cosmo)    / abs(e_cosmo)    < 1e-4   # noqa: E221
+    assert abs(e_lpbinf - e_pcminf)   / abs(e_pcminf)   < 1e-4   # noqa: E221
 
-    assert np.max(np.abs(v_pcminf.np - v_cosmo.np)) < 1e-5
-    assert np.max(np.abs(v_pcminf.np - v_lpb_einf.np)) < 1e-4
-    assert np.max(np.abs(v_cosmo.np - v_lpb_einf.np)) < 1e-4
-    assert np.max(np.abs(v_lpbinf.np - v_lpb_einf.np)) < 1e-4
-    assert np.max(np.abs(v_lpbinf.np - v_cosmo.np)) < 1e-4
-    assert np.max(np.abs(v_lpbinf.np - v_pcminf.np)) < 1e-4
-    assert np.max(np.abs(v_lpb0.np - v_pcm.np)) < 1e-3
+    assert np.max(np.abs(v_pcminf.np - v_cosmo.np))    < 1e-10   # noqa: E221
+    assert np.max(np.abs(v_pcminf.np - v_lpb_einf.np)) < 1e-10   # noqa: E221
+    assert np.max(np.abs(v_cosmo.np  - v_lpb_einf.np)) < 1e-10   # noqa: E221
+    assert np.max(np.abs(v_lpb0.np   - v_pcm.np))      < 1e-5    # noqa: E221
+    assert np.max(np.abs(v_lpbinf.np - v_lpb_einf.np)) < 1e-4    # noqa: E221
+    assert np.max(np.abs(v_lpbinf.np - v_cosmo.np))    < 1e-4    # noqa: E221
+    assert np.max(np.abs(v_lpbinf.np - v_pcminf.np))   < 1e-4    # noqa: E221
+
 
 @pytest.mark.quick
 @uusing("ddx")
@@ -283,13 +287,13 @@ def test_ddx_rhf_reference(inp):
         "geom": __geoms["fcm"],
         "basis": "cc-pvdz",
         "ddx": {"model": "pcm", "solvent": "water", "radii_set": "uff", },
-        "ref": -597.9718942424215,
+        "ref": -597.9718943192062,
     }, id='fcm-pcm'),
     pytest.param({
         "geom": __geoms["nh3"],
         "basis": "cc-pvdz",
         "ddx": {"model": "lpb", "solvent": "water", "radii_set": "uff", "solvent_kappa": 0.11},
-        "ref": -56.19598597466339,
+        "ref": -56.1988043810054,
     }, id='nh3-lpb'),
 ])
 def test_ddx_rhf_consistency(inp):
@@ -321,6 +325,114 @@ def test_ddx_eri_algorithms(scf_type):
         "ddx_solvent": "water",
         "ddx_radii_set": "uff",
     })
-    ref = -56.1715394
+    if scf_type in ("df", "cd"):
+        tol = 4
+    else:
+        tol = 9
+
+    ref = -56.171546236617495
     scf_e = psi4.energy('SCF')
-    assert compare_values(ref, scf_e, 4, "Total SCF energy with DDX versus reference data")
+    assert compare_values(ref, scf_e, tol, "Total SCF energy with DDX versus reference data")
+
+@pytest.mark.quick
+@uusing("ddx")
+def test_ddx_tdscf_pcmsolver():
+    # PCMsolver reference values, same as in tests/pcmsolver/tdscf
+    exc_energies = np.array([  # Hartree
+        0.08972598844884663,
+        0.2719972189552112,
+        0.33525624703045037,
+        0.3713900898382711,
+        0.3762084431466903,
+    ])
+
+    osc_strengths = np.array([
+        0.00414272407997719,
+        4.590977316768732e-28,
+        0.005715258102198367,
+        0.018432750255865125,
+        0.006434117688452513,
+    ])
+
+    scf_ref = -55.5218518303635165
+
+    psi4.geometry("""
+        0, 2
+        N  0.000000000000     0.000000000000    -0.079859033927
+        H  0.000000000000    -0.803611003426     0.554794694632
+        H  0.000000000000     0.803611003426     0.554794694632
+        symmetry c1
+        units angstrom
+        """)
+
+    psi4.set_options({
+        "reference":      "uhf",
+        "scf_type":       "pk",
+        "basis":          "def2-SVP",
+        "e_convergence":  10,
+        "maxiter":        50,
+        "tdscf_states":   5,
+        #
+        "ddx":            True,
+        "ddx_model":      "pcm",
+        "ddx_solvent":    "water",
+        "ddx_radii_set":  "uff",   # Make it compatible with pcmsolver
+        'ddx_radii_scaling': 1.2,  # Make it compatible with pcmsolver
+    })
+
+    scf_e = psi4.energy("TD-SCF")
+    assert compare_values(scf_ref, scf_e, 4, "Total SCF energy with DDX versus reference data")
+
+    f_calc = []
+    e_calc = []
+    for i in range(5):
+        e_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
+        f_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A TRANSITION'))
+    compare_arrays(exc_energies, e_calc, 4, 'PCM EXCITATION ENERGY ')
+    compare_arrays(osc_strengths, f_calc, 4, 'PCM OSCILLATOR STRENGTH ')
+
+
+@pytest.mark.quick
+@uusing("ddx")
+def test_ddx_tdscf_gaussian():
+    # Reference test against Gaussian
+    exc_energies = np.array([  # eV
+        9.7131, 11.6679, 11.9693, 14.0604, 16.0886, 20.3350, 33.4852, 34.1673, 35.3953, 35.6058,
+    ])
+    psi4.geometry("""
+        O         0.00000000     0.00000000     0.11721877
+        H         0.00000000     1.48123757    -0.93017349
+        H         0.00000000    -1.48123757    -0.93017349
+        0 1
+        symmetry c1
+        no_reorient
+        no_com
+        units bohr
+    """)
+    psi4.set_options({
+        "basis": "3-21g",
+        "d_convergence": 1e-8,
+        "e_convergence": 1e-12,
+        "tdscf_r_convergence": 1e-6,
+        "scf_type": "direct",
+        "guess": "core",
+        "ddx": True,
+        "tdscf_states": 10,
+        "ddx_lmax": 10,
+        "ddx_n_lebedev": 590,
+        "ddx_model": "pcm",
+        "ddx_radii_set": "uff",
+        "ddx_radii_scaling": 1.1,
+        "ddx_eta": 0.0,
+        "ddx_solvation_convergence": 1e-10,
+        "ddx_solvent_epsilon": 2.0,
+        "ddx_solvent_epsilon_optical": 2.0,
+        "ddx_solute_spherical_points": 590,
+        "ddx_solute_radial_points": 1000,
+    })
+    psi4.energy('TD-HF')
+
+    e_calc = []
+    for i in range(5):
+        e_calc.append(psi4.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
+    compare_arrays(exc_energies, e_calc, 4, 'PCM EXCITATION ENERGY ')

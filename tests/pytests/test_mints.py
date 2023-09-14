@@ -7,6 +7,47 @@ from utils import compare_arrays
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
+def test_overlap_obs():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+        symmetry c1
+    """)
+
+    psi4.set_options({'basis': 'aug-cc-pvdz'})
+
+    conv = psi4.core.BasisSet.build(h2o,'BASIS', psi4.core.get_global_option('BASIS'))
+
+    wfn = psi4.core.Wavefunction.build(h2o, psi4.core.get_global_option('BASIS'))
+    mints = psi4.core.MintsHelper(wfn.basisset())
+
+    case1 = mints.ao_overlap()
+    case2 = mints.ao_overlap(wfn.basisset(), wfn.basisset())
+
+    assert psi4.compare_matrices(case1, case2, 10, "OVERLAP_TEST")  # TEST
+
+def test_overlap_aux():
+    h2o = psi4.geometry("""
+        O
+        H 1 1.0
+        H 1 1.0 2 101.5
+        symmetry c1
+    """)
+
+    psi4.set_options({'basis': 'aug-cc-pvdz',
+                      'df_basis_mp2':'aug-cc-pvdz-ri'})
+
+    conv = psi4.core.BasisSet.build(h2o,'BASIS', psi4.core.get_global_option('BASIS'))
+    aux = psi4.core.BasisSet.build(h2o,'DF_BASIS_MP2',"", "RIFIT", psi4.core.get_global_option('DF_BASIS_MP2'))
+
+    wfn = psi4.core.Wavefunction.build(h2o, psi4.core.get_global_option('BASIS'))
+    mints = psi4.core.MintsHelper(wfn.basisset())
+
+    tr = mints.ao_overlap(aux, aux).trace()
+
+    assert psi4.compare_values(118, tr, 12, 'Test that diagonal elements of AO Overlap are 1.0')  # TEST
+
 def test_export_ao_elec_dip_deriv():
     h2o = psi4.geometry("""
         O

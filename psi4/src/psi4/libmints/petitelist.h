@@ -69,25 +69,11 @@ inline int64_t i_offset64(int64_t i) { return ((i * (i + 1)) >> 1); }
  *  \param mol Molecule to form mapping matrix from.
  *  \returns Integer matrix of dimension natoms X nirreps.
  */
-int **compute_atom_map(const std::shared_ptr<Molecule> &mol, double tol = 0.1, bool suppress_mol_print_in_exc = false);
-int **compute_atom_map(const Molecule *mol, double tol = 0.1, bool suppress_mol_print_in_exc = false);
+  std::vector<std::vector<int>> compute_atom_map(const std::shared_ptr<Molecule> &mol, double tol = 0.1, bool suppress_mol_print_in_exc = false);
+  std::vector<std::vector<int>> compute_atom_map(const Molecule *mol, double tol = 0.1, bool suppress_mol_print_in_exc = false);
 /// @}
 
-/*! @{
- * Frees atom mapping for created for a molecule by compute_atom_map.
- *
- *  \param atom_map Map to free.
- *  \param mol Molecule used to create atom_map.
- */
-void delete_atom_map(int **atom_map, const std::shared_ptr<Molecule> &mol);
-void delete_atom_map(int **atom_map, const Molecule *mol);
-/// @}
-
-ShellMapType compute_shell_map(int **atom_map, const std::shared_ptr<BasisSet> &);
-PSI_DEPRECATED(
-    "Calling `PetiteList.delete_shell_map` is no longer necessary.  In the version "
-    " of Psi4 following 1.4 this function will no longer be provided.")
-void delete_shell_map(ShellMapType shell_map, const std::shared_ptr<BasisSet> &);
+  ShellMapType compute_shell_map(const std::vector<std::vector<int>> & atom_map, const std::shared_ptr<BasisSet> &);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -97,19 +83,15 @@ struct contribution {
 
     contribution();
     contribution(int b, double c);
-    ~contribution();
 };
 
 struct SO {
-    int len;
-    int length;
-    contribution *cont;
+  std::vector<contribution> cont;
+  int len() const { return cont.size(); };
+  int length;
 
-    SO();
-    SO(int);
-    ~SO();
-
-    SO &operator=(const SO &);
+  SO();
+  SO(int);
 
     void set_length(int);
     void reset_length(int);
@@ -119,12 +101,11 @@ struct SO {
 };
 
 struct SO_block {
-    int len;
-    SO *so;
+  std::vector<SO> so;
+  int len() const {return so.size(); };
 
     SO_block();
     SO_block(int);
-    ~SO_block();
 
     void set_length(int);
     void reset_length(int);
@@ -165,15 +146,15 @@ class PSI_API PetiteList {
 
     bool include_pure_transform_;
 
-    char *p1_;
-    int **atom_map_;
+    std::vector<char> p1_;
+    std::vector<std::vector<int>> atom_map_;
     ShellMapType shell_map_;
-    int **unique_shell_map_;
-    char *lamij_;
-    int *nbf_in_ir_;
+    std::vector<std::vector<int>> unique_shell_map_;
+    std::vector<char> lamij_;
+    std::vector<int> nbf_in_ir_;
     unsigned short group_;
 
-    unsigned short *stablizer_;
+    std::vector<unsigned short> stablizer_;
     int max_stablizer_;
 
     void init(double tol = 0.05);
@@ -182,7 +163,6 @@ class PSI_API PetiteList {
     PetiteList(const std::shared_ptr<BasisSet> &, const std::shared_ptr<IntegralFactory> &,
                bool include_pure_transform = false);
     PetiteList(const std::shared_ptr<BasisSet> &, const IntegralFactory *, bool include_pure_transform = false);
-    ~PetiteList();
 
     bool include_pure_transform() const { return include_pure_transform_; }
 
@@ -311,7 +291,7 @@ class PSI_API PetiteList {
     /// @param g index of the group operation
     Matrix *r(int g);
 
-    SO_block *compute_aotoso_info();
+    std::vector<SO_block> compute_aotoso_info();
 
     /** @return the AO->SO coefficient matrix. The columns correspond to SOs (see SO_basisdim() )
         and rows to AOs (see AO_basisdim() ).

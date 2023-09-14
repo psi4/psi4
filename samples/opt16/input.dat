@@ -1,0 +1,45 @@
+#! SCF 6-31G(d) optimization of TS for HCN to HNC
+#! Performs finite difference hessian calculation. Then optimizes
+#! using previous orbitals for scf guess, in subsequent calculations.
+#! The last two displacements of the hessian break the plane of symemtry,
+#! This test confirms that only the reference geometry, with the correct
+#! symmetry, writes orbitals to disk. SCF will fail (ValidationError) otherwise.
+
+SCF_E = -92.7236996864523064
+
+molecule {
+0 1
+C  -0.0399606537   1.7574844925   0.0000000000    
+N   1.2331003808   0.0000000000   0.0000000000    
+H  -1.1931397271  -1.7574844925   0.0000000000    
+units bohr
+}
+
+set {
+  scf_type pk
+  basis 6-31G
+  opt_type ts
+  full_hess_every 0
+}
+
+fd_energy = optimize('scf', dertype='gradient')
+
+molecule {
+0 1
+C  -0.0399606537   1.7574844925   0.0000000000    
+N   1.2331003808   0.0000000000   0.0000000000    
+H  -1.1931397271  -1.7574844925   0.0000000000    
+units bohr
+}
+
+set {
+  scf_type pk
+  basis 6-31G
+  opt_type ts
+  full_hess_every 0
+}
+
+analytic_energy = optimize('scf')
+
+
+

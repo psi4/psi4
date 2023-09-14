@@ -32,16 +32,16 @@ Also calls to qcdb module are here and not elsewhere in driver.
 Organizationally, this module isolates qcdb code from psi4 code.
 
 """
+import datetime
+import difflib
+import glob
 import os
 import re
-import glob
 import shelve
 import shutil
-import difflib
-import datetime
 import subprocess
 
-from psi4.driver.p4util.exceptions import *
+from ..p4util.exceptions import *
 
 # Not maintained: see https://github.com/psi4/psi4/issues/2478
 

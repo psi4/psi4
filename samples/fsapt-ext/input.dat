@@ -14,8 +14,6 @@ O   2.516175   0.894012  -1.014512
 H   1.942080   1.572902  -1.410984
 H   3.056412   0.561271  -1.739079
 symmetry c1
-no_reorient
-no_com
 }
 
 # External potential containing the third water from the trimer with TIP3P charges

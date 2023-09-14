@@ -28,14 +28,15 @@
 
 from tempfile import NamedTemporaryFile
 
-import numpy as np
 import cppe
-from qcelemental import constants
-from pkg_resources import parse_version
+import numpy as np
+from qcelemental.util import parse_version
 
 from psi4 import core
-from psi4.driver.qcdb import libmintsbasisset
-from psi4.driver.p4util.exceptions import ValidationError
+
+from ...constants import constants
+from ...p4util.exceptions import ValidationError
+from ...qcdb import libmintsbasisset
 
 
 def get_pe_options():

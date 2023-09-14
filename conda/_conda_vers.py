@@ -33,6 +33,7 @@ computed version number into the conda recipe.
 import sys
 from distutils.core import setup
 
+
 def version_func():
     import subprocess
 

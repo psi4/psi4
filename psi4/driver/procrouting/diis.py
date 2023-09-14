@@ -1,12 +1,14 @@
+import os
 from enum import Enum
 from itertools import product
-import os
-
-from psi4 import core
-from psi4.driver import psifiles as psif
 
 import numpy as np
 from qcelemental.util import which_import
+
+from psi4 import core
+
+from .. import psifiles as psif
+
 
 class RemovalPolicy(Enum):
     LargestError = 1

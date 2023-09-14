@@ -12,7 +12,7 @@ from addons import using
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
-with open(Path(__file__).parent / "adcc_reference_data.json") as f:
+with open(Path(__file__).parent / "test_adcc/adcc_reference_data.json") as f:
     reference_data = json.load(f)
 
 

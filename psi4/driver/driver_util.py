@@ -26,14 +26,15 @@
 # @END LICENSE
 #
 
-import re
 import math
 from typing import Any, Dict, Optional, Tuple, Union
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import docs_table_link, ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError
-from psi4.driver.procrouting import *
+
+from . import p4util
+from .p4util.exceptions import ManagedMethodError, MissingMethodError, UpgradeHelper, ValidationError, docs_table_link
+from .procrouting import proc
+from .procrouting.proc_table import procedures
 
 
 def negotiate_convergence_criterion(dermode: Union[Tuple[str, str], Tuple[int, int]], method: str, return_optstash: bool = False):
@@ -354,6 +355,11 @@ def highest_analytic_derivative_available(method: str,
     if dertype == '(auto)':
         raise MissingMethodError(_alternative_methods_message(method, "any", messages=proc_messages, proc=proc))
 
+    if dertype == 2 and p4util.libint2_configuration()["eri"][2] is None:
+        dertype = 1
+        proc_messages[2] = {"method": method, "blame": "Libint2 build"}
+        #core.print_out("  Warning: Analytical Hessians not available with this Libint2 library. Falling back to finite difference. Setting `points=5` may be needed for precision.\n")
+
     return dertype, proc_messages
 
 
@@ -482,7 +488,10 @@ def sort_derivative_type(
                 conditions2 = [stats[k][1] for k in ["method_type", "reference", "fcae", "qc_module"]]
                 msg += f" under conditions {', '.join(conditions2)}. See {stats['link']}."
             except KeyError:
-                msg += " under any conditions. See (possibly) {stats['link']}."
+                if "blame" in stats:
+                    msg += f" under {stats['blame']} conditions."
+                else:
+                    msg += f" under any conditions. See (possibly) {stats['link']}."
             raise MissingMethodError(msg)
 
     # hack section

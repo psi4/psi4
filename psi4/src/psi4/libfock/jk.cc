@@ -71,10 +71,18 @@ JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
 
+    // check if algorithm is composite
+    std::array<std::string, 3> composite_algos = { "DFDIRJ", "COSX", "LINK" };
+    bool is_composite = std::any_of(
+      composite_algos.cbegin(),
+      composite_algos.cend(),
+      [&](std::string composite_algo) { return jk_type.find(composite_algo) != std::string::npos; }
+    );
+
     bool do_density_screen = options.get_str("SCREENING") == "DENSITY";
     bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
     
-    bool can_do_density_screen = (jk_type == "DIRECT" || jk_type == "LINK");
+    bool can_do_density_screen = (jk_type == "DIRECT" || jk_type == "DFDIRJ+LINK" || jk_type == "DFDIRJ");
 
     if (do_density_screen && !(can_do_density_screen || do_df_scf_guess)) {
         throw PSIEXCEPTION("Density screening has not been implemented for non-Direct SCF algorithms.");
@@ -152,8 +160,9 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
-    } else if (jk_type == "COSX") {
-        auto jk = std::make_shared<DFJCOSK>(primary, auxiliary, options);
+    /// handle composite methods
+    } else if (is_composite) {
+        auto jk = std::make_shared<CompositeJK>(primary, auxiliary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -163,17 +172,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return jk;
 
-    } else if (jk_type == "LINK") {
-        auto jk = std::make_shared<DFJLinK>(primary, auxiliary, options);
-
-        if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-        if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
-        if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
-        if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
-        if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
-
-        return jk;
-    
     } else {
         std::stringstream message;
         message << "JK::build_JK: Unkown SCF Type '" << jk_type << "'" << std::endl;
@@ -218,8 +216,12 @@ SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
 }
 
-const std::vector<size_t>& JK::computed_shells_per_iter() {
+const std::unordered_map<std::string, std::vector<size_t> >& JK::computed_shells_per_iter() {
     return computed_shells_per_iter_;
+}
+
+const std::vector<size_t>& JK::computed_shells_per_iter(const std::string& n_let) {
+    return computed_shells_per_iter_[n_let];
 }
 
 void JK::common_init() {

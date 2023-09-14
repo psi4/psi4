@@ -377,7 +377,7 @@ functions that span a sufficiently complete set, see
 be orthonormalized as usual; the rest of the basis functions are
 hidden from the calculation. The Cholesky approach allows reaching
 accurate energies even in the presence of significant linear
-dependencies [Lehtola:2020:04224]_.
+dependencies [Lehtola:2020:134108]_.
 
 In |PSIfour|, symmetric orthogonalization is used by default, unless
 the smallest overlap eigenvalue falls below the user-supplied double
@@ -497,6 +497,11 @@ GWH
 HUCKEL
     An extended H\ |u_dots|\ ckel guess based on on-the-fly atomic UHF
     calculations alike SAD, see [Lehtola:2019:1593]_.
+MODHUCKEL
+    Like HUCKEL, an extended H\ |u_dots|\ ckel guess based on
+    on-the-fly atomic UHF calculations alike SAD, see
+    [Lehtola:2019:1593]_. This variant employs an updated rule for the
+    generalized Wolfsberg-Helmholz formula from [Ammeter:1978:3686]_.
 READ
     Read the previous orbitals from a ``wfn`` file, casting from
     one basis to another if needed. Useful for starting anion
@@ -516,6 +521,18 @@ SAP
     used DFT quadrature. The current implementation is based on
     exchange-only local density calculations that are but nanohartree
     away from the complete basis set limit [Lehtola:2020:012516]_.
+SAPGAU
+    Superposition of Atomic Potentials, but using error function based
+    fits to the atomic radial potentials as discussed in
+    [Lehtola:2020:144105]_. The main difference to the SAP guess
+    discussed above [Lehtola:2019:25945]_ is that the SAPGAU scheme is
+    analytic, and can be efficiently formed in terms of three-center
+    two-electron integrals [Lehtola:2020:144105]_. The potential in
+    the SAPGAU scheme is passed with the |scf__sapgau_basis|
+    keyword. The default potential is given by the large fit to the
+    HelFEM potential, sap_helfem_large, described in
+    [Lehtola:2020:144105]_. Note that this guess is known in the DIRAC
+    program as .SCRPOT and in the ERKALE program as SAPFIT.
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then
@@ -648,7 +665,9 @@ ERI Algorithms
 The key difficulty in the SCF procedure is treatment of the four-index ERI
 contributions to the Fock Matrix. A number of algorithms are available in
 |PSIfour| for these terms. The algorithm is selected by the |globals__scf_type|
-keyword, which may be one of the following
+keyword. Most consist of a single algorithm applied to
+the construction of both the Coulomb and Exchange parts
+of the Fock Matrix:
 
 PK [:ref:`Default <table:conv_scf>`]
     An out-of-core, presorted algorithm using exact ERIs. Quite fast for a
@@ -685,19 +704,44 @@ CD
     for gradient computations.  The algorithm to obtain the Cholesky
     vectors is not designed for computations with thousands of basis
     functions.
+
+|PSIfour| also features the capability to use "composite" Fock matrix build 
+algorithms - arbitrary combinations of specialized algorithms that construct 
+either the Coulomb or the Exchange matrix separately. In general, since 
+separate Coulomb and Exchange matrix build algorithms exploit properties specific to 
+their respective matrix, composite algorithms display lower
+scaling factors than their combined Fock build counterparts. However, composite algorithms also 
+introduce redundant ERI computations into the calculation. Therefore, composite Fock build
+algorithms tend to perform better for larger systems, but worse for smaller systems. Arbitrary 
+composite algorithms can be accessed by setting |globals__scf_type| to ``J_alg+K_alg``, 
+where *J_alg* and *K_alg* are the names of the separate Coulomb
+and Exchange construction algorithms to use, respectively.
+
+Specialized algorithms available to construct the Coulomb term within a composite framework 
+are as follows:
+
+DFDIRJ
+    An integral-direct algorithm constructing the Coulomb term based on [Weigend:2002:4285]_
+    The DFDIRJ algorithm combines the benefits of integral-direct SCF approaches 
+    with that of density-fitting. Specifically, DFJ utilizes no I/O and displays 
+    strong performance with large system size through a combination of 
+    effective parallelization and utilization of density-fitting to minimize 
+    ERI computational cost. See the :ref:`sec:scfddfj` section for more information.
+
+Specialized algorithms available to construct the Exchange term within a composite framework
+are as follows:
+
 COSX
     An algorithm based on the semi-numerical "chain of spheres exchange" (COSX)
     approach described in [Neese:2009:98]_. The coulomb term is computed with a
     direct density-fitting algorithm. The COSX algorithm uses no I/O, scales
     well with system size, and requires minimal memory, making it ideal for
-    large systems and multi-core CPUs. See the COSX section below for more information.
+    large systems and multi-core CPUs. See :ref:`sec:scfcosx` for more information.
 LINK
     An implementation of the linear-scaling "Linear Exchange" (LinK)
-    algorithm described in [Ochsenfeld:1998:1663]_. As with the COSX option, 
-    the Coulomb term is computed with an integral-direct density-fitting 
-    algorithm. The LINK algorithm provides many of the benefits of integral-direct
-    SCF algorithms, including no disk I/O, low memory usage, and effective
-    parallelization. Additionally, the
+    algorithm described in [Ochsenfeld:1998:1663]_. The LINK algorithm provides 
+    many of the benefits of integral-direct SCF algorithms, including no disk I/O, 
+    low memory usage, and effective parallelization. Additionally, the
     LINK implementation scales well with system size 
     while simultaneously providing a formally-exact computation of the 
     Exchange term. See :ref:`sec:scflink` for more information.
@@ -769,6 +813,27 @@ To avoid this, either set |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
 
+.. _`sec:scfddfj`:
+
+Integral-Direct Density-Fitted Coulomb Construction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Resolution of the Identity (RI) can be used to decompose the normally 4-center ERI tensor into a combination of 3-center and 2-center components.
+By reducing the dimensionality of the ERI tensor, application of the RI (often referred to as density-fitting, or DF) can be used to greatly speed up
+SCF calculations. The reduction in ERI tensor rank also makes DF an appealing option for conventional SCF calculations, where the ERIs are stored 
+in core or on disk. However, even when using DF, I/O becomes a significant bottleneck for systems of a sufficient size when performing conventional SCF
+calculations. In principle, though, DF approaches can be utilized in an integral-direct context, gaining the benefits of DF methods without suffering the
+I/O bottlenecks that conventional DF methods will eventually run into. One such approach, outlined by Weigend in [Weigend:2002:4285]_,
+is available for use in Psi4 for the separate construction of the Coulomb contribution to the Fock matrix.  This implementation can be used alongside 
+Psi4's separate Exchange construction algorithms for composite Fock matrix construction by using the keyword DFDIRJ as the Coulomb construction 
+algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DFDIRJ+K_alg``). 
+
+DFDIRJ supports multiple capabilities to improve performance. Specifically, DFDIRJ allows for a combination of density-matrix based ERI 
+screening (set |globals__screening| to ``DENSITY``) and incremental Fock matrix construction (set |scf__incfock| to ``TRUE``). These two, when combined,
+enable more aggressive screening of ERI contributions to the Coulomb matrix and thus greatly improve performance.
+
+.. _`sec:scfcosx`:
+
 COSX Exchange
 ~~~~~~~~~~~~~
 
@@ -780,11 +845,16 @@ DFT quadrature grids, which are described in :ref:`sec:dft`.
 Both the accuracy of the COSX algorithm and also the computational
 cost are directly determined by the size of the integration grid, so selection
 of the grid is important. This COSX implementation uses two separate grids.
-The SCF algorithm is first converged on a smaller grid, followed by a final SCF
-iteration on a larger grid. This results in numerical errors comparable to
+By default, the SCF algorithm is first converged on a smaller grid, followed by a
+number of SCF iterations up to a maximum value (controlled by the |scf__cosx_maxiter_final| keyword)
+on a larger grid. By default, |scf__cosx_maxiter_final| is set to 1, a single
+SCF iteration, which results in numerical errors comparable to
 performing the entire SCF on the expensive larger grid at a computational cost
-much closer to the smaller grid. The size of the initial grid is controlled by the
-keywords |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
+much closer to the smaller grid. Setting |scf__cosx_maxiter_final| to 0 disables the
+larger grid entirely. Setting |scf__cosx_maxiter_final| to -1 allows
+for the SCF to fully converge on the larger grid, useful for the study of wavefunction
+properties such as gradients. The size of the initial grid is controlled by the keywords
+|scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
 The final grid is controlled by |scf__cosx_radial_points_final| and
 |scf__cosx_spherical_points_final|. The defaults for both grids aim to balance
 cost and accuracy.
@@ -814,7 +884,7 @@ Linear Exchange
 ~~~~~~~~~~~~~~~
 
 Large SCF calculations can benefit from specialized screening procedures that further reduce the scaling of the ERI contribution to the Fock matrix.
-LinK, the linear-scaling exchange method described in [Ochsenfeld:1998:1663]_, is available in Psi4 in conjunction with integral-direct density fitting for Coulomb construction (|globals__scf_type| set to ``LINK``).
+LinK, the linear-scaling exchange method described in [Ochsenfeld:1998:1663]_, is available in Psi4 in conjunction with composite algorithms that build J (|globals__scf_type| set to ``J_alg+LINK``).
 LinK achieves linear-scaling by exploiting shell pair sparsity in the density matrix and overlap sparsity between shell pairs. Specifically, LinK exploits the fact that the Exchange term
 requires only a linear-scaling number of significant elements through reformulating the
 shell quartet screening process to scale linearly with system size.

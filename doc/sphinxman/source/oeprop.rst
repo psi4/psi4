@@ -80,7 +80,7 @@ summarized in the table below.
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Stockholder Atomic Multipoles      | MBIS_CHARGES          | Generates atomic charges, dipoles, etc. See :ref:`sec:oeprop_mbis`                |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-   | Free-atom volumes                  | MBIS_VOLUME_RATIOS    |                                                                                   |
+   | Hirshfeld volume ratios            | MBIS_VOLUME_RATIOS    | Generate the AIM to free atom volume ratios                                       |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
 
 There are two ways the computation of one-electron properties can be requested. 

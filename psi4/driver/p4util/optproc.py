@@ -35,9 +35,8 @@ __all__ = [
     "OptionsState",
 ]
 
-import sys
 from contextlib import contextmanager
-from typing import Optional, Iterator, List
+from typing import Iterator, List, Optional
 
 from psi4 import core
 

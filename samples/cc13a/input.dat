@@ -17,6 +17,7 @@ set {
   max_energy_g_convergence    7
   e_convergence 10
   r_convergence 10
+  qc_module ccenergy
 }
 
 optimize('CCSD(T)')

@@ -24,6 +24,8 @@ if(${ENABLE_ambit})
             set(_so_only OFF)
         endif()
 
+        set(_ambit_dir "share/cmake/ambit")
+
         ExternalProject_Add(ambit_external
             DEPENDS lapack_external
                     hdf5_external
@@ -38,7 +40,6 @@ if(${ENABLE_ambit})
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DSTATIC_ONLY=${_a_only}
                        -DSHARED_ONLY=${_so_only}
                        -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant
@@ -46,6 +47,7 @@ if(${ENABLE_ambit})
                        #-DEXTRA_Fortran_FLAGS=${CMAKE_EXTRA_Fortran_FLAGS}
                        -DEXTRA_C_FLAGS=${CMAKE_C_FLAGS}
                        -DEXTRA_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                       -Dambit_INSTALL_CMAKEDIR=${_ambit_dir}
                        -DPython_EXECUTABLE=${Python_EXECUTABLE}
                        -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
                        -DPython_LIBRARY=${Python_LIBRARIES}                       
@@ -55,8 +57,8 @@ if(${ENABLE_ambit})
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
                        -DENABLE_TESTS=OFF
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
-                       -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
-                       -DTargetHDF5_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5
+                       -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
+                       -DTargetHDF5_DIR=${TargetHDF5_DIR}
                        -Dpybind11_DIR=${pybind11_DIR}
                        -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
@@ -65,7 +67,7 @@ if(${ENABLE_ambit})
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=C;CXX)
 
-        set(ambit_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/ambit CACHE PATH "path to internally built ambitConfig.cmake" FORCE)
+        set(ambit_DIR ${STAGED_INSTALL_PREFIX}/${_ambit_dir} CACHE PATH "path to internally built ambitConfig.cmake" FORCE)
     endif()
 else()
     add_library(ambit_external INTERFACE)  # dummy

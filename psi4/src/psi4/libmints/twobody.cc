@@ -78,10 +78,12 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
         screening_type_ = ScreeningType::CSAM;
     else if (screentype == "DENSITY")
         screening_type_ = ScreeningType::Density;
+    else if (screentype == "NONE")
+        screening_type_ = ScreeningType::None;
     else
         throw PSIEXCEPTION("Unknown screening type " + screentype + " in TwoBodyAOInt()");
     
-    if (screening_threshold_ == 0.0) screening_type_ = ScreeningType::None;
+    if (screening_threshold_ == 0.0) screening_type_ = ScreeningType::Schwarz;
 
 }
 
@@ -247,7 +249,7 @@ void TwoBodyAOInt::setup_sieve() {
             break;
         case ScreeningType::None:   
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_none(M, N, R, S); };
-            break;
+            return;
         default:
             throw PSIEXCEPTION("Unimplemented screening type in TwoBodyAOInt::setup_sieve()");
     }

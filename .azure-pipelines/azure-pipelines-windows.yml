@@ -7,8 +7,8 @@ jobs:
       vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '14.0.0'
-      mkl.version: '2019.1'
+      llvm.version: '15.0.7'
+      mkl.version: '2022.1.0'
       cmake.build_type: 'Release'
       conda.build: false
       ctest.type: 'smoke'
@@ -25,8 +25,9 @@ jobs:
           if "%PYTHON_VERSION%"=="3.8" set VALID=true
           if "%PYTHON_VERSION%"=="3.9" set VALID=true
           if "%PYTHON_VERSION%"=="3.10" set VALID=true
+          if "%PYTHON_VERSION%"=="3.11" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.8" through "3.10".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.8" through "3.11".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -107,6 +108,11 @@ jobs:
       #    conda config --append channels conda-forge
       - script: |
           conda config --set always_yes yes
+          conda config --add channels conda-forge
+          conda config --add channels conda-forge/label/libint_dev
+          conda config --set channel_priority strict
+          conda install -n base conda-libmamba-solver
+          conda config --set solver libmamba
           conda info
         displayName: "Configure Miniconda"
 
@@ -117,7 +123,8 @@ jobs:
           conda install cmake ^
                         anaconda-project ^
                         conda-build ^
-                        conda-forge::eigen ^
+                        eigen ^
+                        boost-cpp ^
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
@@ -127,18 +134,19 @@ jobs:
                         ninja ^
                         numpy ^
                         pint ^
-                        pybind11=2.7.0 ^
+                        pybind11 ^
                         pytest>=7.0.1 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        psi4/label/dev::dftd3 ^
-                        psi4/label/dev::gcp ^
-                        conda-forge::gau2grid ^
-                        conda-forge::libxc ^
-                        psi4/label/dev::libint2=*=h2e52968_4 ^
-                        conda-forge::qcelemental ^
-                        conda-forge::qcengine=0.26.0 ^
-                        conda-forge::optking ^
+                        dftd3-python ^
+                        gcp-correction ^
+                        gau2grid ^
+                        libxc-c ^
+                        libint=2.7.3dev1 ^
+                        qcelemental ^
+                        qcengine ^
+                        pydantic=1.10.10 ^
+                        optking ^
                         scipy
           conda install --only-deps anaconda-client
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
@@ -158,10 +166,11 @@ jobs:
       # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
       #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
+      #    set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
       - script: |
           cd
           git clone https://github.com/psi4/iomp5md.git
-          set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
+          set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
           echo '##vso[task.setvariable variable=LIB]%LIB%'
         displayName: "Install Intel OpenMP import library"
 
@@ -243,6 +252,7 @@ jobs:
           if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
           ctest --build-config %CMAKE_BUILD_TYPE% ^
                 --label-regex !CTEST_TYPE! ^
+                --label-exclude d2ints ^
                 --output-on-failure ^
                 --parallel %NUMBER_OF_PROCESSORS% ^
                 --timeout 3000
@@ -253,15 +263,13 @@ jobs:
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          psi4 --test %PYTEST_TYPE% -n %NUMBER_OF_PROCESSORS%
+          psi4 --test %PYTEST_TYPE%_not_d2ints -n %NUMBER_OF_PROCESSORS%
         displayName: "Test Psi4 (pytest $(pytest.type))"
         workingDirectory: $(Build.BinariesDirectory)
 
       # Build package
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
-          conda config --append channels conda-forge
-          conda config --append channels psi4/label/dev
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)

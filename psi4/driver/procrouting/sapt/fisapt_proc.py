@@ -31,6 +31,7 @@ import os
 import numpy as np
 
 from psi4 import core
+
 from .. import empirical_dispersion
 
 
@@ -56,6 +57,10 @@ def fisapt_compute_energy(self, external_potentials=None):
     core.timer_off("FISAPT: Monomer SCF")
     self.freeze_core()
     self.unify()
+    self.nuclear()
+    self.unify_part2()
+    self.freeze_core()
+    self.do_cubes()
     core.timer_on("FISAPT: Subsys E")
     self.dHF()
     core.timer_off("FISAPT: Subsys E")

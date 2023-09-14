@@ -192,7 +192,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK COSX LINK");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DFDIRJ DFDIRJ+COSX DFDIRJ+LINK");
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -212,7 +212,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
     /*- The type of screening used when computing two-electron integrals. -*/
-    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
+    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY NONE");
 
     // CDS-TODO: We should go through and check that the user hasn't done
     // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -1181,8 +1181,20 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("FISAPT_CHARGE_COMPLETENESS", 0.8);
         /*- Manual link bond specification [[Atom1, Atom2], ...] -*/
         options.add("FISAPT_MANUAL_LINKS", new ArrayType());
-        /*- Where do sigma links go (to C or to AB)? -*/
-        options.add_str("FISAPT_LINK_ASSIGNMENT", "C", "C AB");
+        /*- Where do sigma links go (to C, AB, or split into IHOs)? -*/
+        options.add_str("FISAPT_LINK_ASSIGNMENT", "C", "C AB SAO0 SAO1 SAO2 SIAO0 SIAO1 SIAO2");
+        /*- Orthogonalization of link orbitals for FISAPT_LINK_ASSIGNMENT=SAOx/SIAOx 
+            Link A orthogonalized to A in whole (interacting) molecule or in the (noninteracting) fragment? -*/
+        options.add_str("FISAPT_LINK_ORTHO", "FRAGMENT", "FRAGMENT WHOLE NONE");
+        /*- Calculate separate exchange corrections for parallel and perpendicular spin coupling of link orbitals? 
+            When false, only the averaged out exchange corrections are computed. -*/
+        options.add_bool("FISAPT_EXCH_PARPERP", false);
+        /*- Generate cube files for unsplit link orbitals (IBOs)? -*/
+        options.add_bool("FISAPT_CUBE_LINKIBOS", false);
+        /*- Generate cube files for split link orbitals (IHOs)? -*/
+        options.add_bool("FISAPT_CUBE_LINKIHOS", false);
+        /*- Generate cube files for fragment density matrices? -*/
+        options.add_bool("FISAPT_CUBE_DENSMAT", false);
 
         // => F-SAPT Options <= //
 
@@ -1434,7 +1446,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("INTS_TOLERANCE", 1E-12);
         /*- The type of guess orbitals. See :ref:`sec:scfguess` for what the options mean and
          what the defaults are. -*/
-        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD SADNO SAP HUCKEL READ");
+        options.add_str("GUESS", "AUTO", "AUTO CORE GWH SAD SADNO SAP SAPGAU HUCKEL MODHUCKEL READ");
+        /*- The potential basis set used for the SAPGAU guess -*/
+        options.add_str("SAPGAU_BASIS", "sap_helfem_large");
         /*- Mix the HOMO/LUMO in UHF or UKS to break alpha/beta spatial symmetry.
         Useful to produce broken-symmetry unrestricted solutions.
         Notice that this procedure is defined only for calculations in C1 symmetry. -*/
@@ -1669,6 +1683,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("COSX_RADIAL_POINTS_FINAL", 35);
         /*- Screening criteria for integrals and intermediates in COSX -*/
         options.add_double("COSX_INTS_TOLERANCE", 1.0E-11);
+        /*- Controls SCF iteration behavior for the larger (i.e., final) COSX grid.
+        -1 fully converges the SCF on the final grid if possible, ending early if |scf__maxiter| total SCF iterations are reached (failure).
+        0 disables the final COSX grid entirely.
+        n runs up to n iterations on the final COSX grid, ending early if SCF convergence is reached (success) or if |scf__maxiter| total SCF iterations are reached (failure). -*/
+        options.add_int("COSX_MAXITER_FINAL", 1);
         /*- Screening criteria for shell-pair densities in COSX !expert -*/
         options.add_double("COSX_DENSITY_TOLERANCE", 1.0E-10);
         /*- Screening criteria for basis function values on COSX grids !expert -*/
@@ -1855,7 +1874,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CPHF_MEM_SAFETY_FACTOR", 0.75);
         /*- SCF Type
          -*/
-        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK COSX");
+        options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT GTFOCK DFDIRJ+COSX");
         /*- Auxiliary basis for SCF
          -*/
         options.add_str("DF_BASIS_SCF", "");

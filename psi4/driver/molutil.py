@@ -33,9 +33,10 @@ import numpy as np
 import qcelemental as qcel
 
 from psi4 import core
-from psi4.driver.p4util import temp_circular_import_blocker
-from psi4.driver import qcdb
-from psi4.driver.p4util.exceptions import *
+
+from . import qcdb
+from .constants import constants
+from .p4util.exceptions import *
 
 
 def molecule_set_attr(self, name, value):
@@ -170,10 +171,15 @@ def _molecule_from_arrays(cls,
         nonphysical=nonphysical,
         mtol=mtol,
         verbose=verbose)
+
+    qmol = core.Molecule.from_dict(molrec)
+    geom = np.array(molrec["geom"]).reshape((-1, 3))
+    qmol._initial_cartesian = core.Matrix.from_array(geom)
+
     if return_dict:
-        return core.Molecule.from_dict(molrec), molrec
+        return qmol, molrec
     else:
-        return core.Molecule.from_dict(molrec)
+        return qmol
 
 
 @classmethod
@@ -263,7 +269,8 @@ def geometry(geom: str, name: str = "default") -> core.Molecule:
     if "geom" in molrec["qm"]:
         geom = np.array(molrec["qm"]["geom"]).reshape((-1, 3))
         if molrec["qm"]["units"] == "Angstrom":
-            geom = geom / qcel.constants.bohr2angstroms
+            # beware if qcel and psi4 choose different sets of constants
+            geom = geom / constants.bohr2angstroms
         molecule._initial_cartesian = core.Matrix.from_array(geom)
     molecule.set_name(name)
 

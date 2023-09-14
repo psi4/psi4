@@ -47,7 +47,7 @@ def is_psi4_new_enough(version_feature_introduced):
     if not _plugin_import('psi4'):
         return False
     import psi4
-    from pkg_resources import parse_version
+    from qcelemental.util import parse_version
     return parse_version(psi4.__version__) >= parse_version(version_feature_introduced)
 
 

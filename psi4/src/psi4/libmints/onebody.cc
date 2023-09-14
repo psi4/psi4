@@ -163,7 +163,6 @@ OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms
     target_ = new double[buffsize];
 
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    libint2::initialize();
     shellpairs_ = build_shell_pair_list_no_spdata(bs1, bs2, threshold);
 }
 

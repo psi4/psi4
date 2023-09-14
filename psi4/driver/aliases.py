@@ -40,9 +40,6 @@ __all__ = [
     "sherrill_gold_standard",
 ]
 
-import os
-import re
-import warnings
 from typing import Any, Dict, List
 
 CBSMetadata = List[Dict[str, Any]]
@@ -109,18 +106,23 @@ def sherrill_gold_standard(**kwargs) -> CBSMetadata:
     scf = {
         'wfn': 'hf',
         'basis': kwargs.pop('scf_basis', 'aug-cc-pVQZ'),
-        'scheme': kwargs.pop('scf_scheme', 'xtpl_highest_1')
+        'scheme': kwargs.pop('scf_scheme', 'xtpl_highest_1'),
+        'options': kwargs.pop('scf_options', {}),
     }
     corl = {
         'wfn': kwargs.pop('corl_wfn', 'mp2'),
         'basis': kwargs.pop('corl_basis', 'aug-cc-pV[TQ]Z'),
-        'scheme': kwargs.pop('corl_scheme', 'corl_xtpl_helgaker_2')
+        'scheme': kwargs.pop('corl_scheme', 'corl_xtpl_helgaker_2'),
+        'options': kwargs.pop('corl_options', {}),
+        'options_lo': kwargs.pop('corl_options_lo', {}),
     }
     delta = {
         'wfn': kwargs.pop('delta_wfn', 'ccsd(t)'),
         'wfn_lesser': kwargs.pop('delta_wfn_lesser', 'mp2'),
         'basis': kwargs.pop('delta_basis', 'aug-cc-pVTZ'),
-        'scheme': kwargs.pop('delta_scheme', 'xtpl_highest_1')
+        'scheme': kwargs.pop('delta_scheme', 'xtpl_highest_1'),
+        'options': kwargs.pop('delta_options', {}),
+        'options_lo': kwargs.pop('delta_options_lo', {}),
     }
 
     return [scf, corl, delta]

@@ -65,30 +65,30 @@ review of the aims of A/F/I-SAPT and the existing state-of-the-art in the field
 in the introduction chapter on partitioned SAPT methods in `Parrish's thesis
 <https://smartech.gatech.edu/handle/1853/53850>`_.
 
-A video tutorial series for the use of the FISAPT module is available `here
-<https://www.youtube.com/playlist?list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-Specific videos in the series include:
-
-- `F-SAPT#1
-  <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Describes the use of F-SAPT to analyze the
-  distribution of the intermolecular interaction energy components between the
-  various hydroxyl and phenyl moieties of the phenol dimer.
-- `F-SAPT#2
-  <https://www.youtube.com/watch?v=fqlzXsayec0&index=2&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Discusses how to plot the order-1 F-SAPT analysis with PyMol and perform a
-  "difference F-SAPT" analysis
-- `I-SAPT#1
-  <https://www.youtube.com/watch?v=fD6mu_tTG_c&index=3&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Describes the use of I-SAPT to analyze the interaction between the two phenol
-  groups in a 2,4-pentanediol molecule.
-- `I-SAPT#2
-  <https://www.youtube.com/watch?v=hDbonAOD5dY&index=4&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Discusses how to plot the density fields and ESPs of the various moieties of
-  the I-SAPT embedding scheme with PyMol
-- `F/I-SAPT Options
-  <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Details all of the more-advanced options in the F/I-SAPT code (rarely needed).
+.. A video tutorial series for the use of the FISAPT module is available `here
+.. <https://www.youtube.com/playlist?list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+.. Specific videos in the series include:
+..
+.. - `F-SAPT#1
+..   <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Describes the use of F-SAPT to analyze the
+..   distribution of the intermolecular interaction energy components between the
+..   various hydroxyl and phenyl moieties of the phenol dimer.
+.. - `F-SAPT#2
+..   <https://www.youtube.com/watch?v=fqlzXsayec0&index=2&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Discusses how to plot the order-1 F-SAPT analysis with PyMol and perform a
+..   "difference F-SAPT" analysis
+.. - `I-SAPT#1
+..   <https://www.youtube.com/watch?v=fD6mu_tTG_c&index=3&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Describes the use of I-SAPT to analyze the interaction between the two phenol
+..   groups in a 2,4-pentanediol molecule.
+.. - `I-SAPT#2
+..   <https://www.youtube.com/watch?v=hDbonAOD5dY&index=4&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Discusses how to plot the density fields and ESPs of the various moieties of
+..   the I-SAPT embedding scheme with PyMol
+.. - `F/I-SAPT Options
+..   <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Details all of the more-advanced options in the F/I-SAPT code (rarely needed).
 
 The scripts discussed below are located in :source:`psi4/share/psi4/fsapt`.
 
@@ -378,12 +378,12 @@ publication-quality renderings.
 
 Adding Point Charges to F/I-SAPT Computations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. Citation: Alenaizan, A; Cheney, D. L.; Sherrill, C. D. Electrostatatically embedded
+.. Citation: Alenaizan, A; Cheney, D. L.; Sherrill, C. D. Electrostatically embedded
 .. symmetry adapted pertubration theory. In preparation.
 
 Point charges can be added to the interacting subsystems A and B as well
 as to the ``linking`` fragment C. Briefly, the interaction between the point charges in A(B)
-and fragment B(A) enters the SAPT0 interction energy. It explicitly affects in the electrostatics
+and fragment B(A) enters the SAPT0 interaction energy. It explicitly affects the electrostatics
 and induction components, and implicitly affects other SAPT0 components by polarizing the orbitals.
 If point charges are present in both subsystems A and B, an additional charge-charge interaction
 term is also added to the electrostatic energy. When point charges are assigned to subsystem C, the point
@@ -393,9 +393,44 @@ directly contribute to the SAPT0 interaction energy.
 Examples :srcsample:`fsapt-ext-abc` and :srcsample:`fsapt-ext-abc2`
 illustrate the use of point charges in F/I-SAPT procedure.
 
+Link Orbital Partitioning in I-SAPT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-F/I-SAPT Keywords
-^^^^^^^^^^^^^^^^^
+The assignment of the A-C and B-C linking electron pairs is controlled by the |fisapt__fisapt_link_assignment|
+keyword. The default setting ``fisapt_link_assignment c`` assigns the entire pair to the linker C together with
+a +1 nuclear charge from the connecting atoms of A/B to preserve the electrical neutrality of each fragment.
+However, as already noticed in [Parrish:2015:051103]_, such a partitioning might result in unphysical dipole
+moments at the interfragment boundaries. Imagine, for example, that I-SAPT is used to examine the interaction
+of two methyl groups connected by some linker fragment. When the linking bonds are assigned to C, the carbon atoms
+of the methyl groups are missing electrons on one of their *sp^3* hybrid orbitals and a dipole moment appears.
+These dipole moments have been observed to lead, in some cases, to I-SAPT energy contributions that do not make 
+physical sense, for example, to a strongly repulsive electrostatic energy between two fragments connected by an
+intramolecular hydrogen bond.
+
+To overcome this issue, Luu and Patkowski proposed a reassignment of the linking electron pairs so that each fragment
+(C and A/B) gets one electron [Luu:2023:356]_. This electron is placed on a hybrid orbital of the connecting atom
+pointing in the direction of the interfragment bond. Several schemes for determining this link hybrid were proposed 
+in [Luu:2023:356]_ and they all are implemented in |PSIfour|. We recommend the so-called *SIAO1* scheme,
+``fisapt_link_assignment siao1``, as it has been observed to provide consistently meaningful I-SAPT terms and a
+smooth basis set convergence. The SIAO1 name implies that the projection to construct the link hybrids happens in the
+intrinsic atomic orbital space (as opposed to the SAO1 method where the standard atomic orbital space is used), with
+one iteration of fragment orbital optimization and link orbital orthogonalization, a process that very quickly 
+achieves self-consistency. Altogether, the allowed values for |fisapt__fisapt_link_assignment| are ``c`` (default),
+``ab`` (the opposite of ``c`` where the entire linking pair is assigned to A/B), ``sao0``, ``sao1``, ``sao2``,
+``siao0``, ``siao1`` (recommended for all I-SAPT applications), and ``siao2`` (essentially identical to ``siao1`` but
+slightly more expensive).
+
+Advanced I-SAPT Keywords for SAOn/SIAOn Partitionings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: autodir_options_c/fisapt__fisapt_link_ortho.rst
+.. include:: autodir_options_c/fisapt__fisapt_exch_parperp.rst
+.. include:: autodir_options_c/fisapt__fisapt_cube_linkibos.rst
+.. include:: autodir_options_c/fisapt__fisapt_cube_linkihos.rst
+.. include:: autodir_options_c/fisapt__fisapt_cube_densmat.rst
+
+Other F/I-SAPT Keywords
+^^^^^^^^^^^^^^^^^^^^^^^
 
 The input files described above cover roughly 90% of all F/I-SAPT analyses. For
 more delicate or involved problems, there are a large number of user options

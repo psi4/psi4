@@ -1,39 +1,51 @@
 name: baseenv
 channels:
   - conda-forge
+  - nodefaults
 dependencies:
-  - blas=*=mkl
+  - libblas=*=*mkl
   - python=3.9
     # build
-  #- boost-cpp
+  - boost-cpp
   - cmake
-
-
+  - c-compiler
+  - cxx-compiler
   - eigen
 
-  - mkl-devel=2021.4
+  - intel-openmp
+  - mkl-devel=2022.1
   - ninja
+  - numpy
   - pybind11
     # qc req'd
   - gau2grid
-  - psi4/label/dev::libint2
-  - libxc
-  - mkl=2021.4
-  - msgpack-python
-  - networkx
-  - numpy
-  - scipy
-  - toml
+  - conda-forge/label/libint_dev::libint=2.7.3dev1
   - optking
   - qcelemental
   - qcengine
+  - libxc-c
+    # qc opt'l
+  # - psi4/label/dev::ambit
+  # - psi4/label/dev::chemps2
+  # - psi4/label/dev::libecpint
+  - dkh
+  # - psi4/label/dev::gdma
+  # - psi4/label/dev::pcmsolver
+  # - psi4/label/dev::simint
+    # runtime
+  - mkl=2022.1
+  - msgpack-python
+  - networkx
+  - scipy
+  - toml
+  - basis_set_exchange
   - dftd3-python
   - dftd4-python
+  - pylibefp
   - gcp-correction
   - geometric
   - pymdi
-  - psi4/label/dev::resp
-  - psi4/label/dev::snsmp2
+  - tomli
   - pytest
   - pytest-xdist
   - pip
@@ -41,6 +53,4 @@ dependencies:
       - git+https://github.com/i-pi/i-pi.git@master-py3
 
 # toml needed for psi4 to load parameters from dftd4-python
-# one of mkl=2021.4 or mkl-devel=2021.4 needed to avoid DLL runtime error
-    # qc opt'l
-    # runtime
+# one of mkl==2022.1 or mkl-devel==2022.1 needed to avoid DLL runtime error
