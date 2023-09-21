@@ -69,7 +69,7 @@ message(STATUS "Building using CMake ${CMAKE_VERSION} Generator ${CMAKE_GENERATO
 #    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, Einsums, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
 #                         qcelemental, qcengine, optking, simint, Libxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
@@ -108,6 +108,7 @@ option(ENABLE_ddx "Enables ddx for domain-decomposition contiuum solvation model
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_ecpint "Enables libecpint for effective core potentials (ECP)" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
+option(ENABLE_Einsums "Enables the Einsums tensor library" OFF)
 option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran; can also be added at runtime)" OFF)
@@ -231,6 +232,7 @@ ExternalProject_Add(psi4-core
            dkh_external
            ecpint_external
            libefp_external
+           einsums_external
            erd_external
            gau2grid_external
            gdma_external
@@ -281,6 +283,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
+              -DENABLE_Einsums=${ENABLE_Einsums}
               -DENABLE_erd=${ENABLE_erd}
               -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
@@ -298,6 +301,7 @@ ExternalProject_Add(psi4-core
               -Ddkh_DIR=${dkh_DIR}
               -Decpint_DIR=${ecpint_DIR}
               -Dlibefp_DIR=${libefp_DIR}
+              -DEinsums_DIR=${Einsums_DIR}
               -Derd_DIR=${erd_DIR}
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}

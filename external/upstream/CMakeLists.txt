@@ -8,6 +8,7 @@ foreach(dir
   dkh
   ecpint
   libefp
+  einsums
   erd
   gau2grid
   gdma
