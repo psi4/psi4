@@ -97,7 +97,6 @@ def scf_compute_energy(self):
         core.print_out("  Energy and wave function converged.\n\n")
 
     scf_energy = self.finalize_energy()
-    print(self.iterene)
     return scf_energy
 
 
@@ -686,11 +685,7 @@ def scf_finalize_energy(self):
 
     # reshape to be 2-d
     iterene = np.array(self.iterene).reshape(-1, 1)
-    core.print_out("iterene:")
-    print(iterene)
     iterene = core.Matrix.from_array(iterene)
-    print(iterene.np)
-    iterene.print_out()
     core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iterene))
     self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iterene))
 

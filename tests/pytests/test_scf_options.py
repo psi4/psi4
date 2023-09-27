@@ -135,7 +135,7 @@ def test_scf_guess(inp, ref):
     )
     assert compare_values(
         vals[ref][inp["options"]["guess"]],
-        psi4.variable("SCF TOTAL ENERGIES").np[0, 0],
+        psi4.variable("SCF TOTAL ENERGIES")[0],
         6,
         "INITIAL ITERATION",
     )
