@@ -216,12 +216,12 @@ pair between monomers.
 
 The :math:`S^{2}` approximation is usually pretty good, but may 
 break down for short intermolecular distance, particularly in high-order
-terms. To compensate these deviations, in 2014 Parker et al. [Parker:2014:094106]_ 
+terms. To compensate for these deviations, in 2014 Parker et al. [Parker:2014:094106]_ 
 recommended to scale all :math:`S^{2}` approximated exchange terms by the ratio:
 
 .. math:: p_{EX}(\alpha) = \left( \frac{E_{exch}^{(10)}}{E_{exch}^{(10)}(S^{2})} \right)^{\alpha}
 
-and recommended using the ratio :math:`\alpha = 1`. To obtain SAPT energies with this scaling,
+and recommended using the ratio with exponent :math:`\alpha = 1`. To obtain SAPT energies with this scaling,
 simply set the keyword ``exch_scale_alpha true``. Alternatively, another value for :math:`\alpha`
 can be specified by setting |sapt__exch_scale_alpha| to a value. For example, ::
 
@@ -229,7 +229,7 @@ can be specified by setting |sapt__exch_scale_alpha| to a value. For example, ::
 
 will set :math:`\alpha = 1.0` and scale exchange energies with :math:`p_{EX}(1.0)`.
 
-However, as later pointed out by Schaeffer and Jansen [Schaffer:2013:2570]_
+However, as pointed out by Schaffer and Jansen [Schaffer:2013:2570]_
 in the context of DFT-based SAPT, the ratios :math:`E_{exch}^{(1)}(S^{2})/E_{exch}^{(1)}`,
 :math:`E_{\rm exch-ind}^{(2)}(S^2)/E_{\rm exch-ind}^{(2)}`, and 
 :math:`E_{\rm exch-disp}^{(2)}(S^2)/E_{\rm exch-disp}^{(2)}` are not very similar to
