@@ -18,13 +18,18 @@ if(SPHINX_THEME STREQUAL sphinx_psi_theme)
     execute_process(COMMAND ${Python_EXECUTABLE} -c
         "import sphinx_psi_theme; import cloud_sptheme; import sphinx_automodapi; import graphviz"
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
+elseif(SPHINX_THEME STREQUAL basic)
+    # these themes are built-in to Sphinx
+    execute_process(COMMAND ${Python_EXECUTABLE} -c
+        "import sphinx_automodapi; import graphviz"
+        OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 else()
     execute_process(COMMAND ${Python_EXECUTABLE} -c
         "import ${SPHINX_THEME}; import sphinx_automodapi; import graphviz"
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 endif()
 if(_exec_python_err)
-    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi sphinx-autodoc-typehints graphviz python-graphviz autodoc-pydantic -c conda-forge -c psi4)")
+    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi sphinx-autodoc-typehints graphviz python-graphviz autodoc-pydantic sphinx-tabs -c conda-forge -c psi4)")
     set(SPHINX_STUFF_FOUND "OFF")
 
 else()
@@ -125,6 +130,9 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     foreach(fl ${STATICRES})
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/resources/${fl} ${CCBD}/source)
     endforeach()
+
+    # Extension files
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CCSD}/source/extensions ${CCBD}/source/extensions)
 
     # Autodoc basis sets
     add_custom_command(

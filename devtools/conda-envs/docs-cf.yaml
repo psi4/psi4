@@ -19,7 +19,7 @@ dependencies:
   - gau2grid
   - conda-forge/label/libint_dev::libint
   - libxc-c
-  - psi4/label/dev::libecpint
+  - libecpint
   - optking
   - qcengine
   - qcportal=0.15.8
@@ -31,7 +31,8 @@ dependencies:
   - sphinx
   - sphinx-autodoc-typehints
   - sphinx-automodapi
-  - psi4/label/dev::sphinx-psi-theme
+  - psi4::sphinx-psi-theme=1.1
   - jinja2
   - autodoc-pydantic
+  - sphinx-tabs
 

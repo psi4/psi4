@@ -124,6 +124,17 @@ That same command can be used for PsiAPI mode::
 
     psi4.set_memory(int(5e8))
 
+.. tabs::
+
+   .. code-tab:: bash PSIthon
+
+        set_memory(2000000000)
+
+   .. code-tab:: py PsiAPI
+
+        psi4.set_memory(int(5e8))
+
+
 .. note:: For parallel jobs, the ``memory`` keyword represents the total memory
    available to the job, *not* the memory per thread.
 

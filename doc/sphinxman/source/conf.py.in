@@ -52,9 +52,12 @@ sys.path.insert(0, os.path.abspath('@psi4_BINARY_DIR@/stage/@CMAKE_INSTALL_LIBDI
 sys.path.insert(0, os.path.abspath('@psi4_SOURCE_DIR@/psi4/share/psi4/databases/'))
 sys.path.insert(0, os.path.abspath('@psi4_SOURCE_DIR@/plugins/'))
 sys.path.insert(0, os.path.abspath('@CMAKE_CURRENT_SOURCE_DIR@/source'))
+sys.path.insert(0, os.path.abspath('@CMAKE_CURRENT_SOURCE_DIR@/source/extensions'))  # for local extensions
 
 # Import Sphinx themes
-import @SPHINX_THEME@
+if "@SPHINX_THEME@" not in ["basic"]:
+    # not a theme built-into Sphinx
+    import @SPHINX_THEME@
 
 
 # -- General configuration -----------------------------------------------------
@@ -76,8 +79,6 @@ extensions = [
     "sphinx.ext.intersphinx",  # Link to other project's documentation (see mapping below)
     # from Jupyter
     @_jupyconf@  # nbsphinx
-    # from Cloud
-    'cloud_sptheme.ext.index_styling',
     # from Astropy
     'sphinx_automodapi.automodapi',
     'sphinx_automodapi.automodsumm',
@@ -85,12 +86,13 @@ extensions = [
     #
     "sphinx_autodoc_typehints",
     "sphinxcontrib.autodoc_pydantic",
+    'sphinx_tabs.tabs',
+    # local
+    "psidomain",  # for QCVariables
+    "relbar_toc",  # specialized top bar
 ]
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     extensions.extend([
-        # from Psi4
-        'sphinx_psi_theme.ext.psidomain',
-        'sphinx_psi_theme.ext.relbar_toc',
     ])
 
 autosummary_generate = True
@@ -191,15 +193,28 @@ highlight_language = "python"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = '@SPHINX_THEME@'
+if '@SPHINX_THEME@' == "cloud_sptheme":
+    html_theme = "cloud"
+else:
+    html_theme = '@SPHINX_THEME@'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {"roottarget": "index" }
+if '@SPHINX_THEME@' == 'sphinx_psi_theme':
+    html_theme_options = {"roottarget": "index"}
+elif '@SPHINX_THEME@' == 'pydata_sphinx_theme':
+    html_theme_options = {
+        # ...
+        "navbar_start": ["navbar-logo"],
+        "navbar_center": [], #"navbar-nav"],
+        "navbar_end": ["navbar-icon-links"],
+        "navbar_persistent": ["search-button"]
+        # ...
+    }
 
 # Add any paths that contain custom themes here, relative to this directory.
-if '@SPHINX_THEME@' == 'sphinx_psi_theme':
+if '@SPHINX_THEME@' in ['sphinx_psi_theme', "cloud_sptheme"]:
     html_theme_path = [@SPHINX_THEME@.get_theme_dir()]
 else:
     html_theme_path = []
@@ -231,8 +246,23 @@ html_last_updated_fmt = '%A, %d %B %Y %I:%M%p'
 
 # Custom sidebar templates, maps document names to template names.
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
-    html_sidebars = {'**': ['searchbox.html', 'localtoc.html'],
-                     'index': ['searchbox.html', 'impressum.html']}
+    html_sidebars = {
+        "**": [
+            'searchbox.html',
+            'localtoc.html',
+        ]
+    }
+elif "@SPHINX_THEME@" == "furo":
+    html_sidebars = {
+        "**": [
+            "sidebar/scroll-start.html",
+            "sidebar/brand.html",
+            "sidebar/search.html",
+            "sidebar/navigation.html",
+            "sidebar/ethical-ads.html",
+            "sidebar/scroll-end.html",
+        ]
+    }
 else:
     html_sidebars = {'**': ['localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']}
 
@@ -347,6 +377,7 @@ linkcheck_ignore = [
     "https://www.msg.chem.iastate.edu/gamess/index.html",  # certificate problem but works fine IRL
     "https://github.com/libefp2/libefp#",  # anchor fine in IRL but linkcheck protests
 ]
+sphinx_tabs_valid_builders = ['linkcheck']
 
 # Documents to append as an appendix to all manuals.
 #texinfo_appendices = []
