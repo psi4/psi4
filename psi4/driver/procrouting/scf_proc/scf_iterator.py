@@ -80,7 +80,7 @@ def scf_compute_energy(self):
         self.initialize_jk(self.memory_jk_)
     else:
         self.initialize()
-    self.iterene = []
+    self.iteration_energies = []
 
     try:
         self.iterations()
@@ -372,7 +372,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.set_energies("Total Energy", SCFE)
         core.set_variable("SCF ITERATION ENERGY", SCFE)
-        self.iterene.append(SCFE)
+        self.iteration_energies.append(SCFE)
 
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
@@ -683,11 +683,11 @@ def scf_finalize_energy(self):
     core.print_out("\n\n")
     self.print_energies()
 
-    # reshape to be 2-d
-    iterene = np.array(self.iterene).reshape(-1, 1)
-    iterene = core.Matrix.from_array(iterene)
-    core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iterene))
-    self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iterene))
+    # force list into Matrix for storage
+    iteration_energies = np.array(self.iteration_energies).reshape(-1, 1)
+    iteration_energies = core.Matrix.from_array(iteration_energies)
+    core.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
+    self.set_variable("SCF TOTAL ENERGIES", core.Matrix.from_array(iteration_energies))
 
     self.clear_external_potentials()
     if core.get_option('SCF', 'PCM'):
@@ -854,7 +854,7 @@ core.HF.compute_energy = scf_compute_energy
 core.HF.finalize_energy = scf_finalize_energy
 core.HF.print_energies = scf_print_energies
 core.HF.print_preiterations = scf_print_preiterations
-core.HF.iterene = []
+core.HF.iteration_energies = []
 
 
 def _converged(e_delta, d_rms, e_conv=None, d_conv=None):
