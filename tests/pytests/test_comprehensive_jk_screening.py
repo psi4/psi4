@@ -6,14 +6,8 @@ from utils import compare, compare_integers, compare_values
 pytestmark = [pytest.mark.psi, pytest.mark.api] 
 
 @pytest.mark.parametrize("scf_type", [ "PK", "DIRECT", "OUT_OF_CORE", "DISK_DF", "MEM_DF", "DFDIRJ+LINK", "DFDIRJ+COSX" ])
-#@pytest.mark.parametrize("scf_type", [ "PK", "DIRECT", "OUT_OF_CORE", "DISK_DF", "MEM_DF", "DFDIRJ+COSX" ])
-#@pytest.mark.parametrize("scf_type", [ "MEM_DF", "DFDIRJ+LINK", "DFDIRJ+COSX" ])
-#@pytest.mark.parametrize("scf_type", [ "DFDIRJ+LINK" ]) 
-
 @pytest.mark.parametrize("scf_subtype", [ "AUTO", "INCORE", "OUT_OF_CORE", "YOSHIMINE_OUT_OF_CORE", "REORDER_OUT_OF_CORE" ])
-
 @pytest.mark.parametrize("screening", [ "SCHWARZ", "DENSITY", "CSAM", "NONE" ])
-#@pytest.mark.parametrize("screening", [ "NONE" ]) 
 def test_comprehensive_jk_screening(scf_type, scf_subtype, screening):
     """Checks the energy values computed by different JK methods using different
     screening types. The differences in energies should be insignificant.""" 
