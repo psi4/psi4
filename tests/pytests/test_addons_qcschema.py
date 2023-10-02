@@ -17,7 +17,7 @@ import psi4
 #    assert 0
 # * switch to json running
 #    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-#    pprint.pprint(atres.dict())
+#    pprint.pprint(atres.model_dump())
 
 pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.smoke]
 
@@ -114,7 +114,7 @@ def test_ipi_broker1():
 ##    assert 0
 ##
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 #
 #    assert psi4.compare_values(refnuc,   water.nuclear_repulsion_energy(),              3, "Nuclear repulsion energy")
@@ -140,7 +140,7 @@ def test_ipi_broker1():
 ##    assert 0
 ##
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 #
 #    assert psi4.compare_values(refnuc,   water_mirror.nuclear_repulsion_energy(),    3, "Nuclear repulsion energy")
@@ -172,7 +172,7 @@ def test_ipi_broker1():
 ##    assert 0
 ##
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 #
 #    assert psi4.compare_values(  8.801465529972, psi4.variable("NUCLEAR REPULSION ENERGY"), 6, 'NRE')
@@ -274,7 +274,7 @@ def test_libefp():
 
 
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 #
 #    assert psi4.compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')
@@ -342,7 +342,7 @@ def test_pcmsolver():
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__input": "\\n       Units = Angstrom\\n       Medium {\\n       SolverType = IEFPCM\\n       Solvent = Water\\n       }\\n    \\n       Cavity {\\n       RadiiSet = UFF\\n       Type = GePol\\n       Scaling = False\\n       Area = 0.3\\n       Mode = Implicit\\n       }\\n    ", "pcm_scf_type": "TOTAL", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres1 = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    pprint.pprint(atres1.dict())
+    pprint.pprint(atres1.model_dump())
     assert psi4.compare_values(nucenergy, atres1.properties.nuclear_repulsion_energy, 10,
                                "Nuclear repulsion energy (PCM, total algorithm)")
     assert psi4.compare_values(totalenergy, atres1.return_result, 10, "Total energy (PCM, total algorithm)")
@@ -352,7 +352,7 @@ def test_pcmsolver():
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__input": "\\n       Units = Angstrom\\n       Medium {\\n       SolverType = IEFPCM\\n       Solvent = Water\\n       }\\n    \\n       Cavity {\\n       RadiiSet = UFF\\n       Type = GePol\\n       Scaling = False\\n       Area = 0.3\\n       Mode = Implicit\\n       }\\n    ", "pcm_scf_type": "SEPARATE", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres2 = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    pprint.pprint(atres2.dict())
+    pprint.pprint(atres2.model_dump())
     assert psi4.compare_values(totalenergy, atres2.return_result, 10, "Total energy (PCM, separate algorithm)")
     assert psi4.compare_values(polenergy, atres2.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6,
                                "Polarization energy (PCM, separate algorithm)")
@@ -360,7 +360,7 @@ def test_pcmsolver():
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__input": "\\n       Units = Angstrom\\n       Medium {\\n       SolverType = IEFPCM\\n       Solvent = Water\\n       }\\n    \\n       Cavity {\\n       RadiiSet = UFF\\n       Type = GePol\\n       Scaling = False\\n       Area = 0.3\\n       Mode = Implicit\\n       }\\n    ", "pcm_scf_type": "TOTAL", "scf_type": "PK", "reference": "uhf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres3 = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    pprint.pprint(atres3.dict())
+    pprint.pprint(atres3.model_dump())
     assert psi4.compare_values(totalenergy, atres3.return_result, 10, "Total energy (PCM, separate algorithm)")
     assert psi4.compare_values(polenergy, atres3.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6,
                                "Polarization energy (PCM, separate algorithm)")
@@ -368,7 +368,7 @@ def test_pcmsolver():
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__input": "\\n       Units = Angstrom\\n       Medium {\\n       SolverType = IEFPCM\\n       Solvent = Water\\n       }\\n    \\n       Cavity {\\n       RadiiSet = UFF\\n       Type = GePol\\n       Scaling = False\\n       Area = 0.3\\n       Mode = Implicit\\n       }\\n    ", "pcm_scf_type": "TOTAL", "scf_type": "PK", "reference": "rohf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres4 = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    pprint.pprint(atres4.dict())
+    pprint.pprint(atres4.model_dump())
     assert psi4.compare_values(totalenergy, atres4.return_result, 10, "Total energy (PCM, separate algorithm)")
     assert psi4.compare_values(polenergy, atres4.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6,
                                "Polarization energy (PCM, separate algorithm)")
@@ -433,7 +433,7 @@ def test_json():
     }
 
     json_ret = psi4.schema_wrapper.run_qcschema(json_input)
-    json_ret = json_ret.dict()
+    json_ret = json_ret.model_dump()
     pprint.pprint(json_ret)
 
     assert psi4.compare_integers(True, json_ret["success"], "Success")
@@ -475,7 +475,7 @@ def test_json():
 ##    assert 0
 ##
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 #
 #    assert psi4.compare_values(-76.062748460117, psi4.variable('scf total energy'), 6, 'SCF')
@@ -506,7 +506,7 @@ def test_v2rdm_casscf():
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "N"], "geometry": [0.0, 0.0, -0.4724315332214108, 0.0, 0.0, 0.4724315332214108], "name": "N2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 14.00307400443], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [7, 7], "mass_numbers": [14, 14], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "v2rdm-casscf", "basis": "CC-PVDZ"}, "keywords": {"active": [1, 0, 1, 1, 0, 1, 1, 1], "cholesky_tolerance": 1e-12, "d_convergence": 1e-10, "maxiter": 500, "restricted_docc": [2, 0, 0, 0, 0, 2, 0, 0], "scf_type": "CD", "v2rdm_casscf__r_convergence": 1e-5, "v2rdm_casscf__e_convergence": 1e-6, "v2rdm_casscf__maxiter": 20000}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    pprint.pprint(atres.dict())
+    pprint.pprint(atres.model_dump())
 
     assert psi4.compare_values(-103.04337420425350, atres.extras["qcvars"]["SCF TOTAL ENERGY"], 8, "SCF total energy")
     assert psi4.compare_values(-103.086205379481, atres.return_result, 5, "v2RDM-CASSCF total energy")
@@ -549,14 +549,14 @@ def test_v2rdm_casscf():
 ##    assert 0
 ##
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 ##    atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="ccsd", molecule=ethene_ethyne)
 ##    print(f'    jatin = """{atin.serialize("json")}"""')
 ##    assert 0
 ##
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 #
 #    assert psi4.compare_values(en_gpu_dfcc, en_dfcc, 8, "CCSD total energy")
@@ -653,7 +653,7 @@ def test_dkh():
 ##    assert 0
 ##
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 #
 #    scf = psi4.energy('scf')
@@ -674,7 +674,7 @@ def test_snsmp2():
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["He", "He"], "geometry": [-1.8897261254578286, -2.892808813508824e-17, 0.0, 1.8897261254578286, 2.892808813508824e-17, 0.0], "name": "He2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [4.00260325413, 4.00260325413], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [2, 2], "mass_numbers": [4, 4], "fragments": [[0], [1]], "fragment_charges": [0.0, 0.0], "fragment_multiplicities": [1, 1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "sns-mp2", "basis": "(auto)"}, "keywords": {}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    pprint.pprint(atres.dict())
+    pprint.pprint(atres.model_dump())
 
     assert psi4.compare_values(0.00176708227, atres.return_result, 5, "SNS-MP2 IE [Eh]")
 
@@ -797,7 +797,7 @@ def test_cppe():
 ##    assert 0
 ##
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-##    pprint.pprint(atres.dict())
+##    pprint.pprint(atres.model_dump())
 #
 #
 #    ene = psi4.energy("cct3")

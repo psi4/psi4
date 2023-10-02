@@ -2,23 +2,26 @@ import numpy as np
 
 import pytest
 from utils import *
-from addons import uusing
+from addons import using
 
 import psi4
 
 pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
-@uusing("qcfractal")
-@uusing("qcportal")
 @pytest.mark.cbs
+@pytest.mark.nbody
 @pytest.mark.smoke
 @pytest.mark.quick
+@pytest.mark.parametrize("dertype", [
+    pytest.param(1, id="analytic"),
+    pytest.param(0, id="findif", marks=pytest.mark.findif),
+])
 @pytest.mark.parametrize("distributed", [
     pytest.param(False, id="internal"),
-    pytest.param(True,  id="snowflake"),
+    pytest.param(True,  id="snowflake", marks=[*using("qcfractal"), *using("qcportal")]),
 ])
-def test_qcf_cbs_mbe(distributed, snowflake):
+def test_qcf_cbs_mbe(distributed, snowflake, dertype):
     
     import psi4
     dimer = psi4.geometry("""
@@ -38,16 +41,16 @@ def test_qcf_cbs_mbe(distributed, snowflake):
 
     if distributed:
         client = snowflake.client()
-        plan = psi4.gradient("HF/cc-pV[D,T]Z", bsse_type="CP", return_plan=True, return_total_data=True)
+        plan = psi4.gradient("HF/cc-pV[D,T]Z", bsse_type="CP", return_plan=True, return_total_data=True, dertype=dertype)
         plan.compute(client)
         snowflake.await_results()
         grad = plan.get_psi_results(client)
 
     else:
-        grad = psi4.gradient("HF/cc-pV[D,T]Z", bsse_type="CP", return_total_data=True)
+        grad = psi4.gradient("HF/cc-pV[D,T]Z", bsse_type="CP", return_total_data=True, dertype=dertype)
 
     assert compare_values(ref_ene, psi4.variable("CURRENT ENERGY"))
-    assert compare_values(ref_grad, grad, atol=1.e-7)
+    assert compare_values(ref_grad, grad, atol=1.e-7)  # checks one sig fig
     
     if distributed:
         # `get_results` is a closer-to-internals alternative to `get_psi_results`.

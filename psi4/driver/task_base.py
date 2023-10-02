@@ -29,19 +29,17 @@
 __all__ = [
     "AtomicComputer",
     "BaseComputer",
+    "ComputerEnum",
     "EnergyGradientHessianWfnReturn",
 ]
 
 import abc
 import copy
+from enum import Enum
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
-
+from pydantic import ConfigDict, Field, field_validator
 import qcelemental as qcel
 from qcelemental.models import AtomicInput, AtomicResult, DriverEnum
 
@@ -71,9 +69,10 @@ class BaseComputer(qcel.models.ProtoModel):
     def plan(self):
         pass
 
-    class Config(qcel.models.ProtoModel.Config):
-        extra = "allow"
-        allow_mutation = True
+    model_config = ConfigDict(
+        extra="allow",
+        frozen=False,
+    )
 
 
 class AtomicComputer(BaseComputer):
@@ -89,18 +88,18 @@ class AtomicComputer(BaseComputer):
     result: Any = Field(default_factory=dict, description=":py:class:`~qcelemental.models.AtomicResult` return.")
     result_id: Optional[str] = Field(None, description="The optional ID for the computation.")
 
-    class Config(qcel.models.ProtoModel.Config):
-        pass
-
-    @validator("basis")
+    @field_validator("basis")
+    @classmethod
     def set_basis(cls, basis):
         return basis.lower()
 
-    @validator("method")
+    @field_validator("method")
+    @classmethod
     def set_method(cls, method):
         return method.lower()
 
-    @validator("keywords")
+    @field_validator("keywords")
+    @classmethod
     def set_keywords(cls, keywords):
         return copy.deepcopy(keywords)
 
@@ -217,12 +216,12 @@ class AtomicComputer(BaseComputer):
         )
         # ... END
 
-        #pp.pprint(self.result.dict())
+        #pp.pprint(self.result.model_dump())
         #print("... JSON returns >>>")
         core.set_output_file(gof, True)
         core.reopen_outfile()
-        logger.debug(pp.pformat(self.result.dict()))
-        core.print_out(_drink_filter(self.result.dict()["stdout"]))
+        logger.debug(pp.pformat(self.result.model_dump()))
+        core.print_out(_drink_filter(self.result.model_dump()["stdout"]))
         self.computed = True
 
     def get_results(self, client: Optional["qcportal.FractalClient"] = None) -> AtomicResult:
@@ -280,3 +279,22 @@ def _drink_filter(stdout: str) -> str:
     stdout = stdout.replace("\n*** Psi4 exiting successfully. Buy a developer a beer!", "")
     stdout = stdout.replace("\n*** Psi4 encountered an error. Buy a developer more coffee!", "")
     return stdout
+
+
+class ComputerEnum(str, Enum):
+    """Allowed driver compute layers."""
+
+    def computer(self) -> BaseComputer:
+        """Return class specified by enum."""
+
+        if self == "atomic":
+            return AtomicComputer
+        elif self == "composite":
+            from .driver_cbs import CompositeComputer
+            return CompositeComputer
+        elif self == "finitedifference":
+            from .driver_findif import FiniteDifferenceComputer
+            return FiniteDifferenceComputer
+        elif self == "manybody":
+            from .driver_nbody import ManyBodyComputer
+            return ManyBodyComputer

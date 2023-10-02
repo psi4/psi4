@@ -257,7 +257,7 @@ def _convert_basis(basis):
         centers.append(qcel.models.basis.BasisCenter(electron_shells=center_shells))
 
     # Take unique to prevent duplicate data, doesn't matter too much
-    hashes = [hash(json.dumps(centers[x].dict(), sort_keys=True)) for x in range(len(centers))]
+    hashes = [hash(json.dumps(centers[x].model_dump(), sort_keys=True)) for x in range(len(centers))]
 
     uniques = {k: v for k, v in zip(hashes, centers)}
     name_map = {}
@@ -451,19 +451,19 @@ def run_qcschema(
         # Echo the infile on the outfile
         core.print_out("\n  ==> Input QCSchema <==\n")
         core.print_out("\n--------------------------------------------------------------------------\n")
-        core.print_out(pp.pformat(json.loads(input_model.json())))
+        core.print_out(pp.pformat(json.loads(input_model.model_dump_json())))
         core.print_out("\n--------------------------------------------------------------------------\n")
 
         keep_wfn = input_model.protocols.wavefunction != 'none'
 
         # qcschema should be copied
-        ret_data = run_json_qcschema(input_model.dict(), clean, False, keep_wfn=keep_wfn)
+        ret_data = run_json_qcschema(input_model.model_dump(), clean, False, keep_wfn=keep_wfn)
         ret_data["provenance"].update({
             "creator": "Psi4",
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema"
         })
-        ret_data["native_files"]["input"] = json.dumps(json.loads(input_model.json()), indent=1)
+        ret_data["native_files"]["input"] = json.dumps(json.loads(input_model.model_dump_json()), indent=1)
 
         exit_printing(start_time=start_time, success=True)
 
@@ -472,7 +472,7 @@ def run_qcschema(
     except Exception as exc:
 
         if not isinstance(input_data, dict):
-            input_data = input_data.dict()
+            input_data = input_data.model_dump()
 
         input_data = input_data.copy()
         input_data["stdout"] = _read_output(outfile)

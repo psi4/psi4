@@ -149,12 +149,7 @@ import sys
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
-
+from pydantic import Field, field_validator
 from qcelemental.models import AtomicResult, DriverEnum
 
 from psi4 import core
@@ -1538,7 +1533,8 @@ class CompositeComputer(BaseComputer):
     # One-to-One list of QCSchema corresponding to `task_list`.
     results_list: List[Any] = []
 
-    @validator('molecule')
+    @field_validator('molecule')
+    @classmethod
     def set_molecule(cls, mol):
         mol.update_geometry()
         mol.fix_com(True)
@@ -1593,7 +1589,7 @@ class CompositeComputer(BaseComputer):
                     })
                 self.task_list.append(task)
 
-                # logger.debug("TASK\n" + pp.pformat(task.dict()))
+                # logger.debug("TASK\n" + pp.pformat(task.model_dump()))
 
     def build_tasks(self, obj, **kwargs):
         # permanently a dummy function
@@ -1751,7 +1747,7 @@ class CompositeComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('CBS QCSchema:\n' + pp.pformat(cbs_model.dict()))
+        logger.debug('CBS QCSchema:\n' + pp.pformat(cbs_model.model_dump()))
 
         return cbs_model
 
@@ -1800,7 +1796,7 @@ class CompositeComputer(BaseComputer):
 def _cbs_schema_to_wfn(cbs_model):
     """Helper function to produce Wavefunction from a Composite-flavored AtomicResult."""
 
-    mol = core.Molecule.from_schema(cbs_model.molecule.dict())
+    mol = core.Molecule.from_schema(cbs_model.molecule.model_dump())
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp', quiet=True)
     wfn = core.Wavefunction(mol, basis)
     if hasattr(cbs_model.provenance, "module"):

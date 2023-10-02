@@ -145,7 +145,7 @@ expected_return_result["quadrupole"] = np.array(expected_return_result["quadrupo
 expected_return_result["wiberg_lowdin_indices"] = np.array(expected_return_result["wiberg_lowdin_indices"]).reshape((3, 3))
 expected_return_result["mayer_indices"] = np.array(expected_return_result["mayer_indices"]).reshape((3, 3))
 
-json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
+json_ret = psi4.schema_wrapper.run_qcschema(json_data).model_dump()  # formerly .dict(), but both still work
 
 # can't write msgpack arrays to json
 

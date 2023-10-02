@@ -146,7 +146,7 @@ def test_qcschema_wavefunction_scf_orbitals(result_data_fixture):
     wfn = ret.wavefunction
 
     expected_keys = {'basis', 'restricted', 'scf_orbitals_a', 'scf_eigenvalues_a', 'orbitals_a', 'eigenvalues_a'}
-    assert wfn.dict().keys() == expected_keys
+    assert wfn.model_dump().keys() == expected_keys
 
 def test_qcschema_wavefunction_scf_occupations_gs(result_data_fixture):
     result_data_fixture["protocols"] = {"wavefunction": "all"}

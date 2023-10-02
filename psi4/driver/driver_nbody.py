@@ -150,10 +150,7 @@ from ast import literal_eval
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Sequence, Set, Tuple, Union
 
-try:
-    from pydantic.v1 import Field, validator
-except ImportError:
-    from pydantic import Field, validator
+from pydantic import Field, FieldValidationInfo, field_validator
 
 import logging
 
@@ -176,7 +173,8 @@ logger = logging.getLogger(__name__)
 
 FragBasIndex = Tuple[Tuple[int], Tuple[int]]
 
-SubTaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
+MBETaskComputers = Union[AtomicComputer, CompositeComputer, FiniteDifferenceComputer]
+
 
 def nbody():
     """
@@ -856,69 +854,75 @@ class ManyBodyComputer(BaseComputer):
     keywords: Dict[str, Any] = Field({}, description="The computation keywords/options.")
 
     bsse_type: List[BsseEnum] = Field([BsseEnum.cp], description="Requested BSSE treatments. First in list determines which interaction or total energy/gradient/Hessian returned.")
-    nfragments: int = Field(-1, description="Number of distinct fragments comprising full molecular supersystem.")  # formerly max_frag
-    max_nbody: int = Field(-1, description="Maximum number of bodies to include in the many-body treatment. Possible: max_nbody <= nfragments. Default: max_nbody = nfragments.")
+    nfragments: int = Field(-1, validate_default=True, description="Number of distinct fragments comprising full molecular supersystem.")  # formerly max_frag
+    max_nbody: int = Field(-1, validate_default=True, description="Maximum number of bodies to include in the many-body treatment. Possible: max_nbody <= nfragments. Default: max_nbody = nfragments.")
 
     nbodies_per_mc_level: List[List[Union[int, Literal["supersystem"]]]] = Field([], description="Distribution of active n-body levels among model chemistry levels. All bodies in range [1, self.max_nbody] must be present exactly once. Number of items in outer list is how many different modelchems. Each inner list specifies what n-bodies to be run at the corresponding modelchem (e.g., `[[1, 2]]` has max_nbody=2 and 1-body and 2-body contributions computed at the same level of theory; `[[1], [2]]` has max_nbody=2 and 1-body and 2-body contributions computed at different levels of theory. An entry 'supersystem' means all higher order n-body effects up to the number of fragments. The n-body levels are effectively sorted in the outer list, and any 'supersystem' element is at the end.")  # formerly nbody_list
 
     embedding_charges: Dict[int, List[float]] = Field({}, description="Atom-centered point charges to be used on molecule fragments whose basis sets are not included in the computation. Keys: 1-based index of fragment. Values: list of atom charges for that fragment.")
 
-    return_total_data: Optional[bool] = Field(None, description="When True, returns the total data (energy/gradient/Hessian) of the system, otherwise returns interaction data. Default is False for energies, True for gradients and Hessians. Note that the calculation of total counterpoise corrected energies implies the calculation of the energies of monomers in the monomer basis, hence specifying ``return_total_data = True`` may carry out more computations than ``return_total_data = False``.")
+    return_total_data: Optional[bool] = Field(None, validate_default=True, description="When True, returns the total data (energy/gradient/Hessian) of the system, otherwise returns interaction data. Default is False for energies, True for gradients and Hessians. Note that the calculation of total counterpoise corrected energies implies the calculation of the energies of monomers in the monomer basis, hence specifying ``return_total_data = True`` may carry out more computations than ``return_total_data = False``.")
     quiet: bool = Field(False, description="Whether to print/log formatted n-body energy analysis. Presently used by multi to suppress output. Candidate for removal from class once in-class/out-of-class functions sorted.")
 
-    task_list: Dict[str, SubTaskComputers] = {}
+    task_list: Dict[str, MBETaskComputers] = {}
 
     # Note that validation of user fields happens through typing and validator functions, so no class __init__ needed.
 
-    @validator("bsse_type", pre=True)
+    @field_validator("bsse_type", mode="before")
+    @classmethod
     def set_bsse_type(cls, v):
         if not isinstance(v, list):
             v = [v]
         # emulate ordered set
         return list(dict.fromkeys([bt.lower() for bt in v]))
 
-    @validator('molecule')
+    @field_validator('molecule')
+    @classmethod
     def set_molecule(cls, mol):
         mol.update_geometry()
         mol.fix_com(True)
         mol.fix_orientation(True)
         return mol
 
-    @validator("nfragments", always=True)
-    def set_nfragments(cls, v, values):
-        return values["molecule"].nfragments()
+    @field_validator("nfragments")
+    @classmethod
+    def set_nfragments(cls, v: int, info: FieldValidationInfo) -> int:
+        return info.data["molecule"].nfragments()
 
-    @validator("max_nbody", always=True)
-    def set_max_nbody(cls, v, values):
+    @field_validator("max_nbody")
+    @classmethod
+    def set_max_nbody(cls, v: int, info: FieldValidationInfo) -> int:
         if v == -1:
-            return values["nfragments"]
+            return info.data["nfragments"]
         else:
-            return min(v, values["nfragments"])
+            return min(v, info.data["nfragments"])
 
-    @validator("embedding_charges")
-    def set_embedding_charges(cls, v, values):
-        if len(v) != values["nfragments"]:
+    @field_validator("embedding_charges")
+    @classmethod
+    def set_embedding_charges(cls, v: Dict[int, List[float]], info: FieldValidationInfo) -> Dict[int, List[float]]:
+        if len(v) != info.data["nfragments"]:
             raise ValueError("embedding_charges dict should have entries for each 1-indexed fragment.")
 
         return v
 
-    @validator("return_total_data", always=True)
-    def set_return_total_data(cls, v, values):
+    @field_validator("return_total_data")
+    @classmethod
+    def set_return_total_data(cls, v: Optional[bool], info: FieldValidationInfo) -> bool:
         if v is not None:
             rtd = v
-        elif values["driver"] in ["gradient", "hessian"]:
+        elif info.data["driver"] in ["gradient", "hessian"]:
             rtd = True
         else:
             rtd = False
 
-        if values.get("embedding_charges", False) and rtd is False:
+        if info.data.get("embedding_charges", False) and rtd is False:
             raise ValueError("Cannot return interaction data when using embedding scheme.")
 
         return rtd
 
     def build_tasks(
         self,
-        mb_computer: SubTaskComputers,
+        mb_computer: MBETaskComputers,
         mc_level_idx: int,
         **kwargs: Dict[str, Any],
     ) -> int:
@@ -1021,7 +1025,7 @@ class ManyBodyComputer(BaseComputer):
 
     def prepare_results(
         self,
-        results: Optional[Dict[str, SubTaskComputers]] = None,
+        results: Optional[Dict[str, MBETaskComputers]] = None,
         client: Optional["qcportal.FractalClient"] = None,
     ) -> Dict[str, Any]:
         """Process the results from all n-body component molecular systems and model chemistry levels into final quantities.
@@ -1395,7 +1399,7 @@ class ManyBodyComputer(BaseComputer):
             properties["return_gradient"] = ret_gradient
             properties["return_hessian"] = ret_ptype
 
-        component_results = self.dict()['task_list']
+        component_results = self.model_dump()['task_list']
         for k, val in component_results.items():
             val['molecule'] = val['molecule'].to_schema(dtype=2)
 
@@ -1417,7 +1421,7 @@ class ManyBodyComputer(BaseComputer):
                 'success': True,
             })
 
-        logger.debug('\nNBODY QCSchema:\n' + pp.pformat(nbody_model.dict()))
+        logger.debug('\nNBODY QCSchema:\n' + pp.pformat(nbody_model.model_dump()))
 
         return nbody_model
 

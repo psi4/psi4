@@ -288,7 +288,7 @@ def test_3():
         },
     }
     res = qcng.compute(resinp, 'dftd3', raise_error=True)
-    res = res.dict()
+    res = res.model_dump()
 
     #res = dftd3.run_dftd3_from_arrays(molrec=sys, name_hint='b3lyp', level_hint='d3bj')
     assert compare('B3LYP-D3(BJ)', _compute_key(res['extras']['local_keywords']), 'key')
@@ -390,7 +390,7 @@ def test_mp2d__run_mp2d__2body(inp, subjects, request):
         'keywords': {},
     }
     jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
-    jrec = jrec.dict()
+    jrec = jrec.model_dump()
 
     #assert len(jrec['extras']['qcvars']) == 8
 
@@ -453,7 +453,7 @@ def test_dftd3__run_dftd3__2body(inp, program, subjects, request):
         'keywords': keywords,
     }
     jrec = qcng.compute(resinp, program, raise_error=True)
-    jrec = jrec.dict()
+    jrec = jrec.model_dump()
 
     assert len(jrec['extras']['qcvars']) == (8 if program == "dftd3" else 6)
 
@@ -510,7 +510,7 @@ def test_dftd3__run_dftd3__3body(inp, subjects, request):
         'keywords': {},
     }
     jrec = qcng.compute(resinp, 'dftd3', raise_error=True)
-    jrec = jrec.dict()
+    jrec = jrec.model_dump()
 
     assert len(jrec['extras']['qcvars']) == 8
 

@@ -262,7 +262,7 @@ def test_mp2d():
         'keywords': {},
     }
     jrec = qcng.compute(resinp, 'mp2d', raise_error=True)
-    jrec = jrec.dict()
+    jrec = jrec.dict()  # .model_dump() preferred
 
     assert psi4.compare_values(expected, jrec['extras']['qcvars']['CURRENT ENERGY'], 7, 'E')
     assert psi4.compare_values(expected, jrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'], 7, 'disp E')
@@ -878,7 +878,7 @@ def test_run_qcschema():
     }
 
     json_ret = psi4.json_wrapper.run_qcschema(json_input)
-    print(json_ret.dict())
+    print(json_ret.model_dump())
 
     assert psi4.compare(True, json_ret.success, "Success")
     assert psi4.compare_values(-5.474227786274896, json_ret.properties.return_energy, 4, "SCF ENERGY")

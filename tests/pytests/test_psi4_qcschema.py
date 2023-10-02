@@ -16,7 +16,7 @@ pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.s
 #    assert 0
 # * switch to json running
 #    atres = psi4.schema_wrapper.run_qcschema(jatin)
-#    pprint.pprint(atres.dict())
+#    pprint.pprint(atres.model_dump())
 
 
 @pytest.fixture
