@@ -1,14 +1,18 @@
 list(APPEND sources
   CDJK.cc
   CompositeJK.cc
+  COSK.cc
+  DirectDFJ.cc
   DirectJK.cc
   DiskDFJK.cc
   DiskJK.cc
   GTFockJK.cc
+  LinK.cc
   MemDFJK.cc
   PKJK.cc
   PK_workers.cc
   PKmanagers.cc
+  SplitJK.cc
   apps.cc
   cubature.cc
   hamiltonian.cc
