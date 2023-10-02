@@ -74,6 +74,7 @@ void DiskDFJK::common_init() {
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     auto tmperi = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!tmperi->initialized()) tmperi->initialize_sieve();
     n_function_pairs_ = tmperi->function_pairs().size();
 }
 size_t DiskDFJK::memory_estimate() {
@@ -435,6 +436,9 @@ void DiskDFJK::preiterations() {
     eri_.emplace_back(rifactory->eri());
     for (int Q = 1; Q < df_ints_num_threads_; Q++) {
         eri_.emplace_back(eri_.front()->clone());
+    }
+    for (auto eri : eri_) {
+        if (!eri->initialized()) eri->initialize_sieve();
     }
     n_function_pairs_ = eri_.front()->function_pairs().size();
     // Setup erf integrals, if needed
