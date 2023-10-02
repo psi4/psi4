@@ -92,12 +92,7 @@ void CompositeJK::common_init() {
     }
 
     // other options
-    if (options_.get_str("SCREENING") == "NONE") {
-        timer_off("CompositeJK: Setup");
-        throw PSIEXCEPTION("The CompositeJK algorithms do not support SCREENING=NONE currently!");
-    } else {
-        density_screening_ = options_.get_str("SCREENING") == "DENSITY";
-    }
+    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
 
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 
@@ -112,6 +107,16 @@ void CompositeJK::common_init() {
 
     IntegralFactory factory(primary_, primary_, primary_, primary_);
     eri_computers_["4-Center"][0] = std::shared_ptr<TwoBodyAOInt>(factory.eri());
+    
+    if (!eri_computers_["4-Center"][0]->initialized()) eri_computers_["4-Center"][0]->initialize_sieve();  
+ 
+    // initialize 3-Center ERIs
+    eri_computers_["3-Center"].emplace({});
+    eri_computers_["3-Center"].resize(nthreads_);
+
+    IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
+    eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
+    if (!eri_computers_["3-Center"][0]->initialized()) eri_computers_["3-Center"][0]->initialize_sieve();  
 
     // create each threads' ERI computers
     for(int rank = 1; rank < nthreads_; rank++) {

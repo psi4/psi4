@@ -26,6 +26,8 @@
  * @END LICENSE
  */
 
+#include <cassert>
+
 #include <algorithm>
 #include <stdexcept>
 #include "psi4/libqt/qt.h"
@@ -74,9 +76,9 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     // Default values for when screening isnt used
     initialized_ = false;
     //function_pair_values_ = {}; 
-    shell_pair_values_ = {};
-    max_integral_ = 0.0;
-    screening_threshold_squared_ = 0.0; 
+    //shell_pair_values_ = {};
+    //max_integral_ = 0.0;
+    //screening_threshold_squared_ = 0.0; 
 
     auto screentype = Process::environment.options.get_str("SCREENING");
     if (screentype == "SCHWARZ")
@@ -266,9 +268,11 @@ void TwoBodyAOInt::setup_sieve() {
 
 void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra) {
 
+    outfile->Printf("Creating sieve pair info...");
     nshell_ = bs->nshell();
     nbf_ = bs->nbf();
 
+    auto noscreen = screening_type_ == ScreeningType::None || screening_threshold_ == 0.0; 
     function_pair_values_.resize((size_t)nbf_ * nbf_, 0.0);
     shell_pair_values_.resize((size_t)nshell_ * nshell_, 0.0);
     max_integral_ = 0.0;
@@ -306,6 +310,10 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     bs3_ = original_bs3_;
     bs4_ = original_bs4_;
 
+    outfile->Printf("Max integral: %f\n", max_integral_);
+    outfile->Printf("Screening threshold: %f\n", screening_threshold_);
+    outfile->Printf("Nshell: %d\n", nshell_);
+    outfile->Printf("Nbf: %d\n", nbf_);
     screening_threshold_squared_ = screening_threshold_ * screening_threshold_;
     double screening_threshold_over_max = screening_threshold_ / max_integral_;
     double screening_threshold_squared_over_max = screening_threshold_squared_ / max_integral_;
@@ -319,7 +327,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     size_t munu = 0L;
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu <= mu; nu++, munu++) {
-            if (function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) {
+            if ((function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) || noscreen) {
                 function_pairs_.push_back(std::make_pair(mu, nu));
                 function_pairs_reverse_[munu] = offset;
                 offset++;
@@ -336,7 +344,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU < nshell_; NU++) {
-            if (shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) {
+            if ((shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) || noscreen) {
                 shell_to_shell_[MU].push_back(NU);
             }
         }
@@ -349,7 +357,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     size_t MUNU = 0L;
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU <= MU; NU++, MUNU++) {
-            if (shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) {
+            if ((shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) || noscreen) {
                 shell_pairs.push_back(std::make_pair(MU, NU));
                 shell_pairs_reverse_[MUNU] = offset;
                 offset++;
@@ -359,7 +367,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu < nbf_; nu++) {
-            if (function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) {
+            if ((function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) || noscreen) {
                 function_to_function_[mu].push_back(nu);
             }
         }
@@ -401,9 +409,17 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
             }
         }
     }
+
+    outfile->Printf("Shell pairs length: %d\n", shell_pairs.size());
+    outfile->Printf("Shell pairs reverse length: %d\n", shell_pairs_reverse_.size());
+    outfile->Printf("Function pairs length: %d\n", function_pairs_.size());
+    outfile->Printf("Function pairs reverse length: %d\n", function_pairs_reverse_.size());
 }
 
 void TwoBodyAOInt::create_sieve_pair_info() {
+    // We only want to initialize TwoBodyAOInt once
+    if(initialized_) throw PSIEXCEPTION("Sieve pair info has already been created!");
+    
     // We assume that only the bra or the ket has a pair that generates a sieve.  If all bases are the same, either
     // can be used.  If only bra or ket has a matching pair, that matching pair is used.  If both bra and ket have
     // matching pairs but those pairs are different, we need to generalize this machinery a little to disambiguate
@@ -431,6 +447,11 @@ void TwoBodyAOInt::create_sieve_pair_info() {
                throw PSIEXCEPTION("If different basis sets exist in the ket, basis4 is expected to be dummy in setup_sieve()");
         for(int shell = 0; shell < basis3()->nshell(); ++shell) shell_pairs_ket_.emplace_back(shell,0);
     }
+
+    //assert(!shell_pairs_.empty());
+    //assert(!shell_pairs_reverse_.empty());
+    //assert(!function_pairs_.empty());
+    //assert(!function_pairs_reverse_.empty());
 
     initialized_ = true;
 }
