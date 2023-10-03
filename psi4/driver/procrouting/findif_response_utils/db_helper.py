@@ -35,11 +35,12 @@ Properties that are able to use this module should be added to
 the registered_props dictionary.
 
 """
-import os
 import collections
+import os
 
 from psi4 import core
-from psi4.driver import p4util
+
+from ... import p4util
 
 
 def generate_inputs(db,name):

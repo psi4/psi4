@@ -30,6 +30,7 @@
 
 import os
 import sys
+
 # Extracts last git changelog item into html for psicode
 
 gitlast = 'feed/latest_trac_changeset.txt'  # path to output file with latest changeset

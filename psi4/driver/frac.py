@@ -35,9 +35,9 @@ __all__ = [
 from typing import Callable, Dict, Union
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import driver
-from psi4.driver.p4util.exceptions import *
+
+from . import driver, p4util
+from .p4util.exceptions import *
 
 
 def frac_traverse(name: Union[str, Callable], **kwargs) -> Dict[float, float]:

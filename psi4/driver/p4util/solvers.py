@@ -525,7 +525,6 @@ class SolverEngine(ABC):
            order. Where H2 is described in :func:`hamiltonian_solver`.
            ``len(H2X) == len(X)``
         """
-        pass
 
     @abstractmethod
     def precondition(self, R_k, w_k):
@@ -548,7 +547,6 @@ class SolverEngine(ABC):
            The preconditioned residual vector, a correction vector that will be
            used to augment the guess space
         """
-        pass
 
     @abstractmethod
     def new_vector(self):
@@ -567,7 +565,6 @@ class SolverEngine(ABC):
            This should be a new vector object with the correct dimensions,
            assumed to be zeroed out
         """
-        pass
 
     def vector_dot(X, Y) -> float:
         """Compute a dot product between two `vectors`
@@ -582,7 +579,6 @@ class SolverEngine(ABC):
         a : float
            The dot product  (X x Y)
         """
-        pass
 
     # cython doesn't like static+ decorators https://github.com/cython/cython/issues/1434#issuecomment-608975116
     vector_dot = staticmethod(abstractmethod(vector_dot))
@@ -606,7 +602,6 @@ class SolverEngine(ABC):
           The solver assumes that Y is updated, and returned. So it is safe to
           avoid a copy of Y if possible
         """
-        pass
 
     @abstractmethod
     def vector_scale(a: float, X):
@@ -625,7 +620,6 @@ class SolverEngine(ABC):
           The solver assumes that the passed vector is modifed. So it is save
           to avoid a copy of X if possible.
         """
-        pass
 
     @abstractmethod
     def vector_copy(X):
@@ -642,7 +636,6 @@ class SolverEngine(ABC):
            A copy of `X` should be distinct object that can be modified
            independently of the passed object, Has the same data when returned.
         """
-        pass
 
     @abstractmethod
     def residue(self, X, so_prop_ints):
@@ -662,7 +655,6 @@ class SolverEngine(ABC):
         residue : Any
           The transition property.
         """
-        pass
 
 
 def davidson_solver(

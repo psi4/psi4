@@ -38,6 +38,7 @@ ene, wwfn = frequencies('hf/cc-pvdz', molecule=weird, return_wfn=True, dertype=2
 masses = [weird.mass(iat) for iat in range(weird.natom())]
 w_freq = wwfn.frequencies().np[0]  # 984.044
 compare_values(1000., masses[1], "weird H mass", atol=1.e-6)
+import math
 compare_values(math.sqrt(mu_weird / mu_plain), p_freq / w_freq, "HbyH sqrt(mu):freq ratio", atol=1.e-6)
 
 clean()

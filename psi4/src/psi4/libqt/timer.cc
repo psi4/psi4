@@ -1005,17 +1005,19 @@ void timer_done() {
     omp_set_lock(&lock_timer);
     extern Timer_Structure root_timer;
     root_timer.turn_off();
-    char *host;
 
-    host = (char *)malloc(40 * sizeof(char));
-    gethostname(host, 40);
+    // host name has up to HOST_NAME_MAX (64 or 256) + 1 bytes, and must end in the null byte
+    std::vector<char> host(257);
+    int error = gethostname(host.data(), host.size());
+    if (error) strncpy(host.data(), "nohostname", host.size());
+    if (host.back() != '\0') host.push_back('\0');
 
     /* Dump the timing data to timer.dat and free the timers */
     auto mode = std::ostream::app;
     auto printer = std::make_shared<PsiOutStream>("timer.dat", mode);
     printer->Printf("\n");
-    printer->Printf("Host: %s\n", host);
-    free(host);
+    printer->Printf("Host: %s\n", host.data());
+
     printer->Printf("\n");
     // NOTE: ctime is not thread-safe and could potentially cause overwriting of the return strings. 
     printer->Printf("Timers On : %s", ctime(&timer_start)); // lgtm[cpp/potentially-dangerous-function] 

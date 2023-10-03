@@ -467,7 +467,7 @@ Bibliography
 
 .. [Schaffer:2013:2570]
    R. Sch\ |a_dots|\ ffer and G. Jansen
-   *Mol. Phys.* **111**, 2570 (2013).
+   *Mol. Phys.* **111**, 2570 (2013), https://doi.org/10.1080/00268976.2013.827253 .
 
 .. [Laqua:2018:204111]
    H. Laqua, J. Kussmann and C. Ochsenfeld
@@ -497,9 +497,13 @@ Bibliography
    S. Lehtola
    *Phys. Rev. A.* **101**, 032504 (2020), https://doi.org/10.1103/PhysRevA.101.032504.
 
-.. [Lehtola:2020:04224]
+.. [Lehtola:2020:134108]
    S. Lehtola
-   *arXiv* 2001:04224.
+   *J. Chem. Phys.* **152**, 134108 (2020), https://doi.org/10.1063/1.5144964.
+
+.. [Lehtola:2020:144105]
+   S. Lehtola, L. Visscher, and E. Engel
+   *J. Chem. Phys.* **152**, 144105 (2020), https://doi.org/10.1063/5.0004046.
 
 .. [Olsen:2010:3721]
    J. M. Olsen, K. Aidas, and J. Kongsted.
@@ -570,7 +574,7 @@ Bibliography
 
 .. [Podeszwa:2006:400]
    R. Podeszwa, R. Bukowski, and K. Szalewicz,
-   *J. Chem. Theory Comput.* **2**, 400 (2006). 
+   *J. Chem. Theory Comput.* **2**, 400 (2006).
 
 .. [Xie:2022:024801]
    Y. Xie, D. G. A. Smith, and C. D. Sherrill,
@@ -599,7 +603,7 @@ Bibliography
 .. [Izsak:2011:144105]
    R. Izs\ |a_acute|\ k and F. Neese
    *J. Chem. Phys.* **135**, 144105 (2011)
-   
+
 .. [Smith:2018:3504]
     10.1021/acs.jctc.8b00286,
     "PSI4NUMPY: An Interactive Quantum Chemistry Programming Environment for Reference Implementations and Rapid Development",
@@ -620,12 +624,12 @@ Bibliography
    M. Haser and R. Ahlrichs,
    *J. Comp. Chem.* **10(1)**, 104 (1989).
    https://doi.org/10.1002/jcc.540100111
-   
+
 .. [Thompson:2017:144101]
    T. H. Thompson and C. Ochsenfeld
    *J. Chem. Phys.* **147**, 144101 (2017).
    https://doi.org/10.1063/1.4994190
-   
+
 .. [Smith:2020:184108]
     "PSI4 1.4: Open-source software for high-throughput quantum chemistry",
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish, M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio, A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer, R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni, J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein, B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov, K. Patkowski, A. E. DePrince III, U. Bozkaya, R. King, F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill
@@ -637,7 +641,7 @@ Bibliography
    J. M. Waldrop and K. Patkowski
    *J. Chem. Phys.* **154**, 024103 (2021).
    https://doi.org/10.1063/1.4994190
-   
+
 .. [Ochsenfeld:1998:1663]
    C. Ochsenfeld, C. A. White, M. Head-Gordon
    *J. Chem. Phys.* **109**, 1663 (1998)
@@ -721,4 +725,3 @@ Bibliography
    F. Weigend,
    *Phys. Chem. Chem. Phys.* **4**, 4285-4291 (2002).
    https://doi.org/10.1039/B204199P
-

@@ -31,36 +31,39 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function. *name* can be assumed lowercase by here.
 
 """
-import re
 import os
-import sys
+import re
 import shutil
 import subprocess
+import sys
 import warnings
 from typing import Dict, List, Union
 
 import numpy as np
-from ..constants import constants
 from qcelemental.util import parse_version, which
 
-from psi4 import extras
-from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import qcdb
-from psi4.driver import psifiles as psif
-from psi4.driver.p4util.exceptions import ManagedMethodError, PastureRequiredError, UpgradeHelper, ValidationError, docs_table_link
-#from psi4.driver.molutil import *
-from psi4.driver.qcdb.basislist import corresponding_basis
-# never import driver, wrappers, or aliases into this file
+from psi4 import core, extras
 
+from .. import p4util
+from .. import psifiles as psif
+from .. import qcdb
+from ..constants import constants
+from ..p4util.exceptions import (
+    ManagedMethodError,
+    PastureRequiredError,
+    UpgradeHelper,
+    ValidationError,
+    docs_table_link,
+)
+
+#from psi4.driver.molutil import *
+from ..qcdb.basislist import corresponding_basis
+from . import dft, empirical_dispersion, mcscf, proc_util, response, solvent
 from .proc_data import method_algorithm_type
 from .roa import run_roa
-from . import proc_util
-from . import empirical_dispersion
-from . import dft
-from . import mcscf
-from . import response
-from . import solvent
+
+# never import driver, wrappers, or aliases into this file
+
 
 
 # ADVICE on new additions:
@@ -1484,6 +1487,11 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
                                                    return_atomlist=True)
             wfn.set_sad_fitting_basissets(sad_fitting_list)
             optstash.restore()
+
+    if core.get_option("SCF", "GUESS") == "SAPGAU":
+        # Populate sapgau basis
+        sapgau = core.BasisSet.build(wfn.molecule(), "SAPGAU_BASIS", core.get_global_option("SAPGAU_BASIS"))
+        wfn.set_basisset("SAPGAU", sapgau)
 
     if hasattr(core, "EXTERN") and 'external_potentials' in kwargs:
         core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +

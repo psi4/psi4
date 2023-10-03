@@ -28,6 +28,7 @@
 """Module with property-related helper functions."""
 
 import psi4
+
 from . import optproc
 
 __all__ = ['free_atom_volumes']

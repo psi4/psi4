@@ -30,8 +30,8 @@ import atexit
 import datetime
 import itertools
 import os
-from typing import List, Optional, Union
 from pathlib import Path
+from typing import List, Optional, Union
 
 from qcelemental.util import which, which_import
 
@@ -284,6 +284,7 @@ def set_output_file(
 
     # Get the custom logger
     import logging
+
     from psi4 import logger
     if not inherit_loglevel:
         logger.setLevel(loglevel)

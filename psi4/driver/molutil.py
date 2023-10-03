@@ -32,11 +32,11 @@ from typing import Dict, Tuple, Union
 import numpy as np
 import qcelemental as qcel
 
-from .constants import constants
 from psi4 import core
-from psi4.driver.p4util import temp_circular_import_blocker
-from psi4.driver import qcdb
-from psi4.driver.p4util.exceptions import *
+
+from . import qcdb
+from .constants import constants
+from .p4util.exceptions import *
 
 
 def molecule_set_attr(self, name, value):

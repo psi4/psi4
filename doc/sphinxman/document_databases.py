@@ -28,11 +28,10 @@
 # @END LICENSE
 #
 
-import sys
-import os
 import glob
+import os
 import re
-
+import sys
 
 DriverPath = ''
 if (len(sys.argv) == 2):

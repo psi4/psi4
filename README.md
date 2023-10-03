@@ -34,7 +34,7 @@ strives to be friendly to both users and developers.
 
 * **Users' Website**  www.psicode.org
 
-* **Downloading and Installing Psi4** https://psicode.org/psi4manual/master/build_faq.html (for the CMake adept, see [CMakeLists.txt](CMakeLists.txt)
+* **Downloading and Installing Psi4** https://psicode.org/psi4manual/master/build_faq.html (for the CMake adept, see [CMakeLists.txt](CMakeLists.txt#L27)
 
 * **Manual**  [http://bit.ly/psi4manual](https://psicode.org/psi4manual/master/index.html) (built nightly from master branch) or https://psicode.org/psi4manual/1.4.0/index.html (last release)
 

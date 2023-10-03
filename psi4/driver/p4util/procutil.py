@@ -45,25 +45,21 @@ __all__ = [
     "state_to_atomicinput",
 ]
 
+import collections
 import os
-import ast
-import sys
-import math
-import pickle
-import inspect
 import warnings
 from contextlib import contextmanager
-import collections
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Union
 from types import ModuleType
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Union
 
 import numpy as np
 from qcelemental.models import AtomicInput
 
 from psi4 import core
 from psi4.metadata import __version__
-from .exceptions import ValidationError
+
 from . import p4regex
+from .exceptions import ValidationError
 
 
 def kwargs_lower(kwargs: Dict[str, Any]) -> Dict[str, Any]:
@@ -538,7 +534,7 @@ def prepare_options_for_set_options() -> Dict[str, Any]:
     # we need the following dirty hack.
 
     try:
-        import forte # Needed for Forte options to run.
+        import forte  # Needed for Forte options to run.
     except ImportError:
         pass
     else:

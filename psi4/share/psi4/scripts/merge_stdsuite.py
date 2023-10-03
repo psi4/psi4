@@ -1,9 +1,8 @@
 import ast
-import shutil
 import getpass
-import pathlib
 import operator
-
+import pathlib
+import shutil
 
 # How do pytest tests in `test_standard_suite.py` communicate with docs?
 # * after calling psi4 for each test, `standard_suite_runner.py` appends a one-line dict describing the result to local file "stdsuite_psi4.txt".

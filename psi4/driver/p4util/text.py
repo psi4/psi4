@@ -39,12 +39,9 @@ __all__ = [
 
 from typing import List, Optional
 
-import sys
-import warnings
-
-from psi4.driver import constants
-
 from psi4 import core
+
+from .. import constants
 
 
 def banner(text: str, type: int = 1, width: int = 35, strNotOutfile: bool = False) -> Optional[str]:
