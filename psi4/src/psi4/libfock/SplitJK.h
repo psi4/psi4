@@ -108,7 +108,7 @@ class PSI_API SplitJK {
     // => Knobs <= //
 
     void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
-    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric_; }
+    void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
     /// Bench accessors
     void set_bench(int bench) { bench_ = bench; }
     int get_bench() const { return bench_; }
