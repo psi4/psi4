@@ -183,7 +183,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
 
-    timer_on("CompositeJK: COSX Grid Construction");
+    timer_on("COSK: COSX Grid Construction");
 
     // for now, we use two COSX grids:
     //   - a small DFTGrid for the pre-converged SCF iterations
@@ -266,7 +266,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
             outfile->Printf("    Average number of grid points per atom: %f \n\n", npoints_per_atom);
         }
     }
-    timer_off("CompositeJK: COSX Grid Construction");
+    timer_off("COSK: COSX Grid Construction");
 
     // => Overlap Fitting Metric <= //
 
@@ -277,7 +277,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     // Here, Q refers to just S_ @ S_num^{-1} (no X)
     // This Q is contracted with X later to agree with the literature definition
 
-    timer_on("CompositeJK: COSX Numeric Overlap");
+    timer_on("COSK: COSX Numeric Overlap");
 
     // compute the numeric overlap matrix for each grid
     std::unordered_map<std::string, Matrix> S_num;
@@ -285,19 +285,19 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
         S_num[gridname] = compute_numeric_overlap(*grid, primary_);
     }
 
-    timer_off("CompositeJK: COSX Numeric Overlap");
+    timer_off("COSK: COSX Numeric Overlap");
 
-    timer_on("CompositeJK: COSX Analytic Overlap");
+    timer_on("COSK: COSX Analytic Overlap");
 
     // compute the analytic overlap matrix
-    MintsHelper helper(primary_, options_);
+    MintsHelper helper(primary_, options);
     auto S_an = helper.ao_overlap();
 
-    timer_off("CompositeJK: COSX Analytic Overlap");
+    timer_off("COSK: COSX Analytic Overlap");
 
     // form the overlap metric (Q) for each grid
 
-    timer_on("CompositeJK: COSX Overlap Metric Solve");
+    timer_on("COSK: COSX Overlap Metric Solve");
 
     int nbf = primary_->nbf();
     std::vector<int> ipiv(nbf);
@@ -308,7 +308,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
         C_DGESV(nbf, nbf, S_num[gridname].pointer()[0], nbf, ipiv.data(), Q_mat_[gridname]->pointer()[0], nbf);
     }
 
-    timer_off("CompositeJK: COSX Overlap Metric Solve");
+    timer_off("COSK: COSX Overlap Metric Solve");
 
     timer_off("COSK: Setup");
 }
@@ -345,8 +345,8 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     // use a small DFTGrid grid (and overlap metric) for early SCF iterations
     // otherwise use a large DFTGrid
-    auto grid = grids_[gridopt_]; 
-    auto Q = Q_mat_[gridopt_]; 
+    auto grid = grids_[gridopt_];
+    auto Q = Q_mat_[gridopt_];
 
     // => Initialization <= //
 

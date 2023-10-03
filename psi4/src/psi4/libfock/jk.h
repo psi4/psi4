@@ -1308,9 +1308,10 @@ class PSI_API CompositeJK : public JK {
 
     /**
     * Knobs for getting and setting current COSX grid, if COSX is used
+    * throws by default, if COSX is not used
     */
-    void set_COSX_grid(std::string gridopt) { return k_algo_->set_COSX_grid(gridopt); } 
-    std::string get_COSX_grid() { return k_algo_->get_COSX_grid(); } 
+    void set_COSX_grid(std::string gridopt) { return k_algo_->set_COSX_grid(gridopt); }
+    std::string get_COSX_grid() { return k_algo_->get_COSX_grid(); }
 
     /**
     * Print header information regarding JK

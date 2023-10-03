@@ -248,8 +248,8 @@ class PSI_API LinK : public SplitJK {
  * doi: 10.1016/j.chemphys.2008.10.036
  */
 class PSI_API COSK : public SplitJK {
-    
-    // => Semi-Numerical Stuff, for COSX <= //
+
+    // => Semi-Numerical Stuff <= //
 
     /// COSX grids
     /// Currently contains two grids:
@@ -261,7 +261,7 @@ class PSI_API COSK : public SplitJK {
 
     /// Overlap fitting metric for different COSX grids
     std::unordered_map<std::string, SharedMatrix> Q_mat_;
- 
+
     // integral cutoff
     double kscreen_;
     // density element cutoff
