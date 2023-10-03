@@ -242,10 +242,10 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
                     outfile->Printf(warning_message);
 
                     warning_printed = true;
-                        break;
+                    break;
                 }
             }
-                if (warning_printed) break;
+            if (warning_printed) break;
         }
 
         // Print out specific grid info upon request
@@ -345,8 +345,8 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     // use a small DFTGrid grid (and overlap metric) for early SCF iterations
     // otherwise use a large DFTGrid
-    auto grid = early_screening_ ? grids["Initial"] : grids["Final"]; 
-    auto Q = early_screening_ ? Q_init_ : Q_final_;
+    auto grid = grids_[gridopt_]; 
+    auto Q = Q_mat_[gridopt_]; 
 
     // => Initialization <= //
 

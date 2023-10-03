@@ -39,6 +39,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 class MinimalInterface;
@@ -128,6 +129,17 @@ class PSI_API SplitJK {
     * print name of method
     */
     virtual std::string name() = 0;
+
+    /**
+    * Method-specific knobs, if necessary
+    */
+    virtual void set_COSX_grid(std::string gridopt) {
+        throw PSIEXCEPTION("SplitJK::set_COSX_grid was called, but COSX is not being used!");
+    }
+
+    virtual std::string get_COSX_grid() {
+        throw PSIEXCEPTION("SplitJK::get_COSX_grid was called, but COSX is not being used!");
+    };
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -296,6 +308,9 @@ class PSI_API COSK : public SplitJK {
     * print name of method
     */
     std::string name() override { return "COSX"; }
+
+    void set_COSX_grid(std::string gridopt) override { gridopt_ = gridopt; };
+    std::string get_COSX_grid() override { return gridopt_; };
 };
 
 }

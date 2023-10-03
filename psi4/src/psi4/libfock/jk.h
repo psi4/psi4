@@ -1249,9 +1249,6 @@ class PSI_API CompositeJK : public JK {
     // Is the JK currently on the first SCF iteration of this SCF cycle?
     bool initial_iteration_ = true;
   
-    /// per-thread TwoBodyAOInt object (for computing three/four-center ERIs)
-    std::unordered_map<std::string, std::vector<std::shared_ptr<TwoBodyAOInt>>> eri_computers_;
-
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Methods <= //
@@ -1310,10 +1307,10 @@ class PSI_API CompositeJK : public JK {
     virtual void set_do_K(bool do_K) override;
 
     /**
-    * Knobs for getting and setting current COSX grid
+    * Knobs for getting and setting current COSX grid, if COSX is used
     */
-    void set_COSX_grid(std::string gridopt) { gridopt_ = gridopt; };
-    std::string get_COSX_grid() { return gridopt_; };
+    void set_COSX_grid(std::string gridopt) { return k_algo_->set_COSX_grid(gridopt); } 
+    std::string get_COSX_grid() { return k_algo_->get_COSX_grid(); } 
 
     /**
     * Print header information regarding JK
