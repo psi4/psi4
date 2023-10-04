@@ -7,7 +7,7 @@ jobs:
       vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '14.0.0'
+      llvm.version: '15.0.7'
       mkl.version: '2022.1.0'
       cmake.build_type: 'Release'
       conda.build: false

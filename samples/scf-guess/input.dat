@@ -33,6 +33,9 @@ energy('scf')
 set guess sap
 energy('scf')
 
+set guess sapgau
+energy('scf')
+
 molecule nocat {
 1 2
 F
@@ -62,6 +65,9 @@ energy('scf')
 set guess sap
 energy('scf')
 
+set guess sapgau
+energy('scf')
+
 
 set {
   reference rohf
@@ -84,6 +90,9 @@ energy('scf')
 set guess sap
 energy('scf')
 
+set guess sapgau
+energy('scf')
+
 
 set {
   reference cuhf
@@ -104,4 +113,7 @@ set guess huckel
 energy('scf')
 
 set guess sap
+energy('scf')
+
+set guess sapgau
 energy('scf')
