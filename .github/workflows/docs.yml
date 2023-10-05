@@ -125,10 +125,10 @@ jobs:
 
     - name: Compare Docs (generated vs psi4/psi4docs)
       if: ${{ github.repository == 'psi4/psi4' }}
-      working-directory: ./docs
+      working-directory: ./docs/sphinxman/master
       id: compare-psi4docs
       run: |
-        cp -pR ../code/objdir/doc/sphinxman/html .
+        cp -pR ../../../code/objdir/doc/sphinxman/html/ .
         echo "::group::Selective Git Diff"
         git diff --color-words -I"Last updated on" -I"psi4/tree"
         echo "::endgroup::"
