@@ -62,6 +62,7 @@ Pre-Release (e.g., ``v1.3rc1``)
 Release (e.g., ``v1.3``)
 ------------------------
 
+* `Collect new authors`_ (if no prerelease)
 * `Do final pass before release tag`_
 * `Tag (pre)release`_
 * `Initialize release branch`_
@@ -78,12 +79,11 @@ Release (e.g., ``v1.3``)
 
 .. _`faq:postreleaseprocedure`:
 
-Post-Release (e.g., ``v1.3.1``)
+Post-Release (e.g., ``v1.8.2``)
 -------------------------------
 
 * `Assemble postrelease changes`_
 * `Tweak Conda for postrelease`_
-* `Do final pass before release tag`_
 * `Tag postrelease`_
 * `Build Conda Psi4 stack at specific commit`_
 * `Publish to main conda label`_
@@ -125,11 +125,10 @@ Update samples
 Collect new authors
 -------------------
 
-* Survey contributions to current Milestone. Add new contribs and PR lists to release notes GitHub issue
-* Figure out any new "Additional Contributors" authors since last release
-* Edit ``psi4/header.py`` accordingly, make PR
-* Get permission of new authors and their particulars for ``codemeta.json``
-* Invite any contributors with at least 3 PRs to join GitHub Organization
+* Survey contributions to current Milestone. Add new contributors to the release notes GitHub issue.
+* Figure out any new "Additional Contributors" authors since last release.
+* Get permission of new authors and their particulars for ``codemeta.json``.
+* Edit ``psi4/header.py`` accordingly and make PR.
 
 
 Anticipate next release
@@ -160,26 +159,75 @@ By "ecosystem stack", mean packages that are upstream, downstream, required, and
 Assemble postrelease changes
 ----------------------------
 
-* Collect PRs with "backport" label, and request other backport suggestions on upcoming RN issue
-* Cherry-pick backport PRs and commits, apply other changes manually, not forgetting CI files
-* Do the draft parts of `Publish GitHub postrelease`_
-* Test thoroughly locally, including psi4-rt (may have to step back for dependency versions or builds)
-* Note that while can't change maintenance branch's history, can push to it directly on upstream
-* If want to do trial conda builds, requires ``source/git_tag: 1.3.x`` and fake ``package/version: v1.3.1rc1``
+* Collect PRs with "backport" label, and request other backport suggestions through slack.
+* Be on the maintenance branch (e.g., ``1.8.x``). ``git fetch upstream`` or any other remotes you're
+  going to be cherry-picking from.
+* Cherry-pick backport PRs and commits (``git cherry-pick sha``), apply other changes manually, not
+  forgetting CI files or samples.
+* Possibly apply other changes manually, including:
+
+  - CI file tweaks like LLVM version or dependency constraint.
+  - samples files from a docs build.
+  - :source:`doc/sphinxman/source/introduction.rst` for any compiler and Python minimum requirements to edit.
+
+* Tag it (`Tag postrelease`_ for details). This is needed to compute a version on a maintenance
+  branch to even run. Until the release is published on GH (final step of
+  `Publish GitHub postrelease`_), it's ok to revise a tag (force push to maintenance branch).
+
+  - Add or increment patch number in ``psi4/metadata.py``; leave the "z"s. Commit file.
+  - Tag with ``git tag -a v1.8.2 -m "v1.8.2"``, then push ``git push --atomic upstream 1.8.x v1.8.2``.
+
+* Test core |PSIfour| thoroughly locally (ecosystem will get tested by c-f) by running
+  ``pytest ../tests/ -n auto`` (psithon and psiapi tests). Possibly you may have to step back for
+  dependency versions from what master needs.
+* Start `Tweak Conda for postrelease`_ PR at conda-forge. This will thoroughly test the ecosystem.
+* If more changes are needed, ``git tag -d v1.8.2`` to delete the tag, then make more commits,
+  retag, push, and repeat. Try to finalize the postrelease tag within a session or a day, so
+  tentative tags don't linger.
+* Start the draft parts of `Publish GitHub postrelease`_ from the backported PRs assembled here.
+
+
+.. Tweak Conda for postrelease (pre-Spring 2023)
+.. ---------------------------------------------
+..
+.. * In psi4-* recipes, find the best combination of master meta.yaml/build.sh and the v1N(x-1)-labeled ones
+..
+..   - comment out any dependencies in master but not yet in postrelease
+..   - add ``{{ dep_bld }}`` entries if needed to step back build. make sure normal operation is ``''``
+..
+.. * In cbcy,
+..
+..   - create a postrelease new line and record anything not in continuous order with <> or blanking
+..   - step back any dependencies versions or build numbers to ones compatible with the postrelease
 
 
 Tweak Conda for postrelease
 ---------------------------
 
-* In psi4-* recipes, find the best combination of master meta.yaml/build.sh and the v1N(x-1)-labeled ones
+* Start a PR to https://github.com/conda-forge/psi4-feedstock . Always store the PR branch on your
+  fork, never on the conda-forge feedstock (or your branch itself will et publically packaged).
+  https://github.com/conda-forge/psi4-feedstock/pull/15 is an example.
 
-  - comment out any dependencies in master but not yet in postrelease
-  - add ``{{ dep_bld }}`` entries if needed to step back build. make sure normal operation is ``''``
+  - Always: edit ``version`` and ``commit`` jinja variables.
+  - Possibly: edit ``source/url`` field for trial locations.
+  - Always: edit ``sha256`` jinja variable from e.g., ``curl -sL https://github.com/psi4/psi4/archive/v1.8.2.tar.gz | openssl sha256``
+  - Always: edit ``build/number``. Either reset to 0 if version increments or bump if version *doesn't* increment.
+  - Possibly: uncomment ``skip: true  # [py != 310]`` if you want to test one Python version on all
+    architectures before the whole build matrix (currently 16 builds). After editing this (and
+    opening the PR), you'll have to issue a comment ``@conda-forge-admin, please rerender`` for the
+    matrix slimming to take effect.
+  - Possibly: remove any old patches that are now in the main codebase.
+  - Possibly: add in or remove any dependency or ecosystem packages.
+  - Possibly: for any relevant addition, make sure ``-D CMAKE_INSIST_FIND_PACKAGE_<project>=ON`` or
+    ``-D ENABLE_<project>=ON`` is set in ``build.sh`` and ``bld.bat``.
+  - Possibly: add or release version constraints or architecture constraints (e.g., ``[not win]``) on packages.
 
-* In cbcy,
-
-  - create a postrelease new line and record anything not in continuous order with <> or blanking
-  - step back any dependencies versions or build numbers to ones compatible with the postrelease
+* Submit the PR and rerender (cmd above). Monitor the CI.
+* When all CI lanes are passing *and* the tag is final on the maintenance branch, rerender (may be
+  no-op) and merge the PR.
+* After all the packages are built on main and show up at https://anaconda.org/conda-forge/psi4/files
+  with a couple downloads, this means they're been mirrored and are generally installable. Announce
+  on slack general channel.
 
 
 Do final pass before release tag
@@ -223,7 +271,7 @@ Tag (pre)release
     # goto GH:psi4/psi4 > Settings > Branches > master > Edit
     #      https://github.com/psi4/psi4/settings/branch_protection_rules/424295
     # uncheck "Include administrators" and Save changes
-    
+
     >>> git push --atomic upstream master v1.3rc2
 
     # pause here and push to upstream and let Azure complete for an
@@ -285,8 +333,8 @@ Tag postrelease
     # skipping the hash recording and "upcoming" step b/c only tags matter on maintenance branch
 
     # free pushing to maintenance branches at present so GitHub interface steps not needed
-    
-    # see note at "Tag postrelease" for why atomic commit needed. Collect docs from GHA artifacts.
+
+    # see note at "Tag (pre)release" for why atomic commit needed. Collect docs from GHA artifacts.
 
     >>> git push --atomic upstream 1.3.x v1.3.1
 
@@ -295,7 +343,7 @@ Initialize release branch
 -------------------------
 
 * follow tagging procedure
-* before re-engaing the "include admin" button, push a branch at the tag commit (not the records commit)
+* before re-engaging the "include admin" button, push a branch at the tag commit (not the records commit)
 
   ::
 
@@ -347,66 +395,73 @@ Publish to main conda label
 * This step is manual, so takes a while. (It gets checked when Psi4conda installers are built b/c that pulls from "main", not "dev")
 
 
-Build Psi4conda set (pre-Spring 2021)
--------------------------------------
-
-Installers are build using the project ``constructor`` and build binary bash scripts, one per OS per Python version. In analogy to Miniconda, they're called Psi4Conda. They can be built anywhere (Mac can be built on Linux) and get served from vergil (cdsgroup webserver).
-
-* Need a conda env with ``constructor`` and ``cookiecutter``. This env presently accessed through ``conda activate cookie``.
-* Enter "constructor-cutter-unified" in the psi4meta repo. There's a good README there, https://github.com/psi4/psi4meta/blob/master/conda-recipes/constructor-cutter-unified/README.md
-* Edit ``cookiecutter/cookiecutter.json`` for control
-
-  - Edit which python versions, if necessary
-  - Edit ``release`` field
-  - Edit ``hash`` field. This is the 7-char hash that's on every psi4 conda pkg as part of version
-  - Edit ``ltrtver`` field. This matches the current setting in ``conda_build_config.yaml``
-  - For prereleases, ``"channel_tag": "/label/dev"``, while for (post)releases, it should be the empty string
-  - Leave this file set to a "rc" with Git, as that has more details
-
-* For (post)releases (not prereleases), copy cookiecutter.json to cookiecutter.json-vXXX
-* Edit ``cookiecutter/{{.../construct.yaml`` for templating. This is rarely needed
-* If it's been a while or you need the space, clear out ``~/.conda/constructor``, where the downloaded packages are cached
-* Note that installers get written to ``build/`` and this gets regenerated each time. Clear out between runs.
-* ``python run.py``
-* [Outdated] Watch out for ``py_`` in buildstring as this means a noarch package has been pulled. It must be eliminated. Constructors can't handle "noarch" packages and will fail at runtime. If see a "noarch" package, must find the recipe and rebuild for all OS & Python combinations. Then run constructor again.
-* [Replacement] After adding a post_install to reposition the noarch packages, they are safe to include.
-* If fetching times out, may have to run run.py several times. Clear out build/ in between. It's the fetching that takes a long time, not constucting
-* In the end, should have several installers
-
-  ::
-
-    >>> ls -l build/psi4conda-1.3-py3.*/*64.sh
-    -rwxr-xr-x. 516M Feb 28 20:30 build/psi4conda-1.3-py3.6-linux-64/psi4conda-1.3-py36-Linux-x86_64.sh
-    -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.6-osx-64/psi4conda-1.3-py36-MacOSX-x86_64.sh
-    -rwxr-xr-x. 518M Feb 28 20:30 build/psi4conda-1.3-py3.7-linux-64/psi4conda-1.3-py37-Linux-x86_64.sh
-    -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.7-osx-64/psi4conda-1.3-py37-MacOSX-x86_64.sh
-
-
-* Upload installer files to vergil, ``scp -r build/Psi4*/Psi4*sh root@vergil.chemistry.gatech.edu:/var/www/html/psicode-download/``
-* Log in to vergil root and make WindowsWSL symlinks
+.. Build Psi4conda set (pre-Spring 2021)
+.. -------------------------------------
+..
+.. Installers are build using the project ``constructor`` to build binary bash scripts, one per OS per Python version (e.g., 16 total for linux-64/osx-64/win-64/osx-arm64 and py38/39/310/311). In analogy to Miniconda, they're called Psi4Conda. They can be built anywhere (Mac can be built on Linux) and get served from vergil (cdsgroup webserver).
+..
+.. * Need a conda env with ``constructor`` and ``cookiecutter``. This env presently accessed through ``conda activate cookie``.
+.. * Enter "constructor-cutter-unified" in the psi4meta repo. There's a good README there, https://github.com/psi4/psi4meta/blob/master/conda-recipes/constructor-cutter-unified/README.md
+.. * Edit ``cookiecutter/cookiecutter.json`` for control
+..
+..   - Edit which python versions, if necessary
+..   - Edit ``release`` field
+..   - Edit ``hash`` field. This is the 7-char hash that's on every psi4 conda pkg as part of version
+..   - Edit ``ltrtver`` field. This matches the current setting in ``conda_build_config.yaml``
+..   - For prereleases, ``"channel_tag": "/label/dev"``, while for (post)releases, it should be the empty string
+..   - Leave this file set to a "rc" with Git, as that has more details
+..
+.. * For (post)releases (not prereleases), copy cookiecutter.json to cookiecutter.json-vXXX
+.. * Edit ``cookiecutter/{{.../construct.yaml`` for templating. This is rarely needed
+.. * If it's been a while or you need the space, clear out ``~/.conda/constructor``, where the downloaded packages are cached
+.. * Note that installers get written to ``build/`` and this gets regenerated each time. Clear out between runs.
+.. * ``python run.py``
+.. * [Outdated] Watch out for ``py_`` in buildstring as this means a noarch package has been pulled. It must be eliminated. Constructors can't handle "noarch" packages and will fail at runtime. If see a "noarch" package, must find the recipe and rebuild for all OS & Python combinations. Then run constructor again.
+.. * [Replacement] After adding a post_install to reposition the noarch packages, they are safe to include.
+.. * If fetching times out, may have to run run.py several times. Clear out build/ in between. It's the fetching that takes a long time, not constucting
+.. * In the end, should have several installers
+..
+..   ::
+..
+..     >>> ls -l build/psi4conda-1.3-py3.*/*64.sh
+..     -rwxr-xr-x. 516M Feb 28 20:30 build/psi4conda-1.3-py3.6-linux-64/psi4conda-1.3-py36-Linux-x86_64.sh
+..     -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.6-osx-64/psi4conda-1.3-py36-MacOSX-x86_64.sh
+..     -rwxr-xr-x. 518M Feb 28 20:30 build/psi4conda-1.3-py3.7-linux-64/psi4conda-1.3-py37-Linux-x86_64.sh
+..     -rwxr-xr-x. 299M Feb 28 20:31 build/psi4conda-1.3-py3.7-osx-64/psi4conda-1.3-py37-MacOSX-x86_64.sh
+..
+..
+.. * Upload installer files to vergil, ``scp -r build/Psi4*/Psi4*sh root@vergil.chemistry.gatech.edu:/var/www/html/psicode-download/``
+.. * Log in to vergil root and make WindowsWSL symlinks
 
 
 Build Psi4conda set
 -------------------
 
-Installers are build using the project ``constructor`` and build binary bash or exe scripts, one per OS per Python version. In analogy to Miniconda, they're called Psi4Conda. They are built through GHA on the psi4meta repo and get served from vergil (cdsgroup webserver).
+Installers are build using the project ``constructor`` to build binary bash or exe scripts, one per
+OS per Python version. For example, there's 16 installers when OSes are linux-64, win-64, osx-64,
+osx-arm64 and pythons are 38, 39, 310, 311. In analogy to Miniconda, they're called Psi4Conda. They
+are built through GHA on the psi4meta repo and get served from vergil (cdsgroup webserver).
 
+* If the previous release hasn't had a snapshot saved, copy ``construct.yaml`` into a version-labeled
+  file and check it in.
 * Edit recipe https://github.com/psi4/psi4meta/blob/master/installers/construct.yaml
 
-  - Edit the top matter for Configuration. See snapshots in directory for examples.
-  
-    - Edit ``release`` fields. (Windows is often ``dev1`` unless separate steps.)
-    - Edit ``ltrtver`` field. This matches the current setting in ``conda_build_config.yaml``
-    - For prereleases, ``"channel_tag": "/label/dev"``, while for (post)releases, it should be the empty string
-  - Edit the packages and channels info if necessary. Probably long-term stable. 
+  - Edit the top matter for Configuration, mainly the ``release`` field. See snapshots in directory for examples.
+  - Edit the packages and channels info if necessary. Probably long-term stable.
 
-* Edit the GHA control file https://github.com/psi4/psi4meta/blob/master/.github/workflows/Installers.yml matrix.cfg
-* All conda packages must already have been built and in the right ``channel_tag`` channel.
-* Commit ``construct.yaml`` to trigger installer builds.
-* When all build successfully, hover over the artifacts, and note the consecutive numbers GH has assigned them. These artifacts only linger for a day.
-* Log in to vergil root and move to ``/var/www/html/psicode-download``.
-* Use the pull_gha_installers script to download the installers from GH to vergil. First two arguments are first and last of the artifact numbers, and third argument is an auth token. ``bash pull_gha_installers.sh 47226565 47226573 715...4f3``.
-* Make WindowsWSL and any other symlinks the script head matter advises.
+* Edit the GHA control file https://github.com/psi4/psi4meta/blob/master/.github/workflows/Installers.yml
+  ``matrix.cfg`` list if Python versions or target architectures have changed.
+* All conda packages must already have been built and present in the right channels on
+  https://anaconda.org/conda-forge/psi4/files .
+* Commit ``construct.yaml`` to trigger installer builds. (Even workflow edits need a dummy commit to
+  ``construct.yaml`` to retrigger.)
+* When all build successfully, hover over the artifacts, and note the smallest and largest of the
+  near-consecutive numbers GH has assigned them. These artifacts only linger for a day.
+* Log in to vergil root and cd to ``/var/www/html/psicode-download``.
+* Use the pull_gha_installers.sh script to download the installers from GH to vergil. First two
+  arguments are first and last of the artifact numbers, and third argument is an auth token.
+  ``bash pull_gha_installers.sh 47226565 47226573 715...4f3``.
+* Make WindowsWSL and any other symlinks the script frontmatter advises.
 
 
 Generate download page for psicode.org
@@ -428,14 +483,55 @@ Generate download page for psicode.org
 * Petition on Slack for testers
 
 
+.. Collect documentation snapshot (pre-Fall 2023)
+.. ----------------------------------------------
+..
+.. * Documentation is built automatically by GHA from the latest psi4 master commit. It gets pushed to the psi4/psi4docs repository and thence served by netlify to a site independent of psicode.org. The netlify psicode.org site has a redirect so that psicode.org/psi4manual/master presents the psi4docs netlify content.
+.. * GHA controller is :source:`.github/workflows/docs.yml`
+.. * This setup works great for "latest" docs, but it won't build a nice copy on the tag because the tag commit is pushed before the tag itself, so the version shows up "undefined".
+.. * So, anytime after "Tag (pre)release" is over, navigate on psi4 GH to the tag commit (not the record commit) and retrigger the docs GHA. Download the artifact (zipped docs dir) at the end to a local computer.
+.. * In your hugo site clone, create a new directory under ``static/psi4manual``. Copy the zipped docs there, unpack, rearrange so that ``static/psi4manual/<new-tag>/index.html`` is present. Check in.
+
+
 Collect documentation snapshot
 ------------------------------
 
-* Documentation is built automatically by GHA from the latest psi4 master commit. It gets pushed to the psi4/psi4docs repository and thence served by netlify to a site independent of psicode.org. The netlify psicode.org site has a redirect so that psicode.org/psi4manual/master presents the psi4docs netlify content.
-* GHA controller is :source:`.github/workflows/docs.yml`
-* This setup works great for "latest" docs, but it won't build a nice copy on the tag because the tag commit is pushed before the tag itself, so the version shows up "undefined".
-* So, anytime after "Tag (pre)release" is over, navigate on psi4 GH to the tag commit (not the record commit) and retrigger the docs GHA. Download the artifact (zipped docs dir) at the end to a local computer.
-* In your hugo site clone, create a new directory under ``static/psi4manual``. Copy the zipped docs there, unpack, rearrange so that ``static/psi4manual/<new-tag>/index.html`` is present. Check in.
+* Documentation is built automatically by GHA from the latest psi4 master commit. It gets pushed to
+  a special "master" folder on the https://github.com/psi4/psi4docs repository. From there, it and
+  other docs snapshots are built and served to https://psi4.github.io/psi4docs/master/ (independent
+  of psicode.org). The netlify psicode.org site has a redirect so that
+  https://psicode.org/psi4manual/master/index.html presents the psi4docs repo content.
+
+  - GHA sphinx-build controller is :source:`.github/workflows/docs.yml`
+  - GHA gh-pages deploy controller is https://github.com/psi4/psi4docs/blob/master/.github/workflows/docs.yml
+  - Netlify psicode redirect controller is https://github.com/psi4/psicode-hugo-website/blob/master/netlify.toml#L10-L15
+
+* This setup works great for "latest" docs, but it won't necessarily build a nice copy on the tag
+  commit itself for release and postrelease snapshots. Get a snapshot *on the tag* by some means:
+
+  - For releases, you can do the ``atomic`` push of the tag commit, wait for the docs build to
+    complete, download the GHA artifact (zipped docs dir), then continue by pushing the record commit.
+  - For releases beyond the ``atomic`` push, navigate on psi4 GH to the tag commit (not the record
+    commit) and retrigger the docs GHA, then download the GHA artifact (zipped docs dir).
+  - For postreleases (TODO run the docs build on the maintenance branches), build the docs locally
+    at the tag and collect the docs dir.
+
+* In your local clone of https://github.com/psi4/psi4docs, find the appropriate folder and unpack
+  your docs snapshot into it.
+
+  - For releases, you'll need to make a new folder, e.g. ``sphinxman/1.8.x``.
+  - For postreleases, you'll overwrite the contents of the existing folder.
+  - Unpack and rearrange so that in the end, e.g., ``sphinxman/1.8.x/index.html`` is present.
+
+* Commit all your docs files and push to ``master``.
+* For releases, add a line to the top-level table https://github.com/psi4/psi4docs/edit/master/README.md .
+* For releases, add a new redirects block to https://github.com/psi4/psicode-hugo-website/edit/master/netlify.toml .
+
+* Details:
+
+  - If you sequentially push the tag commit, push the tag, push the record commit, GHA will build the docs at v1.{Y+1}.dev1, not at v1.Y .
+  - If you sequentially push the tag commit, then push the tag, GHA will build the docs at the tag commit, but the version will show up as "undefined".
+  - If you ``atomic`` push the tag commit and tag together and wait, GHA will build the docs at v1.Y, as desired.
 
 
 Publish GitHub release
@@ -453,10 +549,13 @@ Publish GitHub release
 Publish GitHub postrelease
 --------------------------
 
-* On GitHub site "Draft a New Release" for anticipated or newly minted tag
-* Fill in frontmatter style and links from previous GitHub release
-* Fill in RN as cherry-pick to or edit on branch
-* "publish" release. This establishes release date for GitHub API
+* With an anticipated or newly minted tag, go to https://github.com/psi4/psi4/releases/new (or
+  "Draft a new release" button on GitHub site).
+* Release title takes the form: ``v1.8.2, 2023-10-03``
+* Fill in frontmatter style and links from previous GitHub release.
+* Fill in RN bullets for changes cherry-picked or edited to the maintenance branch.
+* Save the draft release until tag is finalized.
+* "publish" release. This establishes the release date for the GitHub API.
 
 
 Publish psicode release
