@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - gha-docs
+      - '1.*.x'
 
 concurrency:
   group: latest-docs-group
@@ -124,21 +125,22 @@ jobs:
         tar -zcf doxyman.tar.gz html/
 
     - name: Compare Docs (generated vs psi4/psi4docs)
-      if: ${{ github.repository == 'psi4/psi4' }}
-      working-directory: ./docs/sphinxman/master
+      if: github.event_name == 'push' && github.repository == 'psi4/psi4'
+      working-directory: ./docs/sphinxman
       id: compare-psi4docs
       run: |
-        cp -pR ../../../code/objdir/doc/sphinxman/html/ .
+        cp -pR ../../code/objdir/doc/sphinxman/html .
+        mv html ${{ github.ref_name }}
         echo "::group::Selective Git Diff"
         git diff --color-words -I"Last updated on" -I"psi4/tree"
         echo "::endgroup::"
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
-        git commit -m "auto-generated from Psi4 master"
+        git commit -m "auto-generated from Psi4 ${{ github.ref_name }}"
 
     - name: Push Changes to psi4/psi4docs
-      if: ${{ github.repository == 'psi4/psi4' }}
+      if: github.repository == 'psi4/psi4'
       uses: ad-m/github-push-action@master
       with:
         directory: ./docs
