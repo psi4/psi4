@@ -125,11 +125,12 @@ jobs:
         tar -zcf doxyman.tar.gz html/
 
     - name: Compare Docs (generated vs psi4/psi4docs)
-      if: github.event_name == 'push' && github.repository == 'psi4/psi4' && ( startsWith( github.ref, 'refs/tags/' ) || github.ref == 'refs/heads/master' )
-      working-directory: ./docs/sphinxman/master
+      if: github.event_name == 'push' && github.repository == 'psi4/psi4'
+      working-directory: ./docs/sphinxman
       id: compare-psi4docs
       run: |
-        cp -pR ../../../code/objdir/doc/sphinxman/html/* .
+        cp -pR ../../../code/objdir/doc/sphinxman/html/ .
+        mv html ${{ github.ref_name }}
         echo "::group::Selective Git Diff"
         git diff --color-words -I"Last updated on" -I"psi4/tree"
         echo "::endgroup::"
@@ -137,17 +138,6 @@ jobs:
         git config --local user.name "GitHub Action"
         git add -A
         git commit -m "auto-generated from Psi4 master"
-
-    - name: Shift Docs (maintenance)
-      if: github.event_name == 'push' && github.repository == 'psi4/psi4' && ( startsWith( github.ref, 'refs/tags/' ) || github.ref != 'refs/heads/master' )
-      working-directory: ./docs/sphinxman/maintenance
-      id: compare-psi4docs-m
-      run: |
-        cp -pR ../../../code/objdir/doc/sphinxman/html/* .
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add -A
-        git commit -m "auto-generated from Psi4 maintenance"
 
     - name: Push Changes to psi4/psi4docs
       if: github.repository == 'psi4/psi4'
