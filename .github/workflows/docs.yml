@@ -137,7 +137,7 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
-        git commit -m "auto-generated from Psi4 master"
+        git commit -m "auto-generated from Psi4 ${{ github.ref_name }}"
 
     - name: Push Changes to psi4/psi4docs
       if: github.repository == 'psi4/psi4'
