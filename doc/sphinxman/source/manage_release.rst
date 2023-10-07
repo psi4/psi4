@@ -585,6 +585,23 @@ are built through GHA on the https://github.com/psi4/psi4meta repository and get
 * Make WindowsWSL and any other symlinks the script frontmatter advises.
 
 
+Build Docker images
+-------------------
+
+Docker images are built through GHA on the https://github.com/psi4/psi4meta repository from a Conda
+environment specification and get served from DockerHub, https://hub.docker.com/r/psi4/psi4/tags .
+
+* Edit specification https://github.com/psi4/psi4meta/blob/master/docker/environment.yaml
+
+  - Edit the packages and channels info if necessary. Probably long-term stable.
+  - Don't edit the Python version, as that's controlled by the GHA.
+
+* Edit the GHA control file https://github.com/psi4/psi4meta/blob/master/.github/workflows/Docker.yml
+  ``matrix.cfg`` list for changed Python version and to label the tags with current Psi4 from c-f.
+* Commit ``environment.yaml`` or ``Docker.yml`` to trigger GHA Docker builds.
+* Check at DockerHub for new images.
+
+
 .. Generate download page for psicode.org (pre-Fall 2023)
 .. ------------------------------------------------------
 ..
