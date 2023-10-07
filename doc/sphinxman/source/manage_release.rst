@@ -65,6 +65,9 @@ Release (e.g., ``v1.3``)
 
 * `Update samples`_ (if no prerelease)
 * `Collect new authors`_ (if no prerelease)
+* `Anticipate next release`_ (if no prerelease)
+* `Build Conda ecosystem stack`_ (if no prerelease)
+* `Run long tests`_
 * `Do final pass before release tag`_
 * `Tag (pre)release`_
 * `Initialize release branch`_
@@ -101,6 +104,7 @@ On January first
 * Screenshot https://anaconda.org/conda-forge/psi4 .
 * Add new year title and images to website
   https://github.com/psi4/psicode-hugo-website/edit/master/content/posts/downloads.md .
+* On the next day, check that the new year's plot appears at https://psicode.netlify.app/posts/downloads/ .
 
 
 Update copyright year
@@ -147,6 +151,63 @@ Collect new authors
 * Edit ``psi4/header.py`` accordingly and make PR.
 
 
+Run long tests
+--------------
+
+* Run the full test suite with threading parallelism on. There's one CC test that's a known fail
+  in parallel b/c it sets memory very low, iirc.
+
+  - CTest (CLI)::
+
+      +++ b/tests/runtest.py
+      @@ -104,7 +104,7 @@ def backtick(exelist):
+
+       # run psi4 and collect testing status from any compare_* in input file
+       if os.path.isfile(infile):
+      -    exelist = [psi, infile, outfile, '-l', psidatadir]
+      +    exelist = [psi, infile, outfile, '-l', psidatadir, '-n2']
+           # On Windows set Python interpreter explicitly as the shebang is ignored
+           if sys.platform.startswith('win'):
+
+  - Pytest (API)::
+
+      +++ b/tests/pytests/conftest.py
+      @@ -22,6 +22,7 @@ def pytest_collection_modifyitems(config, items):
+       def set_up_overall(request, tmp_path_factory):
+           import psi4
+
+      +    psi4.core.set_num_threads(2)
+           psi4.set_output_file("pytest_output.dat", False)
+           os.chdir(tmp_path_factory.getbasetemp())
+           request.addfinalizer(tear_down)
+
+      +++ b/tests/pytests/conftest.py
+      @@ -34,6 +34,7 @@ def set_up():
+           psi4.core.clean()
+           psi4.core.clean_timers()
+           psi4.core.clean_options()
+      +    psi4.set_num_threads(2)
+           psi4.set_output_file("pytest_output.dat", True)
+
+  - Pytest (CLI)::
+
+      +++ b/tests/pytests/addons.py
+      @@ -223,8 +223,8 @@ def ctest_runner(inputdatloc, *, extra_infiles: List = None, outfiles: List = No
+           if Path(psi4.executable).suffix == ".exe":
+               command = [psi4.executable, inputdat]
+           else:
+      -        command = [sys.executable, psi4.executable, inputdat]
+      -    _, output = execute(command, infiles_with_contents, outfiles, environment=env, scratch_messy=False)
+      +        command = [sys.executable, psi4.executable, inputdat, "-n2"]
+      +    _, output = execute(command, infiles_with_contents, outfiles, environment=env, scratch_messy=True)
+
+           success = output["proc"].poll() == 0
+           assert success, output["stdout"] + output["stderr"]
+
+* Run a full stdsuite tests to generate new capabilities tables for docs. Detailed instructions are
+  in :source:`psi4/share/psi4/scripts/merge_stdsuite.py` .
+
+
 Anticipate next release
 -----------------------
 
@@ -157,19 +218,32 @@ Anticipate next release
 Build Conda ecosystem stack
 ---------------------------
 
-By "ecosystem stack", mean packages that are upstream, downstream, required, and optional for a fully featured Psi4 build and which we can't get from "defaults" or "conda-forge" channels.
+* By "ecosystem stack", we mean packages that are upstream, downstream, required, and optional for
+  a fully featured Psi4 build and which we have some role in packaging.
+* These packages (e.g., ``libint``, ``gdma``) should already be updated and built on conda-forge.
+  Survey them to check version tick and other key PRs have been merged.
+* Changes to targets' "source" and "version" in individual recipes should be edited in psi4
+  ``external/*/*/CMakeLists.txt`` files
+* Edit any added or dropped dependencies in main :source:`CMakeLists.txt` and docs
+  :source:`doc/sphinxman/source/build_planning.rst` .
 
-* Main directions are in [cbcy](https://github.com/psi4/psi4meta/blob/master/conda-recipes/conda_build_config.yaml) and [poodle](https://github.com/psi4/psi4meta/blob/master/psinet-nightly/kitandkapoodle.py)
-* A couple weeks before the first "rc" is planned, start going through L/LT in poodle, checking with upstream to see if new versions have been released. If good changes present, rebuild the packages, changing the version numbers in the respective recipes
-* When L/LT all built and passed, edit the individual package version numbers in cbcy and increment to a new ``ltrtver`` with updated version numbers and/or build numbers (only if code changes)
-* Build L/PSI4. If any trouble, edit psi4 code. Iterate until builds and passes. This stage is the only full ctest & pytest on Psi4+upstream
-* Build L/RT-MP. If any trouble, edit code in L/RT and rebuild those package(s). Iterate until builds and passes. This stage is the only full ctest & pytest of Psi4+downstream
-* Build L/DEV. If any trouble, edit psi4 build system, plugin system, or OpenMP setup. Iterate until builds and passes
-* Build L/DOCS. If any trouble, edit the docs or the tests. Iterate until builds and passes
-* Results of last should upload to psicode.org (docs) and codecov.io (coverage)
-* Changes to targets' "source" and "version" in individual recipes should be edited in psi4 ``external/*/*/CMakeLists.txt`` files
-* Once everything's working on Linux, repeat on Mac
-* At this point, ready to fine-tune builds of "Psi4 stack"
+
+.. Build Conda ecosystem stack (pre-Spring 2023)
+.. ---------------------------------------------
+..
+.. By "ecosystem stack", mean packages that are upstream, downstream, required, and optional for a fully featured Psi4 build and which we can't get from "defaults" or "conda-forge" channels.
+..
+.. * Main directions are in [cbcy](https://github.com/psi4/psi4meta/blob/master/conda-recipes/conda_build_config.yaml) and [poodle](https://github.com/psi4/psi4meta/blob/master/psinet-nightly/kitandkapoodle.py)
+.. * A couple weeks before the first "rc" is planned, start going through L/LT in poodle, checking with upstream to see if new versions have been released. If good changes present, rebuild the packages, changing the version numbers in the respective recipes
+.. * When L/LT all built and passed, edit the individual package version numbers in cbcy and increment to a new ``ltrtver`` with updated version numbers and/or build numbers (only if code changes)
+.. * Build L/PSI4. If any trouble, edit psi4 code. Iterate until builds and passes. This stage is the only full ctest & pytest on Psi4+upstream
+.. * Build L/RT-MP. If any trouble, edit code in L/RT and rebuild those package(s). Iterate until builds and passes. This stage is the only full ctest & pytest of Psi4+downstream
+.. * Build L/DEV. If any trouble, edit psi4 build system, plugin system, or OpenMP setup. Iterate until builds and passes
+.. * Build L/DOCS. If any trouble, edit the docs or the tests. Iterate until builds and passes
+.. * Results of last should upload to psicode.org (docs) and codecov.io (coverage)
+.. * Changes to targets' "source" and "version" in individual recipes should be edited in psi4 ``external/*/*/CMakeLists.txt`` files
+.. * Once everything's working on Linux, repeat on Mac
+.. * At this point, ready to fine-tune builds of "Psi4 stack"
 
 
 Assemble postrelease changes
@@ -221,7 +295,7 @@ Tweak Conda for postrelease
 ---------------------------
 
 * Start a PR to https://github.com/conda-forge/psi4-feedstock . Always store the PR branch on your
-  fork, never on the conda-forge feedstock (or your branch itself will et publically packaged).
+  fork, never on the conda-forge feedstock (or your branch itself will get publically packaged).
   https://github.com/conda-forge/psi4-feedstock/pull/15 is an example.
 
   - Always: edit ``version`` and ``commit`` jinja variables.
@@ -286,7 +360,7 @@ Tag (pre)release
 
     # goto GH:psi4/psi4 > Settings > Branches > master > Edit
     #      https://github.com/psi4/psi4/settings/branch_protection_rules/424295
-    # uncheck "Include administrators" and Save changes
+    # uncheck "Do not allow bypassing the above settings" for admins and Save changes
 
     >>> git push --atomic upstream master v1.3rc2
 
@@ -294,7 +368,7 @@ Tag (pre)release
     #       on-tag Windows conda package and docs, not tag+1.dev1 .
     #       the atomic flag below pushes commit and tag together so only one CI
     #       which is necessary for Windows conda package to compute the right version.
-    #       After push, can temporarily re-engage "Include administrators" protections.
+    #       After push, can temporarily re-engage admins "Do not allow ..." protections.
     #       also, grab the docs build from GHA artifacts
 
     >>> vi psi4/metadata.py
@@ -310,11 +384,11 @@ Tag (pre)release
 
     # goto GH:psi4/psi4 > Settings > Branches > master > Edit
     #      https://github.com/psi4/psi4/settings/branch_protection_rules/424295
-    # uncheck "Include administrators" and Save changes
+    # uncheck admins "Do not allow ..." and Save changes
 
     >>> git push upstream master
 
-    # re-engage "Include administrators" protections
+    # re-engage admins "Do not allow ..." protections
 
 
 Tag postrelease
@@ -359,7 +433,7 @@ Initialize release branch
 -------------------------
 
 * follow tagging procedure
-* before re-engaging the "include admin" button, push a branch at the tag commit (not the records commit)
+* before re-engaging the admins "Do not allow ..." button, push a branch at the tag commit (not the records commit)
 
   ::
 
@@ -382,7 +456,8 @@ Once upon a time, "Psi4 stack", meant packages ``psi4``, ``psi4-rt``, ``psi4-dev
 Package ``psi4-docs`` used to be in "Psi4 stack", but it's handled by GHA and netlify now, not Conda.
 Package ``psi4-rt`` used to be in "Psi4 stack", but a maximum ecosystem package isn't provided now, only a customizable env spec.
 Package ``psi4-dev`` used to be in "Psi4 stack", but now build environment and guidance is in-repo with ``psi4-path-advisor.py``.
-Other packages in the "ecosystem stack" (e.g., ``libint``, ``gdma``) should already be updated and built on conda-forge.
+Other packages in the "ecosystem stack" (e.g., ``libint``, ``gdma``) should already be updated and
+built on conda-forge. Survey them to check version tick PRs have been merged.
 
 Conda-forge overwhelmingly handles the ``psi4`` package itself, with a full architecture and Python
 version matrix. What remains are specialty or development builds for the psi4 channel.
@@ -404,28 +479,28 @@ version matrix. What remains are specialty or development builds for the psi4 ch
   (logged in as psi4), *add*, not replace, ``main`` label, so accessible from ``psi4/label/main``.
 
 
-:: Build Conda Psi4 stack at specific commit (pre-Spring 2023)
-:: -----------------------------------------------------------
-::
-:: By "Psi4 stack", mean packages ``psi4``, ``psi4-rt``, ``psi4-dev``.
-:: Package ``psi4-docs`` used to be in "Psi4 stack", but it's handled by GHA and netlify now, not Conda, so skip directions below.
-:: Other packages, the "ecosystem stack" (e.g., ``libint``, ``v2rdm_casscf``) should be already built.
-::
-:: * Check poodle for stray channels that may have crept in for dependencies (like c-f for ACS season). Copy over new dependencies if needed to psi4 channel
-:: * Particularly before release (not prerelease), consider max pinnings on dependencies, particularly any fast-moving dependencies (e.g., qcel) and whether they need version space to grow compatibly and grow incompatibly.
-:: * Nightly conda-builds work from ``master`` psi4. (Postrelease "practice" works from ``1.N.x`` psi4.)
-::
-::   - Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in:
-::
-::     * psi4-multiout on Linux & Mac, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/meta.yaml#L10
-::     * psi4-docs on Linux, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-docs/meta.yaml#L10 on L
-::
-::   - In cbcy, edit ``psi4ver`` to "v"-less tag
-::
-:: * For releases and postreleases (not prereleases), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new non-dev label (probably a ditto) matching the release (e.g., "1.3")
-:: * Set ``kitandkapoodle.py`` to the normal ``***`` stack. Should be (``psi4``, ``psi4-rt``, ``psi4-dev``) * python_versions for Linux & Mac. Also single ``psi4-docs``     from Linux
-:: * Run ``kitandkapoodle.py`` and allow stack to upload to anaconda.org to ``psi4/label/dev``. Poodle emits with ``--label dev`` so will go to the subchannel. May need to delete packages to clear out space on anaconda.org
-:: * Copy ``meta.yaml`` and ``build.sh`` of at least ``psi4-multiout`` and ``psi4-rt`` to e.g., v121-build.sh files for easy reference or rebuilding as dependencies in master change.
+.. Build Conda Psi4 stack at specific commit (pre-Spring 2023)
+.. -----------------------------------------------------------
+..
+.. By "Psi4 stack", mean packages ``psi4``, ``psi4-rt``, ``psi4-dev``.
+.. Package ``psi4-docs`` used to be in "Psi4 stack", but it's handled by GHA and netlify now, not Conda, so skip directions below.
+.. Other packages, the "ecosystem stack" (e.g., ``libint``, ``v2rdm_casscf``) should be already built.
+..
+.. * Check poodle for stray channels that may have crept in for dependencies (like c-f for ACS season). Copy over new dependencies if needed to psi4 channel
+.. * Particularly before release (not prerelease), consider max pinnings on dependencies, particularly any fast-moving dependencies (e.g., qcel) and whether they need version space to grow compatibly and grow incompatibly.
+.. * Nightly conda-builds work from ``master`` psi4. (Postrelease "practice" works from ``1.N.x`` psi4.)
+..
+..   - Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in:
+..
+..     * psi4-multiout on Linux & Mac, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/meta.yaml#L10
+..     * psi4-docs on Linux, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-docs/meta.yaml#L10 on L
+..
+..   - In cbcy, edit ``psi4ver`` to "v"-less tag
+..
+.. * For releases and postreleases (not prereleases), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new non-dev label (probably a ditto) matching the release (e.g., "1.3")
+.. * Set ``kitandkapoodle.py`` to the normal ``***`` stack. Should be (``psi4``, ``psi4-rt``, ``psi4-dev``) * python_versions for Linux & Mac. Also single ``psi4-docs``     from Linux
+.. * Run ``kitandkapoodle.py`` and allow stack to upload to anaconda.org to ``psi4/label/dev``. Poodle emits with ``--label dev`` so will go to the subchannel. May need to delete packages to clear out space on anaconda.org
+.. * Copy ``meta.yaml`` and ``build.sh`` of at least ``psi4-multiout`` and ``psi4-rt`` to e.g., v121-build.sh files for easy reference or rebuilding as dependencies in master change.
 
 
 .. Publish to main conda label (pre-Spring 2023)
@@ -686,24 +761,23 @@ Finalize release
 
 * Make new PR with
   * edits to main ``README.md`` badges, python versions, etc.
-  * edits to ``CMakeLists.txt`` ``find_package(PythonLibsNew 3.6 REQUIRED)``
 * Tweet about release
 
 
-Reset psi4meta for nightly operation
-------------------------------------
-
-On both Linux and Mac:
-
-* After (post)release (not prerelease), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new "release.dev" label
-* After postrelease, unpin any dependencies in cbcy that needed older either ver or bld (e.g., v2rdm_casscf_bld)
-* Edit ``psi4ver`` back to ``''`` in cbcy
-* Edit ``source/git_tag`` back to ``master`` for psi4-multiout, psi4-docs
-* Edit build string back to ``0`` if psi4-multiout needed multiple passes
-* Edit kitandkapoodle.py back to ``***`` stack
-* Check in all release, construct, recipe changes on Linux and Mac. Synchronize both to GitHub psi4meta
-* Copy meta.yaml and build.sh files to vMmp-prefixed files for the record.
-* Edit crontab back to 2am "norm". Comment out "anom"
+.. Reset psi4meta for nightly operation (pre-Spring 2023)
+.. ------------------------------------------------------
+..
+.. On both Linux and Mac:
+..
+.. * After (post)release (not prerelease), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new "release.dev" label
+.. * After postrelease, unpin any dependencies in cbcy that needed older either ver or bld (e.g., v2rdm_casscf_bld)
+.. * Edit ``psi4ver`` back to ``''`` in cbcy
+.. * Edit ``source/git_tag`` back to ``master`` for psi4-multiout, psi4-docs
+.. * Edit build string back to ``0`` if psi4-multiout needed multiple passes
+.. * Edit kitandkapoodle.py back to ``***`` stack
+.. * Check in all release, construct, recipe changes on Linux and Mac. Synchronize both to GitHub psi4meta
+.. * Copy meta.yaml and build.sh files to vMmp-prefixed files for the record.
+.. * Edit crontab back to 2am "norm". Comment out "anom"
 
 
 Misc.
