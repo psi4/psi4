@@ -38,7 +38,9 @@ Release Procedures
 Annual
 ------
 
+* `On January first`_
 * `Update copyright year`_
+* `Update counter scripts`_
 
 
 .. _`faq:prereleaseprocedure`:
@@ -51,10 +53,9 @@ Pre-Release (e.g., ``v1.3rc1``)
 * `Anticipate next release`_
 * `Build Conda ecosystem stack`_
 * `Tag (pre)release`_
-* `Build Conda Psi4 stack at specific commit`_
+* `Build extra Conda packages for Psi4 channel`_
 * `Build Psi4conda set`_
 * `Generate download page for psicode.org`_
-* `Reset psi4meta for nightly operation`_
 
 
 .. _`faq:releaseprocedure`:
@@ -62,19 +63,18 @@ Pre-Release (e.g., ``v1.3rc1``)
 Release (e.g., ``v1.3``)
 ------------------------
 
+* `Update samples`_ (if no prerelease)
 * `Collect new authors`_ (if no prerelease)
 * `Do final pass before release tag`_
 * `Tag (pre)release`_
 * `Initialize release branch`_
-* `Build Conda Psi4 stack at specific commit`_
-* `Publish to main conda label`_
+* `Build extra Conda packages for Psi4 channel`_
 * `Build Psi4conda set`_
 * `Generate download page for psicode.org`_
 * `Collect documentation snapshot`_
 * `Publish GitHub release`_
-* `Publish psicode release`_
+* `Publish psicode.org release`_
 * `Finalize release`_
-* `Reset psi4meta for nightly operation`_
 
 
 .. _`faq:postreleaseprocedure`:
@@ -85,15 +85,22 @@ Post-Release (e.g., ``v1.8.2``)
 * `Assemble postrelease changes`_
 * `Tweak Conda for postrelease`_
 * `Tag postrelease`_
-* `Build Conda Psi4 stack at specific commit`_
-* `Publish to main conda label`_
 * `Build Psi4conda set`_
+* `Build extra Conda packages for Psi4 channel`_
 * `Generate download page for psicode.org`_
 * `Collect documentation snapshot`_
 * `Publish GitHub postrelease`_
-* `Publish psicode release`_
+* `Publish psicode.org release`_
 * `Finalize release`_
-* `Reset psi4meta for nightly operation`_
+
+
+On January first
+----------------
+
+* Screenshot https://anaconda.org/psi4/psi4 .
+* Screenshot https://anaconda.org/conda-forge/psi4 .
+* Add new year title and images to website
+  https://github.com/psi4/psicode-hugo-website/edit/master/content/posts/downloads.md .
 
 
 Update copyright year
@@ -112,6 +119,15 @@ Update copyright year
   - ``README.md``
 
 * Also, in content of :source:`doc/sphinxman/source/conf.py.in#L130`
+
+
+Update counter scripts
+----------------------
+
+* Log onto vergil as cdsgroup.
+* Add new years, Python versions, and Psi4 versions as needed.
+* check vergil /home/cdsgroup/psi4meta/download-analysis/installer: vi downloads_updater.py any new patterns to add?
+* check vergil if changing any download patterns
 
 
 Update samples
@@ -359,40 +375,69 @@ Initialize release branch
 * set up new branch as protected branch through GitHub psi4 org Settings. Should be already covered under 1.*.x rule.
 
 
-Build Conda Psi4 stack at specific commit
------------------------------------------
+Build extra Conda packages for Psi4 channel
+-------------------------------------------
 
-By "Psi4 stack", mean packages ``psi4``, ``psi4-rt``, ``psi4-dev``.
-Package ``psi4-docs`` used to be in "Psi4 stack", but it's handled by GHA and netlify now, not Conda, so skip directions below.
-Other packages, the "ecosystem stack" (e.g., ``libint``, ``v2rdm_casscf``) should be already built.
+Once upon a time, "Psi4 stack", meant packages ``psi4``, ``psi4-rt``, ``psi4-dev``, and ``psi4-docs``.
+Package ``psi4-docs`` used to be in "Psi4 stack", but it's handled by GHA and netlify now, not Conda.
+Package ``psi4-rt`` used to be in "Psi4 stack", but a maximum ecosystem package isn't provided now, only a customizable env spec.
+Package ``psi4-dev`` used to be in "Psi4 stack", but now build environment and guidance is in-repo with ``psi4-path-advisor.py``.
+Other packages in the "ecosystem stack" (e.g., ``libint``, ``gdma``) should already be updated and built on conda-forge.
 
-* Check poodle for stray channels that may have crept in for dependencies (like c-f for ACS season). Copy over new dependencies if needed to psi4 channel
-* Particularly before release (not prerelease), consider max pinnings on dependencies, particularly any fast-moving dependencies (e.g., qcel) and whether they need version space to grow compatibly and grow incompatibly.
-* Nightly conda-builds work from ``master`` psi4. (Postrelease "practice" works from ``1.N.x`` psi4.)
+Conda-forge overwhelmingly handles the ``psi4`` package itself, with a full architecture and Python
+version matrix. What remains are specialty or development builds for the psi4 channel.
 
-  - Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in:
+* High AM and multiarch ``psi4`` builds for Linux
 
-    * psi4-multiout on Linux & Mac, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/meta.yaml#L10
-    * psi4-docs on Linux, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-docs/meta.yaml#L10 on L
+  - Especially at tagged releases, update and reconcile c-f psi4/feedstock recipe with psinet
+    psi4meta/conda-recipes/psi4-cf recipe. Differences include:
 
-  - In cbcy, edit ``psi4ver`` to "v"-less tag
+    * restricted to only even python versions
+    * c-f libint vs. psi4 libint2 packages (latter with high AM)
+    * smoke vs. full tests
+    * no git rev-parse lines
+    * load Intel compilers and specify them in compilers and flags CMake arguments
 
-* For releases and postreleases (not prereleases), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new non-dev label (probably a ditto) matching the release (e.g., "1.3")
-* Set ``kitandkapoodle.py`` to the normal ``***`` stack. Should be (``psi4``, ``psi4-rt``, ``psi4-dev``) * python_versions for Linux & Mac. Also single ``psi4-docs``     from Linux
-* Run ``kitandkapoodle.py`` and allow stack to upload to anaconda.org to ``psi4/label/dev``. Poodle emits with ``--label dev`` so will go to the subchannel. May need to delete packages to clear out space on anaconda.org
-* Copy ``meta.yaml`` and ``build.sh`` of at least ``psi4-multiout`` and ``psi4-rt`` to e.g., v121-build.sh files for easy reference or rebuilding as dependencies in master change.
+* Prepare recipe, make sure ``psi4-cf`` is the only target uncommented in ``kitandkapoodle.py``, set
+  crontab, view in ``kpd-anom.log``.
+* Files will upload to ``psi4/label/dev``. For releases and postreleases, on the anaconda.org site
+  (logged in as psi4), *add*, not replace, ``main`` label, so accessible from ``psi4/label/main``.
 
 
-Publish to main conda label
----------------------------
+:: Build Conda Psi4 stack at specific commit (pre-Spring 2023)
+:: -----------------------------------------------------------
+::
+:: By "Psi4 stack", mean packages ``psi4``, ``psi4-rt``, ``psi4-dev``.
+:: Package ``psi4-docs`` used to be in "Psi4 stack", but it's handled by GHA and netlify now, not Conda, so skip directions below.
+:: Other packages, the "ecosystem stack" (e.g., ``libint``, ``v2rdm_casscf``) should be already built.
+::
+:: * Check poodle for stray channels that may have crept in for dependencies (like c-f for ACS season). Copy over new dependencies if needed to psi4 channel
+:: * Particularly before release (not prerelease), consider max pinnings on dependencies, particularly any fast-moving dependencies (e.g., qcel) and whether they need version space to grow compatibly and grow incompatibly.
+:: * Nightly conda-builds work from ``master`` psi4. (Postrelease "practice" works from ``1.N.x`` psi4.)
+::
+::   - Instead, switch ``source/git_tag`` from ``master`` to tag (e.g., ``v1.3rc1``) in:
+::
+::     * psi4-multiout on Linux & Mac, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-multiout/meta.yaml#L10
+::     * psi4-docs on Linux, https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-docs/meta.yaml#L10 on L
+::
+::   - In cbcy, edit ``psi4ver`` to "v"-less tag
+::
+:: * For releases and postreleases (not prereleases), in ``conda_build_config.yaml``, edit ``ltrtver`` to a new non-dev label (probably a ditto) matching the release (e.g., "1.3")
+:: * Set ``kitandkapoodle.py`` to the normal ``***`` stack. Should be (``psi4``, ``psi4-rt``, ``psi4-dev``) * python_versions for Linux & Mac. Also single ``psi4-docs``     from Linux
+:: * Run ``kitandkapoodle.py`` and allow stack to upload to anaconda.org to ``psi4/label/dev``. Poodle emits with ``--label dev`` so will go to the subchannel. May need to delete packages to clear out space on anaconda.org
+:: * Copy ``meta.yaml`` and ``build.sh`` of at least ``psi4-multiout`` and ``psi4-rt`` to e.g., v121-build.sh files for easy reference or rebuilding as dependencies in master change.
 
-* Go through each active conda package off https://anaconda.org/psi4/repo
 
-  - Find the most recent build set (Linux/Mac, active py versions) that ``psi4``/``psi4-rt``/``psi4-dev`` is using
-  - _add_ (not replace) the ``main`` label.
-
-* This makes a ``conda install psi4 -c psi4`` get everything psi4 needs. For the moment ``conda install psi4 -c psi4/label/dev`` will get the same set, until package psi4-1.4a1.dev1 gets uploaded. May help to check versions and build versions against ltrtver in ``conda_build_config.yaml``.
-* This step is manual, so takes a while. (It gets checked when Psi4conda installers are built b/c that pulls from "main", not "dev")
+.. Publish to main conda label (pre-Spring 2023)
+.. ---------------------------------------------
+..
+.. * Go through each active conda package off https://anaconda.org/psi4/repo
+..
+..   - Find the most recent build set (Linux/Mac, active py versions) that ``psi4``/``psi4-rt``/``psi4-dev`` is using
+..   - _add_ (not replace) the ``main`` label.
+..
+.. * This makes a ``conda install psi4 -c psi4`` get everything psi4 needs. For the moment ``conda install psi4 -c psi4/label/dev`` will get the same set, until package psi4-1.4a1.dev1 gets uploaded. May help to check versions and build versions against ltrtver in ``conda_build_config.yaml``.
+.. * This step is manual, so takes a while. (It gets checked when Psi4conda installers are built b/c that pulls from "main", not "dev")
 
 
 .. Build Psi4conda set (pre-Spring 2021)
@@ -440,7 +485,8 @@ Build Psi4conda set
 Installers are build using the project ``constructor`` to build binary bash or exe scripts, one per
 OS per Python version. For example, there's 16 installers when OSes are linux-64, win-64, osx-64,
 osx-arm64 and pythons are 38, 39, 310, 311. In analogy to Miniconda, they're called Psi4Conda. They
-are built through GHA on the psi4meta repo and get served from vergil (cdsgroup webserver).
+are built through GHA on the https://github.com/psi4/psi4meta repository and get served from vergil
+(the cdsgroup webserver).
 
 * If the previous release hasn't had a snapshot saved, copy ``construct.yaml`` into a version-labeled
   file and check it in.
@@ -464,23 +510,69 @@ are built through GHA on the psi4meta repo and get served from vergil (cdsgroup 
 * Make WindowsWSL and any other symlinks the script frontmatter advises.
 
 
+.. Generate download page for psicode.org (pre-Fall 2023)
+.. ------------------------------------------------------
+..
+.. * Be in repo psicode-hugo-website
+.. * Copy and edit new file akin to https://github.com/psi4/psicode-hugo-website/blob/master/content/installs/v13rc2.md. Note the edition string ``v13rc2`` in frontmatter for this and future filenames
+.. * Copy and edit new file akin to https://github.com/psi4/psicode-hugo-website/blob/master/data/installs/v13rc2.yaml for menu and notes content
+.. * Enter ``scripts/`` dir and edit primarily https://github.com/psi4/psicode-hugo-website/blob/master/scripts/install-generator.py#L9 but also any other arrays or messages that should change.
+.. * Run the  ``install-generator.py`` in place. It will dump new files into ``data/installs/`` _subdirs_. Be sure to ``git add`` them.
+.. * Installer page is now ready.
+.. * Shift "latest" alias in frontmatter from whichever page is currently active to the new page. This makes sure "Downloads" on the navigation bar points to new page.
+.. * Conscientiously, one should test
+..
+..   - installer downloads in Mac and Linux. And actually installing them and ``psi4 --test`` them.
+..   - that download button and ``curl`` downloading register on the download counters on vergil
+..
+.. * Commit the new files, PR, and deploy psicode site
+.. * Petition on Slack for testers
+
+
 Generate download page for psicode.org
 --------------------------------------
 
-* Be in repo psicode-hugo-website
-* Copy and edit new file akin to https://github.com/psi4/psicode-hugo-website/blob/master/content/installs/v13rc2.md. Note the edition string ``v13rc2`` in frontmatter for this and future filenames
-* Copy and edit new file akin to https://github.com/psi4/psicode-hugo-website/blob/master/data/installs/v13rc2.yaml for menu and notes content
-* Enter ``scripts/`` dir and edit primarily https://github.com/psi4/psicode-hugo-website/blob/master/scripts/install-generator.py#L9 but also any other arrays or messages that should change.
-* Run the  ``install-generator.py`` in place. It will dump new files into ``data/installs/`` _subdirs_. Be sure to ``git add`` them.
-* Installer page is now ready.
-* Shift "latest" alias in frontmatter from whichever page is currently active to the new page. This makes sure "Downloads" on the navigation bar points to new page.
-* Conscientiously, one should test
+* Be in local clone of repository https://github.com/psi4/psicode-hugo-website .
+* Copy and edit a new file akin to ``content/installs/v182.md``. Add it to the git index.
 
-  - installer downloads in Mac and Linux. And actually installing them and ``psi4 --test`` them.
-  - that download button and ``curl`` downloading register on the download counters on vergil
+  - Note the edition string ``v182`` in frontmatter for this and future filenames.
+  - Don't postdate the date string in frontmatter or it won't render.
+  - Ultimately, make sure the ``aliases:\n  - /installs/latest/`` lines are *added* to this new file
+    and *removed* from the previous latest file, but this can wait until the installer page has been tested.
 
-* Commit the new files, PR, and deploy psicode site
-* Petition on Slack for testers
+* Copy and edit a new file akin to ``data/installs/v182.yaml``. Add it to the git index.
+
+  - Glance through the menu and notes content to make sure they're up-to-date. This file determines
+    the structure of the install page.
+  - Add or remove python versions and architectures if necessary.
+  - Every couple years, update the default python version in ``datakey: python``/``selected`` *and*
+    in ``optsHandler`` at the end.
+  - Always adjust the ``datakey: branch``/``stable`` block.
+  - For releases, adjust the ``datakey: branch``/``previous`` and ``nightly`` blocks.
+
+* Enter the ``scripts/`` directory. If the previous release hasn't had a snapshot saved, copy
+  ``install-generator.py`` into a version-labeled file, and add it to the git index.
+* Edit ``scripts/install-generator.py``.
+
+  - Primarily, edit ``edition`` at the top.
+  - Also, edit other arrays (stuff above ``## Outputs``) or messages (logic below ``## Outputs``)
+    that should change.
+
+* Run the ``install-generator.py`` in place. It will dump two new files, e.g.,
+  ``data/installs/cmd/{edition}.json`` and ``data/installs/dlbtn/{edition}.json``. Add these to the
+  index (no need to inspect them).
+
+* The installer page is now ready for inspection. Run ``hugo server --watch=false`` and view in
+  browser at http://localhost:1313/ . Click around the options to make sure the buttons and
+  instructions all look right.
+
+* Iterate on the ``data/installs/{edition}.yaml`` and the ``install-generator.py`` until correct.
+  It's fine to push to psicode.org to see it in place. But wait until it's final (and all the
+  packages and installers are ready) to shift "latest" alias in frontmatter from whichever page is
+  currently active to the new page, ``content/installs/{edition}.md``. This makes sure "Downloads"
+  on the navigation bar points to the new page.
+
+* Commit the new files, PR, and deploy psicode site.
 
 
 .. Collect documentation snapshot (pre-Fall 2023)
@@ -509,12 +601,15 @@ Collect documentation snapshot
 * This setup works great for "latest" docs, but it won't necessarily build a nice copy on the tag
   commit itself for release and postrelease snapshots. Get a snapshot *on the tag* by some means:
 
+  - For releases and postreleases, any commit to the maintenance branch will build docs and upload
+    to the branch name in psi4docs. This should be pre-positioned by GHA, so check that docs with
+    the right version are deployed and then no further action required (can skip ahead to README.md
+    and netlify.toml steps).
   - For releases, you can do the ``atomic`` push of the tag commit, wait for the docs build to
     complete, download the GHA artifact (zipped docs dir), then continue by pushing the record commit.
   - For releases beyond the ``atomic`` push, navigate on psi4 GH to the tag commit (not the record
     commit) and retrigger the docs GHA, then download the GHA artifact (zipped docs dir).
-  - For postreleases (TODO run the docs build on the maintenance branches), build the docs locally
-    at the tag and collect the docs dir.
+  - For postreleases, build the docs locally at the tag and collect the docs dir.
 
 * In your local clone of https://github.com/psi4/psi4docs, find the appropriate folder and unpack
   your docs snapshot into it.
@@ -537,13 +632,18 @@ Collect documentation snapshot
 Publish GitHub release
 ----------------------
 
-* On GitHub site "Draft a New Release" with newly minted tag
+* With an anticipated or newly minted tag, go to https://github.com/psi4/psi4/releases/new (or
+  "Draft a new release" button on GitHub site).
+* Release title takes the form: ``v1.8, 2023-05-11``
 * Fill in frontmatter style and links from previous GitHub release
-* Fill in RN from hopefully existing RN issue
-* Fill in RN by going through the top posts from all PRs from this milestone
-* "publish" release. This establishes release date for GitHub API
+* Fill in RN from hopefully existing RN issue.
+* Fill in RN by going through the frontmatter from all PRs from this milestone, particularly the
+  "User API & Changelog headlines" section.
+* Save the draft release until tag is finalized.
+* "publish" release. This establishes the release date for the GitHub API.
 * Close the RN issue.
 * Close the milestone (should be 100% complete).
+* Open a milestone for the release that's a year out.
 
 
 Publish GitHub postrelease
@@ -558,13 +658,27 @@ Publish GitHub postrelease
 * "publish" release. This establishes the release date for the GitHub API.
 
 
-Publish psicode release
------------------------
+Publish psicode.org release
+---------------------------
 
-* Copy a recent release page like https://github.com/psi4/psicode-hugo-website/blob/master/content/posts/v1p2.md
-* Edit its filename, title, date, image, and links
-* Execute https://api.github.com/repos/psi4/psi4/releases/latest and note the ``id`` field value
-* Use the ``id`` value in the shortcode call at the bottom by ``ghRN``
+* Be in local clone of repository https://github.com/psi4/psicode-hugo-website .
+* Execute https://api.github.com/repos/psi4/psi4/releases/latest or
+  https://api.github.com/repos/psi4/psi4/releases/tags/v1.8.2 (substituting tag) and note the ``id``
+  field value.
+* Copy and edit a new file akin to ``content/posts/v182.md``. Add it to the git index.
+
+  - e.g., ``v1.8.2`` is used for Title and Release Notes.
+  - e.g., ``1.8.x`` is used for Documentation and Source.
+  - e.g., ``v182`` (edition string) is used for Image and Installers.
+  - Use the ``id`` value in the shortcode call at the bottom near ``ghRN``.
+
+* Add a new release page to the ``psi4_release_fireworks.key`` Keynote presentation. Run the slide
+  transition and screenshot the fireworks. Open the PNG file in Preview and save as JPEG while
+  downsampling to ~400kB. Place the file at e.g., ``static/images/portfolio/fireworks_slide_v182.jpg``.
+  Add it to the git index.
+* Edit ``data/portfolio.yml`` to add a new block for the release (order matters).
+* Include these changes in a PR. Check the generated preview if needed. Merge the PR yourself or ask
+  for it to be merged.
 
 
 Finalize release
@@ -590,4 +704,12 @@ On both Linux and Mac:
 * Check in all release, construct, recipe changes on Linux and Mac. Synchronize both to GitHub psi4meta
 * Copy meta.yaml and build.sh files to vMmp-prefixed files for the record.
 * Edit crontab back to 2am "norm". Comment out "anom"
+
+
+Misc.
+-----
+
+* Consider rebuilding the |PSIfour| binder image.
+* If you want to do trial conda builds from a maintenance branch w/o pushing the tag, requires
+  ``source/git_tag: 1.3.x`` and fake ``package/version: v1.3.1rc1``
 
