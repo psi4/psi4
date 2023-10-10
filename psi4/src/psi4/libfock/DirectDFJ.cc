@@ -105,7 +105,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
     size_t computed_triplets1 = 0, computed_triplets2 = 0;
 
     // screening threshold
-    double thresh2 = options_.get_double("INTS_TOLERANCE") * options_.get_double("INTS_TOLERANCE");
+    double thresh2 = cutoff_ * cutoff_; 
 
     // per-thread G Vector buffers (for accumulating thread contributions to G)
     // G is the contraction of the density matrix with the 3-index ERIs
