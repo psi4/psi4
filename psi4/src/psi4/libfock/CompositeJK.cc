@@ -141,15 +141,8 @@ void CompositeJK::common_init() {
         eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
         if (!eri_computers_["3-Center"][0]->initialized()) eri_computers_["3-Center"][0]->initialize_sieve();
 
-        FittingMetric J_metric_obj(auxiliary_, true);
-        J_metric_obj.form_fitting_metric();
-        J_metric_ = J_metric_obj.get_metric();
-
         computed_shells_per_iter_["Triplets"] = {};
         
-        IntegralFactory rifactory(auxiliary_, zero, primary_, primary_);
-        eri_computers_["3-Center"][0] = std::shared_ptr<TwoBodyAOInt>(rifactory.eri());
-
         for(int rank = 1; rank < nthreads_; rank++) {
             eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
             if (!eri_computers_["3-Center"][rank]->initialized()) eri_computers_["3-Center"][rank]->initialize_sieve();
@@ -306,9 +299,15 @@ void CompositeJK::compute_JK() {
     }
 
     // update ERI engine density matrices for density screening
-    if (density_screening_ || k_type_ == "LINK") {
+    if (density_screening_) {
         for (auto eri_computer : eri_computers_["4-Center"]) {
             eri_computer->update_density(D_ref_);
+        }
+    } else if (do_K_) {
+        if (k_algo_->name() == "LinK") {
+            for (auto eri_computer : eri_computers_["4-Center"]) {
+                eri_computer->update_density(D_ref_);
+            }
         }
     }
 
