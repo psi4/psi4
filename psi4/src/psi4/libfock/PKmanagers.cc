@@ -187,7 +187,7 @@ PKManager::PKManager(std::shared_ptr<BasisSet> primary, size_t memory, Options& 
     if (options["INTS_TOLERANCE"].has_changed()) {
         cutoff_ = options.get_double("INTS_TOLERANCE");
     }
-    
+
     ntasks_ = 0;
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
