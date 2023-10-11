@@ -206,7 +206,7 @@ class LimitExceeded : public PsiException {
 
     T actual_value() const noexcept { return errorval_; }
 
-    ~LimitExceeded<T>() noexcept override {};
+    ~LimitExceeded() noexcept override {};
 };
 
 /**
