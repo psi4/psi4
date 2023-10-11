@@ -44,6 +44,14 @@ this section we will describe the essential features of the Psithon language.
 samples subdirectory of the top-level |PSIfour| source directory and should
 serve as useful examples.
 
+The equivalent Python PsiAPI syntax is shown alongside the Psithon code snippets.
+When using the Python API, one must import the |PSIfour| module with::
+
+  import psi4
+
+No such directive is neccesary when using Psithon, which is run using the ``psi4``
+executable.
+
 .. index:: physical constants
 .. _`sec:physicalConstants`:
 
@@ -126,7 +134,7 @@ That same command can be used for PsiAPI mode::
 
 .. tabs::
 
-   .. code-tab:: bash PSIthon
+   .. code-tab:: py PSIthon
 
         set_memory(2000000000)
 
@@ -246,16 +254,29 @@ processed after the CCSD computation completes.
 In PsiAPI mode, one can use the command :py:func:`~psi4.driver.set_options`
 like below for general and module-specific options. Note that these values
 should be of correct type, strings for strings, floats for floats like
-convergences. The function `~psi4.core.clean_options` that reinitializes
+convergences. The function :py:func:`~psi4.core.clean_options` that reinitializes
 all options may also be useful to separate calculations in a PsiAPI
-session. ::
+session. 
 
-   psi4.set_options({
-       'scf_type': 'pk',
-       'e_convergence': 1.e-5,
-       'soscf': True,
-       'optking__geom_maxiter': 50
-   })
+.. tabs::
+
+   .. code-tab:: py PSIthon
+
+        set {
+            scf_type = pk
+            e_convergence =  1.e-5
+            soscf = True
+            optking__geom_maxiter = 50
+        }
+
+   .. code-tab:: py PsiAPI
+
+        psi4.set_options({
+            'scf_type': 'pk',
+            'e_convergence': 1.e-5,
+            'soscf': True,
+            'optking__geom_maxiter': 50
+        })
 
 Basis Sets
 ==========
@@ -273,27 +294,53 @@ PSI Variables
 To harness the power of Python, |PSIfour| makes the most pertinent results
 of each computation available to the Python interpreter for
 post-processing. To demonstrate, we can embellish the previous example of
-H\ :sub:`2` and H atom::
+H\ :sub:`2` and H atom
 
-    molecule h2 {
-      H
-      H 1 0.9
-    }
-    
-    set basis cc-pvdz
-    set reference rhf
-    h2_energy = energy('scf')
-    
-    molecule h {
-      H
-    }
-    
-    set basis cc-pvdz
-    set reference uhf
-    h_energy = energy('scf')
-    
-    D_e = psi_hartree2kcalmol * (2*h_energy - h2_energy)
-    print "De=%f" % D_e
+.. tabs::
+
+   .. code-tab:: py PSIthon
+
+        molecule h2 {
+          H
+          H 1 0.9
+        }
+        
+        set basis cc-pvdz
+        set reference rhf
+        h2_energy = energy('scf')
+        
+        molecule h {
+          H
+        }
+        
+        set basis cc-pvdz
+        set reference uhf
+        h_energy = energy('scf')
+        
+        D_e = psi_hartree2kcalmol * (2*h_energy - h2_energy)
+        print "De = %f" % D_e
+
+   .. code-tab:: py PsiAPI
+
+        h2 = psi4.geometry("""
+          H
+          H 1 0.9
+          """)
+        
+        psi4.set_options({"basis": "cc-pvdz",
+                          "reference": "rhf"})
+        h2_energy = psi4.energy('scf')
+        
+        h = psi4.geometry("""
+          H
+          """)
+        
+        psi4.set_options({"basis": "cc-pvdz",
+                          "reference": "uhf"})
+        h_energy = psi4.energy('scf')
+        
+        D_e = psi4.constants.hartree2kcalmol * (2*h_energy - h2_energy)
+        print("De = %f" % D_e)
 
 The :py:func:`~psi4.driver.energy` function returns the final result of the
 computation, the requested total energy in Hartrees, which we assign to a
@@ -303,12 +350,21 @@ energy and printed to the output file using standard Python notation.
 Generally, there are multiple quantities of interest. Appendix
 :ref:`apdx:psivariables_module` lists PSI variables variables set by each
 module, and :ref:`apdx:psivariables_alpha` defines them.  These can be
-accessed through the :py:func:`~psi4.core.get_variable` function. For example, after
+accessed through the :py:func:`~psi4.core.variable` function. For example, after
 performing a density fitted MP2 computation, both the spin component
-scaled energy and the unscaled MP2 energy are made available::
+scaled energy and the unscaled MP2 energy are made available
 
-    e_mp2 = get_variable('MP2 TOTAL ENERGY')
-    e_scs_mp2 = get_variable('SCS-MP2 TOTAL ENERGY')
+.. tabs::
+
+   .. code-tab:: py PSIthon
+
+    e_mp2 = variable('MP2 TOTAL ENERGY')
+    e_scs_mp2 = variable('SCS-MP2 TOTAL ENERGY')
+
+   .. code-tab:: py PsiAPI
+
+    e_mp2 = psi4.variable('MP2 TOTAL ENERGY')
+    e_scs_mp2 = psi4.variable('SCS-MP2 TOTAL ENERGY')
 
 Each module and the Python driver set PSI variables over the course of a
 calculation.  The values for all can be printed in the output file with
@@ -333,7 +389,11 @@ Most of the usual user computation functions (*i.e.*,
 Consult the descriptions of other functions in :ref:`sec:psithonFunc` for
 what quantities they return and for what data structures they make
 available for post-processing. Many users need only deal with the simple return
-form for the computation functions. ::
+form for the computation functions. 
+
+.. tabs::
+
+   .. code-tab:: py PSIthon
 
     # E is total energy float
     # G is gradient array
@@ -347,9 +407,27 @@ form for the computation functions. ::
     G = gradient(...)  # used by optimize()
     H = hessian(...)  # used by frequency()
 
+   .. code-tab:: py PsiAPI
+
+    # E is total energy float
+    # G is gradient array
+    # H is hessian array
+    # wfn is class instance with many computational details
+
+    # simple returns
+    E = psi4.energy(...)
+    E = psi4.optimize(...)
+    E = psi4.frequency(...)
+    G = psi4.gradient(...)  # used by optimize()
+    H = psi4.hessian(...)  # used by frequency()
+
 For more elaborate post-processing of computations, adding
 ``return_wfn=True`` keyword argument additionally returns
-:py:class:`~psi4.core.Wavefunction`. ::
+:py:class:`~psi4.core.Wavefunction`. 
+
+.. tabs::
+
+   .. code-tab:: py PSIthon
 
     # power user returns
     E, wfn = energy(..., return_wfn=True)
@@ -368,6 +446,25 @@ For more elaborate post-processing of computations, adding
     # access array in another format
     np.array(wfn.hessian())
 
+   .. code-tab:: py PsiAPI
+
+    # power user returns
+    E, wfn = psi4.energy(..., return_wfn=True)
+    E, wfn = psi4.optimize(..., return_wfn=True)
+    E, wfn = psi4.frequency(..., return_wfn=True)
+    G, wfn = psi4.gradient(..., return_wfn=True)  # used by optimize()
+    H, wfn = psi4.hessian(..., return_wfn=True)  # used by frequency()
+
+    # print gradient array and its rms
+    wfn.gradient.print_out()
+    print(wfn.gradient().rms())
+
+    # format output for other programs
+    psi4.molden(wfn, 'mycalc.molden')
+
+    # access array in another format
+    np.array(wfn.hessian())
+
 .. _`sec:loops`:
 
 Loops
@@ -377,12 +474,22 @@ Python provides many control structures, any of which can be used within |PSIfou
 input files. For example, to loop over three basis sets, the following code can
 be used:
 
-.. code-block:: none
+.. tabs::
 
-    basis_sets = ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"]
-    for basis_set in basis_sets:
-        set basis = $basis_set
-        energy('scf')
+   .. code-tab:: py PSIthon
+        :force:
+
+        basis_sets = ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"]
+        for basis_set in basis_sets:
+            set basis = $basis_set
+            energy('scf')
+
+   .. code-tab:: py PsiAPI
+
+        basis_sets = ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"]
+        for basis_set in basis_sets:
+            psi4.set_options({"basis": basis_set})
+            psi4.energy('scf')
 
 The declaration of ``basis_sets`` is completely standard Python, as is the next
 line, which iterates over the list. However, because the Psithon preprocessor
@@ -391,24 +498,47 @@ Python variable, not a string, by prefixing it with a dollar sign.
 
 The geometry specification supports delayed initialization of variable,
 which permits potential energy scans. As an example, we can scan both the
-angle and bond length in water::
+angle and bond length in water
 
-    molecule h2o{
-      O
-      H 1 R
-      H 1 R 2 A
-    }
-    
-    Rvals = [0.9, 1.0, 1.1]
-    Avals = range(102, 106, 2)
-    
-    set basis cc-pvdz
-    set scf e_convergence=11
-    for R in Rvals:
-        h2o.R = R
-        for A in Avals:
-            h2o.A = A
-            energy('scf')
+.. tabs::
+
+   .. code-tab:: py PSIthon
+
+        molecule h2o{
+          O
+          H 1 R
+          H 1 R 2 A
+        }
+        
+        Rvals = [0.9, 1.0, 1.1]
+        Avals = range(102, 106, 2)
+        
+        set basis cc-pvdz
+        set scf e_convergence=11
+        for R in Rvals:
+            h2o.R = R
+            for A in Avals:
+                h2o.A = A
+                energy('scf')
+
+   .. code-tab:: py PsiAPI
+
+        h2o = psi4.geometry("""
+          O
+          H 1 R
+          H 1 R 2 A
+          """)
+        
+        Rvals = [0.9, 1.0, 1.1]
+        Avals = range(102, 106, 2)
+        
+        psi4.set_options({"basis": "cc-pvdz",
+                          "e_convergence": 11})
+        for R in Rvals:
+            h2o.R = R
+            for A in Avals:
+                h2o.A = A
+                psi4.energy('scf')
 
 The declarations of ``Rvals`` and ``Avals`` are both completely standard Python syntax.
 Having named our molecule ``h2o`` we can then set the values of ``R`` and ``A`` within
@@ -429,44 +559,87 @@ Tables of Results
 The Psithon function ``psi4.driver.p4util.Table`` has been removed,
 as the Python ecosystem provides many more flexible alternatives. An
 example tabulating a potential energy surface scan for water with Pandas
-is shown below::
+is shown below
 
-    molecule h2o {
-      O
-      H 1 R
-      H 1 R 2 A
-    }
-    
-    Rvals=[0.9,1.0,1.1]
-    Avals=range(100,103,2)
-    
-    rows = []
-    table = []
-    
-    set basis cc-pvdz
-    
-    for R in Rvals:
-        h2o.R = R
-        for A in Avals:
-            h2o.A = A
-            energy('mp2')
-            escf = variable('SCF TOTAL ENERGY')
-            edfmp2 = variable('MP2 TOTAL ENERGY')
-            escsmp2 = variable('SCS-MP2 TOTAL ENERGY')
-            rows.append((R, A))
-            table.append([escf, escsmp2, edfmp2])
-    
-    import pandas as pd
-    df = pd.DataFrame(table, columns = ["E(SCF)", "E(SCS)", "E(DFMP2)"], index=rows)
-    print(df)
+.. tabs::
 
-    #                E(SCF)     E(SCS)   E(DFMP2)
-    # (0.9, 100) -76.020680 -76.217006 -76.221189
-    # (0.9, 102) -76.021305 -76.217439 -76.221605
-    # (1.0, 100) -76.021264 -76.224987 -76.228727
-    # (1.0, 102) -76.021460 -76.224946 -76.228668
-    # (1.1, 100) -75.990195 -76.201891 -76.205087
-    # (1.1, 102) -75.990085 -76.201498 -76.204676
+   .. code-tab:: py PSIthon
+
+        molecule h2o {
+          O
+          H 1 R
+          H 1 R 2 A
+        }
+        
+        Rvals = [0.9, 1.0, 1.1]
+        Avals = range(100, 103, 2)
+        
+        rows = []
+        table = []
+        
+        set basis cc-pvdz
+        
+        for R in Rvals:
+            h2o.R = R
+            for A in Avals:
+                h2o.A = A
+                energy('mp2')
+                escf = variable('SCF TOTAL ENERGY')
+                edfmp2 = variable('MP2 TOTAL ENERGY')
+                escsmp2 = variable('SCS-MP2 TOTAL ENERGY')
+                rows.append((R, A))
+                table.append([escf, escsmp2, edfmp2])
+        
+        import pandas as pd
+        df = pd.DataFrame(table, columns = ["E(SCF)", "E(SCS)", "E(DFMP2)"], index=rows)
+        print(df)
+
+        #                E(SCF)     E(SCS)   E(DFMP2)
+        # (0.9, 100) -76.020680 -76.217006 -76.221189
+        # (0.9, 102) -76.021305 -76.217439 -76.221605
+        # (1.0, 100) -76.021264 -76.224987 -76.228727
+        # (1.0, 102) -76.021460 -76.224946 -76.228668
+        # (1.1, 100) -75.990195 -76.201891 -76.205087
+        # (1.1, 102) -75.990085 -76.201498 -76.204676
+
+   .. code-tab:: py PsiAPI
+
+        h2o = psi4.geometry("""
+          O
+          H 1 R
+          H 1 R 2 A
+          """)
+        
+        Rvals = [0.9, 1.0, 1.1]
+        Avals = range(100, 103, 2)
+        
+        rows = []
+        table = []
+        
+        psi4.set_options({"basis": "cc-pvdz"})
+        
+        for R in Rvals:
+            h2o.R = R
+            for A in Avals:
+                h2o.A = A
+                psi4.energy('mp2')
+                escf = psi4.variable('SCF TOTAL ENERGY')
+                edfmp2 = psi4.variable('MP2 TOTAL ENERGY')
+                escsmp2 = psi4.variable('SCS-MP2 TOTAL ENERGY')
+                rows.append((R, A))
+                table.append([escf, escsmp2, edfmp2])
+        
+        import pandas as pd
+        df = pd.DataFrame(table, columns = ["E(SCF)", "E(SCS)", "E(DFMP2)"], index=rows)
+        print(df)
+
+        #                E(SCF)     E(SCS)   E(DFMP2)
+        # (0.9, 100) -76.020680 -76.217006 -76.221189
+        # (0.9, 102) -76.021305 -76.217439 -76.221605
+        # (1.0, 100) -76.021264 -76.224987 -76.228727
+        # (1.0, 102) -76.021460 -76.224946 -76.228668
+        # (1.1, 100) -75.990195 -76.201891 -76.205087
+        # (1.1, 102) -75.990085 -76.201498 -76.204676
 
 
 .. _`sec:wrappers`:
@@ -481,9 +654,17 @@ the |PSIfour| suite.
 As seen in the neon dimer example from the :ref:`tutorial <sec:tutorial>` section,
 the :py:func:`~psi4.driver.driver_nbody.nbody` wrapper provides automatic computation of
 counterpoise-corrected interaction energies between two molecules.  For
-example, ::
+example, 
 
-  energy('mp2', bsse_type='cp')
+.. tabs::
+
+   .. code-tab:: py PSIthon
+
+      energy('mp2', bsse_type='cp')
+
+   .. code-tab:: py PsiAPI
+
+      psi4.energy('mp2', bsse_type='cp')
 
 will compute the counterpoise-corrected density-fitted MP2 interaction energy
 between two molecules.
@@ -491,13 +672,25 @@ between two molecules.
 |PSIfour| also provides the :py:func:`~psi4.driver.cbs` wrapper,
 which automatically computes a complete-basis-set extrapolation (and
 automatically sets up the computations with different basis sets required to
-do the extrapolation).  For example,::
+do the extrapolation).  For example,
 
-  # all equivalent
+.. tabs::
 
-  energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+   .. code-tab:: py PSIthon
 
-  energy('mp2/cc-pv[dt]z')
+      # all equivalent
+
+      energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+
+      energy('mp2/cc-pv[dt]z')
+
+   .. code-tab:: py PsiAPI
+
+      # all equivalent
+
+      psi4.energy('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+
+      psi4.energy('mp2/cc-pv[dt]z')
 
 will compute a 2-point Helgaker extrapolation of the correlation energy
 using the cc-pVDZ and cc-pVTZ basis sets (with method MP2) and add this
@@ -509,9 +702,17 @@ example can be used.
 
 Another very useful and powerful feature of |PSIfour| is the ability
 to compute results on entire databases of molecules at a time,
-as provided by the :py:func:`~psi4.driver.wrapper_database.database` wrapper.  For example,::
+as provided by the :py:func:`~psi4.driver.wrapper_database.database` wrapper.  For example,
 
-  database('mp2', 'S22', cp=1, benchmark='S22B')
+.. tabs::
+
+   .. code-tab:: py PSIthon
+
+      database('mp2', 'S22', cp=1, benchmark='S22B')
+
+   .. code-tab:: py PsiAPI
+    
+      psi4.wrapper_database.database('mp2', 'S22', cp=1, benchmark='S22B')
 
 will perform DF-MP2 counterpoise-corrected interaction energies
 (``cp=1``) on all members of Hobza's S22 database set of van der Waals
