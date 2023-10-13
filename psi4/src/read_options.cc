@@ -1438,6 +1438,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             orbitals before switching to the use of exact integrals in
             a |globals__scf_type| ``DIRECT`` calculation -*/
         options.add_bool("DF_SCF_GUESS", true);
+        /*- Do a DFDIRJ+COSX SCF calculation to converge the
+            orbitals before switching to the use of exact integrals in
+            a |globals__scf_type| ``DIRECT`` calculation -*/
+        options.add_bool("SCF_COSX_GUESS", false);
         /*- For certain |globals__scf_type| algorithms that have internal sub-algorithms
             depending on available memory or other hardware constraints, allow the best
             sub-algorithm for the molecule and conditions (``AUTO`` ; usual mode) or
