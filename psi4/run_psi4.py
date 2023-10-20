@@ -119,11 +119,11 @@ executable = Path(__file__).resolve()
 psi4_exe_loc = executable.parent
 
 prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
-cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
-cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
-cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
-pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/")
-psi4_install_cmakedir = "@psi4_INSTALL_CMAKEDIR@".replace("\\", "/")
+cmake_install_bindir = r"@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
+cmake_install_datadir = r"@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
+cmake_install_libdir = r"@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
+pymod_install_libdir = r"@PYMOD_INSTALL_LIBDIR@".lstrip("/")
+psi4_install_cmakedir = r"@psi4_INSTALL_CMAKEDIR@".replace("\\", "/")
 full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
 full_data = prefix / cmake_install_datadir / "psi4"
 full_bin = prefix / cmake_install_bindir
