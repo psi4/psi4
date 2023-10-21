@@ -141,7 +141,7 @@ jobs:
                         libint=2.7.3dev1 ^
                         qcelemental ^
                         qcengine ^
-                        pydantic=1.10.10 ^
+                        pydantic=1.10.13 ^
                         optking ^
                         scipy ^
                         --solver libmamba
