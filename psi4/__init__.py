@@ -38,11 +38,11 @@ import os
 from pathlib import Path
 psi4_module_loc = Path(__file__).resolve().parent
 
-prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
-cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
-cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
-cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
-pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/")
+prefix = Path(r"@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+cmake_install_bindir = r"@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
+cmake_install_datadir = r"@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
+cmake_install_libdir = r"@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
+pymod_install_libdir = r"@PYMOD_INSTALL_LIBDIR@".lstrip("/")
 full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
 full_data = prefix / cmake_install_datadir / "psi4"
 full_bin = prefix / cmake_install_bindir
@@ -50,7 +50,7 @@ rel_data = os.path.relpath(full_data, start=full_pymod)
 rel_bin = os.path.relpath(full_bin, start=full_pymod)
 
 executable = psi4_module_loc.joinpath(rel_bin, "psi4")
-executable_exe = (Path("/opt/anaconda1anaconda2anaconda3") / "Scripts" / "psi4.exe").resolve(strict=False)
+executable_exe = (Path(r"/opt/anaconda1anaconda2anaconda3") / "Scripts" / "psi4.exe").resolve(strict=False)
 if executable_exe.exists():
     # Win conda-build generates this unbeknownst to CMake
     executable = executable_exe

@@ -118,7 +118,7 @@ args = args.__dict__  # Namespace object seems silly
 executable = Path(__file__).resolve()
 psi4_exe_loc = executable.parent
 
-prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+prefix = Path(r"@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
 cmake_install_bindir = r"@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
 cmake_install_datadir = r"@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
 cmake_install_libdir = r"@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")

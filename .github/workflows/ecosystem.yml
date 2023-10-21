@@ -230,12 +230,12 @@ jobs:
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;- qcfractal=0.51;g" run.yaml  # >=0.50b10
-          sed -i "s;- qcportal;- postgresql;g" run.yaml
+          sed -i "s;- qcfractal;;g" run.yaml
+          sed -i "s;- qcportal;;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- qcfractal;- qcfractal=0.51;g" run.yaml
-          sed -E -i.bak "s;- qcportal;- postgresql;g" run.yaml
+          sed -E -i.bak "s;- qcfractal;;g" run.yaml
+          sed -E -i.bak "s;- qcportal;;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # nyi
@@ -430,7 +430,8 @@ jobs:
         fi
 
     - name: Patch QCFractal for Python
-      if: runner.os == 'macOS'
+      if: false
+      #if: runner.os == 'macOS'
       run: |
         cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
         sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
