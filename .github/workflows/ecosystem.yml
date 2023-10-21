@@ -14,12 +14,12 @@ jobs:
 
   ecosystem:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         cfg:
 
           - runs-on: ubuntu-latest
-            python-version: "3.10"
+            python-version: "3.12"
             mkl-version: ""
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long"
@@ -28,7 +28,7 @@ jobs:
               -D BUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
-            python-version: "3.9"
+            python-version: "3.12"
             mkl-version: ""
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long"
@@ -42,7 +42,7 @@ jobs:
             # * libiomp5 is picking up naturally but left explicit as guide
 
           - runs-on: windows-latest
-            python-version: "3.9"
+            python-version: "3.12"
             mkl-version: "=2022.1"
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long and not d2ints"
@@ -113,7 +113,7 @@ jobs:
           - libblas=*=*mkl
           - python=${{ matrix.cfg.python-version }}
             # build
-          - boost-cpp
+          - libboost-headers
           - cmake
           - c-compiler
           - cxx-compiler
@@ -201,8 +201,8 @@ jobs:
           - adcc
           - basis_set_exchange
           - cppe
-          - dftd3-python
-          - dftd4-python
+          #- dftd3-python
+          #- dftd4-python
           - pylibefp
           #- psi4/label/dev::fockci
           - gcp-correction
@@ -230,12 +230,12 @@ jobs:
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;- qcfractal=0.50;g" run.yaml  # >=0.50b10
+          sed -i "s;- qcfractal;- qcfractal=0.51;g" run.yaml  # >=0.50b10
           sed -i "s;- qcportal;- postgresql;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" run.yaml
-          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" run.yaml
+          sed -E -i.bak "s;- qcfractal;- qcfractal=0.51;g" run.yaml
+          sed -E -i.bak "s;- qcportal;- postgresql;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # nyi
