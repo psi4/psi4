@@ -119,7 +119,8 @@ jobs:
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
       - script: |
-          conda install cmake ^
+          conda create -n p4dev ^
+                        cmake ^
                         anaconda-project ^
                         conda-build ^
                         eigen ^
@@ -151,6 +152,7 @@ jobs:
           #conda install --only-deps anaconda-client
           #pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
           #which anaconda
+          conda activate p4dev
           conda list
         displayName: "Install conda packages"
 
@@ -195,11 +197,11 @@ jobs:
                 -DENABLE_XHOST=OFF ^
                 -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
-                -DPython_EXECUTABLE="C:/tools/miniforge3/python.exe" ^
+                -DPython_EXECUTABLE="C:/tools/miniforge3/envs/p4dev/python.exe" ^
                 -DPython_NumPy_INCLUDE_DIR="C:/tools/miniforge3/lib/site-packages/numpy/core/include" ^
-                -DEigen3_ROOT="C:/tools/miniforge3/Library" ^
-                -DBOOST_ROOT="C:/tools/miniforge3/Library" ^
-                -DMultiprecision_ROOT="C:/tools/miniforge3/Library" ^
+                -DEigen3_ROOT="C:/tools/miniforge3/envs/p4dev/Library" ^
+                -DBOOST_ROOT="C:/tools/miniforge3/envs/p4dev/Library" ^
+                -DMultiprecision_ROOT="C:/tools/miniforge3/envs/p4dev/Library" ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
