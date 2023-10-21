@@ -121,11 +121,9 @@ jobs:
       - script: |
           conda create -n p4dev ^
                         cmake ^
-                        anaconda-project ^
-                        conda-build ^
+
                         eigen ^
-                        boost-cpp ^
-                        conda-verify ^
+                        libboost-headers ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^
@@ -138,7 +136,6 @@ jobs:
                         pytest>=7.0.1 ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        dftd3-python ^
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
