@@ -450,9 +450,9 @@ jobs:
 
       # step works but is redundant with next two; enable for debugging
     - name: Test Addons with CTest
-      if: false
+      if: runner.os == 'Windows'
       working-directory: ./objdir
-      run: ctest -L addon -j2 --output-on-failure
+      run: ctest -L smoke -LE d2ints -j2 --output-on-failure
 
     - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (L, M, W)"
       if: matrix.cfg.base-channel == 'conda-forge'

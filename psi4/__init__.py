@@ -110,15 +110,15 @@ from psi4.core import variable, set_variable
 #   rather than letting PYTHONPATH rule for the few.
 import sys
 if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PCMSolver
-    sys.path.insert(1, "@PCMSolver_PYMOD@")
+    sys.path.insert(1, r"@PCMSolver_PYMOD@")
 if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
-    sys.path.insert(1, "@cppe_PYMOD@")
+    sys.path.insert(1, r"@cppe_PYMOD@")
 if "@ENABLE_ddx@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pyddx
-    sys.path.insert(1, "@pyddx_PYMOD@")
+    sys.path.insert(1, r"@pyddx_PYMOD@")
 if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
-    sys.path.insert(1, "@pylibefp_PYMOD@")
+    sys.path.insert(1, r"@pylibefp_PYMOD@")
 if "@ENABLE_gdma@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # gdma
-    sys.path.insert(1, "@gdma_PYMOD@")
+    sys.path.insert(1, r"@gdma_PYMOD@")
 
 # Create a custom logger
 import logging

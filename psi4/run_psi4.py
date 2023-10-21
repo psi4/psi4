@@ -186,7 +186,7 @@ if args['plugin_compile']:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
 
 if args['psiapi_path']:
-    pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
+    pyexe_dir = os.path.dirname(r"@Python_EXECUTABLE@")
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     # TODO Py not quite right on conda Windows and Psi include %PREFIX$. but maybe not appropriate for Win anyways
     sys.exit()
