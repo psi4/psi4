@@ -121,7 +121,6 @@ jobs:
       - script: |
           conda create -n p4dev ^
                         cmake ^
-
                         eigen ^
                         libboost-headers ^
                         intel-openmp=%MKL_VERSION% ^
