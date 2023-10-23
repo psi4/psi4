@@ -316,6 +316,7 @@ void DFHelper::prepare_sparsity() {
     auto rifactory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(screen_threads);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->initialized())) eri.front()->initialize_sieve();
 #pragma omp parallel num_threads(screen_threads) if (nbf_ > 1000)
     {
         int rank = 0;
@@ -324,7 +325,6 @@ void DFHelper::prepare_sparsity() {
 #endif
         if (rank) {
             eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
-            if (!eri[rank]->initialized()) eri[rank]->initialize_sieve();
         }
     }
 
@@ -425,9 +425,9 @@ void DFHelper::prepare_AO() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->initialized())) eri.front()->initialize_sieve();
     for(int rank = 1; rank < nthreads_; rank++) {
         eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
-        if (!eri[rank]->initialized()) eri[rank]->initialize_sieve();
     }
 
     // gather blocking info
@@ -497,6 +497,7 @@ void DFHelper::prepare_AO_wK() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->initialized())) eri.front()->initialize_sieve();
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -504,7 +505,6 @@ void DFHelper::prepare_AO_wK() {
         rank = omp_get_thread_num();
 #endif
         eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
-        if (!eri[rank]->initialized()) eri[rank]->initialize_sieve();
     }
 
     // gather blocking info
@@ -517,6 +517,7 @@ void DFHelper::prepare_AO_core() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->initialized())) eri.front()->initialize_sieve();
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -524,7 +525,6 @@ void DFHelper::prepare_AO_core() {
         rank = omp_get_thread_num();
 #endif
         if(rank) eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
-        if (!eri[rank]->initialized()) eri[rank]->initialize_sieve();
     }
 
     // determine blocking
@@ -594,7 +594,10 @@ void DFHelper::prepare_AO_wK_core() {
     std::vector<std::shared_ptr<TwoBodyAOInt>> weri(nthreads_);
 
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->initialized())) eri.front()->initialize_sieve();
+
     weri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+    if (!(weri.front()->initialized())) weri.front()->initialize_sieve();
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -603,10 +606,7 @@ void DFHelper::prepare_AO_wK_core() {
 #endif
         if (rank) {
             eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
-            if (!eri[rank]->initialized()) eri[rank]->initialize_sieve();
-
             weri[rank] = std::shared_ptr<TwoBodyAOInt>(weri.front()->clone());
-            if (!weri[rank]->initialized()) weri[rank]->initialize_sieve();
         }
     }
 
@@ -1885,6 +1885,7 @@ void DFHelper::transform() {
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthread);
     eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    if (!(eri.front()->initialized())) eri.front()->initialize_sieve();
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -1895,7 +1896,6 @@ void DFHelper::transform() {
         C_buffers[rank] = Cp;
         if (rank) {
             eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
-            if (!eri[rank]->initialized()) eri[rank]->initialize_sieve();
         }
     }
 
