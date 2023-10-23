@@ -429,6 +429,12 @@ jobs:
           qcengine info
         fi
 
+    - name: Special Config - QCElemental Dep
+      if: true
+      run: |
+        conda remove qcelemental --force
+        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
+
     - name: Patch QCFractal for Python
       if: false
       #if: runner.os == 'macOS'
