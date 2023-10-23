@@ -120,7 +120,6 @@ void CompositeJK::common_init() {
     // create each threads' ERI computers
     for(int rank = 1; rank < nthreads_; rank++) {
         eri_computers_["4-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["4-Center"].front()->clone());
-        if (!eri_computers_["4-Center"][rank]->initialized()) eri_computers_["4-Center"][rank]->initialize_sieve();
 
     }
 
@@ -145,7 +144,6 @@ void CompositeJK::common_init() {
 
         for(int rank = 1; rank < nthreads_; rank++) {
             eri_computers_["3-Center"][rank] = std::shared_ptr<TwoBodyAOInt>(eri_computers_["3-Center"].front()->clone());
-            if (!eri_computers_["3-Center"][rank]->initialized()) eri_computers_["3-Center"][rank]->initialize_sieve();
         }
     } else {
         throw PSIEXCEPTION("Invalid Composite J algorithm selected!");
