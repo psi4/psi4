@@ -493,7 +493,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         # Print out the iteration
         core.print_out(
-            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s \n" %
+            "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
             ("DF-" if is_dfjk else "", reference, "SAD" if
              ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
 

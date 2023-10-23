@@ -224,30 +224,6 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
         };
         grid = std::make_shared<DFTGrid>(primary_->molecule(), primary_, grid_int_options, grid_str_options, grid_float_options, options_);
 
-        // Print out warning if grid with negative grid weights is used
-        // Original Nesse COSX formulation does not support negative grid weights
-        // which can happen with certain grid configurations
-        // See https://github.com/psi4/psi4/issues/2890
-        auto warning_printed = false;
-        for (const auto &block : grid->blocks()) {
-            const auto w = block->w();
-            for (int ipoint = 0; ipoint < block->npoints(); ++ipoint) {
-                if (w[ipoint] < 0.0) {
-                    std::string warning_message = "  INFO: The definition of the current ";
-                    warning_message += gridname_lowercase;
-                    warning_message += " grid includes negative weights, which the original COSX formulation does not support!\n    If this is of concern, please choose another final grid through adjusting either COSX_PRUNING_SCHEME or COSX_SPHERICAL_POINTS_";
-                    warning_message += gridname_uppercase;
-                    warning_message += ".\n\n";
-
-                    outfile->Printf(warning_message);
-
-                    warning_printed = true;
-                    break;
-                }
-            }
-            if (warning_printed) break;
-        }
-
         // Print out specific grid info upon request
         if (options_.get_int("DEBUG")) {
             outfile->Printf("  ==> COSX: ");
