@@ -148,9 +148,9 @@ jobs:
                         pydantic=1.10.13 ^
                         optking ^
                         scipy
-          #conda install --only-deps anaconda-client
-          #pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
-          #which anaconda
+          conda install --only-deps anaconda-client
+          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
+          which anaconda
           conda list
         displayName: "Install conda packages"
 

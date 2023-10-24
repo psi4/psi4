@@ -230,12 +230,12 @@ jobs:
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;;g" run.yaml
-          sed -i "s;- qcportal;;g" run.yaml
+          # qcfractal >=0.50
+          sed -i "s;- qcportal;- postgresql;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- qcfractal;;g" run.yaml
-          sed -E -i.bak "s;- qcportal;;g" run.yaml
+          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" run.yaml
+          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # nyi
@@ -430,13 +430,12 @@ jobs:
         fi
 
     - name: Special Config - QCElemental Dep
-      if: true
       run: |
         conda remove qcelemental --force
         python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
 
     - name: Special Config - QCFractal Dep
-      if: true
+      if: runner.os == 'Linux'
       run: |
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@fix_snowflake#egg=qcfractal&subdirectory=qcfractal'
@@ -461,7 +460,7 @@ jobs:
 
       # step works but is redundant with next two; enable for debugging
     - name: Test Addons with CTest
-      if: runner.os == 'Windows'
+      if: false
       working-directory: ./objdir
       run: ctest -L smoke -LE d2ints -j2 --output-on-failure
 
