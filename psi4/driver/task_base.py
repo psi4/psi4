@@ -276,7 +276,23 @@ def _singlepointrecord_to_atomicresult(spr: "qcportal.singlepoint.SinglepointRec
     #   are defined, so we also need to reconstruct these.
     shared_qcvars = {}
     for pv, dpv in atres.properties.dict().items():
-        if pv.startswith("return_"):
+        if dpv is None:
+            continue
+        if pv.startswith("return_") or pv.endswith("_moment"):
+            continue
+        if pv in [
+            "scf_one_electron_energy",
+            "scf_two_electron_energy",
+            "scf_vv10_energy",
+            "scf_xc_energy",
+            "scf_dispersion_correction_energy",
+            "mp2_same_spin_correlation_energy",
+            "mp2_opposite_spin_correlation_energy",
+            "ccsd_same_spin_correlation_energy",
+            "ccsd_opposite_spin_correlation_energy",
+            "ccsd_prt_pr_correlation_energy",
+            "ccsd_prt_pr_total_energy",
+        ]:
             continue
         shared_qcvars[pv.upper().replace("_", " ")] = dpv
     qcvars = atres.extras.pop("extra_properties")

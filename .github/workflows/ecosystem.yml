@@ -28,7 +28,7 @@ jobs:
               -D BUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
-            python-version: "3.11"
+            python-version: "3.10"
             mkl-version: ""
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long"
