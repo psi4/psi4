@@ -272,10 +272,17 @@ def _singlepointrecord_to_atomicresult(spr: "qcportal.singlepoint.SinglepointRec
     # QCFractal `next` database stores return_result, properties, and extras["qcvars"] merged
     #   together and with lowercase keys. `to_qcschema_result` partitions properties back out,
     #   but we need to restore qcvars keys, types, and dimensions.
+    # QCFractal v0.51 starts saving space by removing qcvars whose qcvar.lower().replace(" ", "_")
+    #   are defined, so we also need to reconstruct these.
+    shared_qcvars = {}
+    for pv, dpv in atres.properties.dict().items():
+        if pv.startswith("return_"):
+            continue
+        shared_qcvars[pv.upper().replace("_", " ")] = dpv
     qcvars = atres.extras.pop("extra_properties")
     qcvars.pop("return_result")
     qcvars = {k.upper(): p4util.plump_qcvar(k, v) for k, v in qcvars.items()}
-    atres.extras["qcvars"] = qcvars
+    atres.extras["qcvars"] = {**qcvars, **shared_qcvars}
 
     return atres
 

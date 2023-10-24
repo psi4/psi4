@@ -28,7 +28,7 @@ jobs:
               -D BUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
-            python-version: "3.12"
+            python-version: "3.11"
             mkl-version: ""
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long"
@@ -435,9 +435,14 @@ jobs:
         conda remove qcelemental --force
         python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
 
-    - name: Patch QCFractal for Python
-      if: false
-      #if: runner.os == 'macOS'
+    - name: Special Config - QCFractal Dep
+      if: true
+      run: |
+        conda remove qcfractal --force
+        python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@fix_snowflake#egg=qcfractal&subdirectory=qcfractal'
+
+    - name: Special Config - Patch Legacy QCFractal for Python
+      if: runner.os == 'macOS'
       run: |
         cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
         sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
