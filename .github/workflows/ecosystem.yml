@@ -28,7 +28,7 @@ jobs:
               -D BUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
-            python-version: "3.10"
+            python-version: "3.9"
             mkl-version: ""
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long"
@@ -201,8 +201,8 @@ jobs:
           - adcc
           - basis_set_exchange
           - cppe
-          #- dftd3-python
-          #- dftd4-python
+          - dftd3-python
+          - dftd4-python
           - pylibefp
           #- psi4/label/dev::fockci
           - gcp-correction
@@ -232,6 +232,8 @@ jobs:
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           # qcfractal >=0.50
           sed -i "s;- qcportal;- postgresql;g" run.yaml
+          # not for py312
+          sed -i "s;- dftd4-python;;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" run.yaml
@@ -247,6 +249,9 @@ jobs:
           sed -i "s;- openfermion>=1.0;;g" run.yaml
           sed -i "s;- openfermionpsi4;;g" run.yaml
           sed -i "s;- memory_profiler;;g" run.yaml
+          # not for py312
+          sed -i "s;- dftd3-python;;g" run.yaml
+          sed -i "s;- dftd4-python;;g" run.yaml
         fi
         printf "\n<<<  build.yaml  >>>\n"
         cat build.yaml
