@@ -33,6 +33,7 @@ import atexit
 import datetime
 import json
 import os
+import re
 import sys
 import warnings
 from pathlib import Path
@@ -200,6 +201,13 @@ if args["psidatadir"] is not None:
     data_dir = os.path.abspath(os.path.expanduser(args["psidatadir"]))
     os.environ["PSIDATADIR"] = data_dir
 
+if args["version"]:
+    with (psi4_module_loc / "metadata.py").open() as fp:
+        verline = fp.readline()
+    __version__ = re.match(r"__version__ = ['\"](?P<ver>.*)['\"]", verline).group("ver")
+    print(__version__)
+    sys.exit()
+
 ### Actually import psi4 and apply setup ###
 
 # Arrange for warnings to ignore everything except the message
@@ -211,10 +219,6 @@ warnings.formatwarning = custom_formatwarning
 # Import installed psi4
 sys.path.insert(1, lib_dir)
 import psi4  # isort:skip
-
-if args["version"]:
-    print(psi4.__version__)
-    sys.exit()
 
 # Prevents a poor option combination
 if args['plugin_template'] and (not args['plugin_name']):
