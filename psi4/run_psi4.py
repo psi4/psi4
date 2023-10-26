@@ -202,8 +202,7 @@ if args["psidatadir"] is not None:
     os.environ["PSIDATADIR"] = data_dir
 
 if args["version"]:
-    with (psi4_module_loc / "metadata.py").open() as fp:
-        verline = fp.readline()
+    with (psi4_module_loc / "metadata.py").open() as fp: verline = fp.readline()
     __version__ = re.match(r"__version__ = ['\"](?P<ver>.*)['\"]", verline).group("ver")
     print(__version__)
     sys.exit()
