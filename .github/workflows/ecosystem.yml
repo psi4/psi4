@@ -40,6 +40,7 @@ jobs:
               -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
+            # * as long as we're using mac to test legacy QCFractal, stick with py39
 
           - runs-on: windows-latest
             python-version: "3.12"
@@ -435,12 +436,14 @@ jobs:
         fi
 
     - name: Special Config - QCElemental Dep
+      if: false
       run: |
         conda remove qcelemental --force
         python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
 
     - name: Special Config - QCFractal Dep
       if: runner.os == 'Linux'
+      # remove after snowflake fixed in qcf v0.52
       run: |
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@fix_snowflake#egg=qcfractal&subdirectory=qcfractal'
