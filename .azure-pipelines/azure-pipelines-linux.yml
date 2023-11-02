@@ -94,10 +94,10 @@ jobs:
         blas=*=mkl \
         mkl-include \
         networkx \
-        pytest>=7.0.1 \
+        conda-forge::pytest>=7.0.1 \
         eigen \
         libboost-headers \
-        pytest-xdist \
+        conda-forge::pytest-xdist \
         msgpack-python \
         conda-forge::qcelemental \
         conda-forge::qcengine \

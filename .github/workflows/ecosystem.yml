@@ -443,10 +443,10 @@ jobs:
 
     - name: Special Config - QCFractal Dep
       if: runner.os == 'Linux'
-      # remove after snowflake fixed in qcf v0.52
+      # remove after snowflake fix in https://github.com/MolSSI/QCFractal/pull/781 released in v0.52
       run: |
         conda remove qcfractal --force
-        python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@fix_snowflake#egg=qcfractal&subdirectory=qcfractal'
+        python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
 
     - name: Special Config - Patch Legacy QCFractal for Python
       if: runner.os == 'macOS'
