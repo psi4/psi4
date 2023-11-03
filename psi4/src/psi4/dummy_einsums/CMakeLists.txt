@@ -20,7 +20,7 @@ if(DEFINED ENV{CONDA_TOOLCHAIN_BUILD})
         #   There's a CONDA_BACKUP_CONDA_TOOLCHAIN_BUILD envvar when not activated.
         #   So hopefully, this doesn't interfere with system compilers.
         target_compile_definitions(
-          dummy_eimsums
+          dummy_einsums
           PUBLIC
             _LIBCPP_DISABLE_AVAILABILITY
             H5CPP_USE_OMP_ALIGNED_ALLOC
