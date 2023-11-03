@@ -26,42 +26,20 @@
  * @END LICENSE
  */
 
-// <<< START Einsums Demoing namespace einsums;
+#include <cmath>
+#include <cstdlib>
+
 #include "einsums.hpp"
 #include "range/v3/algorithm/for_each.hpp"
 #include "range/v3/view/zip.hpp"
 
-#include <cmath>
-#include <cstdlib>
-// END Einsums Demo >>>
-
-//#include <algorithm>
-//#include <iomanip>
-//#ifdef _OPENMP
-//#include <omp.h>
-//#endif
-
-//#include "psi4/psifiles.h"
-//#include "psi4/psi4-dec.h"
-//
-//#include "psi4/libpsi4util/process.h"
-//#include "psi4/libmints/basisset.h"
-//#include "psi4/libqt/qt.h"
 #include "psi4/libmints/wavefunction.h"
-//#include "psi4/libmints/vector.h"
-//#include "psi4/libmints/matrix.h"
-//#include "psi4/libpsio/psio.hpp"
-//#include "psi4/libpsio/psio.h"
-//#include "psi4/libpsio/aiohandler.h"
-//#include "psi4/libpsi4util/PsiOutStream.h"
-//#include "psi4/lib3index/dfhelper.h"
 
 namespace psi {
 namespace dummy_einsums {
 
 SharedWavefunction dummy_einsums(SharedWavefunction ref_wfn, Options& options) {
 
-    // <<< START Einsums Demoing namespace einsums;
     using namespace einsums;
     using namespace einsums::tensor_algebra;
     using namespace einsums::tensor_algebra::index;
@@ -102,7 +80,6 @@ SharedWavefunction dummy_einsums(SharedWavefunction ref_wfn, Options& options) {
     timer::report();
     blas::finalize();
     timer::finalize();
-    // END Einsums Demo >>>
 
     return ref_wfn;
 }
