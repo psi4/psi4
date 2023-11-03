@@ -138,7 +138,7 @@ jobs:
           # - psi4/label/dev::chemps2
           # - psi4/label/dev::libecpint
           - einsums=*=mkl*
-          #- range-v3
+          - range-v3
           - zlib
           - dkh
           - pygdma
