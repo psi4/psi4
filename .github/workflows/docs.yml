@@ -27,8 +27,7 @@ jobs:
 
     # fetch-depth: 0 gets git history so Psi4 version computable
     - name: Checkout
-      if: false
-      #if: ${{ github.repository == 'psi4/psi4' }}
+      if: ${{ github.repository == 'psi4/psi4' }}
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
@@ -131,6 +130,7 @@ jobs:
       id: compare-psi4docs
       run: |
         cp -pR ../../code/objdir/doc/sphinxman/html .
+        rm -rf ${{ github.ref_name }}
         mv html ${{ github.ref_name }}
         echo "::group::Selective Git Diff"
         git diff --color-words -I"Last updated on" -I"psi4/tree"

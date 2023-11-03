@@ -272,7 +272,7 @@ jobs:
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
           conda build --python %PYTHON_VERSION% ^
                       conda\win
-          copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
+          copy /y C:\tools\miniforge3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
         condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Build Psi4 package"
 
@@ -290,7 +290,7 @@ jobs:
       # * error handling may need tweaking as I don't know if failure to upload for lack of space (`echo $?`=1) will fail the workflow.
       - bash: |
           set -e
-          ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+          ls -l /c/tools/miniforge3/conda-bld/win-64/*.tar.bz2
           echo "Using the mapped env var for this task works and is recommended: $(conda.anaconda_org_token)"
           anaconda whoami
           anaconda \
@@ -298,7 +298,7 @@ jobs:
            upload \
             --label dev \
             --skip \
-            /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+            /c/tools/miniforge3/conda-bld/win-64/*.tar.bz2
           echo $?
         env:
           ANACONDA_API_TOKEN: $(conda.anaconda_org_token)
