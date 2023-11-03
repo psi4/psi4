@@ -23,7 +23,7 @@ perturbation_strength = 0.001
     pytest.param({'name': 'dct', 'options': {'dct_type': 'df'}, 'varname': 'DCT'}, id='df-rdct'),
     pytest.param({'name': 'dct', 'options': {'dct_type': 'df', 'reference': 'uhf'}, 'varname': 'DCT'}, id='df-udct'),
     pytest.param({'name': 'ccsd', 'options': {'opdm_relax': 'true'}, 'varname': 'CCSD'}, id='ccsd'),
-    pytest.param({'name': 'ccsd', 'options': {'opdm_relax': 'true', 'reference': 'uhf'}, 'varname': 'CCSD'}, id='ccsd'),
+    pytest.param({'name': 'ccsd', 'options': {'opdm_relax': 'true', 'reference': 'uhf'}, 'varname': 'CCSD'}, id='uccsd'),
     ]
 )
 def test_dipole(inp):

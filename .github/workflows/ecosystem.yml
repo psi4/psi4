@@ -14,12 +14,12 @@ jobs:
 
   ecosystem:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         cfg:
 
           - runs-on: ubuntu-latest
-            python-version: "3.10"
+            python-version: "3.12"
             mkl-version: ""
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long"
@@ -40,9 +40,10 @@ jobs:
               -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
+            # * as long as we're using mac to test legacy QCFractal, stick with py39
 
           - runs-on: windows-latest
-            python-version: "3.9"
+            python-version: "3.12"
             mkl-version: "=2022.1"
             base-channel: "conda-forge"
             pytest-marker-expr: "addon and not long and not d2ints"
@@ -113,7 +114,7 @@ jobs:
           - libblas=*=*mkl
           - python=${{ matrix.cfg.python-version }}
             # build
-          - boost-cpp
+          - libboost-headers
           - cmake
           - c-compiler
           - cxx-compiler
@@ -230,8 +231,10 @@ jobs:
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- qcfractal;- qcarchive/label/next::qcfractal;g" run.yaml  # >=0.50b10
+          # qcfractal >=0.50
           sed -i "s;- qcportal;- postgresql;g" run.yaml
+          # not for py312
+          sed -i "s;- dftd4-python;;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" run.yaml
@@ -247,6 +250,9 @@ jobs:
           sed -i "s;- openfermion>=1.0;;g" run.yaml
           sed -i "s;- openfermionpsi4;;g" run.yaml
           sed -i "s;- memory_profiler;;g" run.yaml
+          # not for py312
+          sed -i "s;- dftd3-python;;g" run.yaml
+          sed -i "s;- dftd4-python;;g" run.yaml
         fi
         printf "\n<<<  build.yaml  >>>\n"
         cat build.yaml
@@ -429,7 +435,20 @@ jobs:
           qcengine info
         fi
 
-    - name: Patch QCFractal for Python
+    - name: Special Config - QCElemental Dep
+      if: false
+      run: |
+        conda remove qcelemental --force
+        python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
+
+    - name: Special Config - QCFractal Dep
+      if: runner.os == 'Linux'
+      # remove after snowflake fix in https://github.com/MolSSI/QCFractal/pull/781 released in v0.52
+      run: |
+        conda remove qcfractal --force
+        python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
+
+    - name: Special Config - Patch Legacy QCFractal for Python
       if: runner.os == 'macOS'
       run: |
         cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
@@ -451,7 +470,7 @@ jobs:
     - name: Test Addons with CTest
       if: false
       working-directory: ./objdir
-      run: ctest -L addon -j2 --output-on-failure
+      run: ctest -L smoke -LE d2ints -j2 --output-on-failure
 
     - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (L, M, W)"
       if: matrix.cfg.base-channel == 'conda-forge'

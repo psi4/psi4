@@ -272,10 +272,33 @@ def _singlepointrecord_to_atomicresult(spr: "qcportal.singlepoint.SinglepointRec
     # QCFractal `next` database stores return_result, properties, and extras["qcvars"] merged
     #   together and with lowercase keys. `to_qcschema_result` partitions properties back out,
     #   but we need to restore qcvars keys, types, and dimensions.
+    # QCFractal v0.51 starts saving space by removing qcvars whose qcvar.lower().replace(" ", "_")
+    #   are defined, so we also need to reconstruct these.
+    shared_qcvars = {}
+    for pv, dpv in atres.properties.dict().items():
+        if dpv is None:
+            continue
+        if pv.startswith("return_") or pv.endswith("_moment"):
+            continue
+        if pv in [
+            "scf_one_electron_energy",
+            "scf_two_electron_energy",
+            "scf_vv10_energy",
+            "scf_xc_energy",
+            "scf_dispersion_correction_energy",
+            "mp2_same_spin_correlation_energy",
+            "mp2_opposite_spin_correlation_energy",
+            "ccsd_same_spin_correlation_energy",
+            "ccsd_opposite_spin_correlation_energy",
+            "ccsd_prt_pr_correlation_energy",
+            "ccsd_prt_pr_total_energy",
+        ]:
+            continue
+        shared_qcvars[pv.upper().replace("_", " ")] = dpv
     qcvars = atres.extras.pop("extra_properties")
     qcvars.pop("return_result")
     qcvars = {k.upper(): p4util.plump_qcvar(k, v) for k, v in qcvars.items()}
-    atres.extras["qcvars"] = qcvars
+    atres.extras["qcvars"] = {**qcvars, **shared_qcvars}
 
     return atres
 

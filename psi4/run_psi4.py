@@ -119,12 +119,12 @@ args = args.__dict__  # Namespace object seems silly
 executable = Path(__file__).resolve()
 psi4_exe_loc = executable.parent
 
-prefix = Path("@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
-cmake_install_bindir = "@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
-cmake_install_datadir = "@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
-cmake_install_libdir = "@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
-pymod_install_libdir = "@PYMOD_INSTALL_LIBDIR@".lstrip("/")
-psi4_install_cmakedir = "@psi4_INSTALL_CMAKEDIR@".replace("\\", "/")
+prefix = Path(r"@CMAKE_INSTALL_PREFIX@".replace("\\", "/"))
+cmake_install_bindir = r"@CMAKE_INSTALL_BINDIR@".replace("\\", "/")
+cmake_install_datadir = r"@CMAKE_INSTALL_DATADIR@".replace("\\", "/")
+cmake_install_libdir = r"@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
+pymod_install_libdir = r"@PYMOD_INSTALL_LIBDIR@".lstrip("/")
+psi4_install_cmakedir = r"@psi4_INSTALL_CMAKEDIR@".replace("\\", "/")
 full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
 full_data = prefix / cmake_install_datadir / "psi4"
 full_bin = prefix / cmake_install_bindir
@@ -187,7 +187,7 @@ if args['plugin_compile']:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
 
 if args['psiapi_path']:
-    pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
+    pyexe_dir = os.path.dirname(r"@Python_EXECUTABLE@")
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     # TODO Py not quite right on conda Windows and Psi include %PREFIX$. but maybe not appropriate for Win anyways
     sys.exit()
