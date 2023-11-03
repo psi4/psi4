@@ -27,7 +27,8 @@ jobs:
 
     # fetch-depth: 0 gets git history so Psi4 version computable
     - name: Checkout
-      if: ${{ github.repository == 'psi4/psi4' }}
+      if: false
+      #if: ${{ github.repository == 'psi4/psi4' }}
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
