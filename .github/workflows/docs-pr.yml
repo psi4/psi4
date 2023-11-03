@@ -113,6 +113,6 @@ jobs:
         rm -rf master
         mv html master
         echo "::group::Selective Git Diff"
-        git diff --color-words -I"Last updated on" -I"psi4/tree"
+        git diff --color-words -I"Last updated on" -I"psi4/tree" -I"documentation_options"
         echo "::endgroup::"
 

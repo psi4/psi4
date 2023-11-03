@@ -164,7 +164,7 @@ jobs:
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           sed -i "s;- fortran-compiler;;g" build.yaml
           sed -i "s;- llvm-openmp;- intel-openmp;g" build.yaml
-          sed -i "s;- einsums;;g" build.yaml
+          sed -i "s;- einsums;#- einsums;g" build.yaml
         fi
         #
         # Runtime for single-channel (L, M, W)
@@ -255,7 +255,7 @@ jobs:
           sed -i "s;- openfermion>=1.0;;g" run.yaml
           sed -i "s;- openfermionpsi4;;g" run.yaml
           sed -i "s;- memory_profiler;;g" run.yaml
-          sed -i "s;- einsums;;g" run.yaml
+          sed -i "s;- einsums;#- einsums;g" run.yaml
           # not for py312
           sed -i "s;- dftd3-python;;g" run.yaml
           sed -i "s;- dftd4-python;;g" run.yaml
