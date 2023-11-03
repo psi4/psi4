@@ -47,28 +47,6 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libqt/qt.h"
 
-// <<< START Einsums Demoing namespace einsums;
-#include "einsums/Blas.hpp"
-#include "einsums/ElementOperations.hpp"
-#include "einsums/FFT.hpp"
-#include "einsums/LinearAlgebra.hpp"
-#include "einsums/OpenMP.h"
-#include "einsums/Print.hpp"
-#include "einsums/STL.hpp"
-#include "einsums/Section.hpp"
-#include "einsums/State.hpp"
-#include "einsums/Tensor.hpp"
-#include "einsums/TensorAlgebra.hpp"
-#include "einsums/Timer.hpp"
-#include "einsums/Utilities.hpp"
-#include "einsums/polynomial/Laguerre.hpp"
-#include "range/v3/algorithm/for_each.hpp"
-#include "range/v3/view/zip.hpp"
-
-#include <cmath>
-#include <cstdlib>
-// END Einsums Demo >>>
-
 #include "blas.h"
 
 // position in a symmetric packed matrix
@@ -166,49 +144,6 @@ void CoupledCluster::common_init() {
 
     // for df-bccd
     brueckner_iter = 0;
-
-    // <<< START Einsums Demoing namespace einsums;
-    using namespace einsums;
-    using namespace einsums::tensor_algebra;
-    using namespace einsums::tensor_algebra::index;
-
-    timer::initialize();
-    blas::initialize();
-
-    // Disable HDF5 diagnostic reporting.
-    H5Eset_auto(0, nullptr, nullptr);
-
-    // Create a file to hold the data from the DiskTensor tests.
-    //einsums::state::data = h5::create("Data.h5", H5F_ACC_TRUNC);
-    // TODO need to delete file
-
-    auto [_t, _w] = polynomial::laguerre::gauss_laguerre(40);
-    println(_t);
-    println(_w);
-
-    auto weights = create_tensor_like(_w);
-    {
-        using namespace element_operations::new_tensor;
-        einsum(Indices{i}, &_w, Indices{i}, _w, Indices{i}, exp(_t));
-    }
-    println(_w);
-
-    ranges::for_each(ranges::views::zip(_t.vector_data(), _w.vector_data()), [](auto &&v) {
-        auto t = std::get<0>(v);
-        auto w = std::get<1>(v);
-
-        println("test : {:14.10f} {:14.10f}", t, w);
-    });
-
-    // BEGIN: FFT tests
-
-    // auto result = fft::fftfreq(8, 0.1);
-    // println(result);
-
-    timer::report();
-    blas::finalize();
-    timer::finalize();
-    // END Einsums Demo >>>
 }
 
 void CoupledCluster::finalize() {

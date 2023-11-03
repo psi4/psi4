@@ -118,7 +118,7 @@ else()
 endif()
 
 if(${ENABLE_Einsums})
-    find_package(Einsums 0.1 CONFIG REQUIRED)
+    find_package(Einsums 0.3 CONFIG REQUIRED)
     get_property(_loc TARGET Einsums::einsums PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using Einsums${ColourReset}: ${_loc} (version ${Einsums_VERSION})")

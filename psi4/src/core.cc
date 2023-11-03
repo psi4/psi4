@@ -198,6 +198,10 @@ SharedWavefunction mcscf(SharedWavefunction, Options&);
 namespace psimrcc {
 SharedWavefunction psimrcc(SharedWavefunction, Options&);
 }
+namespace dummy_einsums {
+SharedWavefunction dummy_einsums (SharedWavefunction, Options&);
+}
+
 
 // Matrix returns
 namespace scfgrad {
@@ -491,6 +495,17 @@ SharedWavefunction py_psi_psimrcc(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("PSIMRCC");
     return psimrcc::psimrcc(ref_wfn, Process::environment.options);
 }
+
+#ifdef USING_Einsums
+SharedWavefunction py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("EINSUMS");
+    return dummy_einsums::dummy_einsums(ref_wfn, Process::environment.options);
+}
+#else
+double py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+}
+#endif
 
 void py_psi_clean() { PSIOManager::shared_object()->psiclean(); }
 
@@ -1324,6 +1339,7 @@ PYBIND11_MODULE(core, core) {
     core.def("cceom", py_psi_cceom, "ref_wfn"_a, "Runs the equation of motion coupled cluster code for excited states.");
     core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
+    core.def("dummy_einsums", py_psi_dummy_einsums, "ref_wfn"_a, "Runs the einsums placeholder code.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
         if (ofname == "stdout") {

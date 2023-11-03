@@ -114,6 +114,13 @@ if(TARGET ECPINT::ecpint)
     )
 endif()
 
+if(TARGET Einsums::einsums)
+  target_compile_definitions(core
+    PRIVATE
+      USING_Einsums
+    )
+endif()
+
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(core
     PRIVATE

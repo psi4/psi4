@@ -1560,3 +1560,19 @@ def test_dftd4():
     psi4.set_options({"dft_dispersion_parameters": [1.0]})
     psi4.energy('wb97x-d')
     assert psi4.compare_values(-0.000834247063, psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
+
+
+@uusing("einsums")
+def test_einsums():
+    mol = psi4.geometry("""
+        O  0.000000  0.000000  0.117176
+        H -0.000000 -0.756950 -0.468706
+        H -0.000000  0.756950 -0.468706
+     noreorient
+     nocom
+    """)
+
+    basis = psi4.core.BasisSet.build(mol, "ORBITAL", 'def2-svp', quiet=True)
+    wfn = psi4.core.Wavefunction(mol, basis)
+
+    psi4.core.dummy_einsums(wfn)

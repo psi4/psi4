@@ -19,9 +19,3 @@ list(APPEND sources
   )
 psi4_add_module(bin fnocc sources)
 
-if(TARGET Einsums::einsums)
-  target_link_libraries(fnocc
-    PRIVATE
-      Einsums::einsums
-    )
-endif()
