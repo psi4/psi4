@@ -106,6 +106,7 @@ jobs:
         # Buildtime (L, M, W)
         #
         which python
+        pip install PyYAML
         conda/psi4-path-advisor.py env \
           --lapack mkl \
           --name p4build \
@@ -164,12 +165,12 @@ jobs:
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
           # no py312
-          sed -i "s;- dftd4-python;;g" build.yaml
+          sed -i "s;- dftd4-python;;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
           # no py312
-          sed -E -i.bak "s;- dftd4-python;;g" build.yaml
+          sed -E -i.bak "s;- dftd4-python;;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           sed -i "s;- fortran-compiler;;g" build.yaml
@@ -276,7 +277,7 @@ jobs:
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: baseenv
+        activate-environment: p4build
         environment-file: env_p4build.yaml
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
