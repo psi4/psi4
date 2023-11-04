@@ -449,7 +449,7 @@ data:
       constraint_note: "v2.7.3dev1 provides rt-switchable ordering (src) and derivative integrals (build)."
       aux_build_names:
         - //psi4/label/testing::libint2
-        - boost-cpp
+        - libboost-headers
         - eigen
       aux_build_names_note:
         "//psi4/label/testing::libint2": "Optionally for linux-64, an AM=7 build is available here."
@@ -922,7 +922,7 @@ data:
         - openfermion=1
         - pydantic=1
       aux_run_names_note:
-        - "openfermion=1": "Shouldn't need to specify but do for the pydantic transition."
+        "openfermion=1": "Shouldn't need to specify but do for the pydantic transition."
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
 
@@ -938,7 +938,7 @@ data:
       host: github
       account: MolSSI
       name: QCElemental
-      commit: v0.26.0
+      commit: v0.27.1
     #cmake:
     #  name:
     #  constraint: ATLEAST 0.24.0
@@ -1128,7 +1128,7 @@ data:
       host: github
       account: MolSSI
       name: QCEngine
-      commit: v0.27.0
+      commit: v0.29.0
     #cmake:
     #  name: qcengine
     #  constraint: ATLEAST 0.26.0
@@ -1321,4 +1321,37 @@ data:
       cmake:
         ENABLE_bse: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
+
+  - project: einsums
+    use:
+      added: 1.9
+      required: false
+      required_note: "Allow using the Einsums tensor library."
+      buildable: true
+      buildtime: true
+      cms: true
+    repository:
+      host: github
+      account: Einsums
+      name: Einsums
+      commit: v0.3
+    #cmake:
+    #  name:
+    #  constraint: 0.3
+    #  target: Einsums::einsums
+    #  components:
+    #  ENABLE_Einsums
+    conda:
+      channel: conda-forge
+      name: einsums
+      constraint: "=*=mkl*"
+      aux_build_names:
+        - range-v3
+        - zlib
+      skip_win: true
+      cmake:
+        ENABLE_Einsums: true
+        Einsums_DIR: ${CONDA_PREFIX}/share/cmake/Einsums
+        //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
+        //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
 

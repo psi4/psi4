@@ -105,6 +105,13 @@ jobs:
         #
         # Buildtime (L, M, W)
         #
+        conda/psi4-path-advisor.py env \
+          --lapack mkl \
+          --name p4build \
+          --python ${{ matrix.cfg.python-version }} \
+          --disable docs
+        printf "\n<<<  env_p4build.yaml  >>>\n"
+        cat env_p4build.yaml
         cat > build.yaml <<EOF
         name: baseenv
         channels:
@@ -267,7 +274,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: baseenv
-        environment-file: build.yaml
+        environment-file: env_p4build.yaml
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
@@ -424,6 +431,7 @@ jobs:
       #   psi4 and base channel dependencies and addons. This is created at the same environment
       #   name (so same location on disk as the build env) for non-relocatability reasons.
     - name: Runtime Conda environment(s)
+      if: false
       run: |
         echo "::group::Prepare Environment"
         conda deactivate

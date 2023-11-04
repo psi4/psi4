@@ -306,7 +306,7 @@ class PreserveWhiteSpaceWrapRawTextHelpFormatter(argparse.RawDescriptionHelpForm
     def _split_lines(self, text, width):
         textRows = text.splitlines()
         for idx,line in enumerate(textRows):
-            search = re.search('\s*[0-9\-]{0,}\.?\s*', line)
+            search = re.search(r'\s*[0-9\-]{0,}\.?\s*', line)
             if line.strip() == "":
                 textRows[idx] = " "
             elif search:
@@ -322,39 +322,40 @@ class PreserveWhiteSpaceWrapRawTextHelpFormatter(argparse.RawDescriptionHelpForm
 parser = argparse.ArgumentParser(
     prog="psi4-path-advisor",
     formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
-    #description="""Build and Run path advisor for Psi4"
-    description="""Run env subcommand. Conda env create and activate. Run cmake subcommand. Build.
+    description="""Dependency, Build, and Run path advisor for Psi4.
+Mediates file https://github.com/psi4/psi4/blob/master/codedeps.yaml
+Run env subcommand. Conda env create and activate. Run cmake subcommand. Build.
 
-    Run env subcommand. Conda env create and activate. Run cmake subcommand. Build.
-#(Command Default) Generates a minimal CMake command for building Psi4 against
-#    this psi4-dev conda metapackage.
-
-# <<<  black-box usage (copy/paste-able)
-# get code from GitHub
+# =======================================
+#  (A) black-box usage (copy/paste-able)
+# =======================================
+# (1) get code from GitHub
 git clone https://github.com/psi4/psi4.git && cd psi4
-# generate env spec file from codedeps.yaml. "eval $(...)" creates and activates conda env.
+# (2) generate env spec file from codedeps.yaml. "eval $(...)" creates and activates conda env.
 eval $(conda/psi4-path-advisor.py env)
-# generate cmake cache file from conda env. "eval $(...)" configures and builds with cmake.
+# (3) generate cmake cache file from conda env. "eval $(...)" configures and builds with cmake.
 eval $(conda/psi4-path-advisor.py cmake)
 
 shows up in p4dev
 
-# <<<  flexible usage
-# get code from GitHub
+# =======================================
+#  (B) flexible usage
+# =======================================
+# (1) get code from GitHub
 git clone https://github.com/psi4/psi4.git && cd psi4
 
-# generate env spec file from codedeps.yaml.
+# (2) generate env spec file from codedeps.yaml.
 conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
 #> conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
-# edit env_p4dev310.yaml to customize software packages.
-# issue suggested or customized command to create and activate conda env.
+# (3) edit env_p4dev310.yaml to customize software packages.
+# (4) issue suggested or customized command to create and activate conda env.
 conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
 
-# generate cmake cache file from conda env.
+# (5) generate cmake cache file from conda env.
 ./conda/psi4-path-advisor.py cmake
 #> cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 && cmake --build objdir_p4dev310
-# edit cache_p4dev310.cmake to customize build configuration.
-# issues suggested or customized command to configure and build with cmake.
+# (6) edit cache_p4dev310.cmake to customize build configuration.
+# (7) issue suggested or customized command to configure and build with cmake.
 cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 && cmake --build objdir_p4dev310
 
 conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
@@ -402,7 +403,8 @@ parser_env.add_argument("--disable",
     nargs="+",
     choices=["compilers", "lapack", "addons", "test", "docs"],
     help=f"""Categories of dependencies to not include in env file.
-Can instead edit generated env spec file by hand.""")
+Can instead edit generated env spec file by hand.
+For example, '--disable compilers lapack addons test docs' for minimal.""")
 parser_env.add_argument("--solver",
     default="mamba-as-possible",
     choices=solver_choices,
