@@ -343,11 +343,19 @@ shows up in p4dev
 # get code from GitHub
 git clone https://github.com/psi4/psi4.git && cd psi4
 
+# generate env spec file from codedeps.yaml.
 conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
-# output: conda env create -n p4dev310 -f /psi/gits/hrw-tag/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
+#> conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
+# edit env_p4dev310.yaml to customize software packages.
+# issue suggested or customized command to create and activate conda env.
+conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
 
+# generate cmake cache file from conda env.
 ./conda/psi4-path-advisor.py cmake
-cmake -S. -GNinja -C/psi/gits/hrw-tag/cache_ppa_noaddons.cmake -Bobjdir_ppa_noaddons && cmake --build objdir_ppa_noaddons
+#> cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 && cmake --build objdir_p4dev310
+# edit cache_p4dev310.cmake to customize build configuration.
+# issues suggested or customized command to configure and build with cmake.
+cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 && cmake --build objdir_p4dev310
 
 conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
 > psi4-path-advisor.py
