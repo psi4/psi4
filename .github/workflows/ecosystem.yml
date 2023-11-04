@@ -105,6 +105,7 @@ jobs:
         #
         # Buildtime (L, M, W)
         #
+        which python
         conda/psi4-path-advisor.py env \
           --lapack mkl \
           --name p4build \
@@ -162,11 +163,13 @@ jobs:
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
-          # sed -i "s;;;g" build.yaml
+          # no py312
+          sed -i "s;- dftd4-python;;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
-          # sed -E -i.bak "s;;;g" build.yaml
+          # no py312
+          sed -E -i.bak "s;- dftd4-python;;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           sed -i "s;- fortran-compiler;;g" build.yaml
