@@ -44,15 +44,10 @@ SharedWavefunction dummy_einsums(SharedWavefunction ref_wfn, Options& options) {
     using namespace einsums::tensor_algebra;
     using namespace einsums::tensor_algebra::index;
 
-    timer::initialize();
-    blas::initialize();
-
-    // Disable HDF5 diagnostic reporting.
-    H5Eset_auto(0, nullptr, nullptr);
+    einsums::initialize();
 
     // Create a file to hold the data from the DiskTensor tests.
     //einsums::state::data = h5::create("Data.h5", H5F_ACC_TRUNC);
-    // TODO need to delete file
 
     auto [_t, _w] = polynomial::laguerre::gauss_laguerre(40);
     println(_t);
@@ -77,9 +72,7 @@ SharedWavefunction dummy_einsums(SharedWavefunction ref_wfn, Options& options) {
     // auto result = fft::fftfreq(8, 0.1);
     // println(result);
 
-    timer::report();
-    blas::finalize();
-    timer::finalize();
+    einsums::finalize(true);
 
     return ref_wfn;
 }
