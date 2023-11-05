@@ -300,6 +300,8 @@ data:
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
+      skip_win: true
+      skip_win_note: "Older versions available for Windows but not fully functional for v1.9."
 
   - project: dkh
     use:
@@ -1171,6 +1173,8 @@ data:
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
+      skip_win: true
+      skip_win_note: "Older versions available for Windows but not fully functional for v1.9."
 
   - project: ecpint
     use:
@@ -1211,12 +1215,14 @@ data:
       host: github
       account: MolSSI
       name: QCFractal
-      commit: next  # TODO branch
+      commit: 23b51cb
+      commit_note: "Includes snowflake fix post v0.51."
     cmake: null
     conda:
-      channel: qcarchive/label/next
+      channel: conda-forge
+      channel_note: "Can also use qcarchive/label/next and constraint >=0.50b10."
       name: qcfractal
-      constraint: ">=0.50b10"
+      constraint: ">=0.51"
       aux_run_names:
         - postgresql
       aux_run_names_note:

@@ -114,7 +114,31 @@ jobs:
           --python ${{ matrix.cfg.python-version }} \
           --disable docs \
           --offline-conda
-        printf "\n<<<  env_p4build.yaml  >>>\n"
+        printf "\n<<<  env_p4build.yaml (pre)  >>>\n"
+        cat env_p4build.yaml
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          :
+          # not for py312
+          sed -i "s;- dftd4-python;#- dftd4-python;g" env_p4build.yaml
+        fi
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          :
+          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" env_p4build.yaml
+          sed -E -i.bak "s;- postgresql;- qcportal=0.15.8;g" env_p4build.yaml
+        fi
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          :
+          # nyi
+          #sed -i "s;- adcc;;g" run.yaml
+          #sed -i "s;- pyddx;;g" run.yaml
+          #sed -i "s;- cppe;;g" run.yaml
+          #sed -i "s;- qcfractal;;g" run.yaml
+          #sed -i "s;- qcportal;;g" run.yaml
+          #sed -i "s;- openfermion>=1.0;;g" run.yaml
+          #sed -i "s;- openfermionpsi4;;g" run.yaml
+          #sed -i "s;- memory_profiler;;g" run.yaml
+        fi
+        printf "\n<<<  env_p4build.yaml (post)  >>>\n"
         cat env_p4build.yaml
         cat > build.yaml <<EOF
         name: baseenv
@@ -171,8 +195,6 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
-          # no py312
-          sed -E -i.bak "s;- dftd4-python;;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           sed -i "s;- fortran-compiler;;g" build.yaml
@@ -246,31 +268,6 @@ jobs:
         # toml needed for psi4 to load parameters from dftd4-python
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          # qcfractal >=0.50
-          sed -i "s;- qcportal;- postgresql;g" run.yaml
-          # not for py312
-          sed -i "s;- dftd4-python;;g" run.yaml
-        fi
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" run.yaml
-          sed -E -i.bak "s;- qcportal;- qcportal=0.15.8;g" run.yaml
-        fi
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-          # nyi
-          sed -i "s;- adcc;;g" run.yaml
-          sed -i "s;- pyddx;;g" run.yaml
-          sed -i "s;- cppe;;g" run.yaml
-          sed -i "s;- qcfractal;;g" run.yaml
-          sed -i "s;- qcportal;;g" run.yaml
-          sed -i "s;- openfermion>=1.0;;g" run.yaml
-          sed -i "s;- openfermionpsi4;;g" run.yaml
-          sed -i "s;- memory_profiler;;g" run.yaml
-          sed -i "s;- einsums;#- einsums;g" run.yaml
-          # not for py312
-          sed -i "s;- dftd3-python;;g" run.yaml
-          sed -i "s;- dftd4-python;;g" run.yaml
-        fi
         printf "\n<<<  build.yaml  >>>\n"
         cat build.yaml
         printf "\n<<<  run.yaml  >>>\n"
