@@ -17,15 +17,37 @@ codedeps_yaml = Path(__file__).parent.parent / "codedeps.yaml"
 cmake_S = os.path.relpath(codedeps_yaml.parent, start=Path.cwd())
 
 
-def conda_list(*, name: str = None, prefix: str = None) -> str:
-    # thanks, https://stackoverflow.com/a/56363822
-    #   SO convinced me that subprocess was better than import (following block)
-    #   Also, the conda.cli only works on base env (where conda pkg installed)
+def native_platform():
+    """Return conda platform code.
+    This can't distinguish the metal chip for osx, so prefer to use platform from conda info directly.
+
+    """
+    import sys
+    import platform
+    if sys.platform.startswith("linux"):
+        return "linux-64"
+    elif sys.platform == "darwin":
+        if platform.machine() == "arm64":
+            return "osx-arm64"
+        elif platform.machine() == "x86_64":
+            # note that an Apple Silicon processor running an Intel-compiled Python sorts here
+            return "osx-64"
+    elif sys.platform.startswith("win"):
+        return "win-64"
+
+
+def conda_list(*, name: str = None, prefix: str = None):
+    """Return `conda list` in json format.
+
+    Thanks, https://stackoverflow.com/a/56363822
+       SO convinced me that subprocess was better than import (following block)
+       Also, the conda.cli only works on base env (where conda pkg installed)
 
     #import conda.cli.python_api as Conda
     #env_list_json, stderr, rc = Conda.run_command(Conda.Commands.LIST, ["--json"])
     #env_list_dict = json.loads(env_list_json)
 
+    """
     if name:
         proc = run(["conda", "list", "--json", "--name", name], text=True, capture_output=True)
     elif prefix:
@@ -61,15 +83,26 @@ re_pkgline = re.compile("(?P<suppress>//)?(?P<chnl>.*::)?(?P<pkg>[A-Za-z0-9_-]+)
 
 conda_available = shutil.which("conda")
 mamba_available = shutil.which("mamba")
-if not conda_available or mamba_available:
-    raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
+pm_available = (conda_available or mamba_available)
 
-conda_info_dict = conda_info()
-conda_platform_native = conda_info_dict["platform"]
-conda_prefix = conda_info_dict["active_prefix"]
-conda_prefix_short = conda_info_dict["active_prefix_name"]
-conda_host = conda_info_dict["env_vars"].get("CONDA_TOOLCHAIN_HOST", None)  # None if no compilers in env
-conda_list_struct = conda_list()
+if pm_available:
+    conda_info_dict = conda_info()
+    conda_platform_native = conda_info_dict["platform"]
+    conda_prefix = conda_info_dict["active_prefix"]
+    conda_prefix_short = conda_info_dict["active_prefix_name"]
+    conda_host = conda_info_dict["env_vars"].get("CONDA_TOOLCHAIN_HOST", None)  # None if no compilers in env
+    conda_list_struct = conda_list()
+    base_prefix = conda_info_dict["conda_prefix"]  # env with conda cmd
+    base_list_struct = conda_list(prefix=base_prefix)
+else:
+    conda_platform_native = native_platform()
+    conda_prefix = "(no prefix)"
+    conda_prefix_short = "(no prefix)"
+    conda_host = None
+    conda_list_struct = {}
+    base_list_struct = {}
+
+
 conda_list_pkgver = {item["name"]: item["version"] for item in conda_list_struct}
 conda_lapack_variant = None  # None if no c-f libblas in env
 for itm in conda_list_struct:
@@ -81,8 +114,6 @@ for itm in conda_list_struct:
 # TODO handle conda_host None in base env with no compilers present
 # TODO handle conda_lapack_variant None in base env with no lapack present
 
-base_prefix = conda_info_dict["conda_prefix"]  # env with conda cmd
-base_list_struct = conda_list(prefix=base_prefix)
 conda_libmamba_available = False
 for itm in base_list_struct:
     if itm["name"] == "conda-libmamba-solver":
@@ -375,7 +406,7 @@ bash for eval. conda available.
 
 parser.add_argument("-v", action="count", default=0,
     help="""Use for more printing (-vv).
-Do not use with bash command substitution: eval $(psi4-path-advisor args)""")
+Do not use this arg with bash command substitution: eval $(psi4-path-advisor args)""")
 
 subparsers = parser.add_subparsers(dest="subparser_name",
     help="???")
@@ -415,6 +446,11 @@ parser_env.add_argument("--platform",
     help=f"""Conda platform/subdir for env file, if not the computed native
 (default: {conda_platform_native}). Apple Silicon users,
 check this value! Argument rarely used.""")
+parser_env.add_argument("--offline-conda",
+    action="store_true",
+    help=f"""Use script without conda/mamba available. Argument used rarely for
+bootstrapping CI. Do not use this arg with bash command substitution""")
+
 # add constraints to env file?
 
 parser_cmake = subparsers.add_parser("cache",
@@ -464,9 +500,11 @@ if args.v > 1:
 with codedeps_yaml.open() as fp:
     ydict = yaml.load(fp, Loader=yaml.FullLoader)
 
-##### ENV
+##### CONDA ENV
 
 if args.subparser_name in ["conda", "env"]:
+    if not (pm_available or args.offline_conda):
+        raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
 
     if args.solver == "mamba-as-possible":
         if conda_libmamba_available:
@@ -475,6 +513,8 @@ if args.subparser_name in ["conda", "env"]:
             solver = "mamba"
         elif conda_available:
             solver = "conda"
+        elif args.offline_conda:
+            solver = "(no pm)"
     else:
         solver = args.solver
     if solver == "conda-libmamba":
@@ -657,9 +697,11 @@ if args.subparser_name in ["conda", "env"]:
     print(env_create_and_activate_cmd)
 
 
-##### CACHE
+##### CMAKE CACHE
 
 elif args.subparser_name in ["cmake", "cache"]:
+    if not pm_available:
+        raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
 
     text = []
     pyotf_merge = {}
@@ -919,22 +961,6 @@ elif args.subparser_name in ["cmake", "cache"]:
 #
 #srecc = """    """.join(recc)
 #print(srecc)
-
-def native_platform():
-    # fn is good but unused. since this can't distinguish the metal chip for osx, we instead use
-    #   conda info platform directly.
-    import sys
-    import platform
-    if sys.platform.startswith("linux"):
-        return "linux-64"
-    elif sys.platform == "darwin":
-        if platform.machine() == "arm64":
-            return "osx-arm64"
-        elif platform.machine() == "x86_64":
-            # note that an Apple Silicon processor running an Intel-compiled Python sorts here
-            return "osx-64"
-    elif sys.platform.startswith("win"):
-        return "win-64"
 
 
 # For Silicon owners whose miniconda is set to Intel:

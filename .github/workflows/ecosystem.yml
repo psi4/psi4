@@ -106,12 +106,14 @@ jobs:
         # Buildtime (L, M, W)
         #
         which python
+        python --version
         pip install PyYAML
         conda/psi4-path-advisor.py env \
           --lapack mkl \
           --name p4build \
           --python ${{ matrix.cfg.python-version }} \
-          --disable docs
+          --disable docs \
+          --offline-conda
         printf "\n<<<  env_p4build.yaml  >>>\n"
         cat env_p4build.yaml
         cat > build.yaml <<EOF
@@ -430,31 +432,6 @@ jobs:
       shell: cmd /C CALL {0}
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 
-      # Notes: This is clearing away the whole build environment (to make explicit the build and
-      #   runtime dependencies and addons). Then it's creating a new runtime environment based on
-      #   psi4 and base channel dependencies and addons. This is created at the same environment
-      #   name (so same location on disk as the build env) for non-relocatability reasons.
-    - name: Runtime Conda environment(s)
-      if: false
-      run: |
-        echo "::group::Prepare Environment"
-        conda deactivate
-        mamba remove -n baseenv --all
-        mamba env create --file run.yaml
-        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        #conda env create --file aux.yaml
-        #fi
-        conda activate baseenv
-        echo "::endgroup::"
-        mamba info
-        mamba list -n baseenv
-        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        #conda list -n auxenv
-        if [[ "${{ runner.os }}" != "Windows" ]]; then
-          # on Windows, cmd varies: `qcengine.exe`
-          qcengine info
-        fi
-
     - name: Special Config - QCElemental Dep
       if: false
       run: |
@@ -471,9 +448,16 @@ jobs:
     - name: Special Config - Patch Legacy QCFractal for Python
       if: runner.os == 'macOS'
       run: |
-        cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
-        cat  /Users/runner/miniconda3/envs/baseenv/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+        sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/p4build/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
+
+    - name: Runtime Conda environment
+      run: |
+        mamba info
+        mamba list
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
+          # on Windows, cmd varies: `qcengine.exe`
+          qcengine info
+        fi
 
     - name: Test OpenMP
       working-directory: ./install/lib
@@ -528,7 +512,7 @@ jobs:
         from pathlib import Path
         from ruamel_yaml import YAML
 
-        file1 = Path("build.yaml")
+        file1 = Path("env_p4build.yaml")
         yaml1 = YAML(typ="rt")
         yaml1.indent(mapping=2, sequence=4, offset=2)
         data1 = yaml1.load(file1)
