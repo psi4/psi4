@@ -297,6 +297,57 @@ GNU (conda):
     Can't engage self-provided icc/icpc compilers backed by
     conda-provided gcc/g++ because package (cxx-compiler)
     not installed in current env.""")
+
+elif conda_platform_native in ["osx-64", "osx-arm64"]:
+    compiler_help.append(f"""(default: {compiler_default})""")
+
+    # byo
+    compiler_choices.append("byo")
+    compiler_help.append("""byo:
+    Omit compilers from cache to engage self-provided compilers.
+    CMake configuration may still use conda compilers if
+    present and not contravened.""")
+
+    # conda
+    if conda_native:
+        compiler_choices.append("conda")
+        compiler_choices.append("Clang")
+        compiler_help.append(f"""conda (Clang):
+Clang (conda):
+    Engage conda-provided (cxx-compiler) clang/clang++ compilers.""")
+    else:
+        compiler_choices.append(strike("conda"))
+        compiler_choices.append(strike("Clang"))
+        compiler_help.append(f"""{strike('conda (Clang)')}:
+{strike('Clang (conda)')}:
+    Can't engage conda-provided clang/clang++ compilers because
+    package (cxx-compiler) not installed in current env.""")
+
+elif conda_platform_native == "win-64":
+    compiler_help.append(f"""(default: {compiler_default})""")
+
+    # byo
+    compiler_choices.append("byo")
+    compiler_help.append("""byo:
+    Omit compilers from cache to engage self-provided compilers.
+    CMake configuration may still use conda compilers if
+    present and not contravened.""")
+
+    # conda
+    if conda_native:
+        compiler_choices.append("conda")
+        compiler_choices.append("MSVC")
+        compiler_help.append(f"""conda (MSVC):
+MSVC (conda):
+    Engage conda-provided (cxx-compiler) MSVC compilers.""")
+    else:
+        compiler_choices.append(strike("conda"))
+        compiler_choices.append(strike("MSVC"))
+        compiler_help.append(f"""{strike('conda (MSVC)')}:
+{strike('MSVC (conda)')}:
+    Can't engage conda-provided MSVC compilers because
+    package (cxx-compiler) not installed in current env.""")
+
 else:
     raise RuntimeError("unexpected A")
 
