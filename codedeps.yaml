@@ -803,7 +803,6 @@ data:
       #  //CMAKE_INSIST_FIND_PACKAGE_simint: true
       #  //CMAKE_DISABLE_FIND_PACKAGE_simint: true
 
-    # TODO update now ambit merged
   - project: ambit
     use:
       added: 1.2  # ambit appears in repo by 1.0, but the table in v1.4 paper says v1.2
@@ -816,8 +815,7 @@ data:
       host: github
       account: jturney
       name: ambit
-      commit: bda0f02  # recent for c-f
-    #  commit: 733c529  # current master
+      commit: v0.7.1
     #cmake:
     #  name:
     #  constraint: 0.6
@@ -825,11 +823,13 @@ data:
     #  components:
     #  ENABLE_ambit
     conda: null
-      #cmake:
-      #  ENABLE_ambit: true
-      #  ambit_DIR: ${CONDA_PREFIX}/share/cmake/ambit
-      #  //CMAKE_INSIST_FIND_PACKAGE_ambit: true
-      #  //CMAKE_DISABLE_FIND_PACKAGE_ambit: true
+      channel: conda-forge
+      name: ambit
+      cmake:
+        ENABLE_ambit: true
+        ambit_DIR: ${CONDA_PREFIX}/share/cmake/ambit
+        //CMAKE_INSIST_FIND_PACKAGE_ambit: true
+        //CMAKE_DISABLE_FIND_PACKAGE_ambit: true
 
   - project: gau2grid
     use:
