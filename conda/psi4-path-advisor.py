@@ -3,7 +3,11 @@
 import os
 import re
 import json
-import yaml
+try:
+    import yaml
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("Python module PyYAML not found. Solve by installing it: "
+        "`conda install -c conda-forge pyyaml` or `pip install PyYAML`.")
 import shutil
 import argparse
 import itertools

@@ -572,6 +572,25 @@ data:
         //CMAKE_INSIST_FIND_PACKAGE_PCMSolver: true
         //CMAKE_DISABLE_FIND_PACKAGE_PCMSolver: true
 
+  - project: v2rdm_casscf
+    use:
+      added: "1.0"
+      required: false
+      required_note: "Allows using V2RDM_CASSCF plugin. Requires Fortran."
+      buildable: true
+      buildtime: false
+      cms: true
+    repository:
+      host: github
+      account: loriab
+      name: v2rdm_casscf
+      commit: aa7d6a1
+    # cmake:
+    #   ENABLE_v2rdm_casscf
+    #    v2rdm_casscf::v2rdm_casscf
+    #    CMAKE_INSIST_FIND_PACKAGE_v2rdm_casscf
+    conda: null
+
   - project: doxygen
     use:
       added: "1.0"
@@ -1028,7 +1047,8 @@ data:
       channel: conda-forge
       name: cppe
       name_note: "Equivalent to psi4::pycppe ."
-      constraint: ">=0.3.1"
+      constraint: "==0.3.1"
+      constraint_note: "v0.3.2 available, incl. Windows but errors with libecpint."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_cppe is inconsequential."
       skip_win: true
