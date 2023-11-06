@@ -825,6 +825,7 @@ data:
     conda:
       channel: conda-forge
       name: ambit
+      skip_win: true
       cmake:
         ENABLE_ambit: true
         ambit_DIR: ${CONDA_PREFIX}/share/cmake/ambit
