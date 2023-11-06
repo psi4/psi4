@@ -822,7 +822,7 @@ data:
     #  target: ambit::ambit
     #  components:
     #  ENABLE_ambit
-    conda: null
+    conda:
       channel: conda-forge
       name: ambit
       cmake:
