@@ -163,6 +163,8 @@ else:
 ### blas/lapack
 
 lapack_conda_native = "blas-devel" in conda_list_pkgver
+if not lapack_conda_native and conda_lapack_variant == "mkl" and "mkl-devel" in conda_list_pkgver:
+    lapack_conda_native = True
 lapack_default = "conda" if lapack_conda_native else "byo"
 lapack_choices = []
 lapack_help = []
@@ -430,18 +432,18 @@ shows up in p4dev
 # (1) get code from GitHub
 git clone https://github.com/psi4/psi4.git && cd psi4
 
-# (2) generate env spec file from codedeps.yaml.
+# (2.1) generate env spec file from codedeps.yaml.
 conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
 #> conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
-# (3) edit env_p4dev310.yaml to customize software packages.
-# (4) issue suggested or customized command to create and activate conda env.
+# (2.2) edit env_p4dev310.yaml to customize software packages.
+# (2.3) issue suggested or customized command to create and activate conda env.
 conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
 
-# (5) generate cmake cache file from conda env.
+# (3.1) generate cmake cache file from conda env.
 ./conda/psi4-path-advisor.py cmake
 #> cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 && cmake --build objdir_p4dev310
-# (6) edit cache_p4dev310.cmake to customize build configuration.
-# (7) issue suggested or customized command to configure and build with cmake.
+# (3.2) edit cache_p4dev310.cmake to customize build configuration.
+# (3.3) issue suggested or customized command to configure and build with cmake.
 cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 && cmake --build objdir_p4dev310
 
 conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
@@ -819,6 +821,11 @@ elif args.subparser_name in ["cmake", "cache"]:
                 all_found = False
                 pkgstr.append(strike("openblas=*=openmp*"))
                 primary_banner = f"""# <<<  {pkgstr[0]:<{compute_width(pkgstr[0], 27)}} {", ".join(pkgstr[1:])}"""
+
+        if primary == "libblas" and args.lapack == "mkl" and not all_found:
+            # since it's been recc for so long, allow mkl-devel pkg instead of blas-devel
+            plain_package_set[:] = ["mkl-devel" if (p == "blas-devel") else p for p in plain_package_set]
+            all_found = all(pkg in conda_list_pkgver for pkg in plain_package_set)
 
         if conda["cmake"] and list(conda["cmake"].keys()) == ["CMAKE_PROGRAM_PATH"]:
             if not all_found:

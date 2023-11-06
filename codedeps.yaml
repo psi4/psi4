@@ -656,6 +656,7 @@ data:
       aux_build_names:
         - sphinx-automodapi
         - sphinx-autodoc-typehints
+        - sphinx-tabs
         - autodoc-pydantic=1
       cmake:
         SPHINX_ROOT: ${CONDA_PREFIX}
@@ -731,6 +732,7 @@ data:
       channel: conda-forge
       name: pybind11
       constraint: ">=2.10.*"
+      constraint_note: "Particularly for docs until FixedSize typing percolates upstream."
       cmake:
         pybind11_DIR: ${CONDA_PREFIX}/share/cmake/pybind11
         //CMAKE_INSIST_FIND_PACKAGE_pybind11: true

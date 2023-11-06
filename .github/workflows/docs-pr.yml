@@ -7,6 +7,14 @@ on:
 jobs:
 
   docs:
+    strategy:
+      matrix:
+        cfg:
+          - runs-on: ubuntu-latest
+            python-version: "3.11"
+            #cmargs: >
+            #  -D CMAKE_VERBOSE_MAKEFILE=OFF
+            #  -D BUILD_SHARED_LIBS=ON
     runs-on: ubuntu-latest
     name: Propose Docs
     defaults:
@@ -31,17 +39,36 @@ jobs:
         path: docs
         ref: master
 
+    - name: Write Conda environment files
+      run: |
+        echo "::group::Prepare OS Python"
+        which python
+        python --version
+        pip install PyYAML
+        echo "::endgroup::"
+        conda/psi4-path-advisor.py \
+          env \
+          --name p4docs \
+          --python ${{ matrix.cfg.python-version }} \
+          --disable addons test \
+          --offline-conda
+        printf "\n<<<  env_p4docs.yaml  >>>\n"
+        cat env_p4docs.yaml
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          :
+        fi
+
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
       uses: conda-incubator/setup-miniconda@v2
       with:
         miniforge-variant: Mambaforge
         use-mamba: true
-        activate-environment: test
+        activate-environment: p4docs
         add-pip-as-python-dependency: true
         auto-activate-base: false
         channels: conda-forge
-        environment-file: code/devtools/conda-envs/docs-cf.yaml
+        environment-file: env_p4docs.yaml
         show-channel-urls: true
 
     - name: Environment Information
@@ -74,7 +101,7 @@ jobs:
           -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -DENABLE_ecpint=ON \
+          -DENABLE_ecpint=OFF \
           -DCMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_optking=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
