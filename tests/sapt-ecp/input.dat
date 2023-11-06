@@ -21,6 +21,7 @@ d_convergence 10
 diis_rms_error false
 df_fitting_condition 1.e-12
 df_basis_sapt def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
+guess core
 }
 
 ref_321g = -0.09561567760757009

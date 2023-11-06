@@ -18,7 +18,7 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-20.04  # avoids some compiling/log blackouts
+          - runs-on: ubuntu-latest
             python-version: "3.12"
             mkl-version: ""
             pytest-marker-expr: "addon and not long"

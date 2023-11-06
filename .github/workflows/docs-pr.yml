@@ -46,7 +46,7 @@ jobs:
         python --version
         pip install PyYAML
         echo "::endgroup::"
-        conda/psi4-path-advisor.py \
+        code/conda/psi4-path-advisor.py \
           env \
           --name p4docs \
           --python ${{ matrix.cfg.python-version }} \
@@ -83,7 +83,7 @@ jobs:
     #  if: ${{ github.repository == 'psi4/psi4' }}
     #  run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.10/site-packages/sphinx_automodapi/autodoc_enhancements.py
 
-    # docs are not Ninja ready
+    # docs are finally Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
@@ -91,7 +91,7 @@ jobs:
         cmake \
           -S. \
           -Bobjdir \
-          -G"Unix Makefiles" \
+          -G"Ninja" \
           -DCMAKE_BUILD_TYPE=Debug \
           -DCMAKE_C_COMPILER=${CC} \
           -DCMAKE_CXX_COMPILER=${CXX} \
@@ -112,13 +112,13 @@ jobs:
     - name: Compile Psi4
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
-      run: cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
+      run: cmake --build objdir
 
     - name: Compile & Pack Docs
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
       run: |
-        cmake --build objdir --target sphinxman -j`getconf _NPROCESSORS_ONLN`
+        cmake --build objdir --target sphinxman
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
 
