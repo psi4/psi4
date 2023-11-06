@@ -174,6 +174,7 @@ _addons_ = {
     "psixas": which_import("psixas", return_bool=True),
     #"mctc-gcp": psi4_which("mctc-gcp", return_bool=True),
     "bse": which_import("basis_set_exchange", return_bool=True),
+    "einsums": _CMake_to_Py_boolean("@ENABLE_Einsums@"),
 }
 
 

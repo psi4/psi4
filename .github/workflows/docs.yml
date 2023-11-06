@@ -130,6 +130,7 @@ jobs:
       id: compare-psi4docs
       run: |
         cp -pR ../../code/objdir/doc/sphinxman/html .
+        rm -rf ${{ github.ref_name }}
         mv html ${{ github.ref_name }}
         echo "::group::Selective Git Diff"
         git diff --color-words -I"Last updated on" -I"psi4/tree"
