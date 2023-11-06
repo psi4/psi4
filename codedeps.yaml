@@ -658,6 +658,9 @@ data:
         - sphinx-autodoc-typehints
         - sphinx-tabs
         - autodoc-pydantic=1
+        - qcportal
+      aux_build_names_note:
+        qcportal: "Required for docs to resolve objects in pydantic classes."
       cmake:
         SPHINX_ROOT: ${CONDA_PREFIX}
         //SPHINXMAN_STRICT: OFF
