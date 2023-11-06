@@ -389,7 +389,7 @@ sphinx_tabs_valid_builders = ['linkcheck']
 #texinfo_show_urls = 'footnote'
 
 # Abbreviations
-rst_epilog = """
+rst_epilog = r"""
 
 .. color: #273896;">
 .. |PSIfour| raw:: html
@@ -448,7 +448,7 @@ extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/%
             'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '%s') }
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/3.10', None),
+intersphinx_mapping = {'python': ('https://docs.python.org/3.12', None),
                        "numpy": ("https://numpy.org/doc/stable/", None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
                        'matplotlib': ('https://matplotlib.org/stable/', None),

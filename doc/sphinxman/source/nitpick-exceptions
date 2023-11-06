@@ -11,6 +11,15 @@ py:class psi::Options
 py:class pydantic.main.BaseModel
 py:class pydantic.utils.Representation
 
+# pybind11 & python
+# Annotated[... FixedSize]
+# https://github.com/pybind/pybind11/pull/4679
+# -or- build docs with pybind11=2.10
+py:class psi4.core.PyCapsule.nuclear_repulsion_energy:1
+py:class psi4.core.PyCapsule.nuclear_repulsion_energy_deriv1:1
+py:class psi4.core.PyCapsule.matrix:1
+py:class psi4.core.PyCapsule.get_dipole_field_strength:1
+
 # QCArchive
 # FractalClient is temp until https://github.com/MolSSI/QCFractal/pull/716
 py:class qcportal.client.FractalClient
