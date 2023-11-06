@@ -18,7 +18,7 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
+          - runs-on: ubuntu-20.04
             python-version: "3.12"
             mkl-version: ""
             base-channel: "conda-forge"
@@ -317,20 +317,20 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_ambit=OFF \
+          -D ENABLE_ambit=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
           -D ENABLE_CheMPS2=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_ecpint=OFF \
+          -D ENABLE_ecpint=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -D ENABLE_Einsums=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Einsums=ON \
           -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_PCMSolver=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
+          -D ENABLE_PCMSolver=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
           -D ENABLE_simint=OFF \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
@@ -360,20 +360,20 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_ambit=OFF \
+          -D ENABLE_ambit=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
           -D ENABLE_CheMPS2=OFF \
           -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_ecpint=OFF \
+          -D ENABLE_ecpint=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -D ENABLE_Einsums=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Einsums=ON \
           -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_PCMSolver=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=OFF \
+          -D ENABLE_PCMSolver=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
           -D ENABLE_simint=OFF \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
@@ -407,8 +407,12 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+          -D ENABLE_ecpint=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
           -D ENABLE_gdma=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
+          -D ENABLE_PCMSolver=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.cmargs }}

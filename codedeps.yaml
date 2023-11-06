@@ -140,6 +140,8 @@ data:
       channel: conda-forge
       name: fortran-compiler
       constraint: null
+      skip_win: true
+      skip_win_note: "Presently pulls in an old Flang."
       cmake:
         # {CMAKE_CXX_COMPILER_ID}_{Conda_platform}
         GNU_linux-64:
