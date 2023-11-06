@@ -24,7 +24,7 @@
 #    conda: !!map                    # Section required if use/required=true.
 #      channel: !!str                  # Field required. Preferred channel on anaconda.org suitable for `-c`. Use the broadest if conda/name on multiple channels or subchannels.
 #      name: !!str or !!map            # Field required. The conda package name. Use minimal required package (e.g., libxc-c (C intf) rather than libxc (C & Fortran intf)). Occasionally may be dictionary with keys conda platforms.
-#      constraint: !!str or !!map      # Field required. Version of ????. Field may be `null` if most recent (for minimum) and any run_export (for maximum) settings will do. Occasionally may be dictionary with keys conda platforms.
+#      constraint: !!str or !!map      # Field required. Version or build number restrictions on package. Field should be `null` if most recent settings will do or needed to solve environment. Occasionally may be dictionary with keys conda platforms.
 #      aux_run_names: !!set            # Field optional. Use to list add'l packages needed to run dummy and Psi4 together that aren't deps of dummy (e.g., postgresql for qcfractal).
 #      aux_build_names: !!set          # Field optional. Use to list add'l packages needed to build Psi4 against dummy that aren't deps of dummy (e.g., mkl-devel for mkl).
 #      cmake: !!map                    # Field required. Use to specify CMake variables relevant to this package. Those starting with // aren't usually set. May involve substitutions.
@@ -179,13 +179,13 @@ data:
     repository: null
     #cmake:
     #  name:
-    #  constraint:
+    #  constraint: ">=3.8"
     #  target:
     #  components:
     conda:
       channel: conda-forge
       name: python
-      constraint: ">=3.8"
+      constraint: null
       aux_build_names:
         - pip
       aux_build_names_note:
@@ -206,10 +206,11 @@ data:
       cms: false
     repository: null
     cmake: null
+    #  constraint: ">=3.19"
     conda:
       channel: conda-forge
       name: cmake
-      constraint: ">=3.19"
+      constraint: null
       cmake:
         -S: <src>
         -B: <bld>
@@ -292,13 +293,13 @@ data:
       commit: v0.7.0  # TODO not in psi src
     #cmake:
     #  name:
-    #  constraint:
+    #  constraint: ">=0.6.0"
     #  target:
     #  components:
     conda:
       channel: conda-forge
       name: dftd3-python
-      constraint: ">=0.6.0"
+      constraint: null
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
@@ -322,13 +323,13 @@ data:
     #  commit: v1.2
     #cmake:
     #  name: dkh
-    #  constraint: 1.2
+    #  constraint: ">=1.2"
     #  target: dkh::dkh
     #  enable: ENABLE_dkh
     conda:
       channel: conda-forge
       name: dkh
-      constraint: ">=1.2"
+      constraint: null
       cmake:
         ENABLE_dkh: true
         dkh_DIR: ${CONDA_PREFIX}/share/cmake/dkh
@@ -480,10 +481,10 @@ data:
       host: github
       account: loriab
       name: pylibefp
-      commit: v0.6.1  # libefp itself 15cd7ce = v1.5.0 + 10
+      commit: v0.6.2  # libefp itself 15cd7ce = v1.5.0 + 10
     #cmake:
     #  name: pylibefp
-    #  constraint: 0.6.1
+    #  constraint: ">=0.6.2"
     #  target: pylibefp::core
     #  components: shallow
     #  ENABLE_libefp
@@ -491,7 +492,7 @@ data:
       channel: conda-forge
       name: pylibefp
       name_note: "0.6.2 provides windows arch"
-      constraint: ">=0.6.2"
+      constraint: null
       cmake:
         ENABLE_libefp: true
         libefp_DIR: ${CONDA_PREFIX}/share/cmake/libefp
@@ -557,13 +558,13 @@ data:
       commit: v123_plus_ming
     #cmake:
     #  name: PCMSolver
-    #  constraint: 1.2.3
+    #  constraint: "1.2.3"
     #  target: PCMSolver::pcm
     # ENABLE_PCMSolver
     conda:
       channel: conda-forge
       name: pcmsolver
-      constraint: "1.2.3"
+      constraint: null
       aux_build_names:
         - zlib
       cmake:
@@ -609,7 +610,7 @@ data:
     conda:
       channel: conda-forge
       name: doxygen
-      constraint: false
+      constraint: null
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
 
@@ -645,13 +646,13 @@ data:
     repository: null
     #cmake:
     #  name:
-    #  constraint:
+    #  constraint: ">=3.5"
     #  target:
     #  components:
     conda:
       channel: conda-forge
       name: sphinx
-      constraint: ">=3.5"
+      constraint: null
       aux_build_names:
         - sphinx-automodapi
         - sphinx-autodoc-typehints
@@ -698,13 +699,13 @@ data:
       commit: v2.3.1
     #cmake:
     #  name:
-    #  constraint:
+    #  constraint: ">=2.3.1"
     #  target:
     #  components:
     conda:
       channel: conda-forge
       name: gcp-correction
-      constraint: ">=2.3.1"
+      constraint: null
       cmake:
         CMAKE_PROGRAM_PATH: ${CONDA_PREFIX}/bin
       cmake_note: "Primarily OTF runtime detected. With package present, CMake detection only relevant for CTest."
@@ -744,10 +745,12 @@ data:
       buildtime: false
       cms: false
       test_required: true
+    # cmake:
+    #  constraint: ">=7.0.1"
     conda:
       channel: conda-forge
       name: pytest
-      constraint: ">=7.0.1"
+      constraint: null
       aux_run_names:
         - pytest-xdist
       aux_run_names_note:
@@ -844,6 +847,7 @@ data:
     conda:
       channel: conda-forge
       name: ambit
+      constraint: null
       skip_win: true
       cmake:
         ENABLE_ambit: true
@@ -865,12 +869,12 @@ data:
       commit: v2.0.7
     #cmake:
     #  name: gau2grid
-    #  constraint: 2.0
+    #  constraint: ">=2.0.7"
     #  target: gau2grid::gg
     conda:
       channel: conda-forge
       name: gau2grid
-      constraint: ">=2.0.7"
+      constraint: null
       cmake:
         gau2grid_DIR: ${CONDA_PREFIX}/share/cmake/gau2grid
         //CMAKE_INSIST_FIND_PACKAGE_gau2grid: true
@@ -942,6 +946,7 @@ data:
       channel: conda-forge
       name: openfermionpsi4
       constraint: null
+      skip_win: true
       aux_run_names:
         - openfermion=1
         - pydantic=1
@@ -995,14 +1000,14 @@ data:
       commit: v0.15.13
     cmake:
       name: adcc
-      constraint: ATLEAST 0.15.13
+      constraint: ATLEAST 0.15.16
       #ENABLE_adcc
       #target:
       #components:
     conda:
       channel: conda-forge
       name: adcc
-      constraint: ">=0.15.16"
+      constraint: null
       constraint_note: v0.15.16 has transition moment corrections
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_adcc is inconsequential."
@@ -1067,13 +1072,13 @@ data:
       commit: "1.0"
     #cmake:
     #  name:
-    #  constraint:
+    #  constraint: ">=1.0"
     #  target:
     #  components:
     conda:
       channel: conda-forge
       name: geometric
-      constraint: ">=1.0"
+      constraint: null
       constraint_note: "v1.0 has new API."
       cmake: null
       cmake_note: "Primarily OTF runtime detected."
@@ -1110,14 +1115,14 @@ data:
       commit: v1.2.3
     #cmake:
     #  name: mdi
-    #  constraint: 1.2.3
+    #  constraint: ">=1.2"
     #  target: mdi::mdi
     #  components: null
     # ENABLE_mdi
     conda:
       channel: conda-forge
       name: pymdi
-      constraint: ">=1.2"
+      constraint: null
       constraint_note: "v1.2 has breaking API change."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_mdi is inconsequential."
@@ -1183,14 +1188,14 @@ data:
     # - dftd4-python >=3.5.0                         # 3.5.0 provides b97-3c parameters
     #cmake:
     #  name:
-    #  constraint:
+    #  constraint: ">=3.3.0"
     #  target:
     #  components:
     conda:
       channel: conda-forge
       name: dftd4-python
       name_note: "Equivalent to psi4::dftd4 . toml needed for qcengine/dftd4-python interface."
-      constraint: ">=3.3.0"
+      constraint: null
       aux_run_names:
         - toml
       cmake:
@@ -1214,13 +1219,13 @@ data:
       commit: v1.0.7  # TODO needs PR
     #cmake:
     #  name: ecpint
-    #  constraint: 1.0.7
+    #  constraint: ">=1.0.7"
     #  target: ECPINT::ecpint
     #  ENABLE_ecpint
     conda:
       channel: conda-forge
       name: libecpint
-      constraint: ">=1.0.7"
+      constraint: null
       cmake:
         ENABLE_ecpint: true
         ecpint_DIR: ${CONDA_PREFIX}/lib/cmake/ecpint
@@ -1241,11 +1246,12 @@ data:
       commit: 23b51cb
       commit_note: "Includes snowflake fix post v0.51."
     cmake: null
+    #  constraint: ">=0.51"
     conda:
       channel: conda-forge
       channel_note: "Can also use qcarchive/label/next and constraint >=0.50b10."
       name: qcfractal
-      constraint: ">=0.51"
+      constraint: null
       aux_run_names:
         - postgresql
       aux_run_names_note:
@@ -1293,7 +1299,7 @@ data:
     conda:
       channel: conda-forge
       name: pyddx
-      constraint: ">=0.4.3"
+      constraint: null
       constraint_note: "v0.4.3 has correct LBP."
       cmake: null
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling through ENABLE_ddx is inconsequential."
@@ -1320,7 +1326,7 @@ data:
     conda:
       channel: conda-forge
       name: optking
-      constraint: ">=0.2.1"
+      constraint: null
       cmake:
         //CMAKE_INSIST_FIND_PACKAGE_optking: true
         //CMAKE_DISABLE_FIND_PACKAGE_optking: true
@@ -1374,6 +1380,7 @@ data:
       channel: conda-forge
       name: einsums
       constraint: "=*=mkl*"
+      # todo: fix mkl constraint in pkg or generalize to blas_impl
       aux_build_names:
         - range-v3
         - zlib

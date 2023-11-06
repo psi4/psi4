@@ -632,6 +632,10 @@ if args.subparser_name in ["conda", "env"]:
         if conda["channel"] != "conda-forge":
             primary = conda["channel"] + "::" + primary
 
+        if cons := conda["constraint"]:
+            if isinstance(cons, str):
+                primary += cons
+
         for pkg in aux_run:
             req = "opt'l" if pkg.startswith("//") else "req'd"
             notes[pkg] = f"{req} with {conda['name']}"
