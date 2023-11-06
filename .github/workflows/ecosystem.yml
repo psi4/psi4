@@ -18,7 +18,7 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-20.04
+          - runs-on: ubuntu-20.04  # avoids some compiling/log blackouts
             python-version: "3.12"
             mkl-version: ""
             base-channel: "conda-forge"
@@ -27,7 +27,7 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
 
-          - runs-on: macos-13
+          - runs-on: macos-13  # ensures py!=27 in base OS
             python-version: "3.9"
             mkl-version: ""
             base-channel: "conda-forge"
@@ -110,8 +110,8 @@ jobs:
         which python
         python --version
         pip install PyYAML
-        conda/psi4-path-advisor.py env \
-          --lapack mkl \
+        conda/psi4-path-advisor.py \
+          env \
           --name p4build \
           --python ${{ matrix.cfg.python-version }} \
           --disable docs \
