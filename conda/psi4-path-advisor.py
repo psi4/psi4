@@ -528,6 +528,10 @@ parser_cmake.add_argument("--objdir",
     default=f"objdir_{conda_prefix_short}",
     help=f"""Specify a build directory to cmake, if not (default: objdir_{conda_prefix_short}).
 Can instead rename on cmdline, so argument mostly for printing.""")
+parser_cmake.add_argument("--insist",
+    action="store_true",
+    help=f"""Set the cache to prevent cmake from falling back on internal build
+for packages present in the conda environment.""")
 
 args = parser.parse_args()
 
@@ -865,7 +869,10 @@ elif args.subparser_name in ["cmake", "cache"]:
                     raise ValueError("more than one var", dcmake_vars)
 
                 if k.startswith("//"):
-                    text.append(f'# set({k[2:]:<28} {"<placeholder>" if v is None else v} CACHE {ctyp} "")')
+                    if args.insist and "INSIST_FIND_PACKAGE" in k and all_found:
+                        text.append(f'set({k[2:]:<28} ON CACHE {ctyp} "")')
+                    else:
+                        text.append(f'# set({k[2:]:<28} {"<placeholder>" if v is None else v} CACHE {ctyp} "")')
                 elif not all_found:
                     text.append(f'# set({k:<28} {"<placeholder>"} CACHE {ctyp} "")')
                 elif k.startswith("-"):

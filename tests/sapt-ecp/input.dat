@@ -30,13 +30,13 @@ E = energy('hf/lanl2dz')
 compare_values(1.0, 1.0, 8, "SEPARATE SAPT0 energy with Ca2+, with ECP")                                  #TEST
 
 molecule {
+2 1
+Ca 2.281447 -0.004247 -0.000154
+--
 0 1
 H -0.803001 1.098737 0.000360
 H -0.919454 -1.089722 0.000521
 O -0.035537 -0.067631 0.000218
---
-2 1
-Ca 2.281447 -0.004247 -0.000154
 units angstrom
 no_reorient
 symmetry c1

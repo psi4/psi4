@@ -156,45 +156,54 @@ jobs:
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'
       run: |
+        conda/psi4-path-advisor.py \
+          cache \
+          --objdir objdir \
+          --insist
+        printf "\n<<<  cache_p4build.cmake  >>>\n"
+        cat cache_p4build.cmake
         cmake \
           -S. \
           -B objdir \
-          -G Ninja \
-          -D CMAKE_BUILD_TYPE=Release \
-          -D CMAKE_INSTALL_PREFIX=./install \
-          -D CMAKE_C_COMPILER=${CC} \
-          -D CMAKE_CXX_COMPILER=${CXX} \
-          -D CMAKE_Fortran_COMPILER=${FC} \
-          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_ambit=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
-          -D ENABLE_CheMPS2=OFF \
-          -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
-          -D ENABLE_dkh=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_ecpint=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -D ENABLE_Einsums=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Einsums=ON \
-          -D ENABLE_gdma=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_PCMSolver=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
-          -D ENABLE_simint=OFF \
-          -D SIMINT_VECTOR=sse \
-          -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
-          -D ENABLE_v2rdm_casscf=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
-          -D ENABLE_OPENMP=ON \
-          -D ENABLE_XHOST=OFF \
+          -C ${{ github.workspace }}/cache_p4build.cmake \
           ${{ matrix.cfg.cmargs }}
+
+          #-G Ninja \
+          #-D CMAKE_BUILD_TYPE=Release \
+          #-D CMAKE_INSTALL_PREFIX=./install \
+          #-D CMAKE_C_COMPILER=${CC} \
+          #-D CMAKE_CXX_COMPILER=${CXX} \
+          #-D CMAKE_Fortran_COMPILER=${FC} \
+          #-D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          #-D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          #-D ENABLE_ambit=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
+          #-D ENABLE_CheMPS2=OFF \
+          #-D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
+          #-D ENABLE_dkh=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+          #-D ENABLE_ecpint=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
+          #-D ENABLE_Einsums=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_Einsums=ON \
+          #-D ENABLE_gdma=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
+          #-D ENABLE_PCMSolver=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
+          #-D ENABLE_simint=OFF \
+          #-D SIMINT_VECTOR=sse \
+          #-D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
+          #-D ENABLE_v2rdm_casscf=ON \
+          #-D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
+          #-D ENABLE_OPENMP=ON \
+          #-D ENABLE_XHOST=OFF \
+          #${{ matrix.cfg.cmargs }}
 
     - name: Configure Psi4, Conda defaults Clang (M)
       if: runner.os == 'macOS'
@@ -274,7 +283,7 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
-      run: cmake --build objdir --config Release --target install -j
+      run: cmake --build objdir --config Release --target install
 
     - name: Linked dependencies, ldd (L)
       if: runner.os == 'Linux'
