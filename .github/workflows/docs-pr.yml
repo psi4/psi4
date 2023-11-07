@@ -12,9 +12,6 @@ jobs:
         cfg:
           - runs-on: ubuntu-latest
             python-version: "3.11"
-            #cmargs: >
-            #  -D CMAKE_VERBOSE_MAKEFILE=OFF
-            #  -D BUILD_SHARED_LIBS=ON
     runs-on: ubuntu-latest
     name: Propose Docs
     defaults:
@@ -78,36 +75,47 @@ jobs:
         conda list
         which conda python cmake $CXX
 
-    # This patch and the jinja2<3 restriction were needed as recently as March 2023, but when I try a py311 env with newest everything, both can be released.
-    #- name: Patch Sphinx for Pybind11
-    #  if: ${{ github.repository == 'psi4/psi4' }}
-    #  run: sed -i "s/app\.add_autodoc_attrgetter/# app.add_autodoc_attrgetter/g" ${CONDA_PREFIX}/lib/python3.10/site-packages/sphinx_automodapi/autodoc_enhancements.py
-
     # docs are finally Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
       if: ${{ github.repository == 'psi4/psi4' }}
       working-directory: ./code
       run: |
+        conda/psi4-path-advisor.py \
+          cache \
+          --objdir objdir \
+          --insist
+        printf "\n<<<  cache_p4docs@objdir.cmake  >>>\n"
+        pygmentize -g -O style=colorful,linenos=1 cache_p4docs@objdir.cmake
+        #
         cmake \
           -S. \
-          -Bobjdir \
-          -G"Ninja" \
-          -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_C_COMPILER=${CC} \
-          -DCMAKE_CXX_COMPILER=${CXX} \
-          -DCMAKE_CXX_FLAGS="-O0" \
-          -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -DENABLE_ecpint=OFF \
-          -DCMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_optking=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          -DSPHINXMAN_STRICT=ON \
-          -DSPHINX_ROOT=${CONDA_PREFIX}
+          -B objdir \
+          -G Ninja \
+          -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
+          -D CMAKE_BUILD_TYPE=Debug \
+          -D CMAKE_CXX_FLAGS="-O0" \
+          -D SPHINXMAN_STRICT=ON
+
+      #run: |
+      #  cmake \
+      #    -S. \
+      #    -Bobjdir \
+      #    -G"Ninja" \
+      #    -DCMAKE_BUILD_TYPE=Debug \
+      #    -DCMAKE_C_COMPILER=${CC} \
+      #    -DCMAKE_CXX_COMPILER=${CXX} \
+      #    -DCMAKE_CXX_FLAGS="-O0" \
+      #    -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+      #    -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+      #    -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+      #    -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+      #    -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+      #    -DENABLE_ecpint=OFF \
+      #    -DCMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
+      #    -DCMAKE_INSIST_FIND_PACKAGE_optking=ON \
+      #    -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+      #    -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+      #    -DSPHINX_ROOT=${CONDA_PREFIX}
 
     - name: Compile Psi4
       if: ${{ github.repository == 'psi4/psi4' }}

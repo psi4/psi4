@@ -224,9 +224,9 @@ jobs:
           -B objdir \
           -G Ninja \
           -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
+          -D CMAKE_INSTALL_PREFIX=./install \
           -D ENABLE_v2rdm_casscf=ON \
           -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
-          -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
         #cmake \
         #  -S. \

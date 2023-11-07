@@ -1,7 +1,7 @@
 from addons import *
 
 @uusing("v2rdm_casscf")
-@ctest_labeler("")
+@ctest_labeler("long")
 def test_v2rdm_casscf_v2rdm5():
     ctest_runner(__file__)
 

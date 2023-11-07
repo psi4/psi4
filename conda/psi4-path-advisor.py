@@ -52,17 +52,19 @@ def conda_list(*, name: str = None, prefix: str = None):
     #env_list_dict = json.loads(env_list_json)
 
     """
+    condaexe = "conda.exe" if os.name == "nt" else "conda"
     if name:
-        proc = run(["conda", "list", "--json", "--name", name], text=True, capture_output=True)
+        proc = run([condaexe, "list", "--json", "--name", name], text=True, capture_output=True)
     elif prefix:
-        proc = run(["conda", "list", "--json", "--prefix", prefix], text=True, capture_output=True)
+        proc = run([condaexe, "list", "--json", "--prefix", prefix], text=True, capture_output=True)
     else:
-        proc = run(["conda", "list", "--json"], text=True, capture_output=True)
+        proc = run([condaexe, "list", "--json"], text=True, capture_output=True)
     return json.loads(proc.stdout)
 
 
 def conda_info():
-    proc = run(["conda", "info", "--json"], text=True, capture_output=True)
+    condaexe = "conda.exe" if os.name == "nt" else "conda"
+    proc = run([condaexe, "info", "--json"], text=True, capture_output=True)
     return json.loads(proc.stdout)
 
 
