@@ -4554,12 +4554,12 @@ def run_sapt(name, **kwargs):
         mp2_corl_interaction_e = core.variable('MP2 CORRELATION ENERGY')
 
     optstash2.restore()
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
-        core.set_global_option('DF_INTS_IO', 'LOAD')
+#    if (sapt_basis == 'dimer') and (ri == 'DF'):
+#        core.set_global_option('DF_INTS_IO', 'LOAD')
 
     # Compute Monomer A wavefunction
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
-        core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+#    if (sapt_basis == 'dimer') and (ri == 'DF'):
+#        core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
     core.IO.set_default_namespace('monomerA')
     core.print_out('\n')
@@ -4575,8 +4575,8 @@ def run_sapt(name, **kwargs):
         mp2_corl_interaction_e -= core.variable('MP2 CORRELATION ENERGY')
 
     # Compute Monomer B wavefunction
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
-        core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+#    if (sapt_basis == 'dimer') and (ri == 'DF'):
+#        core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     core.IO.set_default_namespace('monomerB')
     core.print_out('\n')
     p4util.banner('Monomer B HF')
