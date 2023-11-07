@@ -1382,18 +1382,19 @@ data:
     #  target: Einsums::einsums
     #  components:
     #  ENABLE_Einsums
-    conda: null
-    #  channel: conda-forge
-    #  name: einsums
+    conda:
+      channel: conda-forge
+      name: einsums
+      constraint: null
     #  constraint: "=*=mkl*"
     #  # todo: fix mkl constraint in pkg or generalize to blas_impl
-    #  aux_build_names:
-    #    - range-v3
-    #    - zlib
-    #  skip_win: true
-    #  cmake:
-    #    ENABLE_Einsums: true
-    #    Einsums_DIR: ${CONDA_PREFIX}/share/cmake/Einsums
-    #    //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
-    #    //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
+      aux_build_names:
+        - range-v3
+        - zlib
+      skip_win: true
+      cmake:
+        ENABLE_Einsums: true
+        Einsums_DIR: ${CONDA_PREFIX}/share/cmake/Einsums
+        //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
+        //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
 
