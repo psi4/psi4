@@ -94,7 +94,6 @@ void CompositeJK::common_init() {
     // other options
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
-    early_screening_ = k_type == "COSX" ? true : false;
 
     // pre-construct per-thread TwoBodyAOInt objects for computing 3- and 4-index ERIs
     timer_on("CompositeJK: ERI Computers");
@@ -250,11 +249,9 @@ void CompositeJK::compute_JK() {
     if (do_wK_) throw PSIEXCEPTION("CompositeJK algorithms do not support wK integrals yet!");
 
     // set compute()-specific parameters
-    j_algo_->set_early_screening(early_screening_);
     j_algo_->set_lr_symmetric(lr_symmetric_);
     
     if (do_K_) {
-        k_algo_->set_early_screening(early_screening_);
         k_algo_->set_lr_symmetric(lr_symmetric_);
     }
 

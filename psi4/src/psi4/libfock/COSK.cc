@@ -175,7 +175,6 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
 #endif
 
     // set options
-    early_screening_ = false;
     lr_symmetric_ = true;
 
     kscreen_ = options.get_double("COSX_INTS_TOLERANCE");

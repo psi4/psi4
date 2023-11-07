@@ -270,8 +270,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
-    early_screening = self.jk().get_early_screening()
+    early_screening = False
     if cosx_enabled:
+        early_screening = True
         self.jk().set_COSX_grid("Initial")
 
     # maximum number of scf iterations to run after early screening is disabled
@@ -517,14 +518,13 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
             if early_screening:
 
-                # we've reached convergence with early screning enabled; disable it on the JK object
+                # we've reached convergence with early screning enabled; disable it
                 early_screening = False
-                self.jk().set_early_screening(early_screening)
 
-                # make note of the change to early screening; next SCF iteration will be the last
+                # make note of the change to early screening; next SCF iteration(s) will be the last
                 early_screening_disabled = True
 
-                # cosx uses the largest grid for its final SCF iteration
+                # cosx uses the largest grid for its final SCF iteration(s)
                 if cosx_enabled:
                     self.jk().set_COSX_grid("Final")
 

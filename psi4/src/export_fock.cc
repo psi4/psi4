@@ -74,8 +74,6 @@ void export_fock(py::module &m) {
         .def("get_omega_alpha", &JK::get_omega_alpha, "Weight for HF exchange term in range-separated DFT")
         .def("set_omega_beta", &JK::set_omega_beta, "Weight for dampened exchange term in range-separated DFT", "beta"_a)
         .def("get_omega_beta", &JK::get_omega_beta, "Weight for dampened exchange term in range-separated DFT")
-        .def("set_early_screening", &JK::set_early_screening, "Use severe screening techniques? Useful in early SCF iterations.", "early_screening"_a)
-        .def("get_early_screening", &JK::get_early_screening, "Use severe screening techniques? Useful in early SCF iterations.")
         .def("compute", &JK::compute)
         .def("finalize", &JK::finalize)
         .def("C_clear",

@@ -85,8 +85,6 @@ class PSI_API SplitJK {
 
     // Perform Density matrix-based integral screening?
     bool density_screening_;
-    /// Use severe screening techniques? Useful in early SCF iterations
-    bool early_screening_;
     /// Left-right symmetric?
     bool lr_symmetric_;
 
@@ -108,7 +106,6 @@ class PSI_API SplitJK {
 
     // => Knobs <= //
 
-    void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
     void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
     /// Bench accessors
     void set_bench(int bench) { bench_ = bench; }
