@@ -1307,10 +1307,10 @@ class PSI_API CompositeJK : public JK {
     virtual void set_do_K(bool do_K) override;
 
     /**
-    * Knobs for getting and setting current COSX grid, if COSX is used
+    * Knobs for getting and setting current COSX grid for this SCF iteration, if COSX is used
     * throws by default, if COSX is not used
     */
-    void set_COSX_grid(std::string gridopt) { return k_algo_->set_COSX_grid(gridopt); }
+    void set_COSX_grid(std::string current_grid) { return k_algo_->set_COSX_grid(current_grid); }
     std::string get_COSX_grid() { return k_algo_->get_COSX_grid(); }
 
     /**

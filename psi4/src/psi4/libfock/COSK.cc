@@ -321,8 +321,8 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     // use a small DFTGrid grid (and overlap metric) for early SCF iterations
     // otherwise use a large DFTGrid
-    auto grid = grids_[gridopt_];
-    auto Q = Q_mat_[gridopt_];
+    auto grid = grids_[current_grid_];
+    auto Q = Q_mat_[current_grid_];
 
     // => Initialization <= //
 

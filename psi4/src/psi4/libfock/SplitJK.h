@@ -133,7 +133,7 @@ class PSI_API SplitJK {
     /**
     * Method-specific knobs, if necessary
     */
-    virtual void set_COSX_grid(std::string gridopt) {
+    virtual void set_COSX_grid(std::string current_grid) {
         throw PSIEXCEPTION("SplitJK::set_COSX_grid was called, but COSX is not being used!");
     }
 
@@ -257,7 +257,7 @@ class PSI_API COSK : public SplitJK {
     /// -  A large DFTGrid for the final SCF iteration
     std::unordered_map<std::string, std::shared_ptr<DFTGrid> > grids_;
     /// COSX grid currently in use for this iteration
-    std::string gridopt_;
+    std::string current_grid_;
 
     /// Overlap fitting metric for different COSX grids
     std::unordered_map<std::string, SharedMatrix> Q_mat_;
@@ -309,8 +309,9 @@ class PSI_API COSK : public SplitJK {
     */
     std::string name() override { return "COSX"; }
 
-    void set_COSX_grid(std::string gridopt) override { gridopt_ = gridopt; };
-    std::string get_COSX_grid() override { return gridopt_; };
+    // setter/getter for the COSX grid used for this SCF iteration
+    void set_COSX_grid(std::string current_grid) override { current_grid_ = current_grid; };
+    std::string get_COSX_grid() override { return current_grid_; };
 };
 
 }
