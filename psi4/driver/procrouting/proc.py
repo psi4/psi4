@@ -4549,16 +4549,22 @@ def run_sapt(name, **kwargs):
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     core.timer_off("SAPT: Dimer SCF")
 
+    necp_ab = dimer_wfn.basisset().n_ecp_core()
+    share_df_ints = ((sapt_basis == 'dimer') and (ri == 'DF') and not (necp_ab and (os.name == 'nt')))
+    print(f"{necp_ab=} {share_df_ints=}")
+    if (sapt_basis == 'dimer') and (ri == 'DF') and not share_df_ints:
+        core.print_out(f"\n  Turning off SAPT DF integrals sharing because of ECP: {necp_ab}\n\n")
+
     if do_delta_mp2:
         select_mp2("mp2", ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = core.variable('MP2 CORRELATION ENERGY')
 
     optstash2.restore()
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
+    if share_df_ints:
         core.set_global_option('DF_INTS_IO', 'LOAD')
 
     # Compute Monomer A wavefunction
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
+    if share_df_ints:
         core.IO.change_file_namespace(97, 'dimer', 'monomerA')
 
     core.IO.set_default_namespace('monomerA')
@@ -4575,7 +4581,7 @@ def run_sapt(name, **kwargs):
         mp2_corl_interaction_e -= core.variable('MP2 CORRELATION ENERGY')
 
     # Compute Monomer B wavefunction
-    if (sapt_basis == 'dimer') and (ri == 'DF'):
+    if share_df_ints:
         core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     core.IO.set_default_namespace('monomerB')
     core.print_out('\n')
