@@ -305,7 +305,7 @@ void CompositeJK::compute_JK() {
         timer_on("CompositeJK: " + k_algo_->name());
 
         if (k_algo_->name() == "COSX") {
-            std::string gridname = early_screening_ ? "Initial" : "Final";
+            std::string gridname = k_algo_->get_COSX_grid();
             timer_on("COSX " + gridname + " Grid");
         }
 
@@ -316,7 +316,7 @@ void CompositeJK::compute_JK() {
         }
 
         if (k_algo_->name() == "COSX") {
-            std::string gridname = early_screening_ ? "Initial" : "Final";
+            std::string gridname = k_algo_->get_COSX_grid();
             timer_off("COSX " + gridname + " Grid");
         }
 
