@@ -169,6 +169,8 @@ jobs:
           -G Ninja \
           -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
           -D CMAKE_INSTALL_PREFIX=./install \
+          -D ENABLE_v2rdm_casscf=ON \
+          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           ${{ matrix.cfg.cmargs }}
 
           #-G Ninja \
@@ -222,6 +224,8 @@ jobs:
           -B objdir \
           -G Ninja \
           -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
+          -D ENABLE_v2rdm_casscf=ON \
+          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
         #cmake \
@@ -270,33 +274,46 @@ jobs:
     - name: Configure Psi4, LLVM clang-cl (W)
       if: runner.os == 'Windows'
       run: |
+        conda/psi4-path-advisor.py \
+          cache \
+          --objdir objdir \
+          --insist
+        printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
+        pygmentize -g -O style=colorful,linenos=1 cache_p4build@objdir.cmake
         cmake \
-          -S . \
+          -S. \
           -B objdir \
           -G Ninja \
-          -D CMAKE_BUILD_TYPE=Release \
+          -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
           -D CMAKE_INSTALL_PREFIX=./install \
-          -D CMAKE_C_COMPILER=clang-cl \
-          -D CMAKE_CXX_COMPILER=clang-cl \
-          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_dkh=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          -D ENABLE_ecpint=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          -D ENABLE_gdma=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          -D ENABLE_PCMSolver=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
-          -D ENABLE_OPENMP=ON \
-          -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.cmargs }}
+        #cmake \
+        #  -S . \
+        #  -B objdir \
+        #  -G Ninja \
+        #  -D CMAKE_BUILD_TYPE=Release \
+        #  -D CMAKE_INSTALL_PREFIX=./install \
+        #  -D CMAKE_C_COMPILER=clang-cl \
+        #  -D CMAKE_CXX_COMPILER=clang-cl \
+        #  -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+        #  -D ENABLE_dkh=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+        #  -D ENABLE_ecpint=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
+        #  -D ENABLE_gdma=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
+        #  -D ENABLE_PCMSolver=ON \
+        #  -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
+        #  -D ENABLE_OPENMP=ON \
+        #  -D ENABLE_XHOST=OFF \
+        #  ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
       run: cmake --build objdir --config Release --target install
