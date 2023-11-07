@@ -4551,7 +4551,6 @@ def run_sapt(name, **kwargs):
 
     necp_ab = dimer_wfn.basisset().n_ecp_core()
     share_df_ints = ((sapt_basis == 'dimer') and (ri == 'DF') and not (necp_ab and (os.name == 'nt')))
-    print(f"{necp_ab=} {share_df_ints=}")
     if (sapt_basis == 'dimer') and (ri == 'DF') and not share_df_ints:
         core.print_out(f"\n  Turning off SAPT DF integrals sharing because of ECP: {necp_ab}\n\n")
 

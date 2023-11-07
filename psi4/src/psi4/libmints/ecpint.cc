@@ -54,7 +54,7 @@ namespace psi {
 
 ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                int deriv)
-    : OneBodyAOInt(st, bs1, bs2, deriv), engine_(bs1->max_am(), bs1->max_ecp_am(), deriv, 1e-17) {
+    : OneBodyAOInt(st, bs1, bs2, deriv), engine_(bs1->max_am(), bs1->max_ecp_am(), deriv) {
     int maxam1 = bs1->max_am();
     int maxam2 = bs2->max_am();
 

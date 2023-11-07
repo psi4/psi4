@@ -132,6 +132,7 @@ jobs:
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
         fi
+        echo "  - pygments" >> env_p4build.yaml
         printf "\n<<<  env_p4build.yaml (post)  >>>\n"
         cat env_p4build.yaml
 
@@ -161,10 +162,11 @@ jobs:
           --objdir objdir \
           --insist
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        cat cache_p4build@objdir.cmake
+        pygmentize -g -O style=colorful,linenos=1 cache_p4build@objdir.cmake
         cmake \
           -S. \
           -B objdir \
+          -G Ninja \
           -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
           -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
@@ -214,10 +216,11 @@ jobs:
           --objdir objdir \
           --insist
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        cat cache_p4build@objdir.cmake
+        pygmentize -g -O style=colorful,linenos=1 cache_p4build@objdir.cmake
         cmake \
           -S. \
           -B objdir \
+          -G Ninja \
           -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
           -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
@@ -348,13 +351,6 @@ jobs:
         export PATH=../install/bin:$PATH
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-
-    - name: Test Run, Spot, Run ECP
-      working-directory: ./objdir
-      run: |
-        export PATH=../install/bin:$PATH
-        #export KMP_DUPLICATE_LIB_OK=TRUE
-        psi4 ../tests/sapt-ecp/input.dat -o stdout
 
       # step works but is redundant with next two; enable for debugging
     - name: Test Addons with CTest
