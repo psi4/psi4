@@ -50,6 +50,8 @@ jobs:
               -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
               -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
               -D psi4_SKIP_ENABLE_Fortran=ON
+              -D CMAKE_BUILD_TYPE=Release
+              -D ENABLE_XHOST=OFF
             # Notes:
             # * See mkl-version notes at end
             # * "not d2ints" allows Windows accessing c-f L2 to pass
@@ -110,6 +112,9 @@ jobs:
         pip install PyYAML
         echo "::endgroup::"
         #
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          conda info --json
+        fi
         conda/psi4-path-advisor.py \
           env \
           --name p4build \

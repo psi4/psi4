@@ -150,7 +150,9 @@ endif()
 ############################  Options: Build How?  #############################
 include(psi4OptionsTools)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
+message("WWW0 ${CMAKE_BUILD_TYPE}")
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
+message("WWW1 ${CMAKE_BUILD_TYPE}")
 include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
 # below are uncommon to adjust
 option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
