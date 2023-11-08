@@ -108,7 +108,9 @@ else:
     conda_host = None
     conda_list_struct = {}
     base_list_struct = {}
+print("TTT", conda_prefix)
 conda_prefix = Path(conda_prefix).as_posix()
+print("TTT2", conda_prefix)
 
 
 conda_list_pkgver = {item["name"]: item["version"] for item in conda_list_struct}
