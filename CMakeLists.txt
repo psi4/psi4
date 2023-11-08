@@ -11,6 +11,11 @@ endif()
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
                                               # 3.2: continue()
                                               # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
+
+message("VVV0 ${CMAKE_BUILD_TYPE}")
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build.")
+message("VVV1 ${CMAKE_BUILD_TYPE}")
+
 project(psi4
         LANGUAGES C CXX)
 set(psi4_URL "http://www.psicode.org/")
