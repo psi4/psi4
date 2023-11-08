@@ -193,10 +193,9 @@ data:
       aux_build_names_note:
         pip: "Package installer not strictly needed but needs to be tied to this python if used."
       cmake:
-        unix:
-          Python_EXECUTABLE: ${CONDA_PREFIX}/bin/python
-        win-64:
-          Python_EXECUTABLE: ${CONDA_PREFIX}/python.exe
+        Python_EXECUTABLE:
+          unix: ${CONDA_PREFIX}/bin/python
+          win-64: ${CONDA_PREFIX}/python.exe
         #Python_ROOT_DIR: ${CONDA_PREFIX}
         #//Python_LIBRARY: null
         #//Python_INCLUDE_DIR: null
@@ -338,7 +337,9 @@ data:
       constraint: null
       cmake:
         ENABLE_dkh: true
-        dkh_DIR: ${CONDA_PREFIX}/share/cmake/dkh
+        dkh_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/dkh
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/dkh
         //CMAKE_INSIST_FIND_PACKAGE_dkh: true
         //CMAKE_DISABLE_FIND_PACKAGE_dkh: true
 
@@ -376,7 +377,9 @@ data:
       constraint: null
       cmake:
         ENABLE_gdma: true
-        gdma_DIR: ${CONDA_PREFIX}/share/cmake/gdma
+        gdma_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/gdma
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/gdma
         //CMAKE_INSIST_FIND_PACKAGE_gdma: true
         //CMAKE_DISABLE_FIND_PACKAGE_gdma: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
@@ -469,7 +472,9 @@ data:
       cmake:
         BOOST_ROOT: ${CONDA_PREFIX}
         Eigen3_ROOT: ${CONDA_PREFIX}
-        Libint2_DIR: ${CONDA_PREFIX}/lib/cmake/libint2
+        Libint2_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/libint2
+          win-64: ${CONDA_PREFIX}/Library/lib/cmake/libint2
         //MAX_AM_ERI: 5
         //CMAKE_INSIST_FIND_PACKAGE_Libint2: true
         //CMAKE_DISABLE_FIND_PACKAGE_Libint2: true
@@ -503,7 +508,9 @@ data:
       constraint: null
       cmake:
         ENABLE_libefp: true
-        libefp_DIR: ${CONDA_PREFIX}/share/cmake/libefp
+        libefp_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/libefp
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/libefp
         //CMAKE_INSIST_FIND_PACKAGE_pylibefp: true
         //CMAKE_DISABLE_FIND_PACKAGE_pylibefp: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest and for managing fragment files."
@@ -577,7 +584,9 @@ data:
         - zlib
       cmake:
         ENABLE_PCMSolver: true
-        PCMSolver_DIR: ${CONDA_PREFIX}/share/cmake/PCMSolver
+        PCMSolver_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/PCMSolver
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/PCMSolver
         //CMAKE_INSIST_FIND_PACKAGE_PCMSolver: true
         //CMAKE_DISABLE_FIND_PACKAGE_PCMSolver: true
 
@@ -745,7 +754,9 @@ data:
       constraint: ">=2.10.*"
       constraint_note: "Particularly for docs until FixedSize typing percolates upstream."
       cmake:
-        pybind11_DIR: ${CONDA_PREFIX}/share/cmake/pybind11
+        pybind11_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/pybind11
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/pybind11
         //CMAKE_INSIST_FIND_PACKAGE_pybind11: true
         //CMAKE_DISABLE_FIND_PACKAGE_pybind11: true
 
@@ -889,7 +900,9 @@ data:
       name: gau2grid
       constraint: null
       cmake:
-        gau2grid_DIR: ${CONDA_PREFIX}/share/cmake/gau2grid
+        gau2grid_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/gau2grid
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/gau2grid
         //CMAKE_INSIST_FIND_PACKAGE_gau2grid: true
         //CMAKE_DISABLE_FIND_PACKAGE_gau2grid: true
 
@@ -935,7 +948,9 @@ data:
       name: libxc-c
       constraint: null
       cmake:
-        Libxc_DIR: ${CONDA_PREFIX}/lib/cmake/Libxc
+        Libxc_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/Libxc
+          win-64: ${CONDA_PREFIX}/Library/lib/cmake/Libxc
         //CMAKE_INSIST_FIND_PACKAGE_Libxc: true
         //CMAKE_DISABLE_FIND_PACKAGE_Libxc: true
 
@@ -1242,7 +1257,9 @@ data:
       constraint: null
       cmake:
         ENABLE_ecpint: true
-        ecpint_DIR: ${CONDA_PREFIX}/lib/cmake/ecpint
+        ecpint_DIR:
+          unix: ${CONDA_PREFIX}/lib/cmake/ecpint
+          win-64: ${CONDA_PREFIX}/Library/lib/cmake/ecpint
         //CMAKE_INSIST_FIND_PACKAGE_ecpint: true
         //CMAKE_DISABLE_FIND_PACKAGE_ecpint: true
 

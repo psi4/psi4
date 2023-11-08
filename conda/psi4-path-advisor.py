@@ -862,9 +862,12 @@ elif args.subparser_name in ["cmake", "cache"]:
                     text.append("#   Note that mixing lapack implementations is not advised.")
                 dcmake_vars = conda["cmake"].get(f"{args.lapack}_{conda_platform}", conda["cmake"].get(args.lapack))
             else:
-                dcmake_vars = conda["cmake"].get(f"{conda_unix}", conda["cmake"])
+                dcmake_vars = conda["cmake"]
 
             for k, v in dcmake_vars.items():
+
+                if isinstance(v, dict):
+                    v = v.get(conda_platform, v.get(conda_unix))
 
                 if k.endswith("_DIR"):
                     ctyp = "PATH"
