@@ -61,8 +61,9 @@ data:
         Clang_osx-arm64:
           CMAKE_C_COMPILER:       "${CONDA_PREFIX}/bin/${HOST}-clang"
           //CMAKE_C_FLAGS:        null
-        MSVC_win-64: null
-          #CMAKE_C_COMPILER:      clang-cl
+        MSVC_win-64:
+          CMAKE_C_COMPILER:       "clang-cl"
+          //CMAKE_C_FLAGS:        null
         Intel_linux-64:
           CMAKE_C_COMPILER:       "\"icc;-gnu-prefix=${CONDA_PREFIX}/bin/${HOST}-;--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
           //CMAKE_C_FLAGS:        null
@@ -106,8 +107,9 @@ data:
         Clang_osx-arm64:
           CMAKE_CXX_COMPILER:     "${CONDA_PREFIX}/bin/${HOST}-clang++"
           //CMAKE_CXX_FLAGS:      null
-        MSVC_win-64: null
-          #CMAKE_CXX_COMPILER:    clang-cl
+        MSVC_win-64:
+          CMAKE_CXX_COMPILER:     "clang-cl"
+          //CMAKE_CXX_FLAGS:      null
         Intel_linux-64:
           CMAKE_CXX_COMPILER:     "\"icpc;-gnu-prefix=${CONDA_PREFIX}/bin/${HOST}-;--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
           //CMAKE_CXX_FLAGS:      null

@@ -318,7 +318,8 @@ jobs:
     - name: Compile & Install Psi4
       run: |
         if [[ "${{ runner.os }}" != "Linux" ]]; then
-          # limit to avoid OOM errors in GHA
+          # limit to avoid GHA OOM errors in libmints
+          # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
           export CMAKE_BUILD_PARALLEL_LEVEL=2
         fi
         cmake --build objdir --config Release --target install
