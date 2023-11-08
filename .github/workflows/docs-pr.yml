@@ -53,7 +53,6 @@ jobs:
         #
         printf "\n<<<  env_p4docs.yaml  >>>\n"
         pygmentize -g -O style=colorful,linenos=1 env_p4docs.yaml
-        #cat env_p4docs.yaml
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
         fi
