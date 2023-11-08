@@ -109,8 +109,9 @@ else:
     conda_list_struct = {}
     base_list_struct = {}
 print("TTT", conda_prefix)
-conda_prefix = Path(conda_prefix).as_posix()
-print("TTT2", conda_prefix)
+if conda_prefix:  # None if base env not activated
+    conda_prefix = Path(conda_prefix).as_posix()
+    print("TTT2", conda_prefix)
 
 
 conda_list_pkgver = {item["name"]: item["version"] for item in conda_list_struct}
@@ -446,7 +447,7 @@ conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapa
 conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
 
 # (3.1) generate cmake cache file from conda env.
-./conda/psi4-path-advisor.py cmake
+conda/psi4-path-advisor.py cmake
 #> cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 && cmake --build objdir_p4dev310
 # (3.2) edit cache_p4dev310.cmake to customize build configuration.
 # (3.3) issue suggested or customized command to configure and build with cmake.

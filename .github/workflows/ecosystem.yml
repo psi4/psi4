@@ -50,7 +50,6 @@ jobs:
               -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
               -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
               -D psi4_SKIP_ENABLE_Fortran=ON
-              -D CMAKE_BUILD_TYPE=Release
               -D ENABLE_XHOST=OFF
             # Notes:
             # * See mkl-version notes at end
@@ -400,6 +399,7 @@ jobs:
       run: |
         pygmentize -g env_p4build.yaml
         pygmentize -g cache_p4build@objdir.cmake
+        conda/psi4-path-advisor.py -vv
         #echo "::group::Prepare Environment"
         #mamba install ruamel_yaml -c conda-forge
         #echo "::endgroup::"
