@@ -542,6 +542,7 @@ if args.subparser_name in ["conda", "env"]:
     conda_platform = args.platform
 else:
     conda_platform = conda_platform_native
+conda_unix = "win-64" if conda_platform == "win-64" else "unix"
 
 
 if args.v > 1:
@@ -858,7 +859,7 @@ elif args.subparser_name in ["cmake", "cache"]:
                     text.append("#   Note that mixing lapack implementations is not advised.")
                 dcmake_vars = conda["cmake"].get(f"{args.lapack}_{conda_platform}", conda["cmake"].get(args.lapack))
             else:
-                dcmake_vars = conda["cmake"]
+                dcmake_vars = conda["cmake"].get(f"{conda_unix}", conda["cmake"])
 
             for k, v in dcmake_vars.items():
 

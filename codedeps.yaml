@@ -193,9 +193,11 @@ data:
       aux_build_names_note:
         pip: "Package installer not strictly needed but needs to be tied to this python if used."
       cmake:
+        unix:
+          Python_EXECUTABLE: ${CONDA_PREFIX}/bin/python
+        win-64:
+          Python_EXECUTABLE: "\"${CONDA_PREFIX}/python.exe\""
         #Python_ROOT_DIR: ${CONDA_PREFIX}
-        Python_EXECUTABLE: ${CONDA_PREFIX}/bin/python
-        #Python_EXECUTABLE: %CONDA_PREFIX%/python.exe
         #//Python_LIBRARY: null
         #//Python_INCLUDE_DIR: null
 
