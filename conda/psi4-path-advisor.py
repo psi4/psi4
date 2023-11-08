@@ -89,6 +89,7 @@ re_pkgline = re.compile("(?P<suppress>//)?(?P<chnl>.*::)?(?P<pkg>[A-Za-z0-9_-]+)
 
 conda_available = shutil.which("conda")
 mamba_available = shutil.which("mamba")
+print(f"{conda_available=} {mamba_available=}")
 pm_available = (conda_available or mamba_available)
 
 if pm_available:

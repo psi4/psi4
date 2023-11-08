@@ -91,7 +91,7 @@ jobs:
           -S. \
           -B objdir \
           -G Ninja \
-          -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
+          -C ${{ github.workspace }}/cache_p4docs@objdir.cmake \
           -D CMAKE_BUILD_TYPE=Debug \
           -D CMAKE_CXX_FLAGS="-O0" \
           -D SPHINXMAN_STRICT=ON

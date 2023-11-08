@@ -153,8 +153,6 @@ jobs:
       run: |
         mamba info
         mamba list
-        which mamba
-        which conda
 
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'
