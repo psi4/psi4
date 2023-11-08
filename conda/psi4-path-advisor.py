@@ -52,7 +52,7 @@ def conda_list(*, name: str = None, prefix: str = None):
     #env_list_dict = json.loads(env_list_json)
 
     """
-    condaexe = "mamba.bat" if (os.name == "nt") else "conda"
+    condaexe = "conda.bat" if (os.name == "nt") else "conda"
     if name:
         proc = run([condaexe, "list", "--json", "--name", name], text=True, capture_output=True)
     elif prefix:
@@ -63,7 +63,7 @@ def conda_list(*, name: str = None, prefix: str = None):
 
 
 def conda_info():
-    condaexe = shutil.which("mamba") + ".bat" if (os.name == "nt") else "conda"
+    condaexe = "conda.bat" if (os.name == "nt") else "conda"
     proc = run([condaexe, "info", "--json"], text=True, capture_output=True)
     return json.loads(proc.stdout)
 
@@ -845,6 +845,8 @@ elif args.subparser_name in ["cmake", "cache"]:
             text.append(primary_banner)
             if note := conda.get("cmake_note"):
                 text.append(f"# {note}")
+            print("BBB", primary, args.compiler, conda_platform)
+            print("CCC", conda["cmake"])
 
             if primary in ["c-compiler", "cxx-compiler", "fortran-compiler"]:
                 if args.compiler == "byo":
