@@ -153,6 +153,7 @@ jobs:
       run: |
         mamba info
         mamba list
+        ls -l "C:\\Miniconda3\\condabin"
 
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'

@@ -52,7 +52,7 @@ def conda_list(*, name: str = None, prefix: str = None):
     #env_list_dict = json.loads(env_list_json)
 
     """
-    condaexe = shutil.which("mamba") if os.name == "nt" else "conda"
+    condaexe = shutil.which("mamba") + ".exe" if (os.name == "nt") else "conda"
     if name:
         proc = run([condaexe, "list", "--json", "--name", name], text=True, capture_output=True)
     elif prefix:
@@ -63,7 +63,7 @@ def conda_list(*, name: str = None, prefix: str = None):
 
 
 def conda_info():
-    condaexe = shutil.which("mamba") if os.name == "nt" else "conda"
+    condaexe = shutil.which("mamba") + ".exe" if (os.name == "nt") else "conda"
     proc = run([condaexe, "info", "--json"], text=True, capture_output=True)
     return json.loads(proc.stdout)
 
