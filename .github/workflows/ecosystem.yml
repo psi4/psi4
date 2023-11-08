@@ -18,7 +18,7 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
+          - runs-on: ubuntu-20.04
             python-version: "3.12"
             mkl-version: ""
             pytest-marker-expr: "addon and not long"
@@ -153,6 +153,8 @@ jobs:
       run: |
         mamba info
         mamba list
+        which mamba
+        which conda
 
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'
