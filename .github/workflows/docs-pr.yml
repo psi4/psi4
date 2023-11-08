@@ -52,7 +52,7 @@ jobs:
           --offline-conda
         #
         printf "\n<<<  env_p4docs.yaml  >>>\n"
-        pygmentize -g -O style=colorful,linenos=1 env_p4docs.yaml
+        pygmentize -g -O style=friendly,linenos=1 env_p4docs.yaml
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
         fi

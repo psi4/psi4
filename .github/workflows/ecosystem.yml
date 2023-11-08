@@ -165,7 +165,7 @@ jobs:
           --objdir objdir \
           --insist
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        pygmentize -g -O style=colorful,linenos=1 cache_p4build@objdir.cmake
+        pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
         #
         cmake \
           -S. \
@@ -222,7 +222,7 @@ jobs:
           --objdir objdir \
           --insist
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        pygmentize -g -O style=colorful,linenos=1 cache_p4build@objdir.cmake
+        pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
         #
         cmake \
           -S. \
@@ -284,7 +284,7 @@ jobs:
           --objdir objdir \
           --insist
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        pygmentize -g -O style=colorful,linenos=1 cache_p4build@objdir.cmake
+        pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
         #
         cmake \
           -S. \

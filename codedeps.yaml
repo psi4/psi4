@@ -408,6 +408,8 @@ data:
         mkl:
           LAPACK_LIBRARIES:    ${CONDA_PREFIX}/lib/libmkl_rt${SHLIB_EXT}
           LAPACK_INCLUDE_DIRS: ${CONDA_PREFIX}/include
+        mkl_win-64:
+          LAPACK_LIBRARIES:    "\"${CONDA_PREFIX}\\Library\\lib\\mkl_rt.lib\""
         openblas:
           LAPACK_LIBRARIES:    ${CONDA_PREFIX}/lib/libopenblas${SHLIB_EXT}
         blis:
