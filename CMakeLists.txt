@@ -12,9 +12,7 @@ endif()
                                               # 3.2: continue()
                                               # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
 
-message("VVV0 ${CMAKE_BUILD_TYPE}")
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build.")
-message("VVV1 ${CMAKE_BUILD_TYPE}")
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build.")  # foil Ninja Debug on Windows
 
 project(psi4
         LANGUAGES C CXX)
@@ -155,9 +153,7 @@ endif()
 ############################  Options: Build How?  #############################
 include(psi4OptionsTools)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
-message("WWW0 ${CMAKE_BUILD_TYPE}")
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
-message("WWW1 ${CMAKE_BUILD_TYPE}")
 include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
 # below are uncommon to adjust
 option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)

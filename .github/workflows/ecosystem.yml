@@ -25,7 +25,7 @@ jobs:
             pytest-marker-expr: "smoke"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
+            #  -D BUILD_SHARED_LIBS=ON
 
           #- runs-on: macos-13  # ensures py!=27 in base OS
           #  python-version: "3.9"
@@ -47,10 +47,10 @@ jobs:
             pytest-marker-expr: "addon and not long and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=OFF
               -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
               -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
               -D psi4_SKIP_ENABLE_Fortran=ON
+            #  -D BUILD_SHARED_LIBS=OFF
             # Notes:
             # * See mkl-version notes at end
             # * "not d2ints" allows Windows accessing c-f L2 to pass
@@ -111,17 +111,16 @@ jobs:
         pip install PyYAML
         echo "::endgroup::"
         #
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          conda info --json
-        fi
         conda/psi4-path-advisor.py \
           env \
           --name p4build \
           --python ${{ matrix.cfg.python-version }} \
           --disable docs \
           --offline-conda
-        printf "\n<<<  env_p4build.yaml (pre)  >>>\n"
+        echo "::group::View Env Spec File for Conda"
+        printf "\n<<<  env_p4build.yaml  >>>\n"
         cat env_p4build.yaml
+        echo "::endgroup::"
         #
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           :
@@ -139,9 +138,6 @@ jobs:
           :
         fi
         echo "  - pygments" >> env_p4build.yaml
-        #
-        printf "\n<<<  env_p4build.yaml (post)  >>>\n"
-        cat env_p4build.yaml
 
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
@@ -168,8 +164,10 @@ jobs:
           cache \
           --objdir objdir \
           --insist
+        echo "::group::View Cache File for CMake"
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
         pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
+        echo "::endgroup::"
         #
         cmake \
           -S. \
@@ -181,42 +179,8 @@ jobs:
           -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           ${{ matrix.cfg.cmargs }}
 
-          #-G Ninja \
-          #-D CMAKE_BUILD_TYPE=Release \
-          #-D CMAKE_INSTALL_PREFIX=./install \
-          #-D CMAKE_C_COMPILER=${CC} \
-          #-D CMAKE_CXX_COMPILER=${CXX} \
-          #-D CMAKE_Fortran_COMPILER=${FC} \
-          #-D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          #-D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          #-D ENABLE_ambit=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
-          #-D ENABLE_CheMPS2=OFF \
-          #-D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
-          #-D ENABLE_dkh=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-          #-D ENABLE_ecpint=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-          #-D ENABLE_Einsums=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_Einsums=ON \
-          #-D ENABLE_gdma=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-          #-D ENABLE_PCMSolver=ON \
-          #-D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
-          #-D ENABLE_simint=OFF \
-          #-D SIMINT_VECTOR=sse \
-          #-D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
-          #-D ENABLE_v2rdm_casscf=ON \
-          #-D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           #-D ENABLE_OPENMP=ON \
           #-D ENABLE_XHOST=OFF \
-          #${{ matrix.cfg.cmargs }}
 
     - name: Configure Psi4, Conda defaults Clang (M)
       if: runner.os == 'macOS'
@@ -225,8 +189,10 @@ jobs:
           cache \
           --objdir objdir \
           --insist
+        echo "::group::View Cache File for CMake"
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
         pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
+        echo "::endgroup::"
         #
         cmake \
           -S. \
@@ -237,48 +203,12 @@ jobs:
           -D ENABLE_v2rdm_casscf=ON \
           -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           ${{ matrix.cfg.cmargs }}
-        #cmake \
-        #  -S. \
-        #  -B objdir \
-        #  -G Ninja \
-        #  -D CMAKE_BUILD_TYPE=Release \
-        #  -D CMAKE_INSTALL_PREFIX=./install \
-        #  -D CMAKE_C_COMPILER=${CC} \
-        #  -D CMAKE_CXX_COMPILER=${CXX} \
-        #  -D CMAKE_Fortran_COMPILER=${FC} \
-        #  -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-        #  -D ENABLE_ambit=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
-        #  -D ENABLE_CheMPS2=OFF \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
-        #  -D ENABLE_dkh=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-        #  -D ENABLE_ecpint=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-        #  -D ENABLE_Einsums=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_Einsums=ON \
-        #  -D ENABLE_gdma=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-        #  -D ENABLE_PCMSolver=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
-        #  -D ENABLE_simint=OFF \
-        #  -D SIMINT_VECTOR=sse \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
-        #  -D ENABLE_v2rdm_casscf=ON \
-        #  -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
+
         #  -D ENABLE_OPENMP=ON \
         #  -D ENABLE_XHOST=OFF \
         #  -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
         #  -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
         #  -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
-        #  ${{ matrix.cfg.cmargs }}
 
     - name: Configure Psi4, LLVM clang-cl (W)
       if: runner.os == 'Windows'
@@ -287,43 +217,21 @@ jobs:
           cache \
           --objdir objdir \
           --insist
+        echo "::group::View Cache File for CMake"
         printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
         pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
+        echo "::endgroup::"
         #
         cmake \
           -S. \
           -B objdir \
           -G Ninja \
-          -C "${{ github.workspace }}\cache_p4build@objdir.cmake" \
+          -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
           -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
-        #cmake \
-        #  -S . \
-        #  -B objdir \
-        #  -G Ninja \
-        #  -D CMAKE_BUILD_TYPE=Release \
-        #  -D CMAKE_INSTALL_PREFIX=./install \
-        #  -D CMAKE_C_COMPILER=clang-cl \
-        #  -D CMAKE_CXX_COMPILER=clang-cl \
-        #  -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_optking=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-        #  -D ENABLE_dkh=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
-        #  -D ENABLE_ecpint=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_ecpint=ON \
-        #  -D ENABLE_gdma=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
-        #  -D ENABLE_PCMSolver=ON \
-        #  -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
+
         #  -D ENABLE_OPENMP=ON \
         #  -D ENABLE_XHOST=OFF \
-        #  ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
       run: |
@@ -392,7 +300,6 @@ jobs:
 
     - name: Test Addons with Pytest
       working-directory: ./objdir
-      # (1st entry PYTHONPATH) need to find the Psi4 module
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files

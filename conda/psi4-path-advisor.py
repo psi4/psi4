@@ -108,10 +108,8 @@ else:
     conda_host = None
     conda_list_struct = {}
     base_list_struct = {}
-print("TTT", conda_prefix)
 if conda_prefix:  # None if base env not activated
     conda_prefix = Path(conda_prefix).as_posix()
-    print("TTT2", conda_prefix)
 
 
 conda_list_pkgver = {item["name"]: item["version"] for item in conda_list_struct}
@@ -406,7 +404,7 @@ class PreserveWhiteSpaceWrapRawTextHelpFormatter(argparse.RawDescriptionHelpForm
                 textRows[idx] = " "
             elif search:
                 lWSpace = search.end()
-                lines = [self.__add_whitespace(i,lWSpace,x) for i,x in enumerate(_textwrap.wrap(line, width))]
+                lines = [self.__add_whitespace(i,lWSpace,x) for i,x in enumerate(_textwrap.wrap(line, 70))]  # width))]
                 textRows[idx] = lines
 
         return [item for sublist in textRows for item in sublist]
@@ -421,9 +419,9 @@ parser = argparse.ArgumentParser(
 Mediates file https://github.com/psi4/psi4/blob/master/codedeps.yaml
 Run env subcommand. Conda env create and activate. Run cmake subcommand. Build.
 
-# =======================================
-#  (A) black-box usage (copy/paste-able)
-# =======================================
+=========================================
+  (A) black-box usage (copy/paste-able)
+=========================================
 # (1) get code from GitHub
 git clone https://github.com/psi4/psi4.git && cd psi4
 # (2) generate env spec file from codedeps.yaml. "eval $(...)" creates and activates conda env.
@@ -433,12 +431,14 @@ eval $(conda/psi4-path-advisor.py cmake)
 
 shows up in p4dev
 
-# =======================================
-#  (B) flexible usage
-# =======================================
+=========================================
+  (B) flexible usage
+=========================================
 # (1) get code from GitHub
 git clone https://github.com/psi4/psi4.git && cd psi4
 
+# (2.0) consider dependency options
+conda/psi4-path-advisor.py env -h
 # (2.1) generate env spec file from codedeps.yaml.
 conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
 #> conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
@@ -446,6 +446,8 @@ conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapa
 # (2.3) issue suggested or customized command to create and activate conda env.
 conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
 
+# (3.0) consider compile options
+conda/psi4-path-advisor.py cmake -h
 # (3.1) generate cmake cache file from conda env.
 conda/psi4-path-advisor.py cmake
 #> cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 && cmake --build objdir_p4dev310
@@ -470,10 +472,10 @@ bash for eval. conda available.
 
 parser.add_argument("-v", action="count", default=0,
     help="""Use for more printing (-vv).
-Do not use this arg with bash command substitution: eval $(psi4-path-advisor args)""")
+This arg is NOT compatible with bash command substitution.""")
 
 subparsers = parser.add_subparsers(dest="subparser_name",
-    help="???")
+    help="Script requires a subcommand.")
 
 parser_env = subparsers.add_parser("env",
     aliases=["conda"],
@@ -512,8 +514,8 @@ parser_env.add_argument("--platform",
 check this value! Argument rarely used.""")
 parser_env.add_argument("--offline-conda",
     action="store_true",
-    help=f"""Use script without conda/mamba available. Argument used rarely for
-bootstrapping CI. Do not use this arg with bash command substitution""")
+    help=f"""Use script without conda/mamba available.
+Useful for bootstrapping CI runners. This arg is NOT compatible with bash command substitution.""")
 
 # add constraints to env file?
 
@@ -537,8 +539,7 @@ parser_cmake.add_argument("--objdir",
 Can instead rename on cmdline, so argument mostly for printing.""")
 parser_cmake.add_argument("--insist",
     action="store_true",
-    help=f"""Set the cache to prevent cmake from falling back on internal build
-for packages present in the conda environment.""")
+    help=f"""Set the cache to prevent cmake from falling back on internal build for packages present in the conda environment.""")
 
 args = parser.parse_args()
 
@@ -850,8 +851,6 @@ elif args.subparser_name in ["cmake", "cache"]:
             text.append(primary_banner)
             if note := conda.get("cmake_note"):
                 text.append(f"# {note}")
-            print("BBB", primary, args.compiler, conda_platform)
-            print("CCC", conda["cmake"])
 
             if primary in ["c-compiler", "cxx-compiler", "fortran-compiler"]:
                 if args.compiler == "byo":
@@ -893,6 +892,7 @@ elif args.subparser_name in ["cmake", "cache"]:
                     if "${HOST}" in v:
                         v = v.replace("${HOST}", conda_host)
                     text.append(f'set({k:<30} {v} CACHE {ctyp} "")')
+                    print("FFF", v, Path(v).exists())
 
         else:
             if note := conda.get("cmake_note"):
