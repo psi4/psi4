@@ -15,13 +15,14 @@ import unicodedata
 import textwrap as _textwrap
 from pathlib import Path
 from subprocess import run
+from typing import Dict
 
 
 codedeps_yaml = Path(__file__).parent.parent / "codedeps.yaml"
 cmake_S = os.path.relpath(codedeps_yaml.parent, start=Path.cwd())
 
 
-def native_platform():
+def native_platform() -> str:
     """Return conda platform code.
     This can't distinguish the metal chip for osx, so prefer to use platform from conda info directly.
 
@@ -40,7 +41,7 @@ def native_platform():
         return "win-64"
 
 
-def conda_list(*, name: str = None, prefix: str = None):
+def conda_list(*, name: str = None, prefix: str = None) -> Dict:
     """Return `conda list` in json format.
 
     Thanks, https://stackoverflow.com/a/56363822
@@ -62,7 +63,7 @@ def conda_list(*, name: str = None, prefix: str = None):
     return json.loads(proc.stdout)
 
 
-def conda_info():
+def conda_info() -> Dict:
     condaexe = "conda.bat" if (os.name == "nt") else "conda"
     proc = run([condaexe, "info", "--json"], text=True, capture_output=True)
     return json.loads(proc.stdout)
@@ -89,7 +90,6 @@ re_pkgline = re.compile("(?P<suppress>//)?(?P<chnl>.*::)?(?P<pkg>[A-Za-z0-9_-]+)
 
 conda_available = shutil.which("conda")
 mamba_available = shutil.which("mamba")
-print(f"{conda_available=} {mamba_available=}")
 pm_available = (conda_available or mamba_available)
 
 if pm_available:
@@ -923,7 +923,7 @@ elif args.subparser_name in ["cmake", "cache"]:
     cmakecache_lbl = conda_prefix_short if (objdir_lbl == conda_prefix_short) else f"{conda_prefix_short}@{objdir_lbl}"
     cmakecache_lbl = f"cache_{cmakecache_lbl}.cmake"
     cmakecache = Path(cmakecache_lbl).resolve()
-    big_args["-C"] = cmakecache
+    big_args["-C"] = rf'"{cmakecache}"'
     big_args_sorted = [f"{k}{big_args[k]}" for k in sorted(big_args.keys(), reverse=True)]
 
     pretext = f"""# {cmakecache_lbl}
