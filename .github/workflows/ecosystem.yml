@@ -26,19 +26,19 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
 
-          - runs-on: macos-13  # ensures py!=27 in base OS
-            python-version: "3.9"
-            mkl-version: ""
-            pytest-marker-expr: "addon and not long"
-            target-sdk: "10.10"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
-              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-            # Notes:
-            # * libiomp5 is picking up naturally but left explicit as guide
-            # * as long as we're using mac to test legacy QCFractal, stick with py39
+          #- runs-on: macos-13  # ensures py!=27 in base OS
+          #  python-version: "3.9"
+          #  mkl-version: ""
+          #  pytest-marker-expr: "addon and not long"
+          #  target-sdk: "10.10"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D BUILD_SHARED_LIBS=ON
+          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+          #  # Notes:
+          #  # * libiomp5 is picking up naturally but left explicit as guide
+          #  # * as long as we're using mac to test legacy QCFractal, stick with py39
 
           - runs-on: windows-latest
             python-version: "3.12"
@@ -392,38 +392,39 @@ jobs:
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "${{ matrix.cfg.pytest-marker-expr }}" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
-      if: false
       run: |
-        echo "::group::Prepare Environment"
-        mamba install ruamel_yaml -c conda-forge
-        echo "::endgroup::"
-        cat > userenvs.py <<EOF
-        from pathlib import Path
-        from ruamel_yaml import YAML
+        pygmentize -g env_p4build.yaml
+        pygmentize -g cache_p4build@objdir.cmake
+        #echo "::group::Prepare Environment"
+        #mamba install ruamel_yaml -c conda-forge
+        #echo "::endgroup::"
+        #cat > userenvs.py <<EOF
+        #from pathlib import Path
+        #from ruamel_yaml import YAML
 
-        file1 = Path("env_p4build.yaml")
-        yaml1 = YAML(typ="rt")
-        yaml1.indent(mapping=2, sequence=4, offset=2)
-        data1 = yaml1.load(file1)
+        #file1 = Path("env_p4build.yaml")
+        #yaml1 = YAML(typ="rt")
+        #yaml1.indent(mapping=2, sequence=4, offset=2)
+        #data1 = yaml1.load(file1)
 
-        file2 = Path("run.yaml")
-        yaml2 = YAML(typ="rt")
-        data2 = yaml2.load(file2)
+        #file2 = Path("run.yaml")
+        #yaml2 = YAML(typ="rt")
+        #data2 = yaml2.load(file2)
 
-        for dep in data2["dependencies"]:
-            if dep not in data1["dependencies"]:
-                data1["dependencies"].append(dep)
+        #for dep in data2["dependencies"]:
+        #    if dep not in data1["dependencies"]:
+        #        data1["dependencies"].append(dep)
 
-        outfile = Path("devtools") / "conda-envs" / "${{ runner.os }}-buildrun-maxeco.yaml"
-        yaml1.dump(data1, outfile)
-        EOF
+        #outfile = Path("devtools") / "conda-envs" / "${{ runner.os }}-buildrun-maxeco.yaml"
+        #yaml1.dump(data1, outfile)
+        #EOF
 
-        python userenvs.py
-        cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
-        #if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        #cp aux.yaml devtools/conda-envs/${{ runner.os }}-aux-maxeco.yaml
-        #fi
-        git diff --color-words
+        #python userenvs.py
+        #cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
+        ##if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
+        ##cp aux.yaml devtools/conda-envs/${{ runner.os }}-aux-maxeco.yaml
+        ##fi
+        #git diff --color-words
 
 # Notes
 # -----
