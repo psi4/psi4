@@ -91,10 +91,11 @@ jobs:
         --disable compilers addons docs
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
+      confa info
       if [[ "${PYTHON_VER}" != "3.12" ]]; then
-        echo "  - psi4/label/dev::dftd3" >> env_p4env.yaml
-        echo "  - psi4/label/dev::dftd4" >> env_p4env.yaml
-        echo "  - psi4/label/dev::gcp" >> env_p4env.yaml
+        echo "  - psi4::dftd3" >> env_p4env.yaml
+        #echo "  - psi4::dftd4" >> env_p4env.yaml
+        echo "  - psi4::gcp" >> env_p4env.yaml
       fi
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
@@ -131,6 +132,9 @@ jobs:
       source activate p4env
       python -V
       python -c 'import numpy; print(numpy.version.version)'
+      pwd
+      ls -l
+      ls -l $(Agent.BuildDirectory)
       export CXX=${CXX_COMPILER}
       export CC=${C_COMPILER}
       export FC=${F_COMPILER}
