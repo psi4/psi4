@@ -99,7 +99,7 @@ jobs:
       echo "\n<<<  env_p4env.yaml  >>>\n"
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
-      conda activate p4env
+      #conda activate p4env
       #conda install -n base conda-libmamba-solver
       #conda create -q \
       #  -n p4env \
@@ -122,13 +122,13 @@ jobs:
       #  conda-forge::qcengine \
       #  conda-forge::optking \
       #  scipy
-      #source activate p4env
+      source activate p4env
       which python
       conda list
     displayName: 'Build Environment'
 
   - bash: |
-      conda activate p4env
+      source activate p4env
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       export CXX=${CXX_COMPILER}
@@ -171,7 +171,7 @@ jobs:
 
   - bash: |
       cd build
-      conda activate p4env
+      source activate p4env
       ../devtools/scripts/ci_build.sh
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
@@ -179,19 +179,19 @@ jobs:
 
   - bash: |
       cd build
-      conda activate p4env
+      source activate p4env
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
   - bash: |
       cd build
-      conda activate p4env
+      source activate p4env
       python ../devtools/scripts/ci_run_test.py
       python ../devtools/scripts/ci_print_failing.py
     displayName: 'CTest Tests'
 
   - bash: |
       cd build
-      conda activate p4env
+      source activate p4env
       PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -n 2 -m 'quick' stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
