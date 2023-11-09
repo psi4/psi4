@@ -18,23 +18,27 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
+          - label: "Conda GNU (L)"
+            runs-on: ubuntu-latest
             python-version: "3.12"
             mkl-version: ""
-            #pytest-marker-expr: "addon and not long"
-            pytest-marker-expr: "smoke"
+            pytest-marker-expr: "addon and not long"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
             #  -D BUILD_SHARED_LIBS=ON
 
-          - runs-on: macos-13  # ensures py!=27 in base OS
+          - label: "Conda Clang (M)"
+            runs-on: macos-13  # ensures py!=27 in base OS
             python-version: "3.9"
             mkl-version: ""
-            #pytest-marker-expr: "addon and not long"
-            pytest-marker-expr: "smoke"
+            pytest-marker-expr: "addon and not long"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D ENABLE_v2rdm_casscf=ON
+              -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON
           #    -D BUILD_SHARED_LIBS=ON
           #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
           #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
@@ -42,15 +46,15 @@ jobs:
             # * libiomp5 is picking up naturally but left explicit as guide
             # * as long as we're using mac to test legacy QCFractal, stick with py39
 
-          - runs-on: windows-latest
+          - label: "LLVM clang-cl (W)"
+            runs-on: windows-latest
             python-version: "3.12"
             mkl-version: "=2022.1"
-            #pytest-marker-expr: "addon and not long and not d2ints"
-            pytest-marker-expr: "smoke and not d2ints"
+            pytest-marker-expr: "addon and not long and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
               -D psi4_SKIP_ENABLE_Fortran=ON
+              #-D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
             # needed -D psi4_SKIP_ENABLE_Fortran=ON
             #  -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
             #  -D BUILD_SHARED_LIBS=OFF
@@ -58,7 +62,7 @@ jobs:
             # * See mkl-version notes at end
             # * "not d2ints" allows Windows accessing c-f L2 to pass
 
-    name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
+    name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.label }}"
     runs-on: ${{ matrix.cfg.runs-on }}
     defaults:
       run:
@@ -161,61 +165,7 @@ jobs:
         mamba info
         mamba list
 
-    - name: Configure Psi4, Conda defaults GNU (L)
-      if: runner.os == 'Linux'
-      run: |
-        conda/psi4-path-advisor.py \
-          cache \
-          --objdir objdir \
-          --insist
-        echo "::group::View Cache File for CMake"
-        printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
-        echo "::endgroup::"
-        #
-        cmake \
-          -S. \
-          -B objdir \
-          -G Ninja \
-          -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
-          -D CMAKE_INSTALL_PREFIX=./install \
-          -D ENABLE_v2rdm_casscf=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
-          ${{ matrix.cfg.cmargs }}
-
-          #-D ENABLE_OPENMP=ON \
-          #-D ENABLE_XHOST=OFF \
-
-    - name: Configure Psi4, Conda defaults Clang (M)
-      if: runner.os == 'macOS'
-      run: |
-        conda/psi4-path-advisor.py \
-          cache \
-          --objdir objdir \
-          --insist
-        echo "::group::View Cache File for CMake"
-        printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
-        echo "::endgroup::"
-        #
-        cmake \
-          -S. \
-          -B objdir \
-          -G Ninja \
-          -C ${{ github.workspace }}/cache_p4build@objdir.cmake \
-          -D CMAKE_INSTALL_PREFIX=./install \
-          -D ENABLE_v2rdm_casscf=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
-          ${{ matrix.cfg.cmargs }}
-
-        #  -D ENABLE_OPENMP=ON \
-        #  -D ENABLE_XHOST=OFF \
-        #  -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
-        #  -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
-        #  -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
-
-    - name: Configure Psi4, LLVM clang-cl (W)
-      if: runner.os == 'Windows'
+    - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
         conda/psi4-path-advisor.py \
           cache \
@@ -234,6 +184,18 @@ jobs:
           -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
 
+          # (L)
+          #-D ENABLE_OPENMP=ON \
+          #-D ENABLE_XHOST=OFF \
+
+        # (M)
+        #  -D ENABLE_OPENMP=ON \
+        #  -D ENABLE_XHOST=OFF \
+        #  -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
+        #  -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
+        #  -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
+
+        # (W)
         #  -D ENABLE_OPENMP=ON \
         #  -D ENABLE_XHOST=OFF \
 
@@ -337,9 +299,6 @@ jobs:
 
         #python userenvs.py
         #cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
-        ##if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        ##cp aux.yaml devtools/conda-envs/${{ runner.os }}-aux-maxeco.yaml
-        ##fi
         #git diff --color-words
 
 # Notes

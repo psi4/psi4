@@ -7,7 +7,7 @@ import psi4
 from standard_suite_runner import runner_asserter
 from addons import using
 
-pytestmark = [pytest.mark.psi, pytest.mark.api]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.stdsuite]
 
 @pytest.fixture
 def clsd_open_pmols():
