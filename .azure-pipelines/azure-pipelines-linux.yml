@@ -132,12 +132,6 @@ jobs:
       source activate p4env
       python -V
       python -c 'import numpy; print(numpy.version.version)'
-      pwd
-      ls -l
-      echo bld
-      ls -l $(Agent.BuildDirectory)
-      echo src
-      ls -l $(Build.SourcesDirectory)
       export CXX=${CXX_COMPILER}
       export CC=${C_COMPILER}
       export FC=${F_COMPILER}
@@ -150,12 +144,14 @@ jobs:
       cmake \
         -S. \
         -B build \
-        -G Ninja \
+        -G "Unix Makefiles" \
         -C $(Build.SourcesDirectory)/cache_p4env@build.cmake \
-        -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install \
+        -D CMAKE_CXX_COMPILER=${CXX_COMPILER} \
+        -D CMAKE_C_COMPILER=${C_COMPILER} \
+        -D CMAKE_Fortran_COMPILER=${F_COMPILER} \
+        -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -D ENABLE_PLUGIN_TESTING=ON \
-        -D CMAKE_BUILD_TYPE=${BUILD_TYPE}
-      ls -l
+        -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install
       # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
       #   b/c their c++ symbols don't mix with the different Travis compilers. for other
       #   reasons, pkgs are being compiled less statically, sad for CI.
@@ -178,12 +174,9 @@ jobs:
     displayName: 'Configure Build'
 
   - bash: |
-      ls -l
       cd build
-      echo build
-      ls -l
       source activate p4env
-      ../devtools/scripts/ci_build_ninja.sh
+      ../devtools/scripts/ci_build.sh
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
