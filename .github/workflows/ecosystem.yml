@@ -54,8 +54,9 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
-              #-D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
+              -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
             # needed -D psi4_SKIP_ENABLE_Fortran=ON
+            # needed -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
             #  -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
             #  -D BUILD_SHARED_LIBS=OFF
             # Notes:

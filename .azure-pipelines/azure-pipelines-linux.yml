@@ -16,8 +16,8 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-7 g++-7'
-        vmImage: 'ubuntu-22.04'
-        PYTEST_MARKER_EXPR: '-m quick'
+        vmImage: 'ubuntu-20.04'
+        PYTEST_MARKER_EXPR: "-m quick"
 
       gcc_latest:
         CXX_COMPILER: 'g++'
@@ -26,8 +26,8 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
-        vmImage: 'ubuntu-22.04'
-        PYTEST_MARKER_EXPR: '-m "api and not stdsuite and not (smoke or quick or medlong or long)"'
+        vmImage: 'ubuntu-latest'
+        PYTEST_MARKER_EXPR: "-m \"api and not stdsuite and not (smoke or quick or medlong or long)\""
 
       clang_latest:
         CXX_COMPILER: 'clang++'
@@ -36,8 +36,8 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-6.0'
-        vmImage: 'ubuntu-22.04'
-        PYTEST_MARKER_EXPR: '-m "cli and not (smoke or quick or medlong or long)"'
+        vmImage: 'ubuntu-20.04'
+        PYTEST_MARKER_EXPR: '-m \"cli and not (smoke or quick or medlong or long)\"'
 
   pool:
     vmImage: $(vmImage)
