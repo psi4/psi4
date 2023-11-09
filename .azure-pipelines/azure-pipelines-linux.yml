@@ -145,16 +145,17 @@ jobs:
         cmake \
         --objdir build \
         --insist
-      echo "\n<<<  cache_p4build@objdir.cmake  >>>\n"
+      echo "\n<<<  cache_p4env@build.cmake  >>>\n"
       cat cache_p4env@build.cmake
       cmake \
         -S. \
         -B objdir \
         -G Ninja \
-        -C $(Build.SourcesDirectory)/cache_p4build@objdir.cmake \
+        -C $(Build.SourcesDirectory)/cache_p4env@build.cmake \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install \
         -D ENABLE_PLUGIN_TESTING=ON \
         -D CMAKE_BUILD_TYPE=${BUILD_TYPE}
+      ls -l
       # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
       #   b/c their c++ symbols don't mix with the different Travis compilers. for other
       #   reasons, pkgs are being compiled less statically, sad for CI.
