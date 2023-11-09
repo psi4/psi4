@@ -149,7 +149,7 @@ jobs:
       cat cache_p4env@build.cmake
       cmake \
         -S. \
-        -B objdir \
+        -B build \
         -G Ninja \
         -C $(Build.SourcesDirectory)/cache_p4env@build.cmake \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install \
@@ -178,7 +178,10 @@ jobs:
     displayName: 'Configure Build'
 
   - bash: |
+      ls -l
       cd build
+      echo build
+      ls -l
       source activate p4env
       ../devtools/scripts/ci_build.sh
       readelf -d ./stage/lib/psi4/core*.so
