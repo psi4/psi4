@@ -79,31 +79,46 @@ jobs:
   - bash: |
         echo "##vso[task.prependpath]$CONDA/bin"
         conda config --set always_yes yes
+        conda config --set solver libmamba
     displayName: "Add Conda to PATH"
 
   - bash: |
-      conda create -q \
-        -n p4env \
-        python=$PYTHON_VER \
-        psi4/label/dev::gau2grid \
-        psi4/label/testing::libint2=2.7.2=h2fe1556_0 \
-        psi4/label/dev::libxc=5 \
-        psi4/label/dev::dftd3 \
-        psi4/label/dev::gcp \
-        psi4/label/dev::pybind11-headers \
-        blas=*=mkl \
-        mkl-include \
-        networkx \
-        conda-forge::pytest>=7.0.1 \
-        eigen \
-        libboost-headers \
-        conda-forge::pytest-xdist \
-        msgpack-python \
-        conda-forge::qcelemental \
-        conda-forge::qcengine \
-        conda-forge::optking \
-        scipy
-      source activate p4env
+      conda/psi4-path-advisor.py \
+        env \
+        --name p4env \
+        --python $PYTHON_VER \
+        --disable compilers docs
+      echo "\n<<<  env_p4env.yaml  >>>\n"
+      cat env_p4env.yaml
+      echo "  - psi4/label/dev::dftd3" >> env_p4env.yaml
+      echo "  - psi4/label/dev::gcp" >> env_p4env.yaml
+      echo "\n<<<  env_p4env.yaml  >>>\n"
+      cat env_p4env.yaml
+      conda env create -n p4env -f env_p4env.yaml
+      conda activate p4env
+      #conda install -n base conda-libmamba-solver
+      #conda create -q \
+      #  -n p4env \
+      #  python=$PYTHON_VER \
+      #  psi4/label/dev::gau2grid \
+      #  psi4/label/testing::libint2=2.7.2=h2fe1556_0 \
+      #  psi4/label/dev::libxc=5 \
+      #  psi4/label/dev::dftd3 \
+      #  psi4/label/dev::gcp \
+      #  psi4/label/dev::pybind11-headers \
+      #  blas=*=mkl \
+      #  mkl-include \
+      #  networkx \
+      #  conda-forge::pytest>=7.0.1 \
+      #  eigen \
+      #  libboost-headers \
+      #  conda-forge::pytest-xdist \
+      #  msgpack-python \
+      #  conda-forge::qcelemental \
+      #  conda-forge::qcengine \
+      #  conda-forge::optking \
+      #  scipy
+      #source activate p4env
       which python
       conda list
     displayName: 'Build Environment'

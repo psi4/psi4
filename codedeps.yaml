@@ -1390,6 +1390,8 @@ data:
       constraint: null
       cmake:
         ENABLE_bse: true
+        //CMAKE_INSIST_FIND_PACKAGE_bse: true
+        //CMAKE_DISABLE_FIND_PACKAGE_bse: true
       cmake_note: "Primarily OTF runtime detected. With package present, CMake enabling only relevant for CTest."
 
   - project: einsums

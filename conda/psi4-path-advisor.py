@@ -895,7 +895,7 @@ elif args.subparser_name in ["cmake", "cache"]:
                     if "${HOST}" in v:
                         v = v.replace("${HOST}", conda_host)
                     text.append(f'set({k:<30} {v} CACHE {ctyp} "")')
-                    print("FFF", v, Path(v).exists())
+                    # print("EXISTS?", v, Path(v).exists())
 
         else:
             if note := conda.get("cmake_note"):
@@ -1025,17 +1025,6 @@ elif args.subparser_name in ["cmake", "cache"]:
 ##    'Mgnu':   '    -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsGNUCache.cmake \\',
 ##    'objdir': '    -Bobjdir',
 ##}
-#
-#recc = ['/opt/anaconda1anaconda2anaconda3/bin/cmake',
-#        '-S.',
-#        '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsCache.cmake',
-#        '-Bobjdir']
-#
-#if args.disable_addons:
-#    recc.insert(-1, '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsDisableCache.cmake')
-#
-#if args.mkl:
-#    recc.insert(-1, '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsMKLCache.cmake')
 #
 #if sys.platform == 'darwin':
 #    if args.clang:
