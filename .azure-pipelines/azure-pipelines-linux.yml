@@ -83,6 +83,7 @@ jobs:
     displayName: "Add Conda to PATH"
 
   - bash: |
+      conda install pyyaml -c conda-forge
       conda/psi4-path-advisor.py \
         env \
         --name p4env \
