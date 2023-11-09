@@ -134,7 +134,10 @@ jobs:
       python -c 'import numpy; print(numpy.version.version)'
       pwd
       ls -l
+      echo bld
       ls -l $(Agent.BuildDirectory)
+      echo src
+      ls -l $(Build.SourcesDirectory)
       export CXX=${CXX_COMPILER}
       export CC=${C_COMPILER}
       export FC=${F_COMPILER}
@@ -148,7 +151,7 @@ jobs:
         -S. \
         -B objdir \
         -G Ninja \
-        -C $(Agent.BuildDirectory)/cache_p4build@objdir.cmake \
+        -C $(Build.SourcesDirectory)/cache_p4build@objdir.cmake \
         -D CMAKE_INSTALL_PREFIX=$(Agent.BuildDirectory)/Install \
         -D ENABLE_PLUGIN_TESTING=ON \
         -D CMAKE_BUILD_TYPE=${BUILD_TYPE}
