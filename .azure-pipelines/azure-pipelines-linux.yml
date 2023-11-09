@@ -183,7 +183,7 @@ jobs:
       echo build
       ls -l
       source activate p4env
-      ../devtools/scripts/ci_build.sh
+      ../devtools/scripts/ci_build_ninja.sh
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
