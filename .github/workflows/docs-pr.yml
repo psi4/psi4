@@ -11,9 +11,9 @@ jobs:
       matrix:
         cfg:
           - runs-on: ubuntu-latest
-            python-version: "3.11"
-    runs-on: ubuntu-latest
+            python-version: "3.10"
     name: Propose Docs
+    runs-on: ${{ matrix.cfg.runs-on }}
     defaults:
       run:
         shell: bash -l {0}
@@ -51,11 +51,10 @@ jobs:
           --disable addons \
           --offline-conda
         #
+        echo "::group::View Env Spec File for Conda"
         printf "\n<<<  env_p4docs.yaml  >>>\n"
         pygmentize -g -O style=friendly,linenos=1 env_p4docs.yaml
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          :
-        fi
+        echo "::endgroup::"
 
     - name: Create Conda Environment
       if: ${{ github.repository == 'psi4/psi4' }}
@@ -86,8 +85,10 @@ jobs:
           cache \
           --objdir objdir \
           --insist
+        echo "::group::View Cache File for CMake"
         printf "\n<<<  cache_p4docs@objdir.cmake  >>>\n"
         pygmentize -g -O style=colorful,linenos=1 cache_p4docs@objdir.cmake
+        echo "::endgroup::"
         #
         cmake \
           -S. \

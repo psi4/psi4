@@ -470,16 +470,18 @@ data:
       aux_build_names_note:
         "//psi4/label/testing::libint2": "Optionally for linux-64, an AM=7 build is available here."
       cmake:
-        BOOST_ROOT: ${CONDA_PREFIX}
-        Eigen3_ROOT: ${CONDA_PREFIX}
+        BOOST_ROOT:
+          unix: ${CONDA_PREFIX}
+          win-64: ${CONDA_PREFIX}/Library
+        Eigen3_ROOT:
+          unix: ${CONDA_PREFIX}
+          win-64: ${CONDA_PREFIX}/Library
         Libint2_DIR:
           unix: ${CONDA_PREFIX}/lib/cmake/libint2
           win-64: ${CONDA_PREFIX}/Library/lib/cmake/libint2
         //MAX_AM_ERI: 5
         //CMAKE_INSIST_FIND_PACKAGE_Libint2: true
         //CMAKE_DISABLE_FIND_PACKAGE_Libint2: true
-        #BOOST_ROOT:  %CONDA_PREFIX%/Library
-        #Eigen3_ROOT: %CONDA_PREFIX%/Library
 
   - project: libefp
     use:
@@ -875,7 +877,9 @@ data:
       skip_win: true
       cmake:
         ENABLE_ambit: true
-        ambit_DIR: ${CONDA_PREFIX}/share/cmake/ambit
+        ambit_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/ambit
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/ambit
         //CMAKE_INSIST_FIND_PACKAGE_ambit: true
         //CMAKE_DISABLE_FIND_PACKAGE_ambit: true
 
@@ -1419,7 +1423,9 @@ data:
       skip_win: true
       cmake:
         ENABLE_Einsums: true
-        Einsums_DIR: ${CONDA_PREFIX}/share/cmake/Einsums
+        Einsums_DIR:
+          unix: ${CONDA_PREFIX}/share/cmake/Einsums
+          win-64: ${CONDA_PREFIX}/Library/share/cmake/Einsums
         //CMAKE_INSIST_FIND_PACKAGE_Einsums: true
         //CMAKE_DISABLE_FIND_PACKAGE_Einsums: true
 
