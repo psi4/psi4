@@ -98,7 +98,6 @@ jobs:
       if [[ "${PYTHON_VER}" != "3.12" ]]; then
         echo "  - psi4::gcp" >> env_p4env.yaml
         echo "  - psi4::dftd3" >> env_p4env.yaml
-        #echo "  - psi4/label/dev::dftd4" >> env_p4env.yaml
       fi
       sed -i "s;- libxc-c;- psi4::libxc=5;g" env_p4env.yaml
       sed -i "s;- conda-forge/label/libint_dev;#- conda-forge/label/libint_dev;g" env_p4env.yaml
@@ -157,5 +156,5 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 -n 2 -m "$PYTEST_MARKER_EXPR" stage/lib/psi4/tests/
+      PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'

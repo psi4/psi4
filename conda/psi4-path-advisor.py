@@ -539,7 +539,7 @@ parser_cmake.add_argument("--objdir",
 Can instead rename on cmdline, so argument mostly for printing.""")
 parser_cmake.add_argument("--insist",
     action="store_true",
-    help=f"""Set the cache to prevent cmake from falling back on internal build for packages present in the conda environment.""")
+    help=f"""Set the cache (`INSIST_FIND_PACKAGE_<pkg>=ON`) to prevent cmake from falling back on internal build for packages present in the conda environment.""")
 
 args = parser.parse_args()
 

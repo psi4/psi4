@@ -14,8 +14,8 @@ requirements:
     - networkx
     - numpy
     - python={{ PY_VER }}
-    - qcelemental=0.26.0
-    - qcengine=0.27.0
+    - qcelemental=0.27.1
+    - qcengine=0.29.0
     - msgpack-python
     - optking
     - gau2grid
@@ -45,7 +45,7 @@ build:
 
 test:
   requires:
-    - pytest>=7.0.1
+    - pytest
     - dftd3-python
     - gcp-correction
   commands:

@@ -62,9 +62,17 @@ parser.add_argument("-m", "--messy", action='store_true',
 # parser.add_argument("-d", "--debug", action='store_true', help="Flush the outfile at every print statement.")
 # parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
 # parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
+parser.add_argument("--psiapi", action='store_true',
+                    help="""Generates a one-line bash command (safe for command substitution) to source correct """
+                         """paths for Psi4 executable (`which psi4`) and module (`python -c "import psi4"`). """
+                         """This argument is a practical refinement of `--psiapi-path`. Differences are """
+                         """(1) this is one-line so can use cmd substitution and (2) this *doesn't* add the build-time """
+                         """Python interpreter to the path, as this is often controlled by other mechanisms."""
+                         """Also see: `--module`.""")
 parser.add_argument("--psiapi-path", action='store_true',
                     help="""Generates a bash command to source correct Python """
-                         """interpreter and path for ``python -c "import psi4"``""")
+                         """interpreter and path for `python -c "import psi4"` and `which psi4`. """
+                         """Also see: `--psiapi` and `--module`.""")
 parser.add_argument("--module", action='store_true',
                     help="""Generates the path to PsiAPI loading. That is, the following file exists: `psi4 --module`/psi4/__init__.py . Also, adding `psi4 --module` to PYTHONPATH allows "import psi4".""")
 parser.add_argument("-v", "--verbose", action='store_true', help="Prints Psithon to Python translation.")
@@ -190,6 +198,10 @@ if args['psiapi_path']:
     pyexe_dir = os.path.dirname(r"@Python_EXECUTABLE@")
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     # TODO Py not quite right on conda Windows and Psi include %PREFIX$. but maybe not appropriate for Win anyways
+    sys.exit()
+
+if args['psiapi']:
+    print(f"""export PATH={bin_dir}:$PATH PYTHONPATH={lib_dir}:$PYTHONPATH""")
     sys.exit()
 
 if args["module"]:

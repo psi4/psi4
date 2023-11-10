@@ -180,20 +180,20 @@ jobs:
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
-        conda/psi4-path-advisor.py \
-          cache \
-          --objdir objdir \
-          --insist
-        echo "::group::View Cache File for CMake"
-        printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
-        echo "::endgroup::"
+        #conda/psi4-path-advisor.py \
+        #  cache \
+        #  --objdir objdir \
+        #  --insist
+        #echo "::group::View Cache File for CMake"
+        #printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
+        #pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
+        #echo "::endgroup::"
         #
+        #  -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
         cmake \
           -S. \
           -B objdir \
           -G Ninja \
-          -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
           -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
 
