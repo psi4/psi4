@@ -119,6 +119,8 @@ if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
     sys.path.insert(1, r"@pylibefp_PYMOD@")
 if "@ENABLE_gdma@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # gdma
     sys.path.insert(1, r"@gdma_PYMOD@")
+if "@ENABLE_bse@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # bse
+    sys.path.insert(1, r"@bse_PYMOD@")
 
 # Create a custom logger
 import logging

@@ -7,6 +7,10 @@ if(${optking_FOUND})
     message(STATUS "${Cyan}Found optking${ColourReset}: ${PY_optking} (found version ${optking_VERSION})")
     add_library(optking_external INTERFACE)  # dummy
 
+    if(${CMAKE_INSIST_FIND_PACKAGE_optking})
+        message(VERBOSE "Suitable optking located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_optking})
         message(FATAL_ERROR "Suitable optking could not be externally located as user insists")

@@ -6,6 +6,10 @@ if(${ENABLE_ambit})
         message(STATUS "${Cyan}Found ambit${ColourReset}: ${_loc} (found version ${ambit_VERSION})")
         add_library(ambit_external INTERFACE)  # dummy
 
+        if(${CMAKE_INSIST_FIND_PACKAGE_ambit})
+            message(VERBOSE "Suitable ambit located externally as user insists")
+        endif()
+
         # reset below necessary as find_package clears it. better solution sought
         set(TargetHDF5_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5 CACHE PATH "path to externally detected ambitConfig.cmake" FORCE)
     else()

@@ -7,6 +7,11 @@ endif()
 if(${pybind11_FOUND})
     message(STATUS "${Cyan}Found pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
     add_library(pybind11_external INTERFACE)  # dummy
+
+    if(${CMAKE_INSIST_FIND_PACKAGE_pybind11})
+        message(VERBOSE "Suitable pybind11 located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_pybind11})
         message(FATAL_ERROR "Suitable pybind11 could not be externally located as user insists")

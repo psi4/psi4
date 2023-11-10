@@ -5,6 +5,11 @@ if(${ENABLE_gdma})
         get_property(_loc TARGET gdma::pygdma PROPERTY LOCATION)
         message(STATUS "${Cyan}Found gdma${ColourReset}: ${_loc} (found version ${gdma_VERSION})")
         add_library(gdma_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_gdma})
+            message(VERBOSE "Suitable gdma located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_gdma})
             message(FATAL_ERROR "Suitable gdma could not be externally located as user insists")

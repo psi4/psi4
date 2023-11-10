@@ -56,6 +56,11 @@ if (TARGET Libint2::cxx)
         message(WARNING "Libint2 detected but missing ERI 2nd derivative integrals (components eri_c4_d2_l2 eri_c3_d2_l3 eri_c2_d2_l3). Psi4 will automatically fall back to finite difference.")
     endif()
     add_library(libint2_external INTERFACE)  # dummy
+
+    if(${CMAKE_INSIST_FIND_PACKAGE_Libint2})
+        message(VERBOSE "Suitable Libint2 located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_Libint2})
         message(FATAL_ERROR "Suitable Libint2 could not be externally located as user insists")

@@ -5,6 +5,11 @@ if(${ENABLE_mdi})
         get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)
         message(STATUS "${Cyan}Found mdi${ColourReset}: ${_loc} (found version ${mdi_VERSION})")
         add_library(mdi_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_mdi})
+            message(VERBOSE "Suitable mdi located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_mdi})
             message(FATAL_ERROR "Suitable mdi could not be externally located as user insists")

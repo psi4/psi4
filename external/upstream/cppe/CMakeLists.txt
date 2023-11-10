@@ -7,6 +7,11 @@ if(${ENABLE_cppe})
     if(${cppe_FOUND})
         message(STATUS "${Cyan}Found cppe${ColourReset}: ${PY_cppe} (found version ${cppe_VERSION})")
         add_library(cppe_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_cppe})
+            message(VERBOSE "Suitable cppe located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_cppe})
             message(FATAL_ERROR "Suitable cppe could not be externally located as user insists")

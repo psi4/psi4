@@ -5,6 +5,11 @@ if(${ENABLE_dkh})
         get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
         message(STATUS "${Cyan}Found dkh${ColourReset}: ${_loc} (found version ${dkh_VERSION})")
         add_library(dkh_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_dkh})
+            message(VERBOSE "Suitable dkh located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_dkh})
             message(FATAL_ERROR "Suitable dkh could not be externally located as user insists")

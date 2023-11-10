@@ -823,7 +823,7 @@ elif args.subparser_name in ["cmake", "cache"]:
             primary_banner = f"""# <<<  {primary:<27} {", ".join(plain_package_set[1:])}"""
         else:
             all_found = False
-            pkgstr = [pkg if (pkg in conda_list_pkgver) else strike(pkg) for pkg in plain_package_set]
+            pkgstr = [pkg if (pkg in conda_list_pkgver) else strike(pkg, tilde=True) for pkg in plain_package_set]
             primary_banner = f"""# <<<  {pkgstr[0]:<{compute_width(pkgstr[0], 27)}} {", ".join(pkgstr[1:])}"""
             if not use["required"]:
                 absent_merge.append(primary_banner)
@@ -832,7 +832,7 @@ elif args.subparser_name in ["cmake", "cache"]:
         if primary == "libblas" and args.lapack == "openblas" and conda_platform == "linux-64":
             if conda_openblas_variant != "openmp":
                 all_found = False
-                pkgstr.append(strike("openblas=*=openmp*"))
+                pkgstr.append(strike("openblas=*=openmp*", tilde=True))
                 primary_banner = f"""# <<<  {pkgstr[0]:<{compute_width(pkgstr[0], 27)}} {", ".join(pkgstr[1:])}"""
 
         if primary == "libblas" and args.lapack == "mkl" and not all_found:
@@ -941,7 +941,7 @@ elif args.subparser_name in ["cmake", "cache"]:
 #   It sets some likely values to initialize the CMake cache for dependencies
 #   to build your Psi4 source.
 #
-# Dependency packages are shown as \"present-package\" or \"{strike('missing-package')}\".
+# Dependency packages are shown as \"present-package\" or \"{strike('missing-package', tilde=True)}\".
 #   Psi4 is not assured to build if any required dependencies show as missing.
 #   Feel free to edit this file prior to CMake configuration or to override with
 #   \"-D\" arguments on the command line. Note that for most setups, no cache file
@@ -953,6 +953,8 @@ elif args.subparser_name in ["cmake", "cache"]:
 # > conda activate {conda_prefix_short}
 # > cmake \\
 """
+    # using strike(..., tilde=T) in cache file so searchable
+
     for itm in big_args_sorted:
         pretext += "#    " + itm
         pretext += "\n" if itm == big_args_sorted[-1] else " \\\n"

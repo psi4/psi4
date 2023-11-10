@@ -8,6 +8,11 @@ if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
     message(STATUS "${Cyan}Found Libxc${ColourReset}: ${_loc} (found version ${Libxc_VERSION})")
     add_library(libxc_external INTERFACE)  # dummy
+
+    if(${CMAKE_INSIST_FIND_PACKAGE_Libxc})
+        message(VERBOSE "Suitable Libxc located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_Libxc})
         message(FATAL_ERROR "Suitable Libxc could not be externally located as user insists")

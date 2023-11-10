@@ -53,15 +53,20 @@ jobs:
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D CMAKE_C_COMPILER=clang-cl
+              -D CMAKE_CXX_COMPILER=clang-cl
               -D psi4_SKIP_ENABLE_Fortran=ON
               -D OpenMP_LIBRARY_DIRS="D:/a/psi4/psi4/iomp5md/conda/win/2019.1"
             # needed -D psi4_SKIP_ENABLE_Fortran=ON
             # needed -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
             #  -D BUILD_SHARED_LIBS=OFF
             # Notes:
-            # * See mkl-version notes at end
+            # * When not using cache file, need to specify the following:
+            #     -D CMAKE_C_COMPILER=clang-cl
+            #     -D CMAKE_CXX_COMPILER=clang-cl
             # * "not d2ints" allows Windows accessing c-f L2 to pass
             # * Older computers may need -D ENABLE_XHOST=OFF & -D CMAKE_CXX_FLAGS="/arch:AVX"
+            # * See mkl-version notes at end
 
           # (L)
           #-D ENABLE_XHOST=OFF \
@@ -180,21 +185,24 @@ jobs:
 
     - name: Configure Psi4, ${{ matrix.cfg.label }}
       run: |
-        #conda/psi4-path-advisor.py \
-        #  cache \
-        #  --objdir objdir \
-        #  --insist
-        #echo "::group::View Cache File for CMake"
-        #printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
-        #pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
-        #echo "::endgroup::"
+        conda/psi4-path-advisor.py \
+          cache \
+          --objdir objdir \
+          --insist
+        echo "::group::View Cache File for CMake"
+        printf "\n<<<  cache_p4build@objdir.cmake  >>>\n"
+        pygmentize -g -O style=friendly,linenos=1 cache_p4build@objdir.cmake
+        echo "::endgroup::"
         #
-        #  -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
+        # TEMP EXCL -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
+        # TEMP INCL -D BUILD_SHARED_LIBS=ON \
+        # Note: using the cache file (-C below) is optional. See cmargs above.
         cmake \
           -S. \
           -B objdir \
           -G Ninja \
           -D CMAKE_INSTALL_PREFIX=./install \
+          -D BUILD_SHARED_LIBS=ON \
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4

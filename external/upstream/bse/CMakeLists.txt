@@ -7,7 +7,11 @@ if(${ENABLE_bse})
     if(${basis_set_exchange_FOUND})
         message(STATUS "${Cyan}Found bse${ColourReset}: ${PY_basis_set_exchange} (found version ${basis_set_exchange_VERSION})")
         add_library(bse_external INTERFACE)  # dummy
-    
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_bse})
+            message(VERBOSE "Suitable bse located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_bse})
             message(FATAL_ERROR "Suitable bse could not be externally located as user insists")

@@ -4,6 +4,11 @@ if(${gau2grid_FOUND})
     get_property(_loc TARGET gau2grid::gg PROPERTY LOCATION)
     message(STATUS "${Cyan}Found gau2grid${ColourReset}: ${_loc} (found version ${gau2grid_VERSION})")
     add_library(gau2grid_external INTERFACE)  # dummy
+
+    if(${CMAKE_INSIST_FIND_PACKAGE_gau2grid})
+        message(VERBOSE "Suitable gau2grid located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_gau2grid})
         message(FATAL_ERROR "Suitable gau2grid could not be externally located as user insists")

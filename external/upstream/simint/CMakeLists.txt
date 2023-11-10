@@ -7,6 +7,11 @@ if(${ENABLE_simint})
         get_property(_loc TARGET simint::simint PROPERTY LOCATION)
         message(STATUS "${Cyan}Found simint ${simint_MAXAM}${ColourReset}: ${_loc} (found version ${simint_VERSION}; vectorization ${simint_VECTOR})")
         add_library(simint_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_simint})
+            message(VERBOSE "Suitable simint located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_simint})
             message(FATAL_ERROR "Suitable simint could not be externally located as user insists")

@@ -11,6 +11,11 @@ if(${ENABLE_libefp})
 
         # reset below necessary as find_package clears it. better solution sought
         #set(TargetHDF5_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5 CACHE PATH "path to externally detected pylibefpConfig.cmake" FORCE)
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_pylibefp})
+            message(VERBOSE "Suitable pylibefp located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_pylibefp})
             message(FATAL_ERROR "Suitable pylibefp could not be externally located as user insists")

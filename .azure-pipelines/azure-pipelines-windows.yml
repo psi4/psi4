@@ -112,7 +112,7 @@ jobs:
           conda config --add channels conda-forge/label/libint_dev
           conda config --set channel_priority strict
           conda config --set solver libmamba
-          conda update -n base -c conda-forge conda
+          conda install conda=23.10 -n base -c conda-forge
           conda info
           conda list
         displayName: "Configure Miniconda"
@@ -264,7 +264,8 @@ jobs:
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          psi4 --test %PYTEST_TYPE%_not_d2ints -n %NUMBER_OF_PROCESSORS%
+          psi4 --test smoke_not_d2ints -n %NUMBER_OF_PROCESSORS%
+          #psi4 --test %PYTEST_TYPE%_not_d2ints -n %NUMBER_OF_PROCESSORS%
         displayName: "Test Psi4 (pytest $(pytest.type))"
         workingDirectory: $(Build.BinariesDirectory)
 

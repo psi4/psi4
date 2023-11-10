@@ -5,6 +5,11 @@
         get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
         message(STATUS "${Cyan}Found PCMSolver${ColourReset}: ${_loc} (found version ${PCMSolver_VERSION})")
         add_library(pcmsolver_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_PCMSolver})
+            message(VERBOSE "Suitable PCMSolver located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_PCMSolver})
             message(FATAL_ERROR "Suitable PCMSolver could not be externally located as user insists")

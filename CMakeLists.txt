@@ -281,8 +281,8 @@ ExternalProject_Add(psi4-core
               -DPython_NumPy_INCLUDE_DIR=${Python_NumPy_INCLUDE_DIR}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DENABLE_ambit=${ENABLE_ambit}
-              -DENABLE_bse=${ENABLE_bse}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
+              -DENABLE_cppe=${ENABLE_cppe}
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
@@ -299,7 +299,6 @@ ExternalProject_Add(psi4-core
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
               -DEigen3_DIR=${Eigen3_DIR}
               -Dambit_DIR=${ambit_DIR}
-              -Dbse_DIR=${bse_DIR}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
               -Decpint_DIR=${ecpint_DIR}
@@ -308,10 +307,9 @@ ExternalProject_Add(psi4-core
               -Derd_DIR=${erd_DIR}
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
-              -DLibint_DIR=${Libint_DIR}
+              #-DLibint_DIR=${Libint_DIR}
               -DLibint2_DIR=${Libint2_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
-              -Dddx_DIR=${ddx_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -Dpylibefp_DIR=${pylibefp_DIR}

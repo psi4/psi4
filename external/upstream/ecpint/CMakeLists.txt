@@ -5,6 +5,11 @@ if(${ENABLE_ecpint})
         get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
         message(STATUS "${Cyan}Found ecpint${ColourReset}: ${_loc} (found version ${ecpint_VERSION})")
         add_library(ecpint_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_ecpint})
+            message(VERBOSE "Suitable ecpint located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_ecpint})
             message(FATAL_ERROR "Suitable ecpint could not be externally located as user insists")
