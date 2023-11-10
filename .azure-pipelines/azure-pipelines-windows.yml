@@ -112,6 +112,7 @@ jobs:
           conda config --add channels conda-forge/label/libint_dev
           conda config --set channel_priority strict
           conda config --set solver libmamba
+          conda update -n base -c conda-forge conda
           conda info
           conda list
         displayName: "Configure Miniconda"

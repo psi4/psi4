@@ -22,7 +22,7 @@ jobs:
             runs-on: ubuntu-latest
             python-version: "3.12"
             mkl-version: ""
-            pytest-marker-expr: "addon and not long"
+            pytest-marker-expr: "addon and not (medlong or long)"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D ENABLE_v2rdm_casscf=ON
@@ -33,7 +33,7 @@ jobs:
             runs-on: macos-13  # ensures py!=27 in base OS
             python-version: "3.9"
             mkl-version: ""
-            pytest-marker-expr: "addon and not long"
+            pytest-marker-expr: "addon and not (medlong or long)"
             target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -50,19 +50,30 @@ jobs:
             runs-on: windows-latest
             python-version: "3.12"
             mkl-version: "=2022.1"
-            pytest-marker-expr: "addon and not long and not d2ints"
+            pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D psi4_SKIP_ENABLE_Fortran=ON
               -D OpenMP_LIBRARY_DIRS="D:/a/psi4/psi4/iomp5md/conda/win/2019.1"
-              -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
             # needed -D psi4_SKIP_ENABLE_Fortran=ON
             # needed -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
-            #  -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
             #  -D BUILD_SHARED_LIBS=OFF
             # Notes:
             # * See mkl-version notes at end
             # * "not d2ints" allows Windows accessing c-f L2 to pass
+            # * Older computers may need -D ENABLE_XHOST=OFF & -D CMAKE_CXX_FLAGS="/arch:AVX"
+
+          # (L)
+          #-D ENABLE_XHOST=OFF \
+
+        # (M)
+        #  -D ENABLE_XHOST=OFF \
+        #  -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
+        #  -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
+        #  -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
+
+        # (W)
+        #  -D ENABLE_XHOST=OFF \
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.label }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -185,18 +196,6 @@ jobs:
           -C "${{ github.workspace }}/cache_p4build@objdir.cmake" \
           -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
-
-          # (L)
-          #-D ENABLE_XHOST=OFF \
-
-        # (M)
-        #  -D ENABLE_XHOST=OFF \
-        #  -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
-        #  -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
-        #  -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
-
-        # (W)
-        #  -D ENABLE_XHOST=OFF \
 
     - name: Compile & Install Psi4
       run: |
