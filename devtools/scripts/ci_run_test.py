@@ -4,7 +4,7 @@ import sys
 import time
 
 # <<<  run ctest  >>>
-retcode = subprocess.Popen(['ctest', '-j2', '-L', 'smoke'], bufsize=0,
+retcode = subprocess.Popen(['ctest', '-j2', '-L', 'smoke', '-L', 'plug'], bufsize=0,
                             stdout=subprocess.PIPE, universal_newlines=True)
 print_all = False
 ctestout = ''

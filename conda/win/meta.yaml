@@ -45,7 +45,7 @@ build:
 
 test:
   requires:
-    - pytest
+    - pytest-xdist
     - dftd3-python
     - gcp-correction
   commands:
