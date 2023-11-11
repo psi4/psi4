@@ -2,12 +2,8 @@
 
 import os
 import re
+import sys
 import json
-try:
-    import yaml
-except ModuleNotFoundError:
-    raise ModuleNotFoundError("Python module PyYAML not found. Solve by installing it: "
-        "`conda install -c conda-forge pyyaml` or `pip install PyYAML`.")
 import shutil
 import argparse
 import itertools
@@ -17,6 +13,20 @@ from pathlib import Path
 from subprocess import run
 from typing import Dict
 
+try:
+    from ruamel.yaml import YAML
+except ModuleNotFoundError:
+    try:
+        import yaml
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError("Python module PyYAML not found. Solve by installing it: "
+            "`conda install -c conda-forge ruamel.yaml` or `pip install ruamel.yaml` or "
+            "`conda install -c conda-forge pyyaml` or `pip install PyYAML`.")
+    else:
+        yaml_load = yaml.safe_load
+else:
+    yaml=YAML(typ='safe')
+    yaml_load = yaml.load
 
 codedeps_yaml = Path(__file__).parent.parent / "codedeps.yaml"
 cmake_S = os.path.relpath(codedeps_yaml.parent, start=Path.cwd())
@@ -27,7 +37,6 @@ def native_platform() -> str:
     This can't distinguish the metal chip for osx, so prefer to use platform from conda info directly.
 
     """
-    import sys
     import platform
     if sys.platform.startswith("linux"):
         return "linux-64"
@@ -510,8 +519,8 @@ parser_env.add_argument("--platform",
     choices=["linux-64", "osx-64", "osx-arm64", "win-64"],
     default=conda_platform_native,
     help=f"""Conda platform/subdir for env file, if not the computed native
-(default: {conda_platform_native}). Apple Silicon users,
-check this value! Argument rarely used.""")
+(default: {conda_platform_native}).
+Apple Silicon users, check this value! Argument rarely used.""")
 parser_env.add_argument("--offline-conda",
     action="store_true",
     help=f"""Use script without conda/mamba available.
@@ -568,7 +577,7 @@ if args.v > 1:
 #""")
 
 with codedeps_yaml.open() as fp:
-    ydict = yaml.load(fp, Loader=yaml.FullLoader)
+    ydict = yaml_load(fp)
 
 ##### CONDA ENV
 
@@ -861,6 +870,9 @@ elif args.subparser_name in ["cmake", "cache"]:
                     text.append("# Bring-your-own (byo) blas/lapack libraries by setting here -or- by passing on cmdline -or- by letting cmake autodetect.")
                     text.append("#   Note that mixing lapack implementations is not advised.")
                 dcmake_vars = conda["cmake"].get(f"{args.lapack}_{conda_platform}", conda["cmake"].get(args.lapack))
+                if dcmake_vars is None:
+                    print(f"Libblas info missing in keys '{args.lapack}_{conda_platform}' or '{args.lapack}'. Contact the developers.")
+                    sys.exit(4)
             else:
                 dcmake_vars = conda["cmake"]
 

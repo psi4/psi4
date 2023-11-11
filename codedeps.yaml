@@ -408,6 +408,8 @@ data:
         "openblas=*=openmp*": "For the case of linux-64 and OpenBLAS, the openmp variant needs to be specified."
       cmake:
         # {libblas}_{Conda_platform}
+        accelerate:
+          LAPACK_LIBRARIES:    ${CONDA_PREFIX}/lib/libblas${SHLIB_EXT}
         mkl:
           LAPACK_LIBRARIES:    ${CONDA_PREFIX}/lib/libmkl_rt${SHLIB_EXT}
           LAPACK_INCLUDE_DIRS: ${CONDA_PREFIX}/include
