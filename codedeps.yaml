@@ -219,6 +219,7 @@ data:
         -B: <bld>
         CMAKE_PREFIX_PATH: ${CONDA_PREFIX}
         //CMAKE_BUILD_TYPE: null
+        //BUILD_SHARED_LIBS: null
         //CMAKE_VERBOSE_MAKEFILE: null
 
   - project: generator

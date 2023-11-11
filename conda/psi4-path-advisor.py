@@ -481,7 +481,7 @@ bash for eval. conda available.
 
 parser.add_argument("-v", action="count", default=0,
     help="""Use for more printing (-vv).
-This arg is NOT compatible with bash command substitution.""")
+Verbosity arg is NOT compatible with bash command substitution.""")
 
 subparsers = parser.add_subparsers(dest="subparser_name",
     help="Script requires a subcommand.")
@@ -524,7 +524,7 @@ Apple Silicon users, check this value! Argument rarely used.""")
 parser_env.add_argument("--offline-conda",
     action="store_true",
     help=f"""Use script without conda/mamba available.
-Useful for bootstrapping CI runners. This arg is NOT compatible with bash command substitution.""")
+Useful for bootstrapping CI runners. Offline arg is NOT compatible with bash command substitution.""")
 
 # add constraints to env file?
 
@@ -907,7 +907,8 @@ elif args.subparser_name in ["cmake", "cache"]:
                     if "${HOST}" in v:
                         v = v.replace("${HOST}", conda_host)
                     text.append(f'set({k:<30} {v} CACHE {ctyp} "")')
-                    # print("EXISTS?", v, Path(v).exists())
+                    if args.insist and ctyp != "BOOL":
+                        assert Path(v).exists(), f"Active value in cache for {k} does not exist on filesystem: {v}"
 
         else:
             if note := conda.get("cmake_note"):
@@ -965,7 +966,7 @@ elif args.subparser_name in ["cmake", "cache"]:
 # > conda activate {conda_prefix_short}
 # > cmake \\
 """
-    # using strike(..., tilde=T) in cache file so searchable
+    # using tilde-type strike in cache file so searchable
 
     for itm in big_args_sorted:
         pretext += "#    " + itm
@@ -1026,19 +1027,6 @@ elif args.subparser_name in ["cmake", "cache"]:
 #    if args.plugin_compile:
 #        print("""Install "psi4" via `conda install psi4 -c psi4[/label/dev]`, then reissue command.""")
 #
-#
-#
-##advice = {
-##    'cmake':  '/opt/anaconda1anaconda2anaconda3/bin/cmake \\',
-##    'here':   '    -S. \\',
-##    'deps':   '    -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsCache.cmake \\',
-##    'nooptl': '    -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsDisableCache.cmake \\',
-##    'Lintel': '    -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsIntelCache.cmake \\',
-##    'Lgnu':   '    -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsGNUCache.cmake \\',
-##    'Mclang': '    -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsAppleClangCache.cmake \\',
-##    'Mgnu':   '    -C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsGNUCache.cmake \\',
-##    'objdir': '    -Bobjdir',
-##}
 #
 #if sys.platform == 'darwin':
 #    if args.clang:

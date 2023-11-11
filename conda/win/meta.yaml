@@ -50,5 +50,8 @@ test:
     - gcp-correction
   commands:
     - python -c "import psi4; print(psi4.__version__, psi4.__file__)"
+    - python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+    - python -c "import psi4;print(psi4.addons())"
+    - pytest -rws -v --durations=20 --color yes -n auto %SP_DIR%\\psi4 -m "smoke and not d2ints"
     #- python -c "import psi4; assert psi4.test('quick') == 0"
-    - psi4 --test smoke_not_d2ints -n2
+    #- psi4 --test smoke_not_d2ints -n2
