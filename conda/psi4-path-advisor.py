@@ -907,8 +907,9 @@ elif args.subparser_name in ["cmake", "cache"]:
                     if "${HOST}" in v:
                         v = v.replace("${HOST}", conda_host)
                     text.append(f'set({k:<30} {v} CACHE {ctyp} "")')
-                    if args.insist and ctyp != "BOOL":
-                        assert Path(v).exists(), f"Active value in cache for {k} does not exist on filesystem: {v}"
+                    if not (ctyp == "BOOL" or Path(v).exists()):
+                        pass
+                        # print(f"Warning: Active value in cache for {k} does not exist on filesystem: {v}")
 
         else:
             if note := conda.get("cmake_note"):
