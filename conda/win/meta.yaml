@@ -26,10 +26,8 @@ requirements:
 build:
   string: py{{ environ['PY_VER'].replace('.', '') }}_{{ 'debug' if environ['CMAKE_BUILD_TYPE'] == 'Debug' else '0' }}
   script:
-    - type {{ INSTALL_DIR }}\lib\psi4\__init__.py
-    - type {{ INSTALL_DIR }}\bin\psi4
     - md {{ PREFIX }}\Scripts
-    - copy /y {{ INSTALL_DIR }}\bin\psi4 {{ PREFIX }}\Scripts  # orig
+    - copy /y {{ INSTALL_DIR }}\bin\psi4 {{ PREFIX }}\Scripts
     - sed -i.bu "s;cmake_install_bindir = .*;cmake_install_bindir = 'Scripts';g" {{ PREFIX }}\Scripts\psi4
     - sed -i.bu "s;cmake_install_datadir = .*;cmake_install_datadir = 'Library/share';g" {{ PREFIX }}\Scripts\psi4
     - sed -i.bu "s;cmake_install_libdir = .*;cmake_install_libdir = 'Library/lib';g" {{ PREFIX }}\Scripts\psi4
@@ -57,8 +55,8 @@ test:
     - dftd3-python
     - gcp-correction
   commands:
-    - cat %PREFIX%\\Scripts\\psi4-script.py
-    - cat %SP_DIR%\\psi4\\__init__.py
+    #- cat %PREFIX%\\Scripts\\psi4-script.py
+    #- cat %SP_DIR%\\psi4\\__init__.py
     - python -c "import psi4; print(psi4.__version__, psi4.__file__)"
     - python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
     - python -c "import psi4;print(psi4.addons())"
@@ -66,4 +64,4 @@ test:
     - psi4.exe --module
     - pytest -rws -v --durations=20 --color yes -n auto %SP_DIR%\\psi4 -m "smoke and not d2ints"
     #- python -c "import psi4; assert psi4.test('quick') == 0"
-    #- psi4 --test smoke_not_d2ints -n2
+    - psi4 --test smoke_not_d2ints -n2
