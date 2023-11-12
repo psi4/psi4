@@ -55,6 +55,8 @@ test:
     - dftd3-python
     - gcp-correction
   commands:
+    - cat %PREFIX%\\Scripts\\psi4
+    - cat %SP_DIR%\\psi4\\__init__.py
     - python -c "import psi4; print(psi4.__version__, psi4.__file__)"
     - python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
     - python -c "import psi4;print(psi4.addons())"

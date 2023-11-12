@@ -109,18 +109,18 @@ from psi4.core import variable, set_variable
 # * Note that this is a "battening down the hatches" for the many
 #   rather than letting PYTHONPATH rule for the few.
 import sys
-if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PCMSolver
-    sys.path.insert(1, r"@PCMSolver_PYMOD@")
-if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
-    sys.path.insert(1, r"@cppe_PYMOD@")
-if "@ENABLE_ddx@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pyddx
-    sys.path.insert(1, r"@pyddx_PYMOD@")
-if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
-    sys.path.insert(1, r"@pylibefp_PYMOD@")
-if "@ENABLE_gdma@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # gdma
-    sys.path.insert(1, r"@gdma_PYMOD@")
-if "@ENABLE_bse@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # bse
-    sys.path.insert(1, r"@bse_PYMOD@")
+#if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PCMSolver
+#    sys.path.insert(1, r"@PCMSolver_PYMOD@")
+#if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
+#    sys.path.insert(1, r"@cppe_PYMOD@")
+#if "@ENABLE_ddx@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pyddx
+#    sys.path.insert(1, r"@pyddx_PYMOD@")
+#if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
+#    sys.path.insert(1, r"@pylibefp_PYMOD@")
+#if "@ENABLE_gdma@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # gdma
+#    sys.path.insert(1, r"@gdma_PYMOD@")
+#if "@ENABLE_bse@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # bse
+#    sys.path.insert(1, r"@bse_PYMOD@")
 
 # Create a custom logger
 import logging

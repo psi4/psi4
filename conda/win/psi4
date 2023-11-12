@@ -1,4 +1,4 @@
-#!@Python_EXECUTABLE@
+#!/opt/anaconda1anaconda2anaconda3/python.exe
 
 #
 # @BEGIN LICENSE
@@ -127,7 +127,7 @@ args = args.__dict__  # Namespace object seems silly
 executable = Path(__file__).resolve()
 psi4_exe_loc = executable.parent
 
-prefix = Path("/opt/anaconda1anaconda2anaconda3")
+prefix = Path(r"/opt/anaconda1anaconda2anaconda3")
 cmake_install_bindir = "Scripts"
 cmake_install_datadir = "Library/share"
 cmake_install_libdir = "Library/lib"
@@ -195,7 +195,7 @@ if args['plugin_compile']:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
 
 if args['psiapi_path']:
-    pyexe_dir = os.path.dirname(r"@Python_EXECUTABLE@")
+    pyexe_dir = os.path.dirname(r"/opt/anaconda1anaconda2anaconda3/python.exe")
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     # TODO Py not quite right on conda Windows and Psi include %PREFIX$. but maybe not appropriate for Win anyways
     sys.exit()

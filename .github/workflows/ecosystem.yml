@@ -22,6 +22,7 @@ jobs:
             runs-on: ubuntu-latest
             python-version: "3.12"
             mkl-version: ""
+            platform: linux-64
             pytest-marker-expr: "addon and not (medlong or long)"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -33,6 +34,7 @@ jobs:
             runs-on: macos-13  # ensures py!=27 in base OS
             python-version: "3.9"
             mkl-version: ""
+            platform: osx-64
             pytest-marker-expr: "addon and not (medlong or long)"
             target-sdk: "10.10"
             cmargs: >
@@ -50,6 +52,7 @@ jobs:
             runs-on: windows-latest
             python-version: "3.12"
             mkl-version: "=2022.1"
+            platform: win-64
             pytest-marker-expr: "addon and not (medlong or long) and not d2ints"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
@@ -276,7 +279,7 @@ jobs:
         pygmentize -g env_p4build.yaml
         pygmentize -g cache_p4build@objdir.cmake
         conda/psi4-path-advisor.py -vv
-        cp cache_p4build@objdir.cmake devtools/conda-envs/linux-64-buildrun.yaml"
+        cp cache_p4build@objdir.cmake "devtools/conda-envs/${{ matrix.cfg.platform }}-buildrun.yaml"
         git diff --color-words
         #echo "::group::Prepare Environment"
         #mamba install ruamel_yaml -c conda-forge
