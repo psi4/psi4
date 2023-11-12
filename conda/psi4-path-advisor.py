@@ -550,6 +550,14 @@ parser_cmake.add_argument("--insist",
     action="store_true",
     help=f"""Set the cache (`INSIST_FIND_PACKAGE_<pkg>=ON`) to prevent cmake from falling back on internal build for packages present in the conda environment.""")
 
+parser_env = subparsers.add_parser("bulletin",
+    formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
+    help="(Info only) Read any build messages or advice.")
+
+parser_env = subparsers.add_parser("deploy",
+    formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
+    help="(Admin only) Apply codedeps info to codebase.")
+
 args = parser.parse_args()
 
 if args.subparser_name in ["conda", "env"]:
@@ -987,6 +995,68 @@ elif args.subparser_name in ["cmake", "cache"]:
     print(cmake_configure_and_build_cmd)
 
 
+##### BULLETIN
+
+elif args.subparser_name in ["bulletin"]:
+
+    notes = f"""
+
+  * [11 Nov 2023] Around July 2023 miniconda started shipping mamba-ready (though
+    not as the default solver). Likewise, miniforge and mambaforge started the
+    conda command available. Around October 2023, miniconda started shipping with
+    mamba as the default solver. For an older anaconda/miniconda installation, if
+    you want to instruct it to use the mamba solver by default from behind the
+    conda hood, issue the following from
+    https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community :
+
+      conda update -n base conda
+      conda install -n base conda-libmamba-solver
+      conda config --set solver libmamba
+
+  * [11 Nov 2023] For Silicon (osx-arm64) owners whose miniconda is set to Intel
+    (osx-64) (check with `conda info`):
+
+      conda config --system --set subdir osx-arm64
+"""
+    print(notes)
+
+
+##### DEPLOY
+
+elif args.subparser_name in ["deploy"]:
+    if not pm_available:
+        raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
+
+    script = f"""
+PNAME=p4dev8  # some env that doesn't exist
+
+conda/psi4-path-advisor.py env --platform linux-64 --lapack mkl --disable addons docs
+CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+mv env_p4dev.yaml {codedeps_yaml.parent}/devtools/conda-envs/linux-64-buildrun.yaml
+
+conda/psi4-path-advisor.py env --platform osx-64 --lapack mkl --disable addons docs
+CONDA_SUBDIR=osx-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+mv env_p4dev.yaml {codedeps_yaml.parent}/devtools/conda-envs/osx-64-buildrun.yaml
+
+conda/psi4-path-advisor.py env --platform osx-arm64 --lapack accelerate --disable addons docs
+CONDA_SUBDIR=osx-arm64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+mv env_p4dev.yaml {codedeps_yaml.parent}/devtools/conda-envs/osx-arm64-buildrun.yaml
+
+conda/psi4-path-advisor.py env --platform win-64 --lapack mkl --disable addons docs
+CONDA_SUBDIR=win-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
+mv env_p4dev.yaml {codedeps_yaml.parent}/devtools/conda-envs/win-64-buildrun.yaml
+
+conda/psi4-path-advisor.py env --name p4docs --platform linux-64 --disable addons
+CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4docs.yaml --dry-run
+mv env_p4docs.yaml {codedeps_yaml.parent}/devtools/conda-envs/linux-64-docs.yaml
+
+"""
+
+    with open("deps_deploy.sh", "w") as fp:
+        fp.write(script)
+
+
+
 #elif sys.platform == 'darwin':
 #    parser.add_argument('--clang', action='store_true',
 #                        help="""Engage conda's psi4-dev-provided clang/clang++/gfortran compilers. You must have downloaded this file https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.9.sdk.tar.xz, unpacked it, and saved it at ~/SDKs/MacOSX10.9.sdk . !Change! this arg invoked XCode AppleClang prior to Jul 2018.""")
@@ -1003,25 +1073,11 @@ elif args.subparser_name in ["cmake", "cache"]:
 #    parser.add_argument("--psiapi-path", action='store_true',
 #                        help="""(Duplicate from `psi4`) Generates a bash command to source correct Python for `python -c "import psi4"`""")
 #
-#parser.add_argument('--plugin-compile', action='store_true', help="""\
-#(Duplicate from `psi4`) Generates a CMake command for building a plugin against this Psi4 installation.
-#>>> cd <plugin_directory>
-#>>> `psi4 --plugin-compile`
-#>>> make
-#>>> psi4""")
-#
-#args = parser.parse_args()
-#
-#
 #if psi4alongside:
 #    from subprocess import call
 #
 #    if args.psiapi_path:
 #        call([psi4, '--psiapi-path'])
-#        sys.exit(0)
-#
-#    if args.plugin_compile:
-#        call([psi4, '--plugin-compile'])
 #        sys.exit(0)
 #
 #else:
@@ -1036,11 +1092,3 @@ elif args.subparser_name in ["cmake", "cache"]:
 #    #    recc.insert(-1, '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsAppleClangCache.cmake')
 #    #if args.gcc:
 #    #    recc.insert(-1, '-C/opt/anaconda1anaconda2anaconda3/share/cmake/psi4/psi4DepsGNUCache.cmake')
-#
-#srecc = """    """.join(recc)
-#print(srecc)
-
-
-# For Silicon owners whose miniconda is set to Intel:
-#   conda config --system --set subdir osx-arm64
-

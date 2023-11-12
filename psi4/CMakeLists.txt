@@ -62,7 +62,6 @@ find_package(pybind11 2.6.2 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
 message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
 
-#find_package(DL)  # use ${CMAKE_DL_LIBS} if found to be explicitly needed
 find_file(LIBDL_FOUND dlfcn.h)
 if(LIBDL_FOUND)
     message(STATUS "Using DL: ${LIBDL_FOUND} ${CMAKE_DL_LIBS}")

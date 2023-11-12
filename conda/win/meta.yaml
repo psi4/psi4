@@ -26,14 +26,17 @@ requirements:
 build:
   string: py{{ environ['PY_VER'].replace('.', '') }}_{{ 'debug' if environ['CMAKE_BUILD_TYPE'] == 'Debug' else '0' }}
   script:
-    - dir {{ RECIPE_DIR }}
+    - type {{ INSTALL_DIR }}\lib\psi4\__init__.py
+    - type {{ INSTALL_DIR }}\bin\psi4
     - type {{ RECIPE_DIR }}\__init__.py
     - type {{ RECIPE_DIR }}\psi4
     - md {{ PREFIX }}\Scripts
-    - copy /y {{ RECIPE_DIR }}\psi4 {{ PREFIX }}\Scripts
+    - sed -i "s;ib\\psi4;ib\\site-packages\\psi4;g" {{ INSTALL_DIR }}\bin\psi4
+    - copy /y {{ INSTALL_DIR }}\bin\psi4 {{ PREFIX }}\Scripts  # orig
+    #- copy /y {{ RECIPE_DIR }}\psi4 {{ PREFIX }}\Scripts  # new
     - echo __pycache__ > exclude.txt
     - xcopy /f /i /s /exclude:exclude.txt {{ INSTALL_DIR }}\lib\psi4 {{ SP_DIR }}\psi4
-    - copy /y {{ RECIPE_DIR }}\__init__.py {{ SP_DIR }}\psi4\__init__.py
+    #- copy /y {{ RECIPE_DIR }}\__init__.py {{ SP_DIR }}\psi4\__init__.py  # new
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\basis       {{ PREFIX }}\Lib\share\psi4\basis
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\plugin      {{ PREFIX }}\Lib\share\psi4\plugin
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\quadratures {{ PREFIX }}\Lib\share\psi4\quadratures

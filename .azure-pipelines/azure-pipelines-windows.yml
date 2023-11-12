@@ -124,6 +124,7 @@ jobs:
           conda install cmake ^
                         anaconda-project ^
                         conda-build ^
+                        m2-sed ^
                         eigen ^
                         libboost-headers ^
                         conda-verify ^

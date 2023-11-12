@@ -279,35 +279,8 @@ jobs:
         pygmentize -g env_p4build.yaml
         pygmentize -g cache_p4build@objdir.cmake
         conda/psi4-path-advisor.py -vv
-        cp cache_p4build@objdir.cmake "devtools/conda-envs/${{ matrix.cfg.platform }}-buildrun.yaml"
+        cp env_p4build.yaml "devtools/conda-envs/${{ matrix.cfg.platform }}-buildrun.yaml"
         git diff --color-words
-        #echo "::group::Prepare Environment"
-        #mamba install ruamel_yaml -c conda-forge
-        #echo "::endgroup::"
-        #cat > userenvs.py <<EOF
-        #from pathlib import Path
-        #from ruamel_yaml import YAML
-
-        #file1 = Path("env_p4build.yaml")
-        #yaml1 = YAML(typ="rt")
-        #yaml1.indent(mapping=2, sequence=4, offset=2)
-        #data1 = yaml1.load(file1)
-
-        #file2 = Path("run.yaml")
-        #yaml2 = YAML(typ="rt")
-        #data2 = yaml2.load(file2)
-
-        #for dep in data2["dependencies"]:
-        #    if dep not in data1["dependencies"]:
-        #        data1["dependencies"].append(dep)
-
-        #outfile = Path("devtools") / "conda-envs" / "${{ runner.os }}-buildrun-maxeco.yaml"
-        #yaml1.dump(data1, outfile)
-        #EOF
-
-        #python userenvs.py
-        #cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
-        #git diff --color-words
 
 # Notes
 # -----
