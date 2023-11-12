@@ -28,7 +28,7 @@ else:
     yaml=YAML(typ='safe')
     yaml_load = yaml.load
 
-codedeps_yaml = Path(__file__).parent.parent / "codedeps.yaml"
+codedeps_yaml = Path(__file__).resolve().parent.parent / "codedeps.yaml"
 cmake_S = os.path.relpath(codedeps_yaml.parent, start=Path.cwd())
 
 
@@ -460,10 +460,10 @@ git clone https://github.com/psi4/psi4.git && cd psi4
 conda/psi4-path-advisor.py env -h
 # (2.1) generate env spec file from codedeps.yaml.
 conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
-#> conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
+#> conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml && conda activate p4dev310
 # (2.2) edit env_p4dev310.yaml to customize software packages.
 # (2.3) issue suggested or customized command to create and activate conda env.
-conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml --solver libmamba && conda activate p4dev310
+conda env create -n p4dev310 -f /home/psi4/env_p4dev310.yaml && conda activate p4dev310
 
 # (3.0) consider compile options
 conda/psi4-path-advisor.py cmake -h
@@ -471,23 +471,9 @@ conda/psi4-path-advisor.py cmake -h
 conda/psi4-path-advisor.py cmake
 #> cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 && cmake --build objdir_p4dev310
 # (3.2) edit cache_p4dev310.cmake to customize build configuration.
-# (3.3) issue suggested or customized command to configure and build with cmake.
+# (3.3) issue suggested or customized command to configure & build with cmake.
 cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 && cmake --build objdir_p4dev310
-
-conda/psi4-path-advisor.py env -n p4dev310 --python 3.10 --disable addons --lapack openblas
-> psi4-path-advisor.py
-eval $(conda/psi4-path-advisor.py env -n ppa_plain)
-#>>> conda create -n p4dev python={3.6} psi4-dev -c psi4[/label/dev]
-> # intermediate cmd: conda env create -n p4dev -f env_p4dev.yaml && conda activate p4dev
-cmake -S. -GNinja -C/psi/gits/hrw-tag/cache_ppa_plain.cmake -Bobjdir_ppa_plain && cmake --build objdir_ppa_plain
-#>>> conda activate p4dev
-#>>> psi4-path-advisor
-## execute or adapt `cmake` commands above; DepsCache handles python & addons;
-##   DepsMKLCache handles math; further psi4-path-advisor options handle compilers.
-#>>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
-    #env_create_and_activate_cmd = f"{subdircmd}conda env create -n {args.name} -f {envspec_fn} --solver libmamba  && conda activate {args.name}"
-bash for eval. conda available.
-#>>> make install""")
+""")
 
 parser.add_argument("-v", action="count", default=0,
     help="""Use for more printing (-vv).
