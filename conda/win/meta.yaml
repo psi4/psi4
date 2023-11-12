@@ -28,15 +28,14 @@ build:
   script:
     - type {{ INSTALL_DIR }}\lib\psi4\__init__.py
     - type {{ INSTALL_DIR }}\bin\psi4
-    - type {{ RECIPE_DIR }}\__init__.py
-    - type {{ RECIPE_DIR }}\psi4
     - md {{ PREFIX }}\Scripts
-    - sed -i "s;ib\\psi4;ib\\site-packages\\psi4;g" {{ INSTALL_DIR }}\bin\psi4
+    - sed -i "s;cmake_install_bindir = ;cmake_install_bindir = 'Scripts' #;g" {{ INSTALL_DIR }}\bin\psi4
+    - sed -i "s;cmake_install_datadir = ;cmake_install_datadir = 'Library/share' #;g" {{ INSTALL_DIR }}\bin\psi4
+    - sed -i "s;cmake_install_libdir = ;cmake_install_libdir = 'Library/lib' #;g" {{ INSTALL_DIR }}\bin\psi4
+    - sed -i "s;pymod_install_libdir = ;pymode_install_libdir = '../../Lib/site-packages' #;g" {{ INSTALL_DIR }}\bin\psi4
     - copy /y {{ INSTALL_DIR }}\bin\psi4 {{ PREFIX }}\Scripts  # orig
-    #- copy /y {{ RECIPE_DIR }}\psi4 {{ PREFIX }}\Scripts  # new
     - echo __pycache__ > exclude.txt
     - xcopy /f /i /s /exclude:exclude.txt {{ INSTALL_DIR }}\lib\psi4 {{ SP_DIR }}\psi4
-    #- copy /y {{ RECIPE_DIR }}\__init__.py {{ SP_DIR }}\psi4\__init__.py  # new
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\basis       {{ PREFIX }}\Lib\share\psi4\basis
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\plugin      {{ PREFIX }}\Lib\share\psi4\plugin
     - xcopy /f /i /s {{ INSTALL_DIR }}\share\psi4\quadratures {{ PREFIX }}\Lib\share\psi4\quadratures
@@ -58,7 +57,8 @@ test:
     - dftd3-python
     - gcp-correction
   commands:
-    - cat %PREFIX%\\Scripts\\psi4
+    - cat %PREFIX%\\Scripts\\psi4.exe
+    - cat %PREFIX%\\Scripts\\psi4.bat
     - cat %SP_DIR%\\psi4\\__init__.py
     - python -c "import psi4; print(psi4.__version__, psi4.__file__)"
     - python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"

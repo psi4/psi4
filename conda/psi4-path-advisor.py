@@ -140,20 +140,20 @@ for itm in base_list_struct:
 
 ### conda/mamba
 
-solver_choices = ["mamba-as-possible"]
-solver_help = [f"""(default: mamba-as-possible)
-mamba-as-possible:
-    Use conda-libmamba else mamba else conda to solve environments.
+solver_choices = ["conda-else-mamba"]
+solver_help = [f"""(default: conda-else-mamba)
+conda-else-mamba:
+    Use conda else mamba to solve environments.
     Can instead adjust on cmdline, so argument mostly for printing."""]
-if conda_libmamba_available:
-    solver_choices.append("conda-libmamba")
-    solver_help.append("""conda-libmamba:
-    Use `conda ... --solver=libmamba` to solve environments.""")
+if conda_available:
+    solver_choices.append("conda")
+    solver_help.append("""conda:
+    Use `conda` to solve environments.""")
 else:
-    solver_choices.append(strike("conda-libmamba"))
-    solver_help.append(f"""{strike('conda-libmamba')}
-    Can't use `conda ... --solver=libmamba` to solve environments
-    because packages (conda or conda-libmamba-solver) not installed in base env.""")
+    solver_choices.append(strike("conda"))
+    solver_help.append(f"""{strike('conda')}
+    Can't use `conda` to solve environments
+    because package (conda) not installed in base env.""")
 if mamba_available:
     solver_choices.append("mamba")
     solver_help.append("""mamba:
@@ -163,13 +163,23 @@ else:
     solver_help.append(f"""{strike('mamba')}
     Can't use `mamba` to solve environments
     because packages (mamba?) not installed in base env.""")
-if conda_available:
-    solver_choices.append("conda")
-    solver_help.append("""conda:
-    Use `conda` to solve environments.""")
+if conda_libmamba_available:
+    solver_choices.append("conda-libmamba")
+    solver_help.append("""conda-libmamba:
+    Use `conda ... --solver=libmamba` to solve environments.""")
 else:
-    solver_choices.append(strike("conda"))
-    solver_help.append(f"""{strike('conda')}
+    solver_choices.append(strike("conda-libmamba"))
+    solver_help.append(f"""{strike('conda-libmamba')}
+    Can't use `conda ... --solver=libmamba` to solve environments
+    because packages (conda or conda-libmamba-solver) not installed in base env.""")
+if conda_available:
+    solver_choices.append("conda-classic")
+    solver_help.append("""conda-classic:
+    Use `conda ... --solver=classic` to solve environments.""")
+else:
+    solver_choices.append(strike("conda-classic"))
+    solver_help.append(f"""{strike('conda-classic')}
+    Can't use `conda ... --solver=classic` to solve environments
     Can't use `conda` to solve environments
     because package (conda) not installed in base env.""")
 
@@ -512,7 +522,7 @@ parser_env.add_argument("--disable",
 Can instead edit generated env spec file by hand.
 For example, '--disable compilers lapack addons test docs' for minimal.""")
 parser_env.add_argument("--solver",
-    default="mamba-as-possible",
+    default="conda-else-mamba",
     choices=solver_choices,
     help="\n".join(solver_help))
 parser_env.add_argument("--platform",
@@ -550,11 +560,11 @@ parser_cmake.add_argument("--insist",
     action="store_true",
     help=f"""Set the cache (`INSIST_FIND_PACKAGE_<pkg>=ON`) to prevent cmake from falling back on internal build for packages present in the conda environment.""")
 
-parser_env = subparsers.add_parser("bulletin",
+parser_bulletin = subparsers.add_parser("bulletin",
     formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
     help="(Info only) Read any build messages or advice.")
 
-parser_env = subparsers.add_parser("deploy",
+parser_deploy = subparsers.add_parser("deploy",
     formatter_class=PreserveWhiteSpaceWrapRawTextHelpFormatter,
     help="(Admin only) Apply codedeps info to codebase.")
 
@@ -575,6 +585,10 @@ if args.v > 1:
     print("#######")
     parser_cmake.print_help()
     print("#######")
+    parser_bulletin.print_help()
+    print("#######")
+    parser_deploy.print_help()
+    print("#######")
     print(f"{conda_platform=}  {conda_lapack_variant=}  {args=}")
     print("#######")
 
@@ -593,19 +607,19 @@ if args.subparser_name in ["conda", "env"]:
     if not (pm_available or args.offline_conda):
         raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
 
-    if args.solver == "mamba-as-possible":
-        if conda_libmamba_available:
-            solver = "conda-libmamba"
+    if args.solver == "conda-else-mamba":
+        if conda_available:
+            solver = "conda"
         elif mamba_available:
             solver = "mamba"
-        elif conda_available:
-            solver = "conda"
         elif args.offline_conda:
             solver = "(no pm)"
     else:
         solver = args.solver
     if solver == "conda-libmamba":
         solver = ["conda", "--solver libmamba"]
+    elif solver == "conda-classic":
+        solver = ["conda", "--solver classic"]
     else:
         solver = [solver, ""]
 
@@ -1027,28 +1041,30 @@ elif args.subparser_name in ["deploy"]:
     if not pm_available:
         raise RuntimeError("usage: this script requires either the conda or mamba command to be in envvar PATH.")
 
-    script = f"""
+    full_cmake_S = codedeps_yaml.parent
+    script = f"""#!/usr/bin/env bash
+
 PNAME=p4dev8  # some env that doesn't exist
 
-conda/psi4-path-advisor.py env --platform linux-64 --lapack mkl --disable addons docs
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform linux-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {codedeps_yaml.parent}/devtools/conda-envs/linux-64-buildrun.yaml
+mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/linux-64-buildrun.yaml
 
-conda/psi4-path-advisor.py env --platform osx-64 --lapack mkl --disable addons docs
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=osx-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {codedeps_yaml.parent}/devtools/conda-envs/osx-64-buildrun.yaml
+mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/osx-64-buildrun.yaml
 
-conda/psi4-path-advisor.py env --platform osx-arm64 --lapack accelerate --disable addons docs
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform osx-arm64 --lapack accelerate --disable addons docs
 CONDA_SUBDIR=osx-arm64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {codedeps_yaml.parent}/devtools/conda-envs/osx-arm64-buildrun.yaml
+mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/osx-arm64-buildrun.yaml
 
-conda/psi4-path-advisor.py env --platform win-64 --lapack mkl --disable addons docs
+{full_cmake_S}/conda/psi4-path-advisor.py env --platform win-64 --lapack mkl --disable addons docs
 CONDA_SUBDIR=win-64 conda env create -n $PNAME -f env_p4dev.yaml --dry-run
-mv env_p4dev.yaml {codedeps_yaml.parent}/devtools/conda-envs/win-64-buildrun.yaml
+mv env_p4dev.yaml {full_cmake_S}/devtools/conda-envs/win-64-buildrun.yaml
 
-conda/psi4-path-advisor.py env --name p4docs --platform linux-64 --disable addons
+{full_cmake_S}/conda/psi4-path-advisor.py env --name p4docs --platform linux-64 --disable addons
 CONDA_SUBDIR=linux-64 conda env create -n $PNAME -f env_p4docs.yaml --dry-run
-mv env_p4docs.yaml {codedeps_yaml.parent}/devtools/conda-envs/linux-64-docs.yaml
+mv env_p4docs.yaml {full_cmake_S}/devtools/conda-envs/linux-64-docs.yaml
 
 """
 
