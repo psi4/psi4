@@ -60,7 +60,7 @@ class PSI_API Dimension {
 
     /// @brief Assignment operator, this one can be very dangerous
     PSI_DEPRECATED(
-        "The assignment operator for psi::Dimension is being deprecated. Unless someone speaks up, 1.9 may be the "
+        "The assignment operator for psi::Dimension is being deprecated. Unless someone speaks up, 1.10 may be the "
         "last release to have it.")
     Dimension& operator=(const int* other);
 
@@ -92,13 +92,13 @@ class PSI_API Dimension {
 
     /// @brief Casting operator to int*
     PSI_DEPRECATED(
-        "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.9 may be the "
+        "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.10 may be the "
         "last release to have them.")
     operator int*() { return blocks_.data(); }
 
     /// @brief Casting operator to const int*
     PSI_DEPRECATED(
-        "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.9 may be the "
+        "Cast-to-pointer operators for psi::Dimension are being deprecated. Unless someone speaks up, 1.10 may be the "
         "last release to have them.")
     operator const int*() const { return blocks_.data(); }
 
