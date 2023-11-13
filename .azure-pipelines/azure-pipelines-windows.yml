@@ -107,6 +107,7 @@ jobs:
 
       # Configure Miniconda
       #    conda config --append channels conda-forge
+      #    conda=23.10 forced a bugfix at conda-build stage
       - script: |
           conda config --set always_yes yes
           conda config --add channels conda-forge/label/libint_dev
@@ -265,8 +266,7 @@ jobs:
       - script: |
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          psi4 --test smoke_not_d2ints -n %NUMBER_OF_PROCESSORS%
-          #psi4 --test %PYTEST_TYPE%_not_d2ints -n %NUMBER_OF_PROCESSORS%
+          psi4 --test %PYTEST_TYPE%_not_d2ints -n %NUMBER_OF_PROCESSORS%
         displayName: "Test Psi4 (pytest $(pytest.type))"
         workingDirectory: $(Build.BinariesDirectory)
 
@@ -276,14 +276,14 @@ jobs:
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniforge3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
-        #condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Build Psi4 package"
 
       # Publish package
       - task: PublishBuildArtifacts@1
         inputs:
           artifactName: conda
-        #condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Publish Psi4 package"
 
       # Upload package

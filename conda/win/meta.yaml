@@ -62,6 +62,6 @@ test:
     - python -c "import psi4;print(psi4.addons())"
     - psi4.exe --version
     - psi4.exe --module
-    - pytest -rws -v --durations=20 --color yes -n auto %SP_DIR%\\psi4 -m "smoke and not d2ints"
     #- python -c "import psi4; assert psi4.test('quick') == 0"
     - psi4 --test smoke_not_d2ints -n2
+    #- pytest -rws -v --durations=20 --color yes -n auto %SP_DIR%\\psi4 -m "smoke and not d2ints"
