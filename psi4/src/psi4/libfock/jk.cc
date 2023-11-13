@@ -246,7 +246,6 @@ void JK::common_init() {
     omega_ = 0.0;
     omega_alpha_ = 1.0;
     omega_beta_ = 0.0;
-    early_screening_ = false;
 
     num_computed_shells_ = 0L;
     computed_shells_per_iter_ = {};
