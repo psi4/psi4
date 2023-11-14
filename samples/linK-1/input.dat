@@ -12,8 +12,10 @@ molecule mol {
 }
 
 set {
-    scf_type dfdirj+link
+    scf_type direct
+    scf_cosx_guess true 
     df_scf_guess false
+    cosx_maxiter_final 0
     basis aug-cc-pVDZ
     e_convergence 1.0e-10
     screening density
