@@ -297,14 +297,21 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         early_screening = True
         self.jk().set_COSX_grid("Initial")
 
+    # has early_screening changed from True to False?
+    early_screening_disabled = False
     # maximum number of scf iterations to run after early screening is disabled
     scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
 
+    # account for DirectJK iterations post-COSX-guess if need be
+    if core.get_option('SCF', 'SCF_COSX_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
+        early_screening = False 
+
+        early_screening_disabled = True
+
+        scf_maxiter_post_screening = 2 # run two DirectJK iterations with COSX guess
+
     if scf_maxiter_post_screening < -1:
         raise ValidationError('COSX_MAXITER_FINAL ({}) must be -1 or above. If you wish to attempt full SCF converge on the final COSX grid, set COSX_MAXITER_FINAL to -1.'.format(scf_maxiter_post_screening))
-
-    # has early_screening changed from True to False?
-    early_screening_disabled = False
 
     # SCF iterations!
     SCFE_old = 0.0
