@@ -29,13 +29,12 @@ from typing import Tuple
 
 import numpy as np
 
-from qcelemental import constants
-
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
-from psi4.driver.procrouting.sapt import fisapt_proc
+
+from .. import p4util
+from ..constants import constants
+from ..p4util.exceptions import *
+from .dft import build_superfunctional_from_dictionary, functionals
 
 
 def scf_set_reference_local(name, is_dft=False):
@@ -266,6 +265,8 @@ def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[c
 
 
 def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
+    from .sapt import fisapt_proc
+
     sapt_dimer = dimer_wfn.molecule()
     sapt_dimer, monomerA, monomerB = prepare_sapt_molecule(sapt_dimer, "dimer")
     disp_name = name.split("-")[1]

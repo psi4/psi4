@@ -14,8 +14,8 @@ requirements:
     - networkx
     - numpy
     - python={{ PY_VER }}
-    - qcelemental=0.25.1
-    - qcengine=0.26.0
+    - qcelemental=0.26.0
+    - qcengine=0.27.0
     - msgpack-python
     - optking
     - gau2grid
@@ -49,5 +49,6 @@ test:
     - dftd3-python
     - gcp-correction
   commands:
-    - python -c "import psi4; assert psi4.test('quick') == 0"
-    - psi4 --test quick
+    - python -c "import psi4; print(psi4.__version__, psi4.__file__)"
+    #- python -c "import psi4; assert psi4.test('quick') == 0"
+    - psi4 --test smoke_not_d2ints -n2

@@ -520,76 +520,102 @@ class BasisSet(object):
         """
         raise FeatureNotImplemented('BasisSet::build')
 
-#TRIAL#    @staticmethod
-#TRIAL#    def pyconstruct_combined(mol, keys, targets, fitroles, others):
-#TRIAL#
-#TRIAL#        # make sure the lengths are all the same
-#TRIAL#        if len(keys) != len(targets) or len(keys) != len(fitroles):
-#TRIAL#            raise ValidationError("""Lengths of keys, targets, and fitroles must be equal""")
-#TRIAL#
-#TRIAL#        # Create (if necessary) and update qcdb.Molecule
-#TRIAL#        if isinstance(mol, basestring):
-#TRIAL#            mol = Molecule(mol)
-#TRIAL#            returnBasisSet = False
-#TRIAL#        elif isinstance(mol, Molecule):
-#TRIAL#            returnBasisSet = True
-#TRIAL#        else:
-#TRIAL#            raise ValidationError("""Argument mol must be psi4string or qcdb.Molecule""")
-#TRIAL#        mol.update_geometry()
-#TRIAL#
-#TRIAL#        # load in the basis sets
-#TRIAL#        sets = []
-#TRIAL#        name = ""
-#TRIAL#        for at in range(len(keys)):
-#TRIAL#            bas = BasisSet.pyconstruct(mol, keys[at], targets[at], fitroles[at], others[at])
-#TRIAL#            name += targets[at] + " + "
-#TRIAL#            sets.append(bas)
-#TRIAL#
-#TRIAL#        name = name[:-3].strip()
-#TRIAL#        # work our way through the sets merging them
-#TRIAL#        combined_atom_basis_shell = OrderedDict()
-#TRIAL#        for at in range(len(sets)):
-#TRIAL#            atom_basis_shell = sets[at].atom_basis_shell
-#TRIAL#
-#TRIAL#            for label, basis_map in atom_basis_shell.items():
-#TRIAL#                if label not in combined_atom_basis_shell:
-#TRIAL#                    combined_atom_basis_shell[label] = OrderedDict()
-#TRIAL#                    combined_atom_basis_shell[label][name] = []
-#TRIAL#                for basis, shells in basis_map.items():
-#TRIAL#                    combined_atom_basis_shell[label][name].extend(shells)
-#TRIAL#
-#TRIAL#        #for label, basis_map in combined_atom_basis_shell.items():
-#TRIAL#        #    # sort the shells by angular momentum
-#TRIAL#        #    combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name], key=lambda shell: she
-#TRIAL#
-#TRIAL#        # Molecule and parser prepped, call the constructor
-#TRIAL#        mol.set_basis_all_atoms(name, "CABS")
-#TRIAL#
-#TRIAL#        # Construct the grand BasisSet for mol
-#TRIAL#        basisset = BasisSet("CABS", mol, combined_atom_basis_shell)
-#TRIAL#
-#TRIAL#        # Construct all the one-atom BasisSet-s for mol's CoordEntry-s
-#TRIAL#        for at in range(mol.natom()):
-#TRIAL#            oneatombasis = BasisSet(basisset, at)
-#TRIAL#            oneatombasishash = hashlib.sha1(oneatombasis.print_detail(numbersonly=True).encode('utf-8')).hexdigest()
-#TRIAL#            mol.set_shell_by_number(at, oneatombasishash, role="CABS")
-#TRIAL#        mol.update_geometry()  # re-evaluate symmetry taking basissets into account
-#TRIAL#
-#TRIAL#        text = """   => Creating Basis Set <=\n\n"""
-#TRIAL#        text += """    Role: %s\n""" % (fitroles)
-#TRIAL#        text += """    Keyword: %s\n""" % (keys)
-#TRIAL#        text += """    Name: %s\n""" % (name)
-#TRIAL#
-#TRIAL#        if returnBasisSet:
-#TRIAL#            print(text)
-#TRIAL#            return basisset
-#TRIAL#        else:
-#TRIAL#            bsdict = {}
-#TRIAL#            bsdict['message'] = text
-#TRIAL#            bsdict['name'] = basisset.name
-#TRIAL#            bsdict['puream'] = int(basisset.has_puream())
-#TRIAL#            bsdict['shell_map'] = basisset.export_for_libmints("CABS")
-#TRIAL#            return bsdict
+    @staticmethod
+    def pyconstruct_combined(mol, keys, targets, fitroles, others):
+        """Builds a BasisSet object for *mol* (either a qcdb.Molecule or
+        a string that can be instantiated into one) from two basis set
+        specifications passed in as python functions or as a string that
+        names a basis to be applied to all atoms. The union of the two
+        basis sets can be used as an auxiliary basis set for F12 methods.
+
+        Parameters
+        ----------
+        mol : :py:class:`qcdb.Molecule` or dict or str
+            If not a :py:class:`qcdb.Molecule`, something that can be converted into one.
+            If the latter, the basisset dict is returned rather than the BasisSet object.
+            If you've got a psi4.core.Molecule, pass `qcdb.Molecule(psimol.to_dict())`.
+        keys : {'BASIS', 'CABS_BASIS'}
+            Labels to append to the two basis sets.
+        targets : str or function
+            Defines the basis sets to be combined.
+        fitroles : {'ORBITAL', 'F12'}
+        others :
+            Like `target` only supplies the definitions
+            for the orbital basis.
+
+        Returns
+        -------
+        bas : :py:class:`qcdb.BasisSet`
+            Built BasisSet object for `mol`.
+        dbas : dict, optional
+            Only returned if `mol` is a qcdb.Molecule. Suitable for feeding to libmints.
+        """
+        # make sure the lengths are all the same
+        if len(keys) != len(targets) or len(keys) != len(fitroles):
+            raise ValidationError("""Lengths of keys, targets, and fitroles must be equal""")
+
+        # Create (if necessary) and update qcdb.Molecule
+        if isinstance(mol, str):
+            mol = Molecule(mol)
+            returnBasisSet = False
+        elif isinstance(mol, Molecule):
+            returnBasisSet = True
+        else:
+            raise ValidationError("""Argument mol must be psi4string or qcdb.Molecule""")
+        mol.update_geometry()
+
+        # load in the basis sets
+        sets = [BasisSet.pyconstruct(mol, keys[at], targets[at], fitroles[at], others[at]) for at in range(len(keys))]
+        name = " + ".join(targets)
+        keywords = " + ".join(keys)
+        blends = " + ".join([bas.name.upper() for bas in sets])
+
+        # merges the two maps of ShellInfo into one combined map
+        combined_atom_basis_shell = collections.OrderedDict()
+        for basis in sets:
+            atom_basis_shell = basis.atom_basis_shell
+
+            for label, basis_map in atom_basis_shell.items():
+                if label not in combined_atom_basis_shell:
+                    combined_atom_basis_shell[label] = collections.OrderedDict.fromkeys([name], [])
+                for shells in basis_map.values():
+                    combined_atom_basis_shell[label][name].extend(shells)
+
+        # sort the shells by angular momentum
+        for label, basis_map in combined_atom_basis_shell.items():
+            combined_atom_basis_shell[label][name] = sorted(combined_atom_basis_shell[label][name],
+                    key=lambda shell: shell.l)
+
+        # Molecule and parser prepped, call the constructor
+        mol.set_basis_all_atoms(name, "CABS")
+
+        # Construct the grand BasisSet for mol
+        basisset = BasisSet("CABS", mol, combined_atom_basis_shell)
+
+        # Construct all the one-atom BasisSet-s for mol's CoordEntry-s
+        for at in range(mol.natom()):
+            oneatombasis = BasisSet(basisset, at)
+            oneatombasishash = hashlib.sha1(oneatombasis.print_detail(numbersonly=True).encode('utf-8')).hexdigest()
+            mol.set_shell_by_number(at, oneatombasishash, role="CABS")
+        mol.update_geometry()  # re-evaluate symmetry taking basissets into account
+
+        text = """   => Creating Basis Set <=\n\n"""
+        text += """    Role: %s\n""" % (fitroles)
+        text += """    Keyword: %s\n""" % (keys)
+        text += """    Name: %s\n""" % (name)
+
+        if returnBasisSet:
+            print(text)
+            return basisset
+        else:
+            bsdict = {}
+            bsdict['message'] = text
+            bsdict['name'] = basisset.name
+            bsdict['key'] = keywords
+            bsdict['blend'] = blends
+            bsdict['puream'] = int(basisset.has_puream())
+            bsdict['shell_map'] = basisset.export_for_libmints("CABS")
+            return bsdict
 
     @staticmethod
     def pyconstruct(mol, key, target, fitrole='ORBITAL', other=None, return_atomlist=False, return_dict=False, verbose=1):

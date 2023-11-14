@@ -7,14 +7,14 @@ jobs:
       vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '14.0.0'
+      llvm.version: '16.0.6'
       mkl.version: '2022.1.0'
       cmake.build_type: 'Release'
       conda.build: false
       ctest.type: 'smoke'
       pytest.type: 'quick'
       MKL_CBWR: AVX
-      PYTHON_VERSION: '3.8'
+      PYTHON_VERSION: '3.10'
     steps:
 
       # Check Python
@@ -25,8 +25,10 @@ jobs:
           if "%PYTHON_VERSION%"=="3.8" set VALID=true
           if "%PYTHON_VERSION%"=="3.9" set VALID=true
           if "%PYTHON_VERSION%"=="3.10" set VALID=true
+          if "%PYTHON_VERSION%"=="3.11" set VALID=true
+          if "%PYTHON_VERSION%"=="3.12" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.8" through "3.10".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.8" through "3.12".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -95,10 +97,10 @@ jobs:
 
       # Install Miniconda
       - script: |
-          choco install miniconda3 --yes
-          set PATH=C:\tools\miniconda3\Scripts;C:\tools\miniconda3;C:\tools\miniconda3\Library\bin;C:\tools\miniconda3\Library\mingw-w64\bin;%PATH%
+          choco install miniforge3 --yes
+          set PATH=C:\tools\miniforge3\Scripts;C:\tools\miniforge3;C:\tools\miniforge3\Library\bin;C:\tools\miniforge3\Library\mingw-w64\bin;%PATH%
           echo '##vso[task.setvariable variable=PATH]%PATH%'
-          set LIB=C:\tools\miniconda3\Library\lib;%LIB%
+          set LIB=C:\tools\miniforge3\Library\lib;%LIB%
           echo '##vso[task.setvariable variable=LIB]%LIB%'
           conda --version
         displayName: "Install Miniconda"
@@ -107,9 +109,11 @@ jobs:
       #    conda config --append channels conda-forge
       - script: |
           conda config --set always_yes yes
-          conda config --add channels conda-forge
+          conda config --add channels conda-forge/label/libint_dev
           conda config --set channel_priority strict
+          conda config --set solver libmamba
           conda info
+          conda list
         displayName: "Configure Miniconda"
 
       # Create conda enviroment
@@ -120,12 +124,11 @@ jobs:
                         anaconda-project ^
                         conda-build ^
                         eigen ^
-                        boost-cpp ^
+                        libboost-headers ^
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
                         mpmath ^
-                        typing-extensions=4.5.0 ^
                         msgpack-python ^
                         networkx ^
                         ninja ^
@@ -139,9 +142,10 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        conda-forge/label/libint_dev::libint=2.7.3dev1 ^
+                        libint=2.7.3dev1 ^
                         qcelemental ^
                         qcengine ^
+                        pydantic=1.10.13 ^
                         optking ^
                         scipy
           conda install --only-deps anaconda-client
@@ -191,11 +195,11 @@ jobs:
                 -DENABLE_XHOST=OFF ^
                 -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
-                -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
-                -DPython_NumPy_INCLUDE_DIR="C:/tools/miniconda3/lib/site-packages/numpy/core/include" ^
-                -DEigen3_ROOT="C:/tools/miniconda3/Library" ^
-                -DBOOST_ROOT="C:/tools/miniconda3/Library" ^
-                -DMultiprecision_ROOT="C:/tools/miniconda3/Library" ^
+                -DPython_EXECUTABLE="C:/tools/miniforge3/python.exe" ^
+                -DPython_NumPy_INCLUDE_DIR="C:/tools/miniforge3/lib/site-packages/numpy/core/include" ^
+                -DEigen3_ROOT="C:/tools/miniforge3/Library" ^
+                -DBOOST_ROOT="C:/tools/miniforge3/Library" ^
+                -DMultiprecision_ROOT="C:/tools/miniforge3/Library" ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
@@ -266,20 +270,17 @@ jobs:
       # Build package
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
-          conda config --add channels conda-forge
-          conda config --add channels conda-forge/label/libint_dev
-          conda info
           conda build --python %PYTHON_VERSION% ^
                       conda\win
-          copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
-        condition: false
+          copy /y C:\tools\miniforge3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Build Psi4 package"
 
       # Publish package
       - task: PublishBuildArtifacts@1
         inputs:
           artifactName: conda
-        condition: false
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Publish Psi4 package"
 
       # Upload package
@@ -289,7 +290,7 @@ jobs:
       # * error handling may need tweaking as I don't know if failure to upload for lack of space (`echo $?`=1) will fail the workflow.
       - bash: |
           set -e
-          ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+          ls -l /c/tools/miniforge3/conda-bld/win-64/*.tar.bz2
           echo "Using the mapped env var for this task works and is recommended: $(conda.anaconda_org_token)"
           anaconda whoami
           anaconda \
@@ -297,10 +298,10 @@ jobs:
            upload \
             --label dev \
             --skip \
-            /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+            /c/tools/miniforge3/conda-bld/win-64/*.tar.bz2
           echo $?
         env:
           ANACONDA_API_TOKEN: $(conda.anaconda_org_token)
-        condition: false
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/1.'), endsWith(variables['Build.SourceBranch'], '.x'))))
         displayName: "Upload Psi4 package to anaconda.org"
 

@@ -30,12 +30,12 @@ The SCF iteration functions
 """
 import numpy as np
 
-from ..solvent.efp import (get_qm_atoms_opts, modify_Fock_induced,
-                           modify_Fock_permanent)
-
 from psi4 import core
-from psi4.driver import constants, p4util
-from psi4.driver.p4util.exceptions import SCFConvergenceError, ValidationError
+
+from ... import p4util
+from ...constants import constants
+from ...p4util.exceptions import SCFConvergenceError, ValidationError
+from ..solvent.efp import get_qm_atoms_opts, modify_Fock_induced, modify_Fock_permanent
 
 #import logging
 #logger = logging.getLogger("scf.scf_iterator")
@@ -267,9 +267,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
+    cosx_enabled = "COSX" in core.get_option('SCF', 'SCF_TYPE')
 
     # does the JK algorithm use severe screening approximations for early SCF iterations?
-    early_screening = self.jk().get_early_screening()
+    early_screening = False
+    if cosx_enabled:
+        early_screening = True
+        self.jk().set_COSX_grid("Initial")
+
+    # maximum number of scf iterations to run after early screening is disabled
+    scf_maxiter_post_screening = core.get_option('SCF', 'COSX_MAXITER_FINAL')
+
+    if scf_maxiter_post_screening < -1:
+        raise ValidationError('COSX_MAXITER_FINAL ({}) must be -1 or above. If you wish to attempt full SCF converge on the final COSX grid, set COSX_MAXITER_FINAL to -1.'.format(scf_maxiter_post_screening))
 
     # has early_screening changed from True to False?
     early_screening_disabled = False
@@ -277,6 +287,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     # SCF iterations!
     SCFE_old = 0.0
     Dnorm = 0.0
+    scf_iter_post_screening = 0
     while True:
         self.iteration_ += 1
 
@@ -451,7 +462,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 if incfock_performed:
                     status.append("INCFOCK")
-                
+
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:
                     self.reset_occupation()
@@ -496,29 +507,37 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         if frac_enabled and not self.frac_performed_:
             continue
 
-        # this is the first iteration after early screening was turned off
+        # have we completed our post-early screening SCF iterations? 
         if early_screening_disabled:
-            break
+            scf_iter_post_screening += 1
+            if scf_iter_post_screening >= scf_maxiter_post_screening and scf_maxiter_post_screening > 0:
+                break
 
         # Call any postiteration callbacks
         if not ((self.iteration_ == 0) and self.sad_) and _converged(Ediff, Dnorm, e_conv=e_conv, d_conv=d_conv):
 
             if early_screening:
 
-                # we've reached convergence with early screning enabled; disable it on the JK object
+                # we've reached convergence with early screning enabled; disable it
                 early_screening = False
-                self.jk().set_early_screening(early_screening)
 
-                # make note of the change to early screening; next SCF iteration will be the last
+                # make note of the change to early screening; next SCF iteration(s) will be the last
                 early_screening_disabled = True
+
+                # cosx uses the largest grid for its final SCF iteration(s)
+                if cosx_enabled:
+                    self.jk().set_COSX_grid("Final")
 
                 # clear any cached matrices associated with incremental fock construction
                 # the change in the screening spoils the linearity in the density matrix
                 if hasattr(self.jk(), 'clear_D_prev'):
                     self.jk().clear_D_prev()
 
-                core.print_out("  Energy and wave function converged with early screening.\n")
-                core.print_out("  Performing final iteration with tighter screening.\n\n")
+                if scf_maxiter_post_screening == 0:
+                    break
+                else:
+                    core.print_out("  Energy and wave function converged with early screening.\n")
+                    core.print_out("  Continuing SCF iterations with tighter screening.\n\n")
             else:
                 break
 
@@ -690,6 +709,15 @@ def scf_finalize_energy(self):
         self.push_back_external_potential(Vpe)
         # Set callback function for CPSCF
         self.set_external_cpscf_perturbation("PE", lambda pert_dm : self.pe_state.get_pe_contribution(pert_dm, elec_only=True)[1])
+
+    if core.get_option('SCF', 'DDX'):
+        Dt = self.Da().clone()
+        Dt.add(self.Db())
+        Vddx = self.ddx.get_solvation_contributions(Dt)[1]
+        self.push_back_external_potential(Vddx)
+        # Set callback function for CPSCF
+        self.set_external_cpscf_perturbation(
+            "DDX", lambda pert_dm : self.ddx.get_solvation_contributions(pert_dm, elec_only=True, nonequilibrium=True)[1])
 
     # Orbitals are always saved, in case an MO guess is requested later
     # save_orbitals()

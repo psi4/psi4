@@ -97,22 +97,28 @@ protected:
                    int nso, int nocc, int nvir, bool alpha);
 #endif
 
+    // Compute the JK contribution to the the Fock derivative onthe
+    //   right-side of the CP-SCF equations.
     void JK_deriv1(std::shared_ptr<Matrix> D1,
                    std::shared_ptr<Matrix> C1, 
                    std::shared_ptr<Matrix> C1occ,
                    std::shared_ptr<Matrix> D2, 
                    int nso, int nocc, int nvir, bool alpha);
 
+    // Compute the JK contribution to the the overlap derivative *
+    //   TEI term  on the right-side of the CP-SCF equations.
     void JK_deriv2(std::shared_ptr<JK> jk, int mem, 
-                   std::shared_ptr<Matrix> C1, 
-                   std::shared_ptr<Matrix> C1occ,
-                   std::shared_ptr<Matrix> C2, 
-                   std::shared_ptr<Matrix> C2occ,
-                   int nso, int n1occ, int n2occ, int nvir, bool alpha);
+                   std::shared_ptr<Matrix> Ca,
+                   std::shared_ptr<Matrix> Caocc,
+                   std::shared_ptr<Matrix> Cb,
+                   std::shared_ptr<Matrix> Cbocc,
+                   int nso, int naocc, int nbocc, int navir);
 
-    void VXC_deriv(std::shared_ptr<Matrix> C, 
-                   std::shared_ptr<Matrix> Cocc,
-                   int nso, int nocc, int nvir, bool alpha);
+    void VXC_deriv(std::shared_ptr<Matrix> Ca,
+                   std::shared_ptr<Matrix> Caocc,
+                   std::shared_ptr<Matrix> Cb,
+                   std::shared_ptr<Matrix> Cbocc,
+                   int nso, int naocc, int nbocc, int navir);
 
     void assemble_Fock(int nocc, int nvir, bool alpha);
 
@@ -123,7 +129,7 @@ protected:
                     std::shared_ptr<Matrix> C1occ,
                     std::shared_ptr<Matrix> C2, 
                     std::shared_ptr<Matrix> C2occ, 
-                    int nso, int n1occ, int n2occ, int nvir,bool alpha);
+                    int nso, int n1occ, int n2occ, int nvir);
 
     void dipole_derivatives(std::shared_ptr<Matrix> C1, 
                             std::shared_ptr<Matrix> C1occ,

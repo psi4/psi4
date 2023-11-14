@@ -32,7 +32,6 @@ Avoid importing from psi4 into here.
 from collections import namedtuple
 from typing import Tuple
 
-
 # A negative order indicates perturbative method
 mrcc_methods = {
             'ccsd'          : { 'method': 1, 'order':  2, 'fullname': 'CCSD'         },

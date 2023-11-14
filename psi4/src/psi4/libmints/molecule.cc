@@ -2050,7 +2050,7 @@ void Molecule::symmetrize(double tol, bool suppress_mol_print_in_exc) {
     CharacterTable ct = point_group()->char_table();
 
     // Obtain atom mapping of atom * symm op to atom
-    int **atom_map = compute_atom_map(this, tol, suppress_mol_print_in_exc);
+    auto atom_map = compute_atom_map(this, tol, suppress_mol_print_in_exc);
 
     // Symmetrize the molecule to remove any noise
     for (int atom = 0; atom < natom(); ++atom) {
@@ -2072,8 +2072,6 @@ void Molecule::symmetrize(double tol, bool suppress_mol_print_in_exc) {
         }
     }
 
-    // Delete the atom map.
-    delete_atom_map(atom_map, this);
     // Set the geometry to ensure z-matrix variables get updated
     set_geometry(temp);
 }

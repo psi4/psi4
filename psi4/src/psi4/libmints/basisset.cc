@@ -746,10 +746,10 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     }
 
     shell_first_ao_ = std::vector<int>(n_shells_);
+    shell_first_exponent_ = std::vector<int>(n_shells_);
     shell_first_basis_function_ = std::vector<int>(n_shells_);
     shells_ = std::vector<GaussianShell>(n_shells_);
     ecp_shells_ = std::vector<GaussianShell>(n_ecp_shells_);
-    l2_shells_.resize(n_shells_);
     ao_to_shell_ = std::vector<int>(nao_);
     function_to_shell_ = std::vector<int>(nbf_);
     function_center_ = std::vector<int>(nbf_);
@@ -803,12 +803,8 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                     GaussianShell(shelltype, am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
                                   &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
                                   &uexponents_[ustart + atom_nprim], puream, n, &xyz_.data()[3 * n], bf_count);
-                auto l2c = libint2::svector<double>(&uoriginal_coefficients_[ustart + atom_nprim],
-                                                    &uoriginal_coefficients_[ustart + atom_nprim + shell_nprim]);
-                auto l2e = libint2::svector<double>(&uexponents_[ustart + atom_nprim],
-                                                    &uexponents_[ustart + atom_nprim + shell_nprim]);
-                l2_shells_[shell_count] =
-                    libint2::Shell{l2e, {{am, static_cast<bool>(puream), l2c}}, {{xyz[0], xyz[1], xyz[2]}}};
+                shell_first_exponent_[shell_count] = ustart + atom_nprim;
+                n_prim_per_shell_[shell_count] = shell_nprim;
             } else {
                 throw PSIEXCEPTION("Unexpected shell type in BasisSet constructor!");
             }
@@ -826,6 +822,8 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             throw PSIEXCEPTION("Problem with nprimitive in basis set construction!");
         }
     }
+    // Update the libint2 shell data
+    update_l2_shells();
 
     /*
      * Now loop over ECPs and finalize metadata
@@ -865,6 +863,21 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                 throw PSIEXCEPTION("Problem with nprimitive in ECP basis set construction!");
             }
         }
+    }
+}
+
+void BasisSet::update_l2_shells(bool embed_normalization) {
+    l2_shells_.resize(n_shells_);
+    for (auto ishell = 0; ishell < n_shells_; ishell++) {
+        auto am = shells_[ishell].am();
+        auto center_index = shell_to_center(ishell);
+        Vector3 xyz = molecule_->xyz(center_index);
+
+        auto offset = shell_first_exponent_[ishell];
+        auto nprim = n_prim_per_shell_[ishell];
+        auto l2c = libint2::svector<double>(&uoriginal_coefficients_[offset], &uoriginal_coefficients_[offset + nprim]);
+        auto l2e = libint2::svector<double>(&uexponents_[offset], &uexponents_[offset + nprim]);
+        l2_shells_[ishell] = libint2::Shell{l2e, {{am, puream_, l2c}}, {{xyz[0], xyz[1], xyz[2]}}, embed_normalization};
     }
 }
 
@@ -1245,4 +1258,26 @@ bool psi::fpeq(const double a, const double b, const double THR/* = 1.0E-14*/) {
     } else {
         return false;
     }
+}
+
+void BasisSet::convert_sap_contraction() {
+  if(max_am_ != 0) {
+    throw PSIEXCEPTION("SAP potentials should be composed of a single S function per atom, and not contain higher angular momentum!");
+  }
+
+  // Coefficients need to be scaled by (expn/pi)^1.5 to go from the
+  // original tabulated error function fits to two-electron integrals,
+  // see doi:10.1063/5.0004046
+  for (int i = 0; i < n_uprimitive_; i++) {
+    // A minus sign is necessary here since the coefficients are
+    // chosen to be negative because of V(r) = - Z(r)/r in the
+    // expansion
+    uoriginal_coefficients_[i] *= -std::pow(uexponents_[i]/M_PI,1.5);
+  }
+  ucoefficients_ = uoriginal_coefficients_;
+  uerd_coefficients_ = uoriginal_coefficients_;
+
+  // Now we just need to recreate the Libint2 data, telling it to skip
+  // the usual renormalization steps
+  update_l2_shells(false);
 }

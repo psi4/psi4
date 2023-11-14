@@ -51,12 +51,13 @@ from typing import Any, Dict, Union
 import numpy as np
 import qcelemental as qcel
 import qcengine as qcng
+
+from psi4 import core
 from psi4.extras import exit_printing
 from psi4.header import print_header
 from psi4.metadata import __version__
-from psi4.driver import driver, p4util
 
-from psi4 import core
+from . import driver, p4util
 
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
@@ -586,7 +587,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     # Set options
     ## The Forte plugin needs special treatment.
     try:
-        import forte # Needed for Forte options to run.
+        import forte  # Needed for Forte options to run.
     except ImportError:
         pass
     else:

@@ -26,32 +26,11 @@
 # @END LICENSE
 #
 
-"""Attempts to catch Python based import errors and provides possible solutions."""
+"""Extension to format and index PSI variables."""
 
-__all__ = []
+#Sphinx.add_object_type(psivar, rolename, indextemplate='', parse_node=None, ref_nodeclass=None, objname='', doc_field_types=[])
 
-# NumPy import
-try:
-    import numpy as np
-except ImportError:
-    msg = """
-    NumPy is a runtime requirement for Psi4. Please install NumPy to proceed.
+def setup(app):
 
-    NumPy installation with a package manager can be accomplished by the following lines:
-        - conda install numpy
-        - sudo yum install numpy
-        - sudo apt-get install python-numpy
-        - brew install numpy
-    """
-    raise ImportError(msg)
+    app.add_object_type('psivar', 'psivar', indextemplate='single: %s')
 
-# Import plugin add-ons here for now
-try:
-    import csx4psi
-except ImportError:
-    pass
-
-try:
-    from . import pasture
-except ImportError:
-    pass

@@ -19,6 +19,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
   option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-tp=host")
   if (NOT ENABLE_XHOST)
+      # This triggers on code generation for all x86 architectures
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -tp=px")
   endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

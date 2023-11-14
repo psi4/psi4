@@ -14,8 +14,9 @@ py:class pydantic.utils.Representation
 # QCArchive
 # FractalClient is temp until https://github.com/MolSSI/QCFractal/pull/716
 py:class qcportal.client.FractalClient
-#py:class qcportal.FractalClient
+py:class qcportal.FractalClient
 py:class qcportal.PortalClient
+py:class qcelemental.models.results.AtomicResultProtocols
 
 ## numpy inherited docstrings
 #py:obj dtype

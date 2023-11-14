@@ -213,7 +213,9 @@ class HF : public Wavefunction {
     /// SAD Guess and propagation
     virtual void compute_SAD_guess(bool natorb);
     /// Huckel guess
-    virtual void compute_huckel_guess();
+    virtual void compute_huckel_guess(bool updated_rule);
+    /// Forms the SAPGAU guess
+    virtual void compute_sapgau_guess();
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);

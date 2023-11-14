@@ -46,14 +46,12 @@ __all__ = [
     "plump_qcvar",
     "set_options",
     "set_module_options",
-    "temp_circular_import_blocker",  # retire ASAP
 ]
 
 
+import math
 import os
 import re
-import sys
-import math
 import uuid
 import warnings
 from collections import Counter
@@ -63,13 +61,13 @@ from tempfile import NamedTemporaryFile
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-
 import qcelemental as qcel
-from psi4 import core
-from psi4.driver import qcdb
 
+from psi4 import core, extras
+
+from .. import qcdb
 from . import optproc
-from .exceptions import TestComparisonError, ValidationError, UpgradeHelper
+from .exceptions import TestComparisonError, UpgradeHelper, ValidationError
 
 ## Python basis helps
 
@@ -636,23 +634,22 @@ def pcm_helper(block: str):
     """
     import pcmsolver
 
-    with NamedTemporaryFile(mode="w+t", delete=True) as fl:
+    # delete=True works for Unix but not for Windows
+    with NamedTemporaryFile(mode="w+t", delete=False) as fl:
         fl.write(block)
         fl.flush()
         parsed_pcm = pcmsolver.parse_pcm_input(fl.name)
+        extras.register_scratch_file(fl.name)
 
     with NamedTemporaryFile(mode="w+t", delete=False) as fl:
         fl.write(parsed_pcm)
         core.set_local_option("PCM", "PCMSOLVER_PARSED_FNAME", fl.name)
+        extras.register_scratch_file(fl.name)  # retain with -m (messy) option
 
 
 def _basname(name: str) -> str:
     """Imitates :py:meth:`core.BasisSet.make_filename` without the gbs extension."""
     return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
-
-
-def temp_circular_import_blocker():
-    pass
 
 
 def basis_helper(block: str, name: str = '', key: str = 'BASIS', set_option: bool = True):
@@ -1562,8 +1559,11 @@ def _core_erisieve_build(
         do_csam: bool = False
     ) -> core.ERISieve:
     """
-    Constructs a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
+    This function previously constructed a Psi4 ERISieve object from an input basis set, with an optional cutoff threshold for
     ERI screening and an optional input to enable CSAM screening (over Schwarz screening).
+
+    However, as the ERISieve class was removed from Psi4 in v1.9, the function now throws with an UpgradeHelper
+    exception, and lets the user know to use TwoBodyAOInt instead.
 
     Parameters
     ----------
@@ -1585,12 +1585,7 @@ def _core_erisieve_build(
     >>> sieve = psi4.core.ERISieve.build(bas, cutoff, csam)
     """
 
-    warnings.warn(
-        "`ERISieve` is deprecated in favor of `TwoBodyAOInt`, and will be removed as soon as Psi4 v1.9 is released.\n",
-        category=FutureWarning,
-        stacklevel=2)
-
-    return core.ERISieve(orbital_basis, cutoff, do_csam)
+    raise UpgradeHelper("ERISieve", "TwoBodyAOInt", 1.8, " The ERISieve class has been removed and replaced with the TwoBodyAOInt class. ERISieve.build(orbital_basis, cutoff, do_csam) can be replaced with the command sequence factory = psi4.core.IntegralFactory(basis); factory.eri(0).")
 
 
 core.ERISieve.build = _core_erisieve_build

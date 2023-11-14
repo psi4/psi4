@@ -30,7 +30,7 @@ import os
 
 from psi4 import core
 
-from psi4.driver.p4util.exceptions import ValidationError
+from ...p4util.exceptions import ValidationError
 
 
 def cubeprop_compute_properties(self):

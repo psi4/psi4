@@ -198,12 +198,10 @@ SharedWavefunction mcscf(SharedWavefunction, Options&);
 namespace psimrcc {
 SharedWavefunction psimrcc(SharedWavefunction, Options&);
 }
-
-#ifdef USING_gdma
-namespace gdma_interface {
-SharedWavefunction gdma_interface(SharedWavefunction, Options&, const std::string& datfilename);
+namespace dummy_einsums {
+SharedWavefunction dummy_einsums (SharedWavefunction, Options&);
 }
-#endif
+
 
 // Matrix returns
 namespace scfgrad {
@@ -403,18 +401,6 @@ SharedWavefunction py_psi_detci(SharedWavefunction ref_wfn) {
     return detci::detci(ref_wfn, Process::environment.options);
 }
 
-#ifdef USING_gdma
-double py_psi_gdma(SharedWavefunction ref_wfn, const std::string& datfilename) {
-    py_psi_prepare_options_for_module("GDMA");
-    gdma_interface::gdma_interface(ref_wfn, Process::environment.options, datfilename);
-    return 0.0;
-}
-#else
-double py_psi_gdma(SharedWavefunction ref_wfn, const std::string& datfilename) {
-    throw PSIEXCEPTION("GDMA not enabled. Recompile with -DENABLE_gdma.");
-}
-#endif
-
 #ifdef USING_CheMPS2
 SharedWavefunction py_psi_dmrg(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("DMRG");
@@ -509,6 +495,17 @@ SharedWavefunction py_psi_psimrcc(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("PSIMRCC");
     return psimrcc::psimrcc(ref_wfn, Process::environment.options);
 }
+
+#ifdef USING_Einsums
+SharedWavefunction py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("EINSUMS");
+    return dummy_einsums::dummy_einsums(ref_wfn, Process::environment.options);
+}
+#else
+double py_psi_dummy_einsums(SharedWavefunction ref_wfn) {
+    throw PSIEXCEPTION("Einsums not enabled. Recompile with -DENABLE_Einsums");
+}
+#endif
 
 void py_psi_clean() { PSIOManager::shared_object()->psiclean(); }
 
@@ -1333,7 +1330,6 @@ PYBIND11_MODULE(core, core) {
     core.def("cctriples", py_psi_cctriples, "ref_wfn"_a, "Runs the coupled cluster (T) energy code.");
     core.def("detci", py_psi_detci, "ref_wfn"_a, "Runs the determinant-based configuration interaction code.");
     core.def("dmrg", py_psi_dmrg, "ref_wfn"_a, "Runs the CheMPS2 interface DMRG code.");
-    core.def("run_gdma", py_psi_gdma, "ref_wfn"_a, "datfilename"_a, "Runs the GDMA interface code.");
     core.def("fnocc", py_psi_fnocc, "ref_wfn"_a, "Runs the FNO-CCSD(T)/QCISD(T)/MP4/CEPA energy code");
     core.def("cchbar", py_psi_cchbar, "ref_wfn"_a, "Runs the code to generate the similarity transformed Hamiltonian.");
     core.def("cclambda", py_psi_cclambda, "ref_wfn"_a, "Runs the coupled cluster lambda equations code.");
@@ -1343,6 +1339,7 @@ PYBIND11_MODULE(core, core) {
     core.def("cceom", py_psi_cceom, "ref_wfn"_a, "Runs the equation of motion coupled cluster code for excited states.");
     core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
     core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
+    core.def("dummy_einsums", py_psi_dummy_einsums, "ref_wfn"_a, "Runs the einsums placeholder code.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
         if (ofname == "stdout") {

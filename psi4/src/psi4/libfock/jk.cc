@@ -71,12 +71,18 @@ JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
 
-    bool is_composite = jk_type.find("+") != std::string::npos; // does SCF_TYPE contain +?
+    // check if algorithm is composite
+    std::array<std::string, 3> composite_algos = { "DFDIRJ", "COSX", "LINK" };
+    bool is_composite = std::any_of(
+      composite_algos.cbegin(),
+      composite_algos.cend(),
+      [&](std::string composite_algo) { return jk_type.find(composite_algo) != std::string::npos; }
+    );
 
     bool do_density_screen = options.get_str("SCREENING") == "DENSITY";
     bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
     
-    bool can_do_density_screen = (jk_type == "DIRECT" || jk_type == "DFDIRJ+LINK");
+    bool can_do_density_screen = (jk_type == "DIRECT" || jk_type == "DFDIRJ+LINK" || jk_type == "DFDIRJ");
 
     if (do_density_screen && !(can_do_density_screen || do_df_scf_guess)) {
         throw PSIEXCEPTION("Density screening has not been implemented for non-Direct SCF algorithms.");
@@ -240,7 +246,6 @@ void JK::common_init() {
     omega_ = 0.0;
     omega_alpha_ = 1.0;
     omega_beta_ = 0.0;
-    early_screening_ = false;
 
     num_computed_shells_ = 0L;
     computed_shells_per_iter_ = {};

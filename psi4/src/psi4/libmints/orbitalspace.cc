@@ -195,7 +195,7 @@ OrbitalSpace orthogonalize(const std::string &id, const std::string &name, const
     return OrbitalSpace(id, name, sqrtm, bs, localfactory);
 }
 
-OrbitalSpace orthogonal_compliment(const OrbitalSpace &space1, const OrbitalSpace &space2, const std::string &id,
+OrbitalSpace orthogonal_complement(const OrbitalSpace &space1, const OrbitalSpace &space2, const std::string &id,
                                    const std::string &name, const double &lindep_tol) {
     outfile->Printf("    Projecting out '%s' from '%s' to obtain space '%s'\n", space1.name().c_str(),
                     space2.name().c_str(), name.c_str());
@@ -206,79 +206,51 @@ OrbitalSpace orthogonal_compliment(const OrbitalSpace &space1, const OrbitalSpac
         return OrbitalSpace(id, name, space2.C(), space2.evals(), space2.basisset(), space2.integral());
     }
 
-    // O12 = O12
+    // Overlap Matrix
     SharedMatrix O12 = OrbitalSpace::overlap(space1, space2);
+
+    // Half-transform to RIBS
     auto C12 = std::make_shared<Matrix>("C12", space1.C()->colspi(), space2.C()->colspi());
+    C12->gemm(false, false, 1.0, O12, space2.C(), 0.0);
 
-    // C12 = C1t * S12 * C2
-    // TODO: Try using the svd_a function of Matrix, however it calls dgesdd not dgesvd.
-    C12->transform(space1.C(), O12, space2.C());
-    C12->print();
+    // SVD of MO overlap matrix
+    auto [U, S, Vt] = C12->svd_a_temps();
+    C12->svd_a(U, S, Vt);
 
-#if SVD
-    std::tuple<SharedMatrix, SharedMatrix, SharedMatrix> svd_temps = C12->svd_a_temps();
-
-#else
-    // We're interested in the right side vectors (V) of an SVD solution.
-    // We don't need a full SVD solution just part of it. Do it by hand:
-    auto D11 = std::make_shared<Matrix>("D11", C12->colspi(), C12->colspi());
-    D11->gemm(true, false, 1.0, C12, C12, 0.0);
-    //        D11->print();
-
-    auto V11 = std::make_shared<Matrix>("V11", D11->rowspi(), D11->colspi());
-    auto E1 = std::make_shared<Vector>("E1", D11->colspi());
-    D11->diagonalize(V11, E1);
-    //        V11->eivprint(E1);
-
-    // Count the number of eigenvalues < lindep_tol
-    Dimension zeros(space1.nirrep());
-    for (int h = 0; h < space1.nirrep(); ++h) {
-        for (int i = 0; i < E1->dimpi()[h]; ++i) {
-            if (E1->get(h, i) < lindep_tol) zeros[h]++;
-        }
+    // Remove near-zero eigenvalues from the S matrix
+    Dimension nlindep(space1.nirrep());
+    for (int i = 0; i < S->dimpi()[0]; ++i) {
+        if (S->get(0, i) < lindep_tol) nlindep[0]++;
     }
 
+    // Select nullspace vectors from V
+    Dimension dim_zero(space1.nirrep());
+    Dimension Np(S->dimpi() - nlindep);
+    auto V_Nt = Vt->get_block({Np, Vt->rowspi()},{dim_zero, Vt->colspi()});
+    auto V_N = V_Nt->transpose();
+
+    outfile->Printf("    %d linear dependencies will be \'removed\'.\n", nlindep[0]);
     outfile->Printf("        Orbital space before projecting out: ");
     space2.dim().print();
     outfile->Printf("        Orbital space after projecting out:  ");
-    zeros.print();
+    (space2.dim() - Np).print();
     outfile->Printf("\n");
 
-    // Pull out the nullspace vectors
-    Dimension dim_zero(space1.nirrep());
-    SharedMatrix V = V11->get_block({dim_zero, V11->rowspi()}, {dim_zero, zeros});
+    // Half-back transform to RIBS
+    auto newC = std::make_shared<Matrix>("Transformation matrix", space2.C()->rowspi(), V_N->colspi());
+    newC->gemm(false, false, 1.0, space2.C(), V_N, 0.0);
 
-    // Half-back transform to space2
-    auto newC = std::make_shared<Matrix>("Transformation matrix", space2.C()->rowspi(), zeros);
-    newC->gemm(false, false, 1.0, space2.C(), V, 0.0);
-
+    /* O12.newC = 0 (DOI: 10.1016/j.cplett.2004.07.061) */
     return OrbitalSpace(id, name, newC, space2.basisset(), space2.integral());
-#endif
 }
 }  // namespace
 
 OrbitalSpace OrbitalSpace::build_cabs_space(const OrbitalSpace &orb_space, const OrbitalSpace &ri_space,
                                             double lindep_tol) {
-    return orthogonal_compliment(orb_space, ri_space, "p''", "CABS", lindep_tol);
+    return orthogonal_complement(orb_space, ri_space, "p''", "CABS", lindep_tol);
 }
 
-OrbitalSpace OrbitalSpace::build_ri_space(const std::shared_ptr<Molecule> &molecule, const std::string &obs_key,
-                                          const std::string &aux_key, double lindep_tol) {
-    // Construct a combined basis set.
-    Options &options = Process::environment.options;
-    std::vector<std::string> keys, targets, roles, others;
-    keys.push_back(obs_key);
-    keys.push_back(aux_key);
-    targets.push_back(options.get_str(obs_key));
-    targets.push_back(options.get_str(aux_key));
-    roles.push_back(obs_key);
-    roles.push_back("F12");
-    others.push_back(options.get_str(obs_key));
-    others.push_back(options.get_str(obs_key));
-    throw PSIEXCEPTION("build_ri_space has not been updated to the new python based basis set construction scheme.");
-    // std::shared_ptr<BasisSet> combined = BasisSet::pyconstruct_combined(molecule, keys, targets, roles, others);
-    std::shared_ptr<BasisSet> combined = BasisSet::zero_ao_basis_set();
-
+OrbitalSpace OrbitalSpace::build_ri_space(const std::shared_ptr<BasisSet> &combined, double lindep_tol) {
     // orthogonalize the basis set projecting out linear dependencies.
     return orthogonalize("p'", "RIBS", combined, lindep_tol);
 }

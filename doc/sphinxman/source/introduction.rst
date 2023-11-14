@@ -134,6 +134,18 @@ or implementation contributions specific to |PSIfour| (in addition to
 appropriate references for the underlying theory, which are not necessarily
 included in the list below).
 
+Most |PSIfour| calculations employ density functional
+theory. |PSIfour| does not implement any density functionals; instead,
+all the density functionals come from LIBXC, which should be cited in
+addition to |PSIfour|
+
+* "Recent developments in LIBXC — a comprehensive library of
+  functionals for density functional
+  theory," S. Lehtola, C. Steigemann, M. J. T. Oliveira,
+  and M. A. L. Marques, *SoftwareX* **7**, 1 (2018). (doi:
+  `10.1016/j.softx.2017.11.002
+  <https://doi.org/10.1016/j.softx.2017.11.002>`_)
+
 Regardless of the type of the calculation, an initial guess is
 necessary. |PSIfour| features several initial guesses for the
 molecular orbitals. The default guess is the superposition of atomic
@@ -424,7 +436,7 @@ approximation are found in the following two works:
   (doi: `10.1007/s00214-012-1235-6 <https://doi.org/10.1007/s00214-012-1235-6>`_)
 
 * "Single-determinant-based symmetry-adapted perturbation theory without
-  single-exchange approximation," 
+  single-exchange approximation,"
   R. Sch\ |a_dots|\ ffer and G. Jansen, *Mol. Phys.* **111**, 2570 (2013).
   (doi: `10.1080/00268976.2013.827253 <https://doi.org/10.1080/00268976.2013.827253>`_)
 

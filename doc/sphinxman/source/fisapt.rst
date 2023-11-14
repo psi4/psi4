@@ -65,30 +65,30 @@ review of the aims of A/F/I-SAPT and the existing state-of-the-art in the field
 in the introduction chapter on partitioned SAPT methods in `Parrish's thesis
 <https://smartech.gatech.edu/handle/1853/53850>`_.
 
-A video tutorial series for the use of the FISAPT module is available `here
-<https://www.youtube.com/playlist?list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-Specific videos in the series include:
-
-- `F-SAPT#1
-  <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Describes the use of F-SAPT to analyze the
-  distribution of the intermolecular interaction energy components between the
-  various hydroxyl and phenyl moieties of the phenol dimer.
-- `F-SAPT#2
-  <https://www.youtube.com/watch?v=fqlzXsayec0&index=2&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Discusses how to plot the order-1 F-SAPT analysis with PyMol and perform a
-  "difference F-SAPT" analysis
-- `I-SAPT#1
-  <https://www.youtube.com/watch?v=fD6mu_tTG_c&index=3&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Describes the use of I-SAPT to analyze the interaction between the two phenol
-  groups in a 2,4-pentanediol molecule.
-- `I-SAPT#2
-  <https://www.youtube.com/watch?v=hDbonAOD5dY&index=4&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Discusses how to plot the density fields and ESPs of the various moieties of
-  the I-SAPT embedding scheme with PyMol
-- `F/I-SAPT Options
-  <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Details all of the more-advanced options in the F/I-SAPT code (rarely needed).
+.. A video tutorial series for the use of the FISAPT module is available `here
+.. <https://www.youtube.com/playlist?list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+.. Specific videos in the series include:
+..
+.. - `F-SAPT#1
+..   <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Describes the use of F-SAPT to analyze the
+..   distribution of the intermolecular interaction energy components between the
+..   various hydroxyl and phenyl moieties of the phenol dimer.
+.. - `F-SAPT#2
+..   <https://www.youtube.com/watch?v=fqlzXsayec0&index=2&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Discusses how to plot the order-1 F-SAPT analysis with PyMol and perform a
+..   "difference F-SAPT" analysis
+.. - `I-SAPT#1
+..   <https://www.youtube.com/watch?v=fD6mu_tTG_c&index=3&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Describes the use of I-SAPT to analyze the interaction between the two phenol
+..   groups in a 2,4-pentanediol molecule.
+.. - `I-SAPT#2
+..   <https://www.youtube.com/watch?v=hDbonAOD5dY&index=4&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Discusses how to plot the density fields and ESPs of the various moieties of
+..   the I-SAPT embedding scheme with PyMol
+.. - `F/I-SAPT Options
+..   <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+..   Details all of the more-advanced options in the F/I-SAPT code (rarely needed).
 
 The scripts discussed below are located in :source:`psi4/share/psi4/fsapt`.
 
