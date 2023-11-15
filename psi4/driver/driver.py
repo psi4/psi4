@@ -33,23 +33,23 @@ frequency calculations.
 """
 
 
-__all__ = [
-    "energy",
-    "gradient",
-    "properties",
-    "optimize",
-    "hessian",
-    "frequency",
-    "vibanal_wfn",
-    "gdma",
-    "fchk",
-    "molden",
-    "tdscf",
-    "opt",
-    "freq",
-    "frequencies",
-    "prop",
-]
+#__all__ = [
+#    "energy",
+#    "gradient",
+#    "properties",
+#    "optimize",
+#    "hessian",
+#    "frequency",
+#    "vibanal_wfn",
+#    "gdma",
+#    "fchk",
+#    "molden",
+#    "tdscf",
+#    "opt",
+#    "freq",
+#    "frequencies",
+#    "prop",
+#]
 
 # TODO: above are all the fns defined in this file that are sensible
 #   to export from this file, which is the usual contents of `__all__`.
@@ -61,6 +61,9 @@ __all__ = [
 #   `__all__`. Below is one at least transitory necessary extra __all__
 #   extension and some more possibly necessary ones as we work towards a
 #   more rational import structure.
+#   [Nov 2023] For the short/med term, __all__ will not be defined for this file in
+#   order to not disrupt input files, plugins, etc. that expect to have use of
+#   numpy and driver internals that they have been able to use w/o special imports.
 
 #__all__.extend([
 #    "procedures",
