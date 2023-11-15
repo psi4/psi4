@@ -1,5 +1,7 @@
 #! RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
 
+import numpy as np
+
 molecule h2o {
   0 1
   O

@@ -2,6 +2,8 @@
 #! equation is solved in the uncontracted cc-pVDZ-DK basis.
 #! The reference numbers are from Lan Cheng's implementation in Cfour
 
+import numpy as np
+
 ref_nuc_energy =  8.316179709840201 #TEST
 ref_nr_energy  = -76.00090503998709 #TEST 
 ref_rel_energy = -76.05694013116914 #TEST

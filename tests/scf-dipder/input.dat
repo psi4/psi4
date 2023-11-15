@@ -1,5 +1,6 @@
 #! Test SCF dipole derivatives against old Psi3 reference values
 
+import numpy as np                                                     #TEST
 ref_energy = -78.01198983530274                                        #TEST
 ref_dipder = np.array([                                                #TEST
      [ -0.0841019829,       0.0000000000,       0.0000000000,          #TEST

@@ -1,5 +1,6 @@
 #! test roundtrip-ness of dict repr for psi4.core.Molecule and qcdb.Molecule
 
+import numpy as np
 from psi4.driver import qcdb
 
 

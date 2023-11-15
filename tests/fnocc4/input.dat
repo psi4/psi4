@@ -1,4 +1,7 @@
 #! Test FNO-DF-CCSD(T) energy
+
+import numpy as np
+
 molecule h2o {
 0 1
 O

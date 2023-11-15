@@ -1,5 +1,6 @@
 #! CI/MCSCF cc-pvDZ properties for Potassium nitrate (rocket fuel!)
 
+import numpy as np  #TEST
 import warnings  #TEST
 d2au = 1 / constants.dipmom_au2debye  #TEST
 q2au = 1 / (constants.dipmom_au2debye * constants.bohr2angstroms)  #TEST

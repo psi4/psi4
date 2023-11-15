@@ -1,5 +1,5 @@
 #! SCF STO-3G finite-difference tests
-import numpy
+import numpy as np
 
 molecule h2o {
   O

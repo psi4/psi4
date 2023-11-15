@@ -1,4 +1,5 @@
 #! Exercises the various DFT-D corrections, both through python directly and through c++
+import numpy as np
 
 ref_d2         = [-0.00390110, -0.00165271, -0.00058118]  #TEST
 ref_d3zero     = [-0.00285088, -0.00084340, -0.00031923]  #TEST

@@ -40,6 +40,7 @@ gs_refs = {
         }
 gs_refs_arr = {}
 pole = [gs_refs["CC2 DIPOLE " + cart] for cart in "XYZ"]  #TEST
+import numpy as np  #TEST
 gs_refs_arr["CC2 DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
 pole = [gs_refs["CC2 QUADRUPOLE " + cart] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
 gs_refs_arr["CC2 QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST

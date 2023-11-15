@@ -19,6 +19,7 @@ molecule water {
 #Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-0.912085762652)
 #psi4.set_global_option_python('EXTERN', Chrgfield.extern)
 
+import numpy as np
 external_potentials = np.array([
 -0.834,1.649232019048,0.0,-2.356023604706,
 0.417,0.544757019107,0.0,-3.799961446760,

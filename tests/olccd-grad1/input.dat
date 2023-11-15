@@ -1,5 +1,7 @@
 #! OLCCD cc-pVDZ gradient for the H2O molecule.
 
+import numpy as np
+
 # Test values are analytic from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
 ref = psi4.core.Matrix.from_array(np.array(                         #TEST
             [[ 0.000000000000,  0.000000000000,  0.013925122269],   #TEST
