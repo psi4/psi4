@@ -1,6 +1,7 @@
 #! apply linear fragmentation algorithm to a water cluster
 
 import math
+import numpy as np
 from psi4.driver import qcdb
 
 s22_12 = qcdb.Molecule("""

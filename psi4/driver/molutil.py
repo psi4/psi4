@@ -27,6 +27,11 @@
 #
 """Module with utility functions that act on molecule objects."""
 
+__all__ = [
+    "activate",
+    "geometry",
+]
+
 from typing import Dict, Tuple, Union
 
 import numpy as np

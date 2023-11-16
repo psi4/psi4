@@ -26,6 +26,11 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "CppeInterface",
+    "get_pe_options",
+]
+
 from tempfile import NamedTemporaryFile
 
 import cppe

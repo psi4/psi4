@@ -29,6 +29,8 @@
 List of double-hybrid functionals
 """
 
+__all__ = ["functional_list"]
+
 funcs = []
 
 funcs.append({

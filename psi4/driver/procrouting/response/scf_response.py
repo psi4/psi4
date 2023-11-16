@@ -26,6 +26,15 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "cpscf_linear_response",
+    "dipole",
+    "property_dicts",
+    "quadrupole",
+    "tdscf_excitations",
+    "traceless_quadrupole",
+]
+
 from collections import Counter
 from typing import List, Union
 
@@ -76,7 +85,7 @@ property_dicts = {
 }
 
 
-def cpscf_linear_response(wfn, *args, **kwargs):
+def cpscf_linear_response(wfn: core.Wavefunction, *args, **kwargs) -> List[np.ndarray]:
     """
     Compute the static properties from a reference wavefunction. The currently implemented properties are
       - dipole polarizability
@@ -84,20 +93,21 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 
     Parameters
     ----------
-    wfn : psi4 wavefunction
+    wfn
         The reference wavefunction.
     args : list
         The list of arguments. For each argument, such as ``dipole polarizability``, will return the corresponding
         response.
     kwargs : dict
-        Options that control how the response is computed. The following options are supported (with default values):
-          - ``conv_tol``: 1e-5
-          - ``max_iter``: 10
-          - ``print_lvl``: 2
+        Options dictionary that controls how the response is computed. The following options are supported (with default values):
+
+        - ``conv_tol``: 1e-5
+        - ``max_iter``: 10
+        - ``print_lvl``: 2
 
     Returns
     -------
-    responses : list
+    responses : List[~numpy.ndarray]
         The list of response tensors.
     """
     mints = core.MintsHelper(wfn.basisset())
@@ -582,7 +592,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
     core.print_out("\n")
 
 
-def tdscf_excitations(wfn,
+def tdscf_excitations(wfn: core.Wavefunction,
                       *,
                       states: Union[int, List[int]],
                       triplets: str = "NONE",
@@ -592,14 +602,14 @@ def tdscf_excitations(wfn,
                       guess: str = "DENOMINATORS",
                       verbose: int = 1,
                       coeff_cutoff: float = 0.1,
-                      tdm_print: List[str] = []):
+                      tdm_print: List[str] = []) -> List:
     r"""Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
     -----------
-    wfn : :py:class:`psi4.core.Wavefunction`
+    wfn
        The reference wavefunction
-    states : Union[int, List[int]]
+    states
        How many roots (excited states) should the solver seek to converge?
        This function accepts either an integer or a list of integers:
          - The list has :math:`n_{\mathrm{irrep}}` elements and is only
@@ -609,7 +619,8 @@ def tdscf_excitations(wfn,
            will be distributed among irreps.
            For example, ``states = 10`` for a D2h system will compute 10 states
            distributed as ``[2, 2, 1, 1, 1, 1, 1, 1]`` among irreps.
-    triplets : {"NONE", "ONLY", "ALSO"}
+    triplets
+       {"NONE", "ONLY", "ALSO"}
        Should the solver seek to converge states of triplet symmetry?
        Default is `none`: do not seek to converge triplets.
        Valid options are:
@@ -625,12 +636,12 @@ def tdscf_excitations(wfn,
            "ALSO"`` states (C2v symmetry), ``[2, 2, 2, 2]`` will be of singlet
            spin symmetry and ``[1, 1, 1, 1]``` will be of triplet spin
            symmetry.
-    tda :  bool, optional.
+    tda
        Should the solver use the Tamm-Dancoff approximation (TDA) or the
        random-phase approximation (RPA)?
        Default is ``False``: use RPA.
        Note that TDA is equivalent to CIS for HF references.
-    r_convergence : float, optional.
+    r_convergence
        The convergence threshold for the norm of the residual vector.
        Default: 1.0e-4
        Using a tighter convergence threshold here requires tighter SCF ground
@@ -640,20 +651,20 @@ def tdscf_excitations(wfn,
        :math:`10^{-(N-2)}`.
        The default value is consistent with the default value for
        ``D_CONVERGENCE``.
-    maxiter : int, optional
+    maxiter
        Maximum number of iterations.
        Default: 60
-    guess : str, optional.
+    guess
        How should the starting trial vectors be generated?
        Default: `DENOMINATORS`, i.e. use orbital energy differences to generate
        guess vectors.
-    verbose : int, optional.
+    verbose
        How verbose should the solver be?
        Default: 1
-    coeff_cutoff : float, optional.
+    coeff_cutoff
        Cutoff for printing out excitation and de-excitation coefficients.
        Default: 0.1
-    tdm_print : list, optional.
+    tdm_print
        List of transition dipole moments to print.
        Valid options are:
          - `ETDM_LEN`. Electric Transition Dipole Moments, length representation

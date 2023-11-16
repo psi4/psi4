@@ -40,6 +40,7 @@ from .driver_cbs import cbs  # remove in v1.8 when UpgradeHelper expires
 from .inputparser import process_input
 from .ipi_broker import ipi_broker
 from .molutil import *
+from .p4util.exceptions import *
 from .p4util.fchk import *
 from .p4util.fcidump import *
 from .p4util.python_helpers import basis_helper, pcm_helper, set_module_options, set_options

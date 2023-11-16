@@ -26,8 +26,13 @@
 # @END LICENSE
 #
 """
-The SCF iteration functions
+The SCF iteration functions extending :class:`psi4.core.HF`.
 """
+
+__all__ = []
+
+from typing import List
+
 import numpy as np
 
 from psi4 import core
@@ -254,6 +259,7 @@ def scf_initialize(self):
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
+    """Main SCF iterations loop. Per-iteration control and convergence checks here."""
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
     verbose = core.get_option('SCF', "PRINT")
@@ -1013,13 +1019,13 @@ def _validate_soscf():
 
 core.HF.validate_diis = _validate_diis
 
-def efp_field_fn(xyz):
+def efp_field_fn(xyz: List[float]) -> List[float]:
     """Callback function for PylibEFP to compute electric field from electrons
     in ab initio part for libefp polarization calculation.
 
     Parameters
     ----------
-    xyz : list
+    xyz
         (3 * npt, ) flat array of points at which to compute electric field
 
     Returns

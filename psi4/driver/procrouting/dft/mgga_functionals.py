@@ -29,6 +29,8 @@
 List of meta-GGA functionals
 """
 
+__all__ = ["functional_list"]
+
 funcs = []
 
 funcs.append({

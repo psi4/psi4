@@ -29,6 +29,8 @@
 List of XC functionals
 """
 
+__all__ = ["functional_list"]
+
 funcs = []
 
 # yapf: disable

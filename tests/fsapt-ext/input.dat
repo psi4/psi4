@@ -1,4 +1,5 @@
 #! Quick test of external potential in F-SAPT (see fsapt1 for a real example)
+import numpy as np
 
 memory 1 GB
 

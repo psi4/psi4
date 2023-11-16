@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+__all__ = ["mcscf_solver"]
 
 import numpy as np
 
@@ -41,7 +42,7 @@ def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype)
     core.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" %
                     (mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype))
 
-def mcscf_solver(ref_wfn):
+def mcscf_solver(ref_wfn: core.Wavefunction) -> core.CIWavefunction:
 
     # Build CIWavefunction
     core.prepare_options_for_module("DETCI")

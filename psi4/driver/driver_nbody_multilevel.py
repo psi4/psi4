@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+__all__ = ["prepare_results"]
+
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import numpy as np

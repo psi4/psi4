@@ -31,6 +31,50 @@ single-point energies, geometry optimizations, properties, and vibrational
 frequency calculations.
 
 """
+
+
+#__all__ = [
+#    "energy",
+#    "gradient",
+#    "properties",
+#    "optimize",
+#    "hessian",
+#    "frequency",
+#    "vibanal_wfn",
+#    "gdma",
+#    "fchk",
+#    "molden",
+#    "tdscf",
+#    "opt",
+#    "freq",
+#    "frequencies",
+#    "prop",
+#]
+
+# TODO: above are all the fns defined in this file that are sensible
+#   to export from this file, which is the usual contents of `__all__`.
+#   However, due to Psi4's overuse of "import *" and unfortunate nested
+#   naming of driver/driver.py, a lot of internal driver fns intended for
+#   driver.py's private use are available in the API and may be in use in the
+#   wild. `sapt-dft-api` and `sapt-dft-lrc` are two test cases that needed
+#   slight modification after the API tightening that happens when defining
+#   `__all__`. Below is one at least transitory necessary extra __all__
+#   extension and some more possibly necessary ones as we work towards a
+#   more rational import structure.
+#   [Nov 2023] For the short/med term, __all__ will not be defined for this file in
+#   order to not disrupt input files, plugins, etc. that expect to have use of
+#   numpy and driver internals that they have been able to use w/o special imports.
+
+#__all__.extend([
+#    "procedures",
+#    # TODO: below may need transitive export
+#    #"p4util",
+#    #"qcdb",
+#    #"from psi4.driver.p4util.exceptions import *",
+#    #"from psi4.driver.procrouting import *",
+#    #"mdi_run",
+#])
+
 import copy
 import json
 import logging

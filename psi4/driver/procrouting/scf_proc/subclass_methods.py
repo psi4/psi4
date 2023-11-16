@@ -1,4 +1,41 @@
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2023 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This file is part of Psi4.
+#
+# Psi4 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# Psi4 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along
+# with Psi4; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+"""
+Extensions to :class:`psi4.core.RHF`, :class:`psi4.core.UHF`,
+:class:`psi4.core.CUHF`, and :class:`psi4.core.ROHF` for ``diis`` and
+``compute_orbital_gradient`` methods.
+
+"""
+
+__all__ = []
+
 import math
+from typing import Set
 
 import numpy as np
 
@@ -21,6 +58,19 @@ def diis_engine_helper(self):
     return engines
 
 def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
+    """Form :math:`| FDS - SDF |` quantity and return either its
+    root-mean-square when :term:`DIIS_RMS_ERROR <DIIS_RMS_ERROR (SCF)>` is True
+    or its absolute maximum element otherwise. Used for second-order SCF.
+
+    Parameters
+    ----------
+    save_fock
+        Whether to include step in DIIS.
+    max_diis_vectors
+        When `save_fock` is True and a new DIIS object is needed, the maximum
+        number of vectors to initialize it for.
+
+    """
     gradient = self.form_FDSmSDF(self.Fa(), self.Da())
 
     if save_fock:
@@ -45,6 +95,19 @@ def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         return gradient.absmax()
 
 def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
+    """Form :math:`| FDS - SDF |` quantity and return either its
+    root-mean-square when :term:`DIIS_RMS_ERROR <DIIS_RMS_ERROR (SCF)>` is True
+    or its absolute maximum element otherwise. Used for second-order SCF.
+
+    Parameters
+    ----------
+    save_fock
+        Whether to include step in DIIS.
+    max_diis_vectors
+        When `save_fock` is True and a new DIIS object is needed, the maximum
+        number of vectors to initialize it for.
+
+    """
     gradient_a = self.form_FDSmSDF(self.Fa(), self.Da())
     gradient_b = self.form_FDSmSDF(self.Fb(), self.Db())
 
@@ -113,14 +176,32 @@ core.RHF.compute_orbital_gradient = _RHF_orbital_gradient
 core.UHF.compute_orbital_gradient = core.CUHF.compute_orbital_gradient = _UHF_orbital_gradient
 core.ROHF.compute_orbital_gradient = _ROHF_orbital_gradient
 
-def _RHF_diis(self, Dnorm):
+_diis_docstring = """Perform DIIS extrapolation.
+
+    Parameters
+    ----------
+    Dnorm
+        Error metric used to blend certain algorithms like ADIIS and EDIIS.
+
+    Returns
+    -------
+    ~typing.Set[str]
+        All DIIS algorithms performed.
+
+    """
+
+def _RHF_diis(self, Dnorm: float) -> Set[str]:
     return self.diis_manager_.extrapolate(self.Fa(), Dnorm=Dnorm)
 
-def _UHF_diis(self, Dnorm):
+def _UHF_diis(self, Dnorm: float) -> Set[str]:
     return self.diis_manager_.extrapolate(self.Fa(), self.Fb(), Dnorm=Dnorm)
 
-def _ROHF_diis(self, Dnorm):
+def _ROHF_diis(self, Dnorm: float) -> Set[str]:
     return self.diis_manager_.extrapolate(self.soFeff(), Dnorm=Dnorm)
+
+_RHF_diis.__doc__ = _diis_docstring
+_UHF_diis.__doc__ = _diis_docstring
+_ROHF_diis.__doc__ = _diis_docstring
 
 core.RHF.diis = _RHF_diis
 core.UHF.diis = core.CUHF.diis = _UHF_diis

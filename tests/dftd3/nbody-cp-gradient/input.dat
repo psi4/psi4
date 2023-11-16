@@ -1,4 +1,5 @@
 #! Computation of CP-corrected water trimer gradient (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
+import numpy as np
 
 # none of the disp refs independently verified
 ref_disp = {

@@ -26,12 +26,20 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "get_qm_atoms_opts",
+    "modify_Fock_induced",
+    "modify_Fock_permanent",
+]
+
+from typing import Any, Dict, List, Tuple
+
 import numpy as np
 
 from psi4 import core
 
 
-def get_qm_atoms_opts(mol):
+def get_qm_atoms_opts(mol: core.Molecule) -> Tuple[List[float], List[float], Dict[str, Any]]:
     """Provides list of coordinates of quantum mechanical atoms from
     psi4.core.Molecule `mol` to pylibefp.core.efp() `efpobj`. Also
     converts from `read_options("EFP"` to pylibefp opts dictionary.
@@ -63,25 +71,25 @@ def get_qm_atoms_opts(mol):
     return ptc, coords, opts
 
 
-def modify_Fock_permanent(mol, mints, verbose=1):
+def modify_Fock_permanent(mol: core.Molecule, mints: core.MintsHelper, verbose: int = 1) -> np.ndarray:
     """Computes array of the EFP contribution to the potential felt by
     QM atoms due to permanent EFP moments. Used for SCF procedure.
 
     Parameters
     ----------
-    mol : :py:class:`psi4.core.Molecule`
+    mol
         Source of quantum mechanical atoms. As its `EFP` member data, contains
         a :py:class:`pylibefp.core.efp` object that is the source and computer
         of EFP fragments.
-    mints : `psi4.core.MintsHelper`
+    mints
         Integral computer.
-    verbose : int, optional
+    verbose
         Whether to print out multipole coordinates and values. 0: no printing.
         1: print charges and dipoles. 2: additionally print quadrupoles and octupoles.
 
     Returns
     -------
-    ndarray
+    ~numpy.ndarray
         (nbf, nbf) EFP charge through octupole contribution to the potential
 
     """
@@ -132,17 +140,17 @@ def modify_Fock_permanent(mol, mints, verbose=1):
     return V2
 
 
-def modify_Fock_induced(efpobj, mints, verbose=1):
+def modify_Fock_induced(efpobj: "pylibefp.core.efp", mints: core.MintsHelper, verbose: int = 1) -> np.ndarray:
     """Returns shared matrix containing the EFP contribution to the potential
     felt by QM atoms due to EFP induced dipoles. Used in SCF procedure.
 
     Parameters
     ----------
-    efpobj : :py:class:`pylibefp.core.efp`
+    efpobj
         Source of EFP induced dipole information.
-    mints : `psi4.core.MintsHelper`
+    mints
         Integral computer.
-    verbose : int, optional
+    verbose
         Whether to print out induced dipole coordinates and values.
         0: no printing. 1: print induced dipole info.
 

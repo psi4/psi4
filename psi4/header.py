@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+__all__ = ["print_header"]
+
 import datetime
 import os
 import socket

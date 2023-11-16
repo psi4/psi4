@@ -85,6 +85,7 @@ def myownmy_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None
     Yes, this fn is just the corl_xtpl_helgaker_2 w/o error checking and printing.
 
     """
+    import numpy as np
     if isinstance(valueLO, float):
         value = (valueHI * zHI ** 3 - valueLO * zLO ** 3) / (zHI ** 3 - zLO ** 3)
         beta = (valueHI - valueLO) / (zHI ** (-3) - zLO ** (-3))

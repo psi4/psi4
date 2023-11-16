@@ -1,5 +1,7 @@
 #! Multilevel computation of water trimer energy (geometry from J. Chem. Theory Comput. 11, 2126-2136 (2015))
 
+import numpy as np
+
 distributed = os.environ.get("_PSI4_USE_QCF", False)
 if distributed:
     from qcfractal.snowflake import FractalSnowflake

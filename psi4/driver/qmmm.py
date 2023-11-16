@@ -31,6 +31,11 @@ a QM calculation.
 
 """
 
+__all__ = [
+    "Diffuse",
+    "QMMM",
+    "QMMMbohr",
+]
 from psi4 import core
 
 from .driver import *
@@ -132,7 +137,7 @@ class QMMM():
 
 class QMMMbohr():
     """Hold charges and :py:class:`psi4.core.ExternalPotential`. To add external charges to a calculation, prefer
-    passing the array of charges with kwarg ``external_potentials``, as in extern2 example."""
+    passing the array of charges with kwarg ``external_potentials``, as in :srcsample:`extern2` example."""
 
     def __init__(self):
         self.charges = []

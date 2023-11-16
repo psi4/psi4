@@ -15,6 +15,7 @@ molecule mol {
 #Chrgfield.extern.addCharge(7.05, 0., 0., 1.)
 #psi4.set_global_option_python('EXTERN', Chrgfield.extern)
 
+import numpy as np
 external_potentials = np.array([7.05, 0., 0., 1.]).reshape((-1, 4))
 external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
 

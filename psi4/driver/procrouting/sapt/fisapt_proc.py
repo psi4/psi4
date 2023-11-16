@@ -26,7 +26,14 @@
 # @END LICENSE
 #
 
+"""
+Extensions to :class:`psi4.core.FISAPT`.
+"""
+
+__all__ = []
+
 import os
+from typing import Dict, Optional, Union
 
 import numpy as np
 
@@ -35,7 +42,7 @@ from psi4 import core
 from .. import empirical_dispersion
 
 
-def fisapt_compute_energy(self, external_potentials=None):
+def fisapt_compute_energy(self, external_potentials: Optional[Dict[str, core.ExternalPotential]] = None):
     """Computes the FSAPT energy. FISAPT::compute_energy"""
 
     # => Header <=
@@ -130,7 +137,7 @@ def fisapt_compute_energy(self, external_potentials=None):
     self.print_trailer()
 
 
-def fisapt_fdrop(self, external_potentials=None):
+def fisapt_fdrop(self, external_potentials: Optional[Dict[str, core.ExternalPotential]] = None):
     """Drop output files from FSAPT calculation. FISAPT::fdrop"""
 
     core.print_out("  ==> F-SAPT Output <==\n\n")
@@ -225,14 +232,14 @@ def fisapt_plot(self):
     self.raw_plot(filepath)
 
 
-def _drop(array, filepath):
+def _drop(array: Union[core.Matrix, core.Vector], filepath: str):
     """Helper to drop array to disk. FISAPT::drop
 
     Parameters
     ----------
-    array : psi4.core.Matrix or psi4.core.Vector
+    array
         Matrix or vector to be written disk in plain text.
-    filepath : str
+    filepath
         Full or partial file path. `array` will be written
         to <filepath>/<array.name>.dat.
 

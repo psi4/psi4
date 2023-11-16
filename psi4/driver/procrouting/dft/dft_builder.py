@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-import re
 
 """
 Superfunctional builder function & handlers.
@@ -79,6 +78,14 @@ dict = {
     },
 }
 """
+
+__all__ = [
+    "build_superfunctional_from_dictionary",
+    "dashcoeff_supplement",
+    "functionals",
+]
+
+import re
 import collections
 import copy
 

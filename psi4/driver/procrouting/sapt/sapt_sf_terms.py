@@ -27,6 +27,7 @@
 #
 
 from collections import OrderedDict
+from typing import Dict
 
 import numpy as np
 
@@ -128,7 +129,13 @@ def _chain_dot(*dot_list):
     return result
 
 
-def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
+def compute_sapt_sf(
+    dimer: core.Molecule,
+    jk: core.JK,
+    wfn_A: core.Wavefunction,
+    wfn_B: core.Wavefunction,
+    do_print: bool = True,
+) -> Dict[str, float]:
     """
     Computes Elst and Spin-Flip SAPT0 for ROHF wavefunctions
     """

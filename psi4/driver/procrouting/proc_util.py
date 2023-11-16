@@ -25,7 +25,19 @@
 #
 # @END LICENSE
 #
-from typing import Tuple
+
+__all__ = [
+    "scf_set_reference_local",
+    "oeprop_validator",
+    "check_iwl_file_from_scf_type",
+    "check_non_symmetric_jk_density",
+    "check_disk_df",
+    "print_ci_results",
+    "prepare_sapt_molecule",
+    "sapt_empirical_dispersion",
+]
+
+from typing import List, Tuple
 
 import numpy as np
 
@@ -37,9 +49,11 @@ from ..p4util.exceptions import *
 from .dft import build_superfunctional_from_dictionary, functionals
 
 
-def scf_set_reference_local(name, is_dft=False):
+def scf_set_reference_local(name: str, is_dft: bool = False) -> "p4util.OptionsState":
     """
-    Figures out the correct SCF reference to set locally
+    Figures out the correct SCF reference to set locally. In particular, sets
+    Kohn--Sham references from corresponding Hartree--Fock references so that
+    user need not specify DFT in both method and reference.
     """
 
     optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'REFERENCE'])
@@ -66,9 +80,18 @@ def scf_set_reference_local(name, is_dft=False):
     return optstash
 
 
-def oeprop_validator(prop_list):
-    """
-    Validations a list of OEProp computations. Throws if not found
+def oeprop_validator(prop_list: List[str]):
+    """Validates a list of OEProp computations.
+
+    Parameters
+    ----------
+    prop_list
+        Case-insensitive list of one-electron properties.
+
+    Raises
+    ------
+    ValidationError
+        If `prop_list` empty or an item can't be resolved into a known property.
 
     """
     oeprop_methods = core.OEProp.valid_methods
@@ -90,7 +113,7 @@ def oeprop_validator(prop_list):
             raise ValidationError("OEProp: Feature '%s' is not recognized. %s" % (prop, alternatives))
 
 
-def check_iwl_file_from_scf_type(scf_type, wfn):
+def check_iwl_file_from_scf_type(scf_type, wfn: core.Wavefunction):
     """
     Ensures that a IWL file has been written based on input SCF type.
     """
@@ -110,7 +133,7 @@ def check_iwl_file_from_scf_type(scf_type, wfn):
         mints.integrals()
 
 
-def check_non_symmetric_jk_density(name):
+def check_non_symmetric_jk_density(name: str):
     """
     Ensure non-symmetric density matrices are supported for the selected JK routine.
     """
@@ -123,7 +146,7 @@ def check_non_symmetric_jk_density(name):
                               "     Please set SCF_TYPE to %s" % (name, supp_string))
 
 
-def check_disk_df(name, optstash):
+def check_disk_df(name: str, optstash: "p4util.OptionsState"):
 
     optstash.add_option(['SCF_TYPE'])
 

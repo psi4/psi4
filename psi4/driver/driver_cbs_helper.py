@@ -26,6 +26,17 @@
 # @END LICENSE
 #
 
+__all__ = [
+    "xtpl_highest_1",
+    "scf_xtpl_helgaker_2",
+    "scf_xtpl_truhlar_2",
+    "scf_xtpl_karton_2",
+    "scf_xtpl_helgaker_3",
+    "corl_xtpl_helgaker_2",
+    "register_xtpl_function",
+    "register_composite_function",
+]
+
 import logging
 import math
 from typing import Callable, Optional, Union

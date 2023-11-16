@@ -26,6 +26,12 @@
 # @END LICENSE
 #
 
+"""
+Extensions to :class:`psi4.core.CubeProperties`.
+"""
+
+__all__ = []
+
 import os
 
 from psi4 import core
