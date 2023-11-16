@@ -705,17 +705,20 @@ CD
     vectors is not designed for computations with thousands of basis
     functions.
 
-|PSIfour| also features the capability to use "composite" Fock matrix build 
-algorithms - arbitrary combinations of specialized algorithms that construct 
-either the Coulomb or the Exchange matrix separately. In general, since 
-separate Coulomb and Exchange matrix build algorithms exploit properties specific to 
+|PSIfour| also features the capability to use "composite" Fock matrix build
+algorithms - arbitrary combinations of specialized algorithms that construct
+either the Coulomb or the Exchange matrix separately. In general, since
+separate Coulomb and Exchange matrix build algorithms exploit properties specific to
 their respective matrix, composite algorithms display lower
-scaling factors than their combined Fock build counterparts. However, composite algorithms also 
+scaling factors than their combined Fock build counterparts. However, composite algorithms also
 introduce redundant ERI computations into the calculation. Therefore, composite Fock build
-algorithms tend to perform better for larger systems, but worse for smaller systems. Arbitrary 
-composite algorithms can be accessed by setting |globals__scf_type| to ``J_alg+K_alg``, 
+algorithms tend to perform better for larger systems, but worse for smaller systems. Arbitrary
+composite algorithms can be accessed by setting |globals__scf_type| to ``J_alg+K_alg``,
 where *J_alg* and *K_alg* are the names of the separate Coulomb
-and Exchange construction algorithms to use, respectively.
+and Exchange construction algorithms to use, respectively. Alternatively, if one is using
+DFT with non-hybrid functionals, a composite Coulomb construction algorithm can be
+specified solo by setting |globals__scf_type| to ``J_alg``, without the need to set 
+an associated ``K_alg``.
 
 Specialized algorithms available to construct the Coulomb term within a composite framework 
 are as follows:
@@ -826,7 +829,8 @@ calculations. In principle, though, DF approaches can be utilized in an integral
 I/O bottlenecks that conventional DF methods will eventually run into. One such approach, outlined by Weigend in [Weigend:2002:4285]_,
 is available for use in Psi4 for the separate construction of the Coulomb contribution to the Fock matrix.  This implementation can be used alongside 
 Psi4's separate Exchange construction algorithms for composite Fock matrix construction by using the keyword DFDIRJ as the Coulomb construction 
-algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DFDIRJ+K_alg``). 
+algorithm when specifying |globals__scf_type| to use a composite algorithm combination (``DFDIRJ+K_alg`` in general, 
+or ``DFDIRJ`` for DFT with non-hybrid functionals). 
 
 DFDIRJ supports multiple capabilities to improve performance. Specifically, DFDIRJ allows for a combination of density-matrix based ERI 
 screening (set |globals__screening| to ``DENSITY``) and incremental Fock matrix construction (set |scf__incfock| to ``TRUE``). These two, when combined,
@@ -856,8 +860,9 @@ for the SCF to fully converge on the larger grid, useful for the study of wavefu
 properties such as gradients. The size of the initial grid is controlled by the keywords
 |scf__cosx_radial_points_initial| and |scf__cosx_spherical_points_initial|.
 The final grid is controlled by |scf__cosx_radial_points_final| and
-|scf__cosx_spherical_points_final|. The defaults for both grids aim to balance
-cost and accuracy.
+|scf__cosx_spherical_points_final|. Currently, the default grids are very crude,
+allowing for high performance at the cost of accuracy. If high-accuracy calculations
+are desired with COSX, the grid sizes should be increased.
 
 Screening thresholds over integrals, densities, and basis extents are set
 with the |scf__cosx_ints_tolerance|, |scf__cosx_density_tolerance|, and
