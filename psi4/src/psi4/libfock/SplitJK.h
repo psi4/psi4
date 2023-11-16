@@ -39,6 +39,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/dimension.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 class MinimalInterface;
@@ -84,8 +85,6 @@ class PSI_API SplitJK {
 
     // Perform Density matrix-based integral screening?
     bool density_screening_;
-    /// Use severe screening techniques? Useful in early SCF iterations
-    bool early_screening_;
     /// Left-right symmetric?
     bool lr_symmetric_;
 
@@ -107,7 +106,6 @@ class PSI_API SplitJK {
 
     // => Knobs <= //
 
-    void set_early_screening(bool early_screening) { early_screening_ = early_screening; }
     void set_lr_symmetric(bool lr_symmetric) { lr_symmetric_ = lr_symmetric; }
     /// Bench accessors
     void set_bench(int bench) { bench_ = bench; }
@@ -128,6 +126,17 @@ class PSI_API SplitJK {
     * print name of method
     */
     virtual std::string name() = 0;
+
+    /**
+    * Method-specific knobs, if necessary
+    */
+    virtual void set_COSX_grid(std::string current_grid) {
+        throw PSIEXCEPTION("SplitJK::set_COSX_grid was called, but COSX is not being used!");
+    }
+
+    virtual std::string get_COSX_grid() {
+        throw PSIEXCEPTION("SplitJK::get_COSX_grid was called, but COSX is not being used!");
+    };
 };
 
 // ==> Start SplitJK Coulomb (J) Algorithms here <== //
@@ -236,16 +245,19 @@ class PSI_API LinK : public SplitJK {
  * doi: 10.1016/j.chemphys.2008.10.036
  */
 class PSI_API COSK : public SplitJK {
+
     // => Semi-Numerical Stuff <= //
 
-    /// Small DFTGrid for initial SCF iterations
-    std::shared_ptr<DFTGrid> grid_init_;
-    /// Large DFTGrid for the final SCF iteration
-    std::shared_ptr<DFTGrid> grid_final_;
-    /// Overlap fitting metric for grid_initial_
-    SharedMatrix Q_init_;
-    /// Overlap fitting metric for grid_final_
-    SharedMatrix Q_final_;
+    /// COSX grids
+    /// Currently contains two grids:
+    /// -  A small DFTGrid for the pre-convergence SCF iterations
+    /// -  A large DFTGrid for the final SCF iteration
+    std::unordered_map<std::string, std::shared_ptr<DFTGrid> > grids_;
+    /// COSX grid currently in use for this iteration
+    std::string current_grid_;
+
+    /// Overlap fitting metric for different COSX grids
+    std::unordered_map<std::string, SharedMatrix> Q_mat_;
 
     // integral cutoff
     double kscreen_;
@@ -293,6 +305,10 @@ class PSI_API COSK : public SplitJK {
     * print name of method
     */
     std::string name() override { return "COSX"; }
+
+    // setter/getter for the COSX grid used for this SCF iteration
+    void set_COSX_grid(std::string current_grid) override { current_grid_ = current_grid; };
+    std::string get_COSX_grid() override { return current_grid_; };
 };
 
 }
