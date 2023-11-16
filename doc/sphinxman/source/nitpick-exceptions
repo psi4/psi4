@@ -6,6 +6,8 @@ py:class pybind11_builtins.pybind11_object
 # psi4
 #py:class 3
 py:class psi::Options
+py:class psi4.driver.task_base.AtomicComputer
+py:class psi4.driver.task_planner.AtomicComputer
 
 # pydantic
 py:class pydantic.main.BaseModel
