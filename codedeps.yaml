@@ -121,7 +121,6 @@ data:
           CMAKE_CXX_COMPILER:     "\"${CONDA_PREFIX}/bin/icpx;--target=${HOST};--gcc-toolchain=${CONDA_PREFIX};--sysroot=${CONDA_PREFIX}/${HOST}/sysroot\""
           //CMAKE_CXX_FLAGS:      null
         AppleClang_osx-arm64:
-          #CMAKE_C_COMPILER:       "/usr/bin/clang"
           CMAKE_CXX_COMPILER:     "/usr/bin/clang++"
           //CMAKE_CXX_FLAGS:      null
         byo:

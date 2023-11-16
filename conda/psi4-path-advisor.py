@@ -1001,11 +1001,36 @@ elif args.subparser_name in ["bulletin"]:
 
     notes = f"""
 
+  * [15 Nov 2023] If ever you are building from git source and the version is
+    undefined (shows up in CMake output, too), the solution is to pull tags:
+    `git fetch upstream "refs/tags/*:refs/tags/*"`, then recompile (trivial).
+
+      psi4 --version
+      #> undefined
+      psi4
+      #>  Traceback (most recent call last):
+      #>    File "/path/to/psi4/objdir/stage/bin/psi4", line 232, in <module>
+      #>      import psi4  # isort:skip
+      #>      ^^^^^^^^^^^
+      #>    File "/path/to/psi4/objdir/stage/lib/psi4/__init__.py", line 71, in <module>
+      #>      from . import core
+      #>  ImportError: initialization failed
+
+
+  * [15 Nov 2023] The error below is known to happen with the
+    `subdirectory::package` syntax. It has diagnosed itself correctly, so you may
+    as well update libmamba. Alternately, you can add the subdirectory to the
+    environment list at the top of the env spec file and delete it and the :: from
+    the package line.
+
+      InvalidMatchSpec: Invalid spec 'conda-forge/label/libint_dev::libint==2.7.3dev1': This is a bug in libmamba 1.5.1 when using 'defaults::<spec>' or 'pkgs/main::<spec>'. Consider using '-c defaults' instead.
+
+
   * [11 Nov 2023] Around July 2023 miniconda started shipping mamba-ready (though
-    not as the default solver). Likewise, miniforge and mambaforge started the
-    conda command available. Around October 2023, miniconda started shipping with
-    mamba as the default solver. For an older anaconda/miniconda installation, if
-    you want to instruct it to use the mamba solver by default from behind the
+    not as the default solver). Likewise, miniforge and mambaforge started making
+    the conda command available. Around October 2023, miniconda started shipping
+    with mamba as the default solver. For an older anaconda/miniconda installation,
+    if you want to instruct it to use the mamba solver by default from behind the
     conda hood, issue the following from
     https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community :
 
