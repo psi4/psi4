@@ -44,6 +44,7 @@ foreach(dir_name
   sapt
   scfgrad
   dummy_einsums
+  f12
   )
   add_subdirectory(${dir_name})
 endforeach ()
