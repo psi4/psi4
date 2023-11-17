@@ -101,7 +101,7 @@ class MP2F12 : public Wavefunction {
     /* $\beta$ in F12 CGTG */
     double beta_;
 
-    /* F12 energy */
+    /* F12 Correlation Energy */
     double E_f12_ = 0.0;
 
     /* CABS Singles Correction */

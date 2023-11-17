@@ -4393,6 +4393,62 @@ def run_dlpnomp2(name, **kwargs):
     core.tstop()
     return dlpnomp2_wfn
 
+def run_mp2f12(name, **kwargs):
+    r"""Function encoding sequence of PSI module calls
+    for a MP2-F12/3C(FIX) calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['F12_TYPE'],
+        ['CABS_BASIS'],
+        ['DF_BASIS_F12'])
+    
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError("MP2-F12 is not available for %s references.",
+                              core.get_global_option('REFERENCE'))
+
+    # Ensure that SCF and MP2 are run with CONV if F12_TYPE is CONV
+    if "CONV" in core.get_local_option("MP2F12", "F12_TYPE"):
+        core.set_global_option("MP2_TYPE", "CONV")
+        ref_wfn = run_occ("mp2", kwargs)
+    else:
+        dfbs = core.get_local_option("MP2-F12", "DF_BASIS_F12")
+        core.set_global_option("SCF_TYPE", "DF")
+        core.set_local_option("SCF", "DF_BASIS_SCF", dfbs)
+        core.set_global_option("MP2_TYPE", "DF")
+        core.set_local_option("DFMP2", "DF_BASIS_MP2", dfbs)
+        ref_wfn = run_dfmp2("dfmp2", kwargs)
+        
+    core.tstart()
+    core.print_out('\n')
+    p4util.banner('MP2-F12')
+    core.print_out('\n')
+
+    # Create CABS
+    keys = ["BASIS","CABS_BASIS"]
+    targets = [core.get_global_option("BASIS"), core.get_local_option("MP2F12", "CABS_BASIS")]
+    roles = ["ORBITAL","F12"]
+    others = [core.get_global_option("BASIS"), core.get_global_option("BASIS")]
+
+    # Creates combined basis set in Python
+    mol = ref_wfn.molecule()
+    combined = qcdb.libmintsbasisset.BasisSet.pyconstruct_combined(mol.save_string_xyz(), keys, targets, roles, others)
+    cabs = core.BasisSet.construct_from_pydict(mol, combined, combined["puream"])
+    ref_wfn.set_basisset("CABS", cabs)
+
+    mp2f12_wfn = core.mp2f12(ref_wfn)
+    mp2f12_wfn.compute_energy()
+
+    mp2f12_wfn.set_variable('CURRENT ENERGY', mp2f12_wfn.variable('MP2 TOTAL ENERGY'))
+    mp2f12_wfn.set_variable('CURRENT CORRELATION ENERGY', mp2f12_wfn.variable('MP2 CORRELATION ENERGY'))
+
+    # Shove variables into global space
+    for k, v in mp2f12_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
+    core.tstop()
+    return mp2f12_wfn
 
 def run_dmrgscf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
