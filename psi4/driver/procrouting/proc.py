@@ -4402,23 +4402,27 @@ def run_mp2f12(name, **kwargs):
         ['F12_TYPE'],
         ['CABS_BASIS'],
         ['DF_BASIS_F12'])
-    
+
     if core.get_global_option('REFERENCE') != "RHF":
         raise ValidationError("MP2-F12 is not available for %s references.",
                               core.get_global_option('REFERENCE'))
 
     # Ensure that SCF and MP2 are run with CONV if F12_TYPE is CONV
-    if "CONV" in core.get_local_option("MP2F12", "F12_TYPE"):
+    if "CONV" in core.get_local_option("MP2-F12", "F12_TYPE"):
         core.set_global_option("MP2_TYPE", "CONV")
-        ref_wfn = run_occ("mp2", kwargs)
+        ref_wfn = run_occ("mp2")
     else:
         dfbs = core.get_local_option("MP2-F12", "DF_BASIS_F12")
         core.set_global_option("SCF_TYPE", "DF")
         core.set_local_option("SCF", "DF_BASIS_SCF", dfbs)
         core.set_global_option("MP2_TYPE", "DF")
         core.set_local_option("DFMP2", "DF_BASIS_MP2", dfbs)
-        ref_wfn = run_dfmp2("dfmp2", kwargs)
-        
+        ref_wfn = run_dfmp2("dfmp2")
+
+    if ref_wfn.molecule().schoenflies_symbol() != 'c1':
+        raise ValidationError("""  MP2-F12 does not make use of molecular symmetry: """
+                              """reference wavefunction must be C1.\n""")
+ 
     core.tstart()
     core.print_out('\n')
     p4util.banner('MP2-F12')
@@ -4426,7 +4430,7 @@ def run_mp2f12(name, **kwargs):
 
     # Create CABS
     keys = ["BASIS","CABS_BASIS"]
-    targets = [core.get_global_option("BASIS"), core.get_local_option("MP2F12", "CABS_BASIS")]
+    targets = [core.get_global_option("BASIS"), core.get_local_option("MP2-F12", "CABS_BASIS")]
     roles = ["ORBITAL","F12"]
     others = [core.get_global_option("BASIS"), core.get_global_option("BASIS")]
 
