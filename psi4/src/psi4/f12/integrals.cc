@@ -26,7 +26,7 @@
  * @END LICENSE
  */
 
-#include "mp2f12.h"
+#include "mp2.h"
 
 #ifdef _OPENMP
 #include <omp.h>
