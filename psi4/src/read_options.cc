@@ -3270,6 +3270,20 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do Cholesky decomposition of the ERI tensor -*/
         options.add_bool("CHOLESKY", false);
     }
+    if (name == "MP2-F12" || options.read_globals()) {
+        /*- Choose conventional or density-fitted. Default to CONV -*/
+        options.add_str("F12_TYPE", "CONV", "CONV DF DISK_CONV DISK_DF");
+        /*- Whether to restart calculation from stored integrals -*/
+        options.add_bool("F12_INTS_RESTART", false);
+        /*- Set contracted Gaussian-type geminal beta value -*/
+        options.add_double("F12_BETA", 1.0);
+        /*- Choose a basis for Complementary Auxiliary Basis Set -*/
+        options.add_str("CABS_BASIS", "");
+        /*- Whether to compute the CABS Singles Correction -*/
+        options.add_bool("CABS_SINGLES", true);
+        /*- Choose a density-fitting basis for integrals -*/
+        options.add_str("DF_BASIS_F12", "");
+    }
     if (name == "MRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
 

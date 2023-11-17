@@ -1,14 +1,14 @@
 list(APPEND sources
-  mp2f12.cc
-  integrals.cc
+  mp2.cc
   wrapper.cc
+  integrals.cc
   f12_intermediates.cc
   )
 
 if(TARGET Einsums::einsums)
-    psi4_add_module(bin dummy_einsums sources)
+    psi4_add_module(bin mp2f12 sources)
     target_link_libraries(
-      dummy_einsums
+      mp2f12
       PRIVATE
         Einsums::einsums
       )

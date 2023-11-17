@@ -44,7 +44,7 @@
 
 #include "psi4/psi4-dec.h"
 
-#include "mp2f12.h"
+#include "mp2.h"
 
 namespace psi { namespace mp2f12 {
 
@@ -53,11 +53,9 @@ SharedWavefunction mp2f12(SharedWavefunction ref_wfn, Options& options)
 
     std::shared_ptr<Wavefunction> mp2f12;
     if (options.get_str("F12_TYPE").find("DISK") != std::string::npos) {
-        mp2f12 = std::make_shared<DiskMP2F12>(ref_wfn, options, psio);
-    } else if {
-        mp2f12 = std::make_shared<MP2F12>(ref_wfn, options, psio);
+        mp2f12 = std::make_shared<DiskMP2F12>(ref_wfn, options);
     } else {
-        throw PSIEXCEPTION("MP2F12: Unrecognized F12_TYPE.");
+        mp2f12 = std::make_shared<MP2F12>(ref_wfn, options);
     }
 
     return mp2f12;
