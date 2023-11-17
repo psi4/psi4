@@ -104,7 +104,7 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
 
     else:
         # Dispersion
-        disp = data["Disp20,u"] + data["Exch-Disp20,u"]
+        disp = data["Disp20"] + data["Exch-Disp20,u"]
         ret += print_sapt_var("Dispersion", disp) + "\n"
         ret += print_sapt_var("  Disp20", data["Disp20,u"]) + "\n"
         ret += print_sapt_var("  Exch-Disp20", data["Exch-Disp20,u"]) + "\n"
