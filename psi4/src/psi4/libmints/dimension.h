@@ -52,7 +52,7 @@ class PSI_API Dimension {
     /// is given it will be a zero-length string.
     /// @param n : number of blocks
     /// @param name : (optional) name associated with this Dimension object
-    Dimension(const size_t n, const std::string& name = "");
+    Dimension(size_t n, const std::string& name = "");
 
     /// @brief Constructs a Dimension object from an std::vector<int> object, leaving the name a zero-length string.
     /// @param other : object to copy the block numbers from
@@ -70,7 +70,7 @@ class PSI_API Dimension {
     /// @brief Re-initializes the object. If no name is given it will be a zero-length string.
     /// @param n : number of blocks
     /// @param name : (optional) name associated with this Dimension object
-    void init(const size_t n, const std::string& name = "");
+    void init(size_t n, const std::string& name = "");
 
     /// @brief Return the rank (number of block numbers)
     size_t n() const { return blocks_.size(); }
@@ -82,10 +82,10 @@ class PSI_API Dimension {
     void set_name(const std::string& name) { name_ = name; }
 
     /// @brief Access a block number at a partcular index. Not bounds-checked.
-    int& operator[](const size_t i) { return blocks_[i]; }
+    int& operator[](size_t i) { return blocks_[i]; }
 
     /// @brief Access a block number at a partcular index. Not bounds-checked.
-    const int& operator[](const size_t i) const { return blocks_[i]; }
+    const int& operator[](size_t i) const { return blocks_[i]; }
 
     /// @brief Get a const reference to the std::vector storing the block numbers inside the Dimension object.
     const std::vector<int>& blocks() const { return blocks_; }
@@ -112,13 +112,13 @@ class PSI_API Dimension {
     void zero();
 
     /// @brief Fill all elements in blocks_ with given value
-    void fill(const int v);
+    void fill(int v);
 
     void print() const;
 
     // Only used for python
-    const int& get(const size_t i) const { return blocks_[i]; }
-    void set(const size_t i, const int val) { blocks_[i] = val; }
+    const int& get(size_t i) const { return blocks_[i]; }
+    void set(size_t i, int val) { blocks_[i] = val; }
 
     PSI_API friend bool operator==(const Dimension& a, const Dimension& b);
     PSI_API friend bool operator!=(const Dimension& a, const Dimension& b);
