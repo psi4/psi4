@@ -61,7 +61,7 @@ void Dimension::print() const {
 }
 
 Dimension& Dimension::operator=(const int* other) {
-    for (size_t i = 0, maxi = n(); i < maxi; ++i) blocks_[i] = other[i];
+    std::copy(other, other + n(), blocks_);
 
     return *this;
 }
