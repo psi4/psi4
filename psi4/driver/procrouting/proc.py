@@ -4443,8 +4443,8 @@ def run_mp2f12(name, **kwargs):
     mp2f12_wfn = core.mp2f12(ref_wfn)
     mp2f12_wfn.compute_energy()
 
-    mp2f12_wfn.set_variable('CURRENT ENERGY', mp2f12_wfn.variable('MP2 TOTAL ENERGY'))
-    mp2f12_wfn.set_variable('CURRENT CORRELATION ENERGY', mp2f12_wfn.variable('MP2 CORRELATION ENERGY'))
+    mp2f12_wfn.set_variable('CURRENT ENERGY', mp2f12_wfn.variable('MP2-F12 TOTAL ENERGY'))
+    mp2f12_wfn.set_variable('CURRENT CORRELATION ENERGY', mp2f12_wfn.variable('MP2-F12 CORRELATION ENERGY'))
 
     # Shove variables into global space
     for k, v in mp2f12_wfn.variables().items():
