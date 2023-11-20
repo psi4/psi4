@@ -979,6 +979,7 @@ void DiskMP2F12::form_df_teints(const std::string& int_type, einsums::DiskTensor
                 }
             }
 
+            // Switch to Phys Notation
             sort(Indices{p, r, q, s}, &phys_robust, Indices{p, q, r, s}, chem_robust);
         }
 
