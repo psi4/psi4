@@ -58,10 +58,10 @@ MP2F12::~MP2F12() {}
 
 void MP2F12::common_init() 
 {
-    name_ = "MP2-F12";
-    module_ = "mp2f12";
+    if (options_.get_str("REFERENCE") != "RHF") {
+        throw PsiException("Only a restricted reference may be used",__FILE__,__LINE__);
+    }
 
-    // Mixed OBS and CABS require this
     options_.set_global_str("SCREENING", "NONE");
     
     print_ = options_.get_int("PRINT");
@@ -71,22 +71,25 @@ void MP2F12::common_init()
     f12_restart_ = options_.get_bool("F12_INTS_RESTART");
 
     std::vector<OrbitalSpace> bs_ = {};
-    nobs_ = basisset()->nbf();
-    nocc_ = doccpi()[0];
+    nobs_ = reference_wavefunction_->basisset()->nbf();
+    nocc_ = reference_wavefunction_->doccpi()[0];
     nvir_ = nobs_ - nocc_;
-    nfrzn_ = nfrzc();
+    nfrzn_ = reference_wavefunction_->frzcpi()[0];
     naux_ = 0;
 
     if (f12_type_.find("DF") != std::string::npos) {
         use_df_ = true;
-        DFBS_ = get_basisset("DF_BASIS_MP2");
+        DFBS_ = reference_wavefunction_->get_basisset("DF_BASIS_MP2");
         naux_ = DFBS_->nbf();
     }
 
     beta_ = options_.get_double("F12_BETA");
-    cgtg_ = mintshelper()->f12_cgtg(beta_);
+    cgtg_ = reference_wavefunction_->mintshelper()->f12_cgtg(beta_);
 
+    nthreads_ = 1;
+#ifdef _OPENMP
     nthreads_ = Process::environment.get_n_threads();
+#endif
 }
 
 void MP2F12::print_header()
@@ -445,7 +448,7 @@ void MP2F12::print_results()
     }
 
     auto E_rhf = Process::environment.globals["CURRENT REFERENCE ENERGY"];
-    auto E_mp2 = Process::environment.globals["CURRENT CORRELATION ENERGY"];
+    auto E_mp2 = Process::environment.globals["MP2 CORRELATION ENERGY"];
 
     E_f12_total_ = E_rhf + E_mp2 + E_f12_ + E_singles_;
 
@@ -463,10 +466,7 @@ void MP2F12::print_results()
     }
 
     set_scalar_variable("MP2-F12 CORRELATION ENERGY", E_f12_);
-    set_scalar_variable("CURRENT CORRELATION ENERGY", E_f12_);
-
     set_scalar_variable("MP2-F12 TOTAL ENERGY", E_f12_total_);
-    set_scalar_variable("CURRENT ENERGY", E_f12_total_);
 
     set_scalar_variable("MP2-F12 SINGLES ENERGY", E_singles_);
     set_scalar_variable("MP2-F12 DOUBLES ENERGY", E_f12_);
@@ -502,10 +502,10 @@ std::pair<double, double> MP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, eins
 
     ( i == j ) ? ( kd = 1 ) : ( kd = 2 );
 
-    V_s += 0.5 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (V_ij(i, j) + V_ij(j, i));
+    V_s += 0.25 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (V_ij(i, j) + V_ij(j, i));
 
     if ( i != j ) {
-        V_t += 0.5 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd * (V_ij(i, j) - V_ij(j, i));
+        V_t += 0.25 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd * (V_ij(i, j) - V_ij(j, i));
     }
     return {V_s, V_t};
 }
@@ -627,8 +627,9 @@ void DiskMP2F12::form_f12_energy(einsums::DiskTensor<double,4> *V, einsums::Disk
             outfile->Printf("%3d %3d  |   %16.12f   %16.12f     %16.12f \n", i+1, j+1, E_s, E_t, E_f);
         }
     }
-    outfile->Printf("\n  F12/3C Singlet Correlation:      %16.12f \n", E_f12_s);
-    outfile->Printf("  F12/3C Triplet Correlation:      %16.12f \n", E_f12_t);
+
+    set_scalar_variable("MP2-F12 OPPOSITE-SPIN CORRELATION ENERGY", E_f12_s);
+    set_scalar_variable("MP2-F12 SAME-SPIN CORRELATION ENERGY", E_f12_t);
 
     E_f12_ = E_f12_s + E_f12_t;
 }
@@ -899,10 +900,10 @@ std::pair<double, double> DiskMP2F12::V_Tilde(einsums::Tensor<double, 2>& V_ij, 
 
     ( i == j ) ? ( kd = 1 ) : ( kd = 2 );
 
-    V_s = 0.5 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (V_ij(i, j) + V_ij(j, i));
+    V_s = 0.25 * (t_(i, j, i, j) + t_(i, j, j, i)) * kd * (V_ij(i, j) + V_ij(j, i));
 
     if ( i != j ) {
-        V_t = 0.5 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd * (V_ij(i, j) - V_ij(j, i));
+        V_t = 0.25 * (t_(i, j, i, j) - t_(i, j, j, i)) * kd * (V_ij(i, j) - V_ij(j, i));
     }
     return {V_s, V_t};
 }
