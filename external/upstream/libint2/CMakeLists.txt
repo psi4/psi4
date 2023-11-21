@@ -61,6 +61,12 @@ else()
         message(FATAL_ERROR "Suitable Libint2 could not be externally located as user insists")
     endif()
 
+    # stopgap to avert a report that static lib not working on Linux
+    set(_build_shared_libs "ON")
+
+    # reportedly Debug takes forever to build on Mac
+    set(_cmake_build_type "Release")
+
     include(ExternalProject)
 
     if(NOT ${BUILD_Libint2_GENERATOR})
@@ -77,13 +83,7 @@ else()
         if (MSVC)
             # Windows shared (dll) can't work
             set(_build_shared_libs "OFF")
-        else()
-            # stopgap to avert a report that static lib not working on Linux
-            set(_build_shared_libs "ON")
         endif()
-
-        # reportedly Debug takes forever to build on Mac
-        set(_cmake_build_type "Release")
 
         ExternalProject_Add(libint2_external
             URL ${_url_l2_tarball}
