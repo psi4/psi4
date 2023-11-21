@@ -1227,7 +1227,6 @@ void HF::guess() {
         Fa_->print();
         Fb_->print();
     }
-
     energies_["Total Energy"] = 0.0;  // don't use this guess in our convergence checks
 }
 

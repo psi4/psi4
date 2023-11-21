@@ -21,7 +21,6 @@ set {
   docc [ 3, 0, 1, 1 ]
 }
 energy('scf')
-
 compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
 compare_values(refneut_rhf, variable("SCF TOTAL ENERGY"), 6, "RHF  energy, CORE   guess (a.u.)");             #TEST
 

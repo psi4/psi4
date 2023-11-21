@@ -100,7 +100,7 @@ void brianInit() {
     if (brianCookie != 0) {
         throw PSIEXCEPTION("Attempting to reinitialize BrianQC without releasing it first");
     }
-    
+
     brianInt brianAPIVersionOfHost = BRIAN_API_VERSION;
     brianInt hostID = BRIAN_HOST_PSI4;
     brianCookie = brianAPIInit(&brianAPIVersionOfHost, &hostID);
@@ -113,7 +113,7 @@ void brianRelease()
     if (brianCookie == 0) {
         throw PSIEXCEPTION("Attempting to release the BrianQC module when it hasn't been initialized\n");
     }
-    
+
     outfile->Printf("Releasing the BrianQC module\n");
     brianAPIRelease(&brianCookie);
     brianCookie = 0;
@@ -638,7 +638,7 @@ bool py_psi_set_global_option_string(std::string const& key, std::string const& 
         else
             throw std::domain_error("Required option type is boolean, no boolean specified");
     }
-    
+
 #ifdef USING_BrianQC
     if (nonconst_key == "BRIANQC_ENABLE") {
         if (to_upper(value) == "TRUE" || to_upper(value) == "YES" || to_upper(value) == "ON")
@@ -672,13 +672,13 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
     } else {
         Process::environment.options.set_global_int(nonconst_key, value);
     }
-    
+
 #ifdef USING_BrianQC
     if (nonconst_key == "BRIANQC_ENABLE") {
         handleBrianOption(value);
     }
 #endif
-    
+
     return true;
 }
 
@@ -1005,7 +1005,19 @@ void py_psi_print_variable_map() {
              << std::fixed << std::setprecision(12) << it->second << std::endl;
     }
 
+
     outfile->Printf("\n\n  Variable Map:");
+    outfile->Printf("\n  ----------------------------------------------------------------------------\n");
+    outfile->Printf("%s\n\n", line.str().c_str());
+
+    line = std::stringstream();
+    for (std::map<std::string, SharedMatrix>::iterator it = Process::environment.arrays.begin();
+         it != Process::environment.arrays.end(); ++it) {
+        first_tmp = "\"" + it->first + "\"";
+        line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right
+             << std::fixed << std::setprecision(12) << it->second->get(0,0) << " ... " << it->second->get(it->second->nrow()-1, it->second->ncol()-1) << " " << it->second->nrow() << " by " << it->second->ncol() << std::endl;
+    }
+    outfile->Printf("\n\n  Array Variable Map:");
     outfile->Printf("\n  ----------------------------------------------------------------------------\n");
     outfile->Printf("%s\n\n", line.str().c_str());
 }
@@ -1060,7 +1072,7 @@ bool psi4_python_module_initialize() {
     static char* argv = (char*)"";
     for_rtl_init_(&argc, &argv);
 #endif
-    
+
 #ifdef USING_BrianQC
     const char* brianEnableEnv = getenv("BRIANQC_ENABLE");
     brianEnableEnvFound = (bool)brianEnableEnv;
@@ -1073,7 +1085,7 @@ bool psi4_python_module_initialize() {
             brianInit();
         }
     }
-    
+
     const char* brianEnableDFTEnv = getenv("BRIANQC_ENABLE_DFT");
     brianEnableDFT = brianEnableDFTEnv ? (bool)atoi(brianEnableDFTEnv) : true;
 #endif
@@ -1089,7 +1101,7 @@ void psi4_python_module_finalize() {
         brianRelease();
     }
 #endif
-    
+
 #ifdef INTEL_Fortran_ENABLED
     for_rtl_finish_();
 #endif
