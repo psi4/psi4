@@ -134,9 +134,9 @@ cmake_install_libdir = r"@CMAKE_INSTALL_LIBDIR@".replace("\\", "/")
 pymod_install_libdir = r"@PYMOD_INSTALL_LIBDIR@".lstrip("/")
 psi4_install_cmakedir = r"@psi4_INSTALL_CMAKEDIR@".replace("\\", "/")
 full_pymod = (prefix / cmake_install_libdir / pymod_install_libdir / "psi4").resolve()
-full_data = prefix / cmake_install_datadir / "psi4"
-full_bin = prefix / cmake_install_bindir
-full_cmake = prefix / psi4_install_cmakedir
+full_data = (prefix / cmake_install_datadir / "psi4").resolve()
+full_bin = (prefix / cmake_install_bindir).resolve()
+full_cmake = (prefix / psi4_install_cmakedir).resolve()
 rel_pymod = os.path.relpath(full_pymod, start=full_bin)
 rel_data = os.path.relpath(full_data, start=full_bin)
 rel_cmake = os.path.relpath(full_cmake, start=full_bin)
