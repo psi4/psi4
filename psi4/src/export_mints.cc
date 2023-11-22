@@ -319,8 +319,8 @@ void export_mints(py::module& m) {
     typedef void (Vector::*vector_three)(double alpha, double beta, const Vector &other);
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
-        .def(py::init<int>())
-        .def(py::init<int, const std::string&>())
+        .def(py::init<size_t>())
+        .def(py::init<size_t, const std::string&>())
         .def(py::init<const std::vector<int>&>())
         .def("print_out", &Dimension::print, "Print out the dimension object to the output file")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
