@@ -106,7 +106,7 @@ jobs:
       cat env_p4env.yaml
       conda env create -n p4env -f env_p4env.yaml
       source activate p4env
-      confa info
+      conda info
       conda list
     displayName: 'Build Environment'
 
