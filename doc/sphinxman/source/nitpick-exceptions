@@ -11,6 +11,13 @@ py:class psi::Options
 py:class pydantic.main.BaseModel
 py:class pydantic.utils.Representation
 
+# pybind11 & python
+# Annotated[... FixedSize]
+# https://github.com/pybind/pybind11/pull/4679
+# -or- build docs with pybind11=2.10
+py:class Annotated[List[float], FixedSize(3)]
+py:class Annotated[List[Annotated[List[float], FixedSize(3)]], FixedSize(3)]
+
 # QCArchive
 # FractalClient is temp until https://github.com/MolSSI/QCFractal/pull/716
 py:class qcportal.client.FractalClient

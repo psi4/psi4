@@ -5,6 +5,11 @@ if(${ENABLE_mdi})
         get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)
         message(STATUS "${Cyan}Found mdi${ColourReset}: ${_loc} (found version ${mdi_VERSION})")
         add_library(mdi_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_mdi})
+            message(VERBOSE "Suitable mdi located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_mdi})
             message(FATAL_ERROR "Suitable mdi could not be externally located as user insists")
@@ -33,6 +38,8 @@ if(${ENABLE_mdi})
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=C;CXX)
 
         set(mdi_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/mdi CACHE PATH "path to internally built mdiConfig.cmake" FORCE)

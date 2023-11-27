@@ -163,7 +163,7 @@ endif()
 # <<<  DFTD3  >>>
 
 find_program(DFTD3_EXECUTABLE
-             NAMES dftd3
+             NAMES s-dftd3 dftd3
              DOC "Path to Grimme's dftd3 executable")
 
 if(DFTD3_EXECUTABLE)
@@ -211,7 +211,7 @@ endif()
 # <<<  gCP  >>>
 
 find_program(gCP_EXECUTABLE
-             NAMES gcp
+             NAMES mctc-gcp gcp
              DOC "Path to Grimme's gCP executable")
 
 if(gCP_EXECUTABLE)

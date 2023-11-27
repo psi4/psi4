@@ -8,6 +8,10 @@ if(${ENABLE_ddx})
         message(STATUS "${Cyan}Found ddx${ColourReset}: ${PY_pyddx} (found version ${pyddx_VERSION})")
         add_library(ddx_external INTERFACE)  # dummy
 
+        if(${CMAKE_INSIST_FIND_PACKAGE_ddx})
+            message(VERBOSE "Suitable ddx located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_ddx})
             message(FATAL_ERROR "Suitable ddx could not be externally located as user insists")

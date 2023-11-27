@@ -107,11 +107,13 @@ jobs:
 
       # Configure Miniconda
       #    conda config --append channels conda-forge
+      #    conda=23.10 forced a bugfix at conda-build stage
       - script: |
           conda config --set always_yes yes
           conda config --add channels conda-forge/label/libint_dev
           conda config --set channel_priority strict
           conda config --set solver libmamba
+          conda install conda=23.10 -n base -c conda-forge
           conda info
           conda list
         displayName: "Configure Miniconda"
@@ -123,6 +125,7 @@ jobs:
           conda install cmake ^
                         anaconda-project ^
                         conda-build ^
+                        m2-sed ^
                         eigen ^
                         libboost-headers ^
                         conda-verify ^

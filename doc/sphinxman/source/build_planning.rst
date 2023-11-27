@@ -204,6 +204,8 @@ Libint, and even C++ compilers on Linux and Mac) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
 
+See :source:`codedeps.yaml` for a structured listing and history of dependencies.
+
 * :ref:`C++ and C Compilers <cmake:cxx>` (C++17 compliant)
 
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard

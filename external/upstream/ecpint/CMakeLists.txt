@@ -5,6 +5,11 @@ if(${ENABLE_ecpint})
         get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
         message(STATUS "${Cyan}Found ecpint${ColourReset}: ${_loc} (found version ${ecpint_VERSION})")
         add_library(ecpint_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_ecpint})
+            message(VERBOSE "Suitable ecpint located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_ecpint})
             message(FATAL_ERROR "Suitable ecpint could not be externally located as user insists")
@@ -31,7 +36,9 @@ if(${ENABLE_ecpint})
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-                             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
+                             -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
+                             -DCMAKE_CXX_COMPILER_ARG1:STRING=${CMAKE_CXX_COMPILER_ARG1})
 
         set(ecpint_DIR ${STAGED_INSTALL_PREFIX}/lib/cmake/ecpint CACHE PATH "path to internally built ecpint-config.cmake" FORCE)
     endif()
