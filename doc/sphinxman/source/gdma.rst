@@ -99,7 +99,7 @@ program takes as input a data file, and a Gaussian formatted checkpoint (see
 Section :ref:`FCHK <sec:fchk>`) file.  The simplest usage of the GDMA code is
 demonstrated below, along with a listing of the options supported; these
 options correspond to the options described in the 
-:download:`GDMA manual <gdma-2.2.06.pdf>`.
+:download:`GDMA manual <gdma-2.3.pdf>`.
 
 If more advanced usage is desired, which is not is permitted by the options
 listed below, the user may provide their own data file containing keywords to

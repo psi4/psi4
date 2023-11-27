@@ -7,6 +7,10 @@ if(${qcengine_FOUND})
     message(STATUS "${Cyan}Found qcengine${ColourReset}: ${PY_qcengine} (found version ${qcengine_VERSION})")
     add_library(qcengine_external INTERFACE)  # dummy
 
+    if(${CMAKE_INSIST_FIND_PACKAGE_qcengine})
+        message(VERBOSE "Suitable qcengine located externally as user insists")
+    endif()
+
 else()
     if(${CMAKE_INSIST_FIND_PACKAGE_qcengine})
         message(FATAL_ERROR "Suitable qcengine could not be externally located as user insists")

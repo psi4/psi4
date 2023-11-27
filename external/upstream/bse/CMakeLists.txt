@@ -1,13 +1,17 @@
 if(${ENABLE_bse})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_bse}))
         include(FindPythonModule)
-        find_python_module(bse ATLEAST 0.9.0 QUIET)
+        find_python_module(basis_set_exchange ATLEAST 0.9.0 QUIET)
     endif()
     
-    if(${bse_FOUND})
-        message(STATUS "${Cyan}Found bse${ColourReset}: ${PY_bse} (found version ${bse_VERSION})")
+    if(${basis_set_exchange_FOUND})
+        message(STATUS "${Cyan}Found bse${ColourReset}: ${PY_basis_set_exchange} (found version ${basis_set_exchange_VERSION})")
         add_library(bse_external INTERFACE)  # dummy
-    
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_bse})
+            message(VERBOSE "Suitable bse located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_bse})
             message(FATAL_ERROR "Suitable bse could not be externally located as user insists")

@@ -5,6 +5,11 @@ if(${ENABLE_libefp})
         get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
         message(STATUS "${Cyan}Found libefp${ColourReset}: ${_loc} (found version ${libefp_VERSION})")
         add_library(libefp_external INTERFACE)  # dummy
+
+        if(${CMAKE_INSIST_FIND_PACKAGE_libefp})
+            message(VERBOSE "Suitable libefp located externally as user insists")
+        endif()
+
     else()
         if(${CMAKE_INSIST_FIND_PACKAGE_libefp})
             message(FATAL_ERROR "Suitable libefp could not be externally located as user insists")
@@ -37,6 +42,7 @@ if(${ENABLE_libefp})
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+                             -DCMAKE_C_COMPILER_ARG1:STRING=${CMAKE_C_COMPILER_ARG1}
                              -DTargetOpenMP_FIND_COMPONENTS:STRING=C)
 
         set(libefp_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/libefp CACHE PATH "path to internally built libefpConfig.cmake" FORCE)
