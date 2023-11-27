@@ -88,8 +88,15 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         can_do_density_screen.cend(),
         [&](std::string jk_algo) { return jk_type == jk_algo; }
     ); 
- 
-    bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
+
+    std::array<std::string, 3> can_be_in_df_scf_guess = { "DIRECT", "MEM_DF", "DISK_DF" };
+    bool is_in_df_scf_guess = std::any_of(
+        can_be_in_df_scf_guess.cbegin(),
+        can_be_in_df_scf_guess.cend(),
+        [&](std::string jk_algo) { return jk_type == jk_algo; }
+    ); 
+    bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS") && is_in_df_scf_guess;
+
     bool is_incompatible_density_screen = !(is_compatible_density_screen || do_df_scf_guess);
     
     if (do_density_screen && is_incompatible_density_screen) {
