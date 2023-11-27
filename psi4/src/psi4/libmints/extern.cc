@@ -61,6 +61,8 @@ void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector c
     bases_.push_back(std::make_pair(basis, coefs));
 }
 
+SharedMatrix ExternalPotential::gradient() { return gradient_; }
+
 void ExternalPotential::print(const std::string& out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => External Potential Field: %s <= \n\n", name_.c_str());
@@ -205,7 +207,9 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     int natom = mol->natom();
     int nextc = charges_.size();
     auto grad = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
+    auto extg = std::make_shared<Matrix>("Gradient on External Charges", nextc, 3);
     double **Gp = grad->pointer();
+    double **EGp = extg->pointer();
 
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i=0; i< charges_.size(); ++i) {
@@ -231,6 +235,9 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
             Gp[cen][0] += charge * x / (r * r2);
             Gp[cen][1] += charge * y / (r * r2);
             Gp[cen][2] += charge * z / (r * r2);
+            EGp[ext][0] -= charge * x / (r * r2);
+            EGp[ext][1] -= charge * y / (r * r2);
+            EGp[ext][2] -= charge * z / (r * r2);
         }
     }
 
@@ -246,11 +253,14 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     // Potential derivatives
     std::vector<std::shared_ptr<PotentialInt> > Vint;
     std::vector<SharedMatrix> Vtemps;
+    std::vector<SharedMatrix> EVtemps;
     for (int t = 0; t < threads; t++) {
         Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1).release())));
         Vint[t]->set_charge_field(Zxyz);
         Vtemps.push_back(SharedMatrix(grad->clone()));
         Vtemps[t]->zero();
+        EVtemps.push_back(SharedMatrix(extg->clone()));
+        EVtemps[t]->zero();
     }
 
     // Lower Triangle
@@ -279,6 +289,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
         double perm = (P == Q ? 1.0 : 2.0);
 
         double **Vp = Vtemps[thread]->pointer();
+        double **EVp = EVtemps[thread]->pointer();
         double **Dp = Dt->pointer();
         const double *ref0 = buffers[0];
         const double *ref1 = buffers[1];
@@ -286,6 +297,12 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
         const double *ref3 = buffers[3];
         const double *ref4 = buffers[4];
         const double *ref5 = buffers[5];
+        const double *refx[3*nextc];
+        for (int ext = 0; ext < nextc; ext++) {
+            refx[ext*3] = buffers[ext*3 + 6];
+            refx[ext*3 + 1] = buffers[ext*3 + 7];
+            refx[ext*3 + 2] = buffers[ext*3 + 8];
+        }
         for (int p = 0; p < nP; p++) {
             for (int q = 0; q < nQ; q++) {
                 double Vval = perm * Dp[p + oP][q + oQ];
@@ -295,13 +312,20 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
                 Vp[cQ][0] += Vval * (*ref3++);
                 Vp[cQ][1] += Vval * (*ref4++);
                 Vp[cQ][2] += Vval * (*ref5++);
+                for (int ext = 0; ext < nextc; ext++) {
+                    EVp[ext][0] += Vval * (*refx[ext*3]++);
+                    EVp[ext][1] += Vval * (*refx[ext*3 + 1]++);
+                    EVp[ext][2] += Vval * (*refx[ext*3 + 2]++);
+                }
             }
         }
     }
 
     for (int t = 0; t < threads; t++) {
         grad->add(Vtemps[t]);
+        extg->add(EVtemps[t]);
     }
+    gradient_ = extg;
     return grad;
 }
 
