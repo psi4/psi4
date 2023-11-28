@@ -40,10 +40,7 @@
 #include "psi4/libpsi4util/process.h"
 
 #include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
-PRAGMA_WARNING_POP
 
 namespace psi {
 
