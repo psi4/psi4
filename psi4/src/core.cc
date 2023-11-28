@@ -1058,7 +1058,6 @@ bool psi4_python_module_initialize() {
     Process::environment.options.set_read_globals(false);
 
     // Setup Libint2
-    libint2::initialize();
 #if psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_STANDARD
     libint2::set_solid_harmonics_ordering(libint2::SHGShellOrdering_Standard);
 #elif psi4_SHGSHELL_ORDERING == LIBINT_SHGSHELL_ORDERING_GAUSSIAN
@@ -1066,6 +1065,7 @@ bool psi4_python_module_initialize() {
 #else
 #  error "unknown value of macro psi4_SHGSHELL_ORDERING"
 #endif
+    libint2::initialize();
 
 #ifdef INTEL_Fortran_ENABLED
     static int argc = 1;
