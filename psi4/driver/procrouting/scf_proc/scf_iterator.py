@@ -86,6 +86,12 @@ def scf_compute_energy(self):
         with p4util.OptionsStateCM(['SCF_TYPE', 'SCREENING']):
             core.set_global_option('SCF_TYPE', 'DFDIRJ+COSX')
             core.set_global_option('SCREENING', "SCHWARZ")
+            
+            # do COSX guess on single (20/50) grid
+            core.set_global_option('COSX_MAXITER_FINAL', 0)
+            core.set_global_option('COSX_RADIAL_POINTS_INITIAL', 20)
+            core.set_global_option('COSX_SPHERICAL_POINTS_INITIAL', 50)
+
             self.initialize()
             try:
                 self.iterations()
