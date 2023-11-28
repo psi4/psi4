@@ -61,7 +61,7 @@ void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector c
     bases_.push_back(std::make_pair(basis, coefs));
 }
 
-SharedMatrix ExternalPotential::gradient() { return gradient_; }
+SharedMatrix ExternalPotential::gradient() { return gradient_on_charges_; }
 
 void ExternalPotential::print(const std::string& out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
@@ -206,10 +206,10 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     SharedMolecule mol = basis->molecule();
     int natom = mol->natom();
     int nextc = charges_.size();
-    auto grad = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
-    auto extg = std::make_shared<Matrix>("Gradient on External Charges", nextc, 3);
-    double **Gp = grad->pointer();
-    double **EGp = extg->pointer();
+    auto grad_on_atoms = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
+    auto grad_on_charges = std::make_shared<Matrix>("Gradient on External Charges", nextc, 3);
+    double **Gp = grad_on_atoms->pointer();
+    double **EGp = grad_on_charges->pointer();
 
     std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
     for (size_t i=0; i< charges_.size(); ++i) {
@@ -219,7 +219,8 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     }
 
     // Start with the nuclear contribution
-    grad->zero();
+    grad_on_atoms->zero();
+    grad_on_charges->zero();
     for (int cen = 0; cen < natom; ++cen) {
         double xc = mol->x(cen);
         double yc = mol->y(cen);
@@ -257,9 +258,9 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     for (int t = 0; t < threads; t++) {
         Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1).release())));
         Vint[t]->set_charge_field(Zxyz);
-        Vtemps.push_back(SharedMatrix(grad->clone()));
+        Vtemps.push_back(SharedMatrix(grad_on_atoms->clone()));
         Vtemps[t]->zero();
-        EVtemps.push_back(SharedMatrix(extg->clone()));
+        EVtemps.push_back(SharedMatrix(grad_on_charges->clone()));
         EVtemps[t]->zero();
     }
 
@@ -322,11 +323,11 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     }
 
     for (int t = 0; t < threads; t++) {
-        grad->add(Vtemps[t]);
-        extg->add(EVtemps[t]);
+        grad_on_atoms->add(Vtemps[t]);
+        grad_on_charges->add(EVtemps[t]);
     }
-    gradient_ = extg;
-    return grad;
+    gradient_on_charges_ = grad_on_charges;
+    return grad_on_atoms;
 }
 
 double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {

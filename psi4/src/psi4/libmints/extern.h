@@ -62,7 +62,7 @@ class PSI_API ExternalPotential {
     /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
     std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > bases_;
     /// Gradient, if available, as number of charges x 3 SharedMatrix
-    SharedMatrix gradient_;
+    SharedMatrix gradient_on_charges_;
 
    public:
     /// Constructur, does nothing
