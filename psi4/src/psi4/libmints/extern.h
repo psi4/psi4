@@ -104,7 +104,7 @@ class PSI_API ExternalPotential {
     double computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern);
 
     /// Returns the gradient on the external potential point charges from the wfn-extern interaction
-    SharedMatrix gradient();
+    SharedMatrix gradient_on_charges();
 
     /// Print a trace of the external potential
     void print(const std::string& out_fname = "outfile") const;
