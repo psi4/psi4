@@ -40,6 +40,8 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsio/psio.h"
+#include "psi4/psifiles.h"
 
 #include <algorithm>
 #include <limits>
@@ -182,6 +184,7 @@ COSK::COSK(std::shared_ptr<BasisSet> primary, Options& options) : SplitJK(primar
     dscreen_ = options.get_double("COSX_DENSITY_TOLERANCE");
     basis_tol_ = options.get_double("COSX_BASIS_TOLERANCE");
     overlap_fitted_ = options.get_bool("COSX_OVERLAP_FITTING");
+    do_gradient_ = options.get_bool("COSX_DO_GRADIENT");
 
     current_grid_ = "Final"; // default in case it is not explicitly set anywhere
 
@@ -344,16 +347,24 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
 
     // per-thread K Matrix buffers (for accumulating thread contributions to K)
     std::vector<std::vector<SharedMatrix>> KT(njk, std::vector<SharedMatrix>(nthreads_));
+    std::vector<std::vector<SharedMatrix>> KTgrad(njk, std::vector<SharedMatrix>(nthreads_));
 
     // initialize per-thread objects
     IntegralFactory factory(primary_);
     for(size_t thread = 0; thread < nthreads_; thread++) {
         int_computers[thread] = std::shared_ptr<ElectrostaticInt>(static_cast<ElectrostaticInt *>(factory.electrostatic().release()));
         bf_computers[thread] = std::make_shared<BasisFunctions>(primary_, grid->max_points(), grid->max_functions());
+        if (do_gradient_) {
+            bf_computers[thread]->set_deriv(1);
+        }
         for(size_t jki = 0; jki < njk; jki++) {
             KT[jki][thread] = std::make_shared<Matrix>(nbf, nbf);
+            KTgrad[jki][thread] = std::make_shared<Matrix>(natom, 3);
         }
     }
+    
+    // exchange gradient
+    auto Kgrad = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
 
     // precompute bounds for the one-electron integrals
     auto esp_bound = compute_esp_bound(*primary_);
@@ -709,7 +720,77 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 }
             }
         }
+        
+        // compute exchange gradient
+        if (do_gradient_){
+            if (rank == 0) timer_on("Form K Gradient");
+            auto point_values_dx = bf_computers[rank]->basis_values()["PHI_X"];
+            auto point_values_dy = bf_computers[rank]->basis_values()["PHI_Y"];
+            auto point_values_dz = bf_computers[rank]->basis_values()["PHI_Z"];
 
+            for (size_t jki = 0; jki < njk; jki++) {
+
+                auto Xdx_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+                auto Xdy_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+                auto Xdz_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+                auto Qdx_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+                auto Qdy_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+                auto Qdz_block = std::make_shared<Matrix>(npoints_block, nbf_block);  // points x nbf_block
+
+                auto Q_block = std::make_shared<Matrix>(nbf_block, nbf_block);
+                for(size_t mu_local = 0; mu_local < nbf_block; mu_local++) {
+                    size_t mu = bf_map[mu_local];
+                    for(size_t nu_local = 0; nu_local < nbf_block; nu_local++) {
+                        size_t nu = bf_map[nu_local];
+                        Q_block->set(mu_local, nu_local, Q->get(mu, nu));
+                    }
+                }
+
+                auto Xdx_blockp = Xdx_block->pointer();
+                auto Xdy_blockp = Xdy_block->pointer();
+                auto Xdz_blockp = Xdz_block->pointer();
+                for (size_t p = 0; p < npoints_block; p++) {
+                    for (size_t k = 0; k < nbf_block; k++) {
+                        Xdx_blockp[p][k] = point_values_dx->get(p, k) * std::sqrt(w[p]);
+                        Xdy_blockp[p][k] = point_values_dy->get(p, k) * std::sqrt(w[p]);
+                        Xdz_blockp[p][k] = point_values_dz->get(p, k) * std::sqrt(w[p]);
+                    }
+                }
+                //  contract with G_block:
+                SharedMatrix KT_dx_block;
+                SharedMatrix KT_dy_block;
+                SharedMatrix KT_dz_block;
+                if (overlap_fitted_) {
+                    Qdx_block = linalg::doublet(Xdx_block, Q_block, false, true);
+                    Qdy_block = linalg::doublet(Xdy_block, Q_block, false, true);
+                    Qdz_block = linalg::doublet(Xdz_block, Q_block, false, true);
+                    KT_dx_block = linalg::doublet(Qdx_block, G_block[jki], true, true);
+                    KT_dy_block = linalg::doublet(Qdy_block, G_block[jki], true, true);
+                    KT_dz_block = linalg::doublet(Qdz_block, G_block[jki], true, true);
+                } else {
+                    KT_dx_block = linalg::doublet(Xdx_block, G_block[jki], true, true);
+                    KT_dy_block = linalg::doublet(Xdy_block, G_block[jki], true, true);
+                    KT_dz_block = linalg::doublet(Xdz_block, G_block[jki], true, true);
+                }
+                //  contract with density, load into derivative matrix
+                auto D_blockp = D_block[jki]->pointer();
+                auto KT_dx_blockp = KT_dx_block->pointer();
+                auto KT_dy_blockp = KT_dy_block->pointer();
+                auto KT_dz_blockp = KT_dz_block->pointer();
+                auto KTgradp = KTgrad[jki][rank]->pointer();
+                for (size_t mu = 0; mu < nbf_block_all; mu++) {
+                    for (size_t nu = 0; nu < nbf_block; nu++) {
+                        auto center = primary_->function_to_center(bf_map[nu]);
+                        KTgradp[center][0] -= D_blockp[mu][nu] * KT_dx_blockp[nu][mu];
+                        KTgradp[center][1] -= D_blockp[mu][nu] * KT_dy_blockp[nu][mu];
+                        KTgradp[center][2] -= D_blockp[mu][nu] * KT_dz_blockp[nu][mu];
+                    }
+                }
+            }
+
+            if (rank == 0) timer_off("Form K Gradient");
+
+        }
     }
 
     timer_off("Grid Loop");
@@ -722,6 +803,17 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
         if (lr_symmetric_) {
             K[jki]->hermitivitize();
         }
+    }
+    
+    if (do_gradient_){
+        for(size_t jki = 0; jki < njk; jki++) {
+            for (size_t thread = 0; thread < nthreads_; thread++) {
+                Kgrad->add(KTgrad[jki][thread]);
+            }
+        }
+        auto psio_ = PSIO::shared_object();
+        Kgrad->scale(2.0);
+        Kgrad->save(psio_, PSIF_KGRAD, Matrix::SaveType::SubBlocks);
     }
 
     num_computed_shells_ = int_shells_computed;

@@ -27,6 +27,7 @@
  */
 
 #include "jk.h"
+#include "psi4/psifiles.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
@@ -37,7 +38,9 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsio/psio.h"
 #include "psi4/lib3index/dftensor.h"
+
 
 #include <memory>
 #include <unordered_set>

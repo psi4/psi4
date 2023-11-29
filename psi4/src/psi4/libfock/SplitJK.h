@@ -277,6 +277,9 @@ class PSI_API COSK : public SplitJK {
     double basis_tol_;
     /// use overlap-fitted COSX algo?
     bool overlap_fitted_;
+    // do gradients (COSX gradients live here for performace reasons)
+    bool do_gradient_;
+
 
    public:
     // => Constructors < = //

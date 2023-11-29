@@ -204,6 +204,7 @@
 
 #define PSIF_WK_PK               165  /*- File to contain wK pre-sorted integrals for PK -*/
 
+#define PSIF_KGRAD               179  /*- Exchange gradient for cosx -*/
 #define PSIF_SCF_MOS             180  /*- Save SCF orbitals for re-use later as guess, etc. -*/
 #define PSIF_DFMP2_AIA           181  /*- Unfitted three-index MO ints for DFMP2 -*/
 #define PSIF_DFMP2_QIA           182  /*- Fitted-three index MO ints for DFMP2 -*/
