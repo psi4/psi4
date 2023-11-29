@@ -39,10 +39,7 @@
 
 #include "psi4/psifiles.h"
 #include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
-PRAGMA_WARNING_POP
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
