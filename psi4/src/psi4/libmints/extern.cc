@@ -61,7 +61,7 @@ void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector c
     bases_.push_back(std::make_pair(basis, coefs));
 }
 
-SharedMatrix ExternalPotential::gradient() { return gradient_on_charges_; }
+SharedMatrix ExternalPotential::gradient_on_charges() { return gradient_on_charges_; }
 
 void ExternalPotential::print(const std::string& out) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
