@@ -131,21 +131,28 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
             // Maximum density matrix equation
             double max_density = 0.0;
 
-            auto is_in_array = [&](auto element, auto array) {
-                return std::find(std::begin(array), std::end(array), element) != std::end(array);
-            };
-
             std::array<std::string, 2> one_density_jk_references = { "RHF", "RKS" };
+            bool is_one_density_ref = std::any_of(
+                one_density_jk_references.cbegin(),
+                one_density_jk_references.cend(),
+                [&](std::string one_density_jk_reference) { return jk_reference_.find(one_density_jk_reference) != std::string::npos; }
+            );
+
             std::array<std::string, 3> two_density_jk_references = { "UHF", "UKS", "ROHF" }; 
+            bool is_two_density_ref = std::any_of(
+                two_density_jk_references.cbegin(),
+                two_density_jk_references.cend(),
+                [&](std::string two_density_jk_reference) { return jk_reference_.find(two_density_jk_reference) != std::string::npos; }
+            );
 
             // Equation 6 (RHF/RKS Case)
-            if (is_in_array(jk_reference_, one_density_jk_references)) {
+            if (is_one_density_ref) {
                 max_density = std::max({4.0 * ints->shell_pair_max_density(0, M, N), 4.0 * ints->shell_pair_max_density(0, R, S),
                     ints->shell_pair_max_density(0, M, R), ints->shell_pair_max_density(0, M, S),
                     ints->shell_pair_max_density(0, N, R), ints->shell_pair_max_density(0, N, S)});
 
             // UHF/UKS/ROHF Case
-            } else if (is_in_array(jk_reference_, two_density_jk_references)) { 
+            } else if (is_two_density_ref) { 
                 // J-like terms
                 double D_MN = ints->shell_pair_max_density(0, M, N) + ints->shell_pair_max_density(1, M, N);
                 double D_RS = ints->shell_pair_max_density(0, R, S) + ints->shell_pair_max_density(1, R, S);
@@ -193,7 +200,7 @@ void DirectJK::incfock_setup() {
 
         // If there is no previous pseudo-density, this iteration is normal
         if (initial_iteration_ || D_prev_.size() != njk) {
-	        initial_iteration_ = true;
+	    initial_iteration_ = true;
 
             D_ref_ = D_ao_;
             zero();
