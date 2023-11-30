@@ -192,11 +192,11 @@ class PSI_API DirectDFJ : public SplitJK {
     size_t num_computed_shells() override;
 
     bool shell_significant(int M, int N, int P,
-        const std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers, 
+        const std::shared_ptr<TwoBodyAOInt> eri_computer, 
         double** matrixp, const std::vector<double>& J_metric_shell_diag);
 
     bool shell_significant(int M, int N, int P,
-        const std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers, 
+        const std::shared_ptr<TwoBodyAOInt> eri_computer, 
         double* vectorp, const std::vector<double>& J_metric_shell_diag);
 
     /**
@@ -252,7 +252,7 @@ class PSI_API LinK : public SplitJK {
     size_t num_computed_shells() override;
 
     bool shell_significant(int M, int N, int R, int S,
-        const std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers); 
+        const std::shared_ptr<TwoBodyAOInt> eri_computers); 
 
     /**
     * print name of method

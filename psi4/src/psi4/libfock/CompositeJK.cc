@@ -216,7 +216,7 @@ void CompositeJK::print_header() const {
 }
 
 bool CompositeJK::shell_significant(int M, int N, int R, int S, 
-    const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+    const std::shared_ptr<TwoBodyAOInt> ints, 
     const std::vector<SharedMatrix>& D) 
 {
     throw PSIEXCEPTION("CompositeJK::shell_significant() must be called per-algorithm!");

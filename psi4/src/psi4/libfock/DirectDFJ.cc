@@ -86,19 +86,19 @@ void DirectDFJ::print_header() const {
 }
 
 bool DirectDFJ::shell_significant(int M, int N, int P, 
-    const std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers,
+    const std::shared_ptr<TwoBodyAOInt> eri_computer,
     double** matrixp, const std::vector<double>& J_metric_shell_diag) 
 {
     double thresh2 = options_.get_double("INTS_TOLERANCE") * options_.get_double("INTS_TOLERANCE");
-    return matrixp[M][N] * matrixp[M][N] * J_metric_shell_diag[P] * eri_computers[0]->shell_pair_value(M,N) >= thresh2;
+    return matrixp[M][N] * matrixp[M][N] * J_metric_shell_diag[P] * eri_computer->shell_pair_value(M,N) >= thresh2;
 }
 
 bool DirectDFJ::shell_significant(int M, int N, int P, 
-    const std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers,
+    const std::shared_ptr<TwoBodyAOInt> eri_computer,
     double* vectorp, const std::vector<double>& J_metric_shell_diag) 
 {
     double thresh2 = options_.get_double("INTS_TOLERANCE") * options_.get_double("INTS_TOLERANCE");
-    return vectorp[P] * vectorp[P] * J_metric_shell_diag[P] * eri_computers[0]->shell_pair_value(M,N) >= thresh2;
+    return vectorp[P] * vectorp[P] * J_metric_shell_diag[P] * eri_computer->shell_pair_value(M,N) >= thresh2;
 }
 
 // build the J matrix using Weigend's integral-direct density fitting algorithm
@@ -194,7 +194,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(!shell_significant(M, N, P, eri_computers, Dshellp, J_metric_shell_diag)) {
+        if(!shell_significant(M, N, P, eri_computers[0], Dshellp, J_metric_shell_diag)) {
             continue;
         }
         computed_triplets1++;
@@ -292,7 +292,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(!shell_significant(M, N, P, eri_computers, H_shell_maxp, J_metric_shell_diag)) {
+        if(!shell_significant(M, N, P, eri_computers[0], H_shell_maxp, J_metric_shell_diag)) {
             continue;
         }
         computed_triplets2++;

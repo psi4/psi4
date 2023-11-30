@@ -84,7 +84,7 @@ void PKJK::print_header() const {
 }
 
 bool PKJK::shell_significant(int M, int N, int R, int S,
-    const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+    const std::shared_ptr<TwoBodyAOInt> ints, 
     const std::vector<SharedMatrix>& D) 
 {
     return PKmanager_->shell_significant(M, N, R, S, ints, D);

@@ -123,11 +123,11 @@ void DirectJK::print_header() const {
 }
 
 bool DirectJK::shell_significant(int M, int N, int R, int S, 
-    const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+    const std::shared_ptr<TwoBodyAOInt> ints, 
     const std::vector<SharedMatrix>& D) 
 {
     if (density_screening_) {
-        if (!ints.empty() && !D.empty()) {
+        if ((ints != nullptr) && !D.empty()) {
             // Maximum density matrix equation
             double max_density = 0.0;
 
@@ -140,21 +140,21 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
 
             // Equation 6 (RHF/RKS Case)
             if (is_in_array(jk_reference_, one_density_jk_references)) {
-                max_density = std::max({4.0 * ints[0]->shell_pair_max_density(0, M, N), 4.0 * ints[0]->shell_pair_max_density(0, R, S),
-                    ints[0]->shell_pair_max_density(0, M, R), ints[0]->shell_pair_max_density(0, M, S),
-                    ints[0]->shell_pair_max_density(0, N, R), ints[0]->shell_pair_max_density(0, N, S)});
+                max_density = std::max({4.0 * ints->shell_pair_max_density(0, M, N), 4.0 * ints->shell_pair_max_density(0, R, S),
+                    ints->shell_pair_max_density(0, M, R), ints->shell_pair_max_density(0, M, S),
+                    ints->shell_pair_max_density(0, N, R), ints->shell_pair_max_density(0, N, S)});
 
             // UHF/UKS/ROHF Case
             } else if (is_in_array(jk_reference_, two_density_jk_references)) { 
                 // J-like terms
-                double D_MN = ints[0]->shell_pair_max_density(0, M, N) + ints[0]->shell_pair_max_density(1, M, N);
-                double D_RS = ints[0]->shell_pair_max_density(0, R, S) + ints[0]->shell_pair_max_density(1, R, S);
+                double D_MN = ints->shell_pair_max_density(0, M, N) + ints->shell_pair_max_density(1, M, N);
+                double D_RS = ints->shell_pair_max_density(0, R, S) + ints->shell_pair_max_density(1, R, S);
 
                 // K-like terms
-                double D_MR = std::max(ints[0]->shell_pair_max_density(0, M, R), ints[0]->shell_pair_max_density(1, M, R));
-                double D_MS = std::max(ints[0]->shell_pair_max_density(0, M, S), ints[0]->shell_pair_max_density(1, M, S));
-                double D_NR = std::max(ints[0]->shell_pair_max_density(0, N, R), ints[0]->shell_pair_max_density(1, N, R));
-                double D_NS = std::max(ints[0]->shell_pair_max_density(0, N, S), ints[0]->shell_pair_max_density(1, N, S));
+                double D_MR = std::max(ints->shell_pair_max_density(0, M, R), ints->shell_pair_max_density(1, M, R));
+                double D_MS = std::max(ints->shell_pair_max_density(0, M, S), ints->shell_pair_max_density(1, M, S));
+                double D_NR = std::max(ints->shell_pair_max_density(0, N, R), ints->shell_pair_max_density(1, N, R));
+                double D_NS = std::max(ints->shell_pair_max_density(0, N, S), ints->shell_pair_max_density(1, N, S));
 
                 max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
             // throw, because we are using incompatible reference wave function
@@ -163,13 +163,13 @@ bool DirectJK::shell_significant(int M, int N, int R, int S,
                 throw PSIEXCEPTION(error_message);
             }
 
-            return (ints[0]->shell_ceiling2(M, N, R, S) * max_density * max_density >= cutoff_*cutoff_);
+            return (ints->shell_ceiling2(M, N, R, S) * max_density * max_density >= cutoff_*cutoff_);
         } else {
             throw PSIEXCEPTION("Tests for significant shell quartets using density screening are being conducted, but the ints and/or D variables are undefined. Check your DirectJK::shell_significant function arguments");
         }
     } else {
-        if (!ints.empty()) {
-            return ints[0]->shell_significant(M, N, R, S);
+        if (ints != nullptr) {
+            return ints->shell_significant(M, N, R, S);
         } else {
             throw PSIEXCEPTION("Tests for significant shell quartets are being conducted, but the ints variable is undefined. Check your DirectJK::shell_significant function arguments");
         }
@@ -642,7 +642,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         int S = task_shells[S2];
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        if (!shell_significant(P, Q, R, S, ints, D)) continue;
+                        if (!shell_significant(P, Q, R, S, ints[0], D)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // if (thread == 0) timer_on("JK: Ints");
