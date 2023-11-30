@@ -364,7 +364,7 @@ class PSI_API JK {
     *     No significance testing is done unless a subclass overrides this method
     */
     virtual bool shell_significant(int M, int N, int R, int S, 
-        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::shared_ptr<TwoBodyAOInt> ints = nullptr, 
         const std::vector<SharedMatrix>& D = {}) {
           return true; 
     }; 
@@ -699,11 +699,11 @@ class PSI_API PKJK : public JK {
     /// Common initialization
     void common_init();
     /**
-     * Determine if shell quartet is significant or not 
-     * based on screening method used
-     */
+    * Determine if shell quartet is significant or not 
+    * based on screening method used
+    */
     bool shell_significant(int M, int N, int R, int S,
-        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::shared_ptr<TwoBodyAOInt> ints = nullptr, 
         const std::vector<SharedMatrix>& D = {}) override; 
 
     /// Total number of SOs
@@ -798,15 +798,6 @@ class PSI_API DirectJK : public JK {
     void incfock_postiter();
 
     /**
-    *     Determine if shell quartet is significant or not 
-    *     based on screening method used
-    *     No significance testing is done unless a subclass overrides this method
-    */
-    bool shell_significant(int M, int N, int R, int S, 
-        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
-        const std::vector<SharedMatrix>& D = {}) override; 
-
-    /**
      * @brief The standard J and K matrix builds for this integral class
      *
      * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
@@ -824,6 +815,15 @@ class PSI_API DirectJK : public JK {
     * Return number of ERI shell quartets computed during the JK build process.
     */
     size_t num_computed_shells() override; 
+
+    /**
+    *     Determine if shell quartet is significant or not 
+    *     based on screening method used
+    *     No significance testing is done unless a subclass overrides this method
+    */
+    bool shell_significant(int M, int N, int R, int S, 
+        const std::shared_ptr<TwoBodyAOInt> ints = nullptr, 
+        const std::vector<SharedMatrix>& D = {}) override; 
 
    public:
     // => Constructors < = //
@@ -1286,7 +1286,7 @@ class PSI_API CompositeJK : public JK {
     *     No significance testing is done unless a subclass overrides this method
     */
     bool shell_significant(int M, int N, int R, int S, 
-        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::shared_ptr<TwoBodyAOInt> ints = nullptr, 
         const std::vector<SharedMatrix>& D = {}) override; 
 
     /// Do we need to backtransform to C1 under the hood?

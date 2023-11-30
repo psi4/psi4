@@ -93,9 +93,9 @@ void LinK::print_header() const {
 }
 
 bool LinK::shell_significant(int M, int N, int R, int S,
-    const std::vector<std::shared_ptr<TwoBodyAOInt>>& eri_computers) 
+    const std::shared_ptr<TwoBodyAOInt> eri_computer) 
 {
-    return eri_computers[0]->shell_significant(M, N, R, S);
+    return eri_computer->shell_significant(M, N, R, S);
 }
 
 // build the K matrix using Ochsenfelds's Linear Exchange (LinK) algorithm
@@ -355,7 +355,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                     int S = RS % nshell;
 
                     if (!eri_computers[0]->shell_pair_significant(R, S)) continue;
-                    if (!shell_significant(P, Q, R, S, eri_computers)) continue;
+                    if (!shell_significant(P, Q, R, S, eri_computers[0])) continue;
 
                     if (eri_computers[thread]->compute_shell(P, Q, R, S) == 0)
                         continue;
