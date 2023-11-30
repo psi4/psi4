@@ -158,6 +158,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        if (options["REFERENCE"].has_changed()) jk->set_jk_reference(options.get_str("REFERENCE"));
 
         return jk;
 
@@ -165,6 +166,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         auto jk = std::make_shared<DiskDFJK>(primary, auxiliary, options);
         _set_dfjk_options<DiskDFJK>(jk, options);
         if (options["DF_INTS_IO"].has_changed()) jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+        if (options["REFERENCE"].has_changed()) jk->set_jk_reference(options.get_str("REFERENCE"));
 
         return jk;
 
@@ -174,6 +176,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         jk->set_wcombine(false);
         _set_dfjk_options<MemDFJK>(jk, options);
         if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
+        if (options["REFERENCE"].has_changed()) jk->set_jk_reference(options.get_str("REFERENCE"));
 
         return jk;
     } else if (jk_type == "PK") {
@@ -183,6 +186,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
+        if (options["REFERENCE"].has_changed()) jk->set_jk_reference(options.get_str("REFERENCE"));
 
         return std::shared_ptr<JK>(jk);
 
@@ -194,6 +198,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+        if (options["REFERENCE"].has_changed()) jk->set_jk_reference(options.get_str("REFERENCE"));
 
         return std::shared_ptr<JK>(jk);
 
@@ -207,6 +212,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        if (options["REFERENCE"].has_changed()) jk->set_jk_reference(options.get_str("REFERENCE"));
 
         return std::shared_ptr<JK>(jk);
 
@@ -219,6 +225,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["PRINT"].has_changed()) jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed()) jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed()) jk->set_bench(options.get_int("BENCH"));
+        if (options["REFERENCE"].has_changed()) jk->set_jk_reference(options.get_str("REFERENCE"));
 
         return jk;
 
@@ -288,6 +295,7 @@ void JK::common_init() {
     cutoff_ = 1.0E-12;
     do_csam_ = false;
 
+    jk_reference_ = "RHF";
     do_J_ = true;
     do_K_ = true;
     do_wK_ = false;

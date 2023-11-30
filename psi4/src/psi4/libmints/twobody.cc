@@ -76,7 +76,7 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     else if (screentype == "CSAM")
         screening_type_ = ScreeningType::CSAM;
     else if (screentype == "DENSITY")
-        screening_type_ = ScreeningType::Density;
+        screening_type_ = ScreeningType::Schwarz; // we will use Schwarz screening in TwoBodyAOInt here
     else if (screentype == "NONE")
         screening_type_ = ScreeningType::None;
     else
@@ -167,38 +167,9 @@ double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
     return D_max;
 }
 
-// Haser 1989 Equations 6 to 14
-bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
-
-    // Maximum density matrix equation
-    double max_density = 0.0;
-
-    // Equation 6 (RHF Case)
-    if (max_dens_shell_pair_.size() == 1) {
-        max_density = std::max({4.0 * max_dens_shell_pair_[0][M * nshell_ + N], 4.0 * max_dens_shell_pair_[0][R * nshell_ + S], 
-            max_dens_shell_pair_[0][M * nshell_ + R], max_dens_shell_pair_[0][M * nshell_ + S],
-            max_dens_shell_pair_[0][N * nshell_ + R], max_dens_shell_pair_[0][N * nshell_ + S]});
-    } else { // UHF and ROHF
-        // J-like terms
-        double D_MN = max_dens_shell_pair_[0][M * nshell_ + N] + max_dens_shell_pair_[1][M * nshell_ + N];
-        double D_RS = max_dens_shell_pair_[0][R * nshell_ + S] + max_dens_shell_pair_[1][R * nshell_ + S];
-
-        // K-like terms
-        double D_MR = std::max(max_dens_shell_pair_[0][M * nshell_ + R], max_dens_shell_pair_[1][M * nshell_ + R]);
-        double D_MS = std::max(max_dens_shell_pair_[0][M * nshell_ + S], max_dens_shell_pair_[1][M * nshell_ + S]);
-        double D_NR = std::max(max_dens_shell_pair_[0][N * nshell_ + R], max_dens_shell_pair_[1][N * nshell_ + R]);
-        double D_NS = std::max(max_dens_shell_pair_[0][N * nshell_ + S], max_dens_shell_pair_[1][N * nshell_ + S]);
-
-        max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
-    }
-
-    // Square of Cauchy-Schwarz Q_MN terms (Eq. 13)
-    double mn_mn = shell_pair_values_[N * nshell_ + M];
-    double rs_rs = shell_pair_values_[S * nshell_ + R];
-
-    // The density screened ERI bound (Eq. 6)
-    return (mn_mn * rs_rs * max_density * max_density >= screening_threshold_squared_);
-}
+double TwoBodyAOInt::shell_pair_max_density(int i, int M, int N) const {
+    return max_dens_shell_pair_[i][M*nshell_ + N]; 
+};
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
     // Square of standard Cauchy-Schwarz Q_mu_nu terms (Eq. 1)
@@ -242,9 +213,6 @@ void TwoBodyAOInt::setup_sieve() {
             break;
         case ScreeningType::Schwarz:
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_schwarz(M, N, R, S); };
-            break;
-        case ScreeningType::Density:
-            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_density(M, N, R, S); };
             break;
         case ScreeningType::None:   
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_none(M, N, R, S); };
