@@ -2,7 +2,9 @@
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 cmake_policy(SET CMP0094 NEW)
 cmake_policy(SET CMP0075 NEW)
-cmake_policy(SET CMP0144 NEW)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.27.0")
+    cmake_policy(SET CMP0144 NEW)
+endif()
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
     cmake_policy(SET CMP0135 NEW)
@@ -210,7 +212,7 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.11 3.10 3.9 3.8)  # adjust with CMake minimum FindPythonInterp
+set(Python_ADDITIONAL_VERSIONS 3.12 3.11 3.10 3.9 3.8)  # adjust with CMake minimum FindPythonInterp
 find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 

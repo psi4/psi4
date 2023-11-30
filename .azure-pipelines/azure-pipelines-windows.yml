@@ -126,6 +126,7 @@ jobs:
                         anaconda-project ^
                         conda-build ^
                         m2-sed ^
+                        urllib3<2.0 ^
                         eigen ^
                         libboost-headers ^
                         conda-verify ^

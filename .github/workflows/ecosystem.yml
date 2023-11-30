@@ -151,9 +151,7 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           :
-          # test legacy qcf until v1.9
-          sed -E -i.bak "s;- qcfractal;- qcfractal=0.15.8.1;g" env_p4build.yaml
-          sed -E -i.bak "s;- postgresql;- qcportal=0.15.8;g" env_p4build.yaml
+          # sed -E -i.bak "s;;;g" env_p4build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           :
@@ -227,14 +225,13 @@ jobs:
         python -m pip install git+https://github.com/MolSSI/QCElemental.git@v0.29.0.dev2 --no-deps
 
     - name: Special Config - QCFractal Dep
-      if: runner.os == 'Linux'
-      # remove after snowflake fix in https://github.com/MolSSI/QCFractal/pull/781 released in v0.52
+      if: false
       run: |
         conda remove qcfractal --force
         python -m pip install -e 'git+https://github.com/MolSSI/QCFractal.git@main#egg=qcfractal&subdirectory=qcfractal'
 
     - name: Special Config - Patch Legacy QCFractal for Python
-      if: runner.os == 'macOS'
+      if: false
       run: |
         sed -E -i.bak "s;for result in self.queue.values\(\);for result in list(self.queue.values());g" /Users/runner/miniconda3/envs/p4build/lib/python${{ matrix.cfg.python-version }}/site-packages/qcfractal/queue/executor_adapter.py
 
