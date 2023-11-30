@@ -642,7 +642,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                         int S = task_shells[S2];
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        if (!shell_significant(P, Q, R, S, ints[0], D)) continue;
+                        if (!shell_significant(P, Q, R, S, ints[thread], D)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // if (thread == 0) timer_on("JK: Ints");

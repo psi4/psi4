@@ -355,7 +355,7 @@ void LinK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                     int S = RS % nshell;
 
                     if (!eri_computers[0]->shell_pair_significant(R, S)) continue;
-                    if (!shell_significant(P, Q, R, S, eri_computers[0])) continue;
+                    if (!shell_significant(P, Q, R, S, eri_computers[thread])) continue;
 
                     if (eri_computers[thread]->compute_shell(P, Q, R, S) == 0)
                         continue;
