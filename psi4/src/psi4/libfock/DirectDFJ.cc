@@ -194,7 +194,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(!shell_significant(M, N, P, eri_computers[0], Dshellp, J_metric_shell_diag)) {
+        if(!shell_significant(M, N, P, eri_computers[rank], Dshellp, J_metric_shell_diag)) {
             continue;
         }
         computed_triplets1++;
@@ -292,7 +292,7 @@ void DirectDFJ::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::
         auto bra = eri_computers[rank]->shell_pairs()[MN];
         size_t M = bra.first;
         size_t N = bra.second;
-        if(!shell_significant(M, N, P, eri_computers[0], H_shell_maxp, J_metric_shell_diag)) {
+        if(!shell_significant(M, N, P, eri_computers[rank], H_shell_maxp, J_metric_shell_diag)) {
             continue;
         }
         computed_triplets2++;
