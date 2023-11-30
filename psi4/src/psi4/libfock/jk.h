@@ -256,6 +256,9 @@ class PSI_API JK {
 
     // => Tasks <= //
 
+    /// Type of wave function JK is being built for
+    std::string jk_reference_;
+
     /// Do J matrices? Defaults to true
     bool do_J_;
     /// Do K matrices? Defaults to true
@@ -355,6 +358,17 @@ class PSI_API JK {
     */
     virtual size_t num_computed_shells();
 
+    /**
+    *     Determine if shell quartet is significant or not 
+    *     based on screening method used
+    *     No significance testing is done unless a subclass overrides this method
+    */
+    virtual bool shell_significant(int M, int N, int R, int S, 
+        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::vector<SharedMatrix>& D = {}) {
+          return true; 
+    }; 
+
    public:
     // => Constructors <= //
 
@@ -437,6 +451,12 @@ class PSI_API JK {
     /// Bench flag (defaults to 0)
     void set_bench(int bench) { bench_ = bench; }
     int get_bench() const { return bench_; }
+    /**
+    * Set to determine wave function reference. 
+    * @param jk_reference type of reference wave function
+    */
+    void set_jk_reference(const std::string& jk_reference) { jk_reference_ = jk_reference; }
+
     /**
     * Set to do J tasks
     * @param do_J do J matrices or not,
@@ -769,6 +789,15 @@ class PSI_API DirectJK : public JK {
     void incfock_setup();
     /// Post-iteration Incfock processing
     void incfock_postiter();
+
+    /**
+    *     Determine if shell quartet is significant or not 
+    *     based on screening method used
+    *     No significance testing is done unless a subclass overrides this method
+    */
+    bool shell_significant(int M, int N, int R, int S, 
+        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::vector<SharedMatrix>& D = {}) override; 
 
     /**
      * @brief The standard J and K matrix builds for this integral class
@@ -1243,6 +1272,15 @@ class PSI_API CompositeJK : public JK {
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Methods <= //
+
+    /**
+    *     Determine if shell quartet is significant or not 
+    *     based on screening method used
+    *     No significance testing is done unless a subclass overrides this method
+    */
+    bool shell_significant(int M, int N, int R, int S, 
+        const std::vector<std::shared_ptr<TwoBodyAOInt>>& ints = {}, 
+        const std::vector<SharedMatrix>& D = {}) override; 
 
     /// Do we need to backtransform to C1 under the hood?
     bool C1() const override { return true; }
