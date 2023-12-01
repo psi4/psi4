@@ -2,9 +2,7 @@
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 cmake_policy(SET CMP0094 NEW)
 cmake_policy(SET CMP0075 NEW)
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.27.0")
-    cmake_policy(SET CMP0144 NEW)
-endif()
+#  cmake_policy(SET CMP0144 NEW)
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
     cmake_policy(SET CMP0135 NEW)
