@@ -322,6 +322,14 @@ class PSI_API COSK : public SplitJK {
     */
     size_t num_computed_shells() override;
 
+    bool shell_significant_block(int NU, int TAU, bool symm,
+        double X_block_max, double** esp_boundp,
+        double* F_block_gmaxp);
+
+    bool shell_significant(int NU, int TAU, int g, bool symm,
+        psi::Vector X_block_bfmaxp, double** esp_boundp,
+        double** F_block_shellp, double dist_decay); 
+
     /**
     * print name of method
     */

@@ -317,6 +317,24 @@ void COSK::print_header() const {
     }
 }
 
+bool COSK::shell_significant_block(int NU, int TAU, bool symm,
+    double X_block_max, double** esp_boundp,
+    double* F_block_gmaxp) {
+    
+    double k_bound = X_block_max * esp_boundp[NU][TAU] * F_block_gmaxp[TAU];
+    if (symm) k_bound = std::max(k_bound, X_block_max * esp_boundp[TAU][NU] * F_block_gmaxp[NU]);
+    return k_bound >= kscreen_;
+}
+
+bool COSK::shell_significant(int NU, int TAU, int g, bool symm,
+    psi::Vector X_block_bfmaxp, double** esp_boundp,
+    double** F_block_shellp, double dist_decay) {
+
+    double k_bound = X_block_bfmaxp[g] * esp_boundp[NU][TAU] * dist_decay * F_block_shellp[g][TAU];
+    if (symm) k_bound = std::max(k_bound, X_block_bfmaxp[g] * esp_boundp[TAU][NU] * dist_decay * F_block_shellp[g][NU]);
+    return k_bound >= kscreen_;
+} 
+
 // build the K matrix using Neeses's Chain-of-Spheres Exchange algorithm
 // algorithm is originally proposed in https://doi.org/10.1016/j.chemphys.2008.10.036
 // overlap fitting is discussed in https://doi.org/10.1063/1.3646921
@@ -645,9 +663,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                 int_shells_total += npoints_block;
 
                 // can we screen the whole block over K_uv = (X_ug (A_vtg (F_tg)) upper bound?
-                double k_bound = X_block_max * esp_boundp[NU][TAU] * F_block_gmaxp[TAU];
-                if (symm) k_bound = std::max(k_bound, X_block_max * esp_boundp[TAU][NU] * F_block_gmaxp[NU]);
-                if (k_bound < kscreen_) continue;
+                if (!shell_significant_block(NU, TAU, symm, X_block_max, esp_boundp, F_block_gmaxp)) continue;
 
                 for (size_t g = 0; g < npoints_block; g++) {
 
@@ -659,9 +675,7 @@ void COSK::build_G_component(std::vector<std::shared_ptr<Matrix>>& D, std::vecto
                     double dist_decay = 1.0 / std::max(1.0, dist_NUTAU_g);
 
                     // can we screen this single point over K_uv = (X_ug (A_vtg (F_tg))) upper bound?
-                    k_bound = X_block_bfmaxp[g] * esp_boundp[NU][TAU] * dist_decay * F_block_shellp[g][TAU];
-                    if (symm) k_bound = std::max(k_bound, X_block_bfmaxp[g] * esp_boundp[TAU][NU] * dist_decay * F_block_shellp[g][NU]);
-                    if (k_bound < kscreen_) continue;
+                    if (!shell_significant(NU, TAU, g, symm, X_block_bfmax, esp_boundp, F_block_shellp, dist_decay)) continue;
 
                     // calculate pseudospectral integral shell pair (A_NU_TAU) at gridpoint g
                     int_computers[rank]->set_origin({x[g], y[g], z[g]});
