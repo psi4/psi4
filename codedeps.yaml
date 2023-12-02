@@ -1280,8 +1280,8 @@ data:
       host: github
       account: MolSSI
       name: QCFractal
-      commit: 23b51cb
-      commit_note: "Includes snowflake fix post v0.51."
+      commit: 1ca10b9
+      commit_note: "Includes snowflake fix at v0.52."
     cmake: null
     #  constraint: ">=0.51"
     conda:
