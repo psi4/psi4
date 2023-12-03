@@ -945,7 +945,7 @@ data:
       commit: 6.2.2
     #cmake:
     #  name: Libxc
-    #  constraint: 5.1.2  # two calls: catch v5, v6
+    #  constraint: 6.0.0
     #  target: Libxc::xc
       components:
         - C

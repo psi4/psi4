@@ -253,6 +253,7 @@ integrated_basis_methods = [
     'pbeh3c', 'pbeh-3c',
     'rscan3c', 'r2scan-3c',
     'b973c', 'b97-3c',
+    'wb97x3c', 'wb97x-3c',
     'sns-mp2',
 ]
 

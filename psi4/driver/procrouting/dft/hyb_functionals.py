@@ -162,6 +162,30 @@ funcs.append({
 })
 
 funcs.append({
+    "name": "wB97X3c",
+    "alias": ["wB97X-3C"],
+    "xc_functionals": {
+        "HYB_GGA_XC_WB97X_V": {}
+    },
+    "dispersion": {
+        "type": "d4bjeeqatm",
+        "nlc": False,
+        "params": {
+            'a1': 0.2464,
+            'a2': 4.737,
+            's6': 1.000,
+            's8': 0.000,
+            's9': 1.000,
+        },
+    },
+    "description":
+    '    wB97X basied 3C composite method with a small basis set, gCP and D4\n',
+    "citation":
+    '    M. Muller, A. Hansen, S. Grimme, J. Chem. Phys. 158, 014103 (2023)\n',
+    "doi": "10.1063/5.0133026",
+})
+
+funcs.append({
     "name": "SOGGA11-X",
     "alias": ["SOGGA11X"],
     "x_functionals": {
@@ -601,54 +625,6 @@ funcs.append({
     "description": '    Revised SCAN0 Hybrid Meta-GGA XC Functional\n',
     "citation": '    P. D. Mezei, G. I. Csonka, M. Kallay J. Chem. Theory Comput. 14, 2469, 2018\n',
     "doi": "10.1021/acs.jctc.8b00072",
-})
-
-funcs.append({
-    "name": "R2SCAN0",
-    "x_functionals": {
-        "MGGA_X_R2SCAN": {"alpha": 0.75}
-    },
-    "c_functionals": {
-        "MGGA_C_R2SCAN": {}
-    },
-    "x_hf": {
-        "alpha": 0.25
-    },
-    "description": '    r2SCAN0 Hybrid Meta-GGA XC Functional\n',
-    "citation": '    M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
-    "doi": "10.1063/5.0086040",
-})
-
-funcs.append({
-    "name": "R2SCANh",
-    "x_functionals": {
-        "MGGA_X_R2SCAN": {"alpha": 0.90}
-    },
-    "c_functionals": {
-        "MGGA_C_R2SCAN": {}
-    },
-    "x_hf": {
-        "alpha": 0.10
-    },
-    "description": '    r2SCANh Hybrid Meta-GGA XC Functional\n',
-    "citation": '    M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
-    "doi": "10.1063/5.0086040",
-})
-
-funcs.append({
-    "name": "R2SCAN50",
-    "x_functionals": {
-        "MGGA_X_R2SCAN": {"alpha": 0.50}
-    },
-    "c_functionals": {
-        "MGGA_C_R2SCAN": {}
-    },
-    "x_hf": {
-        "alpha": 0.50
-    },
-    "description": '    r2SCAN50 Hybrid Meta-GGA XC Functional\n',
-    "citation": '    M. Bursch, H. Neugebauer, S. Ehlert, S. Grimme  J. Chem. Phys. 156, 134105, 2022   \n',
-    "doi": "10.1063/5.0086040",
 })
 
 funcs.append({
