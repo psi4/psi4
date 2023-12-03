@@ -74,7 +74,7 @@ def oeprop(wfn: core.Wavefunction, *args: List[str], **kwargs):
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])
     for prop in args:
-        oe.add(prop)
+        oe.add(prop.upper())
 
         # If we're doing MBIS, we want the free-atom volumes
         # in order to compute volume ratios,

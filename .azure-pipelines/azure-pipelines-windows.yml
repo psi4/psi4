@@ -125,6 +125,7 @@ jobs:
       - script: |
           conda install cmake ^
                         anaconda-project ^
+                        anaconda-client ^
                         conda-build ^
                         m2-sed ^
                         eigen ^
@@ -152,11 +153,11 @@ jobs:
                         pydantic=1.10.13 ^
                         optking ^
                         scipy
-          conda install --only-deps anaconda-client
-          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
           which anaconda
           conda list
         displayName: "Install conda packages"
+          #conda install --only-deps anaconda-client
+          #pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent-110
 
       # Install LLVM
       # Note: LLVM distributed by conda is too old

@@ -30,10 +30,7 @@
 #define _psi_src_lib_libmints_nabla_h_
 
 #include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
-PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
 
 namespace psi {
