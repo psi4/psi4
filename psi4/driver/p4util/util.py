@@ -349,6 +349,42 @@ def libint2_configuration() -> Dict[str, List[int]]:
         `{'eri': [5, 4, 3], 'eri2': [6, 5, 4], 'eri3': [6, 5, 4], 'onebody': [6, 5, 4]}`
 
     """
+    if "eri_c4_d0_l2" in core._libint2_configuration():
+        return _l2_config_style_eri_c4()
+    elif "eri_dddd_d0" in core._libint2_configuration():
+        return _l2_config_style_eri_llll()
+
+
+def _l2_config_style_eri_llll():
+    skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
+    skel_re = {"onebody_": "onebody_\w_d\d", "eri_c4_": "eri_\w..._d\d", "eri_c3_":  "eri_\w.._d\d", "eri_c2_": "eri_\w._d\d"}
+
+    amstr = "SPDFGHIKLMNOPQRTUVWXYZ"
+    libint2_configuration = core._libint2_configuration()
+
+    for k, v in skel_re.items():
+        t = re.findall(v, libint2_configuration)
+        skel[k] = t
+
+    for cat in list(skel.keys()):
+        der_max_store = []
+        for der in ["d0", "d1", "d2"]:
+            lmax = -1
+            for itm2 in skel[cat]:
+                if itm2.endswith(der):
+                    lmax = max(amstr.index(itm2[-4].upper()), lmax)
+            der_max_store.append(None if lmax == -1 else lmax)
+        skel[cat] = der_max_store
+
+    # rename keys from components
+    skel["onebody"] = skel.pop("onebody_")
+    skel["eri"] = skel.pop("eri_c4_")
+    skel["eri3"] = skel.pop("eri_c3_")
+    skel["eri2"] = skel.pop("eri_c2_")
+    return skel
+
+
+def _l2_config_style_eri_c4():
     skel = {"onebody_": [], "eri_c4_": [], "eri_c3_": [], "eri_c2_": []}
 
     for itm in core._libint2_configuration().split(";"):

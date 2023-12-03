@@ -111,6 +111,7 @@ jobs:
       - script: |
           conda config --set always_yes yes
           conda config --add channels conda-forge/label/libint_dev
+          conda config --add channels psi4/label/testing
           conda config --set channel_priority strict
           conda config --set solver libmamba
           conda install conda=23.10 -n base -c conda-forge
@@ -146,7 +147,7 @@ jobs:
                         gcp-correction ^
                         gau2grid ^
                         libxc-c ^
-                        libint=2.7.3dev1 ^
+                        libint=2.8.0dev2 ^
                         qcelemental ^
                         qcengine ^
                         pydantic=1.10.13 ^
