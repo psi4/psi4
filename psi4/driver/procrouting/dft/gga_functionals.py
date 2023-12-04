@@ -356,20 +356,7 @@ funcs.append({
     "name": "B973c",
     "alias": ["B97-3c"],
     "xc_functionals": {
-        # "GGA_XC_B97_3C": {} #for libxc >= v6.0
-        "GGA_XC_B97_D": {
-            "tweak": { # needed until libxc >= v6.0
-            "_cx0": 1.076616,
-            "_cx1":-0.469912,
-            "_cx2":3.322442,
-            "_css0":0.543788,
-            "_css1":-1.444420,
-            "_css2":1.637436,
-            "_cos0":0.635047,
-            "_cos1":5.532103,
-            "_cos2":-15.301575,
-            },
-        },
+        "GGA_XC_B97_3C": {}
     },
     "description": '    B97-3c GGA-based 3C composite method with a TZ basis set, D3 and short-range basis set correction.\n',
     "citation": '     J. G. Brandenburg, C.Bannwarth, A. Hansen, S. Grimme J. Chem. Phys. 148, 064104, 2018\n',
