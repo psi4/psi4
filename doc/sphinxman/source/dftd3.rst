@@ -93,6 +93,7 @@ Installation
 * There are two implementations of DFTD3; see :ref:`table:empdispimpl` . The newer
   "s-dftd3" one is preferred, while the older "classic" one will work for the immediate future.
   |PSIfour| will automatically select whichever is available.
+  Starting with v1.9, only "s-dftd3" is supported, though the "classic" continues to work for many applications.
 
 * DFTD3 is available as a conda package for Linux and macOS and Windows.
 
@@ -222,6 +223,7 @@ available only through the ``DFTD3`` or ``DFTD4`` programs. Once installed, the
 ``dftd3``/|PSIfour| and ``dftd4``/|PSIfour| interfaces are transparent, and all corrections are
 interfaced exactly alike.
 The -D3 interface can use classic or simple-dftd3 programs interchangeably and will prefer the latter.
+Starting in v1.9, the classic program is no longer supported or tested, though it won't be deliberately disabled.
 
 Despite different defaults in these programs when run independently,
 when run through |PSIfour| as EmpiricalDispersion engine, each should

@@ -731,4 +731,13 @@ Bibliography
    *J. Chem. Phys.* **148**, 064104, (2018).
    https://doi.org/10.1063/1.5012601
 
+.. [Muller:2023:014103]
+   M. M\ |u_dots|\ ller and A. Hansen and S. Grimme
+   *J. Chem. Phys.* **158**, 014103 (2023).
+   https://doi.org/10.1063/5.0133026
+
+.. [Grimme:2021:064103]
+   S. Grimme and A. Hansen and S. Ehlert and J.-M. Mewes
+   *J. Chem. Phys.* **154**, 064103 (2021).
+   https://doi.org/10.1063/5.0040021
 

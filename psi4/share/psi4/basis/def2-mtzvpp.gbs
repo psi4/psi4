@@ -3,7 +3,7 @@ spherical
 
 ! def2-mTZVPP basis set made for r2scan-3c; elements H-Rn
 ! exported from ORCA; converted to Gaussian fmt by MolSSI BSE tool. ECPs copied over from def2-TZVP.gbs
-! r2SCAN-3c: A “Swiss army knife” composite electronic-structure method featured
+! r2SCAN-3c: A "Swiss army knife" composite electronic-structure method featured
 ! J. Chem. Phys. 154, 064103 (2021); https://doi.org/10.1063/5.0040021
 
 H     0

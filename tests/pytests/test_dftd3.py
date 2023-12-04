@@ -124,12 +124,12 @@ s16_r2scan50_psi4 = np.array([-155.6575747, -78.4586347, -77.1962996])
     pytest.param("b97-3c/", s16_b973c_final_orca, marks=[*using("dftd3"), *using("mctc-gcp")]),  # def2-mTZVP
     pytest.param("r2scan0/def2-svp", s16_r2scan0_psi4),
     pytest.param("r2scanh/def2-svp", s16_r2scanh_psi4),
-    pytest.param("r2scan50-d4/def2-svp", s16_r2scan50_psi4 + s16_r2scan50_dftd4),
+    pytest.param("r2scan50-d4/def2-svp", s16_r2scan50_psi4 + s16_r2scan50_dftd4, marks=using("dftd4")),
     pytest.param("r2scan50/def2-svp", s16_r2scan50_psi4),
-    pytest.param("r2scan-d4/def2-mTZVPP", s16_r2scan_final_orca + s16_r2scan_dftd4),
+    pytest.param("r2scan-d4/def2-mTZVPP", s16_r2scan_final_orca + s16_r2scan_dftd4, marks=using("dftd4")),
     pytest.param("r2scan/def2-mTZVPP", s16_r2scan_final_orca),
     pytest.param("r2scan-3c/", s16_r2scan_final_orca + s16_r2scan3c_dftd4 + s16_r2scan3c_mctcgcp, marks=[*using("dftd4"), *using("mctc-gcp")]),  # def2-mTZVPP
-    pytest.param("wb97x-3c/", s16_wb97x3c_xc_orca + s16_wb97x3c_dftd4, marks=using("dftd4")),  # vDZP using d4, not gcp
+    pytest.param("wb97x-3c/", s16_wb97x3c_xc_orca + s16_wb97x3c_dftd4, marks=using("dftd4")),  # vDZP
 ])
 def test_grimme_3c(mtdbas, ref, mode):
 
