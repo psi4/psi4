@@ -79,15 +79,65 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
       [&](std::string composite_algo) { return jk_type.find(composite_algo) != std::string::npos; }
     );
 
+    // exit calculation if density screening is selected for incompatible JK algo
     bool do_density_screen = options.get_str("SCREENING") == "DENSITY";
-    bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS");
-    
-    bool can_do_density_screen = (jk_type == "DIRECT" || jk_type == "DFDIRJ+LINK" || jk_type == "DFDIRJ");
 
-    if (do_density_screen && !(can_do_density_screen || do_df_scf_guess)) {
-        throw PSIEXCEPTION("Density screening has not been implemented for non-Direct SCF algorithms.");
+    std::array<std::string, 3> can_do_density_screen = { "DIRECT", "DFDIRJ+LINK", "DFDIRJ" };
+    bool is_compatible_density_screen = std::any_of(
+        can_do_density_screen.cbegin(),
+        can_do_density_screen.cend(),
+        [&](std::string jk_algo) { return jk_type == jk_algo; }
+    ); 
+
+    std::array<std::string, 3> can_be_in_df_scf_guess = { "DIRECT", "MEM_DF", "DISK_DF" };
+    bool is_in_df_scf_guess = std::any_of(
+        can_be_in_df_scf_guess.cbegin(),
+        can_be_in_df_scf_guess.cend(),
+        [&](std::string jk_algo) { return jk_type == jk_algo; }
+    ); 
+    bool do_df_scf_guess = options.get_bool("DF_SCF_GUESS") && is_in_df_scf_guess;
+
+    bool is_incompatible_density_screen = !(is_compatible_density_screen || do_df_scf_guess);
+    
+    if (do_density_screen && is_incompatible_density_screen) {
+        std::string error_message = "SCREENING=DENSITY has not been implemented for ";
+        error_message += (do_df_scf_guess) ? "DF_SCF_GUESS" : jk_type;
+        error_message += ".";
+   
+        throw PSIEXCEPTION(error_message);
+    }
+    
+    // exit calculation if no screening is selected for incompatible JK algo
+    bool do_no_screen = options.get_str("SCREENING") == "NONE";
+    
+    std::array<std::string, 3> cant_do_no_screen = { "PK", "DISK_DF", "DIRECT" };
+    bool is_incompatible_no_screen = std::any_of(
+        cant_do_no_screen.cbegin(),
+        cant_do_no_screen.cend(),
+        [&](std::string jk_algo) { return jk_type == jk_algo; }
+    ); 
+    is_incompatible_no_screen |= is_composite; 
+    
+    if (do_no_screen && is_incompatible_no_screen) {
+        std::string error_message = "SCREENING=NONE has not been implemented for ";
+        error_message += jk_type;
+        error_message += ".";
+ 
+        throw PSIEXCEPTION(error_message);
     }
 
+    // exit calculation for other incompatible JK + SCREENING combos 
+    std::string screening_type = options.get_str("SCREENING");
+    if (jk_type == "DFDIRJ+LINK" && ((screening_type == "SCHWARZ") || screening_type == "CSAM" )) {
+        std::string error_message = "SCREENING=";
+        error_message += screening_type;
+        error_message += " has not been implemented for ";
+        error_message += jk_type;
+        error_message += ".";
+ 
+        throw PSIEXCEPTION(error_message);
+    }
+   
     // Throw small DF warning
     if (jk_type == "DF") {
         outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
