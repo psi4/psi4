@@ -1,0 +1,46 @@
+#! External potential calculation involving a TIP3P water and a QM water.
+#! Gradient on the external charges is compared to gradient on the QM atoms to validate the gradient on the charges.
+
+molecule water {
+  0 1
+  O  -0.778803000000  0.000000000000  1.132683000000
+  H  -0.666682000000  0.764099000000  1.706291000000
+  H  -0.666682000000  -0.764099000000  1.706290000000
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+# Define a TIP3P water as the external potential
+import numpy as np
+external_potentials = np.array([
+-0.834,1.649232019048,0.0,-2.356023604706,
+0.417,0.544757019107,0.0,-3.799961446760,
+0.417,0.544757019107,0.0,-0.912085762652]).reshape((-1, 4))
+# convert coordinates columns to bohr
+external_potentials[:,[1,2,3]] /= psi_bohr2angstroms
+
+set {
+    scf_type df
+    d_convergence 12
+    basis 6-31G*
+}
+
+# Calculate the total gradient on the wavefunction in the presence of the external potential charges.
+e_total, wfn = energy('scf', molecule=water, return_wfn=True, external_potentials=external_potentials)
+grad_total = np.asarray(gradient('scf', ref_wfn=wfn))
+
+# Get the gradient on the external potential charges from the QM-point charge interaction.
+extern = wfn.external_pot()
+grad_on_charges = np.asarray(extern.gradient_on_charges())
+
+# Calculate the total gradient of the same wavefunction with no external potential charges.
+wfn.set_external_potential(None)
+grad_no_extern = np.asarray(gradient("scf", ref_wfn=wfn))
+
+# The gradient on the atoms from the QM-point charge interaction is this difference.
+grad_on_atoms = grad_total - grad_no_extern
+
+net_force_on_atoms = Vector.from_array(-np.sum(grad_on_atoms, axis=0))
+net_grad_on_charges = Vector.from_array(np.sum(grad_on_charges, axis=0))
+
