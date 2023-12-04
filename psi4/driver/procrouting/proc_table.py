@@ -251,8 +251,8 @@ integrated_basis_methods = [
     'g2', 'gaussian-2',
     'hf3c', 'hf-3c',
     'pbeh3c', 'pbeh-3c',
-    'rscan3c', 'r2scan-3c',
     'b973c', 'b97-3c',
+    'r2scan3c', 'r2scan-3c',
     'wb97x3c', 'wb97x-3c',
     'sns-mp2',
 ]

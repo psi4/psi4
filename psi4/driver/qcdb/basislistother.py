@@ -202,7 +202,6 @@ def load_basfam_other():
     basis_def2qzvpp = BasisFamily('def2-QZVPP', zeta=4)
     basis_def2qzvppd = BasisFamily('def2-QZVPPD', zeta=4)
 
-
     basis_def2sv_p_.add_jfit('def2-universal-JFIT')
     basis_def2msvp.add_jfit('def2-universal-JFIT')
     basis_def2svp.add_jfit('def2-universal-JFIT')
@@ -218,7 +217,6 @@ def load_basfam_other():
     basis_def2qzvpp.add_jfit('def2-universal-JFIT')
     basis_def2qzvppd.add_jfit('def2-universal-JFIT')
 
-
     basis_def2sv_p_.add_jkfit('def2-universal-JKFIT')
     basis_def2msvp.add_jkfit('def2-universal-JKFIT')
     basis_def2svp.add_jkfit('def2-universal-JKFIT')
@@ -233,7 +231,6 @@ def load_basfam_other():
     basis_def2qzvpd.add_jkfit('def2-universal-JKFIT')
     basis_def2qzvpp.add_jkfit('def2-universal-JKFIT')
     basis_def2qzvppd.add_jkfit('def2-universal-JKFIT')
-
 
     basis_def2sv_p_.add_rifit('def2-SV(P)-RI')
     basis_def2msvp.add_rifit('def2-SVP-RI')
@@ -405,16 +402,22 @@ def load_basfam_other():
     basisfamily_list.append(basis_pcsseg3)
     basisfamily_list.append(basis_pcsseg4)
 
-    # Minix
+    # Minix, vDZP
     basis_minix = BasisFamily('minix', zeta=2)
-    
+    basis_vdzp = BasisFamily('vDZP', zeta=2)
+
     basis_minix.add_jfit('def2-universal-JFIT')
+    basis_vdzp.add_jfit('def2-universal-JFIT')
     basis_minix.add_jkfit('def2-universal-JKFIT')
+    basis_vdzp.add_jkfit('def2-universal-JKFIT')
     basis_minix.add_rifit('def2-SVP-RI')
-    # mixix too small for add_guess
-    
+    basis_vdzp.add_rifit('def2-SVP-RI')
+    # minix too small for add_guess
+    # vDZP too small for add_guess
+
     basisfamily_list.append(basis_minix)
-    
+    basisfamily_list.append(basis_vdzp)
+
     # Others
     basis_dz = BasisFamily('DZ')
     basis_dzp = BasisFamily('DZP')
