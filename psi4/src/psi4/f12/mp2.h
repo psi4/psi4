@@ -126,40 +126,49 @@ class MP2F12 : public Wavefunction {
     /* Form the F12/3C(FIX) correlation energy */
     virtual void form_f12_energy(einsums::Tensor<double,4> *V, einsums::Tensor<double,4> *X,
                                  einsums::Tensor<double,4> *C, einsums::Tensor<double,4> *B,
-                                 einsums::Tensor<double,2> *f, einsums::Tensor<double,4> G_,
+                                 einsums::Tensor<double,2> *f, einsums::Tensor<double,4> *G_,
                                  einsums::Tensor<double,4> *D);
    
     /* Form the one-electron integrals H = T + V */
     virtual void form_oeints(einsums::Tensor<double, 2> *h);
 
     /* Form the convetional two-electron integrals */
-    virtual void form_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI);
+    virtual void form_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI,
+                             std::vector<char> order);
     
     /* Form the density-fitted two-electron integrals */
     virtual void form_df_teints(const std::string& int_type, einsums::Tensor<double, 4> *ERI,
-                                einsums::Tensor<double, 3> *Metric);
+                                einsums::Tensor<double, 3> *J_inv_AB, std::vector<char> order);
     
     /* Form the Fock matrix */
     virtual void form_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k,
-                   einsums::Tensor<double, 2> *fk, einsums::Tensor<double, 2> *h);
+                           einsums::Tensor<double, 2> *h);
 
-    /* Form the DF Fock matrix */
+    /* Form the density-fitted Fock matrix */
     virtual void form_df_fock(einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *k, 
-                      einsums::Tensor<double, 2> *fk, einsums::Tensor<double, 2> *h);
+                              einsums::Tensor<double, 2> *h);
 
     /* Form the $V^{ij}_{kl}$ or $X^{ij}_{kl}$ tensor */
-    virtual void form_V_or_X(einsums::Tensor<double, 4> *VX, einsums::Tensor<double, 4> *F,
-                           einsums::Tensor<double, 4> *G_F, einsums::Tensor<double, 4> *FG_F2);
+    virtual void form_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X);
+
+    /* Form the density-fitted $V^{ij}_{kl}$ or $X^{ij}_{kl}$ tensor */
+    virtual void form_df_V_X(einsums::Tensor<double, 4> *V, einsums::Tensor<double, 4> *X,
+                             einsums::Tensor<double, 3> *J_inv_AB);
     
     /* Form the $C^{kl}_{ab}$ tensor */
-    virtual void form_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 4> *F,
-                einsums::Tensor<double, 2> *f);
+    virtual void form_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f);
+
+    /* Form the density-fitted $C^{kl}_{ab}$ tensor */
+    virtual void form_df_C(einsums::Tensor<double, 4> *C, einsums::Tensor<double, 2> *f,
+                           einsums::Tensor<double, 3> *J_inv_AB);
     
     /* Form the $B^{kl}_{mn}$ tensor */
-    virtual void form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 4> *Uf,
-                        einsums::Tensor<double, 4> *F2, einsums::Tensor<double, 4> *F,
-                        einsums::Tensor<double, 2> *f, einsums::Tensor<double, 2> *fk,
-                        einsums::Tensor<double, 2> *kk);
+    virtual void form_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f,
+                        einsums::Tensor<double, 2> *k);
+
+    /* Form the density-fitted $B^{kl}_{mn}$ tensor */
+    virtual void form_df_B(einsums::Tensor<double, 4> *B, einsums::Tensor<double, 2> *f,
+                           einsums::Tensor<double, 2> *k, einsums::Tensor<double, 3> *J_inv_AB);
 
     void print_results();
 
@@ -240,7 +249,7 @@ class DiskMP2F12 : public MP2F12 {
                       einsums::DiskTensor<double, 2> *fk, einsums::DiskTensor<double, 2> *h);
 
     /* Form the $V^{ij}_{kl}$ or $X^{ij}_{kl}$ tensor */
-    void form_V_or_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTensor<double, 4> *F,
+    void form_V_X(einsums::DiskTensor<double, 4> *VX, einsums::DiskTensor<double, 4> *F,
                      einsums::DiskTensor<double, 4> *G_F, einsums::DiskTensor<double, 4> *FG_F2);
 
     /* Form the $C^{kl}_{ab}$ tensor */
