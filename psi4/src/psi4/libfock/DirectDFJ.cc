@@ -85,6 +85,7 @@ void DirectDFJ::print_header() const {
     }
 }
 
+// perform screening of contributions to the gamma_P intermediate
 bool DirectDFJ::shell_significant(int M, int N, int P, 
     const std::shared_ptr<TwoBodyAOInt> eri_computer,
     double** matrixp, const std::vector<double>& J_metric_shell_diag) 
@@ -93,6 +94,7 @@ bool DirectDFJ::shell_significant(int M, int N, int P,
     return matrixp[M][N] * matrixp[M][N] * J_metric_shell_diag[P] * eri_computer->shell_pair_value(M,N) >= thresh2;
 }
 
+// perform screening of contributions to the J matrix 
 bool DirectDFJ::shell_significant(int M, int N, int P, 
     const std::shared_ptr<TwoBodyAOInt> eri_computer,
     double* vectorp, const std::vector<double>& J_metric_shell_diag) 

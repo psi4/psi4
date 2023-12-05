@@ -161,6 +161,20 @@ class PSI_API DirectDFJ : public SplitJK {
     /// Coulomb Metric
     SharedMatrix J_metric_;
 
+    /**
+     * Screen ERI contributions during formation of the gamma_P intermediate
+     */
+    bool shell_significant(int M, int N, int P,
+        const std::shared_ptr<TwoBodyAOInt> eri_computer, 
+        double** matrixp, const std::vector<double>& J_metric_shell_diag);
+
+    /**
+     * Screen ERI contributions during formation of J 
+     */
+    bool shell_significant(int M, int N, int P,
+        const std::shared_ptr<TwoBodyAOInt> eri_computer, 
+        double* vectorp, const std::vector<double>& J_metric_shell_diag);
+
    public:
     // => Constructors < = //
 
@@ -190,14 +204,6 @@ class PSI_API DirectDFJ : public SplitJK {
     * Return number of ERI shell quartets computed during the SplitJK build process.
     */
     size_t num_computed_shells() override;
-
-    bool shell_significant(int M, int N, int P,
-        const std::shared_ptr<TwoBodyAOInt> eri_computer, 
-        double** matrixp, const std::vector<double>& J_metric_shell_diag);
-
-    bool shell_significant(int M, int N, int P,
-        const std::shared_ptr<TwoBodyAOInt> eri_computer, 
-        double* vectorp, const std::vector<double>& J_metric_shell_diag);
 
     /**
     * print name of method
