@@ -45,6 +45,8 @@ energy, wfn = energy('scf', return_wfn=True)
 gdma(wfn)
 dmavals = variable("DMA DISTRIBUTED MULTIPOLES")
 totvals = variable("DMA TOTAL MULTIPOLES")
+totvals_wfn = wfn.variable("DMA TOTAL MULTIPOLES")
 compare_values(ref_energy, energy, 8, "SCF Energy")                                                 #TEST
 compare_matrices(dmavals, ref_dma_mat, 6, "DMA Distributed Multipoles")                             #TEST
 compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")                                   #TEST
+compare_matrices(totvals_wfn, ref_tot_mat, 6, "DMA Total Multipoles (wfn)")                         #TEST

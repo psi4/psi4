@@ -286,7 +286,7 @@ data:
   - project: dftd3
     use:
       added: "1.0"
-      added_note: "Switched from classic dftd3 exe to py intf of simple-dftd3 (from dftd3-python) at 1.7. Classic still supported as of 1.8."
+      added_note: "Switched from classic dftd3 exe to py intf of simple-dftd3 (from dftd3-python) at 1.7. Classic tolerated but no longer supported as of 1.9."
       required: false
       buildable: false
       buildtime: false
@@ -712,7 +712,7 @@ data:
   - project: gcp
     use:
       added: 1.1
-      added_note: "Switched from classic gcp exe to mctc-gcp exe (from gcp-correction) at 1.7. Classic still supported as of 1.8."
+      added_note: "Switched from classic gcp exe to mctc-gcp exe (from gcp-correction) at 1.7. Classic tolerated but no longer supported as of 1.9. A few functionals require mctc."
       required: false
       buildable: false
       buildtime: false
@@ -1219,7 +1219,8 @@ data:
       host: github
       account: dftd4
       name: dftd4
-      commit: v3.5.0  # TODO will be needed for scan
+      commit: v3.5.0
+      commit_note: "v3.5.0 needed for r2scan3c"
     # - dftd4-python >=3.5.0                         # 3.5.0 provides b97-3c parameters
     #cmake:
     #  name:
@@ -1280,7 +1281,7 @@ data:
       host: github
       account: MolSSI
       name: QCFractal
-      commit: 1ca10b9
+      commit: v0.52
       commit_note: "Includes snowflake fix at v0.52."
     cmake: null
     #  constraint: ">=0.51"

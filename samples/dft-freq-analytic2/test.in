@@ -1,0 +1,25 @@
+#! Analytic UKS SVWN frequencies, compared to finite difference values
+
+molecule {
+    1 2
+    O            0.000000000000    -0.000000000000    -0.076528551557
+    H            0.000000000000    -0.769841603721     0.607281824213
+    H           -0.000000000000     0.769841603721     0.607281824213
+}
+
+set {
+  d_convergence 12
+  dft_spherical_points 302
+  dft_radial_points    75
+  scf_type pk
+  reference uks
+}
+
+method = 'SVWN/sto-3g'
+
+Efd, fdwfn = freq(method, dertype=1, return_wfn=True)
+Ean, anwfn = freq(method, return_wfn=True)
+fdwfn.frequencies().print_out()
+anwfn.frequencies().print_out()
+
+compare_arrays(fdwfn.frequencies(), anwfn.frequencies(), f"{method} frequencies, Analytic vs. Finite Difference", atol=0.1)  #TEST

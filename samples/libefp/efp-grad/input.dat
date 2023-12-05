@@ -64,5 +64,5 @@ set efp dertype first
 
 energy('efp')
 
-torq = get_array_variable("EFP TORQUE")  # replaces get_efp_torque()
+torq = variable("EFP TORQUE")  # replaces get_efp_torque()
 

@@ -17,7 +17,6 @@ set {
 }
 energy('scf')
 
-
 set guess gwh
 energy('scf')
 
@@ -30,7 +29,13 @@ energy('scf')
 set guess huckel
 energy('scf')
 
+set guess modhuckel
+energy('scf')
+
 set guess sap
+energy('scf')
+
+set guess sapgau
 energy('scf')
 
 molecule nocat {
@@ -59,7 +64,13 @@ energy('scf')
 set guess huckel
 energy('scf')
 
+set guess modhuckel
+energy('scf')
+
 set guess sap
+energy('scf')
+
+set guess sapgau
 energy('scf')
 
 
@@ -81,7 +92,13 @@ energy('scf')
 set guess huckel
 energy('scf')
 
+set guess modhuckel
+energy('scf')
+
 set guess sap
+energy('scf')
+
+set guess sapgau
 energy('scf')
 
 
@@ -103,5 +120,11 @@ energy('scf')
 set guess huckel
 energy('scf')
 
+set guess modhuckel
+energy('scf')
+
 set guess sap
+energy('scf')
+
+set guess sapgau
 energy('scf')
