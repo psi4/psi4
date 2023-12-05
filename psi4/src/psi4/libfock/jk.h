@@ -358,10 +358,10 @@ class PSI_API JK {
     virtual size_t num_computed_shells();
 
     /**
-    * Determine if shell quartet is significant or not 
-    * based on screening method used
-    * No significance testing is done unless a subclass overrides this method
-    */
+     * Determine if shell quartet is significant or not 
+     * based on screening method used
+     * No significance testing is done unless a subclass overrides this method
+     */
     virtual bool shell_significant(int M, int N, int R, int S, 
         const std::shared_ptr<TwoBodyAOInt> ints = nullptr, 
         const std::vector<SharedMatrix>& D = {}) {
@@ -699,9 +699,9 @@ class PSI_API PKJK : public JK {
     void common_init();
     
     /**
-    * Determine if shell quartet is significant or not 
-    * based on screening method used
-    */
+     * Determine if shell quartet is significant or not 
+     * based on screening method used
+     */
     bool shell_significant(int M, int N, int R, int S,
         const std::shared_ptr<TwoBodyAOInt> ints = nullptr, 
         const std::vector<SharedMatrix>& D = {}) override; 
@@ -812,14 +812,14 @@ class PSI_API DirectJK : public JK {
     void common_init();
 
     /**
-    * Return number of ERI shell quartets computed during the JK build process.
-    */
+     * Return number of ERI shell quartets computed during the JK build process.
+     */
     size_t num_computed_shells() override; 
 
     /**
-    * Determine if shell quartet is significant or not 
-    * based on screening method used
-    */
+     * Determine if shell quartet is significant or not 
+     * based on screening method used
+     */
     bool shell_significant(int M, int N, int R, int S, 
         const std::shared_ptr<TwoBodyAOInt> ints = nullptr, 
         const std::vector<SharedMatrix>& D = {}) override; 
@@ -1280,9 +1280,9 @@ class PSI_API CompositeJK : public JK {
     // => Required Algorithm-Specific Methods <= //
 
     /**
-    * Determine if shell quartet is significant or not 
-    * based on screening method used
-    */
+     * Determine if shell quartet is significant or not 
+     * based on screening method used
+     */
     bool shell_significant(int M, int N, int R, int S, 
         const std::shared_ptr<TwoBodyAOInt> ints = nullptr, 
         const std::vector<SharedMatrix>& D = {}) override; 
