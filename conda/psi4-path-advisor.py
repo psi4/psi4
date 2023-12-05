@@ -448,7 +448,9 @@ eval $(conda/psi4-path-advisor.py env)
 # (3) generate cmake cache file from conda env. "eval $(...)" configures and builds with cmake.
 eval $(conda/psi4-path-advisor.py cmake)
 
-shows up in p4dev
+# (4) next steps. repeat each login or add to shell's rc. your paths may vary.
+eval $(objdir_p4dev/stage/bin/psi4 --psiapi)
+export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files
 
 =========================================
   (B) flexible usage
@@ -473,6 +475,10 @@ conda/psi4-path-advisor.py cmake
 # (3.2) edit cache_p4dev310.cmake to customize build configuration.
 # (3.3) issue suggested or customized command to configure & build with cmake.
 cmake -S. -GNinja -C/home/psi4/cache_p4dev310.cmake -Bobjdir_p4dev310 -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 && cmake --build objdir_p4dev310
+
+# (4) next steps. repeat each login or add to shell's rc. your paths may vary.
+eval $(objdir_p4dev310/stage/bin/psi4 --psiapi)
+export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files
 """)
 
 parser.add_argument("-v", action="count", default=0,
