@@ -168,6 +168,10 @@ double TwoBodyAOInt::shell_pair_max_density(int M, int N) const {
 }
 
 double TwoBodyAOInt::shell_pair_max_density(int i, int M, int N) const {
+    if (max_dens_shell_pair_.empty()) {
+        throw PSIEXCEPTION("The density matrix has not been set in the TwoBodyAOInt class!");
+    }
+
     return max_dens_shell_pair_[i][M*nshell_ + N]; 
 };
 
