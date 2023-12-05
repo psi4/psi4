@@ -225,6 +225,13 @@ class PSI_API LinK : public SplitJK {
     // Density-based ERI Screening tolerance to use in the LinK algorithm
     double linK_ints_cutoff_;
 
+    /**
+    * Determine if shell quartet is significant or not 
+    * based on screening method used
+    */ 
+    bool shell_significant(int M, int N, int R, int S,
+        const std::shared_ptr<TwoBodyAOInt> eri_computers); 
+
    public:
     // => Constructors < = //
 
@@ -256,9 +263,6 @@ class PSI_API LinK : public SplitJK {
     * Return number of ERI shell quartets computed during the SplitJK build process.
     */
     size_t num_computed_shells() override;
-
-    bool shell_significant(int M, int N, int R, int S,
-        const std::shared_ptr<TwoBodyAOInt> eri_computers); 
 
     /**
     * print name of method
