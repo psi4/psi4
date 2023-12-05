@@ -92,6 +92,7 @@ void LinK::print_header() const {
     }
 }
 
+// Determine if shell quartet is significant or not based on screening method used
 bool LinK::shell_significant(int M, int N, int R, int S,
     const std::shared_ptr<TwoBodyAOInt> eri_computer) 
 {
