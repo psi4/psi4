@@ -122,6 +122,7 @@ void DirectJK::print_header() const {
     }
 }
 
+// Haser 1989 Equations 6 to 14
 bool DirectJK::shell_significant(int M, int N, int R, int S, 
     const std::shared_ptr<TwoBodyAOInt> ints, 
     const std::vector<SharedMatrix>& D) 

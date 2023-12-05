@@ -183,8 +183,8 @@ def test_schwarz_vs_csam_energy():
 
     assert compare_values(e_schwarz, e_csam, 11, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
 
-def test_schwarz_vs_density_quartets():
-    """Checks difference between the number of shell quartets computed with Schwarz and Density screening. 
+def test_schwarz_vs_density_quartets_direct():
+    """Checks difference between the number of shell quartets computed with Schwarz and Density screening for DirectJK. 
     Default threshhold of 1.0E-12 is used"""
 
     mol = psi4.geometry("""
@@ -240,6 +240,55 @@ def test_schwarz_vs_density_quartets():
     # actually compare results with expected values
     assert compare(schwarz_computed_shells_expected, schwarz_computed_shells, 'Schwarz Computed Shells Count, Cutoff 1.0e-12')
     assert compare(density_computed_shells_expected, density_computed_shells, 'Density Computed Shells Count, Cutoff 1.0e-12')
+
+def test_density_screening_link():
+    """Checks difference between the number of shell triplets+quartets computed with Density screening, and a reference value, for DFDirJ+LinK. 
+    Default threshhold of 1.0E-12 is used"""
+
+    mol = psi4.geometry("""
+        0 1
+        O  -1.551007  -0.114520   0.000000
+        H  -1.934259   0.762503   0.000000
+        H  -0.599677   0.040712   0.000000
+        O   1.350625   0.111469   0.000000
+        H   1.680398  -0.373741  -0.758561
+        H   1.680398  -0.373741   0.758561
+        symmetry c1
+        no_reorient
+        no_com
+    """)
+
+    # run schwarz screening calculation
+    psi4.set_options({ 
+        "scf_type": "dfdirj+link", 
+        "screening" : 'density', 
+        "df_scf_guess" : False,
+        "integral_package": 'libint2', 
+        "ints_tolerance" : 1e-12, 
+        "link_ints_tolerance" : 1e-12, 
+        "save_jk": True,
+        "bench" : 1 
+
+    })
+    density_energy, density_wfn = psi4.energy('hf/DZ', return_wfn=True)
+
+    # prep for comparing results to expected values
+    density_computed_triplets = density_wfn.jk().computed_shells_per_iter("Triplets") # shell triplets, from DFDirJ
+    density_computed_quartets = density_wfn.jk().computed_shells_per_iter("Quartets") # shell quartets, from LinK
+
+    # reference values, acquired from DFDirJ+LinK from Psi4 v1.8
+    density_computed_triplets_expected = [17680, 29433, 29488, 29480, 29482, 29482, 29482, 29482, 29482]
+    density_computed_quartets_expected = [8019, 19341, 19366, 19371, 19371, 19371, 19371, 19371, 19371]    
+
+    # compare iteration counts of runs with computed shell quartet array lengths
+    # iteration_+1 is used to account for computed_shells arrays including SAD guess results
+    assert(len(density_computed_triplets_expected) == density_wfn.iteration_+1)
+    assert(len(density_computed_quartets_expected) == density_wfn.iteration_+1)
+
+    # actually compare results with expected values
+    assert compare(density_computed_triplets_expected, density_computed_triplets, 'DFDirJ+LinK Computed Shell Triplets Count, Cutoff 1.0e-12')
+    assert compare(density_computed_quartets_expected, density_computed_quartets, 'DFDirJ+LinK Computed Shell Quartets Count, Cutoff 1.0e-12')
+
 
 def test_rhf_vs_uhf_screening():
     """Checks difference between the number of shell quartets screened with Density screening in RHF vs UHF. 
@@ -373,4 +422,5 @@ def test_schwarz_vs_none_energy():
     e_none = psi4.energy('hf/DZ')
 
     assert compare_values(e_schwarz, e_none, 11, 'Schwarz vs None Screening, Cutoff 1.0e-12')
+
 
