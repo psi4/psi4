@@ -317,6 +317,7 @@ void COSK::print_header() const {
     }
 }
 
+// Determine significance of shell pair over block of grid points 
 bool COSK::shell_significant_block(int NU, int TAU, bool symm,
     double X_block_max, double** esp_boundp,
     double* F_block_gmaxp) {
@@ -326,6 +327,7 @@ bool COSK::shell_significant_block(int NU, int TAU, bool symm,
     return k_bound >= kscreen_;
 }
 
+// Determine significance of shell pair over single grid point 
 bool COSK::shell_significant(int NU, int TAU, int g, bool symm,
     psi::Vector X_block_bfmaxp, double** esp_boundp,
     double** F_block_shellp, double dist_decay) {
