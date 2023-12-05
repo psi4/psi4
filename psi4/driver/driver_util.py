@@ -261,6 +261,8 @@ def _alternative_methods_message(method_name: str, dertype: str, *, messages: Di
         stats = messages[0]
         conditions2 = [stats[k][1] for k in ["method_type", "reference", "fcae", "qc_module"]]
         return f"Method={stats['method']} is not available for {dertype} derivative level under conditions {', '.join(conditions2)}. See {stats['link']}.{alternatives}"
+    elif "-d" in method_name or "3c" in method_name:
+        return f"""Method={method_name} is not available for {dertype} derivative level. Some methods need dftd4-python>=3.5.0 and gcp-correction installed. Please `conda install "dftd4-python>=3.5" gcp-correction -c conda-forge` .{alternatives}"""
     else:
         return f"Method={method_name} is not available for {dertype} derivative level.{alternatives}"
 

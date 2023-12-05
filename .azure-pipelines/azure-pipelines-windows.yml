@@ -275,6 +275,7 @@ jobs:
       # Build package
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
+          conda config --set channel_priority flexible
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniforge3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)

@@ -82,7 +82,7 @@ def _capable_engines_for_disp()-> Dict[str, List[str]]:
         for disp in disps:
             capable[disp].append(eng)
     for disp, engines in capable.items():
-        capable_sorted_by_available[disp] = sorted(engines, key=lambda x: (not programs_disp[x], x))
+        capable_sorted_by_available[disp] = sorted(engines, key=lambda x: programs_disp[x], reverse=True)
 
     return capable_sorted_by_available
 
@@ -278,7 +278,7 @@ class EmpiricalDispersion():
                     wfn.set_variable("PAIRWISE DISPERSION CORRECTION ANALYSIS",
                                      jobrec.extras['qcvars']["2-BODY PAIRWISE DISPERSION CORRECTION ANALYSIS"])
 
-            if self.fctldash in ['hf3c', 'pbeh3c']:
+            if self.fctldash in ['hf3c', 'pbeh3c', 'r2scan3c', 'b973c']:
                 jobrec = qcng.compute(
                     resi,
                     self.gcp_engine,
@@ -344,7 +344,7 @@ class EmpiricalDispersion():
                     if "CURRENT" not in k:
                         wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
 
-            if self.fctldash in ['hf3c', 'pbeh3c']:
+            if self.fctldash in ['hf3c', 'pbeh3c', 'r2scan3c', 'b973c']:
                 jobrec = qcng.compute(
                     resi,
                     self.gcp_engine,

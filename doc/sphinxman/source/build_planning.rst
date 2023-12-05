@@ -37,7 +37,9 @@ Compiling and Installing from Source
 .. warning:: As of v1.8, primary binary distribution has moved from
    the psi4 channel to the conda-forge channel. Neither install docs
    for users nor compile docs for developers have been updated yet to
-   reflect new patterns. Please consult :psicode:`psicode downloads
+   reflect new patterns. Please consult :source:`conda/psi4-path-advisor.py`
+   (extensive help menu at ``conda/psi4-path-advisor.py -h``)
+   or :psicode:`psicode downloads
    page <installs/latest/>` for the latest guides.
 
 This section fulfills the duty of every Linux project to have an INSTALL

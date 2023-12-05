@@ -1,0 +1,37 @@
+# Any line starting with the # character is a comment line
+#! Sample B97-3c H2O computation
+
+memory 600 mb
+
+molecule h2o {
+  O
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+b973c_biggrid_e = -76.39769005
+b973c_biggrid_g = [
+ [ 0.,          0.       ,   0.00401722],
+ [ 0.,          0.0010378,  -0.00200861],
+ [ 0.,         -0.0010378,  -0.00200861]]
+
+
+set e_convergence 8
+set dft_radial_points 99
+set dft_spherical_points 590
+set basis cc-pVDZ
+
+ene = energy('b973c/')  # slash unsets basis from above
+compare_values(b973c_biggrid_e, variable('SCF TOTAL ENERGY'), 6, 'b97-3c ene')  #TEST
+compare_values(b973c_biggrid_e, ene, 6, 'b97-3c ene')  #TEST
+
+#fd = gradient('b97-3c/', dertype=0)
+#compare_values(b973c_biggrid_e, variable('current energy'), 6, "b97-3c ene")  #TEST
+#compare_values(b973c_biggrid_g, fd, 6, "b97-3c grad findif")  #TEST
+#print(fd.np)
+
+grd = gradient('b97-3c/', dertype=1)
+compare_values(b973c_biggrid_e, variable('current energy'), 6, "b97-3c ene")  #TEST
+compare_values(b973c_biggrid_g, grd, 5, "b97-3c grad analytic")  #TEST
+print(grd.np)
+

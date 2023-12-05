@@ -41,7 +41,7 @@ jobs:
 
   pool:
     vmImage: $(vmImage)
-  
+
   steps:
   - bash: |
       [[ "${APT_REPOSITORY}" ]] && echo "Add Repo ${APT_REPOSITORY}" && sudo add-apt-repository "${APT_REPOSITORY}"
@@ -99,7 +99,6 @@ jobs:
         echo "  - psi4::gcp" >> env_p4env.yaml
         echo "  - psi4::dftd3" >> env_p4env.yaml
       fi
-      sed -i "s;- libxc-c;- psi4::libxc=5;g" env_p4env.yaml
       sed -i "s;- conda-forge/label/libint_dev;#- conda-forge/label/libint_dev;g" env_p4env.yaml
       sed -i "s;#- psi4/label/testing::libint2;- psi4/label/testing::libint=2.8.0dev2;g" env_p4env.yaml
       echo "\n<<<  env_p4env.yaml  >>>\n"
@@ -158,3 +157,5 @@ jobs:
       source activate p4env
       PYTHONPATH=stage/lib/ pytest -v -rws --durations=15 --durations-min=40 --strict-markers --color yes -n 2 -m "$PYTEST_MARKER_EXPR" stage/lib/psi4/tests/
     displayName: 'PyTest Tests'
+
+# setuptools v66 (vendors packaging v23) incompatible with arb. tarballs. thinks the branch names are versions
