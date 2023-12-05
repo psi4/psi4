@@ -289,6 +289,53 @@ def test_density_screening_link():
     assert compare(density_computed_triplets_expected, density_computed_triplets, 'DFDirJ+LinK Computed Shell Triplets Count, Cutoff 1.0e-12')
     assert compare(density_computed_quartets_expected, density_computed_quartets, 'DFDirJ+LinK Computed Shell Quartets Count, Cutoff 1.0e-12')
 
+def test_schwarz_screening_cosx():
+    """Checks difference between the number of shell triplets+quartets computed with Schwarz screening, and a reference value, for DFDirJ+COSX. 
+    Default threshhold of 1.0E-12 is used"""
+
+    mol = psi4.geometry("""
+        0 1
+        O  -1.551007  -0.114520   0.000000
+        H  -1.934259   0.762503   0.000000
+        H  -0.599677   0.040712   0.000000
+        O   1.350625   0.111469   0.000000
+        H   1.680398  -0.373741  -0.758561
+        H   1.680398  -0.373741   0.758561
+        symmetry c1
+        no_reorient
+        no_com
+    """)
+
+    # run schwarz screening calculation
+    psi4.set_options({ 
+        "scf_type": "dfdirj+cosx", 
+        "screening" : 'schwarz', 
+        "df_scf_guess" : False,
+        "integral_package": 'libint2', 
+        "ints_tolerance" : 1e-12, 
+        "cosx_ints_tolerance" : 1e-12, 
+        "save_jk": True,
+        "bench" : 1 
+
+    })
+    schwarz_energy, schwarz_wfn = psi4.energy('hf/DZ', return_wfn=True)
+
+    # prep for comparing results to expected values
+    schwarz_computed_triplets = schwarz_wfn.jk().computed_shells_per_iter("Triplets") # shell triplets, from DFDirJ
+    schwarz_computed_quartets = schwarz_wfn.jk().computed_shells_per_iter("Quartets") # shell quartets, from LinK
+
+    # reference values, acquired from DFDirJ+LinK from Psi4 v1.8
+    schwarz_computed_triplets_expected = [17680, 29433, 29488, 29480, 29482, 29478, 29478, 29478, 29478, 29478]
+    schwarz_computed_quartets_expected = [835082, 864442, 868290, 867307, 867859, 867914, 867930, 867934, 867936, 2543375]
+
+    # compare iteration counts of runs with computed shell quartet array lengths
+    # iteration_+1 is used to account for computed_shells arrays including SAD guess results
+    assert(len(schwarz_computed_triplets_expected) == schwarz_wfn.iteration_+1)
+    assert(len(schwarz_computed_quartets_expected) == schwarz_wfn.iteration_+1)
+
+    # actually compare results with expected values
+    assert compare(schwarz_computed_triplets_expected, schwarz_computed_triplets, 'DFDirJ+COSX Computed Shell Triplets Count, Cutoff 1.0e-12')
+    assert compare(schwarz_computed_quartets_expected, schwarz_computed_quartets, 'DFDirJ+COSX Computed Shell Quartets Count, Cutoff 1.0e-12')
 
 def test_rhf_vs_uhf_screening():
     """Checks difference between the number of shell quartets screened with Density screening in RHF vs UHF. 
