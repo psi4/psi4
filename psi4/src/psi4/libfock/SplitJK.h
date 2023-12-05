@@ -226,9 +226,9 @@ class PSI_API LinK : public SplitJK {
     double linK_ints_cutoff_;
 
     /**
-    * Determine if shell quartet is significant or not 
-    * based on screening method used
-    */ 
+     * Determine if shell quartet is significant or not 
+     * based on screening method used
+     */ 
     bool shell_significant(int M, int N, int R, int S,
         const std::shared_ptr<TwoBodyAOInt> eri_computers); 
 
@@ -299,6 +299,20 @@ class PSI_API COSK : public SplitJK {
     /// use overlap-fitted COSX algo?
     bool overlap_fitted_;
 
+    /**
+     * Determine significance of shell pair over block of grid points 
+     */ 
+    bool shell_significant_block(int NU, int TAU, bool symm,
+        double X_block_max, double** esp_boundp,
+        double* F_block_gmaxp);
+
+    /**
+     * Determine significance of shell pair over single grid point 
+     */ 
+    bool shell_significant(int NU, int TAU, int g, bool symm,
+        psi::Vector X_block_bfmaxp, double** esp_boundp,
+        double** F_block_shellp, double dist_decay); 
+
    public:
     // => Constructors < = //
 
@@ -331,14 +345,6 @@ class PSI_API COSK : public SplitJK {
     * Return number of ERI shell quartets computed during the SplitJK build process.
     */
     size_t num_computed_shells() override;
-
-    bool shell_significant_block(int NU, int TAU, bool symm,
-        double X_block_max, double** esp_boundp,
-        double* F_block_gmaxp);
-
-    bool shell_significant(int NU, int TAU, int g, bool symm,
-        psi::Vector X_block_bfmaxp, double** esp_boundp,
-        double** F_block_shellp, double dist_decay); 
 
     /**
     * print name of method
